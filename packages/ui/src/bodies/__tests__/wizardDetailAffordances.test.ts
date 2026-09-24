@@ -8,7 +8,7 @@ const toggle = strip(read("../../primitives/Toggle.tsx"))
 const toggleRow = strip(read("../../primitives/ToggleRowContent.tsx"))
 const settingsToggle = strip(read("../../primitives/SettingsToggle.web.tsx"))
 const locationPicker = strip(read("../../map/LocationPicker.web.tsx"))
-const reportFlow = strip(read("../ReportFlowBody.tsx"))
+const captureStep = strip(read("../reportFlow/CaptureStep.tsx"))
 const addressSearch = strip(read("../AddressSearch.tsx"))
 const linkedEvent = strip(read("../LinkedEventCard.tsx"))
 const linkedReport = strip(read("../LinkedReportCard.tsx"))
@@ -60,7 +60,7 @@ describe("controls that are not RNW Pressables still get the house ring", () => 
 
 describe("the report wizard's rings hug their controls", () => {
   it("the library link is a hugging capsule, not a full-width square", () => {
-    const style = reportFlow.match(/\n {2}libraryLink: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+    const style = captureStep.match(/\n {2}libraryLink: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(style).toContain("borderRadius: t.radius.pill")
     expect(style).toContain('alignSelf: "center"')
     expect(style).not.toContain("backgroundColor")

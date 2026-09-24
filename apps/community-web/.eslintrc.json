@@ -52,10 +52,6 @@
                 "message": "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
               },
               {
-                "name": "@civfix/ui/report",
-                "message": "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
-              },
-              {
                 "name": "@civfix/ui/realtime",
                 "message": "The realtime channel is mounted once by components/providers.tsx."
               },

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
   canProceedFromChannelIdentity,
-  isChannelVisibilityValid,
   canCreateChannel,
   CHANNEL_DEFAULT_VISIBILITY,
 } from "../channelWizard"
@@ -22,15 +21,9 @@ describe("canProceedFromChannelIdentity (step 1 identity gate)", () => {
   })
 })
 
-describe("isChannelVisibilityValid (step 2)", () => {
-  it("is always valid for either enum member", () => {
-    expect(isChannelVisibilityValid("private")).toBe(true)
-    expect(isChannelVisibilityValid("public")).toBe(true)
-  })
-
-  it("accepts the default selection (the step can never block Next)", () => {
+describe("visibility (step 2)", () => {
+  it("defaults to private, so the step can never block Next", () => {
     expect(CHANNEL_DEFAULT_VISIBILITY).toBe("private")
-    expect(isChannelVisibilityValid(CHANNEL_DEFAULT_VISIBILITY)).toBe(true)
   })
 })
 

@@ -7,7 +7,8 @@ import DateTimePicker, {
 import { useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useLocale } from "../i18n"
-import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
+import { DateTimeFieldRow, fieldRowChrome } from "./DateTimeFieldRow"
+import { InlineDateTimePickerLayout } from "./InlineDateTimePicker.shared"
 import { uses24HourClock } from "./calendarModel"
 import {
   TIME_PICKER_MINUTE_INTERVAL,
@@ -27,17 +28,8 @@ function Caret() {
   return <Icon icon={iconMap.ChevronDown} size={16} color={th.colors.textSubtle} />
 }
 
-export function DateFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  minDate,
-  label,
-  error,
-  spaced,
-}: DateFieldRowProps) {
+export function DateFieldRow(props: DateFieldRowProps) {
+  const { value, accessibilityLabel, onChange, minDate } = props
   const th = useTheme()
   const current = pickerSeed(value, minDate)
 
@@ -62,12 +54,7 @@ export function DateFieldRow({
   return (
     <DateTimeFieldRow
       icon={iconMap.Calendar}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={isAndroid ? openDialog : undefined}
       trailing={
         isAndroid ? (
@@ -89,21 +76,8 @@ export function DateFieldRow({
   )
 }
 
-export function TimeFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  day,
-  minTime,
-  maxTime,
-  minuteInterval,
-  suffix,
-  label,
-  error,
-  spaced,
-}: TimeFieldRowProps) {
+export function TimeFieldRow(props: TimeFieldRowProps) {
+  const { value, accessibilityLabel, onChange, day, minTime, maxTime, minuteInterval } = props
   const th = useTheme()
   const { locale } = useLocale()
   const current = pickerSeed(value, day)
@@ -132,13 +106,7 @@ export function TimeFieldRow({
   return (
     <DateTimeFieldRow
       icon={iconMap.Clock}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      suffix={suffix}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={isAndroid ? openDialog : undefined}
       trailing={
         isAndroid ? (

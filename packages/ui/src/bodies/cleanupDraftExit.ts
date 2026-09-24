@@ -5,7 +5,10 @@
  */
 import type { DetailEntry } from "../nav"
 import type { DraftReport } from "../report/draftStore"
-import type { CleanupFormValue } from "./CleanupForm"
+import type { CleanupFormValue } from "./cleanupFormModel"
+
+/** Two coordinates this close are the same long-press point, not a float round-trip apart. */
+const SAME_POINT_EPSILON_DEG = 1e-9
 
 /**
  * Whether unmounting the host form is a GENUINE EXIT (clear the draft) rather than a forward drill-down
@@ -214,7 +217,7 @@ export function planDropPinReportSeed(
   const sameSpot =
     draft.lat != null &&
     draft.lng != null &&
-    Math.abs(draft.lat - point.lat) < 1e-9 &&
-    Math.abs(draft.lng - point.lng) < 1e-9
+    Math.abs(draft.lat - point.lat) < SAME_POINT_EPSILON_DEG &&
+    Math.abs(draft.lng - point.lng) < SAME_POINT_EPSILON_DEG
   return hasWork && !sameSpot ? "confirm-reset" : "seed"
 }

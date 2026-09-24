@@ -15,6 +15,8 @@ const SURFACES: Record<string, string> = {
   "bodies/MembersBody.tsx": code(read("../MembersBody.tsx")),
   "bodies/SlotGroupHeader.tsx": code(read("../SlotGroupHeader.tsx")),
   "bodies/EventSlotsBlock.tsx": code(read("../EventSlotsBlock.tsx")),
+  "bodies/EventSlotRow.tsx": code(read("../EventSlotRow.tsx")),
+  "bodies/eventSlotsModel.ts": code(read("../eventSlotsModel.ts")),
   "bodies/profile/ProfileEventsSection.tsx": code(read("../profile/ProfileEventsSection.tsx")),
   "bodies/host/EventRosterBlock.tsx": code(read("../host/EventRosterBlock.tsx")),
   "bodies/host/HostInsightsPanels.tsx": code(read("../host/HostInsightsPanels.tsx")),
@@ -68,9 +70,15 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/SlotGroupHeader.tsx"]).toContain(
       "timeRangeLabel(startsAt, endsAt, locale, timeZone)",
     )
-    expect(SURFACES["bodies/EventSlotsBlock.tsx"]).toContain(
+    expect(SURFACES["bodies/eventSlotsModel.ts"]).toContain(
       "window.end.toISOString(), locale, timeZone)",
     )
+    for (const name of ["bodies/EventSlotsBlock.tsx", "bodies/EventSlotRow.tsx"]) {
+      expect(SURFACES[name], `${name} must print windows in the event's zone`).toContain(
+        "slotWindowRangeLabel(",
+      )
+      expect(SURFACES[name]).toMatch(/slotWindowRangeLabel\([^)]*, locale, timeZone\)/)
+    }
     expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toContain(
       "timeLabel(insights.generatedAt, locale, timeZone)",
     )

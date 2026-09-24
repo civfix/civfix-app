@@ -3,7 +3,7 @@ import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import type { PostComposerMedia } from "../bodies/postComposerStore"
-import type { CleanupFormValue } from "../bodies/CleanupForm"
+import type { CleanupFormValue } from "../bodies/cleanupFormModel"
 import { selectPostComposerDraft, usePostComposerStore } from "../bodies/postComposerStore"
 import { useReplyDraftStore } from "../bodies/thread/replyDraftStore"
 import { useCleanupDraft } from "../bodies/cleanupDraftStore"
@@ -197,7 +197,7 @@ describe("viewer-scoped drafts registry", () => {
   it("scopes the in-flight report submission too: the slot registers, and a wipe drops its run", async () => {
     const slot = createSubmitRunSlot<string>()
     expect(isViewerScopedDraftStore(slot)).toBe(true)
-    const body = readFileSync(join(SRC, "bodies", "ReportFlowBody.tsx"), "utf8")
+    const body = readFileSync(join(SRC, "bodies", "reportFlow", "useReportSubmitFlow.ts"), "utf8")
     expect(body).toMatch(/const submitRuns = createSubmitRunSlot<SubmitSettled>\(/)
 
     adoptViewer("user-a")

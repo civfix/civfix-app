@@ -56,7 +56,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
     paddingLeft: t.space["3"],
     paddingRight: t.space["1"],
-    borderRadius: 14,
+    borderRadius: t.radius.md,
     backgroundColor: t.colors.surfaceTint,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,

@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs"
 import type { JurisdictionDTO } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { routeCardState } from "../routeCard"
 
 const jd = (routable: boolean) =>
@@ -39,14 +40,14 @@ describe("routeCardState", () => {
 })
 
 describe("the review step's route card", () => {
-  const body = readFileSync(new URL("../../bodies/ReportFlowBody.tsx", import.meta.url), "utf8")
+  const body = readFileSync(new URL("../../bodies/reportFlow/ReviewStep.tsx", import.meta.url), "utf8")
   const flat = body.replace(/\s+/g, " ")
 
   it("renders the unavailable state with a retry that refetches the lookup", () => {
     expect(flat).toContain("const route = routeCardState(point !== null, jurisdiction)")
-    expect(flat).toContain('route.kind === "unavailable"')
-    expect(flat).toContain('t("review.route_unavailable")')
-    expect(flat).toContain("onPress={() => void jurisdiction.refetch()}")
+    const unavailable = sliceBetween(flat, 'case "unavailable":', "default:")
+    expect(unavailable).toContain('t("review.route_unavailable")')
+    expect(unavailable).toContain("onPress={() => void jurisdiction.refetch()}")
   })
 
   it("has copy for the unavailable state in every locale", () => {

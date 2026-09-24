@@ -63,10 +63,6 @@ function roundCoord(n: number): number {
   return Math.round(n * factor) / factor
 }
 
-export function bboxSpan(bbox: BBox): number {
-  return Math.max(bbox.east - bbox.west, bbox.north - bbox.south)
-}
-
 export function bboxContains(outer: BBox, inner: BBox): boolean {
   return (
     inner.west >= outer.west &&
@@ -184,7 +180,7 @@ export function mergePins(...groups: ReadonlyArray<readonly ReportPinDTO[]>): Re
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const REFERENCE_CODE_PATTERN = /^[a-z]{2,4}-\d{1,6}-\d{6}$/i
-export const SHORT_ID_LENGTH = 8
+const SHORT_ID_LENGTH = 8
 
 export function reportLookupKey(query: string): string | null {
   const q = query.trim()
@@ -376,6 +372,27 @@ export function rowOrdinalOf(items: readonly PickerListItem[], id: string): numb
     ordinal++
   }
   return -1
+}
+
+export const PICKER_ROW_GAP = 8
+export const PICKER_ESTIMATED_ROW_HEIGHT = 84
+export const PICKER_ESTIMATED_HEADER_HEIGHT = 30
+
+// A row that has not rendered yet has no measured height, so its estimate stands in until it lays out.
+export function rowOffset(
+  items: readonly PickerListItem[],
+  index: number,
+  measured: ReadonlyMap<string, number>,
+): number {
+  let offset = 0
+  for (let i = 0; i < index; i++) {
+    const item = items[i]!
+    offset +=
+      (measured.get(item.key) ??
+        (item.kind === "header" ? PICKER_ESTIMATED_HEADER_HEIGHT : PICKER_ESTIMATED_ROW_HEIGHT)) +
+      PICKER_ROW_GAP
+  }
+  return offset
 }
 
 export function nextPageSize(shown: number, total: number, step = PICKER_PAGE_STEP): number {

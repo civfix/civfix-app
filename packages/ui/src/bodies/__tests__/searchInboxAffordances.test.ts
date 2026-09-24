@@ -7,9 +7,12 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 const searchBody = strip(read("../SearchBody.tsx"))
 const searchResults = strip(read("../SearchResults.tsx"))
 const leaderboardRow = strip(read("../LeaderboardRow.tsx"))
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
 const composer = strip(read("../conversation/ConversationComposer.tsx"))
-const convoStyles = strip(read("../conversation/styles.ts"))
+const convoStyles = strip(read("../conversation/transcriptStyles.ts"))
+const composerStyles = strip(read("../conversation/composerStyles.ts"))
 const reportRow = strip(read("../ReportRow.tsx"))
 const events = strip(read("../EventsBody.tsx"))
 const people = strip(read("../SocialBody.tsx"))
@@ -78,7 +81,7 @@ describe("the chat composer has a visible focus state", () => {
   })
 
   it("uses the same tokens the search field's ring uses", () => {
-    expect(convoStyles).toMatch(
+    expect(composerStyles).toMatch(
       /inputFocused:\s*Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: t\.colors\.accent \}/,
     )
   })

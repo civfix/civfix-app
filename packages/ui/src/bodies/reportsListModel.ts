@@ -1,3 +1,5 @@
+import type { MediaDTO, ReportDTO } from "@civfix/shared"
+
 /**
  * `categoryLabel` arrives already localized (the string the row renders) rather than from the English
  * REPORT_CATEGORY_LABELS map, so a reader of any catalog can search the category name they see.
@@ -38,4 +40,13 @@ export function searchBackfill(input: {
   if (input.isFetchingNextPage) return "busy"
   if (input.fetchNextPageFailed || input.pagesLoaded >= SEARCH_BACKFILL_MAX_PAGES) return "partial"
   return "fetch"
+}
+
+export function firstReportPhoto(report: ReportDTO): MediaDTO | undefined {
+  return report.media.find((m) => m.kind === "image" && m.status === "ready")
+}
+
+export function latestNote(report: ReportDTO): string | undefined {
+  const last = report.timeline.at(-1)
+  return last?.note?.trim() || undefined
 }

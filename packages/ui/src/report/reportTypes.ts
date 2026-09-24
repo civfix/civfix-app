@@ -1,6 +1,6 @@
 import { REPORT_TYPE_TO_CATEGORY, type ReportCategory, type ReportType as ReportTypeId } from "@civfix/shared"
 
-export interface ReportType {
+export interface ReportTypeOption {
   id: ReportTypeId
   category: ReportCategory
   /** "Other": render the neutral + glyph circle rather than a category teardrop. */
@@ -21,14 +21,10 @@ const REPORT_TYPE_PRESENTATION: Record<ReportTypeId, { glyph?: boolean }> = {
   other: { glyph: true },
 }
 
-export const REPORT_TYPES: readonly ReportType[] = (
+export const REPORT_TYPES: readonly ReportTypeOption[] = (
   Object.keys(REPORT_TYPE_PRESENTATION) as ReportTypeId[]
 ).map((id) => ({
   id,
   category: REPORT_TYPE_TO_CATEGORY[id],
   ...REPORT_TYPE_PRESENTATION[id],
 }))
-
-export function reportTypeById(id: string | null | undefined): ReportType | undefined {
-  return REPORT_TYPES.find((t) => t.id === id)
-}

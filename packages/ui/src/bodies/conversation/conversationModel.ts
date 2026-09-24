@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { AVATAR_PALETTE, avatarGradient, type ChatItem, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
+import { AVATAR_PALETTE, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
 import { useThreads } from "../../data"
@@ -7,6 +7,9 @@ import type { ChatRoomError } from "../../data"
 import { dayKey, dayLabel, type DayLabelOptions } from "../relativeTime"
 import { appErrorCode } from "../../data/errorCode"
 import { colorSchemes, type ColorSchemeName } from "../../theme/schemes"
+
+export const FLASH_DURATION_MS = 900
+export const BUBBLE_LONG_PRESS_MS = 300
 
 export interface ConvoMeta {
   kind: MessageThreadDTO["kind"]
@@ -25,6 +28,20 @@ export type RenderItem =
   | { type: "sep"; id: string; label: string }
   | { type: "row"; id: string; item: ChatItem; showName: boolean; groupStart: boolean; groupEnd: boolean }
   | { type: "typing"; id: string; name: string | null; color: string }
+
+export function pinnedRenderRows(pins: readonly ChatMessageDTO[], viewerId: string | null, isGroup: boolean): RenderItem[] {
+  return pins.map((m) => {
+    const mine = viewerId !== null && m.from?.id === viewerId
+    return {
+      type: "row" as const,
+      id: m.id,
+      item: { message: m, mine, pending: false, failed: false },
+      showName: isGroup && !mine && m.kind !== "system",
+      groupStart: true,
+      groupEnd: true,
+    }
+  })
+}
 
 export function typingNames(typingUserIds: string[], names: Map<string, string>, t: TFunction): string {
   if (typingUserIds.length > 2) return t("typing.names_several")

@@ -169,25 +169,3 @@ export const useReplyDraftStore = create<ReplyDraftState>((set, get) => ({
 registerViewerScopedDrafts(useReplyDraftStore, {
   discard: () => useReplyDraftStore.setState({ drafts: {} }),
 })
-
-/**
- * Selector factory: does this thread's draft hold media that has not finished uploading?
- *
- * Writes filter to `ready`, so in practice this is a SAFETY NET rather than a live signal - the composer
- * derives its "still uploading" hold from the live `useComposerAttachments` list, which is the only place
- * a pending item exists. Mirrors `selectPostComposerHasPendingMedia`'s shape.
- */
-export function selectReplyHasPendingMedia(targetId: string) {
-  return (state: ReplyDraftState): boolean =>
-    (state.drafts[targetId]?.media ?? []).some(
-      (media) => media.status === "pending" || media.status === "uploading",
-    )
-}
-
-/** Selector factory: the finalized upload ids this thread's draft would submit. */
-export function selectReplyMediaUploadIds(targetId: string) {
-  return (state: ReplyDraftState): string[] =>
-    (state.drafts[targetId]?.media ?? []).flatMap((media) =>
-      media.status === "ready" && media.uploadId ? [media.uploadId] : [],
-    )
-}

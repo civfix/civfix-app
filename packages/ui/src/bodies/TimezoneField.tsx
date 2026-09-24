@@ -29,7 +29,7 @@ function normalize(value: string): string {
   return value.toLowerCase().replace(/_/g, " ")
 }
 
-export function matchingTimeZones(
+function matchingTimeZones(
   zones: readonly string[],
   query: string,
   locale: string,

@@ -20,6 +20,7 @@ import { describe, expect, it } from "vitest"
 const SOURCES = {
   "SlotEditor.tsx": readFileSync(new URL("../SlotEditor.tsx", import.meta.url), "utf8"),
   "EventSlotsBlock.tsx": readFileSync(new URL("../EventSlotsBlock.tsx", import.meta.url), "utf8"),
+  "EventSlotRow.tsx": readFileSync(new URL("../EventSlotRow.tsx", import.meta.url), "utf8"),
   "SlotWindowPicker.tsx": readFileSync(new URL("../SlotWindowPicker.tsx", import.meta.url), "utf8"),
 }
 
@@ -34,6 +35,10 @@ const SCROLLER_SOURCES = {
     "utf8",
   ),
   "DateTimeFieldRow.tsx": readFileSync(new URL("../DateTimeFieldRow.tsx", import.meta.url), "utf8"),
+  "InlineDateTimePicker.shared.tsx": readFileSync(
+    new URL("../InlineDateTimePicker.shared.tsx", import.meta.url),
+    "utf8",
+  ),
   "TimezoneField.tsx": readFileSync(new URL("../TimezoneField.tsx", import.meta.url), "utf8"),
 }
 
@@ -49,10 +54,11 @@ describe("slot surfaces render inside their host's scroller", () => {
     })
   }
 
-  it("EventSlotsBlock plays the SHARED pop spring and imports no reanimated", () => {
-    const source = SOURCES["EventSlotsBlock.tsx"]
-    expect(source).toMatch(/usePopScale/)
-    expect(source).not.toMatch(/react-native-reanimated/)
+  it("the slot board plays the SHARED pop spring and imports no reanimated", () => {
+    expect(SOURCES["EventSlotRow.tsx"]).toMatch(/usePopScale/)
+    for (const name of ["EventSlotsBlock.tsx", "EventSlotRow.tsx"] as const) {
+      expect(SOURCES[name]).not.toMatch(/react-native-reanimated/)
+    }
   })
 })
 
@@ -102,6 +108,7 @@ describe("the date/time picker seam stays a seam", () => {
       "InlineDateTimePicker.web.tsx",
       "InlineDateTimePicker.native.tsx",
       "DateTimeFieldRow.tsx",
+      "InlineDateTimePicker.shared.tsx",
       "SlotWindowPicker.tsx",
     ] as const) {
       expect(SCROLLER_SOURCES[name], `${name} hardcodes a minute step`).not.toMatch(
@@ -138,6 +145,7 @@ function code(source: string): string {
 
 describe("EventSlotsBlock serialises claims across ALL rows", () => {
   const source = code(SOURCES["EventSlotsBlock.tsx"])
+  const row = code(SOURCES["EventSlotRow.tsx"])
 
   it("disables every pill off the SHARED mutation, not just the tapped row", () => {
     // The viewer's slot is a singular resource: two overlapping PUTs resolve last-RESPONSE-wins, so
@@ -169,17 +177,18 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
   it("counts the facepile's +N against the names PRINTED, not the two-name cap", () => {
     // A follow-gated viewer (or a slot the 50-row roster cap truncated) is handed fewer names than the
     // cap, and `claimed - 2` then understates the overflow against the row's own capacity line.
-    expect(source).toContain("facePileOverflow(slot.claimed, people.length)")
+    expect(row).toContain("facePileOverflow(slot.claimed, people.length)")
     expect(source).not.toContain("slot.claimed - 2")
+    expect(row).not.toContain("slot.claimed - 2")
   })
 
   it("gives the claim/switch/release pill a 44pt target without growing the 30pt visual", () => {
     // The row is deliberately NOT pressable, so this pill is the entire tap area - and it is the primary
     // action of the whole feature. 30 + 7 + 7 = 44 (the package's own rsvpPillModel target), applied as
     // slop so no slot row gets taller.
-    expect(source).toContain("const PILL_HIT_SLOP = 7")
-    expect(source).toContain("height: 30")
-    expect(source.match(/hitSlop=\{PILL_HIT_SLOP\}/g) ?? []).toHaveLength(2)
+    expect(row).toContain("const PILL_HIT_SLOP = 7")
+    expect(row).toContain("height: 30")
+    expect(row.match(/hitSlop=\{PILL_HIT_SLOP\}/g) ?? []).toHaveLength(2)
   })
 
   it("prints one honest head summary for all three board shapes", () => {
@@ -195,8 +204,8 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
   it("keeps the disclosure a SIBLING of the pill, never its parent", () => {
     // RNW renders Pressable as a <button>; nesting one inside another is invalid DOM the browser
     // silently re-parents, which is why the row was never a single tap target.
-    expect(source).toMatch(/<\/Pressable>\s*\{pill \?/)
-    expect(source).toContain("accessibilityState={{ expanded }}")
+    expect(row).toMatch(/<\/Pressable>\s*\{pill \?/)
+    expect(row).toContain("accessibilityState={{ expanded }}")
   })
 
   it("derives the hidden count from the DTO's claimed, never from the roster array", () => {
@@ -211,6 +220,7 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     expect(source).toContain("useCleanupAttendees(cleanupId)")
     expect(source).toContain("claimantsBySlot(")
     expect(source).not.toContain("api.")
+    expect(row).not.toContain("api.")
   })
 })
 
@@ -277,6 +287,7 @@ describe("a LIVE event with no slots still has a way in", () => {
 describe("the slot editor validates against the EVENT's window, not just the row", () => {
   const editor = code(SOURCES["SlotEditor.tsx"])
   const form = code(readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8"))
+  const formModel = code(readFileSync(new URL("../cleanupFormModel.ts", import.meta.url), "utf8"))
 
   it("passes the event window into the per-row error the card paints", () => {
     expect(editor).toContain("slotDraftError(draft, claimed, window)")
@@ -288,7 +299,7 @@ describe("the slot editor validates against the EVENT's window, not just the row
 
   it("feeds the editor the same window the submit gate uses", () => {
     expect(form).toContain("window={cleanupFormWindow(value)}")
-    expect(form).toMatch(/slotsValid\([\s\S]*?cleanupFormWindow\(value\),/)
+    expect(formModel).toMatch(/slotsValid\([\s\S]*?cleanupFormWindow\(value\),/)
   })
 
   it("offers Split into shifts only inside the caps and floors the schema enforces", () => {
@@ -332,15 +343,17 @@ describe("the slot editor validates against the EVENT's window, not just the row
 
 describe("the edit form's capacity-below-claimed error actually blocks Save", () => {
   const form = code(readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8"))
+  const formModel = code(readFileSync(new URL("../cleanupFormModel.ts", import.meta.url), "utf8"))
   const edit = code(readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8"))
   const create = code(readFileSync(new URL("../CreateCleanupBody.tsx", import.meta.url), "utf8"))
 
   it("threads the live claim counts through the submit gate", () => {
-    expect(form).toMatch(/slotsValid\(\s*value\.slots,/)
+    expect(formModel).toMatch(/slotsValid\(\s*value\.slots,/)
     // The >=1 slot floor has no exemption: the edit route is never offered for an ended event, and the
     // server refuses a slot change on one regardless, so there is nothing for a knob to unlock.
     expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots)")
     expect(form).not.toContain("requireSlot")
+    expect(formModel).not.toContain("requireSlot")
   })
 
   it("leaves the CREATE gate exactly as it was - a brand-new slot has no claims", () => {

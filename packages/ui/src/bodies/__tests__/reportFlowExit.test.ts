@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
+import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
-const body = read("../ReportFlowBody.tsx")
+const body = reportFlowSource()
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 describe("every exit from the report wizard returns to the surface it was launched from", () => {

@@ -9,6 +9,7 @@
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
+import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
 import type { LinkedReportRef, UserMentionDTO } from "@civfix/shared"
 import type { DetailEntry } from "../../nav"
 import { ALL_VIEWS, useNavStore } from "../../nav"
@@ -894,7 +895,8 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("ReportFlowBody claims at run ACTIVATION and releases on deactivation", () => {
-    const source = readSource("../ReportFlowBody.tsx")
+    const source = reportFlowSource()
+    expect(readSource("../ReportFlowBody.tsx")).toContain("useReportRunClaim(runActive)")
     // Live boolean nav-store selectors, never mount-time snapshots, so the activation edge fires on the
     // commit the view changes.
     expect(source).toMatch(/const runActive = useNavStore\(\(s\) => s\.view === "report"\)/)
@@ -926,7 +928,8 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("ReportFlowBody routes on THIS RUN'S claim and threads it, never re-reading the latch", () => {
-    const source = readSource("../ReportFlowBody.tsx")
+    const source = reportFlowSource()
+    expect(readSource("../ReportFlowBody.tsx")).toContain("useReportSubmitFlow({ fromComposer, stepOrder, setStep })")
     expect(source).toMatch(/const fromComposer = usePostComposerStore\(\(s\) => s\.claimedCreate\) === "report"/)
     expect(source).toMatch(/useReportSubmit\(\{ forComposer: fromComposer \}\)/)
     expect(source).toMatch(/if \(fromComposer\) \{/)
@@ -977,7 +980,7 @@ describe("the wiring (source-pinned)", () => {
     // The composer opens no report flow at all.
     expect(readSource("../PostComposer.tsx")).not.toMatch(/selectView\("report"\)/)
     // And the helper is reachable by the hosts' own entry points (mobile's `/report` shim).
-    expect(readSource("../index.ts")).toMatch(/^\s*openReportFlow,$/m)
+    expect(readSource("../index.ts")).toMatch(/export \{[^}]*\bopenReportFlow\b[^}]*\} from "\.\/composerCreateFlow"/)
 
     // The helper is the one place that decides what a non-composer entry inherits...
     const flow = readSource("../composerCreateFlow.ts")

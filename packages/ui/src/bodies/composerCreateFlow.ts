@@ -1,40 +1,18 @@
 /**
- * Stack rules for a create flow that returns to a waiting composer ({@link stackAfterComposerReturn}) or
- * publishes over the surface that launched it. No react-native import, so this module unit-tests directly;
- * `isFlowKind` comes from ../nav, the one definition the collapse guard, `map/dropPinFlow` and
- * `shell/backAffordance` also read, so "which kinds are a flow" cannot drift between them.
+ * Stack rules for a create flow that publishes over the surface that launched it, and the report-wizard
+ * entry. No react-native import, so this module unit-tests directly; `isFlowKind` comes from ../nav, the one
+ * definition the collapse guard, `map/dropPinFlow` and `shell/backAffordance` also read, so "which kinds are
+ * a flow" cannot drift between them.
  */
 import { isFlowKind, useNavStore, type DetailEntry } from "../nav"
 import { reportRunSurvivesView } from "./postComposerExit"
 import { usePostComposerStore } from "./postComposerStore"
 
 /**
- * The stack a create flow should leave behind when it returns to a WAITING composer: everything up to and
- * including the topmost `composer` entry, i.e. the flow's own entry (plus anything it pushed on top of it)
- * popped in ONE step. A single `back()` would be wrong because the form can push a linked report's detail
- * first; truncating to the composer is correct at any depth.
- *
- * `null` when no composer entry survived - the report wizard's round trip (`selectView` clears the stack)
- * and the mobile screen-hosted composer both hit that case, and their callers must fall back to their own
- * return (push a fresh entry / dismiss the host surface).
- *
- * After the truncate the stack no longer contains `create-cleanup`, so `isGenuineHostExit`
- * (cleanupDraftExit.ts) reads a genuine exit and clears the draft; that is harmless because the publish
- * path clears it anyway.
- */
-export function stackAfterComposerReturn(
-  stack: readonly DetailEntry[],
-): DetailEntry[] | null {
-  for (let index = stack.length - 1; index >= 0; index--) {
-    if (stack[index]?.kind === "composer") return stack.slice(0, index + 1)
-  }
-  return null
-}
-
-/**
  * The stack a create flow should leave behind when it PUBLISHES with no composer waiting: the flow's own
  * entry (and anything it pushed on top of it, such as a linked report's detail) REPLACED by the thing it
- * just created, by the same truncate-at-any-depth reasoning as {@link stackAfterComposerReturn}.
+ * just created. It truncates at the topmost flow entry rather than calling `back()` once, because the form
+ * can push forward first, so only the truncate is correct at any depth.
  *
  * A finished flow must relinquish its entry. `useNavStore.collapseToParent` refuses to collapse while ANY
  * entry on the stack is a flow kind, so a submitted `create-cleanup` left underneath would make the new

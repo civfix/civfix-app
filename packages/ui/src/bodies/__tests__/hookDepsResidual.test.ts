@@ -60,7 +60,7 @@ describe("memo inputs keep their identity between renders", () => {
   })
 
   it("report review: the draft point is memoized on its coordinates", () => {
-    const review = sliceBetween(read("../ReportFlowBody.tsx"), "function ReviewStep(", "const addressResolution")
+    const review = sliceBetween(read("../reportFlow/ReviewStep.tsx"), "function ReviewStep(", "const addressResolution")
     expect(review).toContain("const point = useMemo(")
     expect(depsOf(sliceBetween(review, "const point = useMemo(", "const setLocation"))).toEqual([
       "draft.lat",

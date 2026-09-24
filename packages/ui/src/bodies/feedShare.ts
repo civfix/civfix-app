@@ -10,7 +10,7 @@ import type {
 } from "@civfix/shared"
 import { appErrorCode } from "../data/errorCode"
 import { mergeDateTime } from "./calendarModel"
-import type { LinkedReportCardData } from "./LinkedReportCard"
+import type { LinkedReportCardData } from "./linkedReportCards"
 
 export interface FeedShareAuthUser {
   id: string

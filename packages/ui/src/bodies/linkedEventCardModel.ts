@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
 import { isValidTimeZone, sameOffsetAt, zoneShortName } from "@civfix/shared/datetime"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 
 export interface LinkedEventCardModel {
   title: string
@@ -25,11 +26,26 @@ export interface LinkedEventCardContext {
   showAttendance?: boolean
 }
 
+/** Faces the card's attendee stack shows at most; the going label carries the rest. */
+export const ATTENDEE_FACE_CAP = 3
+
+const REMOVE_VISUAL_SIZE = 24
+
+const LINKED_EVENT_CARD_TARGETS = {
+  removeTarget: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET },
+  removeVisual: { width: REMOVE_VISUAL_SIZE, height: REMOVE_VISUAL_SIZE },
+} as const
+
 export function buildLinkedEventCardTargetPlan() {
-  return {
-    removeTarget: { width: 44, height: 44 },
-    removeVisual: { width: 24, height: 24 },
-  } as const
+  return LINKED_EVENT_CARD_TARGETS
+}
+
+/**
+ * How many face cells the stack draws: every preview face, padded with placeholders up to the going count,
+ * never past the cap.
+ */
+export function visibleAttendeeSlots(previewCount: number, going: number): number {
+  return Math.min(ATTENDEE_FACE_CAP, Math.max(previewCount, Math.min(ATTENDEE_FACE_CAP, going)))
 }
 
 // `new Intl.DateTimeFormat(...)` is one of the more expensive JS built-ins on Hermes, and this model is
@@ -82,7 +98,7 @@ export function buildLinkedEventCardModel(
   const valid = !Number.isNaN(date.getTime())
   const going = context.going ?? event.going
   const joined = context.joined ?? false
-  const attendees = context.attendees?.slice(0, 3) ?? []
+  const attendees = context.attendees?.slice(0, ATTENDEE_FACE_CAP) ?? []
   const month = valid ? formatter(locale, timeZone, { month: "short" }).format(date).toUpperCase() : "--"
   const day = valid ? formatter(locale, timeZone, { day: "numeric" }).format(date) : "--"
   const zone = valid ? zoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null

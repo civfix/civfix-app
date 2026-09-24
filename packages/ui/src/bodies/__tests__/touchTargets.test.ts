@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { MIN_TOUCH_TARGET as CANONICAL_MIN_TOUCH_TARGET } from "../../theme/touchTarget"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -110,10 +111,13 @@ describe("SocialBody: the message button and the field clear chip clear 44pt", (
 })
 
 describe("MessagingListBody: the inbox's own field clear chip clears 44pt", () => {
-  const SRC = read("../MessagingListBody.tsx")
+  const SRC = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"].map(read).join("\n")
 
   it("takes SocialBody's slop arithmetic rather than a second one", () => {
-    expect(num(SRC, "MIN_TOUCH_TARGET")).toBe(MIN_TOUCH_TARGET)
+    expect(CANONICAL_MIN_TOUCH_TARGET).toBe(MIN_TOUCH_TARGET)
+    expect(SRC).toMatch(/import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "\.\.\/theme"/)
+    expect(SRC).toMatch(/import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "\.\.\/\.\.\/theme"/)
+    expect(SRC).not.toMatch(/const MIN_TOUCH_TARGET =/)
     expect(SRC).toContain("minHeight: MIN_TOUCH_TARGET")
     expect(SRC).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
     expect(SRC).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")

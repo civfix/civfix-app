@@ -9,9 +9,9 @@ import type { HostStage } from "@civfix/shared/host"
 
 export const NEARBY_PREVIEW = 3
 
-export const NEARBY_MAX = 30
-
 export const LINKED_REPORTS_COUNT_AT = 3
+
+const METERS_PER_KM = 1000
 
 export type LinkBlockState = "hidden" | "pin_first" | "ready"
 
@@ -54,7 +54,7 @@ export function nearbyReportRows(
   radiusKm: number,
 ): NearbyReportRow[] {
   const linked = new Set(linkedIds)
-  const maxMeters = Math.max(0, radiusKm) * 1000
+  const maxMeters = Math.max(0, radiusKm) * METERS_PER_KM
   const rows: NearbyReportRow[] = []
   for (const pin of pins) {
     if (!pin || linked.has(pin.id)) continue

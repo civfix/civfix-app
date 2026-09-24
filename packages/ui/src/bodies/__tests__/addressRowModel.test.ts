@@ -234,7 +234,11 @@ describe("addressExternalPlan", () => {
 
 describe("AddressRow source", () => {
   const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
-  const row = strip(readFileSync(new URL("../AddressRow.tsx", import.meta.url), "utf8"))
+  const row = strip(
+    ["../AddressRow.tsx", "../useAddressActions.ts"]
+      .map((rel) => readFileSync(new URL(rel, import.meta.url), "utf8"))
+      .join("\n"),
+  )
 
   it("never turns the address text into an unlabelled press target", () => {
     expect(row).not.toContain('accessibilityHint={t("row.focus_hint")}')

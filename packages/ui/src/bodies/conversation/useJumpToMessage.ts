@@ -4,10 +4,10 @@ import type { ChatItem } from "@civfix/shared"
 import { useToast } from "../../primitives"
 import { useT } from "../../i18n"
 import { resolveJump } from "../jumpToMessage"
-import { FLASH_DURATION_MS } from "./MessageBubble"
-import type { RenderItem } from "./conversationModel"
+import { FLASH_DURATION_MS, type RenderItem } from "./conversationModel"
 
 const SCROLL_RETRY_MS = 120
+const FLASH_CLEAR_SLACK_MS = 50
 
 export interface JumpToMessage {
   flashMessageId: string | null
@@ -48,7 +48,7 @@ export function useJumpToMessage({
     flashTimerRef.current = setTimeout(() => {
       flashTimerRef.current = null
       setFlashMessageId(null)
-    }, FLASH_DURATION_MS + 50)
+    }, FLASH_DURATION_MS + FLASH_CLEAR_SLACK_MS)
   }, [])
 
   const scrollRetriedRef = useRef(false)

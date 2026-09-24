@@ -22,7 +22,7 @@ function carrierOf(instant: Date, timeZone: string): Date {
   return wallClockToFormDate(wallClockInZone(instant.getTime(), timeZone))
 }
 
-export function clockOnEventDay(clock: Date, eventStart: Date, timeZone: string): number | null {
+function clockOnEventDay(clock: Date, eventStart: Date, timeZone: string): number | null {
   const startWall = wallClockInZone(eventStart.getTime(), timeZone)
   const sameDay = { ...startWall, hours: clock.getHours(), minutes: clock.getMinutes() }
   const sameDayMs = wallClockToInstantMs(sameDay, timeZone)

@@ -27,11 +27,15 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
+import { threadRowActions } from "../messagesListModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
+const ROW_ACTION_LABELS = { mute: "Mute", markRead: "Mark read", delete: "Delete", deleteA11y: "Delete conversation" }
 const timeAgoHook = strip(read("../useListTimeAgo.ts"))
 const swipeHook = strip(read("../../primitives/useSwipeActions.ts"))
 const swipeModel = strip(read("../../primitives/swipeActionsModel.ts"))
@@ -120,7 +124,7 @@ describe("the native swipe uses the house gesture primitive", () => {
   it("is inert on web: the lane only arms off web and behind a real action count", () => {
     expect(swipeHook).toContain('const isNative = Platform.OS !== "web"')
     expect(swipeHook).toContain("const active = isNative && enabled && width > 0")
-    expect(inbox).toContain("useSwipeActions({ enabled: !IS_WEB, actionCount: unread ? 3 : 2 })")
+    expect(inbox).toContain("useSwipeActions({ enabled: !IS_WEB, actionCount: rowActions.length })")
   })
 
   it("always animates home on release - a short drag on a CLOSED row never parks mid-lane", () => {
@@ -170,9 +174,12 @@ describe("the destructive third action", () => {
 
   it("reads destructive from the token scale and is reachable without a gesture", () => {
     expect(inbox).toContain("backgroundColor: t.colors.bloom[\"600\"]")
-    expect(inbox).toContain('icon="Trash2"')
+    const del = threadRowActions({ unread: false, muted: false, labels: ROW_ACTION_LABELS }).at(-1)
+    expect(del).toMatchObject({ key: "delete", icon: "Trash2", destructive: true, a11yLabel: "Delete conversation" })
+    expect(inbox).toContain("icon={action.icon}")
     expect(inbox).toMatch(/actionName === "delete"/)
-    expect(inbox).toContain('{ name: "delete", label: deleteA11yLabel }')
+    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toContain("deleteA11y: deleteA11yLabel")
   })
 })
 
@@ -197,9 +204,15 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
   })
 
   it("offers mark-read ONLY where there is something to clear", () => {
-    expect(inbox).toMatch(/unread\s*\?\s*\[\s*\{ name: "mute", label: muteLabel \},\s*\{ name: "markRead", label: markReadLabel \},/)
-    expect(inbox).toMatch(/if \(unread\) \{\s*items\.push\(\{ key: "markRead"/)
-    expect(inbox).toMatch(/actionCount: unread \? 3 : 2/)
+    const keys = (unread: boolean) =>
+      threadRowActions({ unread, muted: false, labels: ROW_ACTION_LABELS }).map((action) => action.key)
+    expect(keys(true)).toEqual(["mute", "markRead", "delete"])
+    expect(keys(false)).toEqual(["mute", "delete"])
+    expect(inbox).toMatch(/threadRowActions\(\{\s*unread,\s*muted,/)
+    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toMatch(/rowActions\.map\(\(action\) => \(\{\s*key: action\.key,/)
+    expect(inbox).toMatch(/\{rowActions\.map\(\(action\) => \(\s*<ThreadRowAction/)
+    expect(inbox).toContain("actionCount: rowActions.length")
   })
 
   it("takes every label from the catalog, in all four locales", () => {

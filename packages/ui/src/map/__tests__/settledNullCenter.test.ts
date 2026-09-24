@@ -5,6 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import { pickerSurface } from "../LocationPicker.types"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -44,7 +45,7 @@ describe("the seams and the report flow carry the settled flag", () => {
   })
 
   it("the report flow passes its resolution state to both pickers", () => {
-    const flow = read("../../bodies/ReportFlowBody.tsx")
+    const flow = reportFlowSource()
     expect(flow).toMatch(/<LocationPicker [^>]*centerSettled=\{initialCenter\.settled\}/)
     expect(flow).toMatch(/<PortraitMapPickStep[\s\S]*?centerSettled=\{pickCenter\.settled\}/)
   })

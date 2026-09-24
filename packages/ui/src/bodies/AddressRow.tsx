@@ -1,11 +1,11 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback } from "react"
 import { Modal, Platform, Pressable, StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import type { AddressPrecision, EventKind, ReportCategory } from "@civfix/shared"
+import type { AddressPrecision } from "@civfix/shared"
 import {
+  PRESSED_OPACITY,
   focusRingProps,
   makeThemedStyles,
-  useLayoutMode,
   useTheme,
   webCursorPointer,
   webHover,
@@ -15,24 +15,13 @@ import {
 } from "../theme"
 import { Icon, Text, iconMap } from "../typography"
 import type { IconName } from "../typography"
-import { useClipboard, useHaptics, useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
-import { showOnMap } from "../map"
-import { useToast } from "../primitives"
-import {
-  addressExternalPlan,
-  addressMapsOptions,
-  addressRowAffordances,
-  appleMapsUrl,
-  applyNearPrefix,
-  googleMapsUrl,
-  type AddressMapsOption,
-  type AddressPoint,
-} from "./addressRowModel"
+import { applyNearPrefix, type AddressMapsOption, type AddressPoint } from "./addressRowModel"
+import { useAddressActions, type AddressFocusTarget } from "./useAddressActions"
 
-export type AddressFocusTarget =
-  | { kind: "report"; id: string; category: ReportCategory }
-  | { kind: "cleanup"; id: string; eventKind: EventKind }
+export type { AddressFocusTarget } from "./useAddressActions"
+
+const LABEL_ICON_SIZE = 14
 
 export interface AddressRowProps {
   address: string | null | undefined
@@ -51,11 +40,6 @@ const OPTION_ICON: Record<AddressMapsOption, IconName> = {
   apple: "Navigation",
   google: "ExternalLink",
   copy: "Copy",
-}
-
-function rowPlatform(): "ios" | "android" | "web" {
-  if (Platform.OS === "web") return "web"
-  return Platform.OS === "android" ? "android" : "ios"
 }
 
 function AddressActionsSheet({
@@ -190,114 +174,13 @@ export function AddressRow({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("address")
-  const clipboard = useClipboard()
-  const openExternal = useOpenExternal()
-  const haptics = useHaptics()
-  const mode = useLayoutMode()
-  const toast = useToast()
-  const [sheetOpen, setSheetOpen] = useState(false)
-
   const near = useCallback((line: string) => t("row.near", { address: line }), [t])
   const resolved = address?.trim() ?? ""
   const line = resolved.length > 0 ? applyNearPrefix(resolved, precision, near) : null
   const display = line ?? fallbackLabel?.trim() ?? null
 
-  const urlInput = useMemo(
-    () => ({
-      address: resolved.length > 0 ? resolved : null,
-      point: point ?? null,
-      verified,
-      title: title ?? null,
-    }),
-    [resolved, point, verified, title],
-  )
-  const appleUrl = useMemo(() => appleMapsUrl(urlInput), [urlInput])
-  const googleUrl = useMemo(() => googleMapsUrl(urlInput), [urlInput])
-
-  const hasExternalPlan =
-    addressExternalPlan({
-      platform: rowPlatform(),
-      appleUrl,
-      googleUrl,
-      hasCopy: false,
-    }).kind !== "none"
-
-  const affordances = addressRowAffordances({
-    variant,
-    hasAddress: resolved.length > 0,
-    hasPoint: point != null,
-    hasFocusTarget: focusTarget != null,
-    hasClipboard: clipboard !== undefined,
-    hasOpenExternal: openExternal !== undefined,
-    hasExternalPlan,
-  })
-
-  const onCopy = useCallback(() => {
-    if (!clipboard || resolved.length === 0) return
-    void clipboard.setString(resolved).then(
-      () => {
-        haptics.success()
-        toast.show(t("row.copied"), { variant: "success" })
-      },
-      () => toast.show(t("row.copy_failed"), { variant: "error" }),
-    )
-  }, [clipboard, haptics, resolved, t, toast])
-
-  const openUrl = useCallback(
-    (url: string) => {
-      if (!openExternal) return
-      void openExternal.open(url)
-    },
-    [openExternal],
-  )
-
-  const chooseOption = useCallback(
-    (option: AddressMapsOption) => {
-      if (option === "copy") {
-        onCopy()
-        return
-      }
-      const url = option === "apple" ? appleUrl : googleUrl
-      if (url) openUrl(url)
-    },
-    [appleUrl, googleUrl, onCopy, openUrl],
-  )
-
-  const sheetOptions = useMemo(
-    () =>
-      addressMapsOptions({
-        platform: rowPlatform(),
-        hasApple: appleUrl !== null,
-        hasGoogle: googleUrl !== null,
-        hasCopy: affordances.copy,
-      }),
-    [appleUrl, googleUrl, affordances.copy],
-  )
-
-  const onExternal = useCallback(() => {
-    const plan = addressExternalPlan({
-      platform: rowPlatform(),
-      appleUrl,
-      googleUrl,
-      hasCopy: affordances.copy,
-    })
-    if (plan.kind === "direct") {
-      openUrl(plan.url)
-      return
-    }
-    if (plan.kind === "sheet") setSheetOpen(true)
-  }, [appleUrl, googleUrl, affordances.copy, openUrl])
-
-  const onFocusMap = useCallback(() => {
-    if (!point || !focusTarget) return
-    haptics.selection()
-    showOnMap(
-      mode,
-      focusTarget.kind === "report"
-        ? { kind: "report", id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category }
-        : { kind: "cleanup", id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
-    )
-  }, [focusTarget, haptics, mode, point])
+  const { affordances, sheetOpen, sheetOptions, onCopy, onExternal, onFocusMap, chooseOption, closeSheet } =
+    useAddressActions({ resolved, point, focusTarget, verified, title, variant })
 
   if (!display) return null
 
@@ -320,7 +203,7 @@ export function AddressRow({
   const body = (
     <View style={styles.main}>
       <View style={styles.label} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
-        <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
+        <Icon icon={iconMap.MapPin} size={LABEL_ICON_SIZE} color={th.colors.textSubtle} />
         {text}
       </View>
       {trailing}
@@ -358,7 +241,7 @@ export function AddressRow({
       <AddressActionsSheet
         visible={sheetOpen}
         options={sheetOptions}
-        onClose={() => setSheetOpen(false)}
+        onClose={closeSheet}
         onChoose={chooseOption}
       />
     </View>
@@ -395,7 +278,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     gap: t.space["1"],
-    marginLeft: 14 + t.space["2"],
+    marginLeft: LABEL_ICON_SIZE + t.space["2"],
     paddingVertical: 2,
     paddingHorizontal: t.space["1"],
     borderRadius: t.radius.pill,
@@ -432,7 +315,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.surfaceTint,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   sheetRoot: {
     flex: 1,

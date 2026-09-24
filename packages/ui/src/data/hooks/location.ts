@@ -22,7 +22,7 @@
  *   2. `fetchApproximateLocation()` - the civfix API's own key-less, permissionless, city-accurate
  *      estimate (`GET /geo/approximate`), sharing one cache entry with `useApproximateLocation()` so the
  *      map and every picker resolve it once. This mirrors `resolveApproxCenter`
- *      (bodies/ReportFlowBody.tsx) and AddressSearch's "use my location". Coarse: consumers should read
+ *      (bodies/reportFlow/useApproxCenter.ts) and AddressSearch's "use my location". Coarse: consumers should read
  *      it as "roughly which city", not "which street".
  *   3. whatever point is ALREADY cached under this key: a host that seeded it (the mobile map home
  *      publishes its own resolved point here) must not be overwritten with `null` by a resolve that
@@ -40,28 +40,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { LatLng } from "@civfix/shared"
 import { useGeolocation } from "../../capabilities"
 import { useApi } from "../context"
+import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "../deviceFix"
 import { fetchApproximateLocation } from "../fetchApproximateLocation"
 import { queryKeys } from "../keys"
-
-/** How long a FRESH device fix gets before we stop waiting and fall back to IP. */
-const DEVICE_FIX_TIMEOUT_MS = 4000
-
-/** Resolve to the promise's value, or to `null` if it rejects or does not settle within `ms`. */
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  return new Promise((settle) => {
-    const timer = setTimeout(() => settle(null), ms)
-    promise.then(
-      (value) => {
-        clearTimeout(timer)
-        settle(value)
-      },
-      () => {
-        clearTimeout(timer)
-        settle(null)
-      },
-    )
-  })
-}
 
 /**
  * The viewer's best-known position as a shared `LatLng`, or `null` when nothing at all could be resolved.

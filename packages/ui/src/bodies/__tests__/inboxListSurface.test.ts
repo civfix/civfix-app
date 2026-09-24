@@ -5,7 +5,9 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 const strip = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
 const feed = strip(read("../FeedBody.tsx"))
 const reports = strip(read("../ReportsBody.tsx"))
 const postCard = strip(read("../PostCard.tsx"))
@@ -124,7 +126,11 @@ describe("read and unread are distinguishable at a glance", () => {
 
   it("keeps the coral pill and the timestamp exactly where they were", () => {
     expect(inbox).toMatch(/unread: \{[\s\S]{0,240}?backgroundColor: t\.colors\.brand\.bloom/)
-    expect(inbox).toContain('thread.unread > 99 ? "99+" : thread.unread')
+    expect(inbox).toContain("{unreadBadgeLabel(thread.unread)}")
+    expect(strip(read("../messagesListModel.ts"))).toContain(
+      "return unread > UNREAD_BADGE_CAP ? `${UNREAD_BADGE_CAP}+` : unread",
+    )
+    expect(strip(read("../messagesListModel.ts"))).toContain("export const UNREAD_BADGE_CAP = 99")
     expect(inbox).toMatch(/ago: \{[\s\S]{0,200}?color: t\.colors\.textSubtle/)
   })
 
@@ -242,17 +248,19 @@ describe("the filter narrows LOADED threads, and never asks the server", () => {
   })
 
   it("shows the no-match state only when a filter is what emptied the list", () => {
-    const from = inbox.indexOf("const emptyContent")
-    const to = inbox.indexOf("return (\n    <FlatList")
-    expect(from, "the emptyContent block must still be findable").toBeGreaterThan(-1)
+    const from = inbox.indexOf("function InboxEmptyState(")
+    const to = inbox.indexOf("export function MessagingListBody(")
+    expect(from, "the empty-state component must still be findable").toBeGreaterThan(-1)
     expect(to).toBeGreaterThan(from)
     const empty = inbox.slice(from, to)
-    expect(empty).toContain("query.isError")
-    expect(empty).toContain("if (filtering)")
-    expect(empty.indexOf("query.isError")).toBeLessThan(empty.indexOf("if (filtering)"))
-    expect(empty.indexOf("if (filtering)")).toBeLessThan(empty.indexOf('t("empty.title")'))
-    expect(empty).toContain('t("empty.no_match.body", { query: search.trim() })')
+    expect(empty).toContain("if (error)")
+    expect(empty).toContain("if (searchQuery !== null)")
+    expect(empty.indexOf("if (error)")).toBeLessThan(empty.indexOf("if (searchQuery !== null)"))
+    expect(empty.indexOf("if (searchQuery !== null)")).toBeLessThan(empty.indexOf('t("empty.title")'))
+    expect(empty).toContain('t("empty.no_match.body", { query: searchQuery })')
     expect(empty).toContain("icon={iconMap.Search}")
+    expect(inbox).toContain("error={query.isError}")
+    expect(inbox).toContain("searchQuery={filtering ? search.trim() : null}")
   })
 
   it("an emptied field is not a filter: the whole list comes back", () => {

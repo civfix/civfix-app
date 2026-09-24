@@ -22,15 +22,9 @@ export type ChannelVisibility = "private" | "public"
 /** The visibility radio's default selection (a channel is private until the creator opens it). */
 export const CHANNEL_DEFAULT_VISIBILITY: ChannelVisibility = "private"
 
-export function canProceedFromChannelIdentity(name: string, description = ""): boolean {
-  return canCreateGroup(name, description)
-}
-
-export function isChannelVisibilityValid(visibility: ChannelVisibility): boolean {
-  return visibility === "private" || visibility === "public"
-}
-
 /** Subscribers are optional, so the Create gate never inspects the selection count. */
 export function canCreateChannel(name: string, description = ""): boolean {
   return canCreateGroup(name, description)
 }
+
+export const canProceedFromChannelIdentity = canCreateChannel

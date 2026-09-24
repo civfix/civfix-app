@@ -20,9 +20,9 @@ import {
   slotRowState,
   slotViewerState,
   slotWindow,
-  slotsFilledSummary,
-  sortSlots,
+  slotWindowRangeLabel,
 } from "../eventSlotsModel"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 
 function slot(id: string, over: Partial<EventSlotDTO> = {}): EventSlotDTO {
   return { id, title: `Slot ${id}`, claimed: 0, sortOrder: 0, ...over }
@@ -80,36 +80,20 @@ describe("slotRowState", () => {
   })
 })
 
-describe("slotsFilledSummary", () => {
+describe("slotBoardSummary sums", () => {
   it("sums claims and capacities", () => {
     expect(
-      slotsFilledSummary([
+      slotBoardSummary([
         slot("a", { capacity: 4, claimed: 2 }),
         slot("b", { capacity: 2, claimed: 1 }),
       ]),
-    ).toEqual({ claimed: 3, capacity: 6 })
+    ).toEqual({ kind: "capped", claimed: 3, capacity: 6 })
   })
 
   it("reports a null capacity when ANY slot is unlimited", () => {
     expect(
-      slotsFilledSummary([slot("a", { capacity: 4, claimed: 2 }), slot("b", { claimed: 5 })]),
-    ).toEqual({ claimed: 7, capacity: null })
-  })
-
-  it("is zero/zero for no slots", () => {
-    expect(slotsFilledSummary([])).toEqual({ claimed: 0, capacity: 0 })
-  })
-})
-
-describe("sortSlots", () => {
-  it("sorts by sortOrder, then title, without mutating the input", () => {
-    const input = [
-      slot("a", { title: "Zebra", sortOrder: 1 }),
-      slot("b", { title: "Apple", sortOrder: 1 }),
-      slot("c", { title: "Middle", sortOrder: 0 }),
-    ]
-    expect(sortSlots(input).map((s) => s.id)).toEqual(["c", "b", "a"])
-    expect(input.map((s) => s.id)).toEqual(["a", "b", "c"])
+      slotBoardSummary([slot("a", { capacity: 4, claimed: 2 }), slot("b", { claimed: 5 })]),
+    ).toEqual({ kind: "open", claimed: 7, capacity: null })
   })
 })
 
@@ -129,6 +113,20 @@ describe("slotWindow", () => {
     const window = slotWindow(slot("a", { startsAt: at("09:00"), endsAt: at("10:00") }))
     expect(window?.start.toISOString()).toBe(at("09:00"))
     expect(window?.end.toISOString()).toBe(at("10:00"))
+  })
+})
+
+describe("slotWindowRangeLabel", () => {
+  it("is null for no slot and for an untimed one", () => {
+    expect(slotWindowRangeLabel(null, "en-US", "America/Los_Angeles")).toBeNull()
+    expect(slotWindowRangeLabel(slot("a"), "en-US", "America/Los_Angeles")).toBeNull()
+  })
+
+  it("prints a timed shift in the zone it is handed, not the device's", () => {
+    const timed = slot("a", { startsAt: at("16:00"), endsAt: at("18:00") })
+    const la = slotWindowRangeLabel(timed, "en-US", "America/Los_Angeles")
+    expect(la).toBe(timeRangeLabel(at("16:00"), at("18:00"), "en-US", "America/Los_Angeles"))
+    expect(la).not.toBe(slotWindowRangeLabel(timed, "en-US", "Asia/Tokyo"))
   })
 })
 
@@ -164,13 +162,22 @@ describe("slotDisplayOrder", () => {
     expect(slotDisplayOrder(input).map((s) => s.id)).toEqual(["c", "b", "a"])
   })
 
-  it("is NOT what sortSlots does: the host's own order survives where the clock does not rule", () => {
+  it("lets the clock outrank the host's sortOrder: a timed shift leads a lower-sortOrder untimed role", () => {
     const input = [
       slot("grill", { title: "Grill", sortOrder: 0 }),
       slot("sweep", { title: "Sweep", sortOrder: 2, startsAt: at("09:00"), endsAt: at("10:00") }),
     ]
-    expect(sortSlots(input).map((s) => s.id)).toEqual(["grill", "sweep"])
     expect(slotDisplayOrder(input).map((s) => s.id)).toEqual(["sweep", "grill"])
+  })
+
+  it("orders untimed roles by sortOrder, then title, without mutating the input", () => {
+    const input = [
+      slot("a", { title: "Zebra", sortOrder: 1 }),
+      slot("b", { title: "Apple", sortOrder: 1 }),
+      slot("c", { title: "Middle", sortOrder: 0 }),
+    ]
+    expect(slotDisplayOrder(input).map((s) => s.id)).toEqual(["c", "b", "a"])
+    expect(input.map((s) => s.id)).toEqual(["a", "b", "c"])
   })
 
   it("is what the attendee board, the shifts panel and the roster all read", () => {

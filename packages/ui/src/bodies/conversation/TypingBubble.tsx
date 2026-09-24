@@ -4,10 +4,14 @@ import { Animated, Platform, View } from "react-native"
 import { Text } from "../../typography"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { useT } from "../../i18n"
-import { useConversationStyles } from "./styles"
+import { useBubbleStyles } from "./bubbleStyles"
+
+const TYPING_DOT_STAGGER_MS = 160
+const TYPING_DOT_MS = 320
+const TYPING_CYCLE_REST_MS = 640
 
 function TypingDots() {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   const dots = useRef([new Animated.Value(0), new Animated.Value(0), new Animated.Value(0)]).current
   // A typing indicator is the one animation in the conversation that never stops on its own, so it is the
   // one most worth silencing under reduced motion. `null` means "not answered yet", which animates: the
@@ -22,10 +26,10 @@ function TypingDots() {
     const anims = dots.map((v, i) =>
       Animated.loop(
         Animated.sequence([
-          Animated.delay(i * 160),
-          Animated.timing(v, { toValue: 1, duration: 320, useNativeDriver: useNative }),
-          Animated.timing(v, { toValue: 0, duration: 320, useNativeDriver: useNative }),
-          Animated.delay(640 - i * 160),
+          Animated.delay(i * TYPING_DOT_STAGGER_MS),
+          Animated.timing(v, { toValue: 1, duration: TYPING_DOT_MS, useNativeDriver: useNative }),
+          Animated.timing(v, { toValue: 0, duration: TYPING_DOT_MS, useNativeDriver: useNative }),
+          Animated.delay(TYPING_CYCLE_REST_MS - i * TYPING_DOT_STAGGER_MS),
         ]),
       ),
     )
@@ -51,7 +55,7 @@ function TypingDots() {
 }
 
 export const TypingBubble = React.memo(function TypingBubble({ name, color }: { name: string | null; color: string }) {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   const { t } = useT("conversation")
   return (
     <View

@@ -11,7 +11,7 @@ import { useT, useLocale } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
 import { idKeyExtractor } from "./navHelpers"
 import { ReportRowView } from "./ReportRow"
-import { firstReportPhoto, latestNote } from "./ReportsBody"
+import { firstReportPhoto, latestNote } from "./reportsListModel"
 import { useListTimeAgo } from "./useListTimeAgo"
 
 function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
@@ -162,7 +162,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   eventSubtitle: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
     marginTop: 3,
   },

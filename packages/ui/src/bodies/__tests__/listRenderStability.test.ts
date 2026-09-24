@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { visibleAttendeeSlots } from "../linkedEventCardModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -135,8 +136,10 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
 
   it("still paints a stack once the footer is asked for, so it is never a bare count", () => {
     expect(SRC).toContain(
-      "const visibleCount = Math.min(3, Math.max(model.attendeePreview.length, Math.min(3, model.going)))",
+      "const visibleCount = visibleAttendeeSlots(model.attendeePreview.length, model.going)",
     )
+    expect(visibleAttendeeSlots(1, 3)).toBe(3)
+    expect(visibleAttendeeSlots(1, 40)).toBe(3)
     expect(SRC).toContain("{showAvatars ? (")
   })
 
@@ -219,14 +222,14 @@ describe("ConversationBody surfaces the chat hook's transient error", () => {
 
 describe("the thumbnail contexts spend the 400px rendition, and the lightbox gets real dimensions", () => {
   it("ReportDetailBody's strip reads thumbUrl for images too, and passes width/height on", () => {
-    const SRC = code(read("../ReportDetailBody.tsx"))
+    const SRC = code(read("../reportDetail/ReportGallery.tsx"))
     expect(SRC).toContain("const thumbUri = m.thumbUrl ?? m.url")
     expect(SRC).not.toContain('m.kind === "video" ? (m.thumbUrl ?? m.url) : m.url')
     expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
   })
 
   it("MessageBubble's 220pt attachment decodes the thumb, and its lightbox keeps full resolution", () => {
-    const SRC = code(read("../conversation/MessageBubble.tsx"))
+    const SRC = code(read("../conversation/BubbleAttachments.tsx"))
     expect(SRC).toContain("thumbUri={m.thumbUrl ?? null}")
     expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
     expect(SRC).toContain("url: m.url")

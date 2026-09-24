@@ -1,36 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { useCleanupDraft } from "../cleanupDraftStore"
 import { commitHostDraftMount, planHostDraftMount } from "../cleanupDraftExit"
-import type { CleanupFormValue } from "../CleanupForm"
+import { emptyCleanupForm, type CleanupFormValue } from "../cleanupFormModel"
 
-// The runtime `emptyCleanupForm` is not imported: ../CleanupForm imports `react-native` (and the
-// maplibre-heavy ../map), whose Flow-typed entry (`import typeof`) fails to parse under this package's plain
-// vitest/node setup. So this inlines an RN-free factory matching its shape and imports only the erased type.
+// The real factory, pinned to a fixed zone and an empty board so the assertions below do not depend on the
+// machine's zone or the slot-key counter. "Announce to the feed" stays the factory's default (ON).
 function mkForm(seedLinkedReportId?: string): CleanupFormValue {
-  return {
-    organizationId: null,
-    title: "",
-    description: "",
-    eventKind: "cleanup",
-    addrQuery: "",
-    spot: "",
-    address: "",
-    addressSource: null,
-    addressPointKey: null,
-    coords: null,
-    date: null,
-    time: null,
-    endTime: null,
-    timezone: "America/Los_Angeles",
-    bring: [],
-    slots: [],
-    linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
-    // "Announce to the feed" defaults ON for a NEW event (emptyCleanupForm), and carries an empty caption.
-    shareToFeed: true,
-    feedCaption: "",
-    coverMediaId: null,
-    coverPreviewUrl: null,
-  }
+  return { ...emptyCleanupForm(seedLinkedReportId), timezone: "America/Los_Angeles", slots: [] }
 }
 
 beforeEach(() => useCleanupDraft.getState().clear())

@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
-const detail = read("../ReportDetailBody.tsx")
+const detail = reportDetailSource()
 const dropPin = read("../DropPinBody.tsx")
 
 function unannouncedViewLabels(src: string): string[] {

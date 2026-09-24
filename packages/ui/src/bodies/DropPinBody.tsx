@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useReverseLabel, reverseLabelText } from "../data"
 import { useNavStore } from "../nav"
@@ -31,7 +31,7 @@ function ActionCard({
   onPress: () => void
 }) {
   const styles = useStyles()
-  const t = useTheme()
+  const th = useTheme()
   return (
     <Pressable
       onPress={onPress}
@@ -40,14 +40,14 @@ function ActionCard({
       {...focusRingProps}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
-      <View style={[styles.cardIcon, { backgroundColor: t.colors.neutral.card }]}>
+      <View style={[styles.cardIcon, { backgroundColor: th.colors.neutral.card }]}>
         <Icon icon={icon} size={19} color={tone} />
       </View>
       <View style={styles.cardMeta}>
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardSub}>{sub}</Text>
       </View>
-      <Icon icon={iconMap.ChevronRight} size={17} color={t.colors.textSubtle} />
+      <Icon icon={iconMap.ChevronRight} size={17} color={th.colors.textSubtle} />
     </Pressable>
   )
 }
@@ -182,7 +182,7 @@ const useStyles = makeThemedStyles((t) => ({
   locationText: {
     flex: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   card: {
@@ -212,12 +212,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   cardTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   cardSub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   confirm: {
@@ -231,12 +231,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   confirmTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   confirmBody: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
@@ -250,37 +250,37 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
   },
   confirmKeepText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.textMuted,
   },
   confirmDiscard: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.brand.bloom,
   },
   confirmDiscardText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.onAccent,
   },
   cancel: {
     alignItems: "center",
     justifyContent: "center",
-    height: 44,
+    height: MIN_TOUCH_TARGET,
   },
   cancelText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.textMuted,
   },
   pressed: {

@@ -8,8 +8,6 @@ import type { PostComposerMedia } from "../../postComposerStore"
 import {
   EMPTY_REPLY_DRAFT,
   MAX_REPLY_DRAFTS,
-  selectReplyHasPendingMedia,
-  selectReplyMediaUploadIds,
   useReplyDraftStore,
 } from "../replyDraftStore"
 
@@ -65,11 +63,8 @@ describe("replyDraftStore", () => {
     const stored = useReplyDraftStore.getState().get("post-1").media
     expect(stored.map((item) => item.uri)).toEqual(["a", "e"])
     // ...so the "spinner over a permanently disabled Reply button" state is unrepresentable.
-    expect(selectReplyHasPendingMedia("post-1")(useReplyDraftStore.getState())).toBe(false)
-    expect(selectReplyMediaUploadIds("post-1")(useReplyDraftStore.getState())).toEqual([
-      "upload-a",
-      "upload-e",
-    ])
+    expect(stored.some((item) => item.status === "pending" || item.status === "uploading")).toBe(false)
+    expect(stored.map((item) => item.uploadId)).toEqual(["upload-a", "upload-e"])
   })
 
   it("caps the map at MAX_REPLY_DRAFTS, evicting the oldest EMPTY draft first", () => {

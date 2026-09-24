@@ -6,12 +6,14 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { REPORT_TYPES } from "../../report/reportTypes"
+import { MIN_TOUCH_TARGET } from "../../theme/touchTarget"
+import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
 const flat = (src: string) => src.replace(/\s+/g, " ")
 
-const body = code(read("../ReportFlowBody.tsx"))
+const body = code(reportFlowSource())
 const submit = code(read("../../report/submit.ts"))
 const reportTypes = code(read("../../report/reportTypes.ts"))
 
@@ -33,7 +35,7 @@ describe("the submit error screen", () => {
   })
 
   it("returns to idle on the step the refusal names", () => {
-    const edit = flat(slice("const editAfterFailure = useCallback(", "}, [submitRecovery])"))
+    const edit = flat(slice("const editAfterFailure = useCallback(", "}, [setStep, submitRecovery])"))
     expect(edit).toContain('setSubmitPhase("idle")')
     expect(edit).toContain("setStep(target)")
     expect(body).toContain("submitErrorRecovery(appErrorCode(settled.error), appErrorFields(settled.error), stepOrder)")
@@ -204,7 +206,8 @@ describe("target sizes and radio semantics", () => {
   })
 
   it("makes the compact Reset link 44px tall", () => {
-    expect(flat(slice("  compactLocClear: {", "  compactLocClearText: {"))).toContain("minHeight: 44")
+    expect(flat(slice("  compactLocClear: {", "  compactLocClearText: {"))).toContain("minHeight: MIN_TOUCH_TARGET")
+    expect(MIN_TOUCH_TARGET).toBe(44)
   })
 
   it("groups the type rows as a radiogroup and names each row with its sub-line", () => {

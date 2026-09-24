@@ -10,7 +10,16 @@ const code = (src: string): string =>
 
 const picker = code(read("../ReportLinkPicker.tsx"))
 const row = code(read("../ReportLinkRow.tsx"))
-const surface = code(read("../reportPicker/ReportPicker.tsx"))
+const SURFACE_FILES = [
+  "ReportPicker.tsx",
+  "usePickerSelection.ts",
+  "usePickerData.ts",
+  "usePickerListScroll.ts",
+  "PickerSearchField.tsx",
+  "PickerList.tsx",
+  "PickerFooter.tsx",
+] as const
+const surface = SURFACE_FILES.map((file) => code(read(`../reportPicker/${file}`))).join("\n")
 const pickerRow = code(read("../reportPicker/PickerReportRow.tsx"))
 const chips = code(read("../reportPicker/LayerChipRow.tsx"))
 const mapNative = code(read("../../map/ReportPickMap.native.tsx"))
@@ -349,7 +358,7 @@ describe("every key these surfaces name exists in en", () => {
   })
 
   it.each([
-    ["ReportPicker.tsx", surface],
+    ["ReportPicker.tsx and its hooks and parts", surface],
     ["PickerReportRow.tsx", pickerRow],
     ["LayerChipRow.tsx", chips],
   ])("%s's picker keys are all in en/report-picker.json", (_name, source) => {

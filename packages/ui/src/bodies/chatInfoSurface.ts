@@ -14,7 +14,7 @@
  */
 
 /** Room kinds whose "details" surface is the chat-info surface built in MembersBody. */
-export const chatInfoRoomKinds = ["report", "cleanup"] as const
+const chatInfoRoomKinds = ["report", "cleanup"] as const
 export type ChatInfoRoomKind = (typeof chatInfoRoomKinds)[number]
 
 export function isChatInfoRoomKind(roomKind: string): roomKind is ChatInfoRoomKind {

@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { LinkedEventRef } from "@civfix/shared"
-import { clampGallerySelection, linkedEventToCleanup } from "../reportDetailModel"
+import { linkedEventToCleanup } from "../reportDetailModel"
+import { clampGallerySelection } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
+import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"
 
 describe("report gallery selection", () => {
   it("keeps the hero, the active thumb and the lightbox index on one item after the list shrinks", () => {
@@ -92,14 +93,11 @@ describe("your-reports search", () => {
 })
 
 describe("report detail: share and host-an-event live in the overflow menu", () => {
-  const SRC = readFileSync(new URL("../ReportDetailBody.tsx", import.meta.url), "utf8").replace(
-    /\/\*[\s\S]*?\*\//g,
-    "",
-  )
+  const SRC = reportDetailSource().replace(/\/\*[\s\S]*?\*\//g, "")
 
   it("carries both as PopoverMenu items with the house icons, ahead of the report-content item", () => {
     expect(SRC).toContain("const titleMenuItems: PopoverMenuItem[] = [")
-    expect(SRC).toContain('items={titleMenuItems}')
+    expect(SRC).toContain('items={titleMenu.titleMenuItems}')
     expect(SRC).toMatch(/key: "share",[\s\S]*?icon: "Share",[\s\S]*?onPress: onShare,/)
     expect(SRC).toMatch(/key: "host-event",[\s\S]*?icon: "Megaphone",[\s\S]*?onPress: onHostEvent,/)
     expect(SRC.indexOf('key: "share"')).toBeLessThan(SRC.indexOf('key: "host-event"'))

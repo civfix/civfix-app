@@ -262,7 +262,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
   skipBtn: {
@@ -310,7 +310,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   radioLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   radioHint: {

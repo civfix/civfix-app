@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import type { GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
+import type { ChatGroupDTO, GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -172,6 +172,309 @@ function ActionRow({
   )
 }
 
+function useAddMembersSheet(id: string) {
+  const addMembers = useAddGroupMembers()
+  // Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat).
+  const addingRef = useRef(false)
+  const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<PersonDTO[]>([])
+  const [error, setError] = useState(false)
+  const openSheet = useCallback(() => {
+    setSelected([])
+    setError(false)
+    setOpen(true)
+  }, [])
+  const close = useCallback(() => setOpen(false), [])
+  const onConfirm = useCallback(() => {
+    if (addingRef.current) return
+    if (selected.length === 0 || addMembers.isPending) return
+    addingRef.current = true
+    setError(false)
+    addMembers.mutate(
+      { id, memberIds: selected.map((p) => p.id) },
+      {
+        onSuccess: () => setOpen(false),
+        onError: () => setError(true),
+        onSettled: () => {
+          addingRef.current = false
+        },
+      },
+    )
+  }, [selected, addMembers, id])
+  return { open, openSheet, close, selected, setSelected, error, pending: addMembers.isPending, onConfirm }
+}
+
+function AddMembersSheet({
+  sheet,
+  excludeIds,
+}: {
+  sheet: ReturnType<typeof useAddMembersSheet>
+  excludeIds: string[]
+}) {
+  const styles = useStyles()
+  const { t } = useT("group-info")
+  return (
+    <ModalCardSheet
+      visible={sheet.open}
+      onClose={sheet.close}
+      headerIcon="UserPlus"
+      title={t("add_members")}
+      dismissLabel={t("sheet_dismiss")}
+      error={sheet.error ? t("add_error") : null}
+      bodyLayout="fill"
+      cardStyle={styles.addCard}
+      actions={
+        <>
+          <SecondaryButton label={t("cancel")} onPress={sheet.close} size="sm" />
+          <PrimaryButton
+            label={t("add")}
+            onPress={sheet.onConfirm}
+            loading={sheet.pending}
+            disabled={sheet.selected.length === 0 || sheet.pending}
+          />
+        </>
+      }
+    >
+      <MemberPicker selected={sheet.selected} onChange={sheet.setSelected} excludeIds={excludeIds} />
+    </ModalCardSheet>
+  )
+}
+
+function useEditGroupSheet({ id, group, isOwner }: { id: string; group: ChatGroupDTO | undefined; isOwner: boolean }) {
+  const updateGroup = useUpdateGroup()
+  const savingRef = useRef(false)
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState("")
+  const [description, setDescription] = useState("")
+  const [visibility, setVisibility] = useState<"private" | "public">("private")
+  const [error, setError] = useState(false)
+  const avatar = useComposerAttachments(1)
+  const picked = avatar.attachments[0] ?? null
+
+  const openSheet = useCallback(() => {
+    setName(group?.name ?? "")
+    setDescription(group?.description ?? "")
+    setVisibility(group?.visibility ?? "private")
+    setError(false)
+    if (picked) avatar.removeAttachment(picked.id)
+    setOpen(true)
+  }, [group?.name, group?.description, group?.visibility, picked, avatar])
+  const close = useCallback(() => setOpen(false), [])
+  const valid = canCreateGroup(name, description)
+  const onSave = useCallback(() => {
+    if (savingRef.current) return
+    if (!valid || avatar.uploading || updateGroup.isPending) return
+    savingRef.current = true
+    setError(false)
+    const draft = normalizeGroupDraft(name, description)
+    updateGroup.mutate(
+      {
+        id,
+        name: draft.name,
+        description: draft.description ?? "",
+        ...(isOwner && visibility !== group?.visibility ? { visibility } : {}),
+        ...(picked?.uploadId ? { avatarUploadId: picked.uploadId } : {}),
+      },
+      {
+        onSuccess: () => {
+          if (picked) avatar.removeAttachment(picked.id)
+          setOpen(false)
+        },
+        onError: () => setError(true),
+        onSettled: () => {
+          savingRef.current = false
+        },
+      },
+    )
+  }, [valid, avatar, updateGroup, id, name, description, visibility, isOwner, group?.visibility, picked])
+  return {
+    open,
+    openSheet,
+    close,
+    name,
+    setName,
+    description,
+    setDescription,
+    visibility,
+    setVisibility,
+    error,
+    avatar,
+    valid,
+    pending: updateGroup.isPending,
+    onSave,
+  }
+}
+
+function EditGroupSheet({
+  sheet,
+  isOwner,
+  fallbackAvatarUrl,
+}: {
+  sheet: ReturnType<typeof useEditGroupSheet>
+  isOwner: boolean
+  fallbackAvatarUrl: string | null
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("group-info")
+  return (
+    <ModalCardSheet
+      visible={sheet.open}
+      onClose={sheet.close}
+      headerIcon="Pencil"
+      title={t("edit_info")}
+      dismissLabel={t("sheet_dismiss")}
+      error={sheet.error ? t("edit_error") : null}
+      actions={
+        <>
+          <SecondaryButton label={t("cancel")} onPress={sheet.close} size="sm" />
+          <PrimaryButton
+            label={t("save")}
+            onPress={sheet.onSave}
+            loading={sheet.pending}
+            disabled={!sheet.valid || sheet.avatar.uploading || sheet.pending}
+          />
+        </>
+      }
+    >
+      <GroupIdentityFields
+        variant="sheet"
+        avatar={sheet.avatar}
+        name={sheet.name}
+        onChangeName={sheet.setName}
+        description={sheet.description}
+        onChangeDescription={sheet.setDescription}
+        fallbackAvatarUrl={fallbackAvatarUrl}
+        labels={{
+          avatarA11y: t("avatar_a11y"),
+          avatarClearA11y: t("avatar_clear_a11y"),
+          nameLabel: t("name_label"),
+          namePlaceholder: t("name_placeholder"),
+          descriptionLabel: t("description_label"),
+          descriptionPlaceholder: t("description_placeholder"),
+        }}
+      />
+      {isOwner ? (
+        <View style={styles.visibilityEdit}>
+          <Text style={styles.visibilityEditLabel}>{t("visibility_label")}</Text>
+          <View
+            style={styles.visibilitySegment}
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t("visibility_label")}
+          >
+            {(["private", "public"] as const).map((v) => {
+              const active = sheet.visibility === v
+              return (
+                <Pressable
+                  key={v}
+                  onPress={() => sheet.setVisibility(v)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: active }}
+                  accessibilityLabel={t(v === "public" ? "visibility_public" : "visibility_private")}
+                  {...focusRingProps}
+                  style={({ pressed }) => [
+                    styles.visibilityOption,
+                    active ? styles.visibilityOptionActive : null,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <Icon
+                    icon={iconMap[v === "public" ? "Globe" : "Lock"]}
+                    size={15}
+                    color={active ? th.colors.brand.moss : th.colors.textMuted}
+                  />
+                  <Text style={[styles.visibilityOptionText, active ? styles.visibilityOptionTextActive : null]}>
+                    {t(v === "public" ? "visibility_public" : "visibility_private")}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
+        </View>
+      ) : null}
+    </ModalCardSheet>
+  )
+}
+
+function useLeaveGroupSheet({
+  id,
+  viewerId,
+  removeMember,
+  onBack,
+}: {
+  id: string
+  viewerId: string | null
+  removeMember: ReturnType<typeof useRemoveGroupMember>
+  onBack?: () => void
+}) {
+  const leavingRef = useRef(false)
+  const [open, setOpen] = useState(false)
+  const [error, setError] = useState(false)
+  const openSheet = useCallback(() => {
+    setError(false)
+    setOpen(true)
+  }, [])
+  const close = useCallback(() => setOpen(false), [])
+  const onConfirm = useCallback(() => {
+    if (leavingRef.current) return
+    if (!viewerId || removeMember.isPending) return
+    leavingRef.current = true
+    setError(false)
+    removeMember.mutate(
+      { id, userId: viewerId },
+      {
+        onSuccess: () => {
+          setOpen(false)
+          if (onBack) onBack()
+          else useNavStore.getState().setStack([{ kind: "messages" }])
+        },
+        onError: () => setError(true),
+        onSettled: () => {
+          leavingRef.current = false
+        },
+      },
+    )
+  }, [viewerId, removeMember, id, onBack])
+  return { open, openSheet, close, error, pending: removeMember.isPending, onConfirm }
+}
+
+function LeaveGroupSheet({
+  sheet,
+  isChannel,
+  groupName,
+}: {
+  sheet: ReturnType<typeof useLeaveGroupSheet>
+  isChannel: boolean
+  groupName: string
+}) {
+  const styles = useStyles()
+  const { t } = useT("group-info")
+  return (
+    <ModalCardSheet
+      visible={sheet.open}
+      onClose={sheet.close}
+      headerIcon="LogOut"
+      title={isChannel ? t("leave_channel") : t("leave")}
+      dismissLabel={t("sheet_dismiss")}
+      error={sheet.error ? t("leave_error") : null}
+      actions={
+        <>
+          <SecondaryButton label={t("cancel")} onPress={sheet.close} size="sm" />
+          <PrimaryButton
+            label={t("leave_action")}
+            variant="destructive"
+            onPress={sheet.onConfirm}
+            loading={sheet.pending}
+            disabled={sheet.pending}
+          />
+        </>
+      }
+    >
+      <Text style={styles.confirmBody}>{t("leave_confirm", { name: groupName })}</Text>
+    </ModalCardSheet>
+  )
+}
+
 export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: GroupInfoBodyProps) {
   const { FlatList } = useScrollHost()
   const styles = useStyles()
@@ -191,116 +494,21 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const toast = useToast()
 
   const toggleMute = useToggleMute("group", id)
-  const addMembers = useAddGroupMembers()
-  const updateGroup = useUpdateGroup()
   const removeMember = useRemoveGroupMember()
   const setRole = useSetGroupMemberRole()
-  // Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat).
-  const addingRef = useRef(false)
-  const savingRef = useRef(false)
-  const leavingRef = useRef(false)
-
-  const [addOpen, setAddOpen] = useState(false)
-  const [addSelected, setAddSelected] = useState<PersonDTO[]>([])
-  const [addError, setAddError] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [editName, setEditName] = useState("")
-  const [editDescription, setEditDescription] = useState("")
-  const [editVisibility, setEditVisibility] = useState<"private" | "public">("private")
-  const [editError, setEditError] = useState(false)
-  const [leaveOpen, setLeaveOpen] = useState(false)
-  const [leaveError, setLeaveError] = useState(false)
-
-  const avatar = useComposerAttachments(1)
-  const picked = avatar.attachments[0] ?? null
+  const addSheet = useAddMembersSheet(id)
+  const editSheet = useEditGroupSheet({ id, group, isOwner })
+  const leaveSheet = useLeaveGroupSheet({ id, viewerId, removeMember, onBack })
 
   const onToggleMute = useCallback(() => {
     toggleMute.mutate({ muted: !(group?.muted ?? false) })
   }, [toggleMute, group?.muted])
 
-  const openAdd = useCallback(() => {
-    setAddSelected([])
-    setAddError(false)
-    setAddOpen(true)
-  }, [])
-  const onAddConfirm = useCallback(() => {
-    if (addingRef.current) return
-    if (addSelected.length === 0 || addMembers.isPending) return
-    addingRef.current = true
-    setAddError(false)
-    addMembers.mutate(
-      { id, memberIds: addSelected.map((p) => p.id) },
-      {
-        onSuccess: () => setAddOpen(false),
-        onError: () => setAddError(true),
-        onSettled: () => {
-          addingRef.current = false
-        },
-      },
-    )
-  }, [addSelected, addMembers, id])
   const addExcludeIds = useMemo(() => {
     const ids = (members.data?.pages ?? []).flatMap((p) => p.members.map((m) => m.user.id))
     if (viewerId && !ids.includes(viewerId)) ids.push(viewerId)
     return ids
   }, [members.data, viewerId])
-
-  const openEdit = useCallback(() => {
-    setEditName(group?.name ?? "")
-    setEditDescription(group?.description ?? "")
-    setEditVisibility(group?.visibility ?? "private")
-    setEditError(false)
-    if (picked) avatar.removeAttachment(picked.id)
-    setEditOpen(true)
-  }, [group?.name, group?.description, group?.visibility, picked, avatar])
-  const editValid = canCreateGroup(editName, editDescription)
-  const onEditSave = useCallback(() => {
-    if (savingRef.current) return
-    if (!editValid || avatar.uploading || updateGroup.isPending) return
-    savingRef.current = true
-    setEditError(false)
-    const draft = normalizeGroupDraft(editName, editDescription)
-    updateGroup.mutate(
-      {
-        id,
-        name: draft.name,
-        description: draft.description ?? "",
-        ...(isOwner && editVisibility !== group?.visibility ? { visibility: editVisibility } : {}),
-        ...(picked?.uploadId ? { avatarUploadId: picked.uploadId } : {}),
-      },
-      {
-        onSuccess: () => {
-          if (picked) avatar.removeAttachment(picked.id)
-          setEditOpen(false)
-        },
-        onError: () => setEditError(true),
-        onSettled: () => {
-          savingRef.current = false
-        },
-      },
-    )
-  }, [editValid, avatar, updateGroup, id, editName, editDescription, editVisibility, isOwner, group?.visibility, picked])
-
-  const onLeaveConfirm = useCallback(() => {
-    if (leavingRef.current) return
-    if (!viewerId || removeMember.isPending) return
-    leavingRef.current = true
-    setLeaveError(false)
-    removeMember.mutate(
-      { id, userId: viewerId },
-      {
-        onSuccess: () => {
-          setLeaveOpen(false)
-          if (onBack) onBack()
-          else useNavStore.getState().setStack([{ kind: "messages" }])
-        },
-        onError: () => setLeaveError(true),
-        onSettled: () => {
-          leavingRef.current = false
-        },
-      },
-    )
-  }, [viewerId, removeMember, id, onBack])
 
   const onOpenPerson = useCallback(
     (navId: string) => {
@@ -402,8 +610,8 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
           disabled={toggleMute.isPending || !group}
           onPress={onToggleMute}
         />
-        {canManage ? <ActionRow icon="UserPlus" label={isChannel ? t("add_subscribers") : t("add_members")} onPress={openAdd} /> : null}
-        {canManage ? <ActionRow icon="Pencil" label={t("edit_info")} onPress={openEdit} /> : null}
+        {canManage ? <ActionRow icon="UserPlus" label={isChannel ? t("add_subscribers") : t("add_members")} onPress={addSheet.openSheet} /> : null}
+        {canManage ? <ActionRow icon="Pencil" label={t("edit_info")} onPress={editSheet.openSheet} /> : null}
         {isChannel && isPublic && clipboard ? (
           <ActionRow icon="Link2" label={t("copy_link")} onPress={onCopyLink} />
         ) : null}
@@ -412,7 +620,7 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
             icon="LogOut"
             label={isChannel ? t("leave_channel") : t("leave")}
             destructive
-            onPress={() => { setLeaveError(false); setLeaveOpen(true) }}
+            onPress={leaveSheet.openSheet}
           />
         ) : null}
       </View>
@@ -453,128 +661,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
         }
       />
 
-      <ModalCardSheet
-        visible={addOpen}
-        onClose={() => setAddOpen(false)}
-        headerIcon="UserPlus"
-        title={t("add_members")}
-        dismissLabel={t("sheet_dismiss")}
-        error={addError ? t("add_error") : null}
-        bodyLayout="fill"
-        cardStyle={styles.addCard}
-        actions={
-          <>
-            <SecondaryButton label={t("cancel")} onPress={() => setAddOpen(false)} size="sm" />
-            <PrimaryButton
-              label={t("add")}
-              onPress={onAddConfirm}
-              loading={addMembers.isPending}
-              disabled={addSelected.length === 0 || addMembers.isPending}
-            />
-          </>
-        }
-      >
-        <MemberPicker selected={addSelected} onChange={setAddSelected} excludeIds={addExcludeIds} />
-      </ModalCardSheet>
-
-      <ModalCardSheet
-        visible={editOpen}
-        onClose={() => setEditOpen(false)}
-        headerIcon="Pencil"
-        title={t("edit_info")}
-        dismissLabel={t("sheet_dismiss")}
-        error={editError ? t("edit_error") : null}
-        actions={
-          <>
-            <SecondaryButton label={t("cancel")} onPress={() => setEditOpen(false)} size="sm" />
-            <PrimaryButton
-              label={t("save")}
-              onPress={onEditSave}
-              loading={updateGroup.isPending}
-              disabled={!editValid || avatar.uploading || updateGroup.isPending}
-            />
-          </>
-        }
-      >
-        <GroupIdentityFields
-          variant="sheet"
-          avatar={avatar}
-          name={editName}
-          onChangeName={setEditName}
-          description={editDescription}
-          onChangeDescription={setEditDescription}
-          fallbackAvatarUrl={group?.avatar?.url ?? null}
-          labels={{
-            avatarA11y: t("avatar_a11y"),
-            avatarClearA11y: t("avatar_clear_a11y"),
-            nameLabel: t("name_label"),
-            namePlaceholder: t("name_placeholder"),
-            descriptionLabel: t("description_label"),
-            descriptionPlaceholder: t("description_placeholder"),
-          }}
-        />
-        {isOwner ? (
-          <View style={styles.visibilityEdit}>
-            <Text style={styles.visibilityEditLabel}>{t("visibility_label")}</Text>
-            <View
-              style={styles.visibilitySegment}
-              accessibilityRole="radiogroup"
-              accessibilityLabel={t("visibility_label")}
-            >
-              {(["private", "public"] as const).map((v) => {
-                const active = editVisibility === v
-                return (
-                  <Pressable
-                    key={v}
-                    onPress={() => setEditVisibility(v)}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: active }}
-                    accessibilityLabel={t(v === "public" ? "visibility_public" : "visibility_private")}
-                    {...focusRingProps}
-                    style={({ pressed }) => [
-                      styles.visibilityOption,
-                      active ? styles.visibilityOptionActive : null,
-                      pressed ? styles.pressed : null,
-                    ]}
-                  >
-                    <Icon
-                      icon={iconMap[v === "public" ? "Globe" : "Lock"]}
-                      size={15}
-                      color={active ? th.colors.brand.moss : th.colors.textMuted}
-                    />
-                    <Text style={[styles.visibilityOptionText, active ? styles.visibilityOptionTextActive : null]}>
-                      {t(v === "public" ? "visibility_public" : "visibility_private")}
-                    </Text>
-                  </Pressable>
-                )
-              })}
-            </View>
-          </View>
-        ) : null}
-      </ModalCardSheet>
-
-      <ModalCardSheet
-        visible={leaveOpen}
-        onClose={() => setLeaveOpen(false)}
-        headerIcon="LogOut"
-        title={isChannel ? t("leave_channel") : t("leave")}
-        dismissLabel={t("sheet_dismiss")}
-        error={leaveError ? t("leave_error") : null}
-        actions={
-          <>
-            <SecondaryButton label={t("cancel")} onPress={() => setLeaveOpen(false)} size="sm" />
-            <PrimaryButton
-              label={t("leave_action")}
-              variant="destructive"
-              onPress={onLeaveConfirm}
-              loading={removeMember.isPending}
-              disabled={removeMember.isPending}
-            />
-          </>
-        }
-      >
-        <Text style={styles.confirmBody}>{t("leave_confirm", { name: group?.name ?? "" })}</Text>
-      </ModalCardSheet>
+      <AddMembersSheet sheet={addSheet} excludeIds={addExcludeIds} />
+      <EditGroupSheet sheet={editSheet} isOwner={isOwner} fallbackAvatarUrl={group?.avatar?.url ?? null} />
+      <LeaveGroupSheet sheet={leaveSheet} isChannel={isChannel} groupName={group?.name ?? ""} />
     </>
   )
 }
@@ -623,7 +712,7 @@ const useStyles = makeThemedStyles((t) => ({
   kindBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["2"],
     paddingVertical: 3,
     borderRadius: t.radius.md,
@@ -638,7 +727,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   heroDescription: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.textMuted,
     textAlign: "center",
   },
@@ -654,7 +743,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   visibilityText: {
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   visibilityEdit: {
@@ -688,7 +777,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   visibilityOptionText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   visibilityOptionTextActive: {
@@ -703,14 +792,14 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
   },
   actionDisabled: {
     opacity: 0.5,
   },
   actionLabel: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   actionLabelDestructive: {
@@ -718,7 +807,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     textTransform: "uppercase",
     letterSpacing: 0.4,

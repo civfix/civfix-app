@@ -153,7 +153,7 @@ const useStyles = makeThemedStyles((t) => ({
   thumb: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: t.radius.sm,
     flexShrink: 0,
     backgroundColor: t.colors.bgAlt,
   },
@@ -176,7 +176,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   addr: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
     marginTop: 3,
   },

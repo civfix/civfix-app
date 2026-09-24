@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { reportDetailSource } from "../../bodies/reportDetail/__tests__/reportDetailSource"
 import { MOTION } from "../../theme/motion"
 import { menuOrigin, MENU_SCALE_FROM } from "../menuMotionModel"
 
@@ -19,8 +20,10 @@ const contextMenu = strip(read("../MessageContextMenu.tsx"))
 const postActionBar = strip(read("../PostActionBar.tsx"))
 const convoBar = strip(read("../../bodies/conversation/ConvoBar.tsx"))
 const conversation = strip(read("../../bodies/ConversationBody.tsx"))
-const inbox = strip(read("../../bodies/MessagingListBody.tsx"))
-const reportDetail = strip(read("../../bodies/ReportDetailBody.tsx"))
+const inbox = ["../../bodies/MessagingListBody.tsx", "../../bodies/inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
+const reportDetail = strip(reportDetailSource())
 
 describe("menu motion tokens", () => {
   it("names an entrance and a QUICKER exit in the shared motion vocabulary", () => {

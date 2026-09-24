@@ -233,7 +233,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -295,7 +295,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     paddingVertical: 10,
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   row: {

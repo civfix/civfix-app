@@ -1,26 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, Platform, Animated, Dimensions } from "react-native"
+import { View, Pressable, StyleSheet, Platform, Animated } from "react-native"
 import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
-import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji, type MediaDTO } from "@civfix/shared"
-import { useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../../theme"
+import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji } from "@civfix/shared"
+import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import type { LucideIcon } from "../../typography"
-import { MessageContextMenu, ReactionChips, ReplyQuote, MediaPreview, PopoverMenu, usePopoverAnchor, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
-import type { PopoverMenuItem, AnchorRect, ContextMenuAction } from "../../primitives"
-import { buildReactionChipModel } from "../../primitives/reactionChipModel"
+import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
 import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
-import { useLightbox } from "../../lightbox"
 import { announce } from "../../announce"
 import { useLocale, useT } from "../../i18n"
-import { buildMessageActions, isBlockableAuthor, type MessageActionKey } from "../messageActions"
+import { buildMessageActions, isBlockableAuthor } from "../messageActions"
 import { clockTime } from "../relativeTime"
 import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
 import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
 import { ChatLinkEmbeds } from "./ChatLinkEmbeds"
-import { senderNameColor } from "./conversationModel"
-import { useConversationStyles } from "./styles"
+import { BUBBLE_LONG_PRESS_MS, FLASH_DURATION_MS, senderNameColor } from "./conversationModel"
+import { BubbleAttachments } from "./BubbleAttachments"
+import { BubbleMenus } from "./BubbleMenus"
+import { useBubbleContextMenu } from "./useBubbleContextMenu"
+import { useBubbleStyles } from "./bubbleStyles"
 
-export const FLASH_DURATION_MS = 900
+const FLASH_IN_MS = 200
 
 function webFocused(state: PressableStateCallbackType): boolean {
   if (Platform.OS !== "web") return false
@@ -31,7 +30,7 @@ function actionBtnReveal(shown: boolean): ViewStyle {
   return { opacity: shown ? 1 : 0, pointerEvents: shown ? "auto" : "none" }
 }
 
-export interface RenderChatBodyInput {
+interface RenderChatBodyInput {
   body: string
   mentions: UserMentionDTO[] | undefined
   cityHandle?: string | null
@@ -41,7 +40,7 @@ export interface RenderChatBodyInput {
   onOpenLink: (target: ChatLinkTarget) => void
 }
 
-export function chatBodyTokens({
+function chatBodyTokens({
   body,
   mentions,
   cityHandle,
@@ -53,11 +52,7 @@ export function chatBodyTokens({
   })
 }
 
-export function renderChatBody(input: RenderChatBodyInput): React.ReactNode {
-  return renderChatTokens(chatBodyTokens(input), input)
-}
-
-export function renderChatTokens(
+function renderChatTokens(
   tokens: readonly ChatBodyToken[],
   { body, tintStyle, onOpenPerson, onOpenLink }: RenderChatBodyInput,
 ): React.ReactNode {
@@ -98,88 +93,16 @@ export function renderChatTokens(
   })
 }
 
-export const BubbleAttachments = React.memo(function BubbleAttachments({
-  attachments,
-  mine,
-  onReportPhoto,
-  onLongPress,
-}: {
-  attachments: MediaDTO[] | null | undefined
-  mine: boolean
-  onReportPhoto?: (mediaId: string) => void
-  onLongPress?: () => void
-}) {
-  const styles = useConversationStyles()
-  const th = useTheme()
-  const { open } = useLightbox()
-  const { t } = useT("conversation")
-  if (!attachments || attachments.length === 0) return null
-  const lightboxItems = attachments.map((m) => ({
-    url: m.url,
-    kind: m.kind === "video" ? ("video" as const) : ("image" as const),
-    thumbUrl: m.thumbUrl ?? null,
-    width: m.width ?? null,
-    height: m.height ?? null,
-  }))
-  return (
-    <View style={[styles.attachments, mine ? styles.attachmentsMine : styles.attachmentsTheirs]}>
-      {attachments.map((m, i) => {
-        const canReportPhoto = !mine && !!onReportPhoto && m.kind !== "video"
-        return (
-          <View key={m.id} style={styles.attachmentWrap}>
-            <Pressable
-              onPress={() => open(lightboxItems, i)}
-              onLongPress={onLongPress}
-              delayLongPress={300}
-              accessibilityRole="button"
-              accessibilityLabel={t("attachment.view")}
-              {...focusRingProps}
-              style={styles.attachmentTap}
-            >
-              <MediaPreview
-                uri={m.url}
-                kind={m.kind === "video" ? "video" : "image"}
-                posterUri={m.thumbUrl ?? null}
-                thumbUri={m.thumbUrl ?? null}
-                aspectRatio={4 / 3}
-                style={styles.attachment}
-              />
-            </Pressable>
-            {canReportPhoto ? (
-              <Pressable
-                onPress={() => onReportPhoto?.(m.id)}
-                accessibilityRole="button"
-                accessibilityLabel={t("attachment.report_photo")}
-                hitSlop={6}
-                {...focusRingProps}
-                style={(state) => [
-                  styles.photoReportBtn,
-                  webTransition,
-                  webCursorPointer,
-                  webHover(state) ? styles.photoReportBtnHovered : null,
-                  state.pressed ? styles.pressed : null,
-                ]}
-              >
-                <Icon icon={iconMap.Flag} size={13} color={th.colors.onScrim} />
-              </Pressable>
-            ) : null}
-          </View>
-        )
-      })}
-    </View>
-  )
-})
-
 type FlashShape = "bubble" | "rounded" | "card"
 
 function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: FlashShape }) {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   const v = useRef(new Animated.Value(0)).current
   useEffect(() => {
     const useNative = Platform.OS !== "web"
     const anim = Animated.sequence([
-      Animated.timing(v, { toValue: 1, duration: 200, useNativeDriver: useNative }),
-      Animated.timing(v, { toValue: 0, duration: FLASH_DURATION_MS - 200, useNativeDriver: useNative }),
+      Animated.timing(v, { toValue: 1, duration: FLASH_IN_MS, useNativeDriver: useNative }),
+      Animated.timing(v, { toValue: 0, duration: FLASH_DURATION_MS - FLASH_IN_MS, useNativeDriver: useNative }),
     ])
     anim.start()
     return () => anim.stop()
@@ -198,7 +121,7 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
 }
 
 function SendStatusLine({ failed, onRetry }: { failed: boolean; onRetry: () => void }) {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   if (failed) {
@@ -222,12 +145,6 @@ function SendStatusLine({ failed, onRetry }: { failed: boolean; onRetry: () => v
       <Text style={styles.timeText}>{t("bubble.sending")}</Text>
     </View>
   )
-}
-
-interface MenuModel {
-  menuActions: ContextMenuAction[]
-  confirmItems: PopoverMenuItem[]
-  stopConfirmItems: PopoverMenuItem[]
 }
 
 export interface BubbleProps {
@@ -281,6 +198,116 @@ function bubblePropsEqual(prev: BubbleProps, next: BubbleProps): boolean {
   return true
 }
 
+function SenderName({
+  from,
+  onOpenPerson,
+}: {
+  from: NonNullable<ChatMessageDTO["from"]>
+  onOpenPerson: BubbleProps["onOpenPerson"]
+}) {
+  const styles = useBubbleStyles()
+  const th = useTheme()
+  const name = (
+    <Text
+      style={[styles.who, from.official ? styles.whoBadged : null, { color: senderNameColor(from.id, th.scheme) }]}
+      numberOfLines={1}
+      onPress={from.deleted ? undefined : () => onOpenPerson(from)}
+      accessibilityRole={from.deleted ? undefined : "button"}
+      {...(from.deleted ? null : focusRingProps)}
+    >
+      {from.name}
+    </Text>
+  )
+  if (!from.official) return name
+  return (
+    <View style={styles.whoRow}>
+      {name}
+      <VerifiedBadge size="sm" />
+    </View>
+  )
+}
+
+function TombstonePill() {
+  const styles = useBubbleStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  return (
+    <View style={styles.mutedPill}>
+      <Icon icon={iconMap.Ban} size={13} color={th.colors.textSubtle} />
+      <Text style={styles.mutedPillText}>{t("bubble.removed")}</Text>
+    </View>
+  )
+}
+
+function ProcessingPill() {
+  const styles = useBubbleStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  return (
+    <View style={styles.mutedPill}>
+      <Icon icon={iconMap.Image} size={13} color={th.colors.textSubtle} />
+      <Text style={styles.mutedPillText}>{t("bubble.attachment_processing")}</Text>
+    </View>
+  )
+}
+
+function BubbleHoverActions({
+  reactable,
+  menuShown,
+  hovered,
+  onHoverChange,
+  onOpen,
+}: {
+  reactable: boolean
+  menuShown: boolean
+  hovered: boolean
+  onHoverChange: (hovered: boolean) => void
+  onOpen: () => void
+}) {
+  const styles = useBubbleStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  return (
+    <>
+      {reactable ? (
+        <Pressable
+          onPress={onOpen}
+          onHoverIn={() => onHoverChange(true)}
+          onHoverOut={() => onHoverChange(false)}
+          accessibilityRole="button"
+          accessibilityLabel={t("context_menu.reactions")}
+          hitSlop={6}
+          {...focusRingProps}
+          style={(state) => [
+            styles.hoverActionBtn,
+            actionBtnReveal(hovered || webFocused(state)),
+            state.pressed ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.SmilePlus} size={14} color={th.colors.textSubtle} />
+        </Pressable>
+      ) : null}
+      <Pressable
+        onPress={onOpen}
+        onHoverIn={() => onHoverChange(true)}
+        onHoverOut={() => onHoverChange(false)}
+        accessibilityRole="button"
+        accessibilityLabel={t("bubble.message_actions")}
+        accessibilityState={{ expanded: menuShown }}
+        hitSlop={6}
+        {...focusRingProps}
+        style={(state) => [
+          styles.hoverActionBtn,
+          actionBtnReveal(hovered || webFocused(state)),
+          state.pressed ? styles.pressed : null,
+        ]}
+      >
+        <Icon icon={iconMap.Ellipsis} size={15} color={th.colors.textSubtle} />
+      </Pressable>
+    </>
+  )
+}
+
 export const Bubble = React.memo(function Bubble({
   item,
   showName,
@@ -313,12 +340,11 @@ export const Bubble = React.memo(function Bubble({
   pinnedOnlyView = false,
   onJumpFromPinned,
 }: BubbleProps) {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   const { t: td } = useT("discussion")
   const { locale } = useLocale()
-  const { t: tp } = useT("conversation-polls")
   const { message, mine, pending, failed } = item
   const body = message.body ?? ""
   const edited = Boolean(message.editedAt)
@@ -328,18 +354,8 @@ export const Bubble = React.memo(function Bubble({
   const wrapGap = groupStart ? styles.bubbleWrapGroupStart : null
   const isWeb = Platform.OS === "web"
   const [hovered, setHovered] = useState(false)
-  const [menuMode, setMenuMode] = useState<"closed" | "menu" | "confirm" | "confirm-stop">("closed")
-  const [menuEverOpened, setMenuEverOpened] = useState(false)
-  const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
-  const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor((rect) => {
-    setMenuRect(rect)
-    setMenuMode("menu")
-  })
-  useEffect(() => {
-    if (menuMode === "closed") return
-    const sub = Dimensions.addEventListener("change", () => setMenuMode("closed"))
-    return () => sub.remove()
-  }, [menuMode])
+  const menu = useBubbleContextMenu()
+  const { anchorRef: menuAnchorRef, open: openContextMenu } = menu
   const clipboard = useClipboard()
   const openExternal = useOpenExternal()
   const openInternalHref = useOpenInternalHref()
@@ -397,10 +413,7 @@ export const Bubble = React.memo(function Bubble({
   if (removed && !(mine && (pending || failed))) {
     return (
       <View style={[styles.bubbleWrap, mine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs, wrapGap]}>
-        <View style={styles.tombstoneBubble}>
-          <Icon icon={iconMap.Ban} size={13} color={th.colors.textSubtle} />
-          <Text style={styles.tombstoneBubbleText}>{t("bubble.removed")}</Text>
-        </View>
+        <TombstonePill />
         {flash ? <FlashOverlay mine={false} shape="rounded" /> : null}
       </View>
     )
@@ -432,110 +445,6 @@ export const Bubble = React.memo(function Bubble({
     canModeratePoll: canModeratePoll && Boolean(onStopPoll),
   })
   const menuAvailable = descriptors.length > 0 || reactable
-  const buildMenuModel = (): MenuModel => {
-    const actionLabel: Record<MessageActionKey, string> = {
-      reply: t("context_menu.reply"),
-      copy: t("context_menu.copy"),
-      edit: t("context_menu.edit"),
-      pin: t("context_menu.pin"),
-      unpin: t("context_menu.unpin"),
-      jump: t("pins.jump"),
-      delete: t("context_menu.delete"),
-      report: t("context_menu.report"),
-      block: t("context_menu.block"),
-      retractVote: tp("retract"),
-      stopPoll: tp("stop"),
-    }
-    const actionIcon: Record<MessageActionKey, LucideIcon> = {
-      reply: iconMap.CornerUpLeft,
-      copy: iconMap.Copy,
-      edit: iconMap.Pencil,
-      pin: iconMap.Pin,
-      unpin: iconMap.PinOff,
-      jump: iconMap.ArrowRight,
-      delete: iconMap.Trash2,
-      report: iconMap.Flag,
-      block: iconMap.Ban,
-      retractVote: iconMap.Close,
-      stopPoll: iconMap.Lock,
-    }
-    const actionPress: Record<MessageActionKey, () => void> = {
-      reply: () => onReply(message),
-      copy: () => {
-        if (!clipboard) return
-        void clipboard
-          .setString(body)
-          .then(() => toast.show(t("context_menu.copied"), { variant: "success" }))
-          .catch(() => toast.show(t("context_menu.copy_failed"), { variant: "error" }))
-      },
-      edit: openEdit,
-      pin: () => {
-        if (message.id) onSetPinned?.(message.id, true)
-      },
-      unpin: () => {
-        if (message.id) onSetPinned?.(message.id, false)
-      },
-      jump: () => {
-        if (message.id) onJumpFromPinned?.(message.id)
-      },
-      delete: () => setMenuMode("confirm"),
-      report: () => {
-        if (message.id) onReport(message.id)
-      },
-      block: () => {
-        if (from && from.id) onBlock?.({ id: from.id, name: from.name })
-      },
-      retractVote: () => {
-        if (message.id) onVotePoll?.(message.id, [])
-      },
-      stopPoll: () => {
-        if (onStopPoll) setMenuMode("confirm-stop")
-      },
-    }
-    return {
-      menuActions: descriptors.map((d) => ({
-        key: d.key,
-        label: actionLabel[d.key],
-        icon: actionIcon[d.key],
-        destructive: d.destructive,
-        onPress: actionPress[d.key],
-      })),
-      confirmItems: [
-        { key: "cancel", label: t("menu.cancel"), onPress: () => {} },
-        {
-          key: "confirm-delete",
-          label: t("menu.delete_message"),
-          icon: "Trash2",
-          destructive: true,
-          onPress: () => {
-            if (message.id) onDelete(message.id)
-          },
-        },
-      ],
-      stopConfirmItems: [
-        { key: "cancel", label: t("menu.cancel"), onPress: () => {} },
-        {
-          key: "confirm-stop",
-          label: tp("stop_confirm"),
-          icon: "Lock",
-          onPress: () => {
-            if (message.id) onStopPoll?.(message.id)
-          },
-        },
-      ],
-    }
-  }
-  const openContextMenu = () => {
-    setMenuEverOpened(true)
-    const node = menuAnchorRef.current
-    if (node && typeof node.measureInWindow === "function") {
-      measureMenu()
-    } else {
-      setMenuRect(null)
-      setMenuMode("menu")
-    }
-  }
-  const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
   const rowKey = message.clientId ?? message.id
   const tinted = mine && !bare
@@ -595,12 +504,11 @@ export const Bubble = React.memo(function Bubble({
       <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />
     </>
   )
-  const bubbleClone = !menuEverOpened ? null : hasBody ? (
+  const bubbleClone = !menu.everOpened ? null : hasBody ? (
     <View style={[styles.bubble, bubbleChrome, bubbleTint]}>{bubbleInner}</View>
   ) : (
     <BubbleAttachments attachments={atts} mine={mine} />
   )
-  const menuReactions = buildReactionChipModel(reactions).map((c) => ({ emoji: c.emoji, mine: c.mine }))
   const webContextMenuProps =
     isWeb && menuAvailable
       ? ({
@@ -613,27 +521,7 @@ export const Bubble = React.memo(function Bubble({
 
   const rowContent = (
     <>
-      {showName && message.from ? (() => {
-        const from = message.from
-        const name = (
-          <Text
-            style={[styles.who, from.official ? styles.whoBadged : null, { color: senderNameColor(from.id, th.scheme) }]}
-            numberOfLines={1}
-            onPress={from.deleted ? undefined : () => onOpenPerson(from)}
-            accessibilityRole={from.deleted ? undefined : "button"}
-            {...(from.deleted ? null : focusRingProps)}
-          >
-            {from.name}
-          </Text>
-        )
-        if (!from.official) return name
-        return (
-          <View style={styles.whoRow}>
-            {name}
-            <VerifiedBadge size="sm" />
-          </View>
-        )
-      })() : null}
+      {showName && message.from ? <SenderName from={message.from} onOpenPerson={onOpenPerson} /> : null}
       {message.forwardedToCity ? (
         <View style={styles.forwardPill}>
           <Icon icon={iconMap.Mail} size={12} color={th.colors.brand.moss} />
@@ -646,10 +534,7 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       <View style={styles.bubbleRow}>
         {emptyRow ? (
-          <View style={styles.processingBubble}>
-            <Icon icon={iconMap.Image} size={13} color={th.colors.textSubtle} />
-            <Text style={styles.processingBubbleText}>{t("bubble.attachment_processing")}</Text>
-          </View>
+          <ProcessingPill />
         ) : !hasBody ? null : isWeb ? (
           <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
             {bubbleInner}
@@ -660,7 +545,7 @@ export const Bubble = React.memo(function Bubble({
             ref={menuAnchorRef}
             onPress={onBubblePress}
             onLongPress={menuAvailable ? openContextMenu : undefined}
-            delayLongPress={300}
+            delayLongPress={BUBBLE_LONG_PRESS_MS}
             accessibilityActions={
               menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined
             }
@@ -679,43 +564,13 @@ export const Bubble = React.memo(function Bubble({
           </Pressable>
         )}
         {isWeb && menuAvailable ? (
-          <>
-            {reactable ? (
-              <Pressable
-                onPress={openContextMenu}
-                onHoverIn={() => setHovered(true)}
-                onHoverOut={() => setHovered(false)}
-                accessibilityRole="button"
-                accessibilityLabel={t("context_menu.reactions")}
-                hitSlop={6}
-                {...focusRingProps}
-                style={(state) => [
-                  styles.hoverActionBtn,
-                  actionBtnReveal(hovered || webFocused(state)),
-                  state.pressed ? styles.pressed : null,
-                ]}
-              >
-                <Icon icon={iconMap.SmilePlus} size={14} color={th.colors.textSubtle} />
-              </Pressable>
-            ) : null}
-            <Pressable
-              onPress={openContextMenu}
-              onHoverIn={() => setHovered(true)}
-              onHoverOut={() => setHovered(false)}
-              accessibilityRole="button"
-              accessibilityLabel={t("bubble.message_actions")}
-              accessibilityState={{ expanded: menuMode !== "closed" }}
-              hitSlop={6}
-              {...focusRingProps}
-              style={(state) => [
-                styles.hoverActionBtn,
-                actionBtnReveal(hovered || webFocused(state)),
-                state.pressed ? styles.pressed : null,
-              ]}
-            >
-              <Icon icon={iconMap.Ellipsis} size={15} color={th.colors.textSubtle} />
-            </Pressable>
-          </>
+          <BubbleHoverActions
+            reactable={reactable}
+            menuShown={menu.mode !== "closed"}
+            hovered={hovered}
+            onHoverChange={setHovered}
+            onOpen={openContextMenu}
+          />
         ) : null}
       </View>
 
@@ -731,36 +586,27 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       {flash && !hasBody ? <FlashOverlay mine={false} shape="rounded" /> : null}
 
-      {menuAvailable && menuEverOpened ? (() => {
-        const model = buildMenuModel()
-        return (
-          <>
-            <MessageContextMenu
-              visible={menuMode === "menu"}
-              onClose={closeContextMenu}
-              anchor={menuRect}
-              bubble={bubbleClone}
-              mine={mine}
-              reactions={menuReactions}
-              onReact={toggleReaction}
-              actions={model.menuActions}
-              showReactions={reactable}
-            />
-            <PopoverMenu
-              visible={menuMode === "confirm"}
-              anchorRect={menuRect}
-              onClose={() => setMenuMode("closed")}
-              items={model.confirmItems}
-            />
-            <PopoverMenu
-              visible={menuMode === "confirm-stop"}
-              anchorRect={menuRect}
-              onClose={() => setMenuMode("closed")}
-              items={model.stopConfirmItems}
-            />
-          </>
-        )
-      })() : null}
+      {menuAvailable && menu.everOpened ? (
+        <BubbleMenus
+          menu={menu}
+          descriptors={descriptors}
+          message={message}
+          mine={mine}
+          bubbleClone={bubbleClone}
+          reactions={reactions}
+          showReactions={reactable}
+          onReact={toggleReaction}
+          onReply={onReply}
+          onEdit={openEdit}
+          onDelete={onDelete}
+          onSetPinned={onSetPinned}
+          onJumpFromPinned={onJumpFromPinned}
+          onVotePoll={onVotePoll}
+          onStopPoll={onStopPoll}
+          onReport={onReport}
+          onBlock={onBlock}
+        />
+      ) : null}
       {(groupEnd || edited) && !inFlight ? (
         <View style={styles.metaLine}>
           {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt, locale)}</Text> : null}
@@ -802,7 +648,7 @@ export const Bubble = React.memo(function Bubble({
 }, bubblePropsEqual)
 
 export const DaySeparator = React.memo(function DaySeparator({ label }: { label: string }) {
-  const styles = useConversationStyles()
+  const styles = useBubbleStyles()
   return (
     <View style={styles.sepRow}>
       <Text style={styles.sepText}>{label}</Text>

@@ -2,6 +2,7 @@ import React from "react"
 import { Pressable, ScrollView, View } from "react-native"
 import type { ReportCategory } from "@civfix/shared"
 import {
+  PRESSED_OPACITY_SUBTLE,
   categoryColor,
   focusRingProps,
   makeThemedStyles,
@@ -197,7 +198,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.selectedFill,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: PRESSED_OPACITY_SUBTLE,
   },
   label: {
     fontFamily: t.fontFamily.bodySemiBold,
@@ -217,7 +218,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   divider: {
     width: 1,
-    height: FILTER_CHIP_HEIGHT - 12,
+    height: FILTER_CHIP_HEIGHT - t.space["3"],
     backgroundColor: t.colors.border,
     marginHorizontal: t.space["1"],
   },

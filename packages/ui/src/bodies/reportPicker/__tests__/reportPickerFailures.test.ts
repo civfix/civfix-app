@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import * as model from "../reportPickerModel"
 
-const surface = readFileSync(new URL("../ReportPicker.tsx", import.meta.url), "utf8")
+const surface = ["../ReportPicker.tsx", "../usePickerData.ts"]
+  .map((rel) => readFileSync(new URL(rel, import.meta.url), "utf8"))
+  .join("\n")
 
 type Failures = (input: {
   regionError: boolean
