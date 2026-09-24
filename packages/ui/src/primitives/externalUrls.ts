@@ -1,3 +1,5 @@
+import { SOURCE_REPO_URL, sourceLink } from "@civfix/shared/legal"
+
 export const WEB_ORIGIN = "https://civfix.org"
 
 let configuredWebOrigin = WEB_ORIGIN
@@ -10,14 +12,12 @@ export function webOrigin(): string {
   return configuredWebOrigin
 }
 
-export const SOURCE_REPO_URL = "https://github.com/civfix/civfix-app"
-
-const COMMIT_SHA = /^[0-9a-f]{7,40}$/i
+export { SOURCE_REPO_URL }
 
 let configuredSourceCommit = ""
 
 export function setSourceCommit(commit: string): void {
-  configuredSourceCommit = COMMIT_SHA.test(commit) ? commit.toLowerCase() : ""
+  configuredSourceCommit = sourceLink(commit).commit
 }
 
 export function sourceCommit(): string {
@@ -25,7 +25,7 @@ export function sourceCommit(): string {
 }
 
 export function sourceUrl(): string {
-  return configuredSourceCommit ? `${SOURCE_REPO_URL}/tree/${configuredSourceCommit}` : SOURCE_REPO_URL
+  return sourceLink(configuredSourceCommit).url
 }
 
 export const PROD_API_HOST = "api.civfix.org"

@@ -1,3 +1,4 @@
+import { PageSlugSchema } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
 import { accessCodeFromSearch, signupPath, signupSlugFromPath } from "./signup-slug"
@@ -30,6 +31,32 @@ describe("signupSlugFromPath", () => {
       raw: "x".repeat(61),
     })
     expect(signupSlugFromPath("/e/%zz/")).toEqual({ kind: "invalid", raw: "%zz" })
+  })
+
+  it("accepts exactly the slugs the contract's PageSlugSchema accepts, normalized the same way", () => {
+    const candidates = [
+      "abc",
+      "ab",
+      " beach-cleanup ",
+      "Beach-Cleanup",
+      "a-b-c",
+      "-a",
+      "a-",
+      "a--b",
+      "a_b",
+      "caf\u00e9",
+      "x".repeat(60),
+      "x".repeat(61),
+      "  ab  ",
+      "ABC\t",
+    ]
+    for (const candidate of candidates) {
+      const parsed = PageSlugSchema.safeParse(candidate)
+      expect(signupSlugFromPath(`/e/${encodeURIComponent(candidate)}/`)).toEqual(
+        parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: candidate },
+      )
+    }
+    expect(signupSlugFromPath("/e/%20beach-cleanup%20/")).toEqual({ kind: "slug", slug: "beach-cleanup" })
   })
 
   it("lowercases a hand-typed slug", () => {

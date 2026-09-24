@@ -13,6 +13,7 @@ import {
 import {
   ErrorCode,
   formatCertificateCode,
+  formatCertificateHours,
   normalizeCertificateCode,
   type VerifyCertificateResponse,
 } from "@civfix/shared"
@@ -22,6 +23,7 @@ import { DetailShell } from "@/components/detail-shell"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { api, toAppError } from "@/lib/api"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import {
   SERVICE_RECORD_SEGMENT,
   serviceRecordCodeFromPath,
@@ -112,7 +114,7 @@ export function ServiceRecordView() {
       }
       // Replace, not push, so Back leaves the page rather than walking back through typed codes.
       if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", serviceRecordPath(code))
+        replaceUrlInPlace(serviceRecordPath(code))
       }
       void verify(code)
     },
@@ -124,7 +126,7 @@ export function ServiceRecordView() {
     setInput("")
     setPhase({ kind: "idle" })
     if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", `/${SERVICE_RECORD_SEGMENT}/`)
+      replaceUrlInPlace(`/${SERVICE_RECORD_SEGMENT}/`)
     }
   }, [])
 
@@ -263,7 +265,7 @@ function RecordVerdict({
 
       <dl className="sr-card mt-4 grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-ink-5 bg-cardflat p-5 sm:grid-cols-2">
         <Field label={t("issued")} value={formatDate(record.issuedAt, locale)} />
-        <Field label={t("hours")} value={formatHours(record.totalHours, locale)} />
+        <Field label={t("hours")} value={formatCertificateHours(record.totalHours, locale)} />
         <Field label={t("activities")} value={formatCount(record.entryCount, locale)} />
         {record.periodStart && record.periodEnd && (
           <Field
@@ -413,15 +415,6 @@ function formatDate(iso: string | null | undefined, locale: string): string {
   } catch {
     // An unsupported locale tag must not blank the verdict.
     return date.toISOString().slice(0, 10)
-  }
-}
-
-/** The ledger has 0.25h granularity, so keep up to two decimals. */
-function formatHours(hours: number, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(hours)
-  } catch {
-    return String(hours)
   }
 }
 

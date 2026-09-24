@@ -25,7 +25,8 @@ import { entryFromPath, useNavStore } from "@civfix/ui/nav"
 
 import { AppShellFrame } from "@/components/home/home-shell"
 import { liveMode } from "@/components/home/live-layout-mode"
-import { landscapeFakeApi, FAKE_VIEWER } from "@/components/dev/landscape-fake-api"
+import { GALLERY_VIEWER } from "@/components/dev/fixtures"
+import { landscapeFakeApi } from "@/components/dev/landscape-fake-api"
 import { makeQueryClient } from "@/lib/query"
 
 function searchParams(): URLSearchParams {
@@ -45,7 +46,7 @@ function makeFakeData(signedOut: boolean): DataContextValue {
     chatSocket: makeFakeChatSocket(),
     auth: signedOut
       ? { isAuthenticated: false, user: null, isPending: false }
-      : { isAuthenticated: true, user: FAKE_VIEWER, isPending: false },
+      : { isAuthenticated: true, user: GALLERY_VIEWER, isPending: false },
     ...(signedOut ? { requireAuth: () => {} } : {}),
   })
 }

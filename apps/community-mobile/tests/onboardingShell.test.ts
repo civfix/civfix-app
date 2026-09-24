@@ -76,6 +76,7 @@ const authOptions = readFileSync(
   new URL("../src/components/AuthOptions.tsx", import.meta.url),
   "utf8",
 )
+const authFlow = readFileSync(new URL("../src/hooks/useAuthFlow.ts", import.meta.url), "utf8")
 const pager = readFileSync(
   new URL("../src/components/onboarding/OnboardingPager.tsx", import.meta.url),
   "utf8",
@@ -117,9 +118,11 @@ test("the theme step reuses the settings option list rather than a second picker
 
 test("the email path hands the screen back before pushing the OTP card above the overlay", () => {
   assert.match(readyPage, /<SignInOptions onHandoff=\{onComplete\} \/>/)
+  assert.match(readyPage, /const \{ ready, enabled \} = useSignInProviders\(\)/)
+  assert.match(authFlow, /enabled: providers\.data \?\? ALL_OAUTH_PROVIDERS,/)
   assert.match(
     readyPage,
-    /<AuthOptions\n\s+enabled=\{providers\.data \?\? ALL_OAUTH_PROVIDERS\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
+    /<AuthOptions\n\s+enabled=\{enabled\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
   )
   const handoff = authOptions.indexOf("onHandoff?.()")
   const push = authOptions.indexOf('pathname: "/auth/otp"')

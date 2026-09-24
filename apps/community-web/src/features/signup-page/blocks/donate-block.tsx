@@ -4,7 +4,7 @@ import * as React from "react"
 import { HandHeart } from "lucide-react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
-import { isSafeMarkdownHref } from "@civfix/shared/markdown"
+import { isSafeHttpsUrl } from "@civfix/shared/markdown"
 
 type DonateBlockData = Extract<EventPageBlock, { kind: "donate" }>
 
@@ -17,7 +17,7 @@ export function DonateBlock({
 }) {
   const { t } = useT("web-signup")
   const supplied = block.url ?? page.donationUrl ?? null
-  const href = supplied !== null && isSafeMarkdownHref(supplied) ? supplied : null
+  const href = supplied !== null && isSafeHttpsUrl(supplied) ? supplied : null
   if (href === null) return null
 
   return (

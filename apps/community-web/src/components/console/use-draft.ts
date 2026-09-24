@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+
 export interface DraftController<T> {
   draft: T
   setDraft: (next: T) => void
@@ -41,32 +43,6 @@ export function consoleDraftOwner(key: string): string {
   return key.slice(DRAFT_KEY_PREFIX.length).split(".")[0] ?? "anon"
 }
 
-// Storage throws in private mode, when site data is blocked, or over quota. A draft is a
-// convenience, so each failure degrades to "no draft" rather than breaking the form.
-function storageGet(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function storageSet(key: string, value: string): void {
-  try {
-    window.localStorage.setItem(key, value)
-  } catch {
-    return
-  }
-}
-
-function storageRemove(key: string): void {
-  try {
-    window.localStorage.removeItem(key)
-  } catch {
-    return
-  }
-}
-
 // Nothing reads these scopes any more, and they can hold an access code or an unsent message body,
 // so they are removed on sight.
 const RETIRED_SCOPE_PREFIXES = ["ticket.v1.", "broadcast.v1."]
@@ -84,7 +60,7 @@ function sweepRetiredDrafts(): void {
   } catch {
     return
   }
-  for (const key of keys) if (isRetiredDraftKey(key)) storageRemove(key)
+  for (const key of keys) if (isRetiredDraftKey(key)) safeRemove("local", key)
 }
 
 function parseEnvelope(raw: string): unknown {
@@ -116,10 +92,10 @@ function restoreDraft<T>(key: string, raw: string, initial: T): T | null {
 
 function readDraft<T>(key: string, initial: T): T | null {
   if (typeof window === "undefined") return null
-  const raw = storageGet(key)
+  const raw = safeGet("local", key)
   if (!raw) return null
   const restored = restoreDraft(key, raw, initial)
-  if (restored === null) storageRemove(key)
+  if (restored === null) safeRemove("local", key)
   return restored
 }
 
@@ -170,7 +146,7 @@ export function useDraft<T extends object>(
       owner: consoleDraftOwner(key),
       value: draft,
     }
-    storageSet(key, JSON.stringify(envelope))
+    safeSet("local", key, JSON.stringify(envelope))
   }, [draft, dirty, key])
 
   const setDraft = useCallback((next: T) => {
@@ -186,7 +162,7 @@ export function useDraft<T extends object>(
   const dismissRestored = useCallback(() => setRestored(false), [])
 
   const clear = useCallback(() => {
-    if (typeof window !== "undefined") storageRemove(key)
+    safeRemove("local", key)
     setDraftState(initialRef.current)
     setDirty(false)
     setRestored(false)

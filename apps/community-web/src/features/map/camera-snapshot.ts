@@ -1,6 +1,8 @@
 import type { BBox } from "@civfix/shared"
 import type { CameraTarget } from "@civfix/ui"
 
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+
 /**
  * Seeds the shared Map's `initialCenter` synchronously from the last-settled camera, so a returning
  * visitor's first frame is their metro and the load-time region fetch is the only one (no second fetch
@@ -42,12 +44,7 @@ function isCameraSnapshot(body: unknown): body is SnapshotBody {
 export function readCameraSnapshot(): CameraTarget | null {
   if (typeof window === "undefined") return null
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(CAMERA_SNAPSHOT_KEY)
-  } catch {
-    return null
-  }
+  const raw = safeGet("local", CAMERA_SNAPSHOT_KEY)
   if (raw === null) return null
 
   try {
@@ -75,18 +72,10 @@ export function writeCameraSnapshot(viewport: BBox, zoom: number): void {
     zoom,
   }
   if (!isCameraSnapshot(body)) return
-  try {
-    window.localStorage.setItem(CAMERA_SNAPSHOT_KEY, JSON.stringify(body))
-  } catch {
-    // Quota or private mode: the snapshot is an optimization, not state.
-  }
+  safeSet("local", CAMERA_SNAPSHOT_KEY, JSON.stringify(body))
 }
 
 export function clearCameraSnapshot(): void {
   if (typeof window === "undefined") return
-  try {
-    window.localStorage.removeItem(CAMERA_SNAPSHOT_KEY)
-  } catch {
-    // Best effort: storage may be unavailable.
-  }
+  safeRemove("local", CAMERA_SNAPSHOT_KEY)
 }

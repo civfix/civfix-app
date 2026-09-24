@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import type { InfiniteData, QueryClient, UseMutationOptions } from "@tanstack/react-query"
+import type { InfiniteData, QueryClient, UseMutationOptions, UseQueryResult } from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   PersonDTO,
@@ -376,20 +376,33 @@ export function useUpdateProfile() {
   })
 }
 
-export function useHandleAvailability(handle: string, currentHandle: string | null | undefined) {
+export interface HandleAvailabilityCheck {
+  availability: UseQueryResult<HandleAvailableResponse>
+  checkedHandle: string
+}
+
+export function useHandleAvailabilityCheck(
+  handle: string,
+  currentHandle: string | null | undefined,
+): HandleAvailabilityCheck {
   const api = useApi()
   const candidate = useDebouncedValue(handle.trim(), HANDLE_AVAILABILITY_DEBOUNCE_MS)
   const enabled =
     candidate.length > 0 &&
     isValidHandle(candidate) &&
     candidate.toLowerCase() !== (currentHandle ?? "").trim().toLowerCase()
-  return useQuery<HandleAvailableResponse>({
+  const availability = useQuery<HandleAvailableResponse>({
     queryKey: queryKeys.handleAvailable(candidate),
     enabled,
     queryFn: () => api.checkHandle({ handle: candidate }),
     retry: false,
     staleTime: HANDLE_AVAILABILITY_STALE_MS,
   })
+  return { availability, checkedHandle: candidate }
+}
+
+export function useHandleAvailability(handle: string, currentHandle: string | null | undefined) {
+  return useHandleAvailabilityCheck(handle, currentHandle).availability
 }
 
 export function useMentionSearch(rawPrefix: string) {

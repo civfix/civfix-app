@@ -1,7 +1,6 @@
 import type { ApiClient } from "@civfix/shared/client"
 import type {
   ChatHistoryResponse,
-  ChatMessageDTO,
   CleanupAttendeesResponse,
   CleanupDTO,
   GetMyHoursResponse,
@@ -10,21 +9,28 @@ import type {
   LeaderboardResponse,
   ListMyReportsResponse,
   ListNotificationsResponse,
-  ListThreadsResponse,
   MarkReadResponse,
-  NotificationPrefsDTO,
   PersonDTO,
   ReportClusterResponse,
   ReportDTO,
-  SearchUsersResponse,
-  UserDTO,
   UserProfileDTO,
 } from "@civfix/shared"
 import { makeFakeApiClient } from "@civfix/ui/data"
 
-const iso = (msFromNow: number) => new Date(Date.now() + msFromNow).toISOString()
-const hours = (h: number) => h * 60 * 60 * 1000
-const days = (d: number) => d * 24 * hours(1)
+import {
+  DAY_MS,
+  GALLERY_LEADERBOARD_PODIUM,
+  GALLERY_MY_PROFILE,
+  GALLERY_NOTIFICATIONS,
+  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_SEARCH_RESULTS,
+  GALLERY_VIEWER,
+  daysAgo,
+  galleryChatHistory,
+  galleryThreads,
+  isoFromNow,
+  makeCannedApi,
+} from "./fixtures"
 
 function person(id: string, name: string, handle: string, extra: Partial<PersonDTO> = {}): PersonDTO {
   return {
@@ -45,34 +51,8 @@ const ANN = person("p-ann", "Ann Rivera", "annrivera", { followers: 128 })
 const LEE = person("p-lee", "Lee Tran", "leetran")
 const MEI = person("p-mei", "Mei Wong", "meiwong")
 
-export const FAKE_VIEWER = {
-  id: "me",
-  displayName: "Sam Okafor",
-  handle: "samok",
-  avatarUrl: null,
-  role: "user",
-  allowDirectMessages: true,
-  showVolunteerHours: true,
-} as unknown as UserDTO
-
-const MY_PROFILE: UserProfileDTO = {
-  id: "me",
-  name: "Sam Okafor",
-  handle: "samok",
-  bio: "Reporting potholes and joining neighborhood cleanups around the Mission.",
-  avatar: null,
-  avatarUrl: null,
-  followers: 42,
-  following: 31,
-  isFollowing: false,
-  pastEvents: [],
-  stats: { reports: 5, fixed: 3, cleanups: 3 },
-  volunteerHours: 12.5,
-  showVolunteerHours: true,
-}
-
 const PERSON_PROFILE: UserProfileDTO = {
-  ...MY_PROFILE,
+  ...GALLERY_MY_PROFILE,
   id: "p-ann",
   name: "Ann Rivera",
   handle: "annrivera",
@@ -80,16 +60,6 @@ const PERSON_PROFILE: UserProfileDTO = {
   followers: 128,
   following: 64,
   volunteerHours: 61.5,
-}
-
-const SEARCH_RESULTS: SearchUsersResponse = {
-  results: [ANN, LEE, MEI].map((p) => ({
-    id: p.id,
-    handle: p.handle ?? "",
-    displayName: p.name,
-    avatar: null,
-    avatarUrl: null,
-  })),
 }
 
 function cleanup(
@@ -107,7 +77,7 @@ function cleanup(
     description: "Gloves, bags and grabbers provided. Meet at the gate; we finish by noon.",
     lat: 37.77,
     lng: -122.42,
-    scheduledAt: iso(days(inDays)),
+    scheduledAt: isoFromNow(inDays * DAY_MS),
     status: "upcoming",
     organizer,
     going: 12,
@@ -157,7 +127,7 @@ function report(
   title: string,
   status: ReportDTO["status"],
 ): ReportDTO {
-  const createdAt = iso(-days(3))
+  const createdAt = daysAgo(3)
   return {
     id,
     category,
@@ -213,108 +183,15 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
   }))
 }
 
-const THREADS: ListThreadsResponse = {
-  items: [
-    {
-      id: "th-crew",
-      kind: "cleanup",
-      title: "Creekside litter sweep",
-      refId: "e1",
-      last: "Bring gloves - we have extra bags at the gate.",
-      lastFromMe: false,
-      ago: "2h",
-      unread: 3,
-      members: 8,
-      muted: false,
-    },
-    {
-      id: "th-dm",
-      kind: "dm",
-      title: "Ann Rivera",
-      refId: "dm-ann",
-      peer: ANN,
-      last: "Thanks for joining Saturday!",
-      lastFromMe: true,
-      ago: "1d",
-      unread: 0,
-      members: 0,
-      muted: false,
-    },
-  ],
-  nextCursor: null,
-}
-
-function message(
-  id: string,
-  from: PersonDTO | typeof FAKE_VIEWER,
-  body: string,
-  minsAgo: number,
-): ChatMessageDTO {
-  return {
-    id,
-    cleanupId: "",
-    from: {
-      id: from.id,
-      name: "name" in from ? from.name : from.displayName,
-      avatar: null,
-      followers: 0,
-      following: 0,
-      isFollowing: false,
-    },
-    body,
-    kind: "text",
-    createdAt: iso(-minsAgo * 60 * 1000),
-  } as ChatMessageDTO
-}
-
-const CHAT_MESSAGES = [
-  message("m1", ANN, "Morning! Meeting at the Dolores Park gate at 9.", 180),
-  message("m2", LEE, "On my way - bringing a wagon for the heavy bags.", 150),
-  message("m3", FAKE_VIEWER, "Nice. I have grabbers for four people.", 120),
-  message("m4", ANN, "Bring gloves - we have extra bags at the gate.", 90),
-]
-
 function chatHistory(args?: Record<string, unknown>): ChatHistoryResponse {
-  const roomId = String(args?.cleanupId ?? args?.threadId ?? args?.id ?? "")
-  return {
-    items: CHAT_MESSAGES.map((m) => ({ ...m, cleanupId: roomId })),
-    nextCursor: null,
-  }
+  return galleryChatHistory(String(args?.cleanupId ?? args?.threadId ?? args?.id ?? ""))
 }
+
+const THREADS = galleryThreads(ANN)
 
 const NOTIFICATIONS: ListNotificationsResponse = {
-  items: [
-    {
-      id: "n1",
-      type: "report_update",
-      title: "Your pothole report is in progress",
-      body: "The city crew has been assigned to inspect the site this week.",
-      read: false,
-      createdAt: iso(-hours(2)),
-      link: "/pin/r-pothole",
-    },
-    {
-      id: "n2",
-      type: "cleanup_reminder",
-      title: "Creekside litter sweep is tomorrow",
-      body: "Don't forget gloves - meet at the Dolores Park gate at 9am.",
-      read: true,
-      createdAt: iso(-hours(20)),
-      link: "/cleanups/e1",
-    },
-  ],
+  items: GALLERY_NOTIFICATIONS,
   nextCursor: null,
-}
-
-const NOTIFICATION_PREFS: NotificationPrefsDTO = {
-  push: true,
-  mentions: true,
-  cleanupChat: true,
-  reportUpdates: true,
-  follows: false,
-  postInteractions: true,
-  hostBroadcasts: true,
-  quietHours: { start: "22:00", end: "07:00" },
 }
 
 const MY_HOURS: GetMyHoursResponse = {
@@ -331,11 +208,7 @@ const MY_HOURS: GetMyHoursResponse = {
 const LEADERBOARD: LeaderboardResponse = {
   geoid: "0667000",
   jurisdictionName: "San Francisco",
-  entries: [
-    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
-    { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
-    { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
-  ],
+  entries: [...GALLERY_LEADERBOARD_PODIUM],
   nextOffset: null,
   participantCount: 42,
   viewerRank: 11,
@@ -354,16 +227,16 @@ const sharedFake = makeFakeApiClient() as unknown as Record<string, unknown>
 
 const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown>> = {
   myProfile: async (): Promise<GetProfileResponse> => ({
-    profile: { ...MY_PROFILE, pastEvents: PAST_EVENTS },
+    profile: { ...GALLERY_MY_PROFILE, pastEvents: PAST_EVENTS },
   }),
   getProfile: async (args): Promise<GetProfileResponse> => ({
-    profile: { ...(args?.id === "me" ? MY_PROFILE : PERSON_PROFILE), pastEvents: PAST_EVENTS },
+    profile: { ...(args?.id === "me" ? GALLERY_MY_PROFILE : PERSON_PROFILE), pastEvents: PAST_EVENTS },
   }),
-  searchUsers: async () => SEARCH_RESULTS,
+  searchUsers: async () => GALLERY_SEARCH_RESULTS,
   followSuggestions: async () => ({ results: [ANN, LEE, MEI] }),
   listFollowers: async () => ({ items: [LEE, MEI], nextCursor: null }),
   listFollowing: async () => ({ items: [ANN], nextCursor: null }),
-  updateSettings: async () => ({ user: FAKE_VIEWER }),
+  updateSettings: async () => ({ user: GALLERY_VIEWER }),
 
   listCleanups: async (args) => ({
     items: args?.when === "attending" ? UPCOMING_CLEANUPS.filter((c) => c.joined) : UPCOMING_CLEANUPS,
@@ -392,8 +265,8 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
 
   listNotifications: async () => NOTIFICATIONS,
   markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
-  getNotificationPrefs: async () => NOTIFICATION_PREFS,
-  updateNotificationPrefs: async () => NOTIFICATION_PREFS,
+  getNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
+  updateNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
 
   getMyHours: async () => MY_HOURS,
   getMyHoursEntries: async () => ({ items: [], nextCursor: null }),
@@ -401,13 +274,4 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
   getJurisdictionLeaderboard: async () => LEADERBOARD,
 }
 
-export const landscapeFakeApi: ApiClient = new Proxy(
-  {},
-  {
-    get(_target, prop) {
-      if (prop === "then") return undefined
-      const key = String(prop)
-      return canned[key] ?? sharedFake[key]
-    },
-  },
-) as ApiClient
+export const landscapeFakeApi: ApiClient = makeCannedApi(canned, (name) => sharedFake[name])

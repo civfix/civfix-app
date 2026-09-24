@@ -2,17 +2,25 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { CalendarPlus, CircleAlert, Loader2 } from "lucide-react"
+import { CalendarPlus } from "lucide-react"
 import { ErrorCode, type PublicEventPageDTO } from "@civfix/shared"
 import { buildIcs, eventIcsUid } from "@civfix/shared/ics"
 import { Trans, useT } from "@civfix/ui/i18n"
 
+import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
 import { api, toAppError } from "@/lib/api"
 import { downloadBlob } from "@/lib/download-blob"
 import { accentVars } from "./page-theme"
 import { BlockRouter } from "./block-router"
 import { RegistrationWidget } from "./registration-widget"
 import { accessCodeFromSearch, signupSlugFromPath } from "./signup-slug"
+
+const SIGNUP_STATE_CLASSES: PublicPageStateClasses = {
+  page: "signup-page",
+  shell: "signup-shell signup-state",
+  spin: "signup-spin",
+  action: "signup-secondary",
+}
 
 type ViewState =
   | { readonly kind: "loading" }
@@ -67,28 +75,29 @@ export function SignupView() {
 
   if (state.kind === "loading") {
     return (
-      <SignupState busy title={t("state.loading_title")}>
+      <PublicPageState classes={SIGNUP_STATE_CLASSES} busy title={t("state.loading_title")}>
         {t("state.loading_body")}
-      </SignupState>
+      </PublicPageState>
     )
   }
 
   if (state.kind === "not_found") {
     return (
-      <SignupState title={t("state.not_found_title")}>
+      <PublicPageState classes={SIGNUP_STATE_CLASSES} title={t("state.not_found_title")}>
         <Trans t={t} i18nKey="state.not_found_body" components={[<Link key="home" href="/" />]} />
-      </SignupState>
+      </PublicPageState>
     )
   }
 
   if (state.kind === "offline") {
     return (
-      <SignupState
+      <PublicPageState
+        classes={SIGNUP_STATE_CLASSES}
         title={t("state.offline_title")}
         action={{ label: t("state.retry"), onClick: () => setReloadKey((key) => key + 1) }}
       >
         {t("state.offline_body")}
-      </SignupState>
+      </PublicPageState>
     )
   }
 
@@ -182,34 +191,6 @@ function CalendarButton({ page }: { page: PublicEventPageDTO }) {
     <button type="button" className="signup-secondary" onClick={download}>
       <CalendarPlus aria-hidden="true" size={16} /> {t("calendar")}
     </button>
-  )
-}
-
-interface SignupStateProps {
-  title: string
-  busy?: boolean
-  action?: { label: string; onClick: () => void }
-  children: React.ReactNode
-}
-
-function SignupState({ title, busy, action, children }: SignupStateProps) {
-  return (
-    <main className="signup-page" aria-busy={busy ? true : undefined}>
-      <div className="signup-shell signup-state">
-        {busy ? (
-          <Loader2 aria-hidden="true" className="signup-spin" size={32} />
-        ) : (
-          <CircleAlert aria-hidden="true" size={32} />
-        )}
-        <h1>{title}</h1>
-        <p>{children}</p>
-        {action ? (
-          <button type="button" className="signup-secondary" onClick={action.onClick}>
-            {action.label}
-          </button>
-        ) : null}
-      </div>
-    </main>
   )
 }
 

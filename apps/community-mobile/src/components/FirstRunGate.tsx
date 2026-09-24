@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
-import { isValidHandle } from "@civfix/shared"
 import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
@@ -18,6 +17,14 @@ import {
   announce,
   makeKeyboardAwareScrollHost,
 } from "@civfix/ui"
+import {
+  FIRST_NAME_MAX,
+  LAST_NAME_MAX,
+  firstRunModel,
+  splitName,
+  stripHandlePrefix,
+  useHandleAvailabilityCheck,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
@@ -25,13 +32,9 @@ import { friendlyError } from "@/lib/errors"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
-const DISPLAY_NAME_MAX = 80
-const FIRST_NAME_MAX = 40
-const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
 const MIN_TOUCH_TARGET = 44
 // The upper bound of the shared HANDLE_REGEX, so the field stops where validation would reject.
 const HANDLE_MAX_LENGTH = 20
-const HANDLE_CHECK_DEBOUNCE_MS = 350
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
@@ -39,21 +42,6 @@ export function FirstRunGate() {
   if (status !== "authed" || !incomplete) return null
   return <FirstRunForm />
 }
-
-function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
-}
-
-type Availability = {
-  checking: boolean
-  available: boolean | null
-  reason: string | null
-  failed: boolean
-}
-
-const UNCHECKED: Availability = { checking: false, available: null, reason: null, failed: false }
 
 function FirstRunForm() {
   const { t } = useT("mobile-auth-registration")
@@ -68,57 +56,43 @@ function FirstRunForm() {
   const [first, setFirst] = useState(seeded.first)
   const [last, setLast] = useState(seeded.last)
   const [handle, setHandle] = useState("")
-  const [avail, setAvail] = useState<Availability>(UNCHECKED)
-  const [checkAttempt, setCheckAttempt] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [termsConfirmed, setTermsConfirmed] = useState(false)
 
-  const trimmedHandle = handle.trim()
-  const handleValid = isValidHandle(trimmedHandle)
-  const displayName = `${first.trim()} ${last.trim()}`.trim()
-  const available = handleValid && avail.available === true
-  const canSubmit =
-    available &&
-    displayName.length > 0 &&
-    displayName.length <= DISPLAY_NAME_MAX &&
-    ageConfirmed &&
-    termsConfirmed &&
-    !submitting
+  const { availability, checkedHandle } = useHandleAvailabilityCheck(handle, null)
+  const { refetch: recheckHandle } = availability
+  const {
+    trimmedHandle,
+    handleValid,
+    displayName,
+    previewName,
+    checking,
+    available,
+    taken,
+    checkFailed,
+    canSubmit,
+  } = firstRunModel({
+    first,
+    last,
+    handle,
+    checkedHandle,
+    availability,
+    ageConfirmed,
+    termsConfirmed,
+    submitting,
+  })
 
-  useEffect(() => {
-    if (!handleValid) {
-      setAvail(UNCHECKED)
-      return
-    }
-    let cancelled = false
-    setAvail({ ...UNCHECKED, checking: true })
-    const timer = setTimeout(async () => {
-      try {
-        const res = await api.checkHandle({ handle: trimmedHandle })
-        if (!cancelled) {
-          setAvail({ ...UNCHECKED, available: res.available, reason: res.reason ?? null })
-        }
-      } catch {
-        if (!cancelled) setAvail({ ...UNCHECKED, failed: true })
-      }
-    }, HANDLE_CHECK_DEBOUNCE_MS)
-    return () => {
-      cancelled = true
-      clearTimeout(timer)
-    }
-  }, [trimmedHandle, handleValid, checkAttempt])
-
-  const retryHandleCheck = useCallback(() => setCheckAttempt((n) => n + 1), [])
+  const retryHandleCheck = useCallback(() => void recheckHandle(), [recheckHandle])
 
   useEffect(() => {
     if (error) announce(error)
   }, [error])
 
   useEffect(() => {
-    if (avail.failed) announce(t("handle.check_failed"))
-  }, [avail.failed, t])
+    if (checkFailed) announce(t("handle.check_failed"))
+  }, [checkFailed, t])
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit) return
@@ -133,8 +107,6 @@ function FirstRunForm() {
       setSubmitting(false)
     }
   }, [canSubmit, trimmedHandle, displayName, setUser, t])
-
-  const previewName = trimmedHandle || displayName || "?"
 
   return (
     <View style={styles.overlay}>
@@ -181,7 +153,7 @@ function FirstRunForm() {
               label={t("field.username.label")}
               placeholder={t("field.username.placeholder")}
               value={handle}
-              onChangeText={(text) => setHandle(text.replace(/^@+/, ""))}
+              onChangeText={(text) => setHandle(stripHandlePrefix(text))}
               maxLength={HANDLE_MAX_LENGTH}
               autoCapitalize="none"
               autoCorrect={false}
@@ -189,10 +161,10 @@ function FirstRunForm() {
             <HandleHint
               handle={trimmedHandle}
               valid={handleValid}
-              checking={avail.checking}
+              checking={checking}
               available={available}
-              taken={handleValid && avail.available === false}
-              checkFailed={handleValid && avail.failed}
+              taken={taken}
+              checkFailed={checkFailed}
               onRetry={retryHandleCheck}
             />
 

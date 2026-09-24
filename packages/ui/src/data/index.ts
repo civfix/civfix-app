@@ -28,6 +28,7 @@ export {
   useFollowing,
   useUpdateProfile,
   useHandleAvailability,
+  useHandleAvailabilityCheck,
   useMentionSearch,
   useProfilePastEvents,
 } from "./hooks/social"
@@ -139,3 +140,5 @@ export { fetchApproximateLocation } from "./fetchApproximateLocation"
 export { NOW_TICK_MS, useNow } from "./useNow"
 export { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "./hooks/useDebouncedValue"
 export { useEventBoundaryRefresh } from "./useEventBoundaryRefresh"
+export { DISPLAY_NAME_MAX, FIRST_NAME_MAX, LAST_NAME_MAX, firstRunModel, splitName, stripHandlePrefix } from "./firstRunModel"
+export type { FirstRunAvailability, FirstRunInput, FirstRunView } from "./firstRunModel"

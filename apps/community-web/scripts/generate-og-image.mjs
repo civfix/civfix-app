@@ -4,13 +4,14 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { OG_IMAGE_MAX_BYTES } from "./postbuild-gates.mjs"
+
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..")
 const publicDir = join(appDir, "public")
 
 const OG_WIDTH = 1200
 const OG_HEIGHT = 630
 const ICON_SIZE = 180
-const OG_MAX_BYTES = 300 * 1024
 
 const CHROME_CANDIDATES = [
   process.env.CHROME_BIN,
@@ -93,7 +94,7 @@ body {
 `
 
 const TARGETS = [
-  { name: "og.png", html: ogHtml, width: OG_WIDTH, height: OG_HEIGHT, maxBytes: OG_MAX_BYTES },
+  { name: "og.png", html: ogHtml, width: OG_WIDTH, height: OG_HEIGHT, maxBytes: OG_IMAGE_MAX_BYTES },
   { name: "apple-touch-icon.png", html: iconHtml, width: ICON_SIZE, height: ICON_SIZE },
 ]
 

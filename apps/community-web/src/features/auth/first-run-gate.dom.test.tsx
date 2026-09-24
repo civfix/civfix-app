@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { UserDTO } from "@civfix/shared"
 
+import type * as UiDataModule from "@civfix/ui/data"
 import type * as ApiModule from "@/lib/api"
 
 const logout = vi.fn()
@@ -24,7 +25,13 @@ vi.mock("@civfix/ui", () => ({
 }))
 vi.mock("@/hooks/use-profile-registration", () => ({
   useFirstRunRequired: () => true,
-  useHandleAvailability: () => ({ data: { available: true }, isFetching: false }),
+}))
+vi.mock("@civfix/ui/data", async (importOriginal) => ({
+  ...(await importOriginal<typeof UiDataModule>()),
+  useHandleAvailabilityCheck: (handle: string) => ({
+    availability: { data: { available: true }, isFetching: false, isError: false },
+    checkedHandle: handle.trim(),
+  }),
   useUpdateProfile: () => ({ mutate, isPending: false, isError: false, error: null }),
 }))
 vi.mock("@/hooks/use-visual-viewport-shift", () => ({ useVisualViewportShift: () => 0 }))
