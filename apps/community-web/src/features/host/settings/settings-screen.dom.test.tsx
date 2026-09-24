@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { cleanup, screen, waitFor } from "@testing-library/react"
+import { useState } from "react"
+import { act, cleanup, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { CleanupDTO } from "@civfix/shared"
 
@@ -101,5 +102,45 @@ describe("SettingsScreen reminders", () => {
       "disabled",
       false,
     )
+  })
+})
+
+describe("SettingsScreen server refresh", () => {
+  let serve: (dto: CleanupDTO) => void = () => {}
+
+  function Refreshing({ initial }: { initial: CleanupDTO }) {
+    const [dto, setDto] = useState(initial)
+    serve = setDto
+    return (
+      <ConsoleNavigationProvider>
+        <ConsoleEventProvider eventId={EVENT_ID} event={dto}>
+          <SettingsScreen />
+        </ConsoleEventProvider>
+      </ConsoleNavigationProvider>
+    )
+  }
+
+  function renderRefreshing(dto: CleanupDTO) {
+    renderConsole(<Refreshing initial={dto} />, {
+      api: { listMyOrganizations: vi.fn().mockResolvedValue({ items: [] }) } as never,
+    })
+  }
+
+  const donationField = () => screen.getByLabelText(/donations\.link/)
+
+  it("shows the refetched event when the host has not edited anything", async () => {
+    renderRefreshing(event({ donationUrl: "https://give.example/a" }))
+    await waitFor(() => expect(donationField()).toHaveProperty("value", "https://give.example/a"))
+    act(() => serve(event({ donationUrl: "https://give.example/b" })))
+    await waitFor(() => expect(donationField()).toHaveProperty("value", "https://give.example/b"))
+  })
+
+  it("keeps the host's unsaved edits when the server copy changes underneath them", async () => {
+    const user = userEvent.setup()
+    renderRefreshing(event({ donationUrl: "https://give.example/a" }))
+    await waitFor(() => expect(donationField()).toHaveProperty("value", "https://give.example/a"))
+    await user.type(donationField(), "/mine")
+    act(() => serve(event({ donationUrl: "https://give.example/b" })))
+    expect(donationField()).toHaveProperty("value", "https://give.example/a/mine")
   })
 })
