@@ -31,7 +31,10 @@ export function CancelEventSheet({
   const [reason, setReason] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useResetOnOpen(visible, () => setReason(""))
+  useResetOnOpen(visible, () => {
+    setReason("")
+    setFocused(false)
+  })
 
   const commit = useCallback(() => {
     if (pending) return

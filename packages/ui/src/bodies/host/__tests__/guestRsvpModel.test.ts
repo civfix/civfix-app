@@ -13,7 +13,7 @@ import {
   guestRequestErrorKey,
   guestResendReadyAt,
   guestResendSecondsLeft,
-  guestRsvpCommit,
+  guestRsvpCommitFor,
   guestSmsUnavailable,
   guestVerifyErrorKey,
 } from "../registration/guestRsvpModel"
@@ -229,15 +229,22 @@ describe("resend cooldown", () => {
   })
 })
 
-describe("the keyboard commit on each step", () => {
-  it("submits the form, then the code, and starts over once attempts run out", () => {
-    expect(guestRsvpCommit("form", false)).toBe("submitForm")
-    expect(guestRsvpCommit("code", false)).toBe("submitCode")
-    expect(guestRsvpCommit("code", true)).toBe("startOver")
+describe("the web Cmd/Ctrl+Enter commit per step", () => {
+  it("does nothing on the choice step, which has two equal answers and no default", () => {
+    expect(guestRsvpCommitFor("choice", false)).toBeNull()
+    expect(guestRsvpCommitFor("choice", true)).toBeNull()
   })
 
-  it("closes the sheet from the choice and success steps", () => {
-    expect(guestRsvpCommit("choice", false)).toBe("close")
-    expect(guestRsvpCommit("success", false)).toBe("close")
+  it("submits the form, verifies the code, starts over once attempts run out, and closes on success", () => {
+    expect(guestRsvpCommitFor("form", false)).toBe("submitForm")
+    expect(guestRsvpCommitFor("code", false)).toBe("submitCode")
+    expect(guestRsvpCommitFor("code", true)).toBe("startOver")
+    expect(guestRsvpCommitFor("success", false)).toBe("close")
+  })
+
+  it("is what the sheet hands ModalCardSheet as onCommit", () => {
+    const sheet = readFileSync(new URL("../registration/GuestRsvpSheet.tsx", import.meta.url), "utf8")
+    expect(sheet).toContain("guestRsvpCommitFor(step, exhausted)")
+    expect(sheet).not.toMatch(/\(exhausted \? startOver : submitCode\) : onClose/)
   })
 })
