@@ -50,6 +50,18 @@ describe("SPA-fallback completeness gate", () => {
 })
 
 describe("AASA gate", () => {
+  it("requires exactly the web-only paths that must never open the app", () => {
+    expect(REQUIRED_AASA_EXCLUDES).toEqual([
+      "/legal/*",
+      "/service-record/*",
+      "/guest*",
+      "/claim*",
+      "/manage*",
+      "/e/*",
+      "/unsubscribe*",
+    ])
+  })
+
   it("passes for the committed association file", () => {
     expect(missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)).toEqual([])
     expect(aasaExcludeOrder(association).ok).toBe(true)

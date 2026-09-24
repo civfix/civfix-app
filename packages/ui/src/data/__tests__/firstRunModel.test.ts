@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { UpdateProfileRequestSchema } from "@civfix/shared"
 import {
@@ -109,5 +110,16 @@ describe("firstRunModel", () => {
   it("previews the handle, then the name, then a placeholder", () => {
     expect(model({ handle: " ", checkedHandle: "" }).previewName).toBe("Ada Lovelace")
     expect(model({ handle: "", checkedHandle: "", first: "", last: "" }).previewName).toBe("?")
+  })
+})
+
+describe("the shared handle check both first-run screens use", () => {
+  const social = readFileSync(new URL("../hooks/social.ts", import.meta.url), "utf8")
+
+  it("waits 300 ms after the last keystroke and keeps an answer for 30 s", () => {
+    expect(social).toContain("const HANDLE_AVAILABILITY_DEBOUNCE_MS = 300\n")
+    expect(social).toContain("const HANDLE_AVAILABILITY_STALE_MS = 30_000\n")
+    expect(social).toContain("useDebouncedValue(handle.trim(), HANDLE_AVAILABILITY_DEBOUNCE_MS)")
+    expect(social).toContain("staleTime: HANDLE_AVAILABILITY_STALE_MS,")
   })
 })
