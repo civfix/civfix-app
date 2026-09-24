@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles, motion } from "../theme"
+import { makeThemedStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
 import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -12,10 +12,9 @@ import {
   pageLayerPointerEvents,
   pageLayerTokens,
   type PageLayerPointerEvents,
-  type PageMotionTokens,
   type PageTransitionPlan,
-  type PageTransitionTiming,
 } from "./pageStackModel"
+import { PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING } from "./pageStackMotion"
 import {
   isInstantPagePlan,
   pagePlanDuration,
@@ -29,16 +28,6 @@ import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 
-const TIMING: PageTransitionTiming = {
-  pushDuration: motion.pagePush.duration,
-  popDuration: motion.pagePop.duration,
-  fadeDuration: motion.bodyReplace.duration,
-}
-const PAGE_MOTION: PageMotionTokens = {
-  travelRatio: motion.pageTravelRatio,
-  parallaxRatio: motion.pageParallaxRatio,
-  scrimOpacity: motion.pageScrimOpacity,
-}
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
 const REDUCED_TOKENS = pageLayerTokens(PAGE_MOTION, true, false)
 const SETTLE_SLACK_MS = 60
@@ -106,7 +95,7 @@ export function PageStack({
         keyboardBound: keyboardAvoidance,
         coarsePointer: isCoarsePointer(),
       },
-      TIMING,
+      PAGE_TIMING,
     )
     const nav = state.nav + 1
     const committed = committedRef.current
@@ -306,11 +295,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
-  header: {
-    flexShrink: 0,
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
+  header: PAGE_HEADER_STYLE,
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: t.colors.shadowColor,

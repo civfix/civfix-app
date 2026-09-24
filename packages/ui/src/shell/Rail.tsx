@@ -29,7 +29,7 @@ import {
 } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
-import { activeTabIndex, tabPillTransition } from "./tabBarLogic"
+import { DOCK_ORB_GLYPH_SIZE, DOCK_TAB_GLYPH_SIZE, activeTabIndex, tabPillTransition } from "./tabBarLogic"
 import {
   NAV_GAP,
   NAV_H,
@@ -50,9 +50,9 @@ import {
 import { cssTransition } from "./motionCss"
 import { prefersReducedMotion } from "./webMedia"
 
-const RAIL_ICON = 24
+const RAIL_ICON = DOCK_TAB_GLYPH_SIZE
 const RAIL_ICON_STROKE = 2.4
-const ORB_ICON = 22
+const ORB_ICON = DOCK_ORB_GLYPH_SIZE
 const BRAND_SIZE = RAIL_BRAND_SIZE
 const RAIL_BORDER = StyleSheet.hairlineWidth
 const LOZENGE_TOP = (RAIL_CAPSULE_H - RAIL_BORDER * 2 - RAIL_ITEM) / 2

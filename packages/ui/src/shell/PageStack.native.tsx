@@ -39,10 +39,9 @@ import {
   swipeBackDecision,
   type PageLayerPointerEvents,
   type PageLayerTokens,
-  type PageMotionTokens,
-  type PageTransitionTiming,
   type SwipeBackTokens,
 } from "./pageStackModel"
+import { PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING } from "./pageStackMotion"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { useKeyboardReserve } from "./useKeyboardReserve"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
@@ -53,21 +52,11 @@ const SETTLE_CFG = pageSwipeSettleConfig()
 const CANCEL_CFG = pageSwipeCancelConfig()
 const FADE_CFG = timingConfig(motion.bodyReplace)
 
-const TIMING: PageTransitionTiming = {
-  pushDuration: motion.pagePush.duration,
-  popDuration: motion.pagePop.duration,
-  fadeDuration: motion.bodyReplace.duration,
-}
 const SWIPE_TOKENS: SwipeBackTokens = {
   completeFraction: motion.pageCompleteFraction,
   completeVelocity: motion.pageCompleteVelocity,
 }
 const EDGE_WIDTH = motion.pageEdgeWidth
-const PAGE_MOTION: PageMotionTokens = {
-  travelRatio: motion.pageTravelRatio,
-  parallaxRatio: motion.pageParallaxRatio,
-  scrimOpacity: motion.pageScrimOpacity,
-}
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
 const DRAG_TOKENS = pageLayerTokens(PAGE_MOTION, false, true)
 const REDUCED_TOKENS = pageLayerTokens(PAGE_MOTION, true, false)
@@ -169,7 +158,7 @@ export function PageStack({
       return
     }
 
-    const plan = pageTransitionPlan(direction, reduceMotion, TIMING)
+    const plan = pageTransitionPlan(direction, reduceMotion, PAGE_TIMING)
     dragging.value = 0
 
     if (plan.retainLeaving && goneKey && goneEntry) {
@@ -416,11 +405,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
-  header: {
-    flexShrink: 0,
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
+  header: PAGE_HEADER_STYLE,
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: t.colors.shadowColor,

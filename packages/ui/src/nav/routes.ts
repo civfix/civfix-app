@@ -27,7 +27,6 @@ export function entryIdentity(entry: DetailEntry | null | undefined): string | n
   return entryDiscriminator(entry)
 }
 
-
 function normalizePath(path: string): string {
   const withoutHash = path.split("#")[0] ?? ""
   const withoutQuery = withoutHash.split("?")[0] ?? ""
@@ -36,371 +35,284 @@ function normalizePath(path: string): string {
     : withoutQuery
 }
 
+function pathParts(path: string): string[] {
+  return normalizePath(path)
+    .split("/")
+    .filter((p) => p && p !== "_")
+}
+
 export function isRootLink(path: string | null | undefined): boolean {
   return path === "/"
 }
 
+type AddressableView = NonNullable<DetailEntry["view"]>
+type RoomKind = NonNullable<DetailEntry["roomKind"]>
+
+const VIEW_PATHS: Record<AddressableView, string> = {
+  map: "/map",
+  search: "/search",
+  report: "/report",
+}
+
+const ADDRESSABLE_VIEWS = Object.keys(VIEW_PATHS) as AddressableView[]
+const ROOM_KINDS: readonly RoomKind[] = ["dm", "report", "cleanup", "group"]
+// A cleanup thread is addressed as /messages/<id>; the other rooms carry their kind in the path.
+const PREFIXED_THREAD_ROOMS: readonly RoomKind[] = ["dm", "report", "group"]
+
+// A body that renders its own header. It is blank after trim, so the shell draws no DetailBar for it.
+export const BODY_OWNS_HEADER = " "
+
+type Captures = Readonly<Record<string, string>>
+
+interface PathRoute {
+  segments: readonly string[]
+  to: (captures: Captures) => DetailEntry | null
+}
+
+// A ":name" segment captures that part; extra trailing parts are ignored, so the first matching route wins.
+function route(pattern: string, to: PathRoute["to"]): PathRoute {
+  return { segments: pattern.split("/"), to }
+}
+
+const messagesList = (): DetailEntry => ({ kind: "messages" })
+
+const PATH_ROUTES: readonly PathRoute[] = [
+  ...ADDRESSABLE_VIEWS.map((view) => route(view, (): DetailEntry => ({ kind: "view", view }))),
+  route("pin/:id", ({ id }) => ({ kind: "pin", id })),
+  route("cleanups/:id/edit", ({ id }) => ({ kind: "edit-cleanup", id })),
+  route("cleanups/:id/host", ({ id }) => ({ kind: "host-mode", id })),
+  route("cleanups/:id/checkin", ({ id }) => ({ kind: "host-checkin", id })),
+  route("cleanups/:id/announce", ({ id }) => ({ kind: "host-announce", id })),
+  route("cleanups/:id/team", ({ id }) => ({ kind: "host-team", id })),
+  route("cleanups/:id/hours", ({ id }) => ({ kind: "host-log-hours", id })),
+  route("cleanups/:id/analytics", ({ id }) => ({ kind: "event-analytics", id })),
+  route("cleanups/:id/announcements/:announcementId", ({ id, announcementId }) => ({
+    kind: "announcement",
+    id,
+    announcementId,
+  })),
+  route("cleanups/:id/announcements", ({ id }) => ({ kind: "announcements", id })),
+  route("cleanups/:id/ticket/:seatId", ({ id, seatId }) => ({ kind: "my-ticket", id, seatId })),
+  route("cleanups/:id/ticket", ({ id }) => ({ kind: "my-ticket", id })),
+  route("cleanups/:id", ({ id }) => ({ kind: "cleanup", id })),
+  route("cleanups", () => ({ kind: "cleanups" })),
+  route("events", () => ({ kind: "cleanups" })),
+  route("e/:id", ({ id }) => ({ kind: "cleanup", id })),
+  route("orgs/:slug/manage", ({ slug }) => ({ kind: "org-manage", slug })),
+  route("orgs/:slug", ({ slug }) => ({ kind: "org", slug })),
+  route("people/:id/followers", ({ id }) => ({ kind: "followers", id })),
+  route("people/:id/following", ({ id }) => ({ kind: "following", id })),
+  route("people/:id", ({ id }) => ({ kind: "person", id })),
+  route("people", () => ({ kind: "people" })),
+  route("leaderboard/:geoid", ({ geoid }) => ({ kind: "leaderboard", geoid })),
+  ...ROOM_KINDS.map((roomKind) =>
+    route(`messages/pins/${roomKind}/:id`, ({ id }) => ({ kind: "pinned-messages", id, roomKind })),
+  ),
+  route("messages/pins", messagesList),
+  ...ROOM_KINDS.map((roomKind) =>
+    route(`messages/members/${roomKind}/:id`, ({ id }) => ({ kind: "members", id, roomKind })),
+  ),
+  route("messages/members", messagesList),
+  ...PREFIXED_THREAD_ROOMS.map((roomKind) =>
+    route(`messages/${roomKind}/:id`, ({ id }) => ({ kind: "thread", id, roomKind })),
+  ),
+  ...PREFIXED_THREAD_ROOMS.map((roomKind) => route(`messages/${roomKind}`, messagesList)),
+  route("messages/:id", ({ id }) => ({ kind: "thread", id, roomKind: "cleanup" })),
+  route("messages", messagesList),
+  route("reports/:id", ({ id }) => ({ kind: "pin", id })),
+  route("reports", () => ({ kind: "myreports" })),
+  route("notifications/prefs", () => ({ kind: "notification-prefs" })),
+  route("notifications", () => ({ kind: "activity" })),
+  route("profile", () => ({ kind: "profile" })),
+  route("settings/account", () => ({ kind: "settings-account" })),
+  route("settings/privacy", () => ({ kind: "settings-privacy" })),
+  route("settings/blocked", () => ({ kind: "blocked" })),
+  route("settings/language", () => ({ kind: "language-settings" })),
+  route("settings/appearance", () => ({ kind: "appearance-settings" })),
+  route("settings/:section", () => null),
+  route("settings", () => ({ kind: "settings" })),
+  route("host/analytics", () => ({ kind: "host-analytics" })),
+  route("host", () => ({ kind: "create-cleanup" })),
+  route("groups/new", () => ({ kind: "new-group" })),
+  route("groups/:id/info", ({ id }) => ({ kind: "group-info", id })),
+  route("channels/new", () => ({ kind: "new-channel" })),
+  route("dashboard", () => ({ kind: "event-dashboard" })),
+  route("post/:id/thread", ({ id }) => ({ kind: "post-thread", id })),
+  route("post/:id", ({ id }) => ({ kind: "post", id })),
+  route("compose/quote/:targetPostId", ({ targetPostId }) => ({
+    kind: "composer",
+    composerMode: "quote",
+    targetPostId,
+  })),
+  route("compose", () => ({ kind: "composer" })),
+  route("saves", () => ({ kind: "saves" })),
+]
+
+function matchSegments(segments: readonly string[], parts: readonly string[]): Captures | null {
+  const captures: Record<string, string> = {}
+  const matches = segments.every((segment, index) => {
+    const part = parts[index]
+    if (part === undefined) return false
+    if (!segment.startsWith(":")) return segment === part
+    captures[segment.slice(1)] = part
+    return true
+  })
+  return matches ? captures : null
+}
+
 export function entryFromPath(path: string | null | undefined): DetailEntry | null {
   if (!path) return null
-  const normalized = normalizePath(path)
-  const routeView = viewFromPath(normalized)
-  if (routeView === "map" || routeView === "search" || routeView === "report")
-    return { kind: "view", view: routeView }
-  const parts = normalized.split("/").filter((p) => p && p !== "_")
-  if (parts.length === 0) return null
-  const [base, id] = parts
-
-  switch (base) {
-    case "pin":
-      return id ? { kind: "pin", id } : null
-    case "cleanups": {
-      if (!id) return { kind: "cleanups" }
-      const sub = parts[2]
-      if (sub === "edit") return { kind: "edit-cleanup", id }
-      if (sub === "host") return { kind: "host-mode", id }
-      if (sub === "checkin") return { kind: "host-checkin", id }
-      if (sub === "announce") return { kind: "host-announce", id }
-      if (sub === "team") return { kind: "host-team", id }
-      if (sub === "hours") return { kind: "host-log-hours", id }
-      if (sub === "analytics") return { kind: "event-analytics", id }
-      if (sub === "announcements") {
-        const announcementId = parts[3]
-        return announcementId
-          ? { kind: "announcement", id, announcementId }
-          : { kind: "announcements", id }
-      }
-      if (sub === "ticket") {
-        const seatId = parts[3]
-        return seatId ? { kind: "my-ticket", id, seatId } : { kind: "my-ticket", id }
-      }
-      return { kind: "cleanup", id }
-    }
-    case "events":
-      return { kind: "cleanups" }
-    case "e":
-      return id ? { kind: "cleanup", id } : null
-    case "orgs":
-      if (!id) return null
-      return parts[2] === "manage" ? { kind: "org-manage", slug: id } : { kind: "org", slug: id }
-    case "people":
-      if (id && parts[2] === "followers") return { kind: "followers", id }
-      if (id && parts[2] === "following") return { kind: "following", id }
-      return id ? { kind: "person", id } : { kind: "people" }
-    case "leaderboard":
-      return id ? { kind: "leaderboard", geoid: id } : null
-    case "messages":
-      if (id === "pins") {
-        const rk = parts[2]
-        const roomId = parts[3]
-        if (roomId && (rk === "dm" || rk === "report" || rk === "cleanup" || rk === "group")) {
-          return { kind: "pinned-messages", id: roomId, roomKind: rk }
-        }
-        return { kind: "messages" }
-      }
-      if (id === "members") {
-        const rk = parts[2]
-        const roomId = parts[3]
-        if (roomId && (rk === "dm" || rk === "report" || rk === "cleanup" || rk === "group")) {
-          return { kind: "members", id: roomId, roomKind: rk }
-        }
-        return { kind: "messages" }
-      }
-      if (id === "dm") {
-        const dmId = parts[2]
-        return dmId ? { kind: "thread", id: dmId, roomKind: "dm" } : { kind: "messages" }
-      }
-      if (id === "report") {
-        const reportRoomId = parts[2]
-        return reportRoomId ? { kind: "thread", id: reportRoomId, roomKind: "report" } : { kind: "messages" }
-      }
-      if (id === "group") {
-        const groupRoomId = parts[2]
-        return groupRoomId ? { kind: "thread", id: groupRoomId, roomKind: "group" } : { kind: "messages" }
-      }
-      return id ? { kind: "thread", id, roomKind: "cleanup" } : { kind: "messages" }
-    case "reports":
-      return id ? { kind: "pin", id } : { kind: "myreports" }
-    case "notifications":
-      return id === "prefs" ? { kind: "notification-prefs" } : { kind: "activity" }
-    case "profile":
-      return { kind: "profile" }
-    case "settings":
-      if (!id) return { kind: "settings" }
-      if (id === "account") return { kind: "settings-account" }
-      if (id === "privacy") return { kind: "settings-privacy" }
-      if (id === "blocked") return { kind: "blocked" }
-      if (id === "language") return { kind: "language-settings" }
-      if (id === "appearance") return { kind: "appearance-settings" }
-      return null
-    case "host":
-      if (id === "analytics") return { kind: "host-analytics" }
-      return { kind: "create-cleanup" }
-    case "groups":
-      if (id === "new") return { kind: "new-group" }
-      if (id && parts[2] === "info") return { kind: "group-info", id }
-      return null
-    case "channels":
-      if (id === "new") return { kind: "new-channel" }
-      return null
-    case "dashboard":
-      return { kind: "event-dashboard" }
-    case "post":
-      if (id && parts[2] === "thread") return { kind: "post-thread", id }
-      return id ? { kind: "post", id } : null
-    case "compose":
-      if (id === "quote" && parts[2]) {
-        return { kind: "composer", composerMode: "quote", targetPostId: parts[2] }
-      }
-      return { kind: "composer" }
-    case "saves":
-      return { kind: "saves" }
-    default:
-      return null
+  const parts = pathParts(path)
+  for (const { segments, to } of PATH_ROUTES) {
+    const captures = matchSegments(segments, parts)
+    if (captures) return to(captures)
   }
+  return null
+}
+
+type EntryText = string | ((entry: DetailEntry) => string)
+
+interface KindRoute {
+  path: EntryText
+  title: EntryText
+  /** The tab a detail of this kind belongs under. */
+  parentView?: View
+  /** The tab this kind is the list of, so a deep link to it selects that tab instead of pushing a detail. */
+  listView?: View
+}
+
+function idPath(build: (id: string, entry: DetailEntry) => string, fallback: string): EntryText {
+  return (entry) => (entry.id ? build(entry.id, entry) : fallback)
+}
+
+function cleanupPath(suffix: string, child?: "announcementId" | "seatId"): EntryText {
+  return idPath((id, entry) => {
+    const childId = child ? entry[child] : undefined
+    return childId ? `/cleanups/${id}${suffix}/${childId}` : `/cleanups/${id}${suffix}`
+  }, "/cleanups")
+}
+
+function orgPath(suffix: string): EntryText {
+  return (entry) => (entry.slug ? `/orgs/${entry.slug}${suffix}` : "/")
+}
+
+function roomPath(section: "pins" | "members"): EntryText {
+  return idPath((id, entry) => `/messages/${section}/${entry.roomKind ?? "cleanup"}/${id}`, "/messages")
+}
+
+const threadPath = idPath(
+  (id, entry) =>
+    entry.roomKind && PREFIXED_THREAD_ROOMS.includes(entry.roomKind)
+      ? `/messages/${entry.roomKind}/${id}`
+      : `/messages/${id}`,
+  "/messages",
+)
+
+const KIND_ROUTES: Record<DetailKind, KindRoute> = {
+  pin: { path: idPath((id) => `/pin/${id}`, "/"), title: "title.pin", parentView: "reports" },
+  cleanup: { path: cleanupPath(""), title: "title.cleanup", parentView: "events" },
+  person: { path: idPath((id) => `/people/${id}`, "/people"), title: BODY_OWNS_HEADER, parentView: "social" },
+  thread: { path: threadPath, title: BODY_OWNS_HEADER, parentView: "messaging" },
+  myreports: { path: "/reports", title: "title.myreports", parentView: "reports", listView: "reports" },
+  cleanups: { path: "/cleanups", title: "title.cleanups", parentView: "events", listView: "events" },
+  people: { path: "/people", title: "title.people", parentView: "social", listView: "social" },
+  messages: { path: "/messages", title: "title.messages", parentView: "messaging", listView: "messaging" },
+  "new-msg": { path: "/messages", title: "title.new_msg" },
+  activity: { path: "/notifications", title: "title.activity" },
+  "notification-prefs": { path: "/notifications/prefs", title: "title.notification_prefs" },
+  profile: { path: "/profile", title: "title.profile" },
+  "create-cleanup": { path: "/host", title: "title.create_cleanup" },
+  "edit-cleanup": { path: cleanupPath("/edit"), title: "title.edit_cleanup" },
+  cluster: { path: "/", title: "title.cluster" },
+  blend: { path: "/", title: (entry) => entry.event?.title || "title.cleanup" },
+  followers: { path: idPath((id) => `/people/${id}/followers`, "/people"), title: "title.followers" },
+  following: { path: idPath((id) => `/people/${id}/following`, "/people"), title: "title.following" },
+  leaderboard: {
+    path: (entry) => (entry.geoid ? `/leaderboard/${entry.geoid}` : "/"),
+    title: "title.leaderboard",
+  },
+  blocked: { path: "/settings/blocked", title: "title.blocked" },
+  members: {
+    path: roomPath("members"),
+    title: (entry) =>
+      entry.roomKind === "report" || entry.roomKind === "cleanup" ? "title.chat_info" : "title.members",
+  },
+  "language-settings": { path: "/settings/language", title: "title.language_settings" },
+  "appearance-settings": { path: "/settings/appearance", title: "title.appearance_settings" },
+  settings: { path: "/settings", title: "title.settings" },
+  "settings-account": { path: "/settings/account", title: "title.settings_account" },
+  "settings-privacy": { path: "/settings/privacy", title: "title.settings_privacy" },
+  "pinned-messages": { path: roomPath("pins"), title: BODY_OWNS_HEADER, parentView: "messaging" },
+  "new-group": { path: "/groups/new", title: BODY_OWNS_HEADER, parentView: "messaging" },
+  "new-channel": { path: "/channels/new", title: BODY_OWNS_HEADER, parentView: "messaging" },
+  "group-info": {
+    path: idPath((id) => `/groups/${id}/info`, "/messages"),
+    title: "title.group_info",
+    parentView: "messaging",
+  },
+  post: { path: idPath((id) => `/post/${id}`, "/"), title: "title.post", parentView: "home" },
+  "post-thread": { path: idPath((id) => `/post/${id}/thread`, "/"), title: BODY_OWNS_HEADER, parentView: "home" },
+  composer: {
+    path: (entry) =>
+      entry.composerMode === "quote" && entry.targetPostId ? `/compose/quote/${entry.targetPostId}` : "/compose",
+    title: BODY_OWNS_HEADER,
+  },
+  saves: { path: "/saves", title: "title.saves", parentView: "home" },
+  "drop-pin": { path: VIEW_PATHS.map, title: "title.drop_pin", parentView: "map" },
+  "host-mode": { path: cleanupPath("/host"), title: "title.host_mode", parentView: "events" },
+  "host-checkin": { path: cleanupPath("/checkin"), title: "title.host_checkin", parentView: "events" },
+  "host-announce": { path: cleanupPath("/announce"), title: "title.host_announce", parentView: "events" },
+  "host-team": { path: cleanupPath("/team"), title: "title.host_team", parentView: "events" },
+  "host-log-hours": { path: cleanupPath("/hours"), title: "title.host_log_hours", parentView: "events" },
+  "my-ticket": { path: cleanupPath("/ticket", "seatId"), title: "title.my_ticket", parentView: "events" },
+  org: { path: orgPath(""), title: "title.org", parentView: "events" },
+  "event-dashboard": { path: "/dashboard", title: "title.event_dashboard", parentView: "events" },
+  announcement: {
+    path: cleanupPath("/announcements", "announcementId"),
+    title: "title.announcement",
+    parentView: "events",
+  },
+  announcements: { path: cleanupPath("/announcements"), title: "title.announcements", parentView: "events" },
+  "event-analytics": { path: cleanupPath("/analytics"), title: "title.event_analytics", parentView: "events" },
+  "host-analytics": { path: "/host/analytics", title: "title.host_analytics", parentView: "events" },
+  "org-manage": { path: orgPath("/manage"), title: "title.org_manage", parentView: "events" },
+}
+
+// Entries restored from history or storage are typed but not guaranteed to carry a current kind.
+function kindRoute(entry: DetailEntry): KindRoute | undefined {
+  return entry.kind === "view" ? undefined : (KIND_ROUTES[entry.kind] as KindRoute | undefined)
+}
+
+function entryText(text: EntryText | undefined, entry: DetailEntry, fallback: string): string {
+  if (text === undefined) return fallback
+  return typeof text === "string" ? text : text(entry)
 }
 
 export function pathForEntry(entry: DetailEntry | null): string {
   if (!entry) return "/"
   if (entry.kind === "view") return entry.view ? pathForView(entry.view) ?? "/" : "/"
-  switch (entry.kind) {
-    case "pin":
-      return entry.id ? `/pin/${entry.id}` : "/"
-    case "cleanups":
-      return "/cleanups"
-    case "cleanup":
-      return entry.id ? `/cleanups/${entry.id}` : "/cleanups"
-    case "edit-cleanup":
-      return entry.id ? `/cleanups/${entry.id}/edit` : "/cleanups"
-    case "host-mode":
-      return entry.id ? `/cleanups/${entry.id}/host` : "/cleanups"
-    case "host-checkin":
-      return entry.id ? `/cleanups/${entry.id}/checkin` : "/cleanups"
-    case "host-announce":
-      return entry.id ? `/cleanups/${entry.id}/announce` : "/cleanups"
-    case "host-team":
-      return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
-    case "host-log-hours":
-      return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
-    case "event-analytics":
-      return entry.id ? `/cleanups/${entry.id}/analytics` : "/cleanups"
-    case "host-analytics":
-      return "/host/analytics"
-    case "announcements":
-      return entry.id ? `/cleanups/${entry.id}/announcements` : "/cleanups"
-    case "announcement":
-      if (!entry.id) return "/cleanups"
-      return entry.announcementId
-        ? `/cleanups/${entry.id}/announcements/${entry.announcementId}`
-        : `/cleanups/${entry.id}/announcements`
-    case "my-ticket":
-      if (!entry.id) return "/cleanups"
-      return entry.seatId
-        ? `/cleanups/${entry.id}/ticket/${entry.seatId}`
-        : `/cleanups/${entry.id}/ticket`
-    case "org":
-      return entry.slug ? `/orgs/${entry.slug}` : "/"
-    case "org-manage":
-      return entry.slug ? `/orgs/${entry.slug}/manage` : "/"
-    case "create-cleanup":
-      return "/host"
-    case "people":
-      return "/people"
-    case "person":
-      return entry.id ? `/people/${entry.id}` : "/people"
-    case "followers":
-      return entry.id ? `/people/${entry.id}/followers` : "/people"
-    case "following":
-      return entry.id ? `/people/${entry.id}/following` : "/people"
-    case "leaderboard":
-      return entry.geoid ? `/leaderboard/${entry.geoid}` : "/"
-    case "messages":
-      return "/messages"
-    case "thread":
-      if (!entry.id) return "/messages"
-      if (entry.roomKind === "dm") return `/messages/dm/${entry.id}`
-      if (entry.roomKind === "report") return `/messages/report/${entry.id}`
-      if (entry.roomKind === "group") return `/messages/group/${entry.id}`
-      return `/messages/${entry.id}`
-    case "pinned-messages":
-      return entry.id ? `/messages/pins/${entry.roomKind ?? "cleanup"}/${entry.id}` : "/messages"
-    case "members":
-      return entry.id ? `/messages/members/${entry.roomKind ?? "cleanup"}/${entry.id}` : "/messages"
-    case "myreports":
-      return "/reports"
-    case "activity":
-      return "/notifications"
-    case "notification-prefs":
-      return "/notifications/prefs"
-    case "profile":
-      return "/profile"
-    case "settings":
-      return "/settings"
-    case "settings-account":
-      return "/settings/account"
-    case "settings-privacy":
-      return "/settings/privacy"
-    case "blocked":
-      return "/settings/blocked"
-    case "language-settings":
-      return "/settings/language"
-    case "appearance-settings":
-      return "/settings/appearance"
-    case "event-dashboard":
-      return "/dashboard"
-    case "new-group":
-      return "/groups/new"
-    case "new-channel":
-      return "/channels/new"
-    case "group-info":
-      return entry.id ? `/groups/${entry.id}/info` : "/messages"
-    case "new-msg":
-      return "/messages"
-    case "post":
-      return entry.id ? `/post/${entry.id}` : "/"
-    case "post-thread":
-      return entry.id ? `/post/${entry.id}/thread` : "/"
-    case "composer":
-      return entry.composerMode === "quote" && entry.targetPostId
-        ? `/compose/quote/${entry.targetPostId}`
-        : "/compose"
-    case "saves":
-      return "/saves"
-    case "drop-pin":
-      return "/map"
-    default:
-      return "/"
-  }
+  return entryText(kindRoute(entry)?.path, entry, "/")
 }
 
 export function pathForView(view: View): string | null {
-  if (view === "map") return "/map"
-  if (view === "search") return "/search"
-  if (view === "report") return "/report"
-  return null
+  return (VIEW_PATHS as Partial<Record<View, string>>)[view] ?? null
 }
 
 export function viewFromPath(path: string | null | undefined): View | null {
   if (!path) return null
-  const base = normalizePath(path)
-    .split("/")
-    .filter((p) => p && p !== "_")[0]
-  if (base === "map") return "map"
-  if (base === "search") return "search"
-  if (base === "report") return "report"
-  return null
+  const base = pathParts(path)[0]
+  return ADDRESSABLE_VIEWS.find((view) => view === base) ?? null
 }
 
 export function titleForEntry(entry: DetailEntry | null): string {
   if (!entry) return ""
-  switch (entry.kind) {
-    case "view":
-      return ""
-    case "pin":
-      return "title.pin"
-    case "cleanups":
-      return "title.cleanups"
-    case "myreports":
-      return "title.myreports"
-    case "cleanup":
-      return "title.cleanup"
-    case "messages":
-      return "title.messages"
-    case "thread":
-      return " "
-    case "pinned-messages":
-      return " "
-    case "new-group":
-    case "new-channel":
-      return " "
-    case "new-msg":
-      return "title.new_msg"
-    case "people":
-      return "title.people"
-    case "person":
-      return " "
-    case "followers":
-      return "title.followers"
-    case "following":
-      return "title.following"
-    case "leaderboard":
-      return "title.leaderboard"
-    case "activity":
-      return "title.activity"
-    case "notification-prefs":
-      return "title.notification_prefs"
-    case "profile":
-      return "title.profile"
-    case "settings":
-      return "title.settings"
-    case "settings-account":
-      return "title.settings_account"
-    case "settings-privacy":
-      return "title.settings_privacy"
-    case "blocked":
-      return "title.blocked"
-    case "language-settings":
-      return "title.language_settings"
-    case "appearance-settings":
-      return "title.appearance_settings"
-    case "create-cleanup":
-      return "title.create_cleanup"
-    case "edit-cleanup":
-      return "title.edit_cleanup"
-    case "host-mode":
-      return "title.host_mode"
-    case "host-checkin":
-      return "title.host_checkin"
-    case "host-announce":
-      return "title.host_announce"
-    case "host-team":
-      return "title.host_team"
-    case "host-log-hours":
-      return "title.host_log_hours"
-    case "event-analytics":
-      return "title.event_analytics"
-    case "host-analytics":
-      return "title.host_analytics"
-    case "announcements":
-      return "title.announcements"
-    case "announcement":
-      return "title.announcement"
-    case "my-ticket":
-      return "title.my_ticket"
-    case "org":
-      return "title.org"
-    case "org-manage":
-      return "title.org_manage"
-    case "event-dashboard":
-      return "title.event_dashboard"
-    case "cluster":
-      return "title.cluster"
-    case "blend":
-      return entry.event?.title || "title.cleanup"
-    case "members":
-      return entry.roomKind === "report" || entry.roomKind === "cleanup"
-        ? "title.chat_info"
-        : "title.members"
-    case "group-info":
-      return "title.group_info"
-    case "post":
-      return "title.post"
-    case "saves":
-      return "title.saves"
-    case "drop-pin":
-      return "title.drop_pin"
-    case "post-thread":
-    case "composer":
-      return " "
-    default:
-      return ""
-  }
+  return entryText(kindRoute(entry)?.title, entry, "")
 }
 
 export function titleParamsForEntry(entry: DetailEntry | null): { count?: number } {
   if (entry?.kind === "cluster") return { count: entry.reports?.length ?? 0 }
   return {}
 }
-
 
 export type HeaderMode = "search" | "detail"
 
@@ -432,68 +344,15 @@ function placeholderKind(view: View): { placeholder: string; kind: "places" | "p
   }
 }
 
-
 export function viewForEntry(entry: DetailEntry | null): View | null {
   if (!entry) return null
-  switch (entry.kind) {
-    case "view":
-      return entry.view ?? null
-    case "myreports":
-      return "reports"
-    case "cleanups":
-      return "events"
-    case "people":
-      return "social"
-    case "messages":
-      return "messaging"
-    default:
-      return null
-  }
+  if (entry.kind === "view") return entry.view ?? null
+  return kindRoute(entry)?.listView ?? null
 }
 
 export function parentViewForEntry(entry: DetailEntry | null): View | null {
   if (!entry) return null
-  switch (entry.kind) {
-    case "view":
-      return null
-    case "pin":
-    case "myreports":
-      return "reports"
-    case "cleanup":
-    case "cleanups":
-    case "host-mode":
-    case "host-checkin":
-    case "host-announce":
-    case "host-team":
-    case "host-log-hours":
-    case "my-ticket":
-    case "announcement":
-    case "announcements":
-    case "event-analytics":
-    case "host-analytics":
-    case "org":
-    case "org-manage":
-    case "event-dashboard":
-      return "events"
-    case "person":
-    case "people":
-      return "social"
-    case "thread":
-    case "messages":
-    case "pinned-messages":
-    case "new-group":
-    case "new-channel":
-    case "group-info":
-      return "messaging"
-    case "post":
-    case "post-thread":
-    case "saves":
-      return "home"
-    case "drop-pin":
-      return "map"
-    default:
-      return null
-  }
+  return kindRoute(entry)?.parentView ?? null
 }
 
 function baseViewForSeed(currentView: View): View {

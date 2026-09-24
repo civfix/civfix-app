@@ -65,3 +65,10 @@ export function useScrollHost(): ScrollHostValue {
 
 /** Exported so every shell that injects the plain host shares one identity. */
 export const PLAIN_SCROLL_HOST = DEFAULT_SCROLL_HOST
+
+export function decorateScrollHost(
+  base: ScrollHostValue,
+  wrap: (Base: React.ComponentType<any>) => React.ComponentType<any>,
+): ScrollHostValue {
+  return { ScrollView: wrap(base.ScrollView), FlatList: wrap(base.FlatList) }
+}

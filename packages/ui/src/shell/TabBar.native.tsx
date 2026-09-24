@@ -21,7 +21,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { makeThemedStyles, useTheme } from "../theme"
+import { makeThemedStyles, space, useTheme } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import {
   LiquidGlassDock,
@@ -47,6 +47,7 @@ import {
   TAB_ICON_STROKE_WIDTH,
   TAB_ICON_CENTER_Y,
   TAB_PILL_LOCK_COUNT,
+  activeTabIndex,
   lockedIndexForPillCenter,
   pillDragRect,
   selectedPillRect,
@@ -89,12 +90,10 @@ const ICON_CENTER_Y = TAB_ICON_CENTER_Y
 const PILL_TOP = selectedPillRect(0, 0).y
 const PILL_HEIGHT = selectedPillRect(0, 0).height
 const DOCKED_D = H - DOCK_MORPH_SHRINK
-const FIELD_PAD = 20
+const FIELD_PAD = space["5"]
+const FIELD_H = space["10"]
+const FIELD_GUTTER = space["4"]
 const DOCKED_MAG_X = DOCKED_D + G + FIELD_PAD
-
-function tabIndexForView(view: NavView): number {
-  return TABS.findIndex((tab) => tab.view === view)
-}
 
 function MorphTabCell({
   index,
@@ -259,7 +258,7 @@ export function TabBar() {
   }, [reduceMotion, mount])
 
   const visible = activeIndex >= 0
-  const persistIndex = visible ? activeIndex : Math.max(tabIndexForView(prevView), 0)
+  const persistIndex = visible ? activeIndex : Math.max(activeTabIndex(prevView), 0)
   const pillIndex = visible ? activeIndex : persistIndex
   const targetX = selectedPillRect(pillIndex, tabW).x
   const tx = useSharedValue(targetX)
@@ -377,9 +376,9 @@ export function TabBar() {
       ],
     }
   })
-  const dockedFieldLeft = DOCKED_MAG_X + 16
-  const dockedFieldW = Math.max(regionW - dockedFieldLeft - 16, 0)
-  const focusedFieldW = Math.max(regionW - DOCKED_D - G - dockedFieldLeft - 8, 0)
+  const dockedFieldLeft = DOCKED_MAG_X + FIELD_GUTTER
+  const dockedFieldW = Math.max(regionW - dockedFieldLeft - FIELD_GUTTER, 0)
+  const focusedFieldW = Math.max(regionW - DOCKED_D - G - dockedFieldLeft - space["2"], 0)
   const fieldStyle = useAnimatedStyle(() => {
     const right = shapes.value.right
     return {
@@ -605,8 +604,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   field: {
     position: "absolute",
-    top: H / 2 - 20,
-    height: 40,
+    top: H / 2 - FIELD_H / 2,
+    height: FIELD_H,
     justifyContent: "center",
   },
   placeholderLabel: {
@@ -623,14 +622,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   clear: {
     position: "absolute",
-    top: H / 2 - 20,
-    right: (DOCKED_D - 40) / 2,
-    width: 40,
-    height: 40,
+    top: H / 2 - FIELD_H / 2,
+    right: (DOCKED_D - FIELD_H) / 2,
+    width: FIELD_H,
+    height: FIELD_H,
   },
   clearHit: {
-    width: 40,
-    height: 40,
+    width: FIELD_H,
+    height: FIELD_H,
     alignItems: "center",
     justifyContent: "center",
   },

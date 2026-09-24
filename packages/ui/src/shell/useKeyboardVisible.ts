@@ -1,17 +1,12 @@
-/**
- * iOS uses the `will*` events so the value flips in sync with the KeyboardAvoidingView animation; Android
- * has no `will*` events, so it uses `did*`.
- */
 import { useEffect, useState } from "react"
-import { Keyboard, Platform } from "react-native"
+import { Keyboard } from "react-native"
+import { KEYBOARD_HIDE_EVENT, KEYBOARD_SHOW_EVENT } from "./keyboardPlatform"
 
 export function useKeyboardVisible(): boolean {
   const [visible, setVisible] = useState(false)
   useEffect(() => {
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
-    const showSub = Keyboard.addListener(showEvent, () => setVisible(true))
-    const hideSub = Keyboard.addListener(hideEvent, () => setVisible(false))
+    const showSub = Keyboard.addListener(KEYBOARD_SHOW_EVENT, () => setVisible(true))
+    const hideSub = Keyboard.addListener(KEYBOARD_HIDE_EVENT, () => setVisible(false))
     return () => {
       showSub.remove()
       hideSub.remove()

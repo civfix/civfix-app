@@ -8,37 +8,26 @@
  * state or re-deriving the card height by interpolation both left the card edge lagging the content.
  */
 import React, { useMemo, useRef, useCallback, useEffect } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  Platform,
-  ScrollView as RNScrollView,
-  FlatList as RNFlatList,
-} from "react-native"
-import BottomSheet, {
-  useBottomSheetInternal,
-  type BottomSheetBackgroundProps,
-} from "@gorhom/bottom-sheet"
+import { View, useWindowDimensions, ScrollView as RNScrollView, FlatList as RNFlatList } from "react-native"
+import BottomSheet from "@gorhom/bottom-sheet"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedReaction,
   interpolate,
   Extrapolation,
-  runOnJS,
-  type SharedValue,
 } from "react-native-reanimated"
-import { BlurView } from "expo-blur"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { makeThemedStyles, space, useTheme } from "../theme"
+import { makeThemedStyles, space } from "../theme"
 import { useNavStore, type Snap, type View as NavView, type DetailEntry } from "../nav"
 import { useT } from "../i18n"
-import { useHaptics } from "../capabilities"
 import { SearchHeader } from "./SearchHeader.native"
 import { SheetHeader } from "./SheetHeader.shared"
-import { armCollapse, shouldCollapseOnSettle, COLLAPSE_SWAP_AT } from "./dragCollapse"
+import { COLLAPSE_SWAP_AT } from "./dragCollapse"
+import { SheetGrabHandle, makeBackground } from "./CompactSheetChrome.native"
+import { SHEET_FLOAT_SIDE, SHEET_HANDLE_HEIGHT, SHEET_HEADER_SIDE_PAD, sheetHeaderPad } from "./sheetChrome"
+import { useSheetCollapse } from "./useSheetCollapse.native"
+import { useSheetExitFreeze } from "./useSheetExitFreeze"
 import { defaultRenderBody } from "./BodyRouter"
 import { ScrollHostProvider } from "./ScrollHost"
 import { makeContentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -51,12 +40,10 @@ import { BodyTransition } from "./BodyTransition.native"
 import { sheetDismissConfig, sheetMoveConfig } from "./motionConfigs.native"
 import { useStackDirection } from "./useStackDirection"
 import {
-  SHEET_SNAP_RANGE,
   compactBottomChrome,
   dockOcclusionFromSheet,
   sheetSnapForAccessibilityAction,
   sheetSnapPoints,
-  sheetSnapValueKey,
 } from "./tabBarLogic"
 import { sheetDockOcclusion } from "./sheetDockOcclusion.native"
 import type { CompactShellProps } from "./CompactShell.types"
@@ -111,21 +98,12 @@ function sheetScrollHostFor(layout: "scroll" | "full") {
   return layout === "full" ? SHEET_SCROLL_HOST : SHEET_SCROLL_HOST_SAFE_BOTTOM
 }
 
-// Card insets interpolated off animatedIndex (0 = peek, 2 = full). The bottom gap is 0 at every snap: the
-// sheet presents as a modal flush to the screen bottom, because any gap exposed the raw background under
-// the card and sliced the scrolled content above the screen edge.
-const FLOAT_SIDE: [number, number] = [12, 4]
-const FLOAT_BOTTOM: [number, number] = [0, 0]
-const FLOAT_RADIUS: [number, number] = [30, 22]
-
 /**
- * The body's side gutter is constant (the midpoint of FLOAT_SIDE) rather than animated: margin is a layout
+ * The body's side gutter is constant (the midpoint of SHEET_FLOAT_SIDE) rather than animated: margin is a layout
  * property, so animating it re-ran layout for the whole body subtree on every drag frame. Only the header
  * animates the remainder (headerFloatStyle). Accepted delta: at full the body sits 4pt inside the card edge.
  */
-const CONTENT_SIDE = (FLOAT_SIDE[0] + FLOAT_SIDE[1]) / 2
-
-const HANDLE_HEIGHT = 20
+const CONTENT_SIDE = (SHEET_FLOAT_SIDE[0] + SHEET_FLOAT_SIDE[1]) / 2
 
 // The body fades out early in the mid-to-peek leg so its text is gone before the card shrinks past it,
 // instead of floating over the map. BODY_FADE_TO is COLLAPSE_SWAP_AT, where the header swaps DetailBar for
@@ -133,101 +111,9 @@ const HANDLE_HEIGHT = 20
 const BODY_FADE_FROM = 0.95
 const BODY_FADE_TO = COLLAPSE_SWAP_AT
 
-const useBlur = Platform.OS === "ios"
-const AnimatedBlur = Animated.createAnimatedComponent(BlurView)
-
-const ADJUST_ACTIONS = [{ name: "increment" }, { name: "decrement" }]
-
-// Its own component so the live snap value re-renders only the handle: a new
-// handleComponent identity would remount it and drop screen-reader focus mid-adjust.
-function SheetGrabHandle({
-  label,
-  onCycle,
-  onAdjust,
-}: {
-  label: string
-  onCycle: () => void
-  onAdjust: (actionName: string) => void
-}) {
-  const styles = useStyles()
-  const { t } = useT("nav")
-  const snap = useNavStore((s) => s.snap)
-  return (
-    <Pressable
-      onPress={onCycle}
-      accessibilityRole="adjustable"
-      accessibilityLabel={label}
-      accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}
-      accessibilityActions={ADJUST_ACTIONS}
-      onAccessibilityAction={(e) => onAdjust(e.nativeEvent.actionName)}
-      style={styles.handleArea}
-    >
-      <View style={styles.handleBar} />
-    </Pressable>
-  )
-}
-
-function makeBackground(
-  animatedIndex: SharedValue<number>,
-  animatedPosition: SharedValue<number>,
-  screenH: number,
-) {
-  return function GlassBackground({ style }: BottomSheetBackgroundProps) {
-    const styles = useStyles()
-    const th = useTheme()
-    // gorhom's measured container height is where the sheet bottoms in animatedPosition's space.
-    // useWindowDimensions under-reports it by varying system-bar amounts on Android edge-to-edge.
-    const { animatedLayoutState } = useBottomSheetInternal()
-    // No overflow:hidden on the shadow wrapper: iOS masksToBounds would eat the shadow, so a clip child
-    // masks the blur/wash/sheen instead.
-    const cardStyle = useAnimatedStyle(() => {
-      const i = animatedIndex.value
-      const side = interpolate(i, [0, 2], FLOAT_SIDE, Extrapolation.CLAMP)
-      const gap = interpolate(i, [0, 2], FLOAT_BOTTOM, Extrapolation.CLAMP)
-      const radius = interpolate(i, [0, 2], FLOAT_RADIUS, Extrapolation.CLAMP)
-      // rawContainerHeight is -999 until laid out, so the first frame falls back to the window height.
-      const rawH = animatedLayoutState.value.rawContainerHeight
-      const sheetBottom = rawH > 0 ? rawH : screenH
-      const cardH = Math.max(sheetBottom - animatedPosition.value - gap, 0)
-      return {
-        left: side,
-        right: side,
-        height: cardH,
-        // Rounded top only: rounding the flush bottom edge would open background slivers at the corners.
-        borderTopLeftRadius: radius,
-        borderTopRightRadius: radius,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-      }
-    })
-    const radiusStyle = useAnimatedStyle(() => {
-      const radius = interpolate(animatedIndex.value, [0, 2], FLOAT_RADIUS, Extrapolation.CLAMP)
-      return {
-        borderTopLeftRadius: radius,
-        borderTopRightRadius: radius,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-      }
-    })
-    return (
-      <Animated.View style={[style, styles.bgRoot]}>
-        <Animated.View style={[styles.cardShadow, cardStyle]}>
-          <Animated.View style={[styles.cardClip, radiusStyle]}>
-            {useBlur ? (
-              <AnimatedBlur intensity={th.glass.sheet.blurIntensity} tint={th.scheme === "dark" ? "dark" : "light"} style={StyleSheet.absoluteFill} />
-            ) : null}
-            <View style={styles.cardWash} />
-            <View style={styles.cardSheen} />
-          </Animated.View>
-        </Animated.View>
-      </Animated.View>
-    )
-  }
-}
-
 /**
  * `view`/`active` come in as props, not from the store, because a dismissing sheet renders the frozen
- * snapshot of them (see the exit freeze below).
+ * snapshot of them (useSheetExitFreeze).
  */
 function NativeSheetHeader({
   view,
@@ -261,41 +147,21 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // mirror reads "sheet off-screen" on the pre-layout frame and the dock fades out with the rising card
   // instead of vanishing the instant the sheet mounts.
   const animatedPosition = useSharedValue(height)
-  // Tracked on the JS thread so the grab-handle tap can cycle snaps without reading a shared value.
-  const currentIndexRef = useRef(0)
-  const collapseCommitted = useSharedValue(false)
 
   const snap = useNavStore((s) => s.snap)
   const setSnap = useNavStore((s) => s.setSnap)
-  const haptics = useHaptics()
   const storeActive = useNavStore((s) => s.active)
   const storeView = useNavStore((s) => s.view)
   const stack = useNavStore((s) => s.stack)
-  const collapseToParent = useNavStore((s) => s.collapseToParent)
-
-  // Exit freeze: on dismiss the store drops the detail synchronously while the sheet is still sliding off,
-  // so rendering the live store would flash the underlying view's header and body on the dismissing card.
-  // While `closing`, render the last live detail, view and stack instead. The stack is frozen too because
-  // the header's back chevron reads it and would otherwise pop off the sliding card.
-  const frozenEntryRef = useRef<DetailEntry | null>(storeActive)
-  const frozenViewRef = useRef<NavView>(storeView)
-  const frozenStackRef = useRef<readonly DetailEntry[]>(stack)
-  if (!closing) {
-    frozenEntryRef.current = storeActive
-    frozenViewRef.current = storeView
-    frozenStackRef.current = stack
-  }
-  const active = closing ? frozenEntryRef.current : storeActive
-  const view = closing ? frozenViewRef.current : storeView
-  const headerStack = closing ? frozenStackRef.current : stack
+  const {
+    active,
+    view,
+    stack: headerStack,
+  } = useSheetExitFreeze(closing, { active: storeActive, view: storeView, stack })
 
   // The same identity the keyed remount below uses; a change drives BodyTransition's entrance animation.
   const bodyKey = shellBodyKey(active, `home:${view}`)
   const direction = useStackDirection(stack.length)
-
-  // What the sheet last reported, so the sync effect only snaps for programmatic changes and never echoes
-  // the user's own drag.
-  const reportedSnapRef = useRef(0)
 
   // The sheet bottoms at the screen edge, so only the top headroom is reserved.
   const snapPoints = useMemo<[number, number, number]>(
@@ -311,46 +177,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // is already a 250ms timing, so this only changes the curve there.
   const animationConfigs = useMemo(() => (closing ? sheetDismissConfig() : sheetMoveConfig()), [closing])
 
-  const onChange = useCallback(
-    (index: number) => {
-      if (index >= 0 && index <= 2) {
-        const prevIndex = currentIndexRef.current
-        currentIndexRef.current = index
-        reportedSnapRef.current = index
-        setSnap(index as Snap)
-        if (index !== prevIndex) haptics.impactLight()
-        // Settle-time backstop for the detail-to-parent collapse; the swap usually already happened mid-
-        // animation (onAnimate + the reaction below). Gating on the arrival index alone matters: after an
-        // interrupted pull-up then a quick pull-down, `prevIndex` is still 0. collapseToParent no-ops at home
-        // and mid-flow, so the initial mount at peek is harmless.
-        if (shouldCollapseOnSettle(index, prevIndex)) collapseToParent()
-      }
-    },
-    [setSnap, collapseToParent, haptics],
-  )
-
-  // gorhom fires this at the start of a settle, before onChange (which fires on arrival). Gate on the
-  // destination only: an interrupted pull-up never settles, so the following pull-down still reports
-  // `fromIndex` 0.
-  const onAnimate = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      collapseCommitted.value = armCollapse(fromIndex, toIndex)
-    },
-    [collapseCommitted],
-  )
-
-  // Swapping to the origin view while the sheet is still moving hides the DetailBar-to-SearchHeader change
-  // in the motion instead of popping it after the sheet settles at peek.
-  useAnimatedReaction(
-    () => animatedIndex.value,
-    (idx) => {
-      if (collapseCommitted.value && idx <= COLLAPSE_SWAP_AT) {
-        collapseCommitted.value = false
-        runOnJS(collapseToParent)()
-      }
-    },
-    [collapseToParent],
-  )
+  const { onChange, onAnimate, currentIndexRef, reportedSnapRef } = useSheetCollapse(animatedIndex)
 
   // The dock fades off the sheet's visible height, so it tracks the card continuously on open and dismiss
   // with no dead frame between slide end and dock return. On Android edge-to-edge the window height can
@@ -390,10 +217,10 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     [animatedIndex, animatedPosition, height],
   )
 
-  // Only the header animates, by the remainder FLOAT_SIDE - CONTENT_SIDE (+4..-4), which keeps the search
+  // Only the header animates, by the remainder SHEET_FLOAT_SIDE - CONTENT_SIDE (+4..-4), which keeps the search
   // bar locked to the card edge while confining the per-frame layout pass to the header's small subtree.
   const headerFloatStyle = useAnimatedStyle(() => {
-    const side = interpolate(animatedIndex.value, [0, 2], FLOAT_SIDE, Extrapolation.CLAMP)
+    const side = interpolate(animatedIndex.value, [0, 2], SHEET_FLOAT_SIDE, Extrapolation.CLAMP)
     return { marginLeft: side - CONTENT_SIDE, marginRight: side - CONTENT_SIDE }
   })
 
@@ -429,10 +256,9 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // The content region's height is owned here rather than flex:1 inside gorhom's animated content mask, so
   // the body's scroll viewport is bounded by numbers we control and the full content overflow scrolls. At
   // lower snaps the region extends below the visible card; the body fade hides it during collapse.
-  const sheetContentHeight = snapPoints[2] - HANDLE_HEIGHT
+  const sheetContentHeight = snapPoints[2] - SHEET_HANDLE_HEIGHT
 
-  // paddingTop stays constant across snaps: a peek-aware top pad made the search bar jump while dragging.
-  const headerVPad = { paddingTop: 0, paddingBottom: snap === 0 ? 20 : 12 }
+  const headerVPad = sheetHeaderPad(snap)
   // Rebuilt only when the navigation identity changes, not on snap or keyboard re-renders; this relies on
   // `renderBody` being referentially stable, which the module-level default is.
   const body = useMemo(() => renderBody(active, view), [renderBody, active, view])
@@ -503,55 +329,16 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   )
 }
 
-const useStyles = makeThemedStyles((t) => ({
+const useStyles = makeThemedStyles(() => ({
   // zIndex goes on gorhom's containerStyle because that outer view, not the inner moving sheet, is the
   // sibling of AppShell's z50 map controls. Above them so an expanded sheet covers the side buttons; below
   // the z70 auth overlay.
   sheetContainer: {
     zIndex: 60,
   },
-  bgRoot: {
-    backgroundColor: "transparent",
-    pointerEvents: "none",
-  },
-  // An opaque fill so the shadow casts on iOS.
-  cardShadow: {
-    position: "absolute",
-    top: 0,
-    backgroundColor: t.glass.sheet.fillFallback,
-    ...t.shadows.s4,
-  },
-  cardClip: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: "hidden",
-  },
-  cardWash: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: useBlur ? t.glass.sheet.fill : "transparent",
-  },
-  cardSheen: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: t.glass.sheet.sheen,
-  },
-  handleArea: {
-    height: HANDLE_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: t.space["2"],
-  },
-  handleBar: {
-    width: 38,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: t.glass.grabHandle,
-  },
   contentHost: {},
   headerHost: {
-    paddingHorizontal: 14,
+    paddingHorizontal: SHEET_HEADER_SIDE_PAD,
   },
   bodyHost: {
     flex: 1,

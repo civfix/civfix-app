@@ -5,7 +5,7 @@ import { makeThemedStyles } from "../theme"
 import { searchRevealExitStyle, searchRevealStyle } from "./bodyLayout"
 import { dockMorphProgress } from "./dockMorphProgress.native"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
-import { PLAIN_SCROLL_HOST, ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
+import { PLAIN_SCROLL_HOST, ScrollHostProvider, decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
 import { useSearchBarStore } from "./searchBarStore"
 import { resolveTabBarFootprint } from "./tabBarLogic"
 import { useTabBarStore } from "./tabBarStore"
@@ -50,10 +50,7 @@ function makeDockClearanceScroll(Base: React.ComponentType<any>): React.Componen
 }
 
 function makeDockClearanceScrollHost(base: ScrollHostValue): ScrollHostValue {
-  return {
-    ScrollView: makeDockClearanceScroll(base.ScrollView),
-    FlatList: makeDockClearanceScroll(base.FlatList),
-  }
+  return decorateScrollHost(base, makeDockClearanceScroll)
 }
 
 const PORTRAIT_SCROLL_HOST = makeDockClearanceScrollHost(

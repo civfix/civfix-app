@@ -31,6 +31,9 @@ export const TAB_EASING_CSS = "cubic-bezier(.22,1,.36,1)"
 export const TAB_BAR_HEIGHT = 60
 
 export const TAB_ICON_SIZE = 25
+/** The web dock's tab and search-orb glyphs, which the expanded rail repeats. */
+export const DOCK_TAB_GLYPH_SIZE = 24
+export const DOCK_ORB_GLYPH_SIZE = 22
 export const TAB_ICON_STROKE_WIDTH = 2.4
 export const TAB_ICON_CENTER_Y = DOCK_H / 2
 export const TAB_PILL_INSET_Y = 4
@@ -117,19 +120,6 @@ export function resolveTabBarFootprint(measured: number, fallback: number): numb
   return measuredFootprint > 0 ? measuredFootprint : Math.max(1, Math.round(fallback))
 }
 
-export function compactShellChromePlan(
-  measured: number,
-  platform: "native" | "web",
-  safeAreaBottom = 0,
-): { bottomInset: number } {
-  return {
-    bottomInset: resolveTabBarFootprint(
-      measured,
-      initialTabBarFootprint(platform, safeAreaBottom),
-    ),
-  }
-}
-
 export function searchMorphTarget(view: View): 0 | 1 {
   return view === "search" ? 1 : 0
 }
@@ -140,11 +130,6 @@ export function resolvePreviousView(stored: View, view: View): View {
 
 export function seedPreviousView(currentView: View, lastNonSearch: View): View {
   return currentView === "search" ? lastNonSearch : currentView
-}
-
-export function exitTabId(previousView: View): TabId {
-  const spec = TAB_SPECS.find((tab) => tab.view === previousView)
-  return spec ? spec.id : "home"
 }
 
 function clamp01(value: number): number {
@@ -185,11 +170,6 @@ export function placeholderMorph(progress: number): {
   "worklet"
   const w = windowProgress(progress, 0.85, 1.0)
   return { opacity: w, translateX: (1 - w) * 8, blur: (1 - w) * 6 }
-}
-
-export function clearMorph(progress: number): { opacity: number } {
-  "worklet"
-  return { opacity: windowProgress(progress, 0.7, 1.0) }
 }
 
 export const DOCK_SHEET_CLEAR = 32

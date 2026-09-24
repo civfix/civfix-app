@@ -4,7 +4,6 @@
  * web uses a plain TextInput (the web sheet drag is bound to the grab handle only) and must stay free of
  * @gorhom/bottom-sheet.
  */
-import type { LucideIcon } from "../typography"
 
 export interface SearchHeaderProps {
   value: string
@@ -29,11 +28,6 @@ export interface SearchHeaderProps {
   docked?: boolean
   /** Docked-only: returns to the view Search was opened from. */
   onHome?: () => void
-  /**
-   * Docked-only: the dock morph collapses the tabs into the exit button showing the previous view's icon,
-   * so tapping it reads as "go back to where I was". Defaults to Home.
-   */
-  exitIcon?: LucideIcon
   /** Docked-only: the trailing clear button. */
   onClear?: () => void
 }

@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useRef } from "react"
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native"
-import type { ScrollHostValue } from "./ScrollHost"
+import { decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
 import { useDockMinimizeStore } from "./dockMinimizeStore"
 import { useNavStore } from "../nav"
 
@@ -13,8 +13,6 @@ function claimDockScroll(token: object): boolean {
 
 const minimizeState = useDockMinimizeStore.getState
 const navState = useNavStore.getState
-
-let publishScroll: ((y: number, suppressed?: boolean) => void) | null = null
 
 function makeMinimizeAwareScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
   const MinimizeAwareScroll = forwardRef<any, any>(function MinimizeAwareScroll(
@@ -46,8 +44,7 @@ function makeMinimizeAwareScroll(Base: React.ComponentType<any>): React.Componen
             ownsRef.current = true
             const y = e.nativeEvent.contentOffset.y
             const suppressed = navState().view === "search"
-            if (publishScroll === null) publishScroll = minimizeState().handleScroll
-            publishScroll(y, suppressed)
+            minimizeState().handleScroll(y, suppressed)
           }
         }
         onScroll?.(e)
@@ -70,8 +67,5 @@ function makeMinimizeAwareScroll(Base: React.ComponentType<any>): React.Componen
 }
 
 export function makeMinimizeAwareScrollHost(base: ScrollHostValue): ScrollHostValue {
-  return {
-    ScrollView: makeMinimizeAwareScroll(base.ScrollView),
-    FlatList: makeMinimizeAwareScroll(base.FlatList),
-  }
+  return decorateScrollHost(base, makeMinimizeAwareScroll)
 }

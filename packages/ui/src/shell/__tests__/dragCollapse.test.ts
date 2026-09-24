@@ -9,7 +9,7 @@
  */
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
-import { armCollapse, shouldCollapseOnSettle, COLLAPSE_SWAP_AT } from "../dragCollapse"
+import { isPeekIndex, COLLAPSE_SWAP_AT } from "../dragCollapse"
 import { useNavStore, type Snap } from "../../nav"
 
 /**
@@ -30,11 +30,10 @@ function resetCompact(): void {
 
 function makeSheetHarness() {
   let committed = false // mirrors the `collapseCommitted` shared value
-  let lastSettled = 0 // mirrors `currentIndexRef.current`
   const collapse = () => useNavStore.getState().collapseToParent()
   return {
-    commit(fromIndex: number, toIndex: number) {
-      committed = armCollapse(fromIndex, toIndex)
+    commit(_fromIndex: number, toIndex: number) {
+      committed = isPeekIndex(toIndex)
     },
     moveTo(idx: number) {
       if (committed && idx <= COLLAPSE_SWAP_AT) {
@@ -43,9 +42,7 @@ function makeSheetHarness() {
       }
     },
     settle(index: number) {
-      const prevIndex = lastSettled
-      lastSettled = index
-      if (shouldCollapseOnSettle(index, prevIndex)) collapse()
+      if (isPeekIndex(index)) collapse()
     },
   }
 }

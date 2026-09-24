@@ -11,7 +11,7 @@ import { PageStack } from "./PageStack"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "./ScrollHost"
 import { SearchBodyReveal } from "./SearchBodyReveal"
 import { TabBar } from "./TabBar"
-import { portraitFramePlan, reportDraftStartsFresh, type PortraitShellPlan } from "./bodyLayout"
+import { portraitDockVisible, portraitFramePlan, reportDraftStartsFresh, type PortraitShellPlan } from "./bodyLayout"
 import { useTabBarStore } from "./tabBarStore"
 import type { AppShellProps } from "./types"
 import { useStackDirection } from "./useStackDirection"
@@ -190,10 +190,12 @@ export function PortraitShellFrame({
     ],
   )
 
-  const dockVisible =
-    Platform.OS === "web"
-      ? frame.bottomChrome.visible && !sheetMounted
-      : frame.bottomChrome.visible || sheetActive || sheetMounted
+  const dockVisible = portraitDockVisible(
+    Platform.OS === "web",
+    frame.bottomChrome.visible,
+    sheetActive,
+    sheetMounted,
+  )
 
   return (
     <>

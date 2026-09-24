@@ -18,6 +18,7 @@ import { StyleSheet } from "react-native"
 import type { ScrollHostValue } from "./ScrollHost"
 import { useKeyboardHostReserved } from "./keyboardScrollScope"
 import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
+import { isCoarsePointer } from "./webMedia"
 import { useKeyboardInset } from "./useKeyboardInset.web"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 /** Lets the keyboard open and visualViewport settle before measuring. */
@@ -63,7 +64,7 @@ function makeKeyboardAwareScrollView(
       const el = getScrollableNode(innerRef.current)
       if (!el) return
       // Only a touch device raises a soft keyboard; on desktop focusing a field must not grow or scroll.
-      const isTouch = window.matchMedia?.("(pointer: coarse)")?.matches ?? false
+      const isTouch = isCoarsePointer()
       // Typed explicitly to avoid the node/DOM `Timeout` ambiguity.
       let settleTimer: number | undefined
       const onFocusIn = (e: FocusEvent) => {

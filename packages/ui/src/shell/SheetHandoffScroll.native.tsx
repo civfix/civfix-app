@@ -18,7 +18,7 @@ import React, { forwardRef, useMemo } from "react"
 import { View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, { runOnJS, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated"
-import { useBottomSheetInternal, ANIMATION_SOURCE } from "@gorhom/bottom-sheet"
+import { useBottomSheetInternal, ANIMATION_SOURCE, ANIMATION_STATUS } from "@gorhom/bottom-sheet"
 import { useNavStore, type Snap } from "../nav"
 import type { ScrollHostValue } from "./ScrollHost"
 import {
@@ -27,6 +27,9 @@ import {
   handoffPosition,
   shouldEngageHandoff,
 } from "./sheetHandoffLogic"
+
+const RELEASE_VELOCITY_DIVISOR = 2
+const FILL = { flex: 1 } as const
 
 /** Idempotent, so double-firing with gorhom's own onChange is harmless. */
 function settleToSnap(index: number) {
@@ -112,7 +115,7 @@ function makeSheetHandoffScroll(
           "worklet"
           // Capture BEFORE cancelling: an interrupted animation MUST still be settled on release, or
           // the sheet is parked off-detent with no recovery path.
-          wasAnimating.value = animatedAnimationState.get().status === 1 /* RUNNING */
+          wasAnimating.value = animatedAnimationState.get().status === ANIMATION_STATUS.RUNNING
           stopAnimation()
           engaged.value = true
           basePosition.value = animatedPosition.value
@@ -152,7 +155,7 @@ function makeSheetHandoffScroll(
           const i = handoffDestinationIndex(animatedPosition.value, e.velocityY, detents)
           const dest = i >= 0 ? detents[i] : undefined
           if (dest === undefined) return
-          animateToPosition(dest, ANIMATION_SOURCE.GESTURE, e.velocityY / 2)
+          animateToPosition(dest, ANIMATION_SOURCE.GESTURE, e.velocityY / RELEASE_VELOCITY_DIVISOR)
           runOnJS(settleToSnap)(i)
         })
         .onFinalize(() => {
@@ -194,7 +197,7 @@ function makeSheetHandoffScroll(
 
     return (
       <GestureDetector gesture={pan}>
-        <View style={{ flex: 1 }}>
+        <View style={FILL}>
           <GestureDetector gesture={native}>
             <AnimatedBase
               ref={ref}
