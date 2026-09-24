@@ -4,7 +4,7 @@ import * as suggest from "../addressSuggestRequest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
-const addressSearch = strip(read("../AddressSearch.tsx"))
+const addressSearch = strip(read("../AddressSearch.tsx") + "\n" + read("../useAddressSearch.ts"))
 
 type Helpers = {
   settleWithin?: <T>(p: Promise<T>, ms: number) => Promise<T | null>

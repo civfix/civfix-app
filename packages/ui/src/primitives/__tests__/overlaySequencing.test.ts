@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportDetailSource } from "../../bodies/reportDetail/__tests__/reportDetailSource"
 import { makeOverlayActionGate, overlayActionsDeferUntilClosed } from "../overlayActionGate"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -15,7 +16,7 @@ const SLIDE_UP = code(read("../SlideUpSheet.tsx"))
 const CONTEXT_MENU = code(read("../MessageContextMenu.tsx"))
 const MENU_MOTION = code(read("../menuMotion.ts"))
 const OVERFLOW = code(read("../../bodies/PostOverflowMenu.tsx"))
-const REPORT_DETAIL = code(read("../../bodies/ReportDetailBody.tsx"))
+const REPORT_DETAIL = code(reportDetailSource())
 const SHARE_PROVIDER = code(read("../../share/SharePostProvider.tsx"))
 const COMPOSER_ATTACH = code(read("../ComposerAttachSheet.tsx"))
 const REPLY_ATTACH = code(read("../../bodies/thread/ReplyAttachSheet.tsx"))

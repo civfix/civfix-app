@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
 import { useCleanupDraft } from "../cleanupDraftStore"
-import type { CleanupFormValue } from "../CleanupForm"
+import { emptyCleanupForm, type CleanupFormValue } from "../cleanupFormModel"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -10,32 +10,8 @@ const form = strip(read("../CleanupForm.tsx"))
 const create = strip(read("../CreateCleanupBody.tsx"))
 const edit = strip(read("../EditCleanupBody.tsx"))
 
-// CleanupForm imports react-native, which this package's node vitest cannot load, so the value is inlined.
 function mkForm(overrides: Partial<CleanupFormValue> = {}): CleanupFormValue {
-  return {
-    organizationId: null,
-    title: "",
-    description: "",
-    eventKind: "cleanup",
-    addrQuery: "",
-    spot: "",
-    address: "",
-    addressSource: null,
-    addressPointKey: null,
-    coords: null,
-    date: null,
-    time: null,
-    endTime: null,
-    timezone: "America/Los_Angeles",
-    bring: [],
-    slots: [],
-    linkedReportIds: [],
-    shareToFeed: true,
-    feedCaption: "",
-    coverMediaId: null,
-    coverPreviewUrl: null,
-    ...overrides,
-  }
+  return { ...emptyCleanupForm(), timezone: "America/Los_Angeles", slots: [], ...overrides }
 }
 
 beforeEach(() => useCleanupDraft.getState().clear())
@@ -123,7 +99,7 @@ describe("the edit route waits for the session before judging the viewer", () =>
 
   it("shows the skeleton while auth is pending and a sign-in prompt when signed out", () => {
     expect(body).toContain("const { user, isAuthenticated, isPending } = useAuthState()")
-    expect(body).toContain("if (isPending || query.isLoading) return <EditCleanupSkeleton />")
+    expect(body).toContain("if (isPending || query.isLoading) return <EventFormSkeleton />")
     expect(body).toContain('next: pathForEntry({ kind: "edit-cleanup", id })')
     const signIn = body.indexOf("if (!isAuthenticated)")
     const denied = body.indexOf('t("denied.title")')

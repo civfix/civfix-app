@@ -6,7 +6,9 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 
 const feed = strip(read("../FeedBody.tsx"))
 const search = strip(read("../SearchBody.tsx"))
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
 const people = strip(read("../SocialBody.tsx"))
 const reports = strip(read("../ReportsBody.tsx"))
 const events = strip(read("../EventsBody.tsx"))

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
+import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import type { DetailEntry, View } from "../../nav"
 import {
   SEARCH_REVEAL_EXIT_WINDOW,
@@ -391,7 +392,7 @@ describe("the Report tab's keep-alive slot", () => {
   })
 
   it("leaves NO hardware-Back consumer armed while the slot is detached (the BackHandler regression)", () => {
-    const report = readFileSync(new URL("../../bodies/ReportFlowBody.tsx", import.meta.url), "utf8")
+    const report = reportFlowSource()
     expect(report).toContain("const pickLayerOpen = pickLayerVisible(picking, stackNonEmpty, runActive)")
     expect(report).toContain("const stackNonEmpty = useNavStore((s) => s.stack.length > 0)")
     expect(report).toContain('const runActive = useNavStore((s) => s.view === "report")')

@@ -10,8 +10,8 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 const capabilityTypes = strip(read("../../capabilities/types.ts"))
 const capabilityFakes = strip(read("../../capabilities/fakes/index.ts"))
 const locationHook = strip(read("../../data/hooks/location.ts"))
-const reportFlow = strip(read("../ReportFlowBody.tsx"))
-const addressSearch = strip(read("../AddressSearch.tsx"))
+const reportFlowCenter = strip(read("../reportFlow/useApproxCenter.ts"))
+const addressSearch = strip(read("../useAddressSearch.ts"))
 const createCleanup = strip(read("../CreateCleanupBody.tsx"))
 
 const SOURCE_EXT = /\.tsx?$/
@@ -53,7 +53,7 @@ describe("every shared reader of the geolocation seam is PASSIVE", () => {
   it("finds the reader sources it is meant to be scanning", () => {
     expect(sharedReaderSources.length).toBeGreaterThan(50)
     expect(sharedReaderSources.some((f) => f.endsWith("/data/hooks/location.ts"))).toBe(true)
-    expect(sharedReaderSources.some((f) => f.endsWith("/bodies/ReportFlowBody.tsx"))).toBe(true)
+    expect(sharedReaderSources.some((f) => f.endsWith("/bodies/reportFlow/useApproxCenter.ts"))).toBe(true)
   })
 
   it("never requests the OS permission anywhere under bodies/ or data/ - only the host asks", () => {
@@ -63,17 +63,17 @@ describe("every shared reader of the geolocation seam is PASSIVE", () => {
 
   it("reads the injected fix directly, so the guard above is not vacuous", () => {
     expect(locationHook).toContain("geo.getCurrentPosition()")
-    expect(reportFlow).toContain("geo.getCurrentPosition()")
+    expect(reportFlowCenter).toContain("geo.getCurrentPosition()")
     expect(addressSearch).toContain("geo.getCurrentPosition()")
     expect(createCleanup).toContain("useUserLocation()")
   })
 
   it("keeps the passive readers' denial fallback intact - a rejected fix degrades to the API's approximate location", () => {
     expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
-    expect(reportFlow).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
+    expect(reportFlowCenter).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     expect(addressSearch).toContain("await settleWithin(geo.getCurrentPosition(), PROXIMITY_FIX_TIMEOUT_MS)")
     expect(locationHook).toContain("fetchApproximateLocation(api, qc)")
-    expect(reportFlow).toContain("fetchApproximateLocation(api, qc)")
+    expect(reportFlowCenter).toContain("fetchApproximateLocation(api, qc)")
     expect(addressSearch).toContain("fetchApproximateLocation(api, qc)")
     expect(createCleanup).toContain("useUserLocation()")
   })

@@ -10,6 +10,7 @@ const code = (rel: string) =>
 
 const eventsBody = code("../EventsBody.tsx")
 const slotsBlock = code("../EventSlotsBlock.tsx")
+const slotRow = code("../EventSlotRow.tsx")
 const slotEditor = code("../SlotEditor.tsx")
 const slotWindow = code("../SlotWindowPicker.tsx")
 const timezoneField = code("../TimezoneField.tsx")
@@ -68,14 +69,16 @@ describe("the slot board", () => {
   })
 
   it("builds each spoken label from ONE key, so every locale owns its order and punctuation", () => {
-    expect(slotsBlock).toContain(
+    expect(slotRow).toContain(
       't("row.window_count_a11y", { title: slot.title, range, count: slot.claimed })',
     )
-    expect(slotsBlock).toContain(
+    expect(slotRow).toContain(
       't("row.faces_names_more", { names: previewNames, count: previewOverflow })',
     )
-    expect(slotsBlock).not.toMatch(/`\$\{t\("row\.window_a11y"/)
-    expect(slotsBlock).not.toMatch(/`\$\{previewNames\} \$\{t\(/)
+    for (const src of [slotsBlock, slotRow]) {
+      expect(src).not.toMatch(/`\$\{t\("row\.window_a11y"/)
+      expect(src).not.toMatch(/`\$\{previewNames\} \$\{t\(/)
+    }
   })
 })
 

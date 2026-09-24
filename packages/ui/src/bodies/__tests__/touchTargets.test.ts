@@ -110,7 +110,7 @@ describe("SocialBody: the message button and the field clear chip clear 44pt", (
 })
 
 describe("MessagingListBody: the inbox's own field clear chip clears 44pt", () => {
-  const SRC = read("../MessagingListBody.tsx")
+  const SRC = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"].map(read).join("\n")
 
   it("takes SocialBody's slop arithmetic rather than a second one", () => {
     expect(num(SRC, "MIN_TOUCH_TARGET")).toBe(MIN_TOUCH_TARGET)

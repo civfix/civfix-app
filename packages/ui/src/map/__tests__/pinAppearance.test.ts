@@ -5,6 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import { ReportCategorySchema } from "@civfix/shared"
 import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/shared/tokens"
 import {
@@ -94,7 +95,7 @@ describe("the picker cannot silently inherit the event pin again (source-pinned)
   const pickerTypes = read("../LocationPicker.types.ts")
   const pickStepTypes = read("../PortraitMapPickStep.types.ts")
   const nativePicker = read("../LocationPicker.native.tsx")
-  const wizard = read("../../bodies/ReportFlowBody.tsx")
+  const wizard = reportFlowSource()
   const cleanupForm = read("../../bodies/CleanupForm.tsx")
 
   it("both picker contracts take a REQUIRED pin target, with the optional category gone", () => {

@@ -60,7 +60,8 @@ describe("changing the event's time zone carries the timed slots with the window
   it("is what the form's zone picker calls", () => {
     const form = code("../CleanupForm.tsx")
     expect(form).toContain("<TimezoneField value={value.timezone} onChange={onChangeTimezone} />")
-    expect(form).toContain(
+    expect(form).toContain("(timezone: string) => patch(timezoneChangePatch(value, timezone))")
+    expect(code("../cleanupFormModel.ts")).toContain(
       "slots: slotsAfterZoneChange(value.slots, value.date, value.time, value.timezone, timezone)",
     )
   })
@@ -84,7 +85,7 @@ describe("the duration chip measures the window in the EVENT's zone", () => {
   })
 
   it("is fed the event's zone by the picker", () => {
-    expect(code("../DateTimeFieldRow.tsx")).toContain(
+    expect(code("../InlineDateTimePicker.shared.tsx")).toContain(
       "durationChipFor(date, time, endTime, timeZone)",
     )
   })

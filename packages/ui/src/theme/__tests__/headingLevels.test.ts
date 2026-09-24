@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportDetailSourceFiles } from "../../bodies/reportDetail/__tests__/reportDetailSource"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -21,6 +22,12 @@ describe("headingLevel", () => {
 
   it("is exported from the theme barrel, where every body imports its affordances", () => {
     expect(themeIndex).toContain("headingLevel")
+  })
+})
+
+describe("the report detail's split-out parts leave its title the surface's only heading", () => {
+  it.each(reportDetailSourceFiles().slice(1))("%s exposes no heading role", (file) => {
+    expect(strip(readFileSync(file, "utf8"))).not.toContain('accessibilityRole="header"')
   })
 })
 

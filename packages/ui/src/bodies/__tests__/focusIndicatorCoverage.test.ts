@@ -95,7 +95,7 @@ describe("the focused-field recipe is ONE recipe", () => {
 
   it("every tab stop the slot board added carries the ring, and the disclosure announces its state", () => {
     // Four stops per expanded row: the claim pill, the disclosure, each person row, and the overflow link.
-    const src = strip(read("bodies/EventSlotsBlock.tsx"))
+    const src = strip(read("bodies/EventSlotRow.tsx"))
     expect((src.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBeGreaterThanOrEqual(4)
     expect(src).toContain("accessibilityState={{ expanded }}")
     expect(src).toContain('accessibilityHint={t(expanded ? "row.collapse_hint" : "row.expand_hint")}')

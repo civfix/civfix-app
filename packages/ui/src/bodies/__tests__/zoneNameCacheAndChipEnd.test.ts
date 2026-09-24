@@ -69,7 +69,7 @@ describe("a duration chip sets an end that many REAL hours after the start, in t
   })
 
   it("is what the picker's chips call", () => {
-    expect(code("../DateTimeFieldRow.tsx")).toContain(
+    expect(code("../InlineDateTimePicker.shared.tsx")).toContain(
       "onEndTimeChange(endTimeAfterInZone(date, time, hours * 3_600_000, timeZone))",
     )
   })
