@@ -18,3 +18,17 @@ export function detailTitleStyle(fontSize: number, t: Theme): TextStyle {
     color: t.colors.text,
   }
 }
+
+const TAB_ROOT_TITLE_SIZE = 32
+const TAB_ROOT_TITLE_LINE_HEIGHT = 39
+const TAB_ROOT_TITLE_TRACKING = -0.5
+
+export function tabRootTitleStyle(t: Theme): TextStyle {
+  return {
+    fontFamily: t.fontFamily.bodyExtraBold,
+    fontSize: TAB_ROOT_TITLE_SIZE,
+    lineHeight: TAB_ROOT_TITLE_LINE_HEIGHT,
+    letterSpacing: TAB_ROOT_TITLE_TRACKING,
+    color: t.colors.text,
+  }
+}

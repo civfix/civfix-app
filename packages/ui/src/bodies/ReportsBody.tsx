@@ -13,6 +13,7 @@ import {
 import { useMyReports, useAuthState, useRequireAuth } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { ReportRowView } from "./ReportRow"
 import { useListTimeAgo } from "./useListTimeAgo"
@@ -200,11 +201,5 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  title: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  title: tabRootTitleStyle(t),
 }))

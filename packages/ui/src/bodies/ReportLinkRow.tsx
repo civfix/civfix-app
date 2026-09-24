@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from "react"
 import { Animated, StyleSheet } from "react-native"
-import { haversineMeters } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import { useTheme } from "../theme"
 import { SkeletonBlock, POP_ENABLED, usePopScale } from "../primitives"
@@ -14,8 +13,7 @@ import {
 } from "./linkedReportCards"
 import { localReportThumb } from "./localReportThumbs"
 import { reportShortCode } from "./reportPicker/reportPickerModel"
-import { METERS_PER_MILE } from "./reportHitRowModel"
-import { distanceLabel } from "./relativeTime"
+import { reportHitRowModel } from "./reportHitRowModel"
 
 const ROW_SKELETON_HEIGHT = 64
 
@@ -63,17 +61,12 @@ export function ReportLinkRow({
   const view = useMemo(() => {
     if (!card) return null
     const categoryLabel = tEnums(`category.${card.category}`)
-    const title = card.title?.trim() || categoryLabel
-    const distance = center
-      ? distanceLabel(haversineMeters(center, { lat: card.lat, lng: card.lng }) / METERS_PER_MILE)
-      : ""
-    const addr = card.addr?.trim() ?? ""
-    const location = [distance, addr].filter(Boolean).join(" · ")
+    const { title, distance, subtitle } = reportHitRowModel({ report: card, categoryLabel, viewer: center })
     const code = reportShortCode(card)
     return {
       title,
       code,
-      subtitle: location || card.description?.trim() || null,
+      subtitle,
       a11yLabel: distance
         ? tLinked("card.a11yLabelCode", { title, category: categoryLabel, code, distance })
         : tLinked("card.a11yLabel", { title, category: categoryLabel }),

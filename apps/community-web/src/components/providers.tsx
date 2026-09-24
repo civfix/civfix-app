@@ -4,7 +4,7 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
-import { ToastProvider, setSourceCommit, setWebOrigin } from "@civfix/ui"
+import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
@@ -98,18 +98,7 @@ function WebDataProvider({ children }: { children: React.ReactNode }) {
 
   const submitReport = React.useCallback(
     async (submission: ReportSubmission): Promise<ReportSubmitResult> => {
-      const base = {
-        idempotencyKey: submission.idempotencyKey,
-        category: submission.category,
-        type: submission.type,
-        lat: submission.lat,
-        lng: submission.lng,
-        geomSource: submission.geomSource,
-        mediaUploadIds: submission.mediaUploadIds,
-        ...(submission.title ? { title: submission.title } : {}),
-        ...(submission.description ? { description: submission.description } : {}),
-        ...(submission.addr ? { addr: submission.addr } : {}),
-      }
+      const base = toCreateReportRequest(submission)
 
       if (isAuthenticated) {
         const dto = await api.createReport({ ...base, honeypot: "" })

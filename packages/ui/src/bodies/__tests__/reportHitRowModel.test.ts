@@ -24,6 +24,7 @@ describe("reportHitRowModel", () => {
     const row = reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE })
     expect(row).toEqual({
       title: "Broken swing",
+      distance: "0.4 mi",
       subtitle: "0.4 mi · 1200 S Hope St",
       thumbUrl: "https://cdn.civfix.org/thumb.jpg",
     })
@@ -106,5 +107,36 @@ describe("reportHitRowModel", () => {
       reportHitRowModel({ report: { ...FULL, thumbUrl: "  " }, categoryLabel: "Parks", viewer: HERE })
         .thumbUrl,
     ).toBeNull()
+  })
+
+  it("reports the distance on its own, empty without a viewer point", () => {
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE }).distance).toBe("0.4 mi")
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: null }).distance).toBe("")
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks" }).distance).toBe("")
+  })
+
+  it("takes a precomputed distance in METRES over the viewer point", () => {
+    const row = reportHitRowModel({
+      report: { ...FULL, ...FAR },
+      categoryLabel: "Parks",
+      viewer: HERE,
+      distanceM: 0.4 * METERS_PER_MILE,
+    })
+    expect(row.distance).toBe("0.4 mi")
+    expect(row.subtitle).toBe("0.4 mi · 1200 S Hope St")
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", distanceM: 0 }).distance).toBe("0.0 mi")
+  })
+
+  it("leads the location line with the tag, and a tag alone still beats the description", () => {
+    expect(
+      reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE, leadingTag: "Linked" }).subtitle,
+    ).toBe("Linked · 0.4 mi · 1200 S Hope St")
+    expect(
+      reportHitRowModel({ report: { ...FULL, addr: null }, categoryLabel: "Parks", leadingTag: "Linked" })
+        .subtitle,
+    ).toBe("Linked")
+    expect(
+      reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE, leadingTag: null }).subtitle,
+    ).toBe("0.4 mi · 1200 S Hope St")
   })
 })

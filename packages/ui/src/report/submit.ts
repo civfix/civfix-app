@@ -136,6 +136,21 @@ export function submittedAddr(draft: Pick<DraftReport, "addr" | "addrEdited">): 
   return line.length > 0 ? line : undefined
 }
 
+export function toCreateReportRequest(submission: ReportSubmission): CreateReportRequest {
+  return {
+    idempotencyKey: submission.idempotencyKey,
+    category: submission.category,
+    type: submission.type,
+    lat: submission.lat,
+    lng: submission.lng,
+    geomSource: submission.geomSource,
+    mediaUploadIds: submission.mediaUploadIds,
+    ...(submission.title ? { title: submission.title } : {}),
+    ...(submission.addr ? { addr: submission.addr } : {}),
+    ...(submission.description ? { description: submission.description } : {}),
+  }
+}
+
 async function uploadOne(
   api: ApiClient,
   camera: CameraCapability,
@@ -244,19 +259,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () 
 
     const createReport = async (): Promise<ReportSubmitResult> => {
       if (hostSubmit) return hostSubmit(submission)
-      const body: CreateReportRequest = {
-        idempotencyKey: submission.idempotencyKey,
-        category: submission.category,
-        type: submission.type,
-        lat: submission.lat,
-        lng: submission.lng,
-        geomSource: submission.geomSource,
-        mediaUploadIds: submission.mediaUploadIds,
-        ...(submission.title ? { title: submission.title } : {}),
-        ...(submission.addr ? { addr: submission.addr } : {}),
-        ...(submission.description ? { description: submission.description } : {}),
-      }
-      const report = await api.createReport(body)
+      const report = await api.createReport(toCreateReportRequest(submission))
       return {
         reportId: report.id,
         lat: report.lat,

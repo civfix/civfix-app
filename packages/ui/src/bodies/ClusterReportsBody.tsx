@@ -12,6 +12,7 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { ReportRowView } from "./ReportRow"
 import { latestNote, reportThumbUrl } from "./reportsListModel"
+import { reportHitRowModel } from "./reportHitRowModel"
 import { useListTimeAgo } from "./useListTimeAgo"
 
 function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
@@ -19,7 +20,16 @@ function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
   const { t } = useT("report-cluster")
   const { data: report } = useReport(pin.id)
   const category = report?.category ?? pin.category
-  const title = (report?.title ?? pin.title)?.trim() || t(`enums:category.${category}`)
+  const { title, subtitle } = reportHitRowModel({
+    report: {
+      title: report?.title ?? pin.title,
+      addr: report ? report.addr : null,
+      description: pin.description,
+      lat: pin.lat,
+      lng: pin.lng,
+    },
+    categoryLabel: t(`enums:category.${category}`),
+  })
 
   return (
     <ReportRowView
@@ -30,7 +40,7 @@ function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
       lat={pin.lat}
       lng={pin.lng}
       thumbUrl={(report ? reportThumbUrl(report) : null) ?? pin.thumbUrl ?? null}
-      subtitle={report ? report.addr ?? pin.description ?? null : pin.description ?? null}
+      subtitle={subtitle}
       when={report ? timeAgo(report.createdAt) : " "}
       note={report ? latestNote(report) ?? null : null}
     />

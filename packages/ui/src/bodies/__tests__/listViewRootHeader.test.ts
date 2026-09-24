@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { surfaceSource } from "../../__tests__/sourceGuards"
+import { tabRootTitleStyle } from "../../shell/detailHeader"
+import { fontFamily } from "../../theme/fontFamily"
+import type { Theme } from "../../theme/themes"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -13,6 +16,7 @@ const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/
 const people = strip(read("../SocialBody.tsx"))
 const reports = strip(read("../ReportsBody.tsx"))
 const events = strip(read("../EventsBody.tsx"))
+const reportFlow = strip(read("../ReportFlowBody.tsx"))
 
 const hasTabRootType = (src: string): boolean =>
   /fontFamily: (?:theme|t)\.fontFamily\.bodyExtraBold[\s\S]{0,200}?fontSize: 32[\s\S]{0,200}?lineHeight: 39[\s\S]{0,200}?letterSpacing: -0\.5/.test(
@@ -30,10 +34,27 @@ describe("the tab-root title type is one recipe", () => {
   it.each([
     ["MessagingListBody", inbox],
     ["SocialBody", people],
-    ["ReportsBody", reports],
     ["EventsBody", events],
   ])("%s draws the same 32/800 title at its view root", (_name, src) => {
     expect(hasTabRootType(src)).toBe(true)
+  })
+
+  it("tabRootTitleStyle is the same recipe: Hanken 800, 32/39, tracking -0.5", () => {
+    const theme = { fontFamily, colors: { text: "ink" } } as unknown as Theme
+    expect(tabRootTitleStyle(theme)).toEqual({
+      fontFamily: theme.fontFamily.bodyExtraBold,
+      fontSize: 32,
+      lineHeight: 39,
+      letterSpacing: -0.5,
+      color: "ink",
+    })
+  })
+
+  it.each([
+    ["ReportsBody", reports, /title: tabRootTitleStyle\(t\),/],
+    ["ReportFlowBody", reportFlow, /headerTitleRoot: \{ \.\.\.tabRootTitleStyle\(t\), flex: 1 \}/],
+  ])("%s draws its view-root title from tabRootTitleStyle", (_name, src, re) => {
+    expect(src).toMatch(re)
   })
 
   it("SearchBody layers the recipe over its portrait title instead of forking a second one", () => {
