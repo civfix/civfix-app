@@ -17,6 +17,8 @@
         "scripts/*.mjs"
       ],
       "project": ["src/**/*.{ts,tsx}", "scripts/*.mjs"],
+      // The jsdom test project aliases react-native to it in vitest.config.ts, a string knip cannot trace.
+      "ignoreDependencies": ["react-native-web"],
       // @civfix/ui is private: its only consumers are the two apps in this repo, so an export of a
       // package `exports` subpath that neither app imports is dead surface, not public API.
       "includeEntryExports": true
