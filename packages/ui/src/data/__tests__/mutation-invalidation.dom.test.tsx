@@ -787,12 +787,14 @@ describe("literal query keys the key consolidation will move into queryKeys", ()
   })
 
   it("currently keys handle availability by the handle exactly as typed, case included", async () => {
-    const api = { checkHandle: resolves({ available: true }) }
-    const { result, queryClient } = renderWithData(() => useHandleAvailability("Maya_1", null), api)
+    const checkHandle = vi.fn(async (_req: { handle: string }, _opts?: { signal?: AbortSignal }) => ({
+      available: true,
+    }))
+    const { result, queryClient } = renderWithData(() => useHandleAvailability("Maya_1", null), { checkHandle })
 
     await waitFor(() => expect(result.current.data).toEqual({ available: true }))
-    expect(api.checkHandle.mock.calls[0]?.[0]).toEqual({ handle: "Maya_1" })
-    expect(api.checkHandle.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
+    expect(checkHandle.mock.calls[0]?.[0]).toEqual({ handle: "Maya_1" })
+    expect(checkHandle.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
     expect(queryClient.getQueryCache().find({ queryKey: ["handle-available", "Maya_1"], exact: true })).toBeDefined()
   })
 })
