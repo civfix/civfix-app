@@ -4,7 +4,7 @@ import { AppError, ErrorCode } from "@civfix/shared"
 import { parseError } from "@civfix/shared/client"
 import { isAppError, isConflict, isRetryableError } from "./errors.ts"
 
-function crossRealmAppError(code: string, message = "cross-realm"): unknown {
+function crossRealmAppError(code: string, message = "cross-realm"): Error & { code: string } {
   const err = new Error(message)
   err.name = "AppError"
   return Object.assign(err, { code })

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // The tests run under `node --experimental-strip-types`, which only resolves
+    // explicit `.ts` specifiers, and in Node, whose URL/URLSearchParams are iterable.
+    "allowImportingTsExtensions": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"]
+  },
+  "include": ["**/*.test.ts", "**/*.test.tsx", "tests/**/*.ts"],
+  "exclude": ["node_modules"]
+}

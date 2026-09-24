@@ -107,7 +107,7 @@ test("a burst of concurrent 401s runs the sign-out cascade exactly ONCE", async 
       runs++
       await gate
     },
-    assert.fail,
+    (err: unknown) => assert.fail(err as string | Error),
   )
 
   trigger("same")
@@ -129,7 +129,7 @@ test("the latch releases, so a genuinely later 401 signs out again", async () =>
     async () => {
       runs++
     },
-    assert.fail,
+    (err: unknown) => assert.fail(err as string | Error),
   )
 
   trigger("same")
@@ -149,7 +149,7 @@ test("two DIFFERENT keys never block each other, even in the same tick", async (
       started.push(bearer)
       await tick()
     },
-    assert.fail,
+    (err: unknown) => assert.fail(err as string | Error),
   )
 
   trigger("stale")

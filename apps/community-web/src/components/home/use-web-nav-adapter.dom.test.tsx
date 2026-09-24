@@ -38,8 +38,35 @@ async function wait(ms: number): Promise<void> {
   })
 }
 
+// Captured before any test fakes timers: jsdom queues history traversals on its own timers, which fake
+// timers never touch, so settling must keep queueing behind them on the real clock.
+const queueTask = globalThis.setTimeout
+
+async function nextTask(): Promise<void> {
+  await new Promise((resolve) => queueTask(resolve, 0))
+}
+
+// jsdom runs history.go/back/forward as two chained zero-delay tasks and fires popstate from the second.
+// Equal-delay timers run first in, first out, so two tasks queued here always run after a traversal that
+// is already in flight, however loaded the machine is. A landing can start another traversal, so repeat
+// until two tasks pass with no popstate.
 async function settle(): Promise<void> {
-  await wait(20)
+  await act(async () => {
+    let landed = true
+    const onPop = () => {
+      landed = true
+    }
+    window.addEventListener("popstate", onPop)
+    try {
+      while (landed) {
+        landed = false
+        await nextTask()
+        await nextTask()
+      }
+    } finally {
+      window.removeEventListener("popstate", onPop)
+    }
+  })
 }
 
 async function drive(run: () => void): Promise<void> {
@@ -133,6 +160,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.useRealTimers()
 })
 
 describe("mount", () => {
@@ -484,6 +512,7 @@ describe("two Backs before the first has landed", () => {
 
     await drive(() => nav().back())
     await wait(700)
+    await settle()
     expect(path()).toBe("/pin/a/")
     expect(depth()).toBe(1)
     expect(nav().stack).toEqual([PIN_A])
@@ -497,14 +526,22 @@ describe("two Backs before the first has landed", () => {
     mount()
     await drive(() => nav().push(PIN_A))
     await drive(() => nav().push(PERSON))
+    // The push has to fall inside the adapter's traversal timeout, so the clock is driven by hand.
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     delayGo(500)
 
     await drive(() => nav().back())
-    await wait(200)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200)
+    })
     await act(async () => {
       nav().push(PIN_B)
     })
-    await wait(600)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
+    await settle()
+    vi.useRealTimers()
 
     expect(nav().stack).toEqual([PIN_A, PIN_B])
     expect(path()).toBe("/pin/b/")
