@@ -11,10 +11,13 @@ const cameraCall = home.slice(
   home.indexOf("if (viewportBefore) {", home.indexOf("const target = dropPinCameraTarget({")),
 )
 
+const occlusion = readFileSync(new URL("../../../packages/ui/src/shell/shellOcclusion.ts", import.meta.url), "utf8")
+
 test("the drop-pin camera takes the expanded frame plan's occlusion, read after the menu opens", () => {
-  assert.match(cameraCall, /occlusionLeft: expandedFramePlan\(\{/)
-  assert.match(cameraCall, /view: useNavStore\.getState\(\)\.view,/)
-  assert.match(cameraCall, /stackLength: useNavStore\.getState\(\)\.stack\.length,/)
-  assert.match(cameraCall, /sidebarWidth: clampSidebarWidth\(useSidebarStore\.getState\(\)\.width, windowWidth\),/)
-  assert.match(cameraCall, /\}\)\.occlusionLeft,/)
+  assert.match(cameraCall, /occlusionLeft: shellOcclusionLeft\(windowWidth\),/)
+  assert.match(occlusion, /return expandedFramePlan\(\{/)
+  assert.match(occlusion, /view: useNavStore\.getState\(\)\.view,/)
+  assert.match(occlusion, /stackLength: useNavStore\.getState\(\)\.stack\.length,/)
+  assert.match(occlusion, /sidebarWidth: clampSidebarWidth\(useSidebarStore\.getState\(\)\.width, windowWidth\),/)
+  assert.match(occlusion, /\}\)\.occlusionLeft/)
 })
