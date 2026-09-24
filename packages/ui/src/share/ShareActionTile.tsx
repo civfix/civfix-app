@@ -1,6 +1,16 @@
 import React, { useEffect, useRef } from "react"
 import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, type Theme, webCursor, webTransition, webHover } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  type Theme,
+  webCursor,
+  webTransition,
+  webHover,
+  HOVERED_OPACITY,
+  PRESSED_OPACITY,
+} from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import type { ShareTileTone } from "./shareSheetModel"
 
@@ -15,6 +25,8 @@ export interface ShareActionTileProps {
 }
 
 const CIRCLE = 52
+const ICON_SIZE = 22
+const DISABLED_OPACITY = 0.45
 
 function toneColor(tone: ShareTileTone, t: Theme): string {
   switch (tone) {
@@ -68,7 +80,7 @@ export function ShareActionTile({
       ]}
     >
       <View style={[styles.circle, tone === "default" ? null : { borderColor: color }]}>
-        <Icon icon={iconMap[icon]} size={22} color={color} />
+        <Icon icon={iconMap[icon]} size={ICON_SIZE} color={color} />
       </View>
       <Text variant="caption" color={color} numberOfLines={2} style={styles.label}>
         {label}
@@ -97,12 +109,12 @@ const useStyles = makeThemedStyles((t) => ({
     textAlign: "center",
   },
   hovered: {
-    opacity: 0.85,
+    opacity: HOVERED_OPACITY,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   disabled: {
-    opacity: 0.45,
+    opacity: DISABLED_OPACITY,
   },
 }))

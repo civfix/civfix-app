@@ -7,8 +7,6 @@ import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"
 import { makeShareRuns, runShareToDm, SHARE_SOCKET_OPEN_TIMEOUT_MS } from "./shareDelivery"
 import { summarizeShareRun, type SharePlanEntry, type ShareRunSummary } from "./shareToDm"
 
-export { SHARE_SOCKET_OPEN_TIMEOUT_MS } from "./shareDelivery"
-
 export function newShareClientId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID()

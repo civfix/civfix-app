@@ -6,7 +6,6 @@ import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { modalSheetInputFocusedStyle, modalSheetInputStyle } from "../primitives/ModalCardSheet"
 import { PrimaryButton } from "../primitives/PrimaryButton"
-import { SignInPrompt } from "../primitives/StateView"
 import { SlideUpSheet } from "../primitives/SlideUpSheet"
 import { TextInput } from "../primitives/TextInput"
 import { useDeferredOverlayAction } from "../primitives/useDeferredOverlayAction"
@@ -19,8 +18,11 @@ import { SharePeople } from "./SharePeople"
 import { shareCopyTileFace, sharePeopleView, shareSheetFooter, type ShareCopyState } from "./shareSheetModel"
 import { useSharePostSession } from "./useSharePostSession"
 import type { SharePostSheetProps } from "./SharePostSheet.types"
+import { ShareNoteInput, ShareSignedOut } from "./ShareSheetParts"
 
 const NO_RESULTS: readonly UserSearchResultDTO[] = []
+
+const SEARCH_ICON_SIZE = 16
 
 export function SharePostSheet({ visible, target, onClose, onClosed }: SharePostSheetProps) {
   const styles = useStyles()
@@ -121,7 +123,7 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
       {isAuthenticated ? (
         <>
           <View style={[styles.search, searchFocused ? modalSheetInputFocusedStyle(th) : null]}>
-            <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
+            <Icon icon={iconMap.Search} size={SEARCH_ICON_SIZE} color={th.colors.textSubtle} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -146,32 +148,21 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
           />
         </>
       ) : (
-        <View style={styles.signedOut}>
-          <SignInPrompt
-            icon={iconMap.MessageCircle}
-            title={t("signed_out.title")}
-            body={t("signed_out.body")}
-            variant="detail"
-            onSignIn={onSignIn}
-          />
-        </View>
+        <ShareSignedOut onSignIn={onSignIn} style={styles.signedOut} />
       )}
 
       <View style={styles.divider} />
 
       {footer === "compose" ? (
         <View style={styles.compose}>
-          <TextInput
+          <ShareNoteInput
             value={session.note}
             onChangeText={session.setNote}
             editable={!pending}
             maxLength={session.noteMax}
-            placeholder={t("note.placeholder")}
-            placeholderTextColor={th.colors.textSubtle}
-            accessibilityLabel={t("note.a11y")}
-            onFocus={() => setNoteFocused(true)}
-            onBlur={() => setNoteFocused(false)}
-            style={[webInputReset, styles.note, noteFocused ? modalSheetInputFocusedStyle(th) : null]}
+            focused={noteFocused}
+            onFocusedChange={setNoteFocused}
+            style={styles.note}
           />
           <PrimaryButton
             label={t("actions.send_count", { count: selected.length })}

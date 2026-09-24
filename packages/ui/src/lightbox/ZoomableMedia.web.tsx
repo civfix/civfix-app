@@ -21,41 +21,28 @@ import {
   type ZoomTransform,
 } from "./lightboxZoom"
 import type { ZoomableMediaProps } from "./ZoomableMedia.types"
+import { zoomSurfaceStyle, zoomSurfaceZoomedStyle, zoomViewportStyle } from "./ZoomableMedia.styles"
 
 const WHEEL_LINE_HEIGHT_PX = 16
 
 const WHEEL_SETTLE_DELAY_MS = 160
 
-const SETTLE_MS = motion.pageSwipeSettle.duration
+const SETTLE_MS = motion.zoomSettle.duration
 
+// RN's ViewStyle types neither `touchAction` nor a CSS cursor, hence the casts.
 const surfaceStyle = {
-  alignItems: "center",
-  justifyContent: "center",
+  ...zoomSurfaceStyle,
   touchAction: "none",
   cursor: "zoom-in",
 } as unknown as ViewStyle
 
 const surfaceZoomedStyle = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: 0,
-  alignItems: "center",
-  justifyContent: "center",
+  ...zoomSurfaceZoomedStyle,
   touchAction: "none",
   cursor: "grab",
 } as unknown as ViewStyle
 
-const viewportStyle = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: 0,
-  alignItems: "center",
-  justifyContent: "center",
-} as unknown as ViewStyle
+const viewportStyle = zoomViewportStyle
 
 export function ZoomableMedia({
   contentWidth,

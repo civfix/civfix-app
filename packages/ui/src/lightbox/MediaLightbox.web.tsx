@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useRef } from "react"
 import { MediaLightboxBase } from "./MediaLightboxBase"
 import type { MediaLightboxViewProps } from "./MediaLightboxBase"
+import { stepIndex } from "./lightboxStage"
 
 export type { MediaLightboxViewProps }
 
@@ -19,7 +20,7 @@ export function MediaLightboxView(props: MediaLightboxViewProps) {
   const step = useCallback((delta: number) => {
     const { count, index: i, onIndexChange: change } = navRef.current
     if (count < 2) return
-    change((i + delta + count) % count)
+    change(stepIndex(i, delta, count))
   }, [])
 
   useEffect(() => {
