@@ -58,7 +58,7 @@ const ROOM_KINDS: readonly RoomKind[] = ["dm", "report", "cleanup", "group"]
 const PREFIXED_THREAD_ROOMS: readonly RoomKind[] = ["dm", "report", "group"]
 
 // A body that renders its own header. It is blank after trim, so the shell draws no DetailBar for it.
-export const BODY_OWNS_HEADER = " "
+const BODY_OWNS_HEADER = " "
 
 type Captures = Readonly<Record<string, string>>
 

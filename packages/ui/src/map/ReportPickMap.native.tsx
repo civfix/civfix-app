@@ -122,7 +122,7 @@ export const ReportPickMap = memo(
     const { index, query } = useClusters(points)
     const indexRef = useRef<MapClusterIndex>(index)
     const [nodes, setNodes] = useState<ClusterNode[]>([])
-    const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
+    const nodesByMarkerRef = useRef(new globalThis.Map<string, ClusterNode>())
 
     const recomputeRef = useRef<() => void>(() => {})
     useLayoutEffect(() => {

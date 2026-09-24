@@ -57,7 +57,16 @@ export function useChatInbound({
     } else {
       setLiveMessages((prev) => foldInboundBatch([], prev, batch).liveMessages)
     }
-  }, [queryClient, roomId, roomKind, journalInbound, isHistoryFetchInFlight, pruneLiveMessages])
+  }, [
+    queryClient,
+    roomId,
+    roomKind,
+    journalInbound,
+    isHistoryFetchInFlight,
+    pruneLiveMessages,
+    setOutbox,
+    setLiveMessages,
+  ])
 
   const reconcile = useCallback(
     (message: ChatMessageDTO, explicitClientId?: string, viewerTruth?: boolean) => {

@@ -45,7 +45,7 @@ describe("visibleRosterFilters", () => {
 
 describe("there is ONE check-in row in the package", () => {
   it("lives in RosterCheckinList and is reached from both host surfaces", () => {
-    expect(list).toContain("export const RosterCheckinRow")
+    expect(list).toContain("\nconst RosterCheckinRow")
     expect(paged).toContain("<RosterCheckinList {...list} />")
     expect(block).toContain("<RosterPagedList")
     expect(list.match(/<RosterCheckinRow\b/g) ?? []).toHaveLength(1)

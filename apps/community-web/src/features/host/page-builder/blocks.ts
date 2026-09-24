@@ -18,7 +18,7 @@ export const THEME_ACCENTS: readonly ThemeAccent[] = ["bloom", "moss", "sun", "s
 
 let blockCounter = 0
 
-export function newBlockId(kind: EventPageBlockKind): string {
+function newBlockId(kind: EventPageBlockKind): string {
   blockCounter += 1
   return `${kind}-${Date.now().toString(36)}-${blockCounter}`
 }

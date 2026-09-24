@@ -45,7 +45,7 @@ import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { cleanupDetailFilters } from "./cleanups"
 
-export const LEADERBOARD_PAGE_SIZE = 50
+const LEADERBOARD_PAGE_SIZE = 50
 
 /**
  * The leaderboard is a slow-moving aggregate (hours are credited after an event ends, not continuously),

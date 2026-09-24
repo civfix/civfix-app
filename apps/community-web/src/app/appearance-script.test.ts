@@ -36,7 +36,12 @@ function runScript(stored: string | null, systemDark: boolean): PaintResult {
       style,
     },
   }
-  new Function("localStorage", "window", "document", APPEARANCE_SCRIPT)(localStorage, window, document)
+  const paint = new Function("localStorage", "window", "document", APPEARANCE_SCRIPT) as (
+    storage: typeof localStorage,
+    win: typeof window,
+    doc: typeof document,
+  ) => void
+  paint(localStorage, window, document)
   return { readKey, dark, colorScheme: style.colorScheme }
 }
 

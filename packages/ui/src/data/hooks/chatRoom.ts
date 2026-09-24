@@ -8,7 +8,7 @@ import type {
 import type { ApiClient } from "@civfix/shared/client"
 import type { InfiniteData } from "@tanstack/react-query"
 
-export const CHAT_PAGE_SIZE = 30
+const CHAT_PAGE_SIZE = 30
 
 export type ChatHistoryData = InfiniteData<ChatHistoryResponse>
 

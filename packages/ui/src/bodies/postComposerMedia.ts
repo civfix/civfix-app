@@ -23,7 +23,7 @@ export function toPostComposerMedia(item: PendingAttachment): PostComposerMedia 
   }
 }
 
-export function toPendingAttachment(media: PostComposerMedia, index: number): PendingAttachment {
+function toPendingAttachment(media: PostComposerMedia, index: number): PendingAttachment {
   return {
     id: `${CARRIED_ID_PREFIX}${index}:${media.uri}`,
     uri: media.uri,

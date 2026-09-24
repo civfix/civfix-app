@@ -2,7 +2,7 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, URL } from "node:url"
 import { resolveIncomingPath } from "./universalLinks.ts"
 
 const internal = (path: string) => ({ type: "internal", path }) as const

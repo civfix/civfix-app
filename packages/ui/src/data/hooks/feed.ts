@@ -101,6 +101,9 @@ export function useNearbyCleanups(
     const center = { lat: biasLat, lng: biasLng }
     return (items: CleanupDTO[]) => filterCleanupsWithinRadius(items, center, radiusM)
   }, [biasLat, biasLng, radiusM])
+  // The key buckets `near` into its rounded feed cell so nearby callers share one entry; the request
+  // still carries the precise point.
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   return useQuery<CleanupDTO[]>({
     // `limit` is part of BOTH keys: a sidebar preview (8), a search surface (10) and the events page's
     // own `useCleanups("upcoming", 50)` must not share one entry, or whichever refetched last

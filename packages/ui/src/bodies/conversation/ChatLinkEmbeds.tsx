@@ -22,9 +22,9 @@ import { normalizeHandle } from "../mentionText"
 import { useEmbedGate } from "./chatEmbedScope"
 import { civfixEntityRef, type CivfixLinkKind, type CivfixLinkRef } from "./civfixLinks"
 
-export const EMBED_CARD_WIDTH = 260
+const EMBED_CARD_WIDTH = 260
 
-export const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = {
+const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = {
   report: 64,
   event: 68,
   post: 88,

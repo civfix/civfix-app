@@ -87,7 +87,7 @@ async function browserBack(): Promise<void> {
 }
 
 async function reload(): Promise<void> {
-  const state = window.history.state
+  const state: unknown = window.history.state
   const pathname = window.location.pathname
   cleanup()
   useNavStore.setState({
@@ -235,7 +235,7 @@ describe("mount", () => {
   it("restores the stamped snapshot instead of re-seeding, so a reload keeps the stack", async () => {
     mount()
     await drive(() => nav().push(PIN_A))
-    const reloadedState = window.history.state
+    const reloadedState: unknown = window.history.state
 
     cleanup()
     useNavStore.setState({ view: "home", stack: [], active: null })
@@ -799,7 +799,7 @@ describe("a landing carries the live search text and the seq already spent", () 
     expect(aheadSeq).toBeGreaterThan(0)
 
     await browserBack()
-    const rootState = window.history.state
+    const rootState: unknown = window.history.state
     cleanup()
     useNavStore.setState({ view: "home", stack: [], active: null })
     window.history.replaceState(rootState, "", "/")

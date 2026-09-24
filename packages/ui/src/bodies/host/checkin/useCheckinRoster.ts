@@ -1,11 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { useToast } from "../../../primitives"
-import {
-  rosterRows,
-  useCheckInEventSeat,
-  useHostRoster,
-  useUndoEventCheckIn,
-} from "../../../data/hooks/host"
+import { rosterRows, useCheckInEventSeat, useHostRoster } from "../../../data/hooks/host"
+import type { useUndoEventCheckIn } from "../../../data/hooks/host"
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../../../data/hooks/useDebouncedValue"
 import { useT } from "../../../i18n"
 import { rosterMutationErrorKey } from "../rosterFiltersModel"

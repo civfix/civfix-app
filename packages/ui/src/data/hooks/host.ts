@@ -37,11 +37,11 @@ import { queryKeys } from "../keys"
 import { listItems } from "../types"
 import { cleanupDetailFilters, invalidateCleanupLists } from "./cleanups"
 
-export const HOST_COUNTERS_POLL_MS = 20_000
+const HOST_COUNTERS_POLL_MS = 20_000
 
-export const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS
+const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS
 
-export const INSIGHTS_IDLE_POLL_MS = 5 * 60_000
+const INSIGHTS_IDLE_POLL_MS = 5 * 60_000
 
 export const HOST_ROSTER_PAGE_SIZE = 50
 
@@ -55,7 +55,7 @@ const NO_LEGACY_CAPABILITIES: ReadonlySet<HostCapability> = hostCapabilities({
   orgRole: null,
 })
 
-export function legacyRoleCapabilities(cleanup: HostStandingView): ReadonlySet<HostCapability> {
+function legacyRoleCapabilities(cleanup: HostStandingView): ReadonlySet<HostCapability> {
   if (cleanup.myCapabilities.length > 0) return NO_LEGACY_CAPABILITIES
   return hostCapabilities({ eventRole: cleanup.myRole ?? null, orgRole: null })
 }
@@ -374,13 +374,13 @@ export function hostedEventRows(
   return (pages ?? []).flatMap((page) => page.items)
 }
 
-export function invalidateMyEventInvites(qc: QueryClient): void {
+function invalidateMyEventInvites(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: queryKeys.myEventInvites })
   void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
   void qc.invalidateQueries({ queryKey: queryKeys.notificationsRoot })
 }
 
-export const MY_EVENT_INVITES_PAGE_SIZE = 50
+const MY_EVENT_INVITES_PAGE_SIZE = 50
 
 export function useMyEventInvites(opts: { enabled?: boolean } = {}) {
   const api = useApi()

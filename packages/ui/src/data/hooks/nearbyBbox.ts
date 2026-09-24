@@ -13,7 +13,7 @@ export function roundNearbyCoord(n: number): number {
   return Math.round(n * factor) / factor
 }
 
-export function pinSpanScale(padLat: number, padLng: number): number {
+function pinSpanScale(padLat: number, padLng: number): number {
   const span = Math.max(2 * padLng, 4 * padLat)
   if (!Number.isFinite(span) || span <= PIN_SPAN_MAX_DEG) return 1
   return PIN_SPAN_MAX_DEG / span

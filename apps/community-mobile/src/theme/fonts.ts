@@ -19,7 +19,7 @@ import {
 import { Baloo2_800ExtraBold } from "@expo-google-fonts/baloo-2"
 import { createAppFontRegistry } from "./fontAliases"
 
-export const appFontRegistry = createAppFontRegistry({
+const appFontRegistry = createAppFontRegistry({
   display: {
     regular: BricolageGrotesque_400Regular,
     medium: BricolageGrotesque_500Medium,

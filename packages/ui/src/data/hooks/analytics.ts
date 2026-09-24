@@ -8,9 +8,9 @@ import type {
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 
-export const EVENT_ANALYTICS_STALE_MS = 60_000
+const EVENT_ANALYTICS_STALE_MS = 60_000
 
-export const HOST_ANALYTICS_SUMMARY_RANGE: AnalyticsRange = "30d"
+const HOST_ANALYTICS_SUMMARY_RANGE: AnalyticsRange = "30d"
 
 export function useHostAnalyticsSummary(
   orgId: string | null,

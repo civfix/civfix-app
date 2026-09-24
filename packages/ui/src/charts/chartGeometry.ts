@@ -125,7 +125,7 @@ export function xToPixels(x: number, xMin: number, xMax: number, width: number):
   return round(((x - xMin) / (xMax - xMin)) * width)
 }
 
-export const AXIS_LABEL_END_FRACTION = 0.85
+const AXIS_LABEL_END_FRACTION = 0.85
 
 export type AxisLabelPlacement = { left: number } | { right: 0; textAlign: "right" }
 

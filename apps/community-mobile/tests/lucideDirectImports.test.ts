@@ -6,13 +6,31 @@ import { tmpdir } from "node:os"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
+type ImportNode = {
+  type: string
+  source?: { value: string } | null
+  importKind?: string
+  specifiers?: { type: string; importKind?: string }[]
+}
+
+interface BabelConfigExports {
+  lucideDirectImports: unknown
+  lucideBarrelExports: (barrelFile: string) => Map<string, { file: string }>
+}
+
+/** The slice of @babel/core these tests drive; the package ships no types of its own. */
+interface BabelCore {
+  transformSync: (code: string, options: Record<string, unknown>) => { code: string }
+  parseSync: (code: string, options: Record<string, unknown>) => { program: { body: ImportNode[] } }
+}
+
 const require = createRequire(import.meta.url)
-const { lucideDirectImports, lucideBarrelExports } = require("../babel.config.js")
+const { lucideDirectImports, lucideBarrelExports } = require("../babel.config.js") as BabelConfigExports
 // community-mobile declares no @babel/core; resolve the one Metro transforms with (expo -> babel-preset-expo).
 const presetRequire = createRequire(
   createRequire(require.resolve("expo/package.json")).resolve("babel-preset-expo/package.json"),
 )
-const babel = presetRequire("@babel/core")
+const babel = presetRequire("@babel/core") as BabelCore
 
 const BARRELS = new Set(["lucide-react-native", "lucide-react-native/icons"])
 const installedEsmDir = join(require.resolve("lucide-react-native"), "..", "..", "esm")
@@ -159,7 +177,7 @@ test("the installed barrels map every export to a module that exists, covering e
     (file) => file.endsWith(".mjs") && file !== "index.mjs",
   )
   for (const barrel of ["lucide-react-native.mjs", join("icons", "index.mjs")]) {
-    const exports: Map<string, { file: string }> = lucideBarrelExports(join(installedEsmDir, barrel))
+    const exports = lucideBarrelExports(join(installedEsmDir, barrel))
     const targets = new Set([...exports.values()].map(({ file }) => file))
     for (const file of targets) assert.ok(existsSync(file), file)
     for (const icon of iconFiles) assert.ok(targets.has(join(installedEsmDir, "icons", icon)), `${barrel}: ${icon}`)
@@ -185,13 +203,6 @@ function lucideImportSites(dir: string, found: string[] = []): string[] {
     }
   }
   return found
-}
-
-type ImportNode = {
-  type: string
-  source?: { value: string } | null
-  importKind?: string
-  specifiers?: { type: string; importKind?: string }[]
 }
 
 function moduleNodes(code: string, filename: string): ImportNode[] {

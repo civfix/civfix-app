@@ -238,7 +238,17 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setOnlineUserIds(new Set())
     clearTypingState()
     clearAround()
-  }, [roomId, roomKind, clearTypingState, resetSendTracking, resetHistoryJournal, clearAround])
+  }, [
+    roomId,
+    roomKind,
+    clearTypingState,
+    resetSendTracking,
+    resetHistoryJournal,
+    clearAround,
+    setLiveMessages,
+    setOutbox,
+    setOnlineUserIds,
+  ])
 
   useClearTypingTimersOnUnmount(typing.typingTimers)
 

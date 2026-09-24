@@ -1,5 +1,6 @@
 // The package's vitest runs in plain node, so maplibre, react-dom's root and the DOM are minimal fakes.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type { DesiredMarker as Desired, MarkerEntry as Entry } from "../domMarkerLayer.web"
 
 interface FakeEl {
   style: Record<string, string>
@@ -86,8 +87,6 @@ function fakeElement(): FakeEl {
 }
 
 const { syncMarkers } = await import("../domMarkerLayer.web")
-type Desired = import("../domMarkerLayer.web").DesiredMarker
-type Entry = import("../domMarkerLayer.web").MarkerEntry
 
 const map = {} as never
 

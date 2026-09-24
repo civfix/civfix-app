@@ -116,7 +116,7 @@ export function useChatOutbox({
       }, timeoutMs)
       sendTimers.current.set(clientId, timer)
     },
-    [clearSendTimer],
+    [clearSendTimer, setOutbox],
   )
 
   const dispatch = useCallback(
@@ -156,7 +156,7 @@ export function useChatOutbox({
         prev.map((e) => (e.clientId === clientId ? { ...e, status: "failed" } : e)),
       )
     },
-    [socket, roomId, roomKind, stampRoomKind, armSendTimeout, clearSendTimer],
+    [socket, roomId, roomKind, stampRoomKind, armSendTimeout, clearSendTimer, setOutbox],
   )
 
   const redispatch = useCallback(
@@ -230,7 +230,7 @@ export function useChatOutbox({
       }
       dispatch(clientId, body, mentionedUserIds, mediaList.map((m) => m.uploadId), replyToId)
     },
-    [enabled, roomId, myUserId, user?.displayName, dispatch, findMessage],
+    [enabled, roomId, myUserId, user?.displayName, dispatch, findMessage, setOutbox, setTransientError],
   )
 
   const retry = useCallback(
@@ -243,7 +243,7 @@ export function useChatOutbox({
       )
       redispatch(entry)
     },
-    [redispatch],
+    [redispatch, outboxRef, setOutbox, setTransientError],
   )
 
   return {

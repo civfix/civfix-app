@@ -1,7 +1,7 @@
 import { SWIPE_CAPTURE_SLOP_PX, startsInBackSwipeEdge } from "./backSwipeEdge"
 
 export const SWIPE_ACTION_WIDTH_PX = 72
-export const SWIPE_ACTIONS_SNAP_RATIO = 0.5
+const SWIPE_ACTIONS_SNAP_RATIO = 0.5
 export const SWIPE_ACTIONS_FLING_VX = 0.35
 
 export function actionsWidth(count: number): number {

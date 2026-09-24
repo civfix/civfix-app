@@ -105,7 +105,7 @@ describe("the embed cards reuse the house cards and the cached data hooks", () =
 
 describe("the embed states never break the bubble", () => {
   it("reserves each kind's own card height while it loads and falls back to the plain link on an error", () => {
-    expect(EMBEDS).toMatch(/export const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/)
+    expect(EMBEDS).toMatch(/^const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/m)
     expect(EMBEDS).toContain("<SkeletonBlock height={EMBED_RESERVED_HEIGHT[kind]} radius={th.radius.lg} />")
     expect(EMBEDS).toMatch(/if \(data !== undefined\) return <>\{render\(data\)\}<\/>\s*if \(query\.isLoading\) return <EmbedSkeleton kind=\{props\.link\.kind\} \/>\s*return <EmbedFallback/)
     expect(EMBEDS).toMatch(/function EmbedFallback[\s\S]*?if \(!linkOnly\) return null/)
@@ -117,7 +117,7 @@ describe("the embed states never break the bubble", () => {
   })
 
   it("gives the card column a stable width so scroll anchoring holds", () => {
-    expect(EMBEDS).toContain("export const EMBED_CARD_WIDTH = 260")
+    expect(EMBEDS).toContain("\nconst EMBED_CARD_WIDTH = 260")
     expect(EMBEDS).toMatch(/host: \{\s*width: EMBED_CARD_WIDTH,\s*maxWidth: "100%"/)
   })
 

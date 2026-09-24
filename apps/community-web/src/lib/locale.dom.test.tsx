@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import type { UserDTO } from "@civfix/shared"
 
-const updateSettings = vi.fn()
+const updateSettings = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@/lib/api", () => ({
   api: { updateSettings: (...args: unknown[]) => updateSettings(...args) },

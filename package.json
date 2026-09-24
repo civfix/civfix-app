@@ -15,13 +15,18 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "i18n:check": "turbo run i18n:check",
+    "i18n:check": "turbo run i18n:check && pnpm i18n:check:call-sites",
+    "i18n:check:call-sites": "node scripts/check-i18n-call-sites.mjs",
+    "knip": "knip",
+    "jscpd": "jscpd",
     "clean": "turbo run clean",
     "doctor": "cd apps/community-mobile && npx expo-doctor",
     "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
+    "jscpd": "4.3.0",
+    "knip": "5.88.1",
     "turbo": "^2.3.3"
   },
   "pnpm": {

@@ -1,4 +1,4 @@
-export { CapabilitiesProvider, useCapabilities } from "./context"
+export { CapabilitiesProvider } from "./context"
 export type { CapabilitiesProviderProps } from "./context"
 export {
   useCamera,
@@ -30,4 +30,4 @@ export type {
   GeoPosition,
 } from "./types"
 export { webClipboardCapability } from "./webClipboard"
-export { makeFakeCapabilities, makeFakeOpenInternalHref } from "./fakes"
+export { makeFakeCapabilities } from "./fakes"

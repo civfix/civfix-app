@@ -16,8 +16,8 @@ import { SocialGlyph } from "./SocialGlyph"
 import { useToast } from "./toastContext"
 import { presentSocialPlatforms } from "./socialLinksModel"
 
-export const SOCIAL_LINK_HIT_SIZE = 38
-export const SOCIAL_LINK_GLYPH_SIZE = 20
+const SOCIAL_LINK_HIT_SIZE = 38
+const SOCIAL_LINK_GLYPH_SIZE = 20
 const SOCIAL_LINK_HIT_SLOP = hitSlopToTarget(SOCIAL_LINK_HIT_SIZE)
 
 export interface SocialLinksRowProps {

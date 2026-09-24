@@ -34,7 +34,6 @@ export const CONSOLE_PARAM_KEYS = [
   ...CONSOLE_PUSH_PARAM_KEYS,
 ] as const
 
-export type ConsoleReplaceParamKey = (typeof CONSOLE_REPLACE_PARAM_KEYS)[number]
 export type ConsolePushParamKey = (typeof CONSOLE_PUSH_PARAM_KEYS)[number]
 export type ConsoleParamKey = (typeof CONSOLE_PARAM_KEYS)[number]
 

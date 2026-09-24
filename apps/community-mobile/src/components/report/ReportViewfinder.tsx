@@ -339,7 +339,7 @@ export function ReportViewfinder({
           <PrimaryButton
             label={t("gate.choose_library")}
             variant="outline"
-            onPress={onPickFromLibrary}
+            onPress={() => void onPickFromLibrary()}
             style={styles.gateBtnSecondary}
           />
         }
@@ -374,7 +374,7 @@ export function ReportViewfinder({
 
         <View style={styles.shutterRow}>
           <Pressable
-            onPress={onPickFromLibrary}
+            onPress={() => void onPickFromLibrary()}
             disabled={busy || recording}
             accessibilityRole="button"
             accessibilityLabel={t("gate.choose_library")}
@@ -385,7 +385,7 @@ export function ReportViewfinder({
           </Pressable>
 
           <Pressable
-            onPress={mode === "photo" ? onTakePhoto : onToggleRecord}
+            onPress={() => void (mode === "photo" ? onTakePhoto() : onToggleRecord())}
             disabled={busy && !recording}
             accessibilityRole="button"
             accessibilityState={{ disabled: busy && !recording, busy }}

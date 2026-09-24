@@ -12,8 +12,8 @@ import type { LinkedReportCardEntry } from "../linkedReportCards"
 
 export const PICKER_ZOOM = 14
 export const PICKER_RADIUS_M = 500
-export const PICKER_FETCH_PAD = 0.5
-export const PICKER_FETCH_PRECISION = 3
+const PICKER_FETCH_PAD = 0.5
+const PICKER_FETCH_PRECISION = 3
 export const PICKER_MAX_FETCH_SPAN_DEG = PIN_SPAN_MAX_DEG
 export const PICKER_MAX_PINS = 400
 export const PICKER_SEARCH_MIN_CHARS = 3
@@ -323,7 +323,7 @@ export interface PickerSections {
   matches: PickerRow[]
 }
 
-export const SECTION_ORDER: readonly PickerRowPlace[] = ["matches", "linked", "view"]
+const SECTION_ORDER: readonly PickerRowPlace[] = ["matches", "linked", "view"]
 
 export function pickerSections(rows: readonly PickerRow[]): PickerSections {
   const out: PickerSections = { linked: [], view: [], matches: [] }

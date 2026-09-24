@@ -6,7 +6,7 @@ import {
   type ShadowTokens,
 } from "@civfix/shared/tokens"
 
-export { colorSchemes, shadowSchemes }
+export { colorSchemes }
 export type { ColorSchemeName, ColorPalette, ShadowTokens }
 
 export type AppearancePreference = "system" | ColorSchemeName
@@ -23,7 +23,7 @@ export function isAppearancePreference(value: unknown): value is AppearancePrefe
   return typeof value === "string" && (APPEARANCE_PREFERENCES as readonly string[]).includes(value)
 }
 
-export function isColorSchemeName(value: unknown): value is ColorSchemeName {
+function isColorSchemeName(value: unknown): value is ColorSchemeName {
   return typeof value === "string" && (COLOR_SCHEMES as readonly string[]).includes(value)
 }
 

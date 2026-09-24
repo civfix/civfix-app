@@ -1,12 +1,12 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
-import { createRequire } from "node:module"
 import { test } from "node:test"
+import { URL } from "node:url"
 import { tokens } from "@civfix/shared/tokens"
+import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
-const require = createRequire(import.meta.url)
 const appConfigSource = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
-const appConfig = require("../app.config.js")({ config: {} })
+const appConfig = appConfigFactory({ config: {} })
 const loadingSplash = readFileSync(
   new URL("../src/components/LoadingSplash.tsx", import.meta.url),
   "utf8",
@@ -19,12 +19,8 @@ const launchThemeModule = readFileSync(
 
 const LIGHT = tokens.color.neutral.paper
 
-function splashPlugin(): Record<string, any> {
-  const entry = appConfig.plugins.find(
-    (plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-splash-screen",
-  )
-  assert.ok(Array.isArray(entry), "expo-splash-screen plugin tuple")
-  return entry[1]
+function splashPlugin(): Record<string, unknown> {
+  return pluginOptions(appConfig, "expo-splash-screen", "expo-splash-screen plugin tuple")
 }
 
 test("the native splash background is the light paper token", () => {

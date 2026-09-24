@@ -3,7 +3,7 @@ import type { SeriesPoint } from "@civfix/shared"
 export const SPARK_BAR_MAX_WIDTH = 24
 export const SPARK_BAR_GAP = 2
 export const SPARK_BAR_MIN_HEIGHT = 2
-export const SPARK_BAR_RADIUS = 4
+const SPARK_BAR_RADIUS = 4
 export const SPARK_LINE_WIDTH = 2
 export const SPARK_END_DOT_RADIUS = 4
 

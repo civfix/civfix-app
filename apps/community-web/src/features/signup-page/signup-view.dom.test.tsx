@@ -4,7 +4,7 @@ import { act, cleanup, render, screen } from "@testing-library/react"
 import { AppError, ErrorCode } from "@civfix/shared"
 import type { PublicEventPageDTO } from "@civfix/shared"
 
-const getPublicEventPage = vi.fn()
+const getPublicEventPage = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@civfix/ui/i18n", () => ({
   useT: () => ({ t: (key: string) => key, i18n: { language: "en" } }),

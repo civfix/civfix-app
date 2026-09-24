@@ -58,7 +58,9 @@ const DASHBOARD_FILES = folderSourceFiles(
 const dashboardNavSource = (): string => source("../useHostedEventNav.ts")
 
 const catalog = (lng: string, ns: string): Record<string, unknown> =>
-  JSON.parse(readFileSync(new URL(`../../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"))
+  JSON.parse(
+    readFileSync(new URL(`../../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
+  ) as Record<string, unknown>
 
 function org(id: string, over: Partial<OrganizationDTO> = {}): OrganizationDTO {
   return {

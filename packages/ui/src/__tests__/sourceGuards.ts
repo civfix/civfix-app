@@ -78,7 +78,7 @@ export function expectWrittenInLayoutEffect(source: string, assignment: string):
   expect(effect?.deps ?? null, `the layout effect writing ${assignment} must run after every commit`).toBeNull()
 }
 
-export const THEME_TOUCH_TARGET_IMPORT =
+const THEME_TOUCH_TARGET_IMPORT =
   /import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "[./]+\/theme(?:\/touchTarget)?"/
 
 /**
@@ -92,7 +92,7 @@ export function expectThemeTouchTarget(source: string): number {
   return MIN_TOUCH_TARGET
 }
 
-export const THEME_HIT_SLOP_IMPORT =
+const THEME_HIT_SLOP_IMPORT =
   /import \{[^}]*\bhitSlopToTarget\b[^}]*\} from "[./]+\/theme(?:\/touchTarget)?"/
 
 /**
@@ -120,7 +120,7 @@ export function folderSourceFiles(dir: URL, entry?: URL): URL[] {
   return entry ? [entry, ...parts] : parts
 }
 
-export function folderSource(dir: URL, entry?: URL): string {
+function folderSource(dir: URL, entry?: URL): string {
   return folderSourceFiles(dir, entry)
     .map((file) => readFileSync(file, "utf8"))
     .join("\n")

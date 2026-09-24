@@ -222,7 +222,7 @@ describe("MembersScreen invite drawer", () => {
         role: "admin",
       }),
     )
-    const sent = client.inviteOrganizationMember.mock.calls[0]?.[0]
+    const sent: unknown = client.inviteOrganizationMember.mock.calls[0]?.[0]
     expect(InviteOrganizationMemberRequestSchema.safeParse(sent).success).toBe(true)
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "invite.title" })).toBeNull())
   })
@@ -333,7 +333,7 @@ describe("MembersScreen pending invites", () => {
         inviteId: "33333333-3333-4333-8333-333333333333",
       }),
     )
-    const sent = client.revokeOrganizationInvite.mock.calls[0]?.[0]
+    const sent: unknown = client.revokeOrganizationInvite.mock.calls[0]?.[0]
     expect(RevokeOrganizationInviteRequestSchema.safeParse(sent).success).toBe(true)
   })
 })

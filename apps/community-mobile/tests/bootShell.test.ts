@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
@@ -105,7 +106,8 @@ test("the receipt decision runs store-first, and only a NEWER sandbox receipt me
 })
 
 test("expo-file-system is required inside the guarded probe, never imported into the boot chain", () => {
-  assert.doesNotMatch(betaInstallModule, /^import .*"expo-file-system"/m)
+  // A type-only import is erased before bundling, so only a value import would load the module at boot.
+  assert.doesNotMatch(betaInstallModule, /^import (?!type ).*"expo-file-system"/m)
   const probe = betaInstallModule.slice(betaInstallModule.indexOf("function probeStoreKit"))
   const guard = probe.indexOf("try {")
   const load = probe.indexOf('require("expo-file-system")')

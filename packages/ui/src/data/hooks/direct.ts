@@ -47,7 +47,7 @@ export function useUserSearch(rawQuery: string) {
   return { data, isLoading, isPending, isError, refetch, term: trimmed }
 }
 
-export function useOpenDm() {
+function useOpenDm() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation<OpenDmResponse, unknown, string>({

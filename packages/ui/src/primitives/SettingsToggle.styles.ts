@@ -2,7 +2,7 @@ import type { ViewStyle } from "react-native"
 import { alpha } from "../theme/alpha"
 import type { Theme } from "../theme"
 
-export const TRACK_OFF_ALPHA = 0.16
+const TRACK_OFF_ALPHA = 0.16
 
 export function trackOffColor(t: Theme): string {
   return alpha(t.colors.text, TRACK_OFF_ALPHA)

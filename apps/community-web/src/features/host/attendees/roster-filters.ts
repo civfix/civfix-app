@@ -18,7 +18,7 @@ export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "members",
 ]
 
-export const ROSTER_SORTS: readonly RegistrationRosterSort[] = RegistrationRosterSortSchema.options
+const ROSTER_SORTS: readonly RegistrationRosterSort[] = RegistrationRosterSortSchema.options
 
 export function isRosterFilter(value: string | undefined): value is RegistrationRosterFilter {
   return value !== undefined && (ROSTER_FILTERS as readonly string[]).includes(value)

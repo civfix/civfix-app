@@ -1,5 +1,6 @@
 // The package's vitest runs in plain node (no jsdom), so this installs a minimal fake `document`.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type * as AnnounceModule from "../announce.web"
 
 interface FakeElement {
   id: string
@@ -37,7 +38,7 @@ function makeFakeDocument() {
 type FakeDocument = ReturnType<typeof makeFakeDocument>
 
 let doc: FakeDocument
-let announce: typeof import("../announce.web").announce
+let announce: typeof AnnounceModule.announce
 
 beforeEach(async () => {
   vi.useFakeTimers()

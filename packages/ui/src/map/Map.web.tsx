@@ -77,7 +77,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   })
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<MlMap | null>(null)
-  const markersRef = React.useRef<globalThis.Map<string, MarkerEntry>>(new globalThis.Map())
+  const markersRef = React.useRef(new globalThis.Map<string, MarkerEntry>())
   const [mapReady, setMapReady] = React.useState(false)
   const initialCenterRef = React.useRef(initialCenter)
   const mode = useLayoutMode()

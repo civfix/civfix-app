@@ -36,14 +36,14 @@ export function useChatAroundWindow({ api, roomId, roomKind, myUserId, setAround
           return false
         })
     },
-    [api, roomKind, roomId, myUserId],
+    [api, roomKind, roomId, myUserId, setAroundWindow],
   )
 
   const clearAround = useCallback(() => {
     aroundSeqRef.current++
     setAroundWindow(null)
     setAroundLoading(false)
-  }, [])
+  }, [setAroundWindow])
 
   return { aroundLoading, fetchAround, clearAround }
 }

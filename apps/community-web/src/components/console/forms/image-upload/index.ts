@@ -1,4 +1,3 @@
-export { ImageUploadField } from "./image-upload-field"
 export type {
   ConsoleImage,
   ImageUploadFieldProps,

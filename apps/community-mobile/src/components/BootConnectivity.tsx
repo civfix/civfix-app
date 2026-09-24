@@ -53,7 +53,7 @@ export function BootOfflineGate() {
         accessibilityLabel={t("boot.sign_out")}
         accessibilityState={{ disabled: signingOut, busy: signingOut }}
         disabled={signingOut}
-        onPress={onSignOut}
+        onPress={() => void onSignOut()}
         {...focusRingProps}
         style={({ pressed }) => [styles.secondary, pressed ? styles.pressed : null]}
       >

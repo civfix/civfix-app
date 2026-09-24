@@ -33,7 +33,9 @@ pnpm build         # @civfix/shared -> dist (tsup), @civfix/ui -> dist-types, we
 pnpm typecheck
 pnpm lint
 pnpm test
-pnpm i18n:check    # @civfix/ui locale-key check
+pnpm i18n:check    # locale keys complete across languages, and every t(...) call site in ui, web and mobile resolves
+pnpm knip          # unused files, exports and dependencies
+pnpm jscpd         # duplicated code, fails above the configured threshold
 pnpm clean
 pnpm doctor        # expo-doctor on the mobile app
 ```

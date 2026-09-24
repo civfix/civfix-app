@@ -18,8 +18,6 @@ export const CIVFIX_LINK_HOSTS: readonly string[] = [
   "www.civfix.dev",
 ]
 
-export const CIVFIX_APP_SCHEME = "civfix"
-
 export const MAX_EMBEDS_PER_MESSAGE = 2
 
 const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/

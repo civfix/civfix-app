@@ -26,7 +26,7 @@ import {
 } from "./pageStackWebModel"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
-import { forceReflow, useFlipPhase } from "./useFlipPhase"
+import { forceReflow, useFlipPhase, type LayerTransitionEndEvent } from "./useFlipPhase"
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
@@ -242,7 +242,7 @@ const WebPageLayer = memo(function WebPageLayer({
     else node.setAttribute("inert", "")
   }, [active])
 
-  const onTransitionEnd = (event: any) => {
+  const onTransitionEnd = (event: LayerTransitionEndEvent) => {
     if (settleNav === null) return
     if (event?.target !== event?.currentTarget) return
     if (event?.propertyName && event.propertyName !== settleProperty) return

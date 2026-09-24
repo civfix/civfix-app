@@ -19,7 +19,7 @@ import { PostMediaGrid } from "./PostMediaGrid"
 import { buildPostIdentity } from "./postCardModel"
 import { embeddedPostA11yLabel } from "./embeddedPostLabel"
 
-export const EMBEDDED_POST_BODY_CLAMP_LINES = 4
+const EMBEDDED_POST_BODY_CLAMP_LINES = 4
 const MEDIA_RADIUS = 12
 const MEDIA_MAX_HEIGHT = 220
 

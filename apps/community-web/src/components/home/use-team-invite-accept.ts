@@ -14,14 +14,14 @@ import {
   type EventTeamInviteLink,
 } from "@/lib/team-invite"
 
-const TERMINAL_CODES: readonly string[] = [
+const TERMINAL_CODES: readonly ErrorCode[] = [
   ErrorCode.NOT_FOUND,
   ErrorCode.CONFLICT,
   ErrorCode.FORBIDDEN,
   ErrorCode.VALIDATION,
 ]
 
-function problemKey(code: string): string {
+function problemKey(code: ErrorCode): string {
   if (code === ErrorCode.NOT_FOUND) return "accept.error_invalid"
   if (code === ErrorCode.CONFLICT) return "accept.error_unavailable"
   if (code === ErrorCode.FORBIDDEN) return "accept.error_removed"

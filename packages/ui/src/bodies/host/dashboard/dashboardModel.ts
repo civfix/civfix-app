@@ -224,7 +224,7 @@ export type OrgSettableRole = "admin" | "member"
 
 export const ORG_SETTABLE_ROLES: readonly OrgSettableRole[] = ["admin", "member"]
 
-export const NO_ORG_MEMBER_ACTIONS: OrgMemberActions = { roles: [], canRemove: false }
+const NO_ORG_MEMBER_ACTIONS: OrgMemberActions = { roles: [], canRemove: false }
 
 export function orgMemberActions(input: {
   member: OrganizationMemberDTO

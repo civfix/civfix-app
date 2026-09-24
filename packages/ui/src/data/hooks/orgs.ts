@@ -121,7 +121,7 @@ export function organizationEventRows(
   return rows
 }
 
-export const ORG_MEMBERS_PAGE_SIZE = 50
+const ORG_MEMBERS_PAGE_SIZE = 50
 
 export function useOrganizationMembers(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
   const api = useApi()
@@ -220,7 +220,7 @@ export function useRemoveOrganizationMember(orgId: string | undefined) {
   })
 }
 
-export function invalidateMyOrgInvites(qc: QueryClient): void {
+function invalidateMyOrgInvites(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: queryKeys.myOrgInvites })
   void qc.invalidateQueries({ queryKey: queryKeys.myOrganizations })
   void qc.invalidateQueries({ queryKey: queryKeys.notificationsRoot })

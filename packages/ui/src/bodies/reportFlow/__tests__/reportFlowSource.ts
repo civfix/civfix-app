@@ -9,7 +9,7 @@ const BODY = fileURLToPath(new URL("../../ReportFlowBody.tsx", import.meta.url))
  * Every source file the report wizard renders from, body first, so a guard cannot miss a split-out part and
  * a first-occurrence anchor still lands in the body's own JSX.
  */
-export function reportFlowSourceFiles(): string[] {
+function reportFlowSourceFiles(): string[] {
   const parts = readdirSync(FLOW_DIR, { withFileTypes: true })
     .filter((entry) => entry.isFile() && /\.tsx?$/.test(entry.name))
     .map((entry) => join(FLOW_DIR, entry.name))

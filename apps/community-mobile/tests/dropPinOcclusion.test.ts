@@ -4,6 +4,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
 const cameraCall = home.slice(

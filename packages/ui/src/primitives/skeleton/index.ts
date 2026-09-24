@@ -5,10 +5,6 @@ export {
   SkeletonList,
   SkeletonGroup,
   SkeletonDetail,
-  useSkeletonPulse,
-  SKELETON_ROW_KINDS,
-  SKELETON_PULSE_MS,
-  SKELETON_PULSE_MIN,
 } from "./Skeleton"
 export type {
   SkeletonBlockProps,

@@ -33,6 +33,12 @@ jobs:
       - run: node scripts/check-shared-version.mjs
       - run: pnpm turbo run build typecheck lint test --filter="./packages/*"
       - run: pnpm --filter @civfix/ui i18n:check
+      # Repo-wide gates (apps included) live here because this job already installs every workspace;
+      # the resources check imports the @civfix/shared dist the build step above produced.
+      - run: pnpm --filter @civfix/ui i18n:check:resources
+      - run: pnpm i18n:check:call-sites
+      - run: pnpm knip
+      - run: pnpm jscpd
 
   web:
     name: community-web

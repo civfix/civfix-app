@@ -88,7 +88,7 @@ export { KeyboardPinnedFooter } from "./KeyboardPinnedFooter"
 export type { KeyboardPinnedFooterProps } from "./KeyboardPinnedFooter"
 
 export { TextInput } from "./TextInput"
-export type { TextInputProps, TextInputHandle } from "./TextInput.types"
+export type { TextInputProps } from "./TextInput.types"
 
 export { TextField } from "./TextField"
 export type { TextFieldProps } from "./TextField"
@@ -186,7 +186,6 @@ export {
   shouldCaptureActionsSwipe,
   shouldSnapOpen,
   SWIPE_ACTION_WIDTH_PX,
-  SWIPE_ACTIONS_SNAP_RATIO,
 } from "./swipeActionsModel"
 export { MessageContextMenu } from "./MessageContextMenu"
 export type {

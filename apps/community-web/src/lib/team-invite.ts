@@ -1,7 +1,7 @@
 import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 import { replaceUrlInPlace } from "@/lib/replace-url"
 
-export const TEAM_INVITE_TOKEN_PARAM = "teamInvite"
+const TEAM_INVITE_TOKEN_PARAM = "teamInvite"
 
 export const TEAM_INVITE_STASH_KEY = "civfix:event-team-invite"
 

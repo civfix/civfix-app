@@ -182,7 +182,7 @@ export default function OtpScreen() {
                 spellCheck={false}
                 maxLength={REVIEWER_OTP_CODE_MAX_LENGTH}
                 returnKeyType="go"
-                onSubmitEditing={() => onVerify(code)}
+                onSubmitEditing={() => void onVerify(code)}
                 editable={!locked && !verifying}
                 autoFocus
               />
@@ -195,7 +195,7 @@ export default function OtpScreen() {
                   setCode(next)
                 }}
                 length={EMAIL_OTP_CODE_LENGTH}
-                onComplete={onVerify}
+                onComplete={(value) => void onVerify(value)}
                 editable={!locked && !verifying}
               />
             )}
@@ -218,7 +218,7 @@ export default function OtpScreen() {
             label={t("verify.label")}
             loading={verifying}
             disabled={locked || isCodeIncomplete(code, reviewer)}
-            onPress={() => onVerify(code)}
+            onPress={() => void onVerify(code)}
             style={styles.verifyBtn}
           />
 
@@ -227,7 +227,7 @@ export default function OtpScreen() {
               {t("resend.prompt")}
             </Text>
             <Pressable
-              onPress={onResend}
+              onPress={() => void onResend()}
               disabled={cooldown > 0 || resending}
               accessibilityRole="button"
               accessibilityLabel={t("resend.action")}

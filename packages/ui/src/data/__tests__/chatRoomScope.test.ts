@@ -57,7 +57,7 @@ describe("room switch scoping in useChat", () => {
     expect(guard).toBeLessThan(refresh.indexOf("cacheOpsRef.current.push(op)"))
     const reset = section(
       "setLiveMessages([])\n    setOutbox([])",
-      "}, [roomId, roomKind, clearTypingState, resetSendTracking, resetHistoryJournal, clearAround])",
+      "  }, [",
     )
     expect(reset).toContain("resetHistoryJournal()")
     expect(section("const resetHistoryJournal = useCallback", "}, [])", HISTORY)).toContain(

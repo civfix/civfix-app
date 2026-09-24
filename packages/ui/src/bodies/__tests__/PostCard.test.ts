@@ -247,7 +247,7 @@ describe("PostCard model", () => {
         new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url),
         "utf8",
       )
-      expect(JSON.parse(catalog).post_card, locale).not.toHaveProperty("organizer")
+      expect((JSON.parse(catalog) as Record<string, unknown>).post_card, locale).not.toHaveProperty("organizer")
     }
   })
 

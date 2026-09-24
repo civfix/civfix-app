@@ -203,7 +203,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     if (reportedSnapRef.current !== snap) {
       sheetRef.current?.snapToIndex(snap)
     }
-  }, [snap, closing])
+  }, [snap, closing, reportedSnapRef])
 
   // gorhom fires `onClose` when the slide lands, which the presence gate uses to unmount the sheet and
   // restore the dock. Entry is gorhom's own mount animation, so a lateral detail-to-detail swap never
@@ -251,7 +251,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
       if (next !== null) setSnap(next)
     }
     return <SheetGrabHandle label={t("a11y.drag_handle")} onCycle={cycle} onAdjust={adjust} />
-  }, [setSnap, t])
+  }, [setSnap, t, currentIndexRef])
 
   // The content region's height is owned here rather than flex:1 inside gorhom's animated content mask, so
   // the body's scroll viewport is bounded by numbers we control and the full content overflow scrolls. At

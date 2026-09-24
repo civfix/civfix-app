@@ -20,7 +20,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, { runOnJS, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated"
 import { useBottomSheetInternal, ANIMATION_SOURCE, ANIMATION_STATUS } from "@gorhom/bottom-sheet"
 import { useNavStore, type Snap } from "../nav"
-import type { ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
 import {
   HANDOFF_SLOP,
   handoffDestinationIndex,
@@ -42,7 +42,7 @@ function makeSheetHandoffScroll(
   Base: React.ComponentType<any>,
   AnimatedBase: React.ComponentType<any>,
 ): React.ComponentType<any> {
-  const SheetHandoffScroll = forwardRef<any, any>(function SheetHandoffScroll(
+  const SheetHandoffScroll = forwardRef<unknown, DecoratedScrollProps>(function SheetHandoffScroll(
     { onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
   ) {
@@ -223,7 +223,7 @@ function makeSheetHandoffScroll(
  *  for FlatList in reanimated 4; Animated.FlatList also supplies a CellRendererComponent. */
 export function makeSheetHandoffScrollHost(base: ScrollHostValue): ScrollHostValue {
   return {
-    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView as any),
-    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList as any),
+    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView as React.ComponentType<any>),
+    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList as React.ComponentType<any>),
   }
 }

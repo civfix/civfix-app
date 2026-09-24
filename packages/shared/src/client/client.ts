@@ -1,4 +1,4 @@
-import { z } from "zod"
+import type { z } from "zod"
 import { AppErrorSchema } from "../schemas/common.js"
 import { AppError, ErrorCode, isErrorCode } from "../types/errors.js"
 import {

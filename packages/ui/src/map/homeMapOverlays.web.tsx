@@ -15,9 +15,13 @@ type MlMapRef = React.RefObject<MlMap | null>
 
 /** `map.remove()` takes every marker and control with it, so each overlay drops its handles with the map. */
 function useReleaseWithMap(mapReady: boolean, release: () => void): void {
+  // Every caller passes a fresh closure over stable refs, so the latest one is read at teardown instead of
+  // re-arming the effect on each render.
+  const releaseRef = React.useRef(release)
+  releaseRef.current = release
   React.useEffect(() => {
     if (!mapReady) return
-    return release
+    return () => releaseRef.current()
   }, [mapReady])
 }
 
@@ -57,7 +61,7 @@ export function useModeMapControls({ mapRef, mapReady, mode }: ModeMapControlsOp
       attribCtrlRef.current = new maplibregl.AttributionControl({ compact: false })
       map.addControl(attribCtrlRef.current, "bottom-left")
     }
-  }, [mapReady, mode])
+  }, [mapReady, mode, mapRef])
   useReleaseWithMap(mapReady, () => {
     navCtrlRef.current = null
     attribCtrlRef.current = null
@@ -101,7 +105,7 @@ export function useUserLocationDot({
       userMarkerRef.current.setLngLat([userLocation!.lng, userLocation!.lat])
       userMarkerRef.current.getElement().setAttribute("aria-label", t("a11y.userLocation"))
     }
-  }, [mapReady, showUserLocation, userLocation, t])
+  }, [mapReady, showUserLocation, userLocation, t, mapRef])
   useReleaseWithMap(mapReady, () => {
     userMarkerRef.current = null
   })
@@ -165,7 +169,7 @@ export function usePickMarker({
       pickMarkerRef.current.setLngLat([pickDraft.lng, pickDraft.lat])
       applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current, pickFill)
     }
-  }, [mapReady, pickActive, pickDraft, pickPin, mode, scheme])
+  }, [mapReady, pickActive, pickDraft, pickPin, mode, scheme, mapRef, occlusionLeftRef, themeRef])
   useReleaseWithMap(mapReady, () => {
     pickMarkerRef.current = null
   })
@@ -218,7 +222,7 @@ export function useDropPinMarker({ mapRef, mapReady, droppedPin, scheme, t }: Dr
         </ThemeProvider>,
       )
     }
-  }, [mapReady, droppedPin, t, scheme])
+  }, [mapReady, droppedPin, t, scheme, mapRef])
   useReleaseWithMap(mapReady, () => {
     const dropRoot = dropRootRef.current
     if (dropRoot) queueMicrotask(() => dropRoot.unmount())

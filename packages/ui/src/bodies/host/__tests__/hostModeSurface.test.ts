@@ -195,7 +195,7 @@ describe("the tickets row is gated on the platform, not on a capability every ho
 describe("insights wiring", () => {
   it("polls on the live cadence and idles otherwise", () => {
     expect(hooks).toContain("opts.live ? INSIGHTS_LIVE_POLL_MS : INSIGHTS_IDLE_POLL_MS")
-    expect(hooks).toContain("export const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS")
+    expect(hooks).toContain("\nconst INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS")
     expect(body).toContain('live: clockPhase === "live"')
   })
 

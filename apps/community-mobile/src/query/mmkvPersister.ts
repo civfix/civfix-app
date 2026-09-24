@@ -1,4 +1,5 @@
-import { QueryClient, dehydrate, hydrate } from "@tanstack/react-query"
+import { dehydrate, hydrate } from "@tanstack/react-query"
+import type { QueryClient, QueryKey } from "@tanstack/react-query"
 import Constants from "expo-constants"
 import { storage } from "@/lib/mmkv"
 import { CACHED_USER_KEY } from "@/lib/mmkvKeys"
@@ -71,7 +72,7 @@ export function installCachePersistence(queryClient: QueryClient): () => void {
 
   const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
     if (event.type !== "added" && event.type !== "updated" && event.type !== "removed") return
-    if (!isPersistedQueryKey(event.query.queryKey)) return
+    if (!isPersistedQueryKey(event.query.queryKey as QueryKey)) return
     active.schedule()
   })
 

@@ -180,7 +180,7 @@ export function AuthOptions({
           icon={Apple}
           loading={busy === "apple"}
           disabled={busy !== null && busy !== "apple"}
-          onPress={onApple}
+          onPress={() => void onApple()}
         />
       ) : null}
 
@@ -191,7 +191,7 @@ export function AuthOptions({
           icon={Globe}
           loading={busy === "google"}
           disabled={busy !== null && busy !== "google"}
-          onPress={onGoogle}
+          onPress={() => void onGoogle()}
         />
       ) : null}
 
@@ -220,12 +220,12 @@ export function AuthOptions({
             keyboardType="email-address"
             returnKeyType="go"
             autoFocus
-            onSubmitEditing={onEmail}
+            onSubmitEditing={() => void onEmail()}
           />
           <PrimaryButton
             label={t("email.send_code")}
             loading={busy === "email"}
-            onPress={onEmail}
+            onPress={() => void onEmail()}
             style={styles.sendBtn}
           />
         </KeyboardRevealGroup>

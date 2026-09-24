@@ -7,7 +7,7 @@ import type { UserDTO } from "@civfix/shared"
 import type * as UiDataModule from "@civfix/ui/data"
 import type * as ApiModule from "@/lib/api"
 
-const logout = vi.fn()
+const logout = vi.fn<(...args: unknown[]) => unknown>()
 const mutate = vi.fn()
 
 vi.mock("@civfix/ui/i18n", async () => {

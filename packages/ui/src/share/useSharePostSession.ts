@@ -173,5 +173,3 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
     signIn,
   }
 }
-
-export type SharePostSession = ReturnType<typeof useSharePostSession>

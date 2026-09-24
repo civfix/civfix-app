@@ -26,7 +26,14 @@
  * lands here as another `ScrollHostValue`, with no body change.
  */
 import React, { createContext, useContext } from "react"
-import { ScrollView as RNScrollView, FlatList as RNFlatList } from "react-native"
+import {
+  ScrollView as RNScrollView,
+  FlatList as RNFlatList,
+  type Insets,
+  type NativeScrollEvent,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native"
 
 export interface ScrollHostValue {
   ScrollView: React.ComponentType<any>
@@ -40,6 +47,18 @@ export interface ScrollHostListHandle {
 
 export type ScrollHostListProps = Record<string, unknown> & {
   ref?: React.Ref<ScrollHostListHandle>
+}
+
+/**
+ * The props a decorator reads; everything else is forwarded untouched. `onScroll` receives only
+ * `{ nativeEvent }` because the reanimated handoff re-emits a worklet payload, not a full RN event.
+ */
+export interface DecoratedScrollProps {
+  contentContainerStyle?: StyleProp<ViewStyle>
+  horizontal?: boolean | null
+  onScroll?: (event: { nativeEvent: NativeScrollEvent }) => void
+  scrollEventThrottle?: number
+  scrollIndicatorInsets?: Insets
 }
 
 const DEFAULT_SCROLL_HOST: ScrollHostValue = {

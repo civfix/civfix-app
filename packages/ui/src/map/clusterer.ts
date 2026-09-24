@@ -48,7 +48,7 @@ export const CLUSTER_LIST_ZOOM = 11
 export const CLUSTER_MIN_POINTS = 3
 export const CLUSTER_ZOOM_STEP = 2
 export const AGGREGATE_EXPAND_ZOOM = 10
-export const KEY_PRECISION = 5
+const KEY_PRECISION = 5
 export const WORLD_BBOX: BBox = { west: -180, south: -85, east: 180, north: 85 }
 
 export type MapClusterIndex = Supercluster<MapPoint, ClusterWeights>

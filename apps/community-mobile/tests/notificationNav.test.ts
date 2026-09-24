@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 import { isInternalLink } from "../src/lib/links.ts"
 import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBridge.ts"
 import { shellHostsEntries } from "../src/lib/internalHref.ts"

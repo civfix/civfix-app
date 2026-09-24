@@ -16,7 +16,7 @@ const markdown = readFileSync(
 function catalog(lng: string, ns: string): Record<string, Record<string, string>> {
   return JSON.parse(
     readFileSync(new URL(`../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
-  )
+  ) as Record<string, Record<string, string>>
 }
 
 function code(source: string): string {

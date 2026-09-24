@@ -29,7 +29,6 @@ export type {
   SwipeBackDecision,
   SwipeBackTokens,
 } from "./pageStackModel"
-export { SearchHeader } from "./SearchHeader"
 export type { SearchHeaderProps } from "./SearchHeader.types"
 export { DetailBar } from "./DetailBar"
 export type { DetailBarProps } from "./DetailBar"

@@ -8,6 +8,5 @@ export {
   DOCK_H,
   DOCK_GAP,
   DOCK_MORPH_SHRINK,
-  DOCK_MORPH_TOP_OFFSET,
 } from "./liquidGlass"
 export type { LiquidGlassDockProps, DockShapes } from "./liquidGlass"

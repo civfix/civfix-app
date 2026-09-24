@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 const gate = readFileSync(

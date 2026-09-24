@@ -213,7 +213,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
               onEmailChange={setEmail}
               submitting={submitting}
               error={error}
-              onSubmit={requestCode}
+              onSubmit={(event) => void requestCode(event)}
             />
           )}
 

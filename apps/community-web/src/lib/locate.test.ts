@@ -29,9 +29,22 @@ let geo: ReturnType<typeof makeGeoStub>
 
 async function freshModules() {
   vi.resetModules()
-  const locate = await import("@/lib/locate")
-  const webGeo = await import("@/lib/web-geolocation")
-  return { ...locate, webGeolocation: webGeo.webGeolocation }
+  const {
+    GEO_POSITION_OPTIONS,
+    getBrowserPosition,
+    getSharedBrowserFix,
+    resolvePreciseCenter,
+    resolvePreciseCenterAfterPrompt,
+  } = await import("@/lib/locate")
+  const { webGeolocation } = await import("@/lib/web-geolocation")
+  return {
+    GEO_POSITION_OPTIONS,
+    getBrowserPosition,
+    getSharedBrowserFix,
+    resolvePreciseCenter,
+    resolvePreciseCenterAfterPrompt,
+    webGeolocation,
+  }
 }
 
 beforeEach(() => {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
@@ -127,7 +128,7 @@ test("the offline gate's sign-out shows it is working and cannot be pressed twic
   assert.match(gate, /const inFlight = useRef\(false\)/)
   assert.match(gate, /if \(inFlight\.current\) return\s*inFlight\.current = true\s*setSigningOut\(true\)\s*try \{\s*await signOut\(\)\s*\} finally \{\s*inFlight\.current = false\s*setSigningOut\(false\)\s*\}/)
   assert.doesNotMatch(gate, /if \(signingOut\) return/)
-  const button = gate.slice(gate.indexOf("onPress={onSignOut}") - 300)
-  assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{onSignOut\}/)
+  const button = gate.slice(gate.indexOf("onPress={() => void onSignOut()}") - 300)
+  assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{\(\) => void onSignOut\(\)\}/)
   assert.match(button, /\{signingOut \? \(\s*<ActivityIndicator color=\{th\.colors\.textMuted\} \/>/)
 })

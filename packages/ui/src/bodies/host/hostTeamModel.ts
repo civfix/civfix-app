@@ -45,7 +45,7 @@ export function orderedTeamMembers(
 
 export type TeamMemberActions = RosterMemberActions<SettableEventMemberRole>
 
-export const NO_TEAM_MEMBER_ACTIONS: TeamMemberActions = { roles: [], canRemove: false }
+const NO_TEAM_MEMBER_ACTIONS: TeamMemberActions = { roles: [], canRemove: false }
 
 export function teamMemberActions(input: {
   member: EventTeamMemberDTO

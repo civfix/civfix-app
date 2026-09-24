@@ -131,7 +131,7 @@ function patchCleanupInFlatLists(
   mapCleanupRows(qc, id, (c) => ({ ...c, joined: next.joined, going: next.going }))
 }
 
-export function nudgeCleanupInFlatLists(qc: QueryClient, id: string, joined: boolean): void {
+function nudgeCleanupInFlatLists(qc: QueryClient, id: string, joined: boolean): void {
   mapCleanupRows(qc, id, (c) => ({ ...c, joined, going: Math.max(0, c.going + (joined ? 1 : -1)) }))
 }
 

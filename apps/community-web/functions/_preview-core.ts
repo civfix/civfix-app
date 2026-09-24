@@ -327,7 +327,7 @@ async function loadPayload(
     if (hit) {
       const cached = negativeCacheOutcome(hit)
       if (cached) return { payload: null, outcome: cached }
-      const payload = await hit.json().catch(() => null)
+      const payload: unknown = await hit.json().catch(() => null)
       return { payload, outcome: payload === null ? "transient" : "found" }
     }
   }

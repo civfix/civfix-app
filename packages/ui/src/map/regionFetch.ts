@@ -13,11 +13,11 @@ import { AGGREGATE_EXPAND_ZOOM } from "./clusterer"
  * region recorded as loaded would suppress every later refetch inside it.
  */
 export const PAD_FACTOR = 0.6
-export const EDGE_MARGIN = 0.12
-export const MAX_COARSENESS = 3.5
+const EDGE_MARGIN = 0.12
+const MAX_COARSENESS = 3.5
 /** Tapping an aggregate bubble zooms to AGGREGATE_EXPAND_ZOOM precisely so the refetch there returns pins. */
 export const SERVER_PIN_ZOOM = AGGREGATE_EXPAND_ZOOM
-export const VIEWPORT_REFERENCE_TILES = 8
+const VIEWPORT_REFERENCE_TILES = 8
 
 const MAX_IMPLIED_ZOOM = 22
 const WORLD_LNG_SPAN = 360

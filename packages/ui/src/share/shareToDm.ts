@@ -3,7 +3,7 @@ import { threadRoomId } from "../data/threadRoom"
 
 export const SHARE_DM_MAX_RECIPIENTS = 10
 
-export const SHARE_DM_RECENT_LIMIT = 20
+const SHARE_DM_RECENT_LIMIT = 20
 
 export interface ShareRecipient {
   id: string

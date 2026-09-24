@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
 import type { UserDTO } from "@civfix/shared"
 
-const adoptViewer = vi.fn()
-const discardViewerDrafts = vi.fn()
+const adoptViewer = vi.fn<(...args: unknown[]) => unknown>()
+const discardViewerDrafts = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@civfix/ui", () => ({
   adoptViewer: (viewerId: string | null) => adoptViewer(viewerId),

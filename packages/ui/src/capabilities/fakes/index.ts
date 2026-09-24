@@ -94,7 +94,7 @@ function recordOpen(log: string[], url: string): void {
 
 export type FakeOpenExternal = OpenExternalCapability & { opened: string[]; openedInApp: string[] }
 
-export function makeFakeOpenExternal(): FakeOpenExternal {
+function makeFakeOpenExternal(): FakeOpenExternal {
   const fake: FakeOpenExternal = {
     opened: [],
     openedInApp: [],
@@ -112,7 +112,7 @@ export function makeFakeOpenExternal(): FakeOpenExternal {
 
 export type FakeOpenInternalHref = OpenInternalHrefCapability & { opened: string[] }
 
-export function makeFakeOpenInternalHref(): FakeOpenInternalHref {
+function makeFakeOpenInternalHref(): FakeOpenInternalHref {
   const fake: FakeOpenInternalHref = {
     opened: [],
     open(path: string): boolean {
