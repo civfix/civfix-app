@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import type { EventPageBlock, ThemeAccent } from "@civfix/shared"
 import { useT } from "@civfix/ui/i18n"
 
@@ -12,6 +13,24 @@ const ACCENT_CLASS: Record<ThemeAccent, string> = {
   sun: "text-console-sun-strong",
   sky: "text-console-sky-strong",
   lilac: "text-console-lilac-strong",
+}
+
+function PreviewSection({
+  block,
+  children,
+}: {
+  block: Exclude<EventPageBlock, { kind: "hero" }>
+  children: ReactNode
+}) {
+  const { t } = useT("host-page-builder")
+  return (
+    <section>
+      <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
+        {block.title ?? t(`block.kind.${block.kind}`)}
+      </h4>
+      {children}
+    </section>
+  )
 }
 
 export interface PagePreviewProps {
@@ -59,19 +78,13 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               )
             case "about":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.about")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   <MarkdownPreview source={block.body} />
-                </section>
+                </PreviewSection>
               )
             case "agenda":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.agenda")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   <ol className="flex flex-col gap-token-1">
                     {block.items.map((item, index) => (
                       <li key={index} className="flex gap-token-2 text-token-13">
@@ -87,14 +100,11 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
                       </li>
                     ))}
                   </ol>
-                </section>
+                </PreviewSection>
               )
             case "hosts":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.hosts")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   <ul className="flex flex-col gap-token-2">
                     {block.entries.map((entry, index) => (
                       <li key={index} className="text-token-13">
@@ -108,14 +118,11 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
                       </li>
                     ))}
                   </ul>
-                </section>
+                </PreviewSection>
               )
             case "faq":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.faq")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   <dl className="flex flex-col gap-token-2 text-token-13">
                     {block.items.map((item, index) => (
                       <div key={index}>
@@ -124,14 +131,11 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
                       </div>
                     ))}
                   </dl>
-                </section>
+                </PreviewSection>
               )
             case "location":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.location")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   {block.note ? (
                     <p className="text-token-13 text-console-ink-2">{block.note}</p>
                   ) : null}
@@ -140,56 +144,44 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
                       {t("preview.map_placeholder")}
                     </p>
                   ) : null}
-                </section>
+                </PreviewSection>
               )
             case "sponsors":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.sponsors")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   <ul className="flex flex-wrap gap-token-2 text-token-13 text-console-ink-2">
                     {block.entries.map((entry, index) => (
                       <li key={index}>{entry.name}</li>
                     ))}
                   </ul>
-                </section>
+                </PreviewSection>
               )
             case "donate":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.donate")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   {block.blurb ? (
                     <p className="text-token-13 text-console-ink-2">{block.blurb}</p>
                   ) : null}
-                </section>
+                </PreviewSection>
               )
             case "registration":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.registration")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   {block.note ? (
                     <p className="text-token-13 text-console-ink-2">{block.note}</p>
                   ) : null}
                   <p className="mt-token-1 text-token-12 text-console-ink-3">
                     {t("preview.registration_placeholder")}
                   </p>
-                </section>
+                </PreviewSection>
               )
             case "contact":
               return (
-                <section key={block.id}>
-                  <h4 className="mb-token-1 font-display text-token-16 font-bold text-console-ink">
-                    {block.title ?? t("block.kind.contact")}
-                  </h4>
+                <PreviewSection key={block.id} block={block}>
                   {block.body ? (
                     <p className="text-token-13 text-console-ink-2">{block.body}</p>
                   ) : null}
-                </section>
+                </PreviewSection>
               )
           }
         })}

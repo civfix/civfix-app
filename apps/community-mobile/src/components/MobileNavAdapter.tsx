@@ -3,7 +3,7 @@ import { useNavigationContainerRef, useRouter } from "expo-router"
 import { useNavStore, entryFromPath, entryIdentity, isRootLink, type DetailEntry } from "@civfix/ui"
 import { toInternalHref } from "@/lib/links"
 import { internalHrefAction, shellHostsEntries } from "@/lib/internalHref"
-import { threadEntryRoute, type ThreadEntryRoute } from "@/lib/threadEntryRoutes"
+import { threadEntryRoute } from "@/lib/threadEntryRoutes"
 import {
   INITIAL_BRIDGE_GUARD,
   bridgeDecision,
@@ -12,6 +12,7 @@ import {
   stackWithoutBridged,
   type BridgeGuard,
   type NativeRoute,
+  type NativeRouteTarget,
 } from "@/lib/navBridge"
 
 export function seedEntry(entry: DetailEntry): void {
@@ -25,7 +26,7 @@ export interface InternalHrefResult {
 
 let bridgeGuard: BridgeGuard = INITIAL_BRIDGE_GUARD
 let readFocusedRoute: () => NativeRoute | null = () => null
-let pushDetailRoute: ((route: ThreadEntryRoute) => void) | null = null
+let pushDetailRoute: ((route: NativeRouteTarget) => void) | null = null
 
 export function applyInternalHref(href: string): InternalHrefResult | null {
   if (!toInternalHref(href)) return null

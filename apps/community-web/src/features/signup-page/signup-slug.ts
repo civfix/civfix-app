@@ -1,4 +1,4 @@
-export const SIGNUP_SEGMENT = "e"
+const SIGNUP_SEGMENT = "e"
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const SLUG_MIN = 3

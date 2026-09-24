@@ -15,7 +15,7 @@ import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
-import { DEFAULT_TOAST_DURATION_MS, resolveUndoDuration, withinCap } from "./toast-policy"
+import { DEFAULT_TOAST_DURATION_MS, withinCap } from "./toast-policy"
 
 export type ToastTone = "default" | "success" | "danger"
 
@@ -24,8 +24,6 @@ export interface ToastOptions {
   description?: string
   tone?: ToastTone
   durationMs?: number
-  countdown?: boolean
-  action?: { label: string; onPress: () => void }
 }
 
 interface ToastItem extends ToastOptions {
@@ -36,7 +34,6 @@ interface ToastItem extends ToastOptions {
 
 export interface ConsoleToastApi {
   toast: (options: ToastOptions) => string
-  undoToast: (title: string, onUndo: () => void, options?: Partial<ToastOptions>) => string
   dismiss: (id: string) => void
 }
 
@@ -46,30 +43,6 @@ export function useConsoleToast(): ConsoleToastApi {
   const api = useContext(ToastContext)
   if (!api) throw new Error("useConsoleToast must be used within ConsoleToastProvider")
   return api
-}
-
-function CountdownLabel({
-  expiresAt,
-  pausedRemainingMs,
-}: {
-  expiresAt: number
-  pausedRemainingMs: number | null
-}) {
-  const [remaining, setRemaining] = useState(() => Math.max(0, expiresAt - Date.now()))
-  useEffect(() => {
-    if (pausedRemainingMs !== null) return
-    setRemaining(Math.max(0, expiresAt - Date.now()))
-    const interval = window.setInterval(() => {
-      setRemaining(Math.max(0, expiresAt - Date.now()))
-    }, 250)
-    return () => window.clearInterval(interval)
-  }, [expiresAt, pausedRemainingMs])
-  const shown = pausedRemainingMs ?? remaining
-  return (
-    <span className="font-mono text-token-12 text-console-toast-ink-dim [font-feature-settings:'tnum']">
-      {Math.ceil(shown / 1000)}s
-    </span>
-  )
 }
 
 const TONE_ACCENT: Record<ToastTone, string> = {
@@ -154,8 +127,8 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
     [schedule],
   )
 
-  // Timed toasts hold while the pointer or keyboard focus is on them (WCAG 2.2.1), so an
-  // action can be reached before the toast expires.
+  // Timed toasts hold while the pointer or keyboard focus is on them (WCAG 2.2.1), so one cannot
+  // expire while someone is still reading or operating it.
   const syncPause = useCallback(
     (focusTarget: EventTarget | null) => {
       const stack = stackRef.current
@@ -191,19 +164,7 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
     [schedule],
   )
 
-  const undoToast = useCallback(
-    (title: string, onUndo: () => void, options?: Partial<ToastOptions>) =>
-      toast({
-        title,
-        countdown: true,
-        ...options,
-        durationMs: resolveUndoDuration(options?.durationMs),
-        action: { label: t("action.undo"), onPress: onUndo },
-      }),
-    [toast, t],
-  )
-
-  const api = useMemo(() => ({ toast, undoToast, dismiss }), [toast, undoToast, dismiss])
+  const api = useMemo(() => ({ toast, dismiss }), [toast, dismiss])
 
   const polite = items.filter((item) => item.tone !== "danger")
   const assertive = items.filter((item) => item.tone === "danger")
@@ -238,7 +199,7 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
         }}
         onFocus={(event: FocusEvent) => syncPause(event.target)}
         onBlur={(event: FocusEvent) => syncPause(event.relatedTarget)}
-        className="pointer-events-none fixed bottom-token-4 right-token-4 z-[70] flex w-[min(360px,calc(100vw-32px))] flex-col gap-token-2"
+        className="pointer-events-none fixed bottom-token-4 right-token-4 z-[70] flex w-[min(360px,calc(100vw-theme(spacing.token-8)))] flex-col gap-token-2"
       >
         {items.map((item) => (
           <div
@@ -260,24 +221,6 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
                 </p>
               ) : null}
             </div>
-            {item.countdown && item.expiresAt ? (
-              <CountdownLabel
-                expiresAt={item.expiresAt}
-                pausedRemainingMs={item.pausedRemainingMs}
-              />
-            ) : null}
-            {item.action ? (
-              <button
-                type="button"
-                onClick={() => {
-                  item.action?.onPress()
-                  dismiss(item.id)
-                }}
-                className="shrink-0 rounded-xs px-token-2 py-1 text-token-13 font-bold underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
-              >
-                {item.action.label}
-              </button>
-            ) : null}
             <button
               type="button"
               aria-label={t("action.dismiss")}

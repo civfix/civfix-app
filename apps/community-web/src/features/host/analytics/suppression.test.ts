@@ -1,11 +1,8 @@
-import type { Panel, SeriesPoint, SuppressedRate } from "@civfix/shared"
+import type { Panel, SeriesPoint } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
 import {
-  DEFAULT_SUPPRESSION_K,
-  isSuppressedValue,
   panelIsBlank,
-  rateIsShowable,
   seriesHasSuppressedPoints,
   seriesIsChartable,
   seriesValuesForChart,
@@ -16,21 +13,7 @@ function point(value: number | null, suppressed = value === null): SeriesPoint {
   return { day: "2026-03-01", value, suppressed }
 }
 
-function rate(over: Partial<SuppressedRate> = {}): SuppressedRate {
-  return { value: 0.5, numerator: 5, denominator: 10, suppressed: false, ...over }
-}
-
 describe("analytics suppression", () => {
-  it("matches the contract's k", () => {
-    expect(DEFAULT_SUPPRESSION_K).toBe(5)
-  })
-
-  it("treats null as suppressed and zero as a real, showable value", () => {
-    expect(isSuppressedValue(null)).toBe(true)
-    expect(isSuppressedValue(0)).toBe(false)
-    expect(isSuppressedValue(7)).toBe(false)
-  })
-
   it("drops every row of a wholly suppressed panel", () => {
     const panel: Panel = {
       panelSuppressed: true,
@@ -60,13 +43,6 @@ describe("analytics suppression", () => {
         rows: [{ key: "a", label: "A", value: null, suppressed: true }],
       }),
     ).toBe(true)
-  })
-
-  it("shows a rate only when it is neither null nor flagged", () => {
-    expect(rateIsShowable(rate())).toBe(true)
-    expect(rateIsShowable(rate({ value: null, numerator: null, denominator: null, suppressed: true }))).toBe(false)
-    expect(rateIsShowable(rate({ suppressed: true }))).toBe(false)
-    expect(rateIsShowable(rate({ value: 0 }))).toBe(true)
   })
 
   it("charts a series only once two real points exist", () => {

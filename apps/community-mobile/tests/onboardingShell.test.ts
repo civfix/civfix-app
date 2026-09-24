@@ -8,7 +8,7 @@ const gate = readFileSync(
   "utf8",
 )
 const store = readFileSync(new URL("../src/store/onboardingStore.ts", import.meta.url), "utf8")
-const keys = readFileSync(new URL("../src/lib/mmkv-keys.ts", import.meta.url), "utf8")
+const keys = readFileSync(new URL("../src/lib/mmkvKeys.ts", import.meta.url), "utf8")
 
 test("the tour mounts BELOW the registration gate, so the two never share the screen", () => {
   const tour = layout.indexOf(
@@ -27,13 +27,15 @@ test("the loading gate outranks the tour overlay on both platforms", () => {
 })
 
 test("settings can replay the tour through the registered presenter", () => {
-  assert.match(layout, /function OnboardingTourBridge\(\): null/)
+  const appBridges = readFileSync(new URL("../src/boot/AppBridges.tsx", import.meta.url), "utf8")
+  assert.match(appBridges, /function OnboardingTourBridge\(\): null/)
   assert.match(
-    layout,
+    appBridges,
     /setOnboardingTourPresenter\(\(\) => useOnboardingStore\.getState\(\)\.replay\(\)\)/,
   )
-  assert.match(layout, /return \(\) => setOnboardingTourPresenter\(null\)/)
-  assert.match(layout, /<OnboardingTourBridge \/>/)
+  assert.match(appBridges, /return \(\) => setOnboardingTourPresenter\(null\)/)
+  assert.match(appBridges, /<OnboardingTourBridge \/>/)
+  assert.match(layout, /<AppBridges \/>/)
 })
 
 test("the persisted completion flag is versioned and keyed by the shared storage key", () => {
@@ -117,7 +119,7 @@ test("the email path hands the screen back before pushing the OTP card above the
   assert.match(readyPage, /<SignInOptions onHandoff=\{onComplete\} \/>/)
   assert.match(
     readyPage,
-    /<AuthOptions\n\s+enabled=\{providers\.data \?\? ALL_PROVIDERS\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
+    /<AuthOptions\n\s+enabled=\{providers\.data \?\? ALL_OAUTH_PROVIDERS\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
   )
   const handoff = authOptions.indexOf("onHandoff?.()")
   const push = authOptions.indexOf('pathname: "/auth/otp"')

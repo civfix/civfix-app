@@ -6,6 +6,13 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 
 const FILES = [
   "../app/_layout.tsx",
+  "../src/theme/appearanceTheme.ts",
+  "../src/lib/inAppBrowser.ts",
+  "../src/boot/useBootstrap.ts",
+  "../src/boot/useLaunchGate.ts",
+  "../src/components/CrashScreen.tsx",
+  "../src/push/useNotificationDeepLinks.ts",
+  "../src/push/usePushOnSignIn.ts",
   "../src/lib/nativeGeolocation.ts",
   "../src/lib/nativeCamera.ts",
   "../src/lib/nativeCalendarFile.ts",
@@ -24,8 +31,8 @@ test("no error is swallowed without a stated reason", () => {
 })
 
 test("a failed storage purge at boot is logged by name before the app hydrates anyway", () => {
-  const layout = read("../app/_layout.tsx")
-  const boot = layout.slice(layout.indexOf("function useBootstrap()"))
+  const bootstrap = read("../src/boot/useBootstrap.ts")
+  const boot = bootstrap.slice(bootstrap.indexOf("function useBootstrap()"))
   assert.match(
     boot.slice(0, boot.indexOf("\n}\n")),
     /\.catch\(\(err: unknown\) => \{\s*console\.warn\("\[storage-env\][^"]*", errorName\(err\)\)\s*\}\)\s*\.finally\(\(\) => \{\s*void hydrate\(\)/,
@@ -33,8 +40,8 @@ test("a failed storage purge at boot is logged by name before the app hydrates a
 })
 
 test("an unreadable cold-start notification tap is logged instead of silently dropped", () => {
-  const layout = read("../app/_layout.tsx")
-  const hook = layout.slice(layout.indexOf("function useNotificationDeepLinks()"))
+  const deepLinks = read("../src/push/useNotificationDeepLinks.ts")
+  const hook = deepLinks.slice(deepLinks.indexOf("function useNotificationDeepLinks("))
   assert.match(
     hook.slice(0, hook.indexOf("\n}\n")),
     /Notifications\.clearLastNotificationResponse\(\)\s*\} catch \(err\) \{\s*console\.warn\("\[push\][^"]*", errorName\(err\)\)/,
@@ -42,7 +49,9 @@ test("an unreadable cold-start notification tap is logged instead of silently dr
 })
 
 test("log lines carry only the error's name, never its message", () => {
-  const layout = read("../app/_layout.tsx")
-  const helper = layout.slice(layout.indexOf("function errorName("))
+  const helper = read("../src/lib/errorName.ts")
+  for (const user of ["../src/boot/useBootstrap.ts", "../src/push/useNotificationDeepLinks.ts"]) {
+    assert.match(read(user), /import \{ errorName \} from "@\/lib\/errorName"/)
+  }
   assert.match(helper.slice(0, helper.indexOf("\n}\n")), /return err instanceof Error \? err\.name : typeof err/)
 })

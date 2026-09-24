@@ -12,7 +12,7 @@ import {
   writesStorageEnvMarker,
 } from "@/lib/storageEnvMarker"
 import { queryClient } from "@/query/client"
-import { clearPersistedCache, resumeCachePersistence } from "@/query/mmkv-persister"
+import { clearPersistedCache, resumeCachePersistence } from "@/query/mmkvPersister"
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,

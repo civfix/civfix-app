@@ -13,10 +13,7 @@ export function useVisualViewportShift(enabled = true): number {
   const [shift, setShift] = React.useState(0)
 
   React.useEffect(() => {
-    if (!enabled) {
-      setShift(0)
-      return
-    }
+    if (!enabled) return
     const vv = typeof window !== "undefined" ? window.visualViewport : null
     if (!vv) return
     const compute = () => {
@@ -29,8 +26,10 @@ export function useVisualViewportShift(enabled = true): number {
     return () => {
       vv.removeEventListener("resize", compute)
       vv.removeEventListener("scroll", compute)
+      // A reopened dialog must start centered, not at the shift it had when it closed.
+      setShift(0)
     }
   }, [enabled])
 
-  return shift
+  return enabled ? shift : 0
 }

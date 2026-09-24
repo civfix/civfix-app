@@ -6,6 +6,7 @@ import { useT } from "@civfix/ui/i18n"
 import { Wordmark } from "@/components/brand"
 import { hasPersistedCache } from "@/lib/query-persist"
 import { useAuthResolved } from "@/hooks/use-auth"
+import { Z_BOOT_SPLASH } from "@/styles/z-layers"
 
 /**
  * On a first-ever load (no persisted query cache) the app has nothing to paint but skeletons, so a
@@ -54,7 +55,7 @@ function Splash() {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 300,
+        zIndex: Z_BOOT_SPLASH,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

@@ -45,7 +45,7 @@
               },
               {
                 "name": "@civfix/ui/theme",
-                "message": "@civfix/ui/theme's barrel imports react-native. Use @civfix/ui/theme/schemes (the RN-free subpath) for scheme names and palettes, and components/console/use-color-scheme.ts to read the same `.dark` class the --console-* variables key off."
+                "message": "@civfix/ui/theme's barrel imports react-native. Use @civfix/ui/theme/schemes (the RN-free subpath) for scheme names and palettes, and lib/color-scheme.ts to read the same `.dark` class the --console-* variables key off."
               },
               {
                 "name": "@civfix/ui/surface",

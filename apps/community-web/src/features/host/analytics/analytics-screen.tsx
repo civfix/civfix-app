@@ -1,7 +1,9 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import type { UseQueryResult } from "@tanstack/react-query"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
 import type {
   AnalyticsRange,
   EventAnalyticsBroadcastsResponse,
@@ -13,6 +15,7 @@ import type {
 } from "@civfix/shared"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
 import { useConsoleUrlState } from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
@@ -89,12 +92,69 @@ function PanelBars({
   )
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1">
       <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">{title}</h2>
       {children}
     </section>
+  )
+}
+
+interface AnalyticsTabData {
+  registration: EventAnalyticsRegistrationsResponse | undefined
+  attendance: EventAnalyticsCheckinsResponse | undefined
+  messaging: EventAnalyticsBroadcastsResponse | undefined
+  page: EventAnalyticsSourcesResponse | undefined
+}
+
+function analyticsCsvBody(tab: AnalyticsTab, data: AnalyticsTabData, t: Translate): CsvRow[] {
+  switch (tab) {
+    case "registration": {
+      const registrations = data.registration
+      if (!registrations) return []
+      return [
+        [t("csv.day"), t("csv.registrations"), t("csv.cumulative")],
+        ...registrations.series.map((point, index) => [
+          point.day,
+          point.value,
+          registrations.cumulative[index]?.value ?? null,
+        ]),
+      ]
+    }
+    case "attendance":
+      if (!data.attendance) return []
+      return [
+        [t("csv.minute_offset"), t("csv.arrivals")],
+        ...data.attendance.arrivals.map((point) => [point.day, point.value]),
+      ]
+    case "messaging":
+      if (!data.messaging) return []
+      return [
+        [t("csv.channel"), t("csv.sent"), t("csv.failed"), t("csv.suppressed")],
+        ...data.messaging.byChannel.map((row) => [row.channel, row.sent, row.failed, row.suppressed]),
+      ]
+    case "page":
+      if (!data.page) return []
+      return [
+        [t("csv.day"), t("csv.page_views")],
+        ...data.page.pageViews.map((point) => [point.day, point.value]),
+      ]
+  }
+}
+
+function AnalyticsTabGate<T>({
+  query,
+  children,
+}: {
+  query: UseQueryResult<T>
+  children: (data: T) => ReactNode
+}) {
+  const gate = useGate(query)
+  return (
+    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
+      {query.data ? children(query.data) : null}
+    </StateGate>
   )
 }
 
@@ -139,16 +199,15 @@ export function AnalyticsScreen() {
   })
 
   const overviewGate = useGate(overview)
-  const k = overview.data?.k ?? 5
+  const k = overview.data?.k ?? ANALYTICS_SUPPRESSION_K
   const rangeApplies = tab !== "attendance"
-  const tabQuery =
-    tab === "registration"
-      ? registrations
-      : tab === "attendance"
-        ? checkins
-        : tab === "messaging"
-          ? broadcasts
-          : sources
+  const tabQueries = {
+    registration: registrations,
+    attendance: checkins,
+    messaging: broadcasts,
+    page: sources,
+  } satisfies Record<AnalyticsTab, UseQueryResult<{ generatedAt: string }>>
+  const tabQuery = tabQueries[tab]
 
   const exportCurrent = () => {
     const labels = {
@@ -163,8 +222,8 @@ export function AnalyticsScreen() {
     const generatedAt =
       tabQuery.data?.generatedAt ?? overview.data?.generatedAt ?? new Date().toISOString()
     const head = provenanceRows({
-      title: t("csv.title", { event: event?.title ?? "", tab: t(`tab.${tab}`) }),
-      reference: event?.referenceCode ?? null,
+      title: t("csv.title", { event: event.title ?? "", tab: t(`tab.${tab}`) }),
+      reference: event.referenceCode ?? null,
       generatedAt,
       generatedAtLabel: format.dateTime(generatedAt),
       filters: [
@@ -179,39 +238,14 @@ export function AnalyticsScreen() {
       labels,
     })
 
-    let body: CsvRow[] = []
-    if (tab === "registration" && registrations.data) {
-      body = [
-        [t("csv.day"), t("csv.registrations"), t("csv.cumulative")],
-        ...registrations.data.series.map((point, index) => [
-          point.day,
-          point.value,
-          registrations.data?.cumulative[index]?.value ?? null,
-        ]),
-      ]
-    } else if (tab === "attendance" && checkins.data) {
-      body = [
-        [t("csv.minute_offset"), t("csv.arrivals")],
-        ...checkins.data.arrivals.map((point) => [point.day, point.value]),
-      ]
-    } else if (tab === "messaging" && broadcasts.data) {
-      body = [
-        [t("csv.channel"), t("csv.sent"), t("csv.failed"), t("csv.suppressed")],
-        ...broadcasts.data.byChannel.map((row) => [
-          row.channel,
-          row.sent,
-          row.failed,
-          row.suppressed,
-        ]),
-      ]
-    } else if (tab === "page" && sources.data) {
-      body = [
-        [t("csv.day"), t("csv.page_views")],
-        ...sources.data.pageViews.map((point) => [point.day, point.value]),
-      ]
-    }
+    const body = analyticsCsvBody(tab, {
+      registration: registrations.data,
+      attendance: checkins.data,
+      messaging: broadcasts.data,
+      page: sources.data,
+    }, t)
 
-    downloadCsv(csvFilename([event?.title ?? "event", tab], new Date()), [...head, ...body])
+    downloadCsv(csvFilename([event.title ?? "event", tab], new Date()), [...head, ...body])
   }
 
   return (
@@ -311,11 +345,9 @@ function RegistrationTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("registration.over_time")}>
             <LineArea
@@ -365,8 +397,8 @@ function RegistrationTab({
             </div>
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -378,11 +410,9 @@ function AttendanceTab({
   k: number
 }) {
   const { t } = useT("host-analytics")
-  const gate = useGate(query)
-  const data = query.data
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("attendance.arrivals")}>
             <p className="mb-token-2 text-token-12 text-console-ink-3">
@@ -433,8 +463,8 @@ function AttendanceTab({
             </div>
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -448,11 +478,9 @@ function MessagingTab({
   const { t } = useT("host-analytics")
   const { t: te } = useT("enums")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("messaging.totals")}>
             <dl className="grid grid-cols-3 gap-token-4">
@@ -516,8 +544,8 @@ function MessagingTab({
             />
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -530,11 +558,9 @@ function PageTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("page.views")}>
             <LineArea
@@ -577,7 +603,7 @@ function PageTab({
             />
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }

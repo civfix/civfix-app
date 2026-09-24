@@ -1,11 +1,16 @@
 import React, { useCallback } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router"
-import { GroupInfoBody, Icon, Text, iconMap } from "@civfix/ui"
+import { GroupInfoBody } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { seedEntry } from "@/components/MobileNavAdapter"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { RouteHeader } from "@/components/ui/RouteHeader"
+import { ROOT_ROUTE_NAME } from "@/lib/nestedShellSignal"
+import { makeThemedStyles } from "@/theme"
+
+// The group chat and this info screen, stacked over the shell: leaving the group pops both.
+const CHAT_AND_INFO_DEPTH = 2
 
 type RootStackNavigation = {
   getState: () => { index: number } | undefined
@@ -16,7 +21,6 @@ export default function GroupInfoScreen() {
   const router = useRouter()
   const navigation = useNavigation<RootStackNavigation>()
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("nav")
   const insets = useSafeAreaInsets()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -29,33 +33,17 @@ export default function GroupInfoScreen() {
   const onLeft = useCallback(() => {
     const stack = navigation.getState()
     const selfIndex = stack?.index ?? 0
-    if (selfIndex >= 2) {
-      router.dismiss(2)
+    if (selfIndex >= CHAT_AND_INFO_DEPTH) {
+      router.dismiss(CHAT_AND_INFO_DEPTH)
       return
     }
     seedEntry({ kind: "messages" })
-    navigation.reset({ index: 0, routes: [{ name: SHELL_ROUTE }] })
+    navigation.reset({ index: 0, routes: [{ name: ROOT_ROUTE_NAME }] })
   }, [navigation, router])
 
   return (
     <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("a11y.back")}
-          onPress={onBack}
-          hitSlop={8}
-          style={({ pressed }) => [styles.back, pressed ? styles.pressed : null]}
-        >
-          <Icon icon={iconMap.ArrowLeft} size={BACK_ICON_SIZE} color={th.colors.text} />
-        </Pressable>
-        <View pointerEvents="none" style={styles.titleWrap}>
-          <Text accessibilityRole="header" style={styles.title}>
-            {t("title.group_info")}
-          </Text>
-        </View>
-        <View style={styles.headerSpacer} />
-      </View>
+      <RouteHeader title={t("title.group_info")} onBack={onBack} />
       <GroupInfoBody
         id={id}
         onBack={onLeft}
@@ -65,36 +53,6 @@ export default function GroupInfoScreen() {
   )
 }
 
-const BACK_ICON_SIZE = 20
-
-const SHELL_ROUTE = "index"
-
 const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
-  header: {
-    minHeight: 60,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.colors.border,
-    position: "relative",
-  },
-  back: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  titleWrap: { position: "absolute", left: 0, right: 0, alignItems: "center" },
-  title: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 17,
-    lineHeight: 22,
-    color: t.colors.text,
-  },
-  headerSpacer: { flex: 1 },
-  pressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
 }))

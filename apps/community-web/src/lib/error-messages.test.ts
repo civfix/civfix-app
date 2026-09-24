@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { AppError, ErrorCode } from "@civfix/shared"
 
-import { baselineErrorOverrides, errorMessage, genericErrorMessage } from "@/lib/error-messages"
-
-/** `t` is faked to echo its key (prefixed) so assertions can see which catalog key was chosen. */
-const t = (key: string) => `t:${key}`
+import { errorMessage } from "@/lib/error-messages"
 
 describe("errorMessage", () => {
   it("uses a matching override over everything else", () => {
@@ -30,28 +27,5 @@ describe("errorMessage", () => {
   it("treats an empty-string override as a real value (not a fallthrough)", () => {
     const err = new AppError(ErrorCode.VALIDATION, "server")
     expect(errorMessage(err, { VALIDATION: "" })).toBe("")
-  })
-})
-
-describe("baselineErrorOverrides", () => {
-  it("maps each common code to its localized web-errors:code.* string", () => {
-    const o = baselineErrorOverrides(t)
-    expect(o.VALIDATION).toBe("t:code.VALIDATION")
-    expect(o.RATE_LIMITED).toBe("t:code.RATE_LIMITED")
-    expect(o.TURNSTILE_FAILED).toBe("t:code.TURNSTILE_FAILED")
-    expect(o.NOT_FOUND).toBe("t:code.NOT_FOUND")
-  })
-
-  it("composes with errorMessage so an unhandled common code resolves to a localized baseline", () => {
-    const err = new AppError(ErrorCode.RATE_LIMITED, "raw")
-    expect(errorMessage(err, baselineErrorOverrides(t), { fallback: genericErrorMessage(t) })).toBe(
-      "t:code.RATE_LIMITED",
-    )
-  })
-})
-
-describe("genericErrorMessage", () => {
-  it("returns the localized generic line", () => {
-    expect(genericErrorMessage(t)).toBe("t:generic")
   })
 })

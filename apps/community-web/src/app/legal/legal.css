@@ -186,6 +186,7 @@
 }
 .legal-prose tbody th {
   text-align: left;
+  font-weight: 700;
 }
 .legal-prose tbody tr:nth-child(even) td,
 .legal-prose tbody tr:nth-child(even) th {

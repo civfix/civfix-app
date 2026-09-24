@@ -2,13 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
-import {
-  checkInSeatsInRow,
-  invalidateOrg,
-  markRosterSeatsCheckedIn,
-  rowStillPendingCheckIn,
-  upsertMyOrganization,
-} from "./console-invalidate"
+import { invalidateOrg, markRosterSeatsCheckedIn, upsertMyOrganization } from "./console-invalidate"
 import { consoleKeys } from "./console-keys"
 
 const AT = "2026-09-06T18:00:00.000Z"
@@ -51,41 +45,6 @@ function page(items: EventRegistrationDTO[], total?: number) {
     pageParams: [undefined],
   }
 }
-
-describe("checkInSeatsInRow", () => {
-  it("checks in every seat it is given", () => {
-    const next = checkInSeatsInRow(row(), ["s1", "s2", "s3"], AT)
-    expect(next.seats.map((s) => s.checkedInAt)).toEqual([AT, AT, AT])
-    expect(next.checkedInAt).toBe(AT)
-  })
-
-  it("leaves seats it was not given alone", () => {
-    const next = checkInSeatsInRow(row(), ["s1"], AT)
-    expect(next.seats.map((s) => s.checkedInAt)).toEqual([AT, null, null])
-    expect(rowStillPendingCheckIn(next)).toBe(true)
-  })
-
-  it("never re-stamps a seat that was already checked in", () => {
-    const earlier = "2026-09-06T17:00:00.000Z"
-    const next = checkInSeatsInRow(
-      row({ seats: [seat("s1", { checkedInAt: earlier }), seat("s2")], seatCount: 2 }),
-      ["s1", "s2"],
-      AT,
-    )
-    expect(next.seats[0]?.checkedInAt).toBe(earlier)
-    expect(next.seats[1]?.checkedInAt).toBe(AT)
-  })
-
-  it("does not check in a cancelled seat", () => {
-    const next = checkInSeatsInRow(
-      row({ seats: [seat("s1", { status: "cancelled" })], seatCount: 1 }),
-      ["s1"],
-      AT,
-    )
-    expect(next.seats[0]?.checkedInAt).toBeNull()
-    expect(rowStillPendingCheckIn(next)).toBe(false)
-  })
-})
 
 describe("markRosterSeatsCheckedIn", () => {
   it("keeps the row in the attendees list with its seats updated", () => {

@@ -4,7 +4,7 @@ import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
 import { resolveActiveLocale } from "@/lib/locale"
 import { storage } from "@/lib/mmkv"
-import { LOCALE_KEY } from "@/lib/mmkv-keys"
+import { LOCALE_KEY } from "@/lib/mmkvKeys"
 
 interface PrefsState {
   locale: SupportedLocale

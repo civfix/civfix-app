@@ -5,12 +5,12 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { LEGAL_DOCUMENTS, currentVersion, isCurrent } from "@civfix/shared/legal"
 
-import { LEGAL_DOC_TYPE, legalVersionFor, type LegalDocId } from "./legal-page"
+import { LEGAL_DOC_IDS, legalVersionFor } from "./legal-page"
 
 const appDir = fileURLToPath(new URL("../../..", import.meta.url))
 const legalRoutesDir = join(appDir, "src", "app", "legal")
 
-const DOC_IDS = Object.keys(LEGAL_DOC_TYPE) as LegalDocId[]
+const DOC_IDS = LEGAL_DOC_IDS
 
 describe("legal documents, routes and versions", () => {
   it("has a rendered route for every LegalDocId", () => {
@@ -28,20 +28,20 @@ describe("legal documents, routes and versions", () => {
 
   it("maps every doc id onto a type the contract knows", () => {
     const known = new Set(LEGAL_DOCUMENTS.map((document) => document.type))
-    for (const id of DOC_IDS) expect(known.has(LEGAL_DOC_TYPE[id])).toBe(true)
+    for (const id of DOC_IDS) expect(known.has(id)).toBe(true)
   })
 
   it("renders the contract's current version for each document", () => {
     for (const id of DOC_IDS) {
       const document = legalVersionFor(id)
-      expect(document.version).toBe(currentVersion(LEGAL_DOC_TYPE[id]))
-      expect(isCurrent(LEGAL_DOC_TYPE[id], document.version)).toBe(true)
+      expect(document.version).toBe(currentVersion(id))
+      expect(isCurrent(id, document.version)).toBe(true)
       expect(document.sha256).toMatch(/^[0-9a-f]{64}$/)
     }
   })
 
   it("renders every versioned document at a /legal route, leaving none unhashable", () => {
-    const webTypes = new Set(DOC_IDS.map((id) => LEGAL_DOC_TYPE[id]))
+    const webTypes = new Set<string>(DOC_IDS)
     const unrendered = LEGAL_DOCUMENTS.map((document) => document.type).filter(
       (type) => !webTypes.has(type),
     )

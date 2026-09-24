@@ -40,7 +40,7 @@ function BroadcastsList() {
   const [pendingCancel, setPendingCancel] = useState<BroadcastDTO | null>(null)
 
   const list = useInfiniteQuery<ListEventBroadcastsResponse>({
-    queryKey: consoleKeys.broadcasts(eventId, "all"),
+    queryKey: consoleKeys.broadcasts(eventId),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       api.listEventBroadcasts({

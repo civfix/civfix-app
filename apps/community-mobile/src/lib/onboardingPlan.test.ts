@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import {
   ONBOARDING_LAST_INDEX,
@@ -20,7 +21,6 @@ const ELIGIBLE: OnboardingEligibility = {
   completedVersion: 0,
   currentVersion: 1,
   replayRequested: false,
-  fontsReady: true,
   gateActive: false,
   authStatus: "unauthed",
   profileIncomplete: false,
@@ -47,7 +47,8 @@ test("a newer tour version shows again to someone who saw the older one", () => 
 })
 
 test("the tour waits for the fonts and for the loading gate to clear", () => {
-  assert.equal(shouldShowOnboarding({ ...ELIGIBLE, fontsReady: false }), false)
+  const launchGate = readFileSync(new URL("../boot/useLaunchGate.ts", import.meta.url), "utf8")
+  assert.match(launchGate, /const gateActive =\n\s+!fontsReady \|\|/, "unloaded fonts hold the loading gate up")
   assert.equal(shouldShowOnboarding({ ...ELIGIBLE, gateActive: true }), false)
 })
 
@@ -70,7 +71,6 @@ test("a replay from settings shows the tour again without unwriting the completi
 
 test("a replay request still waits for the fonts, the gate, the session and registration", () => {
   const replaying = { ...ELIGIBLE, completedVersion: 1, replayRequested: true }
-  assert.equal(shouldShowOnboarding({ ...replaying, fontsReady: false }), false)
   assert.equal(shouldShowOnboarding({ ...replaying, gateActive: true }), false)
   assert.equal(shouldShowOnboarding({ ...replaying, authStatus: "idle" }), false)
   assert.equal(shouldShowOnboarding({ ...replaying, authStatus: "loading" }), false)

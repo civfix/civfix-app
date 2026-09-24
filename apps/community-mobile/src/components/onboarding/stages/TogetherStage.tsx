@@ -41,7 +41,7 @@ import {
   useStageStep,
   useStageTimeline,
 } from "./stageMotion"
-import type { StageProps } from "./stageTypes"
+import { noop, pinHeightFor, type StageProps } from "./stageTypes"
 
 const TOTAL_MS = 5200
 
@@ -62,7 +62,7 @@ const STEP_STOPS = stageStops(TOTAL_MS, 1300, 1880, TYPING_IN_MS, TYPING_OUT_MS)
 const TYPING_STEP = 3
 
 const PIN_SIZE = 34
-const PIN_HEIGHT = Math.round(PIN_SIZE * (76 / 64))
+const PIN_HEIGHT = pinHeightFor(PIN_SIZE)
 const PIN_DROP = STAGE_DROP_PX * 4
 const AVATAR_SIZE = 22
 const AVATAR_OVERLAP = -8
@@ -71,8 +71,6 @@ const STRIP_ASPECT_RATIO = sceneAspectRatio(ONBOARDING_MAP_SCENES.together)
 const CARD_OVERLAP = space["4"]
 const ATTRIBUTION_INSET = CARD_OVERLAP + space["2"]
 const GUEST_PATH = "/"
-
-function noop(): void {}
 
 function StageBubble({ item }: { item: ChatItem }) {
   return (

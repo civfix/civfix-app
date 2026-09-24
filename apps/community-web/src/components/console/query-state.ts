@@ -5,7 +5,7 @@ import { ErrorCode } from "@civfix/shared"
 
 import { toAppError } from "@/lib/api"
 
-export function useIsOffline(): boolean {
+function useIsOffline(): boolean {
   const [offline, setOffline] = useState(false)
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function useIsOffline(): boolean {
   return offline
 }
 
-export interface GateFlags {
+interface GateFlags {
   loading: boolean
   error: boolean
   offline: boolean
@@ -31,7 +31,7 @@ export interface GateFlags {
   notFound: boolean
 }
 
-export interface QueryLike {
+interface QueryLike {
   isPending?: boolean
   isLoading?: boolean
   isError?: boolean
@@ -39,7 +39,7 @@ export interface QueryLike {
   data?: unknown
 }
 
-export function gateFlags(query: QueryLike, offline: boolean): GateFlags {
+function gateFlags(query: QueryLike, offline: boolean): GateFlags {
   const failed = query.isError === true
   const code = failed ? toAppError(query.error).code : null
   const networkError = failed && code === ErrorCode.INTERNAL && offline
@@ -64,12 +64,5 @@ export function useGate(query: QueryLike): GateFlags {
 
 export function fieldErrorsFrom(err: unknown): Record<string, string> {
   const app = toAppError(err)
-  if (app.code !== ErrorCode.VALIDATION) return {}
-  const fields = app.fields
-  if (!fields || typeof fields !== "object") return {}
-  const out: Record<string, string> = {}
-  for (const [key, value] of Object.entries(fields)) {
-    if (typeof value === "string") out[key] = value
-  }
-  return out
+  return app.code === ErrorCode.VALIDATION ? { ...(app.fields ?? {}) } : {}
 }

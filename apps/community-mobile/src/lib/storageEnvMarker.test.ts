@@ -2,7 +2,6 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import {
-  LEGACY_STORAGE_IDS,
   PROD_STORAGE_ENV,
   STORAGE_ENV_MARKER_KEY,
   purgesLegacyStorage,
@@ -11,6 +10,14 @@ import {
 } from "./storageEnvMarker.ts"
 import { scopeStorageId, storageNamespace } from "./storageScope.ts"
 import { DEV_API_URL, PROD_API_URL, STAGING_API_URL } from "./apiUrl.ts"
+
+// The storage ids a pre-namespacing production build wrote, which a later environment switch must purge.
+const LEGACY_STORAGE_IDS = [
+  "civfix.session.token",
+  "civfix.app",
+  "civfix.secure",
+  "civfix.secure-blobs.key",
+] as const
 
 const PROD = storageNamespace(PROD_API_URL)
 const STAGING = storageNamespace(STAGING_API_URL)
@@ -68,6 +75,15 @@ test("every listed legacy id is exactly what a production build resolves to", ()
     assert.equal(scopeStorageId(id, PROD_API_URL), id)
     assert.notEqual(scopeStorageId(id, STAGING_API_URL), id)
   }
+})
+
+test("the legacy ids are exactly the ids the storage modules scope, so the list cannot drift", () => {
+  const scoped = ["../auth/storage.ts", "./mmkv.ts", "./nativeSecureStore.ts"].flatMap((rel) =>
+    [...readFileSync(new URL(rel, import.meta.url), "utf8").matchAll(/scopeStorageId\("([^"]+)"/g)].map(
+      (m) => m[1],
+    ),
+  )
+  assert.deepEqual(scoped.sort(), [...LEGACY_STORAGE_IDS].sort())
 })
 
 test("a TestFlight detour between two App Store boots never wipes the production session", () => {

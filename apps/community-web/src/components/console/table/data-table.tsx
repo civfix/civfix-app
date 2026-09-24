@@ -7,11 +7,13 @@ import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
+import { TIGHT_ROW_PAD_Y } from "../row-density"
 import { LoadingState, Skeleton } from "../states"
 import { useIsNarrow } from "../use-media-query"
 import type { SelectionApi } from "./use-selection"
 
 const NOOP = () => {}
+const CELL_PAD = `px-token-3 ${TIGHT_ROW_PAD_Y}`
 
 function useScrollShadow<E extends HTMLElement>() {
   const ref = React.useRef<E>(null)
@@ -222,12 +224,12 @@ export function DataTable<T>({
               ? Array.from({ length: skeletonRows }, (_, i) => (
                   <tr key={i} className="border-b border-console-line last:border-b-0">
                     {selection ? (
-                      <td className="px-token-3 py-[13px]">
+                      <td className={CELL_PAD}>
                         <Skeleton shape="text" className="h-4 w-4" />
                       </td>
                     ) : null}
                     {visibleColumns.map((column) => (
-                      <td key={column.id} className="px-token-3 py-[13px]">
+                      <td key={column.id} className={CELL_PAD}>
                         <Skeleton shape="text" className="max-w-[120px]" />
                       </td>
                     ))}
@@ -249,7 +251,7 @@ export function DataTable<T>({
                       )}
                     >
                       {selection ? (
-                        <td className="px-token-3 py-[13px]">
+                        <td className={CELL_PAD}>
                           <input
                             type="checkbox"
                             aria-label={rowSelectLabel?.(row) ?? t("table.select_row")}
@@ -271,7 +273,8 @@ export function DataTable<T>({
                           <td
                             key={column.id}
                             className={cn(
-                              "px-token-3 py-[13px] text-token-13 text-console-ink-2 [font-feature-settings:'tnum']",
+                              CELL_PAD,
+                              "text-token-13 text-console-ink-2 [font-feature-settings:'tnum']",
                               column.align === "right" && "text-right",
                             )}
                           >

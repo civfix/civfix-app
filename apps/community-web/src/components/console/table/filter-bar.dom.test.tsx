@@ -40,10 +40,10 @@ describe("FilterBar", () => {
   it("gives the remove-filter control a 24px target", () => {
     renderConsole(
       <FilterBar
-        facets={[{ id: "late", label: "Late", kind: "toggle", active: true, onChange: () => {} }]}
+        facets={[{ id: "late", label: "Late", kind: "search", value: "yes", onChange: () => {} }]}
       />,
     )
-    const remove = screen.getByRole("button", { name: "filter.remove_chip(label=Late)" })
+    const remove = screen.getByRole("button", { name: "filter.remove_chip(label=Late: yes)" })
     expect(remove.className).toMatch(/\bh-6\b/)
     expect(remove.className).toMatch(/\bw-6\b/)
   })

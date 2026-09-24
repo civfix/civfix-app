@@ -1,5 +1,4 @@
-
-export type AppLifecycleState = "active" | "background" | "inactive" | "unknown" | "extension"
+import type { AppLifecycleState } from "@/lib/lifecycleTypes"
 
 export const MAX_VIDEO_SECONDS = 10
 
@@ -65,8 +64,8 @@ export interface ViewfinderOutputInputs {
   recordingBusy: boolean
 }
 
-export function viewfinderPreviewEnabled(i: ViewfinderOutputInputs): boolean {
-  return i.hostActive
+export function viewfinderPreviewEnabled(hostActive: boolean): boolean {
+  return hostActive
 }
 
 export function viewfinderVideoOutputEnabled(i: ViewfinderOutputInputs): boolean {

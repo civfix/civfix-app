@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Loader2, Check, X } from "lucide-react"
 import { isValidHandle } from "@civfix/shared"
+import { space } from "@civfix/shared/tokens"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -15,7 +16,8 @@ import {
   useUpdateProfile,
 } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
-import { SESSION_ALERT_ATTR } from "@/styles/z-layers"
+import { HANDLE_MAX_LENGTH } from "@/lib/input-limits"
+import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
 
 export function FirstRunGate() {
   const required = useFirstRunRequired()
@@ -110,11 +112,11 @@ function FirstRunForm() {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 200,
+        zIndex: Z_FIRST_RUN_GATE,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 20,
+        padding: space["5"],
         background: "var(--scrim)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
@@ -127,7 +129,7 @@ function FirstRunForm() {
           maxWidth: 440,
           background: "var(--card)",
           borderRadius: 24,
-          padding: 24,
+          padding: space["6"],
           boxShadow: "var(--shadow-4), var(--sheen-top)",
           maxHeight: "calc(100vh - 40px)",
           overflowY: "auto",
@@ -139,7 +141,7 @@ function FirstRunForm() {
           <h2 id="first-run-title" style={{ marginTop: 14, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>
             {t("title")}
           </h2>
-          <p className="help" style={{ marginTop: 4, maxWidth: 320 }}>
+          <p className="help" style={{ marginTop: space["1"], maxWidth: 320 }}>
             {t("subtitle")}
           </p>
         </div>
@@ -179,7 +181,7 @@ function FirstRunForm() {
               className="input"
               value={handle}
               onChange={(e) => setHandle(e.target.value.replace(/^@+/, ""))}
-              maxLength={20}
+              maxLength={HANDLE_MAX_LENGTH}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
@@ -202,13 +204,13 @@ function FirstRunForm() {
             </p>
           </div>
 
-          <div style={{ marginBottom: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ marginBottom: space["3"], display: "flex", flexDirection: "column", gap: space["2"] }}>
             <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
             <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
           </div>
 
           {update.isError && (
-            <p role="alert" className="cf-clean-error" style={{ marginBottom: 8 }}>
+            <p role="alert" className="cf-clean-error" style={{ marginBottom: space["2"] }}>
               {errorMessage(update.error, {
                 VALIDATION: t("error.validation"),
                 CONFLICT: t("error.conflict"),
@@ -231,7 +233,7 @@ function FirstRunForm() {
             )}
           </button>
 
-          <div className="help" style={{ textAlign: "center", marginTop: 12 }}>
+          <div className="help" style={{ textAlign: "center", marginTop: space["3"] }}>
             {t("not_you")}{" "}
             <button
               type="button"

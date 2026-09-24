@@ -2,6 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from "react"
 
+import { CONSOLE_ROOT } from "./route"
+
 export const CONSOLE_REPLACE_PARAM_KEYS = [
   "tab",
   "q",
@@ -41,13 +43,10 @@ export type ConsoleParamPatch = Partial<Record<ConsoleParamKey, string | null>>
 export type UrlWriteMode = "push" | "replace"
 
 const URL_STATE_EVENT = "civfix-console:urlstate"
+const CONSOLE_HOME = `${CONSOLE_ROOT}/`
 
 const KNOWN_KEYS = new Set<string>(CONSOLE_PARAM_KEYS)
 const PUSH_KEYS = new Set<string>(CONSOLE_PUSH_PARAM_KEYS)
-
-export function isConsoleParamKey(key: string): key is ConsoleParamKey {
-  return KNOWN_KEYS.has(key)
-}
 
 export function isDrawerParamKey(key: string): key is ConsolePushParamKey {
   return PUSH_KEYS.has(key)
@@ -150,10 +149,6 @@ function subscribe(onChange: () => void): () => void {
   }
 }
 
-export function getConsoleParams(): ConsoleParams {
-  return paramsSnapshot()
-}
-
 export function setConsoleParams(patch: ConsoleParamPatch, mode?: UrlWriteMode): void {
   if (typeof window === "undefined") return
   const next = applyConsolePatch(paramsSnapshot(), patch)
@@ -225,8 +220,8 @@ export function useConsoleUrlState(): ConsoleUrlState {
 export function useConsolePathname(): string {
   return useSyncExternalStore(
     subscribe,
-    () => (typeof window === "undefined" ? "/manage/" : window.location.pathname),
-    () => "/manage/",
+    () => (typeof window === "undefined" ? CONSOLE_HOME : window.location.pathname),
+    () => CONSOLE_HOME,
   )
 }
 

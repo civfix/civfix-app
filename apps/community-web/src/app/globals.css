@@ -196,11 +196,6 @@
 }
 
 @layer utilities {
-  /* tokens.radius.pin as a utility, so JSX can use the teardrop shape. */
-  .rounded-pin {
-    border-radius: 50% 50% 50% 6px;
-  }
-
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -247,7 +242,7 @@
 }
 .cf-shell .maplibregl-ctrl-attrib.maplibregl-compact {
   background: color-mix(in srgb, var(--paper) 85%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 .cf-shell .maplibregl-ctrl-attrib,
 .cf-shell .maplibregl-ctrl-attrib a {

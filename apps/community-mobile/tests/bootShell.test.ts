@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs"
 import { test } from "node:test"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
+const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
+const launchGate = readFileSync(new URL("../src/boot/useLaunchGate.ts", import.meta.url), "utf8")
+const pushOnSignIn = readFileSync(new URL("../src/push/usePushOnSignIn.ts", import.meta.url), "utf8")
+const appBridges = readFileSync(new URL("../src/boot/AppBridges.tsx", import.meta.url), "utf8")
+const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
 const config = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8")
 const apiUrlModule = readFileSync(new URL("../src/lib/apiUrl.ts", import.meta.url), "utf8")
@@ -20,7 +25,8 @@ const authStorage = readFileSync(new URL("../src/auth/storage.ts", import.meta.u
 const appConfig = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
 
 test("the root layout exports an ErrorBoundary so expo-router can catch a boot crash", () => {
-  assert.match(layout, /export function ErrorBoundary\(\{ error, retry \}: ErrorBoundaryProps\)/)
+  assert.match(layout, /^export \{ ErrorBoundary \} from "@\/components\/CrashScreen"$/m)
+  assert.match(crashScreen, /export function ErrorBoundary\(\{ error, retry \}: ErrorBoundaryProps\)/)
 })
 
 test("the root layout anchors every deep link under the home route", () => {
@@ -34,7 +40,7 @@ test("the focused root clears the nested-shell signal, and nothing else touches 
 })
 
 test("the crash retry drops the persisted AND in-memory cache before re-rendering", () => {
-  const body = layout.slice(layout.indexOf("export function ErrorBoundary"))
+  const body = crashScreen.slice(crashScreen.indexOf("export function ErrorBoundary"))
   const purge = body.indexOf("purgeQueryCache(queryClient)")
   const again = body.indexOf("void retry()")
 
@@ -42,9 +48,10 @@ test("the crash retry drops the persisted AND in-memory cache before re-renderin
 })
 
 test("the splash is bounded by a watchdog, so a stalled font load cannot hold it forever", () => {
-  assert.match(layout, /const SPLASH_WATCHDOG_MS = \d+/)
-  assert.match(layout, /setTimeout\(\(\) => setFontWaitElapsed\(true\), SPLASH_WATCHDOG_MS\)/)
-  assert.match(layout, /SplashScreen\.hideAsync\(\)\.catch\(/)
+  assert.match(launchGate, /const SPLASH_WATCHDOG_MS = \d+/)
+  assert.match(launchGate, /setTimeout\(\(\) => setFontWaitElapsed\(true\), SPLASH_WATCHDOG_MS\)/)
+  assert.match(launchGate, /SplashScreen\.hideAsync\(\)\.catch\(/)
+  assert.match(layout, /useLaunchGate\(fonts, status\)/)
 })
 
 test("the loading gate stops hit-testing the moment it starts fading out", () => {
@@ -53,7 +60,8 @@ test("the loading gate stops hit-testing the moment it starts fading out", () =>
 })
 
 test("push registration latches on a terminal outcome, never before the async work", () => {
-  const hook = layout.slice(layout.indexOf("function usePushOnSignIn"))
+  assert.match(layout, /^  usePushOnSignIn\(\)$/m)
+  const hook = pushOnSignIn.slice(pushOnSignIn.indexOf("function usePushOnSignIn"))
   assert.match(hook, /if \(!shouldAttemptPushRegistration\(state\)\) return/)
   assert.match(hook, /if \(isPushOutcomeTerminal\(result\.status\)\) \{\n\s+state\.settled = true/)
   assert.match(hook, /if \(isForegroundEdge\(attemptRef\.current, next\)\) attempt\(\)/)
@@ -119,14 +127,15 @@ test("the app config OMITS apiUrl when unset rather than baking a null Expo turn
 })
 
 test("the About presenter is registered for the ROUTER's lifetime, not a leaf screen's", () => {
-  assert.match(layout, /function BrandAboutBridge\(\): null \{/)
-  assert.match(layout, /setBrandAboutPresenter\(\(\) => router\.push\("\/about"\)\)/)
-  assert.match(layout, /return \(\) => setBrandAboutPresenter\(null\)/)
-  assert.match(layout, /<BrandAboutBridge \/>/)
+  assert.match(appBridges, /function BrandAboutBridge\(\): null \{/)
+  assert.match(appBridges, /setBrandAboutPresenter\(\(\) => router\.push\("\/about"\)\)/)
+  assert.match(appBridges, /return \(\) => setBrandAboutPresenter\(null\)/)
+  assert.match(appBridges, /<BrandAboutBridge \/>/)
+  assert.match(layout, /<AppBridges \/>/)
   assert.doesNotMatch(home, /setBrandAboutPresenter/)
 })
 
 test("the android navigation bar glyphs follow the active scheme", () => {
-  assert.match(layout, /import \* as NavigationBar from "expo-navigation-bar"/)
-  assert.match(layout, /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/)
+  assert.match(rootStack, /import \* as NavigationBar from "expo-navigation-bar"/)
+  assert.match(rootStack, /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/)
 })

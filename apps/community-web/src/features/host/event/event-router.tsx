@@ -25,6 +25,7 @@ import { Chip } from "@/components/console/chips/chip"
 import { ConsoleShell } from "../layout/console-shell"
 import { Breadcrumbs } from "../layout/breadcrumbs"
 import { EventSwitcher } from "../layout/event-switcher"
+import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import type { ConsoleNavItem } from "../layout/nav-items"
 import { ConsoleEventProvider, useConsoleNavigation } from "../console-context"
 import { useConsoleFormat } from "../format"
@@ -142,7 +143,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
   return (
     <ConsoleShell
       navItems={navItems}
-      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, 5)}
+      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, MAX_BOTTOM_TABS)}
       activeId={section}
       title={event?.title ?? tc("state.loading")}
       headerActions={<EventSwitcher eventId={eventId} section={section} />}

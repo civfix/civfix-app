@@ -2,6 +2,7 @@ import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"
 import { API_URL } from "@/config"
 import { scopeStorageId } from "@/lib/storageScope"
+import { memoryKeyValueStore, type ClearableKeyValueStore } from "@/lib/memoryKeyValueStore"
 
 const INSTANCE_ID = scopeStorageId("civfix.app", API_URL)
 
@@ -11,29 +12,11 @@ export interface KeyValueStore {
   delete(key: string): void
 }
 
-interface ClearableStore extends KeyValueStore {
-  clearAll(): void
-}
-
-function memoryStore(): ClearableStore {
-  const map = new Map<string, string>()
-  return {
-    getString: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value)
-    },
-    delete: (key) => {
-      map.delete(key)
-    },
-    clearAll: () => map.clear(),
-  }
-}
-
-function createStore(): ClearableStore {
+function createStore(): ClearableKeyValueStore {
   try {
     return new MMKV({ id: INSTANCE_ID })
   } catch {
-    return memoryStore()
+    return memoryKeyValueStore()
   }
 }
 

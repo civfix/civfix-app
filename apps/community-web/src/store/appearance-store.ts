@@ -7,7 +7,7 @@ import {
   type AppearancePreference,
 } from "@civfix/ui/theme"
 
-export const APPEARANCE_STORAGE_KEY = "civfix.appearance"
+import { APPEARANCE_STORAGE_KEY } from "@/lib/appearance-script"
 
 function readStoredPreference(): AppearancePreference {
   if (typeof window === "undefined") return DEFAULT_APPEARANCE_PREFERENCE

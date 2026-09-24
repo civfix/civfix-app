@@ -22,17 +22,11 @@ import {
 } from "@civfix/ui/data"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import { entryFromPath, useNavStore } from "@civfix/ui/nav"
-import { layoutModeFor } from "@civfix/ui"
 
 import { AppShellFrame } from "@/components/home/home-shell"
+import { liveMode } from "@/components/home/live-layout-mode"
 import { landscapeFakeApi, FAKE_VIEWER } from "@/components/dev/landscape-fake-api"
 import { makeQueryClient } from "@/lib/query"
-
-/** The live layout mode, by the shared `layoutModeFor` rule (landscape AND wide enough). */
-function liveMode(): "compact" | "expanded" {
-  if (typeof window === "undefined") return "expanded"
-  return layoutModeFor(window.innerWidth, window.innerHeight)
-}
 
 function searchParams(): URLSearchParams {
   if (typeof window === "undefined") return new URLSearchParams()

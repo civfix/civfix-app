@@ -12,8 +12,7 @@ import type {
 } from "@civfix/ui/capabilities"
 import { MAX_VIDEO_SECONDS } from "./cameraSession"
 import { resolveUploadContentType, stripJpegMetadata } from "./mediaBytes"
-import { ReportViewfinder } from "@/components/report/ReportViewfinder"
-export { MAX_VIDEO_SECONDS }
+import { capturedMediaFromPickerAsset, fileUri } from "./capturedMedia"
 
 type Navigator = (captureId: string) => void
 let navigateToSurface: Navigator | null = null
@@ -54,10 +53,6 @@ function localPath(uri: string): string {
   } catch {
     return withoutScheme
   }
-}
-
-function fileUri(uri: string): string {
-  return uri.startsWith("file://") ? uri : `file://${uri}`
 }
 
 function isTempOutputName(uri: string): boolean {
@@ -165,8 +160,6 @@ async function reencodeImageWithoutMetadata(uri: string): Promise<string> {
 }
 
 export const nativeCamera: CameraCapability = {
-  Viewfinder: ReportViewfinder,
-
   isAvailable(): boolean {
     return navigateToSurface !== null
   },
@@ -191,16 +184,7 @@ export const nativeCamera: CameraCapability = {
     })
     sweepStaleMediaTempFiles()
     if (result.canceled || result.assets.length === 0) return null
-    const asset = result.assets[0]!
-    const isVideo = asset.type === "video"
-    return {
-      uri: asset.uri,
-      kind: isVideo ? "video" : "image",
-      mime: asset.mimeType ?? (isVideo ? "video/mp4" : "image/jpeg"),
-      ...(asset.width ? { width: asset.width } : {}),
-      ...(asset.height ? { height: asset.height } : {}),
-      ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
-    }
+    return capturedMediaFromPickerAsset(result.assets[0]!)
   },
 
   async prepareUpload(media: CapturedMedia): Promise<PreparedUpload> {

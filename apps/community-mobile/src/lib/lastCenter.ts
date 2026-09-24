@@ -1,6 +1,6 @@
 import { isRememberedCenter, type RememberedCenter } from "@civfix/ui"
 import { storage } from "@/lib/mmkv"
-import { LAST_MAP_CENTER_KEY } from "@/lib/mmkv-keys"
+import { LAST_MAP_CENTER_KEY } from "@/lib/mmkvKeys"
 
 const LAST_MAP_CENTER_VERSION = 1
 

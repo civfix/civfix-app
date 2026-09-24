@@ -8,14 +8,25 @@ import { hrefForRoute } from "@/components/console/route"
 import { useGate } from "@/components/console/query-state"
 import { LoadingState, StateGate } from "@/components/console/states"
 import { Chip } from "@/components/console/chips/chip"
-import { Donut, KpiCell, StatStrip } from "@/components/console/charts"
+import { Donut } from "@/components/console/charts"
 
 import { ConsoleLink } from "../layout/console-link"
 import { useConsoleEvent } from "../console-context"
 import { useConsoleFormat } from "../format"
+import { CountersStrip, type CounterCell } from "./counters-strip"
+
+const QUICK_LINK_CLASS =
+  "inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+
+const OVERVIEW_COUNTER_CELLS: readonly CounterCell[] = [
+  "registered",
+  "checked_in",
+  "waitlist",
+  "no_show",
+  "capacity",
+]
 
 function ArrivalsSummary({ eventId, timeZone }: { eventId: string; timeZone?: string }) {
-  const { t } = useT("host-event")
   const format = useConsoleFormat(timeZone)
   const counters = useHostCounters(eventId)
   const gate = useGate(counters)
@@ -28,39 +39,13 @@ function ArrivalsSummary({ eventId, timeZone }: { eventId: string; timeZone?: st
       skeleton={<LoadingState shape="kpi" count={1} />}
     >
       {data ? (
-        <>
-          <StatStrip className="w-full">
-            <KpiCell
-              size="strip"
-              label={t("counters.registered")}
-              value={format.number(data.registered)}
-            />
-            <KpiCell
-              size="strip"
-              label={t("counters.checked_in")}
-              value={format.number(data.checkedIn)}
-            />
-            <KpiCell
-              size="strip"
-              label={t("counters.waitlist")}
-              value={format.number(data.waitlisted)}
-              hot={data.waitlisted > 0}
-            />
-            <KpiCell
-              size="strip"
-              label={t("counters.no_show")}
-              value={format.number(data.noShow)}
-            />
-            <KpiCell
-              size="strip"
-              label={t("counters.capacity")}
-              value={data.capacity === null ? t("counters.unlimited") : format.number(data.capacity)}
-            />
-          </StatStrip>
-          <p className="mt-token-2 text-token-12 text-console-ink-3">
-            {t("counters.as_of", { time: format.time(data.asOf) })} · {t("counters.units")}
-          </p>
-        </>
+        <CountersStrip
+          counters={data}
+          cells={OVERVIEW_COUNTER_CELLS}
+          namespace="host-event"
+          format={format}
+          className="w-full"
+        />
       ) : null}
     </StateGate>
   )
@@ -69,9 +54,9 @@ function ArrivalsSummary({ eventId, timeZone }: { eventId: string; timeZone?: st
 export function OverviewScreen() {
   const { t } = useT("host-event")
   const { eventId, event, can } = useConsoleEvent()
-  const eventTimeZone = event?.timezone ?? undefined
+  const eventTimeZone = event.timezone ?? undefined
   const format = useConsoleFormat(eventTimeZone)
-  const zoneShort = event?.scheduledAt ? format.zoneLabel(event.scheduledAt) : null
+  const zoneShort = event.scheduledAt ? format.zoneLabel(event.scheduledAt) : null
   const ticketTypes = useEventTicketTypes(eventId)
   const ticketsGate = useGate(ticketTypes)
   const types = ticketTypes.data ?? []
@@ -100,16 +85,16 @@ export function OverviewScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.when")}</dt>
               <dd className="text-token-14 font-semibold text-console-ink">
-                {event?.endsAt
+                {event.endsAt
                   ? t("details.when_range", {
                       start: format.dateTime(event.scheduledAt),
                       end: format.time(event.endsAt),
                     })
-                  : format.dateTime(event?.scheduledAt ?? new Date().toISOString())}
+                  : format.dateTime(event.scheduledAt)}
                 {zoneShort ? ` ${zoneShort}` : ""}
               </dd>
             </div>
-            {event?.timezone && zoneShort ? (
+            {event.timezone && zoneShort ? (
               <div className="flex flex-wrap items-baseline justify-between gap-token-2">
                 <dt className="text-token-13 text-console-ink-3">{t("details.timezone")}</dt>
                 <dd className="text-token-14 text-console-ink-2">
@@ -120,13 +105,13 @@ export function OverviewScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.where")}</dt>
               <dd className="max-w-[60%] text-right text-token-14 text-console-ink-2">
-                {event?.address ?? t("details.no_address")}
+                {event.address ?? t("details.no_address")}
               </dd>
             </div>
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.registration")}</dt>
               <dd className="text-token-14 text-console-ink-2">
-                {event?.registrationClosesAt
+                {event.registrationClosesAt
                   ? event.registrationOpensAt
                     ? t("details.registration_range", {
                         opens: format.dateTime(event.registrationOpensAt),
@@ -135,7 +120,7 @@ export function OverviewScreen() {
                     : t("details.registration_open_until", {
                         closes: format.dateTime(event.registrationClosesAt),
                       })
-                  : event?.registrationOpensAt
+                  : event.registrationOpensAt
                     ? format.dateTime(event.registrationOpensAt)
                     : t("details.registration_open")}
               </dd>
@@ -143,10 +128,10 @@ export function OverviewScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.team")}</dt>
               <dd className="text-token-14 text-console-ink-2">
-                {format.number(event?.teamCount ?? 0)}
+                {format.number(event.teamCount ?? 0)}
               </dd>
             </div>
-            {event?.organization ? (
+            {event.organization ? (
               <div className="flex flex-wrap items-baseline justify-between gap-token-2">
                 <dt className="text-token-13 text-console-ink-3">{t("details.organization")}</dt>
                 <dd className="text-token-14 text-console-ink-2">{event.organization.name}</dd>
@@ -161,12 +146,12 @@ export function OverviewScreen() {
               {t("page.title")}
             </h2>
             <div className="flex flex-wrap items-center gap-token-3">
-              {event?.pageStatus ? (
+              {event.pageStatus ? (
                 <Chip kind="page-state" value={event.pageStatus} />
               ) : (
                 <span className="text-token-13 text-console-ink-3">{t("page.none")}</span>
               )}
-              {event?.pageSlug ? (
+              {event.pageSlug ? (
                 <a
                   href={`/e/${event.pageSlug}/`}
                   target="_blank"
@@ -223,7 +208,7 @@ export function OverviewScreen() {
         {can("view_roster") ? (
           <ConsoleLink
             href={hrefForRoute({ kind: "event", eventId, section: "attendees" })}
-            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+            className={QUICK_LINK_CLASS}
           >
             <Users aria-hidden className="h-4 w-4" />
             {t("quick.attendees")}
@@ -232,7 +217,7 @@ export function OverviewScreen() {
         {can("manage_tickets") ? (
           <ConsoleLink
             href={hrefForRoute({ kind: "event", eventId, section: "tickets" })}
-            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+            className={QUICK_LINK_CLASS}
           >
             <Ticket aria-hidden className="h-4 w-4" />
             {t("quick.tickets")}
@@ -240,7 +225,7 @@ export function OverviewScreen() {
         ) : null}
         <a
           href={`/cleanups/${eventId}/`}
-          className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+          className={QUICK_LINK_CLASS}
         >
           <ExternalLink aria-hidden className="h-4 w-4" />
           {t("quick.public_view")}

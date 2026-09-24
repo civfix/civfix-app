@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  DEFAULT_SITE_URL,
   PRODUCTION_SITE_URL,
   STAGING_SITE_URL,
   canonicalSiteOriginFor,
@@ -42,7 +41,7 @@ describe("normalizeSiteUrl", () => {
       undefined,
       null,
     ]) {
-      expect(normalizeSiteUrl(value)).toBe(DEFAULT_SITE_URL)
+      expect(normalizeSiteUrl(value)).toBe(PRODUCTION_SITE_URL)
     }
   })
 })
@@ -79,7 +78,7 @@ describe("resolveSiteOrigin", () => {
       null,
       undefined,
     ]) {
-      expect(resolveSiteOrigin(url)).toBe(DEFAULT_SITE_URL)
+      expect(resolveSiteOrigin(url)).toBe(PRODUCTION_SITE_URL)
     }
   })
 
@@ -97,6 +96,5 @@ describe("resolveSiteOrigin", () => {
     expect(canonicalSiteOriginFor("preview.civfix-web.pages.dev")).toBeNull()
     expect(canonicalSiteOriginFor("civfix.org.evil.com")).toBeNull()
     expect(canonicalSiteOriginFor("notcivfix.dev")).toBeNull()
-    expect(DEFAULT_SITE_URL).toBe(PRODUCTION_SITE_URL)
   })
 })

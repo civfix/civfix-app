@@ -9,7 +9,7 @@ import {
 } from "@civfix/ui/i18n"
 import type { UserDTO } from "@civfix/shared"
 import { storage } from "@/lib/mmkv"
-import { LOCALE_KEY } from "@/lib/mmkv-keys"
+import { LOCALE_KEY } from "@/lib/mmkvKeys"
 
 export function readStoredLocale(): SupportedLocale | null {
   try {

@@ -23,9 +23,16 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { api, toAppError } from "@/lib/api"
 import {
+  SERVICE_RECORD_SEGMENT,
   serviceRecordCodeFromPath,
   serviceRecordPath,
 } from "@/features/service-record/service-record-code"
+
+const COPIED_FLASH_MS = 2000
+
+// The printed "CFX-XXXX-XXXX-XXXX" form is 18 characters, so this leaves one to spare; normalization
+// strips the separators anyway.
+const CODE_INPUT_MAX_LENGTH = 19
 
 /**
  * The public certificate verification page, for a registrar or court clerk holding a printed transcript
@@ -117,7 +124,7 @@ export function ServiceRecordView() {
     setInput("")
     setPhase({ kind: "idle" })
     if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", "/service-record/")
+      window.history.replaceState(null, "", `/${SERVICE_RECORD_SEGMENT}/`)
     }
   }, [])
 
@@ -171,8 +178,7 @@ function CodeForm({
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
-          // 19 = the printed "CFX-XXXX-XXXX-XXXX" form; normalization strips the separators anyway.
-          maxLength={19}
+          maxLength={CODE_INPUT_MAX_LENGTH}
         />
         <Button type="submit" size="lg" disabled={value.trim().length === 0}>
           {t("verify")}
@@ -309,7 +315,7 @@ function Fingerprint({ sha256 }: { sha256: string }) {
 
   React.useEffect(() => {
     if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 2000)
+    const timer = setTimeout(() => setCopied(false), COPIED_FLASH_MS)
     return () => clearTimeout(timer)
   }, [copied])
 

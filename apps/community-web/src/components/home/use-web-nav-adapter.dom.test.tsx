@@ -9,7 +9,8 @@ vi.mock("@civfix/ui", async () => {
 import { entryFromPath, useNavStore, type DetailEntry } from "@civfix/ui/nav"
 
 import { readNavHistory } from "./nav-history"
-import { useWebNavAdapter, webOpenInternalHref } from "./use-web-nav-adapter"
+import { useWebNavAdapter } from "./use-web-nav-adapter"
+import { webOpenInternalHref } from "./web-internal-href"
 
 function Host() {
   useWebNavAdapter()

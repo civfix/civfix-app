@@ -2,22 +2,21 @@
 
 import * as React from "react"
 import { createPortal } from "react-dom"
-import { Mail, Loader2, X } from "lucide-react"
+import { X } from "lucide-react"
 
-import { Trans, useT } from "@civfix/ui/i18n"
+import { useT } from "@civfix/ui/i18n"
 
-import { AppleGlyph, GoogleGlyph } from "@/components/auth/provider-glyphs"
 import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
 import { api, API_BASE_URL } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
 import { oauthRedirectTarget } from "@/lib/oauth-return"
-import { applyOtpInput, emptyOtpCells, otpCode } from "@/lib/otp"
 import { useRefreshSession } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
 import { useAuthStore } from "@/store/auth-store"
 import { useUiStore } from "@/store/ui-store"
 
-type Step = "choices" | "email" | "code"
+import { AuthStepHeading, ChoicesStep, CodeStep, EmailStep, type AuthStep } from "./auth-modal-steps"
+import { useOtpEntry } from "./use-otp-entry"
 
 const OTP_LENGTH = 6
 
@@ -50,29 +49,29 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   const setSession = useAuthStore((s) => s.setSession)
   const enabledProviders = useAuthStore((s) => s.enabledProviders)
 
-  const [step, setStep] = React.useState<Step>("choices")
+  const [step, setStep] = React.useState<AuthStep>("choices")
   const [email, setEmail] = React.useState("")
-  const [cells, setCells] = React.useState<string[]>(() => emptyOtpCells(OTP_LENGTH))
+  const otp = useOtpEntry(OTP_LENGTH)
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [resendAfter, setResendAfter] = React.useState<number>(0)
   const [failedVerifies, setFailedVerifies] = React.useState(0)
 
-  const otpRefs = React.useRef<Array<HTMLInputElement | null>>([])
   const cardRef = React.useRef<HTMLDivElement | null>(null)
   useFocusTrap(cardRef, open)
 
+  const clearOtp = otp.clear
   React.useEffect(() => {
     if (!open) {
       setStep("choices")
       setEmail("")
-      setCells(emptyOtpCells(OTP_LENGTH))
+      clearOtp()
       setError(null)
       setSubmitting(false)
       setResendAfter(0)
       setFailedVerifies(0)
     }
-  }, [open])
+  }, [open, clearOtp])
 
   React.useEffect(() => {
     if (resendAfter <= 0) return
@@ -93,87 +92,66 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   // the inputs would sit under the keyboard. The shift re-centers the card in the visible area above it.
   const vvShift = useVisualViewportShift(open)
 
-  const requestCode = React.useCallback(
-    async (e?: React.FormEvent) => {
-      e?.preventDefault()
-      setError(null)
-      setSubmitting(true)
-      try {
-        const res = await api.otpRequest({ email })
-        setResendAfter(res.resendAfterSec)
-        setCells(emptyOtpCells(OTP_LENGTH))
-        setStep("code")
-      } catch (err) {
-        setError(authErrorMessage(err, t))
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [email, t],
-  )
+  const requestCode = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+    setError(null)
+    setSubmitting(true)
+    try {
+      const res = await api.otpRequest({ email })
+      setResendAfter(res.resendAfterSec)
+      otp.clear()
+      setStep("code")
+    } catch (err) {
+      setError(authErrorMessage(err, t))
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
-  const verifyCode = React.useCallback(
-    async (rawCode: string) => {
-      setError(null)
-      setSubmitting(true)
-      try {
-        // Capture the CSRF token from the verify response so the very next mutation can echo it: the
-        // /auth/session refresh below may not re-issue the token.
-        const res = await api.otpVerify({ email, code: rawCode })
-        setSession({
-          user: res.user,
-          csrfToken: res.csrfToken,
-          guestSmsEnabled: res.guestSmsEnabled,
-        })
-        await refreshSession()
-        setOpen(false)
-      } catch (err) {
-        setError(authErrorMessage(err, t))
-        setCells(emptyOtpCells(OTP_LENGTH))
-        setFailedVerifies((n) => n + 1)
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [email, refreshSession, setSession, setOpen, t],
-  )
+  const verifyCode = async (rawCode: string) => {
+    setError(null)
+    setSubmitting(true)
+    try {
+      // Capture the CSRF token from the verify response so the very next mutation can echo it: the
+      // /auth/session refresh below may not re-issue the token.
+      const res = await api.otpVerify({ email, code: rawCode })
+      setSession({
+        user: res.user,
+        csrfToken: res.csrfToken,
+        guestSmsEnabled: res.guestSmsEnabled,
+      })
+      await refreshSession()
+      setOpen(false)
+    } catch (err) {
+      setError(authErrorMessage(err, t))
+      otp.clear()
+      setFailedVerifies((n) => n + 1)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   // The cells are disabled while a verify is in flight, so a failed verify can only return focus to the
   // first cell after `submitting` has committed back to false.
+  const otpRefs = otp.refs
   React.useEffect(() => {
     if (failedVerifies > 0 && !submitting) otpRefs.current[0]?.focus()
-  }, [failedVerifies, submitting])
+  }, [failedVerifies, submitting, otpRefs])
+
+  const submitIfComplete = (complete: string | null) => {
+    setError(null)
+    if (complete !== null && !submitting) void verifyCode(complete)
+  }
 
   // `raw` may carry several digits: a paste, or the browser autofilling the whole one-time code into the
   // first cell. Submitting with the code in hand avoids waiting for the render that shows the last digit.
-  const setOtpAt = React.useCallback(
-    (i: number, raw: string) => {
-      const { cells: next, focusIndex } = applyOtpInput(cells, i, raw)
-      setCells(next)
-      otpRefs.current[focusIndex]?.focus()
-      setError(null)
-      const complete = otpCode(next)
-      if (complete !== null && !submitting) void verifyCode(complete)
-    },
-    [cells, submitting, verifyCode],
-  )
-
-  const onOtpKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !cells[i] && i > 0) {
-      otpRefs.current[i - 1]?.focus()
-    }
-  }
+  const setOtpAt = (i: number, raw: string) => submitIfComplete(otp.type(i, raw))
 
   const onOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const text = e.clipboardData.getData("text")
     if (!text.replace(/\D/g, "")) return
     e.preventDefault()
-    const { cells: next, focusIndex } = applyOtpInput(emptyOtpCells(OTP_LENGTH), 0, text)
-    setCells(next)
-    otpRefs.current[focusIndex]?.focus()
-    setError(null)
-    const complete = otpCode(next)
-    if (complete !== null && !submitting) void verifyCode(complete)
+    submitIfComplete(otp.paste(text))
   }
 
   if (!open) return null
@@ -215,188 +193,48 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
             <X width={16} height={16} aria-hidden="true" />
           </button>
 
-          {step === "choices" && (
-            <>
-              <h3 id="cf-auth-title" className="cf-auth-title">
-                {t("choices.title")}
-              </h3>
-              <p className="cf-auth-sub">{t("choices.subtitle")}</p>
-            </>
-          )}
-          {step === "email" && (
-            <>
-              <h3 id="cf-auth-title" className="cf-auth-title">
-                {t("email.title")}
-              </h3>
-              <p className="cf-auth-sub">{t("email.subtitle")}</p>
-            </>
-          )}
-          {step === "code" && (
-            <>
-              <h3 id="cf-auth-title" className="cf-auth-title">
-                {t("code.title")}
-              </h3>
-              <p className="cf-auth-sub">
-                <Trans
-                  t={t}
-                  i18nKey="code.subtitle"
-                  values={{ email }}
-                  components={[<strong key="email" />]}
-                />
-              </p>
-            </>
-          )}
+          <AuthStepHeading step={step} email={email} t={t} />
         </div>
 
         <div className="cf-auth-body">
           {step === "choices" && (
-            <>
-              {(showApple || showGoogle) && (
-                <>
-                  <div className="cf-auth-methods">
-                    {showApple && (
-                      <button
-                        type="button"
-                        className="auth-method"
-                        onClick={() => startOAuth("apple", oauthReturnPath)}
-                      >
-                        <AppleGlyph />
-                        {t("choices.continue_apple")}
-                      </button>
-                    )}
-                    {showGoogle && (
-                      <button
-                        type="button"
-                        className="auth-method"
-                        onClick={() => startOAuth("google", oauthReturnPath)}
-                      >
-                        <GoogleGlyph />
-                        {t("choices.continue_google")}
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="auth-divider">{t("choices.divider")}</div>
-                </>
-              )}
-
-              <button
-                type="button"
-                className="auth-method email-pill"
-                onClick={() => setStep("email")}
-              >
-                <Mail width={18} height={18} aria-hidden="true" />
-                {t("choices.continue_email")}
-              </button>
-
-              <div className="cf-auth-trust">{t("choices.trust")}</div>
-              {/* No consent disclaimer here: consent is the explicit checkbox in the first-run gate. */}
-            </>
+            <ChoicesStep
+              t={t}
+              showApple={showApple}
+              showGoogle={showGoogle}
+              onOAuth={(provider) => startOAuth(provider, oauthReturnPath)}
+              onEmail={() => setStep("email")}
+            />
           )}
 
           {step === "email" && (
-            <form className="cf-auth-form" onSubmit={requestCode}>
-              <input
-                className="input cf-auth-email-input"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoFocus
-                required
-                placeholder={t("email.placeholder")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                aria-label={t("email.aria_label")}
-              />
-              <button
-                type="submit"
-                className="btn primary block lg"
-                disabled={submitting || !email.includes("@")}
-              >
-                {submitting && <Loader2 className="cf-spin h-4 w-4" aria-hidden="true" />}
-                {t("email.submit")}
-              </button>
-              {error && (
-                <p role="alert" className="cf-auth-error">
-                  {error}
-                </p>
-              )}
-            </form>
+            <EmailStep
+              t={t}
+              email={email}
+              onEmailChange={setEmail}
+              submitting={submitting}
+              error={error}
+              onSubmit={requestCode}
+            />
           )}
 
           {step === "code" && (
-            <>
-              <div
-                className="otp-row"
-                style={{ marginBottom: 16 }}
-                onPaste={onOtpPaste}
-                role="group"
-                aria-label={t("code.group_aria_label")}
-              >
-                {Array.from({ length: OTP_LENGTH }).map((_, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => {
-                      otpRefs.current[i] = el
-                    }}
-                    className="otp-cell"
-                    value={cells[i] ?? ""}
-                    autoFocus={i === 0}
-                    onChange={(e) => setOtpAt(i, e.target.value)}
-                    onKeyDown={(e) => onOtpKeyDown(i, e)}
-                    maxLength={1}
-                    inputMode="numeric"
-                    autoComplete={i === 0 ? "one-time-code" : "off"}
-                    disabled={submitting}
-                    aria-label={t("code.digit_aria_label", { position: i + 1 })}
-                  />
-                ))}
-              </div>
-
-              {error && (
-                <p role="alert" className="cf-auth-error" style={{ marginBottom: 12 }}>
-                  {error}
-                </p>
-              )}
-
-              {/* The fallback when autofocus or auto-submit on the last digit does not fire. */}
-              <button
-                type="button"
-                className="btn primary block lg"
-                style={{ marginBottom: 12 }}
-                disabled={otpCode(cells) === null || submitting}
-                onClick={() => {
-                  const complete = otpCode(cells)
-                  if (complete !== null) void verifyCode(complete)
-                }}
-              >
-                {submitting && <Loader2 className="cf-spin h-4 w-4" aria-hidden="true" />}
-                {submitting ? t("code.verifying") : t("code.verify")}
-              </button>
-
-              <div className="cf-auth-resend">
-                {t("code.resend_prompt")}{" "}
-                <button
-                  type="button"
-                  disabled={resendAfter > 0 || submitting}
-                  onClick={() => requestCode()}
-                >
-                  {resendAfter > 0
-                    ? t("code.resend_countdown", { count: resendAfter })
-                    : t("code.resend")}
-                </button>
-              </div>
-              <button
-                type="button"
-                className="btn ghost block"
-                onClick={() => {
-                  setError(null)
-                  setStep("email")
-                }}
-              >
-                {t("code.use_different_email")}
-              </button>
-            </>
+            <CodeStep
+              t={t}
+              otp={otp}
+              length={OTP_LENGTH}
+              submitting={submitting}
+              error={error}
+              resendAfter={resendAfter}
+              onType={setOtpAt}
+              onPaste={onOtpPaste}
+              onVerify={(complete) => void verifyCode(complete)}
+              onResend={() => void requestCode()}
+              onUseDifferentEmail={() => {
+                setError(null)
+                setStep("email")
+              }}
+            />
           )}
         </div>
       </div>

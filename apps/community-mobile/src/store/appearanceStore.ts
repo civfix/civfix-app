@@ -6,7 +6,7 @@ import {
   type AppearancePreference,
 } from "@civfix/ui/theme"
 import { mmkvStateStorage } from "@/lib/mmkv"
-import { APPEARANCE_KEY } from "@/lib/mmkv-keys"
+import { APPEARANCE_KEY } from "@/lib/mmkvKeys"
 
 export interface AppearanceState {
   preference: AppearancePreference

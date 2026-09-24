@@ -99,17 +99,13 @@ describe("FunnelRibbon", () => {
 })
 
 describe("HBarRanked", () => {
-  it("keeps only listitems inside its list and the press target a real button", () => {
-    render(
-      <HBarRanked
-        summary={SUMMARY}
-        items={[{ id: "a", label: "Park", value: 3 }]}
-        onPress={() => {}}
-      />,
-    )
+  it("keeps only listitems inside its list, each carrying its row as plain data", () => {
+    render(<HBarRanked summary={SUMMARY} items={[{ id: "a", label: "Park", value: 3 }]} />)
     const list = screen.getByRole("list", { name: SUMMARY })
     for (const child of list.children) expect(child.getAttribute("role")).toBe("listitem")
-    expect(screen.getByRole("button", { name: /Park/ })).toBeTruthy()
-    expect(screen.getAllByRole("listitem")).toHaveLength(1)
+    const items = screen.getAllByRole("listitem")
+    expect(items).toHaveLength(1)
+    expect(items[0]?.textContent).toContain("Park")
+    expect(screen.queryAllByRole("button")).toHaveLength(0)
   })
 })

@@ -1,35 +1,19 @@
 /**
  * These chat-header route files must spell @civfix/ui's `pathForEntry` URLs exactly, and nothing else
  * enforces it, so this calls the real function from the package the app imports.
- *
- * It is loaded by transpiling `src/nav/routes.ts` in memory: `@civfix/ui/nav` has extensionless imports
- * node's ESM resolver rejects, `routes.ts` is not in the package `exports`, and node refuses to strip types
- * under node_modules (ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING), so a by-path import would pass in a
- * linked checkout and fail on a registry install.
  */
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { existsSync, readFileSync } from "node:fs"
-import { createRequire } from "node:module"
+import { existsSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
+import { loadNavRoutes } from "../../tests/helpers/navRoutes.ts"
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app")
 
 type PathForEntry = (entry: unknown) => string
 
-async function loadNavRoutes(): Promise<{ pathForEntry: PathForEntry }> {
-  const require = createRequire(import.meta.url)
-  // Resolved through the package specifier so it follows the same @civfix/ui the app imports.
-  const routesPath = join(dirname(require.resolve("@civfix/ui/package.json")), "src", "nav", "routes.ts")
-  const ts = require("typescript")
-  const { outputText } = ts.transpileModule(readFileSync(routesPath, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  })
-  return import(`data:text/javascript,${encodeURIComponent(outputText)}`)
-}
-
-const { pathForEntry } = await loadNavRoutes()
+const { pathForEntry } = await loadNavRoutes<{ pathForEntry: PathForEntry }>()
 
 const CHAT_HEADER_ROUTES = [
   {

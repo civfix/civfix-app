@@ -14,11 +14,7 @@ import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "@/theme"
 import { KeyboardRevealGroup, Text, PrimaryButton, TextField, announce } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import {
-  signInWithApple,
-  signInWithGoogle,
-  requestEmailOtp,
-} from "@/hooks/useAuthFlow"
+import { signInWithApple, signInWithGoogle, requestEmailOtp } from "@/auth/signIn"
 import { friendlyError, oauthError } from "@/lib/errors"
 import { HOME_HREF } from "@/lib/goHome"
 import { shouldReplaceOnSignIn } from "@/lib/authResume"
@@ -29,12 +25,25 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type Busy = "apple" | "google" | "email" | null
 
+function isAppleCancel(err: unknown): boolean {
+  return (
+    !!err &&
+    typeof err === "object" &&
+    "code" in err &&
+    (err as { code?: string }).code === "ERR_REQUEST_CANCELED"
+  )
+}
+
+function isGoogleCancel(err: unknown): boolean {
+  return isErrorWithCode(err) && err.code === statusCodes.SIGN_IN_CANCELLED
+}
+
 export function AuthOptions({
   enabled,
   onHandoff,
   next: nextProp,
 }: {
-  enabled: OAuthProvider[]
+  enabled: readonly OAuthProvider[]
   onHandoff?: () => void
   next?: string
 }) {
@@ -60,75 +69,81 @@ export function AuthOptions({
     router.replace(next)
   }, [router, next, pathname])
 
-  const onApple = useCallback(async () => {
-    setError(null)
-    setBusy("apple")
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      })
-      if (!credential.identityToken) {
-        throw new Error("Apple did not return an identity token.")
-      }
-      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
-        .filter(Boolean)
-        .join(" ")
-      await signInWithApple({
-        identityToken: credential.identityToken,
-        ...(fullName ? { fullName } : {}),
-      })
-      goNext()
-    } catch (err) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "code" in err &&
-        (err as { code?: string }).code === "ERR_REQUEST_CANCELED"
-      ) {
+  const runProviderSignIn = useCallback(
+    async (
+      provider: Exclude<Busy, "email" | null>,
+      label: "Apple" | "Google",
+      signIn: () => Promise<boolean>,
+      isCancel: (err: unknown) => boolean,
+    ) => {
+      setError(null)
+      setBusy(provider)
+      try {
+        if (await signIn()) goNext()
+      } catch (err) {
+        if (!isCancel(err)) setError(oauthError(t, label, err))
+      } finally {
         setBusy(null)
-        return
       }
-      setError(oauthError(t, "Apple", err))
-    } finally {
-      setBusy(null)
-    }
-  }, [goNext, t])
+    },
+    [goNext, t],
+  )
 
-  const onGoogle = useCallback(async () => {
-    setError(null)
-    setBusy("google")
-    try {
-      GoogleSignin.configure({
-        ...(GOOGLE_WEB_CLIENT_ID ? { webClientId: GOOGLE_WEB_CLIENT_ID } : {}),
-        ...(Platform.OS === "ios" && GOOGLE_IOS_CLIENT_ID
-          ? { iosClientId: GOOGLE_IOS_CLIENT_ID }
-          : {}),
-      })
-      await GoogleSignin.hasPlayServices()
-      const response = await GoogleSignin.signIn()
-      if (!isSuccessResponse(response)) {
-        setBusy(null)
-        return
-      }
-      const idToken = response.data.idToken
-      if (!idToken) {
-        throw new Error("Google did not return an id token.")
-      }
-      await signInWithGoogle({ idToken })
-      goNext()
-    } catch (err) {
-      if (isErrorWithCode(err) && err.code === statusCodes.SIGN_IN_CANCELLED) {
-        setBusy(null)
-        return
-      }
-      setError(oauthError(t, "Google", err))
-    } finally {
-      setBusy(null)
-    }
-  }, [goNext, t])
+  const onApple = useCallback(
+    () =>
+      runProviderSignIn(
+        "apple",
+        "Apple",
+        async () => {
+          const credential = await AppleAuthentication.signInAsync({
+            requestedScopes: [
+              AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+              AppleAuthentication.AppleAuthenticationScope.EMAIL,
+            ],
+          })
+          if (!credential.identityToken) {
+            throw new Error("Apple did not return an identity token.")
+          }
+          const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+            .filter(Boolean)
+            .join(" ")
+          await signInWithApple({
+            identityToken: credential.identityToken,
+            ...(fullName ? { fullName } : {}),
+          })
+          return true
+        },
+        isAppleCancel,
+      ),
+    [runProviderSignIn],
+  )
+
+  const onGoogle = useCallback(
+    () =>
+      runProviderSignIn(
+        "google",
+        "Google",
+        async () => {
+          GoogleSignin.configure({
+            ...(GOOGLE_WEB_CLIENT_ID ? { webClientId: GOOGLE_WEB_CLIENT_ID } : {}),
+            ...(Platform.OS === "ios" && GOOGLE_IOS_CLIENT_ID
+              ? { iosClientId: GOOGLE_IOS_CLIENT_ID }
+              : {}),
+          })
+          await GoogleSignin.hasPlayServices()
+          const response = await GoogleSignin.signIn()
+          if (!isSuccessResponse(response)) return false
+          const idToken = response.data.idToken
+          if (!idToken) {
+            throw new Error("Google did not return an id token.")
+          }
+          await signInWithGoogle({ idToken })
+          return true
+        },
+        isGoogleCancel,
+      ),
+    [runProviderSignIn],
+  )
 
   const onEmail = useCallback(async () => {
     setError(null)

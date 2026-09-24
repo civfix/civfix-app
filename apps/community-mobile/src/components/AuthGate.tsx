@@ -2,7 +2,6 @@ import React, { useEffect } from "react"
 import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
-import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, space, useTheme } from "@/theme"
 import { useReducedMotion } from "@civfix/ui/theme"
 import {
@@ -18,9 +17,7 @@ import { useBootGate } from "@/hooks/useBootGate"
 import { LoadingSplash } from "@/components/LoadingSplash"
 import { AuthOptions } from "@/components/AuthOptions"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
-import { useEnabledProviders } from "@/hooks/useAuthFlow"
-
-const ALL_PROVIDERS: OAuthProvider[] = ["apple", "google", "email"]
+import { ALL_OAUTH_PROVIDERS, useEnabledProviders } from "@/hooks/useAuthFlow"
 
 const { ScrollView: AuthScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
@@ -31,7 +28,7 @@ function WelcomeOptions() {
   const providers = useEnabledProviders()
   const unreachable = useBootGate().showNotice
   const ready = !providers.isPlaceholderData
-  const enabled = providers.data ?? ALL_PROVIDERS
+  const enabled = providers.data ?? ALL_OAUTH_PROVIDERS
 
   const revealed = ready || unreachable
   const reduceMotion = useReducedMotion() === true

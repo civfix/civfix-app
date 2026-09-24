@@ -116,9 +116,17 @@ export type ReconcilePlan =
   | { type: "push"; count: number }
   | { type: "replace" }
 
+function samePlacePlan(
+  a: NavSnapshot,
+  b: NavSnapshot,
+): { type: "none" } | { type: "restamp" } | null {
+  if (!snapshotEquals(a, b)) return null
+  return a.query === b.query ? { type: "none" } : { type: "restamp" }
+}
+
 export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): ReconcilePlan {
-  if (snapshotEquals(landed, live))
-    return landed.query === live.query ? { type: "none" } : { type: "restamp" }
+  const samePlace = samePlacePlan(landed, live)
+  if (samePlace) return samePlace
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)
@@ -159,8 +167,8 @@ export function writePlan(
   current: NavHistoryEntry | null,
   live: NavSnapshot,
 ): WritePlan {
-  if (current && snapshotEquals(current.snapshot, live))
-    return current.snapshot.query === live.query ? { type: "none" } : { type: "restamp" }
+  const samePlace = current ? samePlacePlan(current.snapshot, live) : null
+  if (samePlace) return samePlace
   if (transition.type === "pop") {
     const steps = traversalFor(transition, current)
     return steps === 0 ? { type: "replace" } : { type: "traverse", steps }

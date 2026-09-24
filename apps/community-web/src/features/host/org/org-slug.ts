@@ -1,5 +1,10 @@
 import { ORG_SLUG_MAX, ORG_SLUG_MIN, OrgSlugSchema } from "@civfix/shared"
 
+import { PRODUCTION_SITE_URL } from "@/lib/site-meta"
+
+/** The bare host shown in front of a public org path, e.g. "civfix.org". */
+export const PUBLIC_ORG_HOST = PRODUCTION_SITE_URL.replace(/^https?:\/\//, "")
+
 /**
  * Derive a candidate public handle from an organization name, in the shape OrgSlugSchema accepts:
  * lowercase kebab-case, ASCII letters and digits only. Accented letters are folded to their base
@@ -32,4 +37,9 @@ export function orgSlugProblem(slug: string): OrgSlugProblem | null {
 /** The public URL a slug will live at, shown as a preview while the host types. */
 export function publicOrgPath(slug: string): string {
   return `/orgs/${slug}/`
+}
+
+/** The public page's address as the console prints it: host and path, no scheme. */
+export function publicOrgUrlLabel(slug: string): string {
+  return `${PUBLIC_ORG_HOST}${publicOrgPath(slug)}`
 }

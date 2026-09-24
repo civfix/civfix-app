@@ -1,7 +1,7 @@
 import React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { queryClient } from "@/query/client"
-import { installCachePersistence } from "@/query/mmkv-persister"
+import { installCachePersistence } from "@/query/mmkvPersister"
 
 // Installed at module load, before the first render, so a warm relaunch hydrates synchronously instead of
 // flashing skeletons.

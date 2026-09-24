@@ -227,17 +227,17 @@ const lookingVideo: ViewfinderOutputInputs = {
 }
 
 test("on-surface, both outputs run - the viewfinder is being looked at", () => {
-  assert.equal(viewfinderPreviewEnabled(lookingVideo), true)
+  assert.equal(viewfinderPreviewEnabled(lookingVideo.hostActive), true)
   assert.equal(viewfinderVideoOutputEnabled(lookingVideo), true)
   const lookingPhoto: ViewfinderOutputInputs = { ...lookingVideo, mode: "photo" }
-  assert.equal(viewfinderPreviewEnabled(lookingPhoto), true)
+  assert.equal(viewfinderPreviewEnabled(lookingPhoto.hostActive), true)
   assert.equal(viewfinderVideoOutputEnabled(lookingPhoto), false)
 })
 
 test("grace-held photo mode: the session may run, but preview AND video output are both off", () => {
   assert.equal(cameraSessionRunning({ ...ready, hostActive: true }), true)
   const graced: ViewfinderOutputInputs = { hostActive: false, mode: "photo", recordingBusy: false }
-  assert.equal(viewfinderPreviewEnabled(graced), false)
+  assert.equal(viewfinderPreviewEnabled(graced.hostActive), false)
   assert.equal(viewfinderVideoOutputEnabled(graced), false)
 })
 
@@ -260,7 +260,7 @@ test("a recording in flight (or parked) keeps the video output attached, REGARDL
 })
 
 test("returning WITHIN the grace flips the preview back on - same commit, no cold start", () => {
-  assert.equal(viewfinderPreviewEnabled({ ...lookingVideo, hostActive: true }), true)
+  assert.equal(viewfinderPreviewEnabled(true), true)
   assert.equal(viewfinderVideoOutputEnabled({ ...lookingVideo, hostActive: true }), true)
   assert.equal(cancelsResumeGrace(true, "active"), true)
 })

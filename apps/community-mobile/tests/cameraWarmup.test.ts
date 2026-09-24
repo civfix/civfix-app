@@ -6,6 +6,7 @@ import { test } from "node:test"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const mapHome = read("../app/index.tsx")
 const viewfinder = read("../src/components/report/ReportViewfinder.tsx")
+const session = read("../src/components/report/useViewfinderSession.ts")
 const nativeCamera = read("../src/lib/nativeCamera.ts")
 
 function mapElementMemo(): string {
@@ -24,7 +25,8 @@ test("the map element is memoized, and NOT on the nav view", () => {
   for (const dep of ["pins", "cleanupItems", "focusedPinId", "focusedCleanupId"]) {
     assert.ok(deps.includes(dep), `the map memo dropped its ${dep} dependency`)
   }
-  assert.ok(mapHome.includes("map={mapPlan.renderMap ? mapElement : null}"))
+  assert.ok(mapHome.includes("map={mapElement}"), "the host offers the map for EVERY view so the shared shell can retain it")
+  assert.ok(!/map=\{[^}]*\?[^}]*mapElement/.test(mapHome), "the map element is never mounted conditionally")
 })
 
 test("the host never hands the shared Map a basemap style - it must follow the color scheme", () => {
@@ -38,29 +40,30 @@ test("the map memo deliberately leaves `initialCenter` out of its dependencies",
 })
 
 test("the resume grace softens the SESSION decision and nothing else", () => {
-  assert.ok(viewfinder.includes("hostActive: active || graceHeld"))
-  assert.ok(viewfinder.includes("const surfaceInputs = { ...sessionInputs, hostActive: active }"))
-  assert.ok(viewfinder.includes("const sessionRunningOnSurface = cameraSessionRunning(surfaceInputs)"))
-  assert.ok(viewfinder.includes("const veto = cameraSessionVeto(surfaceInputs)"))
+  assert.ok(session.includes("hostActive: active || graceHeld"))
+  assert.ok(session.includes("const surfaceInputs = { ...sessionInputs, hostActive: active }"))
+  assert.ok(session.includes("const sessionRunningOnSurface = cameraSessionRunning(surfaceInputs)"))
+  assert.ok(session.includes("const veto = cameraSessionVeto(surfaceInputs)"))
+  assert.ok(viewfinder.includes("useViewfinderSession({"))
   assert.ok(
     viewfinder.includes("startsDeferredRecording(pendingRecordRef.current, sessionRunningOnSurface, audioEnabled)"),
   )
 })
 
 test("the grace arms DURING RENDER on the leave edge - never one commit late, in an effect", () => {
-  assert.ok(viewfinder.includes("const [seenActive, setSeenActive] = useState(active)"))
-  assert.ok(viewfinder.includes("if (seenActive !== active) {"))
+  assert.ok(session.includes("const [seenActive, setSeenActive] = useState(active)"))
+  assert.ok(session.includes("if (seenActive !== active) {"))
   assert.ok(
-    !viewfinder.includes("!armsResumeGrace({"),
+    !session.includes("!armsResumeGrace({"),
     "the arm must be a render-phase branch, not an effect guard",
   )
-  const arm = viewfinder.slice(viewfinder.indexOf("if (seenActive !== active) {"))
+  const arm = session.slice(session.indexOf("if (seenActive !== active) {"))
   assert.ok(arm.includes("armsResumeGrace({"))
   assert.ok(arm.includes("setGraceHeld(true)"))
-  const cancelAt = viewfinder.indexOf("if (cancelsResumeGrace(active, appState)) {")
+  const cancelAt = session.indexOf("if (cancelsResumeGrace(active, appState)) {")
   assert.ok(cancelAt > -1)
-  const cancelEnd = viewfinder.indexOf("}", viewfinder.indexOf("setOutputsLinger", cancelAt))
-  const cancelBlock = viewfinder.slice(cancelAt, cancelEnd + 1)
+  const cancelEnd = session.indexOf("}", session.indexOf("setOutputsLinger", cancelAt))
+  const cancelBlock = session.slice(cancelAt, cancelEnd + 1)
   assert.ok(cancelBlock.includes("setGraceHeld(false)"))
   assert.ok(cancelBlock.includes("setOutputsLinger(false)"))
   assert.ok(
@@ -70,20 +73,20 @@ test("the grace arms DURING RENDER on the leave edge - never one commit late, in
 })
 
 test("the PREVIEW stays attached for the whole grace window - a re-attach fence stalls the arrival frame ~250ms", () => {
-  const previewCall = viewfinder.slice(
-    viewfinder.indexOf("viewfinderPreviewEnabled({"),
-    viewfinder.indexOf("viewfinderVideoOutputEnabled({"),
+  const previewCall = session.slice(
+    session.indexOf("viewfinderPreviewEnabled(active"),
+    session.indexOf("viewfinderVideoOutputEnabled({"),
   )
   assert.ok(
-    previewCall.includes("hostActive: active || graceHeld,"),
+    previewCall.includes("viewfinderPreviewEnabled(active || graceHeld)"),
     "preview must ride the full grace, never the short linger",
   )
   assert.ok(!previewCall.includes("outputsLinger"))
 })
 
 test("the output linger detaches on its own bounded clock and is AND-gated on the live grace", () => {
-  assert.ok(viewfinder.includes("hostActive: active || (graceHeld && outputsLinger)"))
-  const clock = viewfinder.slice(viewfinder.indexOf("if (!outputsLinger) return"))
+  assert.ok(session.includes("hostActive: active || (graceHeld && outputsLinger)"))
+  const clock = session.slice(session.indexOf("if (!outputsLinger) return"))
   assert.ok(clock.includes("setTimeout(() => setOutputsLinger(false), OUTPUT_DETACH_DEFER_MS)"))
   assert.ok(clock.includes("return () => clearTimeout(timer)"))
   const depsAt = clock.indexOf("}, [")
@@ -92,7 +95,7 @@ test("the output linger detaches on its own bounded clock and is AND-gated on th
     clock.slice(depsAt).startsWith("}, [outputsLinger])"),
     "the linger clock must be keyed on `outputsLinger`",
   )
-  const arm = viewfinder.slice(viewfinder.indexOf("if (seenActive !== active) {"))
+  const arm = session.slice(session.indexOf("if (seenActive !== active) {"))
   assert.ok(
     arm.indexOf("setOutputsLinger(true)") > -1 &&
       arm.indexOf("setOutputsLinger(true)") < arm.indexOf("}, ["),
@@ -101,7 +104,7 @@ test("the output linger detaches on its own bounded clock and is AND-gated on th
 })
 
 test("the grace's clock hangs off the WINDOW, so a return tears both down together", () => {
-  const clock = viewfinder.slice(viewfinder.indexOf("if (!graceHeld) return"))
+  const clock = session.slice(session.indexOf("if (!graceHeld) return"))
   assert.ok(clock.includes("setTimeout(() => setGraceHeld(false), SESSION_RESUME_GRACE_MS)"))
   assert.ok(clock.includes("return () => clearTimeout(timer)"))
   const depsAt = clock.indexOf("}, [")
@@ -154,8 +157,7 @@ test("the SHUTTER still attaches the device fix - the location-step skip depends
 test("a LIBRARY pick is emitted as a library capture, so it never takes the current device fix", () => {
   const pick = viewfinder.slice(viewfinder.indexOf("const onPickFromLibrary = useCallback"))
   const body = pick.slice(0, pick.indexOf("}, [busy, emitCapture, reportCaptureFailure])"))
-  assert.ok(body.includes("emitCapture("))
-  assert.ok(body.includes('}, "library")'))
+  assert.match(body, /emitCapture\(capturedMediaFromPickerAsset\(result\.assets\[0\]!\), "library"\)/)
   assert.ok(!body.includes('"camera"'))
 })
 

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 
 import { ConsoleIconButton } from "../button"
 import { useIsNarrow, useMediaQuery, CONSOLE_DRAWER_SHRINK_QUERY } from "../use-media-query"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export type DrawerSize = "sm" | "md" | "lg"
@@ -123,13 +124,7 @@ export function Drawer({
   return createPortal(
     <div className="pointer-events-none fixed inset-0 z-50">
       {modal ? (
-        <button
-          type="button"
-          aria-hidden
-          tabIndex={-1}
-          onClick={onClose}
-          className="pointer-events-auto absolute inset-0 bg-console-scrim animate-in fade-in duration-d2"
-        />
+        <Scrim onDismiss={onClose} className="pointer-events-auto" />
       ) : null}
       {panel}
     </div>,

@@ -6,6 +6,8 @@ import { useTotalUnread } from "@civfix/ui/data"
 
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
+const MAP_CONTROLS_TOP_INSET = 6
+
 /**
  * The map lives in a separate AppShell slot (a distinct dynamic chunk), so HomeMap registers its recenter
  * in the `map-recenter` store and `onLocate` reads it back from there.
@@ -22,12 +24,12 @@ export function WebMapControls() {
   }, [recenter])
 
   // The app-download banner is a fixed strip in a different slot, so its measured height arrives through
-  // the promo store. It is 0 whenever no banner shows, leaving the 6px design offset untouched.
+  // the promo store. It is 0 whenever no banner shows, leaving the design offset untouched.
   const bannerHeight = useAppPromoStore((s) => s.bannerHeight)
 
   return (
     <MapControls
-      topInset={6 + bannerHeight}
+      topInset={MAP_CONTROLS_TOP_INSET + bannerHeight}
       unreadCount={unreadCount}
       onLocate={onLocate}
     />

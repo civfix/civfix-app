@@ -9,7 +9,7 @@ vi.mock("@civfix/ui/i18n", async () => {
   return makeI18nMock()
 })
 
-vi.mock("@/features/host/upload", () => ({
+vi.mock("@/components/console/forms/image-upload/upload", () => ({
   pickConsoleImage: vi.fn().mockResolvedValue({ kind: "image", uri: "blob:letter", mime: "image/jpeg" }),
   acceptDroppedImage: vi.fn().mockResolvedValue(null),
   uploadConsoleImage: vi
@@ -19,7 +19,7 @@ vi.mock("@/features/host/upload", () => ({
 
 import { renderConsole } from "@/components/console/__testing__/harness"
 import { ConsoleOrgProvider } from "../console-context"
-import { EIN_PATTERN, VerificationScreen, normalizeEin } from "./verification-screen"
+import { VerificationScreen, normalizeEin } from "./verification-screen"
 
 const ORG_ID = "11111111-1111-4111-8111-111111111111"
 const MEDIA_ID = "66666666-6666-4666-8666-666666666666"
@@ -67,9 +67,12 @@ describe("EIN helpers", () => {
     expect(normalizeEin("123456789")).toBe("12-3456789")
     expect(normalizeEin("12-34")).toBe("12-34")
     expect(normalizeEin("1")).toBe("1")
-    expect(EIN_PATTERN.test("12-3456789")).toBe(true)
-    expect(EIN_PATTERN.test("123456789")).toBe(true)
-    expect(EIN_PATTERN.test("12-345")).toBe(false)
+    const einAccepted = (einNumber: string) =>
+      ApplyOrganizationVerificationRequestSchema.safeParse({ id: ORG_ID, kind: "nonprofit", einNumber })
+        .success
+    expect(einAccepted("12-3456789")).toBe(true)
+    expect(einAccepted("123456789")).toBe(true)
+    expect(einAccepted("12-345")).toBe(false)
   })
 })
 

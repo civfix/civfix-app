@@ -9,6 +9,7 @@ import { useT } from "@civfix/ui/i18n"
 import { cn } from "@/lib/utils"
 
 import { ConsoleButton, ConsoleIconButton } from "../button"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export interface GuidedSheetSection {
@@ -66,7 +67,7 @@ export function GuidedSheet({
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-token-4">
-      <div aria-hidden className="absolute inset-0 bg-console-scrim animate-in fade-in duration-d2" />
+      <Scrim />
       <div
         ref={panelRef}
         role="dialog"

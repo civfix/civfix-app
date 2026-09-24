@@ -10,7 +10,7 @@ import type {
   EventPageDTO,
   ThemeAccent,
 } from "@civfix/shared"
-import { MAX_EVENT_PAGE_BLOCKS, PageSlugSchema } from "@civfix/shared"
+import { MAX_EVENT_PAGE_BLOCKS, PAGE_SLUG_MAX, PageSlugSchema } from "@civfix/shared"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -37,7 +37,6 @@ import {
   blocksDiffer,
   canAddBlock,
   emptyBlock,
-  moveBlock,
   normalizeBlocksForSave,
   replaceBlock,
   withRowKeys,
@@ -45,6 +44,7 @@ import {
 import { BlockEditor } from "./block-editor"
 import { PagePreview } from "./page-preview"
 import { invalidateEvent } from "../console-invalidate"
+import { moveItem } from "../list-order"
 
 const SLUG_DEBOUNCE_MS = 450
 
@@ -271,7 +271,7 @@ export function PageBuilderScreen() {
                   <TextInput
                     id="page-slug"
                     value={currentSlug}
-                    maxLength={60}
+                    maxLength={PAGE_SLUG_MAX}
                     autoComplete="off"
                     invalid={slugStatus?.tone === "error"}
                     onChange={(event) => setSlug(event.target.value.toLowerCase())}
@@ -364,7 +364,7 @@ export function PageBuilderScreen() {
                         <ConsoleIconButton
                           label={t("blocks.move_up_named", { name: blockName(block.kind, index) })}
                           disabled={index === 0}
-                          onClick={() => setBlocks(moveBlock(list, index, -1))}
+                          onClick={() => setBlocks(moveItem(list, index, -1))}
                         >
                           <ArrowUp aria-hidden className="h-4 w-4" />
                         </ConsoleIconButton>
@@ -373,7 +373,7 @@ export function PageBuilderScreen() {
                             name: blockName(block.kind, index),
                           })}
                           disabled={index === list.length - 1}
-                          onClick={() => setBlocks(moveBlock(list, index, 1))}
+                          onClick={() => setBlocks(moveItem(list, index, 1))}
                         >
                           <ArrowDown aria-hidden className="h-4 w-4" />
                         </ConsoleIconButton>
@@ -401,7 +401,7 @@ export function PageBuilderScreen() {
               {t("preview.title")}
             </h2>
             <PagePreview
-              title={event?.title ?? ""}
+              title={event.title ?? ""}
               accent={accent ?? "bloom"}
               coverUrl={cover?.url ?? null}
               blocks={list}

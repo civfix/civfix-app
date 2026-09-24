@@ -5,7 +5,7 @@ import { normalizeCertificateCode } from "@civfix/shared"
  * /service-record/_/ 200` serves the placeholder document while the address bar keeps the real
  * `/service-record/<code>/`, so Next's router reports the placeholder path. The view reads
  * `window.location.pathname` and the placeholder is guarded here, as `seedPathname()` does in
- * use-web-nav-adapter.ts.
+ * web-nav-controller.ts.
  */
 
 /** Shared by the parser and the view so the two cannot drift. */

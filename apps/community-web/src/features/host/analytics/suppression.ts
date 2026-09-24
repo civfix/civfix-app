@@ -1,10 +1,4 @@
-import type { BreakdownRow, Panel, SeriesPoint, SuppressedRate } from "@civfix/shared"
-
-export const DEFAULT_SUPPRESSION_K = 5
-
-export function isSuppressedValue(value: number | null): boolean {
-  return value === null
-}
+import type { BreakdownRow, Panel, SeriesPoint } from "@civfix/shared"
 
 export function visibleRows(panel: Panel): BreakdownRow[] {
   if (panel.panelSuppressed) return []
@@ -13,10 +7,6 @@ export function visibleRows(panel: Panel): BreakdownRow[] {
 
 export function panelIsBlank(panel: Panel): boolean {
   return panel.panelSuppressed || visibleRows(panel).length === 0
-}
-
-export function rateIsShowable(rate: SuppressedRate): boolean {
-  return rate.value !== null && !rate.suppressed
 }
 
 export function seriesIsChartable(points: readonly SeriesPoint[]): boolean {

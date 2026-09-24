@@ -7,6 +7,7 @@ import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/share
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
+import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"
@@ -77,7 +78,7 @@ export function SettingsScreen() {
   const { eventId, event, can } = useConsoleEvent()
   const { go } = useConsoleNavigation()
   const { t: to } = useT("host-org")
-  const zone = useConsoleInputZone(event?.timezone)
+  const zone = useConsoleInputZone(event.timezone)
 
   const canLinkOrg = can("manage_org_link")
   const orgs = useMyOrganizations()
@@ -87,7 +88,7 @@ export function SettingsScreen() {
   const linkableOrgs = myOrgs.filter(
     (org) => (org.myRole === "owner" || org.myRole === "admin") && org.suspended !== true,
   )
-  const linkedOrg = event?.organization ?? null
+  const linkedOrg = event.organization ?? null
   const linkedSuspended =
     linkedOrg !== null && myOrgs.some((org) => org.id === linkedOrg.id && org.suspended === true)
 
@@ -123,7 +124,7 @@ export function SettingsScreen() {
     }
   }
 
-  const zoneNames = useInputZoneNames(zone, [opensAt, closesAt], event?.scheduledAt)
+  const zoneNames = useInputZoneNames(zone, [opensAt, closesAt], event.scheduledAt)
   const currentWindow = { registrationOpensAt: opensAt, registrationClosesAt: closesAt }
   const windowPatch = zonedFieldPatch(savedWindow, currentWindow, zone)
 
@@ -266,7 +267,7 @@ export function SettingsScreen() {
             <TextInput
               id="settings-reply-to"
               type="email"
-              maxLength={254}
+              maxLength={EMAIL_MAX_LENGTH}
               value={replyTo}
               placeholder={t("messaging.reply_to_placeholder")}
               onChange={(event) => setReplyTo(event.target.value)}
@@ -354,11 +355,11 @@ export function SettingsScreen() {
             id="settings-donation-url"
             value={donationUrl}
             placeholder="https://"
-            maxLength={500}
+            maxLength={HTTPS_URL_MAX_LENGTH}
             onChange={(event) => setDonationUrl(event.target.value)}
           />
         </Field>
-        {event?.organization?.donationUrl ? (
+        {event.organization?.donationUrl ? (
           <p className="mt-token-2 text-token-12 text-console-ink-3">
             {t("donations.org_fallback", { org: event.organization.name })}
           </p>
@@ -379,7 +380,7 @@ export function SettingsScreen() {
         <ConsoleButton
           variant="destructive"
           size="sm"
-          disabled={event?.status === "cancelled"}
+          disabled={event.status === "cancelled"}
           onClick={() => setConfirmCancel(true)}
         >
           {t("danger.cancel_event")}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, AppState, useWindowDimensions } from "react-native"
+import { View, Pressable, useWindowDimensions } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
@@ -22,22 +22,21 @@ import {
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
-import { requestEmailOtp, verifyEmailOtp } from "@/hooks/useAuthFlow"
+import { requestEmailOtp, verifyEmailOtp } from "@/auth/signIn"
 import { codeRejectionReason, friendlyError, isRateLimited } from "@/lib/errors"
 import { HOME_HREF, goHome } from "@/lib/goHome"
 import { toResumeHref } from "@/lib/links"
-import {
-  DEFAULT_RESEND_COOLDOWN_SEC,
-  canResend,
-  parseResendAfterSec,
-  resendDeadline,
-  resendSecondsLeft,
-} from "@/lib/otpCooldown"
+import { DEFAULT_RESEND_COOLDOWN_SEC, canResend, parseResendAfterSec } from "@/lib/otpCooldown"
+import { useResendCooldown } from "@/hooks/useResendCooldown"
 
 const { ScrollView: OtpScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const MAX_ATTEMPTS = 3
 const CODE_LENGTH = 6
+
+function isCodeIncomplete(code: string, reviewer: boolean): boolean {
+  return reviewer ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH : code.length !== CODE_LENGTH
+}
 
 export default function OtpScreen() {
   const { t } = useT("mobile-auth-otp")
@@ -60,32 +59,10 @@ export default function OtpScreen() {
   const [error, setError] = useState<string | null>(null)
   const [attempts, setAttempts] = useState(0)
   const [locked, setLocked] = useState(false)
-  const [availableAt, setAvailableAt] = useState(() => resendDeadline(Date.now(), initialCooldown))
-  const [cooldown, setCooldown] = useState(initialCooldown)
+  const { availableAt, cooldown, restart: restartCooldown } = useResendCooldown(initialCooldown)
   const [refocusNonce, setRefocusNonce] = useState(0)
 
   const codeRef = useRef<SegmentedCodeInputHandle>(null)
-
-  useEffect(() => {
-    const sync = (): number => {
-      const left = resendSecondsLeft(availableAt, Date.now())
-      setCooldown(left)
-      return left
-    }
-    if (sync() === 0) return
-
-    const tick = setInterval(() => {
-      if (sync() === 0) clearInterval(tick)
-    }, 1000)
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state === "active") sync()
-    })
-
-    return () => {
-      clearInterval(tick)
-      subscription.remove()
-    }
-  }, [availableAt])
 
   useEffect(() => {
     if (error) announce(error)
@@ -102,10 +79,7 @@ export default function OtpScreen() {
     async (submitted: string) => {
       if (locked || verifying) return
       const submittedCode = reviewer ? submitted.trim() : submitted
-      const incomplete = reviewer
-        ? submittedCode.length < REVIEWER_OTP_CODE_MIN_LENGTH
-        : submittedCode.length !== CODE_LENGTH
-      if (incomplete) {
+      if (isCodeIncomplete(submittedCode, reviewer)) {
         setError(t(reviewer ? "verify.too_short" : "verify.incomplete"))
         return
       }
@@ -150,16 +124,14 @@ export default function OtpScreen() {
       setAttempts(0)
       setLocked(false)
       setCode("")
-      setAvailableAt(
-        resendDeadline(Date.now(), resendAfter > 0 ? resendAfter : DEFAULT_RESEND_COOLDOWN_SEC),
-      )
+      restartCooldown(resendAfter > 0 ? resendAfter : DEFAULT_RESEND_COOLDOWN_SEC)
       setRefocusNonce((n) => n + 1)
     } catch (err) {
       setError(friendlyError(t, err))
     } finally {
       setResending(false)
     }
-  }, [availableAt, email, resending, t])
+  }, [availableAt, email, resending, restartCooldown, t])
 
   return (
     <IosKeyboardAvoidingView style={styles.root}>
@@ -245,12 +217,7 @@ export default function OtpScreen() {
           <PrimaryButton
             label={t("verify.label")}
             loading={verifying}
-            disabled={
-              locked ||
-              (reviewer
-                ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH
-                : code.length !== CODE_LENGTH)
-            }
+            disabled={locked || isCodeIncomplete(code, reviewer)}
             onPress={() => onVerify(code)}
             style={styles.verifyBtn}
           />

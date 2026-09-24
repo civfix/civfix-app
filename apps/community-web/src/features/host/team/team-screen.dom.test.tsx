@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import type { EventTeamMemberDTO, PersonDTO } from "@civfix/shared"
+import type { CleanupDTO, EventTeamMemberDTO, PersonDTO } from "@civfix/shared"
 import { EventTeamRoleSchema, SetMemberRoleRequestSchema } from "@civfix/shared"
 
 vi.mock("@civfix/ui/i18n", async () => {
@@ -16,6 +16,7 @@ import { TeamScreen } from "./team-screen"
 
 const EVENT_ID = "33333333-3333-4333-8333-333333333333"
 const MEMBER_ID = "44444444-4444-4444-8444-444444444444"
+const EVENT = { id: EVENT_ID, title: "River day", myCapabilities: [] } as unknown as CleanupDTO
 
 function person(over: Partial<PersonDTO> = {}): PersonDTO {
   return {
@@ -49,7 +50,7 @@ function renderTeam(members: EventTeamMemberDTO[]) {
     revokeEventTeamInvite: vi.fn(),
   }
   const view = renderConsole(
-    <ConsoleEventProvider eventId={EVENT_ID} event={null}>
+    <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <TeamScreen />
     </ConsoleEventProvider>,
     { api: client as never },

@@ -56,7 +56,7 @@ export function Chip<K extends ChipKind>({
     <span
       className={cn(
         "inline-flex max-w-full shrink-0 items-center gap-1 whitespace-nowrap rounded-pill border font-semibold",
-        size === "sm" ? "h-[20px] px-token-2 text-token-12" : "h-[22px] px-[10px] text-token-12",
+        size === "sm" ? "h-token-5 px-token-2 text-token-12" : "h-[22px] px-[10px] text-token-12",
         entry.bold && "font-bold",
         hueClasses,
         className,

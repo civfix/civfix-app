@@ -37,7 +37,7 @@ export function DeliveryDrawer({
   const format = useConsoleFormat()
 
   const deliveries = useInfiniteQuery<ListBroadcastDeliveriesResponse>({
-    queryKey: consoleKeys.deliveries(eventId, broadcastId ?? "none", status, "all"),
+    queryKey: consoleKeys.deliveries(eventId, broadcastId ?? "none", status),
     enabled: broadcastId !== null,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>

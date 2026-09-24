@@ -94,7 +94,6 @@ describe("broadcast audience", () => {
       send: true,
       schedule: true,
       cancel: false,
-      delete: true,
     })
     expect(broadcastCan("scheduled").edit).toBe(false)
     expect(broadcastCan("scheduled").cancel).toBe(true)
@@ -106,7 +105,6 @@ describe("broadcast audience", () => {
         send: false,
         schedule: false,
         cancel: false,
-        delete: false,
       })
     }
   })

@@ -34,7 +34,7 @@ const ORG_NEW_SEGMENT = "new"
  */
 const ORG_INVITES_SEGMENT = "org-invites"
 const ORG_INVITE_ACCEPT_SEGMENT = "accept"
-export const ORG_INVITE_TOKEN_PARAM = "token"
+const ORG_INVITE_TOKEN_PARAM = "token"
 
 export type ConsoleRoute =
   | { kind: "portfolio" }
@@ -47,7 +47,7 @@ export type ConsoleRoute =
   | { kind: "broadcast"; eventId: string; broadcastId: string }
   | { kind: "not-found"; path: string }
 
-const CONSOLE_ROOT = "/manage"
+export const CONSOLE_ROOT = "/manage"
 
 const EVENT_SECTION_SET = new Set<string>(EVENT_SECTIONS)
 const ORG_SECTION_SET = new Set<string>(ORG_SECTIONS)
