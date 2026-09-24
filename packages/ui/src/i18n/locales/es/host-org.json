@@ -59,7 +59,7 @@
     "title": "Miembros",
     "joined": "Se unió {{when}}",
     "read_only": "Solo la persona propietaria puede cambiar quién pertenece a esta organización.",
-    "subtitle": "Los propietarios gestionan los roles y la facturación; los administradores llevan el perfil y los eventos; los miembros ven la lista de miembros.",
+    "subtitle": "Los propietarios gestionan los roles; los administradores llevan el perfil y los eventos; los miembros ven la lista de miembros.",
     "you": "Tú",
     "empty_title": "Todavía no hay miembros",
     "empty_body": "Invita a tu equipo para que pueda coorganizar eventos con esta organización."

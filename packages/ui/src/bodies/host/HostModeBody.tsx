@@ -62,6 +62,7 @@ import {
   hostedEventFromCleanup,
   hostPrimaryCta,
   hostSecondaryCta,
+  relativeLineFor,
   type HostCtaKey,
   type HostRowKey,
   type HostSurfaceCapabilities,
@@ -425,10 +426,10 @@ export function HostModeBody({ id }: { id: string }) {
     stage === "cancelled"
       ? t("phase.called_off")
       : stage === "past" || stage === "wrapping_up"
-        ? t("phase.ended_on", { when: relative(endsAt ?? event.scheduledAt, now) })
+        ? relativeLineFor(relative(endsAt ?? event.scheduledAt, now), (when) => t("phase.ended_on", { when }))
         : stage === "underway"
-          ? t("phase.started", { when: relative(event.scheduledAt, now) })
-          : t("phase.starts", { when: relative(now, startsAt) })
+          ? relativeLineFor(relative(event.scheduledAt, now), (when) => t("phase.started", { when }))
+          : relativeLineFor(relative(now, startsAt), (when) => t("phase.starts", { when }))
 
   return (
     <ScrollView

@@ -59,7 +59,7 @@
     "title": "Mitglieder",
     "joined": "Dabei seit {{when}}",
     "read_only": "Nur Inhaber*innen können ändern, wer zu dieser Organisation gehört.",
-    "subtitle": "Inhaber*innen verwalten Rollen und Abrechnung, Admins kümmern sich um Profil und Veranstaltungen, Mitglieder sehen die Mitgliederliste.",
+    "subtitle": "Inhaber*innen verwalten Rollen, Admins kümmern sich um Profil und Veranstaltungen, Mitglieder sehen die Mitgliederliste.",
     "you": "Du",
     "empty_title": "Noch keine Mitglieder",
     "empty_body": "Lade dein Team ein, damit ihr unter dieser Organisation gemeinsam Veranstaltungen ausrichten könnt."
