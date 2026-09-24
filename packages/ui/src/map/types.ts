@@ -51,10 +51,10 @@ export interface MapProps {
   onLongPressMap?: (lat: number, lng: number) => void
 
   /**
-   * Omit to get the shared CARTO raster style, which restyles with the colour scheme (Voyager in light,
-   * Dark Matter in dark).
+   * Web only: the width of shell chrome covering the map's left edge, read each time the camera eases to a
+   * focus, a fly-to or a pick on the expanded layout, so the target lands in the visible part of the map.
    */
-  mapStyle?: MapStyleInput
+  occlusionLeft?: () => number
 
   /**
    * There is no fallback centre anywhere in the map stack: a host that does not yet know where the viewer

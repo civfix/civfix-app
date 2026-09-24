@@ -68,6 +68,20 @@ export function targetMarkerA11yLabel(target: FocusedEntity, t: MarkerLabelT): s
     : reportMarkerLabel(target.category, null, t)
 }
 
+/** A native marker press hands back only this id, so it carries the node kind the handler strips off. */
+export function nativeMarkerId(node: ClusterNode): string {
+  switch (node.type) {
+    case "cluster":
+      return node.key
+    case "report":
+      return `pin-${node.id}`
+    case "event":
+      return `cleanup-${node.id}`
+    case "blend":
+      return `blend-${node.id}`
+  }
+}
+
 /** The only part of maplibre's MarkerEvent the map's press handlers read. */
 export interface MarkerPressEvent {
   nativeEvent: { id: string }

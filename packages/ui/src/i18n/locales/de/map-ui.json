@@ -17,9 +17,7 @@
     "clearAll": "Alle abwählen",
     "selectAllA11y": "Alle Kategorien auswählen",
     "clearAllA11y": "Alle Kategorien abwählen",
-    "categoryPinsA11y": "Markierungen für {{category}}",
-    "nearby_one": "{{count}} in der Nähe",
-    "nearby_other": "{{count}} in der Nähe"
+    "categoryPinsA11y": "Markierungen für {{category}}"
   },
   "actions": {
     "locate": "Zu meinem Standort",

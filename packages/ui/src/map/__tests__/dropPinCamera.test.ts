@@ -67,12 +67,12 @@ const expanded = (over: Partial<Parameters<typeof dropPinCameraTarget>[0]> = {})
     windowHeight: WINDOW_H,
     sheetTopReserve: TOP_RESERVE,
     mode: "expanded",
-    sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
+    occlusionLeft: SIDEBAR_DEFAULT_WIDTH,
     ...over,
   })
 
 describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
-  it("returns the pressed point untouched when no sidebar width is supplied (back-compat)", () => {
+  it("returns the pressed point untouched when no occlusion is supplied", () => {
     const target = dropPinCameraTarget({
       ...SF,
       currentZoom: 14,
@@ -99,8 +99,8 @@ describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
   })
 
   it("tracks the user's RESIZED card, not a hardcoded default", () => {
-    const narrow = SF.lng - expanded({ sidebarWidth: SIDEBAR_MIN_WIDTH, currentZoom: 17 }).lng
-    const wide = SF.lng - expanded({ sidebarWidth: SIDEBAR_MAX_WIDTH, currentZoom: 17 }).lng
+    const narrow = SF.lng - expanded({ occlusionLeft: SIDEBAR_MIN_WIDTH, currentZoom: 17 }).lng
+    const wide = SF.lng - expanded({ occlusionLeft: SIDEBAR_MAX_WIDTH, currentZoom: 17 }).lng
     expect(narrow).toBeLessThan(wide)
     expect(wide / narrow).toBeCloseTo(SIDEBAR_MAX_WIDTH / SIDEBAR_MIN_WIDTH, 9)
   })
@@ -117,14 +117,14 @@ describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
   })
 
   it("wraps a shift that would cross the antimeridian instead of emitting an out-of-range lng", () => {
-    const target = expanded({ lng: -179.9999, sidebarWidth: SIDEBAR_MAX_WIDTH, currentZoom: 17 })
+    const target = expanded({ lng: -179.9999, occlusionLeft: SIDEBAR_MAX_WIDTH, currentZoom: 17 })
     expect(target.lng).toBeGreaterThan(179)
     expect(target.lng).toBeLessThanOrEqual(180)
   })
 
   it("no-ops the shift on a degenerate / zero sidebar rather than producing NaN", () => {
-    for (const sidebarWidth of [0, -28, Number.NaN]) {
-      expect(expanded({ sidebarWidth }).lng).toBe(SF.lng)
+    for (const occlusionLeft of [0, -28, Number.NaN]) {
+      expect(expanded({ occlusionLeft }).lng).toBe(SF.lng)
     }
   })
 
@@ -158,21 +158,9 @@ describe("dropPinCamera: expanded takes the frame plan's occlusionLeft", () => {
     expect(delta).toBeGreaterThan(0)
   })
 
-  it("takes occlusionLeft OVER the legacy sidebarWidth when both are supplied", () => {
-    const both = expanded({ occlusionLeft: 454, sidebarWidth: SIDEBAR_DEFAULT_WIDTH, currentZoom: 17 })
-    expect(both).toEqual(expanded({ occlusionLeft: 454, currentZoom: 17 }))
-    expect(both.lng).not.toBe(expanded({ sidebarWidth: SIDEBAR_DEFAULT_WIDTH, currentZoom: 17 }).lng)
-  })
-
-  it("keeps the deprecated sidebarWidth input working", () => {
-    expect(expanded({ sidebarWidth: 440, currentZoom: 17 })).toEqual(
-      expanded({ occlusionLeft: 440, currentZoom: 17 }),
-    )
-  })
-
   it("no-ops the shift on a degenerate / zero occlusion rather than producing NaN", () => {
     for (const occlusionLeft of [0, -28, Number.NaN]) {
-      expect(expanded({ occlusionLeft, sidebarWidth: undefined }).lng).toBe(SF.lng)
+      expect(expanded({ occlusionLeft }).lng).toBe(SF.lng)
     }
   })
 })
@@ -448,13 +436,13 @@ describe("dropPinCamera: the pin lands in the CLEAR map strip beside the rail + 
   }
 
   it("the OLD half-the-card offset lands the pin 7px west of the strip's centre", () => {
-    // Documents the deprecated `sidebarWidth` input: half the shell's own left inset is the whole error.
+    // The card width alone as the occlusion: half the shell's own left inset is the whole error.
     const legacy = dropPinCameraTarget({
       ...SF,
       currentZoom: 17,
       windowHeight: 900,
       sheetTopReserve: 0,
-      sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
+      occlusionLeft: SIDEBAR_DEFAULT_WIDTH,
       mode: "expanded",
     })
     const x = pinScreenX(1440, SF.lng, legacy)

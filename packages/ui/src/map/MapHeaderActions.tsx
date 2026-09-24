@@ -3,8 +3,11 @@ import { StyleSheet, View } from "react-native"
 import { space } from "../theme"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "../bodies/HeaderProfileButton"
+import { MAP_ACTION_SIZE } from "../shell/expandedFramePlan"
 import { MapThemeToggle } from "./MapThemeToggle"
-import { GLASS_CONTROL_SIZE } from "./MapControls"
+
+/** The glass controls opposite this row; MapControls sizes them from the same shell constant. */
+const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE
 
 export interface MapHeaderActionsProps {
   topInset?: number

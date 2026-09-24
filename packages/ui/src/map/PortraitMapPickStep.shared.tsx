@@ -7,15 +7,17 @@ import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "rea
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { useNavStore } from "../nav"
+import { useNavStore, type Snap } from "../nav"
 import type { LatLng } from "./LocationPicker.types"
+
+const ACTION_BUTTON_HEIGHT = 48
 
 /**
  * Keyed only on `visible`: a seam that also reacts to another flip (the web seam's `mapRegistered`) must
  * keep that in its own effect, or the sheet is restored then re-collapsed mid-pick.
  */
 export function usePickStepSheetSnap(visible: boolean): void {
-  const restoreSnapRef = useRef<number | null>(null)
+  const restoreSnapRef = useRef<Snap | null>(null)
   useEffect(() => {
     if (!visible) return
     const nav = useNavStore.getState()
@@ -24,7 +26,7 @@ export function usePickStepSheetSnap(visible: boolean): void {
     return () => {
       const snap = restoreSnapRef.current
       restoreSnapRef.current = null
-      if (snap != null) useNavStore.getState().setSnap(snap as 0 | 1 | 2)
+      if (snap != null) useNavStore.getState().setSnap(snap)
     }
   }, [visible])
 }
@@ -128,7 +130,7 @@ const usePickStepStyles = makeThemedStyles((t) => ({
   },
   cancelBtn: {
     flex: 1,
-    height: 48,
+    height: ACTION_BUTTON_HEIGHT,
     borderRadius: t.radius.md,
     alignItems: "center",
     justifyContent: "center",
@@ -143,7 +145,7 @@ const usePickStepStyles = makeThemedStyles((t) => ({
   },
   confirmBtn: {
     flex: 2,
-    height: 48,
+    height: ACTION_BUTTON_HEIGHT,
     borderRadius: t.radius.md,
     flexDirection: "row",
     alignItems: "center",

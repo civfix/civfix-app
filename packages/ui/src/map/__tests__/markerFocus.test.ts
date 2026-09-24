@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "../markerFocus"
+import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive, nativeMarkerId } from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
 const mapNative = readFileSync(new URL("../Map.native.tsx", import.meta.url), "utf8")
@@ -71,6 +71,23 @@ describe("flyToTargetOffMap", () => {
 
   it("draws nothing without a highlight", () => {
     expect(flyToTargetOffMap([reportNode], null)).toBeNull()
+  })
+})
+
+describe("nativeMarkerId", () => {
+  it("prefixes each marker kind so the press handler can tell them apart by id alone", () => {
+    expect(nativeMarkerId(reportNode)).toBe("pin-r1")
+    expect(nativeMarkerId(eventNode)).toBe("cleanup-c1")
+    expect(nativeMarkerId(blendNode)).toBe("blend-c1")
+    expect(nativeMarkerId(clusterNode)).toBe("cl:1")
+  })
+
+  it("routes every rendered node through it and presses by node kind", () => {
+    expect(mapNative).toContain("const markerId = nativeMarkerId(node)")
+    expect(mapNative).toContain("onPress={pressByType[node.type]}")
+    expect(mapNative).toMatch(
+      /cluster: handlePressCluster,\n\s+report: handlePressPin,\n\s+event: handlePressCleanup,\n\s+blend: handlePressBlend,/,
+    )
   })
 })
 

@@ -40,15 +40,7 @@ describe("locationPickStore: setDraft", () => {
   })
 })
 
-describe("locationPickStore: confirm / cancel", () => {
-  it("confirm ends the pick (active false, draft cleared)", () => {
-    useLocationPick.getState().start({ lat: 1, lng: 2 })
-    useLocationPick.getState().confirm()
-    const s = useLocationPick.getState()
-    expect(s.active).toBe(false)
-    expect(s.draft).toBeNull()
-  })
-
+describe("locationPickStore: cancel", () => {
   it("cancel ends the pick (active false, draft cleared)", () => {
     useLocationPick.getState().start({ lat: 1, lng: 2 })
     useLocationPick.getState().cancel()

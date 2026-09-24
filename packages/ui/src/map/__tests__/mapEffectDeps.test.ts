@@ -69,9 +69,8 @@ describe("Map.web", () => {
 
   it("reads the initial basemap from the last committed render", () => {
     const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useEffect(")
-    expect(build).toContain("const basemap = basemapRef.current")
-    expect(build).toContain("style: (basemap.mapStyle ??")
-    expectWrittenInLayoutEffect(src, "basemapRef.current = { mapStyle, cartoApiKey }")
+    expect(build).toContain("cartoApiKey: cartoApiKeyRef.current,")
+    expectWrittenInLayoutEffect(src, "cartoApiKeyRef.current = cartoApiKey")
   })
 })
 
@@ -141,6 +140,7 @@ describe("latest-value refs are written after commit, never during render", () =
       onPressClusterRef: "onPressCluster",
       onPressBlendRef: "onPressBlend",
       onLongPressMapRef: "onLongPressMap",
+      occlusionLeftRef: "occlusionLeft",
       modeRef: "mode",
     })
   })

@@ -31,11 +31,11 @@ describe("every map keeps a zero bearing and zero pitch (bbox-midpoint centre, l
 })
 
 describe("MapHandle.flyTo on the web seam", () => {
-  it("treats FLYTO_ZOOM as a floor like the native seam, so an omitted zoom never zooms out", () => {
+  it("treats DEFAULT_ZOOM as a floor like the native seam, so an omitted zoom never zooms out", () => {
     const mapWeb = webSeams["Map.web"]
     const fly = /flyTo:\s*\(lat,\s*lng,\s*zoom\)\s*=>\s*\{[\s\S]*?\n\s{6}\},/.exec(mapWeb)?.[0] ?? ""
     expect(fly).not.toBe("")
-    expect(fly).toContain("zoom: zoom ?? Math.max(map.getZoom(), FLYTO_ZOOM)")
-    expect(fly).not.toMatch(/zoom:\s*zoom \?\? FLYTO_ZOOM\b/)
+    expect(fly).toContain("zoom: zoom ?? Math.max(map.getZoom(), DEFAULT_ZOOM)")
+    expect(fly).not.toMatch(/zoom:\s*zoom \?\? DEFAULT_ZOOM\b/)
   })
 })

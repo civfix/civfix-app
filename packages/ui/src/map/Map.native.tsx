@@ -15,7 +15,7 @@ import {
 } from "@maplibre/maplibre-react-native"
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/shared"
-import { useTheme } from "../theme"
+import { space, useTheme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
@@ -36,6 +36,7 @@ import {
   markerA11yLabel,
   markerButtonA11y,
   markerNodeIsActive,
+  nativeMarkerId,
   targetMarkerA11yLabel,
   type MarkerPressEvent,
 } from "./markerFocus"
@@ -48,12 +49,16 @@ import {
   type ClusterNode,
   type MapClusterIndex,
 } from "./clusterer"
+import {
+  CAMERA_EASE_MS,
+  CLUSTER_FLY_MS,
+  DEFAULT_ZOOM,
+  FOCUS_ZOOM,
+  MARKER_PRESS_GUARD_MS,
+} from "./mapCamera"
 import type { MapProps, MapHandle } from "./types"
 
-const DEFAULT_ZOOM = 13
-const FOCUS_ZOOM = 16
-const CLUSTER_FLY_MS = 450
-const MARKER_PRESS_GUARD_MS = 350
+const ATTRIBUTION_CLEARANCE = 96
 const NO_REPORTS: MapProps["reports"] = []
 const NO_CLEANUPS: MapProps["cleanups"] = []
 const NO_AGGREGATES: MapProps["reportAggregates"] = []
@@ -158,7 +163,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     onPressBlend,
     onPressMap,
     onLongPressMap,
-    mapStyle,
     initialCenter,
   } = props
 
@@ -259,13 +263,17 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
         cameraRef.current?.flyTo({
           center: [lng, lat],
           zoom: zoom ?? Math.max(lastRegionRef.current?.zoom ?? DEFAULT_ZOOM, DEFAULT_ZOOM),
-          duration: 600,
+          duration: CAMERA_EASE_MS,
         })
       },
       recenter: () => {
         const loc = userLocationRef.current
         if (loc) {
-          cameraRef.current?.flyTo({ center: [loc.lng, loc.lat], zoom: DEFAULT_ZOOM, duration: 600 })
+          cameraRef.current?.flyTo({
+            center: [loc.lng, loc.lat],
+            zoom: DEFAULT_ZOOM,
+            duration: CAMERA_EASE_MS,
+          })
         }
       },
     }),
@@ -275,11 +283,8 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const cartoApiKey = useCartoApiKey()
   const scheme = useTheme().scheme
   const resolvedStyle = useMemo(
-    () =>
-      (mapStyle ?? rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme })) as
-        | string
-        | StyleSpecification,
-    [mapStyle, cartoApiKey, scheme],
+    () => rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme }) as string | StyleSpecification,
+    [cartoApiKey, scheme],
   )
 
   const commitRegion = useCallback((bbox: BBox, zoom: number) => {
@@ -328,7 +333,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   useEffect(() => {
     if (!focus) return
-    cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
+    cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: CAMERA_EASE_MS })
   }, [focus])
 
   useEffect(() => {
@@ -336,7 +341,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     cameraRef.current?.flyTo({
       center: [flyToRequest.lng, flyToRequest.lat],
       zoom: FOCUS_ZOOM,
-      duration: 600,
+      duration: CAMERA_EASE_MS,
     })
     useMapFlyTo.getState().consume(flyToRequest.generation)
   }, [flyToRequest, mapLoaded])
@@ -418,17 +423,20 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     else onPressCleanupRef.current?.(node.event.id)
   }, [])
 
+  const pressByType = useMemo<Record<ClusterNode["type"], (event: MarkerPressEvent) => void>>(
+    () => ({
+      cluster: handlePressCluster,
+      report: handlePressPin,
+      event: handlePressCleanup,
+      blend: handlePressBlend,
+    }),
+    [handlePressCluster, handlePressPin, handlePressCleanup, handlePressBlend],
+  )
+
   const markerNodes = useMemo(() => {
     const byMarker = new globalThis.Map<string, ClusterNode>()
     const rendered = nodes.map((node) => {
-      const markerId =
-        node.type === "cluster"
-          ? node.key
-          : node.type === "report"
-            ? `pin-${node.id}`
-            : node.type === "event"
-              ? `cleanup-${node.id}`
-              : `blend-${node.id}`
+      const markerId = nativeMarkerId(node)
       byMarker.set(markerId, node)
       return { node, markerId }
     })
@@ -452,7 +460,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       style={styles.map}
       mapStyle={resolvedStyle}
       logo={false}
-      attributionPosition={{ bottom: insets.bottom + 96, right: 8 }}
+      attributionPosition={{ bottom: insets.bottom + ATTRIBUTION_CLEARANCE, right: space["2"] }}
       compass={false}
       touchRotate={false}
       touchPitch={false}
@@ -481,15 +489,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
               node={node}
               markerId={markerId}
               active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}
-              onPress={
-                node.type === "cluster"
-                  ? handlePressCluster
-                  : node.type === "report"
-                    ? handlePressPin
-                    : node.type === "event"
-                      ? handlePressCleanup
-                      : handlePressBlend
-              }
+              onPress={pressByType[node.type]}
             />
           ))}
           {offMapTarget ? (

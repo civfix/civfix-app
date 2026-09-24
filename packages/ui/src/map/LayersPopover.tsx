@@ -1,16 +1,73 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
-import { KNOB_OFF_X, KNOB_ON_X, trackOffColor } from "../primitives/SettingsToggle.styles"
+import {
+  KNOB_OFF_X,
+  KNOB_ON_X,
+  SETTINGS_TOGGLE_TRACK,
+  settingsToggleKnob,
+  trackOffColor,
+} from "../primitives/SettingsToggle.styles"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
 import { TeardropPin, inkOnFill } from "./pins"
 import { useReportFilterStore, FILTER_CATEGORIES } from "./filterStore"
 
-/** Exported so MapControls keeps the card mounted for exactly the exit animation. */
-export const LAYERS_POPOVER_ANIM_MS = motion.fadeUp.duration
+const LAYERS_POPOVER_ANIM_MS = motion.fadeUp.duration
+/** Unmounts the card anyway if its exit never reports finished, a little after the animation would. */
+const POPOVER_UNMOUNT_SLACK_MS = 40
+const POPOVER_WIDTH = 224
+const KNOB_TOP = 2
+
+export interface LayersPopoverPresence {
+  mounted: boolean
+  isClosing: boolean
+  onClosed: () => void
+}
+
+/** Keeps the card mounted after `open` turns false, for exactly its exit animation. */
+export function useLayersPopoverPresence(open: boolean): LayersPopoverPresence {
+  const [isClosing, setIsClosing] = useState(false)
+  const prevOpenRef = useRef(open)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const wasOpen = prevOpenRef.current
+    prevOpenRef.current = open
+    if (wasOpen && !open) {
+      setIsClosing(true)
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+      closeTimer.current = setTimeout(() => {
+        setIsClosing(false)
+      }, LAYERS_POPOVER_ANIM_MS + POPOVER_UNMOUNT_SLACK_MS)
+    } else if (!wasOpen && open) {
+      if (closeTimer.current) {
+        clearTimeout(closeTimer.current)
+        closeTimer.current = null
+      }
+      setIsClosing(false)
+    }
+  }, [open])
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+    },
+    [],
+  )
+
+  const onClosed = useCallback(() => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+    setIsClosing(false)
+  }, [])
+
+  return { mounted: open || isClosing, isClosing, onClosed }
+}
 
 function MiniToggle({ on }: { on: boolean }) {
   const styles = useStyles()
@@ -28,13 +85,12 @@ function MiniToggle({ on }: { on: boolean }) {
 }
 
 export interface LayersPopoverProps {
-  eventsNearby?: number
   /** The parent keeps the card mounted while this is true, until `onClosed` fires. */
   isClosing?: boolean
   onClosed?: () => void
 }
 
-export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: LayersPopoverProps) {
+export function LayersPopover({ isClosing = false, onClosed }: LayersPopoverProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("map-ui")
@@ -114,13 +170,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
           </View>
           <View style={styles.meta}>
             <Text style={styles.rowTitle}>{t("layers.events")}</Text>
-            <Text style={styles.rowSub}>
-              {eventsEnabled
-                ? eventsNearby != null
-                  ? t("layers.nearby", { count: eventsNearby })
-                  : t("layers.shown")
-                : t("layers.hidden")}
-            </Text>
+            <Text style={styles.rowSub}>{eventsEnabled ? t("layers.shown") : t("layers.hidden")}</Text>
           </View>
           <MiniToggle on={eventsEnabled} />
         </Pressable>
@@ -206,12 +256,12 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
 
 const useStyles = makeThemedStyles((t) => ({
   animWrap: {
-    width: 224,
+    width: POPOVER_WIDTH,
   },
   card: {
-    width: 224,
+    width: POPOVER_WIDTH,
     borderRadius: t.radius.md,
-    padding: 4,
+    padding: t.space["1"],
     overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.popover.border,
@@ -238,7 +288,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rowTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   rowSub: {
@@ -252,19 +302,10 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.border,
     marginHorizontal: t.space["2"],
   },
-  toggle: {
-    width: 40,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-  },
+  toggle: SETTINGS_TOGGLE_TRACK,
   toggleKnob: {
-    position: "absolute",
-    top: 2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: t.colors.onAccent,
+    ...settingsToggleKnob(t),
+    top: KNOB_TOP,
     ...t.shadows.s1,
   },
   catList: {

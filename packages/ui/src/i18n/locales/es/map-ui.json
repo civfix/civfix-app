@@ -17,9 +17,7 @@
     "clearAll": "Desmarcar todo",
     "selectAllA11y": "Seleccionar todas las categorías",
     "clearAllA11y": "Desmarcar todas las categorías",
-    "categoryPinsA11y": "Marcadores de {{category}}",
-    "nearby_one": "{{count}} cerca",
-    "nearby_other": "{{count}} cerca"
+    "categoryPinsA11y": "Marcadores de {{category}}"
   },
   "actions": {
     "locate": "Volver a mi ubicación",

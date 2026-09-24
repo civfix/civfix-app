@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { View, StyleSheet } from "react-native"
+import { View, StyleSheet, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
@@ -14,6 +14,11 @@ import {
   usePickStepSheetSnap,
 } from "./PortraitMapPickStep.shared"
 import { INLINE_PICK_HEIGHT, type PortraitMapPickStepProps } from "./PortraitMapPickStep.types"
+
+/** RN's style types stop at "absolute"; react-native-web hands "fixed" straight to CSS. */
+const WEB_FIXED_POSITION = { position: "fixed" } as unknown as Pick<ViewStyle, "position">
+/** Above the web shell and its sheet, since the step is portalled to the document body. */
+const PICK_STEP_Z_INDEX = 1000
 
 export function PortraitMapPickStep({
   visible,
@@ -160,13 +165,13 @@ export function PortraitMapPickStep({
 
 const useStyles = makeThemedStyles((t) => ({
   host: {
-    position: "fixed" as unknown as "absolute",
+    ...WEB_FIXED_POSITION,
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     justifyContent: "space-between",
-    zIndex: 1000,
+    zIndex: PICK_STEP_Z_INDEX,
   },
   topBar: {
     margin: t.space["3"],

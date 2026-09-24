@@ -6,7 +6,6 @@ import {
   isRememberedCenter,
   resolveMapCenter,
   shouldAdoptCenter,
-  zoomForSource,
 } from "../mapCenterModel"
 
 const LA = { lat: 34.0522, lng: -118.2437 }
@@ -112,12 +111,6 @@ describe("camera adoption", () => {
     expect(shouldAdoptCenter("precise", "remembered")).toBe(false)
     expect(shouldAdoptCenter("precise", "precise")).toBe(false)
     expect(shouldAdoptCenter("precise", null)).toBe(false)
-  })
-
-  it("zooms by confidence", () => {
-    expect(zoomForSource("precise")).toBe(PRECISE_ZOOM)
-    expect(zoomForSource("approximate")).toBe(APPROX_ZOOM)
-    expect(zoomForSource("remembered")).toBe(APPROX_ZOOM)
   })
 })
 

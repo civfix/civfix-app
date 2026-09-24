@@ -33,7 +33,10 @@ export interface ReportPickMapHandle {
 
 export const REPORT_PICK_PIN_SIZE = 34
 export const REPORT_PICK_MEETING_PIN_SIZE = 30
+export const REPORT_PICK_MEETING_PIN_OPACITY = 0.9
 export const REPORT_PICK_MUTED_OPACITY = 0.62
 export const REPORT_PICK_RADIUS_FILL_ALPHA = 0.08
 export const REPORT_PICK_RADIUS_LINE_ALPHA = 0.35
+export const REPORT_PICK_RADIUS_LINE_WIDTH = 1.5
+export const REPORT_PICK_RADIUS_LINE_DASH: number[] = [2, 2]
 export const REPORT_PICK_FLY_MS = 450

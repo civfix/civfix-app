@@ -40,9 +40,20 @@ import { resolvePreciseCenterAfterPrompt, getBrowserPosition } from "@/lib/locat
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
 /**
- * `mapStyle` is deliberately omitted so the shared Map builds the CARTO raster style itself and restyles
- * live when the colour scheme changes; a host-supplied style would pin the basemap to one scheme.
+ * The rail and card overlay the map's left edge in landscape. Read at call time, so a caller that has just
+ * pushed onto the nav stack sees the card it brought back.
  */
+function shellOcclusionLeft(): number {
+  return expandedFramePlan({
+    view: useNavStore.getState().view,
+    stackLength: useNavStore.getState().stack.length,
+    sidebarWidth: clampSidebarWidth(
+      useSidebarStore.getState().width,
+      typeof window === "undefined" ? 0 : window.innerWidth,
+    ),
+  }).occlusionLeft
+}
+
 export function HomeMap() {
   // The padded region fetched for client-side clustering, not the viewport.
   const [bbox, setBbox] = React.useState<BBox | null>(null)
@@ -261,16 +272,8 @@ export function HomeMap() {
         // Read after openDropPinMenu, which moves the sheet to MID; the camera offsets for the settled detent.
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,
-        // The rail and card overlay the map's left edge in landscape. Read after `openDropPinMenu`, whose
-        // push brings the card back in map mode.
-        occlusionLeft: expandedFramePlan({
-          view: useNavStore.getState().view,
-          stackLength: useNavStore.getState().stack.length,
-          sidebarWidth: clampSidebarWidth(
-            useSidebarStore.getState().width,
-            typeof window === "undefined" ? 0 : window.innerWidth,
-          ),
-        }).occlusionLeft,
+        // Read after `openDropPinMenu`, whose push brings the card back in map mode.
+        occlusionLeft: shellOcclusionLeft(),
       })
       if (viewportBefore) {
         captureDropPinCamera(
@@ -311,6 +314,7 @@ export function HomeMap() {
       onPressBlend={onPressBlend}
       onPressMap={onPressMap}
       onLongPressMap={onLongPressMap}
+      occlusionLeft={shellOcclusionLeft}
     />
   )
 }

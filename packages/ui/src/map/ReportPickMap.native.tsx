@@ -42,18 +42,21 @@ import {
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
+import { MARKER_PRESS_GUARD_MS } from "./mapCamera"
 import {
   REPORT_PICK_FLY_MS,
+  REPORT_PICK_MEETING_PIN_OPACITY,
   REPORT_PICK_MEETING_PIN_SIZE,
   REPORT_PICK_MUTED_OPACITY,
   REPORT_PICK_PIN_SIZE,
   REPORT_PICK_RADIUS_FILL_ALPHA,
   REPORT_PICK_RADIUS_LINE_ALPHA,
+  REPORT_PICK_RADIUS_LINE_DASH,
+  REPORT_PICK_RADIUS_LINE_WIDTH,
   type ReportPickMapHandle,
   type ReportPickMapProps,
 } from "./ReportPickMap.types"
 
-const MARKER_PRESS_GUARD_MS = 350
 const RADIUS_SOURCE_ID = "report-pick-radius"
 
 export const ReportPickMap = memo(
@@ -256,7 +259,11 @@ export const ReportPickMap = memo(
             <Layer
               id={`${RADIUS_SOURCE_ID}-line`}
               type="line"
-              paint={{ "line-color": radiusLine, "line-width": 1.5, "line-dasharray": [2, 2] }}
+              paint={{
+                "line-color": radiusLine,
+                "line-width": REPORT_PICK_RADIUS_LINE_WIDTH,
+                "line-dasharray": REPORT_PICK_RADIUS_LINE_DASH,
+              }}
             />
           </GeoJSONSource>
 
@@ -330,14 +337,14 @@ const useStyles = makeThemedStyles((t) => ({
   meetingPin: {
     alignItems: "center",
     justifyContent: "center",
-    opacity: 0.9,
+    opacity: REPORT_PICK_MEETING_PIN_OPACITY,
   },
   mutedPin: {
     opacity: REPORT_PICK_MUTED_OPACITY,
   },
   credit: {
     position: "absolute",
-    bottom: 4,
+    bottom: t.space["1"],
     right: 6,
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 9,
