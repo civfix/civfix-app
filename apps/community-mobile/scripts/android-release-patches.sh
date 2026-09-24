@@ -11,8 +11,9 @@
 # has none of them, and the failure modes are all misleading:
 #
 #   1. android/local.properties   -> gradle dies at configuration time with "SDK location not found".
-#                                    Only `expo run:android` writes it. On this machine the SDK is
-#                                    the homebrew android-commandlinetools cask, NOT ~/Library/Android/sdk.
+#                                    Only `expo run:android` writes it. The SDK comes from
+#                                    CIVFIX_ANDROID_SDK_DIR, else the Homebrew android-commandlinetools
+#                                    cask under `brew --prefix` (NOT ~/Library/Android/sdk).
 #   2. android/keystore.properties-> without it the release build silently falls back to the DEBUG
 #                                    keystore and Play rejects the upload.
 #   3. app/build.gradle signing   -> the stock template ships `release { signingConfig signingConfigs.debug }`
@@ -35,7 +36,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-sdk_dir="${CIVFIX_ANDROID_SDK_DIR:-/opt/homebrew/share/android-commandlinetools}"
+if [ -n "${CIVFIX_ANDROID_SDK_DIR:-}" ]; then
+  sdk_dir="$CIVFIX_ANDROID_SDK_DIR"
+elif command -v brew >/dev/null 2>&1; then
+  sdk_dir="$(brew --prefix)/share/android-commandlinetools"
+else
+  echo "Set CIVFIX_ANDROID_SDK_DIR to your Android SDK directory (no Homebrew to derive it from)." >&2
+  exit 1
+fi
 keystore_dir="${CIVFIX_KEYSTORE_DIR:-$HOME/civfix-keystore}"
 keystore_file="${CIVFIX_KEYSTORE_FILE:-$keystore_dir/civfix-upload.keystore}"
 password_file="${CIVFIX_KEYSTORE_PASSWORD_FILE:-$keystore_dir/.password.txt}"
