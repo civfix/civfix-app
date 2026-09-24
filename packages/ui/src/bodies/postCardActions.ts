@@ -21,7 +21,6 @@ export function usePostOverflowMenuState(post: PostDTO) {
   return { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject }
 }
 
-/** The navigation, menu and media handlers every thread row (focal post and reply) wires identically. */
 export function usePostRowActions({
   post,
   identity,

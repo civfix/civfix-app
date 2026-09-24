@@ -10,7 +10,6 @@ interface PostComposerStyleParts {
   postButtonTextDisabled: TextStyle
 }
 
-/** The field focus, add-media disc and Post button looks the full-screen and the inline feed composer share. */
 export function postComposerStyleParts(t: Theme): PostComposerStyleParts {
   return {
     inputSurfaceFocused: inputFocusedStyle(t),

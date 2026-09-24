@@ -13,7 +13,7 @@ export interface MapCreditProps {
 
 /**
  * Stands in for the native maplibre attribution control, which the pickers suppress to keep their chrome
- * clean; the basemap licence still requires a visible CARTO/OSM credit (App Store audit H10).
+ * clean; the basemap licence still requires a visible CARTO/OSM credit.
  */
 export function MapCredit({ bottomInset = null }: MapCreditProps) {
   const styles = useStyles()

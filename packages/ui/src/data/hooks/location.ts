@@ -65,7 +65,6 @@ export function useUserLocation() {
   })
 }
 
-/** The queryFn behind {@link queryKeys.userLocation}, for every surface that fetches that entry itself. */
 export async function resolveUserLocation(
   geo: GeolocationCapability,
   api: ApiClient,
