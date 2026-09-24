@@ -130,7 +130,7 @@ export function MessageContextMenu({
   const handleAction = (action: ContextMenuAction) => run(action.onPress)
 
   const renderActionRow = (action: ContextMenuAction) => {
-    const color = action.destructive ? th.colors.bloom["600"] : th.colors.text
+    const color = action.destructive ? th.colors.dangerInk : th.colors.text
     return (
       <Pressable
         key={action.key}

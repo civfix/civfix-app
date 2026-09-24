@@ -55,9 +55,11 @@ import {
   guestRequestErrorKey,
   guestResendReadyAt,
   guestResendSecondsLeft,
+  guestRsvpCommitFor,
   guestSmsUnavailable,
   guestVerifyErrorKey,
   type GuestContactPayload,
+  type GuestRsvpCommit,
   type GuestRsvpFormState,
   type GuestRsvpStep,
 } from "./guestRsvpModel"
@@ -313,8 +315,14 @@ export function GuestRsvpSheet({
     return null
   })()
 
-  const commit =
-    step === "form" ? submitForm : step === "code" ? (exhausted ? startOver : submitCode) : onClose
+  const commitHandlers: Record<GuestRsvpCommit, () => void> = {
+    submitForm,
+    submitCode,
+    startOver,
+    close: onClose,
+  }
+  const commitKind = guestRsvpCommitFor(step, exhausted)
+  const commit = commitKind === null ? undefined : commitHandlers[commitKind]
 
   const contactLabel =
     sentTo === null
