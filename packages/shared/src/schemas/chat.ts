@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { IdSchema, MESSAGE_BODY_MAX, pageResponse, RoomKindSchema } from "./common.js"
 import { ChatMessageDTOSchema, PersonDTOSchema, ReactionEmojiSchema } from "./entities.js"
-import { MAX_MENTIONED_USERS } from "./internal-fields.js"
+import { MAX_MENTIONED_USERS, OkResponseSchema, PageLimitSchema } from "./internal-fields.js"
 
 
 export { ChatMessageDTOSchema, ChatMessageKindSchema } from "./entities.js"
@@ -23,7 +23,7 @@ export const rejectAroundWithBefore = (
 export const ChatHistoryQueryShape = z.object({
   before: IdSchema.optional(),
   around: IdSchema.optional(),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: PageLimitSchema,
 })
 export const ChatHistoryQuerySchema = ChatHistoryQueryShape.superRefine(rejectAroundWithBefore)
 export type ChatHistoryQuery = z.infer<typeof ChatHistoryQuerySchema>
@@ -69,7 +69,7 @@ export const MarkThreadReadRequestSchema = z
   .strict()
 export type MarkThreadReadRequest = z.infer<typeof MarkThreadReadRequestSchema>
 
-export const MarkThreadReadResponseSchema = z.object({ ok: z.literal(true) })
+export const MarkThreadReadResponseSchema = OkResponseSchema
 export type MarkThreadReadResponse = z.infer<typeof MarkThreadReadResponseSchema>
 
 

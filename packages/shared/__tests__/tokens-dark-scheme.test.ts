@@ -8,31 +8,13 @@ import {
   categoryColor,
   cleanupColorFor,
 } from "../src/tokens/design-tokens.js"
+import { contrastRatio, relativeLuminance } from "../src/tokens/chip-contrast.js"
 
 function leafPaths(value: unknown, prefix = ""): string[] {
   if (typeof value !== "object" || value === null) return [prefix]
   return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) =>
     leafPaths(v, prefix ? `${prefix}.${k}` : k),
   )
-}
-
-function rgb(hex: string): [number, number, number] {
-  const n = hex.replace("#", "")
-  return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)]
-}
-
-function luminance(hex: string): number {
-  const [r, g, b] = rgb(hex).map((c) => {
-    const s = c / 255
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
-  }) as [number, number, number]
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-function contrast(a: string, b: string): number {
-  const la = luminance(a)
-  const lb = luminance(b)
-  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
 describe("dark color scheme", () => {
@@ -61,67 +43,67 @@ describe("dark color scheme", () => {
   it("clears WCAG AA body-text contrast on the dark surfaces", () => {
     const { neutral } = darkColor
     for (const surface of [neutral.paper, neutral.paper2, neutral.card, neutral.cardTint]) {
-      expect(contrast(neutral.ink, surface)).toBeGreaterThanOrEqual(7)
-      expect(contrast(neutral.ink2, surface)).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(neutral.ink3, surface)).toBeGreaterThanOrEqual(3)
+      expect(contrastRatio(neutral.ink, surface)).toBeGreaterThanOrEqual(7)
+      expect(contrastRatio(neutral.ink2, surface)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(neutral.ink3, surface)).toBeGreaterThanOrEqual(3)
     }
   })
 
   it("clears WCAG AA body-text contrast on the LIGHT surfaces (ink3 on paper2 is a known 2.86 exception)", () => {
     const { neutral } = tokens.color
     for (const surface of [neutral.paper, neutral.paper2, neutral.card, neutral.cardTint]) {
-      expect(contrast(neutral.ink, surface)).toBeGreaterThanOrEqual(7)
-      expect(contrast(neutral.ink2, surface)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(neutral.ink, surface)).toBeGreaterThanOrEqual(7)
+      expect(contrastRatio(neutral.ink2, surface)).toBeGreaterThanOrEqual(4.5)
     }
     for (const surface of [neutral.paper, neutral.card, neutral.cardTint]) {
-      expect(contrast(neutral.ink3, surface)).toBeGreaterThanOrEqual(3)
+      expect(contrastRatio(neutral.ink3, surface)).toBeGreaterThanOrEqual(3)
     }
   })
 
   it("keeps the light hairline border visible on the surfaces it divides", () => {
     const { neutral } = tokens.color
-    expect(contrast(neutral.ink5, neutral.paper)).toBeGreaterThanOrEqual(1.1)
-    expect(contrast(neutral.ink5, neutral.card)).toBeGreaterThanOrEqual(1.25)
+    expect(contrastRatio(neutral.ink5, neutral.paper)).toBeGreaterThanOrEqual(1.1)
+    expect(contrastRatio(neutral.ink5, neutral.card)).toBeGreaterThanOrEqual(1.25)
   })
 
   it("keeps the light surface ramp ordered from paper2 up to card", () => {
     const { neutral } = tokens.color
-    expect(luminance(neutral.paper2)).toBeLessThan(luminance(neutral.paper))
-    expect(luminance(neutral.paper)).toBeLessThan(luminance(neutral.cardTint))
-    expect(luminance(neutral.cardTint)).toBeLessThan(luminance(neutral.card))
+    expect(relativeLuminance(neutral.paper2)).toBeLessThan(relativeLuminance(neutral.paper))
+    expect(relativeLuminance(neutral.paper)).toBeLessThan(relativeLuminance(neutral.cardTint))
+    expect(relativeLuminance(neutral.cardTint)).toBeLessThan(relativeLuminance(neutral.card))
   })
 
   it("keeps every category pin distinguishable from the dark paper (3:1 non-text floor)", () => {
     for (const hex of Object.values(darkColor.category)) {
-      expect(contrast(hex, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
+      expect(contrastRatio(hex, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
     }
-    expect(contrast(darkColor.cleanup, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
-    expect(contrast(darkColor.brand.bloom, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
+    expect(contrastRatio(darkColor.cleanup, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
+    expect(contrastRatio(darkColor.brand.bloom, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
   })
 
   it("keeps the on-accent foreground legible on the accent fill in the dark scheme", () => {
-    expect(contrast(darkColor.neutral.paper, darkColor.brand.bloom)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(darkColor.neutral.paper, darkColor.brand.moss)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(darkColor.neutral.paper, darkColor.brand.sun)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.bloom)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.moss)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.sun)).toBeGreaterThanOrEqual(4.5)
     for (const hex of Object.values(darkColor.category)) {
-      expect(contrast(darkColor.neutral.paper, hex)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(darkColor.neutral.paper, hex)).toBeGreaterThanOrEqual(4.5)
     }
   })
 
   it("keeps the accent text legible on every dark surface", () => {
     const { neutral } = darkColor
     for (const surface of [neutral.paper, neutral.paper2, neutral.card, neutral.cardTint]) {
-      expect(contrast(darkColor.bloom["600"], surface)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(darkColor.bloom["600"], surface)).toBeGreaterThanOrEqual(4.5)
     }
   })
 
   it("keeps every category pin distinguishable from the dark card surfaces (3:1 non-text floor)", () => {
     for (const surface of [darkColor.neutral.card, darkColor.neutral.cardTint]) {
       for (const hex of Object.values(darkColor.category)) {
-        expect(contrast(hex, surface)).toBeGreaterThanOrEqual(3)
+        expect(contrastRatio(hex, surface)).toBeGreaterThanOrEqual(3)
       }
-      expect(contrast(darkColor.cleanup, surface)).toBeGreaterThanOrEqual(3)
-      expect(contrast(darkColor.brand.bloom, surface)).toBeGreaterThanOrEqual(3)
+      expect(contrastRatio(darkColor.cleanup, surface)).toBeGreaterThanOrEqual(3)
+      expect(contrastRatio(darkColor.brand.bloom, surface)).toBeGreaterThanOrEqual(3)
     }
   })
 

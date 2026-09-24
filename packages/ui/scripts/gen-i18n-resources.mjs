@@ -7,13 +7,17 @@
 import { readdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { LocaleEnum } from "@civfix/shared"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const i18nDir = join(__dirname, "..", "src", "i18n")
 const localesDir = join(i18nDir, "locales")
 const outFile = join(i18nDir, "resources.ts")
 
-const LOCALES = ["en", "es", "de", "ko"]
+// The contract enum, not the folder list: config.ts hands the same list to i18next as supportedLngs, so
+// the bundle carries exactly the locales the app can select. It reads the built package, so build
+// @civfix/shared first after adding a locale.
+const LOCALES = LocaleEnum.options
 
 // Sorted for stable output.
 const namespaces = readdirSync(join(localesDir, "en"))

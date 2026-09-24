@@ -4,6 +4,7 @@ import {
   ContentReportSubjectSchema,
   ContentReportReasonSchema,
 } from "./common.js"
+import { OkResponseSchema } from "./internal-fields.js"
 
 /**
  * POST /content-reports: a citizen flags a piece of UGC with a reason and optional free-text detail.
@@ -19,5 +20,5 @@ export const ReportContentRequestSchema = z
   .strict()
 export type ReportContentRequest = z.infer<typeof ReportContentRequestSchema>
 
-export const ReportContentResponseSchema = z.object({ ok: z.literal(true) })
+export const ReportContentResponseSchema = OkResponseSchema
 export type ReportContentResponse = z.infer<typeof ReportContentResponseSchema>

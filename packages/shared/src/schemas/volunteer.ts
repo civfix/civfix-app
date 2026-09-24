@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
+import { PageLimitSchema } from "./internal-fields.js"
 import {
   LeaderboardEntryDTOSchema as LeaderboardEntryDTOSchemaInternal,
   OrganizationRefDTOSchema,
@@ -88,8 +89,7 @@ export type VolunteerHoursEntryDTO = z.infer<typeof VolunteerHoursEntryDTOSchema
 export const MyVolunteerHoursEntriesQuerySchema = z
   .object({
     cursor: z.string().optional(),
-    // Coerced because this validates a GET query string, where every value arrives as a string.
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type MyVolunteerHoursEntriesQuery = z.infer<typeof MyVolunteerHoursEntriesQuerySchema>
@@ -106,7 +106,7 @@ export const PublicVolunteerHoursQuerySchema = z
   .object({
     id: IdSchema,
     cursor: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type PublicVolunteerHoursQuery = z.infer<typeof PublicVolunteerHoursQuerySchema>
@@ -145,7 +145,7 @@ export type { LeaderboardEntryDTO, OrgHoursDTO } from "./entities.js"
  */
 export const LeaderboardQuerySchema = z.object({
   geoid: z.string().min(1).max(64),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: PageLimitSchema,
   offset: z.coerce.number().int().nonnegative().max(500).optional(),
 })
 export type LeaderboardQuery = z.infer<typeof LeaderboardQuerySchema>

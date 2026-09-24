@@ -9,6 +9,7 @@ import {
   GUEST_MANAGE_TOKEN_MIN_LENGTH,
   IdSchema,
   LatLngFields,
+  PaginationQuerySchema,
   ReportCategorySchema,
   ReportTypeSchema,
 } from "./common.js"
@@ -21,6 +22,14 @@ const IDEMPOTENCY_KEY_MAX_LENGTH = 128
 const MAX_REPORT_MEDIA_UPLOADS = 5
 
 export const MAX_REPORT_ADDR_LENGTH = 300
+
+// Coerced because list endpoints validate a GET query string, where every value arrives as a string.
+// Taken from PaginationQuerySchema so the list endpoints that share its page-size ceiling cannot drift.
+export const PageLimitSchema = PaginationQuerySchema.shape.limit
+
+// One instance is safe to share: zod methods return new schemas rather than mutating, so aliasing it
+// never couples two endpoints' behaviour, and each alias keeps its own exported name and inferred type.
+export const OkResponseSchema = z.object({ ok: z.literal(true) })
 
 export const SortOrderInputSchema = z.number().int().min(0).max(MAX_SORT_ORDER).optional()
 
