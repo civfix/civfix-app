@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
@@ -139,6 +139,12 @@ export function FeedSharePreview({
     animation.start()
     return () => animation.stop()
   }, [enter, reducedMotion])
+  // One interpolation node for the preview's life; building it in render re-attached a fresh node to the
+  // native driver on every caption keystroke.
+  const enterStyle = useMemo(
+    () => ({ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] }),
+    [enter],
+  )
 
   const readOnly = onChangeCaption === undefined
   const overCap = caption.length >= FEED_CAPTION_MAX
@@ -208,7 +214,7 @@ export function FeedSharePreview({
     <Animated.View
       style={[
         styles.preview,
-        { opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] },
+        enterStyle,
       ]}
     >
       {onPress ? (

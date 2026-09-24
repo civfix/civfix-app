@@ -31,7 +31,6 @@ import {
 } from "../data"
 import { useLocale, useT } from "../i18n"
 import { claimantsBySlot, groupRosterBySlot } from "./rosterSlotGroups"
-import { slotPeopleView } from "./slotPeopleVisibility"
 import {
   boardHasTimedSlots,
   claimSlotErrorKey,
@@ -159,6 +158,9 @@ export function EventSlotsBlock({
   const claim = useClaimEventSlot(cleanupId)
   const join = useJoinCleanup(cleanupId)
   const attendees = useCleanupAttendees(cleanupId)
+  const { mutate: mutateClaim } = claim
+  const { mutate: mutateJoin } = join
+  const { refetch: refetchAttendees } = attendees
   const { user, isAuthenticated, isPending } = useAuthState()
   const reducedMotion = useReducedMotion()
   // WHICH row is in flight, so only the tapped pill dims. It is NOT the disabled gate: the mutation is
@@ -200,7 +202,7 @@ export function EventSlotsBlock({
           }
           setPendingSlotId(tappedId)
           if (general) {
-            join.mutate(slotId === null, {
+            mutateJoin(slotId === null, {
               onSettled: settle,
               onSuccess: () => {
                 setPendingSlotId(null)
@@ -212,7 +214,7 @@ export function EventSlotsBlock({
             return
           }
           const switching = slotId !== null && mySlotId(slots) !== null
-          claim.mutate(
+          mutateClaim(
             { slotId },
             {
               onSettled: settle,
@@ -231,7 +233,7 @@ export function EventSlotsBlock({
         { next: `/cleanups/${cleanupId}` },
       )
     },
-    [boardBusy, claim, cleanupId, general, join, onError, requireAuth, slots, t, toast],
+    [boardBusy, mutateClaim, cleanupId, general, mutateJoin, onError, requireAuth, slots, t, toast],
   )
 
   const onToggle = useCallback(
@@ -250,8 +252,8 @@ export function EventSlotsBlock({
   )
 
   const onRetryPeople = useCallback(() => {
-    void attendees.refetch()
-  }, [attendees])
+    void refetchAttendees()
+  }, [refetchAttendees])
 
   const mine = mySlotId(slots)
   const ordered = slotDisplayOrder(slots)
@@ -311,11 +313,6 @@ export function EventSlotsBlock({
           const interactive =
             showPill && (state === "open" || state === "switch" || state === "mine")
           const people = claimants.get(slot.id) ?? NO_ATTENDEES
-          const view = slotPeopleView({
-            scope: attendees.data?.scope,
-            claimed: slot.claimed,
-            shown: people.length,
-          })
           return (
             <SlotRow
               key={slot.id}
@@ -328,18 +325,16 @@ export function EventSlotsBlock({
               showPill={showPill}
               expanded={open.has(slot.id)}
               people={people}
-              view={view}
+              peopleScope={attendees.data?.scope}
               peopleLoading={peopleLoading}
               peopleErrored={peopleErrored}
               nudgeToSignUp={canSignUpHere && state === "open"}
               viewerId={user?.id ?? null}
               hostLabel={hostLabel}
-              onToggle={() => onToggle(slot.id)}
+              onToggle={onToggle}
               onRetryPeople={onRetryPeople}
               onViewAll={onViewAll}
-              {...(interactive
-                ? { onPress: () => run(state === "mine" ? null : slot.id, slot.id, slot.title) }
-                : {})}
+              {...(interactive ? { onClaim: run } : {})}
             />
           )
         })}

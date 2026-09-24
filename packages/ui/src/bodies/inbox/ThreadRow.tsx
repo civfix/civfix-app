@@ -22,7 +22,7 @@ import {
 import { Text, Icon, iconMap, type IconName } from "../../typography"
 import { ThreadAvatar, PopoverMenu, usePopoverAnchor, useSwipeActions, closeOpenSwipeActions } from "../../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../../primitives"
-import { useToggleMute, useMarkThreadRead, useHideConversation } from "../../data"
+import type { ThreadRoomVars } from "../../data"
 import { useT } from "../../i18n"
 import { threadRowActions, unreadBadgeLabel, type ThreadRowActionKey } from "../messagesListModel"
 import { useRowHover } from "../rowHover"
@@ -102,10 +102,16 @@ function ThreadRowAction({
 export const ThreadRow = React.memo(function ThreadRow({
   thread,
   onPress,
+  onToggleMute,
+  onMarkRead: markRead,
+  onHide,
   coarsePointer,
 }: {
   thread: MessageThreadDTO
   onPress: (t: MessageThreadDTO) => void
+  onToggleMute: (vars: ThreadRoomVars & { muted: boolean }) => void
+  onMarkRead: (vars: ThreadRoomVars) => void
+  onHide: (vars: ThreadRoomVars & { hidden: boolean }) => void
   coarsePointer: boolean
 }) {
   const styles = useStyles()
@@ -139,30 +145,27 @@ export const ThreadRow = React.memo(function ThreadRow({
     [unread, muted, muteLabel, markReadLabel, deleteLabel, deleteA11yLabel],
   )
 
-  const toggleMute = useToggleMute(roomKind, roomId)
-  const markRead = useMarkThreadRead()
-  const hideConversation = useHideConversation(roomKind, roomId)
   const swipe = useSwipeActions({ enabled: !IS_WEB, actionCount: rowActions.length })
   const closeActions = swipe.close
 
   const onMute = useCallback(() => {
     closeActions()
     setMenuOpen(false)
-    toggleMute.mutate({ muted: !muted })
-  }, [closeActions, toggleMute, muted])
+    onToggleMute({ roomKind, roomId, muted: !muted })
+  }, [closeActions, onToggleMute, roomKind, roomId, muted])
 
   const onMarkRead = useCallback(() => {
     closeActions()
     setMenuOpen(false)
     if (!unread) return
-    markRead.mutate({ roomKind, roomId })
+    markRead({ roomKind, roomId })
   }, [closeActions, markRead, unread, roomKind, roomId])
 
   const onDelete = useCallback(() => {
     closeActions()
     setMenuOpen(false)
-    hideConversation.mutate({ hidden: true })
-  }, [closeActions, hideConversation])
+    onHide({ roomKind, roomId, hidden: true })
+  }, [closeActions, onHide, roomKind, roomId])
 
   const actionHandlers = useMemo<Record<ThreadRowActionKey, () => void>>(
     () => ({ mute: onMute, markRead: onMarkRead, delete: onDelete }),

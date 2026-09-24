@@ -452,7 +452,8 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const clipboard = useClipboard()
   const toast = useToast()
 
-  const toggleMute = useToggleMute("group", id)
+  const toggleMute = useToggleMute()
+  const { mutate: mutateMute } = toggleMute
   const removeMember = useRemoveGroupMember()
   const setRole = useSetGroupMemberRole()
   const addSheet = useAddMembersSheet(id)
@@ -460,8 +461,8 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const leaveSheet = useLeaveGroupSheet({ id, viewerId, removeMember, onBack })
 
   const onToggleMute = useCallback(() => {
-    toggleMute.mutate({ muted: !(group?.muted ?? false) })
-  }, [toggleMute, group?.muted])
+    mutateMute({ roomKind: "group", roomId: id, muted: !(group?.muted ?? false) })
+  }, [mutateMute, id, group?.muted])
 
   const addExcludeIds = useMemo(() => {
     const ids = (members.data?.pages ?? []).flatMap((p) => p.members.map((m) => m.user.id))
@@ -489,16 +490,18 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
     toast.show(t("action_error"), { variant: "error" })
   }, [toast, t])
 
+  const { mutate: mutateRemove } = removeMember
+  const { mutate: mutateRole } = setRole
   const onRowAction = useCallback(
     (action: GroupMemberActionKey, userId: string) => {
-      if (action === "remove") removeMember.mutate({ id, userId }, { onError: onRowActionError })
+      if (action === "remove") mutateRemove({ id, userId }, { onError: onRowActionError })
       else
-        setRole.mutate(
+        mutateRole(
           { id, userId, role: action === "make-admin" ? "admin" : "member" },
           { onError: onRowActionError },
         )
     },
-    [removeMember, setRole, id, onRowActionError],
+    [mutateRemove, mutateRole, id, onRowActionError],
   )
   const rowActionPending = removeMember.isPending || setRole.isPending
 

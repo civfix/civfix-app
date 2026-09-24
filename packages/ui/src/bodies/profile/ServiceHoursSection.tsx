@@ -47,9 +47,11 @@ function OwnServiceHours({ totalHours }: { totalHours?: number }) {
   const byOrganization = hoursQuery.data?.hours.byOrganization ?? []
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
+  const { hasNextPage: entriesHaveNext, isFetchingNextPage: entriesFetchingNext, fetchNextPage: fetchNextEntries } =
+    entriesQuery
   const onLoadMore = useCallback(() => {
-    if (entriesQuery.hasNextPage && !entriesQuery.isFetchingNextPage) void entriesQuery.fetchNextPage()
-  }, [entriesQuery])
+    if (entriesHaveNext && !entriesFetchingNext) void fetchNextEntries()
+  }, [entriesHaveNext, entriesFetchingNext, fetchNextEntries])
 
   return (
     <>
@@ -79,9 +81,10 @@ function PublicServiceHours({ userId, totalHours }: { userId?: string; totalHour
   const firstPage = pages?.[0]
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
   const onLoadMore = useCallback(() => {
-    if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage()
-  }, [query])
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   if (query.isError) {
     return (

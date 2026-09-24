@@ -38,6 +38,13 @@ describe("formatRate", () => {
   it("returns null for an unknown rate", () => {
     expect(formatRate(null)).toBeNull()
   })
+
+  it("keeps each locale's own format when formatters are reused across calls", () => {
+    const de = new Intl.NumberFormat("de", { style: "percent", maximumFractionDigits: 0 }).format(0.5)
+    expect(formatRate(0.5, "de")).toBe(de)
+    expect(formatRate(0.5, "en-US")).toBe("50%")
+    expect(formatRate(0.5, "de")).toBe(de)
+  })
 })
 
 describe("statTileColumns", () => {

@@ -178,6 +178,7 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     expect(leave).toContain('hint={t("actions.leave_hint")}')
     expect(leave).toContain("onPress={onLeave}")
     expect(eventDetail).toContain("const showLeave = going && !actsAsHost && isLive && !isEnded")
-    expect(eventDetail).toContain("join.mutate(true, {")
+    expect(eventDetail).toContain("const { mutate: mutateJoin } = join")
+    expect(eventDetail).toContain("mutateJoin(true, {")
   })
 })

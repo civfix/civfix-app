@@ -490,12 +490,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
   }, [cleanup.id])
 
+  const { mutate: mutateJoin } = join
   const onLeave = useCallback(() => {
     haptics.impactLight()
-    join.mutate(true, {
+    mutateJoin(true, {
       onSuccess: () => toast.show(t("actions.leave_toast")),
     })
-  }, [haptics, join, t, toast])
+  }, [haptics, mutateJoin, t, toast])
 
   const needsGeneralBoard =
     cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes

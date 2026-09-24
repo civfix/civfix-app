@@ -33,10 +33,11 @@ export function FollowButton({ personId, isFollowing, nextPath, size = "md", sty
   const { t } = useT("profile-follow")
   const requireAuth = useRequireAuth()
   const follow = useFollowPerson(personId)
+  const { mutate: mutateFollow } = follow
 
   const onPress = useCallback(() => {
-    requireAuth(() => follow.mutate(isFollowing), { next: nextPath })
-  }, [requireAuth, follow, isFollowing, nextPath])
+    requireAuth(() => mutateFollow(isFollowing), { next: nextPath })
+  }, [requireAuth, mutateFollow, isFollowing, nextPath])
 
   const compact = size === "sm"
   const fg = isFollowing ? th.colors.moss["700"] : th.colors.onAccent

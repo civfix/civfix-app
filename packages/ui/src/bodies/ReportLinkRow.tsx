@@ -42,7 +42,10 @@ export function ReportLinkRow({
   const known = given ?? cached
   const query = useReport(known ? undefined : id)
   const fetchedId = query.data?.id === id ? id : null
-  const fetched = fetchedId && query.data ? reportToCardData(query.data) : null
+  const fetched = useMemo(
+    () => (fetchedId && query.data ? reportToCardData(query.data) : null),
+    [fetchedId, query.data],
+  )
   const popScale = usePopScale(selected)
 
   useEffect(() => {

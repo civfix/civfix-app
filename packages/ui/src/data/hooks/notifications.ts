@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react"
+import { useLayoutEffect, useMemo, useRef } from "react"
 import type { Query, QueryClient } from "@tanstack/react-query"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
@@ -31,8 +31,11 @@ export function useNotifications(limit = INBOX_LIMIT) {
     enabled: isAuthenticated,
     queryFn: async () => listItems((await api.listNotifications({ limit }))?.items),
   })
-  const unreadCount = (query.data ?? []).filter((n) => !n.read).length
-  return { ...query, unreadCount }
+  const { data, isLoading, isError } = query
+  const unreadCount = useMemo(() => (data ?? []).filter((n) => !n.read).length, [data])
+  // Picking fields keeps TanStack's tracked-property subscription; a spread reads every getter, so the
+  // always-mounted map controls re-rendered on each background fetch start and settle.
+  return { data, isLoading, isError, unreadCount }
 }
 
 export function useMarkNotificationsRead() {

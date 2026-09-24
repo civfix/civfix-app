@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import * as calendar from "../calendarModel"
 import { DURATION_CHIP_HOURS, durationChipFor, eventDurationMs } from "../calendarModel"
 
@@ -28,10 +28,33 @@ describe("the timezone picker's display-name cache keeps one day only", () => {
     expect(summer).toContain("PDT")
   })
 
+  it("warms every zone in timer slices, none inside the call, and stops when cancelled", () => {
+    vi.useFakeTimers()
+    try {
+      const zones = Array.from({ length: 100 }, (_, i) => (i % 2 === 0 ? "Europe/Berlin" : "America/Chicago"))
+      const distinct = ["Asia/Tokyo", "Europe/Paris", "America/Denver", "Australia/Sydney", "Africa/Cairo"]
+      const all = [...distinct, ...zones]
+      const cache = calendar.makeZoneDisplayNameCache()
+      calendar.warmZoneDisplayNames(cache, all, "en")
+      expect(cache.size()).toBe(0)
+      vi.runAllTimers()
+      expect(cache.size()).toBe(distinct.length + 2)
+
+      const cancelled = calendar.makeZoneDisplayNameCache()
+      const cancel = calendar.warmZoneDisplayNames(cancelled, distinct, "en")
+      cancel()
+      vi.runAllTimers()
+      expect(cancelled.size()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("is the cache TimezoneField reads", () => {
     const field = code("../TimezoneField.tsx")
     expect(field).toContain("const displayNames = makeZoneDisplayNameCache()")
     expect(field).not.toContain("new Map<string, string>()")
+    expect(field).toContain("return warmZoneDisplayNames(displayNames, allTimeZones(), locale)")
   })
 })
 

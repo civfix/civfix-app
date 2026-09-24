@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Platform, Animated } from "react-native"
 import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
-import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji } from "@civfix/shared"
+import { type ChatItem, type ChatMessageDTO, type MediaDTO, type UserMentionDTO, type ReactionEmoji } from "@civfix/shared"
 import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
@@ -20,6 +20,8 @@ import { useBubbleContextMenu } from "./useBubbleContextMenu"
 import { useBubbleStyles } from "./bubbleStyles"
 
 const FLASH_IN_MS = 200
+
+const NO_ATTACHMENTS: readonly MediaDTO[] = []
 
 function webFocused(state: PressableStateCallbackType): boolean {
   if (Platform.OS !== "web") return false
@@ -459,7 +461,7 @@ export const Bubble = React.memo(function Bubble({
     onOpenLink,
   })
   const showBodyText = !embedPlan.linkOnly
-  const atts = message.attachments ?? []
+  const atts = message.attachments ?? NO_ATTACHMENTS
   const hasBody = body.length > 0
   const emptyRow =
     !hasBody &&

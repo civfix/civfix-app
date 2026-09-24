@@ -68,7 +68,6 @@ export function useChatRoomSocket({
     setTransientError(null)
     resetReadAck()
 
-    socket.retain()
     const offStatus = socket.onStatus((status) => setConnection(status))
 
     const offMessage = socket.subscribe((frame) => {
@@ -135,7 +134,6 @@ export function useChatRoomSocket({
       offMessage()
       flushPendingReadAck()
       socket.leave(roomId, roomKind)
-      socket.release()
       clearAllSendTimers()
       discardPendingInbound()
     }
@@ -156,4 +154,14 @@ export function useChatRoomSocket({
     resetReadAck,
     flushPendingReadAck,
   ])
+
+  // Held apart from the join effect so an in-place room switch is a leave/join on the open socket: under
+  // the mobile "eager" policy a release that drops the last hold tears the socket down, so releasing per
+  // room would reconnect on every switch. Declared after the join effect so unmount flushes the read
+  // watermark and leaves before the release; myUserId stays a key so a new identity still reconnects.
+  useEffect(() => {
+    if (!enabled) return
+    socket.retain()
+    return () => socket.release()
+  }, [socket, enabled, myUserId])
 }

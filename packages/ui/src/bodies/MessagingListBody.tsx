@@ -14,7 +14,7 @@ import {
   useListEndReached,
 } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
-import { useThreads, useAuthState, useRequireAuth } from "../data"
+import { useThreads, useAuthState, useRequireAuth, useToggleMute, useMarkThreadRead, useHideConversation } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -180,11 +180,24 @@ export function MessagingListBody() {
   const onPressItem = useCallback((thread: MessageThreadDTO) => openThread(thread), [])
   const coarsePointer = useCoarsePointer()
 
+  // One observer per mutation for the whole inbox, not three per mounted row; `mutate` is stable, so the
+  // memoized rows keep their props.
+  const { mutate: toggleMute } = useToggleMute()
+  const { mutate: markRead } = useMarkThreadRead()
+  const { mutate: hideConversation } = useHideConversation()
+
   const renderItem = useCallback(
     ({ item }: { item: MessageThreadDTO }) => (
-      <ThreadRow thread={item} onPress={onPressItem} coarsePointer={coarsePointer} />
+      <ThreadRow
+        thread={item}
+        onPress={onPressItem}
+        onToggleMute={toggleMute}
+        onMarkRead={markRead}
+        onHide={hideConversation}
+        coarsePointer={coarsePointer}
+      />
     ),
-    [onPressItem, coarsePointer],
+    [onPressItem, toggleMute, markRead, hideConversation, coarsePointer],
   )
 
   const threads = useMemo(() => (query.data?.pages ?? []).flatMap((p) => p.items), [query.data])

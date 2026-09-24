@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { View, Pressable } from "react-native"
 import { COMMON_TIMEZONES, supportedTimeZones } from "@civfix/shared/datetime"
 import {
@@ -13,7 +13,7 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
-import { makeZoneDisplayNameCache } from "./calendarModel"
+import { makeZoneDisplayNameCache, warmZoneDisplayNames } from "./calendarModel"
 
 const MAX_TIMEZONE_ROWS = 8
 
@@ -72,6 +72,11 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
 
   const zoneLabel = displayNames.get(value, locale)
   const deviceLabel = displayNames.get(deviceZone, locale)
+
+  useEffect(() => {
+    if (!open) return
+    return warmZoneDisplayNames(displayNames, allTimeZones(), locale)
+  }, [open, locale])
 
   const rows = useMemo(
     () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allTimeZones(), query, locale),

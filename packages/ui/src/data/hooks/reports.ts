@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react"
 import type { QueryClient, InfiniteData } from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
@@ -99,12 +100,15 @@ export function useMapReports({ bbox, categories, enabled }: MapReportsArgs) {
   return useQuery<ReportClusterResponse>({
     queryKey: queryKeys.mapReports(bbox, cats),
     enabled: bbox !== null && (enabled ?? cats.length > 0),
-    queryFn: () =>
-      api.mapReports({
-        bbox: bbox as BBox,
-        zoom: POINTS_FETCH_ZOOM,
-        ...(cats.length > 0 ? { categories: [...cats] } : {}),
-      }),
+    queryFn: ({ signal }) =>
+      api.mapReports(
+        {
+          bbox: bbox as BBox,
+          zoom: POINTS_FETCH_ZOOM,
+          ...(cats.length > 0 ? { categories: [...cats] } : {}),
+        },
+        { signal },
+      ),
     placeholderData: (prev) => prev,
     staleTime: MAP_REPORTS_STALE_MS,
     gcTime: REPORT_PINS_GC_MS,
@@ -185,33 +189,43 @@ export function useReportSearch(
     queryKey: queryKeys.reportSearch(q, categories, types),
     enabled: options.enabled ?? true,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      api.searchReports({
-        q,
-        categories: categories?.length ? [...categories] : undefined,
-        types: types?.length ? [...types] : undefined,
-        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
-        limit: SEARCH_PAGE_SIZE,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      api.searchReports(
+        {
+          q,
+          categories: categories?.length ? [...categories] : undefined,
+          types: types?.length ? [...types] : undefined,
+          ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
+          limit: SEARCH_PAGE_SIZE,
+        },
+        { signal },
+      ),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     retry: false,
     staleTime: REPORT_SEARCH_STALE_MS,
   })
-  const items: ReportPinDTO[] = (query.data?.pages ?? []).flatMap((p) =>
-    Array.isArray(p?.items) ? p.items.filter((it): it is ReportPinDTO => it != null) : [],
+  const { data, fetchNextPage: fetchNext, refetch: refetchQuery } = query
+  const items = useMemo<ReportPinDTO[]>(
+    () =>
+      (data?.pages ?? []).flatMap((p) =>
+        Array.isArray(p?.items) ? p.items.filter((it): it is ReportPinDTO => it != null) : [],
+      ),
+    [data],
   )
+  const fetchNextPage = useCallback(() => {
+    void fetchNext()
+  }, [fetchNext])
+  const refetch = useCallback(() => {
+    void refetchQuery()
+  }, [refetchQuery])
   return {
     items,
-    fetchNextPage: () => {
-      void query.fetchNextPage()
-    },
+    fetchNextPage,
     hasNextPage: query.hasNextPage,
     isFetchingNextPage: query.isFetchingNextPage,
     isLoading: query.isLoading,
     isError: query.isError,
-    refetch: () => {
-      void query.refetch()
-    },
+    refetch,
   }
 }
 

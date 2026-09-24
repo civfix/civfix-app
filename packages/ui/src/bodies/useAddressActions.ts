@@ -48,14 +48,17 @@ export function useAddressActions({
   const haptics = useHaptics()
   const toast = useToast()
 
+  // Keyed on the coordinates, not the object: callers pass a fresh point literal on every render.
+  const lat = point?.lat
+  const lng = point?.lng
   const urlInput = useMemo(
     () => ({
       address: resolved.length > 0 ? resolved : null,
-      point: point ?? null,
+      point: lat !== undefined && lng !== undefined ? { lat, lng } : null,
       verified,
       title: title ?? null,
     }),
-    [resolved, point, verified, title],
+    [resolved, lat, lng, verified, title],
   )
   const appleUrl = useMemo(() => appleMapsUrl(urlInput), [urlInput])
   const googleUrl = useMemo(() => googleMapsUrl(urlInput), [urlInput])

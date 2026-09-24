@@ -106,11 +106,12 @@ function EventCardFooter({
 }) {
   const styles = useStyles()
   const join = useJoinCleanup(eventId)
+  const { mutate: mutateJoin } = join
   const [footerWidth, setFooterWidth] = useState<number | null>(null)
   const showAvatars = footerWidth === null || footerWidth >= FOOTER_STACK_MIN_WIDTH
   const onToggle = React.useCallback(
-    (currentlyGoing: boolean) => join.mutate(currentlyGoing),
-    [join],
+    (currentlyGoing: boolean) => mutateJoin(currentlyGoing),
+    [mutateJoin],
   )
   const onLayout = React.useCallback((event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width

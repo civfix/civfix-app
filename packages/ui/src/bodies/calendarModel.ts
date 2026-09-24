@@ -292,6 +292,34 @@ export function makeZoneDisplayNameCache(): ZoneDisplayNameCache {
   }
 }
 
+const WARM_CHUNK = 40
+
+/**
+ * Fills `cache` for every zone in timer-sliced chunks and returns a cancel. A display name costs two Intl
+ * formatters, so the first timezone query that misses every id would otherwise build about 800 of them
+ * inside a single keystroke.
+ */
+export function warmZoneDisplayNames(
+  cache: ZoneDisplayNameCache,
+  zones: readonly string[],
+  locale: string,
+): () => void {
+  let index = 0
+  let timer: ReturnType<typeof setTimeout> | null = null
+  const step = () => {
+    const end = Math.min(index + WARM_CHUNK, zones.length)
+    for (; index < end; index++) {
+      const zone = zones[index]
+      if (zone !== undefined) cache.get(zone, locale)
+    }
+    timer = index < zones.length ? setTimeout(step, 0) : null
+  }
+  timer = setTimeout(step, 0)
+  return () => {
+    if (timer !== null) clearTimeout(timer)
+  }
+}
+
 export type ScheduleFieldErrorKey = "date_past" | "time_past" | "end_too_soon" | "time_dst_gap"
 
 export interface ScheduleFieldErrors {

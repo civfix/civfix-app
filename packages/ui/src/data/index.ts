@@ -66,6 +66,7 @@ export {
   useHideConversation,
   useMarkThreadRead,
 } from "./hooks/reportChat"
+export type { ThreadRoomVars } from "./hooks/reportChat"
 export {
   useCreateGroup,
   useJoinGroup,

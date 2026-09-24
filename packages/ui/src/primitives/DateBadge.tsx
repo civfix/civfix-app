@@ -1,6 +1,6 @@
 import React from "react"
 import { View, StyleSheet, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
-import { isValidTimeZone, wallClockInZone } from "@civfix/shared/datetime"
+import { isValidTimeZone, safeDateFormat, wallClockInZone } from "@civfix/shared/datetime"
 import { makeThemedStyles, radius, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useLocale } from "../i18n"
@@ -8,6 +8,7 @@ import { useLocale } from "../i18n"
 const DEFAULT_BADGE_SIZE = 56
 const COMPACT_BADGE_MAX = 48
 const TINT_ALPHA_HEX = "1A"
+const WEEKDAY_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short" }
 
 function dateParts(
   iso: string,
@@ -17,7 +18,7 @@ function dateParts(
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return { weekday: "--", day: "--" }
   const zone = timeZone !== undefined && isValidTimeZone(timeZone) ? timeZone : undefined
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: zone }).format(d)
+  const weekday = safeDateFormat(iso, locale, WEEKDAY_OPTIONS, zone)
   const day = zone === undefined ? d.getDate() : wallClockInZone(d.getTime(), zone).day
   return { weekday: weekday.toUpperCase(), day: String(day) }
 }

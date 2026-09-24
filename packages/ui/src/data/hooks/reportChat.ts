@@ -53,12 +53,19 @@ export function muteInvalidationKeys(roomKind: RoomKind, roomId: string): readon
   return roomKind === "group" ? [queryKeys.threads, queryKeys.groupInfo(roomId)] : [queryKeys.threads]
 }
 
-export function useToggleMute(roomKind: RoomKind, roomId: string) {
+export interface ThreadRoomVars {
+  roomKind: RoomKind
+  roomId: string
+}
+
+// The room rides in the variables so one observer can serve every inbox row.
+export function useToggleMute() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ muted }: { muted: boolean }) => api.toggleConversationMute({ roomKind, roomId, muted }),
-    onSuccess: () => {
+    mutationFn: ({ roomKind, roomId, muted }: ThreadRoomVars & { muted: boolean }) =>
+      api.toggleConversationMute({ roomKind, roomId, muted }),
+    onSuccess: (_res, { roomKind, roomId }) => {
       for (const queryKey of muteInvalidationKeys(roomKind, roomId)) void qc.invalidateQueries({ queryKey })
     },
   })
@@ -69,12 +76,12 @@ interface HiddenThreadSlot {
   item: MessageThreadDTO
 }
 
-export function useHideConversation(roomKind: RoomKind, roomId: string) {
+export function useHideConversation() {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation<ToggleHiddenResponse, unknown, { hidden: boolean }, HiddenThreadSlot[]>({
-    mutationFn: ({ hidden }) => api.toggleConversationHidden({ roomKind, roomId, hidden }),
-    onMutate: async ({ hidden }) => {
+  return useMutation<ToggleHiddenResponse, unknown, ThreadRoomVars & { hidden: boolean }, HiddenThreadSlot[]>({
+    mutationFn: ({ roomKind, roomId, hidden }) => api.toggleConversationHidden({ roomKind, roomId, hidden }),
+    onMutate: async ({ roomKind, roomId, hidden }) => {
       if (!hidden) return []
       await qc.cancelQueries({ queryKey: queryKeys.threads })
       const data = qc.getQueryData<InfiniteData<ListThreadsResponse>>(queryKeys.threads)
@@ -115,7 +122,7 @@ export function useMarkThreadRead() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (vars: { roomKind: RoomKind; roomId: string }) => api.markThreadRead(vars),
+    mutationFn: (vars: ThreadRoomVars) => api.markThreadRead(vars),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.threads })
     },
