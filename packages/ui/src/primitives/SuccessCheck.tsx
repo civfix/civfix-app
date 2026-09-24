@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { Animated, Easing, Platform, StyleSheet, View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
 import { motion, useReducedMotion, useTheme } from "../theme"
@@ -25,9 +25,10 @@ export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps
   const reducedMotion = useReducedMotion()
   const scale = useRef(new Animated.Value(motion.pop.from)).current
   const draw = useRef(new Animated.Value(0)).current
-  const dashOffset = useRef(
-    draw.interpolate({ inputRange: [0, 1], outputRange: [CHECK_LENGTH, 0] }),
-  ).current
+  const dashOffset = useMemo(
+    () => draw.interpolate({ inputRange: [0, 1], outputRange: [CHECK_LENGTH, 0] }),
+    [draw],
+  )
 
   useEffect(() => {
     if (message) announceToScreenReader(message)

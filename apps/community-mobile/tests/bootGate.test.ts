@@ -344,3 +344,18 @@ test("a shared request is only joined by callers under the same key: a token wri
   assert.equal(await joined, "signed-out answer")
   assert.equal(await fresh, "signed-in answer")
 })
+
+test("once a caller's deadline has passed, the next caller sends a fresh request instead of joining", async () => {
+  let runs = 0
+  const check = sharedDeadlineRequest(
+    () =>
+      new Promise<string>(() => {
+        runs += 1
+      }),
+  )
+  const first = check(10).catch((e: unknown) => e)
+  assert.ok((await first) instanceof RequestDeadlineError)
+  assert.equal(runs, 1)
+  void check(1000).catch(() => undefined)
+  assert.equal(runs, 2)
+})
