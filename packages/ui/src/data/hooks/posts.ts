@@ -310,7 +310,7 @@ export interface CreatePostVars {
 }
 
 /** Per-call snapshot of what a create touched, so error/success can undo/reconcile precisely. */
-interface CreateCtx {
+export interface CreateCtx {
   /** The list caches we prepended/appended the optimistic post to. */
   touchedKeys: readonly (readonly unknown[])[]
   /** The parent post id when this create is a reply (its reply count was bumped). */
