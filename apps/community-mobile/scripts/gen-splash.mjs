@@ -1,26 +1,10 @@
 /**
- * One-off generator for the branded app icon + splash PNGs (replaces the blank cream placeholders).
+ * Generates assets/splash.png (1284x1284): the per-letter "civfix" wordmark (Baloo 2) on a fully
+ * transparent canvas, so the expo-splash-screen plugin paints the paper token behind it in light AND
+ * dark mode and no baked field can drift from that token. The app icons come from
+ * scripts/gen-icon-from-source.mjs instead.
  *
- * The icon artwork is the civfix map-pin, kept as vector source next to the assets and rasterized
- * here with sharp (librsvg):
- *   - assets/icon.png            1024x1024  from assets/app-icon.svg — flat coral field + white pin
- *                                           with a coral hole + soft drop shadow. Flattened (no alpha)
- *                                           so iOS accepts it; iOS/Android apply their own corner mask.
- *   - assets/adaptive-icon.png   1024x1024  from assets/adaptive-icon.svg — transparent foreground,
- *                                           the white pin scaled into the Android adaptive safe zone.
- *                                           The coral field is app.config android.adaptiveIcon
- *                                           .backgroundColor (#EA4F3D) and shows through the pin hole.
- *   - assets/favicon.png          256x256   the same app-icon.svg, for the Expo web export.
- *   - assets/splash.png          1284x1284  the per-letter "civfix" wordmark (Baloo 2) on a FULLY
- *                                           TRANSPARENT canvas, so the expo-splash-screen plugin
- *                                           paints the paper token behind it (light AND dark) and
- *                                           no baked field can drift from that token.
- *
- * To change the icon, edit assets/app-icon.svg (and assets/adaptive-icon.svg) — they are the source
- * of truth — then re-run this script. Native launcher resources are regenerated from these PNGs by
- * `expo prebuild`.
- *
- * Run from apps/community-mobile:  node scripts/gen-brand-assets.mjs
+ * Run from apps/community-mobile:  node scripts/gen-splash.mjs
  * sharp + opentype.js are dev-only tools (install at repo root with --no-save); not runtime deps.
  */
 import { fileURLToPath } from "node:url"
@@ -52,8 +36,6 @@ const MOSS = "#6FB36F"
 const SKY = "#6FB1DC"
 const LILAC = "#9C82DE"
 const BLOOM = "#FF7A6B"
-// The icon coral — app-icon.svg's flat field; also app.config android.adaptiveIcon.backgroundColor.
-const ICON_CORAL = "#EA4F3D"
 
 // Load Baloo 2 800 and convert the wordmark to vector glyph paths (librsvg's embedded-font support is
 // unreliable, so we draw the real letterforms as filled <path>s and color each letter ourselves).
@@ -88,7 +70,7 @@ function wordmarkPaths(cx, baselineY, fontSize) {
 /**
  * Splash: the per-letter "civfix" wordmark (real Baloo 2 800 glyph paths), centered on a transparent
  * canvas. The field behind it is the splash backgroundColor in app.config.js (the paper token, one
- * value per scheme) — never painted here, or the light asset would show a bright box in dark mode.
+ * value per scheme). It is never painted here, or the light asset would show a bright box in dark mode.
  */
 function splashSvg(size) {
   // Larger wordmark so the logo reads at a comfortable size once `contain`-fit on a tall phone (the
@@ -108,17 +90,5 @@ async function render(svg, out, size) {
   console.log("wrote", out)
 }
 
-/** Rasterize one of the committed icon source SVGs. `flatten` drops alpha onto the coral (for iOS). */
-async function renderAsset(srcSvg, out, size, { flatten } = {}) {
-  let img = sharp(readFileSync(join(assetsDir, srcSvg)), { density: 384 }).resize(size, size)
-  if (flatten) img = img.flatten({ background: ICON_CORAL })
-  await img.png().toFile(join(assetsDir, out))
-  console.log("wrote", out)
-}
-
-await renderAsset("app-icon.svg", "icon.png", 1024, { flatten: true })
-await renderAsset("adaptive-icon.svg", "adaptive-icon.png", 1024)
 await render(splashSvg(1284), "splash.png", 1284)
-// Web favicon (Expo web export): the full app icon scaled down.
-await renderAsset("app-icon.svg", "favicon.png", 256, { flatten: true })
 console.log("done")

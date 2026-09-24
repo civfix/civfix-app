@@ -221,7 +221,7 @@ export function LocationPicker({
         </View>
       )}
 
-      {/* Basemap attribution (App-Store-audit H10): the native maplibre attribution control is suppressed
+      {/* Basemap attribution: the native maplibre attribution control is suppressed
           (attribution={false}) to keep the picker chrome clean, so a static CARTO/OSM credit stands in for
           it. In fullBleed it is lifted above the
           host's floating confirm/cancel bar via attributionBottomInset. */}

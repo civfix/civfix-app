@@ -15,7 +15,6 @@ stay separate and consume `@civfix/shared` from the private registry.
 | `packages/ui` | `@civfix/ui` (private) | The shared React Native UI (theme, primitives, shells, nav store, feature bodies, the Map seam) rendered on web via react-native-web. Never published. [README](packages/ui/README.md) |
 | `apps/community-web` | `community-web` | Next.js 15 static-export SPA (React 19 + RN-web + shadcn) plus its Cloudflare Pages config and Functions. [README](apps/community-web/README.md) |
 | `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 54 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
-| `docs/superpowers` | — | Older design/plan documents, kept for history. |
 
 ## Toolchain
 
@@ -62,7 +61,7 @@ NEXT_PUBLIC_API_URL=https://api.civfix.dev pnpm --filter community-web dev
    `pnpm --filter community-mobile exec expo run:ios` / `run:android`), then
    `pnpm --filter community-mobile start`.
 
-Editing `packages/shared` or `packages/ui` reaches both apps directly — there is no `link:` override
+Editing `packages/shared` or `packages/ui` reaches both apps directly; there is no `link:` override
 to add and no version bump to adopt inside this repo.
 
 The umbrella's local e2e environment (`../dev/run.sh` in the civfix checkout) still drives the
@@ -81,21 +80,20 @@ backend, Postgres/Redis, the media worker and the seeded data for end-to-end run
 
 ## Branches and deploys
 
-**`main` is staging. Production is a `v*` release.** There is no `dev` branch — every feature branch PRs
-into `main`, and a merge is assumed to be production-ready, but it lands on staging first and is promoted
-to production only when a release is cut (issue
-[civfix/issue-tracker#108](https://github.com/civfix/issue-tracker/issues/108)). PRs into `main` run
-`.github/workflows/ci.yml` (three jobs: packages, web, mobile).
+**`main` is staging. Production is a `v*` release.** There is no `dev` branch: every feature branch PRs
+into `main`, and a merge must be production-ready, but it lands on staging first and reaches
+production only when a release is cut. PRs into `main` run `.github/workflows/ci.yml` (three jobs:
+packages, web, mobile).
 
 | Event | What happens |
 | --- | --- |
-| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
+| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (alias `staging.civfix-web.pages.dev`, served as https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
 | published `v*` release | `deploy-web.yml` rebuilds **the same commit** against `api.civfix.org` with Turnstile on, and publishes it to the Pages production branch (https://civfix.org). |
 
 A static export inlines every `NEXT_PUBLIC_*` at build time, so production is a rebuild of the release
-commit rather than a byte-copy of the staging artifact — unlike the backend, whose Docker images really
+commit rather than a byte-copy of the staging artifact, unlike the backend, whose Docker images really
 are promoted as-is. The workflow resolves those values once and then asserts they match the target, so a
-build cannot ship the staging API URL to civfix.org or the production one to the public preview.
+build cannot ship the staging API URL to civfix.org or the production one to civfix.dev.
 
 The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same lane: a push to
 `main` that touches the app or the packages builds the `testflight` profile (staging API) on a
@@ -105,7 +103,7 @@ picks one at runtime from its iOS install source (`api.civfix.dev` while it is h
 TestFlight, `api.civfix.org` once it is downloaded from the App Store), and attaching that build to
 a version and submitting it for review stays a human step in App Store Connect. The runner executes
 the same `scripts/store-build.sh` a developer runs locally (`eas build --local`, then a direct
-`fastlane pilot upload` to App Store Connect — no EAS Submit queue), so CI and laptop builds share
+`fastlane pilot upload` to App Store Connect, with no EAS Submit queue), so CI and laptop builds share
 one EAS signing-credential store and one build-number counter. See that app's README for the
 prerequisites (an `EXPO_TOKEN` secret, the App Store Connect API key secrets, EAS credentials, the
 remote build number).
@@ -130,6 +128,6 @@ from this repository are additionally conveyed under the
 store binaries bundle `packages/shared` and `packages/ui`. Every file is
 covered by the declaration in [REUSE.toml](REUSE.toml); there are no per-file
 license headers. Contributions are accepted under the
-[Contributor License Agreement](CLA.md) — see [CONTRIBUTING.md](CONTRIBUTING.md).
+[Contributor License Agreement](CLA.md); see [CONTRIBUTING.md](CONTRIBUTING.md).
 civfix is a project of Reach Out Los Angeles Inc.; the civfix name and logos are its
 trademarks and are not covered by the license.

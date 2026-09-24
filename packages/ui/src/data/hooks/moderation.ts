@@ -1,7 +1,7 @@
 /**
- * Shared moderation / account-management hooks - the App-Store-audit remediation surface (content
- * reporting, self-service account deletion, and a data-export request). Authored framework-light: the
- * host API client + auth/logout via the injected data context, no expo / next / Alert / store imports.
+ * Shared moderation / account-management hooks: content reporting, self-service account deletion,
+ * and a data-export request. Authored framework-light: the host API client + auth/logout via the
+ * injected data context, no expo / next / Alert / store imports.
  *
  *   useReportContent()  - POST /content-reports {subjectType,subjectId,reason,details?} -> {ok:true}. A
  *                         fire-and-forget content report against any UGC subject (report|comment|message|

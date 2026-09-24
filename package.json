@@ -18,9 +18,7 @@
     "i18n:check": "turbo run i18n:check",
     "clean": "turbo run clean",
     "doctor": "cd apps/community-mobile && npx expo-doctor",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "changeset publish"
+    "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

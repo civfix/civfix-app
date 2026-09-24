@@ -3,8 +3,6 @@
 The civfix community user app: React Native + Expo (custom dev client) + expo-router + TypeScript. It
 lives in the `civfix-app` monorepo alongside the web app and the two shared packages it consumes.
 
-Stack (locked): React Native + Expo (dev client) + expo-router + TypeScript.
-
 ## Layout
 
 ```
@@ -24,13 +22,11 @@ civfix-app/
 config from this app directory, and `node-linker=hoisted` is the layout Metro, the config plugins and
 CocoaPods are proven on.
 
-## Versions chosen
-
-Targeting the current stable Expo SDK with the broadest native-library compatibility.
+## Key versions
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~54.0.0 | SDK 54 (current stable line with the widest 3rd-party RN support) |
+| expo | ~54.0.36 | SDK 54 |
 | react-native | 0.81.5 | SDK 54 pin |
 | react / react-dom | 19.1.0 | SDK 54 pin |
 | expo-router | ~6.0.24 | file-based routing |
@@ -41,18 +37,16 @@ Targeting the current stable Expo SDK with the broadest native-library compatibi
 | @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 54) |
 | react-native-svg | 15.12.1 | teardrop pins, avatars |
 | react-native-safe-area-context | ~5.6.0 | |
-| react-native-mmkv | ^3.3.3 | v3 (no Nitro) for the later chat queue; see "Deferred libs" |
-| react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro) for the later report camera |
+| react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
+| react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro); see "Pinned library majors" |
 | @tanstack/react-query / zustand | ^5 / ^5 | data + state |
 
-### Reanimated v3 vs v4
+### Reanimated v4
 
-The build brief asked for Reanimated v3 with `react-native-reanimated/plugin`. Every current stable
-Expo SDK (54/55/56) bundles **Reanimated v4**, which moved the worklet Babel transform into the
-separate `react-native-worklets` package. Forcing v3 onto SDK 54 (RN 0.81, new architecture) is
-unsupported and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations. We therefore
-use the SDK-bundled Reanimated v4 + `react-native-worklets/plugin` (last in babel.config.js). This is
-the only configuration that passes expo-doctor cleanly.
+Expo SDK 54 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
+`react-native-worklets` package, so `babel.config.js` uses `react-native-worklets/plugin` (last in the
+plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 54 (RN 0.81,
+new architecture) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
 
 ## Building (REQUIRES a dev client - not Expo Go)
 
@@ -172,19 +166,12 @@ apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 
 It runs `pnpm install --frozen-lockfile`, writes `.env`, re-runs `expo prebuild` + `pod install`,
 clears the Metro cache, then prints the config it actually produced (API URL, build number, update
-channel, signing team, and the `@civfix/*` versions **resolved on disk**) and fails rather than
-leave you with a mis-baked project.
+channel, signing team, and the `@civfix/ui` / `@civfix/shared` versions on disk) and fails rather than leave you with a mis-baked project.
 
-The lockfile sync is not ceremony. **An Xcode archive bundles JS straight out of `node_modules`, and
-nothing else in the pipeline notices when that is stale.** On 2026-08-11 `pnpm-lock.yaml` and
-`package.json` both said `@civfix/ui` 0.51.1 while `node_modules` still held 0.50.0 — `pnpm install`
-had never been run after the bump commit. Typecheck and all 222 tests went green because they
-resolve that same stale copy, so the only symptom would have been a TestFlight build missing the
-last two days of UI fixes. Always trust the resolved-version line in the banner over `package.json`.
-That exact drift can no longer happen now that `@civfix/shared` and `@civfix/ui` are workspace
-packages (the archive bundles the live source / the freshly built `dist`), but the sync still matters
-for every third-party dependency. Then: open `ios/civfix.xcworkspace`, destination **Any iOS Device (arm64)**,
-**Product > Archive**, **Distribute App > App Store Connect**.
+The lockfile sync matters because an Xcode archive bundles JS straight out of `node_modules` and
+nothing else in the pipeline notices when a third-party dependency there is stale. Then: open
+`ios/civfix.xcworkspace`, destination **Any iOS Device (arm64)**, **Product > Archive**,
+**Distribute App > App Store Connect**.
 
 Two things this script exists to stop:
 
@@ -200,7 +187,7 @@ Two things this script exists to stop:
 **Close the workspace in Xcode before running it.** Rewriting `project.pbxproj` under a running
 Xcode leaves its build service on a stale project graph, and the next build dies instantly with
 `Could not compute dependency graph: MsgHandlingError(message: "unable to initiate PIF transfer
-session (operation in progress?)")`. The project on disk is fine — only Xcode's session is stale.
+session (operation in progress?)")`. The project on disk is fine; only Xcode's session is stale.
 Recover with `pkill -x SWBBuildService` (`XCBBuildService` on older Xcode; Xcode respawns it), then
 a full Xcode quit + reopen, then `rm -rf ~/Library/Developer/Xcode/DerivedData/civfix-*`.
 
@@ -219,12 +206,12 @@ Temurin 25).
 ```sh
 scripts/prep-archive.sh testflight --platform android   # or appstore; Android always resolves to https://api.civfix.org
 scripts/android-release-patches.sh
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
+export JAVA_HOME="$(/usr/libexec/java_home -v 22)"
 cd android && ./gradlew --no-daemon :app:assembleRelease   # or :app:bundleRelease for the Play .aab
 ```
 
 `android.versionCode` in `app.config.js` is the source of truth for the Play version code and must be
-bumped in a PR for every Play upload — never by editing `android/`, which is gitignored and
+bumped in a PR for every Play upload, never by editing `android/`, which is gitignored and
 regenerated by the prebuild, so a hand edit there is invisible to the next person and to CI.
 
 ### Launch screen assets are baked at prebuild
@@ -234,7 +221,7 @@ prebuild generated**, not what `assets/` and `app.config.js` currently say. `exp
 copies `assets/splash.png` into
 `ios/civfix/Images.xcassets/SplashScreenLogo.imageset/image@{1,2,3}x.png` and writes
 the paper background into the storyboard; nothing re-checks either afterwards. A stale prebuild
-therefore ships the *old* logo on the *new* background — which is how an opaque splash asset from
+therefore ships the *old* logo on the *new* background, which is how an opaque splash asset from
 an earlier revision shipped a visible box around the logo in both appearances long after
 `assets/splash.png` had been fixed.
 
@@ -253,12 +240,12 @@ npx expo prebuild --platform ios --clean --no-install
 `scripts/prep-archive.sh` runs a (non-`--clean`) prebuild + `pod install`, so a prep'd archive picks
 the change up; a hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not.
 Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
-place — it is the only way to be sure no earlier generated file survives.
+place: it is the only way to be sure no earlier generated file survives.
 
 The launch screen is light-only, by product decision (2026-09-14): the static native screen and the
 JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
 match instead of one switching a beat before the other. That is why `app.config.js` carries no `dark`
-splash block — not on `splash`, not on the `expo-splash-screen` plugin tuple — and why
+splash block (not on `splash`, not on the `expo-splash-screen` plugin tuple), and why
 `src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate`, the
 pre-fonts backdrop in `app/_layout.tsx` and that file's system chrome: while `gateMounted` is true,
 `RootStack` holds the status bar, the Android nav-bar glyphs and the native root background
@@ -272,16 +259,16 @@ fully transparent canvas; what sits behind it is `SPLASH_BG_LIGHT`, which the pr
 `luminosity` appearance, and the storyboard paints its container view with that colorset *by name*
 (`<color key="backgroundColor" name="SplashScreenBackground"/>`). With one appearance in the
 colorset UIKit resolves the same paper in light and dark. `Info.plist` still keeps
-`UIUserInterfaceStyle` at `Automatic` — that key governs the whole process, launch screen included,
+`UIUserInterfaceStyle` at `Automatic`: that key governs the whole process, launch screen included,
 so forcing `userInterfaceStyle` to `light` in `app.config.js` would hold the splash light too, but it
 would pin the app proper to that one appearance along with it. The single-appearance colorset buys
 the same launch paper without that cost.
 
 `tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
-fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes
+fully transparent and that most of the image is, and (when a local `ios/` prebuild exists) decodes
 the generated `@3x` imageset entry and asserts the same, checks that the colorset holds exactly one
 light appearance, that the imageset lists no dark entry and no `dark_image` file survives on disk,
-that the storyboard binds the named colour, and that `Info.plist` keeps `Automatic` — so a stale
+that the storyboard binds the named colour, and that `Info.plist` keeps `Automatic`, so a stale
 prebuild carrying the old two-appearance splash fails the test suite before anyone archives. CI has
 no `ios/`, so that half simply skips there.
 
@@ -289,7 +276,7 @@ iOS also caches the rendered launch screen as a snapshot, and that snapshot outl
 came from: a simulator that has been shown the old splash keeps replaying it after `simctl uninstall`
 + reinstall and after a full simulator reboot, even though the freshly installed `Assets.car`
 demonstrably holds the new colours. So a local "the fix didn't work" is usually the snapshot, not the
-binary — verify the bundle with `xcrun assetutil --info <app>/Assets.car` before believing the
+binary; verify the bundle with `xcrun assetutil --info <app>/Assets.car` before believing the
 screen, and bump `ios.buildNumber` (or use a fresh simulator) to force a re-render.
 
 ### Local `eas build` (`scripts/store-build.sh`)
@@ -297,7 +284,7 @@ screen, and bump `ios.buildNumber` (or use a fresh simulator) to force a re-rend
 `apps/community-mobile/scripts/store-build.sh` wraps the whole local flow - it builds the ipa on
 this Mac with `eas build --local` (which, unlike a raw Xcode archive, applies the profile's env so
 the right API URL is baked in) and then runs `scripts/store-upload.sh`, which uploads the ipa
-straight to App Store Connect with `fastlane pilot upload` — not `eas submit`, whose free-tier
+straight to App Store Connect with `fastlane pilot upload`, not `eas submit`, whose free-tier
 queue can hold a submission for hours:
 
 ```sh
@@ -306,7 +293,7 @@ pnpm --filter community-mobile build:appstore     # App Store release build -> p
 ```
 
 One-time prereqs: Xcode + command-line tools, `brew install fastlane`, `npm install -g eas-cli`,
-`eas login`, and — to upload — an App Store Connect API key exported as `ASC_KEY_ID`,
+`eas login`, and, to upload, an App Store Connect API key exported as `ASC_KEY_ID`,
 `ASC_ISSUER_ID` and `ASC_PRIVATE_KEY` (the `.p8` contents); the script refuses to start a build it
 could not upload. Append `--no-submit` (e.g. `pnpm --filter community-mobile build:testflight --
 --no-submit`) to just produce the ipa without uploading (the live-version check below still runs
@@ -355,9 +342,9 @@ The build number is the only version EAS moves. The user-facing version (`versio
 `app.config.js`, mirrored in `package.json`; `CFBundleShortVersionString`) is bumped by hand, and
 the moment matters: App Store Connect accepts any number of builds for a version until that version
 is approved, then rejects every further upload of it ("You've already submitted this version of the
-app"). So **the first PR after an App Store release bumps `version`** — `npm version patch
+app"). So **the first PR after an App Store release bumps `version`**: `npm version patch
 --no-git-tag-version` in this directory moves `package.json`, then set the same value in
-`app.config.js` — or every push to `main` fails at upload time. `scripts/store-build.sh` runs
+`app.config.js`, or every push to `main` fails at upload time. `scripts/store-build.sh` runs
 `scripts/store-version-gate.mjs` before it builds: it reads the live version from Apple's public
 lookup API (no credential) and refuses a version that is not strictly above it, so a missed bump
 fails in seconds instead of after a half-hour build. The lookup can lag a few hours behind an
@@ -383,12 +370,28 @@ for TestFlight testers, publish the `testflight` channel with
 `EXPO_PUBLIC_API_URL=https://api.civfix.dev` set at `eas update` time (profile `env` applies only
 to `eas build`), and never map the `testflight` channel onto a prod-published branch.
 
-Config plugins for the native modules (camera/mic/location permission strings, Google sign-in URL
-scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.js`. The API base
+Config plugins are declared in `apps/community-mobile/app.config.js`: expo-router,
+expo-localization, expo-build-properties, MapLibre, expo-secure-store, Apple authentication,
+expo-location, expo-notifications, vision-camera, expo-image-picker, Google sign-in (URL scheme) and
+expo-splash-screen. Its `infoPlist` block sets the camera, microphone, location-when-in-use and
+photo-library strings; the plugins add the location-always pair (expo-location defaults) and Face ID
+(expo-secure-store). The API base
 URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
 to `http://localhost:8080` and release builds to whichever API the install source implies -
 `https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store
 (`src/lib/apiUrl.ts`).
+
+## Brand assets
+
+Two manual generators produce the committed images (run from `apps/community-mobile`; `sharp` and
+`opentype.js` are dev-only tools, installed at the repo root with `--no-save`):
+
+- `node scripts/gen-icon-from-source.mjs [path/to.png]` writes `assets/icon.png` (1024, no alpha, for
+  iOS) and `assets/adaptive-icon.png` (Android foreground) from `assets/icon-source.png`, the source
+  of truth for the icon art.
+- `node scripts/gen-splash.mjs` writes `assets/splash.png`, the transparent "civfix" wordmark.
+
+`expo prebuild` regenerates the native launcher and splash resources from these PNGs.
 
 ## pnpm + Expo + the shared packages
 
@@ -415,13 +418,17 @@ civfix-admin, the gov plane) can adopt the published version - see the repo-root
 
 Most user-facing screens live in `@civfix/ui` (`packages/ui`), the shared React Native UI consumed by
 both this app and `community-web` (web renders it via react-native-web). The same `.tsx` is authored
-once and the layout adapts to screen WIDTH (`>= 840px` sidebar shell - iPad landscape; `< 840px`
-bottom-sheet shell - phone, iPad portrait), not to platform. This app stays the native host: it
-provides the data context (Bearer auth, the API client, the chat WebSocket), the platform
-capabilities (vision-camera, geolocation, secure-store, push, MMKV/AsyncStorage persistence, haptics,
-expo-blur), the maplibre-react-native basemap, and the `expo-router` deep-link adapter. The preserved
-native shell (animated splash, forced sign-in gate, push register, `civfix://` deep links) is
-unchanged - it only injects capabilities into the shared UI. `packages/ui/README.md` covers the
+once and the layout adapts to orientation and width, not to platform: a landscape window at least
+`EXPANDED_MIN_WIDTH` wide gets the expanded sidebar shell, every other window (portrait, or landscape
+too narrow for the chrome) the compact bottom-sheet shell (`useLayoutMode` in
+`packages/ui/src/theme/useLayoutMode.ts`, deciding through `layoutModeFor` in
+`packages/ui/src/shell/expandedFramePlan.ts`). This app stays the native host: it provides the data
+context (Bearer auth, the API client, the chat WebSocket), the platform capabilities (vision-camera,
+geolocation, secure-store, push, haptics, expo-blur, clipboard, calendar file, open-external), MMKV
+persistence, the maplibre-react-native map, and the `expo-router` deep-link adapter
+(`src/lib/navBridge.ts`). The native shell (animated splash, onboarding, push registration,
+`civfix://` and universal-link deep links) injects those into the shared UI; sign-in is required per
+action through `useAuthGate`, so guests can browse. `packages/ui/README.md` covers the
 architecture (the five seams) and the authoring rules.
 
 `@civfix/ui` ships untranspiled `.tsx` SOURCE (not a bundle) and emits only `.d.ts`. Metro consumes
@@ -438,54 +445,41 @@ rebuilt first - turbo does that automatically (`typecheck` dependsOn `^build`), 
 
 ## Design tokens -> RN theme
 
-`src/theme/index.ts` adapts the platform-neutral shared tokens (`@civfix/shared/tokens`) into
-RN-native values: rem font sizes -> px numbers, CSS box-shadows -> RN shadow/elevation objects,
-numeric radii (the CSS-only `pin` corner is dropped), the category color map, and the loaded
-`@expo-google-fonts` family names. It re-exports `categoryColor()` and adds a `wordmark` color list.
-Do not hardcode hex/size values in components; import from the theme.
+The RN theme lives in `@civfix/ui/theme`, which adapts the shared tokens (`@civfix/shared/tokens`)
+into RN values. `src/theme/index.ts` re-exports it (so `@/theme` imports keep working) and adds only
+the wordmark letters. Do not hardcode hex/size values in components; import from the theme.
 
 ## Map basemap (decision)
 
-- **The map ALWAYS uses the OpenStreetMap (CARTO Voyager) raster basemap.** This is the intentional,
-  permanent basemap (`src/components/map/mapStyle.ts` -> `rasterMapStyle`), matching the design and the
-  web app. An earlier plan would have served Protomaps PMTiles vector tiles from R2 (via
-  `GET /map/tileinfo`); that plan was overridden, so the map needs nothing from R2 - or from the
-  backend - to render. `GET /map/tileinfo` is still called only for its attribution string; the basemap
-  draws regardless of whether it resolves. There is no `protomaps-mlrn` / PMTiles dependency.
+- **The map ALWAYS uses the hardcoded CARTO raster basemap**: Voyager in light, Dark Matter in dark,
+  defined once in `packages/ui/src/map/mapStyle.ts` and shared with the web app. The tile URLs and
+  attribution are hardcoded, so the map needs nothing from the backend to render and the app does not
+  call `GET /map/tileinfo`. The public CARTO key (`EXPO_PUBLIC_CARTO_API_KEY`, which `app.config.js`
+  defaults and surfaces through `extra`) is appended to the tile URLs; a blank key leaves them
+  untouched. There is no PMTiles dependency.
 
 ### Onboarding map stills
 
 The first-run tour's map cards (`src/components/onboarding/stages/MapStill.tsx`) are CARTO Voyager
-(light) / Dark Matter (dark) crops of three real Los Angeles places — Highland Park (report), Boyle
-Heights at Hollenbeck Park (track), Echo Park Lake (together) — shipped as static `@2x` PNGs in
+(light) / Dark Matter (dark) crops of three real Los Angeles places: Highland Park (report), Boyle
+Heights at Hollenbeck Park (track), Echo Park Lake (together). They ship as static `@2x` PNGs in
 `assets/onboarding/` so first launch needs no network, with `@civfix/ui` pins overlaid at real
 coordinates by the stages. `node scripts/onboarding-map-art.mjs` regenerates them from the scene table
 in `src/components/onboarding/onboardingMapScenes.ts` through the app's own tile URL rule and CARTO
 key, writes the palettised stills plus a `manifest.json` (sha256, dimensions and the scene centre,
-zoom and point size each still was cut from) that `tests/onboardingMapArt.test.ts` asserts against —
-so editing a scene without regenerating fails the suite — and with `--preview <dir>` also writes
+zoom and point size each still was cut from) that `tests/onboardingMapArt.test.ts` asserts against
+(so editing a scene without regenerating fails the suite), and with `--preview <dir>` also writes
 copies with the pin spots marked for checking the framing after moving a scene.
 
-## Deferred / incompatible libraries
+## Pinned library majors
 
 - **react-native-mmkv** is pinned to v3 (not v4) and **react-native-vision-camera** to v4 (not v5)
   because the latest majors require `react-native-nitro-modules` + `react-native-nitro-image`, which
-  add native-build surface for libraries not used until later steps. v3/v4 install, typecheck, and
-  pass expo-doctor, and have stable config plugins. Both are declared + configured now so the later
-  report/chat steps need no new native config.
-- **react-native-video / react-native-compressor** are declared for the later media flow; they
-  autolink and need no config-plugin entry.
-
-## @civfix/shared gaps observed (no shared changes made)
-
-The contract was sufficient to build the map home. Minor gaps for a future shared revision:
-
-1. No dedicated map-cleanups endpoint: cleanup pins on the map reuse `GET /cleanups` with a `near`
-   filter. A bbox-scoped cleanup-pins endpoint (parallel to `GET /map/reports`) would be cleaner for
-   dense maps.
-2. No push-token / device-registration helper types beyond `RegisterPushTokenRequest`; fine for now.
-3. `TileInfoResponse.pmtilesUrl` is typed but the mobile map intentionally does not consume it (the map
-   uses the OpenStreetMap raster basemap; see "Map basemap" above). The app reads only `attribution`.
+  add native-build surface. v3/v4 install, typecheck, pass expo-doctor, and have stable config
+  plugins.
+- **react-native-video** (media playback in `@civfix/ui`'s `MediaPreview.native`) and
+  **react-native-compressor** (capture compression in `src/lib/nativeCamera.ts`) autolink and need
+  no config-plugin entry.
 
 ## Verify
 

@@ -7,11 +7,6 @@
  *   - isAvailable()       : true on iOS/Android (a real OS push runtime exists); false on web.
  *   - registerForToken()  : run the full permission -> token -> POST /push/register flow and return the
  *                           Expo push token when it succeeds, else null (declined / unsupported / error).
- *
- * NOTE (B6): token minting is still blocked until a real EAS projectId exists. With the all-zeros
- * placeholder in app.config.ts (extra.eas.projectId) `getExpoPushTokenAsync` rejects, which
- * registerForPushNotifications turns into a graceful { status: "error" } -> this returns null. The wiring
- * is correct; tokens only start minting after `eas init`. See REMEDIATION-STATUS.md (H8 / B6).
  */
 import { Platform } from "react-native"
 import type { PushCapability } from "@civfix/ui/capabilities"

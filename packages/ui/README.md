@@ -5,7 +5,7 @@ primitives (`View` / `Text` / `Pressable`), rendered on native via Metro and on 
 react-native-web. The layout adapts to ORIENTATION (landscape -> expanded sidebar shell; portrait ->
 compact bottom-sheet shell), not to platform, so every screen is written once instead of twice.
 
-It depends only on `@civfix/shared` (design tokens + DTOs). It sits beside the contract in the
+Its domain types and design tokens come from `@civfix/shared`. It sits beside the contract in the
 `civfix-app` monorepo, but is a SEPARATE package so the React/RN peer deps stay isolated and the
 publishable contract never re-releases on UI churn. It is `"private": true` and is NEVER published;
 `apps/community-web` and `apps/community-mobile` take it as `workspace:*`, and no repo outside this
@@ -29,6 +29,9 @@ could resolve it per platform.
 - Consumers transpile the source themselves: Metro honors the `react-native` export condition on mobile;
   web adds `@civfix/ui` (and the RN stack) to `transpilePackages` and aliases `react-native` to
   `react-native-web`.
+- A seam `X` is `X.web.tsx` + `X.native.tsx` plus an extensionless `X.tsx` that re-exports the web
+  file. Metro picks `.native` and the web bundler picks `.web`, so only platform-unaware tooling (tsc,
+  vitest) ever reads the extensionless selector; keep it a one-line re-export.
 
 Consequence (the #1 gotcha): bundlers consume the SOURCE, but `tsc` consumes the `dist-types`. The
 declaration types must be rebuilt before a consumer typecheck sees a change (the dist-types rule,
@@ -36,12 +39,17 @@ below).
 
 ## Dependencies
 
-React, React Native, react-native-web, react-native-reanimated/svg/gesture-handler/safe-area-context,
-@gorhom/bottom-sheet, the maplibre libraries, lucide-react-native, @tanstack/react-query, and zustand
-are `peerDependencies` so each app keeps a single copy (the singletons it owns). `react-native` is
-optional (web satisfies it through the react-native-web alias, not a native install); the native map /
-video and `maplibre-gl` are optional too (web never installs the native map; native never installs
-`maplibre-gl`). The only hard dependency is `@civfix/shared` (`workspace:*` inside this repo).
+React, react-dom, React Native, react-native-web, react-native-reanimated/svg/gesture-handler/
+safe-area-context, @gorhom/bottom-sheet, the maplibre libraries, lucide-react-native, expo-blur,
+react-native-video, @shopify/react-native-skia, @react-native-community/datetimepicker,
+@tanstack/react-query and zustand are `peerDependencies`, so each app keeps a single copy (the
+singletons it owns). The platform-bound ones are optional (`peerDependenciesMeta`): `react-native`
+(web satisfies it through the react-native-web alias), `react-dom`, `maplibre-gl` (web only), the
+native map, expo-blur, react-native-video, skia and the date picker (native only).
+
+The hard `dependencies` are `@civfix/shared` (`workspace:*`), `i18next` + `react-i18next` (the
+string catalogs in `src/i18n`), `supercluster` (map pin clustering), `qrcode-generator` (QR tickets)
+and `react-native-is-edge-to-edge`.
 
 ## The source tree (`src/`)
 
@@ -54,10 +62,17 @@ video and `maplibre-gl` are optional too (web never installs the native map; nat
 | `data/` | the `DataContextValue` + `ApiProvider` + `useApi`/`useAuthState`/`useRequireAuth`/`useLogout`/`useChatSocket`/`useSubmitReport`; the shared React Query feature hooks; the single `queryKeys` factory; the optimistic-cache helpers; the fakes |
 | `nav/` | the unified zustand `useNavStore` (compact-replace vs expanded-append) + the pure route helpers (`pathForEntry`/`entryFromPath`/`seedFor`) + the nav types |
 | `shell/` | `AppShell` + `ExpandedShell` (sidebar) + `CompactShell` (`.native` gorhom sheet / `.web` worklet-free PanResponder sheet) + `BodyRouter` + the pure `bodyRoutes`/`bodyLayout` tables + the `ScrollHost` seam + the header seams |
-| `primitives/` | the ~25 reusable presentational RN controls (buttons, chips, avatars, badges, fields, toggles, cards, ...) |
+| `primitives/` | the reusable presentational RN controls (buttons, chips, avatars, badges, fields, sheets, cards, the skeletons, ...) |
 | `bodies/` | the feature bodies (one per surface: social/reports/feed/events/cleanups/notifications/messaging/conversation/report-flow + detail bodies) + body-local helpers |
 | `map/` | the `Map` seam (`.web` maplibre-gl / `.native` @maplibre/maplibre-react-native behind one contract), the unified react-native-svg pins, `mapStyle`, the `filterStore`, the map controls + popovers |
 | `report/` | the report `draftStore`, the `submit` pipeline, and the report-type taxonomy |
+| `i18n/` | `I18nProvider`, `useT`, locale resolution, the `locales/<lang>/*.json` catalogs (`pnpm i18n:check` / `i18n:gen`), and the locale-aware time helpers |
+| `realtime/` | the platform-free chat WebSocket core (`chatSocketCore`: join/leave, frame validation, reconnect backoff) behind each host's `useChatSocket` |
+| `share/` | the share-a-post sheet (`SharePostSheet` seam), share-to-DM delivery and its session hooks |
+| `lightbox/` | the full-screen `MediaLightbox` and `ZoomableMedia` (`.web` / `.native` seams) |
+| `promo/` | `AppPromoCard` (the app-store badges) and its dismissal store |
+| `charts/` | the RN-svg `BarChart`, `AreaLineChart` and `ProgressRing` |
+| `announce/` | the screen-reader `announce()` seam (`.web` live region / `.native` AccessibilityInfo) |
 
 
 ## Theming (light / dark)
@@ -69,8 +84,7 @@ video and `maplibre-gl` are optional too (web never installs the native map; nat
 
 - **Resolution.** The host mounts `<ThemeProvider>` near the root. It resolves `scheme` from the
   `AppearancePreference` (`"system" | "light" | "dark"`, default `DEFAULT_APPEARANCE_PREFERENCE` =
-  `"light"` - `"system"` only once the user picks it) and react-native's
-  `useColorScheme()`. `useTheme()` returns `themes[scheme]`; `useColorSchemeName()` returns the scheme.
+  `"system"`) and react-native's `useColorScheme()`. `useTheme()` returns `themes[scheme]`; `useColorSchemeName()` returns the scheme.
   Outside a provider everything resolves to light, so tests and isolated renders keep working.
 - **Preference seam.** The host owns persistence and registers its store once, at module scope:
   `setAppearancePreferenceStore({ get, set, subscribe })` (mobile: a zustand+MMKV store; web: a
@@ -253,8 +267,8 @@ override to add and no version to adopt: `apps/community-web` and `apps/communit
 next reload. Verify a single React Native with `pnpm why react-native` (expect exactly one).
 
 THE DIST-TYPES RULE (the single most important gotcha): bundlers read the source live, but consumers
-TYPECHECK against `dist-types/`, so stale declarations produce phantom type errors — or phantom green
-— against the previous `@civfix/ui` shape. Turbo orders this for you (`typecheck`, `lint`, `test` and
+TYPECHECK against `dist-types/`, so stale declarations produce phantom type errors (or phantom green)
+against the previous `@civfix/ui` shape. Turbo orders this for you (`typecheck`, `lint`, `test` and
 `dev` all `dependsOn: ["^build"]`), so run the task through turbo rather than calling `tsc` directly:
 
 ```sh
@@ -267,8 +281,9 @@ pnpm --filter @civfix/ui build                  # tsc --emitDeclarationOnly -> d
 
 - `pnpm build` - emit `dist-types/` (`tsc --emitDeclarationOnly`).
 - `pnpm typecheck` - `tsc --noEmit`.
-- `pnpm test` - vitest (the nav round-trip, the body-render totality, the cache-update tests, the
-  filterStore test).
+- `pnpm test` - vitest in its default Node environment over every `src/**/__tests__/*.test.ts`:
+  pure-logic tests of the stores, models and helpers, plus source-level assertions that read the
+  component files with `node:fs` (nothing renders a React tree).
 - `pnpm lint` - eslint flat config (the import-guard).
 - `pnpm clean` - remove `dist-types` and build info.
 
@@ -276,7 +291,9 @@ pnpm --filter @civfix/ui build                  # tsc --emitDeclarationOnly -> d
 
 `@civfix/ui` is `"private": true` and is NEVER published: it ships as part of whatever build its two
 consumers make. A change here reaches `community-web` on the next deploy of that app
-(`.github/workflows/deploy-web.yml`, a push to `main` or a `v*` release) and reaches `community-mobile` only when
-someone runs a manual EAS build. `changeset version` may still bump its version and changelog
-(`privatePackages: { version: true, tag: false }`), but nothing is published or tagged for it —
-`@civfix/shared` is the only publishable package; see [RELEASING.md](../../RELEASING.md).
+(`.github/workflows/deploy-web.yml`, a push to `main` or a `v*` release) and reaches `community-mobile`
+through `.github/workflows/deploy-mobile.yml`, which builds the iOS app for TestFlight on a `main` push
+that touches the mobile app or `packages/**` (Android ships by hand). `.changeset/config.json` has
+`privatePackages: { "version": false, "tag": false }`, so changesets never versions, changelogs or
+tags this package; `@civfix/shared` is the only publishable package, see
+[RELEASING.md](../../RELEASING.md).

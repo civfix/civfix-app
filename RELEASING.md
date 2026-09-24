@@ -1,13 +1,13 @@
 # Releasing `@civfix/shared`
 
-`@civfix/shared` (`packages/shared`) is the only publishable package in this repo — the contract: Zod
+`@civfix/shared` (`packages/shared`) is the only publishable package in this repo. It is the contract: Zod
 schemas, inferred types, the vendor-neutral interface seams + in-memory fakes, the design tokens, the
 typed API client. It is published to the private Verdaccio registry at `https://repo.civfix.org`
 (scope `@civfix`, anonymous read, authenticated publish).
 
 `@civfix/ui` and both apps are `"private": true` and are NEVER published. Inside this repo, web and
 mobile take both packages as `workspace:*`, so a `packages/shared` or `packages/ui` edit reaches them
-immediately — no publish, no range bump, no lockfile dance.
+immediately: no publish, no range bump, no lockfile dance.
 
 The publish flow survives for the consumers that live OUTSIDE this repo and install the contract from
 the registry:
@@ -18,7 +18,7 @@ the registry:
 | `civfix-admin` | `apps/admin/package.json` |
 | gov plane (`civfix-govt-web`) | its app manifest (tokens-only dependency) |
 
-None of them may ever depend on `@civfix/ui` — the backend isolation is CI-guarded, and
+None of them may ever depend on `@civfix/ui`: the backend isolation is CI-guarded, and
 `packages/shared` bans importing `react` / `react-native` / `@civfix/ui` via ESLint.
 
 ## TL;DR
@@ -33,11 +33,11 @@ a version range, not `main`, so an unpublished or un-bumped contract change is i
 
 The package version is its public API:
 
-- PATCH (`0.41.0 -> 0.41.1`): backward-compatible fix — a new optional DTO field, a new exported
+- PATCH (`0.41.0 -> 0.41.1`): backward-compatible fix, such as a new optional DTO field, a new exported
   helper, an internal or doc change. Existing consumers keep compiling.
-- MINOR (`0.41.0 -> 0.42.0`): additive but notable — a new endpoint, schema or module. Still backward
+- MINOR (`0.41.0 -> 0.42.0`): additive but notable, such as a new endpoint, schema or module. Still backward
   compatible, but consumers will want it.
-- MAJOR: a breaking change — a removed or renamed export, a newly required field, a changed response
+- MAJOR: a breaking change, such as a removed or renamed export, a newly required field, a changed response
   shape. Consumers must update code, not just the version. Breaking changes need an explicit decision
   first; read `packages/shared/DECISIONS.md`.
 
@@ -64,7 +64,7 @@ after) the change. One changeset per logical change; several can accumulate befo
 Add the org-signup endpoints to the client registry.
 ```
 
-A change that touches only `@civfix/ui`, the apps, docs or tooling needs no changeset — nothing is
+A change that touches only `@civfix/ui`, the apps, docs or tooling needs no changeset: nothing is
 published for it. (`.changeset/config.json` has `privatePackages: { version: false, tag: false }`, so
 `changeset version` leaves the private packages alone; only `@civfix/shared` is ever published or
 tagged.)
@@ -74,7 +74,7 @@ tagged.)
 - Tree clean (`git status --porcelain` prints nothing).
 - Green across the workspace: `pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test`.
 - The change(s) and their changeset file(s) are committed.
-- Sanity-check the published SHAPE when you touched `files`, `exports` or the tsup entries — a
+- Sanity-check the published SHAPE when you touched `files`, `exports` or the tsup entries; a
   workspace link resolves paths a registry tarball would not. `pnpm --filter @civfix/shared pack`
   and inspect the tarball, or install it into a scratch consumer, and confirm every subpath
   (`@civfix/shared/tokens`, `/client`, `/interfaces`, `/fakes`, ...) resolves from `dist`.
@@ -90,10 +90,9 @@ DELETES the consumed `.changeset/*.md` files. Review the diff, then commit it
 (`config.json` has `"commit": false`, so changesets does not commit for you) and merge to `main`.
 
 Do NOT hand-edit the version; let `changeset version` own it. The one exception is a version the
-registry already holds from a commit main never released: `0.54.0` and `0.55.0` were published from
-the `feat/feed-and-polish-batch` branch and are kept, so main's next release is `0.56.0`.
-`scripts/check-shared-version.mjs` (run by CI on every PR and by the publish workflow) fails with the
-next free number; set `"version"` and the new `CHANGELOG.md` heading to it by hand.
+registry already holds from a commit main never released. `scripts/check-shared-version.mjs` (run by
+CI on every PR and by the publish workflow) fails on such a version and names the next free number;
+set `"version"` and the new `CHANGELOG.md` heading to it by hand.
 
 `.github/workflows/publish-shared.yml` then runs on the `main` push:
 
@@ -101,17 +100,17 @@ next free number; set `"version"` and the new `CHANGELOG.md` heading to it by ha
   (the Verdaccio `ci-publisher` token; never echoed) and restores `.npmrc` at the end,
 - `pnpm install --frozen-lockfile`,
 - `pnpm --filter @civfix/shared build` (tsup -> `dist`),
-- `node scripts/check-shared-version.mjs --release` — the check above, then it creates and pushes the
+- `node scripts/check-shared-version.mjs --release`: the check above, then it creates and pushes the
   `@civfix/shared@X.Y.Z` tag on the main commit BEFORE anything is published, so a failed tag push
   stops the run and a failed publish is simply retried by the next main push,
-- `pnpm changeset publish --no-git-tag` — publishes only when the version is ahead of the registry.
+- `pnpm changeset publish --no-git-tag`: publishes only when the version is ahead of the registry.
 
 The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` tag is
 something else entirely: a published `vX.Y.Z` GitHub release is the PRODUCTION deploy of this repo's
 web app, and it publishes nothing to the registry.
 
 The workflow only runs on `main`; a manual run on any other branch is skipped. A branch never
-publishes a real version — it uses a snapshot (next section).
+publishes a real version; it uses a snapshot (next section).
 
 Verify:
 
@@ -149,7 +148,7 @@ to a caret range (step 4). A consumer PR must never merge while it pins a snapsh
 ## 4. Adopt the new version in each external consumer
 
 The release is not done until every out-of-repo consumer that needs the change is moved onto it. Web
-and mobile need nothing — they are in this workspace.
+and mobile need nothing; they are in this workspace.
 
 ```sh
 # in civfix-backend / civfix-admin / the gov plane, from the repo root, on a branch:
@@ -163,7 +162,7 @@ pnpm --filter <app> update @civfix/shared
 ```
 
 Then run that repo's checks (backend: `pnpm typecheck` + `pnpm test`; admin: typecheck + lint +
-build) and commit the manifest and `pnpm-lock.yaml` **together** — a range bump without a refreshed
+build) and commit the manifest and `pnpm-lock.yaml` **together**: a range bump without a refreshed
 lockfile leaves CI on the old version.
 
 `civfix-backend` declares the contract in TWO manifests (`services/api` and `services/media-worker`);
@@ -182,6 +181,6 @@ up to date.
 - [ ] Merged to `main`; `publish-shared.yml` green; `npm view @civfix/shared version --registry
       https://repo.civfix.org/` shows the new version and the `@civfix/shared@X.Y.Z` tag exists.
 - [ ] Every external consumer bumped (civfix-backend x2 manifests, civfix-admin, the gov plane),
-      lockfile refreshed, checks green, committed and pushed — or the skip is stated.
+      lockfile refreshed, checks green, committed and pushed, or the skip is stated.
 - [ ] Backend isolation still green (`pnpm why react react-native react-native-web` -> not found;
       `@civfix/ui` absent from its lockfile).
