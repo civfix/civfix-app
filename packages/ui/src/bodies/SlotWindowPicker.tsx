@@ -3,7 +3,7 @@ import { View } from "react-native"
 import { timeLabel, wallClockInZone, wallClockToInstantMs } from "@civfix/shared/datetime"
 import { makeThemedStyles } from "../theme"
 import { useLocale, useT } from "../i18n"
-import { addWallClockDays, wallClockToFormDate } from "./calendarModel"
+import { addWallClockDays, wallClockToFormTime } from "./calendarModel"
 import { MIN_SLOT_DURATION_MS } from "./eventSlotsForm"
 import { TimeFieldRow } from "./InlineDateTimePicker"
 import { TIME_PICKER_MINUTE_INTERVAL } from "./InlineDateTimePicker.types"
@@ -19,7 +19,7 @@ export interface SlotWindowPickerProps {
 }
 
 function carrierOf(instant: Date, timeZone: string): Date {
-  return wallClockToFormDate(wallClockInZone(instant.getTime(), timeZone))
+  return wallClockToFormTime(wallClockInZone(instant.getTime(), timeZone))
 }
 
 export function clockOnEventDay(clock: Date, eventStart: Date, timeZone: string): number | null {
