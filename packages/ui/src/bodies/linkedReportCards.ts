@@ -7,7 +7,7 @@ import type {
   ReportStatus,
   ReportType,
 } from "@civfix/shared"
-import { firstReportPhoto } from "./reportsListModel"
+import { reportThumbUrl } from "./reportsListModel"
 
 export interface LinkedReportCardData {
   id: string
@@ -54,11 +54,6 @@ export function linkedRefToCardData(ref: LinkedReportRef): LinkedReportCardEntry
     ...(ref.addr !== undefined ? { addr: ref.addr } : {}),
     ...(ref.thumbUrl !== undefined ? { thumbUrl: ref.thumbUrl } : {}),
   }
-}
-
-export function reportThumbUrl(report: ReportDTO): string | null {
-  const photo = firstReportPhoto(report)
-  return photo ? (photo.thumbUrl ?? photo.url) : null
 }
 
 export function reportToCardData(report: ReportDTO): LinkedReportCardEntry {

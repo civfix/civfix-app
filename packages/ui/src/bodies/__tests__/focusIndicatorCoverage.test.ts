@@ -48,11 +48,7 @@ describe("the focused-field recipe is ONE recipe", () => {
   it.each([
     ["bodies/AddressSearch.tsx", "fieldFocused"],
     ["bodies/search/searchStyles.ts", "fieldFocused"],
-    ["bodies/EventsBody.tsx", "searchFieldFocused"],
-    ["bodies/SocialBody.tsx", "searchFieldFocused"],
-    ["bodies/ReportsBody.tsx", "searchFieldFocused"],
-    ["bodies/MessagingListBody.tsx", "searchFieldFocused"],
-    ["bodies/ConnectionsBody.tsx", "searchFieldFocused"],
+    ["primitives/ListSearchField.tsx", "searchFieldFocused"],
     ["bodies/MemberPicker.tsx", "searchWrapFocused"],
     ["bodies/DeleteAccountModal.tsx", "codeInputFocused"],
     ["primitives/BringInput.tsx", "inputRowFocused"],
@@ -61,6 +57,18 @@ describe("the focused-field recipe is ONE recipe", () => {
     const src = strip(read(rel))
     expect(src).toContain(name)
     expect(HOUSE.test(src)).toBe(true)
+  })
+
+  it.each([
+    "bodies/EventsBody.tsx",
+    "bodies/SocialBody.tsx",
+    "bodies/ReportsBody.tsx",
+    "bodies/MessagingListBody.tsx",
+    "bodies/ConnectionsBody.tsx",
+  ])("%s draws its list search through ListSearchField rather than re-stating the recipe", (rel) => {
+    const src = strip(read(rel))
+    expect(src).toContain("<ListSearchField")
+    expect(src).not.toContain("webInputReset")
   })
 
   it("the four dialogs take the shared style rather than re-stating it", () => {

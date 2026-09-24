@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import * as model from "../reportsListModel"
 
 const body = readFileSync(new URL("../ReportsBody.tsx", import.meta.url), "utf8")
+const field = readFileSync(new URL("../../primitives/ListSearchField.tsx", import.meta.url), "utf8")
 
 type Backfill = (input: {
   filtering: boolean
@@ -48,9 +49,12 @@ describe("searching your reports reaches past the first page", () => {
 
 describe("the search clear button", () => {
   it("is a 44 point target around the 22 point visual on web, where hitSlop is dropped", () => {
-    const clear = /accessibilityLabel=\{t\("search\.clear_a11y"\)\}[\s\S]*?<\/Pressable>/.exec(body)?.[0] ?? ""
+    expect(body).toContain('clearA11yLabel={t("search.clear_a11y")}')
+    expect(body).not.toContain('clearTarget="slop"')
+    expect(field).toContain('clearTarget = "box"')
+    const clear = /accessibilityLabel=\{clearA11yLabel\}[\s\S]*?<\/Pressable>/.exec(field)?.[0] ?? ""
     expect(clear).not.toContain("hitSlop")
     expect(clear).toContain("style={styles.clearTarget}")
-    expect(body).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(field).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
   })
 })

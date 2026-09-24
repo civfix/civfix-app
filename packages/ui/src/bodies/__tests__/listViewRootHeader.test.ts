@@ -109,13 +109,13 @@ describe("title first, then the surface's own field", () => {
   it("ReportsBody no longer renders its filter above its own title", () => {
     const header = reports.match(/ListHeaderComponent=\{[\s\S]*?\n {6}\}/)?.[0]
     expect(header, "the ListHeaderComponent block must still be findable").toBeTruthy()
-    expect(header!.indexOf("ReportsHeader")).toBeLessThan(header!.indexOf("ReportsSearchField"))
+    expect(header!.indexOf("ReportsHeader")).toBeLessThan(header!.indexOf("<ListSearchField"))
   })
 
   it("SocialBody and EventsBody keep the same order", () => {
     const social = people.match(/ListHeaderComponent=\{[\s\S]*?\n {6}\}/)?.[0]
     expect(social).toBeTruthy()
-    expect(social!.indexOf("PeopleHeader")).toBeLessThan(social!.indexOf("PeopleSearchField"))
+    expect(social!.indexOf("PeopleHeader")).toBeLessThan(social!.indexOf("<ListSearchField"))
     const from = events.indexOf("function EventsHeader(")
     const to = events.indexOf("const useStyles = makeThemedStyles(")
     expect(from, "EventsHeader must still be a top-level function here").toBeGreaterThan(0)

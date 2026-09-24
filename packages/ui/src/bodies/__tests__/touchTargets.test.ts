@@ -93,13 +93,16 @@ describe("SearchBody: the field clear chip and the link actions clear 44pt", () 
 
 describe("SocialBody: the message button and the field clear chip clear 44pt", () => {
   const SRC = read("../SocialBody.tsx")
+  const FIELD = read("../../primitives/ListSearchField.tsx")
 
   it("grows the search field to fit its clear chip's slop", () => {
-    const size = num(SRC, "CLEAR_BTN_SIZE")
-    expect(SRC).toContain("minHeight: MIN_TOUCH_TARGET")
-    expect(SRC).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
-    expect(SRC).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
-    const slop = (expectThemeTouchTarget(SRC) - size) / 2
+    expect(SRC).toContain("<ListSearchField")
+    expect(SRC).toContain('clearTarget="slop"')
+    const size = num(FIELD, "CLEAR_BTN_SIZE")
+    expect(FIELD).toContain("minHeight: MIN_TOUCH_TARGET")
+    expect(FIELD).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
+    expect(FIELD).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
+    const slop = (expectThemeTouchTarget(FIELD) - size) / 2
     expect(size + slop * 2).toBe(MIN_TOUCH_TARGET)
   })
 
@@ -116,9 +119,19 @@ describe("SocialBody: the message button and the field clear chip clear 44pt", (
 })
 
 describe("MessagingListBody: the inbox's own field clear chip clears 44pt", () => {
-  const SRC = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"].map(read).join("\n")
+  const SRC = [
+    "../MessagingListBody.tsx",
+    "../inbox/inboxLayout.ts",
+    "../inbox/ThreadRow.tsx",
+    "../../primitives/ListSearchField.tsx",
+  ]
+    .map(read)
+    .join("\n")
 
   it("takes SocialBody's slop arithmetic rather than a second one", () => {
+    const body = read("../MessagingListBody.tsx")
+    expect(body).toContain("<ListSearchField")
+    expect(body).toContain('clearTarget="slop"')
     expect(CANONICAL_MIN_TOUCH_TARGET).toBe(MIN_TOUCH_TARGET)
     expect(SRC).toMatch(/import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "\.\.\/theme"/)
     expect(SRC).toMatch(/import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "\.\.\/\.\.\/theme"/)

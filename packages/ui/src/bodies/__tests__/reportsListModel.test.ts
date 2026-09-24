@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { ReportDTO } from "@civfix/shared"
-import { firstReportPhoto, latestNote } from "../reportsListModel"
+import { firstReportPhoto, latestNote, reportThumbUrl } from "../reportsListModel"
 
 type Media = ReportDTO["media"][number]
 const media = (id: string, status: Media["status"], kind: Media["kind"] = "image"): Media =>
@@ -26,6 +26,13 @@ describe("report list helpers", () => {
     const r = report({ media: [media("v", "ready", "video"), media("p", "validating"), media("i", "ready")] })
     expect(firstReportPhoto(r)?.id).toBe("i")
     expect(firstReportPhoto(report())).toBeUndefined()
+  })
+
+  it("thumbs a row with the first ready photo's thumbnail, its full image without one, or nothing", () => {
+    const thumbed = { ...media("i", "ready"), thumbUrl: "https://x/i-thumb" } as Media
+    expect(reportThumbUrl(report({ media: [media("v", "ready", "video"), thumbed] }))).toBe("https://x/i-thumb")
+    expect(reportThumbUrl(report({ media: [{ ...media("i", "ready"), thumbUrl: null } as Media] }))).toBe("https://x/i")
+    expect(reportThumbUrl(report({ media: [media("p", "validating")] }))).toBeNull()
   })
 
   it("shows the latest timeline note, trimmed, or nothing for a blank one", () => {

@@ -6,6 +6,7 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 
 const connections = read("../ConnectionsBody.tsx")
 const social = read("../SocialBody.tsx")
+const listSearchField = read("../../primitives/ListSearchField.tsx")
 const search = surfaceSource("search")
 
 describe("followers / following list", () => {
@@ -20,9 +21,12 @@ describe("followers / following list", () => {
   })
 
   it("grows the 22pt clear chip to the 44pt floor like the People search field", () => {
-    expect(connections).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
-    expect(connections).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
-    expect(connections).not.toContain("hitSlop={6}")
+    expect(connections).toContain("<ListSearchField")
+    expect(connections).toContain('clearTarget="slop"')
+    expect(social).toContain('clearTarget="slop"')
+    expect(listSearchField).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
+    expect(listSearchField).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
+    expect(listSearchField).not.toContain("hitSlop={6}")
   })
 })
 

@@ -4,21 +4,20 @@ import type { CleanupDTO, ReportPinDTO } from "@civfix/shared"
 import { cleanupColorFor } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { EmptyState } from "../primitives"
+import { ListBodyEmpty, useListBodyStyles } from "../primitives"
 import { useReport } from "../data"
 import { useNavStore } from "../nav"
 import { useT, useLocale } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { ReportRowView } from "./ReportRow"
-import { firstReportPhoto, latestNote } from "./reportsListModel"
+import { latestNote, reportThumbUrl } from "./reportsListModel"
 import { useListTimeAgo } from "./useListTimeAgo"
 
 function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
   const timeAgo = useListTimeAgo()
   const { t } = useT("report-cluster")
   const { data: report } = useReport(pin.id)
-  const photo = report ? firstReportPhoto(report) : undefined
   const category = report?.category ?? pin.category
   const title = (report?.title ?? pin.title)?.trim() || t(`enums:category.${category}`)
 
@@ -30,7 +29,7 @@ function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
       title={title}
       lat={pin.lat}
       lng={pin.lng}
-      thumbUrl={photo ? photo.thumbUrl ?? photo.url : pin.thumbUrl ?? null}
+      thumbUrl={(report ? reportThumbUrl(report) : null) ?? pin.thumbUrl ?? null}
       subtitle={report ? report.addr ?? pin.description ?? null : pin.description ?? null}
       when={report ? timeAgo(report.createdAt) : " "}
       note={report ? latestNote(report) ?? null : null}
@@ -86,6 +85,7 @@ export function ClusterReportsBody({
 }) {
   const { FlatList } = useScrollHost()
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const { t } = useT("report-cluster")
 
   const renderItem = useCallback(
@@ -97,18 +97,16 @@ export function ClusterReportsBody({
     <FlatList
       data={reports}
       keyExtractor={idKeyExtractor}
-      style={styles.list}
-      contentContainerStyle={reports.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={reports.length === 0 ? listStyles.listEmpty : listStyles.listContentInset}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
       ListHeaderComponent={event ? <ClusterEventRow event={event} /> : undefined}
       ListEmptyComponent={
         <View style={styles.stateFill}>
-          <EmptyState
-            variant="detail"
-            icon={iconMap.MapPin}
-            title={t("empty.title")}
-            body={t("empty.body")}
+          <ListBodyEmpty
+            phase="empty"
+            copy={{ empty: { icon: iconMap.MapPin, title: t("empty.title"), body: t("empty.body") } }}
           />
         </View>
       }
@@ -117,18 +115,6 @@ export function ClusterReportsBody({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
   stateFill: {
     flex: 1,
   },

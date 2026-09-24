@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, Pressable, ActivityIndicator, RefreshControl, StyleSheet, Platform, type ViewStyle } from "react-native"
-import { TextInput } from "../primitives/TextInput"
+import { View, ActivityIndicator, RefreshControl, StyleSheet } from "react-native"
 import type { MessageThreadDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../theme"
-import { Icon, iconMap, Text, type IconName } from "../typography"
+import { makeThemedStyles, wash, useLayoutMode, useTheme } from "../theme"
+import { Text, type IconName } from "../typography"
 import {
-  EmptyState,
-  LoadingState,
+  ListBodyEmpty,
+  ListSearchField,
   PopoverMenu,
   usePopoverAnchor,
   useRefreshControlProps,
   closeOpenSwipeActions,
+  useListBodyStyles,
+  useListEndReached,
 } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
 import { useThreads, useAuthState, useRequireAuth } from "../data"
@@ -36,8 +36,7 @@ const COMPOSE_MENU_ITEMS: ReadonlyArray<{ key: "message" | "group" | "channel"; 
 ]
 
 const EMPTY_FILL_MIN_HEIGHT = 300
-const CLEAR_BTN_SIZE = 22
-const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
+const SEARCH_FIELD_FLUSH = { marginTop: 0 }
 
 function InboxHeader({ showCompose }: { showCompose: boolean }) {
   const styles = useStyles()
@@ -92,49 +91,6 @@ function ComposeButton() {
   )
 }
 
-function InboxSearchField({
-  value,
-  onChangeText,
-}: {
-  value: string
-  onChangeText: (q: string) => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("messages-list")
-  const [focused, setFocused] = useState(false)
-  return (
-    <View style={[styles.searchField, focused ? styles.searchFieldFocused : null]}>
-      <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
-      <TextInput
-        style={[styles.searchInput, webInputReset]}
-        placeholder={t("search.placeholder")}
-        placeholderTextColor={th.colors.textSubtle}
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        autoCapitalize="none"
-        autoCorrect={false}
-        returnKeyType="search"
-        accessibilityLabel={t("search.a11y")}
-      />
-      {value ? (
-        <Pressable
-          onPress={() => onChangeText("")}
-          accessibilityRole="button"
-          accessibilityLabel={t("search.clear_a11y")}
-          hitSlop={CLEAR_BTN_HIT_SLOP}
-          {...focusRingProps}
-          style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
-        >
-          <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
-        </Pressable>
-      ) : null}
-    </View>
-  )
-}
-
 function ThreadSeparator() {
   const styles = useStyles()
   return <View style={styles.separator} />
@@ -154,7 +110,6 @@ function InboxEmptyState({
   onSignIn: () => void
 }) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("messages-list")
   if (signedOut) {
     return (
@@ -173,36 +128,18 @@ function InboxEmptyState({
       </View>
     )
   }
-  if (loading) {
+  if (loading || error || searchQuery !== null) {
     return (
       <View style={styles.emptyFill}>
-        <LoadingState variant="detail" />
-      </View>
-    )
-  }
-  if (error) {
-    return (
-      <View style={styles.emptyFill}>
-        <EmptyState
-          variant="detail"
-          tone="neutral"
-          icon={iconMap.CloudOff}
-          iconColor={th.colors.textSubtle}
-          iconSize={30}
-          title={t("error.title")}
-          body={t("error.body")}
-        />
-      </View>
-    )
-  }
-  if (searchQuery !== null) {
-    return (
-      <View style={styles.emptyFill}>
-        <EmptyState
-          variant="detail"
-          icon={iconMap.Search}
-          title={t("empty.no_match.title")}
-          body={t("empty.no_match.body", { query: searchQuery })}
+        <ListBodyEmpty
+          phase={loading ? "loading" : error ? "error" : "noMatch"}
+          copy={{
+            error: { title: t("error.title"), body: t("error.body") },
+            noMatch: {
+              title: t("empty.no_match.title"),
+              body: t("empty.no_match.body", { query: searchQuery ?? "" }),
+            },
+          }}
         />
       </View>
     )
@@ -216,7 +153,9 @@ function InboxEmptyState({
 
 export function MessagingListBody() {
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const th = useTheme()
+  const { t } = useT("messages-list")
   const refreshSpinner = useRefreshControlProps()
   const { FlatList } = useScrollHost()
   const expanded = useLayoutMode() === "expanded"
@@ -253,11 +192,8 @@ export function MessagingListBody() {
     [threads, filtering, q],
   )
 
-  const { hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = query
-  const onEndReached = useCallback(() => {
-    if (filtering) return
-    if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
-  }, [filtering, hasNextPage, isFetchingNextPage, fetchNextPage])
+  const { refetch } = query
+  const onEndReached = useListEndReached(query, filtering)
 
   const [refreshing, setRefreshing] = useState(false)
   const onRefresh = useCallback(() => {
@@ -287,7 +223,7 @@ export function MessagingListBody() {
     <FlatList
       data={visible}
       keyExtractor={idKeyExtractor}
-      style={styles.scroll}
+      style={listStyles.list}
       contentContainerStyle={[styles.content, expanded ? styles.contentExpanded : null]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -298,14 +234,25 @@ export function MessagingListBody() {
       ListHeaderComponent={
         <View style={styles.headerInset} onTouchStart={dismissSwipe}>
           <InboxHeader showCompose={isAuthenticated} />
-          {showSearch ? <InboxSearchField value={search} onChangeText={setSearch} /> : null}
+          {showSearch ? (
+            <ListSearchField
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t("search.placeholder")}
+              a11yLabel={t("search.a11y")}
+              clearA11yLabel={t("search.clear_a11y")}
+              autoCapitalize="none"
+              clearTarget="slop"
+              style={SEARCH_FIELD_FLUSH}
+            />
+          ) : null}
         </View>
       }
       renderItem={renderItem}
       ItemSeparatorComponent={ThreadSeparator}
       ListFooterComponent={
         !filtering && query.isFetchingNextPage ? (
-          <View style={styles.footer}>
+          <View style={listStyles.footerCentered}>
             <ActivityIndicator color={th.colors.textSubtle} />
           </View>
         ) : null
@@ -316,13 +263,6 @@ export function MessagingListBody() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  footer: {
-    paddingVertical: t.space["4"],
-    alignItems: "center",
-  },
-  scroll: {
-    flex: 1,
-  },
   content: {
     paddingTop: t.space["2"],
     paddingBottom: t.space["10"],
@@ -352,42 +292,6 @@ const useStyles = makeThemedStyles((t) => ({
     lineHeight: 39,
     letterSpacing: -0.5,
     color: t.colors.text,
-  },
-  searchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    minHeight: MIN_TOUCH_TARGET,
-    marginBottom: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    borderRadius: t.radius.md,
-  },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  clearBtn: {
-    width: CLEAR_BTN_SIZE,
-    height: CLEAR_BTN_SIZE,
-    borderRadius: CLEAR_BTN_SIZE / 2,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtnPressed: {
-    backgroundColor: t.colors.border,
   },
   separator: {
     marginLeft: SEPARATOR_INSET,

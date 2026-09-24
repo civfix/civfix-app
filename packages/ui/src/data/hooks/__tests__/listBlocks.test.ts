@@ -51,7 +51,7 @@ describe("BlockedAccountsBody", () => {
   const body = readFileSync(new URL("../../../bodies/BlockedAccountsBody.tsx", import.meta.url), "utf8")
   it("loads the next page at the end of the list and shows a footer spinner while it does", () => {
     expect(body).toContain("onEndReached={onEndReached}")
-    expect(body).toContain("if (hasNextPage && !isFetchingNextPage) void fetchNextPage()")
-    expect(body).toMatch(/ListFooterComponent=\{\s*isFetchingNextPage \?/)
+    expect(body).toContain("const onEndReached = useListEndReached(query)")
+    expect(body).toMatch(/ListFooterComponent=\{\s*query\.isFetchingNextPage \?/)
   })
 })
