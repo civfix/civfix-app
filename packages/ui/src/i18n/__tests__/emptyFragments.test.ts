@@ -4,14 +4,24 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
+import { loadCatalog } from "../bundledCatalogs"
 import { createI18n } from "../config"
+import { makeLocaleSwitcher } from "../localeSwitcher"
 
 const LOCALES_DIR = fileURLToPath(new URL("../locales", import.meta.url))
 const CHECK_SCRIPT = fileURLToPath(new URL("../../../scripts/check-i18n-keys.mjs", import.meta.url))
 
+// The web seam fetches ko as a chunk, so the instance is switched the way I18nProvider switches it.
+async function koreanI18n() {
+  const i18n = createI18n("ko")
+  expect(await makeLocaleSwitcher(i18n, loadCatalog)("ko")).toBe(true)
+  expect(i18n.language).toBe("ko")
+  return i18n
+}
+
 describe("a Korean word-order fragment that is deliberately empty", () => {
-  it("renders as nothing instead of falling back to the English half of the sentence", () => {
-    const i18n = createI18n("ko")
+  it("renders as nothing instead of falling back to the English half of the sentence", async () => {
+    const i18n = await koreanI18n()
     expect(i18n.t("account-delete:verify.enterPre")).toBe("")
     expect(i18n.t("host-ticket:consent.terms_lead")).toBe("")
     expect(i18n.t("messages-list:signed_out.body_before")).toBe("")
@@ -19,8 +29,8 @@ describe("a Korean word-order fragment that is deliberately empty", () => {
     expect(i18n.t("account-delete:verify.enterPost")).not.toBe("")
   })
 
-  it("still falls back to English for a key a locale lacks", () => {
-    const i18n = createI18n("ko")
+  it("still falls back to English for a key a locale lacks", async () => {
+    const i18n = await koreanI18n()
     i18n.addResource("en", "common", "only_in_en_fixture", "English")
     expect(i18n.t("common:only_in_en_fixture")).toBe("English")
   })

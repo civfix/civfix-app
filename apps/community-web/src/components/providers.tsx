@@ -5,7 +5,7 @@ import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
 import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
-import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
+import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
   setAppearancePreferenceStore,
@@ -147,6 +147,18 @@ function WebDataProvider({ children }: { children: React.ReactNode }) {
   return <ApiProvider value={value}>{children}</ApiProvider>
 }
 
+// Follows the applied locale, not the requested one: until a lazily loaded catalog arrives the page is
+// still English and must say so to screen readers and hyphenation.
+function DocumentLangBinding(): null {
+  const { locale } = useLocale()
+
+  React.useEffect(() => {
+    if (typeof document !== "undefined") document.documentElement.lang = locale
+  }, [locale])
+
+  return null
+}
+
 function I18nMount({ children }: { children: React.ReactNode }) {
   const { locale, setLocale } = useResolvedLocale()
 
@@ -154,12 +166,9 @@ function I18nMount({ children }: { children: React.ReactNode }) {
   React.useEffect(() => setHydrated(true), [])
   const activeLocale = hydrated ? locale : FALLBACK_LOCALE
 
-  React.useEffect(() => {
-    if (typeof document !== "undefined") document.documentElement.lang = activeLocale
-  }, [activeLocale])
-
   return (
     <I18nProvider locale={activeLocale} setLocale={setLocale}>
+      <DocumentLangBinding />
       {children}
     </I18nProvider>
   )
