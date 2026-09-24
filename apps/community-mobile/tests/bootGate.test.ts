@@ -285,7 +285,7 @@ test("the session restore deadline is shorter than the boot gate's own deadline"
 
 test("the session restore is bounded by that deadline, never a bare api.session()", () => {
   assert.match(store, /return sessionCheck\(SESSION_RESTORE_DEADLINE_MS\)/)
-  assert.match(sessionCheckSource, /sharedDeadlineRequest\(\(signal\) => api\.session\(\{ signal \}\)\)/)
+  assert.match(sessionCheckSource, /sharedDeadlineRequest\(\(signal\) => api\.session\(\{ signal \}\), tokenGeneration\)/)
   assert.doesNotMatch(store, /api\.session\(/)
   assert.doesNotMatch(store, /await api\.session\(\)/)
   assert.doesNotMatch(store, /api\n?\s*\.session\(\)/)
@@ -315,4 +315,32 @@ test("the splash offers the connecting line and the retry the model asks for", (
   assert.match(splash, /showRetry \? \(/)
   assert.match(splash, /onPress=\{retrySessionRestore\}/)
   assert.match(splash, /if \(reduceMotion\) \{\n\s+appear\.value = 1/)
+})
+
+test("a shared request is only joined by callers under the same key: a token write starts a fresh one", async () => {
+  let key = 1
+  let runs = 0
+  const gates: Array<(value: string) => void> = []
+  const check = sharedDeadlineRequest(
+    () =>
+      new Promise<string>((resolve) => {
+        runs += 1
+        gates.push(resolve)
+      }),
+    () => key,
+  )
+
+  const first = check(1000)
+  const joined = check(1000)
+  assert.equal(runs, 1)
+
+  key = 2
+  const fresh = check(1000)
+  assert.equal(runs, 2)
+
+  gates[0]("signed-out answer")
+  gates[1]("signed-in answer")
+  assert.equal(await first, "signed-out answer")
+  assert.equal(await joined, "signed-out answer")
+  assert.equal(await fresh, "signed-in answer")
 })

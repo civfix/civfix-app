@@ -20,6 +20,7 @@ export function isRequestDeadlineError(err: unknown): err is RequestDeadlineErro
 }
 
 interface SharedFlight<T> {
+  key: unknown
   result: Promise<T>
   controller: AbortController
   abortAt: number
@@ -34,6 +35,7 @@ interface SharedFlight<T> {
  */
 export function sharedDeadlineRequest<T>(
   run: (signal: AbortSignal) => Promise<T>,
+  flightKey: () => unknown = () => undefined,
 ): (deadlineMs: number) => Promise<T> {
   let flight: SharedFlight<T> | null = null
 
@@ -46,19 +48,20 @@ export function sharedDeadlineRequest<T>(
     }, deadlineMs)
   }
 
-  const start = (): SharedFlight<T> => {
+  const start = (key: unknown): SharedFlight<T> => {
     const controller = new AbortController()
     let current: SharedFlight<T> | null = null
     const result = run(controller.signal).finally(() => {
       clearTimeout(current?.timer)
       if (flight === current) flight = null
     })
-    current = { result, controller, abortAt: 0, timer: undefined, expired: false }
+    current = { key, result, controller, abortAt: 0, timer: undefined, expired: false }
     return current
   }
 
   return (deadlineMs) => {
-    const current = flight ?? start()
+    const key = flightKey()
+    const current = flight !== null && flight.key === key ? flight : start(key)
     flight = current
     if (Date.now() + deadlineMs > current.abortAt) armAbort(current, deadlineMs)
     return new Promise<T>((resolve, reject) => {
