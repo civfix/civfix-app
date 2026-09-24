@@ -333,6 +333,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     [...draft.channels].sort(),
   ])
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- previewFingerprint is the key's projection of draft and broadcast: keying on the raw objects would drop a fetched preview on edits that do not change what is sent
   const preview = useQuery<BroadcastPreviewDTO>({
     queryKey: [...consoleKeys.broadcastPreview(eventId, broadcast?.id ?? "new"), previewFingerprint],
     enabled: false,
