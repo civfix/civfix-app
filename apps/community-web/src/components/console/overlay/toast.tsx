@@ -199,7 +199,7 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
         }}
         onFocus={(event: FocusEvent) => syncPause(event.target)}
         onBlur={(event: FocusEvent) => syncPause(event.relatedTarget)}
-        className="pointer-events-none fixed bottom-token-4 right-token-4 z-[70] flex w-[min(360px,calc(100vw-theme(spacing.token-8)))] flex-col gap-token-2"
+        className="pointer-events-none fixed bottom-token-4 right-token-4 z-console-toast flex w-[min(360px,calc(100vw-theme(spacing.token-8)))] flex-col gap-token-2"
       >
         {items.map((item) => (
           <div

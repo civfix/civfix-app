@@ -1,5 +1,6 @@
 "use client"
 
+import { Z_TURNSTILE_CHALLENGE } from "@/styles/z-layers"
 
 const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
 const SCRIPT_ID = "cf-turnstile-script"
@@ -8,7 +9,6 @@ const API_READY_TIMEOUT_MS = 3000
 const SCRIPT_LOAD_TIMEOUT_MS = 15000
 const MINT_TIMEOUT_MS = 20000
 const INTERACTIVE_TIMEOUT_MS = 120000
-const HOST_Z_INDEX = 10500
 
 export const TURNSTILE_SITEKEY: string | undefined = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
 
@@ -110,7 +110,7 @@ function createHost(): { frame: HTMLElement; widget: HTMLElement } {
   frame.style.display = "flex"
   frame.style.justifyContent = "center"
   frame.style.paddingBottom = "calc(env(safe-area-inset-bottom, 0px) + 16px)"
-  frame.style.zIndex = String(HOST_Z_INDEX)
+  frame.style.zIndex = String(Z_TURNSTILE_CHALLENGE)
   frame.style.pointerEvents = "none"
 
   const widget = document.createElement("div")

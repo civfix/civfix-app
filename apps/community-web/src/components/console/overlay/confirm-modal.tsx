@@ -95,7 +95,7 @@ function ConfirmPanel({
     (reasonField?.required ? reason.trim().length === 0 : false)
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center p-token-4 sm:items-center">
+    <div className="fixed inset-0 z-console-dialog flex items-end justify-center p-token-4 sm:items-center">
       <Scrim />
       <div
         ref={panelRef}

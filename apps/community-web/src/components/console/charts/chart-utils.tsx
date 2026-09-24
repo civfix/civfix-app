@@ -112,7 +112,7 @@ export function ChartTooltip({ tip }: { tip: TooltipState | null }) {
   if (!tip) return null
   return (
     <div
-      className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
+      className="pointer-events-none absolute z-console-raised -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
       style={{ left: tip.x, top: tip.y - TOOLTIP_LIFT }}
     >
       <p className="whitespace-nowrap text-token-12 font-semibold text-console-ink">{tip.title}</p>

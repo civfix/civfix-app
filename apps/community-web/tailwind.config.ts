@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss"
+import animate from "tailwindcss-animate"
 import { tokens } from "@civfix/shared/tokens"
-import { Z_SESSION_ALERT } from "./src/styles/z-layers"
+import { Z_LAYERS } from "./src/styles/z-layers"
 
 const { color, fontSize, radius, shadow, space } = tokens
 
@@ -188,9 +189,9 @@ const config: Config = {
         "console-ring": "var(--console-shadow-ring)",
       },
 
-      zIndex: {
-        "session-alert": String(Z_SESSION_ALERT),
-      },
+      zIndex: Object.fromEntries(
+        Object.entries(Z_LAYERS).map(([layer, z]) => [layer, String(z)]),
+      ),
 
       transitionTimingFunction: {
         out: tokens.motion.ease.out,
@@ -214,7 +215,7 @@ const config: Config = {
     ringOpacity: false,
     placeholderOpacity: false,
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 }
 
 export default config

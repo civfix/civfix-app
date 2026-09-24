@@ -17,7 +17,7 @@ export function BottomTabs({ items, activeId }: BottomTabsProps) {
   return (
     <nav
       aria-label={t("shell.sections")}
-      className="fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-console-line bg-console-surface pb-[env(safe-area-inset-bottom)] shadow-console-3 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-console-bottom-tabs flex items-stretch border-t border-console-line bg-console-surface pb-[env(safe-area-inset-bottom)] shadow-console-3 md:hidden"
     >
       {items.map((item) => {
         const Icon = item.icon

@@ -47,7 +47,7 @@ export function DetailShell({
 
   return (
     <div className="min-h-[100dvh] bg-paper">
-      <header className="sticky top-0 z-20 border-b border-ink-5 bg-paper/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-detail-header border-b border-ink-5 bg-paper/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
           <button
             type="button"

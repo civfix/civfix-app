@@ -18,7 +18,7 @@ export function ConsoleTopbar({
   extra,
 }: ConsoleTopbarProps) {
   return (
-    <header className="sticky top-0 z-20 flex flex-col gap-token-2 border-b border-console-line bg-console-surface/95 px-token-4 py-token-3 backdrop-blur md:px-token-6">
+    <header className="sticky top-0 z-console-topbar flex flex-col gap-token-2 border-b border-console-line bg-console-surface/95 px-token-4 py-token-3 backdrop-blur md:px-token-6">
       {breadcrumbs}
       <div className="flex flex-wrap items-center gap-token-3">
         <div className="min-w-0 flex-1">
