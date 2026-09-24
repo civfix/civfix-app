@@ -1,7 +1,9 @@
 import type { OrganizationInviteDTO } from "@civfix/shared"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 import { EMAIL_MAX_LENGTH } from "@/lib/input-limits"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 
 /**
  * Handles are stored without the "@" people type in front of them, and the backend looks them up
@@ -56,28 +58,16 @@ export function inviteIsExpired(invite: OrganizationInviteDTO, now: number = Dat
 export const ORG_INVITE_TOKEN_STASH_KEY = "civfix-console:org-invite-token"
 
 export function stashInviteToken(token: string): void {
-  try {
-    window.sessionStorage.setItem(ORG_INVITE_TOKEN_STASH_KEY, token)
-  } catch {
-    // Storage can be unavailable (private mode, blocked); the URL still carries the token.
-  }
+  safeSet("session", ORG_INVITE_TOKEN_STASH_KEY, token)
 }
 
 export function readStashedInviteToken(): string | null {
-  try {
-    const value = window.sessionStorage.getItem(ORG_INVITE_TOKEN_STASH_KEY)
-    return value === null || value.trim() === "" ? null : value
-  } catch {
-    return null
-  }
+  const value = safeGet("session", ORG_INVITE_TOKEN_STASH_KEY)
+  return value === null || value.trim() === "" ? null : value
 }
 
 export function clearStashedInviteToken(): void {
-  try {
-    window.sessionStorage.removeItem(ORG_INVITE_TOKEN_STASH_KEY)
-  } catch {
-    // Nothing to clear.
-  }
+  safeRemove("session", ORG_INVITE_TOKEN_STASH_KEY)
 }
 
 /**
@@ -90,8 +80,6 @@ export function stripInviteTokenFromUrl(): void {
   if (typeof window === "undefined") return
   const { pathname, search, hash } = window.location
   if (search === "" && hash === "") return
-  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
-  // so it would keep the old URL and write it back on its next navigation.
-  window.history.replaceState(null, "", pathname)
+  replaceUrlInPlace(pathname)
   notifyConsoleUrlChanged()
 }

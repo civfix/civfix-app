@@ -8,23 +8,11 @@ import {
 } from "@civfix/ui/theme"
 
 import { APPEARANCE_STORAGE_KEY } from "@/lib/appearance-script"
+import { safeGet, safeSet } from "@/lib/browser-storage"
 
 function readStoredPreference(): AppearancePreference {
-  if (typeof window === "undefined") return DEFAULT_APPEARANCE_PREFERENCE
-  try {
-    const stored = window.localStorage.getItem(APPEARANCE_STORAGE_KEY)
-    return isAppearancePreference(stored) ? stored : DEFAULT_APPEARANCE_PREFERENCE
-  } catch {
-    return DEFAULT_APPEARANCE_PREFERENCE
-  }
-}
-
-function writeStoredPreference(preference: AppearancePreference): void {
-  if (typeof window === "undefined") return
-  try {
-    window.localStorage.setItem(APPEARANCE_STORAGE_KEY, preference)
-  } catch {
-  }
+  const stored = safeGet("local", APPEARANCE_STORAGE_KEY)
+  return isAppearancePreference(stored) ? stored : DEFAULT_APPEARANCE_PREFERENCE
 }
 
 export interface AppearanceState {
@@ -35,7 +23,7 @@ export interface AppearanceState {
 export const useAppearanceStore = create<AppearanceState>((set) => ({
   preference: readStoredPreference(),
   setPreference: (preference) => {
-    writeStoredPreference(preference)
+    safeSet("local", APPEARANCE_STORAGE_KEY, preference)
     set({ preference })
   },
 }))

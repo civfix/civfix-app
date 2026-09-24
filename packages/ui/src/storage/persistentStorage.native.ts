@@ -24,19 +24,26 @@ function memoryStore(): KV {
   }
 }
 
-function createStore(): KV {
+function openStore(id: string): KV {
   try {
-    return new MMKV({ id: "civfix.ui.filters" })
+    return new MMKV({ id })
   } catch {
-    // No native module during an `expo export` static eval.
     return memoryStore()
   }
 }
 
-const store: KV = createStore()
+// Stores that share an id share one instance, so a memory fallback is one map rather than one per caller.
+const storages = new Map<string, StateStorage>()
 
-export const persistentStorage: StateStorage = {
-  getItem: (name) => store.getString(name) ?? null,
-  setItem: (name, value) => store.set(name, value),
-  removeItem: (name) => store.delete(name),
+export function persistentStorage(id: string): StateStorage {
+  const existing = storages.get(id)
+  if (existing) return existing
+  const store = openStore(id)
+  const storage: StateStorage = {
+    getItem: (name) => store.getString(name) ?? null,
+    setItem: (name, value) => store.set(name, value),
+    removeItem: (name) => store.delete(name),
+  }
+  storages.set(id, storage)
+  return storage
 }

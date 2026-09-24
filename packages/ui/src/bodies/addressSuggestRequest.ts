@@ -23,30 +23,6 @@ export function buildSuggestRequest(query: string, bias: AddressSuggestBias = {}
   }
 }
 
-/** How long the dropdown waits for a device fix before biasing by the IP estimate instead. */
-export const PROXIMITY_FIX_TIMEOUT_MS = 4000
-
-/**
- * Resolves `null` once `ms` passes (or the promise rejects). On web `PositionOptions.timeout` does not
- * start until the permission prompt is answered, so an ignored prompt would otherwise leave suggestions
- * waiting on the bias forever.
- */
-export function settleWithin<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  return new Promise((settle) => {
-    const timer = setTimeout(() => settle(null), ms)
-    promise.then(
-      (value) => {
-        clearTimeout(timer)
-        settle(value)
-      },
-      () => {
-        clearTimeout(timer)
-        settle(null)
-      },
-    )
-  })
-}
-
 export type AddressSearchStatus = "closed" | "results" | "empty" | "failed"
 
 /** Which dropdown the field shows: a failed request is not the same answer as "no matches". */

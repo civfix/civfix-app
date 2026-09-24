@@ -9,7 +9,8 @@
  */
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { appPromoStorage } from "./appPromoStorage"
+import { persistentStorage } from "../storage/persistentStorage"
+import { APP_PROMO_STORAGE_ID } from "../storage/storageIds"
 
 export interface AppPromoState {
   dismissed: boolean
@@ -40,7 +41,8 @@ export const useAppPromoStore = create<AppPromoState>()(
       // A synchronous storage hydrates during create, so the first render never flashes a dismissed banner.
       name: "civfix.app-promo-dismissed",
       version: 1,
-      storage: createJSONStorage(() => appPromoStorage),
+      // localStorage on web, not a cookie like the sidebar width: the dismissal never needs to reach a server.
+      storage: createJSONStorage(() => persistentStorage(APP_PROMO_STORAGE_ID)),
       partialize: (state) => ({ dismissed: state.dismissed }),
     },
   ),

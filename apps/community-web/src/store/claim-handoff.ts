@@ -2,6 +2,7 @@
 
 /** Kept in localStorage so the /claim flow can pick the handle up even after the tab is closed. */
 
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 import { useAuthStore, type AuthState } from "@/store/auth-store"
 
 export interface ClaimHandoff {
@@ -32,50 +33,41 @@ function confirmedViewerId(): string | null {
 }
 
 export function saveClaimHandoff(handoff: ClaimHandoff): void {
-  if (typeof window === "undefined") return
   const stored: StoredClaimHandoff = { ...handoff, ownerId: confirmedViewerId() }
+  safeSet("local", CLAIM_HANDOFF_KEY, JSON.stringify(stored))
+}
+
+function readStored(): Partial<StoredClaimHandoff> | null {
+  const raw = safeGet("local", CLAIM_HANDOFF_KEY)
+  if (!raw) return null
   try {
-    window.localStorage.setItem(CLAIM_HANDOFF_KEY, JSON.stringify(stored))
+    return JSON.parse(raw) as Partial<StoredClaimHandoff>
   } catch {
-    // Storage may be full or blocked (private mode); the claim flow still works via the URL param.
+    return null
   }
 }
 
 export function readClaimHandoff(): ClaimHandoff | null {
-  if (typeof window === "undefined") return null
-  try {
-    const raw = window.localStorage.getItem(CLAIM_HANDOFF_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<ClaimHandoff>
-    if (
-      (typeof parsed.reportId === "string" || parsed.reportId === null) &&
-      typeof parsed.claimCode === "string"
-    ) {
-      return { reportId: parsed.reportId, claimCode: parsed.claimCode }
-    }
-    return null
-  } catch {
-    return null
+  const parsed = readStored()
+  if (
+    parsed !== null &&
+    (typeof parsed.reportId === "string" || parsed.reportId === null) &&
+    typeof parsed.claimCode === "string"
+  ) {
+    return { reportId: parsed.reportId, claimCode: parsed.claimCode }
   }
+  return null
 }
 
 /** Give an unowned saved claim handle to the viewer `state` confirms; a no-op until one is confirmed. */
 export function adoptUnownedClaimHandoff(state: AuthState): void {
   const ownerId = confirmedViewerIdOf(state)
-  if (ownerId === null || typeof window === "undefined") return
-  try {
-    const raw = window.localStorage.getItem(CLAIM_HANDOFF_KEY)
-    if (!raw) return
-    const parsed = JSON.parse(raw) as Partial<StoredClaimHandoff>
-    if (parsed.ownerId !== null) return
-    const handoff = readClaimHandoff()
-    if (!handoff) return
-    const stored: StoredClaimHandoff = { ...handoff, ownerId }
-    window.localStorage.setItem(CLAIM_HANDOFF_KEY, JSON.stringify(stored))
-  } catch {
-    // Storage blocked or unreadable: the handle stays as it was, and an unreadable one is purged on the
-    // next departure anyway.
-  }
+  if (ownerId === null) return
+  if (readStored()?.ownerId !== null) return
+  const handoff = readClaimHandoff()
+  if (!handoff) return
+  const stored: StoredClaimHandoff = { ...handoff, ownerId }
+  safeSet("local", CLAIM_HANDOFF_KEY, JSON.stringify(stored))
 }
 
 /**
@@ -83,10 +75,9 @@ export function adoptUnownedClaimHandoff(state: AuthState): void {
  * recorded has no owner field and is purged too.
  */
 export function clearClaimHandoffOwnedBy(viewerId: string): void {
-  if (typeof window === "undefined") return
+  const raw = safeGet("local", CLAIM_HANDOFF_KEY)
+  if (!raw) return
   try {
-    const raw = window.localStorage.getItem(CLAIM_HANDOFF_KEY)
-    if (!raw) return
     const parsed = JSON.parse(raw) as Partial<StoredClaimHandoff>
     if (parsed.ownerId === null) return
     if (typeof parsed.ownerId === "string" && parsed.ownerId !== viewerId) return
@@ -97,10 +88,5 @@ export function clearClaimHandoffOwnedBy(viewerId: string): void {
 }
 
 export function clearClaimHandoff(): void {
-  if (typeof window === "undefined") return
-  try {
-    window.localStorage.removeItem(CLAIM_HANDOFF_KEY)
-  } catch {
-    // Storage blocked: nothing was saved there to clear.
-  }
+  safeRemove("local", CLAIM_HANDOFF_KEY)
 }

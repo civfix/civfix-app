@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import { ReportCategorySchema, type ReportCategory } from "@civfix/shared"
 import { persistentStorage } from "../storage/persistentStorage"
+import { MAP_FILTERS_STORAGE_ID } from "../storage/storageIds"
 
 export const FILTER_CATEGORIES: readonly ReportCategory[] = ReportCategorySchema.options.filter(
   (c) => c !== "other",
@@ -96,7 +97,7 @@ export const useReportFilterStore = create<ReportFilterState>()(
     {
       name: "civfix.map-filters",
       version: 1,
-      storage: createJSONStorage(() => persistentStorage, {
+      storage: createJSONStorage(() => persistentStorage(MAP_FILTERS_STORAGE_ID), {
         replacer: (_key, value) => (value instanceof Set ? { __set: [...value] } : value),
         reviver: (_key, value) => {
           if (value && typeof value === "object" && Array.isArray((value as { __set?: unknown }).__set)) {

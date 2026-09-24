@@ -63,17 +63,17 @@ describe("every shared reader of the geolocation seam is PASSIVE", () => {
 
   it("reads the injected fix directly, so the guard above is not vacuous", () => {
     expect(locationHook).toContain("geo.getCurrentPosition()")
-    expect(reportFlowCenter).toContain("geo.getCurrentPosition()")
+    expect(reportFlowCenter).toContain("resolveUserLocation(geo, api, qc)")
     expect(addressSearch).toContain("geo.getCurrentPosition()")
     expect(createCleanup).toContain("useUserLocation()")
   })
 
   it("keeps the passive readers' denial fallback intact - a rejected fix degrades to the API's approximate location", () => {
     expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
-    expect(reportFlowCenter).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
-    expect(addressSearch).toContain("await settleWithin(geo.getCurrentPosition(), PROXIMITY_FIX_TIMEOUT_MS)")
+    expect(addressSearch).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     expect(locationHook).toContain("fetchApproximateLocation(api, qc)")
-    expect(reportFlowCenter).toContain("fetchApproximateLocation(api, qc)")
+    expect(reportFlowCenter).toContain('import { resolveUserLocation } from "../../data/hooks/location"')
+    expect(reportFlowCenter).toContain("queryFn: () => resolveUserLocation(geo, api, qc),")
     expect(addressSearch).toContain("fetchApproximateLocation(api, qc)")
     expect(createCleanup).toContain("useUserLocation()")
   })

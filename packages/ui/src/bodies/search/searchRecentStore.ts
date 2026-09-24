@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { persistentStorage } from "../../storage/persistentStorage"
+import { MAP_FILTERS_STORAGE_ID } from "../../storage/storageIds"
 
 export const SEARCH_RECENT_STORAGE_KEY = "civfix.search-recents"
 export const SEARCH_RECENT_LIMIT = 6
@@ -64,7 +65,7 @@ export const useSearchRecentStore = create<SearchRecentState>()(
     }),
     {
       name: SEARCH_RECENT_STORAGE_KEY,
-      storage: createJSONStorage(() => persistentStorage),
+      storage: createJSONStorage(() => persistentStorage(MAP_FILTERS_STORAGE_ID)),
       partialize: (state) => ({ recent: state.recent }),
     },
   ),

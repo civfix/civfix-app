@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
 import * as suggest from "../addressSuggestRequest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -7,7 +8,6 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 const addressSearch = strip(read("../AddressSearch.tsx") + "\n" + read("../useAddressSearch.ts"))
 
 type Helpers = {
-  settleWithin?: <T>(p: Promise<T>, ms: number) => Promise<T | null>
   addressSearchStatus?: (input: {
     open: boolean
     loading: boolean
@@ -15,29 +15,14 @@ type Helpers = {
     resultCount: number
     query: string
   }) => string
-  PROXIMITY_FIX_TIMEOUT_MS?: number
 }
 const helpers = suggest as unknown as Helpers
 
 describe("address search proximity bias never waits on an unanswered permission prompt", () => {
-  afterEach(() => vi.useRealTimers())
-
-  it("settles null once the cap passes when the device fix never answers", async () => {
-    expect(typeof helpers.settleWithin).toBe("function")
-    vi.useFakeTimers()
-    const settled = helpers.settleWithin!(new Promise<never>(() => {}), 4000)
-    vi.advanceTimersByTime(4000)
-    await expect(settled).resolves.toBeNull()
-  })
-
-  it("passes a fix through and flattens a denial to null", async () => {
-    await expect(helpers.settleWithin!(Promise.resolve(7), 50)).resolves.toBe(7)
-    await expect(helpers.settleWithin!(Promise.reject(new Error("denied")), 50)).resolves.toBeNull()
-  })
-
-  it("caps the device fix inside AddressSearch at 4 s", () => {
-    expect(helpers.PROXIMITY_FIX_TIMEOUT_MS).toBe(4000)
-    expect(addressSearch).toContain("settleWithin(geo.getCurrentPosition(), PROXIMITY_FIX_TIMEOUT_MS)")
+  it("caps the device fix inside AddressSearch at 4 s through the shared never-rejecting cap", () => {
+    expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
+    expect(addressSearch).toContain('import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "@civfix/shared"')
+    expect(addressSearch).toContain("withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
   })
 })
 

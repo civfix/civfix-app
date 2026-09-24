@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import * as Location from "expo-location"
+import { withTimeout } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import type { LocationPermission } from "@/lib/locationPrimerPlan"
-import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 
 export interface LocationRefreshResult {
   coords: LatLng | null

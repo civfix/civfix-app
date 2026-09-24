@@ -14,28 +14,14 @@ import {
 } from "@civfix/ui/i18n"
 
 import { api } from "@/lib/api"
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 import { useAuthStore } from "@/store/auth-store"
 
 /** Same key as the mobile MMKV store. */
 export const LOCALE_STORAGE_KEY = "civfix.locale"
 
 function readStoredLocale(): string | null {
-  if (typeof window === "undefined") return null
-  try {
-    return window.localStorage.getItem(LOCALE_STORAGE_KEY)
-  } catch {
-    // Private-mode / disabled storage: fall through to the next resolution source.
-    return null
-  }
-}
-
-function writeStoredLocale(code: SupportedLocale): void {
-  if (typeof window === "undefined") return
-  try {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, code)
-  } catch {
-    // Ignore: the in-memory React state + server sync still carry the choice this session.
-  }
+  return safeGet("local", LOCALE_STORAGE_KEY)
 }
 
 // Records which user's server locale missed the last settings sync, so the choice is synced on that
@@ -43,23 +29,9 @@ function writeStoredLocale(code: SupportedLocale): void {
 // account's server setting must never be rewritten from this device's stored choice.
 const UNSYNCED_LOCALE_KEY = "civfix.locale.unsynced"
 
-function readUnsyncedUserId(): string | null {
-  if (typeof window === "undefined") return null
-  try {
-    return window.localStorage.getItem(UNSYNCED_LOCALE_KEY)
-  } catch {
-    return null
-  }
-}
-
 function writeUnsyncedUserId(userId: string | null): void {
-  if (typeof window === "undefined") return
-  try {
-    if (userId === null) window.localStorage.removeItem(UNSYNCED_LOCALE_KEY)
-    else window.localStorage.setItem(UNSYNCED_LOCALE_KEY, userId)
-  } catch {
-    // Storage unavailable: nothing can outlive this page load, so there is nothing to retry.
-  }
+  if (userId === null) safeRemove("local", UNSYNCED_LOCALE_KEY)
+  else safeSet("local", UNSYNCED_LOCALE_KEY, userId)
 }
 
 /** Drops the pending-sync marker when its viewer leaves this browser; it names a user id. */
@@ -81,7 +53,7 @@ function syncServerLocale(userId: string, code: SupportedLocale): Promise<void> 
 export function reconcileUnsyncedLocale(): Promise<void> {
   const { status, optimistic, user } = useAuthStore.getState()
   if (status !== "authenticated" || optimistic || !user) return Promise.resolve()
-  if (readUnsyncedUserId() !== user.id) return Promise.resolve()
+  if (safeGet("local", UNSYNCED_LOCALE_KEY) !== user.id) return Promise.resolve()
   const stored = readStoredLocale()
   if (stored === null) {
     writeUnsyncedUserId(null)
@@ -131,7 +103,7 @@ export function useResolvedLocale(): {
 
   const setLocale = React.useCallback((code: SupportedLocale) => {
     const next = resolveLocale(code)
-    writeStoredLocale(next)
+    safeSet("local", LOCALE_STORAGE_KEY, next)
     setLocaleState(next)
 
     // The server value drives server-generated text and cross-device sync. A failed settings sync is

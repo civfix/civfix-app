@@ -21,9 +21,9 @@
  *      the session. The cap is the same 4 s the mobile app's own location hook applies.
  *   2. `fetchApproximateLocation()` - the civfix API's own key-less, permissionless, city-accurate
  *      estimate (`GET /geo/approximate`), sharing one cache entry with `useApproximateLocation()` so the
- *      map and every picker resolve it once. This mirrors `resolveApproxCenter`
- *      (bodies/reportFlow/useApproxCenter.ts) and AddressSearch's "use my location". Coarse: consumers should read
- *      it as "roughly which city", not "which street".
+ *      map and every picker resolve it once. The report wizard's picker centre runs this same
+ *      {@link resolveUserLocation}, and AddressSearch's "use my location" follows the same order. Coarse:
+ *      consumers should read it as "roughly which city", not "which street".
  *   3. whatever point is ALREADY cached under this key: a host that seeded it (the mobile map home
  *      publishes its own resolved point here) must not be overwritten with `null` by a resolve that
  *      merely lost a race.
@@ -36,11 +36,11 @@
  * This lives apart from feed.ts (which is deliberately capability-free) because it depends on the platform
  * capability seam; feed.ts stays framework-light and just accepts the resolved `near` as a plain argument.
  */
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import type { LatLng } from "@civfix/shared"
-import { useGeolocation } from "../../capabilities"
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
+import { DEVICE_FIX_TIMEOUT_MS, withTimeout, type LatLng } from "@civfix/shared"
+import type { ApiClient } from "@civfix/shared/client"
+import { useGeolocation, type GeolocationCapability } from "../../capabilities"
 import { useApi } from "../context"
-import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "../deviceFix"
 import { fetchApproximateLocation } from "../fetchApproximateLocation"
 import { queryKeys } from "../keys"
 
@@ -61,16 +61,21 @@ export function useUserLocation() {
     staleTime: Infinity,
     gcTime: Infinity,
     retry: false,
-    queryFn: async () => {
-      // `withTimeout` swallows the rejection too, so a denial falls through to IP exactly like a hang.
-      const fix = geo.isAvailable()
-        ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)
-        : null
-      if (fix) return { lat: fix.latitude, lng: fix.longitude }
-      const approximate = await fetchApproximateLocation(api, qc)
-      if (approximate) return approximate
-      // Never DOWNGRADE a point someone already put in this cache entry (see step 3 above).
-      return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
-    },
+    queryFn: () => resolveUserLocation(geo, api, qc),
   })
+}
+
+/** The queryFn behind {@link queryKeys.userLocation}, for every surface that fetches that entry itself. */
+export async function resolveUserLocation(
+  geo: GeolocationCapability,
+  api: ApiClient,
+  qc: QueryClient,
+): Promise<LatLng | null> {
+  // `withTimeout` swallows the rejection too, so a denial falls through to IP exactly like a hang.
+  const fix = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
+  if (fix) return { lat: fix.latitude, lng: fix.longitude }
+  const approximate = await fetchApproximateLocation(api, qc)
+  if (approximate) return approximate
+  // Never DOWNGRADE a point someone already put in this cache entry (see step 3 above).
+  return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
 }
