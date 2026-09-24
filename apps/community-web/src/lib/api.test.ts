@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode, toAppError } from "@civfix/shared"
 import { createApiClient } from "@civfix/shared/client"
 
-import { toAppError } from "@/lib/api"
 
 function clientRespondingWith(status: number, body: unknown) {
   return createApiClient({

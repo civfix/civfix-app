@@ -5,6 +5,7 @@ import {
   currentVersion,
   type EventAnswerValue,
   type PublicEventPageDTO,
+  toAppError,
 } from "@civfix/shared"
 import {
   answerPayload,
@@ -14,7 +15,7 @@ import {
   visibleQuestions as shownQuestions,
 } from "@civfix/shared/host"
 
-import { api, toAppError } from "@/lib/api"
+import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
 import { useAuthStore } from "@/store/auth-store"
 import {

@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { Globe, HeartHandshake } from "lucide-react"
-import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
+import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl, toAppError } from "@civfix/shared"
 import type { OrganizationDTO, SocialPlatform } from "@civfix/shared"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
@@ -14,7 +14,6 @@ import {
 } from "@civfix/ui/social"
 
 import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
-import { toAppError } from "@/lib/api"
 import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
 import { isSafeHttpsUrl, parseMarkdownSubset } from "@civfix/shared/markdown"
 

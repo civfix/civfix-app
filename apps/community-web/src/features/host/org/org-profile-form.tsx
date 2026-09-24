@@ -16,13 +16,13 @@ import {
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
   UpdateOrganizationRequestSchema,
+  toAppError,
 } from "@civfix/shared"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 import { HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
-import { toAppError } from "@/lib/api"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"
 import { CONSOLE_INPUT_CLASSES, TextInput, TextArea } from "@/components/console/forms/inputs"

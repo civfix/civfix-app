@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ErrorCode } from "@civfix/shared"
+import { ErrorCode, isAppErrorLike } from "@civfix/shared"
 
-import { api, isAppErrorLike } from "@/lib/api"
+import { api } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
 import {

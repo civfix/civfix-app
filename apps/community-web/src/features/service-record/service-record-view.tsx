@@ -17,6 +17,7 @@ import {
   formatCount,
   normalizeCertificateCode,
   type VerifyCertificateResponse,
+  toAppError,
 } from "@civfix/shared"
 import { safeDateFormat } from "@civfix/shared/datetime"
 import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
@@ -24,7 +25,7 @@ import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
 import { DetailShell } from "@/components/detail-shell"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
-import { api, toAppError } from "@/lib/api"
+import { api } from "@/lib/api"
 import { replaceUrlInPlace } from "@/lib/replace-url"
 import {
   SERVICE_RECORD_SEGMENT,

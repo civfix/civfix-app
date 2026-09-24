@@ -41,4 +41,3 @@ export const api: ApiClient = createApiClient({
   onUnauthorized: () => useAuthStore.getState().clear(),
 })
 
-export { isAppErrorLike, toAppError, type AppErrorLike } from "@civfix/shared"

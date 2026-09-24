@@ -1,12 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { AcceptEventTeamInviteRequestSchema, ErrorCode } from "@civfix/shared"
+import { AcceptEventTeamInviteRequestSchema, ErrorCode, toAppError } from "@civfix/shared"
 import { useToast } from "@civfix/ui"
 import { useAcceptEventTeamInvite, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { toAppError } from "@/lib/api"
 import {
   clearStashedTeamInvite,
   readStashedTeamInvite,
