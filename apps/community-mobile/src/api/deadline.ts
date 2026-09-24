@@ -19,27 +19,6 @@ export function isRequestDeadlineError(err: unknown): err is RequestDeadlineErro
   )
 }
 
-export async function withRequestDeadline<T>(
-  deadlineMs: number,
-  run: (signal: AbortSignal) => Promise<T>,
-): Promise<T> {
-  const controller = new AbortController()
-  let expired = false
-  const timer = setTimeout(() => {
-    expired = true
-    controller.abort()
-  }, deadlineMs)
-
-  try {
-    return await run(controller.signal)
-  } catch (err) {
-    if (expired) throw new RequestDeadlineError(deadlineMs)
-    throw err
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
 interface SharedFlight<T> {
   result: Promise<T>
   controller: AbortController
@@ -50,8 +29,8 @@ interface SharedFlight<T> {
 
 /**
  * Callers that arrive while a request is in flight share it instead of sending a twin. Each keeps the
- * deadline it asked for, failing with a RequestDeadlineError at that moment exactly as
- * `withRequestDeadline` would; the request itself is aborted only once the latest of those passes.
+ * deadline it asked for, failing with a RequestDeadlineError at that moment; the request itself is
+ * aborted only once the latest of those passes.
  */
 export function sharedDeadlineRequest<T>(
   run: (signal: AbortSignal) => Promise<T>,

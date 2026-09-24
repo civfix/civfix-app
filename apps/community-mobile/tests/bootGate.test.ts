@@ -15,7 +15,6 @@ import {
   SESSION_RESTORE_DEADLINE_MS,
   isRequestDeadlineError,
   sharedDeadlineRequest,
-  withRequestDeadline,
 } from "../src/api/deadline.ts"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
@@ -171,8 +170,7 @@ test("the gate reads the same at any elapsed time as at the threshold it has rea
 
 test("a request that never answers is aborted and reported as a deadline miss", async () => {
   let aborted = false
-  const err = await withRequestDeadline(
-    10,
+  const err = await sharedDeadlineRequest(
     (signal) =>
       new Promise<never>((_resolve, reject) => {
         signal.addEventListener("abort", () => {
@@ -180,7 +178,7 @@ test("a request that never answers is aborted and reported as a deadline miss", 
           reject(new Error("Aborted"))
         })
       }),
-  ).catch((e: unknown) => e)
+  )(10).catch((e: unknown) => e)
 
   assert.ok(aborted)
   assert.ok(err instanceof RequestDeadlineError)
@@ -188,12 +186,12 @@ test("a request that never answers is aborted and reported as a deadline miss", 
 })
 
 test("a request that answers in time keeps its own value and its own failures", async () => {
-  assert.equal(await withRequestDeadline(1000, async () => "session"), "session")
+  assert.equal(await sharedDeadlineRequest(async () => "session")(1000), "session")
 
   const original = new Error("network request failed")
-  const err = await withRequestDeadline(1000, async () => {
+  const err = await sharedDeadlineRequest(async () => {
     throw original
-  }).catch((e: unknown) => e)
+  })(1000).catch((e: unknown) => e)
   assert.equal(err, original)
 })
 
