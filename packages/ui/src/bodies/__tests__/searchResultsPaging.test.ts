@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
-const src = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+const src = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
 
 describe("search results report paging", () => {
   it("offers the next page of matching reports instead of silently stopping at the first", () => {

@@ -7,6 +7,7 @@ const strip = (src: string): string =>
 
 const body = strip(read("../HostModeBody.tsx"))
 const sheets = strip(read("../HostModeSheets.tsx"))
+const sheetActions = strip(read("../useHostSheetActions.ts"))
 const copy = strip(read("../hostModeCopy.ts"))
 const panels = strip(read("../HostInsightsPanels.tsx"))
 const model = strip(read("../hostSurfaceModel.ts"))
@@ -31,6 +32,7 @@ const cleanupHooks = strip(read("../../../data/hooks/cleanups.ts"))
 const HOST_SOURCES: Record<string, string> = {
   "HostModeBody.tsx": body,
   "HostModeSheets.tsx": sheets,
+  "useHostSheetActions.ts": sheetActions,
   "hostModeCopy.ts": copy,
   "HostInsightsPanels.tsx": panels,
   "hostSurfaceModel.ts": model,
@@ -100,7 +102,7 @@ describe("the host surface spends its coral once", () => {
     expect(checkin).toContain("colors.dangerInk")
     expect(ticket).toContain("colors.dangerInk")
     expect(checkin).not.toContain('colors.bloom["700"]')
-    for (const part of ["../CheckinDeskCards.tsx", "../CheckinRosterSection.tsx"]) {
+    for (const part of ["../checkin/CheckinDeskCards.tsx", "../checkin/CheckinRosterSection.tsx"]) {
       const src = strip(read(part))
       expect(src).toContain("colors.dangerInk")
       expect(src).not.toContain('colors.bloom["700"]')
@@ -346,7 +348,7 @@ describe("every t(...) key the surface uses exists in en/host-mode.json", () => 
     return leaf in obj || `${leaf}_one` in obj || `${leaf}_other` in obj
   }
 
-  it.each(["HostModeBody.tsx", "HostModeSheets.tsx", "hostModeCopy.ts", "HostInsightsPanels.tsx"])("%s", (name) => {
+  it.each(["HostModeBody.tsx", "HostModeSheets.tsx", "useHostSheetActions.ts", "hostModeCopy.ts", "HostInsightsPanels.tsx"])("%s", (name) => {
     const source = HOST_SOURCES[name] as string
     const keys = [...source.matchAll(/\bt\("([a-z][a-z0-9_]*\.[a-z0-9_.]+)"/g)].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)

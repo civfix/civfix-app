@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeTouchTarget, surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
-import { searchBodySource } from "../search/__tests__/searchBodySource"
 
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const body = searchBodySource()
+const body = surfaceSource("search")
 const bodyCode = strip(body)
 const shell = strip(read("../../shell/ExpandedShell.tsx"))
 const rail = strip(read("../../shell/Rail.tsx"))
@@ -68,7 +68,7 @@ describe("the field owns no state", () => {
     expect(bodyCode).toMatch(
       /function useRecordSearchOnCommit\(query: string, pinned: boolean\): void \{\s*useEffect\(\(\) => \{\s*trackSearchInput\(query\)\s*\}, \[query\]\)/,
     )
-    expect(bodyCode.match(/trackSearchInput\(/g)?.length).toBe(1)
+    expect(bodyCode.match(/(?<!function )trackSearchInput\(/g)?.length).toBe(1)
   })
 
   it("declares that effect FIRST, so it flushes before the unpin commit reads the pending input", () => {
@@ -90,7 +90,7 @@ describe("the field owns no state", () => {
 
   it("the docked bar's clear discards it too - it drives the same pinned commit", () => {
     expect(tabBar).toMatch(/onClear: \(\) => \{\s*discardSearchInput\(\)\s*setQuery\(""\)/)
-    expect(tabBar).toContain('import { discardSearchInput } from "../bodies/searchRecentStore"')
+    expect(tabBar).toContain('import { discardSearchInput } from "../bodies/search/searchRecentStore"')
   })
 })
 
@@ -124,7 +124,7 @@ describe("the entry points that focus it", () => {
 
 describe("the field's material", () => {
   it("keeps the docked pill on the shared list-field recipe and takes no new i18n key", () => {
-    expect(bodyCode).toContain("const MIN_TOUCH_TARGET = 44")
+    expectThemeTouchTarget(bodyCode)
     expect(bodyCode).toMatch(
       /gap: 9,\s*\n\s*minHeight: MIN_TOUCH_TARGET,\s*\n\s*paddingHorizontal: 12,\s*\n\s*borderRadius: t\.radius\.md/,
     )

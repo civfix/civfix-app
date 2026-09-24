@@ -3,7 +3,7 @@ import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-nat
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
+import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton, SignInPrompt } from "../primitives"
 import {
@@ -393,7 +393,6 @@ function SearchResultsHeader({ count }: { count: number }) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const ICON_BTN_SIZE = 32
 const ROW_GAP = space["3"]
 const ICON_BTN_HIT_SLOP = {

@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { weekDayLabel } from "../analyticsModel"
-import { analyticsPageSource } from "./analyticsPageSource"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
 const card = read("../dashboard/AnalyticsCarouselCard.tsx")
-const page = analyticsPageSource()
+const page = surfaceSource("eventAnalytics")
 const hook = read("../useWeekLabel.ts")
 
 describe("weekDayLabel", () => {

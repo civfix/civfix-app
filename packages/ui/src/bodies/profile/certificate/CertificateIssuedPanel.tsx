@@ -8,14 +8,13 @@ import { useT } from "../../../i18n"
 import { certificateExpiryLabel } from "../../serviceCertificate"
 import { CertificateCode, CertificateCopyButton } from "./CertificateCode"
 import { useCertificateCardStyles } from "./certificateCardStyles"
-
-const MS_PER_MINUTE = 60_000
+import { MINUTE_MS } from "../../timeUnits"
 
 /** Whole minutes of link life left, floored at 0 (the card has already flipped to `expired` by then). */
 function minutesLeft(expiresAt: string, now: number): number {
   const at = new Date(expiresAt).getTime()
   if (Number.isNaN(at)) return 0
-  return Math.max(0, Math.ceil((at - now) / MS_PER_MINUTE))
+  return Math.max(0, Math.ceil((at - now) / MINUTE_MS))
 }
 
 export function CertificateIssuedPanel({

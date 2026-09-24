@@ -12,12 +12,16 @@ export function PersonActions({
   profile,
   profilePath,
   onMessage,
-  moderation,
+  menuAnchorRef,
+  menuOpen,
+  onOpenMenu,
 }: {
   profile: UserProfileDTO
   profilePath: string
   onMessage: () => void
-  moderation: PersonModeration
+  menuAnchorRef: PersonModeration["menuAnchorRef"]
+  menuOpen: boolean
+  onOpenMenu: () => void
 }) {
   const styles = usePersonDetailStyles()
   const th = useTheme()
@@ -48,11 +52,11 @@ export function PersonActions({
         </>
       )}
       <Pressable
-        ref={moderation.menuAnchorRef}
-        onPress={moderation.openMenu}
+        ref={menuAnchorRef}
+        onPress={onOpenMenu}
         accessibilityRole="button"
         accessibilityLabel={t("actions.more_options")}
-        accessibilityState={{ expanded: moderation.menuOpen }}
+        accessibilityState={{ expanded: menuOpen }}
         {...focusRingProps}
         style={({ pressed }) => [styles.overflowBtn, pressed ? styles.secondaryPressed : null]}
       >

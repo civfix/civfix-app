@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -34,7 +34,7 @@ describe("the official account's check renders wherever a name renders with a ba
   })
 
   it("the profile header badges the name from the server flag", () => {
-    const src = code(personDetailSource())
+    const src = code(surfaceSource("personDetail"))
     expect(src).toContain('{profile.official ? <VerifiedBadge size="md" /> : null}')
   })
 
@@ -43,7 +43,7 @@ describe("the official account's check renders wherever a name renders with a ba
       ...[...BADGED_BYLINES.map(([f]) => f), "../conversation/MessageBubble.tsx"].map(
         (f) => [f, read(f)] as const,
       ),
-      ["../PersonDetailBody.tsx", personDetailSource()],
+      ["../PersonDetailBody.tsx", surfaceSource("personDetail")],
     ]
     for (const [file, source] of sources) {
       const src = code(source)
@@ -60,7 +60,7 @@ describe("block is never offered against the official account", () => {
   })
 
   it("the profile menu drops Block for the official account but keeps Report and Unblock", () => {
-    const src = code(personDetailSource())
+    const src = code(surfaceSource("personDetail"))
     expect(src).toMatch(
       /profile\.blockedByMe\s*\?\s*\[unblockMenuItem, reportMenuItem\]\s*:\s*profile\.official\s*\?\s*\[reportMenuItem\]\s*:\s*\[blockMenuItem, reportMenuItem\]/,
     )

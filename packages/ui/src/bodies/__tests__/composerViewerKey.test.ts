@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { sliceBetween } from "../../__tests__/sourceGuards"
+import { sliceBetween, surfaceSource } from "../../__tests__/sourceGuards"
 
 /**
  * Source-text guards (the package ships no renderer). The composers mirror their draft into component
@@ -8,7 +8,7 @@ import { sliceBetween } from "../../__tests__/sourceGuards"
  * composer that survives an account switch or a sign-out would put the previous author's photos into the
  * next owner's draft. Each composer therefore remounts when its draft changes hands.
  */
-const postComposer = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+const postComposer = surfaceSource("postComposer")
 const inlineComposer = readFileSync(new URL("../feed/InlineComposer.tsx", import.meta.url), "utf8")
 const threadBody = readFileSync(new URL("../PostThreadBody.tsx", import.meta.url), "utf8")
 

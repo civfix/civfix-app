@@ -1,7 +1,6 @@
 import { StyleSheet } from "react-native"
-import { makeThemedStyles } from "../../../theme"
+import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../../theme"
 
-const MIN_TOUCH_TARGET = 44
 const CONFIRM_BTN_HEIGHT = 34
 export const CONFIRM_BTN_HIT_SLOP = {
   top: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,

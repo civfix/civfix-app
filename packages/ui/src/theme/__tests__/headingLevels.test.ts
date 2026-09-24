@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { reportDetailSourceFiles } from "../../bodies/reportDetail/__tests__/reportDetailSource"
-import { personDetailSource } from "../../bodies/personDetail/__tests__/personDetailSource"
-import { searchBodySource } from "../../bodies/search/__tests__/searchBodySource"
+import { surfaceSource as splitSurfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -54,7 +53,7 @@ const TITLE_BUDGET: Record<string, number> = {
 
 const HEADING_FILES = [
   "bodies/SearchBody.tsx",
-  "bodies/SearchResults.tsx",
+  "bodies/search/SearchResults.tsx",
   "bodies/SocialBody.tsx",
   "bodies/ProfileView.tsx",
   "bodies/profile/SectionHeadings.tsx",
@@ -82,8 +81,9 @@ const HEADING_FILES = [
 ]
 
 const SURFACE_SOURCE: Record<string, () => string> = {
-  "bodies/SearchBody.tsx": searchBodySource,
-  "bodies/PersonDetailBody.tsx": personDetailSource,
+  "bodies/SearchBody.tsx": () => splitSurfaceSource("search"),
+  "bodies/PersonDetailBody.tsx": () => splitSurfaceSource("personDetail"),
+  "bodies/PostComposer.tsx": () => splitSurfaceSource("postComposer"),
 }
 
 const surfaceSource = (rel: string): string => SURFACE_SOURCE[rel]?.() ?? read(`../../${rel}`)
@@ -101,7 +101,7 @@ describe("no body announces a section as a peer of its page title", () => {
 
 describe("the two ladders the snapshot reads on /search and /profile", () => {
   it("search's four section labels are level 2", () => {
-    const src = strip(searchBodySource())
+    const src = strip(splitSurfaceSource("search"))
     expect(count(src, /headingLevel\(2\)/g)).toBeGreaterThanOrEqual(4)
   })
 

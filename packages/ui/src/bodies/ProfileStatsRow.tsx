@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, View } from "react-native"
 import type { UserProfileDTO } from "@civfix/shared"
-import { makeThemedStyles, focusRingProps, webCursor, webNoSelect, webTransition } from "../theme"
+import { makeThemedStyles, focusRingProps, webCursor, webNoSelect, webTransition, MIN_TOUCH_TARGET } from "../theme"
 import { Text, TextLink } from "../typography"
 import { useT } from "../i18n"
 import { formatPostActionCount } from "../primitives/postActionModel"
@@ -34,8 +34,6 @@ export function buildProfileStats(source: ProfileStatsSource): ProfileStatItem[]
 export interface ProfileStatsRowProps extends ProfileStatsSource {
   onOpenConnections?: (which: ProfileConnectionKey) => void
 }
-
-const MIN_TOUCH_TARGET = 44
 
 export function ProfileStatsRow({
   followers,

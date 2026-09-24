@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
-import { persistentStorage } from "../storage/persistentStorage"
+import { persistentStorage } from "../../storage/persistentStorage"
 
 export const SEARCH_RECENT_STORAGE_KEY = "civfix.search-recents"
 export const SEARCH_RECENT_LIMIT = 6

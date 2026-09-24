@@ -4,7 +4,7 @@ import { focusRingProps, headingLevel, useTheme, webHover, webTransition } from 
 import { Icon, iconMap, Text } from "../../typography"
 import { useNavStore } from "../../nav"
 import { useT } from "../../i18n"
-import { useSearchRecentStore } from "../searchRecentStore"
+import { useSearchRecentStore } from "./searchRecentStore"
 import { LinkAction } from "./LinkAction"
 import { useSearchStyles } from "./searchStyles"
 

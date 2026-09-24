@@ -18,9 +18,9 @@ import { describe, expect, it } from "vitest"
 import type { ServiceHoursCertificateDTO } from "@civfix/shared"
 import { certificateCardState } from "../serviceCertificate"
 import { latestLiveCertificate } from "../profile/certificate/certificateSeed"
-import { certificateCardSource } from "../profile/certificate/__tests__/certificateCardSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
-const card = certificateCardSource()
+const card = surfaceSource("certificateCard")
 
 const row = (code: string, extra: Partial<ServiceHoursCertificateDTO> = {}): ServiceHoursCertificateDTO =>
   ({ code, status: "valid", revokedAt: null, ...extra }) as unknown as ServiceHoursCertificateDTO

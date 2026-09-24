@@ -27,7 +27,7 @@ import {
   wholeEventCheckedIn,
   wholeEventSignups,
 } from "../analyticsModel"
-import { DAY_MS } from "../hostTime"
+import { DAY_MS } from "../../timeUnits"
 import { breakdownBars, seriesBars } from "../analytics/chartBars"
 import { EMPTY_VALUE } from "../../../i18n/emptyValue"
 

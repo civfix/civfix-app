@@ -17,7 +17,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { formatHours, formatHoursDisplay } from "../formatHours"
-import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const LOCALES = ["en", "es", "de", "ko"] as const
 
@@ -42,7 +42,7 @@ function code(source: string): string {
 
 const section = read("../profile/ServiceHoursSection.tsx")
 const tabBar = read("../profile/ProfileTabBar.tsx")
-const person = personDetailSource()
+const person = surfaceSource("personDetail")
 const notificationsHook = read("../../data/hooks/notifications.ts")
 const privacyBody = read("../SettingsPrivacyBody.tsx")
 

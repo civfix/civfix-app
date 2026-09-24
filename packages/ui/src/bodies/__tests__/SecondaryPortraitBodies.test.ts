@@ -9,7 +9,7 @@ import {
   PROFILE_TAB_ORDER,
   buildProfileTabsModel,
 } from "../profileTabsModel"
-import { SEARCH_RESULT_CARD_LAYOUT } from "../searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT } from "../search/searchResultsModel"
 
 const repostedEvent = {
   id: "event-riverwalk",

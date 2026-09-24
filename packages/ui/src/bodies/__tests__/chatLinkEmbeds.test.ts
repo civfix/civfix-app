@@ -286,7 +286,7 @@ describe("the post card byline gives the name the first line and moves the handl
   })
 
   it("matches the other person-led rows in the package, which all stack name over @handle", () => {
-    for (const file of ["../SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
+    for (const file of ["../search/SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
       const source = code(read(file))
       expect(source).toMatch(/numberOfLines=\{1\}>\s*@\{(person|entry)\.handle\}/)
     }

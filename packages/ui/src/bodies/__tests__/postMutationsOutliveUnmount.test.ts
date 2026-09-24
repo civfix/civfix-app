@@ -11,13 +11,13 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
-import { sliceBetween } from "../../__tests__/sourceGuards"
+import { sliceBetween, surfaceSource } from "../../__tests__/sourceGuards"
 import { MutationObserver, QueryClient } from "@tanstack/react-query"
 
-const code = (relative: string): string =>
-  readFileSync(new URL(relative, import.meta.url), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "")
+const strip = (source: string): string =>
+  source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
+
+const code = (relative: string): string => strip(readFileSync(new URL(relative, import.meta.url), "utf8"))
 
 describe("the TanStack behaviour these fixes rely on", () => {
   it("drops per-call callbacks after the observer unmounts, while the promise still settles", async () => {
@@ -53,8 +53,11 @@ describe("deleting from the overflow menu", () => {
 })
 
 describe("a failed post keeps its text after the composer is gone", () => {
-  for (const file of ["../PostComposer.tsx", "../feed/InlineComposer.tsx"]) {
-    const source = code(file)
+  const composers: Record<string, string> = {
+    "../PostComposer.tsx": strip(surfaceSource("postComposer")),
+    "../feed/InlineComposer.tsx": code("../feed/InlineComposer.tsx"),
+  }
+  for (const [file, source] of Object.entries(composers)) {
     const start = source.indexOf("const staged =")
     const catchAt = source.indexOf(".catch(", start)
     const end = source.indexOf("\n  }", catchAt)

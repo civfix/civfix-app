@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeTouchTarget, folderSourceFiles } from "../../../../__tests__/sourceGuards"
 import type {
   HostedEventDTO,
   HostedEventsAnalyticsResponse,
@@ -48,6 +49,12 @@ const DASHBOARD_PAGE_FILES = [
   "../HostedEventsSection.tsx",
   "../useHostedEventNav.ts",
 ]
+
+/** The body plus every file in the dashboard folder, so a part split out later is guarded too. */
+const DASHBOARD_FILES = folderSourceFiles(
+  new URL("../", import.meta.url),
+  new URL("../../EventDashboardBody.tsx", import.meta.url),
+)
 
 const dashboardNavSource = (): string => source("../useHostedEventNav.ts")
 
@@ -441,9 +448,9 @@ describe("dashboard wiring", () => {
   })
 
   it("keeps the dashboard body clear of the feed", () => {
-    for (const file of DASHBOARD_PAGE_FILES) {
-      expect(source(file), file).not.toContain("FeedBody")
-      expect(source(file), file).not.toContain("feed/")
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("FeedBody")
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("feed/")
     }
     expect(source("../../EventDashboardBody.tsx")).toContain("./dashboard/NextUpCard")
   })
@@ -458,8 +465,8 @@ describe("dashboard wiring", () => {
   })
 
   it("stops pointing the host at the web console at all", () => {
-    for (const file of DASHBOARD_PAGE_FILES) {
-      expect(source(file), file).not.toContain("ConsoleLinkRow")
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("ConsoleLinkRow")
     }
     expect(source("../../HostModeBody.tsx")).not.toContain("ConsoleLinkRow")
   })
@@ -720,20 +727,10 @@ describe("portfolio surface", () => {
   })
 
   it("leaves no bloom selection fill anywhere under the dashboard", () => {
-    const files = [
-      ...DASHBOARD_PAGE_FILES,
-      "../NextUpCard.tsx",
-      "../ImpactCard.tsx",
-      "../FirstEventCard.tsx",
-      "../HostedEventRow.tsx",
-      "../CollaboratorsSection.tsx",
-      "../OrgInviteSheet.tsx",
-      "../DuplicateEventSheet.tsx",
-      "../AnalyticsCarouselCard.tsx",
-    ]
-    for (const file of files) {
-      expect(source(file)).not.toContain("brand.bloom")
-      expect(source(file)).not.toContain('"#')
+    expect(DASHBOARD_FILES.length).toBeGreaterThan(DASHBOARD_PAGE_FILES.length)
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("brand.bloom")
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain('"#')
     }
   })
 
@@ -929,7 +926,7 @@ describe("portfolio surface", () => {
 
   it("shares from an icon button pinned to the top right of the card", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expect(card).toContain("const MIN_TOUCH_TARGET = 44")
+    expectThemeTouchTarget(card)
     expect(card).toContain("const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2")
     expect(card).toMatch(/<Pressable\s+onPress=\{share\}/)
     expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')

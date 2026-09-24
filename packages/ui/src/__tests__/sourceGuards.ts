@@ -1,4 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs"
 import { expect } from "vitest"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 
 /**
  * Helpers for source-level guards. A guard that slices the source between two anchors must fail
@@ -74,4 +76,59 @@ export function expectWrittenInLayoutEffect(source: string, assignment: string):
   const effect = layoutEffectBodies(source).find((candidate) => candidate.body.includes(assignment))
   expect(effect, `${assignment} is not inside a useLayoutEffect body`).toBeDefined()
   expect(effect?.deps ?? null, `the layout effect writing ${assignment} must run after every commit`).toBeNull()
+}
+
+export const THEME_TOUCH_TARGET_IMPORT =
+  /import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "[./]+\/theme(?:\/touchTarget)?"/
+
+/**
+ * The 44pt floor comes from the theme, never a re-typed local copy that could drift. Returns the floor so a
+ * guard can do its slop arithmetic with the value the source actually renders.
+ */
+export function expectThemeTouchTarget(source: string): number {
+  expect(source, "MIN_TOUCH_TARGET must be imported from the theme").toMatch(THEME_TOUCH_TARGET_IMPORT)
+  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(/const MIN_TOUCH_TARGET =/)
+  expect(MIN_TOUCH_TARGET).toBe(44)
+  return MIN_TOUCH_TARGET
+}
+
+/**
+ * Every source file a split surface renders from: the entry file first, so a first-occurrence anchor still
+ * lands in its own JSX, then each .ts/.tsx directly in the parts folder, sorted. Scanning the folder means a
+ * guard cannot miss a part split out later.
+ */
+export function folderSourceFiles(dir: URL, entry?: URL): URL[] {
+  const parts = readdirSync(dir, { withFileTypes: true })
+    .filter((file) => file.isFile() && /\.tsx?$/.test(file.name))
+    .map((file) => file.name)
+    .sort()
+    .map((name) => new URL(name, dir))
+  return entry ? [entry, ...parts] : parts
+}
+
+export function folderSource(dir: URL, entry?: URL): string {
+  return folderSourceFiles(dir, entry)
+    .map((file) => readFileSync(file, "utf8"))
+    .join("\n")
+}
+
+const SRC = new URL("../", import.meta.url)
+
+const SPLIT_SURFACES = {
+  personDetail: { entry: "bodies/PersonDetailBody.tsx", parts: "bodies/personDetail/" },
+  search: { entry: "bodies/SearchBody.tsx", parts: "bodies/search/" },
+  certificateCard: { entry: "bodies/profile/ServiceHoursCertificateCard.tsx", parts: "bodies/profile/certificate/" },
+  eventAnalytics: { entry: "bodies/host/EventAnalyticsBody.tsx", parts: "bodies/host/analytics/" },
+  postComposer: { entry: "bodies/PostComposer.tsx", parts: "bodies/postComposer/" },
+} as const
+
+export type SplitSurface = keyof typeof SPLIT_SURFACES
+
+export function surfaceSource(surface: SplitSurface): string {
+  const { entry, parts } = SPLIT_SURFACES[surface]
+  return folderSource(new URL(parts, SRC), new URL(entry, SRC))
+}
+
+export function surfacePart(surface: SplitSurface, name: string): string {
+  return readFileSync(new URL(name, new URL(SPLIT_SURFACES[surface].parts, SRC)), "utf8")
 }

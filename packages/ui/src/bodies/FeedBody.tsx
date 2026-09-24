@@ -29,7 +29,8 @@ import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { useFeedLiveStore } from "../data/feedLiveStore"
-import { clearsPendingAtOffset, dedupePostsById } from "../data/feedLiveModel"
+import { clearsPendingAtOffset } from "../data/feedLiveModel"
+import { dedupeById } from "../primitives/listKeys"
 import { NewPostsPill } from "./feed/NewPostsPill"
 import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import {
@@ -185,7 +186,7 @@ export function FeedBody() {
   const headerModel = buildFeedHeaderModel({ isAuthenticated, layout }, t)
   const composeLabel = useT("nav").t("title.post_composer")
   const posts = useMemo(
-    () => dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? []),
+    () => dedupeById(feed.data?.pages.flatMap((page) => page.items) ?? []),
     [feed.data],
   )
   const state = feedViewState({

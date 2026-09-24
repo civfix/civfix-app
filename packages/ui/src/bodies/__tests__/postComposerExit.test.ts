@@ -9,7 +9,7 @@
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
-import { sliceBetween } from "../../__tests__/sourceGuards"
+import { sliceBetween, surfacePart, surfaceSource } from "../../__tests__/sourceGuards"
 import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
 import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
 import type { DetailEntry } from "../../nav"
@@ -804,7 +804,7 @@ describe("openReportFlow and a report run that is already live", () => {
  */
 describe("the wiring (source-pinned)", () => {
   it("PostComposer registers the mount tracker and discards on the header X", () => {
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(/import \{ trackPostComposerMount, type PostComposerExitHost \}/)
     expect(source).toMatch(/useEffect\(\(\) => trackPostComposerMount\(EXIT_HOST\), \[\]\)/)
     // The host reads BOTH halves of the intent, and reads them at decision time (no captured values).
@@ -817,13 +817,13 @@ describe("the wiring (source-pinned)", () => {
       /const closeComposer = \(\) => \{\s*\n\s*usePostComposerStore\.getState\(\)\.discardAttachments\(\)\s*\n\s*attachments\.reset\(\)\s*\n\s*setCarriedMedia\(\[\]\)\s*\n\s*setDroppedMedia\(0\)\s*\n\s*;\(onBack \?\? back\)\(\)/,
     )
     expect(source).toMatch(/<ComposerHeader[^>]*?onClose=\{closeComposer\}/)
-    expect(sliceBetween(source, "function ComposerHeader(", "function ComposerAuthorRow(")).toMatch(/accessibilityLabel=\{t\("close_a11y"\)\}\s*onPress=\{onClose\}/)
+    expect(sliceBetween(surfacePart("postComposer", "ComposerHeader.tsx"), "export function ComposerHeader(", "\n}\n")).toMatch(/accessibilityLabel=\{t\("close_a11y"\)\}\s*onPress=\{onClose\}/)
   })
 
   it("PostComposer drops a stale REPORT create-intent at mount", () => {
     // A claim whose run vanished also vetoes the exit discard, so without this a leak keeps the previous
     // post's attachments alive on every later "New post".
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(/useEffect\(clearStaleReportIntentAtComposerMount, \[\]\)/)
     expect(source).toMatch(
       /import \{ clearStaleReportIntentAtComposerMount \} from "\.\/composerCreateFlow"/,
@@ -842,7 +842,7 @@ describe("the wiring (source-pinned)", () => {
   it("the composer no longer launches a create round trip of its own", () => {
     // The dock's create bubble is the only create entry point, so this surface never arms an intent or
     // leaves for a flow.
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     expect(source).not.toMatch(/leaveForCreate|createReport|createEvent/)
     expect(source).not.toMatch(/setPendingCreate/)
   })
@@ -850,7 +850,7 @@ describe("the wiring (source-pinned)", () => {
   it("POPS the composer and PUSHES the new thread for a QUOTE, so the origin entry survives the post", () => {
     // `openDetail` replaces the whole stack, so "thread A -> Quote -> Post -> Back" would lose thread A. Popping
     // the composer first (the host's dismiss, else `nav.back()`) and then pushing leaves [A, newPost].
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
     expect(success).toContain('push({ kind: "post-thread", id: post.id })')
     expect(success).not.toContain("openDetail")
@@ -871,7 +871,7 @@ describe("the wiring (source-pinned)", () => {
     expect(postSubmitDestination("post")).toBe("origin")
     expect(postSubmitDestination("quote")).toBe("thread")
     expect(postSubmitDestination("reply")).toBe("thread")
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
     // Keyed off what was SUBMITTED, never the `mode` prop - the two can disagree mid-flight.
     expect(success).toContain(
@@ -992,7 +992,7 @@ describe("the wiring (source-pinned)", () => {
     expect(rail).toMatch(/useTabBarModel/)
     expect(rail).not.toMatch(/selectView\("report"\)/)
     // The composer opens no report flow at all.
-    expect(readSource("../PostComposer.tsx")).not.toMatch(/selectView\("report"\)/)
+    expect(surfaceSource("postComposer")).not.toMatch(/selectView\("report"\)/)
     // And the helper is reachable by the hosts' own entry points (mobile's `/report` shim).
     expect(readSource("../index.ts")).toMatch(/export \{[^}]*\bopenReportFlow\b[^}]*\} from "\.\/composerCreateFlow"/)
 

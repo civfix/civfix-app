@@ -3,7 +3,6 @@ import { View, Pressable } from "react-native"
 import type { PostDTO } from "@civfix/shared"
 import { focusRingProps } from "../../theme"
 import { Text } from "../../typography"
-import type { useUserPosts } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { PostCard } from "../PostCard"
 import { PROFILE_TIMELINE_BLEED, ProfileTimelineLane } from "../profile/ProfileTimelineLane"
@@ -11,11 +10,17 @@ import { useSectionStyles } from "../profile/sectionStyles"
 import { usePersonDetailStyles } from "./personDetailStyles"
 
 export function PersonPostsTab({
-  postsQuery,
+  loading,
+  error,
+  hasMore,
+  loadingMore,
   postItems,
   onLoadMorePosts,
 }: {
-  postsQuery: ReturnType<typeof useUserPosts>
+  loading: boolean
+  error: boolean
+  hasMore: boolean
+  loadingMore: boolean
   postItems: PostDTO[]
   onLoadMorePosts: () => void
 }) {
@@ -23,8 +28,8 @@ export function PersonPostsTab({
   const sectionStyles = useSectionStyles()
   const { t } = useT("profile-person")
 
-  if (postsQuery.isLoading) return <Text style={styles.postsState}>{t("posts.loading")}</Text>
-  if (postsQuery.isError) return <Text style={styles.postsState}>{t("posts.error")}</Text>
+  if (loading) return <Text style={styles.postsState}>{t("posts.loading")}</Text>
+  if (error) return <Text style={styles.postsState}>{t("posts.error")}</Text>
   if (postItems.length === 0) return <Text style={styles.postsState}>{t("posts.empty")}</Text>
 
   return (
@@ -36,7 +41,7 @@ export function PersonPostsTab({
           ))}
         </ProfileTimelineLane>
       </View>
-      {postsQuery.hasNextPage ? (
+      {hasMore ? (
         <Pressable
           {...focusRingProps}
           style={({ pressed }) => [
@@ -44,13 +49,13 @@ export function PersonPostsTab({
             pressed ? sectionStyles.loadMorePressed : null,
           ]}
           onPress={onLoadMorePosts}
-          disabled={postsQuery.isFetchingNextPage}
+          disabled={loadingMore}
           accessibilityRole="button"
-          accessibilityState={{ disabled: postsQuery.isFetchingNextPage, busy: postsQuery.isFetchingNextPage }}
+          accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
           accessibilityLabel={t("posts.load_more_a11y")}
         >
           <Text style={sectionStyles.loadMoreText}>
-            {postsQuery.isFetchingNextPage ? t("posts.loading_more") : t("posts.load_more")}
+            {loadingMore ? t("posts.loading_more") : t("posts.load_more")}
           </Text>
         </Pressable>
       ) : null}

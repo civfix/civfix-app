@@ -74,7 +74,6 @@ export function LanguageSettingsBody() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  // The one drift from the shared subpage subtitle (14): kept until a design pass picks one size.
   subtitle: {
     fontSize: 13.5,
   },

@@ -4,10 +4,10 @@ import {
   FEED_TOP_CLEAR_OFFSET,
   addPendingNewPost,
   clearsPendingAtOffset,
-  dedupePostsById,
   shouldAnnounceNewPosts,
 } from "../../../data/feedLiveModel"
 import { useFeedLiveStore } from "../../../data/feedLiveStore"
+import { dedupeById } from "../../../primitives/listKeys"
 
 describe("addPendingNewPost", () => {
   it("accumulates ids in arrival order", () => {
@@ -34,15 +34,15 @@ describe("clearsPendingAtOffset", () => {
   })
 })
 
-describe("dedupePostsById", () => {
+describe("dedupeById", () => {
   it("keeps the FIRST occurrence and preserves server rank order", () => {
     const items = [{ id: "a" }, { id: "b" }, { id: "a" }, { id: "c" }]
-    expect(dedupePostsById(items).map((p) => p.id)).toEqual(["a", "b", "c"])
+    expect(dedupeById(items).map((p) => p.id)).toEqual(["a", "b", "c"])
   })
 
   it("returns the same array identity when nothing is duplicated", () => {
     const items = [{ id: "a" }, { id: "b" }]
-    expect(dedupePostsById(items)).toBe(items)
+    expect(dedupeById(items)).toBe(items)
   })
 })
 

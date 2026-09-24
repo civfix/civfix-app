@@ -40,7 +40,7 @@ import { formatHoursDisplay } from "../formatHours"
 import { CertificateCode } from "./certificate/CertificateCode"
 import { CertificateIssuedPanel } from "./certificate/CertificateIssuedPanel"
 import { CertificateRevokeControl } from "./certificate/CertificateRevokeControl"
-import { useSeededCertificate } from "./certificate/certificateSeed"
+import { useSeededCertificate } from "./certificate/useSeededCertificate"
 import { useCertificateCardStyles } from "./certificate/certificateCardStyles"
 
 /**

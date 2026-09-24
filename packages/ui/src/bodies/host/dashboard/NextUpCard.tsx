@@ -9,6 +9,7 @@ import {
   webCursorPointer,
   webHover,
   webTransition,
+  MIN_TOUCH_TARGET,
 } from "../../../theme"
 import { Icon, Text, TextLink, iconMap } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
@@ -25,8 +26,6 @@ const MAX_STRIP_SHIFTS = 3
 const MIN_STRIP_SHIFTS = 2
 
 const SHARE_SIZE = 32
-
-const MIN_TOUCH_TARGET = 44
 
 const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2
 

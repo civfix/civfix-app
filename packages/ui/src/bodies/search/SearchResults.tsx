@@ -7,8 +7,8 @@ import type {
   UserSearchResultDTO,
 } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
-import { announce } from "../announce"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel } from "../theme"
+import { announce } from "../../announce"
+import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel } from "../../theme"
 import {
   Avatar,
   EmptyState,
@@ -16,8 +16,8 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
-} from "../primitives"
-import { Icon, iconMap, Text } from "../typography"
+} from "../../primitives"
+import { Icon, iconMap, Text } from "../../typography"
 import {
   useAuthState,
   useJoinCleanup,
@@ -26,16 +26,16 @@ import {
   useUserLocation,
   useUserSearch,
   normalizeUserSearchTerm,
-} from "../data"
-import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../data/hooks/useDebouncedValue"
-import { useNavStore } from "../nav"
-import { useScrollHost } from "../shell/ScrollHost"
-import { useEventWhen, useLocale, useT } from "../i18n"
-import { useRowHover } from "./rowHover"
-import { pushCleanup } from "../nav/verbs"
-import { ReportRowView } from "./ReportRow"
-import { hasEventEnded } from "./eventLifecycle"
-import { reportHitRowModel } from "./reportHitRowModel"
+} from "../../data"
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../../data/hooks/useDebouncedValue"
+import { useNavStore } from "../../nav"
+import { useScrollHost } from "../../shell/ScrollHost"
+import { useEventWhen, useLocale, useT } from "../../i18n"
+import { useRowHover } from "../rowHover"
+import { pushCleanup } from "../../nav/verbs"
+import { ReportRowView } from "../ReportRow"
+import { hasEventEnded } from "../eventLifecycle"
+import { reportHitRowModel } from "../reportHitRowModel"
 import {
   SEARCH_EVENT_POOL_LIMIT,
   SEARCH_RESULT_CARD_LAYOUT,

@@ -1,10 +1,9 @@
 import { Platform, StyleSheet, type ViewStyle } from "react-native"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, wash } from "../../theme"
+import { makeThemedStyles, wash, MIN_TOUCH_TARGET } from "../../theme"
 import { HEADER_CONTROL_SIZE } from "../../primitives/headerControls"
-import { SEARCH_RESULT_CARD_LAYOUT } from "../searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
 
-const MIN_TOUCH_TARGET = 44
 const FIELD_CLEAR_SIZE = 22
 export const FIELD_CLEAR_HIT_SLOP = {
   top: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,

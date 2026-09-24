@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { RegistrationSourceSchema } from "@civfix/shared"
-import { analyticsPageSource } from "./analyticsPageSource"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 const EVENT_FUNNEL_STEPS = ["signups", "checked_in", "logged_hours"] as const
 
-const body = analyticsPageSource()
+const body = surfaceSource("eventAnalytics")
 const markdown = readFileSync(
   new URL("../../../primitives/Markdown.tsx", import.meta.url),
   "utf8",

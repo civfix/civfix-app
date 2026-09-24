@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React from "react"
 import type { CleanupDTO, EventInsights } from "@civfix/shared"
 import { useTheme } from "../../theme"
 import { Text } from "../../typography"
@@ -7,11 +7,8 @@ import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
-  useToast,
 } from "../../primitives"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
-import { useCancelCleanup, useRequestEventResources } from "../../data"
-import { useMarkEventNoShows } from "../../data/hooks/host"
 import { appErrorCode } from "../../data/errorCode"
 import { useT } from "../../i18n"
 import type { LinkSheetMode } from "../linkReportsModel"
@@ -19,81 +16,12 @@ import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { HostWalkupSheet } from "./HostWalkupSheet"
 import { LinkedReportsSheet } from "./LinkedReportsSheet"
 import { hostedEventFromCleanup } from "./hostSurfaceModel"
-
-export type HostSheetKey = "walkup" | "linking" | "duplicate" | "cancel" | "resources" | "noShows"
-
-type HostSheetsOpen = Readonly<Record<HostSheetKey, boolean>>
-
-const NO_SHEETS_OPEN: HostSheetsOpen = {
-  walkup: false,
-  linking: false,
-  duplicate: false,
-  cancel: false,
-  resources: false,
-  noShows: false,
-}
-
-export function useHostSheetsOpen() {
-  const [open, setOpen] = useState<HostSheetsOpen>(NO_SHEETS_OPEN)
-  const setSheet = useCallback((key: HostSheetKey, value: boolean) => {
-    setOpen((current) => (current[key] === value ? current : { ...current, [key]: value }))
-  }, [])
-  const openSheet = useCallback((key: HostSheetKey) => setSheet(key, true), [setSheet])
-  const closeSheet = useCallback((key: HostSheetKey) => setSheet(key, false), [setSheet])
-  return { open, openSheet, closeSheet }
-}
+import type { HostSheetKey, HostSheetsOpen } from "./useHostSheetsOpen"
+import type { HostSheetActions } from "./useHostSheetActions"
 
 function cancelErrorKey(err: unknown): string {
   return appErrorCode(err) === "CONFLICT" ? "state.cancel_ended" : "state.cancel_error"
 }
-
-// The mutations live in the body, not in HostModeSheets, so a pending cancel, request or no-show mark
-// keeps its state and its success callback while the body swaps to a loading or error notice.
-export function useHostSheetActions(id: string, closeSheet: (key: HostSheetKey) => void) {
-  const { t } = useT("host-mode")
-  const toast = useToast()
-  const cancelCleanup = useCancelCleanup()
-  const requestResources = useRequestEventResources(id)
-  const markNoShows = useMarkEventNoShows(id)
-
-  const onConfirmNoShows = useCallback(() => {
-    markNoShows.mutate(undefined, {
-      onSuccess: (res) => {
-        closeSheet("noShows")
-        toast.show(t("no_shows.success", { count: res.marked }), { variant: "success" })
-      },
-      onError: () => toast.show(t("no_shows.error"), { variant: "error" }),
-    })
-  }, [closeSheet, markNoShows, t, toast])
-
-  const onConfirmCancel = useCallback(
-    (reason?: string) => {
-      cancelCleanup.mutate(
-        { id, ...(reason ? { reason } : {}) },
-        { onSuccess: () => closeSheet("cancel") },
-      )
-    },
-    [cancelCleanup, closeSheet, id],
-  )
-
-  const onSubmitRequest = useCallback(
-    (message: string) => {
-      requestResources.mutate({ message }, { onSuccess: () => closeSheet("resources") })
-    },
-    [closeSheet, requestResources],
-  )
-
-  return {
-    cancelCleanup,
-    requestResources,
-    markNoShows,
-    onConfirmNoShows,
-    onConfirmCancel,
-    onSubmitRequest,
-  }
-}
-
-export type HostSheetActions = ReturnType<typeof useHostSheetActions>
 
 export interface HostModeSheetsProps {
   id: string

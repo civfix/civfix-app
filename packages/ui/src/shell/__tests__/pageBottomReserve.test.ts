@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { ALL_DETAIL_KINDS } from "../../nav"
 import { BODY_LAYOUT, pageBottomReserve } from "../bodyLayout"
-import { personDetailSource } from "../../bodies/personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -79,7 +79,7 @@ describe("ContentBottomReserve - the one additive content-padding decorator", ()
 
 describe("the profile bodies take the page's scroll host, so the reserve reaches them", () => {
   it("PersonDetailBody inherits the shell host instead of building its own", () => {
-    const src = personDetailSource()
+    const src = surfaceSource("personDetail")
     expect(src).toMatch(/const \{ ScrollView \} = useScrollHost\(\)/)
     expect(src).not.toMatch(/PERSON_SCROLL_HOST|makeKeyboardAwareScrollHost|ScrollHostProvider/)
   })

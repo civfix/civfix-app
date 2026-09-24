@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const SOURCE = readFileSync(new URL("../ProfileStatsRow.tsx", import.meta.url), "utf8")
 const VIEW = readFileSync(new URL("../ProfileView.tsx", import.meta.url), "utf8")
-const PERSON = personDetailSource()
+const PERSON = surfaceSource("personDetail")
 const LINK = readFileSync(new URL("../../typography/TextLink.tsx", import.meta.url), "utf8")
 const catalog = JSON.parse(
   readFileSync(new URL("../../i18n/locales/en/profile-view.json", import.meta.url), "utf8"),

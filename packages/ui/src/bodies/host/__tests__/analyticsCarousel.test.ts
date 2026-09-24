@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeTouchTarget, surfaceSource } from "../../../__tests__/sourceGuards"
 import { carouselPage } from "../analyticsModel"
-import { analyticsPageSource } from "./analyticsPageSource"
 
 const CARD = readFileSync(
   new URL("../dashboard/AnalyticsCarouselCard.tsx", import.meta.url),
@@ -15,7 +15,7 @@ const MEASURE = readFileSync(
   "utf8",
 )
 
-const ANALYTICS_BODY = analyticsPageSource()
+const ANALYTICS_BODY = surfaceSource("eventAnalytics")
 
 const constant = (name: string): number => {
   const match = CARD.match(new RegExp(`const ${name} = ([0-9+\\s A-Z_]+)\\n`))
@@ -216,7 +216,7 @@ describe("the page dots are real targets on web, where hitSlop does nothing", ()
   })
 
   it("still reaches 44 px on native without letting neighbouring dots overlap", () => {
-    expect(constant("MIN_TOUCH_TARGET")).toBe(44)
+    expect(expectThemeTouchTarget(CARD)).toBe(44)
     expect(CARD).toContain("const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2")
     expect(CARD).toContain("const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }")
     expect(CARD).not.toContain("hitSlop={8}")

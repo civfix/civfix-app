@@ -24,7 +24,7 @@ import {
 } from "@civfix/shared/host"
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
-import { DAY_MS } from "../hostTime"
+import { DAY_MS } from "../../timeUnits"
 import {
   errorKeyFor,
   hasActions,

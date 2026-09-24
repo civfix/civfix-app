@@ -69,11 +69,13 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
     void fetchMorePosts()
   }, [fetchMorePosts, postsFetchingMore])
 
+  const profilePath = `/people/${profile?.handle ?? id}`
+
   const onMessage = useCallback(() => {
     if (!profile?.id) return
     start(
       { id: profile.id, name: profile.name, handle: profile.handle },
-      `/people/${profile.handle ?? id}`,
+      profilePath,
       {
         onResolved: ({ roomId, thread }) =>
           useNavStore.getState().push({
@@ -84,7 +86,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           }),
       },
     )
-  }, [start, id, profile?.id, profile?.name, profile?.handle])
+  }, [start, profilePath, profile?.id, profile?.name, profile?.handle])
 
   const onOpenEvent = useCallback((event: CleanupDTO) => {
     pushCleanup(event)
@@ -98,7 +100,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
     [profile?.id],
   )
 
-  const profilePath = `/people/${profile?.handle ?? id}`
   const moderation = usePersonModeration(profile?.id, profilePath)
   const { startBlock, onUnblock, startReport, unblockUser } = moderation
 
@@ -178,14 +179,19 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           profile={profile}
           profilePath={profilePath}
           onMessage={onMessage}
-          moderation={moderation}
+          menuAnchorRef={moderation.menuAnchorRef}
+          menuOpen={moderation.menuOpen}
+          onOpenMenu={moderation.openMenu}
         />
 
         <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
 
         {tabsModel.active === "posts" ? (
           <PersonPostsTab
-            postsQuery={postsQuery}
+            loading={postsQuery.isLoading}
+            error={postsQuery.isError}
+            hasMore={postsQuery.hasNextPage}
+            loadingMore={postsQuery.isFetchingNextPage}
             postItems={postItems}
             onLoadMorePosts={onLoadMorePosts}
           />

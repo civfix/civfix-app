@@ -1,15 +1,15 @@
 import React from "react"
 import { View } from "react-native"
 import type { EventCheckinCountersDTO } from "@civfix/shared"
-import type { CheckinReplayReport } from "../../data/checkinOutbox"
-import { makeThemedStyles, useTheme, type Theme } from "../../theme"
-import { Text, Icon, iconMap } from "../../typography"
-import { SecondaryButton, StatTile, StatTileRow } from "../../primitives"
-import { formatStatValue } from "../../primitives/statTileModel"
-import { useLocale, useT } from "../../i18n"
-import { checkinResultRender, type CheckinTone } from "./checkinResult"
+import type { CheckinReplayReport } from "../../../data/checkinOutbox"
+import { makeThemedStyles, useTheme, type Theme } from "../../../theme"
+import { Text, Icon, iconMap } from "../../../typography"
+import { SecondaryButton, StatTile, StatTileRow } from "../../../primitives"
+import { formatStatValue } from "../../../primitives/statTileModel"
+import { useLocale, useT } from "../../../i18n"
+import { checkinResultRender, type CheckinTone } from "../checkinResult"
 import type { CheckinResultState } from "./useCheckinDesk"
-import { TilesSkeleton } from "./HostSkeletons"
+import { TilesSkeleton } from "../HostSkeletons"
 
 export function CheckinCounters({
   counters,

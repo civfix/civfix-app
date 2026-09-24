@@ -7,7 +7,7 @@ import {
   type ProfileTabAvailability,
   type ProfileTabId,
 } from "../profileTabsModel"
-import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const SOURCE = readFileSync(new URL("../ProfileView.tsx", import.meta.url), "utf8")
 
@@ -108,7 +108,7 @@ describe("the hero's trailing affordance", () => {
   })
 
   it("keeps the Saved affordance off a stranger's profile, which never passes the handler", () => {
-    const PERSON = personDetailSource()
+    const PERSON = surfaceSource("personDetail")
     expect(PERSON).not.toContain("ProfilePostsSection")
     expect(PERSON).not.toContain("onOpenSaved")
   })
@@ -125,7 +125,7 @@ describe("the hero's trailing affordance", () => {
   })
 
   it("keeps Activity off both profiles, hook and all", () => {
-    const PERSON = personDetailSource()
+    const PERSON = surfaceSource("personDetail")
     const SOCIAL = readFileSync(new URL("../../data/hooks/social.ts", import.meta.url), "utf8")
     expect(SOURCE).not.toContain("ActivitySection")
     expect(PERSON).not.toContain("ActivitySection")

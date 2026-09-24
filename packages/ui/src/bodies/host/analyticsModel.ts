@@ -9,7 +9,8 @@ import type {
 } from "@civfix/shared"
 import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
 import { hostedEventCan } from "./dashboard/dashboardModel"
-import { DAY_MS } from "./hostTime"
+import { DAY_MS } from "../timeUnits"
+import { dedupeById } from "../../primitives/listKeys"
 
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
@@ -142,22 +143,11 @@ export interface AnalyticsPickerOption {
   title: string
 }
 
-function firstById<T extends { id: string }>(items: readonly T[]): T[] {
-  const seen = new Set<string>()
-  const out: T[] = []
-  for (const item of items) {
-    if (seen.has(item.id)) continue
-    seen.add(item.id)
-    out.push(item)
-  }
-  return out
-}
-
 export function pickerOptions(
   upcoming: readonly HostedEventDTO[],
   past: readonly HostedEventDTO[],
 ): AnalyticsPickerOption[] {
-  return firstById([...upcoming, ...past].filter((event) => hostedEventCan(event, "view_analytics")))
+  return [...dedupeById([...upcoming, ...past].filter((event) => hostedEventCan(event, "view_analytics")))]
     .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
     .map((event) => ({ id: event.id, title: event.title }))
 }

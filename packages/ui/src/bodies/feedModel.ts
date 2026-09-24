@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next"
+import { tokens } from "@civfix/shared/tokens"
 import type { LayoutMode } from "../shell/expandedFramePlan"
 
 export type FeedViewState = "loading" | "error" | "empty" | "loaded"
@@ -9,7 +10,7 @@ export const POST_LIST_END_REACHED_THRESHOLD = 0.6
  * The row duration plus the stagger cap below (200 + 140 = 340ms) must stay under ~350ms, past which a
  * list reads as still loading rather than there.
  */
-export const FEED_ROW_ENTER_MS = 200
+export const FEED_ROW_ENTER_MS = tokens.motion.dur.d2
 
 export function buildFeedHeaderModel(
   { isAuthenticated, layout }: { isAuthenticated: boolean; layout: LayoutMode },

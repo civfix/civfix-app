@@ -11,7 +11,7 @@ import {
 import { TextInput } from "../../primitives/TextInput"
 import type { PostDTO, UserMentionDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
 import { useToast } from "../../primitives/Toast"
 import type { MentionCandidate } from "../../primitives"
@@ -52,7 +52,6 @@ import {
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
-const MIN_TOUCH_TARGET = 44
 
 export function InlineComposer() {
   const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)

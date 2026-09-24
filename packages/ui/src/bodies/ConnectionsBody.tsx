@@ -3,7 +3,7 @@ import { View, Pressable, StyleSheet, ActivityIndicator, Platform, type ViewStyl
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton, EmptyState, LoadingState, OrgAffiliationBadge, VerifiedBadge } from "../primitives"
 import { useAuthState, useFollowers, useFollowing } from "../data"
@@ -241,7 +241,6 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const CLEAR_BTN_SIZE = 22
 const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
 

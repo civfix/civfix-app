@@ -6,7 +6,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { StatusBadge, MetaDot, FramedImage } from "../primitives"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"
-import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT } from "./search/searchResultsModel"
 
 export interface ReportRowViewProps {
   id: string

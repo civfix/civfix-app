@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { searchBodySource } from "../search/__tests__/searchBodySource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const searchBody = strip(searchBodySource())
-const searchResults = strip(read("../SearchResults.tsx"))
+const searchBody = strip(surfaceSource("search"))
+const searchResults = strip(read("../search/SearchResults.tsx"))
 const leaderboardRow = strip(read("../LeaderboardRow.tsx"))
 const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
   .map((file) => strip(read(file)))

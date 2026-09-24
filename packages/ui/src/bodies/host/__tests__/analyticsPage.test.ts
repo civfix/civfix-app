@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
 import type { HostedEventDTO } from "@civfix/shared"
 import { pickerOptions } from "../analyticsModel"
-import { analyticsPageSource } from "./analyticsPageSource"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
-const BODY = analyticsPageSource()
+const BODY = surfaceSource("eventAnalytics")
 
 function hosted(over: Partial<HostedEventDTO> & { id: string }): HostedEventDTO {
   return {

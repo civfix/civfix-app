@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { SEARCH_RESULT_CARD_LAYOUT, groupSearchResults } from "../searchResultsModel"
-import { searchBodySource } from "../search/__tests__/searchBodySource"
+import { SEARCH_RESULT_CARD_LAYOUT, groupSearchResults } from "../search/searchResultsModel"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 describe("SearchResults groups", () => {
   it("orders live results as events, reports, then suggested people", () => {
@@ -30,7 +30,7 @@ describe("SearchResults groups", () => {
 
   it("renders each result as its own rounded card with nine-pixel spacing", () => {
     expect(SEARCH_RESULT_CARD_LAYOUT).toEqual({ gap: 9, radius: 18 })
-    const styles = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+    const styles = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
     const row = styles.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(row).toMatch(/borderRadius: SEARCH_RESULT_CARD_LAYOUT\.radius,/)
     expect(row).toMatch(/borderWidth: StyleSheet\.hairlineWidth,/)
@@ -48,8 +48,8 @@ describe("SearchResults groups", () => {
  * call site (a new third call site that forgets `viewer` reds on the length assertion, not just on tsc).
  */
 describe("report hits render through the shared ReportRowView", () => {
-  const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
-  const searchBody = searchBodySource()
+  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+  const searchBody = surfaceSource("search")
   const reportRow = readFileSync(new URL("../ReportRow.tsx", import.meta.url), "utf8")
 
   it("draws a ReportRowView, not a hand-rolled MapPin circle with a description subtitle", () => {
@@ -101,10 +101,7 @@ describe("report hits render through the shared ReportRowView", () => {
   })
 
   it("threads the viewer location into every ReportHitRow call site", () => {
-    const callSites = [
-      ...searchResults.matchAll(/<ReportHitRow\b[^/]*\/>/g),
-      ...searchBody.matchAll(/<ReportHitRow\b[^/]*\/>/g),
-    ]
+    const callSites = [...searchBody.matchAll(/<ReportHitRow\b[^/]*\/>/g)]
     expect(callSites).toHaveLength(2)
     for (const [tag] of callSites) expect(tag).toMatch(/\bviewer=\{/)
   })
@@ -117,7 +114,7 @@ describe("report hits render through the shared ReportRowView", () => {
  * geometry every other list row in the app uses.
  */
 describe("the leaderboard row lives in its own module", () => {
-  const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
   const leaderboardRow = readFileSync(new URL("../LeaderboardRow.tsx", import.meta.url), "utf8")
   const row = leaderboardRow.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
 

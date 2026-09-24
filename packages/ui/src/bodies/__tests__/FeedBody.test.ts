@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
+import { tokens } from "@civfix/shared/tokens"
 import {
   FEED_ROW_BATCH_MS,
   FEED_ROW_ENTER_MS,
@@ -47,7 +48,11 @@ describe("FeedBody feed model", () => {
   })
 
   it("uses a 200ms ease-out transition unless reduced motion is enabled", () => {
-    expect(FEED_ROW_ENTER_MS).toBe(200)
+    expect(FEED_ROW_ENTER_MS).toBe(tokens.motion.dur.d2)
+    expect(tokens.motion.dur.d2).toBe(200)
+    expect(readFileSync(new URL("../feedModel.ts", import.meta.url), "utf8")).toContain(
+      "export const FEED_ROW_ENTER_MS = tokens.motion.dur.d2",
+    )
     const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
     const timings = feed.match(/duration: FEED_ROW_ENTER_MS,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/g) ?? []
     expect(timings).toHaveLength(3)
@@ -237,7 +242,7 @@ describe("the new-posts pill overlays the list on every surface", () => {
   })
 
   it("keeps the feed exactly in server rank order, de-duplicated by id only", () => {
-    expect(SRC).toContain("dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
+    expect(SRC).toContain("dedupeById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
     expect(SRC).not.toMatch(/posts\s*\.\s*sort|\.toSorted\(/)
   })
 })

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string =>
   readFileSync(new URL(relative, import.meta.url), "utf8")
@@ -10,7 +10,7 @@ const stripComments = (source: string): string =>
 
 const HOSTS = {
   "profile/ProfilePostsSection.tsx": read("../profile/ProfilePostsSection.tsx"),
-  "PersonDetailBody.tsx": personDetailSource(),
+  "PersonDetailBody.tsx": surfaceSource("personDetail"),
   "SavedPostsBody.tsx": read("../SavedPostsBody.tsx"),
   "PostDetailBody.tsx": read("../PostDetailBody.tsx"),
 }

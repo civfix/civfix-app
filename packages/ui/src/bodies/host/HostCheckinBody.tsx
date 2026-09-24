@@ -7,11 +7,12 @@ import { useAuthState, useCleanup } from "../../data"
 import { cleanupHostStanding, hasHostCapability, useHostCounters } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { CheckinCounters, CheckinResultCard, OutboxBanner, ReplayReportCard } from "./CheckinDeskCards"
-import { ManualCodeEntry } from "./CheckinManualEntry"
+import { CheckinCounters, CheckinResultCard, OutboxBanner, ReplayReportCard } from "./checkin/CheckinDeskCards"
+import { ManualCodeEntry } from "./checkin/CheckinManualEntry"
 import { HostStateNotice } from "./HostStateNotice"
-import { CheckinRosterSection, useCheckinRoster } from "./CheckinRosterSection"
-import { useCheckinDesk } from "./useCheckinDesk"
+import { CheckinRosterSection } from "./checkin/CheckinRosterSection"
+import { useCheckinRoster } from "./checkin/useCheckinRoster"
+import { useCheckinDesk } from "./checkin/useCheckinDesk"
 
 export function HostCheckinBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -103,7 +104,18 @@ export function HostCheckinBody({ id }: { id: string }) {
         </Text>
       ) : null}
 
-      <CheckinRosterSection cleanup={cleanup.data} rosterState={rosterState} />
+      <CheckinRosterSection
+        cleanup={cleanup.data}
+        search={rosterState.rosterSearch}
+        onSearchChange={rosterState.setRosterSearch}
+        searchFocused={rosterState.rosterFocused}
+        onSearchFocusChange={rosterState.setRosterFocused}
+        roster={rosterState.roster}
+        waiting={rosterState.waiting}
+        pending={rosterState.pending}
+        onCheckIn={rosterState.onRosterCheckIn}
+        onUndo={rosterState.onRosterUndo}
+      />
     </ScrollView>
   )
 }

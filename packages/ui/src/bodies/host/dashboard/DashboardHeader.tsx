@@ -1,13 +1,13 @@
-import React, { useCallback, useState } from "react"
+import React from "react"
 import { View } from "react-native"
 import type { HostPortfolioKpis, OrganizationDTO } from "@civfix/shared"
 import { headingLevel, makeThemedStyles } from "../../../theme"
 import { Text, iconMap, type LucideIcon } from "../../../typography"
-import { Avatar, MetaDot, PopoverMenu, SecondaryButton, usePopoverAnchor } from "../../../primitives"
-import type { AnchorRect } from "../../../primitives"
+import { Avatar, MetaDot, PopoverMenu, SecondaryButton } from "../../../primitives"
 import { useAuthState } from "../../../data"
 import { useT } from "../../../i18n"
 import type { DashboardScope } from "./dashboardModel"
+import type { ScopeMenuState } from "./useScopeMenu"
 
 const SCOPE_AVATAR = 20
 
@@ -21,26 +21,6 @@ function avatarIcon(name: string, seed: string, photoUrl: string | null): Lucide
   return function ScopeAvatar() {
     return <Avatar name={name} seed={seed} photoUrl={photoUrl} size={SCOPE_AVATAR} decorative />
   }
-}
-
-export interface ScopeMenuState {
-  open: boolean
-  rect: AnchorRect | null
-  anchorRef: ReturnType<typeof usePopoverAnchor>["ref"]
-  show: () => void
-  close: () => void
-}
-
-export function useScopeMenu(): ScopeMenuState {
-  const [open, setOpen] = useState(false)
-  const [rect, setRect] = useState<AnchorRect | null>(null)
-  const { ref: anchorRef, measure } = usePopoverAnchor(setRect)
-  const show = useCallback(() => {
-    measure()
-    setOpen(true)
-  }, [measure])
-  const close = useCallback(() => setOpen(false), [])
-  return { open, rect, anchorRef, show, close }
 }
 
 export interface DashboardHeaderProps {

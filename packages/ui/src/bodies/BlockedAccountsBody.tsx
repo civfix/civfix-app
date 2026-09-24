@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState, useToast } from "../primitives"
 import { useListBlocks, useUnblockUser } from "../data"
@@ -138,7 +138,6 @@ export function BlockedAccountsBody() {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const UNBLOCK_HEIGHT = 34
 const UNBLOCK_HIT_SLOP = (MIN_TOUCH_TARGET - UNBLOCK_HEIGHT) / 2
 

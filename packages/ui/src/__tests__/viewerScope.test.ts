@@ -96,7 +96,7 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
   "map/droppedPinStore.ts:useDroppedPin": "transient long-press pin",
   "map/locationPickStore.ts:useLocationPick": "in-progress map location pick, reset when the picker closes",
   // Known gap: recent searches are per-viewer but not registered, so they persist across sign-out.
-  "bodies/searchRecentStore.ts:useSearchRecentStore": "recent searches",
+  "bodies/search/searchRecentStore.ts:useSearchRecentStore": "recent searches",
 }
 
 const readyMedia: PostComposerMedia = {

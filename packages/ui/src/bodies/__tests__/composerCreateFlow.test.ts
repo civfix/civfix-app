@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import type { DetailEntry } from "../../nav"
 import { useNavStore } from "../../nav"
 import {
@@ -150,7 +151,7 @@ describe("PostComposer's create shortcuts (source-pinned)", () => {
   it("no longer offers a new-report / new-event shortcut, so it never launches either flow", () => {
     // The dock's create bubble is the one entry point for new reports and events. Pinned as an absence,
     // because a composer shortcut that dismisses before launching would detour the user through the feed.
-    const source = readSource("../PostComposer.tsx")
+    const source = surfaceSource("postComposer")
     expect(source).not.toMatch(/leaveForCreate|createReport|createEvent/)
     expect(source).not.toMatch(/planComposerCreateEvent|composerEventFormPresenter/)
     expect(source).not.toMatch(/selectView\("report"\)/)

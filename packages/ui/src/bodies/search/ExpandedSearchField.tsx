@@ -14,7 +14,7 @@ import { searchModeFor, useNavStore } from "../../nav"
 import { useSearchBarStore } from "../../shell/searchBarStore"
 import { searchFieldEscape } from "../../shell/shellKeyModel"
 import { useT } from "../../i18n"
-import { discardSearchInput } from "../searchRecentStore"
+import { discardSearchInput } from "./searchRecentStore"
 import { commitSearchRecent } from "./useRecordSearchOnCommit"
 import { FIELD_CLEAR_HIT_SLOP, useSearchStyles } from "./searchStyles"
 

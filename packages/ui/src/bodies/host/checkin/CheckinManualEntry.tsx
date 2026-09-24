@@ -1,11 +1,11 @@
 import React from "react"
 import { View } from "react-native"
-import { TextInput } from "../../primitives/TextInput"
-import { SecondaryButton, fieldFocusedStyle } from "../../primitives"
-import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset } from "../../theme"
-import { Text } from "../../typography"
-import { useT } from "../../i18n"
-import { MANUAL_CODE_MAX, manualCodeReady } from "./checkinResult"
+import { TextInput } from "../../../primitives/TextInput"
+import { SecondaryButton, fieldFocusedStyle } from "../../../primitives"
+import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset } from "../../../theme"
+import { Text } from "../../../typography"
+import { useT } from "../../../i18n"
+import { MANUAL_CODE_MAX, manualCodeReady } from "../checkinResult"
 
 export interface ManualCodeEntryProps {
   code: string

@@ -7,7 +7,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { formatHoursDisplay } from "./formatHours"
-import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT } from "./search/searchResultsModel"
 
 export type LeaderboardRowEmphasis = "accent" | "ink"
 

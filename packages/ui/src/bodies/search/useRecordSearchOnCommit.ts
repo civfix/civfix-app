@@ -6,7 +6,7 @@ import {
   searchRecentCommit,
   trackSearchInput,
   useSearchRecentStore,
-} from "../searchRecentStore"
+} from "./searchRecentStore"
 
 export function commitSearchRecent(query: string): void {
   const value = searchRecentCommit(query)

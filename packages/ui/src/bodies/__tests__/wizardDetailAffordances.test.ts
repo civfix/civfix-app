@@ -129,7 +129,7 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     const rsvpElements = (src: string) =>
       src.split("<RsvpPill").slice(1).map((seg) => seg.slice(0, seg.indexOf("/>")))
     const cards: Array<[string, string]> = [
-      ["SearchResults", strip(read("../SearchResults.tsx"))],
+      ["SearchResults", strip(read("../search/SearchResults.tsx"))],
       ["EventsBody", strip(read("../EventsBody.tsx"))],
       ["LinkedEventCard", linkedEvent],
     ]

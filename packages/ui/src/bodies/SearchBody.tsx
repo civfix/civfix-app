@@ -6,8 +6,8 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useSearchBarStore } from "../shell/searchBarStore"
 import { useT } from "../i18n"
-import { SearchResults } from "./SearchResults"
-import { useSearchRecentStore } from "./searchRecentStore"
+import { SearchResults } from "./search/SearchResults"
+import { useSearchRecentStore } from "./search/searchRecentStore"
 import {
   isSearchBodyFrozen,
   resolveSearchSurfaceState,

@@ -9,7 +9,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import type { HostAnalyticsSummaryResponse } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover } from "../../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, MIN_TOUCH_TARGET } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
@@ -49,8 +49,6 @@ const RING_GUTTER = 12
 const DOT_SIZE = 6
 
 const DOT_TARGET = 24
-
-const MIN_TOUCH_TARGET = 44
 
 const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2
 
