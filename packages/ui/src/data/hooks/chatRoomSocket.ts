@@ -153,6 +153,11 @@ export function useChatRoomSocket({
     clearAllSendTimers,
     resetReadAck,
     flushPendingReadAck,
+    setJoinRejected,
+    setTransientError,
+    setConnection,
+    setOnlineUserIds,
+    setAroundWindow,
   ])
 
   // Held apart from the join effect so an in-place room switch is a leave/join on the open socket: under

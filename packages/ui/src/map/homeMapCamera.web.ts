@@ -27,7 +27,7 @@ export function useFocusAndFlyToCamera(
     if (!map || !mapReady || !focus) return
     const lng = centerLngFor(focus.lng, FOCUS_ZOOM, mode, occlusionLeftRef)
     map.easeTo({ center: [lng, focus.lat], zoom: FOCUS_ZOOM, duration: CAMERA_EASE_MS })
-  }, [mapReady, mode, focus])
+  }, [mapReady, mode, focus, mapRef, occlusionLeftRef])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -35,5 +35,5 @@ export function useFocusAndFlyToCamera(
     const lng = centerLngFor(flyToRequest.lng, FOCUS_ZOOM, mode, occlusionLeftRef)
     map.easeTo({ center: [lng, flyToRequest.lat], zoom: FOCUS_ZOOM, duration: CAMERA_EASE_MS })
     useMapFlyTo.getState().consume(flyToRequest.generation)
-  }, [mapReady, mode, flyToRequest])
+  }, [mapReady, mode, flyToRequest, mapRef, occlusionLeftRef])
 }

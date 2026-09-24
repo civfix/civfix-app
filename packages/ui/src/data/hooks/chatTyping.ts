@@ -66,5 +66,5 @@ export function useClearTypingTimersOnUnmount(typingTimers: MutableRefObject<Tim
       for (const timer of timers.values()) clearTimeout(timer)
       timers.clear()
     }
-  }, [])
+  }, [typingTimers])
 }

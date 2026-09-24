@@ -1,4 +1,9 @@
-import { useLayoutEffect, useRef } from "react"
+import { useLayoutEffect, useRef, type TransitionEvent } from "react"
+
+export type LayerTransitionEndEvent = Pick<
+  TransitionEvent<Element>,
+  "target" | "currentTarget" | "propertyName"
+>
 
 /**
  * Reads layout from the first target that has any, so the browser commits the start frame before the

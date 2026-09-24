@@ -28,6 +28,20 @@ const FRAMEWORK_FREE_IMPORTS = {
   ],
 }
 
+const TYPED_RULES = {
+  "@typescript-eslint/no-floating-promises": "error",
+  "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: true } }],
+  // A `default` branch is a deliberate catch-all; the rule only has to catch a switch that silently
+  // falls through to undefined when a union grows.
+  "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
+  "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "separate-type-imports" }],
+  "@typescript-eslint/no-unsafe-argument": "error",
+  "@typescript-eslint/no-unsafe-assignment": "error",
+  "@typescript-eslint/no-unsafe-call": "error",
+  "@typescript-eslint/no-unsafe-member-access": "error",
+  "@typescript-eslint/no-unsafe-return": "error",
+}
+
 export default tseslint.config(
   {
     ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.ts"],
@@ -50,6 +64,16 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: TYPED_RULES,
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],

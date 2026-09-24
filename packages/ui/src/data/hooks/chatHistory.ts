@@ -78,7 +78,7 @@ export function useChatHistoryCache({
           : undefined)
       )
     },
-    [queryClient, roomId, roomKind],
+    [queryClient, roomId, roomKind, aroundWindowRef, liveMessagesRef],
   )
 
   const isHistoryFetchInFlight = useCallback(() => {
@@ -175,7 +175,7 @@ export function useChatHistoryCache({
         )
       })
     },
-    [queryClient, roomId, roomKind, isHistoryFetchInFlight],
+    [queryClient, roomId, roomKind, isHistoryFetchInFlight, setLiveMessages, setAroundWindow],
   )
 
   const journalInbound = useCallback((batch: InboundFrame[]) => {

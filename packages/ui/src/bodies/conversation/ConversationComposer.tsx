@@ -164,8 +164,8 @@ export function ConversationComposer({
         onClose={() => setAttachOpen(false)}
         anchor={attachAnchor}
         canCreatePoll={canCreatePoll}
-        onPhoto={att.onAttach}
-        onCamera={att.onCapture}
+        onPhoto={() => void att.onAttach()}
+        onCamera={() => void att.onCapture()}
         onPoll={() => setPollCreateOpen(true)}
       />
       <PollCreateSheet

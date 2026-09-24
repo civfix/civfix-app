@@ -5,7 +5,7 @@ import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransit
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 import { cssTransitionParts } from "./motionCss"
-import { forceReflow, useFlipPhase } from "./useFlipPhase"
+import { forceReflow, useFlipPhase, type LayerTransitionEndEvent } from "./useFlipPhase"
 import { prefersReducedMotion } from "./webMedia"
 
 const IN_DURATION = motion.bodyPush.duration
@@ -107,8 +107,8 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   }))
 
   const committedChildRef = useRef<React.ReactNode>(children)
-  const slotARef = useRef<any>(null)
-  const slotBRef = useRef<any>(null)
+  const slotARef = useRef<React.ComponentRef<typeof View>>(null)
+  const slotBRef = useRef<React.ComponentRef<typeof View>>(null)
 
   if (state.key !== transitionKey) {
     const instant = prefersReducedMotion()
@@ -171,7 +171,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   const outgoingContent =
     anim && !anim.outDropped ? <Fragment key={anim.outgoingKey}>{anim.outgoing}</Fragment> : null
 
-  const onLayerTransitionEnd = (slot: SlotId, event: any) => {
+  const onLayerTransitionEnd = (slot: SlotId, event: LayerTransitionEndEvent) => {
     if (!phase || !flipped) return
     if (slot !== activeSlot) return
     if (event?.target !== event?.currentTarget) return
@@ -191,7 +191,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
         ref={slot === "a" ? slotARef : slotBRef}
         style={[styles.layer, castLayerStyle(layer, transition, zIndex, active)]}
         {...({
-          onTransitionEnd: (event: any) => onLayerTransitionEnd(slot, event),
+          onTransitionEnd: (event: LayerTransitionEndEvent) => onLayerTransitionEnd(slot, event),
         } as any)}
       >
         {active ? activeContent : outgoingContent}

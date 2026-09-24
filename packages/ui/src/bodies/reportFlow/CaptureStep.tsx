@@ -61,13 +61,14 @@ export function CaptureStep({ mode }: { mode: LayoutMode }) {
   )
 
   const run = useCallback(
-    (kind: CaptureSource) =>
-      land(
+    (kind: CaptureSource) => {
+      void land(
         kind === "capture"
           ?
             () => camera.capture({ orientation: "portrait" })
           : () => camera.pickFromLibrary(),
-      ),
+      )
+    },
     [camera, land],
   )
 

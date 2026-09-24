@@ -170,7 +170,7 @@
     "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "clean": "rimraf dist *.tsbuildinfo",
     "dev": "tsup --watch"
   },

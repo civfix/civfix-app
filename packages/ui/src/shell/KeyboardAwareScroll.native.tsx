@@ -17,7 +17,7 @@ import {
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { motion } from "../theme"
-import type { ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
 import { withExtraBottomPadding } from "./bottomPadding"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
@@ -40,9 +40,18 @@ import { useMergedRef } from "./useMergedRef"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
 import { KEYBOARD_HIDE_EVENT, KEYBOARD_PLATFORM, KEYBOARD_SHOW_EVENT } from "./keyboardPlatform"
 
+type MeasureInWindow = (callback: (x: number, y: number, width: number, height: number) => void) => void
+
+/** The imperative surface of whichever RN ScrollView / FlatList the decorator wraps. */
+interface ScrollableNode {
+  scrollTo?: (options: { y: number; animated?: boolean }) => void
+  scrollToOffset?: (options: { offset: number; animated?: boolean }) => void
+  measureInWindow?: MeasureInWindow
+  getNativeScrollRef?: () => { measureInWindow?: MeasureInWindow } | null
+}
 
 interface ScrollableAdapter {
-  scrollToOffset: (node: any, offset: number) => void
+  scrollToOffset: (node: ScrollableNode, offset: number) => void
   scrollEventThrottle?: number
 }
 
@@ -59,7 +68,7 @@ const FLAT_LIST: ScrollableAdapter = {
   },
 }
 
-function measureViewportTop(node: any, apply: (top: number) => void): void {
+function measureViewportTop(node: ScrollableNode, apply: (top: number) => void): void {
   const measurable =
     typeof node?.measureInWindow === "function" ? node : node?.getNativeScrollRef?.()
   if (!measurable || typeof measurable.measureInWindow !== "function") {
@@ -76,12 +85,12 @@ function makeKeyboardAwareScrollable(
 ): React.ComponentType<any> {
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
-  const KeyboardAwareScrollable = forwardRef<any, any>(function KeyboardAwareScrollable(
+  const KeyboardAwareScrollable = forwardRef<ScrollableNode, DecoratedScrollProps>(function KeyboardAwareScrollable(
     { contentContainerStyle, onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
   ) {
     const scopeId = useId()
-    const innerRef = useRef<any>(null)
+    const innerRef = useRef<ScrollableNode | null>(null)
     const offsetRef = useRef(0)
     const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [state, setState] = useState(() => initialScrollKeyboardState(scopeId))

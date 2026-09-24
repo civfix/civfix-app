@@ -14,7 +14,7 @@
  * never collapses the reserve of a scroller on a surface pushed over it.
  */
 import React, { forwardRef, useEffect, useMemo, useRef } from "react"
-import type { ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
 import { withExtraBottomPadding } from "./bottomPadding"
 import { useKeyboardHostReserved } from "./keyboardScrollScope"
 import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
@@ -25,13 +25,22 @@ import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./Keyboard
 /** Lets the keyboard open and visualViewport settle before measuring. */
 const SETTLE_MS = 140
 
-function getScrollableNode(node: any): HTMLElement | null {
+/** react-native-web's ScrollView ref exposes the DOM scroller through getScrollableNode(). */
+interface WebScrollRef {
+  getScrollableNode?: () => unknown
+}
+
+function isScrollElement(value: unknown): value is HTMLElement {
+  return typeof (value as { scrollTop?: unknown }).scrollTop === "number"
+}
+
+function getScrollableNode(node: WebScrollRef | null): HTMLElement | null {
   if (!node) return null
   if (typeof node.getScrollableNode === "function") {
     const el = node.getScrollableNode()
-    return el && typeof el.scrollTop === "number" ? (el as HTMLElement) : null
+    return el && isScrollElement(el) ? el : null
   }
-  return typeof node.scrollTop === "number" ? (node as HTMLElement) : null
+  return isScrollElement(node) ? node : null
 }
 
 function makeKeyboardAwareScrollView(
@@ -42,11 +51,11 @@ function makeKeyboardAwareScrollView(
   // below does not depend on them.
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
-  const KeyboardAwareScrollView = forwardRef<any, any>(function KeyboardAwareScrollView(
+  const KeyboardAwareScrollView = forwardRef<WebScrollRef, DecoratedScrollProps>(function KeyboardAwareScrollView(
     { contentContainerStyle, ...rest },
     ref,
   ) {
-    const innerRef = useRef<any>(null)
+    const innerRef = useRef<WebScrollRef | null>(null)
     const inset = useKeyboardInset()
     const hostReserved = useKeyboardHostReserved()
 

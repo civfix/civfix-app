@@ -86,7 +86,7 @@
     "build": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist-types",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
     "i18n:gen": "node scripts/gen-i18n-resources.mjs",
     "clean": "rimraf dist-types *.tsbuildinfo"

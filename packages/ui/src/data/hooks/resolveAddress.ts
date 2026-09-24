@@ -51,10 +51,9 @@ export function useResolveAddress(
   opts?: { enabled?: boolean },
 ): UseQueryResult<ResolveAddressResponse | null> {
   const api = useApi()
-  const key = point ? geocodePointKey(point) : "none"
   const enabled = point !== null && opts?.enabled !== false
   return useQuery<ResolveAddressResponse | null>({
-    queryKey: queryKeys.resolvedAddress(key),
+    queryKey: queryKeys.resolvedAddress(point ? geocodePointKey(point) : "none"),
     enabled,
     queryFn: () => fetchResolvedAddress(api, point!),
     retry: false,

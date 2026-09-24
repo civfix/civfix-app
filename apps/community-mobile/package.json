@@ -12,7 +12,7 @@
     "postinstall": "pnpm --filter @civfix/shared build",
     "test": "node --experimental-strip-types --test tests/*.test.ts src/api/*.test.ts src/components/*.test.ts src/lib/*.test.ts src/query/*.test.ts src/theme/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "doctor": "expo-doctor",
     "export": "expo export",
     "build:testflight": "scripts/store-build.sh testflight",

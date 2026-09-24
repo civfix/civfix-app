@@ -67,7 +67,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
     })
     const containerRef = React.useRef<HTMLDivElement | null>(null)
     const mapRef = React.useRef<MlMap | null>(null)
-    const markersRef = React.useRef<globalThis.Map<string, MarkerEntry>>(new globalThis.Map())
+    const markersRef = React.useRef(new globalThis.Map<string, MarkerEntry>())
     const meetingMarkerRef = React.useRef<Marker | null>(null)
     const meetingRootRef = React.useRef<Root | null>(null)
     const [mapReady, setMapReady] = React.useState(false)

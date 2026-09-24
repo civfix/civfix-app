@@ -6,7 +6,13 @@ import { searchRevealExitStyle, searchRevealStyle } from "./bodyLayout"
 import { withExtraBottomPadding } from "./bottomPadding"
 import { dockMorphProgress } from "./dockMorphProgress.native"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
-import { PLAIN_SCROLL_HOST, ScrollHostProvider, decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
+import {
+  PLAIN_SCROLL_HOST,
+  ScrollHostProvider,
+  decorateScrollHost,
+  type DecoratedScrollProps,
+  type ScrollHostValue,
+} from "./ScrollHost"
 import { useSearchBarStore } from "./searchBarStore"
 import { resolveTabBarFootprint } from "./tabBarLogic"
 import { useTabBarStore } from "./tabBarStore"
@@ -16,7 +22,7 @@ const DockClearanceFallbackContext = createContext(0)
 DockClearanceFallbackContext.displayName = "DockClearanceFallbackContext"
 
 function makeDockClearanceScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
-  const DockClearanceScroll = forwardRef<any, any>(function DockClearanceScroll(
+  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(function DockClearanceScroll(
     { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
     ref,
   ) {

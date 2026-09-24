@@ -11,7 +11,8 @@ import {
   SkeletonGroup,
   SkeletonList,
 } from "../../../primitives"
-import { hostedEventRows, useMyHostedEvents } from "../../../data/hooks/host"
+import { hostedEventRows } from "../../../data/hooks/host"
+import type { useMyHostedEvents } from "../../../data/hooks/host"
 import { useT } from "../../../i18n"
 import { FeedNotice } from "../../FeedNotice"
 import { HostedEventRow } from "./HostedEventRow"
