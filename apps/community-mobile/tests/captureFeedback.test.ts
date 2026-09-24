@@ -61,3 +61,15 @@ test("the shutter exposes its disabled and busy state to screen readers", () => 
   assert.match(props, /disabled=\{busy && !recording\}/)
   assert.match(props, /accessibilityState=\{\{ disabled: busy && !recording, busy \}\}/)
 })
+
+test("the recording clock ticks inside its badge, never in the viewfinder that renders the camera", () => {
+  const badge = viewfinder.slice(
+    viewfinder.indexOf("function RecordingBadge()"),
+    viewfinder.indexOf("async function readShutterLocation()"),
+  )
+  assert.match(badge, /setInterval\(/)
+  assert.match(badge, /return \(\) => clearInterval\(tick\)/)
+  const body = viewfinder.slice(viewfinder.indexOf("export function ReportViewfinder("))
+  assert.doesNotMatch(body, /setInterval\(|setElapsed/)
+  assert.match(body, /\{recording \? <RecordingBadge \/> : null\}/)
+})

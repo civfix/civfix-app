@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react"
 import {
   isoFromDatetimeLocal,
   isValidTimeZone,
+  safeDateFormat,
   sameOffsetAt,
   zoneShortName,
 } from "@civfix/shared/datetime"
@@ -24,6 +25,31 @@ export interface ConsoleFormatters {
 /** The visible "no value" mark; JSX should render `EmptyValue`, which also names it for readers. */
 export { EMPTY_VALUE } from "@civfix/ui/i18n"
 
+interface LocaleNumberFormats {
+  number: Intl.NumberFormat
+  percent: Intl.NumberFormat
+}
+
+const numberFormatsByLocale = new Map<string, LocaleNumberFormats>()
+
+// Console tables format a number per cell, and building an Intl.NumberFormat costs far more than
+// formatting with one; the key space is the supported locale set.
+function localeNumberFormats(locale: string): LocaleNumberFormats {
+  const cached = numberFormatsByLocale.get(locale)
+  if (cached !== undefined) return cached
+  const made = {
+    number: new Intl.NumberFormat(locale),
+    percent: new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }),
+  }
+  numberFormatsByLocale.set(locale, made)
+  return made
+}
+
+const DATE_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: "medium" }
+const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: "medium", timeStyle: "short" }
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = { timeStyle: "short" }
+const DAY_SHORT_OPTIONS: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
+
 export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   const { locale } = useLocale()
   const viewerTimeZone = useViewerTimeZone()
@@ -36,44 +62,29 @@ export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   )
 
   const number = useCallback(
-    (value: number) => new Intl.NumberFormat(locale).format(value),
+    (value: number) => localeNumberFormats(locale).number.format(value),
     [locale],
   )
   const percent = useCallback(
-    (value: number) =>
-      new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value),
+    (value: number) => localeNumberFormats(locale).percent.format(value),
     [locale],
   )
   const date = useCallback(
-    (iso: string, override?: string) =>
-      new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: zoneOf(override) }).format(
-        new Date(iso),
-      ),
+    (iso: string, override?: string) => safeDateFormat(iso, locale, DATE_OPTIONS, zoneOf(override)),
     [locale, zoneOf],
   )
   const dateTime = useCallback(
     (iso: string, override?: string) =>
-      new Intl.DateTimeFormat(locale, {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: zoneOf(override),
-      }).format(new Date(iso)),
+      safeDateFormat(iso, locale, DATE_TIME_OPTIONS, zoneOf(override)),
     [locale, zoneOf],
   )
   const time = useCallback(
-    (iso: string, override?: string) =>
-      new Intl.DateTimeFormat(locale, { timeStyle: "short", timeZone: zoneOf(override) }).format(
-        new Date(iso),
-      ),
+    (iso: string, override?: string) => safeDateFormat(iso, locale, TIME_OPTIONS, zoneOf(override)),
     [locale, zoneOf],
   )
   const dayShort = useCallback(
     (iso: string, override?: string) =>
-      new Intl.DateTimeFormat(locale, {
-        month: "short",
-        day: "numeric",
-        timeZone: zoneOf(override),
-      }).format(new Date(iso)),
+      safeDateFormat(iso, locale, DAY_SHORT_OPTIONS, zoneOf(override)),
     [locale, zoneOf],
   )
   const zoneLabel = useCallback(

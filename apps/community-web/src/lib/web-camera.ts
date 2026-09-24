@@ -2,8 +2,9 @@
 
 /**
  * The shared CapturedMedia carries a string `uri` (an object-URL for the preview), but `prepareUpload`
- * needs the original File, so a small uri -> File registry recovers the bytes; `releaseCaptured` prunes
- * it. The bytes upload as-is because the server strips metadata and normalizes orientation.
+ * needs the original File, so a small uri -> File registry recovers the bytes; `releaseCaptured` (or the
+ * media's own `release`) prunes it and revokes the object-URL. The bytes upload as-is because the server
+ * strips metadata and normalizes orientation.
  */
 import type {
   CameraCapability,
@@ -62,6 +63,7 @@ async function toCapturedMedia(file: File): Promise<CapturedMedia> {
     uri,
     kind,
     mime: file.type || (kind === "video" ? "video/mp4" : "image/jpeg"),
+    release: () => releaseCaptured(uri),
   }
   if (kind === "image") {
     const gps = await readExifGps(file)

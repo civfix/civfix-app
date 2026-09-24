@@ -7,7 +7,7 @@ import { useT } from "@civfix/ui/i18n"
 import { useConsoleToast } from "@/components/console/overlay/toast"
 
 import { useConsoleErrors } from "../error-copy"
-import { invalidateEvent } from "../console-invalidate"
+import { invalidateEvent, invalidateRoster } from "../console-invalidate"
 import { checkInSeats } from "./check-in-seats"
 
 export function useAttendeeDrawerActions({
@@ -27,7 +27,7 @@ export function useAttendeeDrawerActions({
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
 
-  const refresh = () => invalidateEvent(qc, eventId)
+  const refresh = () => invalidateRoster(qc, eventId)
   const toastFailure = (err: unknown) => toast.toast({ title: errors.message(err), tone: "danger" })
   const succeed = (titleKey: string) => {
     toast.toast({ title: t(titleKey), tone: "success" })
@@ -84,7 +84,7 @@ export function useAttendeeDrawerActions({
     onSuccess: () => {
       toast.toast({ title: t("drawer.moved"), tone: "success" })
       onMoved()
-      refresh()
+      invalidateEvent(qc, eventId)
     },
     onError: (err) =>
       toast.toast({

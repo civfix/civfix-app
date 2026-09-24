@@ -171,24 +171,6 @@
 
 /* These only target design classes and scoped elements, so the rest of the Tailwind app is
    untouched. */
-.cf-design .display {
-  font-family: var(--font-display);
-  font-size: var(--fs-64);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-  font-weight: 700;
-  font-variation-settings: "opsz" 72, "wdth" 95;
-  color: var(--fg-1);
-}
-.cf-design .num,
-.cf-design .stat {
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 48, "wdth" 85;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-feature-settings: "tnum" 1, "lnum" 1;
-}
-
 .cf-shell {
   position: fixed;
   inset: 0;
@@ -345,38 +327,12 @@ body:not(:has(.cf-shell)) {
 }
 .btn.primary:hover { background: var(--bloom-600); transform: translateY(-1px); }
 .btn.primary:active { transform: scale(0.97); }
-.btn.secondary {
-  background: var(--card);
-  color: var(--ink);
-  border: 1px solid var(--border);
-}
-.btn.secondary:hover { background: var(--paper-2); }
 .btn.ghost { background: transparent; box-shadow: none; color: var(--ink-2); }
 .btn.ghost:hover { background: var(--paper-2); }
-.btn.success { background: var(--moss); color: var(--fg-on-color); }
-.btn.success:hover { background: var(--moss-600); }
-.btn.danger { background: var(--bloom-50); color: var(--bloom-700); border: 1px solid var(--bloom-300); }
 .btn.block { width: 100%; }
 .btn.lg { padding: 14px 26px; font-size: 15px; }
-.btn.sm { padding: 7px 14px; font-size: 12px; }
-.btn.icon-only { padding: 0; width: 38px; height: 38px; flex-shrink: 0; }
-.btn.sm.icon-only { width: 34px; height: 34px; }
-.btn.disabled, .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn.disabled:hover, .btn:disabled:hover { transform: none; }
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-.badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover { transform: none; }
 
 .input,
 textarea.input {
@@ -419,107 +375,9 @@ textarea.input {
   }
 }
 
-.gate {
-  background: var(--card-tint);
-  border: 1px solid var(--border-soft);
-  border-radius: 16px;
-  padding: 18px;
-  text-align: center;
-}
-.gate h4 {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 700;
-  margin: 6px 0 4px;
-  letter-spacing: -0.01em;
-}
-.gate p {
-  font-size: 13px;
-  color: var(--ink-2);
-  margin: 0 0 12px;
-  line-height: 1.5;
-  text-wrap: pretty;
-}
-
-.toast {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--ink);
-  color: var(--fg-on-inverse);
-  padding: 11px 18px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: var(--shadow-3);
-  z-index: 200;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms, transform 240ms var(--ease-spring);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.toast.success { background: var(--moss-700); }
-
-.event-list { display: flex; flex-direction: column; gap: 8px; }
 .cf-clean-error { text-align: center; font-size: 12px; color: var(--bloom-700); margin-top: 8px; }
 .cf-host-row { display: flex; gap: 10px; }
 .cf-host-row > .field { flex: 1; }
-
-/* The entrance animation is transform-only, so it never shifts scrollHeight and the
-   auto-scroll-to-bottom stays accurate. */
-.msg {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  align-items: flex-end;
-  animation: cf-msg-in 0.24s ease-out;
-}
-.msg .bubble {
-  padding: 8px 12px;
-  border-radius: 18px;
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  font-size: 14px;
-  color: var(--ink);
-  max-width: 78%;
-  line-height: 1.4;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-  box-shadow: var(--shadow-1);
-}
-.msg.me { flex-direction: row-reverse; }
-.msg.me .bubble {
-  background: var(--bloom);
-  color: var(--fg-on-color);
-  border-color: var(--bloom);
-  border-bottom-right-radius: 4px;
-}
-.msg.me .bubble.pending { opacity: 0.7; }
-.msg:not(.me) .bubble { border-bottom-left-radius: 4px; }
-.msg .when {
-  font-size: 10px;
-  color: var(--ink-3);
-  align-self: flex-end;
-  margin-bottom: 6px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.msg .when.failed {
-  color: var(--bloom-700);
-  font-weight: 700;
-}
-@keyframes cf-msg-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 .cf-auth-header {
   padding: 28px 28px 22px;

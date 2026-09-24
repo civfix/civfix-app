@@ -13,7 +13,7 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 
 import type { ConsoleEventContext } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import { invalidateEvent } from "../console-invalidate"
+import { invalidateRoster } from "../console-invalidate"
 import { checkInSeats } from "./check-in-seats"
 import { checkableSeatIds } from "@civfix/shared/host"
 
@@ -35,7 +35,7 @@ function useAttendeeBulkMutations(
   const [confirmNoShow, setConfirmNoShow] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
 
-  const refresh = () => invalidateEvent(qc, eventId)
+  const refresh = () => invalidateRoster(qc, eventId)
   const toastFailure = (err: unknown) => toast.toast({ title: errors.message(err), tone: "danger" })
   const toastTally = (key: "bulk.checked_in" | "bulk.removed", done: number, failed: number) =>
     toast.toast({

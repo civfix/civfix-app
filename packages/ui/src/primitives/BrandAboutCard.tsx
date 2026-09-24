@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, useReducedMotion, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
@@ -32,15 +32,24 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
     if (Platform.OS === "web") closeRef.current?.focus()
   }, [])
 
+  const reducedMotion = useReducedMotion()
   const progress = useRef(new Animated.Value(0)).current
   useEffect(() => {
-    Animated.timing(progress, {
+    if (reducedMotion === null) return
+    if (reducedMotion) {
+      progress.setValue(1)
+      return
+    }
+    // `progress` feeds only opacity and transform, which the native driver can own.
+    const enter = Animated.timing(progress, {
       toValue: 1,
       duration: ENTER_MS,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start()
-  }, [progress])
+      useNativeDriver: Platform.OS !== "web",
+    })
+    enter.start()
+    return () => enter.stop()
+  }, [progress, reducedMotion])
 
   const donate = () => {
     void openExternal?.open(DONATE_URL)

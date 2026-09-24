@@ -21,6 +21,15 @@ export interface UseDraftOptions {
 const DRAFT_VERSION = "v1"
 const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
+// localStorage writes block the main thread, so a typing burst is serialized and stored once, after
+// it pauses, rather than on every keystroke.
+const DRAFT_WRITE_DELAY_MS = 500
+
+interface PendingWrite {
+  key: string
+  envelope: DraftEnvelope
+}
+
 interface DraftEnvelope {
   version: string
   savedAt: number
@@ -138,16 +147,50 @@ export function useDraft<T extends object>(
     }
   }, [key, skipRestore])
 
+  const pendingWrite = useRef<PendingWrite | null>(null)
+  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flushPendingWrite = useCallback(() => {
+    if (writeTimer.current !== null) {
+      clearTimeout(writeTimer.current)
+      writeTimer.current = null
+    }
+    const pending = pendingWrite.current
+    pendingWrite.current = null
+    if (pending) safeSet("local", pending.key, JSON.stringify(pending.envelope))
+  }, [])
+
   useEffect(() => {
     if (!dirty || typeof window === "undefined") return
-    const envelope: DraftEnvelope = {
-      version: DRAFT_VERSION,
-      savedAt: Date.now(),
-      owner: consoleDraftOwner(key),
-      value: draft,
+    if (pendingWrite.current && pendingWrite.current.key !== key) flushPendingWrite()
+    pendingWrite.current = {
+      key,
+      envelope: {
+        version: DRAFT_VERSION,
+        savedAt: Date.now(),
+        owner: consoleDraftOwner(key),
+        value: draft,
+      },
     }
-    safeSet("local", key, JSON.stringify(envelope))
-  }, [draft, dirty, key])
+    if (writeTimer.current !== null) clearTimeout(writeTimer.current)
+    writeTimer.current = setTimeout(flushPendingWrite, DRAFT_WRITE_DELAY_MS)
+  }, [draft, dirty, key, flushPendingWrite])
+
+  // A tab can be discarded after pagehide or once hidden without any unmount running, so the
+  // last keystrokes are written on those signals instead of waiting out the delay.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") flushPendingWrite()
+    }
+    window.addEventListener("pagehide", flushPendingWrite)
+    document.addEventListener("visibilitychange", flushWhenHidden)
+    return () => {
+      window.removeEventListener("pagehide", flushPendingWrite)
+      document.removeEventListener("visibilitychange", flushWhenHidden)
+      flushPendingWrite()
+    }
+  }, [flushPendingWrite])
 
   const setDraft = useCallback((next: T) => {
     setDirty(true)
@@ -162,11 +205,18 @@ export function useDraft<T extends object>(
   const dismissRestored = useCallback(() => setRestored(false), [])
 
   const clear = useCallback(() => {
+    if (pendingWrite.current?.key === key) {
+      if (writeTimer.current !== null) clearTimeout(writeTimer.current)
+      writeTimer.current = null
+      pendingWrite.current = null
+    } else {
+      flushPendingWrite()
+    }
     safeRemove("local", key)
     setDraftState(initialRef.current)
     setDirty(false)
     setRestored(false)
-  }, [key])
+  }, [key, flushPendingWrite])
 
   return { draft, setDraft, patch, dirty, restored, dismissRestored, clear }
 }

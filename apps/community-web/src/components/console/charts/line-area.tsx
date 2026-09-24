@@ -45,7 +45,6 @@ export function LineArea({
   const { locale } = useLocale()
   const { ref, width } = useMeasuredWidth<HTMLDivElement>()
   const [hover, setHover] = useState<number | null>(null)
-  const [tip, setTip] = useState<TooltipState | null>(null)
 
   const count = labels.length
   const plotW = Math.max(0, width - PLOT_PAD.left - PLOT_PAD.right)
@@ -64,25 +63,26 @@ export function LineArea({
     const x = event.clientX - rect.left
     const ratio = Math.min(1, Math.max(0, (x - PLOT_PAD.left) / plotW))
     const index = Math.round(ratio * (count - 1))
-    setHover(index)
-    setTip({
-      x: xAt(index),
-      y: PLOT_PAD.top,
-      title: labels[index] ?? "",
-      rows: series.map((s, si) => ({
-        label: s.label,
-        value: s.values[index] === null || s.values[index] === undefined
-          ? suppressedLabel
-          : formatCount(s.values[index] as number, locale, { compact: true }),
-        color: s.color ?? palette.seriesColor(si),
-      })),
-    })
+    if (index !== hover) setHover(index)
   }
 
-  const clearHover = () => {
-    setHover(null)
-    setTip(null)
-  }
+  const clearHover = () => setHover(null)
+
+  const tip: TooltipState | null =
+    hover === null
+      ? null
+      : {
+          x: xAt(hover),
+          y: PLOT_PAD.top,
+          title: labels[hover] ?? "",
+          rows: series.map((s, si) => ({
+            label: s.label,
+            value: s.values[hover] === null || s.values[hover] === undefined
+              ? suppressedLabel
+              : formatCount(s.values[hover] as number, locale, { compact: true }),
+            color: s.color ?? palette.seriesColor(si),
+          })),
+        }
 
   return (
     <ChartFrame

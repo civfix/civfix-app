@@ -92,6 +92,8 @@ const PHOTO_URL =
 
 const staticTheme = themeFor("light")
 
+const fakeCaps = makeFakeCapabilities()
+
 const avatarShadowStyle = staticTheme.shadows.s1
 
 /** data-section makes each block easy to target from the verification tooling. */
@@ -385,7 +387,7 @@ export default function PrimitivesGallery() {
   const [code, setCode] = useState("12")
 
   return (
-    <CapabilitiesProvider value={makeFakeCapabilities()}>
+    <CapabilitiesProvider value={fakeCaps}>
       <main
         style={{
           minHeight: "100vh",

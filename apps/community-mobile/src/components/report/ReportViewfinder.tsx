@@ -49,6 +49,25 @@ function stopRecordingQuietly(camera: Camera | null): void {
   camera?.stopRecording().catch(() => undefined)
 }
 
+// The badge owns its clock, so the 10 Hz tick re-renders this badge alone rather than the whole
+// viewfinder and its <Camera>. It mounts as recording starts, which restarts the count at zero.
+function RecordingBadge() {
+  const { t } = useT("mobile-report-camera")
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setElapsed((e) => Math.min(MAX_VIDEO_SECONDS, Math.round((e + 0.1) * 10) / 10))
+    }, ELAPSED_TICK_MS)
+    return () => clearInterval(tick)
+  }, [])
+  return (
+    <View style={cameraStyles.recBadge}>
+      <View style={cameraStyles.recDot} />
+      <Text style={cameraStyles.recText}>{t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}</Text>
+    </View>
+  )
+}
+
 async function readShutterLocation(): Promise<{ lat: number; lng: number } | null> {
   try {
     let granted =
@@ -93,14 +112,12 @@ export function ReportViewfinder({
   const [mode, setMode] = useState<ViewfinderCaptureMode>(initialMode)
   const [recording, setRecording] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [elapsed, setElapsed] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(mic.hasPermission)
   const pendingRecordRef = useRef(false)
   const parkedAtRef = useRef<number | null>(null)
   const recordingRef = useRef(false)
   const mountedRef = useRef(true)
   const hardStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const { sessionRunning, sessionRunningOnSurface, veto, previewEnabled, videoOutputEnabled } =
     useViewfinderSession({
@@ -118,22 +135,13 @@ export function ReportViewfinder({
       hardStopRef.current = null
     }
   }, [])
-  const clearTick = useCallback(() => {
-    if (tickRef.current) {
-      clearInterval(tickRef.current)
-      tickRef.current = null
-    }
-  }, [])
   const setRecordingState = useCallback(
     (next: boolean) => {
       recordingRef.current = next
       setRecording(next)
-      if (!next) {
-        clearHardStop()
-        clearTick()
-      }
+      if (!next) clearHardStop()
     },
-    [clearHardStop, clearTick],
+    [clearHardStop],
   )
 
   const stopIfRecording = useCallback(() => {
@@ -153,9 +161,8 @@ export function ReportViewfinder({
       pendingRecordRef.current = false
       parkedAtRef.current = null
       clearHardStop()
-      clearTick()
     }
-  }, [clearHardStop, clearTick])
+  }, [clearHardStop])
 
   const reportCaptureFailure = useCallback(
     (failure: CaptureFailure) => {
@@ -204,12 +211,7 @@ export function ReportViewfinder({
 
   const beginRecording = useCallback(() => {
     if (!cameraRef.current) return
-    setElapsed(0)
     setRecordingState(true)
-    clearTick()
-    tickRef.current = setInterval(() => {
-      setElapsed((e) => Math.min(MAX_VIDEO_SECONDS, Math.round((e + 0.1) * 10) / 10))
-    }, ELAPSED_TICK_MS)
     cameraRef.current.startRecording({
       fileType: "mp4",
       videoCodec: "h264",
@@ -237,7 +239,7 @@ export function ReportViewfinder({
       hardStopRef.current = null
       if (recordingRef.current) stopRecordingQuietly(cameraRef.current)
     }, MAX_VIDEO_SECONDS * 1000)
-  }, [clearHardStop, clearTick, emitCapture, reportCaptureFailure, setRecordingState])
+  }, [clearHardStop, emitCapture, reportCaptureFailure, setRecordingState])
 
   useEffect(() => {
     if (!pendingRecordRef.current) return
@@ -364,12 +366,7 @@ export function ReportViewfinder({
 
         <View style={cameraStyles.frame} pointerEvents="none" />
 
-        {recording ? (
-          <View style={cameraStyles.recBadge}>
-            <View style={cameraStyles.recDot} />
-            <Text style={cameraStyles.recText}>{t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}</Text>
-          </View>
-        ) : null}
+        {recording ? <RecordingBadge /> : null}
       </View>
 
       <View style={styles.controls}>

@@ -49,6 +49,11 @@ function chartPalette(scheme: ColorSchemeName): ChartPalette {
   }
 }
 
+const PALETTES: Readonly<Record<ColorSchemeName, ChartPalette>> = {
+  light: chartPalette("light"),
+  dark: chartPalette("dark"),
+}
+
 export function useChartPalette(): ChartPalette {
-  return chartPalette(useColorScheme())
+  return PALETTES[useColorScheme()]
 }

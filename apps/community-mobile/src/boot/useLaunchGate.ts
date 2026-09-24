@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import * as SplashScreen from "expo-splash-screen"
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
-import type { BootGateState } from "@/boot/bootGateModel"
+import type { BootPhase } from "@/boot/bootGateModel"
 import type { AuthStatus } from "@/lib/lifecycleTypes"
-import { useBootGate } from "@/hooks/useBootGate"
+import { useBootPhase } from "@/hooks/useBootGate"
 import { useOnboardingStore } from "@/store/onboardingStore"
 
 const SPLASH_WATCHDOG_MS = 5000
@@ -20,7 +20,7 @@ export interface LaunchGate {
   gateActive: boolean
   gateMounted: boolean
   gateStyle: ReturnType<typeof useAnimatedStyle>
-  boot: BootGateState
+  boot: { phase: BootPhase }
 }
 
 export function useLaunchGate({ loaded, error }: FontLoadState, status: AuthStatus): LaunchGate {
@@ -45,12 +45,12 @@ export function useLaunchGate({ loaded, error }: FontLoadState, status: AuthStat
     return () => clearTimeout(t)
   }, [fontsReady])
 
-  const boot = useBootGate()
+  const phase = useBootPhase()
 
   const gateActive =
     !fontsReady ||
-    boot.phase === "connecting" ||
-    boot.phase === "offline" ||
+    phase === "connecting" ||
+    phase === "offline" ||
     (status === "authed" && !minSplashElapsed)
 
   const setGateActive = useOnboardingStore((s) => s.setGateActive)
@@ -73,5 +73,5 @@ export function useLaunchGate({ loaded, error }: FontLoadState, status: AuthStat
     return () => clearTimeout(unmount)
   }, [gateActive, gateOpacity])
 
-  return { fontsReady, gateActive, gateMounted, gateStyle, boot }
+  return { fontsReady, gateActive, gateMounted, gateStyle, boot: { phase } }
 }

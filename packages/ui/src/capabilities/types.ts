@@ -9,6 +9,12 @@ export interface CapturedMedia {
   height?: number
   durationSec?: number
   location?: { lat: number; lng: number; source: "device" | "exif" }
+  /**
+   * Frees what the host allocated for `uri` (a web object URL and the bytes behind it). The holder
+   * calls it once, when nothing can render or upload the uri any more; hosts whose uris own no
+   * memory (native file paths) leave it out.
+   */
+  release?(): void
 }
 
 export interface PreparedUpload {
