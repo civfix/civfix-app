@@ -28,11 +28,7 @@ const hueRamp = (hue: string) => ({
 
 const config: Config = {
   darkMode: ["class"],
-  content: [
-    "./src/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-  ],
+  content: ["./src/**/*.{ts,tsx}"],
   theme: {
     container: {
       center: true,

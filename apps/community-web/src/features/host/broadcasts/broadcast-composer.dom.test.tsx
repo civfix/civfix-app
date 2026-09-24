@@ -125,6 +125,7 @@ describe("BroadcastComposer draft after a schedule or send", () => {
     const user = userEvent.setup()
     const client = renderComposer(broadcast())
     await user.type(screen.getByLabelText(/composer\.schedule_at/), "2026-09-19T08:30")
+    window.dispatchEvent(new Event("pagehide"))
     expect(storedDrafts()).toHaveLength(1)
 
     await user.click(screen.getByRole("button", { name: "composer.schedule_action" }))
@@ -136,6 +137,7 @@ describe("BroadcastComposer draft after a schedule or send", () => {
     const user = userEvent.setup()
     const client = renderComposer(broadcast())
     await user.type(screen.getByLabelText(/composer\.schedule_at/), "2026-09-19T08:30")
+    window.dispatchEvent(new Event("pagehide"))
     expect(storedDrafts()).toHaveLength(1)
 
     await user.click(screen.getByRole("button", { name: "composer.send" }))

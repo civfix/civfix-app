@@ -311,10 +311,11 @@ export function MembersBody({
 
   const threadRow = useThreadForRoom(roomKind, id)
   const muted = threadRow?.muted ?? false
-  const toggleMute = useToggleMute(roomKind, id)
+  const toggleMute = useToggleMute()
+  const { mutate: mutateMute } = toggleMute
   const onToggleMute = useCallback(() => {
-    toggleMute.mutate({ muted: !muted }, { onError: onMutationError })
-  }, [toggleMute, muted, onMutationError])
+    mutateMute({ roomKind, roomId: id, muted: !muted }, { onError: onMutationError })
+  }, [mutateMute, roomKind, id, muted, onMutationError])
 
   const leaveReportChat = useLeaveReportChat()
   const [leaveOpen, setLeaveOpen] = useState(false)

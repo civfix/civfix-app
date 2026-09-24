@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import type { SessionCheckResponse, OAuthProvider } from "@civfix/shared"
-import { api } from "@/api/client"
-import { withRequestDeadline } from "@/api/deadline"
+import type { OAuthProvider } from "@civfix/shared"
+import { sessionCheck } from "@/api/sessionCheck"
 
 // The welcome screen waits on this before showing its buttons, so a silent backend must not hold it for
 // the ~60s socket timeout.
@@ -15,10 +14,7 @@ function useEnabledProviders() {
   return useQuery<OAuthProvider[]>({
     queryKey: ["auth", "providers"],
     queryFn: async () => {
-      const session: SessionCheckResponse = await withRequestDeadline(
-        AUTH_PROVIDERS_DEADLINE_MS,
-        (signal) => api.session({ signal }),
-      )
+      const session = await sessionCheck(AUTH_PROVIDERS_DEADLINE_MS)
       return session.enabledProviders ?? [...ALL_OAUTH_PROVIDERS]
     },
     retry: 0,

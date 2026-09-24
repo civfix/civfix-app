@@ -33,9 +33,11 @@ function nav() {
   return useNavStore.getState()
 }
 
+// jsdom queues history traversals (and their popstate) as window timers, so fake timers drive the
+// browser's side and the controller's traversal timeout on one deterministic clock.
 async function wait(ms: number): Promise<void> {
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms))
+    await vi.advanceTimersByTimeAsync(ms)
   })
 }
 
@@ -141,6 +143,7 @@ function dropSecondGoOfEachTask(): void {
 }
 
 beforeEach(() => {
+  vi.useFakeTimers()
   window.history.replaceState(null, "", "/")
   useNavStore.setState({
     view: "home",

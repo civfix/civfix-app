@@ -206,8 +206,8 @@ export function toAppError(value: unknown): AppError {
 }
 
 /**
- * The typed api client bundles its own copy of AppError, so an error it throws is never `instanceof`
- * the AppError a caller imports; recognition is structural, by `isAppErrorLike`.
+ * An error from another copy of this package (a second install, a test realm) is never `instanceof` the
+ * caller's AppError; recognition is structural, by `isAppErrorLike`.
  */
 export function appErrorCode(err: unknown): ErrorCode | undefined {
   return isAppErrorLike(err) ? err.code : undefined

@@ -1,14 +1,11 @@
 import { create } from "zustand"
-import { isAppErrorLike, type UserDTO } from "@civfix/shared"
+import { isAppErrorLike, type SessionCheckResponse, type UserDTO } from "@civfix/shared"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"
 import type { AuthStatus } from "@/lib/lifecycleTypes"
-import {
-  SESSION_RESTORE_DEADLINE_MS,
-  isRequestDeadlineError,
-  withRequestDeadline,
-} from "@/api/deadline"
+import { SESSION_RESTORE_DEADLINE_MS, isRequestDeadlineError } from "@/api/deadline"
+import { sessionCheck } from "@/api/sessionCheck"
 import type { BootNetworkOutcome } from "@/boot/bootGateModel"
 import { readToken, setToken, clearToken } from "@/auth/storage"
 import { isForeignIdentity } from "@/lib/authLifecycle"
@@ -80,8 +77,8 @@ type SetAuthState = (next: {
   restoreStartedAt?: number
 }) => void
 
-function restoreSession(): Promise<Awaited<ReturnType<typeof api.session>>> {
-  return withRequestDeadline(SESSION_RESTORE_DEADLINE_MS, (signal) => api.session({ signal }))
+function restoreSession(): Promise<SessionCheckResponse> {
+  return sessionCheck(SESSION_RESTORE_DEADLINE_MS)
 }
 
 function reachabilityOutcome(err: unknown): BootNetworkOutcome {

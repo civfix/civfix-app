@@ -252,11 +252,12 @@ describe("a keystroke sequence over a warm cache never regresses to a spinner", 
 
 describe("SearchResults renders one coherent state at a time", () => {
   const source = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+  const model = readFileSync(new URL("../search/searchResultsModel.ts", import.meta.url), "utf8")
 
   it("gates every section header on the SETTLED results phase, never on a per-query flag", () => {
-    expect(source).toMatch(/\{view\.phase === "results" \? \(/)
+    expect(source).toMatch(/data=\{view\.phase === "results" \? rows : NO_ROWS\}/)
     for (const section of ["events", "reports", "people"]) {
-      expect(source).toMatch(new RegExp(`hits\\.${section}\\.length > 0 \\? \\(`))
+      expect(model).toMatch(new RegExp(`if \\(hits\\.${section}\\.length > 0\\) \\{`))
     }
     expect(source).not.toMatch(/peopleLoading/)
     expect(source).not.toMatch(/anyLoading/)
@@ -265,13 +266,19 @@ describe("SearchResults renders one coherent state at a time", () => {
 
   it("keeps section headers out of the DOM until the phase says results", () => {
     const sectionHeaders = [...source.matchAll(/<SectionHeader\b/g)]
-    expect(sectionHeaders).toHaveLength(3)
-    const resultsBranch = source.slice(source.indexOf('{view.phase === "results" ? ('))
-    for (const [tag] of sectionHeaders) expect(resultsBranch).toContain(tag)
+    expect(sectionHeaders).toHaveLength(1)
+    const renderItem = source.slice(source.indexOf("const renderItem = useCallback("), source.indexOf("const phaseState ="))
+    expect(renderItem).toMatch(/case "header":\s*return \(\s*<SectionHeader\b/)
+    for (const key of ["results.events", "results.reports", "results.people"]) {
+      expect(renderItem).toContain(`t("${key}")`)
+    }
+    expect(source.match(/renderItem=\{/g) ?? []).toHaveLength(1)
+    expect(source).toContain("renderItem={renderItem}")
   })
 
   it("shows result-shaped skeleton rows while loading - never a bare spinner", () => {
-    expect(source).toMatch(/\{view\.phase === "loading" \? \(/)
+    expect(source).toMatch(/view\.phase === "loading" \? \(/)
+    expect(source).toContain("ListEmptyComponent={phaseState}")
     expect(source).toMatch(/<SkeletonGroup>/)
     expect(source).toMatch(/<SkeletonList rows=\{\d+\} kind="report" style=\{styles\.group\} \/>/)
     expect(source).toMatch(/<SkeletonList rows=\{\d+\} kind="person" style=\{styles\.group\} \/>/)
@@ -291,7 +298,9 @@ describe("SearchResults renders one coherent state at a time", () => {
   })
 
   it("marks held results busy while the next answer is still in flight", () => {
-    expect(source).toMatch(/accessibilityState=\{\{ busy: !view\.settled \}\}/)
+    expect(source).toMatch(
+      /accessibilityState=\{view\.phase === "results" \? \{ busy: !view\.settled \} : undefined\}/,
+    )
   })
 
   it("records exactly what it paints, so a painted surface can never fall back to a spinner", () => {
@@ -316,7 +325,7 @@ describe("SearchResults renders one coherent state at a time", () => {
   })
 
   it("renders the empty state only on the empty phase", () => {
-    expect(source).toMatch(/\{view\.phase === "empty" \? \(/)
+    expect(source).toMatch(/view\.phase === "empty" \? \(/)
     expect(source).toMatch(/title=\{t\("search\.no_results_title"\)\}/)
     expect(source).not.toMatch(/groups\.length === 0 && !anyLoading/)
   })

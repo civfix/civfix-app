@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 
@@ -342,5 +342,69 @@ describe("removing the capture that placed the pin", () => {
     s.startFromCapture(located("a"))
     s.addCapture(cap("b", { location: { lat: 9, lng: 9, source: "device" } }))
     expect(useDraftReportStore.getState().draft.lat).toBe(1)
+  })
+})
+
+describe("releasing captures that leave the draft", () => {
+  beforeEach(() => useDraftReportStore.getState().reset())
+
+  function releasable(uri: string) {
+    const release = vi.fn()
+    return { media: cap(uri, { release }), release }
+  }
+
+  it("releases a removed capture once, and keeps the others", () => {
+    const a = releasable("blob:a")
+    const b = releasable("blob:b")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.addCapture(b.media)
+    s.removeMedia("blob:a")
+    expect(a.release).toHaveBeenCalledTimes(1)
+    expect(b.release).not.toHaveBeenCalled()
+    s.setTitle("still editing")
+    expect(a.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("releases every never-uploaded capture when the draft is discarded", () => {
+    const a = releasable("blob:a")
+    const b = releasable("blob:b")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.addCapture(b.media)
+    s.reset()
+    expect(a.release).toHaveBeenCalledTimes(1)
+    expect(b.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps an uploaded capture, which the success card or a local thumb may still show", () => {
+    const a = releasable("blob:a")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.setMediaUploadId(useDraftReportStore.getState().draft.media[0]!.id, "up_1")
+    s.reset()
+    expect(a.release).not.toHaveBeenCalled()
+    s.startFromCapture(cap("blob:a"))
+    s.reset()
+    expect(a.release).not.toHaveBeenCalled()
+  })
+
+  it("releases a capture the media cap turned away", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(cap("0"))
+    for (let i = 1; i < MAX_DRAFT_MEDIA; i++) s.addCapture(cap(String(i)))
+    const extra = releasable("blob:extra")
+    s.addCapture(extra.media)
+    expect(useDraftReportStore.getState().draft.media.map((m) => m.uri)).not.toContain("blob:extra")
+    expect(extra.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps a uri another item still shows", () => {
+    const first = releasable("same")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(first.media)
+    s.addCapture(cap("same"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(first.release).not.toHaveBeenCalled()
   })
 })

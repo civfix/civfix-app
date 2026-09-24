@@ -23,7 +23,11 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
+  // Entries share one copy of each module: unsplit, every subpath re-bundled its imports (the client
+  // entry alone carried the schemas and its own AppError), so Metro shipped both copies and `instanceof`
+  // failed across subpaths. CJS splitting is experimental in tsup: re-check `require` of every exports
+  // entry after a tsup upgrade.
+  splitting: true,
   treeshake: true,
   target: "es2022",
   outExtension({ format }) {

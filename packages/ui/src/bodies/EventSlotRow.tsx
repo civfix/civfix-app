@@ -5,9 +5,9 @@
  * The disclosure is a sibling of the pill, never its parent: react-native-web renders `Pressable` as a
  * `<button>`, and a nested button is invalid DOM the browser silently re-parents.
  */
-import React, { useCallback } from "react"
+import React, { memo, useCallback } from "react"
 import { View, Pressable, StyleSheet, Animated } from "react-native"
-import type { AttendeeDTO, EventSlotDTO } from "@civfix/shared"
+import type { AttendeeDTO, CleanupAttendeesResponse, EventSlotDTO } from "@civfix/shared"
 import {
   makeThemedStyles,
   useTheme,
@@ -23,7 +23,7 @@ import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { RoleChip } from "./RoleChip"
-import { FACE_CAP, FACE_NAME_CAP, facePileOverflow, type SlotPeopleView } from "./slotPeopleVisibility"
+import { FACE_CAP, FACE_NAME_CAP, facePileOverflow, slotPeopleView, type SlotPeopleView } from "./slotPeopleVisibility"
 import { slotRemaining, slotWindowRangeLabel, type SlotRowState } from "./eventSlotsModel"
 
 /**
@@ -387,7 +387,9 @@ function SlotFacePreview({
   )
 }
 
-export function SlotRow({
+// Memoized with slot-id handlers so a disclosure toggle or a parent re-render repaints only the rows whose
+// props changed, not the whole board.
+export const SlotRow = memo(function SlotRow({
   slot,
   state,
   busy,
@@ -397,7 +399,7 @@ export function SlotRow({
   showPill,
   expanded,
   people,
-  view,
+  peopleScope,
   peopleLoading,
   peopleErrored,
   nudgeToSignUp,
@@ -406,7 +408,7 @@ export function SlotRow({
   onToggle,
   onRetryPeople,
   onViewAll,
-  onPress,
+  onClaim,
 }: {
   slot: EventSlotDTO
   state: SlotRowState
@@ -424,17 +426,17 @@ export function SlotRow({
   showPill: boolean
   expanded: boolean
   people: readonly AttendeeDTO[]
-  view: SlotPeopleView
+  peopleScope: CleanupAttendeesResponse["scope"] | undefined
   peopleLoading: boolean
   peopleErrored: boolean
   nudgeToSignUp: boolean
   viewerId: string | null
   hostLabel: string
-  onToggle: () => void
+  onToggle: (slotId: string) => void
   onRetryPeople: () => void
   onViewAll: () => void
   /** Claim / switch / release. Absent for the two non-interactive states. */
-  onPress?: () => void
+  onClaim?: (slotId: string | null, tappedId: string, title: string) => void
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -457,6 +459,9 @@ export function SlotRow({
   const metaParts = [windowText, line].filter((part): part is string => part !== null)
 
   const tile = <SlotTile owned={owned} state={state} />
+  const view = slotPeopleView({ scope: peopleScope, claimed: slot.claimed, shown: people.length })
+  const onDisclosurePress = () => onToggle(slot.id)
+  const onPress = onClaim ? () => onClaim(mine ? null : slot.id, slot.id, slot.title) : undefined
   const pill =
     showPill && state !== "readonly" ? (
       <SlotPill slot={slot} state={state} busy={busy} pending={pending} onPress={onPress} />
@@ -476,7 +481,7 @@ export function SlotRow({
     >
       <View style={styles.rowMain}>
         <Pressable
-          onPress={onToggle}
+          onPress={onDisclosurePress}
           accessibilityRole="button"
           accessibilityState={{ expanded }}
           accessibilityLabel={disclosureLabel}
@@ -551,7 +556,7 @@ export function SlotRow({
       ) : null}
     </View>
   )
-}
+})
 
 const useStyles = makeThemedStyles((t) => ({
   row: {

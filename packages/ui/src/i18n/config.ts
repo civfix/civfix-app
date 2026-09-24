@@ -9,24 +9,32 @@
 import i18next, { type i18n as I18nInstance } from "i18next"
 import { initReactI18next } from "react-i18next"
 import { LocaleEnum, type SupportedLocale } from "@civfix/shared"
-import { namespaces, resources } from "./resources"
+import { initialResources } from "./bundledCatalogs"
+import { namespaces } from "./catalogs/namespaces"
 import { FALLBACK_LOCALE } from "./resolveLocale"
 
 const defaultNS = "common"
 
+/**
+ * Starts in `locale` only when its catalogs are bundled; otherwise in the fallback, because a language
+ * without catalogs would render English while claiming to be `locale`. I18nProvider loads the rest.
+ */
 export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInstance {
   const instance = i18next.createInstance()
   void instance.use(initReactI18next).init({
-    lng: locale,
+    lng: locale in initialResources ? locale : FALLBACK_LOCALE,
     fallbackLng: FALLBACK_LOCALE,
     supportedLngs: LocaleEnum.options,
     ns: namespaces as unknown as string[],
     defaultNS,
-    resources,
+    // A copy, because i18next adds loaded catalogs into the object it is given, and that object is a
+    // module singleton shared by every instance.
+    resources: { ...initialResources },
     returnNull: false,
     returnEmptyString: true,
     interpolation: { escapeValue: false },
-    // Resources are bundled, so there is nothing to suspend on, and no <Suspense> boundary exists.
+    // A catalog is added before its language is activated, so there is nothing to suspend on, and no
+    // <Suspense> boundary exists.
     react: { useSuspense: false },
   })
   return instance

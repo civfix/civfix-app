@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from "react"
+import React, { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
@@ -116,13 +116,18 @@ export function MemberPicker({
   const [query, setQuery] = useState("")
   const [focused, setFocused] = useState(false)
   const search = useUserSearch(query)
-  const results = filterExcluded(search.data?.results ?? [], excludeIds)
+  const searchResults = search.data?.results
   const typed = normalizeUserSearchTerm(query)
   const hasQuery = typed.length > 0
   const searchPending = search.isLoading || search.term !== typed
-  const suggestions = filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds)
+  // Memoized so a keystroke that has not changed the results hands the list the same `data`.
+  const suggestions = useMemo(() => filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds), [suggested, excludeIds])
   const showSuggestions = !hasQuery && suggestions.length > 0
-  const rows = showSuggestions ? suggestions : results
+  const rows = useMemo(
+    () => (showSuggestions ? suggestions : filterExcluded(searchResults ?? NO_SUGGESTIONS, excludeIds)),
+    [showSuggestions, suggestions, searchResults, excludeIds],
+  )
+  const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])
 
   const onToggle = useCallback(
     (person: UserSearchResultDTO) => {
@@ -140,11 +145,11 @@ export function MemberPicker({
     ({ item }: { item: UserSearchResultDTO }) => (
       <ResultRow
         person={item}
-        selected={selected.some((p) => p.id === item.id)}
+        selected={selectedIds.has(item.id)}
         onToggle={onToggle}
       />
     ),
-    [selected, onToggle],
+    [selectedIds, onToggle],
   )
 
   return (

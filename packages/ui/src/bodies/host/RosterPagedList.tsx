@@ -1,12 +1,12 @@
 import React, { useCallback } from "react"
 import { View } from "react-native"
-import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { TextLink } from "../../typography"
 import { useT } from "../../i18n"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
-import { RosterCheckinList } from "./RosterCheckinList"
+import { RosterCheckinList, type RosterCheckinListProps } from "./RosterCheckinList"
+import { requestNextRosterPage, type RosterPaging } from "./rosterListModel"
 
 export interface RosterSearchFieldProps {
   value: string
@@ -43,48 +43,40 @@ export function RosterSearchField({
   )
 }
 
-export interface RosterPaging {
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  fetchNextPage: () => Promise<unknown>
-}
-
-export interface RosterPagedListProps {
-  rows: readonly EventRegistrationDTO[]
-  slots: readonly EventSlotDTO[]
-  timeZone: string | undefined
-  canCheckIn: boolean
-  pending: boolean
-  onCheckIn: (seatId: string) => void
-  onUndo: (seatId: string) => void
+export interface RosterPagedListProps extends RosterCheckinListProps {
   paging: RosterPaging
 }
 
 export function RosterPagedList({ paging, ...list }: RosterPagedListProps) {
-  const styles = useStyles()
-  const { t } = useT("host-common")
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } = paging
-  const loadMore = useCallback(() => {
-    if (!hasNextPage || isFetchingNextPage) return
-    void fetchNextPage()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
   return (
     <View>
       <RosterCheckinList {...list} />
-      {hasNextPage ? (
-        <View style={styles.more}>
-          <TextLink
-            variant="label"
-            standalone
-            disabled={isFetchingNextPage}
-            onPress={loadMore}
-            accessibilityLabel={t("roster.load_more_a11y")}
-          >
-            {isFetchingNextPage ? t("roster.loading_more") : t("roster.load_more")}
-          </TextLink>
-        </View>
-      ) : null}
+      <RosterLoadMore paging={paging} />
+    </View>
+  )
+}
+
+export function RosterLoadMore({ paging }: { paging: RosterPaging }) {
+  const styles = useStyles()
+  const { t } = useT("host-common")
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = paging
+  const loadMore = useCallback(
+    () => requestNextRosterPage({ fetchNextPage, hasNextPage, isFetchingNextPage }),
+    [fetchNextPage, hasNextPage, isFetchingNextPage],
+  )
+
+  if (!hasNextPage) return null
+  return (
+    <View style={styles.more}>
+      <TextLink
+        variant="label"
+        standalone
+        disabled={isFetchingNextPage}
+        onPress={loadMore}
+        accessibilityLabel={t("roster.load_more_a11y")}
+      >
+        {isFetchingNextPage ? t("roster.loading_more") : t("roster.load_more")}
+      </TextLink>
     </View>
   )
 }

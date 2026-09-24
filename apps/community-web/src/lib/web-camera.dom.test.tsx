@@ -42,3 +42,21 @@ describe("webCamera picker settling", () => {
     vi.unstubAllGlobals()
   })
 })
+
+describe("webCamera release", () => {
+  it("revokes the capture's object-URL once, through the media's own release", async () => {
+    const revoke = vi.fn()
+    vi.stubGlobal(
+      "URL",
+      Object.assign(URL, { createObjectURL: () => "blob:released", revokeObjectURL: revoke }),
+    )
+    const file = new File(["x"], "clip.mp4", { type: "video/mp4" })
+    const media = await webCamera.acceptFile?.(file)
+    expect(media?.uri).toBe("blob:released")
+    media?.release?.()
+    media?.release?.()
+    expect(revoke).toHaveBeenCalledTimes(1)
+    expect(revoke).toHaveBeenCalledWith("blob:released")
+    vi.unstubAllGlobals()
+  })
+})

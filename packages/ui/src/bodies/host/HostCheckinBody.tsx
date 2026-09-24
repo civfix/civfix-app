@@ -1,4 +1,6 @@
 import React from "react"
+import { View } from "react-native"
+import type { EventSlotDTO } from "@civfix/shared"
 import { makeThemedStyles } from "../../theme"
 import { Text, iconMap } from "../../typography"
 import { PrimaryButton } from "../../primitives"
@@ -7,17 +9,25 @@ import { useAuthState, useCleanup } from "../../data"
 import { cleanupHostStanding, hasHostCapability, useHostCounters } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
+import { rosterListKey } from "../rosterSlotGroups"
 import { CheckinCounters, CheckinResultCard, OutboxBanner, ReplayReportCard } from "./checkin/CheckinDeskCards"
 import { ManualCodeEntry } from "./checkin/CheckinManualEntry"
 import { HostBodyState } from "./HostBodyState"
 import { CheckinRosterSection } from "./checkin/CheckinRosterSection"
+import { checkinRosterListed } from "./checkin/checkinRosterModel"
+import { useRosterItemRenderer, useRosterListItems } from "./RosterCheckinList"
+import { RosterLoadMore } from "./RosterPagedList"
+import type { RosterCheckinItem } from "./rosterListModel"
 import { useCheckinRoster } from "./checkin/useCheckinRoster"
 import { useCheckinDesk } from "./checkin/useCheckinDesk"
+
+const NO_SLOTS: readonly EventSlotDTO[] = []
+const NO_ROSTER_ITEMS: readonly RosterCheckinItem[] = []
 
 export function HostCheckinBody({ id }: { id: string }) {
   const styles = useStyles()
   const { t } = useT("host-checkin")
-  const { ScrollView } = useScrollHost()
+  const { FlatList } = useScrollHost()
 
   const cleanup = useCleanup(id)
   const desk = useCheckinDesk(id)
@@ -27,6 +37,14 @@ export function HostCheckinBody({ id }: { id: string }) {
   const canCheckIn = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "check_in")
   const counters = useHostCounters(id, { enabled: canCheckIn })
   const rosterState = useCheckinRoster(id, canCheckIn, desk.undo)
+  const rosterItems = useRosterListItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)
+  const renderRosterItem = useRosterItemRenderer({
+    timeZone: cleanup.data?.timezone ?? undefined,
+    canCheckIn,
+    pending: rosterState.pending,
+    onCheckIn: rosterState.onRosterCheckIn,
+    onUndo: rosterState.onRosterUndo,
+  })
 
   if (cleanup.isLoading) {
     return <HostBodyState state="loading" t={t} />
@@ -41,74 +59,78 @@ export function HostCheckinBody({ id }: { id: string }) {
   }
 
   const { outbox } = desk
+  const rosterListed = checkinRosterListed(rosterState.roster, rosterState.waiting)
 
   return (
-    <ScrollView
+    <FlatList
+      data={rosterListed ? rosterItems : NO_ROSTER_ITEMS}
+      keyExtractor={rosterListKey}
+      renderItem={renderRosterItem}
       style={styles.scroll}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-    >
-      <CheckinCounters counters={counters} />
+      ListHeaderComponent={
+        <View style={[styles.desk, rosterListed ? styles.deskAboveRoster : null]}>
+          <CheckinCounters counters={counters} />
 
-      {outbox.pending > 0 ? (
-        <OutboxBanner
-          pending={outbox.pending}
-          replaying={outbox.replaying}
-          onRetry={() => void outbox.replay()}
-        />
-      ) : null}
+          {outbox.pending > 0 ? (
+            <OutboxBanner
+              pending={outbox.pending}
+              replaying={outbox.replaying}
+              onRetry={() => void outbox.replay()}
+            />
+          ) : null}
 
-      {outbox.report ? <ReplayReportCard report={outbox.report} onDismiss={outbox.dismissReport} /> : null}
+          {outbox.report ? <ReplayReportCard report={outbox.report} onDismiss={outbox.dismissReport} /> : null}
 
-      {desk.state ? (
-        <CheckinResultCard
-          state={desk.state}
-          undoPending={desk.undo.isPending}
-          onUndo={desk.onUndo}
-          onDismiss={desk.dismissResult}
-        />
-      ) : null}
+          {desk.state ? (
+            <CheckinResultCard
+              state={desk.state}
+              undoPending={desk.undo.isPending}
+              onUndo={desk.onUndo}
+              onDismiss={desk.dismissResult}
+            />
+          ) : null}
 
-      {canScan ? (
-        <PrimaryButton
-          label={t("action.scan")}
-          icon={iconMap.ScanLine}
-          onPress={desk.onScan}
-          loading={desk.scan.isPending}
-        />
-      ) : (
-        <Text style={styles.muted}>{t("action.scan_unavailable")}</Text>
-      )}
+          {canScan ? (
+            <PrimaryButton
+              label={t("action.scan")}
+              icon={iconMap.ScanLine}
+              onPress={desk.onScan}
+              loading={desk.scan.isPending}
+            />
+          ) : (
+            <Text style={styles.muted}>{t("action.scan_unavailable")}</Text>
+          )}
 
-      <ManualCodeEntry
-        code={desk.code}
-        onChangeCode={desk.setCode}
-        onSubmit={desk.onSubmitCode}
-        busy={desk.scan.isPending}
-        focused={desk.codeFocused}
-        onFocusChange={desk.setCodeFocused}
-      />
+          <ManualCodeEntry
+            code={desk.code}
+            onChangeCode={desk.setCode}
+            onSubmit={desk.onSubmitCode}
+            busy={desk.scan.isPending}
+            focused={desk.codeFocused}
+            onFocusChange={desk.setCodeFocused}
+          />
 
-      {desk.errorText ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {desk.errorText}
-        </Text>
-      ) : null}
+          {desk.errorText ? (
+            <Text style={styles.error} accessibilityRole="alert">
+              {desk.errorText}
+            </Text>
+          ) : null}
 
-      <CheckinRosterSection
-        cleanup={cleanup.data}
-        search={rosterState.rosterSearch}
-        onSearchChange={rosterState.setRosterSearch}
-        searchFocused={rosterState.rosterFocused}
-        onSearchFocusChange={rosterState.setRosterFocused}
-        roster={rosterState.roster}
-        waiting={rosterState.waiting}
-        pending={rosterState.pending}
-        onCheckIn={rosterState.onRosterCheckIn}
-        onUndo={rosterState.onRosterUndo}
-      />
-    </ScrollView>
+          <CheckinRosterSection
+            search={rosterState.rosterSearch}
+            onSearchChange={rosterState.setRosterSearch}
+            searchFocused={rosterState.rosterFocused}
+            onSearchFocusChange={rosterState.setRosterFocused}
+            roster={rosterState.roster}
+            waiting={rosterState.waiting}
+          />
+        </View>
+      }
+      ListFooterComponent={rosterListed ? <RosterLoadMore paging={rosterState.roster} /> : null}
+    />
   )
 }
 
@@ -120,7 +142,12 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
     paddingBottom: t.space["10"],
+  },
+  desk: {
     gap: t.space["4"],
+  },
+  deskAboveRoster: {
+    paddingBottom: t.space["2"],
   },
   muted: {
     fontFamily: t.fontFamily.bodyRegular,

@@ -96,12 +96,15 @@ export function useAudiencePreview(
   return useQuery<BroadcastPreviewDTO>({
     queryKey: queryKeys.eventAudiencePreview(cleanupId ?? "unknown", audienceKey(audience)),
     enabled: !!cleanupId && (opts.enabled ?? true),
-    queryFn: () =>
-      api.previewEventBroadcast({
-        id: cleanupId as string,
-        segment: audience,
-        channels: [...ANNOUNCEMENT_CHANNELS],
-      }),
+    queryFn: ({ signal }) =>
+      api.previewEventBroadcast(
+        {
+          id: cleanupId as string,
+          segment: audience,
+          channels: [...ANNOUNCEMENT_CHANNELS],
+        },
+        { signal },
+      ),
     staleTime: AUDIENCE_PREVIEW_DEBOUNCE_MS,
     retry: false,
   })

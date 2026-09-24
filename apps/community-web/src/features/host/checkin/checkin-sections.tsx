@@ -39,7 +39,7 @@ import { checkInSeats } from "../attendees/check-in-seats"
 import type { useConsoleRoster } from "../attendees/use-roster"
 import {
   invalidateCheckinCounters,
-  invalidateEvent,
+  invalidateRoster,
   markRosterSeatsCheckedIn,
 } from "../console-invalidate"
 
@@ -105,7 +105,7 @@ export function ManualCheckinForm({
     onSuccess: (res) => {
       onResult(res)
       setCode("")
-      invalidateEvent(qc, eventId)
+      invalidateRoster(qc, eventId)
     },
     onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
   })
@@ -360,7 +360,7 @@ export function WalkupSheet({
         setName("")
         setParty(WALKUP_MIN_PARTY)
         setTicketTypeId("")
-        invalidateEvent(qc, eventId)
+        invalidateRoster(qc, eventId)
       } else {
         toast.toast({ title: t(`walkup.outcome_${res.outcome}`), tone: "danger" })
       }

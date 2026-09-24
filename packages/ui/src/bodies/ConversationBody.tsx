@@ -289,7 +289,8 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     hasViewReport: Boolean(onViewReportProp),
   })
 
-  const toggleMute = useToggleMute(roomKind, id)
+  const toggleMute = useToggleMute()
+  const { mutate: mutateMute } = toggleMute
   const joinGroup = useJoinGroup()
   const onJoinChannel = useCallback(() => {
     if (joinGroup.isPending) return
@@ -298,8 +299,8 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const leaveChat = useLeaveReportChat()
   const onToggleMute = useCallback(() => {
     setMenuOpen(false)
-    toggleMute.mutate({ muted: !meta.muted })
-  }, [toggleMute, meta.muted])
+    mutateMute({ roomKind, roomId: id, muted: !meta.muted })
+  }, [mutateMute, roomKind, id, meta.muted])
   const onLeaveChat = useCallback(() => {
     setMenuOpen(false)
     leaveChat.mutate(id, { onSuccess: () => onBack() })

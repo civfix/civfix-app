@@ -242,7 +242,7 @@ export function LogHoursEditor({
   )
 }
 
-function HoursRow({
+const HoursRow = React.memo(function HoursRow({
   attendee,
   draft,
   loggedAt,
@@ -320,7 +320,7 @@ function HoursRow({
       ) : null}
     </View>
   )
-}
+})
 
 const useStyles = makeThemedStyles((t) => ({
   openBtn: {

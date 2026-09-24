@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
 import { focusRingProps, makeThemedStyles, motion, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
@@ -44,21 +44,25 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
     return () => animation.stop()
   }, [visible, progress])
 
-  if (!visible) return null
-
-  const motionStyle = reducedMotion
-    ? { opacity: progress }
-    : {
-        opacity: progress,
-        transform: [
-          {
-            translateY: progress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-ENTER.distance, 0],
-            }),
+  const motionStyle = useMemo(
+    () =>
+      reducedMotion
+        ? { opacity: progress }
+        : {
+            opacity: progress,
+            transform: [
+              {
+                translateY: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-ENTER.distance, 0],
+                }),
+              },
+            ],
           },
-        ],
-      }
+    [reducedMotion, progress],
+  )
+
+  if (!visible) return null
 
   return (
     <Animated.View style={[styles.slot, motionStyle]} pointerEvents="box-none">

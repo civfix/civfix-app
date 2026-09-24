@@ -68,10 +68,12 @@ export function InvitationsSection() {
     [declineOrgMutate, onInviteError],
   )
 
+  const { isError: eventInvitesError, refetch: refetchEventInvites } = eventInvites
+  const { isError: orgInvitesError, refetch: refetchOrgInvites } = orgInvites
   const onRetryInvites = useCallback(() => {
-    if (eventInvites.isError) void eventInvites.refetch()
-    if (orgInvites.isError) void orgInvites.refetch()
-  }, [eventInvites, orgInvites])
+    if (eventInvitesError) void refetchEventInvites()
+    if (orgInvitesError) void refetchOrgInvites()
+  }, [eventInvitesError, refetchEventInvites, orgInvitesError, refetchOrgInvites])
 
   const pendingEventInviteId =
     (acceptEvent.isPending ? acceptEvent.variables?.inviteId : undefined) ??
@@ -87,7 +89,7 @@ export function InvitationsSection() {
       eventInvites={pendingEventInvites}
       orgInvites={pendingOrgInvites}
       invitesPending={eventInvites.isPending || orgInvites.isPending}
-      invitesError={eventInvites.isError || orgInvites.isError}
+      invitesError={eventInvitesError || orgInvitesError}
       onRetryInvites={onRetryInvites}
       eventRoleLabel={eventRoleLabel}
       orgRoleLabel={orgRoleLabel}

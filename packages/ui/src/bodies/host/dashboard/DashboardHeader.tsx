@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { View } from "react-native"
 import type { HostPortfolioKpis, OrganizationDTO } from "@civfix/shared"
 import { headingLevel, makeThemedStyles } from "../../../theme"
@@ -37,9 +37,14 @@ export function DashboardHeader({ scope, kpis, teaching, scopeMenu, onCreate }: 
   const { user } = useAuthState()
 
   const scopeName = scope.org?.name ?? t("scope.you")
-  const scopeIcon = scope.org
-    ? avatarIcon(scope.org.name, scope.org.id, scope.org.logoUrl ?? null)
-    : avatarIcon(user?.displayName ?? t("scope.you"), user?.id ?? SCOPE_MENU_SELF, user?.avatarUrl ?? null)
+  const avatarName = scope.org ? scope.org.name : (user?.displayName ?? t("scope.you"))
+  const avatarSeed = scope.org ? scope.org.id : (user?.id ?? SCOPE_MENU_SELF)
+  const avatarPhoto = scope.org ? (scope.org.logoUrl ?? null) : (user?.avatarUrl ?? null)
+  // A new component type per render would remount the avatar image on every dashboard tick.
+  const scopeIcon = useMemo(
+    () => avatarIcon(avatarName, avatarSeed, avatarPhoto),
+    [avatarName, avatarSeed, avatarPhoto],
+  )
 
   return (
     <View style={styles.header}>

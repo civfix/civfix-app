@@ -45,6 +45,7 @@ import {
   clusterFallbackZoom,
   clusterListReports,
   clusterPressTarget,
+  sameRenderedNode,
   WORLD_BBOX,
   type ClusterNode,
   type MapClusterIndex,
@@ -67,6 +68,15 @@ interface MarkerNodeProps {
   markerId: string
   active: boolean
   onPress: (event: MarkerPressEvent) => void
+}
+
+function sameMarkerNodeProps(prev: MarkerNodeProps, next: MarkerNodeProps): boolean {
+  return (
+    prev.markerId === next.markerId &&
+    prev.active === next.active &&
+    prev.onPress === next.onPress &&
+    sameRenderedNode(prev.node, next.node)
+  )
 }
 
 const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }: MarkerNodeProps) {
@@ -111,7 +121,7 @@ const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }:
       </View>
     </Marker>
   )
-})
+}, sameMarkerNodeProps)
 
 interface TargetMarkerProps {
   target: FocusedEntity

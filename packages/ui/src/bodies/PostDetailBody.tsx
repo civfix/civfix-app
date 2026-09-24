@@ -48,7 +48,7 @@ export function PostDetailBody({ id }: { id: string }) {
       showsVerticalScrollIndicator={false}
     >
       <ProfileTimelineLane bleed={0}>
-        <PostCard post={query.data} onOpenPost={(postId) => useNavStore.getState().push({ kind: "post-thread", id: postId })} />
+        <PostCard post={query.data} />
       </ProfileTimelineLane>
       <Pressable
         accessibilityRole="button"

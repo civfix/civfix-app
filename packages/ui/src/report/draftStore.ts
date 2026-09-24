@@ -102,6 +102,30 @@ const EMPTY: DraftReport = {
 
 export type DraftMediaInput = Omit<DraftMedia, "id">
 
+const releaseByUri = new Map<string, () => void>()
+
+function holdRelease(media: CapturedMedia, kept: boolean): void {
+  const release = media.release
+  if (!release) return
+  if (!kept) release.call(media)
+  else releaseByUri.set(media.uri, () => release.call(media))
+}
+
+// An uploaded item may still be on screen after it leaves the draft (the success card, a composer
+// attachment, a feed card's local thumb), so only a never-uploaded capture is freed here; an uploaded
+// one lives as long as the page, as before.
+function releaseDroppedMedia(next: readonly DraftMedia[], previous: readonly DraftMedia[]): void {
+  if (next === previous || releaseByUri.size === 0) return
+  const remaining = new Set(next.map((m) => m.uri))
+  for (const m of previous) {
+    if (remaining.has(m.uri)) continue
+    const release = releaseByUri.get(m.uri)
+    if (release === undefined) continue
+    releaseByUri.delete(m.uri)
+    if (m.uploadId === undefined) release()
+  }
+}
+
 function draftMediaFromCapture(media: CapturedMedia): DraftMedia {
   return {
     id: randomId(),
@@ -189,6 +213,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   startFromCapture: (media) => {
     const capturedAt = new Date().toISOString()
     const seeded = draftMediaFromCapture(media)
+    holdRelease(media, true)
     set((s) => {
       const prefilled =
         s.draft.locationPrefilled && s.draft.lat != null && s.draft.lng != null
@@ -222,9 +247,9 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     })
   },
 
-  addCapture: (media) =>
+  addCapture: (media) => {
+    const added = draftMediaFromCapture(media)
     set((s) => {
-      const added = draftMediaFromCapture(media)
       const becomesLocationSource = s.draft.media.length === 0 && s.draft.lat == null && media.location != null
       return {
         draft: {
@@ -240,7 +265,9 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
             : {}),
         },
       }
-    }),
+    })
+    holdRelease(media, get().draft.media.some((m) => m.id === added.id))
+  },
   addMedia: (media) =>
     set((s) => ({
       draft: {
@@ -278,5 +305,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       freshSeeds: s.freshSeeds + 1,
     })),
 }))
+
+useDraftReportStore.subscribe((state, previous) => releaseDroppedMedia(state.draft.media, previous.draft.media))
 
 registerViewerScopedDrafts(useDraftReportStore, { discard: () => useDraftReportStore.getState().reset() })

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO, PostDTO } from "@civfix/shared"
 import { useTheme } from "../theme"
 import { Text, iconMap } from "../typography"
 import { EmptyState } from "../primitives"
@@ -20,10 +20,14 @@ import { PersonDetailSkeleton } from "./personDetail/PersonDetailSkeleton"
 import { PersonEventsTab, hasPersonEvents } from "./personDetail/PersonEventsTab"
 import { PersonHero } from "./personDetail/PersonHero"
 import { PersonModerationLayer } from "./personDetail/PersonModerationLayer"
-import { PersonPostsTab } from "./personDetail/PersonPostsTab"
+import { PersonPostsFooter, PersonPostsHead, renderPersonPost } from "./personDetail/PersonPostsTab"
+import { personPostsListed } from "./personDetail/personPostsModel"
 import { usePersonModeration } from "./personDetail/usePersonModeration"
 import { usePersonDetailStyles } from "./personDetail/personDetailStyles"
 import { DetailBodyHeader } from "./DetailBodyHeader"
+import { idKeyExtractor } from "../primitives/listKeys"
+
+const NO_POSTS: readonly PostDTO[] = []
 
 function PersonScroll({ children }: { children: React.ReactNode }) {
   const styles = usePersonDetailStyles()
@@ -44,6 +48,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const th = useTheme()
   const { t } = useT("profile-person")
   const { t: tNav } = useT("nav")
+  const { FlatList } = useScrollHost()
   const back = onBack ?? useNavStore.getState().back
   const { start } = useStartDm()
   const query = useProfile(id)
@@ -177,49 +182,67 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
     reports: false,
   })
 
+  const postsTab = tabsModel.active === "posts"
+  const postsState = {
+    loading: postsQuery.isLoading,
+    error: postsQuery.isError,
+    postItems,
+  }
+  const postsListed = postsTab && personPostsListed(postsState)
+
   return (
     <View style={styles.root}>
       {header}
-      <PersonScroll>
-        <PersonHero profile={profile} onOpenConnections={onOpenConnections} />
+      <FlatList
+        data={postsListed ? postItems : NO_POSTS}
+        keyExtractor={idKeyExtractor}
+        renderItem={renderPersonPost}
+        style={styles.scroll}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={styles.listInset}>
+            <PersonHero profile={profile} onOpenConnections={onOpenConnections} />
 
-        <PersonActions
-          profile={profile}
-          profilePath={profilePath}
-          onMessage={onMessage}
-          menuAnchorRef={moderation.menuAnchorRef}
-          menuOpen={moderation.menuOpen}
-          onOpenMenu={moderation.openMenu}
-        />
+            <PersonActions
+              profile={profile}
+              profilePath={profilePath}
+              onMessage={onMessage}
+              menuAnchorRef={moderation.menuAnchorRef}
+              menuOpen={moderation.menuOpen}
+              onOpenMenu={moderation.openMenu}
+            />
 
-        <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
+            <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
 
-        {tabsModel.active === "posts" ? (
-          <PersonPostsTab
-            loading={postsQuery.isLoading}
-            error={postsQuery.isError}
-            hasMore={postsQuery.hasNextPage}
-            loadingMore={postsQuery.isFetchingNextPage}
-            postItems={postItems}
-            onLoadMorePosts={onLoadMorePosts}
-          />
-        ) : null}
+            {postsTab ? <PersonPostsHead {...postsState} /> : null}
 
-        {tabsModel.active === "events" && !hasEvents ? (
-          <Text style={styles.postsState}>{t("events.empty")}</Text>
-        ) : null}
-        {tabsModel.active === "events" && hasEvents ? (
-          <PersonEventsTab eventSplit={eventSplit} pastEvents={pastEvents} onOpenEvent={onOpenEvent} />
-        ) : null}
+            {tabsModel.active === "events" && !hasEvents ? (
+              <Text style={styles.postsState}>{t("events.empty")}</Text>
+            ) : null}
+            {tabsModel.active === "events" && hasEvents ? (
+              <PersonEventsTab eventSplit={eventSplit} pastEvents={pastEvents} onOpenEvent={onOpenEvent} />
+            ) : null}
 
-        {tabsModel.active === "hours" ? (
-          <ServiceHoursSection
-            variant="public"
-            userId={profile.id}
-            totalHours={profile.volunteerHours}
-          />
-        ) : null}
-      </PersonScroll>
+            {tabsModel.active === "hours" ? (
+              <ServiceHoursSection
+                variant="public"
+                userId={profile.id}
+                totalHours={profile.volunteerHours}
+              />
+            ) : null}
+          </View>
+        }
+        ListFooterComponent={
+          postsListed ? (
+            <PersonPostsFooter
+              hasMore={postsQuery.hasNextPage}
+              loadingMore={postsQuery.isFetchingNextPage}
+              onLoadMorePosts={onLoadMorePosts}
+            />
+          ) : null
+        }
+      />
 
       <PersonModerationLayer name={profile.name} menuItems={menuItems} moderation={moderation} />
     </View>

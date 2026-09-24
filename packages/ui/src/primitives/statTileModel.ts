@@ -22,9 +22,20 @@ export function formatStatValue(value: number | null, locale: string = FALLBACK_
   return formatCount(value, locale)
 }
 
+// Intl constructors are costly on Hermes and every rate tile formats on each render.
+const percentFormatters = new Map<string, Intl.NumberFormat>()
+
+function percentFormatter(locale: string): Intl.NumberFormat {
+  const cached = percentFormatters.get(locale)
+  if (cached !== undefined) return cached
+  const made = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 })
+  percentFormatters.set(locale, made)
+  return made
+}
+
 export function formatRate(rate: number | null, locale: string = FALLBACK_LOCALE): string | null {
   if (rate === null || !Number.isFinite(rate)) return null
-  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(rate)
+  return percentFormatter(locale).format(rate)
 }
 
 export const STAT_VALUE_SIZES = ["24", "20", "18"] as const

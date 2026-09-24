@@ -8,39 +8,44 @@ import { PostCard } from "../PostCard"
 import { PROFILE_TIMELINE_BLEED, ProfileTimelineLane } from "../profile/ProfileTimelineLane"
 import { useSectionStyles } from "../profile/sectionStyles"
 import { usePersonDetailStyles } from "./personDetailStyles"
+import { personPostsListed } from "./personPostsModel"
 
-export function PersonPostsTab({
-  loading,
-  error,
-  hasMore,
-  loadingMore,
-  postItems,
-  onLoadMorePosts,
-}: {
+/** Once posts are listed they are the person list's own rows, so the head draws only the lane's top rule. */
+export function PersonPostsHead(props: {
   loading: boolean
   error: boolean
+  postItems: readonly PostDTO[]
+}) {
+  const styles = usePersonDetailStyles()
+  const { t } = useT("profile-person")
+
+  if (personPostsListed(props)) {
+    return <ProfileTimelineLane bleed={PROFILE_TIMELINE_BLEED}>{null}</ProfileTimelineLane>
+  }
+  if (props.loading) return <Text style={styles.postsState}>{t("posts.loading")}</Text>
+  if (props.error) return <Text style={styles.postsState}>{t("posts.error")}</Text>
+  return <Text style={styles.postsState}>{t("posts.empty")}</Text>
+}
+
+export function renderPersonPost({ item }: { item: PostDTO }) {
+  return <PostCard post={item} />
+}
+
+export function PersonPostsFooter({
+  hasMore,
+  loadingMore,
+  onLoadMorePosts,
+}: {
   hasMore: boolean
   loadingMore: boolean
-  postItems: PostDTO[]
   onLoadMorePosts: () => void
 }) {
   const styles = usePersonDetailStyles()
   const sectionStyles = useSectionStyles()
   const { t } = useT("profile-person")
 
-  if (loading) return <Text style={styles.postsState}>{t("posts.loading")}</Text>
-  if (error) return <Text style={styles.postsState}>{t("posts.error")}</Text>
-  if (postItems.length === 0) return <Text style={styles.postsState}>{t("posts.empty")}</Text>
-
   return (
-    <>
-      <View style={styles.postsLane}>
-        <ProfileTimelineLane bleed={PROFILE_TIMELINE_BLEED}>
-          {postItems.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </ProfileTimelineLane>
-      </View>
+    <View style={styles.postsFooter}>
       {hasMore ? (
         <Pressable
           {...focusRingProps}
@@ -59,6 +64,6 @@ export function PersonPostsTab({
           </Text>
         </Pressable>
       ) : null}
-    </>
+    </View>
   )
 }

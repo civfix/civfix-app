@@ -9,8 +9,7 @@
  */
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { persistentStorage } from "../storage/persistentStorage"
-import { APP_PROMO_STORAGE_ID } from "../storage/storageIds"
+import { appPromoStorage } from "./appPromoStorage"
 
 export interface AppPromoState {
   dismissed: boolean
@@ -42,7 +41,7 @@ export const useAppPromoStore = create<AppPromoState>()(
       name: "civfix.app-promo-dismissed",
       version: 1,
       // localStorage on web, not a cookie like the sidebar width: the dismissal never needs to reach a server.
-      storage: createJSONStorage(() => persistentStorage(APP_PROMO_STORAGE_ID)),
+      storage: createJSONStorage(appPromoStorage),
       partialize: (state) => ({ dismissed: state.dismissed }),
     },
   ),

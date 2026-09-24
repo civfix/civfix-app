@@ -19,11 +19,11 @@ async function errorFromTheApiClientRealm(code: string): Promise<unknown> {
   return parseError(response)
 }
 
-test("the api client's REAL AppError is not instanceof the root one - instanceof cannot be trusted", async () => {
+test("the api client's AppError is the root AppError: one module instance across entries", async () => {
   const thrown = await errorFromTheApiClientRealm(ErrorCode.UNAUTHORIZED)
   assert.equal((thrown as Error).name, "AppError")
   assert.equal((thrown as AppError).code, ErrorCode.UNAUTHORIZED)
-  assert.equal(thrown instanceof AppError, false)
+  assert.equal(thrown instanceof AppError, true)
   assert.equal(isAppErrorLike(thrown), true)
   assert.equal(isRetryableError(thrown), false)
 })

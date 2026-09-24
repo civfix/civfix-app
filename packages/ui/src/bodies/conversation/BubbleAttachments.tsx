@@ -16,7 +16,7 @@ export const BubbleAttachments = React.memo(function BubbleAttachments({
   onReportPhoto,
   onLongPress,
 }: {
-  attachments: MediaDTO[] | null | undefined
+  attachments: readonly MediaDTO[] | null | undefined
   mine: boolean
   onReportPhoto?: (mediaId: string) => void
   onLongPress?: () => void

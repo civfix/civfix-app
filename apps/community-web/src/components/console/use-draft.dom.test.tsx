@@ -1,10 +1,11 @@
-import { cleanup, renderHook } from "@testing-library/react"
-import { afterEach, describe, expect, it } from "vitest"
+import { act, cleanup, renderHook } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { consoleDraftKey, useDraft } from "./use-draft"
 
 afterEach(() => {
   cleanup()
+  vi.useRealTimers()
   window.localStorage.clear()
 })
 
@@ -60,5 +61,65 @@ describe("useDraft retired scopes", () => {
 
     for (const key of retired) expect(window.localStorage.getItem(key), key).toBeNull()
     for (const key of kept) expect(window.localStorage.getItem(key), key).not.toBeNull()
+  })
+})
+
+function storedValue(key: string): unknown {
+  const raw = window.localStorage.getItem(key)
+  return raw === null ? null : (JSON.parse(raw) as { value: unknown }).value
+}
+
+describe("useDraft write", () => {
+  it("stores the last draft once typing pauses, not on every change", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const { result } = renderHook(() => useDraft(KEY, { title: "" }))
+    act(() => result.current.patch({ title: "H" }))
+    act(() => result.current.patch({ title: "Hi" }))
+    act(() => vi.advanceTimersByTime(499))
+    expect(window.localStorage.getItem(KEY)).toBeNull()
+
+    act(() => vi.advanceTimersByTime(1))
+    const envelope = JSON.parse(window.localStorage.getItem(KEY) as string) as Record<string, unknown>
+    expect(envelope).toMatchObject({ version: "v1", owner: "viewer-1", value: { title: "Hi" } })
+  })
+
+  it("flushes the pending draft on unmount", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const { result, unmount } = renderHook(() => useDraft(KEY, { title: "", body: "" }))
+    act(() => result.current.patch({ title: "Water", body: "Bring gloves" }))
+    unmount()
+    expect(storedValue(KEY)).toEqual({ title: "Water", body: "Bring gloves" })
+  })
+
+  it("flushes the pending draft on pagehide", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const { result } = renderHook(() => useDraft(KEY, { title: "" }))
+    act(() => result.current.patch({ title: "Hi" }))
+    window.dispatchEvent(new Event("pagehide"))
+    expect(storedValue(KEY)).toEqual({ title: "Hi" })
+  })
+
+  it("drops a pending write when the draft is cleared", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const { result, unmount } = renderHook(() => useDraft(KEY, { title: "" }))
+    act(() => result.current.patch({ title: "Hi" }))
+    act(() => result.current.clear())
+    act(() => vi.advanceTimersByTime(1000))
+    unmount()
+    expect(window.localStorage.getItem(KEY)).toBeNull()
+  })
+
+  it("keeps a pending draft under its own key when the key changes", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const other = consoleDraftKey("ticket.evt_1", "tt_2", "viewer-1")
+    const { result, rerender } = renderHook(({ key }) => useDraft(key, { title: "" }), {
+      initialProps: { key: KEY },
+    })
+    act(() => result.current.patch({ title: "First" }))
+    rerender({ key: other })
+    act(() => result.current.patch({ title: "Second" }))
+    act(() => vi.advanceTimersByTime(500))
+    expect(storedValue(KEY)).toEqual({ title: "First" })
+    expect(storedValue(other)).toEqual({ title: "Second" })
   })
 })

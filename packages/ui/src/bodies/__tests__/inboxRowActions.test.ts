@@ -159,8 +159,9 @@ describe("the native swipe uses the house gesture primitive", () => {
 
 describe("the destructive third action", () => {
   it("hides the conversation for THIS viewer through the shared mutation, never a local filter", () => {
-    expect(inbox).toContain("const hideConversation = useHideConversation(roomKind, roomId)")
-    expect(inbox).toContain("hideConversation.mutate({ hidden: true })")
+    expect(inbox).toContain("const { mutate: hideConversation } = useHideConversation()")
+    expect(inbox).toContain("onHide={hideConversation}")
+    expect(inbox).toContain("onHide({ roomKind, roomId, hidden: true })")
     expect(reportChat).toContain("export function useHideConversation(")
     expect(reportChat).toContain("api.toggleConversationHidden({ roomKind, roomId, hidden })")
   })
@@ -245,15 +246,25 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
 
 describe("the two mutations", () => {
   it("reuse the existing mute hook and add a mark-read one with the same invalidate-only posture", () => {
-    expect(inbox).toContain("const toggleMute = useToggleMute(roomKind, roomId)")
-    expect(inbox).toContain("const markRead = useMarkThreadRead()")
-    expect(inbox).toContain("toggleMute.mutate({ muted: !muted })")
-    expect(inbox).toContain("markRead.mutate({ roomKind, roomId })")
+    expect(inbox).toContain("const { mutate: toggleMute } = useToggleMute()")
+    expect(inbox).toContain("const { mutate: markRead } = useMarkThreadRead()")
+    expect(inbox).toContain("onToggleMute={toggleMute}")
+    expect(inbox).toContain("onMarkRead={markRead}")
+    expect(inbox).toContain("onToggleMute({ roomKind, roomId, muted: !muted })")
+    expect(inbox).toContain("markRead({ roomKind, roomId })")
+    expect(reportChat).toContain("api.toggleConversationMute({ roomKind, roomId, muted })")
     expect(reportChat).toContain("export function useMarkThreadRead()")
     expect(reportChat).toContain("api.markThreadRead(vars)")
     expect(reportChat).toMatch(
       /useMarkThreadRead\(\)[\s\S]*?onSuccess: \(\) => \{\s*void qc\.invalidateQueries\(\{ queryKey: queryKeys\.threads \}\)/,
     )
+  })
+
+  it("are owned once by the inbox, so a mounted row adds no mutation observers", () => {
+    const row = strip(read("../inbox/ThreadRow.tsx"))
+    for (const hook of ["useToggleMute(", "useMarkThreadRead(", "useHideConversation("]) {
+      expect(row).not.toContain(hook)
+    }
   })
 
   it("addresses the room the way the rest of the package does", () => {

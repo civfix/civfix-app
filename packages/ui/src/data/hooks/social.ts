@@ -394,7 +394,7 @@ export function useHandleAvailabilityCheck(
   const availability = useQuery<HandleAvailableResponse>({
     queryKey: queryKeys.handleAvailable(candidate),
     enabled,
-    queryFn: () => api.checkHandle({ handle: candidate }),
+    queryFn: ({ signal }) => api.checkHandle({ handle: candidate }, { signal }),
     retry: false,
     staleTime: HANDLE_AVAILABILITY_STALE_MS,
   })
@@ -413,7 +413,7 @@ export function useMentionSearch(rawPrefix: string) {
   return useQuery<SearchUsersResponse, unknown, SearchUsersResponse>({
     queryKey: queryKeys.mentionSearch(trimmed),
     enabled: isAuthenticated && trimmed.length >= 1,
-    queryFn: () => api.mentionSearch({ q: trimmed }),
+    queryFn: ({ signal }) => api.mentionSearch({ q: trimmed }, { signal }),
     retry: false,
     staleTime: MENTION_SEARCH_STALE_MS,
   })

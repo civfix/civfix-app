@@ -203,8 +203,15 @@ export const usePersonDetailStyles = makeThemedStyles((t) => ({
     marginHorizontal: 5,
   },
 
-  postsLane: {
-    marginBottom: t.space["5"],
+  listContent: {
+    paddingBottom: t.space["10"],
+  },
+  listInset: {
+    paddingHorizontal: t.space["4"],
+  },
+  postsFooter: {
+    paddingHorizontal: t.space["4"],
+    paddingTop: t.space["5"],
   },
   postsState: {
     fontFamily: t.fontFamily.bodyRegular,

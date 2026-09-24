@@ -211,9 +211,10 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
   it("derives the hidden count from the DTO's claimed, never from the roster array", () => {
     // One rule covers three truncations: the follow-only filter, the 50-row roster cap, and a roster
     // that is momentarily behind the detail.
-    const call = source.match(/slotPeopleView\(\{[\s\S]*?\}\)/)?.[0] ?? ""
+    const call = row.match(/slotPeopleView\(\{[\s\S]*?\}\)/)?.[0] ?? ""
     expect(call).toContain("claimed: slot.claimed")
     expect(source).not.toContain("attendees.length -")
+    expect(row).not.toContain("attendees.length -")
   })
 
   it("reads the roster through the SHARED attendees query, not a request of its own", () => {
@@ -266,7 +267,8 @@ describe("a LIVE event with no slots still has a way in", () => {
 
   it("commits that row through the event's join/leave mutation, never a claim on a synthetic id", () => {
     expect(block).toContain("const join = useJoinCleanup(cleanupId)")
-    expect(block).toContain("join.mutate(slotId === null, {")
+    expect(block).toContain("const { mutate: mutateJoin } = join")
+    expect(block).toContain("mutateJoin(slotId === null, {")
     expect(block).toContain('const general = mode === "general"')
   })
 

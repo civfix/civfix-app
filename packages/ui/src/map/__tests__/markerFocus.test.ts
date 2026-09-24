@@ -106,4 +106,12 @@ describe("a focus change must not re-render every marker", () => {
     )
     expect(mapNative).not.toMatch(/lngLat=\{\[node\.lng, node\.lat\]\}/)
   })
+
+  it("compares marker content, since every camera settle hands MarkerNode fresh node objects", () => {
+    expect(mapNative).toMatch(/\n\}, sameMarkerNodeProps\)\n/)
+    expect(mapNative).toContain("sameRenderedNode(prev.node, next.node)")
+    expect(mapNative).toContain("prev.active === next.active")
+    expect(mapNative).toContain("prev.onPress === next.onPress")
+    expect(mapNative).toContain("prev.markerId === next.markerId")
+  })
 })

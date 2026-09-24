@@ -35,7 +35,7 @@ describe("the row menu chip reads the pointer kind once per list render", () => 
   it("hands the value to every row and re-renders the rows when it changes", () => {
     const renderItem = sliceBetween(source, "const renderItem = useCallback(", "const threads = useMemo(")
     expect(renderItem).toContain("coarsePointer={coarsePointer}")
-    expect(renderItem).toMatch(/\[onPressItem, coarsePointer\]/)
+    expect(renderItem).toMatch(/\[onPressItem, toggleMute, markRead, hideConversation, coarsePointer\]/)
     const row = sliceBetween(rowSource, "export const ThreadRow = React.memo(", "}) {")
     expect(row).toContain("coarsePointer: boolean")
   })

@@ -23,6 +23,41 @@ export function groupSearchResults({
   ].filter((group) => group.count > 0)
 }
 
+export type SearchResultRow<E, R, P> =
+  | { kind: "header"; key: string; group: SearchGroupId }
+  | { kind: "event"; key: string; event: E; gapBefore: boolean }
+  | { kind: "report"; key: string; report: R; gapBefore: boolean }
+  | { kind: "more-reports"; key: string; loading: boolean }
+  | { kind: "person"; key: string; person: P; gapBefore: boolean }
+
+/** Keys carry the kind because an event, a report and a person can share an id once they sit in one list. */
+export function searchResultRows<E extends { id: string }, R extends { id: string }, P extends { id: string }>(
+  hits: { events: readonly E[]; reports: readonly R[]; people: readonly P[] },
+  moreReports: { show: boolean; loading: boolean },
+): SearchResultRow<E, R, P>[] {
+  const rows: SearchResultRow<E, R, P>[] = []
+  if (hits.events.length > 0) {
+    rows.push({ kind: "header", key: "header:events", group: "events" })
+    hits.events.forEach((event, index) =>
+      rows.push({ kind: "event", key: `event:${event.id}`, event, gapBefore: index > 0 }),
+    )
+  }
+  if (hits.reports.length > 0) {
+    rows.push({ kind: "header", key: "header:reports", group: "reports" })
+    hits.reports.forEach((report, index) =>
+      rows.push({ kind: "report", key: `report:${report.id}`, report, gapBefore: index > 0 }),
+    )
+    if (moreReports.show) rows.push({ kind: "more-reports", key: "more:reports", loading: moreReports.loading })
+  }
+  if (hits.people.length > 0) {
+    rows.push({ kind: "header", key: "header:people", group: "people" })
+    hits.people.forEach((person, index) =>
+      rows.push({ kind: "person", key: `person:${person.id}`, person, gapBefore: index > 0 }),
+    )
+  }
+  return rows
+}
+
 export function filterEventHits<T extends { title: string; address?: string | null }>(
   events: readonly T[],
   query: string,

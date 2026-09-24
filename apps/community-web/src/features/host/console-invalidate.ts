@@ -17,6 +17,32 @@ export function invalidateEvent(qc: QueryClient, eventId: string): void {
   void qc.invalidateQueries({ queryKey: queryKeys.cleanup(eventId) })
 }
 
+/**
+ * The host caches that read registrations, seats or check-ins: the rosters, counters, insights,
+ * analytics, ticket-type sold counts, and the live recipient counts of broadcast and announcement
+ * audiences. The rest of ["host", id] (page, slug check, questions, team, exports, a registration's
+ * answers) is configuration or registrant input that a roster change cannot alter.
+ */
+const ROSTER_DEPENDENT_SEGMENTS: ReadonlySet<string> = new Set([
+  "roster",
+  "counters",
+  "insights",
+  "analytics",
+  "ticket-types",
+  "audience-preview",
+  "broadcasts",
+  "announcements",
+])
+
+/** After a check-in, no-show, note, removal or walk-up; a move or an event edit uses `invalidateEvent`. */
+export function invalidateRoster(qc: QueryClient, eventId: string): void {
+  void qc.invalidateQueries({
+    queryKey: queryKeys.hostEvent(eventId),
+    predicate: (query) => ROSTER_DEPENDENT_SEGMENTS.has(String(query.queryKey[2])),
+  })
+  void qc.invalidateQueries({ queryKey: queryKeys.cleanup(eventId) })
+}
+
 export function invalidateCheckinCounters(qc: QueryClient, eventId: string): void {
   void qc.invalidateQueries({ queryKey: queryKeys.hostCounters(eventId) })
   void qc.invalidateQueries({ queryKey: queryKeys.cleanup(eventId) })

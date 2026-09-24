@@ -1,8 +1,15 @@
 import { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
+import { queryKeys } from "@civfix/ui/data"
 import { describe, expect, it } from "vitest"
 
-import { invalidateOrg, markRosterSeatsCheckedIn, upsertMyOrganization } from "./console-invalidate"
+import {
+  invalidateEvent,
+  invalidateOrg,
+  invalidateRoster,
+  markRosterSeatsCheckedIn,
+  upsertMyOrganization,
+} from "./console-invalidate"
 import { consoleKeys } from "./console-keys"
 
 const AT = "2026-09-06T18:00:00.000Z"
@@ -180,5 +187,63 @@ describe("upsertMyOrganization", () => {
       org({ name: "River Keepers", myRole: "owner", memberCount: 3 }),
       org({ id: "org_2" }),
     ])
+  })
+})
+
+describe("invalidateRoster", () => {
+  const EVT = "evt_1"
+  const rosterDependent: readonly (readonly unknown[])[] = [
+    consoleKeys.roster(EVT, "all", "name_asc", "", null),
+    queryKeys.hostRoster(EVT, "not_checked_in", ""),
+    queryKeys.hostCounters(EVT),
+    queryKeys.eventInsights(EVT),
+    queryKeys.eventAnalytics(EVT, "summary"),
+    consoleKeys.analytics(EVT, "funnel", "30d"),
+    queryKeys.hostTicketTypes(EVT),
+    queryKeys.eventAudiencePreview(EVT, "checked_in"),
+    consoleKeys.broadcastPreview(EVT, "b_1"),
+    consoleKeys.broadcasts(EVT),
+    queryKeys.eventAnnouncements(EVT),
+    queryKeys.cleanup(EVT),
+    queryKeys.cleanupAttendees(EVT),
+  ]
+  const configuration: readonly (readonly unknown[])[] = [
+    consoleKeys.page(EVT),
+    consoleKeys.slugCheck(EVT, "river"),
+    queryKeys.hostQuestions(EVT),
+    queryKeys.hostTeam(EVT),
+    consoleKeys.exports(EVT),
+    consoleKeys.answers(EVT, "reg_1"),
+  ]
+
+  function seeded(): QueryClient {
+    const qc = new QueryClient()
+    for (const key of [...rosterDependent, ...configuration]) qc.setQueryData(key, {})
+    qc.setQueryData(queryKeys.hostCounters("evt_2"), {})
+    return qc
+  }
+
+  const stale = (qc: QueryClient, key: readonly unknown[]) =>
+    qc.getQueryState(key)?.isInvalidated === true
+
+  it("invalidates every cache that reads registrations, seats or check-ins", () => {
+    const qc = seeded()
+    invalidateRoster(qc, EVT)
+    for (const key of rosterDependent) expect(stale(qc, key), JSON.stringify(key)).toBe(true)
+  })
+
+  it("leaves event configuration, answers and other events alone", () => {
+    const qc = seeded()
+    invalidateRoster(qc, EVT)
+    for (const key of configuration) expect(stale(qc, key), JSON.stringify(key)).toBe(false)
+    expect(stale(qc, queryKeys.hostCounters("evt_2"))).toBe(false)
+  })
+
+  it("covers a subset of what invalidateEvent covers", () => {
+    const qc = seeded()
+    invalidateEvent(qc, EVT)
+    for (const key of [...rosterDependent, ...configuration]) {
+      expect(stale(qc, key), JSON.stringify(key)).toBe(true)
+    }
   })
 })

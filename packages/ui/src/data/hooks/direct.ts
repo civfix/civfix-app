@@ -37,11 +37,14 @@ export function useUserSearch(rawQuery: string) {
   const query = useQuery<SearchUsersResponse, unknown, SearchUsersResponse>({
     queryKey: queryKeys.userSearch(trimmed),
     enabled: isAuthenticated && trimmed.length > 0,
-    queryFn: () => api.searchUsers({ q: trimmed, limit: USER_SEARCH_LIMIT }),
+    queryFn: ({ signal }) => api.searchUsers({ q: trimmed, limit: USER_SEARCH_LIMIT }, { signal }),
     retry: false,
     staleTime: USER_SEARCH_STALE_MS,
   })
-  return { ...query, term: trimmed }
+  // Picking fields keeps TanStack's tracked-property subscription; a spread reads every getter and
+  // re-renders the caller on each fetchStatus/dataUpdatedAt change as well.
+  const { data, isLoading, isPending, isError, refetch } = query
+  return { data, isLoading, isPending, isError, refetch, term: trimmed }
 }
 
 export function useOpenDm() {
@@ -74,13 +77,13 @@ export interface StartDmHandlers {
 
 export function useStartDm() {
   const requireAuth = useRequireAuth()
-  const openDm = useOpenDm()
+  const { mutate: openDm, isPending } = useOpenDm()
 
   const start = useCallback(
     (target: DmTarget, resumePath: string, handlers: StartDmHandlers) => {
       requireAuth(
         () => {
-          openDm.mutate(target.id, {
+          openDm(target.id, {
             onSuccess: (res) => {
               const thread = res.thread
               const roomId = threadRoomId(thread)
@@ -95,7 +98,7 @@ export function useStartDm() {
     [requireAuth, openDm],
   )
 
-  return { start, isPending: openDm.isPending }
+  return { start, isPending }
 }
 
 export function useBlockUser() {
