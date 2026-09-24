@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Keyboard,
   Platform,
   Pressable,
@@ -21,7 +20,8 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { makeThemedStyles, space, useTheme } from "../theme"
+import { makeThemedStyles, motion, space, useTheme } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import {
   LiquidGlassDock,
@@ -78,7 +78,7 @@ import {
   type TabDef,
 } from "./TabBar.shared"
 
-const EASING = Easing.bezier(0.22, 1, 0.36, 1)
+const EASING = Easing.bezier(...motion.easing)
 
 const DOCK_PLATFORM: DockPlatform = Platform.OS === "android" ? "android" : "other"
 
@@ -194,19 +194,7 @@ export function TabBar() {
   const tabW = wide / TAB_COUNT
   const pillW = selectedPillRect(0, tabW).width
 
-  const [reduceMotion, setReduceMotion] = useState(false)
-  useEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => mounted && setReduceMotion(!!enabled))
-      // A failed probe keeps motion on; the reduceMotionChanged listener below still corrects it.
-      .catch(() => {})
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => setReduceMotion(!!enabled))
-    return () => {
-      mounted = false
-      sub?.remove()
-    }
-  }, [])
+  const reduceMotion = useReducedMotion() === true
 
   const [prevView, setPrevView] = useState<NavView>(() =>
     seedPreviousView(view, useTabBarStore.getState().lastNonSearchView),

@@ -157,7 +157,11 @@ describe("the outbound URLs are stated once", () => {
     expect(urls).toContain('export const WEB_ORIGIN = "https://civfix.org"')
     expect(urls).toContain("export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`")
     expect(urls).toContain("export const PRIVACY_URL = `${WEB_ORIGIN}/legal/privacy`")
-    expect(urls).toContain('export const SOURCE_REPO_URL = "https://github.com/civfix/civfix-app"')
+    expect(urls).toContain('import { SOURCE_REPO_URL, sourceLink } from "@civfix/shared/legal"')
+    expect(urls).toContain("export { SOURCE_REPO_URL }")
+    expect(strip(read("../../../../shared/src/legal/source.ts"))).toContain(
+      'export const SOURCE_REPO_URL = "https://github.com/civfix/civfix-app"',
+    )
     expect(strip(read("../share.ts"))).not.toMatch(/= "https:\/\/civfix\.org"/)
     for (const rel of ["../BrandAboutCard.tsx", "../../bodies/SettingsBody.tsx"]) {
       const src = strip(read(rel))

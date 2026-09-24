@@ -11,11 +11,12 @@ import {
   webHover,
   webInputReset,
   webTransition,
+  inputFocusedStyle,
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
-import { type AnswerMap, toggleMultiSelect } from "./questionModel"
+import type { AnswerMap } from "@civfix/shared/host"
+import { toggleMultiSelect } from "./questionModel"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 
 export interface RegistrationQuestionsProps {
@@ -114,7 +115,7 @@ export function RegistrationQuestions({
                   webInputReset,
                   styles.input,
                   question.kind === "long_text" ? styles.inputMultiline : null,
-                  focusedId === question.id ? fieldFocusedStyle(th) : null,
+                  focusedId === question.id ? inputFocusedStyle(th) : null,
                   isInvalid ? styles.inputInvalid : null,
                 ]}
               />

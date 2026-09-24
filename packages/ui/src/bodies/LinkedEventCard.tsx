@@ -13,6 +13,7 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
+import { DateTile } from "../primitives/DateBadge"
 import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import {
@@ -193,10 +194,7 @@ export function LinkedEventCard({
           state.pressed && onPress ? styles.pressed : null,
         ]}
       >
-        <View style={[styles.dateChip, isList ? styles.dateChipList : null]}>
-          <Text style={styles.month}>{model.month}</Text>
-          <Text style={styles.day}>{model.day}</Text>
-        </View>
+        <DateTile variant="linkedEvent" day={model.day} month={model.month} />
 
         <View style={styles.body}>
           <Text variant="bodyStrong" numberOfLines={2} style={styles.title}>
@@ -289,34 +287,6 @@ const useStyles = makeThemedStyles((t) => ({
   pressed: {
     opacity: 0.82,
     transform: [{ scale: 0.985 }],
-  },
-  dateChip: {
-    width: 52,
-    minHeight: 58,
-    flexShrink: 0,
-    borderRadius: t.radius.md,
-    paddingVertical: 7,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.surfaceTint,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-  },
-  dateChipList: {
-    width: 52,
-  },
-  month: {
-    color: t.colors.sun["700"],
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 10,
-    lineHeight: 12,
-    letterSpacing: 0.8,
-  },
-  day: {
-    color: t.colors.text,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 21,
-    lineHeight: 24,
   },
   body: {
     flex: 1,

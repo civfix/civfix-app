@@ -2,12 +2,15 @@
 
 import { useState } from "react"
 import { UserPlus } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import type { EventTeamRole } from "@civfix/shared"
 import {
   INVITABLE_EVENT_TEAM_ROLES,
   SETTABLE_EVENT_MEMBER_ROLES,
-  useApi,
+  useHostTeam,
+  useInviteEventTeamMember,
+  useRevokeEventTeamInvite,
+  useSetMemberRole,
   type SettableEventMemberRole,
 } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
@@ -19,7 +22,6 @@ import { Chip } from "@/components/console/chips/chip"
 import { QRow } from "@/components/console/qrow"
 import { Drawer } from "@/components/console/overlay/drawer"
 import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
-import { useConsoleTeam } from "./use-team"
 import { useConsoleToast } from "@/components/console/overlay/toast"
 import { Field } from "@/components/console/forms/field"
 import { TextInput, Select } from "@/components/console/forms/inputs"
@@ -40,14 +42,13 @@ interface PendingRoleChange {
 export function TeamScreen() {
   const { t } = useT("host-team")
   const { t: tc } = useT("host-common")
-  const api = useApi()
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
   const format = useConsoleFormat()
   const { eventId } = useConsoleEvent()
 
-  const team = useConsoleTeam(eventId)
+  const team = useHostTeam(eventId)
   const gate = useGate(team)
 
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -58,56 +59,66 @@ export function TeamScreen() {
   const [pendingRevoke, setPendingRevoke] = useState<string | null>(null)
   const [pendingRole, setPendingRole] = useState<PendingRoleChange | null>(null)
 
-  const invite = useMutation({
-    mutationFn: () =>
-      api.inviteEventTeamMember({
-        id: eventId,
+  const invite = useInviteEventTeamMember(eventId)
+  const revoke = useRevokeEventTeamInvite(eventId)
+  const setRoleFor = useSetMemberRole()
+
+  const sendInvite = () =>
+    invite.mutate(
+      {
         identifierKind,
         identifier: normalizeInviteIdentifier(identifierKind, identifier),
         role,
-      }),
-    onSuccess: () => {
-      toast.toast({ title: t("invite.sent"), tone: "success" })
-      setInviteOpen(false)
-      setIdentifier("")
-      setFields({})
-      invalidateEvent(qc, eventId)
-    },
-    onError: (err) => {
-      setFields(fieldErrorsFrom(err))
-      toast.toast({ title: errors.message(err), tone: "danger" })
-    },
-  })
+      },
+      {
+        onSuccess: () => {
+          toast.toast({ title: t("invite.sent"), tone: "success" })
+          setInviteOpen(false)
+          setIdentifier("")
+          setFields({})
+          invalidateEvent(qc, eventId)
+        },
+        onError: (err) => {
+          setFields(fieldErrorsFrom(err))
+          toast.toast({ title: errors.message(err), tone: "danger" })
+        },
+      },
+    )
 
-  const revoke = useMutation({
-    mutationFn: (inviteId: string) => api.revokeEventTeamInvite({ id: eventId, inviteId }),
-    onSuccess: () => {
-      toast.toast({ title: t("invite.revoked"), tone: "success" })
-      setPendingRevoke(null)
-      invalidateEvent(qc, eventId)
-    },
-    onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
-  })
+  const revokeInvite = (inviteId: string) =>
+    revoke.mutate(
+      { inviteId },
+      {
+        onSuccess: () => {
+          toast.toast({ title: t("invite.revoked"), tone: "success" })
+          setPendingRevoke(null)
+          invalidateEvent(qc, eventId)
+        },
+        onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
+      },
+    )
 
-  const setRoleFor = useMutation({
-    mutationFn: (input: PendingRoleChange) =>
-      api.setCleanupMemberRole({ id: eventId, userId: input.userId, role: input.role }),
-    onSuccess: () => {
-      toast.toast({ title: t("role.updated"), tone: "success" })
-      setPendingRole(null)
-      invalidateEvent(qc, eventId)
-    },
-    onError: (err) => {
-      setPendingRole(null)
-      toast.toast({
-        title: errors.message(err, {
-          CONFLICT: t("role.error_conflict"),
-          FORBIDDEN: t("role.error_forbidden"),
-        }),
-        tone: "danger",
-      })
-    },
-  })
+  const changeRole = (input: PendingRoleChange) =>
+    setRoleFor.mutate(
+      { id: eventId, userId: input.userId, role: input.role },
+      {
+        onSuccess: () => {
+          toast.toast({ title: t("role.updated"), tone: "success" })
+          setPendingRole(null)
+          invalidateEvent(qc, eventId)
+        },
+        onError: (err) => {
+          setPendingRole(null)
+          toast.toast({
+            title: errors.message(err, {
+              CONFLICT: t("role.error_conflict"),
+              FORBIDDEN: t("role.error_forbidden"),
+            }),
+            tone: "danger",
+          })
+        },
+      },
+    )
 
   return (
     <div className="flex flex-col gap-token-5">
@@ -209,7 +220,7 @@ export function TeamScreen() {
             <ConsoleButton
               size="sm"
               disabled={identifier.trim().length === 0 || invite.isPending}
-              onClick={() => invite.mutate()}
+              onClick={sendInvite}
             >
               {t("invite.send")}
             </ConsoleButton>
@@ -273,7 +284,7 @@ export function TeamScreen() {
         busy={setRoleFor.isPending}
         onCancel={() => setPendingRole(null)}
         onConfirm={() => {
-          if (pendingRole) setRoleFor.mutate(pendingRole)
+          if (pendingRole) changeRole(pendingRole)
         }}
       />
 
@@ -286,7 +297,7 @@ export function TeamScreen() {
         busy={revoke.isPending}
         onCancel={() => setPendingRevoke(null)}
         onConfirm={() => {
-          if (pendingRevoke) revoke.mutate(pendingRevoke)
+          if (pendingRevoke) revokeInvite(pendingRevoke)
         }}
       />
     </div>

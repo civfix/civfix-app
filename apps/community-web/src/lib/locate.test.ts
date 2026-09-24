@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
 
 /**
  * The module caches at module level, so each test re-imports a fresh module via `vi.resetModules()`
@@ -60,7 +61,7 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
   })
 
   it("asks the browser under the ONE aligned timeout policy (useUserLocation's 4s, not a 6s/8s split)", async () => {
-    const { getSharedBrowserFix, DEVICE_FIX_TIMEOUT_MS, GEO_POSITION_OPTIONS } = await freshModules()
+    const { getSharedBrowserFix, GEO_POSITION_OPTIONS } = await freshModules()
     void getSharedBrowserFix().catch(() => {})
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
     expect(geo.calls[0]!.options).toMatchObject({

@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema, MAX_PARTY_SIZE, TicketTypeVisibilitySchema } from "../common.js"
 import { TicketTypeDTOSchema } from "../entities.js"
-import { SortOrderInputSchema } from "../internal-fields.js"
+import { OkResponseSchema, SortOrderInputSchema } from "../internal-fields.js"
 import { MAX_EVENT_QUESTIONS } from "./questions.js"
 
 
@@ -102,10 +102,9 @@ export const DeleteEventTicketTypeRequestSchema = z
   .strict()
 export type DeleteEventTicketTypeRequest = z.infer<typeof DeleteEventTicketTypeRequestSchema>
 
-const DeleteEventTicketTypeResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type DeleteEventTicketTypeResponse = z.infer<typeof DeleteEventTicketTypeResponseObjectSchema>
+export type DeleteEventTicketTypeResponse = z.infer<typeof OkResponseSchema>
 export const DeleteEventTicketTypeResponseSchema: z.ZodType<DeleteEventTicketTypeResponse, z.ZodTypeDef, unknown> =
-  DeleteEventTicketTypeResponseObjectSchema
+  OkResponseSchema
 
 export const ReorderEventTicketTypesRequestSchema = z
   .object({

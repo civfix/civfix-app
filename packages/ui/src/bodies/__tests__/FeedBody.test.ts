@@ -55,8 +55,13 @@ describe("FeedBody feed model", () => {
     )
     const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
     const timings = feed.match(/duration: FEED_ROW_ENTER_MS,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/g) ?? []
-    expect(timings).toHaveLength(3)
-    expect(feed).toMatch(/if \(reduceMotion\) settle\(\)\s*\n\s*else enter\(\)/)
+    expect(timings).toHaveLength(1)
+    expect(feed).toMatch(
+      /useEntranceAnimation\(\{\s*\n\s*from: \{ translateY: HEADER_ENTER_RISE \},\s*\n\s*duration: FEED_ROW_ENTER_MS,/,
+    )
+    const entrance = readFileSync(new URL("../useEntranceAnimation.ts", import.meta.url), "utf8")
+    expect(entrance).toMatch(/duration,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/)
+    expect(entrance).toMatch(/if \(reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/)
     expect(feed).toMatch(/if \(!plan\.animate \|\| reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/)
   })
 

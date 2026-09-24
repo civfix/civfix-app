@@ -1,57 +1,11 @@
-import { Platform, StyleSheet } from "react-native"
-import { makeThemedStyles, wash } from "../../theme"
-import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, detailTitleStyle } from "../../shell/detailHeader"
+import { StyleSheet } from "react-native"
+import { makeThemedStyles } from "../../theme"
 
 export const usePersonDetailStyles = makeThemedStyles((t) => ({
   root: {
     flex: 1,
     backgroundColor: t.colors.bg,
   },
-  header: {
-    minHeight: 52,
-    flexShrink: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: t.space["4"],
-    backgroundColor: t.colors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.colors.border,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -t.space["3"],
-  },
-  headerPanel: {
-    minHeight: 0,
-    gap: 10,
-    paddingTop: 14,
-    paddingHorizontal: 18,
-    paddingBottom: t.space["3"],
-    borderBottomColor:
-      Platform.OS === "web" ? wash(t.colors.borderStrong, 0.45, t) : t.colors.border,
-  },
-  headerChip: {
-    width: DETAIL_BACK_SIZE,
-    height: DETAIL_BACK_SIZE,
-    borderRadius: DETAIL_BACK_RADIUS,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surfaceTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerPanelTitle: { ...detailTitleStyle(18, t), flex: 1 },
-  headerTitleWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    paddingHorizontal: 52,
-  },
-  headerSpacer: { width: 44 },
   scroll: {
     flex: 1,
     minHeight: 0,
@@ -197,10 +151,6 @@ export const usePersonDetailStyles = makeThemedStyles((t) => ({
     marginTop: t.space["5"],
   },
   eventsLabel: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    color: t.colors.textSubtle,
     marginBottom: t.space["2"],
   },
   eventsGroupLabel: {
@@ -225,29 +175,6 @@ export const usePersonDetailStyles = makeThemedStyles((t) => ({
   },
   miniPressed: {
     opacity: 0.9,
-  },
-  dateChip: {
-    flexShrink: 0,
-    width: 34,
-    paddingVertical: t.space["1"],
-    borderRadius: 9,
-    backgroundColor: t.colors.sun["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["100"],
-    alignItems: "center",
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["15"],
-    lineHeight: 16,
-    color: t.colors.sun["700"],
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 8,
-    letterSpacing: 0.5,
-    color: t.colors.sun["700"],
-    marginTop: 2,
   },
   miniMeta: {
     flex: 1,

@@ -29,10 +29,12 @@ export * from "./types/ws.js"
 export * from "./types/domain.js"
 
 export * from "./geo.js"
+export * from "./async.js"
 export * from "./address.js"
 
 export * from "./avatar.js"
 export * from "./datetime.js"
+export * from "./number-format.js"
 export * from "./chat/index.js"
 export * from "./ws/index.js"
 

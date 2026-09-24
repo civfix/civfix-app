@@ -8,15 +8,7 @@
  * word character nor `@` (so an email's local part can't produce one), and ends at a non-word
  * character.
  */
-
-export function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
-/** Handles travel with or without the leading `@` depending on the source DTO; normalize both. */
-export function normalizeHandle(handle: string): string {
-  return handle.replace(/^@/, "")
-}
+import { escapeRegExp, normalizeHandle } from "../mentionText"
 
 const LEFT_BOUNDARY = "(^|[^\\w@])"
 const RIGHT_BOUNDARY = "(?![\\w])"

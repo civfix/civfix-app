@@ -22,3 +22,5 @@ export * from "./share"
 export * from "./announce"
 
 export * from "./promo"
+
+export { toCreateReportRequest } from "./report/submit"

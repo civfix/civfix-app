@@ -1,4 +1,7 @@
 import type { BBox } from "@civfix/shared"
+import type { CameraTarget } from "@civfix/ui"
+
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 
 /**
  * Seeds the shared Map's `initialCenter` synchronously from the last-settled camera, so a returning
@@ -15,14 +18,8 @@ import type { BBox } from "@civfix/shared"
 export const CAMERA_SNAPSHOT_KEY = "civfix.map.camera.v1"
 const CAMERA_SNAPSHOT_VERSION = 1
 
-export interface CameraSnapshot {
-  lat: number
-  lng: number
-  zoom: number
-}
-
 /** The version literal also lives in the body to guard a hand-edited or half-migrated value. */
-interface SnapshotBody extends CameraSnapshot {
+interface SnapshotBody extends CameraTarget {
   v: typeof CAMERA_SNAPSHOT_VERSION
 }
 
@@ -44,15 +41,10 @@ function isCameraSnapshot(body: unknown): body is SnapshotBody {
   )
 }
 
-export function readCameraSnapshot(): CameraSnapshot | null {
+export function readCameraSnapshot(): CameraTarget | null {
   if (typeof window === "undefined") return null
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(CAMERA_SNAPSHOT_KEY)
-  } catch {
-    return null
-  }
+  const raw = safeGet("local", CAMERA_SNAPSHOT_KEY)
   if (raw === null) return null
 
   try {
@@ -80,18 +72,10 @@ export function writeCameraSnapshot(viewport: BBox, zoom: number): void {
     zoom,
   }
   if (!isCameraSnapshot(body)) return
-  try {
-    window.localStorage.setItem(CAMERA_SNAPSHOT_KEY, JSON.stringify(body))
-  } catch {
-    // Quota or private mode: the snapshot is an optimization, not state.
-  }
+  safeSet("local", CAMERA_SNAPSHOT_KEY, JSON.stringify(body))
 }
 
 export function clearCameraSnapshot(): void {
   if (typeof window === "undefined") return
-  try {
-    window.localStorage.removeItem(CAMERA_SNAPSHOT_KEY)
-  } catch {
-    // Best effort: storage may be unavailable.
-  }
+  safeRemove("local", CAMERA_SNAPSHOT_KEY)
 }

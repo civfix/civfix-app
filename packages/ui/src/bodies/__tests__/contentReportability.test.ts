@@ -26,14 +26,28 @@ function menuItem(key: string): string {
   return MENU.slice(at, end)
 }
 
+const MENU_STATE_HOOK: Record<string, RegExp> = {
+  "PostCard.tsx": /= usePostOverflowMenuState\(post\)/,
+  "thread/ThreadFocalPost.tsx": /usePostRowActions\(\{ post, identity, onOpenEntry \}\)/,
+  "thread/ThreadReplyRow.tsx": /usePostRowActions\(\{ post, identity, onOpenEntry \}\)/,
+}
+
 describe("every post surface can be reported", () => {
+  it("anchors the menu and derives its subject in the one shared menu-state hook", () => {
+    const actions = code(read("../postCardActions.ts"))
+    const menuState = sliceFrom(actions, "export function usePostOverflowMenuState(")
+    expect(menuState).toContain("usePopoverAnchor(setMenuAnchor)")
+    expect(menuState).toContain("menuTrigger.measure()")
+    expect(menuState).toContain("postMenuSubject(post)")
+    expect(actions).toContain("const menu = usePostOverflowMenuState(post)")
+  })
+
   for (const [name, source] of Object.entries(SURFACES)) {
     it(`${name} anchors and mounts the overflow menu`, () => {
-      expect(source).toContain("usePopoverAnchor(setMenuAnchor)")
-      expect(source).toContain("menuTrigger.measure()")
+      expect(source).toMatch(MENU_STATE_HOOK[name] ?? /^$/)
       expect(source).toContain("post_card.more_a11y")
       expect(source).toMatch(/<PostOverflowMenu[\s\S]*?subject=\{menuSubject\}/)
-      expect(source).toContain("postMenuSubject(post)")
+      expect(source).toContain("menuTrigger.ref")
     })
 
     it(`${name} renders the shared overflow button instead of a local one`, () => {

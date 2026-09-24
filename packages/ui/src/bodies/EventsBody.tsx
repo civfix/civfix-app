@@ -1,24 +1,29 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, Platform } from "react-native"
-import { TextInput } from "../primitives/TextInput"
 import type { ViewStyle } from "react-native"
 import { haversineMeters } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
 import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { eventEndsAtMs } from "@civfix/shared/host"
 import {
-  MIN_TOUCH_TARGET,
   focusRingProps,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   space,
   useLayoutMode,
   useTheme,
-  webInputReset,
   webTransition,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { MetaDot, RsvpPill, EmptyState, OrgAffiliationBadge } from "../primitives"
+import {
+  MetaDot,
+  RsvpPill,
+  EmptyState,
+  ListSearchField,
+  OrgAffiliationBadge,
+  useListBodyStyles,
+} from "../primitives"
+import { DateTile } from "../primitives/DateBadge"
 import {
   useCleanups,
   useJoinCleanup,
@@ -29,6 +34,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { useEventWhen, useLocale, useT } from "../i18n"
 import { pushCleanup } from "../nav/verbs"
 import { useRowHover } from "./rowHover"
@@ -87,12 +93,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           pressed ? styles.cardPressed : null,
         ]}
       >
-        <View style={styles.date}>
-          <Text style={styles.dateDay}>{day}</Text>
-          <Text color={th.colors.bloom["600"]} style={styles.dateMonth}>
-            {month}
-          </Text>
-        </View>
+        <DateTile variant="eventCard" day={day} month={month} />
 
         <View style={styles.meta}>
           <View style={styles.titleRow}>
@@ -181,6 +182,7 @@ function CardSkeleton() {
 
 export function EventsBody() {
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const th = useTheme()
   const { t } = useT("event-list")
   const { FlatList } = useScrollHost()
@@ -258,8 +260,8 @@ export function EventsBody() {
     <FlatList
       data={rows}
       keyExtractor={(row: Row) => row.key}
-      style={styles.list}
-      contentContainerStyle={rows.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={rows.length === 0 ? listStyles.listEmpty : listStyles.listContent}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
@@ -316,10 +318,8 @@ function EventsHeader({
   showTitle: boolean
 }) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("event-list")
   const { t: tNav } = useT("nav")
-  const [focused, setFocused] = useState(false)
   return (
     <View>
       {showTitle ? (
@@ -330,69 +330,27 @@ function EventsHeader({
         </View>
       ) : null}
       {showSearch ? (
-        <View style={[styles.searchField, focused ? styles.searchFieldFocused : null]}>
-          <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
-          <TextInput
-            style={[styles.searchInput, webInputReset]}
-            placeholder={t("search.placeholder")}
-            placeholderTextColor={th.colors.textSubtle}
-            value={query}
-            onChangeText={onChangeQuery}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            autoCorrect={false}
-            returnKeyType="search"
-            accessibilityLabel={t("search.a11y")}
-          />
-          {query ? (
-            <Pressable
-              onPress={() => onChangeQuery("")}
-              accessibilityRole="button"
-              accessibilityLabel={t("search.clear_a11y")}
-              {...focusRingProps}
-              style={styles.clearTarget}
-            >
-              {({ pressed }) => (
-                <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>
-                  <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
-                </View>
-              )}
-            </Pressable>
-          ) : null}
-        </View>
+        <ListSearchField
+          value={query}
+          onChangeText={onChangeQuery}
+          placeholder={t("search.placeholder")}
+          a11yLabel={t("search.a11y")}
+          clearA11yLabel={t("search.clear_a11y")}
+        />
       ) : null}
     </View>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: 0,
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
-
   rootTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  rootTitle: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  rootTitle: tabRootTitleStyle(t),
 
   sectionHeader: {
     fontFamily: t.fontFamily.bodyBold,
@@ -418,27 +376,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   cardPressed: {
     opacity: 0.92,
-  },
-  date: {
-    width: 50,
-    flexShrink: 0,
-    alignSelf: "flex-start",
-    paddingVertical: 9,
-    borderRadius: 12,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 23,
-    lineHeight: 23,
-    color: t.colors.text,
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.55,
-    marginTop: 3,
   },
   meta: {
     flex: 1,
@@ -478,51 +415,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["12"],
     lineHeight: 16,
     color: t.colors.textMuted,
-  },
-  searchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    minHeight: MIN_TOUCH_TARGET,
-    marginTop: t.space["2"],
-    marginBottom: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    borderRadius: t.radius.md,
-  },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  clearTarget: {
-    width: MIN_TOUCH_TARGET,
-    height: MIN_TOUCH_TARGET,
-    marginRight: -11,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtnPressed: {
-    backgroundColor: t.colors.border,
   },
   metaDot: {
     marginHorizontal: 0,

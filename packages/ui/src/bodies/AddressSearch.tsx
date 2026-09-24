@@ -1,8 +1,7 @@
 import React, { useState } from "react"
-import { View, Pressable, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native"
+import { View, Pressable, ActivityIndicator, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, focusRingProps, webInputReset, PRESSED_OPACITY, MIN_TOUCH_TARGET } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webInputReset, PRESSED_OPACITY, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { useAddressSearch, type AddressPick } from "./useAddressSearch"
@@ -141,10 +140,7 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     minHeight: 52,
   },
-  fieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  fieldFocused: inputFocusedStyle(t),
   input: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,

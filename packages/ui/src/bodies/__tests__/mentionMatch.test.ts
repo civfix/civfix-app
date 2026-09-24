@@ -4,7 +4,8 @@
  * `bob@alex.com` tints nothing.
  */
 import { describe, expect, it } from "vitest"
-import { bodyMentionsHandle, escapeRegExp, mentionScanRegex, normalizeHandle } from "../conversation/mentionMatch"
+import { bodyMentionsHandle, mentionScanRegex } from "../conversation/mentionMatch"
+import { escapeRegExp, normalizeHandle } from "../mentionText"
 
 /** The renderer's tokenizer, reduced to the handles it would tint (in order). */
 function scan(body: string, handles: string[]): string[] {

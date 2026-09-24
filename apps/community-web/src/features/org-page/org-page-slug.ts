@@ -1,5 +1,7 @@
 import { OrgSlugSchema } from "@civfix/shared"
 
+import { routeSegment } from "@/lib/route-segment"
+
 const ORG_PAGE_SEGMENT = "orgs"
 
 export type OrgSlugSource =
@@ -22,21 +24,10 @@ export function isOrgManagePath(pathname: string | null | undefined): boolean {
  * emitted at `/orgs/_/`, so the placeholder segment reads as "none" rather than as a slug.
  */
 export function orgSlugFromPath(pathname: string | null | undefined): OrgSlugSource {
-  if (!pathname) return NONE
+  const segment = routeSegment(pathname, ORG_PAGE_SEGMENT)
+  if (segment.kind === "none") return NONE
+  if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }
 
-  const segments = pathname.split("/").filter((segment) => segment.length > 0)
-  if (segments[0] !== ORG_PAGE_SEGMENT) return NONE
-
-  const raw = segments[1]
-  if (raw === undefined || raw === "_") return NONE
-
-  let decoded: string
-  try {
-    decoded = decodeURIComponent(raw)
-  } catch {
-    return { kind: "invalid", raw }
-  }
-
-  const parsed = OrgSlugSchema.safeParse(decoded)
-  return parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: decoded }
+  const parsed = OrgSlugSchema.safeParse(segment.value)
+  return parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: segment.value }
 }

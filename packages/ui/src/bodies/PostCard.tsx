@@ -13,6 +13,8 @@ import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import {
   POST_SURFACE,
+  ROW_A11Y_PROPS,
+  WEB_ROW_FOCUS_INSET,
   space,
   categoryColor,
   focusRingProps,
@@ -27,7 +29,6 @@ import {
   webTransition,
   type Theme,
 } from "../theme"
-import { tokens } from "@civfix/shared/tokens"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
@@ -37,7 +38,7 @@ import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../primitives/PostOverflowButton"
 import { useNavStore } from "../nav/useNavStore"
-import { useLightbox } from "../lightbox"
+import { usePostMediaLightbox } from "../lightbox/usePostMediaLightbox"
 import { EmbeddedPost } from "./EmbeddedPost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
@@ -45,7 +46,7 @@ import { localReportThumb } from "./localReportThumbs"
 import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { PostOverflowMenu } from "./PostOverflowMenu"
-import { usePopoverAnchor, type AnchorRect } from "../primitives/PopoverMenu"
+import { usePostOverflowMenuState } from "./postCardActions"
 import { useListTimeAgo } from "./useListTimeAgo"
 import {
   POST_BODY_CLAMP_LINES,
@@ -53,7 +54,6 @@ import {
   buildPostCardView,
   buildPostIdentity,
   identityA11yLabel,
-  postMenuSubject,
   repostBodyText,
   repostSubjectAuthorId,
   splitPostBodyMentions,
@@ -83,15 +83,6 @@ const BEFORE_AFTER_MEDIA_ASPECT = 1.1
 const CLEARED_MEDIA_ASPECT = 2.15
 
 const IS_WEB = Platform.OS === "web"
-
-/**
- * The row is a pointer convenience, never an accessibility element: it wraps the name, permalink, mention,
- * media, action-bar and menu controls. On iOS an accessible Pressable hides all of them from VoiceOver, and
- * on web a role=link row nests interactive content and renames the post after its label. Keyboard and
- * screen-reader users open the thread through the timestamp permalink instead. RNW's Pressable always sets
- * tabIndex=0, so web opts out with an explicit -1 (`focusable={false}` loses to it).
- */
-export const ROW_A11Y_PROPS: object = IS_WEB ? { tabIndex: -1 } : { accessible: false }
 
 const AVATAR_WEB_PROPS = IS_WEB ? ({ tabIndex: -1, "aria-hidden": true } as object) : null
 
@@ -483,14 +474,7 @@ export const PostCard = React.memo(function PostCard({
   const { t } = useT("home-feed")
   const layout = useLayoutMode()
   const [expanded, setExpanded] = React.useState(false)
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = usePostOverflowMenuState(post)
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const view = React.useMemo(() => buildPostCardView(post, model), [post, model])
@@ -513,7 +497,6 @@ export const PostCard = React.memo(function PostCard({
     [onOpenReport, push],
   )
 
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
   const openOriginal = React.useMemo(
     () => (openableOriginalId ? () => openPost(openableOriginalId) : undefined),
     [openableOriginalId, openPost],
@@ -547,20 +530,7 @@ export const PostCard = React.memo(function PostCard({
     [push, actionTargetId],
   )
 
-  const lightbox = useLightbox()
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
-  )
+  const openMedia = usePostMediaLightbox(media)
 
   const clamp = model.bodyExpandable && !expanded
   const isFlat = surface === "flat"
@@ -723,11 +693,6 @@ export const PostCard = React.memo(function PostCard({
     </>
   )
 })
-
-const RING_FOOTPRINT = Number.parseFloat(/^0 0 0 (\d+(?:\.\d+)?)px/.exec(tokens.shadow.ring)?.[1] ?? "3")
-export const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
-  ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle)
-  : {}
 
 const META_ROW: ViewStyle = {
   flexDirection: "row",

@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { CircleAlert, Globe, HeartHandshake, Loader2 } from "lucide-react"
-import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
+import { Globe, HeartHandshake } from "lucide-react"
+import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl, toAppError } from "@civfix/shared"
 import type { OrganizationDTO, SocialPlatform } from "@civfix/shared"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
@@ -13,9 +13,9 @@ import {
   presentSocialPlatforms,
 } from "@civfix/ui/social"
 
-import { toAppError } from "@/lib/api"
+import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
 import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
-import { parseMarkdownSubset } from "@civfix/shared/markdown"
+import { isSafeHttpsUrl, parseMarkdownSubset } from "@civfix/shared/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"
 
@@ -47,8 +47,10 @@ function SocialGlyph({ platform }: { platform: SocialPlatform }) {
   )
 }
 
+// The same safe-link rule the event page's donate and sponsor blocks apply: no credentials, IP literal or
+// punycode host, so an org's profile cannot link somewhere its page blocks could not.
 function httpsHref(url: string | null | undefined): string | null {
-  if (!url || !url.startsWith("https://")) return null
+  if (!url || !url.startsWith("https://") || !isSafeHttpsUrl(url)) return null
   try {
     return new URL(url).href
   } catch {
@@ -65,12 +67,19 @@ function websiteLabel(href: string): string {
   }
 }
 
+const ORG_STATE_CLASSES: PublicPageStateClasses = {
+  page: "orgpage",
+  shell: "orgpage-shell orgpage-state",
+  spin: "orgpage-spin",
+  action: "orgpage-button",
+}
+
 export function OrgPageLoading() {
   const { t } = useT("host-org")
   return (
-    <OrgPageState busy title={t("public.loading_title")}>
+    <PublicPageState classes={ORG_STATE_CLASSES} busy title={t("public.loading_title")}>
       {t("public.loading_body")}
-    </OrgPageState>
+    </PublicPageState>
   )
 }
 
@@ -85,13 +94,13 @@ export function OrgPageView() {
   if (source === null) return <OrgPageLoading />
   if (source.kind !== "slug") {
     return (
-      <OrgPageState title={t("public.not_found_title")}>
+      <PublicPageState classes={ORG_STATE_CLASSES} title={t("public.not_found_title")}>
         <Trans
           t={t}
           i18nKey="public.invalid_link_body"
           components={[<Link key="home" href="/" />]}
         />
-      </OrgPageState>
+      </PublicPageState>
     )
   }
   return <OrgDocument slug={source.slug} />
@@ -107,17 +116,18 @@ function OrgDocument({ slug }: { slug: string }) {
     const code = query.isError ? toAppError(query.error).code : ErrorCode.NOT_FOUND
     if (code === ErrorCode.NOT_FOUND) {
       return (
-        <OrgPageState title={t("public.not_found_title")}>
+        <PublicPageState classes={ORG_STATE_CLASSES} title={t("public.not_found_title")}>
           <Trans
             t={t}
             i18nKey="public.not_found_body"
             components={[<Link key="home" href="/" />]}
           />
-        </OrgPageState>
+        </PublicPageState>
       )
     }
     return (
-      <OrgPageState
+      <PublicPageState
+        classes={ORG_STATE_CLASSES}
         title={t("public.error_title")}
         action={{
           label: t("public.retry"),
@@ -125,7 +135,7 @@ function OrgDocument({ slug }: { slug: string }) {
         }}
       >
         {t("public.error_body")}
-      </OrgPageState>
+      </PublicPageState>
     )
   }
 
@@ -236,34 +246,6 @@ function OrgDocument({ slug }: { slug: string }) {
             />
           </p>
         </footer>
-      </div>
-    </main>
-  )
-}
-
-interface OrgPageStateProps {
-  title: string
-  busy?: boolean
-  action?: { label: string; onClick: () => void }
-  children: React.ReactNode
-}
-
-function OrgPageState({ title, busy, action, children }: OrgPageStateProps) {
-  return (
-    <main className="orgpage" aria-busy={busy ? true : undefined}>
-      <div className="orgpage-shell orgpage-state">
-        {busy ? (
-          <Loader2 aria-hidden="true" className="orgpage-spin" size={32} />
-        ) : (
-          <CircleAlert aria-hidden="true" size={32} />
-        )}
-        <h1>{title}</h1>
-        <p>{children}</p>
-        {action ? (
-          <button type="button" className="orgpage-button" onClick={action.onClick}>
-            {action.label}
-          </button>
-        ) : null}
       </div>
     </main>
   )

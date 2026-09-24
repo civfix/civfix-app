@@ -11,7 +11,6 @@ import React, {
 import {
   Dimensions,
   Keyboard,
-  StyleSheet,
   type KeyboardEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -19,6 +18,7 @@ import {
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { motion } from "../theme"
 import type { ScrollHostValue } from "./ScrollHost"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
 import {
@@ -36,6 +36,7 @@ import {
 } from "./keyboardScrollModel"
 import { KeyboardScrollScopeProvider, useKeyboardHostReserveScope } from "./keyboardScrollScope"
 import { usePageIsActive } from "./pageActive"
+import { useMergedRef } from "./useMergedRef"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
 import { KEYBOARD_HIDE_EVENT, KEYBOARD_PLATFORM, KEYBOARD_SHOW_EVENT } from "./keyboardPlatform"
 
@@ -101,14 +102,7 @@ function makeKeyboardAwareScrollable(
       setState((previous) => reduceScrollKeyboard(previous, signal))
     }, [])
 
-    const setRefs = useCallback(
-      (node: any) => {
-        innerRef.current = node
-        if (typeof ref === "function") ref(node)
-        else if (ref) (ref as React.MutableRefObject<any>).current = node
-      },
-      [ref],
-    )
+    const setRefs = useMergedRef(innerRef, ref)
 
     const handleScroll = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -223,9 +217,7 @@ function makeKeyboardAwareScrollable(
 
     const mergedContentStyle = useMemo(() => {
       if (horizontal) return contentContainerStyle
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + state.reserve }]
+      return withExtraBottomPadding(contentContainerStyle, state.reserve)
     }, [contentContainerStyle, horizontal, state.reserve])
 
     const scrollable = (

@@ -1,4 +1,3 @@
-import { z } from "zod"
 import { def } from "./def.js"
 import { ChatHistoryResponseSchema, ChatMessageDTOSchema } from "../../schemas/chat.js"
 import {
@@ -15,6 +14,7 @@ import {
   GroupMemberDTOSchema,
   DeleteGroupMessageRequestSchema,
 } from "../../schemas/groups.js"
+import { OkResponseSchema } from "../../schemas/internal-fields.js"
 
 export const groupEndpoints = {
   createChatGroup: def({
@@ -66,7 +66,7 @@ export const groupEndpoints = {
     method: "DELETE",
     path: "/groups/:id/members/:userId",
     request: RemoveGroupMemberRequestSchema,
-    response: z.object({ ok: z.literal(true) }),
+    response: OkResponseSchema,
     auth: "required",
     csrf: true,
     version: "v1",

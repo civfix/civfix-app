@@ -3,7 +3,8 @@ import { MAX_LINKED_REPORTS } from "@civfix/shared"
 import { useHaptics } from "../../capabilities"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"
-import { pickerAction, selectionDiff, togglePickerId, type PickerMode } from "./reportPickerModel"
+import { toggleLinkedReportId } from "../linkReportsModel"
+import { pickerAction, selectionDiff, type PickerMode } from "./reportPickerModel"
 
 export function usePickerSelection({
   value,
@@ -32,7 +33,7 @@ export function usePickerSelection({
 
   const toggle = useCallback(
     (id: string, title: string) => {
-      const next = togglePickerId(ids, id)
+      const next = toggleLinkedReportId(ids, id)
       if (next.outcome === "at_limit") {
         announce(t("limit_reached", { max: MAX_LINKED_REPORTS }), { priority: "assertive" })
         return

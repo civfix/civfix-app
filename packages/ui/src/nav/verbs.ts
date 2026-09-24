@@ -1,5 +1,6 @@
 import type { CleanupDTO, MessageThreadDTO, RoomKind } from "@civfix/shared"
 import { useNavStore } from "./useNavStore"
+import { threadRoomId } from "../data/threadRoom"
 
 export function isTopEntry(
   stack: ReadonlyArray<{ kind: string; id?: string }>,
@@ -11,7 +12,7 @@ export function isTopEntry(
 }
 
 export function openThread(thread: MessageThreadDTO): void {
-  const roomId = thread.refId ?? thread.id
+  const roomId = threadRoomId(thread)
   if (isTopEntry(useNavStore.getState().stack, "thread", roomId)) return
   if (thread.kind === "dm") {
     useNavStore.getState().push({

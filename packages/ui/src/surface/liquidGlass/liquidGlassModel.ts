@@ -13,6 +13,8 @@
  * inert under node, which keeps this file unit-testable.
  */
 
+import { clamp01 } from "../../math/clamp"
+
 export interface Rect {
   x: number
   y: number
@@ -44,11 +46,6 @@ export const DOCK_GAP = 12
 export const DOCK_MORPH_SHRINK = 16
 /** 2pt rather than flush so the slim bar reads aligned with, not fused to, the resting navbar's top edge. */
 export const DOCK_MORPH_TOP_OFFSET = 2
-
-export function clamp01(v: number): number {
-  "worklet"
-  return v < 0 ? 0 : v > 1 ? 1 : v
-}
 
 export function lerp(t: number, a: number, b: number): number {
   "worklet"

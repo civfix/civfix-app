@@ -1,20 +1,13 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { Pressable, View } from "react-native"
+import { View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { DELETED_USER_LABEL } from "@civfix/shared"
-import {
-  MIN_TOUCH_TARGET,
-  focusRingProps,
-  makeThemedStyles,
-  useTheme,
-  webCursorPointer,
-  webHover,
-  webTransition,
-} from "../../../theme"
-import { Text, TextLink, Icon, iconMap } from "../../../typography"
+import { DELETED_USER_LABEL, appErrorCode } from "@civfix/shared"
+import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme } from "../../../theme"
+import { Text, TextLink, iconMap } from "../../../typography"
 import type { IconName } from "../../../typography"
 import {
   Avatar,
+  IconActionButton,
   IconTile,
   LIST_DIVIDER_INSET,
   LIST_TILE,
@@ -38,7 +31,6 @@ import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
-import { appErrorCode } from "../../../data/errorCode"
 import { lastAdminSeat } from "../orgManageModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {
@@ -58,10 +50,6 @@ const CLOSED = "closed"
 const ACTIONS = "actions"
 
 const CONFIRM_REMOVE = "confirm-remove"
-
-const KEBAB_SIZE = 32
-
-const KEBAB_HIT_SLOP = 6
 
 function MemberRow({
   member,
@@ -84,7 +72,6 @@ function MemberRow({
   onSetRole: (userId: string, role: OrgSettableRole) => void
   onRemove: (userId: string) => void
 }) {
-  const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
@@ -147,27 +134,17 @@ function MemberRow({
         onPress={() => onOpenPerson(person.handle ?? person.id)}
         trailing={
           hasKebab ? (
-            <Pressable
+            <IconActionButton
               ref={menuAnchorRef}
+              icon={iconMap.Ellipsis}
+              iconColor={th.colors.textSubtle}
               onPress={() => {
                 measureMenu()
                 setMenuStep(ACTIONS)
               }}
-              accessibilityRole="button"
               accessibilityLabel={t("team.actions_a11y", { name: person.name })}
               accessibilityState={{ expanded: menuStep !== CLOSED }}
-              hitSlop={KEBAB_HIT_SLOP}
-              {...focusRingProps}
-              style={(state) => [
-                styles.kebab,
-                webTransition,
-                webCursorPointer,
-                webHover(state) ? styles.kebabHovered : null,
-                state.pressed ? styles.kebabPressed : null,
-              ]}
-            >
-              <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.textSubtle} />
-            </Pressable>
+            />
           ) : null
         }
       />
@@ -415,19 +392,6 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  kebab: {
-    width: KEBAB_SIZE,
-    height: KEBAB_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-  },
-  kebabHovered: {
-    backgroundColor: t.colors.bgAlt,
-  },
-  kebabPressed: {
-    opacity: 0.92,
-  },
   noteRow: {
     gap: t.space["1"],
     paddingHorizontal: t.space["4"],

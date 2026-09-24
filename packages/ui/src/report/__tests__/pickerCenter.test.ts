@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
-import { DEVICE_FIX_TIMEOUT_MS } from "../../data/deviceFix"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const picker = read("../../map/LocationPicker.native.tsx")
@@ -137,7 +137,8 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     // race) would erase the point the mobile map home seeds here, and with Infinity staleTime/gcTime and no
     // retry that null sticks for the session, so Discovery's leaderboard and nearby reports vanish. Both
     // queryFns on this key therefore end on a cache read.
-    const resolver = /async function resolveApproxCenter\([\s\S]*?\n\}/.exec(wizard)?.[0] ?? ""
+    const locationHook = read("../../data/hooks/location.ts")
+    const resolver = /async function resolveUserLocation\([\s\S]*?\n\}/.exec(locationHook)?.[0] ?? ""
     expect(resolver).toContain("qc: QueryClient")
     expect(resolver).toContain(
       "return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null",
@@ -147,17 +148,17 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     expect(code(resolver)).not.toMatch(/\n\s*return null\n\}/)
     // ...and the queryFn actually hands it the client (the pre-fetch `if (cached)` check is NOT the same
     // guarantee: it runs before the fetch, so it cannot see a seed that lands during it).
-    expect(wizard).toContain("queryFn: () => resolveApproxCenter(geo, api, qc),")
-    // The same last step, verbatim, in the hook that owns the key - so the two cannot drift.
-    expect(read("../../data/hooks/location.ts")).toContain(
-      "return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null",
-    )
+    expect(wizard).toContain("queryFn: () => resolveUserLocation(geo, api, qc),")
+    // The hook that owns the key runs the very same resolver, so the two queryFns cannot drift.
+    expect(locationHook).toContain("queryFn: () => resolveUserLocation(geo, api, qc),")
   })
 
   it("caps the device fix so one cold GPS read cannot park the map for the whole session", () => {
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
-    expect(wizard).toContain('import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "../../data/deviceFix"')
-    expect(wizard).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
+    const locationHook = read("../../data/hooks/location.ts")
+    expect(wizard).toContain('import { resolveUserLocation } from "../../data/hooks/location"')
+    expect(locationHook).toContain('import { DEVICE_FIX_TIMEOUT_MS, withTimeout, type LatLng } from "@civfix/shared"')
+    expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     // ...and the query must not retry: a denial that re-runs would re-prompt.
     expect(wizard).toContain("retry: false")
   })

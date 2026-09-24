@@ -9,21 +9,8 @@ import {
   type ListRenderItemInfo,
 } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import {
-  focusRingProps,
-  headingLevel,
-  makeThemedStyles,
-  wash,
-  useLayoutMode,
-  useTheme,
-} from "../theme"
-import { Text, Icon, iconMap } from "../typography"
-import {
-  DETAIL_BACK_SIZE,
-  DETAIL_BACK_RADIUS,
-  DETAIL_BACK_ICON_SIZE,
-  detailTitleStyle,
-} from "../shell/detailHeader"
+import { focusRingProps, makeThemedStyles } from "../theme"
+import { Text, iconMap } from "../typography"
 import { usePost, usePostReplies } from "../data/hooks/posts"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -45,6 +32,7 @@ import { ThreadReplyRow } from "./thread/ThreadReplyRow"
 import { buildThreadRows, type ThreadRow } from "./thread/threadModel"
 import { keyboardDismissModeFor } from "./keyboardDismissMode"
 import { POST_LIST_END_REACHED_THRESHOLD } from "./feedModel"
+import { DetailBodyHeader } from "./DetailBodyHeader"
 
 const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor(Platform.OS)
 
@@ -98,7 +86,6 @@ export function PostThreadBody(props: PostThreadBodyProps) {
 
 function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("home-feed")
   const back = useNavStore((state) => state.back)
   const { isAuthenticated } = useAuthState()
@@ -108,7 +95,6 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const parent = usePost(post.data?.replyToId ?? undefined)
 
   const [rootHeight, setRootHeight] = React.useState(0)
-  const expandedChrome = useLayoutMode() === "expanded"
   const [sentReplies, setSentReplies] = React.useState<PostDTO[]>([])
 
   const composerRef = React.useRef<ReplyComposerHandle | null>(null)
@@ -221,41 +207,13 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
     [replies.isLoading, replies.isError, post.data],
   )
 
-  const header = expandedChrome ? (
-    <View style={[styles.header, styles.headerPanel]}>
-      <Pressable
-        onPress={goBack}
-        accessibilityRole="button"
-        accessibilityLabel={t("thread.back")}
-        hitSlop={6}
-        {...focusRingProps}
-        style={styles.headerChip}
-      >
-        <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-      </Pressable>
-      <Text style={styles.headerPanelTitle} numberOfLines={1} accessibilityRole="header">
-        {t("thread.title")}
-      </Text>
-    </View>
-  ) : (
-    <View style={styles.header}>
-      <Pressable
-        onPress={goBack}
-        accessibilityRole="button"
-        accessibilityLabel={t("thread.back")}
-        hitSlop={6}
-        {...focusRingProps}
-        style={styles.headerButton}
-      >
-        <Icon icon={iconMap.ArrowLeft} size={21} color={th.colors.text} />
-      </Pressable>
-      <View pointerEvents="none" style={styles.headerTitleWrap}>
-        <Text variant="heading" accessibilityRole="header" {...headingLevel(1)}>
-          {t("thread.title")}
-        </Text>
-      </View>
-      <View style={styles.headerSpacer} />
-    </View>
+  const header = (
+    <DetailBodyHeader
+      title={t("thread.title")}
+      backLabel={t("thread.back")}
+      onBack={goBack}
+      compactTitle="heading"
+    />
   )
 
   if (!isAuthenticated) {
@@ -329,50 +287,6 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
 
 const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
-  header: {
-    minHeight: 52,
-    flexShrink: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: t.space["4"],
-    backgroundColor: t.colors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.colors.border,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -t.space["3"],
-  },
-  headerPanel: {
-    minHeight: 0,
-    gap: 10,
-    paddingTop: 14,
-    paddingHorizontal: 18,
-    paddingBottom: t.space["3"],
-    borderBottomColor:
-      Platform.OS === "web" ? wash(t.colors.borderStrong, 0.45, t) : t.colors.border,
-  },
-  headerChip: {
-    width: DETAIL_BACK_SIZE,
-    height: DETAIL_BACK_SIZE,
-    borderRadius: DETAIL_BACK_RADIUS,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surfaceTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerPanelTitle: { ...detailTitleStyle(18, t), flex: 1 },
-  headerTitleWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  headerSpacer: { width: 44 },
   list: { flex: 1, minHeight: 0 },
   listContent: { flexGrow: 1, paddingBottom: t.space["2"] },
   footerPad: { height: t.space["2"] },

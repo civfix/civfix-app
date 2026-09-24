@@ -9,7 +9,8 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import type { HostAnalyticsSummaryResponse } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, MIN_TOUCH_TARGET } from "../../../theme"
+import { visibleValue } from "@civfix/shared/host"
+import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, hitSlopToTarget } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
@@ -29,6 +30,7 @@ import {
   type SummaryPanelKey,
 } from "../analyticsModel"
 import { useWeekLabel } from "../useWeekLabel"
+import { seriesBars } from "../analytics/chartBars"
 
 const HEADER_HEIGHT = 30
 
@@ -50,7 +52,7 @@ const DOT_SIZE = 6
 
 const DOT_TARGET = 24
 
-const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2
+const DOT_SLOP_Y = hitSlopToTarget(DOT_TARGET)
 
 const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }
 
@@ -275,11 +277,7 @@ function Panel({
       >
         {hasSeriesData(daily) ? (
           <BarChart
-            bars={daily.map((point) => ({
-              key: point.day,
-              value: point.suppressed ? null : point.value,
-              color: th.colors.accent,
-            }))}
+            bars={seriesBars(daily, th.colors.accent)}
             xLabels={weeklyXLabels(daily, weekLabel)}
             width={width}
             height={CHART_HEIGHT - X_LABEL_ROW}
@@ -329,7 +327,7 @@ function Panel({
             bars={rows.map((row, index) => ({
               key: `${index}:${row.key}`,
               label: row.label,
-              value: row.suppressed ? null : row.value,
+              value: visibleValue(row),
               color: th.colors.accent,
               valueLabel: row.suppressed ? EMPTY_VALUE : String(row.value ?? 0),
             }))}

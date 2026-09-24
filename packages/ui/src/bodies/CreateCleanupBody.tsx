@@ -11,6 +11,7 @@ import {
   webHover,
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 import { type LatLng } from "@civfix/shared/geocode"
 import { timeRangeLabel } from "@civfix/shared/datetime"
 import { SignInPrompt, useToast } from "../primitives"
@@ -34,7 +35,6 @@ import { StepTransition } from "../shell/StepTransition"
 import { WizardStepHeader } from "../shell/WizardStepHeader"
 import { useStackDirection } from "../shell/useStackDirection"
 import { useLocale, useT } from "../i18n"
-import { appErrorCode } from "../data/errorCode"
 import { pushCleanup } from "../nav/verbs"
 import { useCleanupDraft } from "./cleanupDraftStore"
 import { useLinkedReportCards } from "./linkedReportCards"
@@ -109,18 +109,15 @@ function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
   }
 }
 
+const HOST_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.VALIDATION]: "error.validation",
+  [ErrorCode.RATE_LIMITED]: "error.rateLimited",
+  [ErrorCode.UNAUTHORIZED]: "error.session",
+  [ErrorCode.FORBIDDEN]: "error.session",
+}
+
 function hostErrorMessage(err: unknown, t: (key: string) => string): string {
-  switch (appErrorCode(err)) {
-    case "VALIDATION":
-      return t("error.validation")
-    case "RATE_LIMITED":
-      return t("error.rateLimited")
-    case "UNAUTHORIZED":
-    case "FORBIDDEN":
-      return t("error.session")
-    default:
-      return t("error.generic")
-  }
+  return t(errorCopyKey(err, HOST_ERROR_KEYS, "error.generic"))
 }
 
 function SeedLocationFromReport({ reportId }: { reportId: string }) {

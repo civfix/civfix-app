@@ -364,7 +364,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   it("short-circuits to the reduced token set from the OS reduce-motion flag", () => {
     expect(src).toMatch(/const restTokens = reduceMotion \? REDUCED_TOKENS : ANIMATED_TOKENS/)
     expect(src).toMatch(/const dragTokens = reduceMotion \? REDUCED_DRAG_TOKENS : DRAG_TOKENS/)
-    expect(src).toMatch(/AccessibilityInfo\.isReduceMotionEnabled\(\)/)
+    expect(src).toMatch(/const reduceMotion = useReducedMotion\(\) === true/)
     expect(src).toMatch(/pageTransitionPlan\(direction, reduceMotion, PAGE_TIMING\)/)
   })
 

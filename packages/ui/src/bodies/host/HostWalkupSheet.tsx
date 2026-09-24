@@ -2,29 +2,23 @@ import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
-import { MAX_ATTENDEE_NAME } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/shared"
+import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
 import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
-  modalSheetInputFocusedStyle,
   modalSheetInputStyle,
   useToast,
 } from "../../primitives"
 import { useT } from "../../i18n"
 import { useWalkupRegistration } from "../../data/hooks/host"
-import { appErrorCode } from "../../data/errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
 import { PartySizeStepper } from "./registration/PartySizeStepper"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
-import {
-  clampPartySize,
-  registerOutcomeKey,
-  resolveTicketTypeId,
-  sortedTicketTypes,
-} from "./registration/registrationModel"
+import { resolveTicketTypeId } from "./registration/registrationModel"
 
 export interface HostWalkupSheetProps {
   visible: boolean
@@ -83,7 +77,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           onClose()
         },
         onError: (err) =>
-          setErrorText(appErrorCode(err) === "FORBIDDEN" ? t("walkup.error_forbidden") : t("walkup.error")),
+          setErrorText(appErrorCode(err) === ErrorCode.FORBIDDEN ? t("walkup.error_forbidden") : t("walkup.error")),
       },
     )
   }, [canSubmit, onClose, partySize, selected, t, toast, trimmed, walkup])
@@ -129,7 +123,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
         autoCorrect={false}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
 
       {types.length > 1 ? (

@@ -66,7 +66,7 @@ export function GuidedSheet({
   const blocked = (blockers?.length ?? 0) > 0
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-token-4">
+    <div className="fixed inset-0 z-console-dialog flex items-end justify-center sm:items-center sm:p-token-4">
       <Scrim />
       <div
         ref={panelRef}

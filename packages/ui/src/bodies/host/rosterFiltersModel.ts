@@ -1,5 +1,5 @@
 import type { RegistrationRosterFilter } from "@civfix/shared"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "all",
@@ -15,5 +15,5 @@ export function visibleRosterFilters(
 }
 
 export function rosterMutationErrorKey(err: unknown): "roster.error_forbidden" | "roster.error" {
-  return appErrorCode(err) === "FORBIDDEN" ? "roster.error_forbidden" : "roster.error"
+  return appErrorCode(err) === ErrorCode.FORBIDDEN ? "roster.error_forbidden" : "roster.error"
 }

@@ -82,9 +82,7 @@ describe("the chat composer has a visible focus state", () => {
   })
 
   it("uses the same tokens the search field's ring uses", () => {
-    expect(composerStyles).toMatch(
-      /inputFocused:\s*Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: t\.colors\.accent \}/,
-    )
+    expect(composerStyles).toMatch(/inputFocused: inputFocusedStyle\(t, \{\}\),/)
   })
 })
 

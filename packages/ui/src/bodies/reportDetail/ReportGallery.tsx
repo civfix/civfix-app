@@ -5,6 +5,7 @@ import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"
 import { useLightbox } from "../../lightbox"
+import { toLightboxItems } from "../../lightbox/lightboxItems"
 import { useT } from "../../i18n"
 import { clampGallerySelection, partitionGalleryMedia } from "./galleryModel"
 import { GALLERY_ASPECT_RATIO, useGalleryStyles } from "./galleryStyles"
@@ -29,13 +30,7 @@ export function ReportGallery({
   const [selected, setSelected] = useState(0)
   const index = clampGallerySelection(selected, ready.length)
   const active = ready[index]
-  const lightboxItems = ready.map((m) => ({
-    url: m.url,
-    kind: m.kind === "video" ? ("video" as const) : ("image" as const),
-    thumbUrl: m.thumbUrl ?? null,
-    width: m.width ?? null,
-    height: m.height ?? null,
-  }))
+  const lightboxItems = toLightboxItems(ready)
 
   if (!active) {
     if (ownerPending.length > 0 || pending > 0) {

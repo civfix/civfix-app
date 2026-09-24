@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import type { TFunction } from "i18next"
 import { useToast } from "../../primitives"
-import { appErrorCode } from "../../data/errorCode"
+import { appErrorCode } from "@civfix/shared"
 import { inviteIdentifierValue } from "./hostTeamModel"
 import type { InviteIdentifierKind } from "./InviteIdentifierFields"
 

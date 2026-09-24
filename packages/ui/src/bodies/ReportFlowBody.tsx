@@ -11,6 +11,7 @@ import {
   DETAIL_BACK_RADIUS,
   DETAIL_BACK_ICON_SIZE,
   detailTitleStyle,
+  tabRootTitleStyle,
 } from "../shell/detailHeader"
 import { showBackAffordance } from "../shell/backAffordance"
 import { StepTransition } from "../shell/StepTransition"
@@ -397,14 +398,7 @@ const useStyles = makeThemedStyles((t) => ({
     paddingTop: HEADER_PAD_EXPANDED.top,
     minHeight: HEADER_PAD_EXPANDED.top + ROOT_ROW_CONTENT_HEIGHT_EXPANDED + t.space["1"],
   },
-  headerTitleRoot: {
-    flex: 1,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  headerTitleRoot: { ...tabRootTitleStyle(t), flex: 1 },
   scroll: { flex: 1 },
   wizardHead: {
     paddingHorizontal: t.space["4"],

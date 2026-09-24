@@ -26,7 +26,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { sliceBetween } from "../../__tests__/sourceGuards"
+import { expectThemeHitSlop, sliceBetween } from "../../__tests__/sourceGuards"
 import { threadRowActions } from "../messagesListModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -192,7 +192,8 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
     expect(inbox).toContain("<PopoverMenu")
     expect(inbox).toContain("usePopoverAnchor(setAnchorRect)")
     // The chip clears the 44pt floor by slop, on the file's own arithmetic.
-    expect(inbox).toContain("const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2")
+    expectThemeHitSlop(inbox)
+    expect(inbox).toContain("const ROW_MENU_HIT_SLOP = hitSlopToTarget(ROW_MENU_CHIP)")
     expect(inbox).toContain("hitSlop={ROW_MENU_HIT_SLOP}")
   })
 
@@ -256,7 +257,8 @@ describe("the two mutations", () => {
   })
 
   it("addresses the room the way the rest of the package does", () => {
-    expect(inbox).toContain("const roomId = thread.refId ?? thread.id")
+    expect(inbox).toContain("const roomId = threadRoomId(thread)")
+    expect(inbox).toContain('import { threadRoomId } from "../../data/threadRoom"')
     expect(inbox).toContain("const roomKind = thread.kind")
   })
 })

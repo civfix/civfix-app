@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectThemeHitSlop, surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
 const connections = read("../ConnectionsBody.tsx")
 const social = read("../SocialBody.tsx")
+const listSearchField = read("../../primitives/ListSearchField.tsx")
 const search = surfaceSource("search")
 
 describe("followers / following list", () => {
@@ -20,9 +21,13 @@ describe("followers / following list", () => {
   })
 
   it("grows the 22pt clear chip to the 44pt floor like the People search field", () => {
-    expect(connections).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
-    expect(connections).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
-    expect(connections).not.toContain("hitSlop={6}")
+    expect(connections).toContain("<ListSearchField")
+    expect(connections).toContain('clearTarget="slop"')
+    expect(social).toContain('clearTarget="slop"')
+    expect(listSearchField).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
+    expectThemeHitSlop(listSearchField)
+    expect(listSearchField).toContain("const CLEAR_BTN_HIT_SLOP = hitSlopToTarget(CLEAR_BTN_SIZE)")
+    expect(listSearchField).not.toContain("hitSlop={6}")
   })
 })
 

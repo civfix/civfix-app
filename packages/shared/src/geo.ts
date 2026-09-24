@@ -30,3 +30,24 @@ export function haversineMeters(a: LatLngLike, b: LatLngLike): number {
 export function haversineKm(a: LatLngLike, b: LatLngLike): number {
   return haversineMeters(a, b) / 1000
 }
+
+/**
+ * How long a caller waits for a FRESH device location fix before it falls back to the approximate (IP)
+ * location. A first fix can hang for many seconds, and on web `PositionOptions.timeout` does not start
+ * until the permission prompt is answered, so an ignored prompt would otherwise wait forever. Every
+ * surface uses this one value so the web map camera and the location-keyed queries expire together and
+ * settle in one wave.
+ */
+export const DEVICE_FIX_TIMEOUT_MS = 4000
+
+export const GEOCODE_POINT_KEY_DECIMALS = 5
+
+export function roundGeocodeCoord(n: number): number {
+  const factor = 10 ** GEOCODE_POINT_KEY_DECIMALS
+  return Math.round(n * factor) / factor
+}
+
+/** The exact-coordinate label shown when no address resolves, at the geocode key's precision. */
+export function coordsLabel(point: LatLngLike): string {
+  return `${point.lat.toFixed(GEOCODE_POINT_KEY_DECIMALS)}, ${point.lng.toFixed(GEOCODE_POINT_KEY_DECIMALS)}`
+}

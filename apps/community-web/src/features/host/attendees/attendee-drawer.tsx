@@ -12,8 +12,10 @@ import { ConsoleButton } from "@/components/console/button"
 import { Chip } from "@/components/console/chips/chip"
 
 import { useConsoleEvent } from "../console-context"
+import { consoleKeys } from "../console-keys"
 import { useConsoleFormat } from "../format"
-import { attendanceOf, attendeeDisplayName, checkableSeatIds } from "./roster-filters"
+import { attendeeDisplayName, checkableSeatIds } from "@civfix/shared/host"
+import { attendanceOf } from "./roster-filters"
 import { useAttendeeDrawerActions } from "./use-attendee-drawer-actions"
 import {
   AnswersSection,
@@ -57,7 +59,7 @@ export function AttendeeDrawer({
   const open = registration !== null
 
   const answers = useQuery<GetEventRegistrationAnswersResponse>({
-    queryKey: ["host", eventId, "answers", registrationId ?? "none"],
+    queryKey: consoleKeys.answers(eventId, registrationId ?? "none"),
     enabled: open && canViewAnswers && registrationId !== null,
     queryFn: () =>
       api.getEventRegistrationAnswers({ id: eventId, registrationId: registrationId as string }),

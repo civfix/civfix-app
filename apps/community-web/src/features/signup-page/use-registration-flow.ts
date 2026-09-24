@@ -3,26 +3,28 @@ import {
   ErrorCode,
   GUEST_RSVP_TURNSTILE_ACTION,
   currentVersion,
+  type EventAnswerValue,
   type PublicEventPageDTO,
+  toAppError,
 } from "@civfix/shared"
-
-import { api, toAppError } from "@/lib/api"
-import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
-import { useAuthStore } from "@/store/auth-store"
 import {
   answerPayload,
   clampPartySize,
-  defaultTicketId,
-  isSuccessOutcome,
+  defaultTicketTypeId,
   missingRequired,
+  visibleQuestions as shownQuestions,
+} from "@civfix/shared/host"
+
+import { api } from "@/lib/api"
+import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
+import { useAuthStore } from "@/store/auth-store"
+import {
+  isSuccessOutcome,
   outcomeMessageKey,
-  questionVisible,
-  questionsFor,
   registrationWindowState,
   selectableTickets,
   ticketById,
   waitlistAvailable,
-  type AnswerValue,
 } from "./registration-state"
 
 const REGISTRATION_CONSENT_SURFACE = "web_register" as const
@@ -45,10 +47,12 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   )
 
   const tickets = selectableTickets(page)
-  const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() => defaultTicketId(page))
+  const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() =>
+    defaultTicketTypeId(selectableTickets(page)),
+  )
   // Raw text so the field can be cleared and retyped; it is clamped on blur and on submit.
   const [partyInput, setPartyInput] = React.useState("1")
-  const [answers, setAnswers] = React.useState<Record<string, AnswerValue>>({})
+  const [answers, setAnswers] = React.useState<Record<string, EventAnswerValue>>({})
   const [accessCode, setAccessCode] = React.useState(initialAccessCode ?? "")
   const [hostContactOptIn, setHostContactOptIn] = React.useState(false)
   const [termsAccepted, setTermsAccepted] = React.useState(false)
@@ -72,9 +76,8 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   }, [resendAfter])
 
   const ticket = ticketById(page, ticketTypeId)
-  const scopedQuestions = questionsFor(page.questions, ticketTypeId)
-  const visibleQuestions = scopedQuestions.filter((question) => questionVisible(question, answers))
-  const missing = missingRequired(page.questions, answers, ticketTypeId)
+  const visibleQuestions = shownQuestions(page.questions, ticketTypeId, answers)
+  const missing = missingRequired(visibleQuestions, answers)
   const needsAccessCode = ticket?.requiresAccessCode === true
   const maxParty = ticket?.maxPartySize ?? 1
   const partySize = clampPartySize(Number(partyInput), maxParty)
@@ -100,7 +103,7 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
     ...(ticketTypeId ? { ticketTypeId } : {}),
     partySize,
     ...(needsAccessCode ? { accessCode: accessCode.trim() } : {}),
-    answers: answerPayload(page.questions, answers, ticketTypeId),
+    answers: answerPayload(visibleQuestions, answers),
     consent: {
       termsVersion: currentVersion("terms"),
       disclosureVersion: page.consentVersions.disclosureVersion,
@@ -243,7 +246,7 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
     setPartyInput("1")
   }
 
-  const setAnswer = (questionId: string, next: AnswerValue) =>
+  const setAnswer = (questionId: string, next: EventAnswerValue) =>
     setAnswers((current) => ({ ...current, [questionId]: next }))
 
   return {

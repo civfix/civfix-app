@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { MediaPreview } from "./MediaPreview"
@@ -52,12 +52,11 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
 
 const THUMB_SIZE = 64
 const THUMB_REMOVE_SIZE = 22
-const THUMB_REMOVE_TARGET = 44
 const THUMB_REMOVE_HIT_SLOP = {
   top: 0,
   right: 0,
-  bottom: THUMB_REMOVE_TARGET - THUMB_REMOVE_SIZE,
-  left: THUMB_REMOVE_TARGET - THUMB_REMOVE_SIZE,
+  bottom: MIN_TOUCH_TARGET - THUMB_REMOVE_SIZE,
+  left: MIN_TOUCH_TARGET - THUMB_REMOVE_SIZE,
 }
 
 const useStyles = makeThemedStyles((t) => ({

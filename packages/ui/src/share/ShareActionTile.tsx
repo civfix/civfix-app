@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import {
   makeThemedStyles,
   useTheme,
@@ -13,6 +13,7 @@ import {
   PRESSED_OPACITY,
 } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
+import { announce } from "../announce"
 import type { ShareTileTone } from "./shareSheetModel"
 
 export interface ShareActionTileProps {
@@ -59,7 +60,7 @@ export function ShareActionTile({
     }
     if (status === announced.current) return
     announced.current = status
-    AccessibilityInfo.announceForAccessibility(status)
+    announce(status)
   }, [status])
   return (
     <Pressable

@@ -2,17 +2,26 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import { ACCESS_CODE_MAX } from "@civfix/shared"
-import { hasEventEnded } from "@civfix/shared/host"
-import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
+import { ACCESS_CODE_MAX, appErrorCode } from "@civfix/shared"
+import {
+  answerPayload,
+  clampPartySize,
+  hasEventEnded,
+  missingRequired,
+  registerOutcomeKey,
+  sortedTicketTypes,
+  visibleQuestions,
+  type AnswerMap,
+} from "@civfix/shared/host"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import {
   ModalCardSheet,
-  modalSheetInputFocusedStyle as fieldFocusedStyle,
 } from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
+import { joinParts } from "../../../primitives/joinParts"
 import { useAuthState, useNow, useRequireAuth } from "../../../data"
 import { randomId } from "../../../data/randomId"
 import {
@@ -23,7 +32,6 @@ import {
 } from "../../../data/hooks/host"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
-import { appErrorCode } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
@@ -36,21 +44,8 @@ import {
 } from "./consentModel"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
-import {
-  answerPayload,
-  seedAnswers,
-  missingRequired,
-  visibleQuestions,
-  type AnswerMap,
-} from "./questionModel"
-import {
-  clampPartySize,
-  registerErrorKey,
-  registerOutcomeKey,
-  registrationSurface,
-  resolveTicketTypeId,
-  sortedTicketTypes,
-} from "./registrationModel"
+import { seedAnswers } from "./questionModel"
+import { registerErrorKey, registrationSurface, resolveTicketTypeId } from "./registrationModel"
 
 const NO_QUESTIONS: readonly EventQuestionDTO[] = []
 
@@ -239,15 +234,13 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
           </Text>
         </View>
         <Text style={styles.mineMeta}>
-          {[
+          {joinParts([
             mine?.ticketTypeName ?? null,
             mine ? t("mine.seats", { count: mine.seatCount }) : null,
             waitlisted && mine?.waitlistPosition != null
               ? t("mine.position", { position: mine.waitlistPosition })
               : null,
-          ]
-            .filter((part): part is string => part !== null)
-            .join(" · ")}
+          ])}
         </Text>
         {errorText ? (
           <Text style={styles.error} accessibilityRole="alert">
@@ -346,7 +339,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
             accessibilityLabel={t("form.access_code_label")}
             onFocus={() => setCodeFocused(true)}
             onBlur={() => setCodeFocused(false)}
-            style={[webInputReset, styles.input, codeFocused ? fieldFocusedStyle(th) : null]}
+            style={[webInputReset, styles.input, codeFocused ? inputFocusedStyle(th) : null]}
           />
         </View>
       ) : null}

@@ -1,8 +1,8 @@
-const SIGNUP_SEGMENT = "e"
+import { PageSlugSchema } from "@civfix/shared"
 
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const SLUG_MIN = 3
-const SLUG_MAX = 60
+import { routeSegment } from "@/lib/route-segment"
+
+const SIGNUP_SEGMENT = "e"
 
 export type SignupSlugSource =
   | { readonly kind: "none" }
@@ -12,26 +12,12 @@ export type SignupSlugSource =
 const NONE: SignupSlugSource = { kind: "none" }
 
 export function signupSlugFromPath(pathname: string | null | undefined): SignupSlugSource {
-  if (!pathname) return NONE
+  const segment = routeSegment(pathname, SIGNUP_SEGMENT)
+  if (segment.kind === "none") return NONE
+  if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }
 
-  const segments = pathname.split("/").filter((segment) => segment.length > 0)
-  if (segments[0] !== SIGNUP_SEGMENT) return NONE
-
-  const raw = segments[1]
-  if (raw === undefined || raw === "_") return NONE
-
-  let decoded: string
-  try {
-    decoded = decodeURIComponent(raw)
-  } catch {
-    return { kind: "invalid", raw }
-  }
-
-  const slug = decoded.trim().toLowerCase()
-  if (slug.length < SLUG_MIN || slug.length > SLUG_MAX || !SLUG_PATTERN.test(slug)) {
-    return { kind: "invalid", raw: decoded }
-  }
-  return { kind: "slug", slug }
+  const parsed = PageSlugSchema.safeParse(segment.value)
+  return parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: segment.value }
 }
 
 export function signupPath(slug: string): string {

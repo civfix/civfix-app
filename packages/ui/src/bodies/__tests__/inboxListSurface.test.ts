@@ -11,6 +11,9 @@ const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/
 const feed = strip(read("../FeedBody.tsx"))
 const reports = strip(read("../ReportsBody.tsx"))
 const postCard = strip(read("../PostCard.tsx"))
+const listSearchField = strip(read("../../primitives/ListSearchField.tsx"))
+const listBodyEmpty = strip(read("../../primitives/ListBodyEmpty.tsx"))
+const listEndReached = strip(read("../../primitives/useListEndReached.ts"))
 
 const rowStyle = (): string => {
   const from = inbox.indexOf("\n  row: {")
@@ -67,16 +70,18 @@ describe("the thread row is flat, not a card", () => {
     expect(inbox).toContain("{...focusRingProps}")
     expect(inbox).toContain('accessibilityRole="button"')
     expect(inbox).toContain('t("row.a11y_unread", { title: thread.title, count: thread.unread })')
-    expect((inbox.match(/<Pressable/g) ?? []).length).toBe(4)
+    expect((inbox.match(/<Pressable/g) ?? []).length).toBe(3)
+    expect(inbox).toContain("<ListSearchField")
     expect(inbox).toMatch(/menuHost: \{\s*position: "absolute"/)
     expect(inbox).toMatch(/menuSlot: \{\s*width: ROW_MENU_SLOT/)
   })
 
   it("pulls the keyboard ring INSIDE the row, or a full-bleed row clips it at both edges", () => {
-    expect(inbox).toMatch(/const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB/)
-    expect(inbox).toContain("outlineOffset: -(FOCUS_RING_WIDTH + FOCUS_RING_OFFSET)")
+    expect(inbox).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/\.\.\/theme"/)
+    expect(inbox).not.toMatch(/const WEB_ROW_FOCUS_INSET/)
     expect(inbox).toContain("WEB_ROW_FOCUS_INSET,")
-    expect(postCard).toContain("outlineOffset: -RING_FOOTPRINT")
+    expect(postCard).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
+    expect(postCard).toContain("isFlat ? WEB_ROW_FOCUS_INSET : null")
   })
 
   it("resolves the empty-state fill's magic number into a named constant", () => {
@@ -197,23 +202,24 @@ describe("pull-to-refresh", () => {
 describe("the inbox search field", () => {
   it("is ReportsBody's field: same shape, same focus recipe, same clear chip", () => {
     for (const src of [reports, inbox]) {
-      expect(src).toContain("<Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />")
-      expect(src).toContain("style={[styles.searchInput, webInputReset]}")
-      expect(src).toContain('returnKeyType="search"')
-      expect(src).toContain("onFocus={() => setFocused(true)}")
-      expect(src).toContain("onBlur={() => setFocused(false)}")
-      expect(src).toContain("focused ? styles.searchFieldFocused : null")
-      expect(src).toContain('accessibilityLabel={t("search.clear_a11y")}')
+      expect(src).toContain("<ListSearchField")
+      expect(src).toContain('clearA11yLabel={t("search.clear_a11y")}')
     }
-    expect(inbox).toMatch(
-      /searchFieldFocused:\s*Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: t\.colors\.accent \}/,
-    )
+    const src = listSearchField
+    expect(src).toContain("<Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />")
+    expect(src).toContain("style={[styles.searchInput, webInputReset]}")
+    expect(src).toContain('returnKeyType="search"')
+    expect(src).toContain("onFocus={() => setFocused(true)}")
+    expect(src).toContain("onBlur={() => setFocused(false)}")
+    expect(src).toContain("focused ? styles.searchFieldFocused : null")
+    expect(src).toContain("accessibilityLabel={clearA11yLabel}")
+    expect(src).toMatch(/searchFieldFocused: inputFocusedStyle\(t\),/)
   })
 
   it("sits UNDER the title, inside the same inset, and only once there is something to filter", () => {
     const header = inbox.match(/ListHeaderComponent=\{[\s\S]*?\n {6}\}/)?.[0]
     expect(header, "the ListHeaderComponent block must still be findable").toBeTruthy()
-    expect(header!.indexOf("<InboxHeader")).toBeLessThan(header!.indexOf("<InboxSearchField"))
+    expect(header!.indexOf("<InboxHeader")).toBeLessThan(header!.indexOf("<ListSearchField"))
     expect(header!).toContain("<View style={styles.headerInset} onTouchStart={dismissSwipe}>")
     expect(inbox).toContain("const showSearch = isAuthenticated && threads.length > 0")
   })
@@ -240,10 +246,9 @@ describe("the filter narrows LOADED threads, and never asks the server", () => {
   })
 
   it("stops paginating while filtering - ReportsBody's rule, for the same reason", () => {
-    expect(inbox).toMatch(
-      /const onEndReached = useCallback\(\(\) => \{\s*if \(filtering\) return/,
-    )
-    expect(reports).toMatch(/if \(filtering\) return/)
+    expect(inbox).toContain("const onEndReached = useListEndReached(query, filtering)")
+    expect(reports).toContain("const onEndReached = useListEndReached(query, filtering)")
+    expect(listEndReached).toMatch(/if \(filtering\) return false/)
     expect(inbox).toContain("!filtering && query.isFetchingNextPage")
   })
 
@@ -253,12 +258,11 @@ describe("the filter narrows LOADED threads, and never asks the server", () => {
     expect(from, "the empty-state component must still be findable").toBeGreaterThan(-1)
     expect(to).toBeGreaterThan(from)
     const empty = inbox.slice(from, to)
-    expect(empty).toContain("if (error)")
-    expect(empty).toContain("if (searchQuery !== null)")
-    expect(empty.indexOf("if (error)")).toBeLessThan(empty.indexOf("if (searchQuery !== null)"))
-    expect(empty.indexOf("if (searchQuery !== null)")).toBeLessThan(empty.indexOf('t("empty.title")'))
-    expect(empty).toContain('t("empty.no_match.body", { query: searchQuery })')
-    expect(empty).toContain("icon={iconMap.Search}")
+    expect(empty).toContain("if (loading || error || searchQuery !== null)")
+    expect(empty).toContain('phase={loading ? "loading" : error ? "error" : "noMatch"}')
+    expect(empty.indexOf("searchQuery !== null")).toBeLessThan(empty.indexOf('t("empty.title")'))
+    expect(empty).toContain('t("empty.no_match.body", { query: searchQuery ?? "" })')
+    expect(listBodyEmpty).toMatch(/phase === "noMatch"[\s\S]*?icon=\{iconMap\.Search\}/)
     expect(inbox).toContain("error={query.isError}")
     expect(inbox).toContain("searchQuery={filtering ? search.trim() : null}")
   })

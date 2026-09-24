@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { appErrorCode } from "../data/errorCode"
+import { appErrorCode } from "@civfix/shared"
 import { useApi } from "../data"
 import { uploadMediaId } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"

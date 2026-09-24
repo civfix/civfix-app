@@ -17,9 +17,10 @@ import type {
   GuestRsvpVerifyResponse,
   LinkedReportRef,
 } from "@civfix/shared"
+import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
-import { appErrorCode, appErrorFields, isEventEndedRefusal } from "../errorCode"
+import { isEventEndedRefusal } from "../errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"
@@ -197,14 +198,17 @@ export function joinCleanupMutationOptions(
   }
 }
 
+const RSVP_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.CONFLICT]: "error.closed",
+  [ErrorCode.FORBIDDEN]: "error.not_allowed",
+}
+
 export function rsvpErrorKey(
   code: string | undefined,
   fields?: Record<string, string> | undefined,
 ): string {
   if (isEventEndedRefusal(fields)) return "error.ended"
-  if (code === "CONFLICT") return "error.closed"
-  if (code === "FORBIDDEN") return "error.not_allowed"
-  return "error.generic"
+  return byErrorCode(code, RSVP_ERROR_KEYS, "error.generic")
 }
 
 export function useJoinCleanup(id: string) {

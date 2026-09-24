@@ -2,6 +2,7 @@
 
 import type { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, OrganizationDTO } from "@civfix/shared"
+import { queryKeys } from "@civfix/ui/data"
 
 import { checkInSeatsInRow, rowStillPendingCheckIn } from "./attendees/roster-filters"
 import { consoleKeys } from "./console-keys"
@@ -12,13 +13,13 @@ interface InfiniteRoster {
 }
 
 export function invalidateEvent(qc: QueryClient, eventId: string): void {
-  void qc.invalidateQueries({ queryKey: ["host", eventId] })
-  void qc.invalidateQueries({ queryKey: ["cleanup", eventId] })
+  void qc.invalidateQueries({ queryKey: queryKeys.hostEvent(eventId) })
+  void qc.invalidateQueries({ queryKey: queryKeys.cleanup(eventId) })
 }
 
 export function invalidateCheckinCounters(qc: QueryClient, eventId: string): void {
-  void qc.invalidateQueries({ queryKey: ["host", eventId, "counters"] })
-  void qc.invalidateQueries({ queryKey: ["cleanup", eventId] })
+  void qc.invalidateQueries({ queryKey: queryKeys.hostCounters(eventId) })
+  void qc.invalidateQueries({ queryKey: queryKeys.cleanup(eventId) })
 }
 
 /**
@@ -38,7 +39,7 @@ export function markRosterSeatsCheckedIn(
   at: string,
 ): void {
   if (seatIds.length === 0) return
-  const queries = qc.getQueryCache().findAll({ queryKey: ["host", eventId, "roster"] })
+  const queries = qc.getQueryCache().findAll({ queryKey: consoleKeys.rosterRoot(eventId) })
   for (const query of queries) {
     const dropWhenSettled = rosterFilterOf(query.queryKey) === "not_checked_in"
     qc.setQueryData<InfiniteRoster>(query.queryKey, (previous) =>
@@ -76,7 +77,7 @@ export function markRosterSeatsCheckedIn(
 
 export function invalidateOrg(qc: QueryClient, orgId: string): void {
   void qc.invalidateQueries({ queryKey: consoleKeys.org(orgId) })
-  void qc.invalidateQueries({ queryKey: ["orgs", "mine"] })
+  void qc.invalidateQueries({ queryKey: queryKeys.myOrganizations })
 }
 
 /**
@@ -86,7 +87,7 @@ export function invalidateOrg(qc: QueryClient, orgId: string): void {
  * there is merged (the server's fresh DTO wins) so an edit shows its new name at once too.
  */
 export function upsertMyOrganization(qc: QueryClient, org: OrganizationDTO): void {
-  qc.setQueryData<OrganizationDTO[]>(["orgs", "mine"], (previous) => {
+  qc.setQueryData<OrganizationDTO[]>(queryKeys.myOrganizations, (previous) => {
     const rows = previous ?? []
     if (!rows.some((row) => row.id === org.id)) return [...rows, org]
     return rows.map((row) => (row.id === org.id ? { ...row, ...org } : row))

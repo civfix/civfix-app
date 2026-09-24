@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
@@ -14,6 +15,8 @@ import {
   leakedDevRoutes,
   legalDocumentHash,
   missingAasaExcludes,
+  REQUIRED_AASA_EXCLUDES,
+  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 import { pageExtensionsFor } from "../next.config.mjs"
@@ -25,16 +28,6 @@ const redirects = readFileSync(join(publicDir, "_redirects"), "utf8")
 const association = JSON.parse(
   readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"),
 )
-
-const REQUIRED_EXCLUDES = [
-  "/legal/*",
-  "/service-record/*",
-  "/guest*",
-  "/claim*",
-  "/manage*",
-  "/e/*",
-  "/unsubscribe*",
-]
 
 describe("SPA-fallback completeness gate", () => {
   it("passes for the committed _redirects and the routes that ship a placeholder shell", () => {
@@ -57,8 +50,20 @@ describe("SPA-fallback completeness gate", () => {
 })
 
 describe("AASA gate", () => {
+  it("requires exactly the web-only paths that must never open the app", () => {
+    expect(REQUIRED_AASA_EXCLUDES).toEqual([
+      "/legal/*",
+      "/service-record/*",
+      "/guest*",
+      "/claim*",
+      "/manage*",
+      "/e/*",
+      "/unsubscribe*",
+    ])
+  })
+
   it("passes for the committed association file", () => {
-    expect(missingAasaExcludes(association, REQUIRED_EXCLUDES)).toEqual([])
+    expect(missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)).toEqual([])
     expect(aasaExcludeOrder(association).ok).toBe(true)
   })
 
@@ -145,6 +150,45 @@ describe("legal document hashing", () => {
 
   it("returns null when there is no legal article to hash", () => {
     expect(legalDocumentHash("<html><body><p>nope</p></body></html>")).toBe(null)
+  })
+})
+
+describe("rendered legal documents", () => {
+  const stamped =
+    '<article class="legal-prose" data-legal-doc="terms" data-legal-version="2026-09-06"><p>Terms.</p></article>'
+
+  function exportWith(pages) {
+    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
+    for (const [route, html] of Object.entries(pages)) {
+      mkdirSync(join(outDir, "legal", route), { recursive: true })
+      if (html !== null) writeFileSync(join(outDir, "legal", route, "index.html"), html, "utf8")
+    }
+    return outDir
+  }
+
+  it("is empty when the export has no legal directory", () => {
+    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
+    try {
+      expect(renderedLegalDocuments(outDir)).toEqual([])
+    } finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
+  })
+
+  it("lists every route with an index.html in route order, stamped or not, with its type and hash", () => {
+    const outDir = exportWith({ terms: stamped, privacy: "<p>no stamp</p>", empty: null })
+    try {
+      const documents = renderedLegalDocuments(outDir)
+      expect(documents.map((document) => document.route)).toEqual(["privacy", "terms"])
+      const [privacy, terms] = documents
+      expect(privacy.type).toBe(null)
+      expect(privacy.hashed).toBe(null)
+      expect(terms.type).toBe("terms")
+      expect(terms.html).toBe(stamped)
+      expect(terms.hashed).toEqual(legalDocumentHash(stamped))
+    } finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
   })
 })
 

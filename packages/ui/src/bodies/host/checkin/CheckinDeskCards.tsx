@@ -1,13 +1,14 @@
 import React from "react"
 import { View } from "react-native"
-import type { EventCheckinCountersDTO } from "@civfix/shared"
+import type { CheckinOutcome, EventCheckinCountersDTO } from "@civfix/shared"
+import { checkinResultRender, type CheckinTone } from "@civfix/shared/host"
 import type { CheckinReplayReport } from "../../../data/checkinOutbox"
 import { makeThemedStyles, useTheme, type Theme } from "../../../theme"
-import { Text, Icon, iconMap } from "../../../typography"
+import { Text, Icon, iconMap, type IconName } from "../../../typography"
 import { SecondaryButton, StatTile, StatTileRow } from "../../../primitives"
 import { formatStatValue } from "../../../primitives/statTileModel"
+import { joinParts } from "../../../primitives/joinParts"
 import { useLocale, useT } from "../../../i18n"
-import { checkinResultRender, type CheckinTone } from "../checkinResult"
 import type { CheckinResultState } from "./useCheckinDesk"
 import { TilesSkeleton } from "../HostSkeletons"
 
@@ -100,12 +101,21 @@ export function ReplayReportCard({ report, onDismiss }: { report: CheckinReplayR
   )
 }
 
+const CHECKIN_ICON: Readonly<Record<CheckinOutcome, IconName>> = {
+  checked_in: "TicketCheck",
+  already: "UserCheck",
+  waitlisted: "Hourglass",
+  cancelled: "Ban",
+  no_show: "TriangleAlert",
+  wrong_event: "TriangleAlert",
+  unknown_token: "TriangleAlert",
+}
+
 function checkinToneColor(th: Theme, tone: CheckinTone): string {
   const byTone: Record<CheckinTone, string> = {
     success: th.colors.moss["700"],
     warning: th.colors.sun["700"],
     error: th.colors.dangerInk,
-    neutral: th.colors.textMuted,
   }
   return byTone[tone]
 }
@@ -129,7 +139,7 @@ export function CheckinResultCard({
   return (
     <View style={[styles.result, { borderColor: toneColor }]} accessibilityRole="alert">
       <View style={styles.resultHead}>
-        <Icon icon={iconMap[render.icon]} size={20} color={toneColor} />
+        <Icon icon={iconMap[CHECKIN_ICON[render.shown]]} size={20} color={toneColor} />
         <Text style={[styles.resultTitle, { color: toneColor }]}>{t(render.titleKey)}</Text>
       </View>
       <Text style={styles.resultBody}>{t(render.bodyKey)}</Text>
@@ -137,12 +147,10 @@ export function CheckinResultCard({
         <Text style={styles.resultName}>{state.result.attendeeName}</Text>
       ) : null}
       <Text style={styles.resultMeta}>
-        {[
+        {joinParts([
           state.result.ticketTypeName ?? null,
           state.result.partySize != null ? t("result.party", { count: state.result.partySize }) : null,
-        ]
-          .filter((part): part is string => part !== null)
-          .join(" · ")}
+        ])}
       </Text>
       <View style={styles.resultActions}>
         {render.undoable && state.seatId ? (

@@ -5,7 +5,7 @@
  *      renderer;
  *   3. the safety invariant: a retained map is acceptable only because an opaque base body is painted over
  *      it, so `renderBaseBody` must stay the exact complement of the unretained `mountMap`.
- * The pure behaviour of `retainMap` is pinned in portrait-shell.test.ts and not restated here.
+ * The pure behaviour of `retainMap` is pinned in portraitShell.test.ts and not restated here.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

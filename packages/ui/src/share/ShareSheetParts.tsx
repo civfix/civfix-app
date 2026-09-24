@@ -1,9 +1,8 @@
 import React from "react"
 import { View, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
-import { useTheme, webInputReset } from "../theme"
+import { useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { iconMap } from "../typography"
 import { useT } from "../i18n"
-import { modalSheetInputFocusedStyle } from "../primitives/ModalCardSheet"
 import { SignInPrompt } from "../primitives/StateView"
 import { TextInput } from "../primitives/TextInput"
 
@@ -39,7 +38,7 @@ export function ShareNoteInput({
       accessibilityLabel={t("note.a11y")}
       onFocus={() => onFocusedChange(true)}
       onBlur={() => onFocusedChange(false)}
-      style={[webInputReset, style, focused ? modalSheetInputFocusedStyle(th) : null]}
+      style={[webInputReset, style, focused ? inputFocusedStyle(th) : null]}
     />
   )
 }

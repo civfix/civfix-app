@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { DEVICE_FIX_TIMEOUT_MS, coordsLabel, withTimeout } from "@civfix/shared"
 import { parseLatLng, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
 import { useGeolocation } from "../capabilities"
 import { useApi, fetchApproximateLocation } from "../data"
 import { useMapViewport, viewportBias } from "../map/mapViewportStore"
 import { useT } from "../i18n"
 import { announce } from "../announce"
-import {
-  PROXIMITY_FIX_TIMEOUT_MS,
-  addressSearchStatus,
-  buildSuggestRequest,
-  settleWithin,
-} from "./addressSuggestRequest"
+import { addressSearchStatus, buildSuggestRequest } from "./addressSuggestRequest"
 
 const MAP_BIAS_SCALE = 0.6
 
@@ -49,7 +45,7 @@ export function useAddressSearch({
   const resolveProximity = useCallback((): Promise<LatLng | null> => {
     if (!proximityRef.current) {
       proximityRef.current = (async () => {
-        const pos = geo.isAvailable() ? await settleWithin(geo.getCurrentPosition(), PROXIMITY_FIX_TIMEOUT_MS) : null
+        const pos = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
         if (pos) return { lat: pos.latitude, lng: pos.longitude }
         const approximate = await fetchApproximateLocation(api, qc)
         if (approximate) return approximate
@@ -96,7 +92,7 @@ export function useAddressSearch({
         setResults([
           {
             id: `coordinate:${coord.lat},${coord.lng}`,
-            label: `${coord.lat.toFixed(5)}, ${coord.lng.toFixed(5)}`,
+            label: coordsLabel(coord),
             secondary: t("coordinate.exact"),
             lat: coord.lat,
             lng: coord.lng,

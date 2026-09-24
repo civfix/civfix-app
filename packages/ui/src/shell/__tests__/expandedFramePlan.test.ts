@@ -35,7 +35,7 @@ import {
   RAIL_BRAND_PAD_H,
   RAIL_BRAND_SIZE,
   RAIL_BRAND_W,
-  RAIL_ORB,
+  DOCK_ORB,
   RAIL_PAD_H,
   RAIL_TAB_COUNT,
   expandedFits,
@@ -72,7 +72,7 @@ describe("rail cluster geometry (horizontal: brand pill, capsule, orb, left to r
     expect(RAIL_ITEM).toBe(56)
     expect(RAIL_ITEM_GAP).toBe(10)
     expect(RAIL_PAD_H).toBe(10)
-    expect(RAIL_ORB).toBe(58)
+    expect(DOCK_ORB).toBe(58)
   })
 
   it("borrows the portrait dock's own cell rhythm instead of a tighter landscape one", () => {
@@ -205,7 +205,7 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
 
   it("adds the left cluster up the way the rail lays it out: inset, pill, capsule, orb", () => {
     expect(EXPANDED_LEFT_CLUSTER_W).toBe(
-      NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + RAIL_ORB,
+      NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + DOCK_ORB,
     )
     expect(EXPANDED_LEFT_CLUSTER_W).toBe(481)
   })

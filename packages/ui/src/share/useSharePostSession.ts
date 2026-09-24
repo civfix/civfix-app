@@ -20,7 +20,8 @@ import {
   toShareRecipient,
   type SharePlanEntry,
 } from "./shareToDm"
-import { newShareClientId, useShareToDm } from "./useShareToDm"
+import { useShareToDm } from "./useShareToDm"
+import { randomId } from "../data/randomId"
 import type { SharePostTarget } from "./types"
 
 const NO_SELECTION: PersonDTO[] = []
@@ -132,7 +133,7 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
 
   const onSend = (): void => {
     if (!canSend) return
-    const entries = buildSharePlan(selected.map(toShareRecipient), newShareClientId)
+    const entries = buildSharePlan(selected.map(toShareRecipient), randomId)
     if (entries.length === 0) return
     void deliver(entries, composeShareBody(note, url))
   }

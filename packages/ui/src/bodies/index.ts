@@ -221,11 +221,11 @@ export {
   mergeCardEntry,
   pinToCardData,
   reportToCardData,
-  reportThumbUrl,
   sameCardEntry,
   useLinkedReportCards,
 } from "./linkedReportCards"
 export type { LinkedReportCardEntry, LinkedReportCardsState } from "./linkedReportCards"
+export { reportThumbUrl } from "./reportsListModel"
 export { linkedReportHeadline } from "./linkedReportHeadline"
 export type { LinkedReportHeadline } from "./linkedReportHeadline"
 

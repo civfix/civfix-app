@@ -1,3 +1,5 @@
+import { clamp01 } from "../math/clamp"
+
 export interface ChartPoint {
   x: number
   y: number | null
@@ -19,9 +21,9 @@ export const DEFAULT_RING_THICKNESS = 6
 
 export const AXIS_LABEL_HEIGHT = 14
 
+/** A chart reads a non-finite value as empty, where the worklet `clamp01` would pass NaN through. */
 export function clampFraction(value: number): number {
-  if (!Number.isFinite(value)) return 0
-  return value < 0 ? 0 : value > 1 ? 1 : value
+  return Number.isFinite(value) ? clamp01(value) : 0
 }
 
 export function chartMax(values: readonly (number | null)[], floor = 1): number {

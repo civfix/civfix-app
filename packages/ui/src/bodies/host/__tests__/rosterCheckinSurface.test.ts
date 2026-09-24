@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { ROSTER_FILTERS, visibleRosterFilters } from "../rosterFiltersModel"
+import { SEARCH_DEBOUNCE_MS } from "../../../data/hooks/useDebouncedValue"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (src: string): string =>
@@ -47,8 +48,12 @@ describe("there is ONE check-in row in the package", () => {
   })
 
   it("takes the seat to check in and the seat to undo from the shared pure helpers", () => {
-    expect(list).toContain("export function nextCheckinSeat")
-    expect(list).toContain("export function lastCheckedInSeat")
+    expect(list).toContain(
+      'import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"',
+    )
+    expect(list).toContain("nextCheckinSeat(row)")
+    expect(list).toContain("lastCheckedInSeat(row)")
+    expect(list).not.toContain("function nextCheckinSeat")
     for (const surface of [block, checkin, checkinRoster, paged]) {
       expect(surface).not.toContain("function nextCheckinSeat")
     }
@@ -96,8 +101,9 @@ describe("the check-in screen shows who is still waiting", () => {
     expect(checkin).toContain("useCheckinRoster(id, canCheckIn, desk.undo)")
     expect(checkinRoster).toContain('filter: "not_checked_in"')
     expect(checkinRoster).toContain("q: rosterQuery")
-    expect(checkinRoster).toContain("useDebouncedValue(rosterSearch, ROSTER_SEARCH_DEBOUNCE_MS)")
-    expect(paged).toContain("export const ROSTER_SEARCH_DEBOUNCE_MS = 250\n")
+    expect(checkinRoster).toContain("useDebouncedValue(rosterSearch, SEARCH_DEBOUNCE_MS)")
+    expect(block).toContain("useDebouncedValue(search, SEARCH_DEBOUNCE_MS)")
+    expect(SEARCH_DEBOUNCE_MS).toBe(250)
     expect(checkinRoster).toContain("enabled: canCheckIn")
   })
 

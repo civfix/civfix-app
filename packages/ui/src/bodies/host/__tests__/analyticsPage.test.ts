@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { HostedEventDTO } from "@civfix/shared"
+import { MAX_HOST_SUMMARY_EVENT_ROWS, type HostedEventDTO } from "@civfix/shared"
 import { pickerOptions } from "../analyticsModel"
 import { surfaceSource } from "../../../__tests__/sourceGuards"
 
@@ -135,8 +135,8 @@ describe("the all-events mode answers for the whole portfolio", () => {
 
   it("lets a by-event row set the filter instead of leaving the page", () => {
     expect(BODY).toContain("onPress={() => onPickEvent(row)}")
-    expect(BODY).toContain("const rows = data.byEvent.rows.slice(0, MAX_BY_EVENT_ROWS)")
-    expect(BODY).toContain("const MAX_BY_EVENT_ROWS = 12")
+    expect(BODY).toContain("const rows = data.byEvent.rows.slice(0, MAX_HOST_SUMMARY_EVENT_ROWS)")
+    expect(MAX_HOST_SUMMARY_EVENT_ROWS).toBe(12)
   })
 
   it("resolves the tapped row to an event id rather than to its title", () => {

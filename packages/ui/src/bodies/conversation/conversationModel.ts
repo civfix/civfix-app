@@ -1,11 +1,10 @@
 import { useMemo } from "react"
-import { AVATAR_PALETTE, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
+import { AVATAR_PALETTE, ErrorCode, appErrorCode, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
-import { useThreads } from "../../data"
+import { useThreadForRoom } from "../../data/hooks/chat"
 import type { ChatRoomError } from "../../data"
 import { dayKey, dayLabel, type DayLabelOptions } from "../relativeTime"
-import { appErrorCode } from "../../data/errorCode"
 import { colorSchemes, type ColorSchemeName } from "../../theme/schemes"
 
 export const FLASH_DURATION_MS = 900
@@ -93,7 +92,7 @@ export function transientErrorCopyKey(code: string): string {
 
 /** The edit-save failure toast. Never the error's own message: AppError text is English-only. */
 export function editErrorCopyKey(err: unknown): string {
-  return appErrorCode(err) === "NOT_FOUND" ? "composer.edit_unavailable" : "composer.save_error"
+  return appErrorCode(err) === ErrorCode.NOT_FOUND ? "composer.edit_unavailable" : "composer.save_error"
 }
 
 export function roomErrorCopy(error: ChatRoomError | null, meta: ConvoMeta, t: TFunction): string | null {
@@ -156,12 +155,8 @@ export function useConvoMeta(
   peer: PersonDTO | undefined,
   items: ChatItem[],
 ): ConvoMeta {
-  const threads = useThreads()
+  const match = useThreadForRoom(roomKind, roomId)
   const { t } = useT("conversation")
-  const match = useMemo<MessageThreadDTO | undefined>(() => {
-    const all = (threads.data?.pages ?? []).flatMap((p) => p.items)
-    return all.find((thr) => (thr.refId ?? thr.id) === roomId)
-  }, [threads.data, roomId])
   return useMemo<ConvoMeta>(() => {
     if (match) {
       return {

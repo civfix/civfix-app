@@ -1,36 +1,25 @@
 import React from "react"
-import {
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-} from "react-native"
-import { SafeAreaInsetsContext } from "react-native-safe-area-context"
+import { Platform, Pressable, ScrollView, View, useWindowDimensions } from "react-native"
 import type { CleanupDTO, LinkedEventRef, ReportDTO } from "@civfix/shared"
 import {
   focusRingProps,
   makeThemedStyles,
-  space,
   useTheme,
   webCursorPointer,
   webHover,
   webNoSelect,
-  webScrimProps,
   webTransition,
+  MIN_TOUCH_TARGET,
 } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import type { IconName } from "../../typography"
 import { useT } from "../../i18n"
 import { useAttendingCleanups, useMyReports } from "../../data"
 import type { AnchorRect } from "../../primitives/PopoverMenu"
+import { AnchoredActionSheet, type RunAfterDismiss } from "../../primitives/AnchoredActionSheet"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { buildComposerEventRef } from "../postComposerModel"
-import { useDeferredOverlayAction } from "../../primitives/useDeferredOverlayAction"
-import { useModalClosed } from "../../primitives/useModalClosed"
 
 type AttachLevel = "menu" | "events" | "reports"
 
@@ -44,8 +33,9 @@ const ROW_ICON: Record<MenuRowKey, IconName> = {
 }
 
 const CARD_WIDTH = 264
-const EDGE_MARGIN = space["2"]
-const GAP = space["1"]
+const CARD_MAX_WIDTH = 360
+const ROW_ICON_SIZE = 20
+const PICKER_MAX_HEIGHT_FRACTION = 0.5
 
 export interface ReplyAttachSheetProps {
   visible: boolean
@@ -75,9 +65,7 @@ export function ReplyAttachSheet({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("post-composer")
-  const { width: winW, height: winH } = useWindowDimensions()
-  const isWeb = Platform.OS === "web"
-  const insets = React.useContext(SafeAreaInsetsContext)
+  const { height: winH } = useWindowDimensions()
   const [level, setLevel] = React.useState<AttachLevel>("menu")
   // Reset while rendering, not in an effect, so a reopened sheet never paints the last picker for a frame.
   const [shownVisible, setShownVisible] = React.useState(visible)
@@ -86,13 +74,12 @@ export function ReplyAttachSheet({
     if (visible) setLevel("menu")
   }
 
-  const rows: readonly MenuRowKey[] = isWeb
-    ? (["photo", "event", "report"] as const)
-    : (["photo", "camera", "event", "report"] as const)
+  const rows: readonly MenuRowKey[] =
+    Platform.OS === "web"
+      ? (["photo", "event", "report"] as const)
+      : (["photo", "camera", "event", "report"] as const)
 
-  const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)
-  const onModalDismiss = useModalClosed(visible, settled)
-  const chooseRow = (key: MenuRowKey) => {
+  const chooseRow = (key: MenuRowKey, runAfterDismiss: RunAfterDismiss) => {
     if (key === "event") {
       setLevel("events")
       return
@@ -101,16 +88,16 @@ export function ReplyAttachSheet({
       setLevel("reports")
       return
     }
-    run(key === "photo" ? onPhoto : onCamera)
+    runAfterDismiss(key === "photo" ? onPhoto : onCamera)
   }
 
-  const renderMenuRow = (key: MenuRowKey) => {
+  const renderMenuRow = (key: MenuRowKey, runAfterDismiss: RunAfterDismiss) => {
     const label = t(`attach.${key}`)
     const disabled = (key === "photo" || key === "camera") && !canAttachMedia
     return (
       <Pressable
         key={key}
-        onPress={() => chooseRow(key)}
+        onPress={() => chooseRow(key, runAfterDismiss)}
         disabled={disabled}
         accessibilityRole="menuitem"
         accessibilityLabel={label}
@@ -125,7 +112,7 @@ export function ReplyAttachSheet({
           disabled ? styles.rowDisabled : null,
         ]}
       >
-        <Icon icon={iconMap[ROW_ICON[key]]} size={20} color={th.colors.accent} />
+        <Icon icon={iconMap[ROW_ICON[key]]} size={ROW_ICON_SIZE} color={th.colors.accent} />
         <Text variant="body" numberOfLines={1} style={[styles.rowLabel, webNoSelect]}>
           {label}
         </Text>
@@ -133,7 +120,7 @@ export function ReplyAttachSheet({
     )
   }
 
-  const maxHeight = Math.round(winH * 0.5)
+  const maxHeight = Math.round(winH * PICKER_MAX_HEIGHT_FRACTION)
   const backToMenu = () => setLevel("menu")
   const pickerBody = () =>
     level === "events" ? (
@@ -158,68 +145,19 @@ export function ReplyAttachSheet({
       />
     )
 
-  const content = level === "menu" ? <>{rows.map(renderMenuRow)}</> : pickerBody()
-
-  if (isWeb) {
-    let cardPosition: { bottom: number; left: number } | null = null
-    if (anchor) {
-      const maxLeft = Math.max(EDGE_MARGIN, winW - CARD_WIDTH - EDGE_MARGIN)
-      cardPosition = {
-        bottom: Math.max(EDGE_MARGIN, winH - anchor.y + GAP),
-        left: Math.min(Math.max(anchor.x, EDGE_MARGIN), maxLeft),
-      }
-    }
-    return (
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={onClose}
-        onDismiss={onModalDismiss}
-      >
-        <View style={styles.rootWeb}>
-          <Pressable
-            style={styles.backdropWeb}
-            accessibilityRole="button"
-            accessibilityLabel={t("attach.dismiss")}
-            onPress={onClose}
-            {...webScrimProps}
-          />
-          <View
-            style={[styles.card, cardPosition ? { position: "absolute", ...cardPosition } : styles.cardCentered]}
-            accessibilityRole="menu"
-          >
-            {content}
-          </View>
-        </View>
-      </Modal>
-    )
-  }
-
   return (
-    <Modal
+    <AnchoredActionSheet
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-      onDismiss={onModalDismiss}
+      onClose={onClose}
+      anchor={anchor}
+      cardWidth={CARD_WIDTH}
+      cardMaxWidth={CARD_MAX_WIDTH}
+      dismissLabel={t("attach.dismiss")}
     >
-      <View style={styles.rootNative}>
-        <Pressable
-          style={styles.scrim}
-          accessibilityRole="button"
-          accessibilityLabel={t("attach.dismiss")}
-          onPress={onClose}
-          {...webScrimProps}
-        />
-        <View
-          style={[styles.sheet, { paddingBottom: (insets?.bottom ?? 0) + space["3"] }]}
-          accessibilityRole="menu"
-        >
-          {content}
-        </View>
-      </View>
-    </Modal>
+      {(runAfterDismiss) =>
+        level === "menu" ? <>{rows.map((key) => renderMenuRow(key, runAfterDismiss))}</> : pickerBody()
+      }
+    </AnchoredActionSheet>
   )
 }
 
@@ -361,46 +299,6 @@ function ReportsPicker({ maxHeight, attachedReportId, onBack, onSelect }: Report
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  rootWeb: {
-    flex: 1,
-  },
-  backdropWeb: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  rootNative: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  scrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: t.colors.scrimModal,
-  },
-  card: {
-    minWidth: CARD_WIDTH,
-    maxWidth: 360,
-    paddingVertical: t.space["1"],
-    paddingHorizontal: t.space["1"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
-  cardCentered: {
-    alignSelf: "center",
-    marginTop: "auto",
-    marginBottom: "auto",
-  },
-  sheet: {
-    paddingTop: t.space["2"],
-    paddingHorizontal: t.space["2"],
-    borderTopLeftRadius: t.radius.xl,
-    borderTopRightRadius: t.radius.xl,
-    backgroundColor: t.colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
   row: {
     minHeight: 52,
     flexDirection: "row",
@@ -434,8 +332,8 @@ const useStyles = makeThemedStyles((t) => ({
     paddingRight: t.space["3"],
   },
   backButton: {
-    width: 44,
-    height: 44,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.md,
@@ -468,7 +366,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textMuted,
   },
   listAction: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     paddingHorizontal: 10,
     borderRadius: t.radius.pill,

@@ -1,11 +1,11 @@
 import { useCallback } from "react"
 import type { HostedEventDTO } from "@civfix/shared"
 import { shareLink, useToast } from "../../../primitives"
+import { cleanupSharePath } from "../../../primitives/cleanupSharePath"
 import { useRequireAuth } from "../../../data"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { openHostDashboard } from "../../hostDashboardTarget"
-import { sharePathFor } from "./dashboardModel"
 
 export type HostedEventHandler = (event: HostedEventDTO) => void
 
@@ -64,7 +64,7 @@ export function useHostedEventNav(activeOrgId: string | null): HostedEventNav {
 
   const onShare = useCallback(
     (event: HostedEventDTO) => {
-      void shareLink({ title: event.title, path: sharePathFor(event) }).then((result) => {
+      void shareLink({ title: event.title, path: cleanupSharePath(event) }).then((result) => {
         if (result !== "copied") return
         toast.show(t("common-share:button.copied"), { variant: "success" })
       })

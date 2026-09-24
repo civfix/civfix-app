@@ -9,7 +9,7 @@ import {
   SecondaryButton,
 } from "../../primitives"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { useT } from "../../i18n"
 import type { LinkSheetMode } from "../linkReportsModel"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
@@ -20,7 +20,7 @@ import type { HostSheetKey, HostSheetsOpen } from "./useHostSheetsOpen"
 import type { HostSheetActions } from "./useHostSheetActions"
 
 function cancelErrorKey(err: unknown): string {
-  return appErrorCode(err) === "CONFLICT" ? "state.cancel_ended" : "state.cancel_error"
+  return appErrorCode(err) === ErrorCode.CONFLICT ? "state.cancel_ended" : "state.cancel_error"
 }
 
 export interface HostModeSheetsProps {

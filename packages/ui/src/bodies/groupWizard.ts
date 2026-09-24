@@ -9,6 +9,9 @@
  *   2. "identity" - avatar / name / description. Create is gated on a non-blank name within the
  *                   contract's 80-char cap (the description cap is 500; enforced by maxLength + here).
  */
+import type { ChatGroupDTO } from "@civfix/shared"
+import type { DetailEntry } from "../nav"
+
 /** Mirrors CreateChatGroupRequestSchema's `name: max(80)` (shared exports no named constant). */
 export const GROUP_NAME_MAX = 80
 /** Mirrors CreateChatGroupRequestSchema's `description: max(500)`. */
@@ -39,4 +42,12 @@ export function normalizeGroupDraft(
     name: trimmedName,
     ...(trimmedDescription ? { description: trimmedDescription } : {}),
   }
+}
+
+/** The wizard's own entry is replaced, so Back from the new room returns to where the wizard opened. */
+export function stackOpeningGroup(
+  stack: readonly DetailEntry[],
+  group: Pick<ChatGroupDTO, "id" | "name">,
+): DetailEntry[] {
+  return [...stack.slice(0, -1), { kind: "thread", id: group.id, roomKind: "group", title: group.name }]
 }

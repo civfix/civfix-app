@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/shared"
-import { isSafeMarkdownHref } from "@civfix/shared/markdown"
+import { isSafeHttpsUrl } from "@civfix/shared/markdown"
 
 type SponsorsBlockData = Extract<EventPageBlock, { kind: "sponsors" }>
 
@@ -21,7 +21,7 @@ export function SponsorsBlock({ block }: { block: SponsorsBlockData }) {
           ) : (
             <span>{entry.name}</span>
           )
-          const href = entry.url != null && isSafeMarkdownHref(entry.url) ? entry.url : null
+          const href = entry.url != null && isSafeHttpsUrl(entry.url) ? entry.url : null
           return (
             <li key={`${entry.name}-${index}`}>
               {href === null ? (

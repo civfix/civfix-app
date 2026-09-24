@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
+import type { DetailEntry } from "../../nav/types"
 import {
   canProceedToIdentity,
   canCreateGroup,
   normalizeGroupDraft,
+  stackOpeningGroup,
   GROUP_NAME_MAX,
   GROUP_DESCRIPTION_MAX,
 } from "../groupWizard"
@@ -60,5 +62,25 @@ describe("normalizeGroupDraft", () => {
     const draft = normalizeGroupDraft("Crew", "   ")
     expect(draft).toEqual({ name: "Crew" })
     expect("description" in draft).toBe(false)
+  })
+})
+
+describe("stackOpeningGroup (where Create lands)", () => {
+  it("replaces the wizard entry with the new group's thread, keeping what the wizard opened over", () => {
+    const stack: DetailEntry[] = [
+      { kind: "thread", id: "dm1", roomKind: "dm", title: "Ana" },
+      { kind: "new-group" },
+    ]
+    expect(stackOpeningGroup(stack, { id: "g1", name: "Block club" })).toEqual([
+      { kind: "thread", id: "dm1", roomKind: "dm", title: "Ana" },
+      { kind: "thread", id: "g1", roomKind: "group", title: "Block club" },
+    ])
+  })
+
+  it("opens the room as the only entry when the wizard was the root", () => {
+    const stack: DetailEntry[] = [{ kind: "new-channel" }]
+    expect(stackOpeningGroup(stack, { id: "c1", name: "Updates" })).toEqual([
+      { kind: "thread", id: "c1", roomKind: "group", title: "Updates" },
+    ])
   })
 })

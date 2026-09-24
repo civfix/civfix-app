@@ -1,18 +1,20 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
-import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE } from "@civfix/shared"
+import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE, appErrorCode } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import {
   focusRingProps,
   makeThemedStyles,
+  hitSlopToTarget,
   MIN_TOUCH_TARGET,
   useTheme,
   webCursor,
   webHover,
   webInputReset,
+  inputFocusedStyle,
 } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
-import { FilterChip, PrimaryButton, fieldFocusedStyle, useToast } from "../../primitives"
+import { FilterChip, PrimaryButton, useToast } from "../../primitives"
 import { Markdown } from "../../primitives/Markdown"
 import { useAuthState, useCleanup } from "../../data"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
@@ -25,8 +27,7 @@ import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { appErrorCode } from "../../data/errorCode"
-import { HostStateNotice } from "./HostStateNotice"
+import { HostBodyState } from "./HostBodyState"
 import {
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,
@@ -44,7 +45,7 @@ const TOGGLE_MIN_HEIGHT = 24
 
 const COMPOSER_MIN_HEIGHT = 140
 
-const TOGGLE_SLOP_Y = (MIN_TOUCH_TARGET - TOGGLE_MIN_HEIGHT) / 2
+const TOGGLE_SLOP_Y = hitSlopToTarget(TOGGLE_MIN_HEIGHT)
 
 const TOGGLE_HIT_SLOP = { top: TOGGLE_SLOP_Y, bottom: TOGGLE_SLOP_Y }
 
@@ -111,11 +112,11 @@ export function HostAnnounceBody({ id }: { id: string }) {
   }, [])
 
   if (cleanup.isError) {
-    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
+    return <HostBodyState state="error" t={t} />
   }
 
   if (cleanup.data && !canBroadcast) {
-    return <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
+    return <HostBodyState state="denied" t={t} />
   }
 
   const count = recipients.data?.recipientCount ?? null
@@ -151,7 +152,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
           style={[
             webInputReset,
             styles.input,
-            focusedField === "title" ? fieldFocusedStyle(th) : null,
+            focusedField === "title" ? inputFocusedStyle(th) : null,
           ]}
         />
       </View>
@@ -203,7 +204,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
               webInputReset,
               styles.input,
               styles.inputMultiline,
-              focusedField === "body" ? fieldFocusedStyle(th) : null,
+              focusedField === "body" ? inputFocusedStyle(th) : null,
             ]}
           />
         )}

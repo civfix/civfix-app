@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { MAX_LINKED_REPORTS, type BBox, type LinkedReportRef, type ReportPinDTO } from "@civfix/shared"
+import { type BBox, type LinkedReportRef, type ReportPinDTO } from "@civfix/shared"
 import type { LinkedReportCardEntry } from "../../linkedReportCards"
 import {
   PICKER_MAX_FETCH_SPAN_DEG,
@@ -45,7 +45,6 @@ import {
   rowOffset,
   selectionDiff,
   shouldRefetch,
-  togglePickerId,
 } from "../reportPickerModel"
 import type { PickerListItem, PickerRow } from "../reportPickerModel"
 
@@ -462,13 +461,6 @@ describe("selection + footer", () => {
     expect(pickerAction("draft", dirty, false)).toEqual({ key: "action_link", count: 2, enabled: true })
     expect(pickerAction("commit", dirty, false)).toEqual({ key: "action_save", count: 2, enabled: true })
     expect(pickerAction("commit", dirty, true).enabled).toBe(false)
-  })
-
-  it("toggles ids and refuses past the cap", () => {
-    expect(togglePickerId(["a"], "b")).toEqual({ ids: ["a", "b"], outcome: "added" })
-    expect(togglePickerId(["a", "b"], "a")).toEqual({ ids: ["b"], outcome: "removed" })
-    const full = Array.from({ length: MAX_LINKED_REPORTS }, (_u, i) => `r${i}`)
-    expect(togglePickerId(full, "extra").outcome).toBe("at_limit")
   })
 
   it("a first pin tap focuses, a second tap on the focused pin toggles", () => {

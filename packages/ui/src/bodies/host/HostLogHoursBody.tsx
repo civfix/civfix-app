@@ -1,7 +1,5 @@
 import React, { useCallback } from "react"
 import { nextEventBoundaryMs, hasEventEnded } from "@civfix/shared/host"
-import { makeThemedStyles } from "../../theme"
-import { Text } from "../../typography"
 import {
   cleanupHostStanding,
   managesEvent,
@@ -16,10 +14,11 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { LogHoursEditor } from "../LogHoursEditor"
 import { hostLogHoursGate } from "./hostLogHoursGate"
+import { HostBodyState, useHostBodyStyles } from "./HostBodyState"
 import { HostStateNotice } from "./HostStateNotice"
 
 export function HostLogHoursBody({ id }: { id: string }) {
-  const styles = useStyles()
+  const styles = useHostBodyStyles()
   const { t } = useT("host-common")
   const { ScrollView } = useScrollHost()
 
@@ -46,15 +45,11 @@ export function HostLogHoursBody({ id }: { id: string }) {
   })
 
   if (gate === "loading") {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (gate === "error" || event === null) {
-    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
+    return <HostBodyState state="error" t={t} />
   }
 
   if (gate === "denied") {
@@ -84,19 +79,3 @@ export function HostLogHoursBody({ id }: { id: string }) {
     </ScrollView>
   )
 }
-
-const useStyles = makeThemedStyles((t) => ({
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["10"],
-  },
-  muted: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textSubtle,
-  },
-}))

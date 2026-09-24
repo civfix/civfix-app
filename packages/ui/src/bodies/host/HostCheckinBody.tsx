@@ -9,7 +9,7 @@ import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { CheckinCounters, CheckinResultCard, OutboxBanner, ReplayReportCard } from "./checkin/CheckinDeskCards"
 import { ManualCodeEntry } from "./checkin/CheckinManualEntry"
-import { HostStateNotice } from "./HostStateNotice"
+import { HostBodyState } from "./HostBodyState"
 import { CheckinRosterSection } from "./checkin/CheckinRosterSection"
 import { useCheckinRoster } from "./checkin/useCheckinRoster"
 import { useCheckinDesk } from "./checkin/useCheckinDesk"
@@ -29,23 +29,15 @@ export function HostCheckinBody({ id }: { id: string }) {
   const rosterState = useCheckinRoster(id, canCheckIn, desk.undo)
 
   if (cleanup.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (cleanup.isError || !cleanup.data) {
-    return (
-      <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   if (!canCheckIn) {
-    return (
-      <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-    )
+    return <HostBodyState state="denied" t={t} />
   }
 
   const { outbox } = desk

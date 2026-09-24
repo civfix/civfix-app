@@ -5,6 +5,7 @@ import {
   PRESSED_OPACITY_SUBTLE,
   categoryColor,
   focusRingProps,
+  hitSlopToTarget,
   makeThemedStyles,
   useTheme,
   wash,
@@ -13,12 +14,12 @@ import {
   webTransition,
 } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { FILTER_CHIP_HEIGHT, FILTER_CHIP_MIN_TOUCH_TARGET } from "../../primitives"
+import { FILTER_CHIP_HEIGHT } from "../../primitives"
 import { CATEGORY_ICONS } from "../../primitives/categoryIcons"
 import { useT } from "../../i18n"
 import { PICKER_CATEGORIES } from "./reportPickerFilterStore"
 
-const CHIP_HIT_SLOP = (FILTER_CHIP_MIN_TOUCH_TARGET - FILTER_CHIP_HEIGHT) / 2
+const CHIP_HIT_SLOP = hitSlopToTarget(FILTER_CHIP_HEIGHT)
 
 export interface LayerChipRowProps {
   enabled: ReadonlySet<ReportCategory>

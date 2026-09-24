@@ -86,7 +86,7 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     expect(SHEET).toContain('bodyLayout="fill"')
     expect(SHEET).toContain("modalSheetInputStyle")
     expect(SHEET).toContain("<ShareNoteInput")
-    expect(PARTS).toContain("focused ? modalSheetInputFocusedStyle(th) : null")
+    expect(PARTS).toContain("focused ? inputFocusedStyle(th) : null")
   })
 
   it("native rises from the bottom on SlideUpSheet, TikTok/Instagram style: people row first, then action tiles", () => {
@@ -112,7 +112,9 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     expect(TILE).toContain("accessibilityLabel={name ?? label}")
     expect(TILE).toContain("accessibilityValue={status === undefined ? undefined : { text: status }}")
     expect(TILE).not.toContain("accessibilityLiveRegion")
-    expect(TILE).toContain("AccessibilityInfo.announceForAccessibility(status)")
+    expect(TILE).toContain('import { announce } from "../announce"')
+    expect(TILE).toContain("announce(status)")
+    expect(TILE).not.toContain("AccessibilityInfo")
     expect(NATIVE_SHEET).toContain('name={t("actions.copy_link")}')
     expect(NATIVE_SHEET).toContain('status={copyState === "idle" ? undefined : copyTile.label}')
   })

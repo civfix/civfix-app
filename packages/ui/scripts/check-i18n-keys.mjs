@@ -2,7 +2,7 @@
 /**
  * The `i18n:check` gate.
  *
- * Catalog diff: every es/de/ko catalog must have en's key set, since en is the source the others are
+ * Catalog diff: every other locale's catalog must have en's key set, since en is the source the others are
  * machine-translated from. Arrays are leaves (element content is a translator concern). Korean has no
  * `_one` plural form, so ko only needs `<key>_other`.
  *
@@ -28,7 +28,10 @@ const localesDir = process.env.CIVFIX_I18N_LOCALES_DIR ?? join(__dirname, "..", 
 const srcDir = join(__dirname, "..", "src")
 
 const SOURCE = "en"
-const TARGETS = ["es", "de", "ko"]
+const TARGETS = readdirSync(localesDir, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && entry.name !== SOURCE)
+  .map((entry) => entry.name)
+  .sort()
 
 const INTENTIONAL_EMPTY = new Set([
   "ko/account-delete:verify.enterPre",

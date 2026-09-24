@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema, OAuthProviderSchema } from "./common.js"
+import { OkResponseSchema } from "./internal-fields.js"
 import { RoleSchema } from "../types/roles.js"
 
 /**
@@ -139,9 +140,7 @@ export const SessionCheckResponseSchema = z.object({
 })
 export type SessionCheckResponse = z.infer<typeof SessionCheckResponseSchema>
 
-export const LogoutResponseSchema = z.object({
-  ok: z.literal(true),
-})
+export const LogoutResponseSchema = OkResponseSchema
 export type LogoutResponse = z.infer<typeof LogoutResponseSchema>
 
 /**

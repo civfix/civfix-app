@@ -19,6 +19,7 @@ import {
   useMapFocus,
   useMapFlyTo,
   MapPending,
+  decideRegionFetch,
   resolveMapCenter,
   shouldAdoptCenter,
   holdsRememberedCamera,
@@ -32,7 +33,6 @@ import {
 } from "@civfix/ui"
 import { useApproximateLocation, useCleanups, useMapReports } from "@civfix/ui/data"
 
-import { decideRegionFetch } from "@/features/map/region-fetch"
 import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-snapshot"
 import { resolvePreciseCenterAfterPrompt, getBrowserPosition } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"

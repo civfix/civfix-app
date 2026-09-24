@@ -9,7 +9,7 @@ const code = (source: string): string =>
 
 describe("the post composers guard against a double submit", () => {
   const COMPOSERS = {
-    "PostComposer.tsx": code(surfaceSource("postComposer")),
+    "postComposer/useSubmitPost.ts": code(read("../postComposer/useSubmitPost.ts")),
     "thread/ReplyComposer.tsx": code(read("../thread/ReplyComposer.tsx")),
   }
 
@@ -30,6 +30,13 @@ describe("the post composers guard against a double submit", () => {
       expect(mutate).toBeGreaterThan(claim)
     })
   }
+})
+
+describe("the post composers take their double-submit guard from the shared submit hook", () => {
+  it("PostComposer and InlineComposer both submit through useSubmitPost", () => {
+    expect(code(surfaceSource("postComposer"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
+    expect(code(read("../feed/InlineComposer.tsx"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
+  })
 })
 
 describe("PostComposer subscribes to the nav store by selector", () => {

@@ -632,7 +632,7 @@ describe("dock + sheet animation cost", () => {
     const reveal = readFileSync(new URL("../SearchBodyReveal.native.tsx", import.meta.url), "utf8")
     expect(reveal).toMatch(/style=\{\[styles\.layer, \{ paddingTop: topInset \}, revealStyle\]\}/)
     expect(reveal).not.toMatch(/paddingBottom: bottomInset/)
-    expect(reveal).toMatch(/paddingBottom: basePad \+ clearance/)
+    expect(reveal).toMatch(/withExtraBottomPadding\(contentContainerStyle, clearance\)/)
     expect(reveal).toMatch(/resolveTabBarFootprint\(footprint, fallback\) \+ keyboardReserve/)
     expect(reveal).toMatch(/scrollIndicatorInsets \?\? \{ bottom: clearance \}/)
     expect(reveal).toMatch(/^const PORTRAIT_SCROLL_HOST = makeDockClearanceScrollHost\(/m)

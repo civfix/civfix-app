@@ -1,9 +1,9 @@
 import React from "react"
 import type { EventTeamInviteIdentifierKind, OrgInviteIdentifierKind } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
-import { SegmentedControl, modalSheetInputFocusedStyle, modalSheetInputStyle } from "../../primitives"
+import { SegmentedControl, modalSheetInputStyle } from "../../primitives"
 import { INVITE_IDENTIFIER_MAX } from "./hostTeamModel"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
 
@@ -72,7 +72,7 @@ export function InviteIdentifierFields({
         textContentType={identifierKind === "email" ? "emailAddress" : "username"}
         onFocus={() => onFocusChange(true)}
         onBlur={() => onFocusChange(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </>
   )

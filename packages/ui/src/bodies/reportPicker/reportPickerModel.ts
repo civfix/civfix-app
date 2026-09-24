@@ -1,5 +1,4 @@
 import {
-  MAX_LINKED_REPORTS,
   haversineMeters,
   type BBox,
   type LinkedReportRef,
@@ -516,23 +515,6 @@ export function pickerAction(mode: PickerMode, diff: SelectionDiff, busy: boolea
   if (!diff.dirty) return { key: "action_done", count: diff.selected, enabled: !busy }
   if (mode === "commit") return { key: "action_save", count: diff.selected, enabled: !busy }
   return { key: "action_link", count: diff.selected, enabled: !busy }
-}
-
-export type PickerToggleOutcome = "added" | "removed" | "at_limit"
-
-export interface PickerToggleResult {
-  ids: string[]
-  outcome: PickerToggleOutcome
-}
-
-export function togglePickerId(
-  ids: readonly string[],
-  id: string,
-  max = MAX_LINKED_REPORTS,
-): PickerToggleResult {
-  if (ids.includes(id)) return { ids: ids.filter((x) => x !== id), outcome: "removed" }
-  if (ids.length >= max) return { ids: [...ids], outcome: "at_limit" }
-  return { ids: [...ids, id], outcome: "added" }
 }
 
 export type PickerPinTap = "focus" | "toggle"

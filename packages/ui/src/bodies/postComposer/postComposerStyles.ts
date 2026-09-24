@@ -1,11 +1,12 @@
-import { Platform, StyleSheet, type ViewStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
+import { StyleSheet } from "react-native"
 import { MIN_TOUCH_TARGET, makeThemedStyles } from "../../theme"
+import { postComposerStyleParts } from "./postComposerStyleParts"
 
 export const usePostComposerStyles = makeThemedStyles((t) => ({
+  ...postComposerStyleParts(t),
   root: { flex: 1, backgroundColor: t.colors.bg },
   header: { minHeight: 60, paddingHorizontal: t.space["4"], flexDirection: "row", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: t.colors.border, position: "relative" },
-  closeButton: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.neutral.card, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, zIndex: 2 },
+  closeButton: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET, borderRadius: MIN_TOUCH_TARGET / 2, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.neutral.card, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, zIndex: 2 },
   headerTitleWrap: { position: "absolute", left: 0, right: 0, alignItems: "center" },
   headerTitle: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 17, lineHeight: 22, color: t.colors.text },
   headerSpacer: { flex: 1 },
@@ -19,20 +20,11 @@ export const usePostComposerStyles = makeThemedStyles((t) => ({
   composeRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["3"] },
   inputWrap: { flex: 1, minWidth: 0 },
   inputSurface: { paddingHorizontal: t.space["2"], paddingVertical: t.space["1"], borderRadius: 18, backgroundColor: t.colors.neutral.card, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border },
-  inputSurfaceFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
   input: { minHeight: 104, padding: t.space["2"], fontFamily: t.fontFamily.bodyRegular, fontSize: 14.5, lineHeight: 21, color: t.colors.text, textAlignVertical: "top" },
   thumbsInCard: { marginHorizontal: t.space["2"], marginTop: t.space["1"] },
   mediaRow: { flexDirection: "row", alignItems: "center" },
   addMedia: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET, alignItems: "center", justifyContent: "center", marginLeft: t.space["1"], marginTop: 2, marginBottom: 2 },
-  addMediaDisc: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.surfaceTint },
-  addMediaDisabled: { opacity: 0.52 },
-  postButton: { minHeight: 44, paddingHorizontal: 18, borderRadius: t.radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.accent, zIndex: 2 },
-  postButtonDisabled: { backgroundColor: t.colors.surfaceTint },
-  postButtonText: { color: t.colors.neutral.card, fontFamily: t.fontFamily.bodyExtraBold, fontSize: t.fontSize["14"], lineHeight: 18 },
-  postButtonTextDisabled: { color: t.colors.textSubtle },
+  postButton: { minHeight: MIN_TOUCH_TARGET, paddingHorizontal: 18, borderRadius: t.radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.accent, zIndex: 2 },
   buttonPressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
   attachDivider: { height: StyleSheet.hairlineWidth, backgroundColor: t.colors.border, marginTop: t.space["1"], marginBottom: t.space["1"] },
   attachArea: { gap: 18, marginTop: t.space["1"] },
@@ -42,7 +34,7 @@ export const usePostComposerStyles = makeThemedStyles((t) => ({
   groupList: { gap: 9 },
   groupActions: { flexDirection: "row", alignItems: "center", gap: t.space["2"] },
   groupPlaceholder: { height: 72, borderRadius: 16, backgroundColor: t.colors.surfaceTint },
-  listAction: { minHeight: 44, justifyContent: "center", paddingHorizontal: 10, borderRadius: t.radius.pill },
+  listAction: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: 10, borderRadius: t.radius.pill },
   listActionFlush: { paddingHorizontal: 0 },
   listActionPressed: { opacity: 0.55 },
   listActionText: { color: t.colors.accentText, fontFamily: t.fontFamily.bodyBold, fontSize: 13.5, lineHeight: 18 },
@@ -53,7 +45,7 @@ export const usePostComposerStyles = makeThemedStyles((t) => ({
   panel: { maxHeight: 284 },
   pickerContent: { gap: 9, padding: 1 },
   pillsRow: { flexDirection: "row", alignItems: "center", gap: t.space["2"] },
-  pill: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, borderRadius: t.radius.pill, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, backgroundColor: t.colors.neutral.card },
+  pill: { minHeight: MIN_TOUCH_TARGET, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, borderRadius: t.radius.pill, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, backgroundColor: t.colors.neutral.card },
   pillOpen: { borderColor: t.colors.accent, backgroundColor: t.colors.surfaceTint },
   pillText: { color: t.colors.accentText, fontFamily: t.fontFamily.bodyBold, fontSize: t.fontSize["13"], lineHeight: 18 },
   emptyPicker: { padding: 14, borderRadius: 16, backgroundColor: t.colors.surfaceTint, fontFamily: t.fontFamily.bodyMedium, fontSize: 13.5, lineHeight: 19, color: t.colors.textMuted },

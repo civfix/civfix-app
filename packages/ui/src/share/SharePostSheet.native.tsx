@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { UserSearchResultDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { modalSheetInputFocusedStyle, modalSheetInputStyle } from "../primitives/ModalCardSheet"
+import { modalSheetInputStyle } from "../primitives/ModalCardSheet"
 import { PrimaryButton } from "../primitives/PrimaryButton"
 import { SlideUpSheet } from "../primitives/SlideUpSheet"
 import { TextInput } from "../primitives/TextInput"
@@ -122,7 +122,7 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
 
       {isAuthenticated ? (
         <>
-          <View style={[styles.search, searchFocused ? modalSheetInputFocusedStyle(th) : null]}>
+          <View style={[styles.search, searchFocused ? inputFocusedStyle(th) : null]}>
             <Icon icon={iconMap.Search} size={SEARCH_ICON_SIZE} color={th.colors.textSubtle} />
             <TextInput
               value={query}

@@ -18,24 +18,22 @@
  */
 import React from "react"
 import {
-  AccessibilityInfo,
   Keyboard,
   LayoutAnimation,
   Platform,
   Pressable,
   StyleSheet,
   View,
+  type View as NativeView,
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
-  type TextStyle,
-  type View as NativeView,
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset } from "../../theme"
+import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO } from "@civfix/shared"
+import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, inputFocusedStyle, MIN_TOUCH_TARGET } from "../../theme"
+import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"
 import { ComposerModeBar } from "../../primitives/ComposerModeBar"
@@ -50,7 +48,7 @@ import { personFromAuthUser } from "../feedShare"
 import { useCreatePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { pathForEntry } from "../../nav"
-import { activePostMentions } from "../postComposerModel"
+import { activePostMentions, mergeMention } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
@@ -58,6 +56,7 @@ import {
   mergePostComposerThumbs,
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
+import { normalizeHandle } from "../mentionText"
 import type { PostComposerMedia } from "../postComposerStore"
 import { ComposerAttachChip } from "./ComposerAttachChip"
 import { ReplyAttachSheet } from "./ReplyAttachSheet"
@@ -107,26 +106,6 @@ export interface ReplyComposerProps {
   ref?: React.Ref<ReplyComposerHandle>
 }
 
-/** One process-level reduced-motion read for this screen's single composer (not a per-row subscription). */
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = React.useState(false)
-  React.useEffect(() => {
-    let mounted = true
-    void AccessibilityInfo.isReduceMotionEnabled()
-      .then((value) => {
-        if (mounted) setReduced(value)
-      })
-      // An unreadable setting leaves motion on until the change listener below reports otherwise.
-      .catch(() => undefined)
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced)
-    return () => {
-      mounted = false
-      sub.remove()
-    }
-  }, [])
-  return reduced
-}
-
 export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyComposerProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -143,7 +122,8 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
     useMyProfile().data?.profile ?? (user ? personFromAuthUser(user) : undefined)
   const create = useCreatePost()
   const dock = useReplyDockInset()
-  const reducedMotion = useReducedMotion()
+  // Unanswered (null) keeps the swap animated until the setting is known.
+  const reducedMotion = useReducedMotion() === true
 
   const targetId = focalPost.id
   const draft = useReplyDraftStore((state) => state.drafts[targetId]) ?? EMPTY_REPLY_DRAFT
@@ -271,16 +251,8 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
 
   const onMention = (candidate: MentionCandidate, nextDraft: string) => {
     setBody(targetId, nextDraft)
-    if ((candidate as { kind?: string }).kind === "jurisdiction") return
-    const user: UserMentionDTO = {
-      id: candidate.id,
-      handle: candidate.handle,
-      displayName: candidate.displayName,
-    }
-    setMentionedUsers(targetId, [
-      ...draft.mentionedUsers.filter((item) => item.id !== user.id),
-      user,
-    ])
+    const mentioned = mergeMention(draft.mentionedUsers, candidate)
+    if (mentioned) setMentionedUsers(targetId, mentioned)
   }
 
   const removeMedia = (id: string) => {
@@ -369,7 +341,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
   }
 
   const remaining = BODY_MAX - draft.body.length
-  const targetHandle = focalPost.author.handle?.replace(/^@/, "") ?? null
+  const targetHandle = focalPost.author.handle ? normalizeHandle(focalPost.author.handle) : null
   const replyingTo = targetHandle
     ? t("reply.context", { handle: `@${targetHandle}` })
     : t("reply.context", { handle: focalPost.author.name })
@@ -683,10 +655,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   // EXPANDED ONLY: the house focused-field treatment (`SearchBody.styles.fieldFocused` verbatim), in place
   // of the browser's default blue outline.
-  inputFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as unknown as TextStyle)
-      : { borderColor: t.colors.accent },
+  inputFocused: inputFocusedStyle(t),
   toolsRow: {
     height: 36,
     flexDirection: "row",
@@ -744,7 +713,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.bloom["600"],
   },
   signInPill: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",

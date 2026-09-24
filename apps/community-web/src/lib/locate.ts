@@ -3,17 +3,12 @@
  * server's approximate location (@civfix/ui `useApproximateLocation`), which always answers.
  *
  * One device fix per app, not one per subsystem: the map camera and the web `GeolocationCapability`
- * both await `getSharedBrowserFix()` under the same {@link DEVICE_FIX_TIMEOUT_MS}, so a cold load issues
- * one browser request and settles once instead of kicking off two staggered refetch waves.
+ * both await `getSharedBrowserFix()` under the same {@link DEVICE_FIX_TIMEOUT_MS} @civfix/ui's
+ * `useUserLocation` caps its read with, so a cold load issues one browser request and settles once
+ * instead of kicking off two staggered refetch waves.
  */
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
-
-/**
- * Deliberately the same 4s cap @civfix/ui's `useUserLocation` applies (`DEVICE_FIX_TIMEOUT_MS` in
- * data/hooks/location.ts), so the hook's guard and the map's device attempt expire at the same moment
- * and the camera and the location-keyed queries settle in one wave.
- */
-export const DEVICE_FIX_TIMEOUT_MS = 4000
 
 /** Low accuracy with a 10min cache: good enough for centering without the battery and latency of GPS. */
 export const GEO_POSITION_OPTIONS: PositionOptions = {

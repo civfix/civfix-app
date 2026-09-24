@@ -17,11 +17,11 @@
  * post-thread, person): `titleForEntry` returns the " " suppression sentinel for them, so no DetailBar is
  * rendered, and their root Back is a real navigation back to the list they cover.
  */
-import { isFlowKind, type DetailEntry } from "../nav"
+import { isFlowKind, type DetailEntry, type LayoutMode } from "../nav"
 
 export interface BackAffordanceInput {
   stack: readonly DetailEntry[]
-  mode: "compact" | "expanded"
+  mode: LayoutMode
   /** Passed only by bodies that host a multi-step flow inside one nav entry (the report wizard). */
   stepIndex?: number
   /**

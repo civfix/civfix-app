@@ -18,6 +18,7 @@ import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { buildPostIdentity } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
+import { normalizeHandle } from "../mentionText"
 import { useEmbedGate } from "./chatEmbedScope"
 import { civfixEntityRef, type CivfixLinkKind, type CivfixLinkRef } from "./civfixLinks"
 
@@ -289,7 +290,7 @@ function PersonEmbedCard({ profile, onPress }: { profile: UserProfileDTO; onPres
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
-  const handle = profile.handle?.replace(/^@/, "").trim() || null
+  const handle = (profile.handle ? normalizeHandle(profile.handle).trim() : "") || null
   const bio = profile.bio?.trim() || null
   return (
     <Pressable

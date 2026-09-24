@@ -67,8 +67,8 @@ export function Drawer({
       className={cn(
         "pointer-events-auto flex flex-col bg-console-surface",
         narrow
-          ? "fixed inset-0 z-50 animate-in slide-in-from-bottom duration-d3 ease-out"
-          : "fixed bottom-0 right-0 top-0 z-50 border-l border-console-line shadow-console-3 animate-in slide-in-from-right duration-d2 ease-out",
+          ? "fixed inset-0 z-console-sheet animate-in slide-in-from-bottom duration-d3 ease-out"
+          : "fixed bottom-0 right-0 top-0 z-console-sheet border-l border-console-line shadow-console-3 animate-in slide-in-from-right duration-d2 ease-out",
         className,
       )}
       style={narrow ? undefined : { width: DRAWER_WIDTH[size], maxWidth: "100vw" }}
@@ -122,7 +122,7 @@ export function Drawer({
   )
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-0 z-50">
+    <div className="pointer-events-none fixed inset-0 z-console-sheet">
       {modal ? (
         <Scrim onDismiss={onClose} className="pointer-events-auto" />
       ) : null}

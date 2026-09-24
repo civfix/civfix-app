@@ -20,6 +20,7 @@ const fieldRow = code("../DateTimeFieldRow.tsx")
 const webPicker = code("../InlineDateTimePicker.web.tsx")
 const hoursBlock = code("../EventHoursBlock.tsx")
 const hoursEditor = code("../LogHoursEditor.tsx")
+const listSearchField = code("../../primitives/ListSearchField.tsx")
 
 const pressableWith = (src: string, anchor: string) => {
   const at = src.indexOf(anchor)
@@ -44,14 +45,18 @@ describe("the events list", () => {
   })
 
   it("makes the search clear a 44pt box around its 22pt disc, since rn-web drops hitSlop", () => {
-    const clear = pressableWith(eventsBody, 't("search.clear_a11y")')
+    expect(eventsBody).toContain('clearA11yLabel={t("search.clear_a11y")}')
+    expect(eventsBody).not.toContain('clearTarget="slop"')
+    expect(listSearchField).toContain('clearTarget = "box"')
+    const clear = pressableWith(listSearchField, "accessibilityLabel={clearA11yLabel}")
     expect(clear).not.toContain("hitSlop")
     expect(clear).toContain("style={styles.clearTarget}")
-    expect(eventsBody).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(listSearchField).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
   })
 
   it("keeps the date chip's month legible", () => {
-    expect(eventsBody).toMatch(/dateMonth: \{[^}]*fontSize: 11,/)
+    expect(eventsBody).toContain('<DateTile variant="eventCard"')
+    expect(code("../../primitives/DateBadge.tsx")).toMatch(/eventCardMonth: \{[^}]*fontSize: 11,/)
   })
 })
 

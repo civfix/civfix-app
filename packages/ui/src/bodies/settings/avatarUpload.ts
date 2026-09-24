@@ -1,7 +1,7 @@
 import type { ApiClient } from "@civfix/shared/client"
 import type { CameraCapability, CapturedMedia } from "../../capabilities"
 import { uploadMediaId } from "../../data/uploadMedia"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
@@ -13,13 +13,11 @@ export async function uploadAvatar(
   return uploadMediaId({ api, camera, media: picked })
 }
 
+const AVATAR_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.MEDIA_REJECTED]: "avatar.error.rejected",
+  [ErrorCode.RATE_LIMITED]: "avatar.error.rate_limited",
+}
+
 export function avatarErrorMessage(err: unknown, t: Translate): string {
-  switch (appErrorCode(err)) {
-    case "MEDIA_REJECTED":
-      return t("avatar.error.rejected")
-    case "RATE_LIMITED":
-      return t("avatar.error.rate_limited")
-    default:
-      return t("avatar.error.generic")
-  }
+  return t(errorCopyKey(err, AVATAR_ERROR_KEYS, "avatar.error.generic"))
 }

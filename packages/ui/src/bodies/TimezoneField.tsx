@@ -8,6 +8,7 @@ import {
   webCursorPointer,
   webTransition,
   webHover,
+  MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
@@ -223,7 +224,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.md,
   },

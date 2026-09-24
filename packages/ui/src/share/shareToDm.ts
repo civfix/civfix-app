@@ -1,4 +1,5 @@
 import { MESSAGE_BODY_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { threadRoomId } from "../data/threadRoom"
 
 export const SHARE_DM_MAX_RECIPIENTS = 10
 
@@ -120,7 +121,7 @@ export function dmThreadIdsByPeer(
     for (const thread of page.items ?? []) {
       if (thread?.kind !== "dm") continue
       const peerId = thread.peer?.id
-      const roomId = thread.refId ?? thread.id
+      const roomId = threadRoomId(thread)
       if (!peerId || !roomId || byPeer.has(peerId)) continue
       byPeer.set(peerId, roomId)
     }

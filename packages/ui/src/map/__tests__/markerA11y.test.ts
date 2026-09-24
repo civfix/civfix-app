@@ -56,7 +56,7 @@ describe("markerA11yLabel names every home-map marker", () => {
 // The seams need a map runtime, so the marker wiring is pinned by source.
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const mapWeb = read("../Map.web.tsx")
-const webMarkers = read("../homeMapMarkers.web.ts")
+const webMarkers = read("../domMarkerLayer.web.ts")
 const webOverlays = read("../homeMapOverlays.web.tsx")
 const webFocusRing = read("../mapFocusRing.web.ts")
 const mapNative = read("../Map.native.tsx")
@@ -67,17 +67,20 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
     expect(webMarkers).toContain('el.setAttribute("role", "button")')
     expect(webMarkers).toContain('el.setAttribute("tabindex", "0")')
     expect(webMarkers).toMatch(
-      /el\.addEventListener\("keydown", \(e: KeyboardEvent\) => \{\n\s+if \(e\.key !== "Enter" && e\.key !== " "\) return\n\s+e\.preventDefault\(\)\n\s+e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/,
+      /el\.addEventListener\("keydown", \(e: KeyboardEvent\) => \{\n\s+if \(e\.key !== "Enter" && e\.key !== " "\) return\n\s+e\.preventDefault\(\)\n\s+e\.stopPropagation\(\)\n\s+press\(\)/,
     )
+    expect(webMarkers).toMatch(/const press = \(\) => \{\n\s+beforePress\?\.\(\)\n\s+onClick\.fn\?\.\(\)/)
+    expect(mapWeb).toMatch(/function endFlyToHighlight\(\): void \{\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/)
+    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired, endFlyToHighlight)")
+    expect(reportPickWeb).toContain("syncMarkers(map, markersRef.current, desired)")
     expect((mapWeb.match(/label: markerA11yLabel\(node, t\),/g) ?? []).length).toBe(4)
     expect((mapWeb.match(/label: targetMarkerA11yLabel\(target, t\),/g) ?? []).length).toBe(2)
   })
 
   it("names markers AFTER maplibre's addTo, which overwrites aria-label with a generic 'Map marker'", () => {
-    for (const src of [webMarkers, reportPickWeb]) {
-      expect(src).toMatch(/\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/)
-      expect(src).not.toMatch(/el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/)
-    }
+    expect(webMarkers).toMatch(/\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/)
+    expect(webMarkers).not.toMatch(/el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/)
+    expect(reportPickWeb).not.toContain("new maplibregl.Marker({ element: el, anchor: want.anchor })")
     expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("a11y\.userLocation"\)\)/)
     expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("dropPin\.locationA11y"\)\)/)
     expect(reportPickWeb).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", meetingPointLabel\)/)

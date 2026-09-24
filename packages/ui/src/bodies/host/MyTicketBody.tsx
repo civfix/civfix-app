@@ -7,6 +7,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import type { MyEventTicketSeat } from "@civfix/shared"
+import { formatTicketCode } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { PrimaryButton, SecondaryButton, QrTicket, useToast } from "../../primitives"
@@ -20,10 +21,9 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
 import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
-import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../../data/errorCode"
+import { HostBodyState } from "./HostBodyState"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import {
-  formatTicketCode,
   ticketPageIndex,
   ticketPageWidth,
   ticketQrSize,
@@ -129,26 +129,18 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
         },
         onError: (err) => {
           setConfirmingCancel(false)
-          setErrorText(appErrorCode(err) === "CONFLICT" ? t("outcome.closed") : t("error.generic"))
+          setErrorText(appErrorCode(err) === ErrorCode.CONFLICT ? t("outcome.closed") : t("error.generic"))
         },
       },
     )
   }, [cancel, t, ticket, toast])
 
   if (query.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (query.isError || !ticket) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   const waitlisted = ticket.waitlistPosition != null
@@ -268,9 +260,6 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
-    flex: 1,
-  },
-  fill: {
     flex: 1,
   },
   content: {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { MIN_TOUCH_TARGET } from "../../../packages/ui/src/theme/touchTarget.ts"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const otp = read("../app/auth/otp.tsx")
@@ -33,14 +34,11 @@ test("the first-run form always clears its spinner once the profile save settles
 })
 
 test("a failed username check says so and offers a retry instead of leaving Continue dead", () => {
-  const check = firstRun.slice(firstRun.indexOf("const res = await api.checkHandle"))
-  assert.match(firstRun, /const HANDLE_CHECK_DEBOUNCE_MS = 350\n/)
-  assert.match(
-    check.slice(0, check.indexOf("}, HANDLE_CHECK_DEBOUNCE_MS)")),
-    /catch \{\s*if \(!cancelled\) setAvail\(\{ \.\.\.UNCHECKED, failed: true \}\)/,
-  )
-  assert.match(firstRun, /\}, \[trimmedHandle, handleValid, checkAttempt\]\)/)
-  assert.match(firstRun, /checkFailed=\{handleValid && avail\.failed\}/)
+  assert.match(firstRun, /const \{ availability, checkedHandle \} = useHandleAvailabilityCheck\(handle, null\)/)
+  assert.match(firstRun, /const \{ refetch: recheckHandle \} = availability/)
+  assert.match(firstRun, /const retryHandleCheck = useCallback\(\(\) => void recheckHandle\(\), \[recheckHandle\]\)/)
+  assert.match(firstRun, /\} = firstRunModel\(\{/)
+  assert.match(firstRun, /checkFailed=\{checkFailed\}/)
   assert.match(firstRun, /onRetry=\{retryHandleCheck\}/)
 
   const hint = firstRun.slice(firstRun.indexOf("function HandleHint("))
@@ -52,7 +50,7 @@ test("a failed username check says so and offers a retry instead of leaving Cont
 test("a failed username check is announced, and its retry is a full-size touch target", () => {
   assert.match(
     firstRun,
-    /useEffect\(\(\) => \{\s*if \(avail\.failed\) announce\(t\("handle\.check_failed"\)\)\s*\}, \[avail\.failed, t\]\)/,
+    /useEffect\(\(\) => \{\s*if \(checkFailed\) announce\(t\("handle\.check_failed"\)\)\s*\}, \[checkFailed, t\]\)/,
   )
 
   const hintStart = firstRun.indexOf("function HandleHint(")
@@ -63,6 +61,8 @@ test("a failed username check is announced, and its retry is a full-size touch t
   assert.ok(retryEnd > retryStart)
   const retry = firstRun.slice(retryStart, retryEnd)
   assert.match(retry, /styles\.retryTarget/)
-  assert.match(firstRun, /const MIN_TOUCH_TARGET = 44\n/)
+  assert.equal(MIN_TOUCH_TARGET, 44)
+  assert.match(firstRun, /import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "@\/theme"/)
+  assert.doesNotMatch(firstRun, /const MIN_TOUCH_TARGET =/)
   assert.match(firstRun, /retryTarget: \{[^}]*minHeight: MIN_TOUCH_TARGET/)
 })

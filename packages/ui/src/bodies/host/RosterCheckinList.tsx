@@ -2,8 +2,9 @@ import React, { useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
+import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"
 import {
-  MIN_TOUCH_TARGET,
+  hitSlopToTarget,
   focusRingProps,
   makeThemedStyles,
   useTheme,
@@ -13,34 +14,18 @@ import {
 } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives"
+import { joinParts } from "../../primitives/joinParts"
 import { useT } from "../../i18n"
 import { SlotGroupHeader } from "../SlotGroupHeader"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../rosterSlotGroups"
 
 const CHECK_IN_MIN_HEIGHT = 32
 
-const CHECK_IN_SLOP_Y = (MIN_TOUCH_TARGET - CHECK_IN_MIN_HEIGHT) / 2
+const CHECK_IN_SLOP_Y = hitSlopToTarget(CHECK_IN_MIN_HEIGHT)
 
 const CHECK_IN_HIT_SLOP = { top: CHECK_IN_SLOP_Y, bottom: CHECK_IN_SLOP_Y }
 
-function attendeeName(row: EventRegistrationDTO): string {
-  if (row.person?.deleted) return DELETED_USER_LABEL
-  return row.person?.name ?? row.guestName ?? ""
-}
-
-export function nextCheckinSeat(row: EventRegistrationDTO): string | null {
-  const seat = row.seats.find((s) => s.status === "active" && s.checkedInAt == null)
-  return seat?.id ?? null
-}
-
-export function lastCheckedInSeat(row: EventRegistrationDTO): string | null {
-  let best: { id: string; at: string } | null = null
-  for (const seat of row.seats) {
-    if (seat.status !== "active" || !seat.checkedInAt) continue
-    if (!best || seat.checkedInAt > best.at) best = { id: seat.id, at: seat.checkedInAt }
-  }
-  return best?.id ?? null
-}
+const NAME_FALLBACKS = { guest: "", deleted: DELETED_USER_LABEL }
 
 export const RosterCheckinRow = React.memo(function RosterCheckinRow({
   row,
@@ -58,20 +43,18 @@ export const RosterCheckinRow = React.memo(function RosterCheckinRow({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-common")
-  const name = attendeeName(row)
+  const name = attendeeDisplayName(row, NAME_FALLBACKS)
   const checkedIn = row.checkedInAt != null
   const nextSeat = nextCheckinSeat(row)
   const undoSeat = lastCheckedInSeat(row)
-  const meta = [
+  const meta = joinParts([
     row.ticketTypeName ?? null,
     row.seatCount > 1 ? t("roster.seats", { count: row.seatCount }) : null,
     row.kind === "guest" ? t("roster.guest") : null,
     row.waitlistPosition != null
       ? t("roster.waitlist_position", { position: row.waitlistPosition })
       : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" · ")
+  ])
 
   return (
     <View style={styles.row}>

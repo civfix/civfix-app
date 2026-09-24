@@ -9,6 +9,7 @@ import type {
 } from "@civfix/shared"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
+import { threadMatchesRoom } from "../threadRoom"
 
 const CHAT_PARTICIPANTS_STALE_MS = 30_000
 
@@ -66,14 +67,6 @@ interface HiddenThreadSlot {
   page: number
   index: number
   item: MessageThreadDTO
-}
-
-function threadMatchesRoom(
-  thread: MessageThreadDTO,
-  roomKind: RoomKind,
-  roomId: string,
-): boolean {
-  return thread.kind === roomKind && (thread.refId ?? thread.id) === roomId
 }
 
 export function useHideConversation(roomKind: RoomKind, roomId: string) {

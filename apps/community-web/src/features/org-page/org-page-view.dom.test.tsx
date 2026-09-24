@@ -75,3 +75,29 @@ describe("public organization page copy", () => {
     assertCatalogOnly()
   })
 })
+
+describe("public organization page links", () => {
+  it("links the website and donation URLs that pass the shared safe-link rule", async () => {
+    orgQuery = { isPending: false, isError: false, data: ORG }
+    await renderAt("/orgs/beach-crew/")
+    const hrefs = Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href"))
+    expect(hrefs).toContain("https://beach.example.org/")
+    expect(hrefs).toContain("https://give.example.org/")
+  })
+
+  it("drops a website or donation URL with credentials, an IP literal or a non-https scheme", async () => {
+    const linkHrefs = () => Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href"))
+    orgQuery = {
+      isPending: false,
+      isError: false,
+      data: { ...ORG, websiteUrl: "https://203.0.113.9/", donationUrl: "https://user@give.example.org/" },
+    }
+    await renderAt("/orgs/beach-crew/")
+    expect(linkHrefs().filter((href) => href?.includes("203.0.113.9") || href?.includes("user@"))).toEqual([])
+    cleanup()
+    orgQuery = { isPending: false, isError: false, data: { ...ORG, websiteUrl: "http://beach.example.org/" } }
+    await renderAt("/orgs/beach-crew/")
+    expect(linkHrefs()).not.toContain("http://beach.example.org/")
+    expect(linkHrefs()).toContain("https://give.example.org/")
+  })
+})

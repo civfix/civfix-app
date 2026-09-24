@@ -26,9 +26,7 @@ import type {
   PortfolioAnalyticsRange,
 } from "@civfix/shared"
 
-const DAY_MS = 86_400_000
-const HOUR_MS = 3_600_000
-const MINUTE_MS = 60_000
+import { DAY_MS, HOUR_MS, MINUTE_MS, makeCannedApi, type FakeEndpoint } from "./fixtures"
 
 const FIXTURE_NOW = Date.now()
 
@@ -441,8 +439,6 @@ function argId(args: unknown): string {
   return typeof id === "string" ? id : DASHBOARD_EVENT_IDS.live
 }
 
-export type FakeEndpoint = (args?: unknown) => Promise<unknown>
-
 export function pendingForever(): FakeEndpoint {
   return () => new Promise<never>(() => {})
 }
@@ -505,19 +501,11 @@ const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
 export function makeDashboardFakeApi(
   overrides: Record<string, FakeEndpoint> = {},
 ): ApiClient {
-  return new Proxy(
-    {},
-    {
-      get(_target, prop) {
-        if (prop === "then") return undefined
-        const name = String(prop)
-        const endpoint = overrides[name] ?? DASHBOARD_FAKE_ENDPOINTS[name]
-        if (endpoint) return endpoint
-        return (): Promise<never> =>
-          Promise.reject(new Error(`bodies-gallery dashboard fake: "${name}" is not stubbed`))
-      },
-    },
-  ) as ApiClient
+  return makeCannedApi(
+    { ...DASHBOARD_FAKE_ENDPOINTS, ...overrides },
+    (name) => (): Promise<never> =>
+      Promise.reject(new Error(`bodies-gallery dashboard fake: "${name}" is not stubbed`)),
+  )
 }
 
 const PORTFOLIO_QUERY_NAMES = [

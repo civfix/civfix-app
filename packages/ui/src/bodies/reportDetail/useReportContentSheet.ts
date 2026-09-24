@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { useRequireAuth } from "../../data"
+import { pathForEntry } from "../../nav"
 import { useT } from "../../i18n"
 import { useContentReportSheet } from "../useContentReportSheet"
 
@@ -14,7 +15,7 @@ export function useReportContentSheet(reportId: string) {
   )
   const onReportGalleryPhoto = useCallback(
     (mediaId: string) =>
-      requireAuth(() => onReportPhoto(mediaId), { next: `/pin/${reportId}` }),
+      requireAuth(() => onReportPhoto(mediaId), { next: pathForEntry({ kind: "pin", id: reportId }) }),
     [onReportPhoto, requireAuth, reportId],
   )
 

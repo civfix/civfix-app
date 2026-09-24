@@ -2,12 +2,10 @@
 
 import { useCallback, useMemo } from "react"
 import {
+  isoFromDatetimeLocal,
   isValidTimeZone,
   sameOffsetAt,
-  wallClockInZone,
-  wallClockToInstantMs,
   zoneShortName,
-  type WallClock,
 } from "@civfix/shared/datetime"
 import { useLocale, useViewerTimeZone } from "@civfix/ui/i18n"
 
@@ -105,18 +103,6 @@ export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   )
 }
 
-export function seriesDayLabel(day: string, locale: string): string {
-  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T00:00:00Z`) : new Date(day)
-  if (Number.isNaN(parsed.getTime())) return day
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(parsed)
-}
-
-const pad = (value: number, width = 2) => String(value).padStart(width, "0")
-
 /**
  * The zone a console `datetime-local` input is read and written in: the event's own zone, so a
  * host editing from another zone sees the same wall clock the attendees do; the viewer's zone only
@@ -169,49 +155,13 @@ export function useInputZoneNames(
   const referenceMs = reference ? Date.parse(reference) : Number.NaN
   if (!Number.isNaN(referenceMs)) instants.push(referenceMs)
   for (const input of inputs) {
-    const parsed = zonedInputToIso(input, timeZone)
+    const parsed = isoFromDatetimeLocal(input, timeZone)
     if (parsed.kind === "instant") instants.push(Date.parse(parsed.iso))
   }
   return {
     name: zoneGenericName(timeZone, locale),
     hint: inputZoneHintName(timeZone, viewerTimeZone, instants, locale),
   }
-}
-
-export function isoToZonedInput(iso: string | null | undefined, timeZone: string): string {
-  if (!iso) return ""
-  const at = Date.parse(iso)
-  if (Number.isNaN(at)) return ""
-  const wall = wallClockInZone(at, timeZone)
-  const date = `${pad(wall.year, 4)}-${pad(wall.month)}-${pad(wall.day)}`
-  return `${date}T${pad(wall.hours)}:${pad(wall.minutes)}`
-}
-
-export type ZonedInputValue =
-  | { kind: "empty" }
-  | { kind: "instant"; iso: string }
-  | { kind: "invalid" }
-
-const DATETIME_LOCAL = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
-
-/**
- * `invalid` covers both a malformed value and a wall clock that does not exist in the zone (the
- * hour skipped by a spring-forward DST change), which the caller must surface as a field error
- * rather than silently shifting.
- */
-export function zonedInputToIso(value: string, timeZone: string): ZonedInputValue {
-  if (value === "") return { kind: "empty" }
-  const match = DATETIME_LOCAL.exec(value)
-  if (!match) return { kind: "invalid" }
-  const wall: WallClock = {
-    year: Number(match[1]),
-    month: Number(match[2]),
-    day: Number(match[3]),
-    hours: Number(match[4]),
-    minutes: Number(match[5]),
-  }
-  const at = wallClockToInstantMs(wall, timeZone)
-  return at === null ? { kind: "invalid" } : { kind: "instant", iso: new Date(at).toISOString() }
 }
 
 export interface ZonedFieldPatch<K extends string> {
@@ -231,7 +181,7 @@ export function zonedFieldPatch<K extends string>(
   const result: ZonedFieldPatch<K> = { patch: {}, invalid: [] }
   for (const field of Object.keys(current) as K[]) {
     if (saved !== null && current[field] === saved[field]) continue
-    const parsed = zonedInputToIso(current[field], timeZone)
+    const parsed = isoFromDatetimeLocal(current[field], timeZone)
     if (parsed.kind === "invalid") result.invalid.push(field)
     else result.patch[field] = parsed.kind === "instant" ? parsed.iso : null
   }

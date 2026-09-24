@@ -9,6 +9,7 @@ import {
   PaginationQuerySchema,
   pageResponse,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import { BroadcastDTOSchema, HttpsUrlSchema } from "../entities.js"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "../../markdown/parse.js"
 
@@ -114,10 +115,9 @@ export const DeleteEventBroadcastRequestSchema = z
   .strict()
 export type DeleteEventBroadcastRequest = z.infer<typeof DeleteEventBroadcastRequestSchema>
 
-const DeleteEventBroadcastResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type DeleteEventBroadcastResponse = z.infer<typeof DeleteEventBroadcastResponseObjectSchema>
+export type DeleteEventBroadcastResponse = z.infer<typeof OkResponseSchema>
 export const DeleteEventBroadcastResponseSchema: z.ZodType<DeleteEventBroadcastResponse, z.ZodTypeDef, unknown> =
-  DeleteEventBroadcastResponseObjectSchema
+  OkResponseSchema
 
 export const PreviewEventBroadcastRequestSchema = z
   .object({
@@ -151,10 +151,9 @@ export const TestSendEventBroadcastRequestSchema = z
   .strict()
 export type TestSendEventBroadcastRequest = z.infer<typeof TestSendEventBroadcastRequestSchema>
 
-const TestSendEventBroadcastResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type TestSendEventBroadcastResponse = z.infer<typeof TestSendEventBroadcastResponseObjectSchema>
+export type TestSendEventBroadcastResponse = z.infer<typeof OkResponseSchema>
 export const TestSendEventBroadcastResponseSchema: z.ZodType<TestSendEventBroadcastResponse, z.ZodTypeDef, unknown> =
-  TestSendEventBroadcastResponseObjectSchema
+  OkResponseSchema
 
 export const SendEventBroadcastRequestSchema = z
   .object({ id: IdSchema, broadcastId: IdSchema })
@@ -248,10 +247,9 @@ export const UnsubscribeBroadcastsRequestSchema = z
   .strict()
 export type UnsubscribeBroadcastsRequest = z.infer<typeof UnsubscribeBroadcastsRequestSchema>
 
-const UnsubscribeBroadcastsResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type UnsubscribeBroadcastsResponse = z.infer<typeof UnsubscribeBroadcastsResponseObjectSchema>
+export type UnsubscribeBroadcastsResponse = z.infer<typeof OkResponseSchema>
 export const UnsubscribeBroadcastsResponseSchema: z.ZodType<UnsubscribeBroadcastsResponse, z.ZodTypeDef, unknown> =
-  UnsubscribeBroadcastsResponseObjectSchema
+  OkResponseSchema
 
 export const OpenUnsubscribeBroadcastsRequestSchema = z
   .object({

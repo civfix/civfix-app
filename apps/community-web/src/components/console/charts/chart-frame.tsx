@@ -1,6 +1,8 @@
 "use client"
 
 import type { MouseEvent, ReactNode, RefObject } from "react"
+import { formatCount } from "@civfix/shared"
+import { useLocale } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
@@ -8,7 +10,6 @@ import {
   CHART_LABEL_FONT_SIZE,
   ChartLegend,
   ChartTooltip,
-  formatCompact,
   NUM_CLASS,
   niceTicks,
   sparseIndices,
@@ -57,6 +58,7 @@ export function YGrid({
   width: number
   palette: ChartPalette
 }) {
+  const { locale } = useLocale()
   return (
     <>
       {axis.ticks.map((tick) => (
@@ -77,7 +79,7 @@ export function YGrid({
             fill={palette.label}
             className={NUM_CLASS}
           >
-            {formatCompact(tick)}
+            {formatCount(tick, locale, { compact: true })}
           </text>
         </g>
       ))}

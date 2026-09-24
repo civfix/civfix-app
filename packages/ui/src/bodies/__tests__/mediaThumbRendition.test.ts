@@ -56,13 +56,20 @@ describe("the thread surfaces open their photos in the lightbox", () => {
     })
 
     it(`${rel} builds the lightbox items once per media array`, () => {
-      expect(source).toContain('import { useLightbox } from "../../lightbox"')
-      expect(source).toContain("const lightbox = useLightbox()")
-      expect(source).toContain("if (items.length > 0) lightbox.open(items, index)")
-      expect(source).toContain("[lightbox, media]")
-      expect(source).toContain("const media = post.media ?? EMPTY_MEDIA")
+      expect(source).toContain('import { usePostRowActions } from "../postCardActions"')
+      expect(source).toMatch(/\bmedia, openMedia \}\s*=\s*usePostRowActions\(/)
     })
   }
+
+  it("builds the lightbox items once per media array in the shared row and lightbox hooks", () => {
+    const actions = code(read("../postCardActions.ts"))
+    expect(actions).toContain("const media = post.media ?? EMPTY_MEDIA")
+    expect(actions).toContain("const openMedia = usePostMediaLightbox(media)")
+    const hook = code(read("../../lightbox/usePostMediaLightbox.ts"))
+    expect(hook).toContain("const lightbox = useLightbox()")
+    expect(hook).toContain("if (items.length > 0) lightbox.open(items, index)")
+    expect(hook).toContain("[lightbox, media]")
+  })
 })
 
 describe("the lightbox keeps full resolution", () => {

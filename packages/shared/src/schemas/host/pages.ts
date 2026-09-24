@@ -8,6 +8,7 @@ import {
   MAX_PARTY_SIZE,
   PageViewSourceSchema,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import {
   CleanupStatusSchema,
   EventPageBlockSchema,
@@ -166,7 +167,6 @@ export const RecordEventPageViewRequestSchema = z
   .strict()
 export type RecordEventPageViewRequest = z.infer<typeof RecordEventPageViewRequestSchema>
 
-const RecordEventPageViewResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RecordEventPageViewResponse = z.infer<typeof RecordEventPageViewResponseObjectSchema>
+export type RecordEventPageViewResponse = z.infer<typeof OkResponseSchema>
 export const RecordEventPageViewResponseSchema: z.ZodType<RecordEventPageViewResponse, z.ZodTypeDef, unknown> =
-  RecordEventPageViewResponseObjectSchema
+  OkResponseSchema

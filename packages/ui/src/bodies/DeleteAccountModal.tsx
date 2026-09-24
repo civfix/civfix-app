@@ -1,25 +1,17 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  Platform,
-  type TextInput as RNTextInput,
-  type ViewStyle,
-} from "react-native"
+import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
+import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { appErrorCode } from "../data/errorCode"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string
 
 const EMAIL_OTP_LENGTH = 6
-const CODE_FOCUS_DELAY_MS = 50
 
 export interface DeleteAccountModalProps {
   visible: boolean
@@ -27,28 +19,23 @@ export interface DeleteAccountModalProps {
   onClose: () => void
 }
 
+const SEND_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "sendError.rateLimited",
+  [ErrorCode.VALIDATION]: "sendError.validation",
+}
+
+const DELETE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.UNAUTHORIZED]: "deleteError.unauthorized",
+  [ErrorCode.RATE_LIMITED]: "deleteError.rateLimited",
+  [ErrorCode.VALIDATION]: "deleteError.validation",
+}
+
 function sendErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "RATE_LIMITED":
-      return t("sendError.rateLimited")
-    case "VALIDATION":
-      return t("sendError.validation")
-    default:
-      return t("sendError.generic")
-  }
+  return t(errorCopyKey(err, SEND_ERROR_KEYS, "sendError.generic"))
 }
 
 function deleteErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "UNAUTHORIZED":
-      return t("deleteError.unauthorized")
-    case "RATE_LIMITED":
-      return t("deleteError.rateLimited")
-    case "VALIDATION":
-      return t("deleteError.validation")
-    default:
-      return t("deleteError.generic")
-  }
+  return t(errorCopyKey(err, DELETE_ERROR_KEYS, "deleteError.generic"))
 }
 
 export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountModalProps) {
@@ -74,7 +61,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
 
   useEffect(() => {
     if (!visible || codeFocusRequest === 0) return
-    const timer = setTimeout(() => codeRef.current?.focus(), CODE_FOCUS_DELAY_MS)
+    const timer = setTimeout(() => codeRef.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
     return () => clearTimeout(timer)
   }, [visible, codeFocusRequest])
 
@@ -259,13 +246,10 @@ const useStyles = makeThemedStyles((t) => ({
     letterSpacing: 8,
     color: t.colors.text,
   },
-  codeInputFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  codeInputFocused: inputFocusedStyle(t),
   resend: {
     alignSelf: "flex-start",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
   },
   resendText: {

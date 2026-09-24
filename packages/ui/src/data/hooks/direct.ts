@@ -19,6 +19,7 @@ import type { ApiClient } from "@civfix/shared/client"
 import { useApi, useAuthState, useRequireAuth } from "../context"
 import { queryKeys } from "../keys"
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "./useDebouncedValue"
+import { threadRoomId } from "../threadRoom"
 
 const USER_SEARCH_LIMIT = 20
 
@@ -82,7 +83,7 @@ export function useStartDm() {
           openDm.mutate(target.id, {
             onSuccess: (res) => {
               const thread = res.thread
-              const roomId = thread.refId ?? thread.id
+              const roomId = threadRoomId(thread)
               handlers.onResolved({ roomId, thread, target })
             },
             onError: (err) => handlers.onError?.(err),

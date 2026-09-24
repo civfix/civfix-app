@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectThemeTouchTarget, surfaceSource } from "../../__tests__/sourceGuards"
+import { tabRootTitleStyle } from "../../shell/detailHeader"
+import { fontFamily } from "../../theme/fontFamily"
+import type { Theme } from "../../theme/themes"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -13,33 +16,43 @@ const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/
 const people = strip(read("../SocialBody.tsx"))
 const reports = strip(read("../ReportsBody.tsx"))
 const events = strip(read("../EventsBody.tsx"))
+const reportFlow = strip(read("../ReportFlowBody.tsx"))
 
-const hasTabRootType = (src: string): boolean =>
-  /fontFamily: (?:theme|t)\.fontFamily\.bodyExtraBold[\s\S]{0,200}?fontSize: 32[\s\S]{0,200}?lineHeight: 39[\s\S]{0,200}?letterSpacing: -0\.5/.test(
-    src,
-  ) ||
-  /fontSize: 32[\s\S]{0,200}?lineHeight: 39[\s\S]{0,200}?letterSpacing: -0\.5[\s\S]{0,200}?fontFamily: (?:theme|t)\.fontFamily\.bodyExtraBold/.test(
-    src,
-  )
+const DETAIL_HEADER_IMPORT = /import \{[^}]*\btabRootTitleStyle\b[^}]*\} from "[./]+\/shell\/detailHeader"/
 
 describe("the tab-root title type is one recipe", () => {
-  it("FeedBody is the reference: Hanken 800, 32/39, tracking -0.5", () => {
-    expect(hasTabRootType(feed)).toBe(true)
+  it.each([
+    ["FeedBody", feed, /heading: tabRootTitleStyle\(t\),/],
+    ["MessagingListBody", inbox, /heading: tabRootTitleStyle\(t\),/],
+    ["SocialBody", people, /title: tabRootTitleStyle\(t\),/],
+    ["EventsBody", events, /rootTitle: tabRootTitleStyle\(t\),/],
+  ])("%s draws the same 32/800 title at its view root", (_name, src, re) => {
+    expect(src).toMatch(DETAIL_HEADER_IMPORT)
+    expect(src).toMatch(re)
+    expect(src).not.toMatch(/fontSize: 32,\s*lineHeight: 39/)
+  })
+
+  it("tabRootTitleStyle is the same recipe: Hanken 800, 32/39, tracking -0.5", () => {
+    const theme = { fontFamily, colors: { text: "ink" } } as unknown as Theme
+    expect(tabRootTitleStyle(theme)).toEqual({
+      fontFamily: theme.fontFamily.bodyExtraBold,
+      fontSize: 32,
+      lineHeight: 39,
+      letterSpacing: -0.5,
+      color: "ink",
+    })
   })
 
   it.each([
-    ["MessagingListBody", inbox],
-    ["SocialBody", people],
-    ["ReportsBody", reports],
-    ["EventsBody", events],
-  ])("%s draws the same 32/800 title at its view root", (_name, src) => {
-    expect(hasTabRootType(src)).toBe(true)
+    ["ReportsBody", reports, /title: tabRootTitleStyle\(t\),/],
+    ["ReportFlowBody", reportFlow, /headerTitleRoot: \{ \.\.\.tabRootTitleStyle\(t\), flex: 1 \}/],
+  ])("%s draws its view-root title from tabRootTitleStyle", (_name, src, re) => {
+    expect(src).toMatch(re)
   })
 
   it("SearchBody layers the recipe over its portrait title instead of forking a second one", () => {
-    expect(search).toMatch(
-      /titleTabRoot: \{\s*fontFamily: t\.fontFamily\.bodyExtraBold,\s*lineHeight: 39,\s*letterSpacing: -0\.5,/,
-    )
+    expect(search).toMatch(DETAIL_HEADER_IMPORT)
+    expect(search).toMatch(/titleTabRoot: tabRootTitleStyle\(t\),/)
     expect(search).toContain("[styles.title, styles.titleTabRoot]")
     expect(search).toMatch(/title: \{[\s\S]{0,160}?fontFamily: t\.fontFamily\.displayBold/)
   })
@@ -97,11 +110,12 @@ describe("a view root and a stacked panel start on the same rule", () => {
   it.each([
     ["SearchBody", search, /paddingTop: 14/],
     ["MessagingListBody", inbox, /contentExpanded: \{ paddingTop: 14 \}/],
-    ["SocialBody", people, /minHeight: 44,\s*marginTop: 14/],
-    ["ReportsBody", reports, /minHeight: 44,\s*marginTop: 14/],
-    ["EventsBody", events, /minHeight: 44,\s*marginTop: 14/],
+    ["SocialBody", people, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
+    ["ReportsBody", reports, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
+    ["EventsBody", events, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
   ])("%s opens its first line 14 below the card edge", (_name, src, re) => {
     expect(src).toMatch(re)
+    if (re.source.includes("MIN_TOUCH_TARGET")) expect(expectThemeTouchTarget(src)).toBe(44)
   })
 })
 
@@ -109,13 +123,13 @@ describe("title first, then the surface's own field", () => {
   it("ReportsBody no longer renders its filter above its own title", () => {
     const header = reports.match(/ListHeaderComponent=\{[\s\S]*?\n {6}\}/)?.[0]
     expect(header, "the ListHeaderComponent block must still be findable").toBeTruthy()
-    expect(header!.indexOf("ReportsHeader")).toBeLessThan(header!.indexOf("ReportsSearchField"))
+    expect(header!.indexOf("ReportsHeader")).toBeLessThan(header!.indexOf("<ListSearchField"))
   })
 
   it("SocialBody and EventsBody keep the same order", () => {
     const social = people.match(/ListHeaderComponent=\{[\s\S]*?\n {6}\}/)?.[0]
     expect(social).toBeTruthy()
-    expect(social!.indexOf("PeopleHeader")).toBeLessThan(social!.indexOf("PeopleSearchField"))
+    expect(social!.indexOf("PeopleHeader")).toBeLessThan(social!.indexOf("<ListSearchField"))
     const from = events.indexOf("function EventsHeader(")
     const to = events.indexOf("const useStyles = makeThemedStyles(")
     expect(from, "EventsHeader must still be a top-level function here").toBeGreaterThan(0)

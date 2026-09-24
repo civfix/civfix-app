@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme } from "../theme"
+import { focusRingProps, makeThemedStyles, useTheme, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap, Text, TextLink } from "../typography"
 
 export interface FeedNoticeLink {
@@ -100,7 +100,6 @@ export function FeedNotice({
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const NOTICE_TILE = 40
 
 const useStyles = makeThemedStyles((t) => ({

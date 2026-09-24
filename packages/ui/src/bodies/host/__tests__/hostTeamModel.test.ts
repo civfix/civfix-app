@@ -265,7 +265,7 @@ describe("dates on the team screen", () => {
     expect(teamDateLabel("not-a-date", "en-US")).toBe("")
   })
 
-  it("falls back to the ISO day rather than throwing on a locale the runtime rejects", () => {
-    expect(teamDateLabel("2026-03-04T10:00:00.000Z", "!!not-a-locale")).toBe("2026-03-04")
+  it("falls back to en-US rather than throwing on a locale the runtime rejects", () => {
+    expect(teamDateLabel("2026-03-04T10:00:00.000Z", "!!not-a-locale")).toBe("Mar 4, 2026")
   })
 })

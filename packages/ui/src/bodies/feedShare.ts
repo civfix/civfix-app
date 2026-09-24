@@ -8,10 +8,10 @@ import type {
   ReportCategory,
   ReportType,
 } from "@civfix/shared"
-import { appErrorCode } from "../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { mergeDateTime } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
-import { optimisticPostId } from "./thread/threadModel"
+import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "./postComposerSubmit"
 
 export interface FeedShareAuthUser {
   id: string
@@ -151,38 +151,30 @@ export interface OptimisticFeedSharePostArgs {
 }
 
 export function buildOptimisticFeedSharePost(args: OptimisticFeedSharePostArgs): PostDTO {
-  const now = args.now ?? new Date().toISOString()
+  const now = args.now ? new Date(args.now) : new Date()
+  const linkedAt = now.toISOString()
   const body = args.caption.trim().slice(0, FEED_CAPTION_MAX)
-  return {
-    id: optimisticPostId(Date.now()),
+  return buildOptimisticPost({
     author: args.author,
     kind: "post",
     body: body.length > 0 ? body : null,
-    createdAt: now,
-    editedAt: null,
-    counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
-    viewer: { liked: false, reposted: false, saved: false },
-    media: [],
-    mentions: [],
-    repostOf: null,
-    replyToId: null,
-    threadRootId: null,
+    now,
     event: args.event ?? null,
     report: args.report
       ? {
           id: args.report.id,
           category: args.report.category,
           ...(args.report.type ? { type: args.report.type } : {}),
-          title: args.report.title.trim() || "Report",
+          title: args.report.title.trim() || REPORT_TITLE_FALLBACK,
           status: "published",
           lat: args.report.lat,
           lng: args.report.lng,
           addr: args.report.addr ?? null,
           thumbUrl: null,
-          linkedAt: now,
+          linkedAt,
         }
       : null,
-  }
+  })
 }
 
 export function classifyFeedShareFailure(err: unknown): {
@@ -190,9 +182,9 @@ export function classifyFeedShareFailure(err: unknown): {
   retryable: boolean
 } {
   switch (appErrorCode(err)) {
-    case "VALIDATION":
+    case ErrorCode.VALIDATION:
       return { reason: "rejected", retryable: false }
-    case "RATE_LIMITED":
+    case ErrorCode.RATE_LIMITED:
       return { reason: "rate-limited", retryable: true }
     default:
       return { reason: "network", retryable: true }

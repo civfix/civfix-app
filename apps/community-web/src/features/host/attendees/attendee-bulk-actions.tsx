@@ -15,7 +15,7 @@ import type { ConsoleEventContext } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
 import { checkInSeats } from "./check-in-seats"
-import { checkableSeatIds } from "./roster-filters"
+import { checkableSeatIds } from "@civfix/shared/host"
 
 interface RemoveInput {
   ids: readonly string[]

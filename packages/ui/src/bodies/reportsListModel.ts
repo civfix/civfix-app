@@ -46,6 +46,11 @@ export function firstReportPhoto(report: ReportDTO): MediaDTO | undefined {
   return report.media.find((m) => m.kind === "image" && m.status === "ready")
 }
 
+export function reportThumbUrl(report: ReportDTO): string | null {
+  const photo = firstReportPhoto(report)
+  return photo ? (photo.thumbUrl ?? photo.url) : null
+}
+
 export function latestNote(report: ReportDTO): string | undefined {
   const last = report.timeline.at(-1)
   return last?.note?.trim() || undefined

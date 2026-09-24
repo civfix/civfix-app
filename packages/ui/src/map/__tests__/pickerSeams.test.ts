@@ -49,8 +49,11 @@ describe("the report picker's native pins do not wait for a camera move after ge
 describe("the native pickers credit the basemap with the full OSM attribution", () => {
   it("shows DEFAULT_ATTRIBUTION rather than the shortened a11y string", () => {
     expect(DEFAULT_ATTRIBUTION).toContain("OpenStreetMap contributors")
+    const credit = code(read("../MapCredit.tsx"))
+    expect(credit).toContain("{DEFAULT_ATTRIBUTION}")
+    expect(credit).not.toContain('t("a11y.attribution")')
     for (const src of [nativePicker, reportPickNative]) {
-      expect(src).toContain("{DEFAULT_ATTRIBUTION}")
+      expect(src).toContain("<MapCredit ")
       expect(src).not.toContain('t("a11y.attribution")')
     }
   })

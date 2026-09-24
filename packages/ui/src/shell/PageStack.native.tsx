@@ -1,11 +1,5 @@
 import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import {
-  AccessibilityInfo,
-  Platform,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native"
+import { Platform, StyleSheet, useWindowDimensions, View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
   runOnJS,
@@ -26,6 +20,7 @@ import {
   pageSwipeSettleConfig,
 } from "./motionConfigs.native"
 import { timingConfig } from "../theme/motionTiming.native"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import { useNestedShellHost } from "./nestedShellHost"
 import { PageActiveProvider } from "./pageActive"
@@ -66,8 +61,6 @@ const FAIL_Y = 14
 
 type LayerDriver = "front" | "exit" | "zero" | "one"
 
-let reduceMotionCache = false
-
 interface LeavingLayer {
   key: string
   entry: DetailEntry
@@ -93,25 +86,7 @@ export function PageStack({
   const dragging = useSharedValue(0)
   const [leaving, setLeaving] = useState<LeavingLayer | null>(null)
 
-  const [reduceMotion, setReduceMotion] = useState(reduceMotionCache)
-  useLayoutEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => {
-        reduceMotionCache = !!enabled
-        if (mounted) setReduceMotion(!!enabled)
-      })
-      // A failed probe keeps motion on; the reduceMotionChanged listener below still corrects it.
-      .catch(() => {})
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
-      reduceMotionCache = !!enabled
-      setReduceMotion(!!enabled)
-    })
-    return () => {
-      mounted = false
-      sub?.remove()
-    }
-  }, [])
+  const reduceMotion = useReducedMotion() === true
 
   const dropLeaving = useCallback((key: string) => {
     setLeaving((current) => (current && current.key === key ? null : current))

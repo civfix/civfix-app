@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import { readGuestManageToken } from "@/features/guest/guest-cancel-token"
 
 type Phase = "confirm" | "cancelling" | "done" | "error"
@@ -124,7 +125,7 @@ export function GuestCancelView() {
  */
 function scrubTokenFromUrl(): void {
   if (typeof window === "undefined") return
-  window.history.replaceState(null, "", window.location.pathname)
+  replaceUrlInPlace(window.location.pathname)
 }
 
 function cancelErrorMessage(err: unknown, t: (key: string) => string): string {

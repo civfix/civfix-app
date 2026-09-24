@@ -4,7 +4,8 @@ import type { JurisdictionHours, OrgHoursDTO, VolunteerHoursEntryDTO } from "@ci
 import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { Avatar, EmptyState, MetaDot } from "../../primitives"
+import { Avatar, EmptyState, MetaDot, SkeletonBlock, SkeletonGroup } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { useAuthState, useMyHours, useMyHoursEntries, usePublicHoursEntries } from "../../data"
 import { useNavStore } from "../../nav"
 import { useLocale, useT } from "../../i18n"
@@ -16,6 +17,9 @@ import { ServiceHoursCertificateCard } from "./ServiceHoursCertificateCard"
 const MAX_JURISDICTION_CHIPS = 3
 const MAX_ORGANIZATION_CHIPS = 3
 const SKELETON_ROWS = [0, 1, 2]
+const SKELETON_CHIP_SIZE = 38
+const SKELETON_CHIP_RADIUS = 9
+const SKELETON_LINE_RADIUS = 7
 
 export interface ServiceHoursSectionProps {
   variant: "own" | "public"
@@ -319,11 +323,11 @@ function HoursLedger({
           body={t("ledger.error_body")}
         />
       ) : isLoading ? (
-        <View>
+        <SkeletonGroup>
           {SKELETON_ROWS.map((i) => (
-            <SkeletonRow key={i} />
+            <LedgerRowSkeleton key={i} />
           ))}
-        </View>
+        </SkeletonGroup>
       ) : items.length === 0 ? (
         <EmptyState
           variant="detail"
@@ -407,10 +411,7 @@ function LedgerRow({ entry }: { entry: VolunteerHoursEntryDTO }) {
       {...focusRingProps}
       style={({ pressed }) => [styles.row, pressed && pressable ? styles.pressedDim : null]}
     >
-      <View style={styles.dateChip}>
-        <Text style={styles.dateDay}>{day}</Text>
-        <Text style={styles.dateMonth}>{month}</Text>
-      </View>
+      <DateTile variant="ledger" day={day} month={month} />
       <View style={styles.rowMeta}>
         <Text style={styles.rowTitle} numberOfLines={1}>
           {title}
@@ -436,14 +437,24 @@ function LedgerRow({ entry }: { entry: VolunteerHoursEntryDTO }) {
   )
 }
 
-function SkeletonRow() {
+function LedgerRowSkeleton() {
   const styles = useStyles()
   return (
     <View style={styles.row}>
-      <View style={styles.skeletonChip} />
+      <SkeletonBlock
+        width={SKELETON_CHIP_SIZE}
+        height={SKELETON_CHIP_SIZE}
+        radius={SKELETON_CHIP_RADIUS}
+        style={styles.skeletonChip}
+      />
       <View style={styles.rowMeta}>
-        <View style={[styles.skeletonLine, styles.skeletonLineWide]} />
-        <View style={[styles.skeletonLine, styles.skeletonLineSmall]} />
+        <SkeletonBlock width="56%" height={11} radius={SKELETON_LINE_RADIUS} />
+        <SkeletonBlock
+          width="34%"
+          height={9}
+          radius={SKELETON_LINE_RADIUS}
+          style={styles.skeletonLineSmall}
+        />
       </View>
     </View>
   )
@@ -539,29 +550,6 @@ const useStyles = makeThemedStyles((t) => ({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },
-  dateChip: {
-    width: 38,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: t.space["1"],
-    borderRadius: 9,
-    backgroundColor: t.colors.sun["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["100"],
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["15"],
-    lineHeight: 16,
-    color: t.colors.sun["700"],
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 8,
-    letterSpacing: 0.5,
-    color: t.colors.sun["700"],
-  },
   rowMeta: {
     flex: 1,
     minWidth: 0,
@@ -596,24 +584,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   skeletonChip: {
-    width: 38,
-    height: 38,
     flexShrink: 0,
-    borderRadius: 9,
-    backgroundColor: t.colors.bgAlt,
-  },
-  skeletonLine: {
-    height: 11,
-    borderRadius: 7,
-    backgroundColor: t.colors.bgAlt,
-  },
-  skeletonLineWide: {
-    width: "56%",
   },
   skeletonLineSmall: {
-    width: "34%",
     marginTop: 7,
-    height: 9,
   },
 
   pressedDim: {

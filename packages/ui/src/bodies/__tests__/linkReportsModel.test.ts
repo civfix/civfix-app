@@ -84,6 +84,13 @@ describe("toggleLinkedReportId", () => {
     expect(toggleLinkedReportId(ids, "one-more").outcome).toBe("at_limit")
     expect(toggleLinkedReportId(ids.slice(0, -1), "one-more").outcome).toBe("added")
   })
+
+  it("toggles the report picker's selection and refuses past the cap", () => {
+    expect(toggleLinkedReportId(["a"], "b")).toEqual({ ids: ["a", "b"], outcome: "added" })
+    expect(toggleLinkedReportId(["a", "b"], "a")).toEqual({ ids: ["b"], outcome: "removed" })
+    const full = Array.from({ length: MAX_LINKED_REPORTS }, (_u, i) => `r${i}`)
+    expect(toggleLinkedReportId(full, "extra").outcome).toBe("at_limit")
+  })
 })
 
 describe("nearbyReportRows", () => {

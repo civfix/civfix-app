@@ -1,7 +1,6 @@
 "use client"
 
 import { createApiClient, type ApiClient } from "@civfix/shared/client"
-import { AppError, ErrorCode } from "@civfix/shared"
 
 import { getCsrfToken, useAuthStore, waitForSessionSettled } from "@/store/auth-store"
 
@@ -42,51 +41,3 @@ export const api: ApiClient = createApiClient({
   onUnauthorized: () => useAuthStore.getState().clear(),
 })
 
-export interface AppErrorLike {
-  code: ErrorCode
-  message: string
-  httpStatus?: unknown
-  fields?: unknown
-  requestId?: unknown
-}
-
-const ERROR_CODE_VALUES: ReadonlySet<string> = new Set<string>(Object.values(ErrorCode))
-
-export function isAppErrorLike(value: unknown): value is AppErrorLike {
-  if (typeof value !== "object" || value === null) return false
-  const candidate = value as { code?: unknown; message?: unknown }
-  return (
-    typeof candidate.code === "string" &&
-    ERROR_CODE_VALUES.has(candidate.code) &&
-    typeof candidate.message === "string"
-  )
-}
-
-/**
- * Never produces user-facing copy: the render site localizes by `code` (lib/error-messages.ts). The
- * English literals below are diagnostics carried as `AppError.message`.
- */
-export function toAppError(err: unknown): AppError {
-  if (err instanceof AppError) return err
-
-  if (isAppErrorLike(err)) {
-    const { httpStatus, fields, requestId } = err
-    const namedFields =
-      typeof fields === "object" && fields !== null && !Array.isArray(fields)
-        ? Object.entries(fields).filter(
-            (entry): entry is [string, string] => typeof entry[1] === "string",
-          )
-        : []
-    return new AppError(err.code, err.message || "Unknown error", {
-      ...(typeof httpStatus === "number" ? { httpStatus } : {}),
-      ...(namedFields.length > 0 ? { fields: Object.fromEntries(namedFields) } : {}),
-      ...(typeof requestId === "string" ? { requestId } : {}),
-      cause: err,
-    })
-  }
-
-  if (err instanceof Error) {
-    return new AppError(ErrorCode.INTERNAL, err.message || "Network request failed", { cause: err })
-  }
-  return new AppError(ErrorCode.INTERNAL, "Unknown error")
-}

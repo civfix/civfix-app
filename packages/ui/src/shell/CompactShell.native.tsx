@@ -34,7 +34,7 @@ import { makeContentBottomReserveScrollHost } from "./ContentBottomReserve"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { makeMinimizeAwareScrollHost } from "./MinimizeAwareScroll.native"
 import { makeSheetHandoffScrollHost } from "./SheetHandoffScroll.native"
-import { resolveBodyLayout, shellBodyKey } from "./bodyLayout"
+import { resolveBodyLayout, surfaceKey } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
 import { BodyTransition } from "./BodyTransition.native"
 import { sheetDismissConfig, sheetMoveConfig } from "./motionConfigs.native"
@@ -160,7 +160,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   } = useSheetExitFreeze(closing, { active: storeActive, view: storeView, stack })
 
   // The same identity the keyed remount below uses; a change drives BodyTransition's entrance animation.
-  const bodyKey = shellBodyKey(active, `home:${view}`)
+  const bodyKey = surfaceKey(view, active)
   const direction = useStackDirection(stack.length)
 
   // The sheet bottoms at the screen edge, so only the top headroom is reserved.

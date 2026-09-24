@@ -3,6 +3,7 @@
 import { dehydrate, hydrate, type QueryClient, type Query } from "@tanstack/react-query"
 
 import { readAuthSnapshot } from "@/lib/auth-snapshot"
+import { safeGet, safeRemove, safeSet, storageAvailable } from "@/lib/browser-storage"
 import { useAuthStore } from "@/store/auth-store"
 
 
@@ -45,19 +46,10 @@ function shouldDehydrateMutation(): boolean {
   return false
 }
 
-function hasStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined"
-}
-
 function restore(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
-  } catch {
-    return
-  }
+  const raw = safeGet("local", STORAGE_KEY)
   if (raw === null) return
 
   let envelope: CacheEnvelope
@@ -101,9 +93,9 @@ function restore(queryClient: QueryClient): void {
 }
 
 function persistedViewerId(): string | null | undefined {
+  const raw = safeGet("local", STORAGE_KEY)
+  if (raw === null) return undefined
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (raw === null) return undefined
     const userId = (JSON.parse(raw) as { userId?: unknown }).userId
     return typeof userId === "string" ? userId : null
   } catch {
@@ -125,7 +117,7 @@ function confirmedViewerId(): string | null | undefined {
 }
 
 function persist(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
   const userId = confirmedViewerId()
   if (userId === undefined) return
   // The viewer just changed: the in-memory cache may still hold the previous viewer's notifications,
@@ -150,23 +142,18 @@ function persist(queryClient: QueryClient): void {
       userId,
       clientState,
     }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+    safeSet("local", STORAGE_KEY, JSON.stringify(envelope))
   } catch {
   }
 }
 
 export function restorePersistedCache(queryClient: QueryClient): void {
-  if (hasStorage()) {
-    try {
-      window.localStorage.removeItem(LEGACY_STORAGE_KEY)
-    } catch {
-    }
-  }
+  if (storageAvailable("local")) safeRemove("local", LEGACY_STORAGE_KEY)
   restore(queryClient)
 }
 
 export function installCachePersistenceWriter(queryClient: QueryClient): () => void {
-  if (!hasStorage()) {
+  if (!storageAvailable("local")) {
     return () => {}
   }
 
@@ -192,18 +179,11 @@ export function installCachePersistenceWriter(queryClient: QueryClient): () => v
 }
 
 export function clearPersistedCache(): void {
-  if (!hasStorage()) return
-  try {
-    window.localStorage.removeItem(STORAGE_KEY)
-  } catch {
-  }
+  if (!storageAvailable("local")) return
+  safeRemove("local", STORAGE_KEY)
 }
 
 export function hasPersistedCache(): boolean {
-  if (!hasStorage()) return false
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) !== null
-  } catch {
-    return false
-  }
+  if (!storageAvailable("local")) return false
+  return safeGet("local", STORAGE_KEY) !== null
 }

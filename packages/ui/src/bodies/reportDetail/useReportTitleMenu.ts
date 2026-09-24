@@ -5,7 +5,7 @@ import type { AnchorRect, PopoverMenuItem } from "../../primitives"
 import { shareLink, absoluteUrl } from "../../primitives/share"
 import { useRequireAuth, useUnlistReport } from "../../data"
 import type { IconName } from "../../typography"
-import { useNavStore } from "../../nav"
+import { pathForEntry, useNavStore } from "../../nav"
 import { useT } from "../../i18n"
 import type { ContentReportTarget } from "../useContentReportSheet"
 
@@ -21,7 +21,7 @@ export function useReportTitleMenu(
   const [titleMenuOpen, setTitleMenuOpen] = useState(false)
   const [titleMenuRect, setTitleMenuRect] = useState<AnchorRect | null>(null)
   const { ref: titleMenuAnchorRef, measure: measureTitleMenu } = usePopoverAnchor(setTitleMenuRect)
-  const sharePath = `/pin/${report.referenceCode ?? report.id}`
+  const sharePath = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })
   const onShare = useCallback(() => {
     void shareLink({
       title,
@@ -78,7 +78,7 @@ export function useReportTitleMenu(
               subjectId: report.id,
               label: t("subject_label.report"),
             }),
-          { next: `/pin/${report.id}` },
+          { next: pathForEntry({ kind: "pin", id: report.id }) },
         ),
     },
   ]

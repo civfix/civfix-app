@@ -4,7 +4,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
+import { expectThemeTouchTarget, sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
 import { statTileSpokenLabel, STAT_VALUE_UNKNOWN } from "../statTileModel"
 import { toastLiveSemantics } from "../toastModel"
 import { a11yState } from "../../theme/a11yState"
@@ -44,7 +44,8 @@ describe("the Terms links are reachable outside the checkbox", () => {
 
   it("keeps the row and the checkbox target tall enough to hit", () => {
     expect(terms).toContain("minHeight: 52")
-    expect(terms).toContain("minHeight: 44")
+    expect(terms).toMatch(/check: \{[^}]*minHeight: MIN_TOUCH_TARGET,/)
+    expect(expectThemeTouchTarget(terms)).toBe(44)
   })
 })
 

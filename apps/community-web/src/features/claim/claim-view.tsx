@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ShieldCheck, CheckCircle2, MapPin, Loader2, ArrowRight } from "lucide-react"
-import { ErrorCode, type ReportDTO } from "@civfix/shared"
+import { ErrorCode, type ReportDTO, toAppError } from "@civfix/shared"
 
 import { useT } from "@civfix/ui/i18n"
 
@@ -12,8 +12,9 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { StatusBadge } from "@civfix/ui"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { api, toAppError } from "@/lib/api"
+import { api } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import { useIsAuthenticated } from "@/hooks/use-auth"
 import { useUiStore } from "@/store/ui-store"
 import { readClaimHandoff, clearClaimHandoff, saveClaimHandoff } from "@/store/claim-handoff"
@@ -190,10 +191,7 @@ function scrubClaimParamsFromUrl(): void {
   params.delete("report")
   const search = params.toString()
   const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`
-  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
-  // which would leave the old ?code= in the router's URL to be written back on its next navigation. An
-  // unmarked call is adopted, and Next copies its own internals onto the entry itself.
-  window.history.replaceState(null, "", url)
+  replaceUrlInPlace(url)
 }
 
 function Intro({

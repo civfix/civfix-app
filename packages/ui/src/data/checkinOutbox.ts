@@ -1,4 +1,5 @@
 import type { CheckinOutcome } from "@civfix/shared"
+import { ErrorCode } from "@civfix/shared"
 import type { PersistenceCapability, SecureStoreCapability } from "../capabilities"
 
 export type OutboxStore = PersistenceCapability | SecureStoreCapability
@@ -154,14 +155,14 @@ export interface ReplayOutcome {
 }
 
 export function replayOutcome(errorCode: string | undefined): ReplayOutcome {
-  if (errorCode === undefined || errorCode === "CONFLICT") {
+  if (errorCode === undefined || errorCode === ErrorCode.CONFLICT) {
     return { disposition: "sent", dropReason: null }
   }
-  if (errorCode === "RATE_LIMITED" || errorCode === "INTERNAL") {
+  if (errorCode === ErrorCode.RATE_LIMITED || errorCode === ErrorCode.INTERNAL) {
     return { disposition: "retry", dropReason: null }
   }
-  if (errorCode === "UNAUTHORIZED") return { disposition: "hold", dropReason: null }
-  if (errorCode === "FORBIDDEN") return { disposition: "drop", dropReason: "forbidden" }
+  if (errorCode === ErrorCode.UNAUTHORIZED) return { disposition: "hold", dropReason: null }
+  if (errorCode === ErrorCode.FORBIDDEN) return { disposition: "drop", dropReason: "forbidden" }
   return { disposition: "drop", dropReason: "refused" }
 }
 

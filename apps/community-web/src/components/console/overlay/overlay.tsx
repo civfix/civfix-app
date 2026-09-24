@@ -59,7 +59,7 @@ export function Overlay({
         {trigger}
         {open && typeof document !== "undefined"
           ? createPortal(
-              <div className="fixed inset-0 z-50">
+              <div className="fixed inset-0 z-console-sheet">
                 <Scrim onDismiss={onClose} />
                 <div
                   ref={panelRef}
@@ -98,7 +98,7 @@ export function Overlay({
           aria-label={label}
           style={{ width }}
           className={cn(
-            "absolute z-40 max-h-[min(420px,60vh)] overflow-y-auto rounded-sm border border-console-line bg-console-surface p-token-3 shadow-console-3",
+            "absolute z-console-popover max-h-[min(420px,60vh)] overflow-y-auto rounded-sm border border-console-line bg-console-surface p-token-3 shadow-console-3",
             side === "bottom"
               ? "top-[calc(100%+theme(spacing.token-1))]"
               : "bottom-[calc(100%+theme(spacing.token-1))]",

@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native"
-import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../../theme"
+import { makeThemedStyles, hitSlopToTarget, MIN_TOUCH_TARGET } from "../../../theme"
 
 const CONFIRM_BTN_HEIGHT = 34
 export const CONFIRM_BTN_HIT_SLOP = {
-  top: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
-  bottom: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
+  top: hitSlopToTarget(CONFIRM_BTN_HEIGHT),
+  bottom: hitSlopToTarget(CONFIRM_BTN_HEIGHT),
 }
 // The link renders about 25pt tall (12.5px label, 4px padding); 10pt of slop each way reaches 44.
 export const REVOKE_LINK_HIT_SLOP = { top: 10, bottom: 10, left: 8, right: 8 }
@@ -19,13 +19,6 @@ export const useCertificateCardStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: 6,
   },
-  eyebrow: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    color: t.colors.textSubtle,
-    textTransform: "uppercase",
-  },
   blurb: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 12.5,
@@ -38,7 +31,7 @@ export const useCertificateCardStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: t.space["2"],
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.surface,
     borderWidth: 1.5,

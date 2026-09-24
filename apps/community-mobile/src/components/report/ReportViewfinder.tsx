@@ -15,6 +15,7 @@ import { CAMERA_CHROME_THEME, fontFamily, fontSize, makeThemedStyles, radius, sp
 import { Text, PrimaryButton, useToast } from "@civfix/ui"
 import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
+import { withTimeout } from "@civfix/shared"
 import {
   BACKGROUNDED_PARK_GRACE_MS,
   MAX_VIDEO_SECONDS,
@@ -24,7 +25,7 @@ import {
   startsDeferredRecording,
   type ViewfinderCaptureMode,
 } from "@/lib/cameraSession"
-import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 import { locateCapture, type CaptureOrigin } from "@/lib/captureLocation"
 import { capturedMediaFromPickerAsset, fileUri } from "@/lib/capturedMedia"
 import { CameraPermissionGate } from "@/components/camera/CameraPermissionGate"

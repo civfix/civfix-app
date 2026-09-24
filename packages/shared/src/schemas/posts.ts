@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
 import { PostCountsSchema, PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
-import { MAX_MENTIONED_USERS } from "./internal-fields.js"
+import { MAX_MENTIONED_USERS, OkResponseSchema } from "./internal-fields.js"
 
 /*
  * PostDTO and PostKind live in ./entities.js so the recursive repost/reply preview cycle stays
@@ -67,7 +67,7 @@ export type CreatePostResponse = z.infer<typeof CreatePostResponseSchema>
 export const GetPostResponseSchema = PostDTOSchema
 export type GetPostResponse = z.infer<typeof GetPostResponseSchema>
 
-export const DeletePostResponseSchema = z.object({ ok: z.literal(true) })
+export const DeletePostResponseSchema = OkResponseSchema
 export type DeletePostResponse = z.infer<typeof DeletePostResponseSchema>
 
 /** Like/unlike returns the full patched post (viewer flags + counts). */

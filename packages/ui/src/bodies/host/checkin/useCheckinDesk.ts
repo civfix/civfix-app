@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react"
 import type { CheckinResultDTO } from "@civfix/shared"
+import { normalizeTicketCode, ticketCodeReady } from "@civfix/shared/host"
 import { useToast } from "../../../primitives"
 import { presentScanner } from "../../../primitives/scannerPresenter"
 import { useHaptics } from "../../../capabilities"
 import { useScanEventTicket, useUndoEventCheckIn } from "../../../data/hooks/host"
-import { appErrorCode } from "../../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { useT } from "../../../i18n"
-import { manualCodeReady, normalizeManualCode } from "../checkinResult"
 import { useCheckinOutbox } from "../useCheckinOutbox"
 
 export interface CheckinResultState {
@@ -42,7 +42,7 @@ export function useCheckinDesk(id: string) {
           },
           onError: (err) => {
             const codeName = appErrorCode(err)
-            if (codeName === undefined || codeName === "INTERNAL" || codeName === "RATE_LIMITED") {
+            if (codeName === undefined || codeName === ErrorCode.INTERNAL || codeName === ErrorCode.RATE_LIMITED) {
               outbox.queue({ method: "scan", token })
               setCode("")
               toast.show(t("outbox.queued"), { variant: "info" })
@@ -63,8 +63,8 @@ export function useCheckinDesk(id: string) {
   }, [submitToken])
 
   const onSubmitCode = useCallback(() => {
-    const value = normalizeManualCode(code)
-    if (!manualCodeReady(value)) {
+    const value = normalizeTicketCode(code)
+    if (!ticketCodeReady(value)) {
       setErrorText(t("error.code_length"))
       return
     }

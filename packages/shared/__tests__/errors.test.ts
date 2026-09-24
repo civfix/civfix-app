@@ -3,6 +3,10 @@ import {
   AppError,
   ErrorCode,
   ERROR_HTTP_STATUS,
+  appErrorCode,
+  appErrorFields,
+  byErrorCode,
+  errorCopyKey,
   isAppErrorLike,
   toAppError,
 } from "../src/types/errors.js"
@@ -172,5 +176,177 @@ describe("toAppError", () => {
     expect(toAppError("boom").code).toBe(ErrorCode.INTERNAL)
     expect(toAppError(null).message).toBe("Unknown error")
     expect(toAppError({ code: "NOT_A_CODE", message: "x" }).code).toBe(ErrorCode.INTERNAL)
+  })
+})
+
+describe("isAppErrorLike", () => {
+  it("accepts any object carrying a known ErrorCode and a string message", () => {
+    expect(isAppErrorLike({ code: ErrorCode.CONFLICT, message: "Already exists" })).toBe(true)
+  })
+
+  it("rejects an unknown code, a non-string message, and non-objects", () => {
+    expect(isAppErrorLike({ code: "ENOENT", message: "no such file" })).toBe(false)
+    expect(isAppErrorLike({ code: ErrorCode.CONFLICT, message: 42 })).toBe(false)
+    expect(isAppErrorLike(null)).toBe(false)
+    expect(isAppErrorLike("CONFLICT")).toBe(false)
+  })
+})
+
+describe("toAppError over foreign and wire shapes", () => {
+  it("normalizes a foreign AppError instance to its real code, status and request id", () => {
+    const foreign = Object.assign(new ForeignAppError(ErrorCode.RATE_LIMITED, "Slow down"), {
+      httpStatus: 429,
+      requestId: "req-1",
+    })
+    const normalized = toAppError(foreign)
+
+    expect(normalized).toBeInstanceOf(AppError)
+    expect(normalized.code).toBe(ErrorCode.RATE_LIMITED)
+    expect(normalized.message).toBe("Slow down")
+    expect(normalized.httpStatus).toBe(429)
+    expect(normalized.requestId).toBe("req-1")
+    expect(normalized.cause).toBe(foreign)
+  })
+
+  it("keeps only the string fields carried by a foreign AppError instance", () => {
+    const foreign = new ForeignAppError(ErrorCode.VALIDATION, "bad", {
+      fields: { title: "Too short", count: 3, nested: { a: 1 }, blank: null },
+    })
+
+    expect(foreign).not.toBeInstanceOf(AppError)
+    expect(toAppError(foreign).fields).toEqual({ title: "Too short" })
+  })
+
+  it("normalizes a plain wire-shaped envelope with the code's status", () => {
+    const normalized = toAppError({ code: "VALIDATION", message: "Check your input" })
+    expect(normalized.code).toBe(ErrorCode.VALIDATION)
+    expect(normalized.httpStatus).toBe(422)
+  })
+
+  it("keeps string fields and drops non-string ones", () => {
+    const normalized = toAppError({
+      code: ErrorCode.VALIDATION,
+      message: "Check your input",
+      fields: { title: "Too short", count: 3, nested: { a: 1 }, blank: null },
+    })
+    expect(normalized.fields).toEqual({ title: "Too short" })
+  })
+
+  it("omits fields entirely when none of them are strings, or when fields is not an object", () => {
+    expect(
+      toAppError({ code: ErrorCode.VALIDATION, message: "Check your input", fields: { count: 3 } })
+        .fields,
+    ).toBeUndefined()
+    expect(
+      toAppError({ code: ErrorCode.VALIDATION, message: "Check your input", fields: ["title"] })
+        .fields,
+    ).toBeUndefined()
+  })
+
+  it("falls through to INTERNAL for a Node errno-style error, keeping its message and cause", () => {
+    const errno = Object.assign(new Error("no such file"), { code: "ENOENT" })
+    const normalized = toAppError(errno)
+    expect(normalized.code).toBe(ErrorCode.INTERNAL)
+    expect(normalized.message).toBe("no such file")
+    expect(normalized.cause).toBe(errno)
+  })
+
+  it("wraps a plain network Error as INTERNAL", () => {
+    const normalized = toAppError(new TypeError("Failed to fetch"))
+    expect(normalized.code).toBe(ErrorCode.INTERNAL)
+    expect(normalized.message).toBe("Failed to fetch")
+  })
+
+  it("wraps a thrown non-Error value as INTERNAL with a diagnostic message", () => {
+    expect(toAppError("boom").code).toBe(ErrorCode.INTERNAL)
+    expect(toAppError("boom").message).toBe("Unknown error")
+  })
+})
+
+describe("appErrorCode", () => {
+  it("reads the code of a real AppError and of a foreign-instance one", () => {
+    expect(appErrorCode(AppError.conflict())).toBe(ErrorCode.CONFLICT)
+    expect(appErrorCode(new ForeignAppError(ErrorCode.RATE_LIMITED, "slow down"))).toBe(
+      ErrorCode.RATE_LIMITED,
+    )
+    expect(appErrorCode({ name: "AppError", code: "RATE_LIMITED", message: "slow down" })).toBe(
+      ErrorCode.RATE_LIMITED,
+    )
+  })
+
+  it("reads a plain wire envelope", () => {
+    expect(appErrorCode({ code: ErrorCode.NOT_FOUND, message: "gone" })).toBe(ErrorCode.NOT_FOUND)
+  })
+
+  it("is undefined for anything the contract does not recognise as an AppError", () => {
+    expect(appErrorCode(new TypeError("Failed to fetch"))).toBeUndefined()
+    expect(appErrorCode(Object.assign(new Error("no such file"), { code: "ENOENT" }))).toBeUndefined()
+    expect(appErrorCode({ name: "AppError", code: "SOMETHING_NEW", message: "x" })).toBeUndefined()
+    expect(appErrorCode({ name: "AppError", code: "RATE_LIMITED" })).toBeUndefined()
+    expect(appErrorCode("RATE_LIMITED")).toBeUndefined()
+    expect(appErrorCode(null)).toBeUndefined()
+    expect(appErrorCode(undefined)).toBeUndefined()
+  })
+})
+
+describe("appErrorFields", () => {
+  it("reads the fields of a real AppError and of a foreign-instance one", () => {
+    expect(appErrorFields(AppError.validation({ email: "invalid" }))).toEqual({ email: "invalid" })
+    const foreign = new ForeignAppError(ErrorCode.VALIDATION, "bad", {
+      fields: { event: "ended", attempts: 3 },
+    })
+    expect(appErrorFields(foreign)).toEqual({ event: "ended" })
+  })
+
+  it("is undefined when there are no string fields or the value is not an AppError", () => {
+    expect(appErrorFields(AppError.conflict())).toBeUndefined()
+    expect(appErrorFields({ code: ErrorCode.VALIDATION, message: "bad", fields: {} })).toBeUndefined()
+    expect(appErrorFields({ code: ErrorCode.VALIDATION, message: "bad", fields: ["email"] })).toBeUndefined()
+    expect(appErrorFields({ fields: { email: "invalid" } })).toBeUndefined()
+    expect(appErrorFields(new Error("boom"))).toBeUndefined()
+  })
+})
+
+describe("byErrorCode", () => {
+  const table = {
+    [ErrorCode.RATE_LIMITED]: "copy.rate_limited",
+    [ErrorCode.VALIDATION]: "",
+  }
+
+  it("returns the table entry for a mapped code", () => {
+    expect(byErrorCode(ErrorCode.RATE_LIMITED, table, "copy.generic")).toBe("copy.rate_limited")
+    expect(byErrorCode("RATE_LIMITED", table, "copy.generic")).toBe("copy.rate_limited")
+  })
+
+  it("treats an empty-string entry as a real value, not a fallthrough", () => {
+    expect(byErrorCode(ErrorCode.VALIDATION, table, "copy.generic")).toBe("")
+  })
+
+  it("falls back for an unmapped, unknown, missing or prototype-named code", () => {
+    expect(byErrorCode(ErrorCode.CONFLICT, table, "copy.generic")).toBe("copy.generic")
+    expect(byErrorCode("SOMETHING_NEW", table, "copy.generic")).toBe("copy.generic")
+    expect(byErrorCode(undefined, table, "copy.generic")).toBe("copy.generic")
+    expect(byErrorCode("toString", table, "copy.generic")).toBe("copy.generic")
+  })
+})
+
+describe("errorCopyKey", () => {
+  const table = { [ErrorCode.RATE_LIMITED]: "copy.rate_limited" }
+
+  it("maps a real or foreign-instance AppError by its code, never by its message", () => {
+    expect(errorCopyKey(AppError.rateLimited("raw server text"), table, "copy.generic")).toBe(
+      "copy.rate_limited",
+    )
+    expect(
+      errorCopyKey(new ForeignAppError(ErrorCode.RATE_LIMITED, "raw"), table, "copy.generic"),
+    ).toBe("copy.rate_limited")
+    expect(errorCopyKey(AppError.conflict("Already exists."), table, "copy.generic")).toBe(
+      "copy.generic",
+    )
+  })
+
+  it("reads a transport failure or a thrown non-error as the fallback", () => {
+    expect(errorCopyKey(new TypeError("network down"), table, "copy.generic")).toBe("copy.generic")
+    expect(errorCopyKey("weird", table, "copy.generic")).toBe("copy.generic")
   })
 })

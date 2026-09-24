@@ -1,23 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Animated, Platform, View } from "react-native"
-import type { PostDTO, UserMentionDTO } from "@civfix/shared"
-import { useToast } from "../primitives/Toast"
+import type { PostDTO } from "@civfix/shared"
 import type { MentionCandidate } from "../primitives"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { Text } from "../typography"
 import { useAuthState, useMyProfile } from "../data"
 import { useT } from "../i18n"
-import { useHaptics } from "../capabilities"
-import { useCreatePost, usePost } from "../data/hooks/posts"
+import { usePost } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
 import { AuthorAsChips } from "./AuthorAsChips"
 import { useListTimeAgo } from "./useListTimeAgo"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
-import { optimisticPostId } from "./thread/threadModel"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
-import { activePostMentions, buildComposerQuoteRef, buildPostComposerModel } from "./postComposerModel"
+import { activePostMentions, buildComposerQuoteRef, buildPostComposerModel, mergeMention } from "./postComposerModel"
 import { keyboardDismissModeFor } from "./keyboardDismissMode"
 import {
   POST_COMPOSER_MEDIA_CAP,
@@ -27,11 +24,15 @@ import {
   postComposerCanAttach,
   snapshotCarriedMedia,
 } from "./postComposerMedia"
-import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
+import {
+  buildOptimisticPost,
+  postSubmitDestination,
+  resolvePostSubmit,
+  toPostOrganizationRef,
+} from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import { usePostComposerAttach } from "./usePostComposerAttach"
 import {
-  restoreFailedPostSubmit,
   selectPostComposerDraft,
   selectPostComposerDraftHidden,
   selectPostComposerDraftOwner,
@@ -47,8 +48,9 @@ import { ComposerHeader } from "./postComposer/ComposerHeader"
 import { ComposerMessageField } from "./postComposer/ComposerMessageField"
 import { QuotedPreview } from "./postComposer/QuotedPreview"
 import { usePostComposerStyles } from "./postComposer/postComposerStyles"
-import { useComposerEntrance } from "./postComposer/useComposerEntrance"
+import { useEntranceAnimation } from "./useEntranceAnimation"
 import { usePostAsOrganization } from "./postComposer/usePostAsOrganization"
+import { useSubmitPost } from "./postComposer/useSubmitPost"
 
 export interface PostComposerStandaloneHost {
   onBack: () => void
@@ -62,6 +64,8 @@ export interface PostComposerProps {
 }
 
 const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor(Platform.OS)
+
+const COMPOSER_ENTRANCE = { from: { translateY: 36, scale: 0.99 }, duration: 280 }
 
 const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
@@ -93,11 +97,10 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   const { ScrollView: ComposerScrollView } = isStandalone
     ? STANDALONE_SCROLL_HOST
     : inheritedScrollHost
-  const entranceStyle = useComposerEntrance()
+  const entranceStyle = useEntranceAnimation(COMPOSER_ENTRANCE)
   const profile = useMyProfile().data?.profile
   const { isAuthenticated } = useAuthState()
-  const haptics = useHaptics()
-  const create = useCreatePost()
+  const { create, submit: submitPost } = useSubmitPost()
   const draft = usePostComposerStore(selectPostComposerDraft)
   // The store ignores writes to a hidden draft, so the composer goes read-only instead of eating input.
   const draftHidden = usePostComposerStore(selectPostComposerDraftHidden)
@@ -110,9 +113,6 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
   const setReplyToPostId = usePostComposerStore((state) => state.setReplyToPostId)
   const setQuotePostId = usePostComposerStore((state) => state.setQuotePostId)
-  const reset = usePostComposerStore((state) => state.reset)
-  const toast = useToast()
-  const mountedRef = useRef(true)
   const hasPendingMedia = usePostComposerStore(selectPostComposerHasPendingMedia)
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const [carriedSnapshot] = useState(() =>
@@ -120,7 +120,6 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   )
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(() => carriedSnapshot.carried)
   const [droppedMedia, setDroppedMedia] = useState(() => carriedSnapshot.dropped)
-  const submittingRef = useRef(false)
 
   useEffect(() => {
     setMode(mode)
@@ -131,13 +130,6 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   useEffect(clearStaleReportIntentAtComposerMount, [])
 
   useEffect(() => trackPostComposerMount(EXIT_HOST), [])
-
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-    }
-  }, [])
 
   const attach = usePostComposerAttach({
     mode,
@@ -204,50 +196,31 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
     organizationId: postAsOrganizationId,
   }, draft.media.length === 0 || (!hasPendingMedia && mediaUploadIds.length === draft.media.length))
 
-  const submit = () => {
-    if (submittingRef.current) return
-    if (!profile || resolution.action !== "submit") return
-    submittingRef.current = true
-    const optimistic: PostDTO = {
-      id: optimisticPostId(Date.now()),
-      author: profile,
-      organization: postAsOrganization
-        ? {
-            id: postAsOrganization.id,
-            slug: postAsOrganization.slug,
-            name: postAsOrganization.name,
-            logoUrl: postAsOrganization.logoUrl ?? null,
-            verified: postAsOrganization.verifiedStatus === "verified",
-            ...(postAsOrganization.verifiedKind
-              ? { verifiedKind: postAsOrganization.verifiedKind }
-              : {}),
-          }
-        : null,
-      kind: resolution.input.kind,
-      body: resolution.input.body ?? null,
-      createdAt: new Date().toISOString(),
-      editedAt: null,
-      counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
-      viewer: { liked: false, reposted: false, saved: false },
-      media: composerMedia.flatMap((item) => item.uploadId ? [{
-        id: item.uploadId,
-        kind: item.kind,
-        url: item.uri,
-        thumbUrl: item.posterUri,
-        status: "ready" as const,
-      }] : []),
-      mentions: activeMentions,
-      event: attachedEvent ? { ...attachedEvent, linkedAt: new Date().toISOString() } : null,
-      report: attachedReport ? { ...attachedReport, linkedAt: new Date().toISOString() } : null,
-      repostOf: null,
-      replyToId: resolution.input.replyToId ?? null,
-      threadRootId: resolution.input.replyToId ?? null,
-    }
-    const staged = selectPostComposerDraft(usePostComposerStore.getState())
-    reset({ mode, targetPostId: targetPostId ?? null })
-    create.mutateAsync({ input: resolution.input, optimistic }, {
-      onSuccess: (post) => {
-        haptics.success()
+  const submit = () =>
+    submitPost(
+      () => {
+        if (!profile || resolution.action !== "submit") return null
+        const now = new Date()
+        const linkedAt = now.toISOString()
+        return {
+          input: resolution.input,
+          optimistic: buildOptimisticPost({
+            author: profile,
+            organization: postAsOrganization ? toPostOrganizationRef(postAsOrganization) : null,
+            kind: resolution.input.kind,
+            body: resolution.input.body ?? null,
+            now,
+            media: composerMedia,
+            mentions: activeMentions,
+            event: attachedEvent ? { ...attachedEvent, linkedAt } : null,
+            report: attachedReport ? { ...attachedReport, linkedAt } : null,
+            replyToId: resolution.input.replyToId ?? null,
+            threadRootId: resolution.input.replyToId ?? null,
+          }),
+          resetTo: { mode, targetPostId: targetPostId ?? null },
+        }
+      },
+      (post, input) => {
         attachments.reset()
         setCarriedMedia([])
         setDroppedMedia(0)
@@ -255,26 +228,15 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
         onPosted?.(post)
         if (onBack) onBack()
         else back()
-        if (postSubmitDestination(resolution.input.kind) === "thread") push({ kind: "post-thread", id: post.id })
+        if (postSubmitDestination(input.kind) === "thread") push({ kind: "post-thread", id: post.id })
         else useFeedScrollTopStore.getState().requestScrollTop()
       },
-      onSettled: () => {
-        submittingRef.current = false
-      },
-    }).catch(() => {
-      haptics.error()
-      const restored = restoreFailedPostSubmit(staged)
-      if (!mountedRef.current) {
-        toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
-      }
-    })
-  }
+    )
 
   const onMention = (candidate: MentionCandidate, nextDraft: string) => {
     setBody(nextDraft)
-    if ((candidate as { kind?: string }).kind === "jurisdiction") return
-    const user: UserMentionDTO = { id: candidate.id, handle: candidate.handle, displayName: candidate.displayName }
-    setMentionedUsers([...draft.mentionedUsers.filter((item) => item.id !== user.id), user])
+    const mentioned = mergeMention(draft.mentionedUsers, candidate)
+    if (mentioned) setMentionedUsers(mentioned)
   }
 
   const closeComposer = () => {

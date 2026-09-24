@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ErrorCode } from "@civfix/shared"
+import { ErrorCode, toAppError } from "@civfix/shared"
 
-import { toAppError } from "@/lib/api"
 
 function useIsOffline(): boolean {
   const [offline, setOffline] = useState(false)

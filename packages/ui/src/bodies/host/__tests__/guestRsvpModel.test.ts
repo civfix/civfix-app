@@ -20,14 +20,11 @@ import {
 import {
   GUEST_OTP_ERROR_FIELD,
   GuestOtpErrorReason,
-  type GuestOtpErrorReason as GuestOtpErrorReasonValue,
-} from "@civfix/shared"
-import {
   appErrorCode,
   appErrorFields,
-  EVENT_ENDED_FIELD,
-  EVENT_ENDED_REASON,
-} from "../../../data/errorCode"
+  type GuestOtpErrorReason as GuestOtpErrorReasonValue,
+} from "@civfix/shared"
+import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../../data/errorCode"
 
 function verifyError(reason: GuestOtpErrorReasonValue): unknown {
   return {

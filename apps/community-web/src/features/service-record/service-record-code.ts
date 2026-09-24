@@ -1,5 +1,7 @@
 import { normalizeCertificateCode } from "@civfix/shared"
 
+import { routeSegment } from "@/lib/route-segment"
+
 /**
  * Not `usePathname()`: under output: "export" the Cloudflare rewrite `/service-record/* ->
  * /service-record/_/ 200` serves the placeholder document while the address bar keeps the real
@@ -21,25 +23,12 @@ const NONE: ServiceRecordCodeSource = { kind: "none" }
 
 /** A printed code is hand-typed, so it may arrive percent-encoded as well as with or without a slash. */
 export function serviceRecordCodeFromPath(pathname: string | null | undefined): ServiceRecordCodeSource {
-  if (!pathname) return NONE
+  const segment = routeSegment(pathname, SERVICE_RECORD_SEGMENT)
+  if (segment.kind === "none") return NONE
+  if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }
 
-  const segments = pathname.split("/").filter((segment) => segment.length > 0)
-  if (segments[0] !== SERVICE_RECORD_SEGMENT) return NONE
-
-  const raw = segments[1]
-  // "_" is the generateStaticParams placeholder segment: the shell document itself, never a real code.
-  if (raw === undefined || raw === "_") return NONE
-
-  let decoded: string
-  try {
-    decoded = decodeURIComponent(raw)
-  } catch {
-    // A malformed escape sequence ("%zz") throws URIError; treat it as a bad code, not a crash.
-    return { kind: "invalid", raw }
-  }
-
-  const code = normalizeCertificateCode(decoded)
-  return code === null ? { kind: "invalid", raw: decoded } : { kind: "code", code }
+  const code = normalizeCertificateCode(segment.value)
+  return code === null ? { kind: "invalid", raw: segment.value } : { kind: "code", code }
 }
 
 /** Trailing slash to match `trailingSlash: true` and the Cloudflare rule. */

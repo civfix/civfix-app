@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { expect } from "vitest"
-import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
+import { MIN_TOUCH_TARGET, hitSlopToTarget } from "../theme/touchTarget"
 
 /**
  * Helpers for source-level guards. A guard that slices the source between two anchors must fail
@@ -90,6 +90,20 @@ export function expectThemeTouchTarget(source: string): number {
   expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(/const MIN_TOUCH_TARGET =/)
   expect(MIN_TOUCH_TARGET).toBe(44)
   return MIN_TOUCH_TARGET
+}
+
+export const THEME_HIT_SLOP_IMPORT =
+  /import \{[^}]*\bhitSlopToTarget\b[^}]*\} from "[./]+\/theme(?:\/touchTarget)?"/
+
+/**
+ * A control that reaches the 44pt floor by slop takes the theme's `hitSlopToTarget`, never a re-typed
+ * `(44 - size) / 2`. Returns the helper so a guard can do its arithmetic with the one the source calls.
+ */
+export function expectThemeHitSlop(source: string): (size: number) => number {
+  expect(source, "hitSlopToTarget must be imported from the theme").toMatch(THEME_HIT_SLOP_IMPORT)
+  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(/const MIN_TOUCH_TARGET =/)
+  expect(source, "a re-typed slop formula bypasses the helper").not.toMatch(/\(MIN_TOUCH_TARGET - [A-Z_]+\) \/ 2/)
+  return hitSlopToTarget
 }
 
 /**

@@ -17,7 +17,7 @@ import { useBootGate } from "@/hooks/useBootGate"
 import { LoadingSplash } from "@/components/LoadingSplash"
 import { AuthOptions } from "@/components/AuthOptions"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
-import { ALL_OAUTH_PROVIDERS, useEnabledProviders } from "@/hooks/useAuthFlow"
+import { useSignInProviders } from "@/hooks/useAuthFlow"
 
 const { ScrollView: AuthScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
@@ -25,10 +25,8 @@ function WelcomeOptions() {
   const { t } = useT("mobile-auth-welcome")
   const th = useTheme()
   const styles = useStyles()
-  const providers = useEnabledProviders()
+  const { ready, enabled } = useSignInProviders()
   const unreachable = useBootGate().showNotice
-  const ready = !providers.isPlaceholderData
-  const enabled = providers.data ?? ALL_OAUTH_PROVIDERS
 
   const revealed = ready || unreachable
   const reduceMotion = useReducedMotion() === true

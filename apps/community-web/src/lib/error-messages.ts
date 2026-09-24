@@ -1,6 +1,4 @@
-import type { ErrorCode } from "@civfix/shared"
-
-import { toAppError } from "@/lib/api"
+import { errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 
 /**
  * Errors map by code, never by message: raw server text never surfaces. This is a plain (non-hook)
@@ -8,14 +6,11 @@ import { toAppError } from "@/lib/api"
  */
 export function errorMessage(
   err: unknown,
-  overrides: Partial<Record<ErrorCode, string>> = {},
+  overrides: ErrorCodeTable<string> = {},
   opts: { fallback?: string } = {},
 ): string {
   // A last resort for tests and non-localized call sites;
   // localized UI passes its own fallback.
   const { fallback = "Something went wrong. Please try again." } = opts
-  const e = toAppError(err)
-  const override = overrides[e.code]
-  if (override !== undefined) return override
-  return fallback
+  return errorCopyKey(err, overrides, fallback)
 }

@@ -43,6 +43,7 @@ import { useTranscriptStyles } from "./conversation/transcriptStyles"
 import { useConvoHeaderStyles } from "./conversation/convoHeaderStyles"
 import { ChatEmbedScopeProvider, useOwnChatEmbedScope } from "./conversation/chatEmbedScope"
 import { viewportWindowKeys } from "./conversation/embedScheduler"
+import { normalizeHandle } from "./mentionText"
 
 export interface ConversationBodyProps {
   id: string
@@ -456,7 +457,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       ? t("composer.placeholder_unavailable")
       : composerSlot.placeholder === "group"
         ? t("composer.placeholder_group")
-        : t("composer.placeholder_dm", { name: meta.title.replace(/^@/, "").split(" ")[0] ?? "" }).trim()
+        : t("composer.placeholder_dm", { name: normalizeHandle(meta.title).split(" ")[0] ?? "" }).trim()
 
   const gateSignals = { liveDisabled: chat.liveDisabled, composerDisabled, composerSlotMode, pinnedOnly }
   const canReact = canReactIn(gateSignals)

@@ -1,6 +1,7 @@
 import { entryFromPath } from "../../nav/routes"
 import { WEB_ORIGIN, webOrigin } from "../../primitives/externalUrls"
-import { mentionScanRegex, normalizeHandle } from "./mentionMatch"
+import { mentionScanRegex } from "./mentionMatch"
+import { normalizeHandle } from "../mentionText"
 
 export type ChatLinkTarget =
   | { kind: "internal"; path: string; url: string }

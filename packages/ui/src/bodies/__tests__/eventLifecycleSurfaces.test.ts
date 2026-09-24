@@ -137,12 +137,14 @@ describe("EventHoursBlock renders inside its host's scroller", () => {
     // The package convention (BodyTransition.native.tsx, usePopScale): reduce-motion suppresses the
     // POSITIONAL half only. This block wraps all four of its arms, so a missing path slid every one.
     const source = code(hoursBlock)
-    expect(source).toContain("AccessibilityInfo.isReduceMotionEnabled()")
-    expect(source).toContain('AccessibilityInfo.addEventListener("reduceMotionChanged"')
-    expect(source).toContain("translateY.setValue(0)")
+    expect(source).toContain('import { useReducedMotion } from "../theme/useReducedMotion"')
+    expect(source).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(source).not.toContain("AccessibilityInfo")
+    expect(source).toMatch(/if \(reduceMotion\) \{\s*translateY\.stopAnimation\(\)\s*translateY\.setValue\(0\)/)
+    expect(source).toContain("}, [reduceMotion, translateY])")
     // The fade still plays under reduce motion - it is only the offset that is settled outright.
-    expect(source).toMatch(/timing\(opacity, 1\)\.start\(\)/)
-    expect(source).toContain("sub?.remove()")
+    expect(source).toMatch(/fadeUpTiming\(opacity, 1\)\.start\(\)/)
+    expect(source).toContain("}, [opacity])")
   })
 
   it("degrades an absent `anyLogged` to pending instead of accusing the host of skipping people", () => {

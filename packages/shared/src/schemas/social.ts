@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
+import { OkResponseSchema, PageLimitSchema } from "./internal-fields.js"
 import {
   PersonDTOSchema,
   CleanupDTOSchema,
@@ -24,7 +25,7 @@ export type ListPeopleResponse = z.infer<typeof ListPeopleResponseSchema>
 export const ConnectionsListQuerySchema = z.object({
   id: z.string(),
   cursor: z.string().optional(),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: PageLimitSchema,
 })
 export type ConnectionsListQuery = z.infer<typeof ConnectionsListQuerySchema>
 
@@ -174,7 +175,7 @@ export const DeleteAccountRequestSchema = z
   .strict()
 export type DeleteAccountRequest = z.infer<typeof DeleteAccountRequestSchema>
 
-export const DeleteAccountResponseSchema = z.object({ ok: z.literal(true) })
+export const DeleteAccountResponseSchema = OkResponseSchema
 export type DeleteAccountResponse = z.infer<typeof DeleteAccountResponseSchema>
 
 export const RequestDataExportResponseSchema = z.object({

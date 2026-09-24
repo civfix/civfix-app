@@ -22,8 +22,10 @@ import {
   aasaExcludeOrder,
   isPlaceholderLegalHash,
   leakedDevRoutes,
-  legalDocumentHash,
   missingAasaExcludes,
+  OG_IMAGE_MAX_BYTES,
+  REQUIRED_AASA_EXCLUDES,
+  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 
@@ -139,16 +141,6 @@ try {
   process.exit(1)
 }
 
-const REQUIRED_AASA_EXCLUDES = [
-  "/legal/*",
-  "/service-record/*",
-  "/guest*",
-  "/claim*",
-  "/manage*",
-  "/e/*",
-  "/unsubscribe*",
-]
-
 const missingExcludes = missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)
 
 if (missingExcludes.length > 0) {
@@ -226,7 +218,6 @@ if (unexcluded.length > 0) {
 }
 
 const OG_IMAGE = "og.png"
-const OG_IMAGE_MAX_BYTES = 300 * 1024
 const SHARE_ASSETS = [OG_IMAGE, "apple-touch-icon.png"]
 
 for (const asset of SHARE_ASSETS) {
@@ -339,28 +330,14 @@ console.log(
         `"${NOINDEX_RULE}" on /* so no staging URL is indexed as a duplicate of civfix.org.`,
 )
 
-const legalOutDir = join(outDir, "legal")
-const legalRoutes = existsSync(legalOutDir)
-  ? readdirSync(legalOutDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .filter((route) => existsSync(join(legalOutDir, route, "index.html")))
-      .sort()
-  : []
-
-const legalHtml = new Map(
-  legalRoutes.map((route) => [route, readFileSync(join(legalOutDir, route, "index.html"), "utf8")]),
-)
+const legalDocuments = renderedLegalDocuments(outDir)
 
 const legalDrift = []
 const legalPlaceholders = []
 const legalRendered = new Map()
 
-for (const route of legalRoutes) {
-  const html = legalHtml.get(route)
-  const type = /data-legal-doc="([^"]*)"/.exec(html)?.[1] ?? null
+for (const { route, type, hashed } of legalDocuments) {
   if (type === null) continue
-  const hashed = legalDocumentHash(html)
   if (hashed === null) continue
   legalRendered.set(type, { route, ...hashed })
 
@@ -387,10 +364,9 @@ for (const route of legalRoutes) {
   }
 }
 
-const legalRoutesMissingStamp = legalRoutes.filter((route) => {
-  const html = legalHtml.get(route)
-  return !/data-legal-doc="[^"]+"/.test(html) || legalDocumentHash(html) === null
-})
+const legalRoutesMissingStamp = legalDocuments
+  .filter(({ html, hashed }) => !/data-legal-doc="[^"]+"/.test(html) || hashed === null)
+  .map(({ route }) => route)
 
 if (legalRoutesMissingStamp.length > 0) {
   console.error(

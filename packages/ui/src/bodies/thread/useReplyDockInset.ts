@@ -30,7 +30,7 @@
  *
  * THE ONE THING THAT WOULD BREAK IT is an ANCESTOR also reserving the keyboard: the mobile-web portrait
  * shell must not pad the post-thread overlay by the keyboard inset. `shell/bodyLayout.ts`
- * (`surfaceKeyboardAvoidance`) keeps `post-thread` out of it, and `shell/__tests__/portrait-shell.test.ts`
+ * (`surfaceKeyboardAvoidance`) keeps `post-thread` out of it, and `shell/__tests__/portraitShell.test.ts`
  * pins that.
  *
  * `restPad` exists because iOS's `endCoordinates.height` is measured from the SCREEN bottom and already

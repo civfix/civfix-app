@@ -1,4 +1,3 @@
-import { z } from "zod"
 import { def } from "./def.js"
 import {
   ChatHistoryResponseSchema,
@@ -35,8 +34,7 @@ import {
   ToggleHiddenResponseSchema,
 } from "../../schemas/report-chat.js"
 import { PaginationQuerySchema } from "../../schemas/common.js"
-
-const ReportChatOkResponseSchema = z.object({ ok: z.literal(true) })
+import { OkResponseSchema } from "../../schemas/internal-fields.js"
 
 export const chatEndpoints = {
   listThreads: def({
@@ -208,7 +206,7 @@ export const chatEndpoints = {
     method: "POST",
     path: "/reports/:id/chat/join",
     request: JoinReportChatRequestSchema,
-    response: ReportChatOkResponseSchema,
+    response: OkResponseSchema,
     auth: "required",
     csrf: true,
     version: "v1",
@@ -226,7 +224,7 @@ export const chatEndpoints = {
     method: "POST",
     path: "/reports/:id/chat/leave",
     request: LeaveReportChatRequestSchema,
-    response: ReportChatOkResponseSchema,
+    response: OkResponseSchema,
     auth: "required",
     csrf: true,
     version: "v1",

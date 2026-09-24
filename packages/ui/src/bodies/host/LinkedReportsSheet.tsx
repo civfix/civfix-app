@@ -7,7 +7,7 @@ import { ModalCardSheet, PrimaryButton, useToast } from "../../primitives"
 import { useUpdateCleanup } from "../../data"
 import { queryKeys } from "../../data/keys"
 import { useT } from "../../i18n"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { ReportLinkPicker } from "../ReportLinkPicker"
 import { ReportPicker } from "../reportPicker/ReportPicker"
 import { optimisticLinkedRefs, refToPin } from "../reportPicker/reportPickerModel"
@@ -66,7 +66,7 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
           },
           onError: (err) => {
             setErrorText(
-              appErrorCode(err) === "FORBIDDEN"
+              appErrorCode(err) === ErrorCode.FORBIDDEN
                 ? t("linked_reports_sheet.error_forbidden")
                 : t("linked_reports_sheet.error"),
             )

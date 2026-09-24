@@ -1,9 +1,8 @@
 import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useUserSearch, normalizeUserSearchTerm } from "../data"
@@ -286,10 +285,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     marginBottom: t.space["2"],
   },
-  searchWrapFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  searchWrapFocused: inputFocusedStyle(t),
   searchInput: {
     flex: 1,
     minWidth: 0,

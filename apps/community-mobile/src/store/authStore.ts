@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { UserDTO } from "@civfix/shared"
+import { isAppErrorLike, type UserDTO } from "@civfix/shared"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"
@@ -12,7 +12,7 @@ import {
 import type { BootNetworkOutcome } from "@/boot/bootGateModel"
 import { readToken, setToken, clearToken } from "@/auth/storage"
 import { isForeignIdentity } from "@/lib/authLifecycle"
-import { isAppError, isUnauthorized } from "@/lib/errors"
+import { isUnauthorized } from "@/lib/errors"
 import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
@@ -86,7 +86,7 @@ function restoreSession(): Promise<Awaited<ReturnType<typeof api.session>>> {
 
 function reachabilityOutcome(err: unknown): BootNetworkOutcome {
   if (isRequestDeadlineError(err)) return "timeout"
-  if (isAppError(err)) return "ok"
+  if (isAppErrorLike(err)) return "ok"
   return "error"
 }
 

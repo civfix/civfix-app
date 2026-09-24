@@ -5,8 +5,7 @@ import { useT } from "../../i18n"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { pinToCardData, useLinkedReportCards } from "../linkedReportCards"
 import { localReportThumb } from "../localReportThumbs"
-import { METERS_PER_MILE } from "../reportHitRowModel"
-import { distanceLabel } from "../relativeTime"
+import { reportHitRowModel } from "../reportHitRowModel"
 import { isChosen, reportShortCode, rowTagKey, type PickerMode, type PickerRow } from "./reportPickerModel"
 
 const FOCUS_BORDER_WIDTH = 2
@@ -42,17 +41,18 @@ export const PickerReportRow = memo(function PickerReportRow({
 
   const view = useMemo(() => {
     const categoryLabel = tEnums(`category.${card.category}`)
-    const title = card.title?.trim() || categoryLabel
-    const distance = distanceLabel(row.distanceM / METERS_PER_MILE)
-    const code = reportShortCode(card)
     const tagKey = rowTagKey(row.state, mode)
-    const tag = tagKey ? t(tagKey) : null
-    const addr = card.addr?.trim() ?? ""
-    const subtitle = [tag, distance, addr].filter(Boolean).join(" · ")
+    const { title, distance, subtitle } = reportHitRowModel({
+      report: card,
+      categoryLabel,
+      distanceM: row.distanceM,
+      leadingTag: tagKey ? t(tagKey) : null,
+    })
+    const code = reportShortCode(card)
     return {
       title,
       code,
-      subtitle: subtitle || card.description?.trim() || null,
+      subtitle,
       a11yLabel: t("row_a11y", { title, category: categoryLabel, code, distance }),
     }
   }, [card, mode, row.distanceM, row.state, t, tEnums])

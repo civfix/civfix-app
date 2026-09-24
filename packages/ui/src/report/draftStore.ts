@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { CapturedMedia } from "../capabilities"
 import { registerViewerScopedDrafts } from "../viewerScope"
+import { randomId } from "../data/randomId"
 
 export interface DraftMedia {
   id: string
@@ -99,21 +100,11 @@ const EMPTY: DraftReport = {
   feedPostId: null,
 }
 
-function randomUuid(): string {
-  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto
-  if (c && typeof c.randomUUID === "function") return c.randomUUID()
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
-    const r = (Math.random() * 16) | 0
-    const v = ch === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
-
 export type DraftMediaInput = Omit<DraftMedia, "id">
 
 function draftMediaFromCapture(media: CapturedMedia): DraftMedia {
   return {
-    id: randomUuid(),
+    id: randomId(),
     uri: media.uri,
     kind: media.kind,
     mime: media.mime,
@@ -152,7 +143,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   ensureIdempotencyKey: () => {
     const existing = get().draft.idempotencyKey
     if (existing) return existing
-    const key = randomUuid()
+    const key = randomId()
     set((s) => ({ draft: { ...s.draft, idempotencyKey: key } }))
     return key
   },
@@ -193,7 +184,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   setAddress: (addr) => set((s) => ({ draft: { ...s.draft, addr, addrEdited: true } })),
   setPrefilledAddress: (addr) =>
     set((s) => (s.draft.addrEdited ? s : { draft: { ...s.draft, addr } })),
-  setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomUuid(), ...media }] } })),
+  setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomId(), ...media }] } })),
 
   startFromCapture: (media) => {
     const capturedAt = new Date().toISOString()
@@ -214,7 +205,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
         draft: {
           ...EMPTY,
           flags: { ...EMPTY_FLAGS },
-          idempotencyKey: randomUuid(),
+          idempotencyKey: randomId(),
           media: [seeded],
           capturedAt,
           ...(media.location
@@ -254,7 +245,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     set((s) => ({
       draft: {
         ...s.draft,
-        media: [...s.draft.media, { id: randomUuid(), ...media }].slice(0, MAX_DRAFT_MEDIA),
+        media: [...s.draft.media, { id: randomId(), ...media }].slice(0, MAX_DRAFT_MEDIA),
       },
     })),
   removeMedia: (idOrUri) =>

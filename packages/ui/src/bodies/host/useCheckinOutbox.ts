@@ -18,7 +18,7 @@ import {
   type CheckinReplayReport,
   type ReplayAttempt,
 } from "../../data/checkinOutbox"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 
 export interface CheckinOutbox {
   pending: number
@@ -106,7 +106,7 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
                   })
             return { status: "ok", outcome: result.outcome }
           } catch (err) {
-            return { status: "error", code: appErrorCode(err) ?? "INTERNAL" }
+            return { status: "error", code: appErrorCode(err) ?? ErrorCode.INTERNAL }
           }
         },
         { now: () => Date.now(), onState: commit, scope: { cleanupId } },

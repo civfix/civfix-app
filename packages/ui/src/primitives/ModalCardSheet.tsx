@@ -11,7 +11,6 @@ import {
   type ViewStyle,
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { tokens } from "@civfix/shared/tokens"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -229,12 +228,6 @@ export function ModalCardSheet({
       </Animated.View>
     </Modal>
   )
-}
-
-export function modalSheetInputFocusedStyle(t: Theme): ViewStyle {
-  return Platform.OS === "web"
-    ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-    : { borderColor: t.colors.accent }
 }
 
 export function modalSheetInputStyle(t: Theme) {

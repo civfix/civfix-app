@@ -6,9 +6,8 @@ import {
   useHostRoster,
   useUndoEventCheckIn,
 } from "../../../data/hooks/host"
-import { useDebouncedValue } from "../../../data/hooks/useDebouncedValue"
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../../../data/hooks/useDebouncedValue"
 import { useT } from "../../../i18n"
-import { ROSTER_SEARCH_DEBOUNCE_MS } from "../RosterPagedList"
 import { rosterMutationErrorKey } from "../rosterFiltersModel"
 
 type UndoCheckIn = ReturnType<typeof useUndoEventCheckIn>
@@ -18,7 +17,7 @@ export function useCheckinRoster(id: string, canCheckIn: boolean, undo: UndoChec
   const toast = useToast()
   const [rosterSearch, setRosterSearch] = useState("")
   const [rosterFocused, setRosterFocused] = useState(false)
-  const rosterQuery = useDebouncedValue(rosterSearch, ROSTER_SEARCH_DEBOUNCE_MS)
+  const rosterQuery = useDebouncedValue(rosterSearch, SEARCH_DEBOUNCE_MS)
   const roster = useHostRoster(id, {
     filter: "not_checked_in",
     q: rosterQuery,

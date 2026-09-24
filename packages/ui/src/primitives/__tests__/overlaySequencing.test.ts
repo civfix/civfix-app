@@ -18,6 +18,7 @@ const MENU_MOTION = code(read("../menuMotion.ts"))
 const OVERFLOW = code(read("../../bodies/PostOverflowMenu.tsx"))
 const REPORT_DETAIL = code(reportDetailSource())
 const SHARE_PROVIDER = code(read("../../share/SharePostProvider.tsx"))
+const ACTION_SHEET = code(read("../AnchoredActionSheet.tsx"))
 const COMPOSER_ATTACH = code(read("../ComposerAttachSheet.tsx"))
 const REPLY_ATTACH = code(read("../../bodies/thread/ReplyAttachSheet.tsx"))
 
@@ -161,15 +162,28 @@ describe("callers no longer hand-roll the after-dismiss dance", () => {
   })
 
   it("both attach sheets run Photo and Camera through the gate, so an iOS action parked while the sheet dismisses is flushed on unmount and dropped on reopen", () => {
+    expect(ACTION_SHEET).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)")
+    expect(ACTION_SHEET).toContain("const onModalDismiss = useModalClosed(visible, settled)")
+    expect(ACTION_SHEET.match(/onDismiss=\{onModalDismiss\}/g)).toHaveLength(2)
+    expect(ACTION_SHEET).toContain("const content = children(run)")
+    for (const [name, sheet] of [
+      ["AnchoredActionSheet", ACTION_SHEET],
+      ["ComposerAttachSheet", COMPOSER_ATTACH],
+      ["ReplyAttachSheet", REPLY_ATTACH],
+    ] as const) {
+      expect(sheet, name).not.toContain("pendingActionRef")
+      expect(sheet, name).not.toContain('Platform.OS === "ios"')
+    }
+    expect(COMPOSER_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
+    expect(COMPOSER_ATTACH).toContain("onPress={() => runAfterDismiss(handlers[key])}")
+    expect(REPLY_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
+    expect(REPLY_ATTACH).toContain('runAfterDismiss(key === "photo" ? onPhoto : onCamera)')
     for (const [name, sheet] of [
       ["ComposerAttachSheet", COMPOSER_ATTACH],
       ["ReplyAttachSheet", REPLY_ATTACH],
     ] as const) {
-      expect(sheet, name).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)")
-      expect(sheet, name).toContain("const onModalDismiss = useModalClosed(visible, settled)")
-      expect(sheet.match(/onDismiss=\{onModalDismiss\}/g), name).toHaveLength(2)
-      expect(sheet, name).not.toContain("pendingActionRef")
-      expect(sheet, name).not.toContain('Platform.OS === "ios"')
+      expect(sheet, name).not.toContain("<Modal")
+      expect(sheet, name).not.toContain("useDeferredOverlayAction(")
     }
   })
 

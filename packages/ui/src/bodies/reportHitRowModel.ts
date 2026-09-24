@@ -20,7 +20,9 @@ export interface ReportHitLike {
 
 export interface ReportHitRowModel {
   title: string
-  /** "{distance} · {address}", either half alone, else the description, else null. */
+  /** The formatted distance from the viewer, or "" when there is no viewer point and no measured distance. */
+  distance: string
+  /** "{tag} · {distance} · {address}" with the absent parts dropped, else the description, else null. */
   subtitle: string | null
   /** The presigned first-photo thumb, or null so the row draws the category pin dot instead. */
   thumbUrl: string | null
@@ -29,23 +31,28 @@ export interface ReportHitRowModel {
 export function reportHitRowModel({
   report,
   categoryLabel,
-  viewer,
+  viewer = null,
+  distanceM,
+  leadingTag = null,
 }: {
   report: ReportHitLike
   /** Already localized by the caller, e.g. `t(\`enums:category.${report.category}\`)`. */
   categoryLabel: string
   /** The viewer's resolved point, or null (location denied / still resolving / unavailable). */
-  viewer: LatLng | null
+  viewer?: LatLng | null
+  /** Metres from the viewer when the caller already measured them (the picker ranks by it); wins over `viewer`. */
+  distanceM?: number
+  /** Already localized; leads the location line, e.g. the picker's linked tag. */
+  leadingTag?: string | null
 }): ReportHitRowModel {
   const title = report.title?.trim() || categoryLabel
   const thumbUrl = report.thumbUrl?.trim() || null
   const addr = report.addr?.trim() || null
-  // Metres from the viewer -> miles, because distanceLabel formats miles. "" without a viewer point, which
-  // drops out of the join below rather than leaving a dangling separator.
-  const distance = viewer
-    ? distanceLabel(haversineMeters(viewer, { lat: report.lat, lng: report.lng }) / METERS_PER_MILE)
-    : ""
-  const location = [distance, addr].filter(Boolean).join(" · ")
+  const meters =
+    distanceM ?? (viewer ? haversineMeters(viewer, { lat: report.lat, lng: report.lng }) : null)
+  // "" without a distance, which drops out of the join below rather than leaving a dangling separator.
+  const distance = meters == null ? "" : distanceLabel(meters / METERS_PER_MILE)
+  const location = [leadingTag, distance, addr].filter(Boolean).join(" · ")
   const subtitle = location || report.description?.trim() || null
-  return { title, subtitle, thumbUrl }
+  return { title, distance, subtitle, thumbUrl }
 }

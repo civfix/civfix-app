@@ -6,20 +6,18 @@ import {
   StyleSheet,
   type AccessibilityActionEvent,
   type PressableStateCallbackType,
-  type ViewStyle,
 } from "react-native"
 import type { MessageThreadDTO } from "@civfix/shared"
 import {
-  FOCUS_RING_OFFSET,
-  FOCUS_RING_WIDTH,
   focusRingProps,
   makeThemedStyles,
-  MIN_TOUCH_TARGET,
+  hitSlopToTarget,
   space,
   wash,
   useTheme,
   webHover,
   webTransition,
+  WEB_ROW_FOCUS_INSET,
 } from "../../theme"
 import { Text, Icon, iconMap, type IconName } from "../../typography"
 import { ThreadAvatar, PopoverMenu, usePopoverAnchor, useSwipeActions, closeOpenSwipeActions } from "../../primitives"
@@ -30,6 +28,7 @@ import { threadRowActions, unreadBadgeLabel, type ThreadRowActionKey } from "../
 import { useRowHover } from "../rowHover"
 import { useTickingListTimeAgo } from "../useListTimeAgo"
 import { IS_WEB, ROW_AVATAR, ROW_GAP, ROW_GUTTER } from "./inboxLayout"
+import { threadRoomId } from "../../data/threadRoom"
 
 type TFn = ReturnType<typeof useT>["t"]
 
@@ -38,7 +37,7 @@ const ROW_MIN_HEIGHT = 80
 const ROW_MENU_CHIP = 28
 const ROW_MENU_GLYPH = 16
 const ROW_MENU_SLOT = ROW_MENU_CHIP + space["2"]
-const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2
+const ROW_MENU_HIT_SLOP = hitSlopToTarget(ROW_MENU_CHIP)
 const SWIPE_ACTION_GLYPH = 18
 
 /**
@@ -54,9 +53,6 @@ function rowMenuChipShown(
   if (hoveredOrOpen || coarsePointer) return true
   return (state as PressableStateCallbackType & { focused?: boolean }).focused === true
 }
-const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
-  ? ({ outlineOffset: -(FOCUS_RING_WIDTH + FOCUS_RING_OFFSET) } as unknown as ViewStyle)
-  : {}
 
 function previewText(thread: MessageThreadDTO, t: TFn): string {
   const body = thread.last?.trim()
@@ -126,7 +122,7 @@ export const ThreadRow = React.memo(function ThreadRow({
   const isChannel = thread.channel === true
   const unread = thread.unread > 0
   const muted = thread.muted === true
-  const roomId = thread.refId ?? thread.id
+  const roomId = threadRoomId(thread)
   const roomKind = thread.kind
 
   const muteLabel = muted ? t("row.action.unmute") : t("row.action.mute")

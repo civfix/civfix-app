@@ -13,6 +13,13 @@ import type {
   EventAnalyticsSourcesResponse,
   Panel,
 } from "@civfix/shared"
+import {
+  panelIsBlank,
+  seriesHasSuppressedPoints,
+  seriesValuesForChart as seriesValues,
+  visibleRows,
+  weekDayLabel,
+} from "@civfix/shared/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"
@@ -36,14 +43,8 @@ import type { CsvRow } from "@/components/console/export"
 
 import { useConsoleEvent } from "../console-context"
 import { consoleKeys } from "../console-keys"
-import { EMPTY_VALUE, useConsoleFormat, seriesDayLabel } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
 import { AnalyticsValue, PanelSuppressed, SuppressionNote } from "./analytics-value"
-import {
-  panelIsBlank,
-  seriesHasSuppressedPoints,
-  seriesValuesForChart as seriesValues,
-  visibleRows,
-} from "./suppression"
 
 const RANGES: readonly AnalyticsRange[] = ["7d", "30d", "90d", "all"]
 const TABS = ["registration", "attendance", "messaging", "page"] as const
@@ -345,6 +346,7 @@ function RegistrationTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
+  const dayLabel = weekDayLabel(format.locale)
   return (
     <AnalyticsTabGate query={query}>
       {(data) => (
@@ -354,7 +356,7 @@ function RegistrationTab({
               area
               suppressedLabel={t("suppressed.point")}
               summary={t("registration.over_time_a11y")}
-              labels={data.series.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.series.map((point) => dayLabel(point.day))}
               series={[
                 { id: "new", label: t("registration.new"), values: seriesValues(data.series) },
                 {
@@ -370,7 +372,7 @@ function RegistrationTab({
             <StackedBars
               suppressedLabel={t("suppressed.point")}
               summary={t("registration.cancellations_a11y")}
-              labels={data.cancellations.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.cancellations.map((point) => dayLabel(point.day))}
               series={[
                 {
                   id: "cancelled",
@@ -478,6 +480,7 @@ function MessagingTab({
   const { t } = useT("host-analytics")
   const { t: te } = useT("enums")
   const format = useConsoleFormat()
+  const dayLabel = weekDayLabel(format.locale)
   return (
     <AnalyticsTabGate query={query}>
       {(data) => (
@@ -537,7 +540,7 @@ function MessagingTab({
             <LineArea
               suppressedLabel={t("suppressed.point")}
               summary={t("messaging.over_time_a11y")}
-              labels={data.series.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.series.map((point) => dayLabel(point.day))}
               series={[
                 { id: "sends", label: t("messaging.sends"), values: seriesValues(data.series) },
               ]}
@@ -558,6 +561,7 @@ function PageTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
+  const dayLabel = weekDayLabel(format.locale)
   return (
     <AnalyticsTabGate query={query}>
       {(data) => (
@@ -567,7 +571,7 @@ function PageTab({
               area
               suppressedLabel={t("suppressed.point")}
               summary={t("page.views_a11y")}
-              labels={data.pageViews.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.pageViews.map((point) => dayLabel(point.day))}
               series={[
                 { id: "views", label: t("page.views"), values: seriesValues(data.pageViews) },
               ]}

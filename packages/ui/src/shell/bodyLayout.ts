@@ -125,15 +125,14 @@ export function portraitSurfaceTransitionKey(
   active: DetailEntry | null,
   presentation: PortraitDetailPresentation,
 ): string {
-  if (presentation !== "full" || !active) return `view:${view}`
-  return entryDiscriminator(active)
+  return surfaceKey(view, presentation === "full" ? active : null)
 }
 
 // Keys on the store's full entry identity: kind + id alone collides for entries
 // addressed by slug, geoid, seat or announcement, which would reuse one body
 // instance (and its local state) across two different entities.
-export function shellBodyKey(active: DetailEntry | null, restingKey: string): string {
-  return active ? entryDiscriminator(active) : restingKey
+export function surfaceKey(view: View, active: DetailEntry | null): string {
+  return active ? entryDiscriminator(active) : `view:${view}`
 }
 
 export function topmostFullEntry(

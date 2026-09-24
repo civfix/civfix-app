@@ -163,7 +163,8 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
   })
 
   it("hands the menu the redirected subject and a way back to the original", () => {
-    expect(CARD).toContain("const menuSubject = React.useMemo(() => postMenuSubject(post), [post])")
+    expect(CARD).toContain("= usePostOverflowMenuState(post)")
+    expect(src("../postCardActions.ts")).toContain("const menuSubject = React.useMemo(() => postMenuSubject(post), [post])")
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?subject=\{menuSubject\}/)
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
     expect(CARD).toContain("(openableOriginalId ? () => openPost(openableOriginalId) : undefined)")

@@ -1,7 +1,15 @@
 import React from "react"
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
 import { SOCIAL_PLATFORM_LABELS, socialLinkUrl, type SocialLinks } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
+import {
+  focusRingProps,
+  hitSlopToTarget,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { SocialGlyph } from "./SocialGlyph"
@@ -10,8 +18,7 @@ import { presentSocialPlatforms } from "./socialLinksModel"
 
 export const SOCIAL_LINK_HIT_SIZE = 38
 export const SOCIAL_LINK_GLYPH_SIZE = 20
-export const SOCIAL_LINK_MIN_TARGET = 44
-const SOCIAL_LINK_HIT_SLOP = (SOCIAL_LINK_MIN_TARGET - SOCIAL_LINK_HIT_SIZE) / 2
+const SOCIAL_LINK_HIT_SLOP = hitSlopToTarget(SOCIAL_LINK_HIT_SIZE)
 
 export interface SocialLinksRowProps {
   links: SocialLinks | null | undefined

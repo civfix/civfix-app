@@ -1,6 +1,6 @@
 import React, { useMemo } from "react"
 import { View } from "react-native"
-import { makeThemedStyles } from "../../theme"
+import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, TextLink } from "../../typography"
 import { SkeletonGroup, SkeletonList } from "../../primitives"
 import { useCleanup } from "../../data/hooks/cleanups"
@@ -12,8 +12,6 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { AnnouncementCard } from "./AnnouncementCard"
-
-const MORE_ROW_HEIGHT = 44
 
 export function AnnouncementsBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -116,6 +114,6 @@ const useStyles = makeThemedStyles((t) => ({
   moreRow: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: MORE_ROW_HEIGHT,
+    minHeight: MIN_TOUCH_TARGET,
   },
 }))

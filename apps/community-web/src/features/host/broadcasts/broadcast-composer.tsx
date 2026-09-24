@@ -9,6 +9,7 @@ import {
   MAX_BROADCAST_CTA_LABEL,
   MAX_BROADCAST_SUBJECT,
 } from "@civfix/shared"
+import { datetimeLocalFromIso, isoFromDatetimeLocal } from "@civfix/shared/datetime"
 import { useApi, useAuthState, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"
@@ -32,11 +33,9 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import {
-  isoToZonedInput,
   useConsoleFormat,
   useConsoleInputZone,
   useInputZoneNames,
-  zonedInputToIso,
 } from "../format"
 import { consoleKeys } from "../console-keys"
 import {
@@ -91,7 +90,7 @@ function draftFrom(broadcast: BroadcastDTO | null, timeZone: string): ComposerDr
     ticketTypeIds: [...audience.ticketTypeIds],
     slotIds: [...audience.slotIds],
     channels: broadcast.channels.filter(isHostChannel),
-    scheduledAt: isoToZonedInput(broadcast.scheduledAt, timeZone),
+    scheduledAt: datetimeLocalFromIso(broadcast.scheduledAt, timeZone),
   }
 }
 
@@ -118,7 +117,7 @@ function scheduleInstant(
   timeZone: string,
 ): string | null {
   if (saved.iso !== null && draftValue === saved.input) return saved.iso
-  const parsed = zonedInputToIso(draftValue, timeZone)
+  const parsed = isoFromDatetimeLocal(draftValue, timeZone)
   return parsed.kind === "instant" ? parsed.iso : null
 }
 

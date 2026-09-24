@@ -56,9 +56,7 @@
     "party_other": "{{count}} seats",
     "undo": "Undo",
     "undo_done": "Check-in undone.",
-    "dismiss": "Dismiss",
-    "unknown_token_title": "Ticket not recognised",
-    "unknown_token_body": "We do not recognise this code for this event."
+    "dismiss": "Dismiss"
   },
   "error": {
     "code_length": "That code does not look right. Check it and try again.",

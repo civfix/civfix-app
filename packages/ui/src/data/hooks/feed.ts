@@ -27,7 +27,7 @@ export const NEARBY_RADIUS_M = 50_000
  * still an order of magnitude finer than the 50 km "near you" radius and barely moves the server's
  * distance ordering. The REQUEST still carries the exact `near`; only the key is quantized.
  */
-function roundCoord(n: number): number {
+function roundFeedCellCoord(n: number): number {
   return Math.round(n * 100) / 100
 }
 
@@ -88,7 +88,7 @@ export function useNearbyCleanups(
   options?: NearbyCleanupsOptions,
 ) {
   const api = useApi()
-  const bias = near ? { lat: roundCoord(near.lat), lng: roundCoord(near.lng) } : null
+  const bias = near ? { lat: roundFeedCellCoord(near.lat), lng: roundFeedCellCoord(near.lng) } : null
   const radiusM = options?.radiusM === undefined ? NEARBY_RADIUS_M : options.radiusM
   // Memoized on PRIMITIVES: react-query recomputes `select` (and hands consumers a fresh array identity)
   // whenever the select function's identity changes, and a new marker array re-runs the shared Map's

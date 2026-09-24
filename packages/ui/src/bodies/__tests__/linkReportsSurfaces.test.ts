@@ -24,6 +24,7 @@ const pickerRow = code(read("../reportPicker/PickerReportRow.tsx"))
 const chips = code(read("../reportPicker/LayerChipRow.tsx"))
 const mapNative = code(read("../../map/ReportPickMap.native.tsx"))
 const mapWeb = code(read("../../map/ReportPickMap.web.tsx"))
+const webMarkerLayer = code(read("../../map/domMarkerLayer.web.ts"))
 const mapSelector = code(read("../../map/ReportPickMap.tsx"))
 const form = code(read("../CleanupForm.tsx"))
 const create = code(read("../CreateCleanupBody.tsx"))
@@ -205,9 +206,12 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     expect(mapNative).toContain("accessibilityLabel={pinLabel(node.pin, state)}")
     expect(mapNative).toContain("accessibilityLabel={clusterLabel(node.count)}")
     expect(mapNative).toContain("accessibilityLabel={meetingPointLabel}")
-    expect(mapWeb).toContain('el.setAttribute("aria-label", want.label)')
-    expect(mapWeb).toContain('el.setAttribute("role", "button")')
-    expect(mapWeb).toContain('el.setAttribute("tabindex", "0")')
+    expect(mapWeb).toContain("label: pinLabelRef.current(node.pin, state),")
+    expect(mapWeb).toContain("label: clusterLabelRef.current(node.count),")
+    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired)")
+    expect(webMarkerLayer).toContain('el.setAttribute("aria-label", want.label)')
+    expect(webMarkerLayer).toContain('el.setAttribute("role", "button")')
+    expect(webMarkerLayer).toContain('el.setAttribute("tabindex", "0")')
   })
 
   it("draws the meeting point and its radius hint on both seams from the shared circle helper", () => {
@@ -224,6 +228,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     for (const [name, src] of [
       ["native", mapNative],
       ["web", mapWeb],
+      ["web marker layer", webMarkerLayer],
     ] as const) {
       expect(src, name).not.toContain("useMapViewport")
       expect(src, name).not.toContain("useMapFocus")

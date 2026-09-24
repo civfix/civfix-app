@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { expectThemeTouchTarget, folderSourceFiles } from "../../../../__tests__/sourceGuards"
+import { expectThemeHitSlop, folderSourceFiles } from "../../../../__tests__/sourceGuards"
 import type {
   HostedEventDTO,
   HostedEventsAnalyticsResponse,
@@ -19,7 +19,6 @@ import {
   duplicateReady,
   firstEventState,
   hostedEventActions,
-  hostedEventCan,
   hostedEventHasActions,
   hostedEventPhase,
   hostedEventStatus,
@@ -35,8 +34,8 @@ import {
   pastRowMeta,
   pendingOrgInvites,
   portfolioKpis,
-  sharePathFor,
 } from "../dashboardModel"
+import { hasHostCapability } from "../../../../data/hooks/host"
 
 const DAY_MS = 86_400_000
 
@@ -175,7 +174,7 @@ describe("event row actions", () => {
 
   it("prefers the server capability list over the legacy role fallback", () => {
     const event = hosted({ myRole: "organizer", myCapabilities: ["view_roster"] })
-    expect(hostedEventCan(event, "manage_event")).toBe(false)
+    expect(hasHostCapability(event, "manage_event")).toBe(false)
     expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
       chat: true,
@@ -700,12 +699,6 @@ describe("first event and past rows", () => {
     expect(source).toContain('tone: "muted" as const')
     expect(source).toContain("color: t.colors.textSubtle")
   })
-
-  it("shares the public page slug, then the reference code, then the id", () => {
-    expect(sharePathFor(row("a", { pageSlug: "ted-watkins" }))).toBe("/cleanups/ted-watkins")
-    expect(sharePathFor(row("b", { referenceCode: "CF-1234" }))).toBe("/cleanups/CF-1234")
-    expect(sharePathFor(row("c"))).toBe("/cleanups/c")
-  })
 })
 
 describe("portfolio surface", () => {
@@ -907,7 +900,7 @@ describe("portfolio surface", () => {
   it("keeps the staffing and shift lines audible by folding them into the card label", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toMatch(
-      /const cardLabel = \[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
+      /const cardLabel = joinParts\(\s*\[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
     )
     expect(card).toContain('t("next_up.waiting", { count: event.waitlistCount }) : null')
     expect(card).toContain('t("next_up.checked_in", { count: liveCheckedIn }) : null')
@@ -926,17 +919,18 @@ describe("portfolio surface", () => {
 
   it("shares from an icon button pinned to the top right of the card", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expectThemeTouchTarget(card)
-    expect(card).toContain("const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2")
-    expect(card).toMatch(/<Pressable\s+onPress=\{share\}/)
+    expect(card).toMatch(/<IconActionButton\s+icon=\{iconMap\.Share\}[^>]*?onPress=\{share\}/)
     expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')
-    expect(card).toContain("hitSlop={SHARE_HIT_SLOP}")
-    expect(card).toContain("<Icon icon={iconMap.Share}")
+    expect(card).toContain("style={styles.share}")
     expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,\s*zIndex: 1,/)
-    expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
+    expect(card).toContain("paddingRight: ICON_ACTION_SIZE + t.space[\"2\"]")
+    const button = source("../../../../primitives/IconActionButton.tsx")
+    expectThemeHitSlop(button)
+    expect(button).toContain("const ICON_ACTION_HIT_SLOP = hitSlopToTarget(ICON_ACTION_SIZE)")
+    expect(button).toContain("hitSlop={ICON_ACTION_HIT_SLOP}")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onShare={onShare}")
-    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: cleanupSharePath(event) })")
   })
 
   it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {
@@ -948,10 +942,12 @@ describe("portfolio surface", () => {
 
   it("keeps the share icon and the host-tools button OUTSIDE the card pressable", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expect(card.match(/<Pressable/g)).toHaveLength(2)
+    expect(card.match(/<Pressable/g)).toHaveLength(1)
+    expect(card.match(/<IconActionButton/g)).toHaveLength(1)
     const opens = card.indexOf("onPress={open}")
     const region = card.slice(opens, card.indexOf("</Pressable>", opens))
     expect(region).not.toContain("<Pressable")
+    expect(region).not.toContain("<IconActionButton")
     expect(region).not.toContain("<PrimaryButton")
     expect(region).not.toContain("<TextLink")
     expect(region).not.toContain("onPress={share}")

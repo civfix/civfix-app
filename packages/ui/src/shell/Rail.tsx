@@ -48,7 +48,7 @@ import {
   RAIL_CAPSULE_W,
   RAIL_ITEM,
   RAIL_ITEM_GAP,
-  RAIL_ORB,
+  DOCK_ORB,
   RAIL_PAD_H,
   railActiveView,
   railItemLeft,
@@ -292,9 +292,9 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.6,
   },
   orb: {
-    width: RAIL_ORB,
-    height: RAIL_ORB,
-    borderRadius: RAIL_ORB / 2,
+    width: DOCK_ORB,
+    height: DOCK_ORB,
+    borderRadius: DOCK_ORB / 2,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: StyleSheet.hairlineWidth,
@@ -303,11 +303,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   orbSelected: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: RAIL_ORB / 2,
+    borderRadius: DOCK_ORB / 2,
     backgroundColor: t.glass.dock.selected,
   },
   orbHoverLozenge: {
-    borderRadius: RAIL_ORB / 2,
+    borderRadius: DOCK_ORB / 2,
   },
   pressed: {
     opacity: 0.9,

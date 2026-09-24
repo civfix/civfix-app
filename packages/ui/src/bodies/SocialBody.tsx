@@ -1,11 +1,16 @@
-import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
-import { TextInput } from "../primitives/TextInput"
+import React, { memo, useCallback } from "react"
+import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../theme"
+import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webTransition, headingLevel, hitSlopToTarget, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, FollowButton, SignInPrompt } from "../primitives"
+import {
+  Avatar,
+  FollowButton,
+  ListSearchField,
+  LoadingState,
+  SignInPrompt,
+  useListBodyStyles,
+} from "../primitives"
 import {
   useUserSearch,
   normalizeUserSearchTerm,
@@ -17,6 +22,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { idKeyExtractor } from "../primitives/listKeys"
@@ -125,21 +131,9 @@ const SuggestedPersonRow = memo(function SuggestedPersonRow({
   )
 })
 
-function RowSkeleton() {
-  const styles = useStyles()
-  return (
-    <View style={styles.row}>
-      <View style={styles.skelAvatar} />
-      <View style={styles.meta}>
-        <View style={[styles.skelLine, { width: "45%" }]} />
-        <View style={[styles.skelLine, styles.skelLineSm, { width: "60%" }]} />
-      </View>
-    </View>
-  )
-}
-
 export function SocialBody() {
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const { t } = useT("search")
   const { FlatList } = useScrollHost()
   const rawQuery = useNavStore((s) => s.query)
@@ -204,15 +198,23 @@ export function SocialBody() {
     <FlatList
       data={listData}
       keyExtractor={idKeyExtractor}
-      style={styles.list}
-      contentContainerStyle={listData.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={listData.length === 0 ? listStyles.listEmpty : listStyles.listContent}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
         <>
           {showTitle ? <PeopleHeader /> : null}
           {layout === "expanded" || !atViewRoot ? (
-            <PeopleSearchField value={rawQuery} onChangeText={setQuery} />
+            <ListSearchField
+              value={rawQuery}
+              onChangeText={setQuery}
+              placeholder={t("field.placeholder")}
+              a11yLabel={t("field.a11y")}
+              clearA11yLabel={t("field.clear_a11y")}
+              autoCapitalize="none"
+              clearTarget="slop"
+            />
           ) : null}
           {!hasQuery && viewerId && leaderboardGeoid ? (
             <LeaderboardEntry onPress={onOpenLeaderboard} />
@@ -225,11 +227,7 @@ export function SocialBody() {
       ListEmptyComponent={
         !hasQuery ? (
           suggestions.isLoading ? (
-            <View style={styles.skelList}>
-              <RowSkeleton />
-              <RowSkeleton />
-              <RowSkeleton />
-            </View>
+            <LoadingState skeleton="person" rows={SKELETON_ROWS} />
           ) : (
             <View style={styles.emptyFill}>
               <FeedNotice
@@ -249,11 +247,7 @@ export function SocialBody() {
             onSignIn={() => requireAuth(() => {}, { next: "/people" })}
           />
         ) : searchPending ? (
-          <View style={styles.skelList}>
-            <RowSkeleton />
-            <RowSkeleton />
-            <RowSkeleton />
-          </View>
+          <LoadingState skeleton="person" rows={SKELETON_ROWS} />
         ) : search.isError ? (
           <View style={styles.emptyFill}>
             <FeedNotice
@@ -275,49 +269,6 @@ export function SocialBody() {
         )
       }
     />
-  )
-}
-
-function PeopleSearchField({
-  value,
-  onChangeText,
-}: {
-  value: string
-  onChangeText: (q: string) => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("search")
-  const [focused, setFocused] = useState(false)
-  return (
-    <View style={[styles.searchField, focused ? styles.searchFieldFocused : null]}>
-      <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
-      <TextInput
-        style={[styles.searchInput, webInputReset]}
-        placeholder={t("field.placeholder")}
-        placeholderTextColor={th.colors.textSubtle}
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        autoCapitalize="none"
-        autoCorrect={false}
-        returnKeyType="search"
-        accessibilityLabel={t("field.a11y")}
-      />
-      {value ? (
-        <Pressable
-          onPress={() => onChangeText("")}
-          accessibilityRole="button"
-          accessibilityLabel={t("field.clear_a11y")}
-          hitSlop={CLEAR_BTN_HIT_SLOP}
-          {...focusRingProps}
-          style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
-        >
-          <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
-        </Pressable>
-      ) : null}
-    </View>
   )
 }
 
@@ -396,81 +347,25 @@ function SearchResultsHeader({ count }: { count: number }) {
 const ICON_BTN_SIZE = 32
 const ROW_GAP = space["3"]
 const ICON_BTN_HIT_SLOP = {
-  top: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,
-  bottom: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,
+  top: hitSlopToTarget(ICON_BTN_SIZE),
+  bottom: hitSlopToTarget(ICON_BTN_SIZE),
   left: ROW_GAP,
   right: 0,
 }
-const CLEAR_BTN_SIZE = 22
-const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
+const SKELETON_ROWS = 3
 
 const useStyles = makeThemedStyles((t) => ({
-  searchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    minHeight: MIN_TOUCH_TARGET,
-    marginTop: t.space["2"],
-    marginBottom: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    borderRadius: t.radius.md,
-  },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  clearBtn: {
-    width: CLEAR_BTN_SIZE,
-    height: CLEAR_BTN_SIZE,
-    borderRadius: CLEAR_BTN_SIZE / 2,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtnPressed: {
-    backgroundColor: t.colors.border,
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: 0,
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
   emptyFill: {
     flexGrow: 1,
   },
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  title: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  title: tabRootTitleStyle(t),
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -561,23 +456,5 @@ const useStyles = makeThemedStyles((t) => ({
   iconBtnPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
-  },
-  skelList: {
-    alignSelf: "stretch",
-  },
-  skelAvatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: t.colors.bgAlt,
-  },
-  skelLine: {
-    height: 13,
-    borderRadius: 7,
-    backgroundColor: t.colors.bgAlt,
-  },
-  skelLineSm: {
-    height: 10,
-    marginTop: 7,
   },
 }))

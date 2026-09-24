@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 const body = readFileSync(new URL("../../PostThreadBody.tsx", import.meta.url), "utf8")
 const focal = readFileSync(new URL("../ThreadFocalPost.tsx", import.meta.url), "utf8")
 const replyRow = readFileSync(new URL("../ThreadReplyRow.tsx", import.meta.url), "utf8")
+const rowActions = readFileSync(new URL("../../postCardActions.ts", import.meta.url), "utf8")
 
 describe("post-thread navigation seam: every push-capable tap routes through onOpenEntry", () => {
   it("PostThreadBody exposes the seam and hands it to every row it renders", () => {
@@ -27,26 +28,30 @@ describe("post-thread navigation seam: every push-capable tap routes through onO
   })
 
   it("ThreadFocalPost and ThreadReplyRow fall back to the push only when the seam is absent", () => {
-    for (const src of [focal, replyRow]) {
-      expect(src).toMatch(/const openEntry = onOpenEntry \?\? push/)
+    expect(rowActions).toMatch(/const openEntry = onOpenEntry \?\? push/)
+    for (const src of [focal, replyRow, rowActions]) {
       expect(src.match(/\bpush\(\{/g)).toBeNull()
+    }
+    for (const src of [focal, replyRow]) {
+      expect(src).toMatch(/\{ openEntry, openPerson,[^}]*\}\s*=\s*usePostRowActions\(\{ post, identity, onOpenEntry \}\)/)
+      expect(src).not.toMatch(/useNavStore/)
     }
   })
 
   it("routes both thread menus' navigation through the seam", () => {
     for (const src of [focal, replyRow]) {
       expect(src).toMatch(/<PostOverflowMenu[\s\S]*?onOpenPerson=\{openPerson\}/)
-      expect(src).toMatch(
-        /const openPerson = React\.useCallback\(\s*\(personId: string\) => openEntry\(\{ kind: "person", id: personId \}\)/,
-      )
     }
+    expect(rowActions).toMatch(
+      /const openPerson = React\.useCallback\(\s*\(personId: string\) => openEntry\(\{ kind: "person", id: personId \}\)/,
+    )
     expect(focal).toContain('openEntry({ kind: "post-thread", id: embedded.id })')
     expect(focal).toContain("isRepost && embedded && !embedded.deleted")
     expect(focal).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
   })
 
   it("covers every entry kind the thread surface can open", () => {
-    const surface = body + focal + replyRow
+    const surface = body + focal + replyRow + rowActions
     for (const kind of ["person", "cleanup", "pin", "post-thread", "composer"]) {
       expect(surface).toMatch(new RegExp(`openEntry\\(\\{ kind: "${kind}"`))
     }

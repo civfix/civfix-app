@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { formatCount } from "@civfix/shared"
+import { useLocale } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
-import { CHART_LABEL_FONT_SIZE, formatCompact, NUM_CLASS } from "./chart-utils"
+import { CHART_LABEL_FONT_SIZE, NUM_CLASS } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface DonutSegment {
@@ -41,6 +43,7 @@ export function Donut({
   className,
 }: DonutProps) {
   const palette = useChartPalette()
+  const { locale } = useLocale()
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((sum, s) => sum + s.value, 0)
   const radius = (size - thickness) / 2
@@ -130,7 +133,7 @@ export function Donut({
                 />
                 <span className="truncate text-token-13 text-console-ink-2">{segment.label}</span>
                 <span className={cn("ml-auto text-token-13 text-console-ink", NUM_CLASS)}>
-                  {formatCompact(segment.value)}
+                  {formatCount(segment.value, locale, { compact: true })}
                 </span>
                 <span className={cn("w-9 text-right text-token-12 text-console-ink-3", NUM_CLASS)}>
                   {pct}%

@@ -1,3 +1,4 @@
+import { formatCount } from "@civfix/shared"
 import { EMPTY_VALUE } from "../i18n/emptyValue"
 import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 
@@ -18,7 +19,7 @@ export function statTileColumns(width: number): StatTileColumns {
 
 export function formatStatValue(value: number | null, locale: string = FALLBACK_LOCALE): string | null {
   if (value === null || !Number.isFinite(value)) return null
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)
+  return formatCount(value, locale)
 }
 
 export function formatRate(rate: number | null, locale: string = FALLBACK_LOCALE): string | null {

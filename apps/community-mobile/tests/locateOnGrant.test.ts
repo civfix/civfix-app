@@ -1,11 +1,11 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
-import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS } from "../src/lib/withTimeout.ts"
+import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS } from "../src/lib/locationTimeouts.ts"
 
 const hook = readFileSync(new URL("../src/hooks/useUserLocation.ts", import.meta.url), "utf8")
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
-const timeouts = readFileSync(new URL("../src/lib/withTimeout.ts", import.meta.url), "utf8")
+const timeouts = readFileSync(new URL("../src/lib/locationTimeouts.ts", import.meta.url), "utf8")
 const nativeMap = readFileSync(
   new URL("../../../packages/ui/src/map/Map.native.tsx", import.meta.url),
   "utf8",

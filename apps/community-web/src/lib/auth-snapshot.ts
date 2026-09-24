@@ -1,5 +1,7 @@
 import { UserDTOSchema, type UserDTO } from "@civfix/shared"
 
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+
 /**
  * A display-only cache so the header paints the signed-in chrome on the first frame instead of flashing
  * "Sign in" while GET /auth/session resolves. It is cosmetic only: the session is the httpOnly cookie and
@@ -23,13 +25,7 @@ interface SnapshotBody {
 export function readAuthSnapshot(): UserDTO | null {
   if (typeof window === "undefined") return null
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(SNAPSHOT_KEY)
-  } catch {
-    // SecurityError (storage disabled / partitioned). Nothing to clear; treat as a miss.
-    return null
-  }
+  const raw = safeGet("local", SNAPSHOT_KEY)
   if (raw === null) return null
 
   try {
@@ -53,18 +49,10 @@ export function readAuthSnapshot(): UserDTO | null {
 export function writeAuthSnapshot(user: UserDTO): void {
   if (typeof window === "undefined") return
   const body: SnapshotBody = { v: SNAPSHOT_VERSION, user }
-  try {
-    window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(body))
-  } catch {
-    // Quota exceeded or storage unavailable (private mode): the snapshot is an optimization, not state.
-  }
+  safeSet("local", SNAPSHOT_KEY, JSON.stringify(body))
 }
 
 export function clearAuthSnapshot(): void {
   if (typeof window === "undefined") return
-  try {
-    window.localStorage.removeItem(SNAPSHOT_KEY)
-  } catch {
-    // Storage unavailable: nothing to do.
-  }
+  safeRemove("local", SNAPSHOT_KEY)
 }

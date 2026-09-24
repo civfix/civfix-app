@@ -28,7 +28,7 @@ import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrai
 import { DetailTrailingButton } from "./DetailTrailingButton"
 import { expandedFramePlan, NAV_FOOTPRINT, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
 import { cssTransition } from "./motionCss"
-import { shellBodyKey } from "./bodyLayout"
+import { surfaceKey } from "./bodyLayout"
 import { clearOcclusionLeft, writeOcclusionLeft } from "./occlusionVar"
 import { useShellKeys } from "./useShellKeys"
 import { prefersReducedMotion } from "./webMedia"
@@ -199,7 +199,7 @@ export function ExpandedShell({
   const hasHeader = hasDetailHeader(held.active)
   const title = hasHeader ? t(titleForEntry(held.active), titleParamsForEntry(held.active)) : ""
 
-  const transitionKey = shellBodyKey(held.active, `view:${held.view}`)
+  const transitionKey = surfaceKey(held.view, held.active)
 
   const direction: BodyTransitionDirection = useStackDirection(held.stack.length)
 

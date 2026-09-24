@@ -5,6 +5,7 @@ import { eventChip } from "@civfix/shared/datetime"
 import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { MetaDot } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import type { useProfilePastEvents } from "../../data"
 import { useT, useEventWhen, useLocale } from "../../i18n"
 import type { ProfileEventSplit } from "../profile/profileEventSplit"
@@ -34,10 +35,7 @@ function MiniEventRow({
       {...focusRingProps}
       style={({ pressed }) => [styles.mini, pressed ? styles.miniPressed : null]}
     >
-      <View style={styles.dateChip}>
-        <Text style={styles.dateDay}>{day}</Text>
-        <Text style={styles.dateMonth}>{month}</Text>
-      </View>
+      <DateTile variant="personEvent" day={day} month={month} />
       <View style={styles.miniMeta}>
         <Text style={styles.miniTitle} numberOfLines={1}>
           {event.title}
@@ -84,7 +82,7 @@ export function PersonEventsTab({
 
   return (
     <View style={styles.events}>
-      <Text style={styles.eventsLabel}>{t("events.label")}</Text>
+      <Text style={[sectionStyles.eyebrowText, styles.eventsLabel]}>{t("events.label")}</Text>
       {hasUpcoming ? (
         <>
           <Text style={styles.eventsGroupLabel}>{t("events.group_upcoming")}</Text>

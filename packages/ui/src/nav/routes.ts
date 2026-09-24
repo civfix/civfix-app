@@ -1,6 +1,4 @@
-import type { DetailEntry, DetailKind, NavState, View } from "./types"
-
-type NavMode = "compact" | "expanded"
+import type { DetailEntry, DetailKind, LayoutMode, NavState, View } from "./types"
 
 const UNADDRESSABLE_KINDS: readonly DetailKind[] = ["cluster", "blend", "drop-pin"]
 
@@ -294,6 +292,33 @@ export function pathForEntry(entry: DetailEntry | null): string {
   return entryText(kindRoute(entry)?.path, entry, "/")
 }
 
+export type NavPlatform = "web" | "native"
+
+// On web a shared /post link opens straight into its thread, and the thread is written back at that short
+// address; native keeps /post as the post card. Each entry maps an aliased kind to the kind whose address
+// it borrows.
+const PLATFORM_ADDRESS_ALIASES: Record<NavPlatform, ReadonlyMap<DetailEntry["kind"], DetailKind>> = {
+  native: new Map(),
+  web: new Map([["post-thread", "post"]]),
+}
+
+export function entryFromPlatformPath(
+  path: string | null | undefined,
+  platform: NavPlatform,
+): DetailEntry | null {
+  const entry = entryFromPath(path)
+  if (!entry?.id) return entry
+  for (const [alias, borrowed] of PLATFORM_ADDRESS_ALIASES[platform]) {
+    if (borrowed === entry.kind) return { kind: alias, id: entry.id }
+  }
+  return entry
+}
+
+export function platformPathForEntry(entry: DetailEntry, platform: NavPlatform): string {
+  const borrowed = PLATFORM_ADDRESS_ALIASES[platform].get(entry.kind)
+  return borrowed && entry.id ? pathForEntry({ kind: borrowed, id: entry.id }) : pathForEntry(entry)
+}
+
 export function pathForView(view: View): string | null {
   return (VIEW_PATHS as Partial<Record<View, string>>)[view] ?? null
 }
@@ -361,7 +386,7 @@ function baseViewForSeed(currentView: View): View {
 
 export function seedFor(
   entry: DetailEntry | null,
-  _mode: NavMode,
+  _mode: LayoutMode,
   currentView: View = "home",
 ): Partial<NavState> {
   if (!entry) return {}

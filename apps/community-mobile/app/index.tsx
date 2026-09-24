@@ -22,6 +22,7 @@ import {
   captureDropPinCamera,
   setDropPinCameraRestorer,
   MapPending,
+  decideRegionFetch,
   resolveMapCenter,
   shouldAdoptCenter,
   PRECISE_ZOOM,
@@ -51,7 +52,6 @@ import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
 import { markRootShellSeen } from "@/lib/rootShellSeen"
 import { useUserLocation } from "@/hooks/useUserLocation"
-import { decideRegionFetch } from "@/lib/mapRegion"
 import { readLastCenter, writeLastCenter } from "@/lib/lastCenter"
 import { locationPrimerDecision } from "@/lib/locationPrimerPlan"
 import { useLocationPrimerStore } from "@/store/locationPrimerStore"

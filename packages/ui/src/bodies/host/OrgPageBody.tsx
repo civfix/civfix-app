@@ -5,6 +5,7 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   useLayoutMode,
   useTheme,
   webCursor,
@@ -34,7 +35,7 @@ import {
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav/useNavStore"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
+import { HostBodyState } from "./HostBodyState"
 import { formatHoursDisplay } from "../formatHours"
 import { canOpenOrgManage } from "./orgManageModel"
 
@@ -173,11 +174,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
   }
 
   if (query.isError || !org) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   return (
@@ -255,15 +252,10 @@ export function OrgPageBody({ slug }: { slug: string }) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
-
 const SHARE_BUTTON_SIZE = 36
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
-    flex: 1,
-  },
-  fill: {
     flex: 1,
   },
   content: {

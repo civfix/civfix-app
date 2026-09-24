@@ -2,19 +2,23 @@
 
 import * as React from "react"
 import { Loader2, Check, X } from "lucide-react"
-import { isValidHandle } from "@civfix/shared"
 import { space } from "@civfix/shared/tokens"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
+import {
+  FIRST_NAME_MAX,
+  LAST_NAME_MAX,
+  firstRunModel,
+  splitName,
+  stripHandlePrefix,
+  useHandleAvailabilityCheck,
+  useUpdateProfile,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
 import { useCurrentUser, useLogout } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
-import {
-  useFirstRunRequired,
-  useHandleAvailability,
-  useUpdateProfile,
-} from "@/hooks/use-profile-registration"
+import { useFirstRunRequired } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
 import { HANDLE_MAX_LENGTH } from "@/lib/input-limits"
 import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
@@ -24,12 +28,6 @@ export function FirstRunGate() {
   if (!required) return null
   return <FirstRunForm />
 }
-
-// Mirrors UpdateProfileRequestSchema's displayName max. The two fields plus the joining space must fit,
-// or the server rejects the save with a VALIDATION error the user cannot act on.
-const DISPLAY_NAME_MAX = 80
-const FIRST_NAME_MAX = 40
-const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
 
 /**
  * Make everything outside `el` inert (unfocusable, hidden from assistive tech) and return the undo.
@@ -54,12 +52,6 @@ function inertOutside(el: HTMLElement): () => void {
   }
 }
 
-function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
-}
-
 function FirstRunForm() {
   const { t } = useT("web-registration")
   const user = useCurrentUser()!
@@ -73,25 +65,23 @@ function FirstRunForm() {
   const [ageConfirmed, setAgeConfirmed] = React.useState(false)
   const [termsConfirmed, setTermsConfirmed] = React.useState(false)
 
-  const avail = useHandleAvailability(handle)
-  const trimmedHandle = handle.trim()
-  const handleValid = isValidHandle(trimmedHandle)
-  const available = handleValid && avail.data?.available === true
-  const displayName = `${first.trim()} ${last.trim()}`.trim()
-  const canSubmit =
-    available &&
-    displayName.length > 0 &&
-    displayName.length <= DISPLAY_NAME_MAX &&
-    ageConfirmed &&
-    termsConfirmed &&
-    !update.isPending
+  const { availability, checkedHandle } = useHandleAvailabilityCheck(handle, null)
+  const { trimmedHandle, handleValid, displayName, previewName, checking, available, taken, canSubmit } =
+    firstRunModel({
+      first,
+      last,
+      handle,
+      checkedHandle,
+      availability,
+      ageConfirmed,
+      termsConfirmed,
+      submitting: update.isPending,
+    })
 
   const onSubmit = React.useCallback(() => {
     if (!canSubmit) return
     update.mutate({ handle: trimmedHandle, displayName })
   }, [canSubmit, update, trimmedHandle, displayName])
-
-  const previewName = trimmedHandle || displayName || "?"
 
   const vvShift = useVisualViewportShift()
 
@@ -180,7 +170,7 @@ function FirstRunForm() {
               id="fr-handle"
               className="input"
               value={handle}
-              onChange={(e) => setHandle(e.target.value.replace(/^@+/, ""))}
+              onChange={(e) => setHandle(stripHandlePrefix(e.target.value))}
               maxLength={HANDLE_MAX_LENGTH}
               autoComplete="off"
               autoCapitalize="none"
@@ -197,9 +187,9 @@ function FirstRunForm() {
               <HandleHint
                 handle={trimmedHandle}
                 valid={handleValid}
-                checking={handleValid && avail.isFetching}
+                checking={checking}
                 available={available}
-                taken={handleValid && avail.data?.available === false}
+                taken={taken}
               />
             </p>
           </div>

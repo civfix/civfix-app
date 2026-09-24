@@ -8,16 +8,16 @@
  * Pure: RN-free and theme-free (the theme pulls `Platform`), so it unit-tests under vitest.
  */
 import { space } from "@civfix/shared/tokens"
-import { parentViewForEntry, type DetailEntry, type View } from "../nav"
+import { parentViewForEntry, type DetailEntry, type LayoutMode, type View } from "../nav"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
+import { DOCK_GAP, DOCK_H } from "../surface/liquidGlass/liquidGlassModel"
 
 /** Shared with the card's own left inset. */
 export const NAV_LEFT = 14
 export const NAV_TOP = 14
-/** The portrait dock's height (`DOCK_H` in surface/liquidGlass), laid flat. */
-export const NAV_H = 64
-/** The dock's own `DOCK_GAP`. */
-export const NAV_GAP = 12
+/** The portrait dock laid flat. */
+export const NAV_H = DOCK_H
+export const NAV_GAP = DOCK_GAP
 export const NAV_FOOTPRINT = NAV_TOP + NAV_H + NAV_GAP
 /** The card is user-resizable, so on an 840px tablet an unbounded drag could bury the map entirely. */
 export const MAP_MIN_CLEAR = 280
@@ -34,8 +34,8 @@ export const RAIL_CAPSULE_W =
   RAIL_PAD_H * 2 + RAIL_ITEM * RAIL_TAB_COUNT + RAIL_ITEM_GAP * (RAIL_TAB_COUNT - 1)
 export const RAIL_CAPSULE_H = NAV_H
 export const RAIL_CAPSULE_RADIUS = RAIL_CAPSULE_H / 2
-/** The portrait dock's own orb (`TabBar.shared`'s ORB_SIZE). */
-export const RAIL_ORB = 58
+/** One orb for the portrait dock and the rail. */
+export const DOCK_ORB = 58
 
 export const RAIL_BRAND_SIZE = 27
 export const RAIL_BRAND_PAD_H = space["5"]
@@ -53,7 +53,7 @@ export const MAP_SIGN_IN_W = Math.ceil(MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT 
 export const MAP_PROFILE_EXTRA = Math.max(MAP_SIGN_IN_W - MAP_ACTION_SIZE, 0)
 
 export const EXPANDED_LEFT_CLUSTER_W =
-  NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + RAIL_ORB
+  NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + DOCK_ORB
 export const EXPANDED_RIGHT_ACTIONS_W =
   MAP_ACTIONS_RIGHT +
   MAP_ACTION_SIZE * MAP_ACTION_COUNT +
@@ -62,8 +62,6 @@ export const EXPANDED_RIGHT_ACTIONS_W =
 export const EXPANDED_CLUSTER_BREATHING = NAV_GAP * 2
 export const EXPANDED_MIN_WIDTH =
   EXPANDED_LEFT_CLUSTER_W + EXPANDED_RIGHT_ACTIONS_W + EXPANDED_CLUSTER_BREATHING
-
-export type LayoutMode = "compact" | "expanded"
 
 export function expandedFits(width: number): boolean {
   return width >= EXPANDED_MIN_WIDTH

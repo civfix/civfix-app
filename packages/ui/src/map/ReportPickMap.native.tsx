@@ -26,7 +26,6 @@ import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
 import { alpha } from "../theme/alpha"
-import { Text } from "../typography"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -35,14 +34,14 @@ import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import {
   clusterFallbackZoom,
-  clusterZoomTarget,
-  expansionZoomOfCluster,
+  clusterPressTarget,
   WORLD_BBOX,
   type ClusterNode,
   type MapClusterIndex,
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
+import { MapCredit } from "./MapCredit"
 import { MARKER_PRESS_GUARD_MS } from "./markerFocus"
 import {
   REPORT_PICK_FLY_MS,
@@ -210,9 +209,7 @@ export const ReportPickMap = memo(
       if (!node || node.type !== "cluster") return
       hapticsRef.current.selection()
       const currentZoom = lastRegionRef.current?.zoom ?? seedRef.current.zoom
-      const expansion =
-        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
-      const target = clusterZoomTarget(node, currentZoom, expansion) ?? clusterFallbackZoom(currentZoom)
+      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       cameraRef.current?.flyTo({
         center: [node.lng, node.lat],
         zoom: target,
@@ -317,15 +314,7 @@ export const ReportPickMap = memo(
           })}
         </MlMap>
 
-        <Text
-          style={[
-            styles.credit,
-            attributionBottomInset != null ? { bottom: attributionBottomInset } : null,
-          ]}
-          pointerEvents="none"
-        >
-          {DEFAULT_ATTRIBUTION}
-        </Text>
+        <MapCredit bottomInset={attributionBottomInset} />
       </View>
     )
   }),
@@ -346,13 +335,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   mutedPin: {
     opacity: REPORT_PICK_MUTED_OPACITY,
-  },
-  credit: {
-    position: "absolute",
-    bottom: t.space["1"],
-    right: 6,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 9,
-    color: t.colors.textSubtle,
   },
 }))

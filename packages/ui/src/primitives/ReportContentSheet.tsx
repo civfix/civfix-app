@@ -2,12 +2,12 @@ import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
 import type { ContentReportReason } from "@civfix/shared"
-import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useResetOnOpen } from "./useModalClosed"
 
 const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
@@ -127,7 +127,7 @@ export function ReportContentSheet({
         accessibilityLabel={t("details.a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

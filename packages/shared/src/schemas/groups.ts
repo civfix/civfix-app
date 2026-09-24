@@ -5,6 +5,7 @@
  */
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
+import { PageLimitSchema } from "./internal-fields.js"
 import { ChatHistoryQueryShape, rejectAroundWithBefore } from "./chat.js"
 import { MediaDTOSchema, PersonDTOSchema } from "./entities.js"
 
@@ -108,7 +109,7 @@ export const ListGroupMembersRequestSchema = z
   .object({
     id: IdSchema,
     cursor: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type ListGroupMembersRequest = z.infer<typeof ListGroupMembersRequestSchema>

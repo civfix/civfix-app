@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectThemeHitSlop, surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -29,7 +29,8 @@ describe("blocked accounts", () => {
     const src = read("../BlockedAccountsBody.tsx")
     expect(src).toContain("accessibilityState={{ disabled: pending, busy: pending }}")
     expect(src).toContain("hitSlop={UNBLOCK_HIT_SLOP}")
-    expect(src).toContain("const UNBLOCK_HIT_SLOP = (MIN_TOUCH_TARGET - UNBLOCK_HEIGHT) / 2")
+    expectThemeHitSlop(src)
+    expect(src).toContain("const UNBLOCK_HIT_SLOP = hitSlopToTarget(UNBLOCK_HEIGHT)")
   })
 })
 
@@ -61,7 +62,8 @@ describe("service-hours transcript card", () => {
   it("brings the revoke link and both confirm buttons to the 44pt floor", () => {
     expect(src).toContain("hitSlop={REVOKE_LINK_HIT_SLOP}")
     expect(src.match(/hitSlop=\{CONFIRM_BTN_HIT_SLOP\}/g) ?? []).toHaveLength(2)
-    expect(src).toMatch(/top: \(MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT\) \/ 2/)
+    expectThemeHitSlop(src)
+    expect(src).toMatch(/top: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),\s*bottom: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),/)
   })
 })
 

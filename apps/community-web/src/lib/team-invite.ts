@@ -1,3 +1,6 @@
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+import { replaceUrlInPlace } from "@/lib/replace-url"
+
 export const TEAM_INVITE_TOKEN_PARAM = "teamInvite"
 
 export const TEAM_INVITE_STASH_KEY = "civfix:event-team-invite"
@@ -50,10 +53,9 @@ export function stripTeamInviteFromUrl(): void {
   if (!inSearch && !inHash) return
   const nextSearch = inSearch ? withoutToken(searchBody) : searchBody
   const nextHash = inHash ? withoutToken(hashBody) : hashBody
-  const url = `${pathname}${nextSearch === "" ? "" : `?${nextSearch}`}${nextHash === "" ? "" : `#${nextHash}`}`
-  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
-  // so it would keep the old URL and write it back on its next navigation.
-  window.history.replaceState(null, "", url)
+  replaceUrlInPlace(
+    `${pathname}${nextSearch === "" ? "" : `?${nextSearch}`}${nextHash === "" ? "" : `#${nextHash}`}`,
+  )
 }
 
 export function takeTeamInviteFromUrl(): EventTeamInviteLink | null {
@@ -67,25 +69,11 @@ export function takeTeamInviteFromUrl(): EventTeamInviteLink | null {
 export const TEAM_INVITE_STASH_TTL_MS = 60 * 60_000
 
 export function stashTeamInvite(link: EventTeamInviteLink): void {
-  if (typeof window === "undefined") return
-  try {
-    window.sessionStorage.setItem(
-      TEAM_INVITE_STASH_KEY,
-      JSON.stringify({ ...link, stashedAt: Date.now() }),
-    )
-  } catch {
-    return
-  }
+  safeSet("session", TEAM_INVITE_STASH_KEY, JSON.stringify({ ...link, stashedAt: Date.now() }))
 }
 
 export function readStashedTeamInvite(): EventTeamInviteLink | null {
-  if (typeof window === "undefined") return null
-  let raw: string | null
-  try {
-    raw = window.sessionStorage.getItem(TEAM_INVITE_STASH_KEY)
-  } catch {
-    return null
-  }
+  const raw = safeGet("session", TEAM_INVITE_STASH_KEY)
   if (raw === null) return null
   const link = parseStashedTeamInvite(raw, Date.now())
   if (link === null) clearStashedTeamInvite()
@@ -109,10 +97,5 @@ export function parseStashedTeamInvite(raw: string, now: number): EventTeamInvit
 }
 
 export function clearStashedTeamInvite(): void {
-  if (typeof window === "undefined") return
-  try {
-    window.sessionStorage.removeItem(TEAM_INVITE_STASH_KEY)
-  } catch {
-    return
-  }
+  safeRemove("session", TEAM_INVITE_STASH_KEY)
 }

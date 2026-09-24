@@ -2,13 +2,7 @@ import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import type { CleanupDTO, MyEventRegistrationRef, TicketTypeDTO } from "@civfix/shared"
-import {
-  defaultTicketTypeId,
-  registerErrorKey,
-  registerOutcomeKey,
-  registrationSurface,
-  sortedTicketTypes,
-} from "../registration/registrationModel"
+import { registerErrorKey, registrationSurface } from "../registration/registrationModel"
 
 const type = (over: Partial<TicketTypeDTO> = {}): TicketTypeDTO => ({
   id: "tt1",
@@ -111,32 +105,6 @@ describe("registrationSurface", () => {
   })
 })
 
-describe("ticket type selection", () => {
-  it("orders by the host's sort order", () => {
-    const ordered = sortedTicketTypes([
-      type({ id: "b", sortOrder: 2 }),
-      type({ id: "a", sortOrder: 1 }),
-    ])
-    expect(ordered.map((t) => t.id)).toEqual(["a", "b"])
-  })
-
-  it("preselects the first type that is actually open", () => {
-    expect(
-      defaultTicketTypeId([
-        type({ id: "sold", sortOrder: 0, soldOut: true }),
-        type({ id: "open", sortOrder: 1 }),
-      ]),
-    ).toBe("open")
-  })
-
-  it("falls back to the first type when none are open, so the picker is never blank", () => {
-    expect(
-      defaultTicketTypeId([type({ id: "a", sortOrder: 0, soldOut: true })]),
-    ).toBe("a")
-    expect(defaultTicketTypeId([])).toBeNull()
-  })
-})
-
 describe("idempotency", () => {
   it("mints ONE key per attempt-set, not one per press", () => {
     const src = readFileSync(
@@ -150,33 +118,7 @@ describe("idempotency", () => {
   })
 })
 
-describe("outcome + error copy", () => {
-  it("renders NO error for the three success arms", () => {
-    expect(registerOutcomeKey("registered")).toBeNull()
-    expect(registerOutcomeKey("replayed")).toBeNull()
-    expect(registerOutcomeKey("waitlisted")).toBeNull()
-  })
-
-  it("gives every refusal its own copy key", () => {
-    const refusals = [
-      "already_registered",
-      "full",
-      "party_too_large",
-      "sales_closed",
-      "registration_closed",
-      "ticket_type_not_found",
-      "access_code_required",
-      "access_code_invalid",
-      "answers_invalid",
-      "banned",
-      "closed",
-      "not_found",
-    ] as const
-    const keys = refusals.map((outcome) => registerOutcomeKey(outcome))
-    expect(keys.every((key) => typeof key === "string")).toBe(true)
-    expect(new Set(keys).size).toBe(refusals.length)
-  })
-
+describe("error copy", () => {
   it("maps the AppError codes a registration can fail with", () => {
     expect(registerErrorKey("CONFLICT")).toBe("outcome.closed")
     expect(registerErrorKey("FORBIDDEN")).toBe("outcome.banned")

@@ -1,5 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
+import { clampPartySize } from "@civfix/shared/host"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -11,7 +12,6 @@ import {
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import { clampPartySize } from "./registrationModel"
 
 export interface PartySizeStepperProps {
   value: number

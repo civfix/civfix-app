@@ -8,6 +8,7 @@ import {
   focusRingProps,
   HOVERED_OPACITY,
   PRESSED_OPACITY,
+  MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text } from "../typography"
 import type { LegalDocumentType } from "@civfix/shared"
@@ -117,7 +118,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     borderRadius: t.radius.sm,
   },
   checkHovered: {

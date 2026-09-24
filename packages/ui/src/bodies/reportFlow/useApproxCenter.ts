@@ -1,22 +1,9 @@
 import { useEffect, useState } from "react"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
 import { type LatLng } from "@civfix/shared/geocode"
-import { useApi, fetchApproximateLocation, queryKeys } from "../../data"
+import { useApi, queryKeys } from "../../data"
+import { resolveUserLocation } from "../../data/hooks/location"
 import { useGeolocation } from "../../capabilities"
-import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "../../data/deviceFix"
-
-async function resolveApproxCenter(
-  geo: ReturnType<typeof useGeolocation>,
-  api: ApiClient,
-  qc: QueryClient,
-): Promise<LatLng | null> {
-  const fix = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
-  if (fix) return { lat: fix.latitude, lng: fix.longitude }
-  const approximate = await fetchApproximateLocation(api, qc)
-  if (approximate) return approximate
-  return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
-}
 
 export interface ApproxCenter {
   center: LatLng | null
@@ -50,7 +37,7 @@ export function useApproxCenter(enabled: boolean, refreshIfNull: boolean): Appro
     void qc
       .fetchQuery<LatLng | null>({
         queryKey: queryKeys.userLocation,
-        queryFn: () => resolveApproxCenter(geo, api, qc),
+        queryFn: () => resolveUserLocation(geo, api, qc),
         staleTime: refreshIfNull ? 0 : Infinity,
         gcTime: Infinity,
         retry: false,

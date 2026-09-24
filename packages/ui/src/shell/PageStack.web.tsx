@@ -26,6 +26,7 @@ import {
 } from "./pageStackWebModel"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
+import { forceReflow, useFlipPhase } from "./useFlipPhase"
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
@@ -117,26 +118,19 @@ export function PageStack({
     setState((cur) => (cur.phase && cur.phase.nav === nav ? { ...cur, phase: null } : cur))
   }, [])
 
-  const flipNav = phase && !phase.flipped ? phase.nav : null
-  useLayoutEffect(() => {
-    if (flipNav === null) return
-    const host = hostRef.current as unknown as { offsetHeight?: number } | null
-    void host?.offsetHeight
-    setState((cur) =>
-      cur.phase && cur.phase.nav === flipNav && !cur.phase.flipped
-        ? { ...cur, phase: { ...cur.phase, flipped: true } }
-        : cur,
-    )
-  }, [flipNav])
-
-  // Keyed on the phase, not the flip: the flip must not clear the fallback armed for the same phase.
-  const phaseNav = phase ? phase.nav : null
-  const phaseDuration = phase ? pagePlanDuration(phase.plan) : 0
-  useLayoutEffect(() => {
-    if (phaseNav === null) return
-    const fallback = setTimeout(() => settle(phaseNav), phaseDuration + SETTLE_SLACK_MS)
-    return () => clearTimeout(fallback)
-  }, [phaseDuration, phaseNav, settle])
+  useFlipPhase({
+    pendingNav: phase && !phase.flipped ? phase.nav : null,
+    phaseNav: phase ? phase.nav : null,
+    fallbackMs: phase ? pagePlanDuration(phase.plan) + SETTLE_SLACK_MS : 0,
+    reflow: () => forceReflow([hostRef.current], false),
+    flip: (flipNav) =>
+      setState((cur) =>
+        cur.phase && cur.phase.nav === flipNav && !cur.phase.flipped
+          ? { ...cur, phase: { ...cur.phase, flipped: true } }
+          : cur,
+      ),
+    settle,
+  })
 
   const rendered = phase?.leaving ? [...layers, phase.leaving] : layers
   const topIndex = rendered.length - 1

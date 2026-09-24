@@ -8,6 +8,7 @@
  * Ownership is read off `slot.mine` - the server-computed flag - never re-derived from a roster.
  */
 import type { EventSlotDTO } from "@civfix/shared"
+import { ErrorCode } from "@civfix/shared"
 import { timeRangeLabel } from "@civfix/shared/datetime"
 import { isEventEndedRefusal } from "../data/errorCode"
 
@@ -165,7 +166,7 @@ export function claimSlotErrorKey(
   fields?: Record<string, string> | undefined,
 ): string {
   if (isEventEndedRefusal(fields)) return "error.ended"
-  if (code === "CONFLICT") return "error.full"
+  if (code === ErrorCode.CONFLICT) return "error.full"
   return "error.generic"
 }
 

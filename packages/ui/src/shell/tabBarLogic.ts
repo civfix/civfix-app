@@ -1,10 +1,7 @@
 import type { Snap, View } from "../nav"
 import { MOTION } from "../theme/motion"
-import {
-  DOCK_H,
-  DOCK_MORPH_SHRINK,
-  DOCK_MORPH_TOP_OFFSET,
-} from "../surface/liquidGlass/liquidGlassModel"
+import { clamp01 } from "../math/clamp"
+import { DOCK_H, DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../surface/liquidGlass/liquidGlassModel"
 
 export type TabId = "home" | "map" | "messages" | "report"
 
@@ -130,11 +127,6 @@ export function resolvePreviousView(stored: View, view: View): View {
 
 export function seedPreviousView(currentView: View, lastNonSearch: View): View {
   return currentView === "search" ? lastNonSearch : currentView
-}
-
-function clamp01(value: number): number {
-  "worklet"
-  return value < 0 ? 0 : value > 1 ? 1 : value
 }
 
 export function windowProgress(progress: number, start: number, end: number): number {

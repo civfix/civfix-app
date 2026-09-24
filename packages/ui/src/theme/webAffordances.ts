@@ -11,6 +11,7 @@ import { Platform, type ViewStyle, type TextStyle, type PressableStateCallbackTy
 import { tokens } from "@civfix/shared/tokens"
 import { EASE_STANDARD_CSS } from "./motion"
 import { ACCENT_TEXT } from "./schemes"
+import type { Theme } from "./themes"
 
 const isWeb = Platform.OS === "web"
 
@@ -106,7 +107,7 @@ let focusStyleInjected = false
  * width clips it harder. The literal is only the fallback for a token reshaped into a form this cannot read.
  */
 const RING_SPEC = /^0 0 0 (\d+(?:\.\d+)?)px\s+(.+)$/.exec(tokens.shadow.ring)
-const FOCUS_RING_FOOTPRINT = RING_SPEC ? Number(RING_SPEC[1]) : 3
+export const FOCUS_RING_FOOTPRINT = RING_SPEC ? Number(RING_SPEC[1]) : 3
 
 /**
  * The ring is opaque `theme.colors.accentText`, not the token's `rgba(240,104,92,0.30)` fill coral, which
@@ -154,6 +155,33 @@ ensureFocusRingStyle()
 export const focusRingProps: { dataSet?: Record<string, string> } = isWeb
   ? { dataSet: { focusRing: "" } }
   : {}
+
+/**
+ * A text field strips the UA outline with `webInputReset`, so it draws its own focus state: the coral border
+ * on every platform, plus the ring token on web. A field whose native focus is shown some other way passes
+ * its own native style.
+ */
+export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t.colors.accent }): ViewStyle {
+  return isWeb ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle) : native
+}
+
+/**
+ * A full-bleed row sits flush with its scroller, which clips an outside ring on three sides, so the ring
+ * is pulled inside by its whole footprint. It must stay a plain inline style: as a StyleSheet class it
+ * loses to the `[data-focus-ring]:focus-visible` rule's specificity.
+ */
+export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb
+  ? ({ outlineOffset: -FOCUS_RING_FOOTPRINT } as unknown as ViewStyle)
+  : {}
+
+/**
+ * A feed row is a pointer convenience, never an accessibility element: it wraps the name, permalink,
+ * mention, media, action-bar and menu controls. On iOS an accessible Pressable hides all of them from
+ * VoiceOver, and on web a role=link row nests interactive content and renames the post after its label.
+ * Keyboard and screen-reader users open the thread through the row's own permalink instead. RNW's Pressable
+ * always sets tabIndex=0, so web opts out with an explicit -1 (`focusable={false}` loses to it).
+ */
+export const ROW_A11Y_PROPS: object = isWeb ? { tabIndex: -1 } : { accessible: false }
 
 /**
  * A modal scrim must not be focusable on web. RNW renders the scrim's role="button" as a real `<button>`,

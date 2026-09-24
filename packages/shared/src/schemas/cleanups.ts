@@ -23,6 +23,8 @@ import {
 import {
   GuestManageTokenSchema,
   IdempotencyKeySchema,
+  OkResponseSchema,
+  PageLimitSchema,
   SortOrderInputSchema,
 } from "./internal-fields.js"
 import { AccessCodeSchema } from "./host/tickets.js"
@@ -202,7 +204,7 @@ export const ListCleanupsRequestSchema = z
     near: LatLngSchema.optional(),
     when: z.enum(["upcoming", "past", "attending"]).optional(),
     cursor: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type ListCleanupsRequest = z.infer<typeof ListCleanupsRequestSchema>
@@ -236,7 +238,7 @@ export const RequestEventResourcesRequestSchema = z
   .strict()
 export type RequestEventResourcesRequest = z.infer<typeof RequestEventResourcesRequestSchema>
 
-export const RequestEventResourcesResponseSchema = z.object({ ok: z.literal(true) })
+export const RequestEventResourcesResponseSchema = OkResponseSchema
 export type RequestEventResourcesResponse = z.infer<typeof RequestEventResourcesResponseSchema>
 
 export const SetMemberRoleRequestSchema = z
@@ -248,7 +250,7 @@ export const SetMemberRoleRequestSchema = z
   .strict()
 export type SetMemberRoleRequest = z.infer<typeof SetMemberRoleRequestSchema>
 
-export const SetMemberRoleResponseSchema = z.object({ ok: z.literal(true) })
+export const SetMemberRoleResponseSchema = OkResponseSchema
 export type SetMemberRoleResponse = z.infer<typeof SetMemberRoleResponseSchema>
 
 export const RemoveMemberRequestSchema = z
@@ -369,7 +371,7 @@ export const GuestRsvpCancelRequestSchema = z
   .strict()
 export type GuestRsvpCancelRequest = z.infer<typeof GuestRsvpCancelRequestSchema>
 
-export const GuestRsvpCancelResponseSchema = z.object({ ok: z.literal(true) })
+export const GuestRsvpCancelResponseSchema = OkResponseSchema
 export type GuestRsvpCancelResponse = z.infer<typeof GuestRsvpCancelResponseSchema>
 
 export const CleanupGuestDTOSchema = z.object({

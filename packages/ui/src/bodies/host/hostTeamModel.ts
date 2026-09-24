@@ -1,14 +1,20 @@
+import { safeDateFormat } from "@civfix/shared/datetime"
 import type {
   CleanupMemberRole,
   EventTeamInviteDTO,
   EventTeamInviteIdentifierKind,
   EventTeamMemberDTO,
 } from "@civfix/shared"
-import { MAX_TEAM_INVITES_PER_EVENT, isValidHandle } from "@civfix/shared"
+import {
+  ErrorCode,
+  MAX_TEAM_INVITES_PER_EVENT,
+  byErrorCode,
+  isValidHandle,
+  type ErrorCodeTable,
+} from "@civfix/shared"
 import { GUEST_EMAIL_MAX, guestEmailValue } from "./registration/guestRsvpModel"
 import { settableRolesOtherThan, type SettableEventMemberRole } from "../../data/eventTeamTiers"
 import {
-  errorKeyFor,
   hasActions,
   orderByRankThenName,
   pendingCount,
@@ -99,35 +105,30 @@ export function inviteIdentifierErrorKey(kind: EventTeamInviteIdentifierKind): s
   return kind === "email" ? "invite.email_invalid" : "invite.handle_invalid"
 }
 
-const INVITE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
-  ["NOT_FOUND", "invite.error_no_account"],
-  ["CONFLICT", "invite.error_conflict"],
-  ["FORBIDDEN", "invite.error_forbidden"],
-  ["RATE_LIMITED", "invite.error_rate_limited"],
-  ["VALIDATION", "invite.error_invalid"],
-])
+const INVITE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.NOT_FOUND]: "invite.error_no_account",
+  [ErrorCode.CONFLICT]: "invite.error_conflict",
+  [ErrorCode.FORBIDDEN]: "invite.error_forbidden",
+  [ErrorCode.RATE_LIMITED]: "invite.error_rate_limited",
+  [ErrorCode.VALIDATION]: "invite.error_invalid",
+}
 
 export function inviteErrorKey(code: string | undefined): string {
-  return errorKeyFor(INVITE_ERROR_KEYS, code, "invite.error_generic")
+  return byErrorCode(code, INVITE_ERROR_KEYS, "invite.error_generic")
 }
 
-const TEAM_MANAGE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
-  ["CONFLICT", "manage.error_conflict"],
-  ["FORBIDDEN", "manage.error_forbidden"],
-  ["NOT_FOUND", "manage.error_gone"],
-])
+const TEAM_MANAGE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.CONFLICT]: "manage.error_conflict",
+  [ErrorCode.FORBIDDEN]: "manage.error_forbidden",
+  [ErrorCode.NOT_FOUND]: "manage.error_gone",
+}
 
 export function teamManageErrorKey(code: string | undefined): string {
-  return errorKeyFor(TEAM_MANAGE_ERROR_KEYS, code, "manage.error_generic")
+  return byErrorCode(code, TEAM_MANAGE_ERROR_KEYS, "manage.error_generic")
 }
 
+const TEAM_DATE_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: "medium" }
+
 export function teamDateLabel(iso: string | null | undefined, locale: string): string {
-  if (!iso) return ""
-  const parsed = new Date(iso)
-  if (Number.isNaN(parsed.getTime())) return ""
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed)
-  } catch {
-    return parsed.toISOString().slice(0, 10)
-  }
+  return safeDateFormat(iso, locale, TEAM_DATE_OPTIONS)
 }

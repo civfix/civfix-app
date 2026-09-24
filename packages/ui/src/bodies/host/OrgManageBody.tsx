@@ -12,7 +12,7 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
-  MIN_TOUCH_TARGET,
+  hitSlopToTarget,
   webCursor,
 } from "../../theme"
 import { Text } from "../../typography"
@@ -31,7 +31,7 @@ import { useOrganization, useUpdateOrganization } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode, appErrorFields } from "../../data/errorCode"
+import { appErrorCode, appErrorFields } from "@civfix/shared"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { OrgField } from "./OrgField"
@@ -59,7 +59,7 @@ const GHOST_MIN_HEIGHT = 28
 
 const HTTPS_PLACEHOLDER = "https://"
 
-const GHOST_SLOP_Y = (MIN_TOUCH_TARGET - GHOST_MIN_HEIGHT) / 2
+const GHOST_SLOP_Y = hitSlopToTarget(GHOST_MIN_HEIGHT)
 
 const GHOST_HIT_SLOP = { top: GHOST_SLOP_Y, bottom: GHOST_SLOP_Y }
 

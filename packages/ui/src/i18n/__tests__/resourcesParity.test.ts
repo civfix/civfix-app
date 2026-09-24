@@ -1,8 +1,8 @@
 import { readdirSync } from "node:fs"
+import { LocaleEnum } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 import { namespaces, resources } from "../resources"
 
-const LOCALES = ["en", "es", "de", "ko"] as const
 
 function namespaceFiles(lng: string): string[] {
   return readdirSync(new URL(`../locales/${lng}/`, import.meta.url))
@@ -16,7 +16,7 @@ describe("every locale file is registered in resources.ts", () => {
     expect([...namespaces].sort()).toEqual(namespaceFiles("en"))
   })
 
-  it.each(LOCALES)("bundles every %s namespace under resources", (lng) => {
+  it.each(LocaleEnum.options)("bundles every %s namespace under resources", (lng) => {
     const bundled = Object.keys(resources[lng] ?? {}).sort()
     expect(bundled).toEqual(namespaceFiles(lng))
   })

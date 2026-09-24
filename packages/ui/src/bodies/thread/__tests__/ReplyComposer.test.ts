@@ -70,11 +70,13 @@ describe("attached-report chip", () => {
 describe("the reply attach sheet on iOS", () => {
   const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
   const sheetShell = sliceBetween(sheet, "export function ReplyAttachSheet(", "function PickerHeader(")
+  const actionSheet = readFileSync(new URL("../../../primitives/AnchoredActionSheet.tsx", import.meta.url), "utf8")
 
   it("stays mounted when it closes, so RN Modal can fire the onDismiss that runs Photo and Camera", () => {
     expect(composer).not.toMatch(/\{attachOpen \? \(\s*<ReplyAttachSheet/)
     expect(composer).toMatch(/<ReplyAttachSheet\s+visible=\{attachOpen\}/)
-    expect(sheetShell).toContain("onDismiss={onModalDismiss}")
+    expect(sheetShell).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}/)
+    expect(actionSheet).toContain("onDismiss={onModalDismiss}")
   })
 
   it("keeps the candidate queries out of the always-mounted shell", () => {

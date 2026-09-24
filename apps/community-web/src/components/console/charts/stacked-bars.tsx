@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { EMPTY_VALUE } from "@civfix/ui/i18n"
+import { formatCount } from "@civfix/shared"
+import { EMPTY_VALUE, useLocale } from "@civfix/ui/i18n"
 
 import { ChartFrame, integerYAxis, PLOT_PAD, XLabels, YGrid } from "./chart-frame"
-import { formatCompact, useMeasuredWidth } from "./chart-utils"
+import { useMeasuredWidth } from "./chart-utils"
 import type { TooltipState } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
@@ -39,6 +40,7 @@ export function StackedBars({
   className,
 }: StackedBarsProps) {
   const palette = useChartPalette()
+  const { locale } = useLocale()
   const { ref, width } = useMeasuredWidth<HTMLDivElement>()
   const [tip, setTip] = useState<TooltipState | null>(null)
 
@@ -123,7 +125,9 @@ export function StackedBars({
                       x: x + barW / 2,
                       y: y1,
                       title: label,
-                      rows: [{ label: s.label, value: formatCompact(value), color }],
+                      rows: [
+                        { label: s.label, value: formatCount(value, locale, { compact: true }), color },
+                      ],
                     })
                   }
                   onMouseLeave={() => setTip(null)}

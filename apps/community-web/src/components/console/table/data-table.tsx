@@ -138,14 +138,14 @@ export function DataTable<T>({
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-px left-px z-20 w-6 rounded-l-md bg-gradient-to-r from-console-surface to-transparent transition-opacity duration-d1",
+          "pointer-events-none absolute inset-y-px left-px z-console-raised w-6 rounded-l-md bg-gradient-to-r from-console-surface to-transparent transition-opacity duration-d1",
           edges.left ? "opacity-100" : "opacity-0",
         )}
       />
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-px right-px z-20 w-6 rounded-r-md bg-gradient-to-l from-console-surface to-transparent transition-opacity duration-d1",
+          "pointer-events-none absolute inset-y-px right-px z-console-raised w-6 rounded-r-md bg-gradient-to-l from-console-surface to-transparent transition-opacity duration-d1",
           edges.right ? "opacity-100" : "opacity-0",
         )}
       />

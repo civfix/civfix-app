@@ -1,29 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-  type ViewStyle,
-} from "react-native"
-import { TextInput } from "../primitives/TextInput"
+import { View, ActivityIndicator } from "react-native"
 import type { ReportDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webInputReset, headingLevel, MIN_TOUCH_TARGET } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
-import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
+import { makeThemedStyles, useTheme, useLayoutMode, headingLevel, MIN_TOUCH_TARGET } from "../theme"
+import { Text, iconMap } from "../typography"
+import {
+  ListBodyEmpty,
+  ListSearchField,
+  SignInPrompt,
+  useListBodyStyles,
+  useListEndReached,
+} from "../primitives"
 import { useMyReports, useAuthState, useRequireAuth } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { ReportRowView } from "./ReportRow"
 import { useListTimeAgo } from "./useListTimeAgo"
-import { firstReportPhoto, latestNote, matchesReportQuery, searchBackfill } from "./reportsListModel"
+import { latestNote, matchesReportQuery, reportThumbUrl, searchBackfill } from "./reportsListModel"
 import { useT } from "../i18n"
+
+const LIST_SKELETON_ROWS = 7
+const SEARCH_SKELETON_ROWS = 3
 
 export function ReportsBody() {
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const th = useTheme()
   const { FlatList } = useScrollHost()
   const { t } = useT("report-list")
@@ -34,7 +36,6 @@ export function ReportsBody() {
   const atViewRoot = useNavStore((s) => s.stack.length === 0)
   const [search, setSearch] = useState("")
   const q = search.trim().toLowerCase()
-
 
   const all = useMemo(
     () => query.data?.pages.flatMap((p) => p.items) ?? [],
@@ -60,17 +61,13 @@ export function ReportsBody() {
   useEffect(() => {
     if (backfill === "fetch") void fetchNextPage()
   }, [backfill, fetchNextPage])
-  const onEndReached = useCallback(() => {
-    if (filtering) return
-    if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
-  }, [filtering, hasNextPage, isFetchingNextPage, fetchNextPage])
+  const onEndReached = useListEndReached(query, filtering)
   const showSearch = layout === "expanded" && all.length > 0
   const showTitle = layout === "compact" ? reports.length > 0 : atViewRoot
 
   const timeAgo = useListTimeAgo()
-  const renderItem = useCallback(({ item }: { item: ReportDTO }) => {
-    const photo = firstReportPhoto(item)
-    return (
+  const renderItem = useCallback(
+    ({ item }: { item: ReportDTO }) => (
       <ReportRowView
         id={item.id}
         category={item.category}
@@ -78,22 +75,29 @@ export function ReportsBody() {
         title={item.title?.trim() || t(`enums:category.${item.category}`)}
         lat={item.lat}
         lng={item.lng}
-        thumbUrl={photo ? photo.thumbUrl ?? photo.url : null}
+        thumbUrl={reportThumbUrl(item)}
         subtitle={item.addr ?? null}
         when={timeAgo(item.createdAt)}
         note={latestNote(item) ?? null}
       />
-    )
-  }, [t, timeAgo])
+    ),
+    [t, timeAgo],
+  )
 
   const signedOut = !isAuthenticated && !isPending
+  const listLoading = isPending || query.isLoading
+  const searchLoading = !!q && (backfill === "fetch" || backfill === "busy")
+  const phase =
+    listLoading || searchLoading ? "loading" : q ? "noMatch" : query.isError ? "error" : "empty"
 
   return (
     <FlatList
       data={signedOut ? [] : reports}
       keyExtractor={idKeyExtractor}
-      style={styles.list}
-      contentContainerStyle={signedOut || reports.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={
+        signedOut || reports.length === 0 ? listStyles.listEmpty : listStyles.listContent
+      }
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       onEndReached={onEndReached}
@@ -101,7 +105,15 @@ export function ReportsBody() {
       ListHeaderComponent={
         <>
           {showTitle ? <ReportsHeader expanded={layout === "expanded"} /> : null}
-          {showSearch ? <ReportsSearchField value={search} onChangeText={setSearch} /> : null}
+          {showSearch ? (
+            <ListSearchField
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t("search.placeholder")}
+              a11yLabel={t("search.a11y")}
+              clearA11yLabel={t("search.clear_a11y")}
+            />
+          ) : null}
         </>
       }
       renderItem={renderItem}
@@ -114,39 +126,29 @@ export function ReportsBody() {
             body={t("signin.body")}
             onSignIn={() => requireAuth(() => {}, { next: "/reports" })}
           />
-        ) : isPending || query.isLoading ? (
-          <LoadingState skeleton="report" rows={7} />
-        ) : q && (backfill === "fetch" || backfill === "busy") ? (
-          <LoadingState skeleton="report" rows={3} />
-        ) : q ? (
-          <EmptyState
-            variant="detail"
-            icon={iconMap.Search}
-            title={t("empty.no_match.title")}
-            body={t("empty.no_match.body", { query: search.trim() })}
-          />
-        ) : query.isError ? (
-          <EmptyState
-            variant="detail"
-            icon={iconMap.CloudOff}
-            tone="neutral"
-            iconColor={th.colors.textSubtle}
-            iconSize={30}
-            title={t("error.title")}
-            body={t("error.body")}
-          />
         ) : (
-          <EmptyState
-            variant="detail"
-            icon={iconMap.MapPin}
-            title={t("empty.none.title")}
-            body={t("empty.none.body")}
+          <ListBodyEmpty
+            phase={phase}
+            skeleton="report"
+            skeletonRows={listLoading ? LIST_SKELETON_ROWS : SEARCH_SKELETON_ROWS}
+            copy={{
+              noMatch: {
+                title: t("empty.no_match.title"),
+                body: t("empty.no_match.body", { query: search.trim() }),
+              },
+              error: { title: t("error.title"), body: t("error.body") },
+              empty: {
+                icon: iconMap.MapPin,
+                title: t("empty.none.title"),
+                body: t("empty.none.body"),
+              },
+            }}
           />
         )
       }
       ListFooterComponent={
         reports.length > 0 && isFetchingNextPage ? (
-          <View style={styles.footer}>
+          <View style={listStyles.footer}>
             <ActivityIndicator size="small" color={th.colors.textSubtle} />
           </View>
         ) : backfill === "partial" ? (
@@ -156,51 +158,6 @@ export function ReportsBody() {
         ) : null
       }
     />
-  )
-}
-
-function ReportsSearchField({
-  value,
-  onChangeText,
-}: {
-  value: string
-  onChangeText: (q: string) => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-list")
-  const [focused, setFocused] = useState(false)
-  return (
-    <View style={[styles.searchField, focused ? styles.searchFieldFocused : null]}>
-      <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
-      <TextInput
-        style={[styles.searchInput, webInputReset]}
-        placeholder={t("search.placeholder")}
-        placeholderTextColor={th.colors.textSubtle}
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        autoCorrect={false}
-        returnKeyType="search"
-        accessibilityLabel={t("search.a11y")}
-      />
-      {value ? (
-        <Pressable
-          onPress={() => onChangeText("")}
-          accessibilityRole="button"
-          accessibilityLabel={t("search.clear_a11y")}
-          {...focusRingProps}
-          style={styles.clearTarget}
-        >
-          {({ pressed }) => (
-            <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>
-              <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
-            </View>
-          )}
-        </Pressable>
-      ) : null}
-    </View>
   )
 }
 
@@ -221,71 +178,10 @@ function ReportsHeader({ expanded }: { expanded: boolean }) {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  searchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    minHeight: MIN_TOUCH_TARGET,
-    marginTop: t.space["2"],
-    marginBottom: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    borderRadius: t.radius.md,
-  },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  clearTarget: {
-    width: MIN_TOUCH_TARGET,
-    height: MIN_TOUCH_TARGET,
-    marginRight: -11,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtnPressed: {
-    backgroundColor: t.colors.border,
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: 0,
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
-  footer: {
-    paddingVertical: t.space["4"],
-  },
   partialHint: {
     textAlign: "center",
     paddingVertical: t.space["4"],
   },
-
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -301,15 +197,9 @@ const useStyles = makeThemedStyles((t) => ({
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  title: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  title: tabRootTitleStyle(t),
 }))

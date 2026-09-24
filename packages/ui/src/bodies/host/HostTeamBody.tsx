@@ -11,6 +11,7 @@ import {
   SecondaryButton,
   useToast,
 } from "../../primitives"
+import { joinParts } from "../../primitives/joinParts"
 import { useAuthState, useCleanup, useRemoveMember, useSetMemberRole } from "../../data"
 import {
   cleanupHostStanding,
@@ -23,9 +24,9 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
-import { appErrorCode } from "../../data/errorCode"
+import { appErrorCode } from "@civfix/shared"
 import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
-import { HostStateNotice } from "./HostStateNotice"
+import { HostBodyState } from "./HostBodyState"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {
   inviteDisplayName,
@@ -146,12 +147,10 @@ function InviteRow({
 
   const sent = teamDateLabel(invite.createdAt, locale)
   const expires = teamDateLabel(invite.expiresAt, locale)
-  const sub = [
+  const sub = joinParts([
     sent ? t("invites.sent", { when: sent }) : null,
     expires ? t("invites.expires", { when: expires }) : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" · ")
+  ])
 
   return (
     <View style={styles.inviteRow}>
@@ -251,23 +250,15 @@ export function HostTeamBody({ id }: { id: string }) {
   }, [onManageError, pendingRevoke, revokeInvite, t, toast])
 
   if (cleanup.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (cleanup.isError || !cleanup.data) {
-    return (
-      <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   if (!canManageTeam) {
-    return (
-      <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-    )
+    return <HostBodyState state="denied" t={t} />
   }
 
   return (

@@ -1,15 +1,9 @@
 import React, { useCallback } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  ActivityIndicator,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
+import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
+import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, SettingsSection, useToast } from "../../primitives"
+import { RadioOptionRow } from "../../primitives/RadioOptionRow"
 import {
   actableOrganizations,
   useAuthState,
@@ -20,6 +14,7 @@ import {
 import { useT } from "../../i18n"
 
 const PRIMARY_ORGANIZATION_AUTOMATIC = "automatic"
+const LOGO_SIZE = 28
 
 function pendingPrimaryOrgId(isPending: boolean, variables: PrivacySettingsVars | undefined): string | null {
   if (!isPending || typeof variables !== "object" || variables === null) return null
@@ -27,70 +22,26 @@ function pendingPrimaryOrgId(isPending: boolean, variables: PrivacySettingsVars 
   return variables.primaryOrganizationId ?? PRIMARY_ORGANIZATION_AUTOMATIC
 }
 
-function OptionRow({
-  label,
-  sub,
-  logoName,
-  logoSeed,
-  logoUrl,
-  selected,
-  pending,
-  onSelect,
+function OrganizationLogo({
+  name,
+  seed,
+  url,
 }: {
-  label: string
-  sub?: string
-  logoName?: string
-  logoSeed?: string
-  logoUrl?: string | null
-  selected: boolean
-  pending: boolean
-  onSelect: () => void
+  name: string
+  seed: string
+  url: string | null
 }) {
+  const styles = useStyles()
+  return <Avatar name={name} seed={seed} photoUrl={url} size={LOGO_SIZE} style={styles.logo} decorative />
+}
+
+function PlaceholderLogo() {
   const styles = useStyles()
   const th = useTheme()
   return (
-    <Pressable
-      onPress={onSelect}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected, busy: pending }}
-      aria-checked={selected}
-      aria-busy={pending}
-      accessibilityLabel={label}
-      {...focusRingProps}
-      style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
-    >
-      {logoName ? (
-        <Avatar
-          name={logoName}
-          seed={logoSeed ?? logoName}
-          photoUrl={logoUrl ?? null}
-          size={28}
-          style={styles.logo}
-          decorative
-        />
-      ) : (
-        <View style={styles.logoPlaceholder}>
-          <Icon icon={iconMap.Building2} size={16} color={th.colors.textSubtle} />
-        </View>
-      )}
-      <View style={styles.rowText}>
-        <Text style={[styles.rowLabel, selected ? styles.rowLabelSelected : null]} numberOfLines={1}>
-          {label}
-        </Text>
-        {sub ? (
-          <Text style={styles.rowSub} numberOfLines={2}>
-            {sub}
-          </Text>
-        ) : null}
-      </View>
-      <View style={styles.trailing}>
-        {pending ? (
-          <ActivityIndicator size="small" color={th.colors.brand.bloom} />
-        ) : selected ? (
-          <Icon icon={iconMap.Check} size={18} color={th.colors.brand.bloom} />
-        ) : null}
-      </View>
-    </Pressable>
+    <View style={styles.logoPlaceholder}>
+      <Icon icon={iconMap.Building2} size={16} color={th.colors.textSubtle} />
+    </View>
   )
 }
 
@@ -121,24 +72,31 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
     <SettingsSection label={t("section.affiliation")} style={style}>
       <Text style={styles.helper}>{t("affiliation.helper")}</Text>
       <View accessibilityRole="radiogroup" aria-label={t("affiliation.label")}>
-        <OptionRow
+        <RadioOptionRow
+          layout="inset"
+          leading={<PlaceholderLogo />}
           label={t("affiliation.automatic")}
           sub={t("affiliation.automatic_sub")}
           selected={current === null}
           pending={pendingId === PRIMARY_ORGANIZATION_AUTOMATIC}
-          onSelect={() => onSelect(null)}
+          onPress={() => onSelect(null)}
         />
         {rows.map((org) => (
           <React.Fragment key={org.id}>
             <View style={styles.divider} />
-            <OptionRow
+            <RadioOptionRow
+              layout="inset"
+              leading={
+                org.name ? (
+                  <OrganizationLogo name={org.name} seed={org.id} url={org.logoUrl ?? null} />
+                ) : (
+                  <PlaceholderLogo />
+                )
+              }
               label={org.name}
-              logoName={org.name}
-              logoSeed={org.id}
-              logoUrl={org.logoUrl ?? null}
               selected={current === org.id}
               pending={pendingId === org.id}
-              onSelect={() => onSelect(org.id)}
+              onPress={() => onSelect(org.id)}
             />
           </React.Fragment>
         ))}
@@ -155,51 +113,16 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["3"],
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    minHeight: 56,
-    paddingHorizontal: t.space["3"],
-    paddingVertical: t.space["3"],
-  },
-  rowPressed: {
-    opacity: 0.7,
-  },
   logo: {
     borderRadius: t.radius.xs,
   },
   logoPlaceholder: {
-    width: 28,
-    height: 28,
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
     borderRadius: t.radius.xs,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.colors.bgAlt,
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  rowLabel: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["15"],
-    color: t.colors.text,
-  },
-  rowLabelSelected: {
-    fontFamily: t.fontFamily.bodyBold,
-  },
-  rowSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textSubtle,
-    marginTop: 2,
-  },
-  trailing: {
-    width: 24,
-    height: 24,
-    alignItems: "flex-end",
-    justifyContent: "center",
   },
   divider: {
     height: StyleSheet.hairlineWidth,

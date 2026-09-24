@@ -5,6 +5,10 @@ export interface MapLatLng {
   lng: number
 }
 
+export interface CameraTarget extends MapLatLng {
+  zoom: number
+}
+
 /**
  * Structural because the shared contract must not import a platform-bound `@maplibre/*` package; the seam
  * files cast it to the real `StyleSpecification`. A string is a style URL.

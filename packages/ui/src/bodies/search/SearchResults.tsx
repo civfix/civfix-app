@@ -8,7 +8,7 @@ import type {
 } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { announce } from "../../announce"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel } from "../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../../theme"
 import {
   Avatar,
   EmptyState,
@@ -17,6 +17,7 @@ import {
   SkeletonList,
   SkeletonText,
 } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { Icon, iconMap, Text } from "../../typography"
 import {
   useAuthState,
@@ -105,10 +106,7 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
         {...focusRingProps}
         style={(state) => [styles.eventTap, webTransition, state.pressed ? styles.pressed : null]}
       >
-        <View style={styles.eventDate}>
-          <Text style={styles.eventMonth}>{month}</Text>
-          <Text style={styles.eventDay}>{day}</Text>
-        </View>
+        <DateTile variant="searchHit" day={day} month={month} />
         <View style={styles.rowCopy}>
           <Text style={styles.rowTitle} numberOfLines={1}>{cleanup.title}</Text>
           <Text style={styles.rowDetail} numberOfLines={expanded ? 1 : 2}>{eventMeta}</Text>
@@ -378,9 +376,6 @@ const useStyles = makeThemedStyles((t) => ({
   rowCopy: { flex: 1, minWidth: 0 },
   rowTitle: { fontFamily: t.fontFamily.bodyBold, fontSize: 14.5, lineHeight: 20, color: t.colors.text },
   rowDetail: { marginTop: 2, fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 17, color: t.colors.textMuted },
-  eventDate: { width: 46, height: 46, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: t.radius.md, backgroundColor: t.colors.sun["50"] },
-  eventMonth: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 9, lineHeight: 11, letterSpacing: 0.7, color: t.colors.sun["700"] },
-  eventDay: { fontFamily: t.fontFamily.displayBold, fontSize: 19, lineHeight: 21, color: t.colors.text },
   pressed: { opacity: 0.65 },
   notice: { flexDirection: "row", alignItems: "center", gap: t.space["3"], borderRadius: t.radius.md, backgroundColor: t.colors.bgAlt, padding: t.space["4"], marginBottom: t.space["2"] },
   noticeText: { flex: 1, fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 17, color: t.colors.textMuted },
@@ -394,7 +389,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   morePill: {
     alignSelf: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     marginTop: t.space["2"],
     paddingHorizontal: t.space["4"],

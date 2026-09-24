@@ -1,9 +1,6 @@
 import type { LinkedEventRef, PersonDTO, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
 import type { PostComposerMedia } from "../postComposerStore"
-import { optimisticPostId } from "./threadModel"
-
-/** Mirrors the server's own projection (`r.title ?? "Report"`), so the optimistic card never snaps. */
-export const REPORT_TITLE_FALLBACK = "Report"
+import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "../postComposerSubmit"
 
 export interface OptimisticReplyInput {
   author: PersonDTO
@@ -29,26 +26,12 @@ export function buildOptimisticReply({
   now,
 }: OptimisticReplyInput): PostDTO {
   const stamp = now.toISOString()
-  return {
-    id: optimisticPostId(now.getTime()),
+  return buildOptimisticPost({
     author,
     kind: "reply",
     body,
-    createdAt: stamp,
-    editedAt: null,
-    counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
-    viewer: { liked: false, reposted: false, saved: false },
-    media: readyMedia.flatMap((item) =>
-      item.uploadId
-        ? [{
-            id: item.uploadId,
-            kind: item.kind,
-            url: item.uri,
-            thumbUrl: item.posterUri,
-            status: "ready" as const,
-          }]
-        : [],
-    ),
+    now,
+    media: readyMedia,
     mentions,
     event: attachedEvent ? { ...attachedEvent, linkedAt: stamp } : null,
     // Built from the picked ROW, exactly as `event` is built from the draft's event. A null here would render
@@ -70,10 +53,9 @@ export function buildOptimisticReply({
             linkedAt: stamp,
           }
         : null,
-    repostOf: null,
     replyToId: focalPost.id,
     // The server derives `parent.thread_root_id ?? parent.id`. Setting BOTH to the parent id is only
     // correct at depth 1, and drilling into a reply makes depth 2 real.
     threadRootId: focalPost.threadRootId ?? focalPost.id,
-  }
+  })
 }

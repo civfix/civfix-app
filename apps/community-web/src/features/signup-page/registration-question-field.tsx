@@ -1,18 +1,16 @@
 "use client"
 
 import * as React from "react"
-import type { EventQuestionDTO } from "@civfix/shared"
-
-import type { AnswerValue } from "./registration-state"
+import type { EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
 
 interface QuestionFieldProps {
   question: EventQuestionDTO
-  value: AnswerValue | undefined
+  value: EventAnswerValue | undefined
   invalid: boolean
   /** The widget's error message, linked to an invalid field so it is read with the field. */
   errorId: string | undefined
   disabled: boolean
-  onChange: (next: AnswerValue) => void
+  onChange: (next: EventAnswerValue) => void
 }
 
 function describedBy(...ids: Array<string | undefined | false>): string | undefined {

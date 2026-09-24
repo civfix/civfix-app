@@ -12,21 +12,15 @@ import type {
   OrganizationMemberRole,
   OrgInviteIdentifierKind,
 } from "@civfix/shared"
-import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
+import { ErrorCode, MAX_ORG_INVITES_PER_ORG, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
 import type { EventWhenInput } from "@civfix/shared/datetime"
 import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/shared/datetime"
-import {
-  can,
-  deriveCleanupStatus,
-  eventPhase,
-  hostCapabilities,
-  type EventWindowLike,
-} from "@civfix/shared/host"
+import { can, deriveCleanupStatus, eventPhase, type EventWindowLike } from "@civfix/shared/host"
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
 import { DAY_MS } from "../../timeUnits"
+import { hasHostCapability } from "../../../data/hooks/host"
 import {
-  errorKeyFor,
   hasActions,
   orderByRankThenName,
   pendingCount,
@@ -47,22 +41,6 @@ export function dashboardScope(
   return { orgId: org?.id ?? null, org, selectorVisible: orgs.length > 0 }
 }
 
-export interface HostedEventStanding {
-  myCapabilities: readonly HostCapability[]
-  myRole?: HostedEventDTO["myRole"]
-}
-
-export function hostedEventCapabilities(
-  event: HostedEventStanding,
-): ReadonlySet<HostCapability> {
-  if (event.myCapabilities.length > 0) return new Set(event.myCapabilities)
-  return hostCapabilities({ eventRole: event.myRole ?? null, orgRole: null })
-}
-
-export function hostedEventCan(event: HostedEventStanding, capability: HostCapability): boolean {
-  return hostedEventCapabilities(event).has(capability)
-}
-
 export interface HostedEventActions {
   hostTools: boolean
   chat: boolean
@@ -72,13 +50,12 @@ export interface HostedEventActions {
 }
 
 export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEventActions {
-  const caps = hostedEventCapabilities(event)
-  const manage = caps.has("manage_event")
+  const manage = hasHostCapability(event, "manage_event")
   const status = hostedEventStatus(event, now)
   return {
-    hostTools: manage || caps.has("view_roster"),
+    hostTools: manage || hasHostCapability(event, "view_roster"),
     chat: status !== "cancelled",
-    announce: caps.has("broadcast") && status !== "cancelled",
+    announce: hasHostCapability(event, "broadcast") && status !== "cancelled",
     duplicate: manage,
     edit: manage && status !== "done" && status !== "cancelled",
   }
@@ -224,10 +201,6 @@ export function pastRowMeta(event: HostedEventDTO): PastRowMeta {
   }
 }
 
-export function sharePathFor(event: HostedEventDTO): string {
-  return `/cleanups/${event.pageSlug ?? event.referenceCode ?? event.id}`
-}
-
 export function orgInviteQuotaReached(invites: readonly OrganizationInviteDTO[]): boolean {
   return pendingCount(invites) >= MAX_ORG_INVITES_PER_ORG
 }
@@ -323,36 +296,39 @@ export function duplicateReady(
   return at !== null && at > now.getTime()
 }
 
+const DUPLICATE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.FORBIDDEN]: "events.duplicate_error_forbidden",
+  [ErrorCode.NOT_FOUND]: "events.duplicate_error_gone",
+  [ErrorCode.RATE_LIMITED]: "events.duplicate_error_rate_limited",
+  [ErrorCode.VALIDATION]: "events.duplicate_error_invalid",
+}
+
 export function duplicateErrorKey(code: string | undefined): string {
-  if (code === "FORBIDDEN") return "events.duplicate_error_forbidden"
-  if (code === "NOT_FOUND") return "events.duplicate_error_gone"
-  if (code === "RATE_LIMITED") return "events.duplicate_error_rate_limited"
-  if (code === "VALIDATION") return "events.duplicate_error_invalid"
-  return "events.duplicate_error_generic"
+  return byErrorCode(code, DUPLICATE_ERROR_KEYS, "events.duplicate_error_generic")
 }
 
 export function orgInviteIdentifierErrorKey(kind: OrgInviteIdentifierKind): string {
   return kind === "email" ? "team.invite_email_invalid" : "team.invite_handle_invalid"
 }
 
-const ORG_INVITE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
-  ["NOT_FOUND", "team.invite_error_no_account"],
-  ["CONFLICT", "team.invite_error_conflict"],
-  ["FORBIDDEN", "team.invite_error_forbidden"],
-  ["RATE_LIMITED", "team.invite_error_rate_limited"],
-  ["VALIDATION", "team.invite_error_invalid"],
-])
-
-export function orgInviteErrorKey(code: string | undefined): string {
-  return errorKeyFor(ORG_INVITE_ERROR_KEYS, code, "team.invite_error_generic")
+const ORG_INVITE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.NOT_FOUND]: "team.invite_error_no_account",
+  [ErrorCode.CONFLICT]: "team.invite_error_conflict",
+  [ErrorCode.FORBIDDEN]: "team.invite_error_forbidden",
+  [ErrorCode.RATE_LIMITED]: "team.invite_error_rate_limited",
+  [ErrorCode.VALIDATION]: "team.invite_error_invalid",
 }
 
-const COLLABORATOR_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
-  ["CONFLICT", "team.error_conflict"],
-  ["FORBIDDEN", "team.error_forbidden"],
-  ["NOT_FOUND", "team.error_gone"],
-])
+export function orgInviteErrorKey(code: string | undefined): string {
+  return byErrorCode(code, ORG_INVITE_ERROR_KEYS, "team.invite_error_generic")
+}
+
+const COLLABORATOR_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.CONFLICT]: "team.error_conflict",
+  [ErrorCode.FORBIDDEN]: "team.error_forbidden",
+  [ErrorCode.NOT_FOUND]: "team.error_gone",
+}
 
 export function collaboratorErrorKey(code: string | undefined): string {
-  return errorKeyFor(COLLABORATOR_ERROR_KEYS, code, "team.error_generic")
+  return byErrorCode(code, COLLABORATOR_ERROR_KEYS, "team.error_generic")
 }

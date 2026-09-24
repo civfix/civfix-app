@@ -9,7 +9,7 @@ export {
   eventPinTarget,
   reportPinTarget,
 } from "./pins"
-export type { MapProps, MapHandle, MapLatLng } from "./types"
+export type { MapProps, MapHandle, MapLatLng, CameraTarget } from "./types"
 
 export { MapControls } from "./MapControls"
 export { useReportFilterStore, enabledCategoriesArray } from "./filterStore"
@@ -41,3 +41,5 @@ export {
 } from "./mapCenterModel"
 export type { MapCenterSource, MapCenterTarget, RememberedCenter } from "./mapCenterModel"
 export { MapPending } from "./MapPending"
+export { decideRegionFetch } from "./regionFetch"
+export type { RegionFetchState, RegionFetchDecision } from "./regionFetch"

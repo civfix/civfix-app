@@ -8,6 +8,7 @@ import {
 import { makeThemedStyles, space, motion, focusRingProps } from "../theme"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
+import { lerp } from "../surface/liquidGlass/liquidGlassModel"
 import { useNavStore, type DetailEntry, type Snap, type View as NavView } from "../nav"
 import { SearchHeader } from "./SearchHeader.web"
 import { SheetHeader } from "./SheetHeader.shared"
@@ -16,7 +17,7 @@ import { defaultRenderBody } from "./BodyRouter"
 import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { cssTransition } from "./motionCss"
-import { shellBodyKey } from "./bodyLayout"
+import { surfaceKey } from "./bodyLayout"
 import {
   SHEET_SNAP_RANGE,
   compactBottomChrome,
@@ -50,10 +51,6 @@ const SETTLE_TRANSITION = cssTransition(
 
 const FLING_VELOCITY = 0.5
 const TAP_SLOP = 6
-
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t
-}
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n))
@@ -97,7 +94,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   const stack = useNavStore((s) => s.stack)
   const collapseToParent = useNavStore((s) => s.collapseToParent)
 
-  const transitionKey = shellBodyKey(active, `home:${view}`)
+  const transitionKey = surfaceKey(view, active)
   const direction = useStackDirection(stack.length)
 
   const snapPx = useMemo(() => sheetSnapPoints(winH, space["8"]), [winH])
@@ -123,9 +120,9 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   }
   frac = clamp(frac, 0, 2)
   const t = frac / 2
-  const side = lerp(...SHEET_FLOAT_SIDE, t)
-  const bottom = lerp(...SHEET_FLOAT_BOTTOM, t)
-  const radius = lerp(...SHEET_FLOAT_RADIUS, t)
+  const side = lerp(t, ...SHEET_FLOAT_SIDE)
+  const bottom = lerp(t, ...SHEET_FLOAT_BOTTOM)
+  const radius = lerp(t, ...SHEET_FLOAT_RADIUS)
 
   const panResponder = useMemo(
     () =>

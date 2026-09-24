@@ -9,6 +9,11 @@ describe("hexWithAlpha", () => {
     expect(hexWithAlpha("#112233", 1)).toBe("#112233ff")
   })
 
+  it("rounds to the nearest byte, so 0.12 and 0.1 land on 0x1f and 0x1a", () => {
+    expect(hexWithAlpha("#112233", 0.12)).toBe("#1122331f")
+    expect(hexWithAlpha("#112233", 0.1)).toBe("#1122331a")
+  })
+
   it("clamps the opacity into [0, 1]", () => {
     expect(hexWithAlpha("#112233", -1)).toBe("#11223300")
     expect(hexWithAlpha("#112233", 2)).toBe("#112233ff")

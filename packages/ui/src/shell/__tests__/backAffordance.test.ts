@@ -396,10 +396,15 @@ describe("person is an own-header FULL body", () => {
   it("supplies its OWN Back, and nothing beside it, because PanelHeader supplies neither", () => {
     // Source greps: the body imports react-native, which this package's node vitest cannot load.
     const body = surfaceSource("personDetail")
-    expect(body).toMatch(/accessibilityLabel=\{tNav\("a11y\.back"\)\}/)
-    expect(body).not.toMatch(/a11y\.home/)
-    expect(body).not.toMatch(/showHome/)
-    expect(body).not.toMatch(/iconMap\.Home/)
+    const header = read("../../bodies/DetailBodyHeader.tsx")
+    expect(body).toMatch(/backLabel=\{tNav\("a11y\.back"\)\}/)
+    expect(body).toContain("<DetailBodyHeader")
+    expect(header.match(/accessibilityLabel=\{backLabel\}/g)).toHaveLength(2)
+    for (const src of [body, header]) {
+      expect(src).not.toMatch(/a11y\.home/)
+      expect(src).not.toMatch(/showHome/)
+      expect(src).not.toMatch(/iconMap\.Home/)
+    }
   })
 
   it("leaves the landscape panel header with Back as its ONLY navigation chip", () => {

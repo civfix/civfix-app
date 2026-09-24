@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { useT } from "../i18n"
 import { Text, Icon, iconMap } from "../typography"
@@ -279,7 +279,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   captionRead: {
     marginTop: t.space["2"],

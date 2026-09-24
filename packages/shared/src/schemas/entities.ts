@@ -22,6 +22,7 @@ import {
   ReportCategorySchema,
   ReportTypeSchema,
   ReportStatusSchema,
+  RoomKindSchema,
   GeomSourceSchema,
   MediaKindSchema,
   MediaStatusSchema,
@@ -912,7 +913,7 @@ export type ReplyToDTO = z.infer<typeof ReplyToDTOSchema>
 export const ChatMessageDTOSchema = z.object({
   id: IdSchema,
   cleanupId: IdSchema,
-  roomKind: z.enum(["cleanup", "dm", "report", "group"]).optional(),
+  roomKind: RoomKindSchema.optional(),
   from: PersonDTOSchema.nullable().optional(),
   body: z.string().nullable().optional(),
   kind: ChatMessageKindSchema,

@@ -8,16 +8,16 @@ import {
   webHover,
   webNoSelect,
   focusRingProps,
+  hitSlopToTarget,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useFollowPerson, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 
-const FOLLOW_MIN_TOUCH_TARGET = 44
 const FOLLOW_HEIGHT_SM = 30
 const FOLLOW_HEIGHT_MD = 42
-const FOLLOW_SM_HIT_SLOP = (FOLLOW_MIN_TOUCH_TARGET - FOLLOW_HEIGHT_SM) / 2
-const FOLLOW_MD_HIT_SLOP = (FOLLOW_MIN_TOUCH_TARGET - FOLLOW_HEIGHT_MD) / 2
+const FOLLOW_SM_HIT_SLOP = hitSlopToTarget(FOLLOW_HEIGHT_SM)
+const FOLLOW_MD_HIT_SLOP = hitSlopToTarget(FOLLOW_HEIGHT_MD)
 
 export interface FollowButtonProps {
   personId: string

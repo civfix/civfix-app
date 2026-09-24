@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   Platform,
@@ -22,11 +21,13 @@ import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
+import { useEntranceAnimation } from "./useEntranceAnimation"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { useFeedLiveStore } from "../data/feedLiveStore"
 import { clearsPendingAtOffset } from "../data/feedLiveModel"
@@ -46,57 +47,6 @@ import {
 const HEADER_ENTER_RISE = 14
 const ROW_ENTER_RISE = 22
 const ROW_ENTER_SCALE_FROM = 0.975
-
-function useFeedEntrance(): Animated.WithAnimatedValue<ViewStyle> {
-  const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(HEADER_ENTER_RISE)).current
-
-  useEffect(() => {
-    let mounted = true
-    const settle = () => {
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-      opacity.setValue(1)
-      translateY.setValue(0)
-    }
-    const enter = () => {
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: FEED_ROW_ENTER_MS,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: FEED_ROW_ENTER_MS,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-      ]).start()
-    }
-
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((reduceMotion) => {
-        if (!mounted) return
-        if (reduceMotion) settle()
-        else enter()
-      })
-      .catch(enter)
-
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (reduceMotion) => {
-      if (reduceMotion) settle()
-    })
-    return () => {
-      mounted = false
-      subscription?.remove()
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-    }
-  }, [opacity, translateY])
-
-  return useMemo(() => ({ opacity, transform: [{ translateY }] }), [opacity, translateY])
-}
 
 function FeedPostRow({
   postId,
@@ -179,7 +129,10 @@ export function FeedBody() {
   const feed = useHomeFeed()
   useFeedRealtime()
   const pendingNewPosts = useFeedLiveStore((s) => s.pendingNewPostIds.length)
-  const entranceStyle = useFeedEntrance()
+  const entranceStyle = useEntranceAnimation({
+    from: { translateY: HEADER_ENTER_RISE },
+    duration: FEED_ROW_ENTER_MS,
+  })
   const [entrance] = useState(createFeedEntranceTracker)
   const reducedMotion = useReducedMotion()
   const { t } = useT("home-feed")
@@ -432,7 +385,7 @@ const useStyles = makeThemedStyles((t) => ({
   contentExpanded: { paddingTop: 14 },
   headerInset: { paddingHorizontal: POST_SURFACE === "flat" ? POST_CARD_RHYTHM.rowPaddingH : 0 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
-  heading: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 32, lineHeight: 39, letterSpacing: -0.5, color: t.colors.text },
+  heading: tabRootTitleStyle(t),
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
   list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] },
   emptyFill: { flexGrow: 1, minHeight: EMPTY_FILL_MIN_HEIGHT },

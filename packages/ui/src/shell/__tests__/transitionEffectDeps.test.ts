@@ -22,8 +22,7 @@ function layoutEffectWriting(source: string, marker: string): LayoutEffectSource
 
 describe("key-guarded transitions list what they read and still animate once per key", () => {
   it.each([
-    ["BodyTransition.native.tsx", "[direction, opacity, transitionKey, translateX]"],
-    ["StepTransition.native.tsx", "[direction, opacity, transitionKey, translateX]"],
+    ["useEntranceTransition.native.ts", "[direction, opacity, transitionKey, translateX]"],
     ["StepTransition.web.tsx", "[direction, transitionKey]"],
   ])("%s", (file, deps) => {
     const effect = layoutEffectWriting(read(file), "prevKeyRef.current = transitionKey")
@@ -31,43 +30,72 @@ describe("key-guarded transitions list what they read and still animate once per
     expect(effect.body.trim().startsWith("if (transitionKey === prevKeyRef.current) return")).toBe(true)
   })
 
-  it("StepTransition.native publishes reduce-motion to its transition from a layout effect, not render", () => {
-    expectWrittenInLayoutEffect(read("StepTransition.native.tsx"), "reduceMotionRef.current = reduceMotion")
+  it.each(["BodyTransition.native.tsx", "StepTransition.native.tsx"])("%s runs the shared entrance hook", (file) => {
+    expect(read(file)).toContain("useEntranceTransition(transitionKey, direction)")
+    expect(read(file)).not.toContain("useLayoutEffect")
+  })
+
+  it("the native entrance publishes reduce-motion to its transition from a layout effect, not render", () => {
+    expectWrittenInLayoutEffect(read("useEntranceTransition.native.ts"), "reduceMotionRef.current = reduceMotion")
   })
 })
 
-describe("BodyTransition.web arms its flip and timers once per navigation", () => {
-  const effect = layoutEffectWriting(read("BodyTransition.web.tsx"), "armedNavRef.current = state.nav")
+describe("useFlipPhase arms its flip and fallback once per navigation", () => {
+  const source = read("useFlipPhase.ts")
 
-  it("lists what it reads", () => {
-    expect(effect.deps).toBe("[activeSlot, anim, state.nav]")
+  it("writes its handlers after commit, never during render", () => {
+    expectWrittenInLayoutEffect(source, "handlersRef.current = { reflow, flip, settle }")
   })
-
-  it("returns before touching the timers when the flip or settle re-renders the same navigation", () => {
-    const guarded = sliceBetween(
-      effect.body,
-      "if (state.nav === armedNavRef.current) return",
-      "clearTimer(fallbackRef)",
-    )
-    expect(guarded).toContain("armedNavRef.current = state.nav")
-  })
-})
-
-describe("PageStack.web keeps the settle fallback alive through the flip", () => {
-  const source = read("PageStack.web.tsx")
 
   it("flips from an effect keyed on the unflipped phase only", () => {
-    expect(source).toContain("const flipNav = phase && !phase.flipped ? phase.nav : null")
-    const flip = layoutEffectWriting(source, "flipped: true")
-    expect(flip.deps).toBe("[flipNav]")
+    const flip = layoutEffectWriting(source, "handlersRef.current.flip(pendingNav)")
+    expect(flip.deps).toBe("[pendingNav]")
     expect(flip.body).not.toContain("setTimeout")
+    expect(flip.body.indexOf("handlersRef.current.reflow()")).toBeLessThan(flip.body.indexOf("handlersRef.current.flip("))
   })
 
   it("arms the fallback from an effect keyed on the phase, which the flip does not move", () => {
-    const fallback = layoutEffectWriting(source, "setTimeout(() => settle(phaseNav)")
-    expect(fallback.deps).toBe("[phaseDuration, phaseNav, settle]")
+    const fallback = layoutEffectWriting(source, "setTimeout(() => handlersRef.current.settle(phaseNav)")
+    expect(fallback.deps).toBe("[fallbackMs, phaseNav]")
     expect(fallback.body).toContain("return () => clearTimeout(fallback)")
-    expect(fallback.body).not.toContain("flipped")
+    expect(fallback.body).not.toContain("flip")
+  })
+})
+
+describe("every web transition seam keys its flip on the unflipped phase and its timers on the phase", () => {
+  it.each([
+    [
+      "BodyTransition.web.tsx",
+      "pendingNav: anim && !anim.flipped ? state.nav : null,",
+      "const phaseNav = anim ? state.nav : null",
+    ],
+    [
+      "PageStack.web.tsx",
+      "pendingNav: phase && !phase.flipped ? phase.nav : null,",
+      "phaseNav: phase ? phase.nav : null,",
+    ],
+    [
+      "StepTransition.web.tsx",
+      "pendingNav: entrance && !entrance.flipped ? entrance.nav : null,",
+      "phaseNav: entrance ? entrance.nav : null,",
+    ],
+  ])("%s", (file, pending, phase) => {
+    const source = read(file)
+    expect(source).toContain("useFlipPhase({")
+    expect(source).toContain(pending)
+    expect(source).toContain(phase)
+  })
+
+  it("BodyTransition.web drops the outgoing layer from an effect keyed on the phase", () => {
+    const outDrop = layoutEffectWriting(read("BodyTransition.web.tsx"), "outDropped: true")
+    expect(outDrop.deps).toBe("[phaseNav]")
+    expect(outDrop.body).toContain("return () => clearTimeout(outDrop)")
+  })
+
+  it("PageStack.web reflows its host only and falls back after the plan's duration plus slack", () => {
+    const source = read("PageStack.web.tsx")
+    expect(source).toContain("reflow: () => forceReflow([hostRef.current], false),")
+    expect(source).toContain("fallbackMs: phase ? pagePlanDuration(phase.plan) + SETTLE_SLACK_MS : 0,")
   })
 })
 
@@ -132,14 +160,13 @@ describe("useKeyboardAnchor.native keeps one stable apply", () => {
 
 describe("a failed reduce-motion probe is a documented choice, not a swallowed error", () => {
   it.each([
-    "BodyTransition.native.tsx",
+    "useEntranceTransition.native.ts",
     "PageStack.native.tsx",
     "TabBar.native.tsx",
-  ])("%s", (file) => {
-    const probe = sliceBetween(read(file), "AccessibilityInfo.isReduceMotionEnabled()", "addEventListener(")
-    expect(probe).toMatch(
-      /\/\/ A failed probe keeps [^\n]*reduceMotionChanged listener[^\n]*\n\s*\.catch\(\(\) => \{\}\)/,
-    )
+  ])("%s reads the shared hook, which answers a failed probe with motion on", (file) => {
+    const source = read(file)
+    expect(source).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(source).not.toContain("AccessibilityInfo.isReduceMotionEnabled()")
   })
 
   it("../primitives/usePopScale.ts reads the shared hook, which answers a failed probe with motion on", () => {

@@ -10,7 +10,7 @@
  * `now` is INJECTED. Nothing here reads the clock, so the card can drive the expiry countdown off its
  * own interval and these rules stay testable without fake timers.
  */
-import { appErrorCode } from "../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 
 export type CertificateCardState =
   /** No hours to certify - the action is visible but inert. */
@@ -60,7 +60,7 @@ export function certificateCardState(input: {
  * rate-limited because each call can render a PDF.
  */
 export function certificateErrorKey(err: unknown): "rate_limited" | "generic" {
-  return appErrorCode(err) === "RATE_LIMITED" ? "rate_limited" : "generic"
+  return appErrorCode(err) === ErrorCode.RATE_LIMITED ? "rate_limited" : "generic"
 }
 
 /**

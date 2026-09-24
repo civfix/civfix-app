@@ -51,10 +51,7 @@ describe("controls that are not RNW Pressables still get the house ring", () => 
     expect(addressSearch).toMatch(/style=\{\[styles\.field, focused \? styles\.fieldFocused : null\]\}/)
     expect(addressSearch).toMatch(/onFocus=\{\(\) => \{\s*setFocused\(true\)/)
     expect(addressSearch).toMatch(/onBlur=\{\(\) => setFocused\(false\)\}/)
-    const focusedStyle = addressSearch.match(/fieldFocused:([\s\S]*?)\n {2}input: \{/)?.[1] ?? ""
-    expect(focusedStyle).toContain("tokens.shadow.ring")
-    expect(focusedStyle).toContain("t.colors.accent")
-    expect(focusedStyle).toContain('Platform.OS === "web"')
+    expect(addressSearch).toMatch(/fieldFocused: inputFocusedStyle\(t\),\n {2}input: \{/)
   })
 })
 

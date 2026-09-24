@@ -9,9 +9,9 @@ const AUTH_PROVIDERS_DEADLINE_MS = 6000
 
 const PROVIDERS_STALE_MS = 5 * 60_000
 
-export const ALL_OAUTH_PROVIDERS: readonly OAuthProvider[] = ["apple", "google", "email"]
+const ALL_OAUTH_PROVIDERS: readonly OAuthProvider[] = ["apple", "google", "email"]
 
-export function useEnabledProviders() {
+function useEnabledProviders() {
   return useQuery<OAuthProvider[]>({
     queryKey: ["auth", "providers"],
     queryFn: async () => {
@@ -25,4 +25,14 @@ export function useEnabledProviders() {
     staleTime: PROVIDERS_STALE_MS,
     placeholderData: [...ALL_OAUTH_PROVIDERS],
   })
+}
+
+// Placeholder data stands in for the real list until the session answers, so "ready" means the
+// server's list (or its fallback after a failure) has replaced it.
+export function useSignInProviders(): { ready: boolean; enabled: readonly OAuthProvider[] } {
+  const providers = useEnabledProviders()
+  return {
+    ready: !providers.isPlaceholderData,
+    enabled: providers.data ?? ALL_OAUTH_PROVIDERS,
+  }
 }

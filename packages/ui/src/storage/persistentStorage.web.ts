@@ -8,7 +8,7 @@ function available(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined"
 }
 
-export const persistentStorage: StateStorage = {
+const localStorageState: StateStorage = {
   getItem: (name) => {
     if (!available()) return null
     try {
@@ -23,7 +23,7 @@ export const persistentStorage: StateStorage = {
     try {
       window.localStorage.setItem(name, value)
     } catch {
-      // Full or blocked storage: the in-memory selection still works this session.
+      // Full or blocked storage: the in-memory state still works this session.
     }
   },
   removeItem: (name) => {
@@ -34,4 +34,9 @@ export const persistentStorage: StateStorage = {
       // Best effort.
     }
   },
+}
+
+/** localStorage is one namespace keyed by each store's persist `name`, so the native instance id is unused. */
+export function persistentStorage(_id: string): StateStorage {
+  return localStorageState
 }

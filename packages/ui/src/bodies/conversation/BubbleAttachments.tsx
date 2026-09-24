@@ -5,6 +5,7 @@ import { useTheme, webCursorPointer, webTransition, webHover, focusRingProps } f
 import { Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"
 import { useLightbox } from "../../lightbox"
+import { toLightboxItems } from "../../lightbox/lightboxItems"
 import { useT } from "../../i18n"
 import { BUBBLE_LONG_PRESS_MS } from "./conversationModel"
 import { useBubbleStyles } from "./bubbleStyles"
@@ -25,13 +26,7 @@ export const BubbleAttachments = React.memo(function BubbleAttachments({
   const { open } = useLightbox()
   const { t } = useT("conversation")
   if (!attachments || attachments.length === 0) return null
-  const lightboxItems = attachments.map((m) => ({
-    url: m.url,
-    kind: m.kind === "video" ? ("video" as const) : ("image" as const),
-    thumbUrl: m.thumbUrl ?? null,
-    width: m.width ?? null,
-    height: m.height ?? null,
-  }))
+  const lightboxItems = toLightboxItems(attachments)
   return (
     <View style={[styles.attachments, mine ? styles.attachmentsMine : styles.attachmentsTheirs]}>
       {attachments.map((m, i) => {

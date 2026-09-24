@@ -60,14 +60,6 @@ export function niceTicks(
   return ticks
 }
 
-export function formatCompact(value: number): string {
-  if (Math.abs(value) >= 1000) {
-    const scaled = value / 1000
-    return `${Math.abs(scaled) >= 10 ? Math.round(scaled) : scaled.toFixed(1)}k`
-  }
-  return String(Math.round(value))
-}
-
 export function sparseIndices(length: number, target = 6): number[] {
   if (length <= target) return Array.from({ length }, (_, i) => i)
   const step = Math.ceil(length / target)
@@ -120,7 +112,7 @@ export function ChartTooltip({ tip }: { tip: TooltipState | null }) {
   if (!tip) return null
   return (
     <div
-      className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
+      className="pointer-events-none absolute z-console-raised -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
       style={{ left: tip.x, top: tip.y - TOOLTIP_LIFT }}
     >
       <p className="whitespace-nowrap text-token-12 font-semibold text-console-ink">{tip.title}</p>

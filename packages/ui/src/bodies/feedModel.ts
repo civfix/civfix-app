@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next"
 import { tokens } from "@civfix/shared/tokens"
-import type { LayoutMode } from "../shell/expandedFramePlan"
+import type { LayoutMode } from "../nav"
 
 export type FeedViewState = "loading" | "error" | "empty" | "loaded"
 
