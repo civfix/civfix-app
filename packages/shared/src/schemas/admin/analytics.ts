@@ -10,7 +10,7 @@ import { ReportCategorySchema } from "../common.js"
 export const AnalyticsKpiUnitSchema = z.enum(["count", "percent", "hours"])
 export type AnalyticsKpiUnit = z.infer<typeof AnalyticsKpiUnitSchema>
 
-/** The `key` values the backend emits today, so a client matches a KPI without reading its label. */
+/** The `key` values for the KPIs the backend's buildKpis produces, so a client matches a KPI without reading its label. */
 export const AnalyticsKpiKey = {
   pinsThisMonth: "pins_this_month",
   resolved: "resolved",

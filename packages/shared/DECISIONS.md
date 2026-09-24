@@ -2137,10 +2137,12 @@ optional, but the carrying schemas are `.strict()`, which fixes the order:
 - A new field on a strict RESPONSE is adopted by every client before the backend emits it. An older
   client's typed response parse fails on the unknown key, passes the raw body through with one warning
   and loses the schema's defaults for that call.
-- A new field on a strict REQUEST is accepted by the backend before any client sends it. An older
-  backend answers VALIDATION.
-- `excludeOrgId` rides a non-strict query, so either order works; an older backend strips it and
-  returns the unfiltered page, so admin keeps its client-side filter until the backend has adopted.
+- A new field on a strict REQUEST is IMPLEMENTED by the backend before any client sends it. Accepting
+  it is not enough: a backend that bumps the manifest but still toggles would parse `flagged: true` and
+  unflag an already-flagged item, the retry bug the field exists to fix. An older backend answers
+  VALIDATION.
+- `excludeOrgId` rides a non-strict query, so either order is safe; an older backend strips it and
+  returns the unfiltered page, so admin keeps its client-side filter until the backend filters.
 
 **One module instance per build.** tsup now builds with code splitting: the entry points share chunks
 instead of each re-bundling its imports. Before, `@civfix/shared/client` carried its own copy of the

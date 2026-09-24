@@ -128,11 +128,15 @@ describe("assertSafeBroadcastLinks", () => {
     }
   })
 
-  it("does not flag a scheme word used as prose or inside an https path", () => {
+  it("still flags an executable scheme with whitespace before its payload", () => {
+    for (const text of ["javascript: alert(1)", "javascript:\talert(1)", "see data: text/html,x", "Waiver file: here"]) {
+      expect(inspectBroadcastLinks(text).length, text).toBeGreaterThan(0)
+    }
+  })
+
+  it("does not flag about as prose or a scheme word inside an https path", () => {
     const prose = [
       "Questions about: parking.",
-      "Bring data: forms and gloves",
-      "Waiver file: here",
       "Topic: about:",
       "https://example.org/data:foo",
       "https://example.org/a.javascript:x",
@@ -142,7 +146,7 @@ describe("assertSafeBroadcastLinks", () => {
     for (const text of prose) {
       expect(inspectBroadcastLinks(text), text).toEqual([])
     }
-    expect(inspectBroadcastLinks("Questions about: parking. Bring data: forms. Waiver file: here")).toEqual([])
+    expect(inspectBroadcastLinks("Questions about: parking. More about: parking")).toEqual([])
   })
 
   it("rejects scheme-relative links", () => {

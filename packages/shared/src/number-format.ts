@@ -71,8 +71,8 @@ export function formatCount(value: number, locale: string, options: FormatCountO
 const CERTIFICATE_HOURS_MAX_FRACTION_DIGITS = 2
 
 /**
- * The one hours format for a service-hours certificate, so the printed PDF and the public verify page
- * can never show a registrar two different totals. The ledger has 0.25h granularity.
+ * The one hours format for a service-hours certificate, so the PDF's prose and the public verify page
+ * show a registrar the same total (the backend's PDF table still prints two fixed decimals).
  */
 export function formatCertificateHours(hours: number, locale: string): string {
   const options: Intl.NumberFormatOptions = {
