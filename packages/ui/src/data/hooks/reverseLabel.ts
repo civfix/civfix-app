@@ -23,7 +23,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { ApiClient } from "@civfix/shared/client"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
-import { isAddressNotFound } from "./resolveAddress"
+import { GEOCODE_STALE_MS, isAddressNotFound } from "./resolveAddress"
 
 /** A simple lat/lng the reverse-label query reads. */
 export interface ReverseLabelPoint {
@@ -81,6 +81,6 @@ export function useReverseLabel(point: ReverseLabelPoint | null) {
     enabled: point !== null,
     queryFn: () => fetchReverseLabel(api, point!),
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: GEOCODE_STALE_MS,
   })
 }

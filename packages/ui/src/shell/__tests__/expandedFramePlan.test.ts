@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { space } from "@civfix/shared/tokens"
+import { GLASS_CONTROL_SIZE } from "../../map/mapControlMetrics"
 import {
   EXPANDED_CLUSTER_BREATHING,
   EXPANDED_LEFT_CLUSTER_W,
@@ -219,7 +220,8 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
         MAP_PROFILE_EXTRA,
     )
     expect(EXPANDED_RIGHT_ACTIONS_W).toBe(368)
-    expect(mapControls).toContain("export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE")
+    expect(GLASS_CONTROL_SIZE).toBe(MAP_ACTION_SIZE)
+    expect(mapControls).toContain('import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"')
     const plan = readFileSync(new URL("../expandedFramePlan.ts", import.meta.url), "utf8")
     expect(plan).toContain("export const MAP_ACTION_SIZE = HEADER_CONTROL_SIZE")
     const glass = readFileSync(new URL("../../primitives/GlassButton.tsx", import.meta.url), "utf8")

@@ -20,11 +20,14 @@ import {
 import { radiusCircleFeature } from "./radiusCircle"
 import {
   REPORT_PICK_FLY_MS,
+  REPORT_PICK_MEETING_PIN_OPACITY,
   REPORT_PICK_MEETING_PIN_SIZE,
   REPORT_PICK_MUTED_OPACITY,
   REPORT_PICK_PIN_SIZE,
   REPORT_PICK_RADIUS_FILL_ALPHA,
   REPORT_PICK_RADIUS_LINE_ALPHA,
+  REPORT_PICK_RADIUS_LINE_DASH,
+  REPORT_PICK_RADIUS_LINE_WIDTH,
   type ReportPickMapHandle,
   type ReportPickMapProps,
 } from "./ReportPickMap.types"
@@ -321,7 +324,11 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
             id: `${RADIUS_SOURCE_ID}-line`,
             type: "line",
             source: RADIUS_SOURCE_ID,
-            paint: { "line-color": line, "line-width": 1.5, "line-dasharray": [2, 2] },
+            paint: {
+              "line-color": line,
+              "line-width": REPORT_PICK_RADIUS_LINE_WIDTH,
+              "line-dasharray": REPORT_PICK_RADIUS_LINE_DASH,
+            },
           })
         } else {
           map.setPaintProperty(`${RADIUS_SOURCE_ID}-fill`, "fill-color", fill)
@@ -346,7 +353,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       if (!meetingMarkerRef.current) {
         const el = document.createElement("div")
         el.style.lineHeight = "0"
-        el.style.opacity = "0.9"
+        el.style.opacity = String(REPORT_PICK_MEETING_PIN_OPACITY)
         el.style.pointerEvents = "none"
         el.setAttribute("role", "img")
         const root = createRoot(el)

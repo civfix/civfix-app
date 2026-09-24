@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { EventSlotDTO } from "@civfix/shared"
-import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../errorCode"
+import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../data/errorCode"
 import {
   boardHasTimedSlots,
   claimSlotErrorKey,

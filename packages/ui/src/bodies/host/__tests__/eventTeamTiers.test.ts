@@ -8,7 +8,7 @@ import {
   eventRoleLabelKey,
   eventTeamTiers,
   settableRolesOtherThan,
-} from "../eventTeamTiers"
+} from "../../../data/eventTeamTiers"
 
 const catalog = (lng: string, ns: string): Record<string, Record<string, string>> =>
   JSON.parse(

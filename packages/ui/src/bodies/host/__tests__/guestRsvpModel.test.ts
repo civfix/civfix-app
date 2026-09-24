@@ -27,7 +27,7 @@ import {
   appErrorFields,
   EVENT_ENDED_FIELD,
   EVENT_ENDED_REASON,
-} from "../../errorCode"
+} from "../../../data/errorCode"
 
 function verifyError(reason: GuestOtpErrorReasonValue): unknown {
   return {

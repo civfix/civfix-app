@@ -1,13 +1,13 @@
 /**
- * Read hooks behind the home FeedBody (the compact-sheet home view): nearby/upcoming events and recent
- * in-app notifications. Both cache a FLAT list with `limit` in the key, because FeedBody only ever shows a
- * short preview. They are read-only; FeedBody navigates to the relevant detail instead of mutating.
+ * Read hook behind the home FeedBody (the compact-sheet home view): nearby/upcoming events. It caches a
+ * FLAT list with `limit` in the key, because FeedBody only ever shows a short preview. It is read-only;
+ * FeedBody navigates to the relevant detail instead of mutating.
  */
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import type { CleanupDTO, LatLng, NotificationDTO } from "@civfix/shared"
+import type { CleanupDTO, LatLng } from "@civfix/shared"
 import { haversineMeters } from "@civfix/shared"
-import { useApi, useAuthState } from "../context"
+import { useApi } from "../context"
 import { queryKeys } from "../keys"
 
 /**
@@ -116,22 +116,5 @@ export function useNearbyCleanups(
       ).filter((c): c is CleanupDTO => c != null),
     select,
     placeholderData: (prev) => prev,
-  })
-}
-
-/**
- * GET /notifications - recent in-app notifications, as a flat list. Auth-REQUIRED, so it is gated on
- * `isAuthenticated` and never fires a guaranteed-401 while signed out. `limit` is part of the key so a
- * short feed preview and a fuller list keep separate cache entries.
- */
-export function useFeedNotifications(limit = 20) {
-  const api = useApi()
-  const { isAuthenticated } = useAuthState()
-  return useQuery<NotificationDTO[]>({
-    queryKey: queryKeys.notifications(limit),
-    enabled: isAuthenticated,
-    // Same non-null coercion as useNearbyCleanups (the client does not validate responses).
-    queryFn: async () =>
-      ((await api.listNotifications({ limit })).items ?? []).filter((n) => n != null),
   })
 }

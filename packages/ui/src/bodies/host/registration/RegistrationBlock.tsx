@@ -23,7 +23,7 @@ import {
 } from "../../../data/hooks/host"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
-import { appErrorCode } from "../../errorCode"
+import { appErrorCode } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"

@@ -387,7 +387,7 @@ describe("person is an own-header FULL body", () => {
   it("is a FULL body whose title is the header-suppression sentinel, so the gate never sees it", () => {
     expect(BODY_LAYOUT.person).toBe("full")
     // " " (not "") is the sentinel: SheetHeader.shared renders no DetailBar for it, and ExpandedShell's
-    // `hasHeader = titleKey.trim() !== ""` is false too.
+    // `hasDetailHeader` gate is false too.
     expect(titleForEntry({ kind: "person", id: "x" })).toBe(" ")
     expect(titleForEntry({ kind: "person", id: "x" }).trim()).toBe("")
   })

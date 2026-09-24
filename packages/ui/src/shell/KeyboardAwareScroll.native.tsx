@@ -11,7 +11,6 @@ import React, {
 import {
   Dimensions,
   Keyboard,
-  Platform,
   StyleSheet,
   type KeyboardEvent,
   type NativeScrollEvent,
@@ -38,12 +37,8 @@ import {
 import { KeyboardScrollScopeProvider, useKeyboardHostReserveScope } from "./keyboardScrollScope"
 import { usePageIsActive } from "./pageActive"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
+import { KEYBOARD_HIDE_EVENT, KEYBOARD_PLATFORM, KEYBOARD_SHOW_EVENT } from "./keyboardPlatform"
 
-const PLATFORM: "ios" | "android" | "other" =
-  Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
-
-const SHOW_EVENT = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
-const HIDE_EVENT = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
 
 interface ScrollableAdapter {
   scrollToOffset: (node: any, offset: number) => void
@@ -129,7 +124,7 @@ function makeKeyboardAwareScrollable(
           endCoordinates,
           windowHeight: Dimensions.get("window").height,
           restingWindowHeight: restingWindowHeight.current,
-          platform: PLATFORM,
+          platform: KEYBOARD_PLATFORM,
           systemBarInset: bottomInsetRef.current,
         }),
       [restingWindowHeight],
@@ -172,7 +167,7 @@ function makeKeyboardAwareScrollable(
         clearTimeout(holdRef.current)
         holdRef.current = null
       }
-      const showSub = Keyboard.addListener(SHOW_EVENT, (e) => {
+      const showSub = Keyboard.addListener(KEYBOARD_SHOW_EVENT, (e) => {
         clearHold()
         dispatch({
           type: "show",
@@ -184,7 +179,7 @@ function makeKeyboardAwareScrollable(
           options.onKeyboardShow?.()
         }
       })
-      const hideSub = Keyboard.addListener(HIDE_EVENT, () => {
+      const hideSub = Keyboard.addListener(KEYBOARD_HIDE_EVENT, () => {
         dispatch({ type: "hide" })
         clearHold()
         holdRef.current = setTimeout(() => {

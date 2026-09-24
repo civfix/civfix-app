@@ -1,3 +1,5 @@
+import { createListenerSet } from "./listenerSet"
+
 export interface KeyboardHostReserveStore {
   getState: () => boolean
   subscribe: (listener: () => void) => () => void
@@ -6,29 +8,20 @@ export interface KeyboardHostReserveStore {
 
 export function makeKeyboardHostReserveStore(): KeyboardHostReserveStore {
   let claims = 0
-  const listeners = new Set<() => void>()
-
-  const publish = (): void => {
-    for (const listener of [...listeners]) listener()
-  }
+  const listeners = createListenerSet()
 
   return {
     getState: () => claims > 0,
-    subscribe: (listener) => {
-      listeners.add(listener)
-      return () => {
-        listeners.delete(listener)
-      }
-    },
+    subscribe: listeners.subscribe,
     claim: () => {
       claims += 1
-      publish()
+      listeners.notify()
       let released = false
       return () => {
         if (released) return
         released = true
         claims -= 1
-        publish()
+        listeners.notify()
       }
     },
   }

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react"
-import { Pressable, StyleSheet, View, type ViewStyle } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import { BlurSurface } from "../surface"
@@ -9,6 +9,8 @@ import { openReportFlow } from "../bodies/composerCreateFlow"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
 import {
+  DOCK_ORB_GLYPH_SIZE,
+  DOCK_TAB_GLYPH_SIZE,
   TAB_BAR_HEIGHT,
   TAB_SPECS,
   activeTabIndex,
@@ -116,7 +118,7 @@ export function TabButton({
       accessibilityLabel={label}
       style={({ pressed }) => [styles.tab, pressed ? styles.pressed : null]}
     >
-      <Icon icon={tab.icon} size={24} color={color} />
+      <Icon icon={tab.icon} size={DOCK_TAB_GLYPH_SIZE} color={color} />
     </Pressable>
   )
 }
@@ -136,7 +138,7 @@ export function SearchOrb({ active, onPress }: { active: boolean; onPress: () =>
     >
       <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
       <View style={styles.orbIcon}>
-        <Icon icon={iconMap.Search} size={22} color={active ? th.colors.accent : th.colors.textMuted} />
+        <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={active ? th.colors.accent : th.colors.textMuted} />
       </View>
     </Pressable>
   )
@@ -210,4 +212,3 @@ export function BarGlass() {
   return <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
 }
 
-export type WebViewStyle = ViewStyle

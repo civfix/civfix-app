@@ -20,6 +20,17 @@ export function sliceFrom(source: string, from: string): string {
   return source.slice(start)
 }
 
+/** Each anchor must occur exactly once, so a second call site cannot satisfy the order by accident. */
+export function expectInSourceOrder(source: string, anchors: readonly string[]): void {
+  let previous = -1
+  for (const anchor of anchors) {
+    expect(source.split(anchor).length - 1, `${JSON.stringify(anchor)} must occur exactly once`).toBe(1)
+    const at = source.indexOf(anchor)
+    expect(at, `${JSON.stringify(anchor)} is out of order`).toBeGreaterThan(previous)
+    previous = at
+  }
+}
+
 export interface LayoutEffectSource {
   body: string
   deps: string | null

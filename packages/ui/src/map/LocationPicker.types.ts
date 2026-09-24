@@ -46,3 +46,4 @@ export function pickerSurface(cameraSeed: LatLng | null, centerSettled: boolean 
 
 export const PICKER_ZOOM = 14
 export const PICKER_HEIGHT = 200
+export const PICKER_EASE_MS = 400

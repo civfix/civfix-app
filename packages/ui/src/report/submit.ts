@@ -22,7 +22,7 @@ import {
   type FeedShareTarget,
 } from "../bodies/feedShare"
 import { rememberLocalReportThumb } from "../bodies/localReportThumbs"
-import { appErrorCode, appErrorFields } from "../bodies/errorCode"
+import { appErrorCode, appErrorFields } from "../data/errorCode"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { useDraftReportStore } from "./draftStore"
 import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"

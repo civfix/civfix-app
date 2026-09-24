@@ -22,7 +22,7 @@ import {
   claimEventSlotMutationOptions,
   rsvpErrorKey,
 } from "../hooks/cleanups"
-import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../bodies/errorCode"
+import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../errorCode"
 
 const REFCODE = "EVT-2026-0042"
 

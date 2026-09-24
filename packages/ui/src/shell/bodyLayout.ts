@@ -59,12 +59,7 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
 
 const PERMANENT_SHEET_KINDS = ["drop-pin"] as const satisfies readonly DetailKind[]
 
-const PENDING_CONVERSION_KINDS = [] as const satisfies readonly DetailKind[]
-
-export const SHEET_ONLY_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
-  ...PERMANENT_SHEET_KINDS,
-  ...PENDING_CONVERSION_KINDS,
-])
+export const SHEET_ONLY_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>(PERMANENT_SHEET_KINDS)
 
 export function resolveBodyLayout(
   kind: DetailKind | "home-view",
@@ -215,26 +210,34 @@ export function effectiveBaseView(view: View, lastNonSearchView: View, searchIsO
   return searchIsOverlay && view === "search" ? lastNonSearchView : view
 }
 
+function revealStyle(progress: number, start: number, end: number): { opacity: number; translateY: number } {
+  "worklet"
+  const raw = (progress - start) / (end - start)
+  const w = raw < 0 ? 0 : raw > 1 ? 1 : raw
+  return { opacity: w, translateY: (1 - w) * 12 }
+}
+
 export const SEARCH_REVEAL_WINDOW = [0.3, 0.8] as const
 
 export function searchRevealStyle(progress: number): { opacity: number; translateY: number } {
   "worklet"
-  const start = 0.3
-  const end = 0.8
-  const raw = (progress - start) / (end - start)
-  const w = raw < 0 ? 0 : raw > 1 ? 1 : raw
-  return { opacity: w, translateY: (1 - w) * 12 }
+  return revealStyle(progress, 0.3, 0.8)
 }
 
 export const SEARCH_REVEAL_EXIT_WINDOW = [0.2, 0.7] as const
 
 export function searchRevealExitStyle(progress: number): { opacity: number; translateY: number } {
   "worklet"
-  const start = 0.2
-  const end = 0.7
-  const raw = (progress - start) / (end - start)
-  const w = raw < 0 ? 0 : raw > 1 ? 1 : raw
-  return { opacity: w, translateY: (1 - w) * 12 }
+  return revealStyle(progress, 0.2, 0.7)
+}
+
+export function portraitDockVisible(
+  isWeb: boolean,
+  chromeVisible: boolean,
+  sheetActive: boolean,
+  sheetMounted: boolean,
+): boolean {
+  return isWeb ? chromeVisible && !sheetMounted : chromeVisible || sheetActive || sheetMounted
 }
 
 export function portraitShellPlan(

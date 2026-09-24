@@ -8,7 +8,7 @@ import type {
   ReportCategory,
   ReportType,
 } from "@civfix/shared"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode } from "../data/errorCode"
 import { mergeDateTime } from "./calendarModel"
 import type { LinkedReportCardData } from "./LinkedReportCard"
 

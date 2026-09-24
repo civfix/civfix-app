@@ -1,13 +1,13 @@
 import React, { createContext, forwardRef, useContext, useMemo } from "react"
 import { StyleSheet } from "react-native"
-import type { ScrollHostValue } from "./ScrollHost"
+import { decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
 
 const ContentBottomReserveContext = createContext(0)
 ContentBottomReserveContext.displayName = "ContentBottomReserveContext"
 
 export const ContentBottomReserveProvider = ContentBottomReserveContext.Provider
 
-export function useContentBottomReserve(): number {
+function useContentBottomReserve(): number {
   return useContext(ContentBottomReserveContext)
 }
 
@@ -38,10 +38,7 @@ export function makeContentBottomReserveScrollHost(
   base: ScrollHostValue,
   useReserve: () => number = useContentBottomReserve,
 ): ScrollHostValue {
-  return {
-    ScrollView: makeContentBottomReserveScroll(base.ScrollView, useReserve),
-    FlatList: makeContentBottomReserveScroll(base.FlatList, useReserve),
-  }
+  return decorateScrollHost(base, (Base) => makeContentBottomReserveScroll(Base, useReserve))
 }
 
 const RESERVED_HOSTS = new WeakMap<ScrollHostValue, ScrollHostValue>()

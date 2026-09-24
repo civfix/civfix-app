@@ -55,10 +55,6 @@ export interface DropPinCameraInput {
    * window edge and is user-resizable, and in map mode only the shell inset remains.
    */
   occlusionLeft?: number
-  /**
-   * @deprecated No caller passes it; {@link occlusionLeft} replaces it and wins when both are present.
-   */
-  sidebarWidth?: number
   mode: "compact" | "expanded"
 }
 
@@ -90,8 +86,8 @@ function topInsetOf(input: DropPinCameraInput): number {
 }
 
 /**
- * Shared by the drop-pin fly and `Map.web`'s location-pick start camera, both of which centre a point the
- * user is about to place a pin on. A zero shift returns the longitude bit-identically.
+ * Shared by the drop-pin fly and the web home map's focus, fly-to and pick-start eases, so every camera
+ * move centres its target in the same visible strip. A zero shift returns the longitude bit-identically.
  */
 export function occludedCenterLng(lng: number, occlusionLeft: number, zoom: number): number {
   const offsetPx = occlusionLeft / 2
@@ -106,7 +102,7 @@ export function dropPinCameraTarget(input: DropPinCameraInput): DropPinCameraTar
   const zoom = Math.max(currentZoom ?? 0, DROP_PIN_ZOOM)
 
   if (mode !== "compact") {
-    return { lat, lng: occludedCenterLng(lng, input.occlusionLeft ?? input.sidebarWidth ?? 0, zoom), zoom }
+    return { lat, lng: occludedCenterLng(lng, input.occlusionLeft ?? 0, zoom), zoom }
   }
 
   const occluded = occludedHeight(sheetSnapPoints(windowHeight, sheetTopReserve), sheetDetent)

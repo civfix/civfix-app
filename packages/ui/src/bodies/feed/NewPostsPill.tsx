@@ -4,7 +4,7 @@ import { focusRingProps, makeThemedStyles, motion, useTheme } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Icon, Text, iconMap } from "../../typography"
 import { useT } from "../../i18n"
-import { shouldAnnounceNewPosts } from "./feedLiveModel"
+import { shouldAnnounceNewPosts } from "../../data/feedLiveModel"
 
 const ENTER = motion.fadeUp
 const USE_NATIVE_DRIVER = Platform.OS !== "web"

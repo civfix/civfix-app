@@ -4,7 +4,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { muteInvalidationKeys } from "../report-chat"
+import { muteInvalidationKeys } from "../reportChat"
 import { queryKeys } from "../../keys"
 
 describe("muteInvalidationKeys", () => {

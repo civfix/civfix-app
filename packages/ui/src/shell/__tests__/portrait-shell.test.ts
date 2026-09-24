@@ -6,6 +6,7 @@ import {
   SEARCH_REVEAL_EXIT_WINDOW,
   SEARCH_REVEAL_WINDOW,
   effectiveBaseView,
+  portraitDockVisible,
   portraitShellPlan,
   portraitSurfaceTransitionKey,
   reportDraftStartsFresh,
@@ -21,6 +22,22 @@ const transitionKey = (
   active: DetailEntry | null,
   presentation: PortraitDetailPresentation,
 ) => portraitSurfaceTransitionKey(view, active, presentation)
+
+describe("portrait dock visibility", () => {
+  it("hides the web dock while the sheet is mounted, including its closing slide", () => {
+    expect(portraitDockVisible(true, true, false, false)).toBe(true)
+    expect(portraitDockVisible(true, true, true, true)).toBe(false)
+    expect(portraitDockVisible(true, true, false, true)).toBe(false)
+    expect(portraitDockVisible(true, false, true, true)).toBe(false)
+  })
+
+  it("keeps the native dock up whenever the chrome or the sheet is showing", () => {
+    expect(portraitDockVisible(false, false, false, false)).toBe(false)
+    expect(portraitDockVisible(false, true, false, false)).toBe(true)
+    expect(portraitDockVisible(false, false, true, true)).toBe(true)
+    expect(portraitDockVisible(false, false, false, true)).toBe(true)
+  })
+})
 
 describe("portrait shell layer plan", () => {
   it.each(["home", "messaging", "search"] as const)(

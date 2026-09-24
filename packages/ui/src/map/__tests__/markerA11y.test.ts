@@ -56,14 +56,17 @@ describe("markerA11yLabel names every home-map marker", () => {
 // The seams need a map runtime, so the marker wiring is pinned by source.
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const mapWeb = read("../Map.web.tsx")
+const webMarkers = read("../homeMapMarkers.web.ts")
+const webOverlays = read("../homeMapOverlays.web.tsx")
+const webFocusRing = read("../mapFocusRing.web.ts")
 const mapNative = read("../Map.native.tsx")
 const reportPickWeb = read("../ReportPickMap.web.tsx")
 
 describe("web markers are keyboard reachable buttons with a real name", () => {
   it("makes each marker a focusable button activated by Enter or Space", () => {
-    expect(mapWeb).toContain('el.setAttribute("role", "button")')
-    expect(mapWeb).toContain('el.setAttribute("tabindex", "0")')
-    expect(mapWeb).toMatch(
+    expect(webMarkers).toContain('el.setAttribute("role", "button")')
+    expect(webMarkers).toContain('el.setAttribute("tabindex", "0")')
+    expect(webMarkers).toMatch(
       /el\.addEventListener\("keydown", \(e: KeyboardEvent\) => \{\n\s+if \(e\.key !== "Enter" && e\.key !== " "\) return\n\s+e\.preventDefault\(\)\n\s+e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/,
     )
     expect((mapWeb.match(/label: markerA11yLabel\(node, t\),/g) ?? []).length).toBe(4)
@@ -71,25 +74,26 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
   })
 
   it("names markers AFTER maplibre's addTo, which overwrites aria-label with a generic 'Map marker'", () => {
-    for (const src of [mapWeb, reportPickWeb]) {
+    for (const src of [webMarkers, reportPickWeb]) {
       expect(src).toMatch(/\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/)
       expect(src).not.toMatch(/el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/)
     }
-    expect(mapWeb).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("a11y\.userLocation"\)\)/)
-    expect(mapWeb).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("dropPin\.locationA11y"\)\)/)
+    expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("a11y\.userLocation"\)\)/)
+    expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("dropPin\.locationA11y"\)\)/)
     expect(reportPickWeb).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", meetingPointLabel\)/)
   })
 
   it("gives the labelled non-interactive elements a role that allows aria-label", () => {
-    expect(mapWeb).toMatch(/className = "cf-map-user-dot"\n\s+el\.setAttribute\("role", "img"\)/)
-    expect(mapWeb).toMatch(/pointerEvents = "none"\n\s+el\.setAttribute\("role", "img"\)/)
+    expect(webOverlays).toMatch(/className = "cf-map-user-dot"\n\s+el\.setAttribute\("role", "img"\)/)
+    expect(webOverlays).toMatch(/pointerEvents = "none"\n\s+el\.setAttribute\("role", "img"\)/)
     expect(mapWeb).toMatch(/ref=\{containerRef\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.homeMap"\)\}/)
     const picker = read("../LocationPicker.web.tsx")
     expect(picker).toMatch(/style=\{styles\.canvas\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.picker"\)\}/)
   })
 
   it("draws the house focus ring on a focused marker", () => {
-    expect(mapWeb).toContain("`.cf-map-canvas .maplibregl-marker:focus-visible{` +")
+    expect(webFocusRing).toContain("`.cf-map-canvas .maplibregl-marker:focus-visible{` +")
+    expect(mapWeb).toContain("ensureMapFocusRingStyle()")
   })
 })
 

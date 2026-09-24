@@ -1,11 +1,14 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { CAMERA_EASE_MS } from "../mapCamera"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const mapNative = strip(read("../Map.native.tsx"))
 const mapWeb = strip(read("../Map.web.tsx"))
+const webCamera = strip(read("../homeMapCamera.web.ts"))
+const webMarkers = strip(read("../homeMapMarkers.web.ts"))
 
 describe("MapHandle.flyTo on the native seam", () => {
   it("treats DEFAULT_ZOOM as a FLOOR, not a target, when the caller passes no zoom", () => {
@@ -23,9 +26,10 @@ describe("MapHandle.flyTo on the native seam", () => {
 
 describe("the focus ease on both seams", () => {
   it("keys on the focus object, so re-publishing the same pin eases back to it", () => {
-    expect(mapWeb).toContain("}, [mapReady, mode, focus])")
+    expect(webCamera).toContain("}, [mapReady, mode, focus])")
+    expect(mapWeb).toContain("useFocusAndFlyToCamera(mapRef, mapReady, mode, focus, flyToRequest, occlusionLeftRef)")
     expect(mapNative).toContain("}, [focus])")
-    expect(mapWeb).not.toContain("focus?.id, focus?.lat")
+    expect(webCamera).not.toContain("focus?.id, focus?.lat")
     expect(mapNative).not.toContain("focus?.id, focus?.lat")
   })
 })
@@ -52,9 +56,12 @@ describe("the Show on map fly-to on both seams", () => {
     expect(mapNative).toContain("if (!flyToRequest || !mapLoaded) return")
     expect(mapNative).toContain("useMapFlyTo.getState().consume(flyToRequest.generation)")
     expect(mapNative).toContain("}, [flyToRequest, mapLoaded])")
-    expect(mapWeb).toContain("if (!map || !mapReady || !flyToRequest) return")
-    expect(mapWeb).toContain("map.easeTo({ center: [lng, flyToRequest.lat], zoom: FOCUS_ZOOM, duration: 600 })")
-    expect(mapWeb).toContain("useMapFlyTo.getState().consume(flyToRequest.generation)")
+    expect(webCamera).toContain("if (!map || !mapReady || !flyToRequest) return")
+    expect(webCamera).toContain(
+      "map.easeTo({ center: [lng, flyToRequest.lat], zoom: FOCUS_ZOOM, duration: CAMERA_EASE_MS })",
+    )
+    expect(CAMERA_EASE_MS).toBe(600)
+    expect(webCamera).toContain("useMapFlyTo.getState().consume(flyToRequest.generation)")
   })
 
   it("ends the highlight on a user camera gesture or a marker tap", () => {
@@ -62,7 +69,8 @@ describe("the Show on map fly-to on both seams", () => {
     expect(mapNative.match(/markerPressedAtRef\.current = Date\.now\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/g)).toHaveLength(4)
     expect(mapWeb).toMatch(/if \(!e\.originalEvent\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onUserCameraMoveRef\.current\?\.\(\)/)
     expect(mapWeb).toContain('map.on("movestart", endFlyToOnUserGesture)')
-    expect(mapWeb).toMatch(/e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/)
+    expect(webMarkers).toMatch(/e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/)
+    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired)")
   })
 })
 

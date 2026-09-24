@@ -15,13 +15,11 @@ import type {
   GuestRsvpRequestResponse,
   GuestRsvpVerifyRequest,
   GuestRsvpVerifyResponse,
-  GuestRsvpCancelRequest,
-  GuestRsvpCancelResponse,
   LinkedReportRef,
 } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
-import { appErrorCode, appErrorFields, isEventEndedRefusal } from "../../bodies/errorCode"
+import { appErrorCode, appErrorFields, isEventEndedRefusal } from "../errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"
@@ -118,28 +116,22 @@ export interface JoinCleanupCtx {
   prevAttendees: CleanupAttendeesResponse | undefined
 }
 
+function mapCleanupRows(qc: QueryClient, id: string, mapRow: (row: CleanupDTO) => CleanupDTO): void {
+  qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
+    Array.isArray(prev) ? prev.map((c) => (c.id === id ? mapRow(c) : c)) : prev,
+  )
+}
+
 function patchCleanupInFlatLists(
   qc: QueryClient,
   id: string,
   next: { joined: boolean; going: number },
 ): void {
-  qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
-    Array.isArray(prev)
-      ? prev.map((c) => (c.id === id ? { ...c, joined: next.joined, going: next.going } : c))
-      : prev,
-  )
+  mapCleanupRows(qc, id, (c) => ({ ...c, joined: next.joined, going: next.going }))
 }
 
 export function nudgeCleanupInFlatLists(qc: QueryClient, id: string, joined: boolean): void {
-  qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
-    Array.isArray(prev)
-      ? prev.map((c) =>
-          c.id === id
-            ? { ...c, joined, going: Math.max(0, c.going + (joined ? 1 : -1)) }
-            : c,
-        )
-      : prev,
-  )
+  mapCleanupRows(qc, id, (c) => ({ ...c, joined, going: Math.max(0, c.going + (joined ? 1 : -1)) }))
 }
 
 function patchAttendeesGoing(qc: QueryClient, id: string, going: number): void {
@@ -288,11 +280,7 @@ export function updateCleanupMutationOptions(
         ...scalarPatch,
         ...(linkedReports ? { linkedReports: [...linkedReports] } : {}),
       }))
-      qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
-        Array.isArray(prev)
-          ? prev.map((c) => (c.id === id ? { ...c, ...scalarPatch } : c))
-          : prev,
-      )
+      mapCleanupRows(qc, id, (c) => ({ ...c, ...scalarPatch }))
       return { prevDetails }
     },
     onError: (_err, _vars, ctx) => {
@@ -437,19 +425,11 @@ export type GuestRsvpRequestVars = Omit<GuestRsvpRequestRequest, "id">
 export type GuestRsvpVerifyVars = Omit<GuestRsvpVerifyRequest, "id">
 
 function patchCleanupGoingInFlatLists(qc: QueryClient, id: string, going: number): void {
-  qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
-    Array.isArray(prev)
-      ? prev.map((c) =>
-          c.id === id
-            ? {
-                ...c,
-                going,
-                ...(c.guestCount === undefined ? {} : { guestCount: c.guestCount + 1 }),
-              }
-            : c,
-        )
-      : prev,
-  )
+  mapCleanupRows(qc, id, (c) => ({
+    ...c,
+    going,
+    ...(c.guestCount === undefined ? {} : { guestCount: c.guestCount + 1 }),
+  }))
 }
 
 export function applyGuestRsvpToCaches(qc: QueryClient, id: string, going: number): void {
@@ -494,13 +474,6 @@ export function useGuestRsvpVerify(cleanupId: string) {
       api.guestRsvpVerify({ id: cleanupId, ...vars }),
     ),
   )
-}
-
-export function useGuestRsvpCancel() {
-  const api = useApi()
-  return useMutation<GuestRsvpCancelResponse, unknown, GuestRsvpCancelRequest>({
-    mutationFn: ({ token }) => api.guestRsvpCancel({ token }),
-  })
 }
 
 function scalarCleanupPatch(patch: Omit<UpdateCleanupRequest, "id">): Partial<CleanupDTO> {

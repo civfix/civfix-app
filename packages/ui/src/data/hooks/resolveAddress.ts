@@ -12,6 +12,8 @@ export interface ResolveAddressPoint {
 
 const RESOLVED_ADDRESS_STALE_MS = 24 * 60 * 60 * 1000
 
+export const GEOCODE_STALE_MS = 5 * 60 * 1000
+
 export function isAddressNotFound(err: unknown): boolean {
   if (typeof err !== "object" || err === null) return false
   const code = (err as { code?: unknown }).code

@@ -38,7 +38,7 @@ const useStyles = makeThemedStyles((t) => ({
     right: -6,
     minWidth: COUNT_SIZE,
     height: COUNT_SIZE,
-    paddingHorizontal: 4,
+    paddingHorizontal: t.space["1"],
     borderRadius: COUNT_SIZE / 2,
     backgroundColor: t.colors.brand.bloom,
     borderWidth: 1.5,

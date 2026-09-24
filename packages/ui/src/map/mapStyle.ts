@@ -14,6 +14,9 @@ export const BASEMAP_TILES: Readonly<Record<ColorSchemeName, readonly string[]>>
   dark: cartoTiles("dark_all"),
 }
 
+// CARTO's own tile ground colours, vendor values rather than design tokens: the basemap paper has to match
+// what the raster tiles actually paint.
+const VOYAGER_GROUND = "#F5F3EE"
 const DARK_MATTER_GROUND = "#0E0E0E"
 
 export const DARK_RASTER_BRIGHTNESS_MIN = 0.18
@@ -40,7 +43,7 @@ function liftHex(hex: string, min: number): string {
 }
 
 const BASEMAP_PAPER: Readonly<Record<ColorSchemeName, string>> = {
-  light: "#F5F3EE",
+  light: VOYAGER_GROUND,
   dark: liftHex(DARK_MATTER_GROUND, DARK_RASTER_BRIGHTNESS_MIN),
 }
 

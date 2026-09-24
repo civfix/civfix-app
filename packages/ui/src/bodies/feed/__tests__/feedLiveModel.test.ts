@@ -6,8 +6,8 @@ import {
   clearsPendingAtOffset,
   dedupePostsById,
   shouldAnnounceNewPosts,
-} from "../feedLiveModel"
-import { useFeedLiveStore } from "../feedLiveStore"
+} from "../../../data/feedLiveModel"
+import { useFeedLiveStore } from "../../../data/feedLiveStore"
 
 describe("addPendingNewPost", () => {
   it("accumulates ids in arrival order", () => {

@@ -12,11 +12,9 @@ import {
   TAB_ANIMATION_MS,
   TAB_SPECS,
   activeTabIndex,
-  clearMorph,
   compactBottomChrome,
   DOCK_BOTTOM_MARGIN,
   dockBottomGap,
-  exitTabId,
   initialTabBarFootprint,
   lockedIndexForPillCenter,
   PILL_DRAG_RESISTANCE,
@@ -192,16 +190,6 @@ describe("map-first tab bar model", () => {
     expect(seedPreviousView("search", "home")).toBe("home")
   })
 
-  it("maps the previous view to its bottom tab, falling back to Home", () => {
-    expect(exitTabId("home")).toBe("home")
-    expect(exitTabId("map")).toBe("map")
-    expect(exitTabId("messaging")).toBe("messages")
-    expect(exitTabId("report")).toBe("report")
-    expect(exitTabId("events")).toBe("home")
-    expect(exitTabId("reports")).toBe("home")
-    expect(exitTabId("search")).toBe("home")
-  })
-
   it("disables search rise animation for touch or reduced-motion users", () => {
     expect(searchRiseTransition({ coarsePointer: true, reduceMotion: false })).toBe("none")
     expect(searchRiseTransition({ coarsePointer: false, reduceMotion: true })).toBe("none")
@@ -276,9 +264,6 @@ describe("dock-morph chrome schedules (each element rides ONE window off p; no c
 
   it("the ✕ fades in last [0.70,1.0]", () => {
     expect(SCHEDULE.clear).toEqual([0.7, 1.0])
-    expect(clearMorph(0.7)).toEqual({ opacity: 0 })
-    expect(clearMorph(1)).toEqual({ opacity: 1 })
-    expect(clearMorph(0.85)).toEqual({ opacity: 0.5 })
   })
 
   it("the ✕ CLEARS back to the resting search page (onClearSearch); only the LEADING circle exits Search", () => {
@@ -731,7 +716,7 @@ describe("ONE overlap model: every keyboard measurement in the package goes thro
 
   it("routes the anchor's UI-thread mirror through keyboardMirrorOverlap, never through its own arithmetic", () => {
     const anchor = read("../useKeyboardAnchor.native.ts")
-    expect(anchor).toMatch(/const systemBarInset = PLATFORM === "android" \? safeAreaBottom : 0/)
+    expect(anchor).toMatch(/const systemBarInset = KEYBOARD_PLATFORM === "android" \? safeAreaBottom : 0/)
     expect(anchor).toMatch(/import \{ isEdgeToEdge \} from "react-native-is-edge-to-edge"/)
     expect(anchor).toMatch(/^const EDGE_TO_EDGE = isEdgeToEdge\(\)$/m)
     expect(anchor).toMatch(

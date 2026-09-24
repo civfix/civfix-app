@@ -7,7 +7,7 @@ import {
   type ReportPinDTO,
 } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
-import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../data/hooks/nearbyBbox"
+import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../data/geoBounds"
 import type { LinkedReportCardEntry } from "../linkedReportCards"
 
 export const PICKER_ZOOM = 14

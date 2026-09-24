@@ -44,8 +44,8 @@ import type {
   ListRepliesResponse,
   DeletePostResponse,
 } from "@civfix/shared"
-import { useApi } from "../context"
-import { useAuthState } from "../context"
+import { useApi, useAuthState } from "../context"
+import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { optimisticPatch, type OptimisticContext } from "../optimistic"
 
@@ -175,13 +175,22 @@ export function appendToList(qc: QueryClient, key: readonly unknown[], post: Pos
   )
 }
 
+function withoutPost(
+  prev: InfiniteData<FeedPageDTO> | undefined,
+  postId: string,
+): InfiniteData<FeedPageDTO> | undefined {
+  return isInfinitePosts(prev)
+    ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== postId) })) }
+    : prev
+}
+
 /** Remove a post (by id) from every page of a specific infinite list cache. */
 export function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string): void {
-  qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
-    isInfinitePosts(prev)
-      ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== postId) })) }
-      : prev,
-  )
+  qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) => withoutPost(prev, postId))
+}
+
+function removeFromAllLists(qc: QueryClient, postId: string): void {
+  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) => withoutPost(prev, postId))
 }
 
 /** True when a specific infinite list cache already contains the post. */
@@ -401,11 +410,7 @@ export function buildDeleteMutation(
       await qc.cancelQueries({ queryKey: queryKeys.post(id) })
       const prevLists = qc.getQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot })
       const prevDetail = qc.getQueryData<PostDTO>(queryKeys.post(id))
-      qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) =>
-        isInfinitePosts(prev)
-          ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== id) })) }
-          : prev,
-      )
+      removeFromAllLists(qc, id)
       // `setQueryData(key, undefined)` is a no-op in react-query (returning undefined skips the write), so
       // drop the detail cache with removeQueries; onError re-seeds it from the snapshot.
       qc.removeQueries({ queryKey: queryKeys.post(id) })
@@ -421,16 +426,7 @@ export function buildDeleteMutation(
   }
 }
 
-/** Coerce each infinite page's `items` to a real array of non-null posts (the client does not validate). */
-function coercePostPages(data: InfiniteData<FeedPageDTO>): InfiniteData<FeedPageDTO> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
-    })),
-  }
-}
+const coercePostPages = coercePages<FeedPageDTO>("items")
 
 /** GET /posts/:id - a single post's detail. Auth-OPTIONAL (a guest reads the public projection); gated on a present id. */
 export function usePost(id: string | undefined) {
@@ -443,21 +439,8 @@ export function usePost(id: string | undefined) {
   })
 }
 
-/** Coerce a replies page's two post arrays, so a malformed payload cannot reach the row builder. */
-function coerceReplyPages(
-  data: InfiniteData<ListRepliesResponse>,
-): InfiniteData<ListRepliesResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
-      authorReplies: Array.isArray(p?.authorReplies)
-        ? p.authorReplies.filter((it) => it != null)
-        : [],
-    })),
-  }
-}
+/** Both post arrays are coerced, so a malformed payload cannot reach the row builder. */
+const coerceReplyPages = coercePages<ListRepliesResponse>("items", "authorReplies")
 
 /** GET /posts/:id/replies - a thread's replies, cursor-infinite. Auth-required; gated on a present id. */
 export function usePostReplies(id: string | undefined) {

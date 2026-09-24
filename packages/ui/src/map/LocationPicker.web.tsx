@@ -1,11 +1,12 @@
 import * as React from "react"
 import maplibregl from "maplibre-gl"
-import { tokens, shadowSchemes } from "@civfix/shared/tokens"
+import { shadowSchemes } from "@civfix/shared/tokens"
 import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import {
+  PICKER_EASE_MS,
   PICKER_ZOOM,
   PICKER_HEIGHT,
   pickerSurface,
@@ -14,24 +15,12 @@ import {
 } from "./LocationPicker.types"
 import { useLocationPick } from "./locationPickStore"
 import { pinAppearanceFor } from "./pins"
+import { applyPinElementTheme, makePinElement } from "./pins/pinElement.web"
 
-export function applyPinElementTheme(el: HTMLElement, t: Theme, fill: string): void {
-  el.style.background = fill
-  el.style.boxShadow = shadowSchemes[t.scheme].pin
-  el.style.border = `2px solid ${t.colors.onAccent}`
-}
-
-export function makePinElement(t: Theme, fill: string): HTMLDivElement {
-  const el = document.createElement("div")
-  el.style.width = "24px"
-  el.style.height = "24px"
-  el.style.borderRadius = String(tokens.radius.pin)
-  el.style.transform = "rotate(45deg)"
-  el.style.boxSizing = "border-box"
-  el.style.cursor = "grab"
-  applyPinElementTheme(el, t, fill)
-  return el
-}
+/** Below this the marker already sits on the value, so an echo of the picker's own change does not ease. */
+const MARKER_MOVED_EPSILON_DEG = 1e-6
+const SAME_PICK_POINT_EPSILON_DEG = 1e-9
+const RESET_TRANSITION_PROPS = ["opacity", "background-color", "border-color", "transform"]
 
 function InlineLocationPicker({
   value,
@@ -156,9 +145,16 @@ function InlineLocationPicker({
     setPlaced(true)
     const marker = ensureMarker(map, [value.lng, value.lat])
     const current = marker.getLngLat()
-    if (Math.abs(current.lat - value.lat) > 1e-6 || Math.abs(current.lng - value.lng) > 1e-6) {
+    if (
+      Math.abs(current.lat - value.lat) > MARKER_MOVED_EPSILON_DEG ||
+      Math.abs(current.lng - value.lng) > MARKER_MOVED_EPSILON_DEG
+    ) {
       marker.setLngLat([value.lng, value.lat])
-      map.easeTo({ center: [value.lng, value.lat], zoom: Math.max(map.getZoom(), PICKER_ZOOM), duration: 400 })
+      map.easeTo({
+        center: [value.lng, value.lat],
+        zoom: Math.max(map.getZoom(), PICKER_ZOOM),
+        duration: PICKER_EASE_MS,
+      })
     }
   }, [value, ensureMarker])
 
@@ -192,7 +188,7 @@ function InlineLocationPicker({
 }
 
 function samePickPoint(a: LatLng, b: LatLng): boolean {
-  return Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lng - b.lng) < 1e-9
+  return Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG && Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
 }
 
 function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
@@ -317,11 +313,11 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
     },
     hint: {
       position: "absolute",
-      bottom: 12,
+      bottom: t.space["3"],
       left: "50%",
       transform: "translateX(-50%)",
       maxWidth: "90%",
-      padding: "7px 12px",
+      padding: `7px ${t.space["3"]}px`,
       borderRadius: t.radius.pill,
       backgroundColor: t.glass.button.fill,
       border: `1px solid ${t.glass.button.border}`,
@@ -374,7 +370,7 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
     },
     overlayCoord: {
-      font: `400 12px/1.3 ${t.fontFamily.mono}, ui-monospace, SFMono-Regular, Menlo, monospace`,
+      font: `400 ${t.fontSize["12"]}px/1.3 ${t.fontFamily.mono}, ui-monospace, SFMono-Regular, Menlo, monospace`,
       color: t.colors.textSubtle,
     },
     overlayReset: {
@@ -387,7 +383,7 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
       font: `700 13.5px/1 ${t.fontFamily.bodyBold}, system-ui, sans-serif`,
       cursor: "pointer",
-      transition: `opacity 120ms ${EASE_STANDARD_CSS}, background-color 120ms ${EASE_STANDARD_CSS}, border-color 120ms ${EASE_STANDARD_CSS}, transform 120ms ${EASE_STANDARD_CSS}`,
+      transition: RESET_TRANSITION_PROPS.map((prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`).join(", "),
     },
     overlayResetHovered: {
       backgroundColor: t.colors.surfaceTint,

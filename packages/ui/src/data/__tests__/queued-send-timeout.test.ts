@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../hooks/chat"
 
-const SRC = readFileSync(join(__dirname, "..", "hooks", "chat.ts"), "utf8")
+const SRC = readFileSync(join(__dirname, "..", "hooks", "chatOutbox.ts"), "utf8")
 
 describe("queued sends are bounded (web queueWhileClosed)", () => {
   it("the queued timeout is a whole multiple of the ack timeout and spans several reconnect cycles", () => {

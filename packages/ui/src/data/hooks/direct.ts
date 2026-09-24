@@ -16,10 +16,13 @@ import type {
   MessageThreadDTO,
 } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
-import { useApi } from "../context"
-import { useAuthState, useRequireAuth } from "../context"
+import { useApi, useAuthState, useRequireAuth } from "../context"
 import { queryKeys } from "../keys"
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "./useDebouncedValue"
+
+const USER_SEARCH_LIMIT = 20
+
+const USER_SEARCH_STALE_MS = 30_000
 
 export function normalizeUserSearchTerm(rawQuery: string): string {
   return rawQuery.trim().replace(/^@+/, "")
@@ -33,9 +36,9 @@ export function useUserSearch(rawQuery: string) {
   const query = useQuery<SearchUsersResponse, unknown, SearchUsersResponse>({
     queryKey: queryKeys.userSearch(trimmed),
     enabled: isAuthenticated && trimmed.length > 0,
-    queryFn: () => api.searchUsers({ q: trimmed, limit: 20 }),
+    queryFn: () => api.searchUsers({ q: trimmed, limit: USER_SEARCH_LIMIT }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: USER_SEARCH_STALE_MS,
   })
   return { ...query, term: trimmed }
 }

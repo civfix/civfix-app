@@ -16,7 +16,7 @@ import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
 import { pathForEntry, useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT, viewerTimeZone } from "../i18n"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode } from "../data/errorCode"
 import {
   formEndInstantMs,
   formInstantMs,

@@ -25,7 +25,7 @@ import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import {
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,

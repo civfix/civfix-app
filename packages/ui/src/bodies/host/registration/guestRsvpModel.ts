@@ -7,7 +7,7 @@ import {
   type GuestContactChannel,
   type TicketTypeDTO,
 } from "@civfix/shared"
-import { isEventEndedRefusal } from "../../errorCode"
+import { isEventEndedRefusal } from "../../../data/errorCode"
 import { initialAnswers, type AnswerMap } from "./questionModel"
 import { defaultTicketTypeId } from "./registrationModel"
 

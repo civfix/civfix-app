@@ -17,9 +17,7 @@
     "clearAll": "전체 해제",
     "selectAllA11y": "모든 카테고리 선택",
     "clearAllA11y": "모든 카테고리 해제",
-    "categoryPinsA11y": "{{category}} 핀",
-    "nearby_one": "근처 {{count}}개",
-    "nearby_other": "근처 {{count}}개"
+    "categoryPinsA11y": "{{category}} 핀"
   },
   "actions": {
     "locate": "내 위치로 이동",

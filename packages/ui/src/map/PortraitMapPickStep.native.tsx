@@ -13,6 +13,8 @@ import {
 import type { PortraitMapPickStepProps } from "./PortraitMapPickStep.types"
 
 const BOTTOM_BAR_CLEARANCE = 124
+const BAR_Z_INDEX = 10
+const LAYER_Z_INDEX = 20
 
 export function PortraitMapPickStep({
   visible,
@@ -130,20 +132,20 @@ const useStyles = makeThemedStyles((t) => ({
     position: "absolute",
     left: t.space["3"],
     right: t.space["3"],
-    zIndex: 10,
-    elevation: 10,
+    zIndex: BAR_Z_INDEX,
+    elevation: BAR_Z_INDEX,
   },
   bottomBar: {
     position: "absolute",
     left: t.space["3"],
     right: t.space["3"],
-    zIndex: 10,
-    elevation: 10,
+    zIndex: BAR_Z_INDEX,
+    elevation: BAR_Z_INDEX,
   },
   layer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 20,
-    elevation: 20,
+    zIndex: LAYER_Z_INDEX,
+    elevation: LAYER_Z_INDEX,
     backgroundColor: t.colors.bg,
   },
 }))

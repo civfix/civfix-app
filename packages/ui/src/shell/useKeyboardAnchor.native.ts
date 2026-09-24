@@ -45,9 +45,8 @@ import {
 } from "./keyboardInsetModel"
 import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
+import { KEYBOARD_PLATFORM } from "./keyboardPlatform"
 
-const PLATFORM: "ios" | "android" | "other" =
-  Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
 
 const EDGE_TO_EDGE = isEdgeToEdge()
 
@@ -60,7 +59,7 @@ export function useKeyboardAnchor({
   const windowH = useWindowDimensions().height
   const restingWindowHeight = useRestingWindowHeight()
   const safeAreaBottom = useContext(SafeAreaInsetsContext)?.bottom ?? 0
-  const systemBarInset = PLATFORM === "android" ? safeAreaBottom : 0
+  const systemBarInset = KEYBOARD_PLATFORM === "android" ? safeAreaBottom : 0
 
   const overlap = useSharedValue(0)
   const owned = useSharedValue(0)
@@ -102,7 +101,7 @@ export function useKeyboardAnchor({
         endCoordinates,
         windowHeight: winRef.current,
         restingWindowHeight: restingWindowHeight.current,
-        platform: PLATFORM,
+        platform: KEYBOARD_PLATFORM,
         systemBarInset: systemBarRef.current,
       }),
     [restingWindowHeight],

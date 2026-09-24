@@ -33,7 +33,7 @@ import { useOrganization, useUpdateOrganization } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode, appErrorFields } from "../errorCode"
+import { appErrorCode, appErrorFields } from "../../data/errorCode"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import {

@@ -68,134 +68,72 @@ function Stub({ label }: { label: string }) {
   )
 }
 
-function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
-  switch (id) {
-    case "feed":
-      return <FeedBody />
-    case "events":
-      return <EventsBody />
-    case "messagingList":
-      return <MessagingListBody />
-    case "social":
-      return <SocialBody />
-    case "reports":
-      return <ReportsBody />
-    case "personDetail":
-      return <PersonDetailBody id={entry?.id ?? ""} />
-    case "reportDetail":
-      return <ReportDetailBody id={entry?.id ?? ""} />
-    case "eventDetail":
-      return <EventDetailBody id={entry?.id ?? ""} />
-    case "createCleanup":
-      return <CreateCleanupBody />
-    case "editCleanup":
-      return <EditCleanupBody id={entry?.id ?? ""} />
-    case "notifications":
-      return <NotificationsBody />
-    case "notificationPrefs":
-      return <NotificationPrefsBody />
-    case "conversation":
-      return (
-        <ConversationBody
-          id={entry?.id ?? ""}
-          roomKind={entry?.roomKind ?? "cleanup"}
-          {...(entry?.peer ? { peer: entry.peer } : {})}
-          {...(entry?.jumpToMessageId ? { jumpToMessageId: entry.jumpToMessageId } : {})}
-        />
-      )
-    case "pinnedMessages":
-      return (
-        <ConversationBody
-          id={entry?.id ?? ""}
-          roomKind={entry?.roomKind ?? "cleanup"}
-          pinnedOnly
-        />
-      )
-    case "newGroup":
-      return <NewGroupBody />
-    case "newChannel":
-      return <NewChannelBody />
-    case "groupInfo":
-      return <GroupInfoBody id={entry?.id ?? ""} />
-    case "reportFlow":
-      return <ReportFlowBody />
-    case "clusterReports":
-      return <ClusterReportsBody reports={entry?.reports ?? []} event={entry?.event ?? null} />
-    case "connections":
-      return (
-        <ConnectionsBody
-          id={entry?.id ?? ""}
-          mode={entry?.kind === "following" ? "following" : "followers"}
-        />
-      )
-    case "leaderboard":
-      return <LeaderboardBody geoid={entry?.geoid ?? ""} />
-    case "members":
-      return <MembersBody id={entry?.id ?? ""} roomKind={entry?.roomKind ?? "cleanup"} />
-    case "profile":
-      return <ProfileBody />
-    case "blockedAccounts":
-      return <BlockedAccountsBody />
-    case "languageSettings":
-      return <LanguageSettingsBody />
-    case "appearanceSettings":
-      return <AppearanceSettingsBody />
-    case "settings":
-      return <SettingsBody />
-    case "settingsAccount":
-      return <SettingsAccountBody />
-    case "settingsPrivacy":
-      return <SettingsPrivacyBody />
-    case "mapView":
-      return <View style={styles.empty} />
-    case "search":
-      return <SearchBody />
-    case "post":
-      return <PostDetailBody id={entry?.id ?? ""} />
-    case "saves":
-      return <SavedPostsBody />
-    case "postThread":
-      return <PostThreadBody id={entry?.id ?? ""} />
-    case "postComposer":
-      return <PostComposer mode={entry?.composerMode ?? "post"} targetPostId={entry?.targetPostId} />
-    case "dropPin":
-      return <DropPinBody lat={entry?.lat ?? null} lng={entry?.lng ?? null} />
-    case "hostMode":
-      return <HostModeBody id={entry?.id ?? ""} />
-    case "hostCheckin":
-      return <HostCheckinBody id={entry?.id ?? ""} />
-    case "hostAnnounce":
-      return <HostAnnounceBody id={entry?.id ?? ""} />
-    case "hostTeam":
-      return <HostTeamBody id={entry?.id ?? ""} />
-    case "hostLogHours":
-      return <HostLogHoursBody id={entry?.id ?? ""} />
-    case "myTicket":
-      return (
-        <MyTicketBody id={entry?.id ?? ""} {...(entry?.seatId ? { seatId: entry.seatId } : {})} />
-      )
-    case "orgPage":
-      return <OrgPageBody slug={entry?.slug ?? ""} />
-    case "orgManage":
-      return <OrgManageBody slug={entry?.slug ?? ""} />
-    case "eventDashboard":
-      return <EventDashboardBody />
-    case "eventAnalytics":
-      return <EventAnalyticsBody id={entry?.id ?? ""} />
-    case "announcements":
-      return <AnnouncementsBody id={entry?.id ?? ""} />
-    case "announcement":
-      return (
-        <AnnouncementBody
-          id={entry?.id ?? ""}
-          announcementId={entry?.announcementId ?? ""}
-        />
-      )
-    case "stub": {
-      const label = entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"
-      return <Stub label={label} />
-    }
-  }
+const idOf = (entry: DetailEntry | null): string => entry?.id ?? ""
+const roomKindOf = (entry: DetailEntry | null) => entry?.roomKind ?? "cleanup"
+
+type BodyRenderer = (entry: DetailEntry | null) => React.ReactNode
+
+// Arrows rather than component factories: each body binding is read at render time, never while the
+// bodies barrel may still be initialising behind the shell import it depends on.
+const BODY_RENDERERS: Record<BodyId, BodyRenderer> = {
+  feed: () => <FeedBody />,
+  events: () => <EventsBody />,
+  messagingList: () => <MessagingListBody />,
+  social: () => <SocialBody />,
+  reports: () => <ReportsBody />,
+  personDetail: (entry) => <PersonDetailBody id={idOf(entry)} />,
+  reportDetail: (entry) => <ReportDetailBody id={idOf(entry)} />,
+  eventDetail: (entry) => <EventDetailBody id={idOf(entry)} />,
+  createCleanup: () => <CreateCleanupBody />,
+  editCleanup: (entry) => <EditCleanupBody id={idOf(entry)} />,
+  notifications: () => <NotificationsBody />,
+  notificationPrefs: () => <NotificationPrefsBody />,
+  conversation: (entry) => (
+    <ConversationBody
+      id={idOf(entry)}
+      roomKind={roomKindOf(entry)}
+      {...(entry?.peer ? { peer: entry.peer } : {})}
+      {...(entry?.jumpToMessageId ? { jumpToMessageId: entry.jumpToMessageId } : {})}
+    />
+  ),
+  pinnedMessages: (entry) => <ConversationBody id={idOf(entry)} roomKind={roomKindOf(entry)} pinnedOnly />,
+  newGroup: () => <NewGroupBody />,
+  newChannel: () => <NewChannelBody />,
+  groupInfo: (entry) => <GroupInfoBody id={idOf(entry)} />,
+  reportFlow: () => <ReportFlowBody />,
+  clusterReports: (entry) => <ClusterReportsBody reports={entry?.reports ?? []} event={entry?.event ?? null} />,
+  connections: (entry) => (
+    <ConnectionsBody id={idOf(entry)} mode={entry?.kind === "following" ? "following" : "followers"} />
+  ),
+  leaderboard: (entry) => <LeaderboardBody geoid={entry?.geoid ?? ""} />,
+  members: (entry) => <MembersBody id={idOf(entry)} roomKind={roomKindOf(entry)} />,
+  profile: () => <ProfileBody />,
+  blockedAccounts: () => <BlockedAccountsBody />,
+  languageSettings: () => <LanguageSettingsBody />,
+  appearanceSettings: () => <AppearanceSettingsBody />,
+  settings: () => <SettingsBody />,
+  settingsAccount: () => <SettingsAccountBody />,
+  settingsPrivacy: () => <SettingsPrivacyBody />,
+  mapView: () => <View style={styles.empty} />,
+  search: () => <SearchBody />,
+  post: (entry) => <PostDetailBody id={idOf(entry)} />,
+  saves: () => <SavedPostsBody />,
+  postThread: (entry) => <PostThreadBody id={idOf(entry)} />,
+  postComposer: (entry) => <PostComposer mode={entry?.composerMode ?? "post"} targetPostId={entry?.targetPostId} />,
+  dropPin: (entry) => <DropPinBody lat={entry?.lat ?? null} lng={entry?.lng ?? null} />,
+  hostMode: (entry) => <HostModeBody id={idOf(entry)} />,
+  hostCheckin: (entry) => <HostCheckinBody id={idOf(entry)} />,
+  hostAnnounce: (entry) => <HostAnnounceBody id={idOf(entry)} />,
+  hostTeam: (entry) => <HostTeamBody id={idOf(entry)} />,
+  hostLogHours: (entry) => <HostLogHoursBody id={idOf(entry)} />,
+  myTicket: (entry) => <MyTicketBody id={idOf(entry)} {...(entry?.seatId ? { seatId: entry.seatId } : {})} />,
+  orgPage: (entry) => <OrgPageBody slug={entry?.slug ?? ""} />,
+  orgManage: (entry) => <OrgManageBody slug={entry?.slug ?? ""} />,
+  eventDashboard: () => <EventDashboardBody />,
+  eventAnalytics: (entry) => <EventAnalyticsBody id={idOf(entry)} />,
+  announcements: (entry) => <AnnouncementsBody id={idOf(entry)} />,
+  announcement: (entry) => <AnnouncementBody id={idOf(entry)} announcementId={entry?.announcementId ?? ""} />,
+  stub: (entry) => <Stub label={entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"} />,
 }
 
 export interface BodyRouterProps {
@@ -209,7 +147,9 @@ export function BodyRouter({ entry, view }: BodyRouterProps) {
       ? VIEW_BODY[entry.view ?? view]
       : DETAIL_BODY[entry.kind]
     : VIEW_BODY[view]
-  return <>{renderBodyId(id, entry)}</>
+  // A restored entry can name a body this build no longer has; such an entry renders nothing.
+  const render: BodyRenderer | undefined = BODY_RENDERERS[id]
+  return <>{render?.(entry)}</>
 }
 
 export const defaultRenderBody = (entry: DetailEntry | null, view: NavView): React.ReactNode => (

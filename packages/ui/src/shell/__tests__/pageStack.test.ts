@@ -350,9 +350,11 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   })
 
   it("resolves every layer token from the motion vocabulary, never from a literal", () => {
-    expect(src).toMatch(/travelRatio: motion\.pageTravelRatio/)
-    expect(src).toMatch(/parallaxRatio: motion\.pageParallaxRatio/)
-    expect(src).toMatch(/scrimOpacity: motion\.pageScrimOpacity/)
+    const pageMotion = readFileSync(new URL("../pageStackMotion.ts", import.meta.url), "utf8")
+    expect(src).toMatch(/import \{ PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING \} from "\.\/pageStackMotion"/)
+    expect(pageMotion).toMatch(/travelRatio: motion\.pageTravelRatio/)
+    expect(pageMotion).toMatch(/parallaxRatio: motion\.pageParallaxRatio/)
+    expect(pageMotion).toMatch(/scrimOpacity: motion\.pageScrimOpacity/)
     expect(src).toMatch(/const ANIMATED_TOKENS = pageLayerTokens\(PAGE_MOTION, false, false\)/)
     expect(src).toMatch(/const DRAG_TOKENS = pageLayerTokens\(PAGE_MOTION, false, true\)/)
     expect(src).toMatch(/const REDUCED_TOKENS = pageLayerTokens\(PAGE_MOTION, true, false\)/)
@@ -363,7 +365,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
     expect(src).toMatch(/const restTokens = reduceMotion \? REDUCED_TOKENS : ANIMATED_TOKENS/)
     expect(src).toMatch(/const dragTokens = reduceMotion \? REDUCED_DRAG_TOKENS : DRAG_TOKENS/)
     expect(src).toMatch(/AccessibilityInfo\.isReduceMotionEnabled\(\)/)
-    expect(src).toMatch(/pageTransitionPlan\(direction, reduceMotion, TIMING\)/)
+    expect(src).toMatch(/pageTransitionPlan\(direction, reduceMotion, PAGE_TIMING\)/)
   })
 
   it("carries the incoming page's own fade alongside the replace crossfade", () => {

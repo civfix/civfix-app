@@ -103,7 +103,6 @@ export function useDockedSearchRise(
     onFieldBlur,
     pinned,
     focusProgress: pos,
-    keyboardEngaged: anchor.engaged,
   }
 }
 

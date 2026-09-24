@@ -24,8 +24,8 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
-import { appErrorCode } from "../errorCode"
-import { type SettableEventMemberRole } from "./eventTeamTiers"
+import { appErrorCode } from "../../data/errorCode"
+import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {
   inviteDisplayName,

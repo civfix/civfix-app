@@ -100,7 +100,7 @@ describe("compact sheet grab handle", () => {
   })
 
   it("is adjustable on native: a value and increment/decrement actions, not just a double-tap", () => {
-    const native = read("CompactShell.native.tsx")
+    const native = read("CompactSheetChrome.native.tsx")
     const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle).toContain('accessibilityRole="adjustable"')
     expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
@@ -154,7 +154,7 @@ describe("compact sheet grab handle at a bound and its spoken value", () => {
   })
 
   it("the native handle speaks the snap name as its value text", () => {
-    const native = read("CompactShell.native.tsx")
+    const native = read("CompactSheetChrome.native.tsx")
     const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle.length).toBeGreaterThan(0)
     expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")

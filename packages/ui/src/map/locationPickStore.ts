@@ -22,7 +22,6 @@ export interface LocationPickState {
   start: (initial?: PickDraft | null, pin?: PinTarget) => void
   setPin: (pin: PinTarget) => void
   setDraft: (lat: number, lng: number) => void
-  confirm: () => void
   cancel: () => void
   setMapRegistered: (registered: boolean) => void
 }
@@ -38,7 +37,6 @@ export const useLocationPick = create<LocationPickState>((set) => ({
   start: (initial, pin) => set({ active: true, draft: initial ?? null, pin: pin ?? DEFAULT_PIN }),
   setPin: (pin) => set({ pin }),
   setDraft: (lat, lng) => set({ draft: { lat, lng } }),
-  confirm: () => set({ active: false, draft: null, pin: DEFAULT_PIN }),
   cancel: () => set({ active: false, draft: null, pin: DEFAULT_PIN }),
   setMapRegistered: (registered) => set({ mapRegistered: registered }),
 }))

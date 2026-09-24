@@ -105,6 +105,6 @@ describe("the resolved-address query key", () => {
   })
 
   it("sits under one prefix the caller can invalidate wholesale", () => {
-    expect(queryKeys.resolvedAddress("x").slice(0, 2)).toEqual([...queryKeys.resolvedAddressRoot])
+    expect(queryKeys.resolvedAddress("x").slice(0, 2)).toEqual(["geocode", "address"])
   })
 })
