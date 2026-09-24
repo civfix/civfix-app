@@ -137,6 +137,7 @@
     "sources_caption": "{{rate}}% of {{views}} page views signed up"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Source",
     "reference": "Event reference",
     "generated_at": "Generated",

@@ -137,6 +137,7 @@
     "sources_caption": "{{rate}} % von {{views}} Seitenaufrufen haben sich angemeldet"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Quelle",
     "reference": "Referenz der Veranstaltung",
     "generated_at": "Erstellt",

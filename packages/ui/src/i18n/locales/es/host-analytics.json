@@ -137,6 +137,7 @@
     "sources_caption": "El {{rate}} % de {{views}} visitas a la página se inscribió"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Fuente",
     "reference": "Referencia del evento",
     "generated_at": "Generado",
