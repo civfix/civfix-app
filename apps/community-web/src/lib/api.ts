@@ -1,12 +1,17 @@
 "use client"
 
+import { stripTrailingSlashes } from "@civfix/shared"
 import { createApiClient, type ApiClient } from "@civfix/shared/client"
 
 import { getCsrfToken, useAuthStore, waitForSessionSettled } from "@/store/auth-store"
 
+const LOCAL_API_URL = "http://localhost:8080"
+
 /** NEXT_PUBLIC_ vars are inlined into the static export, so changing this needs a rebuild. */
+const CONFIGURED_API_URL = process.env.NEXT_PUBLIC_API_URL
+
 export const API_BASE_URL: string =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ?? "http://localhost:8080"
+  CONFIGURED_API_URL === undefined ? LOCAL_API_URL : stripTrailingSlashes(CONFIGURED_API_URL)
 
 /**
  * The Next prerender of the shell has no window, so this falls back to globalThis.fetch and module

@@ -1,4 +1,5 @@
 import { intOr } from "../internal/numbers.js"
+import { MS_PER_DAY } from "../time-units.js"
 import { K_SUPPRESS, normalizeK, roundRate, safeCount } from "./counts.js"
 
 export const MAX_SERIES_DAYS = 400
@@ -8,7 +9,6 @@ const DEFAULT_ARRIVAL_BUCKET_MINUTES = 15
 const DEFAULT_ARRIVAL_FROM_MINUTES = -120
 const DEFAULT_ARRIVAL_TO_MINUTES = 240
 
-const DAY_MS = 86400000
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface DayRange {
@@ -149,12 +149,12 @@ export function enumerateDays(range: DayRange): string[] {
     throw new RangeError("enumerateDays expects YYYY-MM-DD calendar days")
   }
   if (to < from) throw new RangeError("enumerateDays expects range.from <= range.to")
-  const span = Math.round((to - from) / DAY_MS) + 1
+  const span = Math.round((to - from) / MS_PER_DAY) + 1
   if (span > MAX_SERIES_DAYS) {
     throw new RangeError(`enumerateDays refuses an unbounded range (${span} days > ${MAX_SERIES_DAYS})`)
   }
   const days: string[] = []
-  for (let i = 0; i < span; i++) days.push(utcMsToDay(from + i * DAY_MS))
+  for (let i = 0; i < span; i++) days.push(utcMsToDay(from + i * MS_PER_DAY))
   return days
 }
 

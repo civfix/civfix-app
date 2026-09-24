@@ -7,6 +7,20 @@ import { ReportCategorySchema } from "../common.js"
  * category.
  */
 
+export const AnalyticsKpiUnitSchema = z.enum(["count", "percent", "hours"])
+export type AnalyticsKpiUnit = z.infer<typeof AnalyticsKpiUnitSchema>
+
+/** The `key` values the backend emits today, so a client matches a KPI without reading its label. */
+export const AnalyticsKpiKey = {
+  pinsThisMonth: "pins_this_month",
+  resolved: "resolved",
+  cleanupsPlanned: "cleanups_planned",
+  avgRouteTime: "avg_route_time",
+  eventsThisMonth: "events_this_month",
+  newUsers: "new_users",
+} as const
+export type AnalyticsKpiKey = (typeof AnalyticsKpiKey)[keyof typeof AnalyticsKpiKey]
+
 /** One KPI cell: a label, a value, a delta, and the delta direction (for the up/down arrow). */
 export const AnalyticsKpiSchema = z
   .object({
@@ -14,6 +28,9 @@ export const AnalyticsKpiSchema = z
     num: z.number(),
     delta: z.string(),
     dir: z.enum(["up", "down", "flat"]),
+    // An open string, not the AnalyticsKpiKey union, so a KPI added later still parses on older clients.
+    key: z.string().min(1).optional(),
+    unit: AnalyticsKpiUnitSchema.optional(),
   })
   .strict()
 export type AnalyticsKpi = z.infer<typeof AnalyticsKpiSchema>

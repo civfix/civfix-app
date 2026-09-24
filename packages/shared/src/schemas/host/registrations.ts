@@ -194,6 +194,9 @@ export const CreateWalkupRegistrationRequestSchema = z
     name: z.string().trim().min(1).max(MAX_ATTENDEE_NAME),
     partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
     checkInNow: z.boolean().default(true),
+    // Without it the backend derives a key from the name and the minute, which merges two same-name
+    // walk-ups and splits one double-tap across a minute boundary.
+    idempotencyKey: IdempotencyKeySchema.optional(),
   })
   .strict()
 export type CreateWalkupRegistrationRequest = z.infer<typeof CreateWalkupRegistrationRequestSchema>

@@ -1,4 +1,4 @@
-import { MIN_EVENT_DURATION_MINUTES } from "@civfix/shared"
+import { MIN_EVENT_DURATION_MINUTES, MS_PER_DAY } from "@civfix/shared"
 import {
   wallClockExistsInZone,
   wallClockInZone,
@@ -6,7 +6,6 @@ import {
   zoneShortName,
   type WallClock,
 } from "@civfix/shared/datetime"
-import { DAY_MS } from "./timeUnits"
 
 export function startOfDay(d: Date): Date {
   const x = new Date(d)
@@ -70,7 +69,7 @@ function clockMs(time: Date): number {
 }
 
 function offsetFromClocks(startClock: number, endClock: number): number {
-  return (((endClock - startClock) % DAY_MS) + DAY_MS) % DAY_MS
+  return (((endClock - startClock) % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY
 }
 
 export function endOffsetMs(start: Date, end: Date): number {
@@ -175,7 +174,7 @@ export function wallClockToFormDate(wallClock: WallClock): Date {
 
 export function addWallClockDays(wallClock: WallClock, days: number): WallClock {
   const anchor = new Date(Date.UTC(wallClock.year, wallClock.month - 1, wallClock.day, 12))
-  const moved = new Date(anchor.getTime() + days * DAY_MS)
+  const moved = new Date(anchor.getTime() + days * MS_PER_DAY)
   return {
     year: moved.getUTCFullYear(),
     month: moved.getUTCMonth() + 1,
@@ -276,7 +275,7 @@ export function makeZoneDisplayNameCache(): ZoneDisplayNameCache {
   const names = new Map<string, string>()
   return {
     get(timeZone, locale, now = Date.now()) {
-      const today = Math.floor(now / DAY_MS)
+      const today = Math.floor(now / MS_PER_DAY)
       if (today !== day) {
         names.clear()
         day = today

@@ -4,7 +4,7 @@ import {
   fakeHostedEvents,
   fakeHostedEventsAnalytics,
 } from "@civfix/shared/fakes"
-import { MAX_PORTFOLIO_TOP_VOLUNTEERS } from "@civfix/shared"
+import { MAX_PORTFOLIO_TOP_VOLUNTEERS, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
 import type {
   CleanupDTO,
   EventCheckinCountersDTO,
@@ -26,7 +26,7 @@ import type {
   PortfolioAnalyticsRange,
 } from "@civfix/shared"
 
-import { DAY_MS, HOUR_MS, MINUTE_MS, makeCannedApi, type FakeEndpoint } from "./fixtures"
+import { makeCannedApi, type FakeEndpoint } from "./fixtures"
 
 const FIXTURE_NOW = Date.now()
 
@@ -114,8 +114,8 @@ const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     socialLinks: null,
     verifiedStatus: "verified",
     verifiedKind: "nonprofit",
-    verifiedAt: new Date(FIXTURE_NOW - 240 * DAY_MS).toISOString(),
-    createdAt: new Date(FIXTURE_NOW - 500 * DAY_MS).toISOString(),
+    verifiedAt: new Date(FIXTURE_NOW - 240 * MS_PER_DAY).toISOString(),
+    createdAt: new Date(FIXTURE_NOW - 500 * MS_PER_DAY).toISOString(),
     memberCount: 24,
     eventCount: 31,
     myRole: "owner",
@@ -134,7 +134,7 @@ const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     verifiedStatus: "unverified",
     verifiedKind: null,
     verifiedAt: null,
-    createdAt: new Date(FIXTURE_NOW - 180 * DAY_MS).toISOString(),
+    createdAt: new Date(FIXTURE_NOW - 180 * MS_PER_DAY).toISOString(),
     memberCount: 9,
     eventCount: 6,
     myRole: "admin",
@@ -151,15 +151,15 @@ const EVENT_INVITES: ListMyEventInvitesResponse = {
       event: {
         id: "ev-invite-1",
         title: "Creekside trail restoration",
-        startsAt: new Date(FIXTURE_NOW + 6 * DAY_MS).toISOString(),
-        endsAt: new Date(FIXTURE_NOW + 6 * DAY_MS + 4 * HOUR_MS).toISOString(),
+        startsAt: new Date(FIXTURE_NOW + 6 * MS_PER_DAY).toISOString(),
+        endsAt: new Date(FIXTURE_NOW + 6 * MS_PER_DAY + 4 * MS_PER_HOUR).toISOString(),
         status: "upcoming",
         coverThumbUrl: null,
         address: "Glen Canyon Park, San Francisco",
       },
       invitedBy: COHOST,
-      createdAt: new Date(FIXTURE_NOW - 2 * DAY_MS).toISOString(),
-      expiresAt: new Date(FIXTURE_NOW + 12 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 2 * MS_PER_DAY).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 12 * MS_PER_DAY).toISOString(),
     },
   ],
   nextCursor: null,
@@ -179,20 +179,20 @@ const ORG_INVITES: ListMyOrgInvitesResponse = {
       },
       role: "admin",
       invitedBy: COHOST,
-      createdAt: new Date(FIXTURE_NOW - 4 * DAY_MS).toISOString(),
-      expiresAt: new Date(FIXTURE_NOW + 10 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 4 * MS_PER_DAY).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 10 * MS_PER_DAY).toISOString(),
     },
   ],
 }
 
 const ORG_MEMBERS: ListOrganizationMembersResponse = {
   items: [
-    { person: HOST, role: "owner", joinedAt: new Date(FIXTURE_NOW - 500 * DAY_MS).toISOString(), canRemove: false },
-    { person: COHOST, role: "admin", joinedAt: new Date(FIXTURE_NOW - 300 * DAY_MS).toISOString(), canRemove: true },
+    { person: HOST, role: "owner", joinedAt: new Date(FIXTURE_NOW - 500 * MS_PER_DAY).toISOString(), canRemove: false },
+    { person: COHOST, role: "admin", joinedAt: new Date(FIXTURE_NOW - 300 * MS_PER_DAY).toISOString(), canRemove: true },
     {
       person: person("p-lee", "Lee Tran", "leetran"),
       role: "member",
-      joinedAt: new Date(FIXTURE_NOW - 90 * DAY_MS).toISOString(),
+      joinedAt: new Date(FIXTURE_NOW - 90 * MS_PER_DAY).toISOString(),
       canRemove: true,
     },
   ],
@@ -209,8 +209,8 @@ const ORG_INVITE_LIST: ListOrganizationInvitesResponse = {
       role: "member",
       status: "pending",
       invitedBy: HOST,
-      createdAt: new Date(FIXTURE_NOW - 3 * DAY_MS).toISOString(),
-      expiresAt: new Date(FIXTURE_NOW + 11 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 3 * MS_PER_DAY).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 11 * MS_PER_DAY).toISOString(),
     },
   ],
 }
@@ -239,8 +239,8 @@ const EXTRA_TOP_VOLUNTEERS: readonly LeaderboardEntryDTO[] = [
 const NEEDS_HOURS_EVENT: HostedEventDTO = {
   id: "ev-needs-hours",
   title: "Islais Creek weed pull",
-  startsAt: new Date(FIXTURE_NOW - 2 * DAY_MS).toISOString(),
-  endsAt: new Date(FIXTURE_NOW - 2 * DAY_MS + 3 * HOUR_MS).toISOString(),
+  startsAt: new Date(FIXTURE_NOW - 2 * MS_PER_DAY).toISOString(),
+  endsAt: new Date(FIXTURE_NOW - 2 * MS_PER_DAY + 3 * MS_PER_HOUR).toISOString(),
   timezone: "America/Los_Angeles",
   status: "upcoming",
   visibility: "public",
@@ -368,7 +368,7 @@ function phaseCounters(id: string, phase: EventPhase): EventCheckinCountersDTO {
       capacity: row.capacity,
     })),
     arrivals: insights.arrivals.map((bucket) => ({
-      at: new Date(startsAt + bucket.offsetMin * MINUTE_MS).toISOString(),
+      at: new Date(startsAt + bucket.offsetMin * MS_PER_MINUTE).toISOString(),
       count: bucket.seats,
     })),
     asOf: new Date().toISOString(),
@@ -407,18 +407,18 @@ function phaseRoster(id: string, phase: EventPhase): ListEventRegistrationsRespo
         attendeeName: seatIndex === 0 ? who.name : null,
         status: "active" as const,
         ticketToken: null,
-        checkedInAt: checkedIn ? new Date(startsAt + i * 6 * MINUTE_MS).toISOString() : null,
+        checkedInAt: checkedIn ? new Date(startsAt + i * 6 * MS_PER_MINUTE).toISOString() : null,
         checkinMethod: checkedIn ? ("scan" as const) : null,
         noShowAt: null,
       })),
       status: i === ROSTER_PEOPLE.length - 1 ? "cancelled" : "registered",
       source: i === 3 ? "walkup" : "self",
-      registeredAt: new Date(startsAt - (14 - i) * DAY_MS).toISOString(),
+      registeredAt: new Date(startsAt - (14 - i) * MS_PER_DAY).toISOString(),
       cancelledAt:
         i === ROSTER_PEOPLE.length - 1
-          ? new Date(startsAt - 2 * DAY_MS).toISOString()
+          ? new Date(startsAt - 2 * MS_PER_DAY).toISOString()
           : null,
-      checkedInAt: checkedIn ? new Date(startsAt + i * 6 * MINUTE_MS).toISOString() : null,
+      checkedInAt: checkedIn ? new Date(startsAt + i * 6 * MS_PER_MINUTE).toISOString() : null,
       checkedInBy: checkedIn ? HOST : null,
       slot: null,
       waitlistPosition: null,

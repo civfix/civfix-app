@@ -1,5 +1,6 @@
 import {
   haversineMeters,
+  isUuid,
   type BBox,
   type LinkedReportRef,
   type ReportCategory,
@@ -177,13 +178,12 @@ export function mergePins(...groups: ReadonlyArray<readonly ReportPinDTO[]>): Re
   return [...byId.values()]
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const REFERENCE_CODE_PATTERN = /^[a-z]{2,4}-\d{1,6}-\d{6}$/i
 const SHORT_ID_LENGTH = 8
 
 export function reportLookupKey(query: string): string | null {
   const q = query.trim()
-  if (UUID_PATTERN.test(q)) return q.toLowerCase()
+  if (isUuid(q)) return q.toLowerCase()
   if (REFERENCE_CODE_PATTERN.test(q)) return q.toUpperCase()
   return null
 }

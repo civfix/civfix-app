@@ -21,6 +21,7 @@ import type {
   PostDTO,
 } from "@civfix/shared"
 import type { CleanupAttendeesResponse } from "@civfix/shared"
+import { MS_PER_DAY, MS_PER_MINUTE } from "@civfix/shared"
 import type {
   EventHoursResponse,
   EventSlotDTO,
@@ -79,14 +80,12 @@ import {
   portfolioOverrides,
 } from "./dashboard-fixtures"
 import {
-  DAY_MS,
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
   GALLERY_NOTIFICATION_PREFS,
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
-  MINUTE_MS,
   daysAgo,
   galleryChatHistory,
   galleryThreads,
@@ -108,7 +107,7 @@ const ORGANIZER = {
 }
 
 function event(id: string, title: string, daysAgo: number, organizerId: string): CleanupDTO {
-  const scheduledAt = isoFromNow(-daysAgo * DAY_MS)
+  const scheduledAt = isoFromNow(-daysAgo * MS_PER_DAY)
   return {
     id,
     title,
@@ -166,7 +165,7 @@ const LINKED_EVENTS = [
     id: "e1",
     title: "Creekside litter sweep",
     eventKind: "cleanup",
-    scheduledAt: isoFromNow(2 * DAY_MS),
+    scheduledAt: isoFromNow(2 * MS_PER_DAY),
     lat: 37.77,
     lng: -122.42,
     going: 8,
@@ -264,7 +263,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
   items: [
     {
       ...event("e1", "Creekside litter sweep", -2, "p-ann"),
-      scheduledAt: isoFromNow(2 * DAY_MS),
+      scheduledAt: isoFromNow(2 * MS_PER_DAY),
       status: "upcoming",
       joined: true,
       going: 8,
@@ -273,7 +272,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     {
       ...event("e2", "Mission mural touch-up", -2, "p-lee"),
       organizer: { ...ORGANIZER, id: "p-lee", name: "Lee Tran", handle: "leetran" },
-      scheduledAt: isoFromNow(5 * DAY_MS),
+      scheduledAt: isoFromNow(5 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 14,
@@ -282,7 +281,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     {
       ...event("e5", "Dolores Park planting", -2, "p-mei"),
       organizer: { ...ORGANIZER, id: "p-mei", name: "Mei Wong", handle: "meiwong" },
-      scheduledAt: isoFromNow(6 * DAY_MS),
+      scheduledAt: isoFromNow(6 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 5,
@@ -290,7 +289,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     },
     {
       ...event("e6", "Bayview shoreline sweep", -2, "p-ann"),
-      scheduledAt: isoFromNow(8 * DAY_MS),
+      scheduledAt: isoFromNow(8 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 21,
@@ -322,7 +321,7 @@ const FEED_POSTS: PostDTO[] = [
     author: ORGANIZER,
     kind: "post",
     body: "We are meeting by the east gate Saturday morning. Come help us reset the creek path before summer.",
-    createdAt: isoFromNow(-35 * MINUTE_MS),
+    createdAt: isoFromNow(-35 * MS_PER_MINUTE),
     event: {
       id: "e1",
       title: "Creekside litter sweep",
@@ -333,7 +332,7 @@ const FEED_POSTS: PostDTO[] = [
       lng: NEARBY_CLEANUPS.items[0]!.lng,
       going: 8,
       organizer: ORGANIZER,
-      linkedAt: isoFromNow(-35 * MINUTE_MS),
+      linkedAt: isoFromNow(-35 * MS_PER_MINUTE),
     },
     report: null,
     repostOf: null,
@@ -412,7 +411,7 @@ const CLEANUP_DETAIL: CleanupDTO = {
   eventKind: "cleanup",
   description:
     "Join us for a morning sweep along the creek path. We will tackle the litter that washed up after the rain, then grab coffee. Newcomers welcome - tools provided if you do not have your own.",
-  scheduledAt: isoFromNow(2 * DAY_MS),
+  scheduledAt: isoFromNow(2 * MS_PER_DAY),
   status: "upcoming",
   joined: false,
   going: 8,
@@ -440,7 +439,7 @@ const EDIT_CLEANUP_DETAIL: CleanupDTO = {
   ...event("e-mine", "24th St planter day", -3, "me"),
   eventKind: "cleanup",
   description: "We are refreshing the sidewalk planters along 24th St. Tools and soil provided.",
-  scheduledAt: isoFromNow(6 * DAY_MS),
+  scheduledAt: isoFromNow(6 * MS_PER_DAY),
   status: "upcoming",
   joined: false,
   going: 5,

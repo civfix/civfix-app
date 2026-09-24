@@ -15,10 +15,10 @@ import type {
   ReportDTO,
   UserProfileDTO,
 } from "@civfix/shared"
+import { MS_PER_DAY } from "@civfix/shared"
 import { makeFakeApiClient } from "@civfix/ui/data"
 
 import {
-  DAY_MS,
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
@@ -77,7 +77,7 @@ function cleanup(
     description: "Gloves, bags and grabbers provided. Meet at the gate; we finish by noon.",
     lat: 37.77,
     lng: -122.42,
-    scheduledAt: isoFromNow(inDays * DAY_MS),
+    scheduledAt: isoFromNow(inDays * MS_PER_DAY),
     status: "upcoming",
     organizer,
     going: 12,

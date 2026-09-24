@@ -12,13 +12,12 @@ import type {
   OrganizationMemberRole,
   OrgInviteIdentifierKind,
 } from "@civfix/shared"
-import { ErrorCode, MAX_ORG_INVITES_PER_ORG, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, MAX_ORG_INVITES_PER_ORG, MS_PER_DAY, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
 import type { EventWhenInput } from "@civfix/shared/datetime"
 import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/shared/datetime"
 import { can, deriveCleanupStatus, eventPhase, type EventWindowLike } from "@civfix/shared/host"
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
-import { DAY_MS } from "../../timeUnits"
 import { hasHostCapability } from "../../../data/hooks/host"
 import {
   hasActions,
@@ -267,9 +266,9 @@ export function nextDuplicateStart(
 ): DuplicateStartSeed {
   const zone = timezone ?? viewerTimeZone()
   const parsed = Date.parse(startsAt)
-  const seed = Number.isNaN(parsed) ? now.getTime() + 7 * DAY_MS : parsed
+  const seed = Number.isNaN(parsed) ? now.getTime() + 7 * MS_PER_DAY : parsed
   const behindMs = now.getTime() - seed
-  const weeks = behindMs > 0 ? Math.ceil(behindMs / (7 * DAY_MS)) : 0
+  const weeks = behindMs > 0 ? Math.ceil(behindMs / (7 * MS_PER_DAY)) : 0
   let wallClock = addWallClockDays(wallClockInZone(seed, zone), weeks * 7)
 
   for (let roll = 0; roll < MAX_DUPLICATE_ROLLS; roll++) {
@@ -281,7 +280,7 @@ export function nextDuplicateStart(
         : addWallClockDays(wallClock, 7)
   }
 
-  const fallback = now.getTime() + 7 * DAY_MS
+  const fallback = now.getTime() + 7 * MS_PER_DAY
   return { instantMs: fallback, wallClock: wallClockInZone(fallback, zone) }
 }
 

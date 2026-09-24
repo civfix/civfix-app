@@ -1,4 +1,5 @@
 import { FORMAT_FALLBACK_LOCALE } from "./internal/format-locale.js"
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_WEEK } from "./time-units.js"
 
 /**
  * The compact "ago" label, shared so the server and both clients produce identical text.
@@ -49,12 +50,6 @@ export interface RelativeAgoOptions {
   absoluteFallback?: (d: Date) => string
 }
 
-const SECOND = 1000
-const MINUTE = 60 * SECOND
-const HOUR = 60 * MINUTE
-const DAY = 24 * HOUR
-const WEEK = 7 * DAY
-
 function toEpochMs(value: Date | string | number): number | null {
   if (value instanceof Date) {
     const t = value.getTime()
@@ -89,13 +84,13 @@ export function relativeAgo(
   const diff = nowMs - fromMs
 
   // Future timestamps and anything under a minute collapse to the just-now label.
-  if (diff < MINUTE) return justNow
-  if (diff < HOUR) return `${Math.floor(diff / MINUTE)}${minute}`
-  if (diff < DAY) return `${Math.floor(diff / HOUR)}${hour}`
-  if (diff < WEEK) return `${Math.floor(diff / DAY)}${day}`
+  if (diff < MS_PER_MINUTE) return justNow
+  if (diff < MS_PER_HOUR) return `${Math.floor(diff / MS_PER_MINUTE)}${minute}`
+  if (diff < MS_PER_DAY) return `${Math.floor(diff / MS_PER_HOUR)}${hour}`
+  if (diff < MS_PER_WEEK) return `${Math.floor(diff / MS_PER_DAY)}${day}`
 
   if (opts?.absoluteFallback) return opts.absoluteFallback(new Date(fromMs))
-  return `${Math.floor(diff / WEEK)}${week}`
+  return `${Math.floor(diff / MS_PER_WEEK)}${week}`
 }
 
 export interface WallClock {

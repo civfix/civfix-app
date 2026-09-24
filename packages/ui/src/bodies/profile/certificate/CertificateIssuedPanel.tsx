@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { ServiceHoursCertificateDTO } from "@civfix/shared"
+import { MS_PER_MINUTE, type ServiceHoursCertificateDTO } from "@civfix/shared"
 import { useTheme, webSelectableText, focusRingProps } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { MetaDot } from "../../../primitives"
@@ -8,13 +8,12 @@ import { useT } from "../../../i18n"
 import { certificateExpiryLabel } from "../../serviceCertificate"
 import { CertificateCode, CertificateCopyButton } from "./CertificateCode"
 import { useCertificateCardStyles } from "./certificateCardStyles"
-import { MINUTE_MS } from "../../timeUnits"
 
 /** Whole minutes of link life left, floored at 0 (the card has already flipped to `expired` by then). */
 function minutesLeft(expiresAt: string, now: number): number {
   const at = new Date(expiresAt).getTime()
   if (Number.isNaN(at)) return 0
-  return Math.max(0, Math.ceil((at - now) / MINUTE_MS))
+  return Math.max(0, Math.ceil((at - now) / MS_PER_MINUTE))
 }
 
 export function CertificateIssuedPanel({

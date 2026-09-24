@@ -7,10 +7,9 @@ import type {
   SeriesPoint,
   SuppressedRate,
 } from "@civfix/shared"
-import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
+import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS, MS_PER_DAY, isUuid } from "@civfix/shared"
 import { visibleValue } from "@civfix/shared/host"
 import { hasHostCapability } from "../../data/hooks/host"
-import { DAY_MS } from "../timeUnits"
 import { dedupeById } from "../../primitives/listKeys"
 
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
@@ -53,7 +52,7 @@ export function rangeSlice(
   now: number,
 ): readonly SeriesPoint[] {
   if (days === null || days <= 0) return points
-  const from = Math.floor(now / DAY_MS) * DAY_MS - (days - 1) * DAY_MS
+  const from = Math.floor(now / MS_PER_DAY) * MS_PER_DAY - (days - 1) * MS_PER_DAY
   return points.filter((point) => {
     const at = parse(point.day)
     return at === null ? true : at >= from
@@ -135,10 +134,8 @@ export function pickerOptions(
     .map((event) => ({ id: event.id, title: event.title }))
 }
 
-const EVENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 export function isEventId(key: string): boolean {
-  return EVENT_ID.test(key)
+  return isUuid(key)
 }
 
 export function eventRowTarget(

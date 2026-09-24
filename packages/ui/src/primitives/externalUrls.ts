@@ -1,3 +1,4 @@
+import { stripTrailingSlashes } from "@civfix/shared"
 import { SOURCE_REPO_URL, sourceLink } from "@civfix/shared/legal"
 
 export const WEB_ORIGIN = "https://civfix.org"
@@ -5,7 +6,7 @@ export const WEB_ORIGIN = "https://civfix.org"
 let configuredWebOrigin = WEB_ORIGIN
 
 export function setWebOrigin(origin: string): void {
-  configuredWebOrigin = origin.replace(/\/+$/, "")
+  configuredWebOrigin = stripTrailingSlashes(origin)
 }
 
 export function webOrigin(): string {
