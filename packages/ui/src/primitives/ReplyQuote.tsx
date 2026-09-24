@@ -2,7 +2,7 @@ import React from "react"
 import { View, Pressable } from "react-native"
 import { avatarGradient, type ReplyToDTO } from "@civfix/shared"
 import { alpha } from "../theme/alpha"
-import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps, type Theme } from "../theme"
+import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps, PRESSED_OPACITY, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { QUOTE_ACCENT_LINE, excerptOf } from "./quoteStrip"
@@ -126,7 +126,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontStyle: "italic",
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   loading: {
     opacity: 0.5,

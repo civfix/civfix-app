@@ -9,10 +9,10 @@ import {
   webTransition,
   focusRingProps,
   webScrimProps,
+  MIN_TOUCH_TARGET,
   PRESSED_OPACITY,
 } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
-import { MIN_TOUCH_TARGET } from "../typography/TextLink"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { useT } from "../i18n"
 import type { LightboxItem } from "./MediaLightbox.types"

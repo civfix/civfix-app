@@ -1,5 +1,5 @@
 import { StyleSheet, type TextStyle, type ViewStyle } from "react-native"
-import type { Theme } from "../theme"
+import { PRESSED_OPACITY_SUBTLE, type Theme } from "../theme"
 
 export function menuSurfaceStyle(t: Theme): ViewStyle {
   return {
@@ -35,7 +35,7 @@ export function menuRowStyles(t: Theme, inset: number): MenuRowStyles {
     },
     rowPressed: {
       backgroundColor: t.colors.surfaceTint,
-      opacity: 0.85,
+      opacity: PRESSED_OPACITY_SUBTLE,
     },
     rowLabel: {
       flex: 1,

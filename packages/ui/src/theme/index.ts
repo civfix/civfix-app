@@ -109,7 +109,14 @@ export { categoryColor }
 export type { CategoryColorKey }
 
 export { MOTION, EASE_STANDARD_CSS } from "./motion"
-export { PRESSED_OPACITY, HOVERED_OPACITY } from "./opacity"
+export {
+  PRESSED_OPACITY,
+  PRESSED_OPACITY_SUBTLE,
+  HOVERED_OPACITY,
+  DISABLED_OPACITY,
+  DISABLED_OPACITY_FAINT,
+} from "./opacity"
+export { MIN_TOUCH_TARGET } from "./touchTarget"
 export type { TimingRecipe, EaseTuple } from "./motion"
 
 export { tint, wash } from "./color"

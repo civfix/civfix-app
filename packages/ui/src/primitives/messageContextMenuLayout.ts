@@ -4,9 +4,7 @@
  * down to clear the top margin, and every top is floored at the margin (bands may overlap on tiny windows).
  */
 
-import type { MenuAnchorRect } from "./menuMotionModel"
-
-export type { MenuAnchorRect }
+import type { AnchorRect } from "./menuMotionModel"
 
 export interface MenuPlacement {
   bubbleTop: number
@@ -24,7 +22,7 @@ export interface MenuPlacementOptions {
 }
 
 export function resolveMenuPlacement(
-  anchor: MenuAnchorRect,
+  anchor: AnchorRect,
   screenH: number,
   menuH: number,
   reactionRowH: number,
@@ -72,7 +70,7 @@ export function resolveMenuPlacement(
 
 /** `alignRight` aligns the band to the bubble's trailing edge (the viewer's own messages). */
 export function resolveBandLeft(
-  anchor: MenuAnchorRect,
+  anchor: AnchorRect,
   screenW: number,
   width: number,
   alignRight: boolean,
@@ -100,7 +98,7 @@ export interface WebMenuFrame {
 
 /** The web card: one column (reactions, then actions) that scrolls its actions before it leaves the window. */
 export function resolveWebMenuFrame(
-  anchor: MenuAnchorRect | null,
+  anchor: AnchorRect | null,
   screen: { width: number; height: number },
   frame: WebMenuFrameInput,
   alignRight: boolean,

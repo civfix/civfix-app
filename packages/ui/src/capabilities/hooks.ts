@@ -1,5 +1,5 @@
 import { useCapabilities } from "./context"
-import { NOOP_HAPTICS } from "./fakes"
+import { NOOP_HAPTICS } from "./noopHaptics"
 import type {
   CameraCapability,
   GeolocationCapability,

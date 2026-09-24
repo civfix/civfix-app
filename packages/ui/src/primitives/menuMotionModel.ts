@@ -9,8 +9,6 @@ export interface AnchorRect {
   height: number
 }
 
-export type MenuAnchorRect = AnchorRect
-
 export interface MenuCardRect {
   left: number
   top: number
@@ -32,7 +30,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function menuOrigin(
-  anchor: MenuAnchorRect | null | undefined,
+  anchor: AnchorRect | null | undefined,
   card: MenuCardRect | null | undefined,
   scaleFrom: number = MENU_SCALE_FROM,
 ): MenuOrigin {

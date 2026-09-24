@@ -15,7 +15,6 @@ export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 
 export type GuestRsvpCommit = "submitForm" | "submitCode" | "startOver" | "close"
 
-/** What the sheet's keyboard commit (Enter on web) does on each step. */
 export function guestRsvpCommit(step: GuestRsvpStep, exhausted: boolean): GuestRsvpCommit {
   switch (step) {
     case "form":

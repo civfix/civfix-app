@@ -143,7 +143,7 @@ describe("a failed reduce-motion probe is a documented choice, not a swallowed e
   })
 
   it("../primitives/usePopScale.ts reads the shared hook, which answers a failed probe with motion on", () => {
-    expect(read("../primitives/usePopScale.ts")).toContain("reduceMotionRef.current = useReducedMotion() === true")
+    expect(read("../primitives/usePopScale.ts")).toContain("const reduceMotion = useReducedMotion() === true")
     expect(read("../theme/useReducedMotion.ts")).toContain(".catch(() => setReducedMotion(false))")
   })
 })

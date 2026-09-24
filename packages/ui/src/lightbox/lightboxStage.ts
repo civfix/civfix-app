@@ -41,7 +41,6 @@ export function lightboxMediaHeight(width: number, ratio: number): number {
   return Math.max(1, safeWidth / safeRatio)
 }
 
-/** Wraps around both ends, so paging past the last item returns to the first. */
 export function stepIndex(index: number, delta: number, count: number): number {
   return (index + delta + count) % count
 }

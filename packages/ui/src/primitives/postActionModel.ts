@@ -1,6 +1,6 @@
 import type { PostCounts, PostViewer } from "@civfix/shared"
 import { space } from "@civfix/shared/tokens"
-import type { MenuAnchorRect } from "./menuMotionModel"
+import type { AnchorRect } from "./menuMotionModel"
 import { resolveBandLeft } from "./messageContextMenuLayout"
 
 export type PostActionKey = "like" | "repost" | "comment" | "save" | "share"
@@ -162,7 +162,7 @@ export function buildPostActionMenuModel(
 }
 
 export function positionPostActionMenu(
-  anchor: MenuAnchorRect,
+  anchor: AnchorRect,
   viewport: { width: number; height: number },
   menu: { width: number; height: number },
   align: "left" | "right" = "right",

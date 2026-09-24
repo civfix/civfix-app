@@ -191,7 +191,7 @@ export type {
   ContextMenuAction,
   ContextMenuActionKey,
 } from "./MessageContextMenu"
-export type { MenuPlacement, MenuPlacementOptions, MenuAnchorRect } from "./messageContextMenuLayout"
+export type { MenuPlacement, MenuPlacementOptions } from "./messageContextMenuLayout"
 
 export { SystemMessageRow } from "./SystemMessageRow"
 

@@ -7,11 +7,11 @@ import type {
   PushCapability,
   SecureStoreCapability,
   BlurSurfaceCapability,
-  HapticsCapability,
   OpenExternalCapability,
   OpenInternalHrefCapability,
   ClipboardCapability,
 } from "../types"
+import { NOOP_HAPTICS } from "../noopHaptics"
 
 // Inline bytes and no location: the fake ships in the web export's dev galleries, where it must never
 // fetch from a third-party host or stand in for a device GPS fix.
@@ -84,13 +84,6 @@ class MapKeyValueStore implements SecureStoreCapability {
 }
 
 const fakeBlurSurface: BlurSurfaceCapability = { supported: false }
-
-export const NOOP_HAPTICS: HapticsCapability = {
-  selection(): void {},
-  impactLight(): void {},
-  success(): void {},
-  error(): void {},
-}
 
 const FAKE_OPEN_EXTERNAL_LOG_MAX = 50
 

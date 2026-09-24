@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, View, Pressable, StyleSheet } from "react-native"
 import type { PollDTO } from "@civfix/shared"
-import { makeThemedStyles, useReducedMotion, useTheme, webCursorPointer, webNoSelect, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useReducedMotion,
+  useTheme,
+  webCursorPointer,
+  webNoSelect,
+  focusRingProps,
+  PRESSED_OPACITY,
+} from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { PrimaryButton } from "./PrimaryButton"
@@ -241,7 +249,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   rowPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   resultRow: {
     position: "relative",

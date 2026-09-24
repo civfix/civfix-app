@@ -21,7 +21,7 @@ import {
   focusRingProps,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { MIN_TOUCH_TARGET } from "../typography/TextLink"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 import { TextField, BringInput, MetaDot, SecondaryButton } from "../primitives"
 import {
   actableOrganizations,

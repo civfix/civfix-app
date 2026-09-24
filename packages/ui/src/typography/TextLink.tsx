@@ -1,11 +1,14 @@
 import React from "react"
 import { Pressable, type StyleProp, type TextStyle } from "react-native"
-import { focusRingProps, makeThemedStyles, webCursor, PRESSED_OPACITY } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  webCursor,
+  DISABLED_OPACITY,
+  MIN_TOUCH_TARGET,
+  PRESSED_OPACITY,
+} from "../theme"
 import { Text, type AppTextProps } from "./Text"
-
-export const MIN_TOUCH_TARGET = 44
-
-const DISABLED_OPACITY = 0.5
 
 export interface TextLinkProps {
   children: React.ReactNode

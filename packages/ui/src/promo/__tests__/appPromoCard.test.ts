@@ -22,9 +22,9 @@ describe("the dismiss control is a real target, optically centred on the title",
     expect(styleBlock("head")).toContain('alignItems: "center"')
     expect(styleBlock("head")).not.toContain("baseline")
     const dismiss = styleBlock("dismiss")
-    expect(dismiss).toContain('width: t.space["8"]')
-    expect(dismiss).toContain('height: t.space["8"]')
-    expect(tokens.space["8"]).toBe(32)
+    expect(dismiss).toContain("width: DISMISS_SIZE")
+    expect(dismiss).toContain("height: DISMISS_SIZE")
+    expect(SRC).toContain("const DISMISS_SIZE = 32\n")
     expect(dismiss).not.toContain("padding: 2")
   })
 

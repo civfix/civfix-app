@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, webCursor, webHover, focusRingProps } from "../theme"
+import { makeThemedStyles, webCursor, webHover, focusRingProps, PRESSED_OPACITY } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { CheckboxBox } from "./CheckboxBox"
@@ -101,7 +101,7 @@ const useStyles = makeThemedStyles((t) => ({
     textDecorationLine: "underline",
   },
   underPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   notice: {
     backgroundColor: t.colors.bgAlt,

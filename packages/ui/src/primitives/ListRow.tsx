@@ -1,5 +1,5 @@
 import React from "react"
-import { Pressable, View, type ViewStyle } from "react-native"
+import { Pressable, View } from "react-native"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -36,18 +36,20 @@ function iconTileInk(tone: IconTileTone, t: Theme): string {
   }
 }
 
+const TONE_FILL_KEY: Record<IconTileTone, "tileAttention" | "tileSuccess" | "tileDanger" | null> = {
+  neutral: null,
+  attention: "tileAttention",
+  success: "tileSuccess",
+  danger: "tileDanger",
+}
+
 export function IconTile({ icon, tone = "neutral" }: IconTileProps) {
   const styles = useStyles()
   const t = useTheme()
   const ink = iconTileInk(tone, t)
-  const toneFill: Record<IconTileTone, ViewStyle | null> = {
-    neutral: null,
-    attention: styles.tileAttention,
-    success: styles.tileSuccess,
-    danger: styles.tileDanger,
-  }
+  const fillKey = TONE_FILL_KEY[tone]
   return (
-    <View style={[styles.tile, toneFill[tone]]}>
+    <View style={[styles.tile, fillKey ? styles[fillKey] : null]}>
       <Icon icon={iconMap[icon]} size={18} color={ink} />
     </View>
   )

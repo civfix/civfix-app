@@ -1,6 +1,14 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { a11yState, makeThemedStyles, webCursor, webHover, focusRingProps } from "../theme"
+import {
+  a11yState,
+  makeThemedStyles,
+  webCursor,
+  webHover,
+  focusRingProps,
+  HOVERED_OPACITY,
+  PRESSED_OPACITY,
+} from "../theme"
 import { Text } from "../typography"
 import type { LegalDocumentType } from "@civfix/shared"
 import { currentVersion } from "@civfix/shared/legal"
@@ -113,10 +121,10 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.sm,
   },
   checkHovered: {
-    opacity: 0.85,
+    opacity: HOVERED_OPACITY,
   },
   checkPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   links: {
     flexShrink: 1,

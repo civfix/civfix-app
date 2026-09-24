@@ -1,5 +1,6 @@
 import React from "react"
 import { Text as RNText, type TextProps, type TextStyle } from "react-native"
+import { tokens } from "@civfix/shared/tokens"
 import {
   themes,
   useColorSchemeName,
@@ -20,8 +21,12 @@ type Variant =
 
 type VariantStyles = Record<Variant, TextStyle>
 
-// Pixel tracking: the token scale (`tokens.tracking`) is in em, which RN's letterSpacing does not accept.
-const DISPLAY_LETTER_SPACING = -0.6
+// RN's letterSpacing takes pixels, so an em tracking token is scaled by the font size it sits on.
+function trackingPx(em: string, size: number): number {
+  return parseFloat(em) * size
+}
+
+// A design-system gap: -0.015em at 20px sits between the tight and snug tracking tokens.
 const TITLE_LETTER_SPACING = -0.3
 
 function makeVariantStyles(t: Theme): VariantStyles {
@@ -30,7 +35,7 @@ function makeVariantStyles(t: Theme): VariantStyles {
       fontFamily: t.fontFamily.displayBold,
       fontSize: t.fontSize["30"],
       color: t.colors.text,
-      letterSpacing: DISPLAY_LETTER_SPACING,
+      letterSpacing: trackingPx(tokens.tracking.tight, t.fontSize["30"]),
     },
     title: {
       fontFamily: t.fontFamily.displaySemiBold,

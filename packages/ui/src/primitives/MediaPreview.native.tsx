@@ -33,7 +33,6 @@ export function MediaPreview({
           resizeMode="cover"
           controls
           paused
-          repeat={false}
           muted={false}
           onError={onError}
           accessibilityLabel={label || undefined}

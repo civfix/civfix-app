@@ -5,7 +5,7 @@ import { useReducedMotion } from "../theme/useReducedMotion"
 import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 
 export { MENU_SCALE_FROM, menuOrigin }
-export type { MenuAnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
+export type { AnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
 
 declare const process: { env: { NODE_ENV?: string } }
 

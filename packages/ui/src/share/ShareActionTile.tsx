@@ -8,6 +8,7 @@ import {
   webCursor,
   webTransition,
   webHover,
+  DISABLED_OPACITY_FAINT,
   HOVERED_OPACITY,
   PRESSED_OPACITY,
 } from "../theme"
@@ -26,7 +27,6 @@ export interface ShareActionTileProps {
 
 const CIRCLE = 52
 const ICON_SIZE = 22
-const DISABLED_OPACITY = 0.45
 
 function toneColor(tone: ShareTileTone, t: Theme): string {
   switch (tone) {
@@ -115,6 +115,6 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: PRESSED_OPACITY,
   },
   disabled: {
-    opacity: DISABLED_OPACITY,
+    opacity: DISABLED_OPACITY_FAINT,
   },
 }))

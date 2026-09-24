@@ -34,6 +34,7 @@ const BADGE_WIDTH: Record<AppStore, number> = {
   "google-play": 135,
 }
 
+const DISMISS_SIZE = 32
 const DISMISS_HIT_SLOP = 6
 const DISMISS_ICON_SIZE = 15
 const DISMISS_PRESSED_OPACITY = 0.55
@@ -160,8 +161,8 @@ const useStyles = makeThemedStyles((t) => ({
     letterSpacing: TITLE_LETTER_SPACING,
   },
   dismiss: {
-    width: t.space["8"],
-    height: t.space["8"],
+    width: DISMISS_SIZE,
+    height: DISMISS_SIZE,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,
