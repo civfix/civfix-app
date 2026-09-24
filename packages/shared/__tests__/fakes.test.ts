@@ -107,6 +107,32 @@ describe("FakeInboundMail", () => {
   })
 })
 
+describe("FakeInboundMail thread token parity with the real adapter", () => {
+  it("ignores a spoofable X-Thread-Token header", async () => {
+    const m = new FakeInboundMail()
+    const mail = await m.parse(
+      enc.encode("To: clerk@lacity.gov\nX-Thread-Token: abcdefgh1234\n\nhi"),
+    )
+    expect(m.extractThreadToken(mail)).toBeNull()
+  })
+
+  it("finds a reply address in Cc when To is the city clerk", async () => {
+    const m = new FakeInboundMail()
+    const mail = await m.parse(
+      enc.encode(
+        'To: clerk@lacity.gov\nCc: "Ops" <ops@lacity.gov>, report-k7m2x9q4ab3d@civfix.org\n\nhi',
+      ),
+    )
+    expect(m.extractThreadToken(mail)).toBe("k7m2x9q4ab3d")
+  })
+
+  it("lowercases the address before matching, like the real adapter", async () => {
+    const m = new FakeInboundMail()
+    const mail = await m.parse(enc.encode("To: Report-K7M2X9Q4AB3D@CivFix.org\n\nhi"))
+    expect(m.extractThreadToken(mail)).toBe("k7m2x9q4ab3d")
+  })
+})
+
 describe("FakeChatService", () => {
   it("broadcast reaches a joined connection and history paginates", async () => {
     const chat = new FakeChatService()
@@ -129,6 +155,15 @@ describe("FakeChatService", () => {
 
     await chat.leaveRoom("cleanup-1", conn)
     expect(chat.roomSize("cleanup-1")).toBe(0)
+  })
+})
+
+describe("FakeChatService clock", () => {
+  it("stamps createdAt from the injected clock", async () => {
+    const at = Date.parse("2026-05-16T16:00:00.000Z")
+    const chat = new FakeChatService(() => at)
+    const msg = await chat.persist({ cleanupId: "cleanup-1", userId: "user-1", body: "hello" })
+    expect(msg.createdAt).toBe("2026-05-16T16:00:00.000Z")
   })
 })
 

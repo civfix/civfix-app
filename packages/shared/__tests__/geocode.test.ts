@@ -294,6 +294,46 @@ describe("suggestAddresses", () => {
   })
 })
 
+describe("suggestAddresses onError", () => {
+  it("reports a Photon outage while still resolving []", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("down", { status: 503 })))
+    const onError = vi.fn()
+    await expect(suggestAddresses("echo park", { onError })).resolves.toEqual([])
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError.mock.calls[0]?.[1]).toBe("photon")
+    expect(String(onError.mock.calls[0]?.[0])).toContain("503")
+  })
+
+  it("reports a Mapbox failure it falls back past, then the Photon result wins", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string | URL) =>
+        String(url).includes("mapbox.com")
+          ? new Response("err", { status: 500 })
+          : photonResponse([{ lat: 34.0, lng: -118.2, props: { name: "Echo Park" } }]),
+      ),
+    )
+    const onError = vi.fn()
+    const out = await suggestAddresses("echo park", { mapboxToken: "pk.test", onError })
+    expect(out[0]?.source).toBe("photon")
+    expect(onError.mock.calls.map((call) => call[1])).toEqual(["mapbox"])
+  })
+
+  it("is not called for the caller's own abort", async () => {
+    const controller = new AbortController()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        controller.abort()
+        throw Object.assign(new Error("aborted"), { name: "AbortError" })
+      }),
+    )
+    const onError = vi.fn()
+    await expect(suggestAddresses("echo", { signal: controller.signal, onError })).rejects.toThrow()
+    expect(onError).not.toHaveBeenCalled()
+  })
+})
+
 describe("suggestion language/country options", () => {
   it("forwards a supported language to Photon and falls back to English for the rest", async () => {
     const urls: string[] = []

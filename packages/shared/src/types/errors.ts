@@ -55,7 +55,7 @@ export class AppError extends Error {
     this.httpStatus = opts.httpStatus ?? ERROR_HTTP_STATUS[code]
     if (opts.fields !== undefined) this.fields = opts.fields
     if (opts.requestId !== undefined) this.requestId = opts.requestId
-    Object.setPrototypeOf(this, AppError.prototype)
+    Object.setPrototypeOf(this, new.target.prototype)
   }
 
   toJSON(): {
@@ -152,7 +152,6 @@ export class MailSendError extends AppError {
     super(code, message, opts)
     this.name = "MailSendError"
     this.smtp = smtp
-    Object.setPrototypeOf(this, MailSendError.prototype)
   }
 }
 
@@ -166,14 +165,14 @@ export interface AppErrorLike {
 
 const ERROR_CODE_VALUES: ReadonlySet<string> = new Set<string>(Object.values(ErrorCode))
 
+export function isErrorCode(value: unknown): value is ErrorCode {
+  return typeof value === "string" && ERROR_CODE_VALUES.has(value)
+}
+
 export function isAppErrorLike(value: unknown): value is AppErrorLike {
   if (typeof value !== "object" || value === null) return false
   const candidate = value as { code?: unknown; message?: unknown }
-  return (
-    typeof candidate.code === "string" &&
-    ERROR_CODE_VALUES.has(candidate.code) &&
-    typeof candidate.message === "string"
-  )
+  return isErrorCode(candidate.code) && typeof candidate.message === "string"
 }
 
 function stringFields(fields: unknown): Record<string, string> | undefined {
@@ -184,13 +183,21 @@ function stringFields(fields: unknown): Record<string, string> | undefined {
   return named.length > 0 ? Object.fromEntries(named) : undefined
 }
 
-export function toAppError(value: unknown): AppError {
+export interface ToAppErrorOptions {
+  /** Message for a value that carries none of its own (an empty message, or a non-Error throw). */
+  fallbackMessage?: string
+}
+
+const UNKNOWN_ERROR_MESSAGE = "Unknown error"
+
+export function toAppError(value: unknown, opts: ToAppErrorOptions = {}): AppError {
   if (value instanceof AppError) return value
+  const fallbackMessage = opts.fallbackMessage ?? UNKNOWN_ERROR_MESSAGE
 
   if (isAppErrorLike(value)) {
     const { httpStatus, requestId } = value
     const fields = stringFields(value.fields)
-    return new AppError(value.code, value.message || "Unknown error", {
+    return new AppError(value.code, value.message || fallbackMessage, {
       ...(typeof httpStatus === "number" ? { httpStatus } : {}),
       ...(fields !== undefined ? { fields } : {}),
       ...(typeof requestId === "string" ? { requestId } : {}),
@@ -199,10 +206,10 @@ export function toAppError(value: unknown): AppError {
   }
 
   if (value instanceof Error) {
-    return new AppError(ErrorCode.INTERNAL, value.message || "Unknown error", { cause: value })
+    return new AppError(ErrorCode.INTERNAL, value.message || fallbackMessage, { cause: value })
   }
 
-  return new AppError(ErrorCode.INTERNAL, "Unknown error")
+  return new AppError(ErrorCode.INTERNAL, fallbackMessage)
 }
 
 /**
@@ -232,8 +239,8 @@ export function byErrorCode<Value>(
   table: ErrorCodeTable<Value>,
   fallback: Value,
 ): Value {
-  if (code === undefined || !ERROR_CODE_VALUES.has(code)) return fallback
-  const value = table[code as ErrorCode]
+  if (!isErrorCode(code)) return fallback
+  const value = table[code]
   return value === undefined ? fallback : value
 }
 

@@ -87,7 +87,9 @@ export interface BroadcastLinkOptions {
 
 const ABSOLUTE_URL = /\b([a-zA-Z][a-zA-Z0-9+.-]*):\/\/[^\s<>"'`)\]}]+/g
 const SCHEME_RELATIVE = /(^|[\s(<[{])(\/\/[^\s<>"'`)\]}]+)/g
-const DANGEROUS_SCHEME = /\b(javascript|data|vbscript|file|blob|jar|about):/gi
+// A scheme only becomes a link where it starts a token and runs straight into its payload. Requiring
+// that keeps prose ("Questions about: parking") and https URL paths ("/data:foo") from being refused.
+const DANGEROUS_SCHEME = /(?<![\w/.:-])(javascript|data|vbscript|file|blob|jar|about):(?=\S)/gi
 
 function hostAllowed(host: string, allowed: readonly string[]): boolean {
   return allowed.some((entry) => {

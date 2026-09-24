@@ -97,3 +97,54 @@ describe("typed client response parsing", () => {
     expect(warn).not.toHaveBeenCalled()
   })
 })
+
+describe("typed client 2xx body decoding", () => {
+  function clientWith(res: () => Response) {
+    const fetchImpl = vi.fn(async () => res()) as unknown as typeof fetch
+    return createApiClient({ baseURL: "https://api.civfix.test", fetchImpl })
+  }
+
+  it("rejects a 2xx body that is not JSON with an INTERNAL AppError carrying the request id", async () => {
+    const client = clientWith(
+      () =>
+        new Response("<html>gateway</html>", {
+          status: 200,
+          headers: { "content-type": "text/html", "x-request-id": "req-1" },
+        }),
+    )
+    await expect(client.listCleanups({})).rejects.toMatchObject({
+      name: "AppError",
+      code: "INTERNAL",
+      httpStatus: 500,
+      requestId: "req-1",
+    })
+  })
+
+  it("rejects an empty 200 body instead of resolving undefined", async () => {
+    const client = clientWith(() => new Response("", { status: 200 }))
+    await expect(client.listCleanups({})).rejects.toMatchObject({ code: "INTERNAL" })
+  })
+
+  it("still resolves a 204 to undefined", async () => {
+    const client = clientWith(() => new Response(null, { status: 204 }))
+    await expect(client.listCleanups({})).resolves.toBeUndefined()
+  })
+
+  it("rethrows the abort, not an AppError, when the caller aborted during the body read", async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const abort = new DOMException("The operation was aborted.", "AbortError")
+    const client = clientWith(
+      () =>
+        ({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: async () => {
+            throw abort
+          },
+        }) as unknown as Response,
+    )
+    await expect(client.listCleanups({}, { signal: controller.signal })).rejects.toBe(abort)
+  })
+})

@@ -69,6 +69,12 @@ export interface SuggestOptions {
    * results. Ignored by Photon (which has no equivalent filter).
    */
   country?: string | null
+  /**
+   * Told about a provider failure that suggestAddresses degrades past (Mapbox falling back to Photon,
+   * Photon resolving []), so a server caller can log an outage the result alone cannot show. Never
+   * called for the caller's own abort.
+   */
+  onError?: (error: unknown, provider: "mapbox" | "photon") => void
 }
 
 /** Languages Photon actually serves; anything else is requested as English. */
@@ -104,11 +110,15 @@ export function parseLatLng(input: string): LatLng | null {
   return { lat, lng }
 }
 
+// English fallbacks: the wire suggestion has no locale-free field for these, so the UI cannot translate them.
+const EXACT_COORDINATES_LABEL = "Exact coordinates"
+const UNKNOWN_PLACE_LABEL = "Unknown place"
+
 function coordSuggestion(coord: LatLng): GeoSuggestion {
   return {
     id: `coordinate:${coord.lat},${coord.lng}`,
     label: coordsLabel(coord),
-    secondary: "Exact coordinates",
+    secondary: EXACT_COORDINATES_LABEL,
     lat: coord.lat,
     lng: coord.lng,
     source: "coordinate",
@@ -136,7 +146,7 @@ interface PhotonFeature {
 function photonLabel(p: PhotonProperties): string {
   if (p.name) return p.name
   const street = [p.housenumber, p.street].filter(Boolean).join(" ")
-  return street || p.city || p.state || "Unknown place"
+  return street || p.city || p.state || UNKNOWN_PLACE_LABEL
 }
 function photonSecondary(p: PhotonProperties, label: string): string | undefined {
   const parts = [p.city, p.state, p.country].filter((v): v is string => !!v && v !== label)
@@ -211,7 +221,7 @@ interface MapboxV6Feature {
 }
 
 function mapboxLabel(p: MapboxV6Properties): string {
-  return p.name || p.full_address || p.place_formatted || "Unknown place"
+  return p.name || p.full_address || p.place_formatted || UNKNOWN_PLACE_LABEL
 }
 function mapboxSecondary(p: MapboxV6Properties, label: string): string | undefined {
   if (p.place_formatted && p.place_formatted !== label) return p.place_formatted
@@ -280,7 +290,7 @@ function isAbort(err: unknown, signal?: AbortSignal): boolean {
 /**
  * Address autocomplete: a pasted coordinate short-circuits; then Mapbox when `opts.mapboxToken` is set
  * (falling back to Photon when Mapbox throws OR returns nothing); else Photon. Provider errors degrade
- * to [], but an abort rejects.
+ * to [] and are reported through `opts.onError`, but an abort rejects.
  */
 export async function suggestAddresses(query: string, opts: SuggestOptions = {}): Promise<GeoSuggestion[]> {
   const q = query.trim()
@@ -297,13 +307,14 @@ export async function suggestAddresses(query: string, opts: SuggestOptions = {})
       // An abort is the caller cancelling a stale keystroke: reject so the old request cannot resolve []
       // over the newer one's suggestions, and skip a Photon request nobody is waiting on.
       if (isAbort(err, opts.signal)) throw err
-      // Mapbox unavailable → fall through to Photon.
+      opts.onError?.(err, "mapbox")
     }
   }
   try {
     return await photonSuggest(q, opts)
   } catch (err) {
     if (isAbort(err, opts.signal)) throw err
+    opts.onError?.(err, "photon")
     return []
   }
 }

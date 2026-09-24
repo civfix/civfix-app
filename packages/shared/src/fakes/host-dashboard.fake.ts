@@ -1,4 +1,6 @@
 import { avatarGradient } from "../avatar.js"
+import { hostCapabilities } from "../host/capabilities.js"
+import type { CleanupMemberRole, HostCapability } from "../schemas/common.js"
 import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/suppression.js"
 import type {
   BreakdownRow,
@@ -412,6 +414,10 @@ export function fakeHostPortfolioKpis(): HostPortfolioKpis {
   }
 }
 
+function eventRoleCapabilities(eventRole: CleanupMemberRole): HostCapability[] {
+  return [...hostCapabilities({ eventRole, orgRole: null })]
+}
+
 export function fakeHostedEvents(
   when: "upcoming" | "past" = "upcoming",
   options: FakeHostedEventsOptions,
@@ -436,17 +442,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 7,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "manage_tickets",
-        "manage_team",
-        "broadcast",
-        "export",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -466,7 +462,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "cohost",
-      myCapabilities: ["view_event_private", "view_roster", "check_in", "broadcast"],
+      myCapabilities: eventRoleCapabilities("cohost"),
       orgId,
       orgName,
       pageSlug: null,
@@ -486,7 +482,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "coordinator",
-      myCapabilities: ["view_event_private", "view_roster", "view_analytics"],
+      myCapabilities: eventRoleCapabilities("coordinator"),
       orgId,
       orgName,
       pageSlug: null,
@@ -509,17 +505,7 @@ export function fakeHostedEvents(
       waitlistCount: 7,
       hoursCredited: 114.5,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "manage_tickets",
-        "manage_team",
-        "broadcast",
-        "export",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -540,14 +526,7 @@ export function fakeHostedEvents(
       waitlistCount: 3,
       hoursCredited: 0,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "broadcast",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -567,7 +546,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "organizer",
-      myCapabilities: ["view_event_private", "view_roster", "view_analytics", "manage_event"],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,

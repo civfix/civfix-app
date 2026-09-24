@@ -8,6 +8,8 @@ import {
   byErrorCode,
   errorCopyKey,
   isAppErrorLike,
+  isErrorCode,
+  MailSendError,
   toAppError,
 } from "../src/types/errors.js"
 import { AppErrorSchema } from "../src/schemas/common.js"
@@ -79,6 +81,27 @@ describe("AppError", () => {
     expect(err).toBeInstanceOf(Error)
     expect(err).toBeInstanceOf(AppError)
     expect(err.message).toBe("missing")
+  })
+
+  it("keeps a subclass's own prototype, so instanceof and subclass members survive", () => {
+    class DeadlineError extends AppError {
+      constructor() {
+        super(ErrorCode.INTERNAL, "deadline")
+      }
+      isDeadline(): boolean {
+        return true
+      }
+    }
+    const err = new DeadlineError()
+    expect(err).toBeInstanceOf(DeadlineError)
+    expect(err).toBeInstanceOf(AppError)
+    expect(err.isDeadline()).toBe(true)
+
+    const mail = new MailSendError(ErrorCode.INTERNAL, "smtp down", { responseCode: 421 })
+    expect(mail).toBeInstanceOf(MailSendError)
+    expect(mail).toBeInstanceOf(AppError)
+    expect(mail.smtp).toEqual({ responseCode: 421 })
+    expect(mail.name).toBe("MailSendError")
   })
 
   it("serializes to the wire envelope and validates against AppErrorSchema", () => {
@@ -176,6 +199,31 @@ describe("toAppError", () => {
     expect(toAppError("boom").code).toBe(ErrorCode.INTERNAL)
     expect(toAppError(null).message).toBe("Unknown error")
     expect(toAppError({ code: "NOT_A_CODE", message: "x" }).code).toBe(ErrorCode.INTERNAL)
+  })
+})
+
+describe("isErrorCode", () => {
+  it("accepts every ErrorCode value and nothing else", () => {
+    for (const code of Object.values(ErrorCode)) expect(isErrorCode(code)).toBe(true)
+    for (const value of ["BOGUS", "not_found", "", undefined, null, 404, {}]) {
+      expect(isErrorCode(value)).toBe(false)
+    }
+  })
+})
+
+describe("toAppError fallbackMessage", () => {
+  it("uses the caller's fallback for a non-Error throw and for an empty message", () => {
+    const opts = { fallbackMessage: "Network request failed" }
+    expect(toAppError("boom", opts).message).toBe("Network request failed")
+    expect(toAppError(new Error(""), opts).message).toBe("Network request failed")
+    expect(toAppError({ code: ErrorCode.CONFLICT, message: "" }, opts).message).toBe(
+      "Network request failed",
+    )
+  })
+
+  it("keeps the value's own message and the default fallback when no option is given", () => {
+    expect(toAppError(new Error("offline"), { fallbackMessage: "x" }).message).toBe("offline")
+    expect(toAppError("boom").message).toBe("Unknown error")
   })
 })
 

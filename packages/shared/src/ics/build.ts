@@ -1,9 +1,12 @@
 import { isValidTimeZone } from "../datetime.js"
 import { intOr } from "../internal/numbers.js"
+import { isSafeHttpsUrl } from "../markdown/safe-url.js"
 
 export const ICS_PRODID = "-//civfix//civfix events//EN"
 export const ICS_UID_DOMAIN = "civfix.org"
 const FOLD_OCTETS = 75
+// eslint-disable-next-line no-control-regex -- a mailto value is emitted raw, so control characters must be refused
+const ORGANIZER_EMAIL = /^[^\s@\u0000-\u001f\u007f]+@[^\s@\u0000-\u001f\u007f]+$/u
 
 export type IcsStatus = "CONFIRMED" | "TENTATIVE" | "CANCELLED"
 
@@ -132,16 +135,18 @@ export function buildIcs(input: IcsEventInput): string {
     lines.push(`LOCATION:${escapeText(location)}`)
   }
 
+  // URL and ORGANIZER are URI / CAL-ADDRESS values (RFC 5545 3.3.3, 3.3.13), which take no TEXT
+  // backslash escaping; the validation is what keeps CR, LF and control characters out of the line.
   const url = input.url?.trim()
-  if (url !== undefined && /^https:\/\/\S+$/iu.test(url)) {
-    lines.push(`URL:${escapeText(url)}`)
+  if (url !== undefined && isSafeHttpsUrl(url)) {
+    lines.push(`URL:${url}`)
   }
 
   const organizerEmail = input.organizer?.email?.trim()
-  if (organizerEmail !== undefined && /^[^\s@]+@[^\s@]+$/u.test(organizerEmail)) {
+  if (organizerEmail !== undefined && ORGANIZER_EMAIL.test(organizerEmail)) {
     const name = input.organizer?.name?.trim()
     const cn = name !== undefined && name.length > 0 ? `;CN=${escapeParam(name)}` : ""
-    lines.push(`ORGANIZER${cn}:mailto:${escapeText(organizerEmail)}`)
+    lines.push(`ORGANIZER${cn}:mailto:${organizerEmail}`)
   }
 
   const sequence = intOr(input.sequence, 0, 0)

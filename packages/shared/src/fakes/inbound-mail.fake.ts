@@ -19,6 +19,8 @@ const DEFAULT_REPLY_DOMAIN = "civfix.org"
  */
 const REPLY_ADDRESS_RE = /^(?:reply|report|event)[-+]([^@\s]+)@([^@\s]+)$/
 
+const REPLY_ADDRESS_SCAN_RE = /(?<![^\s<,;:"])(?:reply|report|event)[-+][^@\s<>,;"]+@[^@\s<>,;"]+/gi
+
 /**
  * In-memory InboundMail. Parses a tiny subset of RFC822: leading "Header: value" lines until a
  * blank line, then the remainder is the text body. Deterministic and dependency-free.
@@ -73,19 +75,16 @@ export class FakeInboundMail implements InboundMail {
   }
 
   /**
-   * Extract a thread token from an X-Thread-Token header or a typed reply address on OUR reply domain.
-   * The address is anchored + domain-checked and the token shape-validated exactly like the real
-   * CfInboundMail adapter, so a city's own `report-*@city.gov` alias, a foreign CC, or a junk value
-   * cannot create stray threads.
+   * Mirrors the real CfInboundMail adapter: a typed reply address on OUR reply domain, read from To and
+   * then scanned out of the raw Cc header, lowercased before matching. An X-Thread-Token header is ignored
+   * because any sender can set it, which would let a stranger pick the thread. Anchoring, the domain check
+   * and the token shape keep a city's own `report-*@city.gov` alias or a junk value from creating threads.
    */
   extractThreadToken(mail: ParsedMail): string | null {
-    const headerToken = mail.headers["x-thread-token"]
-    if (headerToken && THREAD_TOKEN_RE.test(headerToken)) return headerToken
-    for (const addr of mail.to) {
-      const m = addr.address.match(REPLY_ADDRESS_RE)
-      if (m && m[1] && m[2] && m[2].toLowerCase() === this.replyDomain) {
-        if (THREAD_TOKEN_RE.test(m[1])) return m[1]
-      }
+    const ccAddresses = (mail.headers["cc"] ?? "").match(REPLY_ADDRESS_SCAN_RE) ?? []
+    for (const address of [...mail.to.map((addr) => addr.address), ...ccAddresses]) {
+      const match = address.toLowerCase().match(REPLY_ADDRESS_RE)
+      if (match?.[1] && match[2] === this.replyDomain && THREAD_TOKEN_RE.test(match[1])) return match[1]
     }
     return null
   }
