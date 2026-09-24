@@ -1,6 +1,7 @@
 import type { BBox } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
+import { AGGREGATE_EXPAND_ZOOM } from "../clusterer"
 import {
   decideRegionFetch,
   impliedZoomForBBox,
@@ -10,7 +11,7 @@ import {
   PAD_FACTOR,
   SERVER_PIN_ZOOM,
   type RegionFetchState,
-} from "./region-fetch"
+} from "../regionFetch"
 
 /**
  * A settle-driven map that consults only one of its two regions either restarts an in-flight request on
@@ -163,6 +164,7 @@ describe("the server pin threshold", () => {
 
   it("is the zoom the shared clusterer exports as AGGREGATE_EXPAND_ZOOM", () => {
     expect(SERVER_PIN_ZOOM).toBe(10)
+    expect(SERVER_PIN_ZOOM).toBe(AGGREGATE_EXPAND_ZOOM)
   })
 
   it("derives a region's zoom exactly as the server's bbox clamp does", () => {
@@ -188,6 +190,12 @@ describe("the server pin threshold", () => {
     )
   })
 
+  it("will not revert onto a loaded aggregate region while a different far region is in flight", () => {
+    const far = padBbox(box(-50, 10, -40, 20), PAD_FACTOR)
+    const decision = decideRegionFetch(state(AGGREGATE_REGION, far), PIN_VIEWPORT)
+    expect(decision.action).toBe("request")
+  })
+
   it("fires that refetch once, then settles", () => {
     expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), PIN_VIEWPORT)).toEqual({ action: "keep" })
   })
@@ -196,5 +204,60 @@ describe("the server pin threshold", () => {
     const slightlyWider = boxAround(0.82, 0.41)
     expect(regionCovers(PIN_REGION, slightlyWider)).toBe(true)
     expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), slightlyWider)).toEqual({ action: "keep" })
+  })
+})
+
+describe("a small viewport at the origin", () => {
+  function viewportOf(half: number): BBox {
+    return { west: -half, east: half, south: -half, north: half }
+  }
+
+  const VIEWPORT = viewportOf(0.1)
+  const REGION = padBbox(VIEWPORT, PAD_FACTOR)
+
+  function shifted(b: BBox, d: number): BBox {
+    return { ...b, west: b.west + d, east: b.east + d }
+  }
+
+  it("a padded region covers the viewport it was built from", () => {
+    expect(regionCovers(REGION, VIEWPORT)).toBe(true)
+  })
+
+  it("the first settle requests a padded region", () => {
+    const decision = decideRegionFetch({ loaded: null, requested: null }, VIEWPORT)
+    expect(decision.action).toBe("request")
+    expect(decision.action === "request" ? decision.region : null).toEqual(REGION)
+  })
+
+  it("settles inside the in-flight region are deduped", () => {
+    const decision = decideRegionFetch({ loaded: null, requested: REGION }, shifted(VIEWPORT, 0.005))
+    expect(decision.action).toBe("keep")
+  })
+
+  it("panning back onto the region we hold reverts to it instead of a third fetch", () => {
+    const far = padBbox(shifted(VIEWPORT, 5), PAD_FACTOR)
+    const decision = decideRegionFetch({ loaded: REGION, requested: far }, VIEWPORT)
+    expect(decision.action).toBe("revert")
+    expect(decision.action === "revert" ? decision.region : null).toEqual(REGION)
+  })
+
+  it("panning out of both regions requests a fresh one", () => {
+    const viewport = shifted(VIEWPORT, 5)
+    const decision = decideRegionFetch({ loaded: REGION, requested: REGION }, viewport)
+    expect(decision.action).toBe("request")
+    expect(decision.action === "request" ? decision.region : null).toEqual(padBbox(viewport, PAD_FACTOR))
+  })
+
+  it("zooming in past the loaded sample refetches a tighter region", () => {
+    const zoomedIn = viewportOf(0.01)
+    const decision = decideRegionFetch({ loaded: REGION, requested: REGION }, zoomedIn)
+    expect(decision.action).toBe("request")
+  })
+
+  it("a FAILED region fetch (both refs cleared) re-requests on the next settle", () => {
+    // useMapReports sets retry:false, so a region committed as loaded at request time would report "keep"
+    // forever and strand the map on empty pins.
+    const afterError = decideRegionFetch({ loaded: null, requested: null }, shifted(VIEWPORT, 0.005))
+    expect(afterError.action).toBe("request")
   })
 })

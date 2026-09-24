@@ -1,5 +1,7 @@
 import type { BBox } from "@civfix/shared"
 
+import { AGGREGATE_EXPAND_ZOOM } from "./clusterer"
+
 /**
  * Clustering is client-side, so the map fetches raw points for a padded region and reclusters locally,
  * refetching only when the viewport nears a loaded edge (EDGE_MARGIN) or the region gets too coarse for
@@ -7,23 +9,26 @@ import type { BBox } from "@civfix/shared"
  * SERVER_PIN_ZOOM, derived from the fetch bbox alone, so crossing that threshold forces a refetch even
  * inside a held region; otherwise stale aggregates would linger for a whole zoom level.
  *
- * Mirrors the web host's `features/map/region-fetch.ts` exactly. `useMapReports` sets `retry: false`, so
- * the screen promotes `requested` to `loaded` only on success; a failed region recorded as loaded would
- * suppress every later refetch inside it.
+ * `useMapReports` sets `retry: false`, so a host promotes `requested` to `loaded` only on success; a failed
+ * region recorded as loaded would suppress every later refetch inside it.
  */
 export const PAD_FACTOR = 0.6
 export const EDGE_MARGIN = 0.12
 export const MAX_COARSENESS = 3.5
-export const SERVER_PIN_ZOOM = 10
+/** Tapping an aggregate bubble zooms to AGGREGATE_EXPAND_ZOOM precisely so the refetch there returns pins. */
+export const SERVER_PIN_ZOOM = AGGREGATE_EXPAND_ZOOM
 export const VIEWPORT_REFERENCE_TILES = 8
+
+const MAX_IMPLIED_ZOOM = 22
+const WORLD_LNG_SPAN = 360
 
 /** Same derivation and reference viewport as the server's bbox-to-zoom clamp. */
 export function impliedZoomForBBox(b: BBox): number {
   const span = Math.max(b.east - b.west, (b.north - b.south) * 2)
   if (!Number.isFinite(span) || span <= 0) return 0
-  const zoom = Math.log2((360 * VIEWPORT_REFERENCE_TILES) / span)
+  const zoom = Math.log2((WORLD_LNG_SPAN * VIEWPORT_REFERENCE_TILES) / span)
   if (!Number.isFinite(zoom)) return 0
-  return Math.max(0, Math.min(22, Math.floor(zoom)))
+  return Math.max(0, Math.min(MAX_IMPLIED_ZOOM, Math.floor(zoom)))
 }
 
 export function serverReturnsPins(region: BBox): boolean {

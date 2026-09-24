@@ -16,6 +16,7 @@
  */
 import { sheetSnapPoints } from "../shell/tabBarLogic"
 import type { Snap, View } from "../nav"
+import type { CameraTarget } from "./types"
 
 /** A floor, not a target: the drop-pin fly never zooms out. */
 export const DROP_PIN_ZOOM = 17
@@ -59,11 +60,7 @@ export interface DropPinCameraInput {
 }
 
 /** A camera centre, not the pin position. */
-export interface DropPinCameraTarget {
-  lat: number
-  lng: number
-  zoom: number
-}
+export type DropPinCameraTarget = CameraTarget
 
 /**
  * An explicit three-way rather than `detents[detent]`: hosts feed this from the nav store at runtime, so a

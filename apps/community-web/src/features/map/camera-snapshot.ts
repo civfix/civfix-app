@@ -1,4 +1,5 @@
 import type { BBox } from "@civfix/shared"
+import type { CameraTarget } from "@civfix/ui"
 
 /**
  * Seeds the shared Map's `initialCenter` synchronously from the last-settled camera, so a returning
@@ -15,14 +16,8 @@ import type { BBox } from "@civfix/shared"
 export const CAMERA_SNAPSHOT_KEY = "civfix.map.camera.v1"
 const CAMERA_SNAPSHOT_VERSION = 1
 
-export interface CameraSnapshot {
-  lat: number
-  lng: number
-  zoom: number
-}
-
 /** The version literal also lives in the body to guard a hand-edited or half-migrated value. */
-interface SnapshotBody extends CameraSnapshot {
+interface SnapshotBody extends CameraTarget {
   v: typeof CAMERA_SNAPSHOT_VERSION
 }
 
@@ -44,7 +39,7 @@ function isCameraSnapshot(body: unknown): body is SnapshotBody {
   )
 }
 
-export function readCameraSnapshot(): CameraSnapshot | null {
+export function readCameraSnapshot(): CameraTarget | null {
   if (typeof window === "undefined") return null
 
   let raw: string | null

@@ -58,6 +58,7 @@ import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { PinSvg, pinAppearanceFor } from "./pins"
+import { MapCredit } from "./MapCredit"
 import {
   PICKER_ZOOM,
   PICKER_HEIGHT,
@@ -237,19 +238,8 @@ export function LocationPicker({
         </View>
       )}
 
-      {/* Basemap attribution (App-Store-audit H10): the native maplibre attribution control is suppressed
-          (attribution={false}) to keep the picker chrome clean, so a static CARTO/OSM credit stands in for
-          it. In fullBleed it is lifted above the
-          host's floating confirm/cancel bar via attributionBottomInset. */}
-      <Text
-        style={[
-          styles.credit,
-          fullBleed && attributionBottomInset != null ? { bottom: attributionBottomInset } : null,
-        ]}
-        pointerEvents="none"
-      >
-        {DEFAULT_ATTRIBUTION}
-      </Text>
+      {/* Only fullBleed has the host's floating confirm/cancel bar to clear. */}
+      <MapCredit bottomInset={fullBleed ? attributionBottomInset : null} />
     </View>
   )
 }
@@ -311,14 +301,5 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: 12.5,
     color: t.colors.text,
-  },
-  // Static basemap credit (bottom-right) for the CARTO/OSM tiles.
-  credit: {
-    position: "absolute",
-    bottom: 4,
-    right: 6,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 9,
-    color: t.colors.textSubtle,
   },
 }))

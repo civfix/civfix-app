@@ -190,6 +190,15 @@ export function clusterZoomTarget(
   return target > zoom ? target : null
 }
 
+export function clusterPressTarget(
+  index: MapClusterIndex,
+  node: Extract<ClusterNode, { type: "cluster" }>,
+  currentZoom: number,
+): number | null {
+  const expansion = node.clusterId === null ? null : expansionZoomOfCluster(index, node.clusterId)
+  return clusterZoomTarget(node, currentZoom, expansion)
+}
+
 export function clusterFallbackZoom(currentZoom: number): number {
   const base = Number.isFinite(currentZoom) ? currentZoom : 0
   return Math.min(base + CLUSTER_ZOOM_STEP, CLUSTER_MAX_ZOOM + 1)

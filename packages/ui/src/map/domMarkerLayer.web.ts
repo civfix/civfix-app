@@ -1,7 +1,6 @@
 import type * as React from "react"
 import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
-import { useMapFlyTo } from "./mapFlyToStore"
 
 export interface MarkerEntry {
   marker: Marker
@@ -17,16 +16,20 @@ export interface DesiredMarker {
   node: React.ReactNode
   label: string
   onClick?: () => void
+  /** Set only at creation, so a marker whose pressed state can change must carry it in its signature. */
+  pressed?: boolean
+  opacity?: number
 }
 
 /**
- * A marker whose signature is unchanged keeps its element and React root; only its position, name and
- * click target move, so a reconcile never remounts a pin that did not change.
+ * A marker whose signature is unchanged keeps its element and React root; only its position, name, opacity
+ * and click target move, so a reconcile never remounts a pin that did not change.
  */
 export function syncMarkers(
   map: MlMap,
   current: Map<string, MarkerEntry>,
   desired: ReadonlyMap<string, DesiredMarker>,
+  beforePress?: () => void,
 ): void {
   for (const [key, entry] of current) {
     const want = desired.get(key)
@@ -37,8 +40,10 @@ export function syncMarkers(
       current.delete(key)
     } else {
       entry.marker.setLngLat(want.lngLat)
-      entry.marker.getElement().setAttribute("aria-label", want.label)
       entry.onClick.fn = want.onClick
+      const el = entry.marker.getElement()
+      el.setAttribute("aria-label", want.label)
+      if (want.opacity !== undefined) el.style.opacity = String(want.opacity)
     }
   }
   for (const [key, want] of desired) {
@@ -46,20 +51,24 @@ export function syncMarkers(
     const el = document.createElement("div")
     el.style.cursor = want.onClick ? "pointer" : "default"
     el.style.lineHeight = "0"
+    if (want.opacity !== undefined) el.style.opacity = String(want.opacity)
     el.setAttribute("role", "button")
     el.setAttribute("tabindex", "0")
+    if (want.pressed !== undefined) el.setAttribute("aria-pressed", String(want.pressed))
     const onClick: { fn?: () => void } = { fn: want.onClick }
+    const press = () => {
+      beforePress?.()
+      onClick.fn?.()
+    }
     el.addEventListener("click", (e: MouseEvent) => {
       e.stopPropagation()
-      useMapFlyTo.getState().clear()
-      onClick.fn?.()
+      press()
     })
     el.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
       e.stopPropagation()
-      useMapFlyTo.getState().clear()
-      onClick.fn?.()
+      press()
     })
     const root = createRoot(el)
     root.render(want.node)

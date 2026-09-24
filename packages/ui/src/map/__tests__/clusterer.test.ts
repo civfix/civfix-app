@@ -8,6 +8,7 @@ import {
   expansionZoomOfCluster,
   clusterListReports,
   clusterZoomTarget,
+  clusterPressTarget,
   weightsOfPoint,
   CLUSTER_RADIUS,
   CLUSTER_MAX_ZOOM,
@@ -369,6 +370,25 @@ describe("clusterZoomTarget", () => {
       pin: pin("a", 0, 0),
     }
     expect(clusterZoomTarget(node, 10, 12)).toBeNull()
+  })
+})
+
+describe("clusterPressTarget", () => {
+  it("flies a supercluster cluster to its own expansion zoom, as the seams did inline", () => {
+    const index = buildIndex(denseReports(9))
+    for (let zoom = 0; zoom < CLUSTER_MAX_ZOOM; zoom += 1) {
+      for (const node of clustersOf(queryClusters(index, WORLD, zoom))) {
+        const expansion = expansionZoomOfCluster(index, node.clusterId as number)
+        expect(clusterPressTarget(index, node, zoom)).toBe(clusterZoomTarget(node, zoom, expansion))
+      }
+    }
+  })
+
+  it("takes a server aggregate to the pin zoom without consulting the index", () => {
+    const index = buildIndex([{ kind: "aggregate", id: "a1", lat: 34.05, lng: -118.25, count: 37 }])
+    const node = clustersOf(queryClusters(index, WORLD, 7))[0]!
+    expect(node.clusterId).toBeNull()
+    expect(clusterPressTarget(index, node, 7)).toBe(AGGREGATE_EXPAND_ZOOM)
   })
 })
 

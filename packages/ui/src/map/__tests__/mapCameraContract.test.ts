@@ -8,7 +8,7 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 const mapNative = strip(read("../Map.native.tsx"))
 const mapWeb = strip(read("../Map.web.tsx"))
 const webCamera = strip(read("../homeMapCamera.web.ts"))
-const webMarkers = strip(read("../homeMapMarkers.web.ts"))
+const webMarkers = strip(read("../domMarkerLayer.web.ts"))
 
 describe("MapHandle.flyTo on the native seam", () => {
   it("treats DEFAULT_ZOOM as a FLOOR, not a target, when the caller passes no zoom", () => {
@@ -69,8 +69,10 @@ describe("the Show on map fly-to on both seams", () => {
     expect(mapNative.match(/markerPressedAtRef\.current = Date\.now\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/g)).toHaveLength(4)
     expect(mapWeb).toMatch(/if \(!e\.originalEvent\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onUserCameraMoveRef\.current\?\.\(\)/)
     expect(mapWeb).toContain('map.on("movestart", endFlyToOnUserGesture)')
-    expect(webMarkers).toMatch(/e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/)
-    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired)")
+    expect(webMarkers).toMatch(/e\.stopPropagation\(\)\n\s+press\(\)/)
+    expect(webMarkers).toMatch(/const press = \(\) => \{\n\s+beforePress\?\.\(\)\n\s+onClick\.fn\?\.\(\)/)
+    expect(mapWeb).toMatch(/function endFlyToHighlight\(\): void \{\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/)
+    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired, endFlyToHighlight)")
   })
 })
 

@@ -1,27 +1,20 @@
+import type { CameraTarget, MapLatLng } from "./types"
+
 export const PRECISE_ZOOM = 13
 
 export const APPROX_ZOOM = 10
 
 export type MapCenterSource = "precise" | "approximate" | "remembered"
 
-export interface MapCenterPoint {
-  lat: number
-  lng: number
-}
-
-export interface RememberedCenter extends MapCenterPoint {
-  zoom: number
-}
+export type RememberedCenter = CameraTarget
 
 export interface MapCenterInput {
-  precise: MapCenterPoint | null
-  approximate: MapCenterPoint | null
+  precise: MapLatLng | null
+  approximate: MapLatLng | null
   remembered: RememberedCenter | null
 }
 
-export interface MapCenterTarget extends MapCenterPoint {
-  zoom: number
-}
+export type MapCenterTarget = CameraTarget
 
 export interface MapCenterPlan {
   center: MapCenterTarget | null
@@ -36,7 +29,7 @@ const SOURCE_RANK: Record<MapCenterSource, number> = {
   precise: 2,
 }
 
-function onGlobe(point: MapCenterPoint | null | undefined): point is MapCenterPoint {
+function onGlobe(point: MapLatLng | null | undefined): point is MapLatLng {
   if (!point) return false
   if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng)) return false
   return Math.abs(point.lat) <= 90 && Math.abs(point.lng) <= 180

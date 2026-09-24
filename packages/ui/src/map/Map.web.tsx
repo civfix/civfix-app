@@ -12,8 +12,7 @@ import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import {
   clusterFallbackZoom,
   clusterListReports,
-  clusterZoomTarget,
-  expansionZoomOfCluster,
+  clusterPressTarget,
 } from "./clusterer"
 import { useLocationPick } from "./locationPickStore"
 import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
@@ -23,7 +22,7 @@ import { useMapFlyTo } from "./mapFlyToStore"
 import { activeMarkerIds, flyToTargetOffMap, markerA11yLabel, targetMarkerA11yLabel } from "./markerFocus"
 import { CAMERA_EASE_MS, CLUSTER_FLY_MS, DEFAULT_ZOOM } from "./mapCamera"
 import { ensureMapFocusRingStyle } from "./mapFocusRing.web"
-import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./homeMapMarkers.web"
+import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
 import { attachPressGestures } from "./mapPressGestures.web"
 import { useFocusAndFlyToCamera } from "./homeMapCamera.web"
 import { useDropPinMarker, useModeMapControls, usePickMarker, useUserLocationDot } from "./homeMapOverlays.web"
@@ -33,6 +32,10 @@ import type { MapProps, MapHandle } from "./types"
 const NO_REPORTS: MapProps["reports"] = []
 const NO_CLEANUPS: MapProps["cleanups"] = []
 const NO_AGGREGATES: MapProps["reportAggregates"] = []
+
+function endFlyToHighlight(): void {
+  useMapFlyTo.getState().clear()
+}
 
 function mapBoundsToBBox(map: MlMap): BBox {
   const b = map.getBounds()
@@ -130,9 +133,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       const map = mapRef.current
       if (!map) return
       const currentZoom = map.getZoom()
-      const expansion =
-        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
-      const target = clusterZoomTarget(node, currentZoom, expansion)
+      const target = clusterPressTarget(indexRef.current, node, currentZoom)
       const flyToCluster = (zoom: number) =>
         map.easeTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
       if (target !== null) {
@@ -249,7 +250,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         if (offMapTarget) putTargetMarker(offMapTarget)
       }
 
-      syncMarkers(map, markersRef.current, desired)
+      syncMarkers(map, markersRef.current, desired, endFlyToHighlight)
     }
   })
 

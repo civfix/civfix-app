@@ -44,8 +44,7 @@ import {
 import {
   clusterFallbackZoom,
   clusterListReports,
-  clusterZoomTarget,
-  expansionZoomOfCluster,
+  clusterPressTarget,
   WORLD_BBOX,
   type ClusterNode,
   type MapClusterIndex,
@@ -393,9 +392,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     if (!node || node.type !== "cluster") return
     hapticsRef.current.selection()
     const currentZoom = lastRegionRef.current?.zoom ?? DEFAULT_ZOOM
-    const expansion =
-      node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
-    const target = clusterZoomTarget(node, currentZoom, expansion)
+    const target = clusterPressTarget(indexRef.current, node, currentZoom)
     const flyToCluster = (zoom: number) =>
       cameraRef.current?.flyTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
     if (target !== null) {

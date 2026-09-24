@@ -11,13 +11,13 @@ import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import {
   clusterFallbackZoom,
-  clusterZoomTarget,
-  expansionZoomOfCluster,
+  clusterPressTarget,
   type ClusterNode,
   type MapClusterIndex,
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
+import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
 import {
   REPORT_PICK_FLY_MS,
   REPORT_PICK_MEETING_PIN_OPACITY,
@@ -33,24 +33,6 @@ import {
 } from "./ReportPickMap.types"
 
 const RADIUS_SOURCE_ID = "report-pick-radius"
-
-interface MarkerEntry {
-  marker: Marker
-  root: Root
-  signature: string
-  onClick: { fn?: () => void }
-}
-
-interface Desired {
-  signature: string
-  anchor: "bottom" | "center"
-  lngLat: [number, number]
-  node: React.ReactNode
-  label: string
-  selected: boolean | null
-  muted: boolean
-  onClick: () => void
-}
 
 function boundsToBBox(map: MlMap): BBox {
   const b = map.getBounds()
@@ -123,9 +105,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       const map = mapRef.current
       if (!map) return
       const currentZoom = map.getZoom()
-      const expansion =
-        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
-      const target = clusterZoomTarget(node, currentZoom, expansion) ?? clusterFallbackZoom(currentZoom)
+      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       map.easeTo({ center: [node.lng, node.lat], zoom: target, duration: REPORT_PICK_FLY_MS })
     }, [])
 
@@ -139,7 +119,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         const map = mapRef.current
         if (!map || !mapReady) return
         const scheme = themeRef.current.scheme
-        const desired = new globalThis.Map<string, Desired>()
+        const desired = new globalThis.Map<string, DesiredMarker>()
         for (const node of query(boundsToBBox(map), map.getZoom())) {
           if (node.type === "cluster") {
             desired.set(node.key, {
@@ -152,8 +132,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
                 </ThemeProvider>
               ),
               label: clusterLabelRef.current(node.count),
-              selected: null,
-              muted: false,
+              opacity: 1,
               onClick: () => pressCluster(node),
             })
           } else if (node.type === "report") {
@@ -174,58 +153,14 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
                 </ThemeProvider>
               ),
               label: pinLabelRef.current(node.pin, state),
-              selected: state === "selected" || state === "linked",
-              muted: look.muted,
+              pressed: state === "selected" || state === "linked",
+              opacity: look.muted ? REPORT_PICK_MUTED_OPACITY : 1,
               onClick: () => onPressPinRef.current(node.id),
             })
           }
         }
 
-        const current = markersRef.current
-        for (const [key, entry] of current) {
-          const want = desired.get(key)
-          if (!want || want.signature !== entry.signature) {
-            const stale = entry.root
-            queueMicrotask(() => stale.unmount())
-            entry.marker.remove()
-            current.delete(key)
-          } else {
-            entry.marker.setLngLat(want.lngLat)
-            entry.onClick.fn = want.onClick
-            const el = entry.marker.getElement()
-            el.setAttribute("aria-label", want.label)
-            el.style.opacity = want.muted ? String(REPORT_PICK_MUTED_OPACITY) : "1"
-          }
-        }
-        for (const [key, want] of desired) {
-          if (current.has(key)) continue
-          const el = document.createElement("div")
-          el.style.cursor = "pointer"
-          el.style.lineHeight = "0"
-          el.style.opacity = want.muted ? String(REPORT_PICK_MUTED_OPACITY) : "1"
-          el.setAttribute("role", "button")
-          el.setAttribute("tabindex", "0")
-          if (want.selected !== null) el.setAttribute("aria-pressed", String(want.selected))
-          const onClick: { fn?: () => void } = { fn: want.onClick }
-          el.addEventListener("click", (e: MouseEvent) => {
-            e.stopPropagation()
-            onClick.fn?.()
-          })
-          el.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (e.key !== "Enter" && e.key !== " ") return
-            e.preventDefault()
-            e.stopPropagation()
-            onClick.fn?.()
-          })
-          const root = createRoot(el)
-          root.render(want.node)
-          const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
-            .setLngLat(want.lngLat)
-            .addTo(map)
-          // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
-          el.setAttribute("aria-label", want.label)
-          current.set(key, { marker, root, signature: want.signature, onClick })
-        }
+        syncMarkers(map, markersRef.current, desired)
       }
     })
 
@@ -286,11 +221,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         runner.dispose()
         map.remove()
         mapRef.current = null
-        for (const entry of markers.values()) {
-          const r = entry.root
-          queueMicrotask(() => r.unmount())
-        }
-        markers.clear()
+        disposeMarkers(markers)
         const meetingRoot = meetingRootRef.current
         if (meetingRoot) queueMicrotask(() => meetingRoot.unmount())
         meetingRootRef.current = null
