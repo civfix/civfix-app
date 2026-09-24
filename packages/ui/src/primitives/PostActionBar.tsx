@@ -10,13 +10,15 @@ import {
   type ViewStyle,
 } from "react-native"
 import type { PostCounts, PostViewer } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
 import { Bookmark, Heart, MessageCircle, Repeat2, Share2 } from "lucide-react-native/icons"
 import {
   EASE_STANDARD_CSS,
+  FOCUS_RING_OFFSET,
+  FOCUS_RING_WIDTH,
   makeThemedStyles,
   useTheme,
   focusRingProps,
+  motion,
   webCursor,
   webHover,
   webNoSelect,
@@ -34,7 +36,7 @@ import { PopoverMenu, usePopoverAnchor, type AnchorRect, type PopoverMenuItem } 
 import {
   buildPostActionMenuModel,
   buildPostActionModel,
-  buildPostActionMotionModel,
+  POST_ACTION_POP_MS,
   postActionCountGap,
   postActionGlyphInset,
   postActionHaloFamily,
@@ -47,23 +49,6 @@ import {
   type PostActionModel,
   type PostActionVariant,
 } from "./postActionModel"
-export {
-  buildPostActionMenuModel,
-  buildPostActionModel,
-  buildPostActionMotionModel,
-  formatPostActionCount,
-  positionPostActionMenu,
-  postActionButtonWidth,
-  postActionCountGap,
-  postActionGlyphInset,
-  postActionHaloFamily,
-  postActionHaloInset,
-  postActionHaloOverhang,
-  postActionLayout,
-  postActionRowAvailableWidth,
-  postActionRowWidth,
-} from "./postActionModel"
-export type { PostActionHaloFamily, PostActionLayout, PostActionVariant } from "./postActionModel"
 
 export interface PostActionBarProps {
   postId: string
@@ -84,6 +69,9 @@ const REPOST_MENU_ICONS: Record<"repost" | "quote", IconName> = {
   repost: "Repeat2",
   quote: "MessageCircle",
 }
+
+const ACTION_GLYPH_STROKE = 2.15
+const ACTION_POP_SCALE_FROM = 0.82
 
 const ACTION_LABEL_KEYS: Record<PostActionKey, string> = {
   like: "post_actions.like",
@@ -134,12 +122,12 @@ const HALO_TRANSITION: ViewStyle =
   Platform.OS === "web"
     ? ({
         transitionProperty: "background-color",
-        transitionDuration: "120ms",
+        transitionDuration: `${motion.dur.d1}ms`,
         transitionTimingFunction: EASE_STANDARD_CSS,
       } as ViewStyle)
     : {}
 
-const RING_FOOTPRINT = Number.parseFloat(/^0 0 0 (\d+(?:\.\d+)?)px/.exec(tokens.shadow.ring)?.[1] ?? "3")
+const RING_FOOTPRINT = FOCUS_RING_WIDTH + FOCUS_RING_OFFSET
 const WEB_ACTION_FOCUS_INSET: ViewStyle =
   Platform.OS === "web" ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle) : {}
 
@@ -184,7 +172,7 @@ function actionColor(action: PostActionModel, t: Theme): string {
 }
 
 function ActionGlyph({ action, color, size }: { action: PostActionModel; color: string; size: number }) {
-  const common = { size, color, strokeWidth: 2.15 }
+  const common = { size, color, strokeWidth: ACTION_GLYPH_STROKE }
   switch (action.key) {
     case "like":
       return <Heart {...common} fill={action.active ? color : "none"} />
@@ -233,12 +221,11 @@ const PostActionButton = React.memo(function PostActionButton({
 
   const animate = useCallback(() => {
     if (reducedMotion) return
-    const motion = buildPostActionMotionModel(false)
     scale.stopAnimation()
-    scale.setValue(0.82)
+    scale.setValue(ACTION_POP_SCALE_FROM)
     Animated.timing(scale, {
       toValue: 1,
-      duration: motion.duration,
+      duration: POST_ACTION_POP_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver,
     }).start()
@@ -247,7 +234,7 @@ const PostActionButton = React.memo(function PostActionButton({
       turn.setValue(0)
       Animated.timing(turn, {
         toValue: 1,
-        duration: motion.duration,
+        duration: POST_ACTION_POP_MS,
         easing: Easing.out(Easing.cubic),
         useNativeDriver,
       }).start(() => turn.setValue(0))
@@ -430,14 +417,7 @@ export function PostActionBar({
 
   return (
     <View style={style}>
-      <View
-        style={
-          variant === "focal" ? styles.rowFocal
-            : variant === "reply" ? styles.rowReply
-            : variant === "timeline" ? styles.rowTimeline
-            : styles.row
-        }
-      >
+      <View style={styles[ROW_STYLE_KEY[variant]]}>
         {leading.map(renderButton)}
         {trailing ? (
           <>
@@ -458,34 +438,29 @@ export function PostActionBar({
   )
 }
 
+function rowLayoutStyle(layout: PostActionLayout): ViewStyle {
+  return {
+    minHeight: layout.minHeight,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: layout.justify,
+    gap: layout.gap,
+  }
+}
+
+const ROW_STYLE_KEY: Record<PostActionVariant, "row" | "rowFocal" | "rowReply" | "rowTimeline"> = {
+  card: "row",
+  focal: "rowFocal",
+  reply: "rowReply",
+  timeline: "rowTimeline",
+}
+
 const useStyles = makeThemedStyles((t) => ({
-  row: {
-    minHeight: CARD_LAYOUT.minHeight,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: CARD_LAYOUT.gap,
-  },
-  rowFocal: {
-    minHeight: FOCAL_LAYOUT.minHeight,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: FOCAL_LAYOUT.gap,
-  },
-  rowReply: {
-    minHeight: REPLY_LAYOUT.minHeight,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: REPLY_LAYOUT.gap,
-  },
+  row: rowLayoutStyle(CARD_LAYOUT),
+  rowFocal: rowLayoutStyle(FOCAL_LAYOUT),
+  rowReply: rowLayoutStyle(REPLY_LAYOUT),
   rowTimeline: {
-    minHeight: TIMELINE_LAYOUT.minHeight,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: TIMELINE_LAYOUT.gap,
+    ...rowLayoutStyle(TIMELINE_LAYOUT),
     marginLeft: -TIMELINE_GLYPH_INSET,
     marginRight: -TIMELINE_GLYPH_INSET,
   },

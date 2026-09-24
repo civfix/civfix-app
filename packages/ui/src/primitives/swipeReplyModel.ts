@@ -1,6 +1,5 @@
-import { startsInBackSwipeEdge } from "./backSwipeEdge"
+import { SWIPE_CAPTURE_SLOP_PX, startsInBackSwipeEdge } from "./backSwipeEdge"
 
-export const SWIPE_CAPTURE_SLOP_PX = 10
 export const SWIPE_TRIGGER_PX = 48
 export const SWIPE_MAX_TRANSLATE_PX = 64
 

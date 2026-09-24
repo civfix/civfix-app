@@ -6,13 +6,13 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { tokens, darkColor } from "@civfix/shared/tokens"
+import { ACCENT_TEXT, makeThemeColors } from "../schemes"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const affordances = read("../webAffordances.ts")
 const affordancesCode = strip(affordances)
-const themeIndex = read("../schemes.ts")
 const mapControls = strip(read("../../map/MapControls.tsx"))
 const expandedShell = strip(read("../../shell/ExpandedShell.tsx"))
 
@@ -60,13 +60,15 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
   it("is the accentText coral, single-sourced with theme.colors.accentText", () => {
     expect(SAND).toBe("#F4EFE6")
     expect(CARD).toBe("#FFFDF8")
-    expect(affordancesCode).toContain(`export const FOCUS_RING_COLOR = "${RING}"`)
-    expect(themeIndex).toContain(`accentText: "${RING}"`)
+    expect(ACCENT_TEXT.light).toBe(RING)
+    expect(affordancesCode).toContain("export const FOCUS_RING_COLOR = ACCENT_TEXT.light")
+    expect(makeThemeColors("light").accentText).toBe(RING)
   })
 
   it("has a dark-scheme ink, single-sourced with the dark accentText, injected under :root.dark", () => {
-    expect(affordancesCode).toContain(`export const FOCUS_RING_COLOR_DARK = "${RING_DARK}"`)
-    expect(themeIndex).toContain(`accentText: "${RING_DARK}"`)
+    expect(ACCENT_TEXT.dark).toBe(RING_DARK)
+    expect(affordancesCode).toContain("export const FOCUS_RING_COLOR_DARK = ACCENT_TEXT.dark")
+    expect(makeThemeColors("dark").accentText).toBe(RING_DARK)
     expect(affordancesCode).toContain(":root.dark")
     expect(contrast(RING_DARK, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)
     expect(contrast(RING_DARK, darkColor.neutral.card)).toBeGreaterThanOrEqual(3)

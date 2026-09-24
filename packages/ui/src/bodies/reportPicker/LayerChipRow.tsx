@@ -13,7 +13,7 @@ import {
 } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { FILTER_CHIP_HEIGHT, FILTER_CHIP_MIN_TOUCH_TARGET } from "../../primitives"
-import { CATEGORY_ICONS } from "../../primitives/category-icons"
+import { CATEGORY_ICONS } from "../../primitives/categoryIcons"
 import { useT } from "../../i18n"
 import { PICKER_CATEGORIES } from "./reportPickerFilterStore"
 

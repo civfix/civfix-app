@@ -20,7 +20,7 @@ describe("MapHeaderActions", () => {
   })
 
   it("centres the row against the glass controls opposite it, off the shared tokens", () => {
-    expect(source).toContain('import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"')
+    expect(source).toContain('import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"')
     expect(source).toContain(
       "const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_CONTROL_SIZE) / 2",
     )

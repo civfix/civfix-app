@@ -13,6 +13,7 @@ import { DONATE_URL, PRIVACY_URL, TERMS_URL, offProductionApiHost, sourceUrl } f
  * "501(c)(3)". Built from its code point (not a literal char) so it stays visible/reviewable in source.
  */
 const ZWNJ = String.fromCharCode(0x200c)
+const ENTER_MS = 260
 
 export interface BrandAboutCardProps {
   onClose: () => void
@@ -35,7 +36,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   useEffect(() => {
     Animated.timing(progress, {
       toValue: 1,
-      duration: 260,
+      duration: ENTER_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start()
@@ -209,7 +210,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   lede: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 21,
     color: t.colors.textMuted,
     marginTop: t.space["4"],
@@ -238,7 +239,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: t.space["2"],
     marginTop: t.space["4"],
   },
   legalLink: {

@@ -1,7 +1,7 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import { space } from "../theme"
-import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
+import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "../bodies/HeaderProfileButton"
 import { MapThemeToggle } from "./MapThemeToggle"
 import { GLASS_CONTROL_SIZE } from "./MapControls"

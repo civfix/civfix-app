@@ -6,7 +6,7 @@ import {
   HEADER_CONTROL_RADIUS,
   HEADER_CONTROL_SIZE,
   HEADER_GLYPH_SIZE,
-} from "../headerControls"
+} from "../../primitives/headerControls"
 import { MAP_ACTION_SIZE, RAIL_BRAND_GLYPH_EM } from "../../shell/expandedFramePlan"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")

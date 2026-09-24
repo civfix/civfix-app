@@ -24,8 +24,8 @@ import {
   pagePushConfig,
   pageSwipeCancelConfig,
   pageSwipeSettleConfig,
-  timingConfig,
 } from "./motionConfigs.native"
+import { timingConfig } from "../theme/motionTiming.native"
 import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import { useNestedShellHost } from "./nestedShellHost"
 import { PageActiveProvider } from "./pageActive"

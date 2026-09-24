@@ -100,7 +100,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   label: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
   },
   labelSm: {
     fontSize: 12.5,

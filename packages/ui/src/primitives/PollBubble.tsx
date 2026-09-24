@@ -1,12 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, View, Pressable, StyleSheet } from "react-native"
 import type { PollDTO } from "@civfix/shared"
-import { makeThemedStyles, useReducedMotion, useTheme, webCursorPointer, webNoSelect, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useReducedMotion,
+  useTheme,
+  webCursorPointer,
+  webNoSelect,
+  focusRingProps,
+  PRESSED_OPACITY,
+} from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { PrimaryButton } from "./PrimaryButton"
 import { pollInteractivity, reconcilePollSelection } from "./pollBubbleModel"
 import { useT } from "../i18n"
+
+const RESULT_BAR_GROW_MS = 300
 
 export interface PollBubbleProps {
   poll: PollDTO
@@ -62,7 +72,7 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
     }
     const run = Animated.parallel(
       barsRef.current.map((v, i) =>
-        Animated.timing(v, { toValue: fractions[i] ?? 0, duration: 300, useNativeDriver: false }),
+        Animated.timing(v, { toValue: fractions[i] ?? 0, duration: RESULT_BAR_GROW_MS, useNativeDriver: false }),
       ),
     )
     run.start()
@@ -239,7 +249,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   rowPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   resultRow: {
     position: "relative",

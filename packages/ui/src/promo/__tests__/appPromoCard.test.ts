@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { tokens } from "@civfix/shared/tokens"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 
 const SRC = readFileSync(new URL("../AppPromoCard.tsx", import.meta.url), "utf8")
@@ -9,7 +10,8 @@ const styleBlock = (name: string): string => {
 
 describe("the promo footer shares the feed's column", () => {
   it("insets to the timeline row's own 16, with no per-child compensation", () => {
-    expect(styleBlock("section")).toContain("paddingHorizontal: 16")
+    expect(styleBlock("section")).toContain('paddingHorizontal: t.space["4"]')
+    expect(tokens.space["4"]).toBe(16)
     expect(styleBlock("body")).not.toContain("paddingHorizontal")
     expect(styleBlock("badges")).not.toContain("paddingHorizontal")
   })
@@ -20,8 +22,9 @@ describe("the dismiss control is a real target, optically centred on the title",
     expect(styleBlock("head")).toContain('alignItems: "center"')
     expect(styleBlock("head")).not.toContain("baseline")
     const dismiss = styleBlock("dismiss")
-    expect(dismiss).toContain("width: 32")
-    expect(dismiss).toContain("height: 32")
+    expect(dismiss).toContain("width: DISMISS_SIZE")
+    expect(dismiss).toContain("height: DISMISS_SIZE")
+    expect(SRC).toContain("const DISMISS_SIZE = 32\n")
     expect(dismiss).not.toContain("padding: 2")
   })
 

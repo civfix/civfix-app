@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Platform } from "react-native"
 
-export const MODAL_EMITS_DISMISS = Platform.OS !== "android"
+const MODAL_EMITS_DISMISS = Platform.OS !== "android"
 
 export function useModalClosed(shown: boolean, onClosed: (() => void) | undefined): (() => void) | undefined {
   const onClosedRef = useRef(onClosed)

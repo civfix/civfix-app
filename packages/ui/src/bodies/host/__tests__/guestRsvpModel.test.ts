@@ -16,7 +16,7 @@ import {
   guestRsvpCommitFor,
   guestSmsUnavailable,
   guestVerifyErrorKey,
-} from "../guestRsvpModel"
+} from "../registration/guestRsvpModel"
 import {
   GUEST_OTP_ERROR_FIELD,
   GuestOtpErrorReason,
@@ -27,7 +27,7 @@ import {
   appErrorFields,
   EVENT_ENDED_FIELD,
   EVENT_ENDED_REASON,
-} from "../../bodies/errorCode"
+} from "../../errorCode"
 
 function verifyError(reason: GuestOtpErrorReasonValue): unknown {
   return {
@@ -172,7 +172,7 @@ describe("error mapping", () => {
 
   it.each(["en", "es", "de", "ko"])("carries the ended copy in the %s guest catalog", (locale) => {
     const catalog = JSON.parse(
-      readFileSync(new URL(`../../i18n/locales/${locale}/event-guest-rsvp.json`, import.meta.url), "utf8"),
+      readFileSync(new URL(`../../../i18n/locales/${locale}/event-guest-rsvp.json`, import.meta.url), "utf8"),
     ) as { error: Record<string, string> }
     expect(catalog.error.ended?.length ?? 0).toBeGreaterThan(0)
     expect(catalog.error.ended).not.toBe(catalog.error.closed)
@@ -192,22 +192,22 @@ describe("error mapping", () => {
 
 describe("SMS refusal detection", () => {
   it("never flips an EMAIL submit to the unavailable state", () => {
-    expect(guestSmsUnavailable("email", "VALIDATION", { channel: "off" })).toBe(false)
+    expect(guestSmsUnavailable("email", { channel: "off" })).toBe(false)
   })
 
   it("reads a refusal ONLY from the server naming the channel field", () => {
-    expect(guestSmsUnavailable("sms", "VALIDATION", { channel: "sms is disabled" })).toBe(true)
-    expect(guestSmsUnavailable("sms", undefined, { channel: "cap reached" })).toBe(true)
+    expect(guestSmsUnavailable("sms", { channel: "sms is disabled" })).toBe(true)
+    expect(guestSmsUnavailable("sms", { channel: "cap reached" })).toBe(true)
   })
 
   it("does NOT read a bare CONFLICT as an SMS refusal - that code means the event is closed", () => {
-    expect(guestSmsUnavailable("sms", "CONFLICT", undefined)).toBe(false)
+    expect(guestSmsUnavailable("sms", undefined)).toBe(false)
     expect(guestRequestErrorKey("CONFLICT")).toBe("error.closed")
   })
 
   it("leaves a plain bad-number validation as an ordinary error", () => {
-    expect(guestSmsUnavailable("sms", "VALIDATION", { phone: "invalid" })).toBe(false)
-    expect(guestSmsUnavailable("sms", undefined, undefined)).toBe(false)
+    expect(guestSmsUnavailable("sms", { phone: "invalid" })).toBe(false)
+    expect(guestSmsUnavailable("sms", undefined)).toBe(false)
   })
 })
 
@@ -243,7 +243,7 @@ describe("the web Cmd/Ctrl+Enter commit per step", () => {
   })
 
   it("is what the sheet hands ModalCardSheet as onCommit", () => {
-    const sheet = readFileSync(new URL("../GuestRsvpSheet.tsx", import.meta.url), "utf8")
+    const sheet = readFileSync(new URL("../registration/GuestRsvpSheet.tsx", import.meta.url), "utf8")
     expect(sheet).toContain("guestRsvpCommitFor(step, exhausted)")
     expect(sheet).not.toMatch(/\(exhausted \? startOver : submitCode\) : onClose/)
   })

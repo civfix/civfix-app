@@ -16,6 +16,7 @@ import {
   space,
   categoryColor,
   focusRingProps,
+  linkKeyProps,
   makeThemedStyles,
   stopPress,
   wash,
@@ -40,7 +41,7 @@ import { EmbeddedPost } from "./EmbeddedPost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
 import { localReportThumb } from "./localReportThumbs"
-import { POST_CARD_RHYTHM } from "./postCardRhythm"
+import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { PostOverflowMenu } from "./PostOverflowMenu"
 import { usePopoverAnchor, type AnchorRect } from "../primitives/PopoverMenu"
@@ -90,24 +91,6 @@ const IS_WEB = Platform.OS === "web"
 export const ROW_A11Y_PROPS: object = IS_WEB ? { tabIndex: -1 } : { accessible: false }
 
 const AVATAR_WEB_PROPS = IS_WEB ? ({ tabIndex: -1, "aria-hidden": true } as object) : null
-
-function activateOnLinkKey(event: unknown, activate: () => void): void {
-  const e = event as {
-    key?: string
-    target?: unknown
-    currentTarget?: unknown
-    preventDefault?: () => void
-  }
-  if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return
-  if (e.target !== e.currentTarget) return
-  e.preventDefault?.()
-  activate()
-}
-
-export function linkKeyProps(activate: () => void): object | null {
-  if (!IS_WEB) return null
-  return { onKeyDown: (event: unknown) => activateOnLinkKey(event, activate) }
-}
 
 function PostBody({
   post,

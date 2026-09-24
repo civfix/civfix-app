@@ -7,9 +7,9 @@ import {
   type GuestContactChannel,
   type TicketTypeDTO,
 } from "@civfix/shared"
-import { isEventEndedRefusal } from "../bodies/errorCode"
-import { initialAnswers, type AnswerMap } from "../bodies/host/registration/questionModel"
-import { defaultTicketTypeId } from "../bodies/host/registration/registrationModel"
+import { isEventEndedRefusal } from "../../errorCode"
+import { initialAnswers, type AnswerMap } from "./questionModel"
+import { defaultTicketTypeId } from "./registrationModel"
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 
@@ -142,12 +142,13 @@ export function guestAttemptsExhausted(fields: Record<string, string> | undefine
 
 export function guestSmsUnavailable(
   channel: GuestContactChannel,
-  _code: string | undefined,
   fields: Record<string, string> | undefined,
 ): boolean {
   if (channel !== "sms") return false
   return namesChannel(fields)
 }
+
+export const RESEND_COUNTDOWN_TICK_MS = 1000
 
 export function guestResendReadyAt(nowMs: number, resendAfterSec: number): number {
   return nowMs + Math.max(0, resendAfterSec) * 1000

@@ -13,8 +13,9 @@ const mapControls = strip(read("../../map/MapControls.tsx"))
 
 describe("headingLevel", () => {
   it("emits the ARIA attribute, not an RN prop", () => {
+    expect(affordances).toContain("export type HeadingLevel = 1 | 2 | 3")
     expect(affordances).toMatch(
-      /export function headingLevel\(level: 1 \| 2 \| 3\): object \{\s*return \{ "aria-level": level \}/,
+      /export function headingLevel\(level: HeadingLevel\): \{ "aria-level": HeadingLevel \} \{\s*return \{ "aria-level": level \}/,
     )
   })
 

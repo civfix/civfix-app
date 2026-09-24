@@ -1,7 +1,16 @@
 import React, { memo, useCallback } from "react"
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor, webTransition, webHover } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webCursor,
+  webTransition,
+  webHover,
+  HOVERED_OPACITY,
+  PRESSED_OPACITY,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
@@ -10,6 +19,10 @@ import { isShareRecipient, shareRecipientsSizing, type SharePeopleView } from ".
 
 const TILE_AVATAR = 56
 const ROW_AVATAR = 40
+const TILE_BADGE_SIZE = 20
+/** The row's selected badge and its empty checkbox share one footprint, so toggling never shifts the row. */
+const ROW_CHECK_SIZE = 22
+const SECTION_LABEL_LETTER_SPACING = 0.4
 
 export interface SharePeopleProps {
   view: SharePeopleView
@@ -67,7 +80,7 @@ const PersonTile = memo(function PersonTile({
         />
         {selected ? (
           <View style={styles.tileBadge}>
-            <SelectedBadge size={20} />
+            <SelectedBadge size={TILE_BADGE_SIZE} />
           </View>
         ) : null}
       </View>
@@ -124,7 +137,7 @@ const PersonRow = memo(function PersonRow({
         ) : null}
       </View>
       {selected ? (
-        <SelectedBadge size={22} />
+        <SelectedBadge size={ROW_CHECK_SIZE} />
       ) : (
         <View style={styles.rowCheckEmpty} />
       )}
@@ -214,7 +227,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLabel: {
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: SECTION_LABEL_LETTER_SPACING,
   },
   tiles: {
     gap: t.space["3"],
@@ -251,10 +264,10 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.surface,
   },
   hovered: {
-    opacity: 0.85,
+    opacity: HOVERED_OPACITY,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   row: {
     flexDirection: "row",
@@ -269,9 +282,9 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
   },
   rowCheckEmpty: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: ROW_CHECK_SIZE,
+    height: ROW_CHECK_SIZE,
+    borderRadius: ROW_CHECK_SIZE / 2,
     borderWidth: 1.5,
     borderColor: t.colors.border,
   },

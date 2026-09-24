@@ -4,6 +4,7 @@ import Svg, { Rect } from "react-native-svg"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import {
+  AXIS_LABEL_HEIGHT,
   DEFAULT_BAR_GAP,
   DEFAULT_BAR_RADIUS,
   axisLabelPlacement,
@@ -197,7 +198,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   xLabels: {
-    height: 14,
+    height: AXIS_LABEL_HEIGHT,
   },
   xLabel: {
     position: "absolute",

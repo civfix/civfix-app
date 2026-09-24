@@ -12,7 +12,7 @@ import { LocaleEnum, type SupportedLocale } from "@civfix/shared"
 import { namespaces, resources } from "./resources"
 import { FALLBACK_LOCALE } from "./resolveLocale"
 
-export const defaultNS = "common"
+const defaultNS = "common"
 
 export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInstance {
   const instance = i18next.createInstance()

@@ -74,7 +74,7 @@ describe("the overlay action gate", () => {
 
 describe("every house overlay reports the moment it has fully left the screen", () => {
   it("useModalClosed rides Modal.onDismiss where the platform emits it and an effect on Android", () => {
-    expect(MODAL_CLOSED).toContain('export const MODAL_EMITS_DISMISS = Platform.OS !== "android"')
+    expect(MODAL_CLOSED).toContain('const MODAL_EMITS_DISMISS = Platform.OS !== "android"')
     expect(MODAL_CLOSED).toMatch(/if \(left && !MODAL_EMITS_DISMISS\) onClosedRef\.current\?\.\(\)/)
     expect(MODAL_CLOSED).toMatch(/return MODAL_EMITS_DISMISS \? onDismiss : undefined/)
   })

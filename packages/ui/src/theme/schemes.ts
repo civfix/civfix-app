@@ -59,12 +59,15 @@ interface SchemeExtras {
   stage: string
 }
 
+/** Also the web focus ring's ink (webAffordances), so the ring and accent text cannot drift apart. */
+export const ACCENT_TEXT: Readonly<Record<ColorSchemeName, string>> = { light: "#B03A2C", dark: "#F79185" }
+
 const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
   light: {
     sun700: "#A77B0A",
     lilac100: "#DED2F5",
     lilac300: "#BFA9EC",
-    accentText: "#B03A2C",
+    accentText: ACCENT_TEXT.light,
     glass: "rgba(255,255,255,0.82)",
     glassBorder: "rgba(255,255,255,0.65)",
     scrim: "rgba(26,23,20,0.35)",
@@ -83,7 +86,7 @@ const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
     sun700: "#F5D27A",
     lilac100: "#3A2F4C",
     lilac300: "#7B63B0",
-    accentText: "#F79185",
+    accentText: ACCENT_TEXT.dark,
     glass: "rgba(42,36,28,0.82)",
     glassBorder: "rgba(255,255,255,0.10)",
     scrim: "rgba(0,0,0,0.50)",
@@ -212,9 +215,6 @@ export interface ThemeGlass {
     sheen: string
     selected: string
     shadow: { color: string; offsetY: number; radius: number }
-    height: number
-    orbSize: number
-    radius: number
   }
 }
 
@@ -249,9 +249,6 @@ const GLASS: Readonly<Record<ColorSchemeName, Omit<ThemeGlass, "active" | "on">>
       sheen: "rgba(255,255,255,0.8)",
       selected: "rgba(33,27,19,0.10)",
       shadow: { color: "rgba(33,27,19,0.14)", offsetY: 8, radius: 18 },
-      height: 64,
-      orbSize: 58,
-      radius: 999,
     },
   },
   dark: {
@@ -284,9 +281,6 @@ const GLASS: Readonly<Record<ColorSchemeName, Omit<ThemeGlass, "active" | "on">>
       sheen: "rgba(255,255,255,0.10)",
       selected: "rgba(241,234,224,0.12)",
       shadow: { color: "rgba(0,0,0,0.45)", offsetY: 8, radius: 18 },
-      height: 64,
-      orbSize: 58,
-      radius: 999,
     },
   },
 }

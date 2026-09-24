@@ -10,17 +10,24 @@ const SEAMS = {
   "MediaPreview.native.tsx": code(read("../../primitives/MediaPreview.native.tsx")),
   "MediaPreview.web.tsx": code(read("../../primitives/MediaPreview.web.tsx")),
 }
+const SHARED = code(read("../../primitives/MediaPreview.shared.tsx"))
 
 describe("the MediaPreview seams decode the thumb rendition for images only", () => {
+  it("the shared seam hook resolves the image source from thumbUri and keys the fallback on it", () => {
+    expect(SHARED).toMatch(/const source = kind === "image" && thumbUri \? thumbUri : uri/)
+    expect(SHARED).toMatch(/setFailedUri\(source\)/)
+    expect(SHARED).toMatch(/failed: failedUri === source/)
+  })
+
   for (const [name, source] of Object.entries(SEAMS)) {
     it(`${name} resolves its image source from thumbUri`, () => {
-      expect(source).toMatch(/const source = kind === "image" && thumbUri \? thumbUri : uri/)
+      expect(source).toMatch(/const \{ label, source, failed, onError \} = useMediaPreviewSource\(\{ kind, uri, thumbUri, alt \}\)/)
       expect(source).toMatch(/source=\{\{ uri: source \}\}/)
     })
 
     it(`${name} keys its error fallback on the source it rendered`, () => {
-      expect(source).toMatch(/setFailedUri\(source\)/)
-      expect(source).toMatch(/failedUri === source/)
+      expect(source).toMatch(/if \(failed\) return <MediaPreviewFallback/)
+      expect(source.match(/onError=\{onError\}|\bonError,/g)).toHaveLength(2)
     })
 
     it(`${name} still posters video from posterUri`, () => {

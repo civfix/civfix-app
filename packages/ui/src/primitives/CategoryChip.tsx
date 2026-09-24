@@ -4,7 +4,7 @@ import type { ReportCategory } from "@civfix/shared"
 import { useT } from "../i18n"
 import { makeThemedStyles, useTheme, categoryColor, wash } from "../theme"
 import { Text } from "../typography"
-import { CATEGORY_ICONS } from "./category-icons"
+import { CATEGORY_ICONS } from "./categoryIcons"
 
 export function CategoryChip({
   category,

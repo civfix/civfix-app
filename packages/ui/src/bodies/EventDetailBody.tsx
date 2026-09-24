@@ -15,11 +15,11 @@ import {
   SkeletonList,
   SkeletonText,
   ReportContentSheet,
-  GuestRsvpSheet,
   shareLink,
   useToast,
 } from "../primitives"
 import { DonateBlock } from "../primitives/DonateBlock"
+import { GuestRsvpSheet } from "./host/registration/GuestRsvpSheet"
 import {
   useCleanup,
   useJoinCleanup,

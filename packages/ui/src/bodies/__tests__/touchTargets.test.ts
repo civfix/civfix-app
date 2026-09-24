@@ -129,7 +129,7 @@ describe("MessagingListBody: the inbox's own field clear chip clears 44pt", () =
 
   it("the title row is the box the compose + profile controls sit in, itself past 44pt", () => {
     expect(SRC).toMatch(/header: \{[\s\S]{0,160}?minHeight: HEADER_CONTROL_SIZE/)
-    const controls = read("../headerControls.ts")
+    const controls = read("../../primitives/headerControls.ts")
     expect(num(controls, "HEADER_CONTROL_SIZE")).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET)
   })
 })

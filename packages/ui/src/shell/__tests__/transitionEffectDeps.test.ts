@@ -135,11 +135,15 @@ describe("a failed reduce-motion probe is a documented choice, not a swallowed e
     "BodyTransition.native.tsx",
     "PageStack.native.tsx",
     "TabBar.native.tsx",
-    "../primitives/usePopScale.ts",
   ])("%s", (file) => {
     const probe = sliceBetween(read(file), "AccessibilityInfo.isReduceMotionEnabled()", "addEventListener(")
     expect(probe).toMatch(
       /\/\/ A failed probe keeps [^\n]*reduceMotionChanged listener[^\n]*\n\s*\.catch\(\(\) => \{\}\)/,
     )
+  })
+
+  it("../primitives/usePopScale.ts reads the shared hook, which answers a failed probe with motion on", () => {
+    expect(read("../primitives/usePopScale.ts")).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(read("../theme/useReducedMotion.ts")).toContain(".catch(() => setReducedMotion(false))")
   })
 })

@@ -135,7 +135,7 @@ describe("the feed header's compose control", () => {
   })
 
   it("draws the one 52pt control the profile button and every other top row use", () => {
-    const controls = readFileSync(new URL("../headerControls.ts", import.meta.url), "utf8")
+    const controls = readFileSync(new URL("../../primitives/headerControls.ts", import.meta.url), "utf8")
     expect(controls).toContain("export const HEADER_CONTROL_SIZE = 52")
     expect(controls).toContain("export const HEADER_GLYPH_SIZE = 26")
     expect(controls).toContain("export const HEADER_AVATAR_SIZE = 52")

@@ -19,7 +19,7 @@ export interface PollDraft {
   options: PollOptionRow[]
 }
 
-export interface PollCreateInput {
+export interface PollDraftInput {
   question: string
   options: string[]
 }
@@ -69,6 +69,6 @@ export function canCreatePoll(draft: PollDraft): boolean {
   return draft.question.trim().length > 0 && normalizeOptions(optionTexts(draft)).length >= POLL_MIN_OPTIONS
 }
 
-export function toCreateInput(draft: PollDraft): PollCreateInput {
+export function toCreateInput(draft: PollDraft): PollDraftInput {
   return { question: draft.question.trim(), options: normalizeOptions(optionTexts(draft)) }
 }

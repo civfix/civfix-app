@@ -34,9 +34,11 @@ describe("the lightbox controls sit in the safe area", () => {
   })
 
   it("positions the close button and both chevrons from those offsets", () => {
-    expect(base).toContain("styles.controlBase, offsets.close,")
-    expect(base).toContain("styles.controlBase, offsets.prev,")
-    expect(base).toContain("styles.controlBase, offsets.next,")
+    expect(base).toContain("style={(state) => [styles.controlBase, offset, webCursor(false),")
+    expect(base.match(/styles\.controlBase,/g)).toHaveLength(1)
+    for (const control of ["close", "prev", "next"]) {
+      expect(base).toContain(`offset={offsets.${control}}`)
+    }
     expect(base).not.toMatch(/closeButton: \{/)
     expect(base).not.toMatch(/top: t\.space/)
   })
@@ -141,7 +143,7 @@ describe("the native gesture set", () => {
   })
 
   it("hoists the reanimated timing config out of every worklet", () => {
-    expect(native).toMatch(/^const SETTLE_CFG = timingConfig\(motion\.pageSwipeSettle\)$/m)
+    expect(native).toMatch(/^const SETTLE_CFG = timingConfig\(motion\.zoomSettle\)$/m)
     expect(native).not.toMatch(/withTiming\([^,]+, timingConfig\(/)
   })
 

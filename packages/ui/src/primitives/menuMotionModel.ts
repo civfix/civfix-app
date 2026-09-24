@@ -2,7 +2,7 @@ import { MOTION } from "../theme/motion"
 
 export const MENU_SCALE_FROM = MOTION.menuScaleFrom
 
-export interface MenuAnchorRect {
+export interface AnchorRect {
   x: number
   y: number
   width: number
@@ -30,7 +30,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function menuOrigin(
-  anchor: MenuAnchorRect | null | undefined,
+  anchor: AnchorRect | null | undefined,
   card: MenuCardRect | null | undefined,
   scaleFrom: number = MENU_SCALE_FROM,
 ): MenuOrigin {

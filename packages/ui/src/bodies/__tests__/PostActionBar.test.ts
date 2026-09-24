@@ -4,8 +4,8 @@ import type { PostCounts, PostViewer } from "@civfix/shared"
 import {
   buildPostActionMenuModel,
   buildPostActionModel,
-  buildPostActionMotionModel,
   formatPostActionCount,
+  POST_ACTION_POP_MS,
   postActionButtonWidth,
   postActionCountGap,
   postActionGlyphInset,
@@ -122,16 +122,19 @@ describe("PostActionBar model", () => {
   })
 
   it("models an accessible repost and quote popover", () => {
-    expect(buildPostActionMenuModel(false)).toEqual([
+    const labels = { repost: "Repost", undoRepost: "Undo repost", quote: "Quote post" }
+    expect(buildPostActionMenuModel(false, labels)).toEqual([
       { key: "repost", label: "Repost" },
       { key: "quote", label: "Quote post" },
     ])
-    expect(buildPostActionMenuModel(true)[0]).toEqual({ key: "repost", label: "Undo repost" })
+    expect(buildPostActionMenuModel(true, labels)[0]).toEqual({ key: "repost", label: "Undo repost" })
   })
 
   it("disables decorative motion when requested", () => {
-    expect(buildPostActionMotionModel(false)).toEqual({ duration: 280, easing: "ease-out", animated: true })
-    expect(buildPostActionMotionModel(true)).toEqual({ duration: 0, easing: "linear", animated: false })
+    expect(POST_ACTION_POP_MS).toBe(280)
+    const bar = readFileSync(new URL("../../primitives/PostActionBar.tsx", import.meta.url), "utf8")
+    expect(bar).toMatch(/const animate = useCallback\(\(\) => \{\s*if \(reducedMotion\) return\s*scale\.stopAnimation\(\)/)
+    expect(bar.match(/duration: POST_ACTION_POP_MS,/g)).toHaveLength(2)
   })
 
   it("omits only the requested keys and keeps the rest in canonical order", () => {

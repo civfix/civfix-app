@@ -37,8 +37,8 @@ import {
   useRequireAuth,
   useReportContent,
 } from "../data"
-import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/report-timeline-labels"
-import { timelineEntryRender } from "../primitives/report-timeline-model"
+import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/reportTimelineLabels"
+import { timelineEntryRender } from "../primitives/reportTimelineModel"
 import { AddressRow } from "./AddressRow"
 import { clampGallerySelection, linkedEventToCleanup } from "./reportDetailModel"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"

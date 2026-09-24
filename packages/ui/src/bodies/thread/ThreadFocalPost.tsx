@@ -9,12 +9,12 @@ import { useLocale, useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
+import { PostActionBar } from "../../primitives/PostActionBar"
 import {
-  PostActionBar,
   formatPostActionCount,
   postActionGlyphInset,
   postActionLayout,
-} from "../../primitives/PostActionBar"
+} from "../../primitives/postActionModel"
 import { useNavStore } from "../../nav/useNavStore"
 import type { DetailEntry } from "../../nav/types"
 import { EmbeddedPost } from "../EmbeddedPost"

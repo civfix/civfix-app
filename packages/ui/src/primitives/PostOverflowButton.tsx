@@ -12,7 +12,7 @@ import {
   webTransition,
 } from "../theme"
 import { Icon, iconMap } from "../typography"
-import { POST_CARD_RHYTHM } from "../bodies/postCardRhythm"
+import { POST_CARD_RHYTHM } from "./postCardRhythm"
 
 const RHYTHM = POST_CARD_RHYTHM
 const IS_WEB = Platform.OS === "web"

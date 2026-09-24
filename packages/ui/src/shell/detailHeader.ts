@@ -1,6 +1,6 @@
 import type { TextStyle } from "react-native"
 import { themes, type Theme } from "../theme"
-import { HEADER_CONTROL_RADIUS, HEADER_CONTROL_SIZE, HEADER_GLYPH_SIZE } from "../bodies/headerControls"
+import { HEADER_CONTROL_RADIUS, HEADER_CONTROL_SIZE, HEADER_GLYPH_SIZE } from "../primitives/headerControls"
 
 export const DETAIL_BACK_SIZE = HEADER_CONTROL_SIZE
 export const DETAIL_BACK_RADIUS = HEADER_CONTROL_RADIUS

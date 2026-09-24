@@ -21,7 +21,7 @@ import { useReducedMotion } from "../theme/useReducedMotion"
 import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
-import { HEADER_CONTROL_SIZE } from "./headerControls"
+import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
@@ -31,7 +31,7 @@ import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { useFeedLiveStore } from "./feed/feedLiveStore"
 import { clearsPendingAtOffset, dedupePostsById } from "./feed/feedLiveModel"
 import { NewPostsPill } from "./feed/NewPostsPill"
-import { POST_CARD_RHYTHM } from "./postCardRhythm"
+import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import {
   buildFeedHeaderModel,
   buildFeedMotionModel,

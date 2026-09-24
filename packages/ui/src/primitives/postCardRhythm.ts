@@ -7,7 +7,7 @@
  * react-native imports so it unit-tests under vitest.
  */
 import { space } from "@civfix/shared/tokens"
-import { postActionGlyphInset, postActionLayout } from "../primitives/postActionModel"
+import { postActionGlyphInset, postActionLayout } from "./postActionModel"
 
 const TIMELINE_ACTIONS = postActionLayout("timeline")
 

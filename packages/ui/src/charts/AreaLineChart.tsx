@@ -4,6 +4,7 @@ import Svg, { Line, Path } from "react-native-svg"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import {
+  AXIS_LABEL_HEIGHT,
   axisLabelPlacement,
   chartMax,
   lineGeometry,
@@ -11,8 +12,6 @@ import {
   xToPixels,
   type ChartPoint,
 } from "./chartGeometry"
-
-const AXIS_LABEL_HEIGHT = 14
 
 const LINE_WIDTH = 2
 

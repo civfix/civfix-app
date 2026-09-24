@@ -227,7 +227,7 @@ const useStyles = makeThemedStyles((t) => ({
   suggestPill: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
     paddingVertical: 6,
     borderRadius: t.radius.pill,

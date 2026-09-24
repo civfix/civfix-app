@@ -41,6 +41,10 @@ export function lightboxMediaHeight(width: number, ratio: number): number {
   return Math.max(1, safeWidth / safeRatio)
 }
 
+export function stepIndex(index: number, delta: number, count: number): number {
+  return (index + delta + count) % count
+}
+
 export const LIGHTBOX_CLOSE_GUTTER = tokens.space["4"]
 
 export const LIGHTBOX_CHEVRON_GUTTER = tokens.space["3"]

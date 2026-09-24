@@ -31,7 +31,7 @@ const useStyles = makeThemedStyles((t) => ({
   badgeSm: {
     minWidth: 18,
     height: 18,
-    paddingHorizontal: 4,
+    paddingHorizontal: t.space["1"],
     borderRadius: 9,
     borderWidth: 1.5,
     borderColor: t.colors.neutral.card,

@@ -16,6 +16,7 @@ const HOOK = code(read("../useShareToDm.ts"))
 const DELIVERY = code(read("../shareDelivery.ts"))
 const TILE = code(read("../ShareActionTile.tsx"))
 const PEOPLE = code(read("../SharePeople.tsx"))
+const PARTS = code(read("../ShareSheetParts.tsx"))
 const BAR = code(read("../../primitives/PostActionBar.tsx"))
 const SHELL = code(read("../../shell/AppShell.tsx"))
 const BUBBLE = code(read("../../bodies/conversation/MessageBubble.tsx"))
@@ -84,7 +85,8 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     expect(SHEET).toContain("<ModalCardSheet")
     expect(SHEET).toContain('bodyLayout="fill"')
     expect(SHEET).toContain("modalSheetInputStyle")
-    expect(SHEET).toContain("modalSheetInputFocusedStyle")
+    expect(SHEET).toContain("<ShareNoteInput")
+    expect(PARTS).toContain("focused ? modalSheetInputFocusedStyle(th) : null")
   })
 
   it("native rises from the bottom on SlideUpSheet, TikTok/Instagram style: people row first, then action tiles", () => {
@@ -135,7 +137,8 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
   })
 
   it("native lays the guest prompt out as a row, so its fill-height variant takes its content height inside the content-sized sheet", () => {
-    expect(NATIVE_SHEET).toMatch(/<View style=\{styles\.signedOut\}>\s*<SignInPrompt/)
+    expect(NATIVE_SHEET).toContain("<ShareSignedOut onSignIn={onSignIn} style={styles.signedOut} />")
+    expect(PARTS).toMatch(/<View style=\{style\}>\s*<SignInPrompt/)
     expect(NATIVE_SHEET).toMatch(/signedOut: \{\s*flexDirection: "row"/)
     expect(NATIVE_SHEET).toContain('bodyLayout="fill"')
   })
@@ -198,10 +201,11 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("prompts a signed-out viewer to sign in but still lets them share the link", () => {
     expect(SESSION).toMatch(/requireAuth\(\(\) => undefined, \{ next: target\.path \}\)/)
-    expect(SHEET).toContain("<SignInPrompt")
+    expect(PARTS).toContain("<SignInPrompt")
+    expect(SHEET).toContain("<ShareSignedOut onSignIn={onSignIn}")
     expect(SHEET).toMatch(/isAuthenticated \? \(\s*<>\s*<MemberPicker/)
     expect(SHEET).toMatch(/label=\{t\("actions.more"\)\}/)
-    expect(NATIVE_SHEET).toContain("<SignInPrompt")
+    expect(NATIVE_SHEET).toContain("<ShareSignedOut onSignIn={onSignIn}")
     expect(NATIVE_SHEET).toMatch(/const onSignIn = useCallback\(\(\) => run\(session\.signIn\)/)
   })
 })

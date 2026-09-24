@@ -10,6 +10,7 @@ import {
   lightboxControlOffsets,
   lightboxMediaHeight,
   lightboxMediaWidth,
+  stepIndex,
 } from "../lightboxStage"
 
 describe("lightboxAspectRatio", () => {
@@ -105,5 +106,17 @@ describe("lightboxControlOffsets", () => {
     expect(lightboxControlOffsets(undefined)).toEqual(bare)
     expect(lightboxControlOffsets({})).toEqual(bare)
     expect(lightboxControlOffsets({ top: Number.NaN, right: -12 })).toEqual(bare)
+  })
+})
+
+describe("stepIndex", () => {
+  it("steps forward and back inside the range", () => {
+    expect(stepIndex(0, 1, 3)).toBe(1)
+    expect(stepIndex(2, -1, 3)).toBe(1)
+  })
+
+  it("wraps past either end", () => {
+    expect(stepIndex(2, 1, 3)).toBe(0)
+    expect(stepIndex(0, -1, 3)).toBe(2)
   })
 })

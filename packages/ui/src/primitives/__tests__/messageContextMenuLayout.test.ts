@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   resolveMenuPlacement,
   resolveBandLeft,
+  resolveWebMenuFrame,
   CONTEXT_MENU_GAP,
   CONTEXT_MENU_EDGE_MARGIN,
 } from "../messageContextMenuLayout"
@@ -139,5 +140,34 @@ describe("ContextMenuActionKey", () => {
     const exhaustive: [ContextMenuActionKey] extends [(typeof keys)[number]] ? true : false = true
     expect(exhaustive).toBe(true)
     expect(keys).toHaveLength(11)
+  })
+})
+
+describe("resolveWebMenuFrame", () => {
+  const frame = { actionCount: 4, actionRowH: 38, reactionRowH: 48, cardPadV: 8, cardWidth: 264 }
+  const screen = { width: 1280, height: 800 }
+
+  it("sizes the card from its rows and opens it below a bubble near the top", () => {
+    const f = resolveWebMenuFrame(anchor(120, 40), screen, frame, false)
+    expect(f.cardH).toBe(48 + 4 * 38 + 8)
+    expect(f.position).toEqual({ top: 120 + 40 + CONTEXT_MENU_GAP, left: 24 })
+  })
+
+  it("opens above a bubble near the bottom and trails the viewer's own bubble", () => {
+    const mine = { x: 600, y: 700, width: 220, height: 40 }
+    const f = resolveWebMenuFrame(mine, screen, frame, true)
+    expect(f.position?.top).toBe(700 - CONTEXT_MENU_GAP - f.cardH)
+    expect(f.position?.left).toBe(600 + 220 - 264)
+  })
+
+  it("caps the action list to the window and never places above the edge margin", () => {
+    const tall = resolveWebMenuFrame(anchor(10, 40), { width: 1280, height: 200 }, { ...frame, actionCount: 20 }, false)
+    expect(tall.actionsMaxH).toBe(Math.max(38 * 2, 200 - CONTEXT_MENU_EDGE_MARGIN * 2 - 48 - 8))
+    expect(tall.cardH).toBe(48 + tall.actionsMaxH + 8)
+    expect(tall.position?.top).toBeGreaterThanOrEqual(CONTEXT_MENU_EDGE_MARGIN)
+  })
+
+  it("centres (no position) without an anchor", () => {
+    expect(resolveWebMenuFrame(null, screen, frame, false).position).toBeNull()
   })
 })

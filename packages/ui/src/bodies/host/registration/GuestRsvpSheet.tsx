@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable } from "react-native"
-import { TextInput } from "./TextInput"
+import { TextInput } from "../../../primitives/TextInput"
 import {
   MAX_GUEST_NAME,
   type EventAnswerValue,
@@ -8,42 +8,43 @@ import {
   type GuestContactChannel,
   type TicketTypeDTO,
 } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
-import { useT } from "../i18n"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../../../theme"
+import { Text, Icon, iconMap } from "../../../typography"
+import { useT } from "../../../i18n"
 import {
   useAuthState,
   useRequireAuth,
   useGetTurnstileToken,
   useGuestRsvpRequest,
   useGuestRsvpVerify,
-} from "../data"
-import { appErrorCode, appErrorFields } from "../bodies/errorCode"
-import { TicketTypePicker } from "../bodies/host/registration/TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "../bodies/host/registration/PartySizeStepper"
-import { RegistrationQuestions } from "../bodies/host/registration/RegistrationQuestions"
-import { ConsentChecks } from "../bodies/host/registration/ConsentChecks"
+} from "../../../data"
+import { appErrorCode, appErrorFields } from "../../errorCode"
+import { TicketTypePicker } from "./TicketTypePicker"
+import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
+import { RegistrationQuestions } from "./RegistrationQuestions"
+import { ConsentChecks } from "./ConsentChecks"
 import {
   EMPTY_CONSENT,
   consentAccepted,
   consentPayload,
   type ConsentState,
-} from "../bodies/host/registration/consentModel"
+} from "./consentModel"
 import {
   answerPayload,
   missingRequired,
   visibleQuestions,
   type AnswerMap,
-} from "../bodies/host/registration/questionModel"
-import { selectableTicketTypes } from "../bodies/host/registration/registrationModel"
-import { PrimaryButton } from "./PrimaryButton"
-import { SecondaryButton } from "./SecondaryButton"
-import { SegmentedCodeInput } from "./SegmentedCodeInput"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+} from "./questionModel"
+import { selectableTicketTypes } from "./registrationModel"
+import { PrimaryButton } from "../../../primitives/PrimaryButton"
+import { SecondaryButton } from "../../../primitives/SecondaryButton"
+import { SegmentedCodeInput } from "../../../primitives/SegmentedCodeInput"
+import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "../../../primitives/ModalCardSheet"
 import {
   GUEST_EMAIL_MAX,
   GUEST_RSVP_CODE_LENGTH,
   GUEST_RSVP_TURNSTILE_ACTION,
+  RESEND_COUNTDOWN_TICK_MS,
   answersWithDefaults,
   canSubmitGuestForm,
   effectiveTicketTypeId,
@@ -168,7 +169,7 @@ export function GuestRsvpSheet({
 
   useEffect(() => {
     if (!visible || step !== "code") return
-    const id = setInterval(() => setNowMs(Date.now()), 1000)
+    const id = setInterval(() => setNowMs(Date.now()), RESEND_COUNTDOWN_TICK_MS)
     return () => clearInterval(id)
   }, [visible, step])
 
@@ -227,7 +228,7 @@ export function GuestRsvpSheet({
             setStep("code")
           } catch (err) {
             if (stale()) return
-            if (guestSmsUnavailable(contact.channel, appErrorCode(err), appErrorFields(err))) {
+            if (guestSmsUnavailable(contact.channel, appErrorFields(err))) {
               setSmsBlocked(true)
               setForm((prev) => ({ ...prev, channel: "email", phone: "" }))
             }
@@ -635,8 +636,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   seg: {
     flexDirection: "row",
-    gap: 4,
-    padding: 4,
+    gap: t.space["1"],
+    padding: t.space["1"],
     backgroundColor: t.colors.bgAlt,
     borderRadius: t.radius.pill,
   },
@@ -687,7 +688,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resendText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   resendTextOff: {

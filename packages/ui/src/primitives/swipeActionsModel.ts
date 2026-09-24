@@ -1,6 +1,5 @@
-import { startsInBackSwipeEdge } from "./backSwipeEdge"
+import { SWIPE_CAPTURE_SLOP_PX, startsInBackSwipeEdge } from "./backSwipeEdge"
 
-export const SWIPE_ACTIONS_CAPTURE_SLOP_PX = 10
 export const SWIPE_ACTION_WIDTH_PX = 72
 export const SWIPE_ACTIONS_SNAP_RATIO = 0.5
 export const SWIPE_ACTIONS_FLING_VX = 0.35
@@ -19,7 +18,7 @@ export function shouldCaptureActionsSwipe(
   open: boolean,
   startX = Number.POSITIVE_INFINITY,
 ): boolean {
-  if (Math.abs(dx) <= SWIPE_ACTIONS_CAPTURE_SLOP_PX) return false
+  if (Math.abs(dx) <= SWIPE_CAPTURE_SLOP_PX) return false
   if (Math.abs(dx) <= Math.abs(dy)) return false
   if (dx < 0) return true
   return open && !startsInBackSwipeEdge(startX)

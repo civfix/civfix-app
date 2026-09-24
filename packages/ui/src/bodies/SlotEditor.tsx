@@ -24,7 +24,7 @@ import {
   FOCUS_RING_WIDTH,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { MIN_TOUCH_TARGET } from "../typography/TextLink"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 import { FilterChip, FILTER_CHIP_HEIGHT } from "../primitives"
 import { useLocale, useT } from "../i18n"
 import {

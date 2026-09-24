@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { POST_CARD_RHYTHM, postCardGeometry } from "../postCardRhythm"
+import { POST_CARD_RHYTHM, postCardGeometry } from "../../primitives/postCardRhythm"
 import {
   postActionGlyphInset,
   postActionLayout,
