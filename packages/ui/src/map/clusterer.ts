@@ -145,6 +145,30 @@ export function queryClusters(index: MapClusterIndex, bbox: BBox, zoom: number):
   })
 }
 
+/**
+ * True when two nodes draw the same marker. Each recompute returns fresh node objects, so a memoised marker
+ * compares content; DTOs compare by reference because an unchanged index hands back the same point objects.
+ */
+export function sameRenderedNode(a: ClusterNode, b: ClusterNode): boolean {
+  if (a === b) return true
+  if (a.key !== b.key || a.lng !== b.lng || a.lat !== b.lat) return false
+  switch (a.type) {
+    case "cluster":
+      return (
+        b.type === "cluster" &&
+        a.count === b.count &&
+        a.reportCount === b.reportCount &&
+        a.eventCount === b.eventCount
+      )
+    case "report":
+      return b.type === "report" && a.pin === b.pin
+    case "event":
+      return b.type === "event" && a.event === b.event
+    case "blend":
+      return b.type === "blend" && a.event === b.event && a.reports === b.reports
+  }
+}
+
 export function leavesOfCluster(index: MapClusterIndex, clusterId: number): MapPoint[] {
   return index.getLeaves(clusterId, Infinity).map((f) => f.properties)
 }

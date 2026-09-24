@@ -17,6 +17,7 @@ import {
   CLUSTER_ZOOM_STEP,
   AGGREGATE_EXPAND_ZOOM,
   clusterFallbackZoom,
+  sameRenderedNode,
   type MapPoint,
   type ClusterNode,
 } from "../clusterer"
@@ -424,5 +425,40 @@ describe("query hygiene", () => {
     for (const leaf of reportsOfPoints(leavesOfCluster(index, cluster.clusterId as number))) {
       expect(leaf).toMatchObject(enrich)
     }
+  })
+})
+
+describe("sameRenderedNode", () => {
+  it("treats a re-query of an unchanged index as the same markers, though every node object is fresh", () => {
+    const points = [...denseReports(6), eventPoint("e1", 40, -100), reportPoint("solo", 10, 10)]
+    const index = buildIndex(points)
+    for (const zoom of [3, 10, CLUSTER_MAX_ZOOM + 1]) {
+      const first = queryClusters(index, WORLD, zoom)
+      const second = queryClusters(index, WORLD, zoom)
+      expect(first.length).toBe(second.length)
+      first.forEach((node, i) => {
+        expect(second[i]).not.toBe(node)
+        expect(sameRenderedNode(node, second[i]!)).toBe(true)
+      })
+    }
+  })
+
+  it("sees a new DTO, a moved point or a changed cluster tally as a different marker", () => {
+    const [a] = queryClusters(buildIndex([reportPoint("r", 1, 1)]), WORLD, 12)
+    const [refetched] = queryClusters(buildIndex([reportPoint("r", 1, 1)]), WORLD, 12)
+    const [moved] = queryClusters(buildIndex([reportPoint("r", 1, 2)]), WORLD, 12)
+    expect(sameRenderedNode(a!, refetched!)).toBe(false)
+    expect(sameRenderedNode(a!, moved!)).toBe(false)
+
+    const cluster = clustersOf(queryClusters(buildIndex(denseReports(6)), WORLD, 10))[0]!
+    expect(sameRenderedNode(cluster, { ...cluster, reportCount: cluster.reportCount - 1, eventCount: 1 })).toBe(false)
+    expect(sameRenderedNode(cluster, { ...cluster, count: cluster.count + 1 })).toBe(false)
+    expect(sameRenderedNode(cluster, { ...cluster, clusterId: 999 })).toBe(true)
+  })
+
+  it("never equates nodes of different kinds that share a key and position", () => {
+    const report = { type: "report", key: "k", id: "x", lng: 0, lat: 0, pin: pin("x", 0, 0) } as ClusterNode
+    const event = { type: "event", key: "k", id: "x", lng: 0, lat: 0, event: eventDto("x", 0, 0) } as ClusterNode
+    expect(sameRenderedNode(report, event)).toBe(false)
   })
 })

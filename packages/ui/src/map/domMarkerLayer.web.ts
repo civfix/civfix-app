@@ -6,6 +6,7 @@ export interface MarkerEntry {
   marker: Marker
   root: Root
   signature: string
+  anchor: DesiredMarker["anchor"]
   onClick: { fn?: () => void }
 }
 
@@ -16,14 +17,15 @@ export interface DesiredMarker {
   node: React.ReactNode
   label: string
   onClick?: () => void
-  /** Set only at creation, so a marker whose pressed state can change must carry it in its signature. */
+  /** Re-applied only when the signature changes, so a marker whose pressed state can change must carry it there. */
   pressed?: boolean
   opacity?: number
 }
 
 /**
- * A marker whose signature is unchanged keeps its element and React root; only its position, name, opacity
- * and click target move, so a reconcile never remounts a pin that did not change.
+ * A marker whose key and anchor are unchanged keeps its element, maplibre Marker and React root; only its
+ * position, name, opacity and click target move, and a changed signature re-renders into the same root instead
+ * of rebuilding the element, so a scheme switch or an active toggle creates no DOM nodes or roots.
  */
 export function syncMarkers(
   map: MlMap,
@@ -31,23 +33,41 @@ export function syncMarkers(
   desired: ReadonlyMap<string, DesiredMarker>,
   beforePress?: () => void,
 ): void {
+  const restack = new Set<string>()
   for (const [key, entry] of current) {
     const want = desired.get(key)
-    if (!want || want.signature !== entry.signature) {
+    if (!want || want.anchor !== entry.anchor) {
       const stale = entry.root
       queueMicrotask(() => stale.unmount())
       entry.marker.remove()
       current.delete(key)
-    } else {
-      entry.marker.setLngLat(want.lngLat)
-      entry.onClick.fn = want.onClick
-      const el = entry.marker.getElement()
-      el.setAttribute("aria-label", want.label)
-      if (want.opacity !== undefined) el.style.opacity = String(want.opacity)
+      continue
+    }
+    entry.marker.setLngLat(want.lngLat)
+    entry.onClick.fn = want.onClick
+    const el = entry.marker.getElement()
+    el.setAttribute("aria-label", want.label)
+    if (want.opacity !== undefined) el.style.opacity = String(want.opacity)
+    if (want.signature !== entry.signature) {
+      entry.signature = want.signature
+      el.style.cursor = want.onClick ? "pointer" : "default"
+      if (want.pressed !== undefined) el.setAttribute("aria-pressed", String(want.pressed))
+      else el.removeAttribute("aria-pressed")
+      entry.root.render(want.node)
+      restack.add(key)
     }
   }
   for (const [key, want] of desired) {
-    if (current.has(key)) continue
+    const kept = current.get(key)
+    if (kept) {
+      // DOM order is the marker stacking order: a re-rendered pin moves to the end, where a rebuilt one used to
+      // land, so a newly active pin still draws over its neighbours.
+      if (restack.has(key)) {
+        const el = kept.marker.getElement()
+        el.parentNode?.appendChild(el)
+      }
+      continue
+    }
     const el = document.createElement("div")
     el.style.cursor = want.onClick ? "pointer" : "default"
     el.style.lineHeight = "0"
@@ -77,7 +97,7 @@ export function syncMarkers(
       .addTo(map)
     // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
     el.setAttribute("aria-label", want.label)
-    current.set(key, { marker, root, signature: want.signature, onClick })
+    current.set(key, { marker, root, signature: want.signature, anchor: want.anchor, onClick })
   }
 }
 

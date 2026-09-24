@@ -42,6 +42,11 @@ describe("a shell renders the stack it owns, not whatever the store holds", () =
     expect(searchReveal).toContain('const body = useMemo(() => renderBody(null, "search"), [renderBody])')
     expect(searchReveal).not.toMatch(/\{renderBody\(null, "search"\)\}/)
   })
+
+  it("keeps the expanded panel's body out of shell re-renders that leave the entry and view alone", () => {
+    expect(expanded).toContain("const body = useMemo(() => renderBody(entry, view), [renderBody, entry, view])")
+    expect(expanded).not.toMatch(/\{renderBody\(entry, view\)\}/)
+  })
 })
 
 describe("an empty owned stack presents no page at all, so the base body shows through", () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
   Animated,
   PanResponder,
@@ -321,7 +321,8 @@ function Body({
   renderBody: RenderBody
 }) {
   const styles = useStyles()
-  return <View style={styles.fill}>{renderBody(entry, view)}</View>
+  const body = useMemo(() => renderBody(entry, view), [renderBody, entry, view])
+  return <View style={styles.fill}>{body}</View>
 }
 
 const useStyles = makeThemedStyles((t) => ({
