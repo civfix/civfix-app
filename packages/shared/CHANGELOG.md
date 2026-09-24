@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- 28d4b96: Contract cleanup from the civfix-app campaign: unused value exports removed, the schemas' input limits and the helpers ui, web and mobile shared by copy exported once, the optional fields the backend and admin asked for, and a set of behaviour fixes. No endpoint is added or removed and no path, method, auth or csrf flag moves (the registry stays at 333 entries). See DECISIONS §58.
+- 7c45af1: Contract cleanup from the civfix-app campaign: unused value exports removed, the schemas' input limits and the helpers ui, web and mobile shared by copy exported once, the optional fields the backend and admin asked for, and a set of behaviour fixes. No endpoint is added or removed and no path, method, auth or csrf flag moves (the registry stays at 333 entries). See DECISIONS §58.
 
   **Removed.** No consumer used any of these (checked against civfix-backend `services/api` and `services/media-worker`, civfix-admin `apps/admin`, civfix-govt-web, civfix-govt-shared, civfix-app ui and apps, and the open backend and admin PRs).
 
