@@ -18,7 +18,8 @@ import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
+// The fixture tests point it at a scratch tree; CI runs it on the repository.
+const ROOT = process.env.I18N_CALL_SITES_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), "..")
 const LOCALES_EN = join(ROOT, "packages/ui/src/i18n/locales/en")
 const DEFAULT_NS = "common"
 const SCANNED = [
