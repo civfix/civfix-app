@@ -5,6 +5,7 @@ import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text } from "../../typography"
 import { MetaDot } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { useEventWhen, useLocale, useT } from "../../i18n"
 import { SectionEyebrow, SubHead } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
@@ -41,10 +42,7 @@ function EventRow({
       {...focusRingProps}
       style={({ pressed }) => [styles.erow, pressed && onPress ? styles.erowPressed : null]}
     >
-      <View style={[styles.erowDate, { backgroundColor: tint }]}>
-        <Text style={[styles.erowDay, { color: badgeColor }]}>{day}</Text>
-        <Text style={[styles.erowMonth, { color: badgeColor }]}>{month}</Text>
-      </View>
+      <DateTile variant="profileEvent" day={day} month={month} color={badgeColor} />
       <View style={styles.erowMeta}>
         <Text style={styles.erowTitle} numberOfLines={1}>
           {event.title}
@@ -299,25 +297,6 @@ const useStyles = makeThemedStyles((t) => ({
   erowPressed: {
     opacity: 0.92,
     transform: [{ scale: 0.99 }],
-  },
-  erowDate: {
-    width: 46,
-    height: 46,
-    flexShrink: 0,
-    borderRadius: t.radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  erowDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 19,
-    lineHeight: 20,
-  },
-  erowMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9,
-    letterSpacing: 0.5,
-    marginTop: 2,
   },
   erowMeta: {
     flex: 1,

@@ -40,11 +40,13 @@ const tap = (target: AppearancePreference, from: AppearancePreference): Appearan
 
 describe("the appearance option list is the one picker both surfaces mount", () => {
   const LIST = read("../AppearanceOptionList.tsx")
+  const RADIO_ROW = read("../../primitives/RadioOptionRow.tsx")
   const BODY = read("../AppearanceSettingsBody.tsx")
 
   it("owns the rows, the radio group and the store write", () => {
     expect(LIST).toContain('accessibilityRole="radiogroup"')
-    expect(LIST).toContain('accessibilityRole="radio"')
+    expect(LIST).toContain("<RadioOptionRow")
+    expect(RADIO_ROW).toContain('accessibilityRole="radio"')
     expect(LIST).toContain("setAppearancePreference(commit.preference)")
   })
 
@@ -66,11 +68,13 @@ describe("the appearance option list is the one picker both surfaces mount", () 
     expect(LIST).not.toMatch(/badge/)
     expect(LIST).not.toContain('t("option.dark_beta")')
     expect(LIST).not.toContain('t("option.dark_sub")')
-    expect(LIST).toContain("accessibilityLabel={label}")
+    expect(LIST).toContain("label={label}")
+    expect(RADIO_ROW).toContain("accessibilityLabel={label}")
   })
 
   it("paints from tokens only", () => {
     expect(LIST).not.toMatch(/#[0-9a-fA-F]{6}/)
+    expect(RADIO_ROW).not.toMatch(/#[0-9a-fA-F]{6}/)
   })
 
   it("has dropped the beta copy from all four appearance catalogs, keeping the system caption", () => {
@@ -87,6 +91,7 @@ describe("the appearance option list is the one picker both surfaces mount", () 
 
 describe("the tapped row answers before the theme commit", () => {
   const LIST = read("../AppearanceOptionList.tsx")
+  const RADIO_ROW = read("../../primitives/RadioOptionRow.tsx")
 
   it("shows a spinner in the checkmark slot while the tap is pending", () => {
     expect(appearanceRowState("dark", tap("dark", "light"), "light")).toEqual({
@@ -151,7 +156,8 @@ describe("the tapped row answers before the theme commit", () => {
   it("fires the selection haptic and announces busy from the shared capability seam", () => {
     expect(LIST).toContain("haptics.selection()")
     expect(LIST).toContain('from "../capabilities"')
-    expect(LIST).toContain("accessibilityState={{ checked: selected, busy: pending }}")
+    expect(LIST).toContain("pending={pending}")
+    expect(RADIO_ROW).toContain("accessibilityState={{ checked: selected, busy: pending }}")
   })
 
   it("stays silent when the tap changes nothing, so the applied row never buzzes", () => {
@@ -161,8 +167,8 @@ describe("the tapped row answers before the theme commit", () => {
   })
 
   it("mirrors the radio state into the aria attributes react-native-web emits", () => {
-    expect(LIST).toContain("aria-checked={selected}")
-    expect(LIST).toContain("aria-busy={pending}")
+    expect(RADIO_ROW).toContain("aria-checked={selected}")
+    expect(RADIO_ROW).toContain("aria-busy={pending}")
   })
 
   it("writes the store from an effect, never straight out of the press handler", () => {
@@ -207,13 +213,15 @@ describe("the tapped row answers before the theme commit", () => {
   })
 
   it("paints the spinner with the checkmark's own token color", () => {
-    expect(LIST).toContain('<ActivityIndicator size="small" color={t.colors.brand.bloom} />')
-    expect(LIST).toContain("<Icon icon={iconMap.Check} size={18} color={t.colors.brand.bloom} />")
+    expect(RADIO_ROW).toContain('<ActivityIndicator size="small" color={th.colors.brand.bloom} />')
+    expect(RADIO_ROW).toContain("const CHECK_GLYPH = 18")
+    expect(RADIO_ROW).toContain("<Icon icon={iconMap.Check} size={CHECK_GLYPH} color={th.colors.brand.bloom} />")
   })
 
   it("takes the spinner from react-native and pins the slot so nothing reflows", () => {
-    expect(LIST).toMatch(/import \{[^}]*ActivityIndicator[^}]*\} from "react-native"/s)
-    expect(LIST).toMatch(/trailing: \{\s*width: 24,\s*height: 24,/)
+    expect(RADIO_ROW).toMatch(/import \{[^}]*ActivityIndicator[^}]*\} from "react-native"/s)
+    expect(RADIO_ROW).toContain("const TRAILING_SLOT = 24")
+    expect(RADIO_ROW).toMatch(/trailing: \{\s*width: TRAILING_SLOT,\s*height: TRAILING_SLOT,/)
   })
 })
 

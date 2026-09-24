@@ -115,7 +115,11 @@ describe("screen titles are headings", () => {
 
   it("the thread's compact title, levelled so the two branches stay one page title", () => {
     const thread = code("../PostThreadBody.tsx")
-    expect(thread).toMatch(/<Text variant="heading" accessibilityRole="header" \{\.\.\.headingLevel\(1\)\}>\s*\{t\("thread\.title"\)\}/)
+    const header = code("../DetailBodyHeader.tsx")
+    expect(thread).toMatch(/<DetailBodyHeader\s+title=\{t\("thread\.title"\)\}[^>]*compactTitle="heading"/)
+    expect(header).toMatch(
+      /compactTitle === "heading" \? \(\s*<View[^>]*>\s*<Text variant="heading" accessibilityRole="header" \{\.\.\.headingLevel\(1\)\}>\s*\{title\}/,
+    )
   })
 })
 
@@ -143,7 +147,10 @@ describe("the composer entrance reads the shared reduced-motion hook", () => {
     expect(composer).not.toContain("reduceMotionCache")
     expect(composer).not.toContain("isReduceMotionEnabled")
     expect(composer).not.toContain(".catch(() => {})")
-    expect(between(composer, "function useComposerEntrance()", "return {")).toContain("const reducedMotion = useReducedMotion()")
+    expect(composer).toContain("const entranceStyle = useEntranceAnimation(COMPOSER_ENTRANCE)")
+    const entrance = code("../useEntranceAnimation.ts")
+    expect(entrance).not.toContain("isReduceMotionEnabled")
+    expect(between(entrance, "export function useEntranceAnimation(", "return useMemo")).toContain("const reducedMotion = useReducedMotion()")
   })
 })
 

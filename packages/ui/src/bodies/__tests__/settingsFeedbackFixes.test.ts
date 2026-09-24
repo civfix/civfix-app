@@ -6,6 +6,7 @@ import {
   PROFILE_SAVE_VALIDATION_KEY,
   profileSaveErrorKey,
 } from "../../data/errorCode"
+import { sheetCommit } from "../settings/useSheetEditor"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -45,6 +46,41 @@ describe("Settings > Account editors map the save failure onto honest copy", () 
     const src = read(rel)
     expect(src).toContain(call)
     expect(src).not.toMatch(/\.catch\(\(\) => setSubmitError/)
+  })
+
+  it("the shared sheet editor routes every rejected save through the editor's mapper", () => {
+    const src = read("../settings/useSheetEditor.ts")
+    expect(src).toContain(".catch((err: unknown) => setSubmitError(mapError(err)))")
+    expect(src).not.toMatch(/\.catch\(\(\) => setSubmitError/)
+  })
+
+  it("closes the sheet on a saved commit and keeps it open with the mapped copy on a failed one", async () => {
+    const calls: string[] = []
+    const setters = {
+      setEditing: (editing: boolean) => calls.push(`editing:${editing}`),
+      setSubmitError: (message: string | null) => calls.push(`error:${message}`),
+    }
+    const saved: string[] = []
+    sheetCommit(
+      async (value: string) => {
+        saved.push(value)
+      },
+      () => "mapped",
+      setters,
+    )("next")
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(saved).toEqual(["next"])
+    expect(calls).toEqual(["error:null", "editing:false"])
+
+    calls.length = 0
+    const refusal = new AppError(ErrorCode.VALIDATION, "no")
+    sheetCommit(
+      () => Promise.reject(refusal),
+      (err) => (err === refusal ? "refused" : "other"),
+      setters,
+    )("next")
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(calls).toEqual(["error:null", "error:refused"])
   })
 })
 
@@ -133,6 +169,7 @@ describe("settings radio rows", () => {
     "../LanguageSettingsBody.tsx",
     "../AppearanceOptionList.tsx",
     "../settings/PrimaryOrganizationPicker.tsx",
+    "../../primitives/RadioOptionRow.tsx",
   ])("%s puts no label on the decorative check slot", (rel) => {
     expect(read(rel)).not.toContain("selectedLabel")
   })

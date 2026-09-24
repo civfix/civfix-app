@@ -1,16 +1,12 @@
-import React, { useState } from "react"
+import React from "react"
 import { Text, TextLink } from "../../typography"
-import {
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-  SettingsRow,
-  TextField,
-} from "../../primitives"
+import { TextField } from "../../primitives"
 import { donationUrlHost, safeDonationUrl } from "../../primitives/donationUrl"
 import { useT } from "../../i18n"
 import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
+import { SettingsEditorSheet } from "./SettingsEditorSheet"
+import { useSheetEditor } from "./useSheetEditor"
 import {
   DONATION_LINK_MAX_LENGTH,
   donationLinkDirty,
@@ -27,9 +23,12 @@ export interface DonationLinkEditorProps {
 export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkEditorProps) {
   const styles = useEditorStyles()
   const { t } = useT("donation-link")
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(currentUrl ?? "")
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const editor = useSheetEditor({
+    initial: currentUrl ?? "",
+    save: onSave,
+    mapError: (err) => t(profileSaveErrorKey(err, "editor.error")),
+  })
+  const { draft, setDraft, commit } = editor
 
   const saved = currentUrl ?? null
   const savedSafe = safeDonationUrl(saved)
@@ -38,21 +37,6 @@ export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkE
   const dirty = donationLinkDirty(draft, saved)
   const canSave = !saving && valid && dirty
 
-  const begin = () => {
-    setDraft(currentUrl ?? "")
-    setSubmitError(null)
-    setEditing(true)
-  }
-  const cancel = () => {
-    setSubmitError(null)
-    setEditing(false)
-  }
-  const commit = (url: string | null) => {
-    setSubmitError(null)
-    void onSave(url)
-      .then(() => setEditing(false))
-      .catch((err: unknown) => setSubmitError(t(profileSaveErrorKey(err, "editor.error"))))
-  }
   const save = () => {
     if (!canSave) return
     commit(normalizeDonationLink(draft))
@@ -63,54 +47,38 @@ export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkE
   }
 
   return (
-    <>
-      <SettingsRow
-        icon="HandHeart"
-        label={t("editor.title")}
-        sub={savedSafe ? donationUrlHost(savedSafe) : t("editor.add")}
-        onPress={begin}
+    <SettingsEditorSheet
+      editor={editor}
+      icon="HandHeart"
+      label={t("editor.title")}
+      sub={savedSafe ? donationUrlHost(savedSafe) : t("editor.add")}
+      dismissLabel={t("editor.dismiss")}
+      cancelLabel={t("common:cancel")}
+      saveLabel={t("editor.save")}
+      saving={saving}
+      canSave={canSave}
+      onCommit={save}
+    >
+      <Text style={styles.note}>{t("editor.hint")}</Text>
+      <TextField
+        placeholder={t("editor.placeholder")}
+        value={draft}
+        onChangeText={setDraft}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="url"
+        maxLength={DONATION_LINK_MAX_LENGTH}
+        editable={!saving}
+        accessibilityLabel={t("editor.field_label")}
       />
-      <ModalCardSheet
-        visible={editing}
-        onClose={cancel}
-        onCommit={save}
-        headerIcon="HandHeart"
-        title={t("editor.title")}
-        dismissLabel={t("editor.dismiss")}
-        error={submitError}
-        actions={
-          <>
-            <SecondaryButton label={t("common:cancel")} onPress={cancel} size="sm" />
-            <PrimaryButton
-              label={t("editor.save")}
-              onPress={save}
-              loading={saving}
-              disabled={!canSave}
-            />
-          </>
-        }
-      >
-        <Text style={styles.note}>{t("editor.hint")}</Text>
-        <TextField
-          placeholder={t("editor.placeholder")}
-          value={draft}
-          onChangeText={setDraft}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          maxLength={DONATION_LINK_MAX_LENGTH}
-          editable={!saving}
-          accessibilityLabel={t("editor.field_label")}
-        />
-        {fieldError ? (
-          <Text style={[styles.hint, styles.hintError]}>{t("editor.invalid")}</Text>
-        ) : null}
-        {saved !== null ? (
-          <TextLink variant="label" standalone onPress={remove} accessibilityLabel={t("editor.remove")}>
-            {t("editor.remove")}
-          </TextLink>
-        ) : null}
-      </ModalCardSheet>
-    </>
+      {fieldError ? (
+        <Text style={[styles.hint, styles.hintError]}>{t("editor.invalid")}</Text>
+      ) : null}
+      {saved !== null ? (
+        <TextLink variant="label" standalone onPress={remove} accessibilityLabel={t("editor.remove")}>
+          {t("editor.remove")}
+        </TextLink>
+      ) : null}
+    </SettingsEditorSheet>
   )
 }

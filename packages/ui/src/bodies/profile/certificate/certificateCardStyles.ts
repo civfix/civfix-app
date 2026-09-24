@@ -19,13 +19,6 @@ export const useCertificateCardStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: 6,
   },
-  eyebrow: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    color: t.colors.textSubtle,
-    textTransform: "uppercase",
-  },
   blurb: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 12.5,

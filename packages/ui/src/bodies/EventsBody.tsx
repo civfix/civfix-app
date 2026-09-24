@@ -22,6 +22,7 @@ import {
   OrgAffiliationBadge,
   useListBodyStyles,
 } from "../primitives"
+import { DateTile } from "../primitives/DateBadge"
 import {
   useCleanups,
   useJoinCleanup,
@@ -90,12 +91,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           pressed ? styles.cardPressed : null,
         ]}
       >
-        <View style={styles.date}>
-          <Text style={styles.dateDay}>{day}</Text>
-          <Text color={th.colors.bloom["600"]} style={styles.dateMonth}>
-            {month}
-          </Text>
-        </View>
+        <DateTile variant="eventCard" day={day} month={month} />
 
         <View style={styles.meta}>
           <View style={styles.titleRow}>
@@ -384,27 +380,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   cardPressed: {
     opacity: 0.92,
-  },
-  date: {
-    width: 50,
-    flexShrink: 0,
-    alignSelf: "flex-start",
-    paddingVertical: 9,
-    borderRadius: 12,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 23,
-    lineHeight: 23,
-    color: t.colors.text,
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.55,
-    marginTop: 3,
   },
   meta: {
     flex: 1,

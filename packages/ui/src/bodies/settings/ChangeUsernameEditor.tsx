@@ -1,18 +1,14 @@
-import React, { useState } from "react"
+import React from "react"
 import { isValidHandle } from "@civfix/shared"
 import { Text } from "../../typography"
-import {
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-  SettingsRow,
-  TextField,
-} from "../../primitives"
+import { SettingsRow, TextField } from "../../primitives"
 import { useHandleAvailability } from "../../data"
 import { useLocale, useT } from "../../i18n"
 import { appErrorCode } from "../../data/errorCode"
 import { dayLabel, todayKey, type DayLabelOptions } from "../relativeTime"
 import { useEditorStyles } from "./editorStyles"
+import { SettingsEditorSheet } from "./SettingsEditorSheet"
+import { useSheetEditor } from "./useSheetEditor"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
@@ -55,9 +51,12 @@ export function ChangeUsernameEditor({
     locale,
     now,
   }
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(currentHandle ?? "")
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const editor = useSheetEditor({
+    initial: currentHandle ?? "",
+    save: onSave,
+    mapError: (err) => changeHandleErrorMessage(err, t),
+  })
+  const { draft, setDraft, submitError } = editor
 
   const lockMs = lockedUntil ? new Date(lockedUntil).getTime() : NaN
   const locked = !Number.isNaN(lockMs) && lockMs > Date.now()
@@ -73,21 +72,9 @@ export function ChangeUsernameEditor({
   const canSave =
     !saving && valid && !unchanged && !checking && (availability.data?.available ?? false)
 
-  const begin = () => {
-    setDraft(currentHandle ?? "")
-    setSubmitError(null)
-    setEditing(true)
-  }
-  const cancel = () => {
-    setEditing(false)
-    setSubmitError(null)
-  }
   const save = () => {
     if (!canSave) return
-    setSubmitError(null)
-    void onSave(trimmed)
-      .then(() => setEditing(false))
-      .catch((err: unknown) => setSubmitError(changeHandleErrorMessage(err, t)))
+    editor.commit(trimmed)
   }
 
   const hint = (() => {
@@ -125,56 +112,40 @@ export function ChangeUsernameEditor({
   }
 
   return (
-    <>
-      <SettingsRow
-        icon="AtSign"
-        label={t("handle.change")}
-        sub={currentHandle ? `@${currentHandle}` : t("handle.set")}
-        onPress={begin}
+    <SettingsEditorSheet
+      editor={editor}
+      icon="AtSign"
+      label={t("handle.change")}
+      sub={currentHandle ? `@${currentHandle}` : t("handle.set")}
+      dismissLabel={t("handle.dismiss")}
+      cancelLabel={t("handle.cancel")}
+      saveLabel={t("handle.save")}
+      saving={saving}
+      canSave={canSave}
+      onCommit={save}
+    >
+      <Text style={styles.note}>{t("handle.cooldown_note")}</Text>
+      <TextField
+        placeholder={t("handle.placeholder")}
+        value={draft}
+        onChangeText={setDraft}
+        autoCapitalize="none"
+        autoCorrect={false}
+        maxLength={HANDLE_MAX_LENGTH}
+        editable={!saving}
+        accessibilityLabel={t("handle.field_label")}
       />
-      <ModalCardSheet
-        visible={editing}
-        onClose={cancel}
-        onCommit={save}
-        headerIcon="AtSign"
-        title={t("handle.change")}
-        dismissLabel={t("handle.dismiss")}
-        error={submitError}
-        actions={
-          <>
-            <SecondaryButton label={t("handle.cancel")} onPress={cancel} size="sm" />
-            <PrimaryButton
-              label={t("handle.save")}
-              onPress={save}
-              loading={saving}
-              disabled={!canSave}
-            />
-          </>
-        }
-      >
-        <Text style={styles.note}>{t("handle.cooldown_note")}</Text>
-        <TextField
-          placeholder={t("handle.placeholder")}
-          value={draft}
-          onChangeText={setDraft}
-          autoCapitalize="none"
-          autoCorrect={false}
-          maxLength={HANDLE_MAX_LENGTH}
-          editable={!saving}
-          accessibilityLabel={t("handle.field_label")}
-        />
-        {hint.text ? (
-          <Text
-            style={[
-              styles.hint,
-              hint.tone === "error" ? styles.hintError : hint.tone === "ok" ? styles.hintOk : null,
-            ]}
-            numberOfLines={2}
-          >
-            {hint.text}
-          </Text>
-        ) : null}
-      </ModalCardSheet>
-    </>
+      {hint.text ? (
+        <Text
+          style={[
+            styles.hint,
+            hint.tone === "error" ? styles.hintError : hint.tone === "ok" ? styles.hintOk : null,
+          ]}
+          numberOfLines={2}
+        >
+          {hint.text}
+        </Text>
+      ) : null}
+    </SettingsEditorSheet>
   )
 }

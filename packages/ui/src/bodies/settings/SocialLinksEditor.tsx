@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { View } from "react-native"
 import {
   SocialLinksSchema,
@@ -7,16 +7,12 @@ import {
 } from "@civfix/shared"
 import type { SocialLinks, SocialPlatform } from "@civfix/shared"
 import { Text } from "../../typography"
-import {
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-  SettingsRow,
-  TextField,
-} from "../../primitives"
+import { TextField } from "../../primitives"
 import { useT } from "../../i18n"
 import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
+import { SettingsEditorSheet } from "./SettingsEditorSheet"
+import { useSheetEditor } from "./useSheetEditor"
 
 const SOCIAL_LINK_MAX_LENGTH = 120
 
@@ -52,18 +48,19 @@ export interface SocialLinksEditorProps {
 export function SocialLinksEditor({ socialLinks, saving, onSave }: SocialLinksEditorProps) {
   const styles = useEditorStyles()
   const { t } = useT("settings-account")
-  const [editing, setEditing] = useState(false)
-  const [drafts, setDrafts] = useState<Record<SocialPlatform, string>>(() =>
-    socialDraftsFrom(socialLinks),
-  )
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const saved = socialDraftsFrom(socialLinks)
+  const editor = useSheetEditor({
+    initial: saved,
+    save: onSave,
+    mapError: (err) => t(profileSaveErrorKey(err, "social.error.save", "social.error.invalid")),
+  })
+  const { draft: drafts, setDraft: setDrafts, setSubmitError } = editor
 
   const count = SOCIAL_PLATFORMS.filter((platform) => {
     const value = socialLinks?.[platform]
     return typeof value === "string" && value.trim().length > 0
   }).length
 
-  const saved = socialDraftsFrom(socialLinks)
   const dirty = SOCIAL_PLATFORMS.some(
     (platform) =>
       normalizeSocialValue(platform, drafts[platform] ?? "") !==
@@ -71,15 +68,6 @@ export function SocialLinksEditor({ socialLinks, saving, onSave }: SocialLinksEd
   )
   const canSave = !saving && dirty
 
-  const begin = () => {
-    setDrafts(socialDraftsFrom(socialLinks))
-    setSubmitError(null)
-    setEditing(true)
-  }
-  const cancel = () => {
-    setSubmitError(null)
-    setEditing(false)
-  }
   const save = () => {
     if (!canSave) return
     const parsed = SocialLinksSchema.safeParse(normalizedLinks(drafts))
@@ -87,67 +75,46 @@ export function SocialLinksEditor({ socialLinks, saving, onSave }: SocialLinksEd
       setSubmitError(t("social.error.invalid"))
       return
     }
-    setSubmitError(null)
-    void onSave(parsed.data)
-      .then(() => setEditing(false))
-      .catch((err: unknown) =>
-        setSubmitError(t(profileSaveErrorKey(err, "social.error.save", "social.error.invalid"))),
-      )
+    editor.commit(parsed.data)
   }
 
   return (
-    <>
-      <SettingsRow
-        icon="Link2"
-        label={t("social.title")}
-        sub={count > 0 ? t("social.count", { count }) : t("social.add")}
-        onPress={begin}
-      />
-      <ModalCardSheet
-        visible={editing}
-        onClose={cancel}
-        onCommit={save}
-        headerIcon="Link2"
-        title={t("social.title")}
-        dismissLabel={t("social.dismiss")}
-        error={submitError}
-        actions={
-          <>
-            <SecondaryButton label={t("common:cancel")} onPress={cancel} size="sm" />
-            <PrimaryButton
-              label={t("social.save")}
-              onPress={save}
-              loading={saving}
-              disabled={!canSave}
+    <SettingsEditorSheet
+      editor={editor}
+      icon="Link2"
+      label={t("social.title")}
+      sub={count > 0 ? t("social.count", { count }) : t("social.add")}
+      dismissLabel={t("social.dismiss")}
+      cancelLabel={t("common:cancel")}
+      saveLabel={t("social.save")}
+      saving={saving}
+      canSave={canSave}
+      onCommit={save}
+    >
+      <Text style={styles.note}>{t("social.note")}</Text>
+      {SOCIAL_PLATFORMS.map((platform) => {
+        const label = SOCIAL_PLATFORM_LABELS[platform]
+        return (
+          <View key={platform} style={styles.field}>
+            <Text style={styles.fieldLabel}>{label}</Text>
+            <TextField
+              placeholder={
+                platform === "whatsapp"
+                  ? t("social.placeholder_phone")
+                  : t("social.placeholder_handle")
+              }
+              value={drafts[platform]}
+              onChangeText={(text) => setDrafts((prev) => ({ ...prev, [platform]: text }))}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType={platform === "whatsapp" ? "phone-pad" : "default"}
+              maxLength={SOCIAL_LINK_MAX_LENGTH}
+              editable={!saving}
+              accessibilityLabel={label}
             />
-          </>
-        }
-      >
-        <Text style={styles.note}>{t("social.note")}</Text>
-        {SOCIAL_PLATFORMS.map((platform) => {
-          const label = SOCIAL_PLATFORM_LABELS[platform]
-          return (
-            <View key={platform} style={styles.field}>
-              <Text style={styles.fieldLabel}>{label}</Text>
-              <TextField
-                placeholder={
-                  platform === "whatsapp"
-                    ? t("social.placeholder_phone")
-                    : t("social.placeholder_handle")
-                }
-                value={drafts[platform]}
-                onChangeText={(text) => setDrafts((prev) => ({ ...prev, [platform]: text }))}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType={platform === "whatsapp" ? "phone-pad" : "default"}
-                maxLength={SOCIAL_LINK_MAX_LENGTH}
-                editable={!saving}
-                accessibilityLabel={label}
-              />
-            </View>
-          )
-        })}
-      </ModalCardSheet>
-    </>
+          </View>
+        )
+      })}
+    </SettingsEditorSheet>
   )
 }

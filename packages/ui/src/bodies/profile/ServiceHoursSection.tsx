@@ -5,6 +5,7 @@ import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, EmptyState, MetaDot, SkeletonBlock, SkeletonGroup } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { useAuthState, useMyHours, useMyHoursEntries, usePublicHoursEntries } from "../../data"
 import { useNavStore } from "../../nav"
 import { useLocale, useT } from "../../i18n"
@@ -410,10 +411,7 @@ function LedgerRow({ entry }: { entry: VolunteerHoursEntryDTO }) {
       {...focusRingProps}
       style={({ pressed }) => [styles.row, pressed && pressable ? styles.pressedDim : null]}
     >
-      <View style={styles.dateChip}>
-        <Text style={styles.dateDay}>{day}</Text>
-        <Text style={styles.dateMonth}>{month}</Text>
-      </View>
+      <DateTile variant="ledger" day={day} month={month} />
       <View style={styles.rowMeta}>
         <Text style={styles.rowTitle} numberOfLines={1}>
           {title}
@@ -551,29 +549,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
-  },
-  dateChip: {
-    width: 38,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: t.space["1"],
-    borderRadius: 9,
-    backgroundColor: t.colors.sun["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["100"],
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["15"],
-    lineHeight: 16,
-    color: t.colors.sun["700"],
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 8,
-    letterSpacing: 0.5,
-    color: t.colors.sun["700"],
   },
   rowMeta: {
     flex: 1,

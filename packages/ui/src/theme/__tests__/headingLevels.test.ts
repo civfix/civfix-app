@@ -72,6 +72,7 @@ const HEADING_FILES = [
   "bodies/LeaderboardBody.tsx",
   "bodies/PersonDetailBody.tsx",
   "bodies/PostThreadBody.tsx",
+  "bodies/DetailBodyHeader.tsx",
   "bodies/ConversationBody.tsx",
   "bodies/NewGroupBody.tsx",
   "bodies/NewChannelBody.tsx",

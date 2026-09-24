@@ -42,6 +42,7 @@ import { CertificateIssuedPanel } from "./certificate/CertificateIssuedPanel"
 import { CertificateRevokeControl } from "./certificate/CertificateRevokeControl"
 import { useSeededCertificate } from "./certificate/useSeededCertificate"
 import { useCertificateCardStyles } from "./certificate/certificateCardStyles"
+import { useSectionStyles } from "./sectionStyles"
 
 /**
  * How often the expiry countdown re-reads the clock. The presigned link lives 15 minutes and the copy
@@ -57,6 +58,7 @@ export interface ServiceHoursCertificateCardProps {
 
 export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertificateCardProps) {
   const styles = useCertificateCardStyles()
+  const sectionStyles = useSectionStyles()
   const th = useTheme()
   const { t } = useT("volunteer-hours")
   const { locale } = useLocale()
@@ -178,7 +180,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
     <View style={styles.wrap}>
       <View style={styles.headRow}>
         <Icon icon={iconMap.FileText} size={16} color={th.colors.textMuted} />
-        <Text style={styles.eyebrow}>{t("transcript.eyebrow")}</Text>
+        <Text style={sectionStyles.eyebrowText}>{t("transcript.eyebrow")}</Text>
       </View>
       <Text style={styles.blurb}>{t("transcript.blurb")}</Text>
 

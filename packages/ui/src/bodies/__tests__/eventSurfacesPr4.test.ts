@@ -55,7 +55,8 @@ describe("the events list", () => {
   })
 
   it("keeps the date chip's month legible", () => {
-    expect(eventsBody).toMatch(/dateMonth: \{[^}]*fontSize: 11,/)
+    expect(eventsBody).toContain('<DateTile variant="eventCard"')
+    expect(code("../../primitives/DateBadge.tsx")).toMatch(/eventCardMonth: \{[^}]*fontSize: 11,/)
   })
 })
 

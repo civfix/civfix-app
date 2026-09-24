@@ -16,7 +16,6 @@ import { ServiceHoursSection } from "./profile/ServiceHoursSection"
 import { PROFILE_DEFAULT_TAB, buildProfileTabsModel, type ProfileTabId } from "./profileTabsModel"
 import { splitProfileEvents } from "./profile/profileEventSplit"
 import { PersonActions } from "./personDetail/PersonActions"
-import { PersonDetailHeader } from "./personDetail/PersonDetailHeader"
 import { PersonDetailSkeleton } from "./personDetail/PersonDetailSkeleton"
 import { PersonEventsTab, hasPersonEvents } from "./personDetail/PersonEventsTab"
 import { PersonHero } from "./personDetail/PersonHero"
@@ -24,6 +23,7 @@ import { PersonModerationLayer } from "./personDetail/PersonModerationLayer"
 import { PersonPostsTab } from "./personDetail/PersonPostsTab"
 import { usePersonModeration } from "./personDetail/usePersonModeration"
 import { usePersonDetailStyles } from "./personDetail/personDetailStyles"
+import { DetailBodyHeader } from "./DetailBodyHeader"
 
 function PersonScroll({ children }: { children: React.ReactNode }) {
   const styles = usePersonDetailStyles()
@@ -43,6 +43,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const styles = usePersonDetailStyles()
   const th = useTheme()
   const { t } = useT("profile-person")
+  const { t: tNav } = useT("nav")
   const back = onBack ?? useNavStore.getState().back
   const { start } = useStartDm()
   const query = useProfile(id)
@@ -103,7 +104,14 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const moderation = usePersonModeration(profile?.id, profilePath)
   const { startBlock, onUnblock, startReport, unblockUser } = moderation
 
-  const header = <PersonDetailHeader title={profile?.name} onBack={back} />
+  const header = (
+    <DetailBodyHeader
+      title={profile?.name ?? tNav("title.person")}
+      backLabel={tNav("a11y.back")}
+      onBack={back}
+      compactTitle="label"
+    />
+  )
 
   if (query.isLoading) {
     return (
