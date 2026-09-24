@@ -1,28 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native"
-import { useQueryClient, type QueryClient } from "@tanstack/react-query"
-import type { ReportCategory, ReportType as SharedReportType } from "@civfix/shared"
-import { MAX_REPORT_ADDR_LENGTH } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
-import { type LatLng } from "@civfix/shared/geocode"
-import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
-import { alpha } from "../theme/alpha"
+import { View, Pressable, StyleSheet } from "react-native"
+import { makeThemedStyles, motion, useTheme, useLayoutMode, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
-import { LocationPicker, PortraitMapPickStep, reportPinTarget } from "../map"
-import { PinSvg, glyphForCategory } from "../map"
-import {
-  useApi,
-  useAuthState,
-  useResolveAddress,
-  resolvedAddressValue,
-  useResolveJurisdiction,
-  useReverseLabel,
-  reverseLabelText,
-  useMyProfile,
-  fetchApproximateLocation,
-  queryKeys,
-} from "../data"
+import { KeyboardPinnedFooter, KeyboardPinnedSurface } from "../primitives"
+import { PortraitMapPickStep } from "../map"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import {
@@ -35,915 +16,54 @@ import { showBackAffordance } from "../shell/backAffordance"
 import { StepTransition } from "../shell/StepTransition"
 import { WizardStepHeader } from "../shell/WizardStepHeader"
 import { useStackDirection } from "../shell/useStackDirection"
-import { AddressSearch, type AddressPick } from "./AddressSearch"
-import { reportAddressPrefill } from "./reportAddressField"
 import { announce } from "../announce"
-import { appErrorCode, appErrorFields } from "../data/errorCode"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
-import { FeedShareBlock, FeedSharePreview } from "./FeedShareBlock"
-import { LinkedReportCard } from "./LinkedReportCard"
-import { buildReportPreviewCard, type FeedShareOutcome } from "./feedShare"
-import { useCamera, useGeolocation, useHaptics } from "../capabilities"
+import { useCamera, useHaptics } from "../capabilities"
 import type { CapturedMedia } from "../capabilities"
-import { REPORT_TYPES, type ReportType } from "../report/reportTypes"
-import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../report/draftStore"
+import { useDraftReportStore, captureSeedsNewReport } from "../report/draftStore"
 import { usePostComposerStore } from "./postComposerStore"
-import {
-  deferReportRunRelease,
-  reportRunSurvivesView,
-  type ReportRunExitHost,
-} from "./postComposerExit"
 import {
   type Step,
   stepOrderFor,
   resumeStep,
   stepAfterCapture,
+  canAdvanceStep,
+  showsCaptureCard,
   showsWizardFooter,
   wizardHeaderMode,
   rendersEmbeddedViewfinder,
   viewfinderResumeGraceEligible,
   viewfinderSessionActive,
-  pickLayerVisible,
-  submitErrorRecovery,
-  type SubmitRecovery,
 } from "../report/wizardSteps"
-import {
-  useCaptureDropTarget,
-  captureDropTargetStyle,
-  captureDropActiveStyleFor,
-  type DroppedItem,
-} from "../report/captureDropTarget"
-import {
-  useReportSubmit,
-  useFeedShareRetry,
-  createSubmitRunSlot,
-  descriptionMaxLength,
-  SubmitRunDiscarded,
-  type ReportSubmitOutcome,
-} from "../report/submit"
-import { routeCardState } from "../report/routeCard"
-import { useViewerDraftGeneration } from "../viewerScope"
 import { useT } from "../i18n"
-import type { TFunction } from "i18next"
-
-const REPORT_RUN_EXIT_HOST: ReportRunExitHost = {
-  readView: () => useNavStore.getState().view,
-  release: () => usePostComposerStore.getState().releaseClaimedCreate("report"),
-  watchView: (onNavChange) => useNavStore.subscribe(onNavChange),
-}
-
-const TEXT_FIELDS: ReadonlySet<string> = new Set(["title", "description", "addr"])
-
-function submitErrorMessage(err: unknown, t: TFunction): string {
-  const code = appErrorCode(err)
-  const fieldKeys = Object.keys(appErrorFields(err) ?? {}).map((key) => key.split(".")[0])
-  switch (code) {
-    case "VALIDATION":
-      if (fieldKeys.some((key) => key !== undefined && TEXT_FIELDS.has(key))) return t("errors.validation_text")
-      if (fieldKeys.includes("mediaUploadIds")) return t("errors.validation_media")
-      return t("errors.validation")
-    case "GPS_IMPLAUSIBLE":
-      return t("errors.validation")
-    case "RATE_LIMITED":
-      return t("errors.rate_limited")
-    case "TURNSTILE_FAILED":
-      return t("errors.turnstile_failed")
-    case "MEDIA_REJECTED":
-      return t("errors.media_rejected")
-    case "UNAUTHORIZED":
-    case "FORBIDDEN":
-      return t("errors.unauthorized")
-    default:
-      return t("errors.generic")
-  }
-}
-
-function ReportTypeRow({ type, selected, onPress }: { type: ReportType; selected: boolean; onPress: () => void }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const color = categoryColor(type.category, th.scheme)
-  const label = t(`enums:reportType.${type.id}`)
-  const sub = t(`types.${type.id}.sub`)
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected }}
-      accessibilityLabel={t("types.row_a11y", { label, sub })}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.typeRow,
-        selected ? { borderColor: color, backgroundColor: wash(color, 0.92, th) } : null,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      {type.glyph ? (
-        <View style={styles.glyphCircle}>
-          <Icon icon={iconMap.Plus} size={18} color={th.colors.textMuted} />
-        </View>
-      ) : (
-        <PinSvg fill={color} glyph={glyphForCategory(type.category)} size={30} />
-      )}
-      <View style={styles.typeMeta}>
-        <Text style={styles.typeTitle}>{label}</Text>
-        <Text style={styles.typeSub}>{sub}</Text>
-      </View>
-      <View style={[styles.check, selected ? { backgroundColor: color, borderColor: color } : null]}>
-        {selected ? <Icon icon={iconMap.Check} size={15} color={th.colors.onAccent} /> : null}
-      </View>
-    </Pressable>
-  )
-}
-
-
-function CaptureStep({ mode }: { mode: LayoutMode }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const camera = useCamera()
-  const media = useDraftReportStore((s) => s.draft.media)
-  const startFromCapture = useDraftReportStore((s) => s.startFromCapture)
-  const addCapture = useDraftReportStore((s) => s.addCapture)
-  const removeMedia = useDraftReportStore((s) => s.removeMedia)
-  const [busy, setBusy] = useState(false)
-  const busyRef = useRef(false)
-  const [hint, setHint] = useState<string | null>(null)
-
-  const land = useCallback(
-    async (produce: () => Promise<CapturedMedia | null>) => {
-      if (busyRef.current) return
-      busyRef.current = true
-      setBusy(true)
-      setHint(null)
-      try {
-        const captured = await produce()
-        if (captured) {
-          if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)
-          else addCapture(captured)
-        }
-      } catch {
-        setHint(t("capture.camera_error"))
-      } finally {
-        busyRef.current = false
-        setBusy(false)
-      }
-    },
-    [startFromCapture, addCapture, t],
-  )
-
-  const run = useCallback(
-    (kind: "capture" | "library") =>
-      land(
-        kind === "capture"
-          ?
-            () => camera.capture({ orientation: "portrait" })
-          : () => camera.pickFromLibrary(),
-      ),
-    [camera, land],
-  )
-
-  const acceptFile = camera.acceptFile
-  const onDropFiles = useCallback(
-    (items: readonly DroppedItem[]) => {
-      const first = items[0]
-      if (first === undefined || !acceptFile) return
-      void land(() => acceptFile(first))
-    },
-    [acceptFile, land],
-  )
-  const drop = useCaptureDropTarget(mode === "expanded" && acceptFile != null, onDropFiles)
-
-  if (media.length > 0) {
-    const atCap = media.length >= MAX_DRAFT_MEDIA
-    return (
-      <View style={styles.stepBlock}>
-        <Text style={styles.fieldLabel}>{t("capture.label_filled")}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.captureStrip}
-        >
-          {media.map((m) => (
-            <View key={m.id} style={styles.captureThumbWrap}>
-              <MediaPreview uri={m.uri} kind={m.kind} aspectRatio={1} style={styles.captureThumb} />
-              <Pressable
-                onPress={() => removeMedia(m.id)}
-                accessibilityRole="button"
-                accessibilityLabel={t("capture.remove_item_a11y")}
-                hitSlop={6}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.captureRemove, pressed ? styles.pressed : null]}
-              >
-                <View style={styles.captureRemoveDisc}>
-                  <Icon icon={iconMap.Close} size={13} color={th.colors.onScrim} />
-                </View>
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.captureActions}>
-          <Pressable
-            onPress={() => run("capture")}
-            disabled={busy || atCap}
-            accessibilityRole="button"
-            accessibilityLabel={t("capture.add_camera_a11y")}
-            {...focusRingProps}
-            style={({ pressed }) => [
-              styles.retakeBtn,
-              pressed ? styles.pressed : null,
-              atCap ? styles.retakeDisabled : null,
-            ]}
-          >
-            <Icon icon={iconMap.Camera} size={16} color={th.colors.textMuted} />
-            <Text style={styles.retakeText}>{t("capture.camera")}</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => run("library")}
-            disabled={busy || atCap}
-            accessibilityRole="button"
-            accessibilityLabel={t("capture.add_library_a11y")}
-            {...focusRingProps}
-            style={({ pressed }) => [
-              styles.retakeBtn,
-              pressed ? styles.pressed : null,
-              atCap ? styles.retakeDisabled : null,
-            ]}
-          >
-            <Icon icon={iconMap.Plus} size={16} color={th.colors.textMuted} />
-            <Text style={styles.retakeText}>{t("capture.library")}</Text>
-          </Pressable>
-        </View>
-        <Text style={styles.captureHint}>
-          {atCap
-            ? t("capture.hint_at_cap", { max: MAX_DRAFT_MEDIA })
-            : t("capture.hint_add_more", { count: MAX_DRAFT_MEDIA })}
-        </Text>
-        {hint ? <Text style={styles.hintText}>{hint}</Text> : null}
-      </View>
-    )
-  }
-
-  const fill = mode === "expanded"
-  return (
-    <View style={[styles.stepBlock, fill ? styles.stepBlockFill : null]}>
-      <Pressable
-        ref={drop.ref}
-        onPress={() => run("capture")}
-        disabled={busy}
-        accessibilityRole="button"
-        accessibilityLabel={t("capture.capture_a11y")}
-        {...focusRingProps}
-        style={({ pressed }) => [
-          styles.photoDrop,
-          fill ? styles.photoDropFill : null,
-          th.shadows.pin,
-          drop.active ? captureDropTargetStyle : null,
-          drop.dragging ? captureDropActiveStyleFor(th) : null,
-          pressed ? styles.pressed : null,
-        ]}
-      >
-        {busy ? (
-          <ActivityIndicator color={th.colors.neutral.card} />
-        ) : (
-          <Icon icon={iconMap.Camera} size={30} color={th.colors.neutral.card} />
-        )}
-        <Text style={styles.photoDropTitle}>{t("capture.drop_title")}</Text>
-        <Text style={styles.photoDropSub}>{t("capture.drop_sub")}</Text>
-      </Pressable>
-      <Pressable
-        onPress={() => run("library")}
-        disabled={busy}
-        accessibilityRole="button"
-        accessibilityLabel={t("capture.choose_library_a11y")}
-        {...focusRingProps}
-        style={({ pressed }) => [styles.libraryLink, pressed ? styles.pressed : null]}
-      >
-        <Icon icon={iconMap.Plus} size={15} color={th.colors.textMuted} />
-        <Text style={styles.libraryLinkText}>{t("capture.choose_library")}</Text>
-      </Pressable>
-      {drop.active ? (
-        <Text variant="caption" color={th.colors.textSubtle} style={styles.dragHint}>
-          {t("capture.drag_hint")}
-        </Text>
-      ) : null}
-      {hint ? <Text style={styles.hintText}>{hint}</Text> : null}
-    </View>
-  )
-}
-
-function CategoryStep() {
-  const styles = useStyles()
-  const { t } = useT("report-wizard")
-  const reportTypeId = useDraftReportStore((s) => s.draft.reportTypeId)
-  const setCategory = useDraftReportStore((s) => s.setCategory)
-  return (
-    <View style={styles.stepBlock}>
-      <View style={styles.typeList} accessibilityRole="radiogroup" accessibilityLabel={t("wizard.category.title")}>
-        {REPORT_TYPES.map((type) => (
-          <ReportTypeRow
-            key={type.id}
-            type={type}
-            selected={reportTypeId === type.id}
-            onPress={() => setCategory(type.category, type.glyph ? "" : t(`enums:reportType.${type.id}`), type.id)}
-          />
-        ))}
-      </View>
-    </View>
-  )
-}
-
-function DetailsStep() {
-  const styles = useStyles()
-  const { t } = useT("report-wizard")
-  const draft = useDraftReportStore((s) => s.draft)
-  const setTitle = useDraftReportStore((s) => s.setTitle)
-  const setDescription = useDraftReportStore((s) => s.setDescription)
-  const setFlag = useDraftReportStore((s) => s.setFlag)
-  return (
-    <View style={styles.stepBlock}>
-      <TextField
-        label={t("details.title_label")}
-        placeholder={t("details.title_placeholder")}
-        value={draft.title}
-        onChangeText={setTitle}
-        maxLength={120}
-      />
-      <TextField
-        label={t("details.description_label")}
-        placeholder={t("details.description_placeholder")}
-        value={draft.description}
-        onChangeText={setDescription}
-        multiline
-        maxLength={descriptionMaxLength(draft.flags)}
-      />
-      <View style={styles.toggles}>
-        <Toggle
-          label={t("details.flag_blocking")}
-          value={draft.flags.blockingSidewalk}
-          onValueChange={(v) => setFlag("blockingSidewalk", v)}
-        />
-        <Toggle
-          label={t("details.flag_safety")}
-          value={draft.flags.safetyHazard}
-          onValueChange={(v) => setFlag("safetyHazard", v)}
-        />
-      </View>
-    </View>
-  )
-}
-
-const DEVICE_FIX_TIMEOUT_MS = 4000
+import { CaptureStep } from "./reportFlow/CaptureStep"
+import { CategoryStep } from "./reportFlow/CategoryStep"
+import { DetailsStep } from "./reportFlow/DetailsStep"
+import { LocationStep } from "./reportFlow/LocationStep"
+import { ReviewStep } from "./reportFlow/ReviewStep"
+import { SubmitState } from "./reportFlow/SubmitState"
+import { useFlowStyles } from "./reportFlow/flowStyles"
+import { usePickLayer } from "./reportFlow/usePickLayer"
+import { useReportRunClaim } from "./reportFlow/useReportRunClaim"
+import { useReportSubmitFlow } from "./reportFlow/useReportSubmitFlow"
 
 const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
-const PICK_LAYER_LINGER_MS = 400
-
-const PICK_LAYER_LINGERS = Platform.OS !== "web"
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  return new Promise((settle) => {
-    const timer = setTimeout(() => settle(null), ms)
-    promise.then(
-      (value) => {
-        clearTimeout(timer)
-        settle(value)
-      },
-      () => {
-        clearTimeout(timer)
-        settle(null)
-      },
-    )
-  })
-}
-
-async function resolveApproxCenter(
-  geo: ReturnType<typeof useGeolocation>,
-  api: ApiClient,
-  qc: QueryClient,
-): Promise<LatLng | null> {
-  const fix = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
-  if (fix) return { lat: fix.latitude, lng: fix.longitude }
-  const approximate = await fetchApproximateLocation(api, qc)
-  if (approximate) return approximate
-  return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
-}
-
-// `refreshIfNull` is the picker being open: a session-cached null (denied, or offline) is resolved again
-// then, so a permission granted since can place the map. A cached point is never re-resolved or replaced.
-interface ApproxCenter {
-  center: LatLng | null
-  /** The current resolution attempt finished without a point; the pickers then ask for an address. */
-  settled: boolean
-}
-
-function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {
-  const geo = useGeolocation()
-  const api = useApi()
-  const qc: QueryClient = useQueryClient()
-  const [center, setCenter] = useState<LatLng | null>(
-    () => qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null,
-  )
-  const [settledFor, setSettledFor] = useState<boolean | null>(null)
-  useEffect(() => {
-    if (!enabled || center) return
-    const cached = qc.getQueryData<LatLng | null>(queryKeys.userLocation)
-    if (cached) {
-      setCenter(cached)
-      return
-    }
-    let cancelled = false
-    const settle = (c: LatLng | null) => {
-      if (cancelled) return
-      if (c) setCenter(c)
-      else setSettledFor(refreshIfNull)
-    }
-    void qc
-      .fetchQuery<LatLng | null>({
-        queryKey: queryKeys.userLocation,
-        queryFn: () => resolveApproxCenter(geo, api, qc),
-        staleTime: refreshIfNull ? 0 : Infinity,
-        gcTime: Infinity,
-        retry: false,
-      })
-      .then(settle, () => settle(null))
-    return () => {
-      cancelled = true
-    }
-  }, [geo, api, qc, enabled, center, refreshIfNull])
-  return { center, settled: enabled && center === null && settledFor === refreshIfNull }
-}
-
-function CompactLocationField({
-  point,
-  onOpenPicker,
-  onClear,
-}: {
-  point: LatLng | null
-  onOpenPicker: () => void
-  onClear?: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("map-ui")
-  const label = useReverseLabel(point)
-  const display = point ? reverseLabelText(label.data, point) : null
-
-  return (
-    <View style={styles.compactLoc}>
-      <Pressable
-        onPress={onOpenPicker}
-        accessibilityRole="button"
-        accessibilityLabel={t("pickStep.openA11y")}
-        {...focusRingProps}
-        style={({ pressed }) => [styles.compactLocBtn, pressed ? styles.pressed : null]}
-      >
-        <Icon icon={iconMap.MapPin} size={18} color={th.colors.brand.bloom} />
-        <View style={styles.compactLocMeta}>
-          {display ? (
-            <Text style={styles.compactLocValue} numberOfLines={2}>
-              {display}
-            </Text>
-          ) : (
-            <Text style={styles.compactLocPlaceholder} numberOfLines={1}>
-              {t("pickStep.open")}
-            </Text>
-          )}
-        </View>
-        <Icon icon={point ? iconMap.ChevronRight : iconMap.Plus} size={16} color={th.colors.textMuted} />
-      </Pressable>
-      {point && onClear ? (
-        <Pressable
-          onPress={onClear}
-          accessibilityRole="button"
-          accessibilityLabel={t("actions.reset")}
-          hitSlop={6}
-          {...focusRingProps}
-          style={({ pressed }) => [styles.compactLocClear, pressed ? styles.pressed : null]}
-        >
-          <Icon icon={iconMap.Close} size={13} color={th.colors.textMuted} />
-          <Text style={styles.compactLocClearText}>{t("actions.reset")}</Text>
-        </Pressable>
-      ) : null}
-    </View>
-  )
-}
-
-function LocationStep({ onOpenPicker }: { onOpenPicker: () => void }) {
-  const styles = useStyles()
-  const draft = useDraftReportStore((s) => s.draft)
-  const point = draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null
-  const clearLocation = useDraftReportStore((s) => s.clearLocation)
-
-  return (
-    <View style={styles.stepBlock}>
-      <CompactLocationField point={point} onOpenPicker={onOpenPicker} onClear={clearLocation} />
-    </View>
-  )
-}
-
-function ReviewStep({
-  fromComposer,
-  onRequestReveal,
-  onOpenPicker,
-}: {
-  fromComposer: boolean
-  onRequestReveal?: (y: number) => void
-  onOpenPicker: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const draft = useDraftReportStore((s) => s.draft)
-  const setShareToFeed = useDraftReportStore((s) => s.setShareToFeed)
-  const setFeedCaption = useDraftReportStore((s) => s.setFeedCaption)
-  const point = useMemo(
-    () => (draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null),
-    [draft.lat, draft.lng],
-  )
-  const setLocation = useDraftReportStore((s) => s.setLocation)
-  const clearLocation = useDraftReportStore((s) => s.clearLocation)
-  const setAddress = useDraftReportStore((s) => s.setAddress)
-  const setPrefilledAddress = useDraftReportStore((s) => s.setPrefilledAddress)
-  const [addrQuery, setAddrQuery] = useState("")
-
-  const addressResolution = useResolveAddress(point)
-  const nearAddress = useCallback((line: string) => t("review.where_near", { address: line }), [t])
-  const prefillRef = useRef(setPrefilledAddress)
-  prefillRef.current = setPrefilledAddress
-  const settledAddress = resolvedAddressValue(addressResolution)
-  useEffect(() => {
-    const next = reportAddressPrefill({
-      hasPoint: point !== null,
-      resolution: settledAddress,
-      currentAddr: draft.addr,
-      addrEdited: draft.addrEdited,
-      near: nearAddress,
-    })
-    if (next !== null) prefillRef.current(next)
-  }, [point, settledAddress, draft.addr, draft.addrEdited, nearAddress])
-  const layoutMode = useLayoutMode()
-  const compact = layoutMode === "compact"
-  const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
-
-  const initialCenter = useApproxCenter(true, !compact)
-
-  const onDropPin = useCallback(
-    (lat: number, lng: number) => setLocation(lat, lng, "manual"),
-    [setLocation],
-  )
-  const onPickPlace = useCallback(
-    (place: AddressPick) => setLocation(place.lat, place.lng, "manual"),
-    [setLocation],
-  )
-  const jurisdiction = useResolveJurisdiction(point)
-  const route = routeCardState(point !== null, jurisdiction)
-  const category = draft.category as ReportCategory | null
-  const pin = useMemo(() => reportPinTarget(category), [category])
-
-  return (
-    <View style={styles.stepBlock}>
-      <View style={styles.summaryCard}>
-        {category ? <CategoryChip category={category} showLabel size={36} /> : null}
-        <Text style={styles.summaryTitle} numberOfLines={2}>
-          {draft.title.trim() || t("review.untitled")}
-        </Text>
-        {draft.description.trim() ? (
-          <Text style={styles.summaryDesc} numberOfLines={3}>
-            {draft.description.trim()}
-          </Text>
-        ) : null}
-      </View>
-
-      <View style={styles.locationBlock}>
-        <Text style={styles.fieldLabel}>{t("review.where_label")}</Text>
-        {!point ? (
-          <View style={styles.validationRow}>
-            <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.brand.bloom} />
-            <Text style={styles.errorText}>
-              {t("review.no_location")}
-            </Text>
-          </View>
-        ) : null}
-        {compact ? (
-          <CompactLocationField point={point} onOpenPicker={onOpenPicker} onClear={clearLocation} />
-        ) : (
-          <>
-            <AddressSearch value={addrQuery} onChangeText={setAddrQuery} onPick={onPickPlace} />
-            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter.center ?? undefined} centerSettled={initialCenter.settled} mode={pickMode} pin={pin} />
-          </>
-        )}
-        <TextField
-          placeholder={t("review.where_placeholder")}
-          value={draft.addr ?? ""}
-          onChangeText={setAddress}
-          maxLength={MAX_REPORT_ADDR_LENGTH}
-        />
-      </View>
-
-      <View style={styles.routeCard}>
-        <View style={styles.routeIcon}>
-          <Icon icon={iconMap.Building2} size={18} color={th.colors.sky["700"]} />
-        </View>
-        <View style={styles.routeText}>
-          <Text style={styles.routeLabel}>{t("review.route_label")}</Text>
-          {route.kind === "no_point" ? (
-            <Text style={styles.routeSub}>{t("review.route_no_point")}</Text>
-          ) : route.kind === "routable" ? (
-            <>
-              <Text style={styles.routeName}>{route.name}</Text>
-              <Text style={styles.routeSub}>{t("review.route_routable")}</Text>
-            </>
-          ) : route.kind === "new_area" ? (
-            <Text style={styles.routeSub}>
-              {t("review.route_new_area", { cityState: route.cityState })}
-            </Text>
-          ) : route.kind === "uncovered" ? (
-            <Text style={styles.routeSub}>
-              {t("review.route_uncovered")}
-            </Text>
-          ) : route.kind === "unavailable" ? (
-            <View style={styles.routeRetry}>
-              <Text style={styles.routeSub}>{t("review.route_unavailable")}</Text>
-              <PrimaryButton
-                label={t("submit.try_again")}
-                variant="outline"
-                icon={iconMap.RefreshCw}
-                onPress={() => void jurisdiction.refetch()}
-              />
-            </View>
-          ) : (
-            <Text style={styles.routeSub}>{t("review.route_resolving")}</Text>
-          )}
-        </View>
-      </View>
-
-      {fromComposer ? null : (
-      <FeedShareBlock
-        enabled={draft.shareToFeed}
-        onToggle={setShareToFeed}
-        caption={draft.feedCaption}
-        onChangeCaption={setFeedCaption}
-        label={t("share.label")}
-        helper={t("share.helper")}
-        captionPlaceholder={t("share.caption_placeholder")}
-        captionA11yLabel={t("share.caption_a11y")}
-        nowLabel={t("share.now")}
-        onRequestReveal={onRequestReveal}
-        attachment={
-          <LinkedReportCard
-            report={buildReportPreviewCard(draft, t("review.untitled"))}
-            layout="list"
-            headline="title"
-          />
-        }
-      />
-      )}
-    </View>
-  )
-}
-
-
-interface ShareSnapshot {
-  title: string
-  category: ReportCategory | null
-  addr: string | null
-  thumbUrl: string | null
-  caption: string
-}
-
-function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; share: ShareSnapshot }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const me = useMyProfile().data?.profile ?? null
-  const retryShare = useFeedShareRetry()
-  const [state, setState] = useState<FeedShareOutcome>(outcome)
-  const [retrying, setRetrying] = useState(false)
-  const mounted = useRef(true)
-  useEffect(() => {
-    mounted.current = true
-    return () => {
-      mounted.current = false
-    }
-  }, [])
-
-  if (state.status === "skipped") return null
-
-  if (state.status === "posted") {
-    const postId = state.postId
-    return (
-      <View style={styles.sharedBlock}>
-        <Text style={styles.sharedHeading}>{t("share.posted_heading")}</Text>
-        <FeedSharePreview
-          authorName={me?.name ?? ""}
-          authorId={me?.id}
-          authorPhotoUrl={me?.avatarUrl ?? null}
-          authorAvatar={me?.avatar ?? null}
-          nowLabel={t("share.now")}
-          caption={share.caption}
-          footnote={t("share.fixes_hint")}
-          onPress={() => {
-            useNavStore.getState().finishReportFlow({ kind: "post-thread", id: postId })
-          }}
-          attachment={
-            share.category ? (
-              <LinkedReportCard
-                report={{
-                  id: "shared",
-                  category: share.category,
-                  title: share.title,
-                  status: "published",
-                  thumbUrl: share.thumbUrl,
-                  addr: share.addr,
-                }}
-                layout="list"
-                headline="title"
-              />
-            ) : null
-          }
-        />
-      </View>
-    )
-  }
-
-  const copy =
-    state.reason === "rejected"
-      ? t("share.failed_rejected")
-      : state.reason === "rate-limited"
-        ? t("share.failed_rate_limited")
-        : t("share.failed")
-  const retry = state.retry
-  return (
-    <View style={styles.shareFailRow}>
-      <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.brand.bloom} />
-      <Text style={styles.shareFailText}>{copy}</Text>
-      {state.retryable ? (
-        <PrimaryButton
-          label={t("share.retry")}
-          variant="outline"
-          disabled={retrying}
-          onPress={() => {
-            setRetrying(true)
-            void retryShare(retry)
-              .then((next) => {
-                if (mounted.current) setState(next)
-              })
-              .finally(() => {
-                if (mounted.current) setRetrying(false)
-              })
-          }}
-        />
-      ) : null}
-    </View>
-  )
-}
-
-function SubmitState({
-  phase,
-  error,
-  retryable,
-  result,
-  share,
-  onRetry,
-  onEdit,
-}: {
-  phase: "submitting" | "error" | "done"
-  error: string | null
-  retryable: boolean
-  result: ReportSubmitOutcome | null
-  share: ShareSnapshot | null
-  onRetry: () => void
-  onEdit: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const { isAuthenticated } = useAuthState()
-  useEffect(() => {
-    if (phase === "error") announce(t("submit.announce_error", { detail: error ?? "" }))
-  }, [phase, error, t])
-  useEffect(() => {
-    if (phase === "done") {
-      announce(
-        result?.status === "held"
-          ? t("submit.announce_held")
-          : t("submit.announce_live"),
-      )
-    }
-  }, [phase, result, t])
-
-  if (phase === "submitting") {
-    return (
-      <View style={styles.stateFill}>
-        <ActivityIndicator size="large" color={th.colors.brand.bloom} />
-        <Text variant="title" style={styles.stateTitle}>
-          {t("submit.submitting_title")}
-        </Text>
-        <Text variant="body" color={th.colors.textMuted} style={styles.stateBody}>
-          {t("submit.submitting_body")}
-        </Text>
-      </View>
-    )
-  }
-
-  if (phase === "error") {
-    return (
-      <View style={styles.stateFill}>
-        <View style={styles.errorIcon}>
-          <Icon icon={iconMap.CloudOff} size={30} color={th.colors.bloom["600"]} />
-        </View>
-        <Text variant="title" style={styles.stateTitle}>
-          {t("submit.error_title")}
-        </Text>
-        <Text variant="body" color={th.colors.textMuted} style={styles.stateBody}>
-          {error}
-        </Text>
-        <View style={styles.errorActions}>
-          {retryable ? (
-            <PrimaryButton label={t("submit.try_again")} icon={iconMap.RefreshCw} onPress={onRetry} />
-          ) : null}
-          <PrimaryButton
-            label={t("submit.edit_report")}
-            variant={retryable ? "outline" : undefined}
-            onPress={onEdit}
-          />
-        </View>
-      </View>
-    )
-  }
-
-  return (
-    <View style={styles.stateFill}>
-      <View style={styles.successCheck}>
-        <SuccessCheck announce={t("submit.success_title")} />
-      </View>
-      <Text variant="body" color={th.colors.textMuted} style={styles.stateBody}>
-        {result?.status === "held"
-          ? t("submit.success_body_held")
-          : t("submit.success_body_live")}
-      </Text>
-      {result && share ? (
-        <FeedShareOutcomeRow key={result.reportId} outcome={result.feedShare} share={share} />
-      ) : null}
-      {!isAuthenticated ? (
-        <Text variant="caption" color={th.colors.textSubtle} style={styles.signedOutHint}>
-          {t("share.signed_out_hint")}
-        </Text>
-      ) : null}
-      <View style={styles.successActions}>
-        {result ? (
-          <PrimaryButton
-            label={t("submit.view_report")}
-            variant="outline"
-            onPress={() => {
-              useNavStore.getState().finishReportFlow({
-                kind: "pin",
-                id: result.reportId,
-                lat: result.lat,
-                lng: result.lng,
-              })
-            }}
-          />
-        ) : null}
-        <PrimaryButton label={t("submit.done")} onPress={() => useNavStore.getState().leaveReportFlow()} />
-      </View>
-    </View>
-  )
-}
-
-type SubmitSettled =
-  | { kind: "done"; result: ReportSubmitOutcome; share: ShareSnapshot }
-  | { kind: "composer" }
-  | { kind: "error"; error: unknown }
-  | { kind: "discarded" }
-
-const submitRuns = createSubmitRunSlot<SubmitSettled>({
-  claimsItself: (settled) => settled.kind === "composer",
-})
-
 export function ReportFlowBody() {
   const styles = useStyles()
+  const flowStyles = useFlowStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
   const fromComposer = usePostComposerStore((s) => s.claimedCreate) === "report"
-  const submit = useReportSubmit({ forComposer: fromComposer })
-  const reset = useDraftReportStore((s) => s.reset)
   const mode = useLayoutMode()
   const haptics = useHaptics()
   const Viewfinder = useCamera().Viewfinder ?? null
   const stackNonEmpty = useNavStore((s) => s.stack.length > 0)
   const runActive = useNavStore((s) => s.view === "report")
-  const runSurvives = useNavStore((s) => reportRunSurvivesView(s.view))
 
-  useEffect(() => {
-    const composer = usePostComposerStore.getState()
-    if (runActive) composer.claimPendingCreate("report")
-    else if (!runSurvives) composer.releaseClaimedCreate("report")
-    return () => deferReportRunRelease(REPORT_RUN_EXIT_HOST)
-  }, [runActive, runSurvives])
+  useReportRunClaim(runActive)
 
   const [skipLocationStep] = useState(() => {
     const d = useDraftReportStore.getState().draft
@@ -956,24 +76,8 @@ export function ReportFlowBody() {
 
   const [step, setStep] = useState<Step>(() => resumeStep(useDraftReportStore.getState().draft, mode))
   const [viewfinderMountable, setViewfinderMountable] = useState(false)
-  const [submitPhase, setSubmitPhase] = useState<"idle" | "submitting" | "error" | "done">(() =>
-    submitRuns.unclaimed() ? "submitting" : "idle",
-  )
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitRecovery, setSubmitRecovery] = useState<SubmitRecovery | null>(null)
-  const [result, setResult] = useState<ReportSubmitOutcome | null>(null)
-  const [shareSnapshot, setShareSnapshot] = useState<ShareSnapshot | null>(null)
-  // A wipe for a new viewer drops the slot's run; a body still on screen must drop what it showed of it too.
-  const draftGeneration = useViewerDraftGeneration()
-  const [submitGeneration, setSubmitGeneration] = useState(draftGeneration)
-  if (submitGeneration !== draftGeneration) {
-    setSubmitGeneration(draftGeneration)
-    setSubmitPhase("idle")
-    setSubmitError(null)
-    setSubmitRecovery(null)
-    setResult(null)
-    setShareSnapshot(null)
-  }
+  const { submitPhase, submitError, submitRecovery, result, shareSnapshot, runSubmit, editAfterFailure } =
+    useReportSubmitFlow({ fromComposer, stepOrder, setStep })
   const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
   const revealShareBlock = useCallback((y: number) => {
     scrollRef.current?.scrollTo?.({ y, animated: true })
@@ -992,6 +96,7 @@ export function ReportFlowBody() {
   }, [orphaned, activeStep])
 
   const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)
+  const captureCardFills = mode === "expanded" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)
 
   useEffect(() => {
     const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)
@@ -999,22 +104,12 @@ export function ReportFlowBody() {
   }, [])
   const viewfinderMounted = viewfinderVisible && viewfinderMountable
 
-  const canAdvance = useMemo(() => {
-    switch (activeStep) {
-      case "capture":
-        return hasMedia
-      case "location":
-        return hasLocation
-      case "category":
-        return reportTypeId !== null
-      case "details":
-        return title.trim().length > 0
-      case "review":
-        return hasLocation
-      default:
-        return false
-    }
-  }, [activeStep, hasMedia, reportTypeId, title, hasLocation])
+  const canAdvance = canAdvanceStep(activeStep, {
+    hasMedia,
+    hasLocation,
+    hasReportType: reportTypeId !== null,
+    hasTitle: title.trim().length > 0,
+  })
 
   const stepIndex = Math.max(0, stepOrder.indexOf(activeStep))
   const stepDirection = useStackDirection(stepIndex)
@@ -1046,106 +141,6 @@ export function ReportFlowBody() {
     }
     setStep(stepOrder[stepIndex - 1] as Step)
   }, [stepIndex, stepOrder])
-
-  const bodyMounted = useRef(true)
-  useEffect(() => {
-    bodyMounted.current = true
-    return () => {
-      bodyMounted.current = false
-    }
-  }, [])
-
-  const followRun = useCallback(
-    (run: Promise<SubmitSettled>) => {
-      setSubmitPhase("submitting")
-      setSubmitError(null)
-      setSubmitRecovery(null)
-      void run.then((settled) => {
-        if (!bodyMounted.current) return
-        if (!submitRuns.claim(run) || settled.kind === "discarded") {
-          setSubmitPhase("idle")
-          return
-        }
-        if (settled.kind === "composer") {
-          setSubmitPhase("idle")
-          return
-        }
-        if (settled.kind === "error") {
-          setSubmitError(submitErrorMessage(settled.error, t))
-          setSubmitRecovery(
-            submitErrorRecovery(appErrorCode(settled.error), appErrorFields(settled.error), stepOrder),
-          )
-          setSubmitPhase("error")
-          return
-        }
-        setShareSnapshot(settled.share)
-        setResult(settled.result)
-        setSubmitPhase("done")
-      })
-    },
-    [t, stepOrder],
-  )
-
-  useEffect(() => {
-    const pending = submitRuns.unclaimed()
-    if (pending) followRun(pending)
-  }, [followRun])
-
-  const performSubmit = useCallback(async (isCurrent: () => boolean): Promise<SubmitSettled> => {
-    try {
-      const res = await submit(isCurrent)
-      if (!isCurrent()) return { kind: "discarded" }
-      const d = useDraftReportStore.getState().draft
-      const share: ShareSnapshot = {
-        title: d.title.trim() || t("review.untitled"),
-        category: (d.category as ReportCategory | null) ?? null,
-        addr: d.addr,
-        thumbUrl: d.media[0]?.uri ?? null,
-        caption: d.feedCaption,
-      }
-
-      haptics.success()
-      if (fromComposer) {
-        const composer = usePostComposerStore.getState()
-        composer.setAttachedReport({
-          id: res.reportId,
-          category: res.category ?? (d.category as ReportCategory | null) ?? "other",
-          type: (d.reportTypeId as SharedReportType | undefined) ?? undefined,
-          title: d.title.trim() || t("review.untitled"),
-          status: res.status ?? "published",
-          lat: res.lat,
-          lng: res.lng,
-          addr: d.addr,
-          thumbUrl: d.media[0]?.uri ?? null,
-          linkedAt: new Date().toISOString(),
-        })
-        composer.releaseClaimedCreate("report")
-        reset()
-        useNavStore.getState().finishReportFlow({ kind: "composer" })
-        return { kind: "composer" }
-      }
-
-      reset()
-      return { kind: "done", result: res, share }
-    } catch (err) {
-      if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }
-      haptics.error()
-      return { kind: "error", error: err }
-    }
-  }, [fromComposer, submit, reset, t, haptics])
-
-  const runSubmit = useCallback(() => {
-    const run = submitRuns.start(performSubmit)
-    if (run) followRun(run)
-  }, [performSubmit, followRun])
-
-  const editAfterFailure = useCallback(() => {
-    const target = submitRecovery?.editStep ?? "review"
-    setSubmitPhase("idle")
-    setSubmitError(null)
-    setSubmitRecovery(null)
-    setStep(target)
-  }, [submitRecovery])
 
   const advanceFromCapture = useCallback(() => {
     setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))
@@ -1184,47 +179,16 @@ export function ReportFlowBody() {
     else store.addCapture(media)
   }, [])
 
-  const draftLat = useDraftReportStore((s) => s.draft.lat)
-  const draftLng = useDraftReportStore((s) => s.draft.lng)
-  const draftCategory = useDraftReportStore((s) => s.draft.category)
-  const pickPoint = draftLat != null && draftLng != null ? { lat: draftLat, lng: draftLng } : null
-  const pickPin = useMemo(() => reportPinTarget(draftCategory), [draftCategory])
-  const [picking, setPicking] = useState(false)
-  const pickCenter = useApproxCenter(
-    hasMedia || activeStep === "location" || activeStep === "review" || picking,
-    picking,
-  )
-  const openPicker = useCallback(() => setPicking(true), [])
-  useEffect(() => {
-    if (activeStep === "location" && !hasLocation) setPicking(true)
-  }, [activeStep, hasLocation])
-  const onPickConfirm = useCallback(
-    (lat: number, lng: number) => {
-      useDraftReportStore.getState().setLocation(lat, lng, "manual")
-      setPicking(false)
-      if (activeStep === "location") advanceFromLocation()
-    },
-    [activeStep, advanceFromLocation],
-  )
-  const onPickCancel = useCallback(() => {
-    setPicking(false)
-    if (activeStep === "location") cancelLocation()
-  }, [activeStep, cancelLocation])
-  const pickLayerOpen = pickLayerVisible(picking, stackNonEmpty, runActive)
-  const pickLayerOffViewHold =
-    PICK_LAYER_LINGERS && pickLayerVisible(picking, stackNonEmpty, true) && !runActive
-  const [pickLingerArmed, setPickLingerArmed] = useState(false)
-  const [seenPickHold, setSeenPickHold] = useState(pickLayerOffViewHold)
-  if (seenPickHold !== pickLayerOffViewHold) {
-    setSeenPickHold(pickLayerOffViewHold)
-    setPickLingerArmed(pickLayerOffViewHold)
-  }
-  useEffect(() => {
-    if (!pickLingerArmed) return
-    const handle = setTimeout(() => setPickLingerArmed(false), PICK_LAYER_LINGER_MS)
-    return () => clearTimeout(handle)
-  }, [pickLingerArmed])
-  const pickLayerMounted = pickLayerOpen || (pickLingerArmed && pickLayerOffViewHold)
+  const { pickPoint, pickPin, pickCenter, openPicker, onPickConfirm, onPickCancel, pickLayerOpen, pickLayerMounted } =
+    usePickLayer({
+      activeStep,
+      hasMedia,
+      hasLocation,
+      stackNonEmpty,
+      runActive,
+      advanceFromLocation,
+      cancelLocation,
+    })
 
   if (submitPhase !== "idle") {
     return (
@@ -1263,7 +227,7 @@ export function ReportFlowBody() {
               style={({ pressed }) => [
                 styles.backBase,
                 mode === "expanded" ? styles.backExpanded : styles.backCompact,
-                pressed ? styles.pressed : null,
+                pressed ? flowStyles.pressed : null,
               ]}
             >
               <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
@@ -1304,7 +268,7 @@ export function ReportFlowBody() {
           style={styles.scroll}
           contentContainerStyle={[
             styles.content,
-            mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.contentFill : null,
+            captureCardFills ? styles.contentFill : null,
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -1312,9 +276,7 @@ export function ReportFlowBody() {
           <StepTransition
             transitionKey={activeStep}
             direction={stepDirection}
-            style={
-              mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.stepHostFill : null
-            }
+            style={captureCardFills ? styles.stepHostFill : null}
           >
             {activeStep === "capture" ? (
               <CaptureStep mode={mode} />
@@ -1347,7 +309,7 @@ export function ReportFlowBody() {
             style={({ pressed }) => [
               styles.nextBtn,
               !canAdvance ? styles.nextDisabled : [styles.nextActive, th.shadows.pin],
-              pressed && canAdvance ? styles.pressed : null,
+              pressed && canAdvance ? flowStyles.pressed : null,
             ]}
           >
             <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
@@ -1381,6 +343,7 @@ export function ReportFlowBody() {
 
 const HEADER_PAD_COMPACT = { top: 6, bottom: 12 } as const
 const HEADER_PAD_EXPANDED = { top: 14, bottom: 12 } as const
+const ROOT_ROW_CONTENT_HEIGHT_EXPANDED = 44
 
 const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1 },
@@ -1419,8 +382,8 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     backgroundColor: t.colors.surfaceTint,
   },
-  headerTitleCompact: { ...detailTitleStyle(16, t), flex: 1 },
-  headerTitleExpanded: { ...detailTitleStyle(18, t), flex: 1 },
+  headerTitleCompact: { ...detailTitleStyle(t.fontSize["16"], t), flex: 1 },
+  headerTitleExpanded: { ...detailTitleStyle(t.fontSize["18"], t), flex: 1 },
   headerRootRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1431,8 +394,8 @@ const useStyles = makeThemedStyles((t) => ({
     paddingBottom: t.space["1"],
   },
   headerRootRowExpanded: {
-    paddingTop: 14,
-    minHeight: 14 + 44 + t.space["1"],
+    paddingTop: HEADER_PAD_EXPANDED.top,
+    minHeight: HEADER_PAD_EXPANDED.top + ROOT_ROW_CONTENT_HEIGHT_EXPANDED + t.space["1"],
   },
   headerTitleRoot: {
     flex: 1,
@@ -1461,286 +424,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   contentFill: { flexGrow: 1 },
   stepHostFill: { flexGrow: 1 },
-  stepBlock: { gap: t.space["3"] },
-  stepBlockFill: { flex: 1, justifyContent: "flex-start" },
-  fieldLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-
-  photoDrop: {
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    minHeight: 168,
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.bloom["700"],
-    paddingHorizontal: t.space["6"],
-  },
-  photoDropFill: { flex: 1, maxHeight: 520 },
-  photoDropTitle: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.neutral.card,
-    marginTop: 4,
-  },
-  photoDropSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.neutral.card,
-    textAlign: "center",
-  },
-  libraryLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-    maxWidth: "100%",
-    gap: 6,
-    paddingVertical: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-  },
-  dragHint: {
-    textAlign: "center",
-    marginTop: -t.space["2"],
-  },
-  libraryLinkText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  captureActions: {
-    flexDirection: "row",
-    gap: t.space["3"],
-  },
-  retakeBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    height: 44,
-    borderRadius: t.radius.md,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  retakeText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.textMuted,
-  },
-  retakeDisabled: {
-    opacity: 0.45,
-  },
-  captureStrip: {
-    flexDirection: "row",
-    gap: t.space["2"],
-    paddingVertical: t.space["1"],
-  },
-  captureThumbWrap: {
-    width: 96,
-    position: "relative",
-  },
-  captureThumb: {
-    borderRadius: t.radius.md,
-  },
-  captureRemove: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  captureRemoveDisc: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: alpha(t.colors.shadowColor, 0.62),
-  },
-  captureHint: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-    marginTop: t.space["1"],
-  },
-  compactLoc: {
-    gap: t.space["2"],
-  },
-  compactLocBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    minHeight: 52,
-    paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
-    borderRadius: t.radius.md,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  compactLocMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  compactLocValue: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
-    color: t.colors.text,
-  },
-  compactLocPlaceholder: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
-    color: t.colors.textSubtle,
-  },
-  compactLocClear: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    gap: 5,
-    minHeight: 44,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-  },
-  compactLocClearText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
-    color: t.colors.textMuted,
-  },
-
-  typeList: { gap: 10 },
-  typeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 13,
-    width: "100%",
-    padding: 14,
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s1,
-  },
-  glyphCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.neutral.paper2,
-    borderWidth: 1,
-    borderColor: t.colors.border,
-  },
-  typeMeta: { flex: 1, minWidth: 0 },
-  typeTitle: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["15"],
-    color: t.colors.text,
-  },
-  typeSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-    marginTop: 2,
-  },
-  check: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: t.colors.borderStrong,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  toggles: { gap: t.space["3"] },
-
-  summaryCard: {
-    gap: t.space["2"],
-    padding: 14,
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-  },
-  summaryTitle: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.text,
-  },
-  summaryDesc: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-    lineHeight: 18,
-  },
-  locationBlock: { gap: t.space["2"] },
-  routeCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: t.colors.sky["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sky["100"],
-  },
-  routeIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.neutral.card,
-  },
-  routeText: { flex: 1 },
-  routeRetry: { gap: t.space["2"], alignItems: "flex-start" },
-  routeLabel: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 10.5,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    color: t.colors.sky["700"],
-  },
-  routeName: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-    marginTop: 1,
-  },
-  routeSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textMuted,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-
-  validationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  errorText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.accentText,
-  },
-  hintText: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-    textAlign: "center",
-  },
-
   footer: {
     flexDirection: "row",
     gap: 10,
@@ -1766,74 +449,4 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["15"],
   },
   nextIcon: { marginLeft: 6 },
-  pressed: { opacity: 0.9 },
-
-  stateFill: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: t.space["6"],
-  },
-  stateTitle: { marginTop: t.space["5"], textAlign: "center" },
-  stateBody: {
-    marginTop: t.space["2"],
-    textAlign: "center",
-    lineHeight: 20,
-    maxWidth: 300,
-  },
-  errorActions: {
-    marginTop: t.space["6"],
-    width: "100%",
-    maxWidth: 340,
-    gap: t.space["3"],
-  },
-  errorIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: t.colors.bloom["50"],
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  successCheck: { marginBottom: t.space["3"] },
-  successActions: {
-    marginTop: t.space["8"],
-    width: "100%",
-    maxWidth: 340,
-    gap: t.space["3"],
-  },
-
-  sharedBlock: {
-    marginTop: t.space["6"],
-    width: "100%",
-    maxWidth: 340,
-    gap: t.space["2"],
-  },
-  sharedHeading: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  shareFailRow: {
-    marginTop: t.space["6"],
-    width: "100%",
-    maxWidth: 340,
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  shareFailText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
-    lineHeight: 16,
-    color: t.colors.accentText,
-  },
-  signedOutHint: {
-    marginTop: t.space["4"],
-    width: "100%",
-    maxWidth: 340,
-    textAlign: "center",
-  },
 }))

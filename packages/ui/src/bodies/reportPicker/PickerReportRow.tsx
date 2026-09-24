@@ -9,6 +9,8 @@ import { METERS_PER_MILE } from "../reportHitRowModel"
 import { distanceLabel } from "../relativeTime"
 import { isChosen, reportShortCode, rowTagKey, type PickerMode, type PickerRow } from "./reportPickerModel"
 
+const FOCUS_BORDER_WIDTH = 2
+
 export interface PickerReportRowProps {
   row: PickerRow
   mode: PickerMode
@@ -76,8 +78,8 @@ export const PickerReportRow = memo(function PickerReportRow({
 const useStyles = makeThemedStyles((t) => ({
   wrap: {
     width: "100%",
-    borderRadius: t.radius.lg + 2,
-    borderWidth: 2,
+    borderRadius: t.radius.lg + FOCUS_BORDER_WIDTH,
+    borderWidth: FOCUS_BORDER_WIDTH,
     borderColor: "transparent",
   },
   focused: {

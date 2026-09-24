@@ -136,8 +136,6 @@ export function submittedAddr(draft: Pick<DraftReport, "addr" | "addrEdited">): 
   return line.length > 0 ? line : undefined
 }
 
-export { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../data/uploadMedia"
-
 async function uploadOne(
   api: ApiClient,
   camera: CameraCapability,

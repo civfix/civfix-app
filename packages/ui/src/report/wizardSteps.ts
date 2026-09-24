@@ -6,7 +6,6 @@ export type Step = "capture" | "location" | "category" | "details" | "review"
 export const STEP_ORDER_EXPANDED: Step[] = ["capture", "category", "details", "review"]
 export const STEP_ORDER_COMPACT: Step[] = ["capture", "location", "category", "details", "review"]
 
-
 export interface StepOrderOptions {
   skipLocation?: boolean
 }
@@ -37,6 +36,31 @@ export function stepAfterCapture(
   if (resumed !== "capture" && order.includes(resumed)) return resumed
   const i = order.indexOf("capture")
   return (order[i + 1] as Step | undefined) ?? "capture"
+}
+
+export interface StepReadiness {
+  hasMedia: boolean
+  hasLocation: boolean
+  hasReportType: boolean
+  hasTitle: boolean
+}
+
+/** Whether the footer's Continue (or, on review, the submit) is enabled on `step`. */
+export function canAdvanceStep(step: Step, ready: StepReadiness): boolean {
+  switch (step) {
+    case "capture":
+      return ready.hasMedia
+    case "location":
+      return ready.hasLocation
+    case "category":
+      return ready.hasReportType
+    case "details":
+      return ready.hasTitle
+    case "review":
+      return ready.hasLocation
+    default:
+      return false
+  }
 }
 
 export function showsWizardFooter(step: Step, hasMedia: boolean): boolean {

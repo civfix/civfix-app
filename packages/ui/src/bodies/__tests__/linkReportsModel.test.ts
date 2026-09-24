@@ -3,7 +3,6 @@ import { MAX_LINKED_REPORTS, type ReportPinDTO, type ReportStatus } from "@civfi
 import type { HostStage } from "@civfix/shared/host"
 import {
   LINKED_REPORTS_COUNT_AT,
-  NEARBY_MAX,
   NEARBY_PREVIEW,
   linkBlockState,
   linkSheetMode,
@@ -124,7 +123,6 @@ describe("nearbyReportRows", () => {
     const pins = Array.from({ length: 40 }, (_unused, i) => pin(`p${i}`, { lat: north(i / 100) }))
     expect(nearbyReportRows(pins, LA, [], 2)).toHaveLength(40)
     expect(NEARBY_PREVIEW).toBe(3)
-    expect(NEARBY_MAX).toBe(30)
   })
 })
 

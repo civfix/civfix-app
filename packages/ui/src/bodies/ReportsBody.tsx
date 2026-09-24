@@ -8,9 +8,9 @@ import {
   type ViewStyle,
 } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import type { ReportDTO, MediaDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webInputReset, headingLevel } from "../theme"
+import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webInputReset, headingLevel, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
 import { useMyReports, useAuthState, useRequireAuth } from "../data"
@@ -19,17 +19,8 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { idKeyExtractor } from "./navHelpers"
 import { ReportRowView } from "./ReportRow"
 import { useListTimeAgo } from "./useListTimeAgo"
-import { matchesReportQuery, searchBackfill } from "./reportsListModel"
+import { firstReportPhoto, latestNote, matchesReportQuery, searchBackfill } from "./reportsListModel"
 import { useT } from "../i18n"
-
-export function firstReportPhoto(report: ReportDTO): MediaDTO | undefined {
-  return report.media.find((m) => m.kind === "image" && m.status === "ready")
-}
-
-export function latestNote(report: ReportDTO): string | undefined {
-  const last = report.timeline.at(-1)
-  return last?.note?.trim() || undefined
-}
 
 export function ReportsBody() {
   const styles = useStyles()
@@ -229,8 +220,6 @@ function ReportsHeader({ expanded }: { expanded: boolean }) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
-
 const useStyles = makeThemedStyles((t) => ({
   searchField: {
     flexDirection: "row",
@@ -239,7 +228,7 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
-    paddingHorizontal: 12,
+    paddingHorizontal: t.space["3"],
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -254,7 +243,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     padding: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   clearTarget: {

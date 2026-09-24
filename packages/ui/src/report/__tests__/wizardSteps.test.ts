@@ -1,12 +1,14 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
+import { reportFlowPart, reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import {
   STEP_ORDER_COMPACT,
   STEP_ORDER_EXPANDED,
   stepOrderFor,
   resumeStep,
   stepAfterCapture,
+  canAdvanceStep,
   showsWizardFooter,
   wizardHeaderMode,
   rendersEmbeddedViewfinder,
@@ -16,7 +18,8 @@ import {
   pickLayerVisible,
 } from "../wizardSteps"
 
-const wizardSource = readFileSync(new URL("../../bodies/ReportFlowBody.tsx", import.meta.url), "utf8")
+const wizardSource = reportFlowSource()
+const flatWizard = wizardSource.replace(/\s+/g, " ")
 const wizardCode = wizardSource.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
 
 function viewfinderElement(): string {
@@ -179,6 +182,34 @@ describe("stepAfterCapture (the CONTINUE jump off the capture step)", () => {
 
   it("stops the location step from force-opening the map over a pin the draft already has", () => {
     expect(wizardSource).toContain('if (activeStep === "location" && !hasLocation) setPicking(true)')
+  })
+})
+
+describe("canAdvanceStep", () => {
+  const none = { hasMedia: false, hasLocation: false, hasReportType: false, hasTitle: false }
+
+  it("gates each step on the one thing it collects, and review on the location", () => {
+    expect(canAdvanceStep("capture", { ...none, hasMedia: true })).toBe(true)
+    expect(canAdvanceStep("location", { ...none, hasLocation: true })).toBe(true)
+    expect(canAdvanceStep("category", { ...none, hasReportType: true })).toBe(true)
+    expect(canAdvanceStep("details", { ...none, hasTitle: true })).toBe(true)
+    expect(canAdvanceStep("review", { ...none, hasLocation: true })).toBe(true)
+  })
+
+  it("ignores what the other steps collect", () => {
+    const all = { hasMedia: true, hasLocation: true, hasReportType: true, hasTitle: true }
+    expect(canAdvanceStep("capture", { ...all, hasMedia: false })).toBe(false)
+    expect(canAdvanceStep("location", { ...all, hasLocation: false })).toBe(false)
+    expect(canAdvanceStep("category", { ...all, hasReportType: false })).toBe(false)
+    expect(canAdvanceStep("details", { ...all, hasTitle: false })).toBe(false)
+    expect(canAdvanceStep("review", { ...all, hasLocation: false })).toBe(false)
+  })
+
+  it("is wired to the footer from the draft's own fields", () => {
+    expect(flatWizard).toContain(
+      "const canAdvance = canAdvanceStep(activeStep, { hasMedia, hasLocation, hasReportType: reportTypeId !== null, hasTitle: title.trim().length > 0, })",
+    )
+    expect(wizardSource).toContain("disabled={!canAdvance}")
   })
 })
 
@@ -364,7 +395,9 @@ describe("the capture step's embedded viewfinder wiring", () => {
 describe("the capture step keeps its header attached to its content", () => {
   const styleBlock = (name: string): string => {
     const start = wizardSource.indexOf(`  ${name}: {`)
-    expect(start, `${name} is gone from ReportFlowBody.tsx - rename the guard, do not delete it`).toBeGreaterThan(-1)
+    expect(start, `${name} is gone from the report flow - rename the guard, do not delete it`).toBeGreaterThan(-1)
+    const firstLine = wizardSource.slice(start, wizardSource.indexOf("\n", start))
+    if (firstLine.trimEnd().endsWith("},")) return firstLine
     const end = wizardSource.indexOf("\n  },", start)
     return wizardSource.slice(start, end === -1 ? undefined : end)
   }
@@ -378,8 +411,24 @@ describe("the capture step keeps its header attached to its content", () => {
 
   it("still caps the coral card, so the fill cannot become a wall of colour", () => {
     expect(styleBlock("photoDropFill")).toContain("maxHeight: 520")
-    expect(wizardSource).toContain("mode === \"expanded\" && activeStep === \"capture\" && !hasMedia ? styles.contentFill : null")
+    expect(wizardSource).toContain(
+      "const captureCardFills = mode === \"expanded\" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)",
+    )
+    expect(wizardSource).toContain("captureCardFills ? styles.contentFill : null")
     expect(wizardSource).toContain("fill ? styles.stepBlockFill : null")
+  })
+
+  it("fills in landscape exactly when the capture step shows the empty card", () => {
+    const steps = ["capture", "location", "category", "details", "review"] as const
+    for (const step of steps) {
+      for (const hasMedia of [false, true]) {
+        for (const hasViewfinder of [false, true]) {
+          expect(showsCaptureCard(step, hasMedia, hasViewfinder, "expanded"), `${step} ${hasMedia} ${hasViewfinder}`).toBe(
+            step === "capture" && !hasMedia,
+          )
+        }
+      }
+    }
   })
 })
 
@@ -625,11 +674,11 @@ describe("the capture review shows no location banner", () => {
   it("leaves the location surfaces that DO belong to the flow untouched", () => {
     expect(wizardCode).toContain("function CompactLocationField(")
     expect(wizardCode).toContain("const label = useReverseLabel(point)")
-    expect(wizardSource).toContain('<Text style={styles.fieldLabel}>{t("review.where_label")}</Text>')
+    expect(wizardSource).toContain('<Text style={flowStyles.fieldLabel}>{t("review.where_label")}</Text>')
   })
 
   it("stops CaptureStep reading the draft's coordinate at all", () => {
-    const captureStep = sliceBetween(wizardSource, "function CaptureStep(", "function CategoryStep(")
+    const captureStep = reportFlowPart("CaptureStep.tsx")
     expect(captureStep).not.toContain("useReverseLabel")
     expect(captureStep).not.toContain("reverseLabelText")
     expect(captureStep).not.toContain("s.draft.lat")
@@ -709,6 +758,16 @@ describe("pickLayerVisible", () => {
   })
 })
 
+describe("the body mounts the pieces split out of it", () => {
+  const body = readFileSync(new URL("../../bodies/ReportFlowBody.tsx", import.meta.url), "utf8")
+
+  it("runs the claim, submit and pick-layer hooks from the body itself", () => {
+    expect(body).toContain("useReportRunClaim(runActive)")
+    expect(body).toContain("useReportSubmitFlow({ fromComposer, stepOrder, setStep })")
+    expect(body).toMatch(/usePickLayer\(\{\s*activeStep,\s*hasMedia,\s*hasLocation,\s*stackNonEmpty,\s*runActive,/)
+  })
+})
+
 describe("the pick layer's liveness wiring (source-pinned)", () => {
   it("passes the GATED value to PortraitMapPickStep, never the bare `picking` flag", () => {
     expect(wizardSource).toContain(
@@ -758,9 +817,7 @@ describe("the wizard's STEP transition (source-pinned)", () => {
   })
 
   it("preserves the expanded capture step's fill layout through the wrapper", () => {
-    expect(wizardCode).toMatch(
-      /mode === "expanded" && activeStep === "capture" && !hasMedia \? styles\.stepHostFill : null/,
-    )
+    expect(wizardCode).toMatch(/style=\{captureCardFills \? styles\.stepHostFill : null\}/)
     expect(wizardCode).toMatch(/stepHostFill: \{ flexGrow: 1 \}/)
   })
 

@@ -1,4 +1,25 @@
-import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef, ReportDTO } from "@civfix/shared"
+
+type ReportMedia = ReportDTO["media"][number]
+
+export interface GalleryTiles {
+  ready: ReportMedia[]
+  ownerPending: ReportMedia[]
+  ownerFailed: ReportMedia[]
+  tileCount: number
+}
+
+export function partitionGalleryMedia(media: readonly ReportMedia[], pending: number): GalleryTiles {
+  const ready = media.filter((m) => m.status === "ready")
+  const ownerPending = media.filter((m) => m.status === "validating")
+  const ownerFailed = media.filter((m) => m.status === "rejected" || m.status === "held")
+  return {
+    ready,
+    ownerPending,
+    ownerFailed,
+    tileCount: ready.length + ownerPending.length + ownerFailed.length + pending,
+  }
+}
 
 /**
  * `selected` outlives the media list: a refetch (an item moderated to rejected, the report invalidated) can

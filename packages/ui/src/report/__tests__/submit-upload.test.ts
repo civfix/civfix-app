@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { AppError, ErrorCode } from "@civfix/shared"
-import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../submit"
+import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../../data/uploadMedia"
 
 function okFetch(status = 200): typeof fetch {
   return (async () => ({ ok: status >= 200 && status < 300, status }) as Response) as unknown as typeof fetch

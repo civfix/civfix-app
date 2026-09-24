@@ -17,6 +17,8 @@ import { reportShortCode } from "./reportPicker/reportPickerModel"
 import { METERS_PER_MILE } from "./reportHitRowModel"
 import { distanceLabel } from "./relativeTime"
 
+const ROW_SKELETON_HEIGHT = 64
+
 export interface ReportLinkRowProps {
   id: string
   center: LatLng | null
@@ -79,7 +81,7 @@ export function ReportLinkRow({
   }, [card, center, tEnums, tLinked])
 
   if (!card || !view) {
-    if (query.isLoading) return <SkeletonBlock width="100%" height={64} radius={th.radius.lg} />
+    if (query.isLoading) return <SkeletonBlock width="100%" height={ROW_SKELETON_HEIGHT} radius={th.radius.lg} />
     const unavailable = t("linkedReports.unavailable_row")
     return (
       <LinkedReportCard

@@ -1,27 +1,11 @@
 import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import {
-  type ReportCategory,
-  type ReportType,
-  type ReportStatus,
-} from "@civfix/shared"
-import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition } from "../theme"
+import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { CategoryChip, StatusBadge, FramedImage } from "../primitives"
 import { useT } from "../i18n"
 import { linkedReportHeadline, type LinkedReportHeadline } from "./linkedReportHeadline"
-
-export interface LinkedReportCardData {
-  id: string
-  category: ReportCategory
-  type?: ReportType | null
-  title?: string | null
-  description?: string | null
-  status: ReportStatus | null
-  thumbUrl?: string | null
-  addr?: string | null
-  referenceCode?: string | null
-}
+import type { LinkedReportCardData } from "./linkedReportCards"
 
 export function LinkedReportCard({
   report,
@@ -274,7 +258,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   body: {
     padding: t.space["3"],
-    gap: 4,
+    gap: t.space["1"],
   },
   bodyList: {
     flex: 1,
@@ -344,10 +328,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   removeBtn: {
     position: "absolute",
-    top: -16,
-    right: -16,
-    width: 44,
-    height: 44,
+    top: -t.space["4"],
+    right: -t.space["4"],
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
   },

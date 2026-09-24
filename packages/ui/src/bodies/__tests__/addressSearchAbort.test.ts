@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const addressSearch = strip(read("../AddressSearch.tsx"))
+const addressSearch = strip(read("../AddressSearch.tsx") + "\n" + read("../useAddressSearch.ts"))
 
 describe("AddressSearch supersede", () => {
   it("hands the AbortController's signal to the suggest request, not just to the ordering guards", () => {

@@ -5,7 +5,10 @@ import {
   PICKER_MAX_FETCH_SPAN_DEG,
   PICKER_MAX_PINS,
   PICKER_PAGE_FIRST,
+  PICKER_ESTIMATED_HEADER_HEIGHT,
+  PICKER_ESTIMATED_ROW_HEIGHT,
   PICKER_PAGE_STEP,
+  PICKER_ROW_GAP,
   QUERY_RANK,
   bboxContains,
   bboxHolds,
@@ -39,10 +42,12 @@ import {
   rowIndexOf,
   rowTagKey,
   rowOrdinalOf,
+  rowOffset,
   selectionDiff,
   shouldRefetch,
   togglePickerId,
 } from "../reportPickerModel"
+import type { PickerListItem, PickerRow } from "../reportPickerModel"
 
 const LA = { lat: 34.0522, lng: -118.2437 }
 const VIEW: BBox = { west: -118.26, east: -118.23, south: 34.04, north: 34.065 }
@@ -534,5 +539,38 @@ describe("list state", () => {
     expect(pickerListState({ ...ok, rowCount: 0, hasRegion: false })).toBe("too_wide")
     expect(pickerListState({ ...ok, rowCount: 0, layerCount: 0 })).toBe("no_layers")
     expect(pickerListState({ ...ok, rowCount: 0 })).toBe("empty")
+  })
+})
+
+describe("rowOffset", () => {
+  const row = (id: string): PickerRow => ({
+    pin: pin(id),
+    place: "view",
+    state: "idle",
+    distanceM: 0,
+    rank: QUERY_RANK.otherFields,
+  })
+  const items: PickerListItem[] = [
+    { kind: "header", key: "h:view", place: "view", count: 2 },
+    { kind: "row", key: "r:a", row: row("a") },
+    { kind: "row", key: "r:b", row: row("b") },
+  ]
+
+  it("is zero for the first item", () => {
+    expect(rowOffset(items, 0, new Map())).toBe(0)
+  })
+
+  it("sums the estimates plus one gap per item above an unmeasured row", () => {
+    expect(rowOffset(items, 2, new Map())).toBe(
+      PICKER_ESTIMATED_HEADER_HEIGHT + PICKER_ROW_GAP + PICKER_ESTIMATED_ROW_HEIGHT + PICKER_ROW_GAP,
+    )
+  })
+
+  it("prefers a measured height over the estimate", () => {
+    const measured = new Map([
+      ["h:view", 22],
+      ["r:a", 100],
+    ])
+    expect(rowOffset(items, 2, measured)).toBe(22 + PICKER_ROW_GAP + 100 + PICKER_ROW_GAP)
   })
 })
