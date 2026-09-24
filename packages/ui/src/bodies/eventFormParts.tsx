@@ -10,7 +10,6 @@ export const FORM_CONTROL_HEIGHT = 52
 
 const SKELETON_FIELDS = [44, 88, 44, 44, 44] as const
 
-/** The create and edit forms' loading state: labelled field placeholders over the submit button's. */
 export function EventFormSkeleton() {
   const { ScrollView } = useScrollHost()
   const styles = useStyles()
@@ -32,7 +31,6 @@ export function EventFormSkeleton() {
   )
 }
 
-/** The line above a form's submit button: the submit error when there is one, else the blocking hint. */
 export function FormValidationRow({ error, hint }: { error: string | null; hint: string | null }) {
   const styles = useStyles()
   const th = useTheme()

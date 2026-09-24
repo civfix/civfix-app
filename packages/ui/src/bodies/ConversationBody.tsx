@@ -183,7 +183,15 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   )
   const closeMenu = useCallback(() => setMenuOpen(false), [])
   const { listRef, hasNewBelow, scrollToBottom, backToLatest, onScroll } = useTranscriptScroll(chat.items, clearAround)
-  const { reportTarget, reportContent, onReportMessage, onReportPhoto, closeReport, onSubmitReport } = useConvoReporting()
+  const {
+    target: reportTarget,
+    pending: reportPending,
+    failed: reportFailed,
+    onReportMessage,
+    onReportPhoto,
+    close: closeReport,
+    submit: onSubmitReport,
+  } = useConvoReporting()
   const toast = useToast()
   const { pollCreatePending, pollCreateError, onCreatePoll, onVotePoll, onStopPoll, onSetPinned, onDeleteMessage } =
     useChatMessageActions({ createPoll, votePoll, closePoll, setPinned, deleteMessage })
@@ -719,8 +727,8 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       <ReportContentSheet
         visible={reportTarget !== null}
         subjectLabel={reportTarget?.label ?? t("report.subject_message")}
-        pending={reportContent.isPending}
-        error={reportContent.isError ? t("report.submit_error") : null}
+        pending={reportPending}
+        error={reportFailed ? t("report.submit_error") : null}
         onSubmit={onSubmitReport}
         onClose={closeReport}
       />

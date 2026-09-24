@@ -45,7 +45,6 @@ export interface StepReadiness {
   hasTitle: boolean
 }
 
-/** Whether the footer's Continue (or, on review, the submit) is enabled on `step`. */
 export function canAdvanceStep(step: Step, ready: StepReadiness): boolean {
   switch (step) {
     case "capture":

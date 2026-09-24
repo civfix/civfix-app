@@ -30,7 +30,8 @@ import { ReportGallery } from "./reportDetail/ReportGallery"
 import { HostDraftBar } from "./reportDetail/HostDraftBar"
 import { GALLERY_ASPECT_RATIO } from "./reportDetail/galleryStyles"
 import { useReportDetailSharedStyles } from "./reportDetail/sharedStyles"
-import { useReportContentSheet, useReportTitleMenu } from "./reportDetail/useReportTitleMenu"
+import { useReportContentSheet } from "./reportDetail/useReportContentSheet"
+import { useReportTitleMenu } from "./reportDetail/useReportTitleMenu"
 
 function ReportDetailContent({ report }: { report: ReportDTO }) {
   const styles = useStyles()
@@ -56,7 +57,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
   }, [isActive, report.id, report.lat, report.lng, report.category])
 
   const contentSheet = useReportContentSheet(report.id)
-  const titleMenu = useReportTitleMenu(report, title, contentSheet.openReport)
+  const titleMenu = useReportTitleMenu(report, title, contentSheet.open)
 
   return (
     <View style={styles.detailRoot}>
@@ -145,12 +146,12 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       </View>
 
       <ReportContentSheet
-        visible={contentSheet.reportTarget !== null}
-        subjectLabel={contentSheet.reportTarget?.label ?? t("subject_label.content")}
+        visible={contentSheet.target !== null}
+        subjectLabel={contentSheet.target?.label ?? t("subject_label.content")}
         pending={contentSheet.pending}
         error={contentSheet.failed ? t("content_report.error") : null}
-        onSubmit={contentSheet.onSubmitReport}
-        onClose={contentSheet.closeReport}
+        onSubmit={contentSheet.submit}
+        onClose={contentSheet.close}
       />
     </ScrollView>
     </View>

@@ -3,7 +3,7 @@ import { appErrorCode, appErrorFields } from "../data/errorCode"
 
 const TEXT_FIELDS: ReadonlySet<string> = new Set(["title", "description", "addr"])
 
-/** The copy on the submit error screen, from the report-wizard catalog `t` is bound to. */
+/** The keys are bare, so `t` must be bound to the report-wizard namespace. */
 export function submitErrorMessage(err: unknown, t: TFunction): string {
   const code = appErrorCode(err)
   const fieldKeys = Object.keys(appErrorFields(err) ?? {}).map((key) => key.split(".")[0])

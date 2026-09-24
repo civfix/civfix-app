@@ -4,7 +4,7 @@ import type { ReportSubmitOutcome } from "../../report/submit"
 
 export type SubmitPhase = "idle" | "submitting" | "error" | "done"
 
-/** What the success screen shows of the draft, captured before the draft is reset. */
+/** Taken before the draft resets, because the success screen outlives the draft it describes. */
 export interface ShareSnapshot {
   title: string
   category: ReportCategory | null

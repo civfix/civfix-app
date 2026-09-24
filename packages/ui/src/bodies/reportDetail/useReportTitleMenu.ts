@@ -1,82 +1,18 @@
 import { useCallback, useState } from "react"
-import type { ContentReportReason, ContentReportSubject, ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/shared"
 import { usePopoverAnchor, useToast } from "../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../primitives"
 import { shareLink, absoluteUrl } from "../../primitives/share"
-import { useRequireAuth, useReportContent, useUnlistReport } from "../../data"
+import { useRequireAuth, useUnlistReport } from "../../data"
 import type { IconName } from "../../typography"
 import { useNavStore } from "../../nav"
 import { useT } from "../../i18n"
-
-interface ReportTarget {
-  subjectType: ContentReportSubject
-  subjectId: string
-  label: string
-}
-
-export function useReportContentSheet(reportId: string) {
-  const { t } = useT("report-detail")
-  const requireAuth = useRequireAuth()
-  const reportContent = useReportContent()
-  const toast = useToast()
-  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
-  const openReport = useCallback(
-    (target: ReportTarget) => {
-      reportContent.reset()
-      setReportTarget(target)
-    },
-    [reportContent],
-  )
-  const onReportPhoto = useCallback(
-    (mediaId: string) =>
-      openReport({ subjectType: "photo", subjectId: mediaId, label: t("subject_label.photo") }),
-    [openReport, t],
-  )
-  const onReportGalleryPhoto = useCallback(
-    (mediaId: string) =>
-      requireAuth(() => onReportPhoto(mediaId), { next: `/pin/${reportId}` }),
-    [onReportPhoto, requireAuth, reportId],
-  )
-  const closeReport = useCallback(() => {
-    if (reportContent.isPending) return
-    setReportTarget(null)
-  }, [reportContent.isPending])
-  const onSubmitReport = useCallback(
-    (reason: ContentReportReason, details?: string) => {
-      if (!reportTarget) return
-      reportContent.mutate(
-        {
-          subjectType: reportTarget.subjectType,
-          subjectId: reportTarget.subjectId,
-          reason,
-          ...(details ? { details } : {}),
-        },
-        {
-          onSuccess: () => {
-            setReportTarget(null)
-            toast.show(t("content_report.submitted_toast"), { variant: "success" })
-          },
-        },
-      )
-    },
-    [reportTarget, reportContent, toast, t],
-  )
-
-  return {
-    reportTarget,
-    pending: reportContent.isPending,
-    failed: reportContent.isError,
-    openReport,
-    onReportGalleryPhoto,
-    closeReport,
-    onSubmitReport,
-  }
-}
+import type { ContentReportTarget } from "../useContentReportSheet"
 
 export function useReportTitleMenu(
   report: ReportDTO,
   title: string,
-  openReport: (target: ReportTarget) => void,
+  openReport: (target: ContentReportTarget) => void,
 ) {
   const { t } = useT("report-detail")
   const requireAuth = useRequireAuth()

@@ -273,7 +273,6 @@ function SlotTile({ owned, state }: { owned: boolean; state: SlotRowState }) {
   )
 }
 
-/** The trailing control for every state that has one; a `readonly` row renders none. */
 function SlotPill({
   slot,
   state,

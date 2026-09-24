@@ -325,11 +325,17 @@ function MeetAddressField({
 type FormPatch = (partial: Partial<CleanupFormValue>) => void
 
 /**
- * The cover picker's upload. It writes through `onPatch` (a merge into the host's CURRENT value), never
- * the render-time `patch`: the upload lands after an await, and a spread of the value captured before it
+ * The cover picker's upload. It writes through `mergeIntoCurrent` (a merge into the host's CURRENT value),
+ * never `patchRendered`: the upload lands after an await, and a spread of the value captured before it
  * would drop everything typed meanwhile.
  */
-function useCoverUpload(onPatch: FormPatch, patch: FormPatch) {
+function useCoverUpload({
+  mergeIntoCurrent,
+  patchRendered,
+}: {
+  mergeIntoCurrent: FormPatch
+  patchRendered: FormPatch
+}) {
   const api = useApi()
   const camera = useCamera()
   const [coverUploading, setCoverUploading] = useState(false)
@@ -348,19 +354,19 @@ function useCoverUpload(onPatch: FormPatch, patch: FormPatch) {
           return
         }
         const uploaded = await uploadMedia({ api, camera, media: picked })
-        onPatch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
+        mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
       } catch (err) {
         setCoverErrorKey(eventCoverErrorKey(appErrorCode(err)))
       } finally {
         setCoverUploading(false)
       }
     })()
-  }, [api, camera, coverUploading, onPatch])
+  }, [api, camera, coverUploading, mergeIntoCurrent])
 
   const onRemoveCover = useCallback(() => {
     setCoverErrorKey(null)
-    patch({ coverMediaId: null, coverPreviewUrl: null })
-  }, [patch])
+    patchRendered({ coverMediaId: null, coverPreviewUrl: null })
+  }, [patchRendered])
 
   return { coverUploading, coverErrorKey, onPickCover, onRemoveCover }
 }
@@ -748,7 +754,7 @@ export function CleanupForm({
     (partial: Partial<CleanupFormValue>) => onChange({ ...value, ...partial }),
     [onChange, value],
   )
-  const cover = useCoverUpload(onPatch, patch)
+  const cover = useCoverUpload({ mergeIntoCurrent: onPatch, patchRendered: patch })
   const { hostOrganizations, hostOrganizationId } = useHostOrganizations(
     value,
     onChange,

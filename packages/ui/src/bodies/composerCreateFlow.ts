@@ -1,7 +1,8 @@
 /**
- * Stack rules for a create flow that publishes over the surface that launched it, and the report-wizard entry.
- * No react-native import, so this module unit-tests directly; `isFlowKind` comes from ../nav, the one definition the collapse guard, `map/dropPinFlow` and
- * `shell/backAffordance` also read, so "which kinds are a flow" cannot drift between them.
+ * Stack rules for a create flow that publishes over the surface that launched it, and the report-wizard
+ * entry. No react-native import, so this module unit-tests directly; `isFlowKind` comes from ../nav, the one
+ * definition the collapse guard, `map/dropPinFlow` and `shell/backAffordance` also read, so "which kinds are
+ * a flow" cannot drift between them.
  */
 import { isFlowKind, useNavStore, type DetailEntry } from "../nav"
 import { reportRunSurvivesView } from "./postComposerExit"
@@ -10,8 +11,8 @@ import { usePostComposerStore } from "./postComposerStore"
 /**
  * The stack a create flow should leave behind when it PUBLISHES with no composer waiting: the flow's own
  * entry (and anything it pushed on top of it, such as a linked report's detail) REPLACED by the thing it
- * just created. It truncates at the topmost flow entry rather than calling `back()` once, because the form can
- * push forward first, so only the truncate is correct at any depth.
+ * just created. It truncates at the topmost flow entry rather than calling `back()` once, because the form
+ * can push forward first, so only the truncate is correct at any depth.
  *
  * A finished flow must relinquish its entry. `useNavStore.collapseToParent` refuses to collapse while ANY
  * entry on the stack is a flow kind, so a submitted `create-cleanup` left underneath would make the new

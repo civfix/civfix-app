@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { LinkedEventRef } from "@civfix/shared"
-import { clampGallerySelection, linkedEventToCleanup } from "../reportDetailModel"
+import { linkedEventToCleanup } from "../reportDetailModel"
+import { clampGallerySelection } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
 import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"

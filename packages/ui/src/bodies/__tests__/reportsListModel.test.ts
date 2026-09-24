@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import type { ReportDTO } from "@civfix/shared"
-import { partitionGalleryMedia } from "../reportDetailModel"
 import { firstReportPhoto, latestNote } from "../reportsListModel"
 
 type Media = ReportDTO["media"][number]
@@ -21,19 +20,6 @@ function report(over: Partial<ReportDTO> = {}): ReportDTO {
     ...over,
   } as unknown as ReportDTO
 }
-
-describe("partitionGalleryMedia", () => {
-  it("splits ready, processing and failed media and counts a tile for every unlisted pending upload", () => {
-    const tiles = partitionGalleryMedia(
-      [media("a", "ready"), media("b", "validating"), media("c", "rejected"), media("d", "held"), media("e", "ready")],
-      2,
-    )
-    expect(tiles.ready.map((m) => m.id)).toEqual(["a", "e"])
-    expect(tiles.ownerPending.map((m) => m.id)).toEqual(["b"])
-    expect(tiles.ownerFailed.map((m) => m.id)).toEqual(["c", "d"])
-    expect(tiles.tileCount).toBe(7)
-  })
-})
 
 describe("report list helpers", () => {
   it("picks the first ready image, never a video or an unready photo", () => {

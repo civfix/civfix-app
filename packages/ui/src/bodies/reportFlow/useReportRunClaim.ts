@@ -13,7 +13,10 @@ const REPORT_RUN_EXIT_HOST: ReportRunExitHost = {
   watchView: (onNavChange) => useNavStore.subscribe(onNavChange),
 }
 
-/** Claims the composer's pending report create while the run is live and releases it when the run ends. */
+/**
+ * The claim binds the composer's pending create to one live run, so an abandoned run cannot route a later
+ * report into the composer.
+ */
 export function useReportRunClaim(runActive: boolean): void {
   const runSurvives = useNavStore((s) => reportRunSurvivesView(s.view))
 

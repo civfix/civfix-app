@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
-import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/shared"
 import { isVerifiedEventAddress } from "@civfix/shared"
 import { eventWhenLabel } from "@civfix/shared/datetime"
 import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
@@ -30,7 +30,6 @@ import {
   useNow,
   NOW_TICK_MS,
   useProfile,
-  useReportContent,
 } from "../data"
 import {
   cleanupHostStanding,
@@ -58,6 +57,7 @@ import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
 import { generalSlotBoard } from "./eventSlotsModel"
+import { useContentReportSheet } from "./useContentReportSheet"
 import { eventStatusLine, type EventStatusLine } from "./eventDetailModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
@@ -184,37 +184,15 @@ function useEventMapFocus(cleanup: CleanupDTO) {
 function useEventReportSheet(cleanupId: string, next: string) {
   const { t } = useT("event-detail")
   const requireAuth = useRequireAuth()
-  const toast = useToast()
-  const reportContent = useReportContent()
-  const [reporting, setReporting] = useState(false)
+  const sheet = useContentReportSheet({ submittedToast: t("report_sheet.success_toast") })
+  const { open } = sheet
   const onReport = useCallback(() => {
     requireAuth(
-      () => {
-        reportContent.reset()
-        setReporting(true)
-      },
+      () => open({ subjectType: "event", subjectId: cleanupId, label: t("report_sheet.subject") }),
       { next },
     )
-  }, [requireAuth, reportContent, next])
-  const closeReport = useCallback(() => {
-    if (reportContent.isPending) return
-    setReporting(false)
-  }, [reportContent.isPending])
-  const onSubmitReport = useCallback(
-    (reason: ContentReportReason, details?: string) => {
-      reportContent.mutate(
-        { subjectType: "event", subjectId: cleanupId, reason, ...(details ? { details } : {}) },
-        {
-          onSuccess: () => {
-            setReporting(false)
-            toast.show(t("report_sheet.success_toast"), { variant: "success" })
-          },
-        },
-      )
-    },
-    [reportContent, cleanupId, toast, t],
-  )
-  return { reporting, reportContent, onReport, closeReport, onSubmitReport }
+  }, [requireAuth, open, cleanupId, t, next])
+  return { ...sheet, onReport }
 }
 
 function EventDetailHeader({
@@ -692,12 +670,12 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       ) : null}
 
       <ReportContentSheet
-        visible={report.reporting}
+        visible={report.target !== null}
         subjectLabel={t("report_sheet.subject")}
-        pending={report.reportContent.isPending}
-        error={report.reportContent.isError ? t("report_sheet.submit_error") : null}
-        onSubmit={report.onSubmitReport}
-        onClose={report.closeReport}
+        pending={report.pending}
+        error={report.failed ? t("report_sheet.submit_error") : null}
+        onSubmit={report.submit}
+        onClose={report.close}
       />
 
       <GuestRsvpSheet

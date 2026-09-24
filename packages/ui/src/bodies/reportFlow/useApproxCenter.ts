@@ -4,24 +4,7 @@ import type { ApiClient } from "@civfix/shared/client"
 import { type LatLng } from "@civfix/shared/geocode"
 import { useApi, fetchApproximateLocation, queryKeys } from "../../data"
 import { useGeolocation } from "../../capabilities"
-
-const DEVICE_FIX_TIMEOUT_MS = 4000
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  return new Promise((settle) => {
-    const timer = setTimeout(() => settle(null), ms)
-    promise.then(
-      (value) => {
-        clearTimeout(timer)
-        settle(value)
-      },
-      () => {
-        clearTimeout(timer)
-        settle(null)
-      },
-    )
-  })
-}
+import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "../../data/deviceFix"
 
 async function resolveApproxCenter(
   geo: ReturnType<typeof useGeolocation>,
@@ -35,14 +18,14 @@ async function resolveApproxCenter(
   return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
 }
 
-// `refreshIfNull` is the picker being open: a session-cached null (denied, or offline) is resolved again
-// then, so a permission granted since can place the map. A cached point is never re-resolved or replaced.
 export interface ApproxCenter {
   center: LatLng | null
   /** The current resolution attempt finished without a point; the pickers then ask for an address. */
   settled: boolean
 }
 
+// `refreshIfNull` is the picker being open: a session-cached null (denied, or offline) is resolved again
+// then, so a permission granted since can place the map. A cached point is never re-resolved or replaced.
 export function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {
   const geo = useGeolocation()
   const api = useApi()

@@ -14,6 +14,7 @@ import {
   FOCUS_RING_WIDTH,
   focusRingProps,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   space,
   wash,
   useTheme,
@@ -28,7 +29,7 @@ import { useT } from "../../i18n"
 import { threadRowActions, unreadBadgeLabel, type ThreadRowActionKey } from "../messagesListModel"
 import { useRowHover } from "../rowHover"
 import { useTickingListTimeAgo } from "../useListTimeAgo"
-import { IS_WEB, MIN_TOUCH_TARGET, ROW_AVATAR, ROW_GAP, ROW_GUTTER } from "./inboxLayout"
+import { IS_WEB, ROW_AVATAR, ROW_GAP, ROW_GUTTER } from "./inboxLayout"
 
 type TFn = ReturnType<typeof useT>["t"]
 

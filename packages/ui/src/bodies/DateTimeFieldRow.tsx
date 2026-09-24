@@ -10,8 +10,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
 import type { DateFieldRowProps, TimeFieldRowProps } from "./InlineDateTimePicker.types"
-
-const ROW_HEIGHT = 52
+import { FORM_CONTROL_HEIGHT } from "./eventFormParts"
 
 export interface DateTimeFieldRowProps {
   icon: LucideIcon
@@ -139,7 +138,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.md,
     borderWidth: 1.5,
     borderColor: t.colors.border,
-    minHeight: ROW_HEIGHT,
+    minHeight: FORM_CONTROL_HEIGHT,
     paddingHorizontal: t.space["4"],
   },
   fieldRowHovered: {

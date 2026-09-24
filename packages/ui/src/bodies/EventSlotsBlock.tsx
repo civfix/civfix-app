@@ -72,7 +72,6 @@ export interface EventSlotsBlockProps {
   onViewAll: () => void
 }
 
-/** The one-line strip above the rows: what the viewer holds, or what to do next. */
 function ViewerStrip({
   viewerState,
   heldSlot,

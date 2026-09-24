@@ -469,11 +469,15 @@ function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStanda
  * The wizard's position. An edit started from the review summary returns to review on both Next and Back
  * instead of walking the steps in between.
  */
-function useEventWizard(
-  form: CleanupFormValue,
-  initial: CleanupFormValue,
-  standalone: CreateCleanupStandaloneHost | undefined,
-) {
+function useEventWizard({
+  form,
+  initial,
+  standalone,
+}: {
+  form: CleanupFormValue
+  initial: CleanupFormValue
+  standalone: CreateCleanupStandaloneHost | undefined
+}) {
   const { t } = useT("event-create")
   const haptics = useHaptics()
   const [step, setStep] = useState<EventWizardStep>(() => firstIncompleteEventStep(wizardDraftOf(initial)))
@@ -663,7 +667,7 @@ function HostForm({
   const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
 
   const { create, submitError, canPublish, onPublish } = usePublishEvent(form, standalone)
-  const wizard = useEventWizard(form, mountPlan.value, standalone)
+  const wizard = useEventWizard({ form, initial: mountPlan.value, standalone })
   const { step, stepIndex, isReview } = wizard
 
   const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)

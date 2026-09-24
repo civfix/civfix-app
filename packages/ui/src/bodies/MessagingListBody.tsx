@@ -3,7 +3,7 @@ import { View, Pressable, ActivityIndicator, RefreshControl, StyleSheet, Platfor
 import { TextInput } from "../primitives/TextInput"
 import type { MessageThreadDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset } from "../theme"
+import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap, Text, type IconName } from "../typography"
 import {
   EmptyState,
@@ -26,7 +26,7 @@ import { matchesThreadQuery } from "./messagesListModel"
 import { idKeyExtractor, openThread, openNewGroup, openNewChannel } from "./navHelpers"
 import { useCoarsePointer } from "../shell/useCoarsePointer"
 import { ThreadRow } from "./inbox/ThreadRow"
-import { IS_WEB, MIN_TOUCH_TARGET, ROW_GUTTER, SEPARATOR_INSET } from "./inbox/inboxLayout"
+import { IS_WEB, ROW_GUTTER, SEPARATOR_INSET } from "./inbox/inboxLayout"
 
 const COMPOSE_MENU_ITEMS: ReadonlyArray<{ key: "message" | "group" | "channel"; icon: IconName; labelKey: string }> = [
   { key: "message", icon: "MessageCircle", labelKey: "new_menu.message" },

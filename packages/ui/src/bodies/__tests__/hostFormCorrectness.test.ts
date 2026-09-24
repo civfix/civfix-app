@@ -39,8 +39,10 @@ describe("a cover upload lands on the draft as it is when the upload finishes", 
   })
 
   it("commits the cover through the merge path on both hosts, never the render-time spread", () => {
-    expect(form).toContain("onPatch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
+    expect(form).toContain("useCoverUpload({ mergeIntoCurrent: onPatch, patchRendered: patch })")
+    expect(form).toContain("mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
     expect(form).not.toContain("patch({ coverMediaId: uploaded.mediaId")
+    expect(form).not.toContain("patchRendered({ coverMediaId: uploaded.mediaId")
     expect(create).toContain("useCleanupDraft.getState().merge(partial)")
     expect(create.match(/onPatch=\{mergeIntoDraft\}/g) ?? []).toHaveLength(2)
     expect(edit).toContain("setForm((prev) => ({ ...prev, ...partial }))")
