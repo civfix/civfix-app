@@ -14,7 +14,7 @@ import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { appErrorCode } from "../data/errorCode"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string
@@ -27,28 +27,23 @@ export interface DeleteAccountModalProps {
   onClose: () => void
 }
 
+const SEND_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "sendError.rateLimited",
+  [ErrorCode.VALIDATION]: "sendError.validation",
+}
+
+const DELETE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.UNAUTHORIZED]: "deleteError.unauthorized",
+  [ErrorCode.RATE_LIMITED]: "deleteError.rateLimited",
+  [ErrorCode.VALIDATION]: "deleteError.validation",
+}
+
 function sendErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "RATE_LIMITED":
-      return t("sendError.rateLimited")
-    case "VALIDATION":
-      return t("sendError.validation")
-    default:
-      return t("sendError.generic")
-  }
+  return t(errorCopyKey(err, SEND_ERROR_KEYS, "sendError.generic"))
 }
 
 function deleteErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "UNAUTHORIZED":
-      return t("deleteError.unauthorized")
-    case "RATE_LIMITED":
-      return t("deleteError.rateLimited")
-    case "VALIDATION":
-      return t("deleteError.validation")
-    default:
-      return t("deleteError.generic")
-  }
+  return t(errorCopyKey(err, DELETE_ERROR_KEYS, "deleteError.generic"))
 }
 
 export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountModalProps) {

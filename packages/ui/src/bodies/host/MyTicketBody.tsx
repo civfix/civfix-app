@@ -22,7 +22,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
 import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
 import { HostBodyState } from "./HostBodyState"
-import { appErrorCode } from "../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import {
   ticketPageIndex,
   ticketPageWidth,
@@ -129,7 +129,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
         },
         onError: (err) => {
           setConfirmingCancel(false)
-          setErrorText(appErrorCode(err) === "CONFLICT" ? t("outcome.closed") : t("error.generic"))
+          setErrorText(appErrorCode(err) === ErrorCode.CONFLICT ? t("outcome.closed") : t("error.generic"))
         },
       },
     )

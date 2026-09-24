@@ -1,3 +1,4 @@
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
 import type { LayoutMode } from "../theme"
 import type { DraftReport } from "./draftStore"
 
@@ -122,11 +123,11 @@ export function pickLayerVisible(
 }
 
 // These refusals come back identical however often the same draft is re-sent, so a bare retry loops.
-const DEFINITIVE_SUBMIT_CODES: ReadonlySet<string> = new Set([
-  "VALIDATION",
-  "GPS_IMPLAUSIBLE",
-  "MEDIA_REJECTED",
-  "NOT_ROUTABLE",
+const DEFINITIVE_SUBMIT_CODES: ReadonlySet<string> = new Set<string>([
+  ErrorCode.VALIDATION,
+  ErrorCode.GPS_IMPLAUSIBLE,
+  ErrorCode.MEDIA_REJECTED,
+  ErrorCode.NOT_ROUTABLE,
 ])
 
 const FIELD_STEPS: Readonly<Record<string, Step>> = {
@@ -142,10 +143,10 @@ const FIELD_STEPS: Readonly<Record<string, Step>> = {
   addr: "review",
 }
 
-const CODE_STEPS: Readonly<Record<string, Step>> = {
-  MEDIA_REJECTED: "capture",
-  GPS_IMPLAUSIBLE: "location",
-  NOT_ROUTABLE: "location",
+const CODE_STEPS: ErrorCodeTable<Step> = {
+  [ErrorCode.MEDIA_REJECTED]: "capture",
+  [ErrorCode.GPS_IMPLAUSIBLE]: "location",
+  [ErrorCode.NOT_ROUTABLE]: "location",
 }
 
 export interface SubmitRecovery {
@@ -160,9 +161,9 @@ export function submitErrorRecovery(
 ): SubmitRecovery {
   const fieldKeys = Object.keys(fields ?? {}).map((key) => key.split(".")[0] ?? key)
   const fieldStep = fieldKeys.map((key) => FIELD_STEPS[key]).find((s): s is Step => s !== undefined)
-  const wanted = fieldStep ?? (code !== undefined ? CODE_STEPS[code] : undefined) ?? "review"
+  const wanted = fieldStep ?? byErrorCode(code, CODE_STEPS, "review")
   const editStep = order.includes(wanted) ? wanted : "review"
-  const staleUploads = code === "VALIDATION" && fieldKeys.includes("mediaUploadIds")
+  const staleUploads = code === ErrorCode.VALIDATION && fieldKeys.includes("mediaUploadIds")
   const retryable = code === undefined || !DEFINITIVE_SUBMIT_CODES.has(code) || staleUploads
   return { retryable, editStep }
 }

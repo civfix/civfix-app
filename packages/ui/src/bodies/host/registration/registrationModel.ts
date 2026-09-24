@@ -1,4 +1,5 @@
-import type { CleanupDTO, RegistrationState, TicketTypeDTO } from "@civfix/shared"
+import type { CleanupDTO, ErrorCodeTable, RegistrationState, TicketTypeDTO } from "@civfix/shared"
+import { ErrorCode, byErrorCode } from "@civfix/shared"
 import { defaultTicketTypeId, ticketTypeSelectable } from "@civfix/shared/host"
 
 export type RegistrationSurface =
@@ -53,10 +54,13 @@ export function resolveTicketTypeId(
   return defaultTicketTypeId(types)
 }
 
+const REGISTER_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.CONFLICT]: "outcome.closed",
+  [ErrorCode.FORBIDDEN]: "outcome.banned",
+  [ErrorCode.RATE_LIMITED]: "error.rate_limited",
+  [ErrorCode.NOT_FOUND]: "outcome.not_found",
+}
+
 export function registerErrorKey(code: string | undefined): string {
-  if (code === "CONFLICT") return "outcome.closed"
-  if (code === "FORBIDDEN") return "outcome.banned"
-  if (code === "RATE_LIMITED") return "error.rate_limited"
-  if (code === "NOT_FOUND") return "outcome.not_found"
-  return "error.generic"
+  return byErrorCode(code, REGISTER_ERROR_KEYS, "error.generic")
 }

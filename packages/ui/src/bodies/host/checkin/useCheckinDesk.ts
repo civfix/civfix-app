@@ -5,7 +5,7 @@ import { useToast } from "../../../primitives"
 import { presentScanner } from "../../../primitives/scannerPresenter"
 import { useHaptics } from "../../../capabilities"
 import { useScanEventTicket, useUndoEventCheckIn } from "../../../data/hooks/host"
-import { appErrorCode } from "../../../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { useT } from "../../../i18n"
 import { useCheckinOutbox } from "../useCheckinOutbox"
 
@@ -42,7 +42,7 @@ export function useCheckinDesk(id: string) {
           },
           onError: (err) => {
             const codeName = appErrorCode(err)
-            if (codeName === undefined || codeName === "INTERNAL" || codeName === "RATE_LIMITED") {
+            if (codeName === undefined || codeName === ErrorCode.INTERNAL || codeName === ErrorCode.RATE_LIMITED) {
               outbox.queue({ method: "scan", token })
               setCode("")
               toast.show(t("outbox.queued"), { variant: "info" })

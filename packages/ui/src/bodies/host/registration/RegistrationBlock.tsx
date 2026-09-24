@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import { ACCESS_CODE_MAX } from "@civfix/shared"
+import { ACCESS_CODE_MAX, appErrorCode } from "@civfix/shared"
 import {
   answerPayload,
   clampPartySize,
@@ -33,7 +33,6 @@ import {
 } from "../../../data/hooks/host"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
-import { appErrorCode } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"

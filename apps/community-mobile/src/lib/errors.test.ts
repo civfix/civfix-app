@@ -1,8 +1,8 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode, isAppErrorLike } from "@civfix/shared"
 import { parseError } from "@civfix/shared/client"
-import { codeRejectionReason, isAppError, isConflict, isRetryableError } from "./errors.ts"
+import { codeRejectionReason, friendlyError, isConflict, isRetryableError } from "./errors.ts"
 
 function crossRealmAppError(code: string, message = "cross-realm"): unknown {
   const err = new Error(message)
@@ -24,14 +24,14 @@ test("the api client's REAL AppError is not instanceof the root one - instanceof
   assert.equal((thrown as Error).name, "AppError")
   assert.equal((thrown as AppError).code, ErrorCode.UNAUTHORIZED)
   assert.equal(thrown instanceof AppError, false)
-  assert.equal(isAppError(thrown), true)
+  assert.equal(isAppErrorLike(thrown), true)
   assert.equal(isRetryableError(thrown), false)
 })
 
 test("the hand-built cross-realm stand-in matches the real one's brand", () => {
   const foreign = crossRealmAppError(ErrorCode.UNAUTHORIZED)
   assert.equal(foreign instanceof AppError, false)
-  assert.equal(isAppError(foreign), true)
+  assert.equal(isAppErrorLike(foreign), true)
 })
 
 test("a real AppError with a terminal code is never retried", () => {
@@ -104,7 +104,7 @@ test("nothing else is a conflict - a 401 or a transport failure must stay retrya
 test("an AppError-shaped object with a non-string code is not treated as an AppError", () => {
   const err = new Error("x")
   err.name = "AppError"
-  assert.equal(isAppError(Object.assign(err, { code: 401 })), false)
+  assert.equal(isAppErrorLike(Object.assign(err, { code: 401 })), false)
   assert.equal(isRetryableError(Object.assign(err, { code: 401 })), true)
 })
 
@@ -129,4 +129,11 @@ test("any other code failure reads as its localized code copy, and a transport f
     "<mobile-errors:code.INTERNAL>",
   )
   assert.equal(codeRejectionReason(echoT, new TypeError("Network request failed"), "rejected"), "<mobile-errors:generic>")
+})
+
+test("a code the app has copy for reads as that copy; any other failure reads as the generic line", () => {
+  assert.equal(friendlyError(echoT, new AppError(ErrorCode.RATE_LIMITED, "raw")), "<mobile-errors:code.RATE_LIMITED>")
+  assert.equal(friendlyError(echoT, crossRealmAppError(ErrorCode.FORBIDDEN)), "<mobile-errors:code.FORBIDDEN>")
+  assert.equal(friendlyError(echoT, new AppError(ErrorCode.NOT_ROUTABLE, "raw")), "<mobile-errors:generic>")
+  assert.equal(friendlyError(echoT, new TypeError("Network request failed")), "<mobile-errors:generic>")
 })

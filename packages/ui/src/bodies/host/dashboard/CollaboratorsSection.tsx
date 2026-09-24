@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { DELETED_USER_LABEL } from "@civfix/shared"
+import { DELETED_USER_LABEL, appErrorCode } from "@civfix/shared"
 import {
   MIN_TOUCH_TARGET,
   focusRingProps,
@@ -38,7 +38,6 @@ import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
-import { appErrorCode } from "../../../data/errorCode"
 import { lastAdminSeat } from "../orgManageModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {

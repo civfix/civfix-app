@@ -9,7 +9,7 @@ import { useDuplicateCleanup } from "../../../data/hooks/cleanups"
 import { InlineDateTimePicker } from "../../InlineDateTimePicker"
 import { TimezoneField } from "../../TimezoneField"
 import { formInstantMs, mergeDateTime, wallClockToFormDate } from "../../calendarModel"
-import { appErrorCode } from "../../../data/errorCode"
+import { appErrorCode } from "@civfix/shared"
 import { duplicateErrorKey, duplicateReady, nextDuplicateStart } from "./dashboardModel"
 
 export interface DuplicateEventSheetProps {

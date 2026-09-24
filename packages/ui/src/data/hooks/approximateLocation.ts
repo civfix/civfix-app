@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import type { GetApproximateLocationResponse } from "@civfix/shared"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
@@ -18,7 +18,8 @@ const PERMANENT: readonly ErrorCode[] = [
 
 export function approximateLocationShouldRetry(failureCount: number, error: unknown): boolean {
   if (failureCount >= APPROXIMATE_LOCATION_RETRY_LIMIT) return false
-  if (error instanceof AppError && PERMANENT.includes(error.code)) return false
+  const code = appErrorCode(error)
+  if (code !== undefined && PERMANENT.includes(code)) return false
   return true
 }
 

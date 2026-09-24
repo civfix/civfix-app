@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { ReportType as SharedReportType } from "@civfix/shared"
 import { useNavStore } from "../../nav"
-import { appErrorCode, appErrorFields } from "../../data/errorCode"
+import { appErrorCode, appErrorFields } from "@civfix/shared"
 import { useHaptics } from "../../capabilities"
 import { useDraftReportStore } from "../../report/draftStore"
 import {

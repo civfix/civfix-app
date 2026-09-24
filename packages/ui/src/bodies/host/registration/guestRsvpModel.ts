@@ -1,8 +1,11 @@
 import {
+  ErrorCode,
   GUEST_OTP_ERROR_FIELD,
   GUEST_RSVP_TURNSTILE_ACTION,
   GuestOtpErrorReason,
   MAX_GUEST_NAME,
+  byErrorCode,
+  type ErrorCodeTable,
   type EventQuestionDTO,
   type GuestContactChannel,
   type TicketTypeDTO,
@@ -99,17 +102,20 @@ export function canSubmitGuestForm(form: GuestRsvpFormState, pending: boolean): 
   return guestNameValue(form.name) !== null && guestContactPayload(form) !== null
 }
 
+const GUEST_REQUEST_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "error.rate_limited",
+  [ErrorCode.TURNSTILE_FAILED]: "error.turnstile",
+  [ErrorCode.VALIDATION]: "error.invalid_contact",
+  [ErrorCode.NOT_FOUND]: "error.event_gone",
+  [ErrorCode.CONFLICT]: "error.closed",
+}
+
 export function guestRequestErrorKey(
   code: string | undefined,
   fields?: Record<string, string> | undefined,
 ): string {
   if (isEventEndedRefusal(fields)) return "error.ended"
-  if (code === "RATE_LIMITED") return "error.rate_limited"
-  if (code === "TURNSTILE_FAILED") return "error.turnstile"
-  if (code === "VALIDATION") return "error.invalid_contact"
-  if (code === "NOT_FOUND") return "error.event_gone"
-  if (code === "CONFLICT") return "error.closed"
-  return "error.generic"
+  return byErrorCode(code, GUEST_REQUEST_ERROR_KEYS, "error.generic")
 }
 
 function guestOtpErrorReason(fields: Record<string, string> | undefined): string | undefined {
@@ -118,6 +124,13 @@ function guestOtpErrorReason(fields: Record<string, string> | undefined): string
 
 function namesChannel(fields: Record<string, string> | undefined): boolean {
   return fields !== undefined && Object.prototype.hasOwnProperty.call(fields, "channel")
+}
+
+const GUEST_VERIFY_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.VALIDATION]: "error.bad_code",
+  [ErrorCode.NOT_FOUND]: "error.event_gone",
+  [ErrorCode.RATE_LIMITED]: "error.rate_limited",
+  [ErrorCode.CONFLICT]: "error.closed",
 }
 
 export function guestVerifyErrorKey(
@@ -129,11 +142,7 @@ export function guestVerifyErrorKey(
   if (reason === GuestOtpErrorReason.attemptsExhausted) return "error.attempts_exhausted"
   if (reason === GuestOtpErrorReason.invalidCode) return "error.bad_code"
   if (reason === GuestOtpErrorReason.lockedOut) return "error.rate_limited"
-  if (code === "VALIDATION") return "error.bad_code"
-  if (code === "NOT_FOUND") return "error.event_gone"
-  if (code === "RATE_LIMITED") return "error.rate_limited"
-  if (code === "CONFLICT") return "error.closed"
-  return "error.generic"
+  return byErrorCode(code, GUEST_VERIFY_ERROR_KEYS, "error.generic")
 }
 
 export function guestAttemptsExhausted(fields: Record<string, string> | undefined): boolean {

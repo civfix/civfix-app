@@ -26,11 +26,3 @@ export function pendingCount(invites: readonly { status: string }[]): number {
 export function hasActions(actions: RosterMemberActions<unknown>): boolean {
   return actions.roles.length > 0 || actions.canRemove
 }
-
-export function errorKeyFor(
-  keys: ReadonlyMap<string, string>,
-  code: string | undefined,
-  fallback: string,
-): string {
-  return (code === undefined ? undefined : keys.get(code)) ?? fallback
-}

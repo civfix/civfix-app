@@ -21,4 +21,10 @@ describe("approximateLocationShouldRetry", () => {
   it("never retries a permanent failure", () => {
     expect(approximateLocationShouldRetry(0, new AppError(ErrorCode.NOT_FOUND, "no fix"))).toBe(false)
   })
+
+  it("never retries a permanent failure thrown by the api client's own AppError copy", () => {
+    const fromClient = Object.assign(new Error("no fix"), { name: "AppError", code: ErrorCode.NOT_FOUND })
+    expect(fromClient).not.toBeInstanceOf(AppError)
+    expect(approximateLocationShouldRetry(0, fromClient)).toBe(false)
+  })
 })

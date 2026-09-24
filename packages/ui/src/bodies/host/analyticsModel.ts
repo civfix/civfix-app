@@ -9,7 +9,7 @@ import type {
 } from "@civfix/shared"
 import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
 import { visibleValue } from "@civfix/shared/host"
-import { hostedEventCan } from "./dashboard/dashboardModel"
+import { hasHostCapability } from "../../data/hooks/host"
 import { DAY_MS } from "../timeUnits"
 import { dedupeById } from "../../primitives/listKeys"
 
@@ -130,7 +130,7 @@ export function pickerOptions(
   upcoming: readonly HostedEventDTO[],
   past: readonly HostedEventDTO[],
 ): AnalyticsPickerOption[] {
-  return [...dedupeById([...upcoming, ...past].filter((event) => hostedEventCan(event, "view_analytics")))]
+  return [...dedupeById([...upcoming, ...past].filter((event) => hasHostCapability(event, "view_analytics")))]
     .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
     .map((event) => ({ id: event.id, title: event.title }))
 }

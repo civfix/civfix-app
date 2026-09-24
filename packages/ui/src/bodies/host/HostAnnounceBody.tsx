@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
-import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE } from "@civfix/shared"
+import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE, appErrorCode } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import {
   focusRingProps,
@@ -25,7 +25,6 @@ import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { appErrorCode } from "../../data/errorCode"
 import { HostBodyState } from "./HostBodyState"
 import {
   AUDIENCE_ICONS,

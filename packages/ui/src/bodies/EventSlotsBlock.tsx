@@ -17,6 +17,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View, LayoutAnimation, Platform } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { AttendeeDTO, EventSlotDTO } from "@civfix/shared"
+import { ErrorCode, appErrorCode, appErrorFields } from "@civfix/shared"
 import { headingLevel, makeThemedStyles, useTheme, useReducedMotion } from "../theme"
 import { Text, Icon, iconMap, TextLink } from "../typography"
 import { MetaDot, useToast } from "../primitives"
@@ -29,7 +30,6 @@ import {
   useRequireAuth,
 } from "../data"
 import { useLocale, useT } from "../i18n"
-import { appErrorCode, appErrorFields } from "../data/errorCode"
 import { claimantsBySlot, groupRosterBySlot } from "./rosterSlotGroups"
 import { slotPeopleView } from "./slotPeopleVisibility"
 import {
@@ -179,7 +179,7 @@ export function EventSlotsBlock({
       // A 409 means the server's board moved under this tap - the last spot went, or the event ended.
       // Re-read the event under EVERY key the detail may render as (the page can be cached by refcode
       // when opened from a share link) so the counts and this block's readonly state catch up.
-      if (code === "CONFLICT") void qc.invalidateQueries(cleanupDetailFilters(cleanupId))
+      if (code === ErrorCode.CONFLICT) void qc.invalidateQueries(cleanupDetailFilters(cleanupId))
     },
     [cleanupId, qc, t, toast],
   )

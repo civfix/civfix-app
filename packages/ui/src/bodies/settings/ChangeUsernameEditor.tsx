@@ -1,10 +1,9 @@
 import React from "react"
-import { isValidHandle } from "@civfix/shared"
+import { ErrorCode, errorCopyKey, isValidHandle, type ErrorCodeTable } from "@civfix/shared"
 import { Text } from "../../typography"
 import { SettingsRow, TextField } from "../../primitives"
 import { useHandleAvailability } from "../../data"
 import { useLocale, useT } from "../../i18n"
-import { appErrorCode } from "../../data/errorCode"
 import { dayLabel, todayKey, type DayLabelOptions } from "../relativeTime"
 import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
@@ -14,17 +13,14 @@ type Translate = (key: string, options?: Record<string, unknown>) => string
 
 const HANDLE_MAX_LENGTH = 20
 
+const HANDLE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "handle.error.rate_limited",
+  [ErrorCode.CONFLICT]: "handle.error.taken",
+  [ErrorCode.VALIDATION]: "handle.error.not_allowed",
+}
+
 function changeHandleErrorMessage(err: unknown, t: Translate): string {
-  switch (appErrorCode(err)) {
-    case "RATE_LIMITED":
-      return t("handle.error.rate_limited")
-    case "CONFLICT":
-      return t("handle.error.taken")
-    case "VALIDATION":
-      return t("handle.error.not_allowed")
-    default:
-      return t("handle.error.generic")
-  }
+  return t(errorCopyKey(err, HANDLE_ERROR_KEYS, "handle.error.generic"))
 }
 
 export interface ChangeUsernameEditorProps {

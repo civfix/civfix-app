@@ -1,8 +1,15 @@
-import { AppError, ErrorCode } from "@civfix/shared"
+import {
+  ERROR_HTTP_STATUS,
+  ErrorCode,
+  appErrorCode,
+  errorCopyKey,
+  isAppErrorLike,
+  type ErrorCodeTable,
+} from "@civfix/shared"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
-const KNOWN_CODES: ReadonlySet<string> = new Set<string>([
+const LOCALIZED_CODES: readonly ErrorCode[] = [
   ErrorCode.UNAUTHORIZED,
   ErrorCode.FORBIDDEN,
   ErrorCode.NOT_FOUND,
@@ -14,24 +21,14 @@ const KNOWN_CODES: ReadonlySet<string> = new Set<string>([
   ErrorCode.CONFLICT,
   ErrorCode.TURNSTILE_FAILED,
   ErrorCode.INTERNAL,
-])
+]
 
-export function isAppError(err: unknown): err is AppError {
-  if (err instanceof AppError) return true
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    (err as { name?: unknown }).name === "AppError" &&
-    typeof (err as { code?: unknown }).code === "string" &&
-    typeof (err as { message?: unknown }).message === "string"
-  )
-}
+const ERROR_COPY_KEYS: ErrorCodeTable<string> = Object.fromEntries(
+  LOCALIZED_CODES.map((code) => [code, `mobile-errors:code.${code}`]),
+)
 
 export function friendlyError(t: Translate, err: unknown): string {
-  if (isAppError(err) && KNOWN_CODES.has(err.code)) {
-    return t(`mobile-errors:code.${err.code}`)
-  }
-  return t("mobile-errors:generic")
+  return t(errorCopyKey(err, ERROR_COPY_KEYS, "mobile-errors:generic"))
 }
 
 function isNetworkError(err: unknown): boolean {
@@ -46,7 +43,7 @@ function isNetworkError(err: unknown): boolean {
 }
 
 export function oauthError(t: Translate, provider: "Apple" | "Google", err: unknown): string {
-  if (isAppError(err)) return friendlyError(t, err)
+  if (isAppErrorLike(err)) return friendlyError(t, err)
   if (isNetworkError(err)) return t("mobile-errors:generic")
   return t("mobile-errors:oauth_failed", { provider })
 }
@@ -61,16 +58,16 @@ export function codeRejectionReason(t: Translate, err: unknown, rejected: string
 }
 
 export function isUnauthorized(err: unknown): boolean {
-  return isAppError(err) && err.code === ErrorCode.UNAUTHORIZED
+  return appErrorCode(err) === ErrorCode.UNAUTHORIZED
 }
 
 export function isRateLimited(err: unknown): boolean {
-  return isAppError(err) && err.code === ErrorCode.RATE_LIMITED
+  return appErrorCode(err) === ErrorCode.RATE_LIMITED
 }
 
 export function isConflict(err: unknown): boolean {
-  if (!isAppError(err)) return false
-  return err.code === ErrorCode.CONFLICT || err.httpStatus === 409
+  if (!isAppErrorLike(err)) return false
+  return err.code === ErrorCode.CONFLICT || err.httpStatus === ERROR_HTTP_STATUS[ErrorCode.CONFLICT]
 }
 
 const NON_RETRYABLE_CODES: ReadonlySet<string> = new Set<string>([
@@ -81,5 +78,6 @@ const NON_RETRYABLE_CODES: ReadonlySet<string> = new Set<string>([
 ])
 
 export function isRetryableError(err: unknown): boolean {
-  return !(isAppError(err) && NON_RETRYABLE_CODES.has(err.code))
+  const code = appErrorCode(err)
+  return code === undefined || !NON_RETRYABLE_CODES.has(code)
 }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
-import { geocodePointKey } from "@civfix/shared"
+import { ErrorCode, errorCopyKey, geocodePointKey, type ErrorCodeTable } from "@civfix/shared"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { EmptyState, SignInPrompt } from "../primitives"
@@ -10,7 +10,6 @@ import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
 import { pathForEntry, useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT, viewerTimeZone } from "../i18n"
-import { appErrorCode } from "../data/errorCode"
 import {
   formEndInstantMs,
   formInstantMs,
@@ -31,18 +30,15 @@ import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
+const SAVE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.VALIDATION]: "save.error.validation",
+  [ErrorCode.RATE_LIMITED]: "save.error.rate_limited",
+  [ErrorCode.UNAUTHORIZED]: "save.error.forbidden",
+  [ErrorCode.FORBIDDEN]: "save.error.forbidden",
+}
+
 function saveErrorMessage(err: unknown, t: Translate): string {
-  switch (appErrorCode(err)) {
-    case "VALIDATION":
-      return t("save.error.validation")
-    case "RATE_LIMITED":
-      return t("save.error.rate_limited")
-    case "UNAUTHORIZED":
-    case "FORBIDDEN":
-      return t("save.error.forbidden")
-    default:
-      return t("save.error.generic")
-  }
+  return t(errorCopyKey(err, SAVE_ERROR_KEYS, "save.error.generic"))
 }
 
 function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {

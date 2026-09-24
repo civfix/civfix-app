@@ -8,7 +8,7 @@ import type {
   ReportCategory,
   ReportType,
 } from "@civfix/shared"
-import { appErrorCode } from "../data/errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { mergeDateTime } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
 import { buildOptimisticPost } from "./postComposerSubmit"
@@ -183,9 +183,9 @@ export function classifyFeedShareFailure(err: unknown): {
   retryable: boolean
 } {
   switch (appErrorCode(err)) {
-    case "VALIDATION":
+    case ErrorCode.VALIDATION:
       return { reason: "rejected", retryable: false }
-    case "RATE_LIMITED":
+    case ErrorCode.RATE_LIMITED:
       return { reason: "rate-limited", retryable: true }
     default:
       return { reason: "network", retryable: true }

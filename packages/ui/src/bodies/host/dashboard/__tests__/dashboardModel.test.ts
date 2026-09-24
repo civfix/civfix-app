@@ -19,7 +19,6 @@ import {
   duplicateReady,
   firstEventState,
   hostedEventActions,
-  hostedEventCan,
   hostedEventHasActions,
   hostedEventPhase,
   hostedEventStatus,
@@ -35,8 +34,8 @@ import {
   pastRowMeta,
   pendingOrgInvites,
   portfolioKpis,
-  sharePathFor,
 } from "../dashboardModel"
+import { hasHostCapability } from "../../../../data/hooks/host"
 
 const DAY_MS = 86_400_000
 
@@ -175,7 +174,7 @@ describe("event row actions", () => {
 
   it("prefers the server capability list over the legacy role fallback", () => {
     const event = hosted({ myRole: "organizer", myCapabilities: ["view_roster"] })
-    expect(hostedEventCan(event, "manage_event")).toBe(false)
+    expect(hasHostCapability(event, "manage_event")).toBe(false)
     expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
       chat: true,
@@ -700,12 +699,6 @@ describe("first event and past rows", () => {
     expect(source).toContain('tone: "muted" as const')
     expect(source).toContain("color: t.colors.textSubtle")
   })
-
-  it("shares the public page slug, then the reference code, then the id", () => {
-    expect(sharePathFor(row("a", { pageSlug: "ted-watkins" }))).toBe("/cleanups/ted-watkins")
-    expect(sharePathFor(row("b", { referenceCode: "CF-1234" }))).toBe("/cleanups/CF-1234")
-    expect(sharePathFor(row("c"))).toBe("/cleanups/c")
-  })
 })
 
 describe("portfolio surface", () => {
@@ -907,7 +900,7 @@ describe("portfolio surface", () => {
   it("keeps the staffing and shift lines audible by folding them into the card label", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toMatch(
-      /const cardLabel = \[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
+      /const cardLabel = joinParts\(\s*\[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
     )
     expect(card).toContain('t("next_up.waiting", { count: event.waitlistCount }) : null')
     expect(card).toContain('t("next_up.checked_in", { count: liveCheckedIn }) : null')
@@ -936,7 +929,7 @@ describe("portfolio surface", () => {
     expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onShare={onShare}")
-    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: cleanupSharePath(event) })")
   })
 
   it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {

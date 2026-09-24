@@ -26,7 +26,7 @@ import {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
 } from "../../../data"
-import { appErrorCode, appErrorFields } from "../../../data/errorCode"
+import { appErrorCode, appErrorFields } from "@civfix/shared"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"

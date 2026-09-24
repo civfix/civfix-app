@@ -1,4 +1,4 @@
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode, appErrorCode, appErrorFields } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import type { CreateReportRequest, ReportCategory, ReportType } from "@civfix/shared"
 import { useCallback } from "react"
@@ -22,7 +22,6 @@ import {
   type FeedShareTarget,
 } from "../bodies/feedShare"
 import { rememberLocalReportThumb } from "../bodies/localReportThumbs"
-import { appErrorCode, appErrorFields } from "../data/errorCode"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { useDraftReportStore } from "./draftStore"
 import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"

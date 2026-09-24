@@ -28,13 +28,13 @@ import { formatHoursDisplay } from "../../formatHours"
 import { PhaseDot } from "../PhaseHeader"
 import {
   hostedEventActions,
-  hostedEventCan,
   hostedEventHasActions,
   hostedEventStatus,
   hostedEventWhen,
   pastRowMeta,
   type HostedEventActions,
 } from "./dashboardModel"
+import { hasHostCapability } from "../../../data/hooks/host"
 
 const CLOSED = "closed"
 
@@ -160,7 +160,7 @@ export const HostedEventRow = memo(function HostedEventRow({
 
   const actions = hostedEventActions(event, now)
   const hasMenu = hostedEventHasActions(actions)
-  const canCheckIn = live && hostedEventCan(event, "check_in")
+  const canCheckIn = live && hasHostCapability(event, "check_in")
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
   const checkIn = useCallback(() => onCheckIn(event), [event, onCheckIn])

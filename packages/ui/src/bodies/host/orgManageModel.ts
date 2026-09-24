@@ -6,10 +6,13 @@ import type {
   UpdateOrganizationRequest,
 } from "@civfix/shared"
 import {
+  ErrorCode,
   SOCIAL_PLATFORMS,
   SafeHttpsLinkSchema,
   SocialLinksSchema,
   UpdateOrganizationRequestSchema,
+  byErrorCode,
+  type ErrorCodeTable,
 } from "@civfix/shared"
 
 const ORG_COUNTER_AT = 0.9
@@ -173,23 +176,29 @@ const ORG_LAST_ADMIN_FIELD = "userId"
 
 const ORG_LAST_ADMIN_REASON = "ORG_LAST_ADMIN"
 
+const ORG_MANAGE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.FORBIDDEN]: "manage.error_forbidden",
+  [ErrorCode.VALIDATION]: "manage.error_validation",
+  [ErrorCode.RATE_LIMITED]: "manage.error_rate_limited",
+}
+
 // The server refuses to empty the last admin seat as VALIDATION with the reason on `userId`; CONFLICT
 // means other things, such as a taken handle.
 export function orgManageErrorKey(
   code: string | undefined,
   fields?: Record<string, string>,
 ): string {
-  if (code === "VALIDATION" && fields?.[ORG_LAST_ADMIN_FIELD] === ORG_LAST_ADMIN_REASON) {
+  if (code === ErrorCode.VALIDATION && fields?.[ORG_LAST_ADMIN_FIELD] === ORG_LAST_ADMIN_REASON) {
     return "manage.error_last_admin"
   }
-  if (code === "FORBIDDEN") return "manage.error_forbidden"
-  if (code === "VALIDATION") return "manage.error_validation"
-  if (code === "RATE_LIMITED") return "manage.error_rate_limited"
-  return "manage.error_generic"
+  return byErrorCode(code, ORG_MANAGE_ERROR_KEYS, "manage.error_generic")
+}
+
+const ORG_LOGO_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.MEDIA_REJECTED]: "manage.logo_rejected",
+  [ErrorCode.RATE_LIMITED]: "manage.error_rate_limited",
 }
 
 export function orgLogoErrorKey(code: string | undefined): string {
-  if (code === "MEDIA_REJECTED") return "manage.logo_rejected"
-  if (code === "RATE_LIMITED") return "manage.error_rate_limited"
-  return "manage.logo_error"
+  return byErrorCode(code, ORG_LOGO_ERROR_KEYS, "manage.logo_error")
 }

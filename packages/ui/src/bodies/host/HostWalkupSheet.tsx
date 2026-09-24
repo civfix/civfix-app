@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
-import { MAX_ATTENDEE_NAME } from "@civfix/shared"
+import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/shared"
 import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Text } from "../../typography"
@@ -16,7 +16,6 @@ import {
 } from "../../primitives"
 import { useT } from "../../i18n"
 import { useWalkupRegistration } from "../../data/hooks/host"
-import { appErrorCode } from "../../data/errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
 import { PartySizeStepper } from "./registration/PartySizeStepper"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
@@ -79,7 +78,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           onClose()
         },
         onError: (err) =>
-          setErrorText(appErrorCode(err) === "FORBIDDEN" ? t("walkup.error_forbidden") : t("walkup.error")),
+          setErrorText(appErrorCode(err) === ErrorCode.FORBIDDEN ? t("walkup.error_forbidden") : t("walkup.error")),
       },
     )
   }, [canSubmit, onClose, partySize, selected, t, toast, trimmed, walkup])
