@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import type { DetailEntry } from "../../nav"
-import type { CleanupFormValue } from "../CleanupForm"
+import type { CleanupFormValue } from "../cleanupFormModel"
 import type { DraftReport } from "../../report/draftStore"
 import {
   applyHostSeedPoint,

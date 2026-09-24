@@ -7,6 +7,7 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 
 const detail = strip(read("../EventDetailBody.tsx"))
 const form = strip(read("../CleanupForm.tsx"))
+const formModel = strip(read("../cleanupFormModel.ts"))
 const create = strip(read("../CreateCleanupBody.tsx"))
 const edit = strip(read("../EditCleanupBody.tsx"))
 
@@ -61,8 +62,8 @@ describe("the cover picker rides the shared upload seam", () => {
   })
 
   it("keeps the uploaded id and the preview uri as two separate fields", () => {
-    expect(form).toContain("coverMediaId: string | null")
-    expect(form).toContain("coverPreviewUrl: string | null")
+    expect(formModel).toContain("coverMediaId: string | null")
+    expect(formModel).toContain("coverPreviewUrl: string | null")
     expect(form).toContain("onPatch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
     expect(form).toContain("patch({ coverMediaId: null, coverPreviewUrl: null })")
   })

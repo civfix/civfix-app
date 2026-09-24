@@ -4,7 +4,6 @@ import {
   EVENT_KIND_VALUES,
   MAX_EVENT_ADDRESS_LENGTH,
   MIN_EVENT_DURATION_MINUTES,
-  type EventAddressSource,
   type EventKind,
   type EventSlotDTO,
   type OrganizationRefDTO,
@@ -45,141 +44,40 @@ import { useCamera } from "../capabilities"
 import { appErrorCode } from "../data/errorCode"
 import { eventCoverErrorKey } from "./eventCoverModel"
 import { LocationPicker, PortraitMapPickStep, eventPinTarget } from "../map"
-import { useLocale, useT, viewerTimeZone } from "../i18n"
+import { useLocale, useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
 import { FeedShareBlock, FeedShareEventCard } from "./FeedShareBlock"
-import {
-  endOffsetMs,
-  endTimeAfter,
-  endTimeSelectable,
-  formInstantMs,
-  mergeDateTime,
-  scheduleFieldErrors,
-} from "./calendarModel"
+import { draftWhenLabel, scheduleFieldErrors } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { ReportLinkPicker } from "./ReportLinkPicker"
 import { linkBlockState } from "./linkReportsModel"
 import { TimezoneField } from "./TimezoneField"
-import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow, slotsAfterZoneChange } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
-  addSlotDraft,
-  claimedBySlotId,
-  hasNamedSlot,
-  makeSlotKey,
-  shiftSlotDrafts,
-  slotsValid,
-  type SlotDraft,
-  type SlotWindowBounds,
-} from "./eventSlotsForm"
+  cleanupFormWindow,
+  dateChangePatch,
+  startTimeChangePatch,
+  timezoneChangePatch,
+  type CleanupFormValue,
+} from "./cleanupFormModel"
 
 const COVER_RATIO = 16 / 9
 
-export interface CleanupFormValue {
-  organizationId: string | null
-  title: string
-  description: string
-  eventKind: EventKind
-  addrQuery: string
-  spot: string
-  address: string
-  addressSource: EventAddressSource | null
-  addressPointKey: string | null
-  coords: { lat: number; lng: number } | null
-  date: Date | null
-  time: Date | null
-  endTime: Date | null
-  timezone: string
-  bring: string[]
-  slots: SlotDraft[]
-  linkedReportIds: string[]
-  shareToFeed: boolean
-  feedCaption: string
-  coverMediaId: string | null
-  coverPreviewUrl: string | null
-}
+/** The create and update schemas' caps (`CreateCleanupRequest`), which export no named constant. */
+const EVENT_TITLE_MAX_LENGTH = 120
+const EVENT_DESCRIPTION_MAX_LENGTH = 2000
 
 export type CleanupFormSection = "basics" | "when" | "where" | "extras" | "share"
 
-export const ALL_CLEANUP_FORM_SECTIONS: readonly CleanupFormSection[] = [
+const ALL_CLEANUP_FORM_SECTIONS: readonly CleanupFormSection[] = [
   "basics",
   "when",
   "where",
   "extras",
   "share",
 ]
-
-export function emptyCleanupForm(
-  seedLinkedReportId?: string,
-  seedOrganizationId?: string,
-): CleanupFormValue {
-  return {
-    organizationId: seedOrganizationId ?? null,
-    title: "",
-    description: "",
-    eventKind: "cleanup",
-    addrQuery: "",
-    spot: "",
-    address: "",
-    addressSource: null,
-    addressPointKey: null,
-    coords: null,
-    date: null,
-    time: null,
-    endTime: null,
-    timezone: viewerTimeZone(),
-    bring: [],
-    slots: addSlotDraft([], makeSlotKey()),
-    linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
-    shareToFeed: true,
-    feedCaption: "",
-    coverMediaId: null,
-    coverPreviewUrl: null,
-  }
-}
-
-export { mergeDateTime } from "./calendarModel"
-
-export function cleanupFormWindow(value: CleanupFormValue): SlotWindowBounds | null {
-  return eventDraftWindow(value)
-}
-
-export function hasValidEventEnd(value: CleanupFormValue): boolean {
-  if (!value.date || !value.time || !value.endTime) return false
-  return endTimeSelectable(
-    value.date,
-    value.time,
-    value.endTime.getHours(),
-    value.endTime.getMinutes(),
-    value.timezone,
-  )
-}
-
-/**
- * The >=1 named sign-up slot floor is unconditional: every event needs a board, the edit route is only
- * ever offered for an event that has not ended, and the server refuses a slot change afterwards anyway.
- */
-export function isCleanupFormComplete(
-  value: CleanupFormValue,
-  existingSlots?: readonly EventSlotDTO[],
-): boolean {
-  return (
-    value.title.trim().length > 0 &&
-    value.coords !== null &&
-    isEventAddressComplete(value.address) &&
-    value.date !== null &&
-    value.time !== null &&
-    hasValidEventEnd(value) &&
-    hasNamedSlot(value.slots) &&
-    slotsValid(
-      value.slots,
-      existingSlots ? claimedBySlotId(existingSlots) : undefined,
-      cleanupFormWindow(value),
-    )
-  )
-}
 
 const PREVIEW_ORGANIZER: PersonDTO = {
   id: "draft",
@@ -424,52 +322,14 @@ function MeetAddressField({
   )
 }
 
-export function CleanupForm({
-  value,
-  onChange,
-  onPatch,
-  initialCenter,
-  centerSettled,
-  existingSlots,
-  eventEndUnsaved = false,
-  scheduleUnchanged = false,
-  sections = ALL_CLEANUP_FORM_SECTIONS,
-  showFeedShare = false,
-  feedShareBusy = false,
-  currentOrganization,
-  onRequestFeedShareReveal,
-}: {
-  value: CleanupFormValue
-  onChange: (next: CleanupFormValue) => void
-  /** Merges into the host's CURRENT value; for writes that land after an await. */
-  onPatch: (partial: Partial<CleanupFormValue>) => void
-  initialCenter?: LatLng | null
-  /** The host's centre resolution finished with no point, so the pickers offer address search instead of waiting. */
-  centerSettled?: boolean
-  existingSlots?: readonly EventSlotDTO[]
-  eventEndUnsaved?: boolean
-  scheduleUnchanged?: boolean
-  currentOrganization?: OrganizationRefDTO | null
-  sections?: readonly CleanupFormSection[]
-  showFeedShare?: boolean
-  feedShareBusy?: boolean
-  onRequestFeedShareReveal?: (y: number) => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("event-form")
-  const { t: tCreate } = useT("event-create")
-  const { locale } = useLocale()
+type FormPatch = (partial: Partial<CleanupFormValue>) => void
 
-  const layoutMode = useLayoutMode()
-  const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
-  const compact = layoutMode === "compact"
-
-  const patch = useCallback(
-    (partial: Partial<CleanupFormValue>) => onChange({ ...value, ...partial }),
-    [onChange, value],
-  )
-
+/**
+ * The cover picker's upload. It writes through `onPatch` (a merge into the host's CURRENT value), never
+ * the render-time `patch`: the upload lands after an await, and a spread of the value captured before it
+ * would drop everything typed meanwhile.
+ */
+function useCoverUpload(onPatch: FormPatch, patch: FormPatch) {
   const api = useApi()
   const camera = useCamera()
   const [coverUploading, setCoverUploading] = useState(false)
@@ -502,74 +362,20 @@ export function CleanupForm({
     patch({ coverMediaId: null, coverPreviewUrl: null })
   }, [patch])
 
-  const onChangeDate = useCallback(
-    (date: Date) => {
-      const before =
-        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
-      const time = value.time ? mergeDateTime(date, value.time) : value.time
-      const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
-      const after = time ? formInstantMs(date, time, value.timezone) : null
-      patch({
-        date,
-        time,
-        endTime,
-        ...(before !== null && after !== null && before !== after
-          ? { slots: shiftSlotDrafts(value.slots, after - before) }
-          : {}),
-      })
-    },
-    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
-  )
+  return { coverUploading, coverErrorKey, onPickCover, onRemoveCover }
+}
 
-  const onChangeStartTime = useCallback(
-    (time: Date) => {
-      const before =
-        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
-      const after = value.date ? formInstantMs(value.date, time, value.timezone) : null
-      const offset =
-        value.time && value.endTime
-          ? endOffsetMs(value.time, value.endTime)
-          : DEFAULT_WIZARD_DURATION_MS
-      const endTime = endTimeAfter(time, time, offset)
-      patch({
-        time,
-        endTime,
-        ...(before !== null && after !== null && before !== after
-          ? { slots: shiftSlotDrafts(value.slots, after - before) }
-          : {}),
-      })
-    },
-    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
-  )
+type CoverUpload = ReturnType<typeof useCoverUpload>
 
-  const onChangeTimezone = useCallback(
-    (timezone: string) => {
-      patch({
-        timezone,
-        slots: slotsAfterZoneChange(value.slots, value.date, value.time, value.timezone, timezone),
-      })
-    },
-    [patch, value.date, value.slots, value.time, value.timezone],
-  )
-
-  const onPickPlace = useCallback(
-    (place: AddressPick) => patch({ coords: { lat: place.lat, lng: place.lng } }),
-    [patch],
-  )
-
-  const onDropPin = useCallback(
-    (lat: number, lng: number) => patch({ coords: { lat, lng } }),
-    [patch],
-  )
-
-  const onChangeKind = useCallback(
-    (eventKind: EventKind) => patch({ eventKind }),
-    [patch],
-  )
-
-  const isCleanup = value.eventKind === "cleanup"
-  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
-
+/**
+ * The organizations the viewer can host as, plus the event's current one when editing. Runs on every step,
+ * not only where the chips render, so a selection the viewer lost is cleared from the draft they submit.
+ */
+function useHostOrganizations(
+  value: CleanupFormValue,
+  onChange: (next: CleanupFormValue) => void,
+  currentOrganization: OrganizationRefDTO | null | undefined,
+) {
   const myOrgs = useMyOrganizations()
   const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
     const rows: AuthorAsOption[] = (actableOrganizations(myOrgs.data) ?? []).map((org) => ({
@@ -599,20 +405,194 @@ export function CleanupForm({
     commitForm.current({ ...latestForm.current, organizationId: null })
   }, [value.organizationId, hostOrganizationId])
 
-  const eventPreview = useMemo(() => {
-    const ref = buildEventPreviewCard(value, PREVIEW_ORGANIZER)
-    if (!ref) return null
-    return {
-      title: ref.title,
-      whenLabel: new Date(ref.scheduledAt).toLocaleString(locale, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      }),
-    }
-  }, [value, locale])
+  return { hostOrganizations, hostOrganizationId }
+}
+
+function CoverField({ value, cover }: { value: CleanupFormValue; cover: CoverUpload }) {
+  const styles = useStyles()
+  const { t } = useT("event-form")
+  const { coverUploading, coverErrorKey, onPickCover, onRemoveCover } = cover
+  return (
+    <View style={styles.fieldBlock}>
+      <Text style={styles.fieldLabel}>{t("cover.label")}</Text>
+      <Text style={styles.coverHint}>{t("cover.hint")}</Text>
+      {value.coverPreviewUrl ? (
+        <View style={styles.coverFrame}>
+          <Image
+            source={{ uri: value.coverPreviewUrl }}
+            style={styles.coverImage}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
+        </View>
+      ) : null}
+      <View style={styles.coverActions}>
+        <SecondaryButton
+          size="sm"
+          label={
+            coverUploading
+              ? t("cover.uploading")
+              : value.coverPreviewUrl
+                ? t("cover.replace")
+                : t("cover.add")
+          }
+          onPress={onPickCover}
+          disabled={coverUploading}
+        />
+        {value.coverPreviewUrl ? (
+          <Pressable
+            onPress={onRemoveCover}
+            disabled={coverUploading}
+            accessibilityRole="button"
+            accessibilityLabel={t("cover.remove")}
+            {...focusRingProps}
+            style={(state) => [
+              styles.coverGhost,
+              webCursorPointer,
+              state.pressed ? styles.coverGhostPressed : null,
+            ]}
+          >
+            <Text style={styles.coverGhostText}>{t("cover.remove")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {coverErrorKey ? <Text style={styles.coverError}>{t(coverErrorKey)}</Text> : null}
+    </View>
+  )
+}
+
+function BasicsSection({
+  value,
+  patch,
+  hostOrganizations,
+  hostOrganizationId,
+  cover,
+}: {
+  value: CleanupFormValue
+  patch: FormPatch
+  hostOrganizations: AuthorAsOption[]
+  hostOrganizationId: string | null
+  cover: CoverUpload
+}) {
+  const { t } = useT("event-form")
+  const { t: tCreate } = useT("event-create")
+  const onChangeKind = useCallback((eventKind: EventKind) => patch({ eventKind }), [patch])
+
+  return (
+    <>
+      <AuthorAsChips
+        organizations={hostOrganizations}
+        value={hostOrganizationId}
+        onChange={(organizationId) => patch({ organizationId })}
+        label={tCreate("host_as.label")}
+        personalLabel={tCreate("host_as.personal")}
+        chipA11y={(name) => tCreate("host_as.a11y", { name })}
+        groupA11y={tCreate("host_as.group_a11y")}
+      />
+
+      <TextField
+        label={t("field.title")}
+        placeholder={t("field.titlePlaceholder")}
+        value={value.title}
+        onChangeText={(title) => patch({ title })}
+        maxLength={EVENT_TITLE_MAX_LENGTH}
+      />
+
+      <TextField
+        label={t("field.description")}
+        placeholder={t("field.descriptionPlaceholder")}
+        value={value.description}
+        onChangeText={(description) => patch({ description })}
+        multiline
+        maxLength={EVENT_DESCRIPTION_MAX_LENGTH}
+      />
+
+      <KindSelector value={value.eventKind} onChange={onChangeKind} />
+
+      <CoverField value={value} cover={cover} />
+    </>
+  )
+}
+
+function MeetLocationField({
+  value,
+  patch,
+  initialCenter,
+  centerSettled,
+}: {
+  value: CleanupFormValue
+  patch: FormPatch
+  initialCenter: LatLng | null | undefined
+  centerSettled: boolean | undefined
+}) {
+  const styles = useStyles()
+  const { t } = useT("event-form")
+  const layoutMode = useLayoutMode()
+  const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
+  const compact = layoutMode === "compact"
+  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
+
+  const onPickPlace = useCallback(
+    (place: AddressPick) => patch({ coords: { lat: place.lat, lng: place.lng } }),
+    [patch],
+  )
+
+  const onDropPin = useCallback(
+    (lat: number, lng: number) => patch({ coords: { lat, lng } }),
+    [patch],
+  )
+
+  return (
+    <View style={styles.fieldBlock}>
+      <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
+      {compact ? (
+        <MeetLocationCompact
+          value={value}
+          onConfirmPoint={onDropPin}
+          onClear={() => patch({ coords: null })}
+          initialCenter={initialCenter ?? null}
+          centerSettled={centerSettled}
+        />
+      ) : (
+        <>
+          <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
+          <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
+        </>
+      )}
+      <TextField
+        placeholder={t("field.spotPlaceholder")}
+        value={value.spot}
+        onChangeText={(spot) => patch({ spot })}
+        maxLength={MAX_EVENT_ADDRESS_LENGTH}
+      />
+      <MeetAddressField value={value} onPatch={patch} />
+    </View>
+  )
+}
+
+function WhenSection({
+  value,
+  patch,
+  scheduleUnchanged,
+}: {
+  value: CleanupFormValue
+  patch: FormPatch
+  scheduleUnchanged: boolean
+}) {
+  const styles = useStyles()
+  const { t } = useT("event-form")
+
+  const onChangeDate = useCallback((date: Date) => patch(dateChangePatch(value, date)), [patch, value])
+
+  const onChangeStartTime = useCallback(
+    (time: Date) => patch(startTimeChangePatch(value, time)),
+    [patch, value],
+  )
+
+  const onChangeTimezone = useCallback(
+    (timezone: string) => patch(timezoneChangePatch(value, timezone)),
+    [patch, value],
+  )
 
   const scheduleErrors = useMemo(() => {
     const found = scheduleFieldErrors(value, value.timezone)
@@ -626,122 +606,184 @@ export function CleanupForm({
     }
   }, [scheduleUnchanged, t, value])
 
+  return (
+    <View style={styles.fieldBlock}>
+      <Text style={styles.fieldLabel}>{t("field.dateTime")}</Text>
+      <InlineDateTimePicker
+        date={value.date}
+        time={value.time}
+        endTime={value.endTime}
+        timeZone={value.timezone}
+        errors={scheduleErrors}
+        onDateChange={onChangeDate}
+        onTimeChange={onChangeStartTime}
+        onEndTimeChange={(endTime) => patch({ endTime })}
+      />
+      <TimezoneField value={value.timezone} onChange={onChangeTimezone} />
+    </View>
+  )
+}
+
+function ExtrasSection({
+  value,
+  patch,
+  existingSlots,
+  eventEndUnsaved,
+}: {
+  value: CleanupFormValue
+  patch: FormPatch
+  existingSlots: readonly EventSlotDTO[] | undefined
+  eventEndUnsaved: boolean
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-form")
+  return (
+    <>
+      <View style={styles.fieldBlock}>
+        <View style={styles.labelRow}>
+          <Text style={styles.fieldLabel}>{t("field.slots")}</Text>
+        </View>
+        <Text style={styles.fieldHelp}>{t("field.slotsHelp")}</Text>
+        <SlotEditor
+          value={value.slots}
+          onChange={(slots) => patch({ slots })}
+          window={cleanupFormWindow(value)}
+          timeZone={value.timezone}
+          eventEndUnsaved={eventEndUnsaved}
+          {...(existingSlots ? { existing: existingSlots } : {})}
+        />
+      </View>
+
+      <View style={styles.fieldBlock}>
+        <View style={styles.labelRow}>
+          <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
+          <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
+          <Text style={styles.optional}>{t("field.optional")}</Text>
+        </View>
+        <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
+      </View>
+    </>
+  )
+}
+
+function ShareSection({
+  value,
+  patch,
+  busy,
+  onRequestReveal,
+}: {
+  value: CleanupFormValue
+  patch: FormPatch
+  busy: boolean
+  onRequestReveal: ((y: number) => void) | undefined
+}) {
+  const { t } = useT("event-form")
+  const { locale } = useLocale()
+
+  const eventPreview = useMemo(() => {
+    const ref = buildEventPreviewCard(value, PREVIEW_ORGANIZER)
+    if (!ref) return null
+    return {
+      title: ref.title,
+      whenLabel: draftWhenLabel(new Date(ref.scheduledAt), locale),
+    }
+  }, [value, locale])
+
+  return (
+    <FeedShareBlock
+      enabled={value.shareToFeed}
+      onToggle={(shareToFeed) => patch({ shareToFeed })}
+      caption={value.feedCaption}
+      onChangeCaption={(feedCaption) => patch({ feedCaption })}
+      label={t("share.label")}
+      helper={t("share.helper")}
+      captionPlaceholder={t("share.caption_placeholder")}
+      captionA11yLabel={t("share.caption_a11y")}
+      nowLabel={t("share.now")}
+      attachmentPlaceholder={t("share.card_placeholder")}
+      busy={busy}
+      onRequestReveal={onRequestReveal}
+      attachment={
+        eventPreview ? (
+          <FeedShareEventCard title={eventPreview.title} whenLabel={eventPreview.whenLabel} />
+        ) : null
+      }
+    />
+  )
+}
+
+export function CleanupForm({
+  value,
+  onChange,
+  onPatch,
+  initialCenter,
+  centerSettled,
+  existingSlots,
+  eventEndUnsaved = false,
+  scheduleUnchanged = false,
+  sections = ALL_CLEANUP_FORM_SECTIONS,
+  showFeedShare = false,
+  feedShareBusy = false,
+  currentOrganization,
+  onRequestFeedShareReveal,
+}: {
+  value: CleanupFormValue
+  onChange: (next: CleanupFormValue) => void
+  /** Merges into the host's CURRENT value; for writes that land after an await. */
+  onPatch: (partial: Partial<CleanupFormValue>) => void
+  initialCenter?: LatLng | null
+  /** The host's centre resolution finished with no point, so the pickers offer address search instead of waiting. */
+  centerSettled?: boolean
+  existingSlots?: readonly EventSlotDTO[]
+  eventEndUnsaved?: boolean
+  scheduleUnchanged?: boolean
+  currentOrganization?: OrganizationRefDTO | null
+  sections?: readonly CleanupFormSection[]
+  showFeedShare?: boolean
+  feedShareBusy?: boolean
+  onRequestFeedShareReveal?: (y: number) => void
+}) {
+  const patch = useCallback(
+    (partial: Partial<CleanupFormValue>) => onChange({ ...value, ...partial }),
+    [onChange, value],
+  )
+  const cover = useCoverUpload(onPatch, patch)
+  const { hostOrganizations, hostOrganizationId } = useHostOrganizations(
+    value,
+    onChange,
+    currentOrganization,
+  )
+
   const shows = (section: CleanupFormSection) => sections.includes(section)
 
   return (
     <>
       {shows("basics") ? (
-        <>
-          <AuthorAsChips
-            organizations={hostOrganizations}
-            value={hostOrganizationId}
-            onChange={(organizationId) => patch({ organizationId })}
-            label={tCreate("host_as.label")}
-            personalLabel={tCreate("host_as.personal")}
-            chipA11y={(name) => tCreate("host_as.a11y", { name })}
-            groupA11y={tCreate("host_as.group_a11y")}
-          />
-
-          <TextField
-            label={t("field.title")}
-            placeholder={t("field.titlePlaceholder")}
-            value={value.title}
-            onChangeText={(title) => patch({ title })}
-            maxLength={120}
-          />
-
-          <TextField
-            label={t("field.description")}
-            placeholder={t("field.descriptionPlaceholder")}
-            value={value.description}
-            onChangeText={(description) => patch({ description })}
-            multiline
-            maxLength={2000}
-          />
-
-          <KindSelector value={value.eventKind} onChange={onChangeKind} />
-
-          <View style={styles.fieldBlock}>
-            <Text style={styles.fieldLabel}>{t("cover.label")}</Text>
-            <Text style={styles.coverHint}>{t("cover.hint")}</Text>
-            {value.coverPreviewUrl ? (
-              <View style={styles.coverFrame}>
-                <Image
-                  source={{ uri: value.coverPreviewUrl }}
-                  style={styles.coverImage}
-                  resizeMode="cover"
-                  accessibilityIgnoresInvertColors
-                />
-              </View>
-            ) : null}
-            <View style={styles.coverActions}>
-              <SecondaryButton
-                size="sm"
-                label={
-                  coverUploading
-                    ? t("cover.uploading")
-                    : value.coverPreviewUrl
-                      ? t("cover.replace")
-                      : t("cover.add")
-                }
-                onPress={onPickCover}
-                disabled={coverUploading}
-              />
-              {value.coverPreviewUrl ? (
-                <Pressable
-                  onPress={onRemoveCover}
-                  disabled={coverUploading}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("cover.remove")}
-                  {...focusRingProps}
-                  style={(state) => [
-                    styles.coverGhost,
-                    webCursorPointer,
-                    state.pressed ? styles.coverGhostPressed : null,
-                  ]}
-                >
-                  <Text style={styles.coverGhostText}>{t("cover.remove")}</Text>
-                </Pressable>
-              ) : null}
-            </View>
-            {coverErrorKey ? <Text style={styles.coverError}>{t(coverErrorKey)}</Text> : null}
-          </View>
-        </>
+        <BasicsSection
+          value={value}
+          patch={patch}
+          hostOrganizations={hostOrganizations}
+          hostOrganizationId={hostOrganizationId}
+          cover={cover}
+        />
       ) : null}
 
       {shows("where") ? (
         <>
-          <View style={styles.fieldBlock}>
-            <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
-            {compact ? (
-              <MeetLocationCompact
-                value={value}
-                onConfirmPoint={onDropPin}
-                onClear={() => patch({ coords: null })}
-                initialCenter={initialCenter ?? null}
-                centerSettled={centerSettled}
-              />
-            ) : (
-              <>
-                <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
-              </>
-            )}
-            <TextField
-              placeholder={t("field.spotPlaceholder")}
-              value={value.spot}
-              onChangeText={(spot) => patch({ spot })}
-              maxLength={MAX_EVENT_ADDRESS_LENGTH}
-            />
-            <MeetAddressField value={value} onPatch={patch} />
-          </View>
+          <MeetLocationField
+            value={value}
+            patch={patch}
+            initialCenter={initialCenter}
+            centerSettled={centerSettled}
+          />
 
           <ReportLinkPicker
             value={value.linkedReportIds}
             onChange={(linkedReportIds) => patch({ linkedReportIds })}
             center={value.coords}
             state={linkBlockState({
-              isCleanup,
+              isCleanup: value.eventKind === "cleanup",
               hasCoords: value.coords !== null,
               linkedCount: value.linkedReportIds.length,
             })}
@@ -750,69 +792,24 @@ export function CleanupForm({
       ) : null}
 
       {shows("when") ? (
-        <View style={styles.fieldBlock}>
-          <Text style={styles.fieldLabel}>{t("field.dateTime")}</Text>
-          <InlineDateTimePicker
-            date={value.date}
-            time={value.time}
-            endTime={value.endTime}
-            timeZone={value.timezone}
-            errors={scheduleErrors}
-            onDateChange={onChangeDate}
-            onTimeChange={onChangeStartTime}
-            onEndTimeChange={(endTime) => patch({ endTime })}
-          />
-          <TimezoneField value={value.timezone} onChange={onChangeTimezone} />
-        </View>
+        <WhenSection value={value} patch={patch} scheduleUnchanged={scheduleUnchanged} />
       ) : null}
 
       {shows("extras") ? (
-        <>
-          <View style={styles.fieldBlock}>
-            <View style={styles.labelRow}>
-              <Text style={styles.fieldLabel}>{t("field.slots")}</Text>
-            </View>
-            <Text style={styles.fieldHelp}>{t("field.slotsHelp")}</Text>
-            <SlotEditor
-              value={value.slots}
-              onChange={(slots) => patch({ slots })}
-              window={cleanupFormWindow(value)}
-              timeZone={value.timezone}
-              eventEndUnsaved={eventEndUnsaved}
-              {...(existingSlots ? { existing: existingSlots } : {})}
-            />
-          </View>
-
-          <View style={styles.fieldBlock}>
-            <View style={styles.labelRow}>
-              <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
-              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
-              <Text style={styles.optional}>{t("field.optional")}</Text>
-            </View>
-            <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
-          </View>
-        </>
+        <ExtrasSection
+          value={value}
+          patch={patch}
+          existingSlots={existingSlots}
+          eventEndUnsaved={eventEndUnsaved}
+        />
       ) : null}
 
       {shows("share") && showFeedShare ? (
-        <FeedShareBlock
-          enabled={value.shareToFeed}
-          onToggle={(shareToFeed) => patch({ shareToFeed })}
-          caption={value.feedCaption}
-          onChangeCaption={(feedCaption) => patch({ feedCaption })}
-          label={t("share.label")}
-          helper={t("share.helper")}
-          captionPlaceholder={t("share.caption_placeholder")}
-          captionA11yLabel={t("share.caption_a11y")}
-          nowLabel={t("share.now")}
-          attachmentPlaceholder={t("share.card_placeholder")}
+        <ShareSection
+          value={value}
+          patch={patch}
           busy={feedShareBusy}
           onRequestReveal={onRequestFeedShareReveal}
-          attachment={
-            eventPreview ? (
-              <FeedShareEventCard title={eventPreview.title} whenLabel={eventPreview.whenLabel} />
-            ) : null
-          }
         />
       ) : null}
     </>
@@ -891,7 +888,7 @@ const useStyles = makeThemedStyles((t) => ({
   segment: {
     flexDirection: "row",
     gap: t.space["1"],
-    padding: 4,
+    padding: t.space["1"],
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.bgAlt,
   },
@@ -903,7 +900,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    minHeight: 40,
+    minHeight: t.space["10"],
     paddingVertical: t.space["1"],
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.pill,
@@ -918,7 +915,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
     textAlign: "center",
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   segmentTextActive: {
@@ -973,12 +970,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   compactLocValue: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   compactLocPlaceholder: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.textSubtle,
   },
   compactLocClear: {
@@ -995,7 +992,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   compactLocClearText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
 

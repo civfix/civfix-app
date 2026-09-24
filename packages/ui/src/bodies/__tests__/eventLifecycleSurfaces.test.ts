@@ -225,6 +225,7 @@ describe("the lifecycle surfaces reference only real keys", () => {
 
   const SOURCES = {
     "EventDetailBody.tsx": body,
+    "eventDetailModel.ts": readFileSync(new URL("../eventDetailModel.ts", import.meta.url), "utf8"),
     "EventHoursBlock.tsx": hoursBlock,
     "LogHoursEditor.tsx": editor,
   }

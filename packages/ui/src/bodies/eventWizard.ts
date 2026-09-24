@@ -111,6 +111,17 @@ export function eventDraftWindow(draft: EventScheduleDraft): SlotWindowBounds | 
   return eventWindowInZone(draft.date, draft.time, draft.endTime, draft.timezone)
 }
 
+export function hasValidEventEnd(draft: EventScheduleDraft): boolean {
+  if (!draft.date || !draft.time || !draft.endTime) return false
+  return endTimeSelectable(
+    draft.date,
+    draft.time,
+    draft.endTime.getHours(),
+    draft.endTime.getMinutes(),
+    draft.timezone,
+  )
+}
+
 export function eventStepIndex(step: EventWizardStep): number {
   const index = EVENT_WIZARD_STEPS.indexOf(step)
   return index < 0 ? 0 : index
@@ -151,6 +162,19 @@ export function eventStepSatisfied(
         (other) => isFinalEventStep(other) || eventStepSatisfied(other, draft, now),
       )
   }
+}
+
+/**
+ * The hint under a step that cannot advance yet. Once the step's first field is in, the generic "fill this
+ * in" gives way to the specific thing still wrong: the end time, the address, or an invalid slot.
+ */
+export function eventStepErrorKey(step: EventWizardStep, draft: EventWizardDraft): string {
+  if (step === "when" && draft.date !== null && draft.time !== null && !hasValidEventEnd(draft)) {
+    return "wizard.when.error_end"
+  }
+  if (step === "where" && draft.coords !== null) return "wizard.where.error_address"
+  if (step === "details" && hasNamedSlot(draft.slots)) return "wizard.details.error_invalid"
+  return `wizard.${step}.error`
 }
 
 export function nextEventStep(step: EventWizardStep): EventWizardStep | null {

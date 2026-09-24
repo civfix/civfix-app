@@ -5,12 +5,11 @@
  * of truth for the form value INCLUDING linkedReportIds, so the report detail's host-draft toggle can add or
  * remove a link while the form is unmounted.
  *
- * Platform-neutral (no expo/next/maplibre) so both seams use it and it unit-tests directly. It imports only
- * the CleanupFormValue TYPE (erased at runtime) to avoid pulling CleanupForm's heavy deps into the store.
+ * Platform-neutral (no expo/next/maplibre) so both seams use it and it unit-tests directly.
  */
 import { create } from "zustand"
 import { randomId } from "../data/randomId"
-import type { CleanupFormValue } from "./CleanupForm"
+import type { CleanupFormValue } from "./cleanupFormModel"
 import { registerViewerScopedDrafts } from "../viewerScope"
 
 interface CleanupDraftState {

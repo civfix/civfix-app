@@ -58,10 +58,13 @@ import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
 import { generalSlotBoard } from "./eventSlotsModel"
+import { eventStatusLine, type EventStatusLine } from "./eventDetailModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
 
 const HERO_COVER_RATIO = 16 / 9
+
+const HOST_AVATAR_SIZE = 40
 
 function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
@@ -95,7 +98,7 @@ function HostIdentity({ cleanup, isOrganizer }: { cleanup: CleanupDTO; isOrganiz
         seed={cleanup.organizer.id}
         photoUrl={cleanup.organizer.avatarUrl ?? null}
         gradient={cleanup.organizer.avatar ?? null}
-        size={40}
+        size={HOST_AVATAR_SIZE}
       />
       <View style={styles.hostMeta}>
         <View style={styles.hostNameRow}>
@@ -157,18 +160,295 @@ function LinkedReportsStrip({
   )
 }
 
-function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
+/** The map follows the page: while this detail is the active page it focuses the event's pin. */
+function useEventMapFocus(cleanup: CleanupDTO) {
+  const isActive = usePageIsActive()
+  useEffect(() => {
+    if (!isActive) return
+    const hasCoords = cleanup.lat != null && cleanup.lng != null
+    if (!hasCoords) {
+      useMapFocus.getState().clear()
+      return
+    }
+    useMapFocus.getState().setEvent({
+      id: cleanup.id,
+      lat: cleanup.lat as number,
+      lng: cleanup.lng as number,
+      eventKind: cleanup.eventKind,
+    })
+    useNavStore.getState().setSnap(1)
+    return () => useMapFocus.getState().clearFor(cleanup.id)
+  }, [isActive, cleanup.id, cleanup.lat, cleanup.lng, cleanup.eventKind])
+}
+
+function useEventReportSheet(cleanupId: string, next: string) {
+  const { t } = useT("event-detail")
+  const requireAuth = useRequireAuth()
+  const toast = useToast()
+  const reportContent = useReportContent()
+  const [reporting, setReporting] = useState(false)
+  const onReport = useCallback(() => {
+    requireAuth(
+      () => {
+        reportContent.reset()
+        setReporting(true)
+      },
+      { next },
+    )
+  }, [requireAuth, reportContent, next])
+  const closeReport = useCallback(() => {
+    if (reportContent.isPending) return
+    setReporting(false)
+  }, [reportContent.isPending])
+  const onSubmitReport = useCallback(
+    (reason: ContentReportReason, details?: string) => {
+      reportContent.mutate(
+        { subjectType: "event", subjectId: cleanupId, reason, ...(details ? { details } : {}) },
+        {
+          onSuccess: () => {
+            setReporting(false)
+            toast.show(t("report_sheet.success_toast"), { variant: "success" })
+          },
+        },
+      )
+    },
+    [reportContent, cleanupId, toast, t],
+  )
+  return { reporting, reportContent, onReport, closeReport, onSubmitReport }
+}
+
+function EventDetailHeader({
+  cleanup,
+  isCancelled,
+  status,
+  next,
+}: {
+  cleanup: CleanupDTO
+  isCancelled: boolean
+  status: EventStatusLine | null
+  next: string
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-detail")
   const { locale } = useLocale()
   const { weekdays } = useRelativeTime()
   const viewerTimeZone = useViewerTimeZone()
+  const requireAuth = useRequireAuth()
+  const toast = useToast()
+  const where = cleanup.address?.trim()
+  const hasPoint = cleanup.lat != null && cleanup.lng != null
+  const dist = eventDistanceLabel(cleanup.dist, locale)
+  const statusColor =
+    status?.tone === "cancelled"
+      ? th.colors.bloom["700"]
+      : status?.tone === "ended"
+        ? th.colors.textMuted
+        : th.colors.moss["700"]
+  const sharePath = `/cleanups/${cleanup.referenceCode ?? cleanup.id}`
+
+  const onShare = useCallback(() => {
+    void shareLink({ title: cleanup.title, path: sharePath }).then((result) => {
+      if (result !== "copied") return
+      toast.show(t("common-share:button.copied"), { variant: "success" })
+    })
+  }, [cleanup.title, sharePath, toast, t])
+
+  const onRepost = useCallback(() => {
+    requireAuth(
+      () => {
+        usePostComposerStore
+          .getState()
+          .setAttachedEvent(buildComposerEventRef(cleanup, new Date().toISOString()))
+        useNavStore.getState().push({ kind: "composer" })
+      },
+      { next },
+    )
+  }, [cleanup, next, requireAuth])
+
+  return (
+    <View style={styles.header}>
+      <View style={styles.titleRow}>
+        <Text
+          style={styles.title}
+          numberOfLines={2}
+          accessibilityRole="header"
+          {...headingLevel(2)}
+        >
+          {cleanup.title}
+        </Text>
+        <Pressable
+          onPress={onShare}
+          accessibilityRole="button"
+          accessibilityLabel={t("actions.share_a11y")}
+          hitSlop={6}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
+        >
+          <Icon icon={iconMap.Share} size={17} color={th.colors.text} />
+        </Pressable>
+        {isCancelled ? null : (
+          <Pressable
+            onPress={onRepost}
+            accessibilityRole="button"
+            accessibilityLabel={t("actions.repost_a11y")}
+            hitSlop={6}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
+          >
+            <Icon icon={iconMap.RefreshCw} size={17} color={th.colors.text} />
+          </Pressable>
+        )}
+      </View>
+      {status ? <Text style={[styles.status, { color: statusColor }]}>{t(status.key)}</Text> : null}
+      {cleanup.referenceCode ? (
+        <Text variant="mono" color={th.colors.textSubtle} style={styles.refCode}>
+          {cleanup.referenceCode}
+        </Text>
+      ) : null}
+      <View style={styles.metaRows}>
+        <View style={styles.metaRow}>
+          <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
+          <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
+        </View>
+        <AddressRow
+          address={where ?? null}
+          point={hasPoint ? { lat: cleanup.lat as number, lng: cleanup.lng as number } : null}
+          focusTarget={{ kind: "cleanup", id: cleanup.id, eventKind: cleanup.eventKind }}
+          verified={isVerifiedEventAddress(cleanup.addressSource, cleanup.address)}
+          fallbackLabel={cleanup.type === "route" ? t("where.route") : t("where.meeting_point")}
+          title={cleanup.title}
+          numberOfLines={2}
+          trailing={
+            dist ? (
+              <>
+                <MetaDot color={th.colors.textSubtle} />
+                <Text style={styles.metaDist} numberOfLines={1}>
+                  {t("where.distance_away", { dist })}
+                </Text>
+              </>
+            ) : null
+          }
+        />
+      </View>
+    </View>
+  )
+}
+
+function EventDetailsSection({
+  cleanup,
+  showLinkedReports,
+}: {
+  cleanup: CleanupDTO
+  showLinkedReports: boolean
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-detail")
+
+  const onOpenReport = useCallback(
+    (report: CleanupDTO["linkedReports"][number]) => {
+      useNavStore.getState().push({
+        kind: "pin",
+        id: report.id,
+        title: report.title,
+        lat: report.lat,
+        lng: report.lng,
+      })
+    },
+    [],
+  )
+
+  return (
+    <View style={[styles.section, styles.sectionFlush]}>
+      {cleanup.description ? (
+        <Text style={styles.description}>{cleanup.description}</Text>
+      ) : null}
+      {cleanup.bring.length > 0 ? (
+        <View style={styles.subsection}>
+          <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
+            {t("bring.heading")}
+          </Text>
+          {cleanup.bring.map((item, i) => (
+            <View key={`${item}-${i}`} style={styles.bringRow}>
+              <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
+              <Text style={styles.bringText}>{item}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {showLinkedReports ? (
+        <LinkedReportsStrip reports={cleanup.linkedReports} onOpenReport={onOpenReport} />
+      ) : null}
+    </View>
+  )
+}
+
+function EventHostSection({
+  cleanup,
+  isOrganizer,
+  flush,
+  next,
+}: {
+  cleanup: CleanupDTO
+  isOrganizer: boolean
+  /** No details section above it, so the host section drops its top padding instead. */
+  flush: boolean
+  next: string
+}) {
+  const styles = useStyles()
+  const { t } = useT("event-detail")
+  const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
+
+  const onOpenOrganizer = useCallback(() => {
+    useNavStore
+      .getState()
+      .push({ kind: "person", id: cleanup.organizer.handle ?? cleanup.organizer.id })
+  }, [cleanup.organizer.handle, cleanup.organizer.id])
+
+  return (
+    <View style={[styles.section, flush ? styles.sectionFlush : null]}>
+      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
+        {t("host.heading")}
+      </Text>
+      <View style={styles.hostRow}>
+        {isOrganizer ? (
+          <View style={styles.hostWho}>
+            <HostIdentity cleanup={cleanup} isOrganizer />
+          </View>
+        ) : (
+          <>
+            <Pressable
+              onPress={onOpenOrganizer}
+              accessibilityRole="button"
+              accessibilityLabel={cleanup.organizer.name}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.hostWho, pressed ? styles.pressed : null]}
+            >
+              <HostIdentity cleanup={cleanup} isOrganizer={false} />
+            </Pressable>
+            <FollowButton
+              personId={cleanup.organizer.id}
+              isFollowing={organizerProfile.data?.profile.isFollowing ?? false}
+              nextPath={next}
+              size="sm"
+            />
+          </>
+        )}
+      </View>
+    </View>
+  )
+}
+
+function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
+  const styles = useStyles()
+  const { t } = useT("event-detail")
   const { ScrollView } = useScrollHost()
   const requireAuth = useRequireAuth()
   const { user } = useAuthState()
   const getTurnstileToken = useGetTurnstileToken()
   const haptics = useHaptics()
+  const toast = useToast()
   const join = useJoinCleanup(cleanup.id)
 
   const going = cleanup.joined
@@ -203,29 +483,8 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null
   const next = `/cleanups/${cleanup.id}`
 
-  const isActive = usePageIsActive()
-  useEffect(() => {
-    if (!isActive) return
-    const hasCoords = cleanup.lat != null && cleanup.lng != null
-    if (!hasCoords) {
-      useMapFocus.getState().clear()
-      return
-    }
-    useMapFocus.getState().setEvent({
-      id: cleanup.id,
-      lat: cleanup.lat as number,
-      lng: cleanup.lng as number,
-      eventKind: cleanup.eventKind,
-    })
-    useNavStore.getState().setSnap(1)
-    return () => useMapFocus.getState().clearFor(cleanup.id)
-  }, [isActive, cleanup.id, cleanup.lat, cleanup.lng, cleanup.eventKind])
+  useEventMapFocus(cleanup)
 
-  const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
-
-  const where = cleanup.address?.trim()
-  const hasPoint = cleanup.lat != null && cleanup.lng != null
-  const dist = eventDistanceLabel(cleanup.dist, locale)
   const goingCount = cleanup.going
 
   const onMessageCrew = useCallback(() => {
@@ -241,69 +500,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     )
   }, [cleanup.id, cleanup.title, requireAuth, next])
 
-  const onRepost = useCallback(() => {
-    requireAuth(
-      () => {
-        usePostComposerStore
-          .getState()
-          .setAttachedEvent(buildComposerEventRef(cleanup, new Date().toISOString()))
-        useNavStore.getState().push({ kind: "composer" })
-      },
-      { next },
-    )
-  }, [cleanup, next, requireAuth])
-
-  const toast = useToast()
-
-  const reportContent = useReportContent()
-  const [reporting, setReporting] = useState(false)
-  const onReport = useCallback(() => {
-    requireAuth(
-      () => {
-        reportContent.reset()
-        setReporting(true)
-      },
-      { next },
-    )
-  }, [requireAuth, reportContent, next])
-  const closeReport = useCallback(() => {
-    if (reportContent.isPending) return
-    setReporting(false)
-  }, [reportContent.isPending])
-  const onSubmitReport = useCallback(
-    (reason: ContentReportReason, details?: string) => {
-      reportContent.mutate(
-        { subjectType: "event", subjectId: cleanup.id, reason, ...(details ? { details } : {}) },
-        {
-          onSuccess: () => {
-            setReporting(false)
-            toast.show(t("report_sheet.success_toast"), { variant: "success" })
-          },
-        },
-      )
-    },
-    [reportContent, cleanup.id, toast, t],
-  )
+  const report = useEventReportSheet(cleanup.id, next)
 
   const [guestRsvping, setGuestRsvping] = useState(false)
   const guestQuestions = useEventQuestions(cleanup.id, { enabled: guestRsvping && hasTicketTypes })
   const closeGuestRsvp = useCallback(() => setGuestRsvping(false), [])
   const openGuestRsvp = useCallback(() => setGuestRsvping(true), [])
   const onSignedOutRsvp = getTurnstileToken ? openGuestRsvp : undefined
-  const sharePath = `/cleanups/${cleanup.referenceCode ?? cleanup.id}`
-
-  const onShare = useCallback(() => {
-    void shareLink({ title: cleanup.title, path: sharePath }).then((result) => {
-      if (result !== "copied") return
-      toast.show(t("common-share:button.copied"), { variant: "success" })
-    })
-  }, [cleanup.title, sharePath, toast, t])
-
-  const onOpenOrganizer = useCallback(() => {
-    useNavStore
-      .getState()
-      .push({ kind: "person", id: cleanup.organizer.handle ?? cleanup.organizer.id })
-  }, [cleanup.organizer.handle, cleanup.organizer.id])
 
   const onViewAllMembers = useCallback(() => {
     useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
@@ -315,19 +518,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       onSuccess: () => toast.show(t("actions.leave_toast")),
     })
   }, [haptics, join, t, toast])
-
-  const onOpenReport = useCallback(
-    (report: CleanupDTO["linkedReports"][number]) => {
-      useNavStore.getState().push({
-        kind: "pin",
-        id: report.id,
-        title: report.title,
-        lat: report.lat,
-        lng: report.lng,
-      })
-    },
-    [],
-  )
 
   const needsGeneralBoard =
     cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes
@@ -345,154 +535,27 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const showDetails =
     !!cleanup.description || cleanup.bring.length > 0 || showLinkedReports
 
-  const detailsFlush = showDetails ? styles.sectionFlush : null
-  const hostFlush = showDetails ? null : styles.sectionFlush
   const showTicket = going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost)
   const showMessageCrew = !isCancelled
   const showLeave = going && !actsAsHost && isLive && !isEnded
   const showReport = !actsAsHost
 
-  const statusText = isCancelled
-    ? t("status.cancelled")
-    : isDone
-      ? t("status.ended")
-      : isOrganizer
-        ? t("status.hosting")
-        : isCohost
-          ? t("status.cohosting")
-          : null
-  const statusColor = isCancelled
-    ? th.colors.bloom["700"]
-    : isDone
-      ? th.colors.textMuted
-      : th.colors.moss["700"]
-
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <EventHero cleanup={cleanup} />
 
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Text
-            style={styles.title}
-            numberOfLines={2}
-            accessibilityRole="header"
-            {...headingLevel(2)}
-          >
-            {cleanup.title}
-          </Text>
-          <Pressable
-            onPress={onShare}
-            accessibilityRole="button"
-            accessibilityLabel={t("actions.share_a11y")}
-            hitSlop={6}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
-          >
-            <Icon icon={iconMap.Share} size={17} color={th.colors.text} />
-          </Pressable>
-          {isCancelled ? null : (
-            <Pressable
-              onPress={onRepost}
-              accessibilityRole="button"
-              accessibilityLabel={t("actions.repost_a11y")}
-              hitSlop={6}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
-            >
-              <Icon icon={iconMap.RefreshCw} size={17} color={th.colors.text} />
-            </Pressable>
-          )}
-        </View>
-        {statusText ? (
-          <Text style={[styles.status, { color: statusColor }]}>{statusText}</Text>
-        ) : null}
-        {cleanup.referenceCode ? (
-          <Text variant="mono" color={th.colors.textSubtle} style={styles.refCode}>
-            {cleanup.referenceCode}
-          </Text>
-        ) : null}
-        <View style={styles.metaRows}>
-          <View style={styles.metaRow}>
-            <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
-          </View>
-          <AddressRow
-            address={where ?? null}
-            point={hasPoint ? { lat: cleanup.lat as number, lng: cleanup.lng as number } : null}
-            focusTarget={{ kind: "cleanup", id: cleanup.id, eventKind: cleanup.eventKind }}
-            verified={isVerifiedEventAddress(cleanup.addressSource, cleanup.address)}
-            fallbackLabel={cleanup.type === "route" ? t("where.route") : t("where.meeting_point")}
-            title={cleanup.title}
-            numberOfLines={2}
-            trailing={
-              dist ? (
-                <>
-                  <MetaDot color={th.colors.textSubtle} />
-                  <Text style={styles.metaDist} numberOfLines={1}>
-                    {t("where.distance_away", { dist })}
-                  </Text>
-                </>
-              ) : null
-            }
-          />
-        </View>
-      </View>
+      <EventDetailHeader
+        cleanup={cleanup}
+        isCancelled={isCancelled}
+        status={eventStatusLine({ isCancelled, isDone, isOrganizer, isCohost })}
+        next={next}
+      />
 
       {showDetails ? (
-        <View style={[styles.section, detailsFlush]}>
-          {cleanup.description ? (
-            <Text style={styles.description}>{cleanup.description}</Text>
-          ) : null}
-          {cleanup.bring.length > 0 ? (
-            <View style={styles.subsection}>
-              <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
-                {t("bring.heading")}
-              </Text>
-              {cleanup.bring.map((item, i) => (
-                <View key={`${item}-${i}`} style={styles.bringRow}>
-                  <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
-                  <Text style={styles.bringText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          {showLinkedReports ? (
-            <LinkedReportsStrip reports={cleanup.linkedReports} onOpenReport={onOpenReport} />
-          ) : null}
-        </View>
+        <EventDetailsSection cleanup={cleanup} showLinkedReports={showLinkedReports} />
       ) : null}
 
-      <View style={[styles.section, hostFlush]}>
-        <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
-          {t("host.heading")}
-        </Text>
-        <View style={styles.hostRow}>
-          {isOrganizer ? (
-            <View style={styles.hostWho}>
-              <HostIdentity cleanup={cleanup} isOrganizer />
-            </View>
-          ) : (
-            <>
-              <Pressable
-                onPress={onOpenOrganizer}
-                accessibilityRole="button"
-                accessibilityLabel={cleanup.organizer.name}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.hostWho, pressed ? styles.pressed : null]}
-              >
-                <HostIdentity cleanup={cleanup} isOrganizer={false} />
-              </Pressable>
-              <FollowButton
-                personId={cleanup.organizer.id}
-                isFollowing={organizerProfile.data?.profile.isFollowing ?? false}
-                nextPath={next}
-                size="sm"
-              />
-            </>
-          )}
-        </View>
-      </View>
+      <EventHostSection cleanup={cleanup} isOrganizer={isOrganizer} flush={!showDetails} next={next} />
 
       {donation ? (
         <View style={styles.donate}>
@@ -621,7 +684,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
                 icon={iconMap.Flag}
                 label={t("actions.report")}
                 accessibilityLabel={t("actions.report_a11y")}
-                onPress={onReport}
+                onPress={report.onReport}
               />
             ) : null}
           </EventActionRows>
@@ -629,12 +692,12 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       ) : null}
 
       <ReportContentSheet
-        visible={reporting}
+        visible={report.reporting}
         subjectLabel={t("report_sheet.subject")}
-        pending={reportContent.isPending}
-        error={reportContent.isError ? t("report_sheet.submit_error") : null}
-        onSubmit={onSubmitReport}
-        onClose={closeReport}
+        pending={report.reportContent.isPending}
+        error={report.reportContent.isError ? t("report_sheet.submit_error") : null}
+        onSubmit={report.onSubmitReport}
+        onClose={report.closeReport}
       />
 
       <GuestRsvpSheet

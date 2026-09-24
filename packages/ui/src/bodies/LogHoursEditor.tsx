@@ -38,8 +38,6 @@ export function LogHoursEditor({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-detail")
-  const { locale } = useLocale()
-  const { relative } = useRelativeTime()
   const { user } = useAuthState()
   const toast = useToast()
   const logHours = useLogEventHours()
@@ -185,69 +183,17 @@ export function LogHoursEditor({
           {attendeesQuery.isLoading ? t("log_hours.loading_roster") : t("log_hours.empty_roster")}
         </Text>
       ) : (
-        attendees.map((a) => {
-          const draft = hoursDrafts[a.id] ?? ""
-          const rowInvalid = !hoursDraftValid(draft, MAX_EVENT_HOURS)
-          const loggedAt = loggedAtById[a.id]
-          const suggestion = suggestionById.get(a.id)
-          return (
-            <View key={a.id} style={styles.row}>
-              <Avatar
-                name={a.name}
-                seed={a.id}
-                photoUrl={a.avatarUrl ?? null}
-                gradient={a.avatar ?? null}
-                size={28}
-              />
-              <View style={styles.rowMain}>
-                <View style={styles.rowNameLine}>
-                  <Text style={styles.rowName} numberOfLines={1}>
-                    {a.name}
-                  </Text>
-                  {suggestion ? (
-                    <Pressable
-                      onPress={() => onChangeRow(a.id, formatHours(suggestion.hours))}
-                      disabled={logHours.isPending}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("log_hours.suggest_chip_a11y", {
-                        hours: formatHoursDisplay(suggestion.hours, locale),
-                        slot: suggestion.slotTitle,
-                        name: a.name,
-                      })}
-                      hitSlop={6}
-                      {...focusRingProps}
-                      style={({ pressed }) => [styles.suggestChip, pressed ? styles.pressed : null]}
-                    >
-                      <Text style={styles.suggestChipText} numberOfLines={1}>
-                        {t("log_hours.suggest_chip", {
-                          hours: formatHoursDisplay(suggestion.hours, locale),
-                          slot: suggestion.slotTitle,
-                        })}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-                {loggedAt ? (
-                  <Text style={styles.rowLogged} numberOfLines={1}>
-                    {t("log_hours.row_logged", { ago: relative(loggedAt) })}
-                  </Text>
-                ) : null}
-              </View>
-              <TextField
-                containerStyle={styles.rowField}
-                placeholder={t("log_hours.row_placeholder")}
-                keyboardType="decimal-pad"
-                value={draft}
-                onChangeText={(v) => onChangeRow(a.id, v)}
-                editable={!logHours.isPending}
-                accessibilityLabel={t("log_hours.row_a11y", { name: a.name })}
-              />
-              {rowInvalid ? (
-                <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.bloom["700"]} />
-              ) : null}
-            </View>
-          )
-        })
+        attendees.map((a) => (
+          <HoursRow
+            key={a.id}
+            attendee={a}
+            draft={hoursDrafts[a.id] ?? ""}
+            loggedAt={loggedAtById[a.id]}
+            suggestion={suggestionById.get(a.id)}
+            pending={logHours.isPending}
+            onChangeRow={onChangeRow}
+          />
+        ))
       )}
       {anyRowInvalid ? (
         <Text style={styles.error}>{t("log_hours.invalid", { max: MAX_EVENT_HOURS })}</Text>
@@ -296,6 +242,86 @@ export function LogHoursEditor({
   )
 }
 
+function HoursRow({
+  attendee,
+  draft,
+  loggedAt,
+  suggestion,
+  pending,
+  onChangeRow,
+}: {
+  attendee: AttendeeDTO
+  draft: string
+  loggedAt: string | undefined
+  suggestion: { hours: number; slotTitle: string } | undefined
+  pending: boolean
+  onChangeRow: (userId: string, value: string) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-detail")
+  const { locale } = useLocale()
+  const { relative } = useRelativeTime()
+  const rowInvalid = !hoursDraftValid(draft, MAX_EVENT_HOURS)
+  return (
+    <View style={styles.row}>
+      <Avatar
+        name={attendee.name}
+        seed={attendee.id}
+        photoUrl={attendee.avatarUrl ?? null}
+        gradient={attendee.avatar ?? null}
+        size={28}
+      />
+      <View style={styles.rowMain}>
+        <View style={styles.rowNameLine}>
+          <Text style={styles.rowName} numberOfLines={1}>
+            {attendee.name}
+          </Text>
+          {suggestion ? (
+            <Pressable
+              onPress={() => onChangeRow(attendee.id, formatHours(suggestion.hours))}
+              disabled={pending}
+              accessibilityRole="button"
+              accessibilityLabel={t("log_hours.suggest_chip_a11y", {
+                hours: formatHoursDisplay(suggestion.hours, locale),
+                slot: suggestion.slotTitle,
+                name: attendee.name,
+              })}
+              hitSlop={6}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.suggestChip, pressed ? styles.pressed : null]}
+            >
+              <Text style={styles.suggestChipText} numberOfLines={1}>
+                {t("log_hours.suggest_chip", {
+                  hours: formatHoursDisplay(suggestion.hours, locale),
+                  slot: suggestion.slotTitle,
+                })}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {loggedAt ? (
+          <Text style={styles.rowLogged} numberOfLines={1}>
+            {t("log_hours.row_logged", { ago: relative(loggedAt) })}
+          </Text>
+        ) : null}
+      </View>
+      <TextField
+        containerStyle={styles.rowField}
+        placeholder={t("log_hours.row_placeholder")}
+        keyboardType="decimal-pad"
+        value={draft}
+        onChangeText={(v) => onChangeRow(attendee.id, v)}
+        editable={!pending}
+        accessibilityLabel={t("log_hours.row_a11y", { name: attendee.name })}
+      />
+      {rowInvalid ? (
+        <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.bloom["700"]} />
+      ) : null}
+    </View>
+  )
+}
+
 const useStyles = makeThemedStyles((t) => ({
   openBtn: {
     flexDirection: "row",
@@ -312,7 +338,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   openBtnText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.sky["700"],
   },
   editor: {
@@ -329,7 +355,7 @@ const useStyles = makeThemedStyles((t) => ({
     marginBottom: 0,
   },
   applyBtn: {
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.pill,
     alignItems: "center",
@@ -340,7 +366,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   applyText: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
   row: {
@@ -393,12 +419,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   blankHint: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   error: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.bloom["700"],
   },
   actions: {
@@ -416,7 +442,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   cancelText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   save: {
@@ -428,7 +454,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   saveText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.neutral.card,
   },
   pressed: {

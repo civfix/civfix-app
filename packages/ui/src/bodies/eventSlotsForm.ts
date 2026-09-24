@@ -281,7 +281,7 @@ export interface ShiftWindow {
   end: number
 }
 
-export function shiftWindows(
+function shiftWindows(
   window: { start: Date; end: Date },
   count: ShiftSplitCount,
 ): ShiftWindow[] {
@@ -299,7 +299,7 @@ export function shiftWindows(
   return windows
 }
 
-export function slotDraftIdentity(draft: {
+function slotDraftIdentity(draft: {
   title: string
   startsAt: Date | null
   endsAt: Date | null

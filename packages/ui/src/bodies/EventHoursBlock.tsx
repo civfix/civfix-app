@@ -112,7 +112,6 @@ function FadeUp({ children }: { children: React.ReactNode }) {
   )
 }
 
-
 function HostHours({
   cleanupId,
   cleanup,
@@ -278,25 +277,6 @@ function AttendeeReceipt({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  verifyNote: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-    marginTop: t.space["3"],
-    paddingVertical: t.space["3"],
-    paddingHorizontal: t.space["3"] + 1,
-    borderRadius: t.radius.md,
-    backgroundColor: t.colors.sky["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sky["100"],
-  },
-  verifyNoteText: {
-    flex: 1,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.sky["700"],
-  },
-
   card: {
     marginTop: t.space["3"],
     padding: t.space["4"],
@@ -332,12 +312,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   totalValue: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   totalCount: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
   editTarget: {
@@ -348,7 +328,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   editText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   people: {
@@ -363,13 +343,13 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
   personHours: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
 
@@ -400,7 +380,7 @@ const useStyles = makeThemedStyles((t) => ({
   flatRowText: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
 

@@ -8,6 +8,7 @@ import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { eventEndsAtMs } from "@civfix/shared/host"
 import {
+  MIN_TOUCH_TARGET,
   focusRingProps,
   makeThemedStyles,
   space,
@@ -44,6 +45,9 @@ const CARD_GAP = space["3"] + 2
 const SECTION_GAP = space["4"]
 
 const IS_WEB = Platform.OS === "web"
+
+/** Room the card's foot row leaves free for the RSVP pill absolutely placed in its corner. */
+const RSVP_PILL_RESERVE = 88
 
 const CARD_RING_INSET = space["4"] + StyleSheet.hairlineWidth
 const WEB_CARD_RING: ViewStyle = IS_WEB
@@ -361,8 +365,6 @@ function EventsHeader({
   )
 }
 
-const MIN_TOUCH_TARGET = 44
-
 const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
@@ -394,7 +396,7 @@ const useStyles = makeThemedStyles((t) => ({
 
   sectionHeader: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
   },
 
@@ -451,7 +453,7 @@ const useStyles = makeThemedStyles((t) => ({
   title: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 19,
     color: t.colors.text,
   },
@@ -459,21 +461,21 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginTop: 4,
+    marginTop: t.space["1"],
   },
   subText: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   subWhere: {
     flexShrink: 1,
   },
   blurb: {
-    marginTop: 4,
+    marginTop: t.space["1"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     lineHeight: 16,
     color: t.colors.textMuted,
   },
@@ -484,7 +486,7 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
-    paddingHorizontal: 12,
+    paddingHorizontal: t.space["3"],
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -499,7 +501,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     padding: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   clearTarget: {
@@ -529,7 +531,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 14,
-    paddingRight: 88,
+    paddingRight: RSVP_PILL_RESERVE,
   },
   cnt: {
     flexDirection: "row",
@@ -543,7 +545,7 @@ const useStyles = makeThemedStyles((t) => ({
   cntText: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
   cntTextSep: {
@@ -564,7 +566,7 @@ const useStyles = makeThemedStyles((t) => ({
   cntDist: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
   rsvpSlot: {
@@ -576,7 +578,7 @@ const useStyles = makeThemedStyles((t) => ({
 
   skelList: {
     alignSelf: "stretch",
-    gap: t.space["3"] + 2,
+    gap: CARD_GAP,
   },
   skelDate: {
     width: 50,

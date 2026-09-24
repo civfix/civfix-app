@@ -13,13 +13,7 @@ import {
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
 import { type LatLng } from "@civfix/shared/geocode"
 import { timeRangeLabel } from "@civfix/shared/datetime"
-import {
-  SignInPrompt,
-  SkeletonBlock,
-  SkeletonGroup,
-  SkeletonText,
-  useToast,
-} from "../primitives"
+import { SignInPrompt, useToast } from "../primitives"
 import {
   useCreateCleanup,
   useAuthState,
@@ -54,20 +48,21 @@ import {
 } from "./cleanupDraftExit"
 import { stackAfterFlowPublished } from "./composerCreateFlow"
 import { useDroppedPin } from "../map/droppedPinStore"
-import {
-  CleanupForm,
-  hasValidEventEnd,
-  emptyCleanupForm,
-  isCleanupFormComplete,
-  mergeDateTime,
-  type CleanupFormSection,
-  type CleanupFormValue,
-} from "./CleanupForm"
+import { CleanupForm, type CleanupFormSection } from "./CleanupForm"
+import { emptyCleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./cleanupFormModel"
 import { composeEventAddress } from "./eventAddressField"
-import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
-import { buildSlotInputs, hasNamedSlot } from "./eventSlotsForm"
+import {
+  draftWhenLabel,
+  formEndInstantMs,
+  formInstantMs,
+  isScheduleInFutureInZone,
+  mergeDateTime,
+} from "./calendarModel"
+import { buildSlotInputs } from "./eventSlotsForm"
+import { EventFormSkeleton, FORM_CONTROL_HEIGHT, FormValidationRow } from "./eventFormParts"
 import {
   EVENT_WIZARD_STEPS,
+  eventStepErrorKey,
   eventStepIndex,
   eventStepSatisfied,
   firstIncompleteEventStep,
@@ -215,15 +210,7 @@ function ReviewSummary({
 
   const empty = t("wizard.empty")
   const whenText =
-    value.date && value.time
-      ? mergeDateTime(value.date, value.time).toLocaleString(locale, {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        })
-      : empty
+    value.date && value.time ? draftWhenLabel(mergeDateTime(value.date, value.time), locale) : empty
   const startMs =
     value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
   const endMs =
@@ -299,33 +286,17 @@ function ReviewSummary({
   )
 }
 
-function HostForm({
-  seedReportId,
-  seedPoint,
-  seedOrganizationId,
-  standalone,
-}: {
+interface HostSeed {
   seedReportId?: string
   seedPoint?: HostSeedPoint
   seedOrganizationId?: string
-  standalone?: CreateCleanupStandaloneHost
-}) {
-  const { ScrollView } = useScrollHost()
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("event-create")
-  const { t: tShare } = useT("event-form")
-  const create = useCreateCleanup()
-  const createPostAsync = useCreatePost().mutateAsync
-  const toast = useToast()
-  const haptics = useHaptics()
-  const userLocation = useUserLocation()
-  const initialCenter = useMemo<LatLng | null>(
-    () => (seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : (userLocation.data ?? null)),
-    [seedPoint, userLocation.data],
-  )
-  const centerSettled = seedPoint != null || !userLocation.isPending
+}
 
+/**
+ * The persistent draft behind the form. The mount is PLANNED in render (so the first paint already shows the
+ * merged draft) and COMMITTED in an effect; a genuine exit clears it, a forward drill-down keeps it.
+ */
+function useHostDraft({ seedReportId, seedPoint, seedOrganizationId }: HostSeed) {
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint
       ? {
@@ -349,7 +320,6 @@ function HostForm({
     [seedReportId, seedOrganizationId],
   )
   const form = (draftCommitted ? liveDraft : mountPlan.value) ?? blankForm
-  const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
 
   useEffect(() => {
     return () => {
@@ -361,76 +331,21 @@ function HostForm({
     }
   }, [])
 
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [step, setStep] = useState<EventWizardStep>(() =>
-    firstIncompleteEventStep(wizardDraftOf(mountPlan.value)),
-  )
-  const stepIndex = eventStepIndex(step)
-  const stepDirection = useStackDirection(stepIndex)
-  const isReview = isFinalEventStep(step)
-  const [editingFromReview, setEditingFromReview] = useState(false)
-  const canAdvance = eventStepSatisfied(step, wizardDraftOf(form))
-  const stepErrorKey =
-    step === "when" && form.date !== null && form.time !== null && !hasValidEventEnd(form)
-      ? "wizard.when.error_end"
-      : step === "where" && form.coords !== null
-        ? "wizard.where.error_address"
-        : step === "details" && hasNamedSlot(form.slots)
-          ? "wizard.details.error_invalid"
-          : `wizard.${step}.error`
-  const showWizardBack =
-    editingFromReview || prevEventStep(step) !== null || standalone === undefined
+  return { mountPlan, startedFresh, draftCommitted, form }
+}
 
-  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
-  const revealShareBlock = useCallback((y: number) => {
-    scrollRef.current?.scrollTo?.({ y, animated: true })
-  }, [])
+function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStandaloneHost | undefined) {
+  const { t } = useT("event-create")
+  const { t: tShare } = useT("event-form")
+  const create = useCreateCleanup()
+  const createPostAsync = useCreatePost().mutateAsync
+  const toast = useToast()
+  const haptics = useHaptics()
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     if (submitError) announce(t("announce.publishFailed", { error: submitError }))
   }, [submitError, t])
-
-  useEffect(() => {
-    announce(
-      t("wizard.announceStep", {
-        current: stepIndex + 1,
-        total: EVENT_WIZARD_STEPS.length,
-        title: t(`wizard.${step}.title`),
-      }),
-    )
-  }, [step, stepIndex, t])
-
-  const editStep = useCallback((target: EventWizardStep) => {
-    setEditingFromReview(true)
-    setStep(target)
-  }, [])
-
-  const goNext = useCallback(() => {
-    if (!canAdvance) return
-    haptics.selection()
-    if (editingFromReview) {
-      setEditingFromReview(false)
-      setStep("review")
-      return
-    }
-    const next = nextEventStep(step)
-    if (next) setStep(next)
-  }, [canAdvance, editingFromReview, haptics, step])
-
-  const goBack = useCallback(() => {
-    haptics.selection()
-    if (editingFromReview) {
-      setEditingFromReview(false)
-      setStep("review")
-      return
-    }
-    const previous = prevEventStep(step)
-    if (previous) {
-      setStep(previous)
-      return
-    }
-    if (!standalone) useNavStore.getState().back()
-  }, [editingFromReview, haptics, standalone, step])
 
   const canPublish =
     isCleanupFormComplete(form) &&
@@ -547,6 +462,215 @@ function HostForm({
     )
   }, [canPublish, create, createPostAsync, endsAt, form, haptics, scheduledAt, standalone, t, tShare, toast])
 
+  return { create, submitError, canPublish, onPublish }
+}
+
+/**
+ * The wizard's position. An edit started from the review summary returns to review on both Next and Back
+ * instead of walking the steps in between.
+ */
+function useEventWizard(
+  form: CleanupFormValue,
+  initial: CleanupFormValue,
+  standalone: CreateCleanupStandaloneHost | undefined,
+) {
+  const { t } = useT("event-create")
+  const haptics = useHaptics()
+  const [step, setStep] = useState<EventWizardStep>(() => firstIncompleteEventStep(wizardDraftOf(initial)))
+  const stepIndex = eventStepIndex(step)
+  const stepDirection = useStackDirection(stepIndex)
+  const isReview = isFinalEventStep(step)
+  const [editingFromReview, setEditingFromReview] = useState(false)
+  const canAdvance = eventStepSatisfied(step, wizardDraftOf(form))
+  const stepErrorKey = eventStepErrorKey(step, wizardDraftOf(form))
+  const showWizardBack =
+    editingFromReview || prevEventStep(step) !== null || standalone === undefined
+
+  useEffect(() => {
+    announce(
+      t("wizard.announceStep", {
+        current: stepIndex + 1,
+        total: EVENT_WIZARD_STEPS.length,
+        title: t(`wizard.${step}.title`),
+      }),
+    )
+  }, [step, stepIndex, t])
+
+  const editStep = useCallback((target: EventWizardStep) => {
+    setEditingFromReview(true)
+    setStep(target)
+  }, [])
+
+  const goNext = useCallback(() => {
+    if (!canAdvance) return
+    haptics.selection()
+    if (editingFromReview) {
+      setEditingFromReview(false)
+      setStep("review")
+      return
+    }
+    const next = nextEventStep(step)
+    if (next) setStep(next)
+  }, [canAdvance, editingFromReview, haptics, step])
+
+  const goBack = useCallback(() => {
+    haptics.selection()
+    if (editingFromReview) {
+      setEditingFromReview(false)
+      setStep("review")
+      return
+    }
+    const previous = prevEventStep(step)
+    if (previous) {
+      setStep(previous)
+      return
+    }
+    if (!standalone) useNavStore.getState().back()
+  }, [editingFromReview, haptics, standalone, step])
+
+  return {
+    step,
+    stepIndex,
+    stepDirection,
+    isReview,
+    canAdvance,
+    stepErrorKey,
+    showWizardBack,
+    editStep,
+    goNext,
+    goBack,
+  }
+}
+
+function WizardFooter({
+  showBack,
+  isReview,
+  canAdvance,
+  canPublish,
+  publishPending,
+  onBack,
+  onNext,
+  onPublish,
+}: {
+  showBack: boolean
+  isReview: boolean
+  canAdvance: boolean
+  canPublish: boolean
+  publishPending: boolean
+  onBack: () => void
+  onNext: () => void
+  onPublish: () => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-create")
+  return (
+    <View style={styles.wizardFooter}>
+      {showBack ? (
+        <Pressable
+          onPress={onBack}
+          accessibilityRole="button"
+          accessibilityLabel={t("wizard.back")}
+          {...focusRingProps}
+          style={(state) => [
+            styles.backBtn,
+            webCursorPointer,
+            webTransition,
+            webHover(state) ? styles.backBtnHovered : null,
+            state.pressed ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.ArrowLeft} size={16} color={th.colors.textMuted} />
+          <Text style={styles.backText}>{t("wizard.back")}</Text>
+        </Pressable>
+      ) : null}
+
+      {isReview ? (
+        <Pressable
+          onPress={onPublish}
+          disabled={!canPublish}
+          accessibilityRole="button"
+          accessibilityLabel={t("publish.label")}
+          accessibilityState={{ disabled: !canPublish }}
+          {...focusRingProps}
+          style={(state) => [
+            styles.publishBtn,
+            webCursor(!canPublish),
+            webTransition,
+            !canPublish ? styles.publishDisabled : null,
+            webHover(state) && canPublish ? styles.publishHovered : null,
+            state.pressed && canPublish ? styles.pressed : null,
+          ]}
+        >
+          {publishPending ? (
+            <ActivityIndicator size="small" color={th.colors.onAccent} />
+          ) : (
+            <Icon icon={iconMap.Megaphone} size={17} color={th.colors.onAccent} />
+          )}
+          <Text style={styles.publishText}>
+            {publishPending ? t("publish.pending") : t("publish.label")}
+          </Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={onNext}
+          disabled={!canAdvance}
+          accessibilityRole="button"
+          accessibilityLabel={t("wizard.next")}
+          accessibilityState={{ disabled: !canAdvance }}
+          {...focusRingProps}
+          style={(state) => [
+            styles.publishBtn,
+            webCursor(!canAdvance),
+            webTransition,
+            !canAdvance ? styles.publishDisabled : null,
+            webHover(state) && canAdvance ? styles.publishHovered : null,
+            state.pressed && canAdvance ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.publishText}>{t("wizard.next")}</Text>
+          <Icon icon={iconMap.ChevronRight} size={17} color={th.colors.onAccent} />
+        </Pressable>
+      )}
+    </View>
+  )
+}
+
+function HostForm({
+  seedReportId,
+  seedPoint,
+  seedOrganizationId,
+  standalone,
+}: HostSeed & {
+  standalone?: CreateCleanupStandaloneHost
+}) {
+  const { ScrollView } = useScrollHost()
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-create")
+  const userLocation = useUserLocation()
+  const initialCenter = useMemo<LatLng | null>(
+    () => (seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : (userLocation.data ?? null)),
+    [seedPoint, userLocation.data],
+  )
+  const centerSettled = seedPoint != null || !userLocation.isPending
+
+  const { mountPlan, startedFresh, draftCommitted, form } = useHostDraft({
+    seedReportId,
+    seedPoint,
+    seedOrganizationId,
+  })
+  const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
+
+  const { create, submitError, canPublish, onPublish } = usePublishEvent(form, standalone)
+  const wizard = useEventWizard(form, mountPlan.value, standalone)
+  const { step, stepIndex, isReview } = wizard
+
+  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
+  const revealShareBlock = useCallback((y: number) => {
+    scrollRef.current?.scrollTo?.({ y, animated: true })
+  }, [])
+
   return (
     <ScrollView
       ref={scrollRef}
@@ -566,10 +690,10 @@ function HostForm({
         help={t(`wizard.${step}.help`)}
       />
 
-      <StepTransition transitionKey={step} direction={stepDirection} style={styles.stepHost}>
+      <StepTransition transitionKey={step} direction={wizard.stepDirection} style={styles.stepHost}>
         {isReview ? (
           <>
-            <ReviewSummary value={form} onEdit={editStep} />
+            <ReviewSummary value={form} onEdit={wizard.editStep} />
 
             <CleanupForm
               value={form}
@@ -601,86 +725,21 @@ function HostForm({
         )}
       </StepTransition>
 
-      {submitError ? (
-        <View style={styles.validationRow}>
-          <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.brand.bloom} />
-          <Text style={styles.errorText}>{submitError}</Text>
-        </View>
-      ) : !canAdvance && !create.isPending ? (
-        <View style={styles.validationRow}>
-          <Icon icon={iconMap.Info} size={15} color={th.colors.textSubtle} />
-          <Text style={styles.hintText}>{t(stepErrorKey)}</Text>
-        </View>
-      ) : null}
+      <FormValidationRow
+        error={submitError}
+        hint={!wizard.canAdvance && !create.isPending ? t(wizard.stepErrorKey) : null}
+      />
 
-      <View style={styles.wizardFooter}>
-        {showWizardBack ? (
-          <Pressable
-            onPress={goBack}
-            accessibilityRole="button"
-            accessibilityLabel={t("wizard.back")}
-            {...focusRingProps}
-            style={(state) => [
-              styles.backBtn,
-              webCursorPointer,
-              webTransition,
-              webHover(state) ? styles.backBtnHovered : null,
-              state.pressed ? styles.pressed : null,
-            ]}
-          >
-            <Icon icon={iconMap.ArrowLeft} size={16} color={th.colors.textMuted} />
-            <Text style={styles.backText}>{t("wizard.back")}</Text>
-          </Pressable>
-        ) : null}
-
-        {isReview ? (
-          <Pressable
-            onPress={onPublish}
-            disabled={!canPublish}
-            accessibilityRole="button"
-            accessibilityLabel={t("publish.label")}
-            accessibilityState={{ disabled: !canPublish }}
-            {...focusRingProps}
-            style={(state) => [
-              styles.publishBtn,
-              webCursor(!canPublish),
-              webTransition,
-              !canPublish ? styles.publishDisabled : null,
-              webHover(state) && canPublish ? styles.publishHovered : null,
-              state.pressed && canPublish ? styles.pressed : null,
-            ]}
-          >
-            {create.isPending ? (
-              <ActivityIndicator size="small" color={th.colors.onAccent} />
-            ) : (
-              <Icon icon={iconMap.Megaphone} size={17} color={th.colors.onAccent} />
-            )}
-            <Text style={styles.publishText}>
-              {create.isPending ? t("publish.pending") : t("publish.label")}
-            </Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={goNext}
-            disabled={!canAdvance}
-            accessibilityRole="button"
-            accessibilityLabel={t("wizard.next")}
-            accessibilityState={{ disabled: !canAdvance }}
-            {...focusRingProps}
-            style={(state) => [
-              styles.publishBtn,
-              webCursor(!canAdvance),
-              webTransition,
-              !canAdvance ? styles.publishDisabled : null,
-              webHover(state) && canAdvance ? styles.publishHovered : null,
-              state.pressed && canAdvance ? styles.pressed : null,
-            ]}
-          >
-            <Text style={styles.publishText}>{t("wizard.next")}</Text>
-            <Icon icon={iconMap.ChevronRight} size={17} color={th.colors.onAccent} />
-          </Pressable>
-        )}
-      </View>
+      <WizardFooter
+        showBack={wizard.showWizardBack}
+        isReview={isReview}
+        canAdvance={wizard.canAdvance}
+        canPublish={canPublish}
+        publishPending={create.isPending}
+        onBack={wizard.goBack}
+        onNext={wizard.goNext}
+        onPublish={onPublish}
+      />
     </ScrollView>
   )
 }
@@ -718,7 +777,7 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
   if (isPending) {
     return (
       <ScrollHostProvider value={scrollHost}>
-        <HostFormSkeleton />
+        <EventFormSkeleton />
       </ScrollHostProvider>
     )
   }
@@ -750,31 +809,7 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
   )
 }
 
-function HostFormSkeleton() {
-  const { ScrollView } = useScrollHost()
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {HOST_SKELETON_FIELDS.map((height, index) => (
-        <SkeletonGroup key={index} style={styles.skeletonField}>
-          <SkeletonText width="34%" height={11} />
-          <SkeletonBlock width="100%" height={height} radius={th.radius.lg} />
-        </SkeletonGroup>
-      ))}
-      <SkeletonBlock width="100%" height={44} radius={th.radius.pill} />
-    </ScrollView>
-  )
-}
-
-const HOST_SKELETON_FIELDS = [44, 88, 44, 44, 44] as const
-
 const useStyles = makeThemedStyles((t) => ({
-  skeletonField: { gap: t.space["2"] },
   scroll: {
     flex: 1,
   },
@@ -801,26 +836,8 @@ const useStyles = makeThemedStyles((t) => ({
   noteText: {
     flex: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.moss["700"],
-  },
-  validationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    justifyContent: "center",
-  },
-  errorText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.accentText,
-  },
-  hintText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
   },
   stepHost: {
     gap: t.space["4"],
@@ -851,7 +868,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   summaryValue: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   summarySub: {
@@ -883,7 +900,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    height: 52,
+    height: FORM_CONTROL_HEIGHT,
     paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     borderWidth: 1.5,
@@ -905,7 +922,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: t.space["2"],
-    height: 52,
+    height: FORM_CONTROL_HEIGHT,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.brand.bloom,
     ...t.shadows.pin,
@@ -919,7 +936,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   publishText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.onAccent,
   },
   pressed: {

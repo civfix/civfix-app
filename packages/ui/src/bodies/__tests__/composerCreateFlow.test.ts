@@ -5,17 +5,14 @@ import { useNavStore } from "../../nav"
 import {
   clearStaleReportIntentAtComposerMount,
   openReportFlow,
-  stackAfterComposerReturn,
   stackAfterFlowPublished,
 } from "../composerCreateFlow"
 import * as composerCreateFlow from "../composerCreateFlow"
 import { usePostComposerStore } from "../postComposerStore"
-import { topmostFullEntry } from "../../shell/bodyLayout"
 
 const readSource = (relative: string) =>
   readFileSync(new URL(relative, import.meta.url), "utf8")
 
-const composer: DetailEntry = { kind: "composer" }
 const hostForm: DetailEntry = { kind: "create-cleanup" }
 
 /**
@@ -28,6 +25,7 @@ describe("the removed composer -> host-event presentation seam", () => {
       "planComposerCreateEvent",
       "setComposerEventFormPresenter",
       "composerEventFormPresenter",
+      "stackAfterComposerReturn",
     ]) {
       expect(composerCreateFlow).not.toHaveProperty(name)
     }
@@ -35,72 +33,9 @@ describe("the removed composer -> host-event presentation seam", () => {
     expect(source).not.toMatch(/eventFormPresenter|hasHostPresenter|ComposerCreateEventPlan/)
     // ...and the package barrel does not re-export them either.
     const barrel = readSource("../index.ts")
-    expect(barrel).not.toMatch(/ComposerEventFormPresenter|planComposerCreateEvent|ComposerCreateEventPlan/)
-  })
-})
-
-describe("stackAfterComposerReturn", () => {
-  it("truncates back to the WAITING composer in one step, at any depth", () => {
-    expect(stackAfterComposerReturn([composer, hostForm])).toEqual([composer])
-    // The host form can push forward first (a linked report's detail), so a single `back()` would leave
-    // the user parked mid-flow. Truncating is correct however deep it went.
-    expect(stackAfterComposerReturn([composer, hostForm, { kind: "pin", id: "r1" }])).toEqual([composer])
-    expect(
-      stackAfterComposerReturn([{ kind: "post", id: "p1" }, composer, hostForm]),
-    ).toEqual([{ kind: "post", id: "p1" }, composer])
-  })
-
-  it("returns null when no composer entry survived, so the caller pushes a fresh one", () => {
-    // The report-wizard round trip (`selectView` clears the stack) and the mobile screen-hosted composer.
-    expect(stackAfterComposerReturn([hostForm])).toBeNull()
-    expect(stackAfterComposerReturn([])).toBeNull()
-  })
-
-  it("truncates at the TOPMOST composer, so a nested pair cannot strand the inner one", () => {
-    expect(stackAfterComposerReturn([composer, hostForm, composer, hostForm])).toEqual([
-      composer,
-      hostForm,
-      composer,
-    ])
-  })
-})
-
-describe("the composer <-> host-form round trip over the real nav store", () => {
-  beforeEach(() => {
-    useNavStore.getState().reset()
-  })
-
-  it("opens the host form ON TOP of the composer and lands back IN it on publish", () => {
-    // `reset()` leaves the store on the home view with an empty stack.
-    useNavStore.getState().push(composer)
-    expect(useNavStore.getState().stack).toEqual([composer])
-    const originView = useNavStore.getState().originView
-
-    // Launch leg: the host form is PUSHED, never opened with `openDetail` (which replaces the stack and
-    // would destroy the very composer entry the overlay layer needs).
-    useNavStore.getState().push(hostForm)
-
-    const during = useNavStore.getState()
-    expect(during.stack).toEqual([composer, hostForm])
-    expect(during.active).toEqual(hostForm)
-    // The composer entry survived: the base view is untouched and the overlay layer still resolves to the
-    // composer.
-    expect(during.view).toBe("home")
-    expect(during.originView).toBe(originView)
-    expect(topmostFullEntry(during.stack)).toEqual(composer)
-
-    // Return leg: truncate back to the waiting composer in one step.
-    const trimmed = stackAfterComposerReturn(useNavStore.getState().stack)
-    expect(trimmed).toEqual([composer])
-    useNavStore.getState().setStack(trimmed ?? [])
-
-    const after = useNavStore.getState()
-    expect(after.stack).toEqual([composer])
-    expect(after.active).toEqual(composer)
-    expect(after.originView).toBe(originView)
-    // Exactly ONE composer entry: a second `push` here would make Back from the returned composer re-open
-    // the host form the user just published.
-    expect(after.stack.filter((entry) => entry.kind === "composer")).toHaveLength(1)
+    expect(barrel).not.toMatch(
+      /ComposerEventFormPresenter|planComposerCreateEvent|ComposerCreateEventPlan|stackAfterComposerReturn/,
+    )
   })
 })
 
