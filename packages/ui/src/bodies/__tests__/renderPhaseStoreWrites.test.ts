@@ -119,6 +119,14 @@ describe("the host form plans in render and commits in an effect", () => {
     )
   })
 
+  it("keeps one blank fallback while no draft is live, so its slot key cannot remount the slot rows every render", () => {
+    expect(source).not.toMatch(/\?\?\s*emptyCleanupForm\(/)
+    expect(source).toMatch(
+      /const blankForm = useMemo\(\s*\(\) => emptyCleanupForm\(seedReportId, seedOrganizationId\),\s*\[seedReportId, seedOrganizationId\],?\s*\)/,
+    )
+    expect(source).toMatch(/draftCommitted \? liveDraft : mountPlan\.value\) \?\? blankForm/)
+  })
+
   it("renders the plan's value until the commit lands", () => {
     expect(source).toMatch(/draftCommitted \? liveDraft : mountPlan\.value/)
     // The report-location seed child mounts only after the draft exists - passive effects flush
