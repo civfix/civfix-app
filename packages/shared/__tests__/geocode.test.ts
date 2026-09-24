@@ -5,14 +5,12 @@ import {
   photonSuggest,
   mapboxSuggest,
   suggestAddresses,
-  ipLocate,
 } from "../src/geocode.js"
 
 /**
- * Tests for the unified forward geocoder. parseLatLng is pure; photonSuggest, mapboxSuggest,
- * suggestAddresses, and ipLocate are exercised against a stubbed global fetch so the coordinate
- * short-circuit, the Mapbox->Photon fallback, abort propagation, and the IP lookup are covered without
- * hitting Photon / Mapbox / GeoJS.
+ * Tests for the unified forward geocoder. parseLatLng is pure; photonSuggest, mapboxSuggest and
+ * suggestAddresses are exercised against a stubbed global fetch so the coordinate short-circuit, the
+ * Mapbox->Photon fallback and abort propagation are covered without hitting Photon / Mapbox.
  */
 
 afterEach(() => {
@@ -327,20 +325,5 @@ describe("suggestion language/country options", () => {
     expect(first.get("language")).toBe("es")
     expect(first.get("country")).toBe("us")
     expect(new URL(urls[1]!).searchParams.get("country")).toBeNull()
-  })
-})
-
-describe("ipLocate", () => {
-  it("parses lat/lng from GeoJS", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ latitude: "34.05", longitude: "-118.24" }), { status: 200 })),
-    )
-    expect(await ipLocate()).toEqual({ lat: 34.05, lng: -118.24 })
-  })
-
-  it("returns null on failure", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 500 })))
-    expect(await ipLocate()).toBeNull()
   })
 })

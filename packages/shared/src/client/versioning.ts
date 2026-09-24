@@ -10,9 +10,6 @@
 export type ApiVersion = "v1"
 export type EndpointVersion = ApiVersion | "unversioned"
 
-export const API_VERSIONS = ["v1"] as const satisfies readonly ApiVersion[]
-export const LATEST_API_VERSION: ApiVersion = "v1"
-
 /** The ONE place version->path lives; the backend route() helper imports this too. */
 export function versionedPath(ep: { version: EndpointVersion; path: string }): string {
   return ep.version === "unversioned" ? ep.path : `/${ep.version}${ep.path}`

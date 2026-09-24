@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest"
 
 import {
   ADDRESS_PRECISION_LADDER,
-  comparePrecision,
   geocodePointKey,
   isLocatedPrecision,
   isVerifiedEventAddress,
@@ -39,9 +38,6 @@ describe("address precision ladder", () => {
       "locality",
     ])
     expect(AddressPrecisionSchema.options).toEqual([...ADDRESS_PRECISION_LADDER])
-    expect(comparePrecision("street", "locality")).toBeLessThan(0)
-    expect(comparePrecision("landmark", "intersection")).toBeGreaterThan(0)
-    expect(comparePrecision("street", "street")).toBe(0)
   })
 
   it("treats street/intersection/landmark as located and locality/null as not", () => {

@@ -17,10 +17,6 @@ export function needsNearPrefix(precision: AddressPrecision | null | undefined):
   return precision === "landmark"
 }
 
-export function comparePrecision(a: AddressPrecision, b: AddressPrecision): number {
-  return ADDRESS_PRECISION_LADDER.indexOf(a) - ADDRESS_PRECISION_LADDER.indexOf(b)
-}
-
 export function isVerifiedEventAddress(
   addressSource: EventAddressSource | null | undefined,
   address: string | null | undefined,

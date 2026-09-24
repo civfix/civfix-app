@@ -307,28 +307,3 @@ export async function suggestAddresses(query: string, opts: SuggestOptions = {})
     return []
   }
 }
-
-const GEOJS_URL = "https://get.geojs.io/v1/ip/geo.json"
-
-/**
- * Best-effort IP geolocation (no permission prompt) via GeoJS - a free, CORS-enabled, key-less HTTPS
- * endpoint. Returns null on any failure so callers can fall back to a map center. Used as the proximity
- * source when device location sharing is denied or unavailable.
- *
- * @deprecated since 0.47.0. A third-party data flow with no consumer-plane callers left. Use
- * `GET /geo/approximate` (`getApproximateLocation`, DECISIONS #45).
- */
-export async function ipLocate(signal?: AbortSignal): Promise<LatLng | null> {
-  try {
-    const res = await fetch(GEOJS_URL, { signal, headers: { Accept: "application/json" } })
-    if (!res.ok) return null
-    const data = (await res.json()) as { latitude?: string | number; longitude?: string | number }
-    const lat = Number(data.latitude)
-    const lng = Number(data.longitude)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
-    return { lat, lng }
-  } catch {
-    return null
-  }
-}

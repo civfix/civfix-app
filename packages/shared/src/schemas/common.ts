@@ -66,8 +66,7 @@ export const ISODateSchema = z
   .transform((d) => d.toISOString())
 export type ISODate = string
 
-export const H3CellSchema = z.string().min(1)
-export type H3Cell = z.infer<typeof H3CellSchema>
+export type H3Cell = string
 
 export const AppErrorSchema = z.object({
   code: z.string(),
@@ -162,10 +161,6 @@ export const REPORT_TYPE_CODE: Record<ReportType, string> = {
   vegetation: "OV",
   other: "OT",
 }
-
-export const REPORT_CODE_TO_TYPE = Object.fromEntries(
-  Object.entries(REPORT_TYPE_CODE).map(([t, c]) => [c, t]),
-) as Record<string, ReportType>
 
 export const GeomSourceSchema = z.enum(["device", "exif", "manual"])
 export type GeomSource = z.infer<typeof GeomSourceSchema>
@@ -416,17 +411,10 @@ export type LegalDocumentType = z.infer<typeof LegalDocumentTypeSchema>
 export const ConsentSurfaceSchema = z.enum(["web_register", "mobile_register", "onboarding"])
 export type ConsentSurface = z.infer<typeof ConsentSurfaceSchema>
 
-
-export interface GovTarget {
-  name: string
-  email: string
-}
-
 export interface WebReportType {
   id: string
   label: string
   category: ReportCategory
-  gov: GovTarget
 }
 
 export const WEB_REPORT_TYPES = [
@@ -434,59 +422,42 @@ export const WEB_REPORT_TYPES = [
     id: "dump",
     label: "Illegal dumping",
     category: "trash",
-    gov: { name: "LA Bureau of Sanitation", email: "sanitation@lacity.gov" },
   },
   {
     id: "encampment",
     label: "Encampment",
     category: "encampment",
-    gov: { name: "LA Bureau of Sanitation", email: "sanitation@lacity.gov" },
   },
   {
     id: "graffiti",
     label: "Graffiti",
     category: "graffiti",
-    gov: { name: "Office of Community Beautification", email: "ocb@lacity.gov" },
   },
   {
     id: "infrastructure",
     label: "Broken infrastructure",
     category: "water",
-    gov: { name: "LA Bureau of Street Services", email: "streetservices@lacity.gov" },
   },
   {
     id: "pavement",
     label: "Pavement distress",
     category: "hazard",
-    gov: { name: "LA Bureau of Street Services", email: "streetservices@lacity.gov" },
   },
   {
     id: "vegetation",
     label: "Overgrown vegetation",
     category: "recycling",
-    gov: { name: "LA Bureau of Street Services", email: "streetservices@lacity.gov" },
   },
   {
     id: "water",
     label: "Water/leak",
     category: "water",
-    gov: { name: "LADWP", email: "customerservice@ladwp.com" },
   },
   {
     id: "recycling",
     label: "Recycling",
     category: "recycling",
-    gov: { name: "LA Bureau of Sanitation", email: "sanitation@lacity.gov" },
   },
 ] as const satisfies readonly WebReportType[]
 
 export type WebReportTypeId = (typeof WEB_REPORT_TYPES)[number]["id"]
-
-export const WEB_REPORT_TYPE_BY_ID: Record<WebReportTypeId, WebReportType> = Object.fromEntries(
-  WEB_REPORT_TYPES.map((t) => [t.id, t]),
-) as Record<WebReportTypeId, WebReportType>
-
-export function webReportTypeToCategory(id: string): ReportCategory {
-  const entry = WEB_REPORT_TYPE_BY_ID[id as WebReportTypeId]
-  return entry ? entry.category : "other"
-}

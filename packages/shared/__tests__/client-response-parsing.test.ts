@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { createApiClient, parseResponse, resetResponseWarnings } from "../src/client/client.js"
-import { endpoints } from "../src/client/endpoints.js"
+import type * as ClientModule from "../src/client/client.js"
+import type * as EndpointsModule from "../src/client/endpoints.js"
 
 /**
  * The typed client parses 2xx bodies against the endpoint's response schema, so the registry's
@@ -42,13 +42,20 @@ function legacyCleanup() {
   }
 }
 
+let createApiClient: typeof ClientModule.createApiClient
+let parseResponse: typeof ClientModule.parseResponse
+let endpoints: typeof EndpointsModule.endpoints
+
 function clientReturning(body: unknown) {
   const fetchImpl = vi.fn(async () => jsonResponse(body)) as unknown as typeof fetch
   return createApiClient({ baseURL: "https://api.civfix.test", fetchImpl })
 }
 
-beforeEach(() => {
-  resetResponseWarnings()
+// A fresh module per test resets the client's once-per-endpoint warning memo.
+beforeEach(async () => {
+  vi.resetModules()
+  ;({ createApiClient, parseResponse } = await import("../src/client/client.js"))
+  ;({ endpoints } = await import("../src/client/endpoints.js"))
 })
 
 afterEach(() => {

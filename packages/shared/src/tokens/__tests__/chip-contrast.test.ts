@@ -4,9 +4,7 @@ import {
   CHIP_HUE_NAMES,
   MIN_CHIP_RATIO,
   chipHuePairs,
-  chipPairPasses,
   contrastRatio,
-  mixWithWhite,
   relativeLuminance,
 } from "../chip-contrast.js"
 
@@ -24,14 +22,6 @@ describe("contrast math", () => {
     expect(contrastRatio("#356291", "#E9F1FA")).toBeCloseTo(contrastRatio("#E9F1FA", "#356291"), 12)
   })
 
-  it("mixes toward white and clamps the weight", () => {
-    expect(mixWithWhite("#000000", 1)).toBe("#000000")
-    expect(mixWithWhite("#000000", 0)).toBe("#FFFFFF")
-    expect(mixWithWhite("#000000", 0.5)).toBe("#808080")
-    expect(mixWithWhite("#000000", 5)).toBe("#000000")
-    expect(mixWithWhite("#000000", -5)).toBe("#FFFFFF")
-  })
-
   it("refuses a malformed hex instead of silently scoring garbage", () => {
     expect(() => relativeLuminance("#FFF")).toThrow(RangeError)
     expect(() => contrastRatio("nope", "#FFFFFF")).toThrow(RangeError)
@@ -41,7 +31,6 @@ describe("contrast math", () => {
     expect(() => relativeLuminance("#1G2233")).toThrow(RangeError)
     expect(() => relativeLuminance("#11223Z")).toThrow(RangeError)
     expect(() => relativeLuminance("12#3456")).toThrow(RangeError)
-    expect(() => mixWithWhite("#-12233", 0.5)).toThrow(RangeError)
     expect(relativeLuminance("ffffff")).toBeCloseTo(1, 10)
   })
 })
@@ -68,7 +57,6 @@ describe("chipHuePairs", () => {
           ratio,
           `${scheme} ${pair.name} chip ink ${pair.text} on ${pair.bg} is ${ratio.toFixed(2)}:1`,
         ).toBeGreaterThanOrEqual(MIN_CHIP_RATIO)
-        expect(chipPairPasses(pair)).toBe(true)
       }
     }
   })

@@ -87,10 +87,6 @@ export const FORWARD_TEMPLATE_VARIABLES: readonly ForwardTemplateVariable[] = [
   },
 ]
 
-export const FORWARD_TEMPLATE_VARIABLE_NAMES: readonly string[] = FORWARD_TEMPLATE_VARIABLES.map((v) =>
-  v.token.slice(1, -1),
-)
-
 export type ForwardTemplateValues = Record<string, string>
 
 export const FORWARD_TEMPLATE_SAMPLE_VALUES: Readonly<ForwardTemplateValues> = {

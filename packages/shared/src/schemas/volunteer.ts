@@ -9,20 +9,14 @@ import {
 
 /**
  * `"report"` is historical only and must stay in this list. Nothing writes a report credit any more
- * (filing a report is not volunteer service), but old ledger rows, the frozen `snapshot` of every
- * already-issued certificate, and older servers still carry the value, so dropping it would make those
- * payloads fail to parse. Do not add a new source that credits reports.
+ * (filing a report is not volunteer service), but old ledger rows (0.1 hours each), the frozen
+ * `snapshot` of every already-issued certificate, and older servers still carry the value, so dropping
+ * it would make those payloads fail to parse. Do not add a new source that credits reports.
  */
 export const VOLUNTEER_HOURS_SOURCES = ["report", "event", "manual"] as const
 export const VolunteerHoursSourceSchema = z.enum(VOLUNTEER_HOURS_SOURCES)
 export type VolunteerHoursSource = z.infer<typeof VolunteerHoursSourceSchema>
 
-/**
- * @deprecated Filing a report is not volunteer service and nothing credits it. The constant only
- * documents what the historical `source='report'` rows are worth; crediting anything with it would put
- * report filings back on the public leaderboard and on signed PDF transcripts.
- */
-export const REPORT_VOLUNTEER_HOURS = 0.1
 /** Smallest creditable event-hours amount (2-dp minimum; rounding is enforced backend-side). */
 export const MIN_EVENT_HOURS = 0.01
 export const MAX_EVENT_HOURS = 24

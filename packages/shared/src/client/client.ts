@@ -136,11 +136,6 @@ for (const name of Object.keys(endpoints) as EndpointName[]) {
 /** Endpoint names already warned about, so a mismatching server logs once instead of per call. */
 const warnedEndpoints = new Set<string>()
 
-/** Reset the once-per-endpoint warning memo. Exported for unit testing only. */
-export function resetResponseWarnings(): void {
-  warnedEndpoints.clear()
-}
-
 /**
  * Run a 2xx body through the endpoint's response schema so the DTOs' `.default()`s and `.catch()`es
  * actually apply on the read path; without this the inferred types lie whenever the deployed server is

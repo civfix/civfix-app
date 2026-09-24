@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest"
-import {
-  versionedPath,
-  API_VERSIONS,
-  LATEST_API_VERSION,
-} from "../src/client/versioning.js"
+import { versionedPath } from "../src/client/versioning.js"
 import { endpoints } from "../src/client/endpoints.js"
 
 describe("versionedPath", () => {
@@ -19,11 +15,6 @@ describe("versionedPath", () => {
     expect(versionedPath({ version: "unversioned", path: "/auth/google/start" })).toBe(
       "/auth/google/start",
     )
-  })
-
-  it("exposes the supported versions and the latest", () => {
-    expect(API_VERSIONS).toEqual(["v1"])
-    expect(LATEST_API_VERSION).toBe("v1")
   })
 })
 
