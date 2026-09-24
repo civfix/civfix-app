@@ -51,7 +51,8 @@ export function ProfileStatsRow({
     const label = t(item.labelKey, { count: item.value })
     const count = formatPostActionCount(item.value)
     const which = item.connection
-    const pressable = which != null && onOpenConnections != null
+    const onPress = which != null && onOpenConnections != null ? () => onOpenConnections(which) : null
+    const pressable = onPress != null
     const content = (
       <>
         <Text style={styles.count}>{count}</Text>
@@ -66,7 +67,7 @@ export function ProfileStatsRow({
         )}
       </>
     )
-    if (!which || !onOpenConnections) {
+    if (!onPress) {
       return (
         <View key={item.key} style={styles.stat}>
           {content}
@@ -76,7 +77,7 @@ export function ProfileStatsRow({
     return (
       <Pressable
         key={item.key}
-        onPress={() => onOpenConnections(which)}
+        onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={`${count} ${label}`}
         {...focusRingProps}
@@ -114,7 +115,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   count: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 19,
     color: t.colors.text,
   },

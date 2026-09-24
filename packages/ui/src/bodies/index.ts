@@ -12,11 +12,7 @@ export { AppearanceSettingsBody } from "./AppearanceSettingsBody"
 export { AppearanceOptionList } from "./AppearanceOptionList"
 
 export { SettingsBody } from "./SettingsBody"
-export {
-  setOnboardingTourPresenter,
-  getOnboardingTourPresenter,
-  useOnboardingTourPresenter,
-} from "./onboardingTour"
+export { setOnboardingTourPresenter, useOnboardingTourPresenter } from "./onboardingTour"
 export type { OnboardingTourPresenter } from "./onboardingTour"
 export { SettingsAccountBody } from "./SettingsAccountBody"
 export { DonationLinkEditor } from "./settings/DonationLinkEditor"
@@ -53,7 +49,7 @@ export type { ReportRowViewProps } from "./ReportRow"
 export { ReportDetailBody } from "./ReportDetailBody"
 export { FeedBody } from "./FeedBody"
 export { SearchBody } from "./SearchBody"
-export { DiscoveryLeaderboard } from "./SearchBody"
+export { DiscoveryLeaderboard } from "./search/DiscoveryLeaderboard"
 export { SearchResults } from "./SearchResults"
 export { PostCard } from "./PostCard"
 export { LinkedEventCard } from "./LinkedEventCard"
@@ -115,11 +111,7 @@ export type { ProfileStatItem, ProfileStatsRowProps, ProfileConnectionKey } from
 
 export { ProfileTabBar } from "./profile/ProfileTabBar"
 export type { ProfileTabBarProps } from "./profile/ProfileTabBar"
-export {
-  ProfileTimelineLane,
-  PROFILE_TIMELINE_BLEED,
-  timelineLaneBleedStyle,
-} from "./profile/ProfileTimelineLane"
+export { ProfileTimelineLane, PROFILE_TIMELINE_BLEED } from "./profile/ProfileTimelineLane"
 export type { ProfileTimelineLaneProps } from "./profile/ProfileTimelineLane"
 export {
   PROFILE_DEFAULT_TAB,

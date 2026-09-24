@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { viewerTimeZone } from "../../i18n/useViewerTimeZone"
+import { personDetailSource } from "../personDetail/__tests__/personDetailSource"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -10,7 +11,7 @@ const SURFACES: Record<string, string> = {
   "primitives/DateBadge.tsx": code(read("../../primitives/DateBadge.tsx")),
   "primitives/EventCard.tsx": code(read("../../primitives/EventCard.tsx")),
   "bodies/EventsBody.tsx": code(read("../EventsBody.tsx")),
-  "bodies/PersonDetailBody.tsx": code(read("../PersonDetailBody.tsx")),
+  "bodies/PersonDetailBody.tsx": code(personDetailSource()),
   "bodies/SearchResults.tsx": code(read("../SearchResults.tsx")),
   "bodies/MembersBody.tsx": code(read("../MembersBody.tsx")),
   "bodies/SlotGroupHeader.tsx": code(read("../SlotGroupHeader.tsx")),

@@ -1,10 +1,10 @@
 export type SearchGroupId = "people" | "events" | "reports"
 
+export const SEARCH_EVENT_POOL_LIMIT = 10
+
 export const SEARCH_RESULT_CARD_LAYOUT = {
   gap: 9,
   radius: 18,
-  individualCards: true,
-  dividedContainer: false,
 } as const
 
 export function groupSearchResults({

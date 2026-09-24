@@ -19,7 +19,7 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { useRowHover } from "./rowHover"
 import { resolveDiscoveryGeoid } from "./leaderboardGeoid"
 
@@ -413,7 +413,7 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
-    paddingHorizontal: 12,
+    paddingHorizontal: t.space["3"],
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -428,7 +428,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     padding: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   clearBtn: {
@@ -487,7 +487,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLink: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   row: {
@@ -535,7 +535,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {

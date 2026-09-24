@@ -28,7 +28,7 @@ export interface PostCardRhythm {
   overflowGlyph: number
   /**
    * Equal to `metaRowMinHeight` so the button cannot inflate the row, which would need a cancelling margin
-   * that breaks `EmbeddedPostMeta` (it shares the style without the button).
+   * on the shared meta-row style.
    */
   overflowBoxHeight: number
   /** The action bar's timeline halo, so both circular affordances on a row match by construction. */

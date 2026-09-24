@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { reportDetailSourceFiles } from "../../bodies/reportDetail/__tests__/reportDetailSource"
+import { personDetailSource } from "../../bodies/personDetail/__tests__/personDetailSource"
+import { searchBodySource } from "../../bodies/search/__tests__/searchBodySource"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -43,7 +45,7 @@ describe("the wordmark is a button, not a heading", () => {
 /**
  * A body may leave at most its own title implicit: any other unleveled header would announce as a peer
  * of the page title. SearchBody and ReportFlowBody render a portrait and an expanded title in mutually
- * exclusive branches, so their budget is 2.
+ * exclusive branches, so their budget is 2. A body split across a folder is counted as one surface.
  */
 const TITLE_BUDGET: Record<string, number> = {
   "bodies/SearchBody.tsx": 2,
@@ -62,6 +64,7 @@ const HEADING_FILES = [
   "bodies/EventDetailBody.tsx",
   "bodies/GroupInfoBody.tsx",
   "bodies/MembersBody.tsx",
+  "bodies/ChatInfoParts.tsx",
   "bodies/ReportsBody.tsx",
   "bodies/ReportFlowBody.tsx",
   "bodies/FeedBody.tsx",
@@ -78,11 +81,18 @@ const HEADING_FILES = [
   "shell/DetailBar.tsx",
 ]
 
+const SURFACE_SOURCE: Record<string, () => string> = {
+  "bodies/SearchBody.tsx": searchBodySource,
+  "bodies/PersonDetailBody.tsx": personDetailSource,
+}
+
+const surfaceSource = (rel: string): string => SURFACE_SOURCE[rel]?.() ?? read(`../../${rel}`)
+
 const count = (src: string, re: RegExp) => (src.match(re) ?? []).length
 
 describe("no body announces a section as a peer of its page title", () => {
   it.each(HEADING_FILES)("%s levels every heading past its title", (rel) => {
-    const src = strip(read(`../../${rel}`))
+    const src = strip(surfaceSource(rel))
     const roles = count(src, /accessibilityRole="header"/g)
     const levels = count(src, /headingLevel\(/g)
     expect(roles - levels).toBeLessThanOrEqual(TITLE_BUDGET[rel] ?? 1)
@@ -91,7 +101,7 @@ describe("no body announces a section as a peer of its page title", () => {
 
 describe("the two ladders the snapshot reads on /search and /profile", () => {
   it("search's four section labels are level 2", () => {
-    const src = strip(read("../../bodies/SearchBody.tsx"))
+    const src = strip(searchBodySource())
     expect(count(src, /headingLevel\(2\)/g)).toBeGreaterThanOrEqual(4)
   })
 

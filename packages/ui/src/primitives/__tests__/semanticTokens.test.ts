@@ -106,14 +106,21 @@ describe("selection is neutral", () => {
   })
 
   it("keeps the pickers that became segmented gated on their in-flight request", () => {
-    const sites: [string, string][] = [
-      ["../../bodies/host/HostTeamInviteSheet.tsx", "disabled={invite.isPending}"],
-      ["../../bodies/host/dashboard/OrgInviteSheet.tsx", "disabled={invite.isPending}"],
+    const fields = strip(read("../../bodies/host/InviteIdentifierFields.tsx"))
+    const control = fields.slice(fields.indexOf("<SegmentedControl"))
+    expect(control.slice(0, control.indexOf("/>")), "the identifier picker lost its busy gate").toContain(
+      "disabled={disabled}",
+    )
+    const sites = [
+      "../../bodies/host/HostTeamInviteSheet.tsx",
+      "../../bodies/host/dashboard/OrgInviteSheet.tsx",
     ]
-    for (const [rel, gate] of sites) {
+    for (const rel of sites) {
       const src = strip(read(rel))
-      const control = src.slice(src.indexOf("<SegmentedControl"))
-      expect(control.slice(0, control.indexOf("/>")), `${rel} lost its busy gate`).toContain(gate)
+      const fieldsUse = src.slice(src.indexOf("<InviteIdentifierFields"))
+      expect(fieldsUse.slice(0, fieldsUse.indexOf("/>")), `${rel} lost its busy gate`).toContain(
+        "disabled={invite.isPending}",
+      )
     }
   })
 })

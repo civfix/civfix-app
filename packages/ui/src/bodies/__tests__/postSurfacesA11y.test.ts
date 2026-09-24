@@ -38,7 +38,7 @@ describe("the post row is a pointer convenience, not an accessibility element", 
   })
 
   it("leaves keyboard and screen-reader users the timestamp permalink to open the thread", () => {
-    const permalink = between(card, 'accessibilityLabel={t("post_card.permalink_a11y", { time: model.timeLabel })}', "style=")
+    const permalink = between(card, 'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}', "style=")
     expect(permalink).toContain("linkKeyProps(onOpenPost)")
   })
 
@@ -74,7 +74,10 @@ describe("a repost's comment and quote target the original", () => {
   const card = code("../PostCard.tsx")
 
   it("routes both through the same target as the row and the menu, falling back when it is deleted", () => {
-    expect(card).toContain("const actionTargetId = isRepost && embedded && !embedded.deleted ? embedded.id : post.id")
+    const view = code("../postCardModel.ts")
+    expect(view).toContain("const liveOriginal = isRepost && embedded && !embedded.deleted ? embedded : null")
+    expect(view).toContain("actionTargetId: liveOriginal ? liveOriginal.id : post.id,")
+    expect(card).toContain("const { isRepost, embedded, rowPostId, actionTargetId, openableOriginalId, media } = view")
     expect(card).toContain("const onComment = React.useCallback(() => openPost(actionTargetId), [openPost, actionTargetId])")
     expect(card).toContain('push({ kind: "composer", composerMode: "quote", targetPostId: actionTargetId })')
   })

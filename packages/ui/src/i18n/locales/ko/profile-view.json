@@ -1,8 +1,4 @@
 {
-  "hero": {
-    "share_a11y": "프로필 공유",
-    "close_a11y": "프로필 닫기"
-  },
   "stats": {
     "following": "팔로잉",
     "followers_other": "팔로워",

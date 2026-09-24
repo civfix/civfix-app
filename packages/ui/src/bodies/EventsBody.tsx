@@ -30,7 +30,7 @@ import {
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useEventWhen, useLocale, useT } from "../i18n"
-import { pushCleanup } from "./navHelpers"
+import { pushCleanup } from "../nav/verbs"
 import { useRowHover } from "./rowHover"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"

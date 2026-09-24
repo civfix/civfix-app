@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { useNavStore } from "../../nav"
-import type { DetailEntry } from "../../nav"
-import { openPinnedMessages, clearThreadJumpParam, openThread, openNewGroup, openGroupInfo, isTopEntry } from "../navHelpers"
+import { useNavStore } from ".."
+import type { DetailEntry } from ".."
+import { openPinnedMessages, clearThreadJumpParam, openThread, openNewGroup, openGroupInfo, isTopEntry } from "../verbs"
 
 function resetStore(): void {
   useNavStore.setState({

@@ -32,11 +32,12 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useEventWhen, useLocale, useT } from "../i18n"
 import { useRowHover } from "./rowHover"
-import { pushCleanup } from "./navHelpers"
+import { pushCleanup } from "../nav/verbs"
 import { ReportRowView } from "./ReportRow"
 import { hasEventEnded } from "./eventLifecycle"
 import { reportHitRowModel } from "./reportHitRowModel"
 import {
+  SEARCH_EVENT_POOL_LIMIT,
   SEARCH_RESULT_CARD_LAYOUT,
   filterEventHits,
   groupSearchResults,
@@ -163,7 +164,7 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
   const { t } = useT("home-sidebar")
   const { data: location } = useUserLocation()
   const { isAuthenticated } = useAuthState()
-  const cleanupsQuery = useNearbyCleanups(10, location ?? null)
+  const cleanupsQuery = useNearbyCleanups(SEARCH_EVENT_POOL_LIMIT, location ?? null)
   const debouncedQuery = useDebouncedValue(rawQuery, SEARCH_DEBOUNCE_MS)
   const peopleSearch = useUserSearch(rawQuery)
   const reportSearch = useReportSearch({ q: debouncedQuery })
@@ -351,14 +352,7 @@ const useStyles = makeThemedStyles((t) => ({
   content: { paddingHorizontal: t.space["4"], paddingBottom: t.space["10"] },
   sectionHeader: { paddingTop: t.space["3"], paddingBottom: t.space["2"] },
   sectionTitle: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 11.5, lineHeight: 16, letterSpacing: 1.2, textTransform: "uppercase", color: t.colors.textMuted },
-  group: {
-    gap: SEARCH_RESULT_CARD_LAYOUT.gap,
-    backgroundColor: SEARCH_RESULT_CARD_LAYOUT.individualCards
-      ? "transparent"
-      : t.colors.surface,
-    borderWidth: SEARCH_RESULT_CARD_LAYOUT.dividedContainer ? StyleSheet.hairlineWidth : 0,
-    borderColor: t.colors.border,
-  },
+  group: { gap: SEARCH_RESULT_CARD_LAYOUT.gap },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -366,17 +360,10 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: 64,
     paddingVertical: t.space["2"] + 2,
     paddingHorizontal: t.space["3"],
-    borderRadius: SEARCH_RESULT_CARD_LAYOUT.individualCards
-      ? SEARCH_RESULT_CARD_LAYOUT.radius
-      : 0,
-    borderWidth: SEARCH_RESULT_CARD_LAYOUT.individualCards ? StyleSheet.hairlineWidth : 0,
-    borderBottomWidth: SEARCH_RESULT_CARD_LAYOUT.dividedContainer
-      ? StyleSheet.hairlineWidth
-      : undefined,
+    borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
-    backgroundColor: SEARCH_RESULT_CARD_LAYOUT.individualCards
-      ? t.colors.surface
-      : "transparent",
+    backgroundColor: t.colors.surface,
     ...t.shadows.s1,
   },
   rowHovered: { backgroundColor: t.colors.surfaceTint, borderColor: t.colors.borderStrong },
@@ -416,6 +403,6 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
   },
-  retryText: { color: t.colors.textMuted, fontFamily: t.fontFamily.bodyBold, fontSize: 13, lineHeight: 18 },
+  retryText: { color: t.colors.textMuted, fontFamily: t.fontFamily.bodyBold, fontSize: t.fontSize["13"], lineHeight: 18 },
   bottomPad: { height: t.space["8"] },
 }))

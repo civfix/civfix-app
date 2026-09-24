@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MIN_TOUCH_TARGET as CANONICAL_MIN_TOUCH_TARGET } from "../../theme/touchTarget"
+import { searchBodySource, searchPart } from "../search/__tests__/searchBodySource"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -59,7 +60,7 @@ describe("ComposerThumbs: the remove button lives INSIDE the thumb it belongs to
 })
 
 describe("SearchBody: the field clear chip and the link actions clear 44pt", () => {
-  const SRC = read("../SearchBody.tsx")
+  const SRC = searchBodySource()
 
   it("grows the clear chip's slop to the shared 44pt target inside the 44pt field", () => {
     const size = num(SRC, "FIELD_CLEAR_SIZE")
@@ -73,12 +74,13 @@ describe("SearchBody: the field clear chip and the link actions clear 44pt", () 
 
   it("gives the text link a 44pt BOX rather than slop its header would clip", () => {
     expect(SRC).toContain("clear: { minHeight: MIN_TOUCH_TARGET, justifyContent: \"center\"")
-    const linkAction = SRC.slice(SRC.indexOf("function LinkAction"), SRC.indexOf("function SuggestedPersonCard"))
+    const linkAction = searchPart("LinkAction.tsx")
+    expect(linkAction).toContain("export function LinkAction(")
     expect(linkAction, "the box IS the target now - no slop to clip").not.toContain("hitSlop")
   })
 
   it("reads the shared result-card layout instead of re-typing 18 and 9", () => {
-    expect(SRC).toContain('import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"')
+    expect(SRC).toContain('import { SEARCH_RESULT_CARD_LAYOUT } from "../searchResultsModel"')
     expect(SRC).toContain("borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius")
     expect(SRC).toContain("gap: SEARCH_RESULT_CARD_LAYOUT.gap")
     expect(SRC).not.toMatch(/borderRadius: 18,/)

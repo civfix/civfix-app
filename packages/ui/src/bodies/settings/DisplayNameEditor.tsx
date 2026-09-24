@@ -11,7 +11,7 @@ import { useT } from "../../i18n"
 import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 
-export const MAX_DISPLAY_NAME_LENGTH = 80
+const MAX_DISPLAY_NAME_LENGTH = 80
 
 export interface DisplayNameEditorProps {
   currentName: string

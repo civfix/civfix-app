@@ -8,7 +8,7 @@ function available(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined"
 }
 
-export const mapFilterStorage: StateStorage = {
+export const persistentStorage: StateStorage = {
   getItem: (name) => {
     if (!available()) return null
     try {

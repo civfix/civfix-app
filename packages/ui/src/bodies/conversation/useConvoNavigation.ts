@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import type { PersonDTO, RoomKind } from "@civfix/shared"
 import { useNavStore } from "../../nav"
-import { openGroupInfo, openPinnedMessages } from "../navHelpers"
+import { openGroupInfo, openPinnedMessages } from "../../nav/verbs"
 
 export function useConvoNavigation({
   id,

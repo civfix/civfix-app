@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
-import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
+import { View, Pressable, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import {
@@ -29,6 +29,7 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
+import { ChatInfoActionRow, ChatInfoHero } from "./ChatInfoParts"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
 import { chatInfoRosterView } from "./chatInfoVisibility"
@@ -211,90 +212,6 @@ function LinkedEntityRow({
       </Text>
       <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textSubtle} />
     </Pressable>
-  )
-}
-
-function ActionRow({
-  icon,
-  label,
-  a11y,
-  destructive,
-  disabled,
-  onPress,
-}: {
-  icon: IconName
-  label: string
-  a11y?: string
-  destructive?: boolean
-  disabled?: boolean
-  onPress: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={a11y ?? label}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.actionRow,
-        pressed ? styles.rowPressed : null,
-        disabled ? styles.actionDisabled : null,
-      ]}
-    >
-      <Icon
-        icon={iconMap[icon]}
-        size={18}
-        color={destructive ? th.colors.bloom["600"] : th.colors.text}
-      />
-      <Text style={[styles.actionLabel, destructive ? styles.actionLabelDestructive : null]}>
-        {label}
-      </Text>
-    </Pressable>
-  )
-}
-
-function ChatInfoHero({
-  imageUrl,
-  glyph,
-  title,
-  subtitle,
-  memberLine,
-}: {
-  imageUrl: string | null
-  glyph: IconName
-  title: string
-  subtitle: string | null
-  memberLine: string
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <View style={styles.hero}>
-      <View style={[styles.heroAvatar, imageUrl ? styles.heroAvatarFramed : null]}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.heroAvatarImage} resizeMode="cover" />
-        ) : (
-          <Icon icon={iconMap[glyph]} size={34} color={th.colors.onAccent} />
-        )}
-      </View>
-      <Text
-        style={styles.heroName}
-        numberOfLines={2}
-        accessibilityRole="header"
-        {...headingLevel(2)}
-      >
-        {title}
-      </Text>
-      {subtitle ? (
-        <Text style={styles.heroSubtitle} numberOfLines={2}>
-          {subtitle}
-        </Text>
-      ) : null}
-      <Text style={styles.heroMembers}>{memberLine}</Text>
-    </View>
   )
 }
 
@@ -544,6 +461,7 @@ export function MembersBody({
             : cleanup?.title ?? ""
         }
         subtitle={roomKind === "report" ? report?.addr ?? null : cleanup?.address ?? null}
+        subtitleLines={2}
         memberLine={
           roster.access === "followed-only"
             ? t("hero.members_partial", { shown: roster.shown, going: roster.going })
@@ -553,7 +471,7 @@ export function MembersBody({
       {roster.canMute || canLeave ? (
         <View style={styles.actions}>
           {roster.canMute ? (
-            <ActionRow
+            <ChatInfoActionRow
               icon={muted ? "BellOff" : "Bell"}
               label={muted ? t("action.unmute") : t("action.mute")}
               disabled={toggleMute.isPending}
@@ -561,7 +479,7 @@ export function MembersBody({
             />
           ) : null}
           {canLeave ? (
-            <ActionRow
+            <ChatInfoActionRow
               icon="LogOut"
               label={t("action.leave")}
               destructive
@@ -693,68 +611,11 @@ const useStyles = makeThemedStyles((t) => ({
   linkedRowPressed: {
     opacity: 0.7,
   },
-  hero: {
-    alignItems: "center",
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["4"],
-    gap: t.space["2"],
-  },
-  heroAvatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.brand.moss,
-  },
-  heroAvatarFramed: t.imageFrame,
-  heroAvatarImage: {
-    width: "100%",
-    height: "100%",
-  },
-  heroName: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 19,
-    color: t.colors.text,
-    textAlign: "center",
-  },
-  heroSubtitle: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.textMuted,
-    textAlign: "center",
-  },
-  heroMembers: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.textSubtle,
-  },
   actions: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
     paddingVertical: t.space["1"],
     marginBottom: t.space["3"],
-  },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["3"],
-  },
-  actionDisabled: {
-    opacity: 0.5,
-  },
-  actionLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["15"],
-    color: t.colors.text,
-  },
-  actionLabelDestructive: {
-    color: t.colors.bloom["600"],
-  },
-  rowPressed: {
-    opacity: 0.7,
   },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,

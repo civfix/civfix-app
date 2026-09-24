@@ -44,10 +44,10 @@ describe("the onboarding-tour presenter seam", () => {
     expect(calls).toBe(1)
   })
 
-  it("is exported from the bodies barrel, types included", () => {
+  it("exports the host-facing setter and the subscribing hook from the bodies barrel, types included", () => {
     const barrel = read("../index.ts")
     expect(barrel).toContain("setOnboardingTourPresenter")
-    expect(barrel).toContain("getOnboardingTourPresenter")
+    expect(barrel).not.toContain("getOnboardingTourPresenter")
     expect(barrel).toContain("useOnboardingTourPresenter")
     expect(barrel).toContain('export type { OnboardingTourPresenter } from "./onboardingTour"')
   })

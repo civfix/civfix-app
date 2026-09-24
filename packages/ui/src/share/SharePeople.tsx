@@ -14,7 +14,7 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
-import { idKeyExtractor } from "../bodies/navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { isShareRecipient, shareRecipientsSizing, type SharePeopleView } from "./shareSheetModel"
 
 const TILE_AVATAR = 56

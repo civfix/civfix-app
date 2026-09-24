@@ -1,5 +1,5 @@
 import type { CleanupDTO, MessageThreadDTO, RoomKind } from "@civfix/shared"
-import { useNavStore } from "../nav"
+import { useNavStore } from "./useNavStore"
 
 export function isTopEntry(
   stack: ReadonlyArray<{ kind: string; id?: string }>,
@@ -71,5 +71,3 @@ export function pushCleanup(c: CleanupDTO): void {
     lng: c.lng,
   })
 }
-
-export const idKeyExtractor = (item: { id: string }) => item.id

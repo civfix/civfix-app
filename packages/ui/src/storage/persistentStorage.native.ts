@@ -35,7 +35,7 @@ function createStore(): KV {
 
 const store: KV = createStore()
 
-export const mapFilterStorage: StateStorage = {
+export const persistentStorage: StateStorage = {
   getItem: (name) => store.getString(name) ?? null,
   setItem: (name, value) => store.set(name, value),
   removeItem: (name) => store.delete(name),

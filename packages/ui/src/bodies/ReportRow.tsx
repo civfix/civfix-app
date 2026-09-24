@@ -129,10 +129,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rowCard: {
     paddingHorizontal: t.space["3"],
-    borderRadius: SEARCH_RESULT_CARD_LAYOUT.individualCards ? SEARCH_RESULT_CARD_LAYOUT.radius : 0,
-    borderWidth: SEARCH_RESULT_CARD_LAYOUT.individualCards ? StyleSheet.hairlineWidth : 0,
+    borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
-    backgroundColor: SEARCH_RESULT_CARD_LAYOUT.individualCards ? t.colors.surface : "transparent",
+    backgroundColor: t.colors.surface,
     ...t.shadows.s1,
   },
   rowCardPressed: {

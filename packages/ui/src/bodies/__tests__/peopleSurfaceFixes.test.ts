@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { searchBodySource } from "../search/__tests__/searchBodySource"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
 const connections = read("../ConnectionsBody.tsx")
 const social = read("../SocialBody.tsx")
-const search = read("../SearchBody.tsx")
+const search = searchBodySource()
 
 describe("followers / following list", () => {
   it("offers no Follow button on a deleted account or on the viewer's own row", () => {

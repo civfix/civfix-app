@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react"
+import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { View as RNView } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
@@ -11,12 +11,17 @@ export interface HeaderIconButtonProps {
   onPress: () => void
   surface?: "glass" | "solid"
   expanded?: boolean
+  ref?: React.Ref<RNView>
 }
 
-export const HeaderIconButton = forwardRef<RNView, HeaderIconButtonProps>(function HeaderIconButton(
-  { icon, label, onPress, surface = "glass", expanded },
+export function HeaderIconButton({
+  icon,
+  label,
+  onPress,
+  surface = "glass",
+  expanded,
   ref,
-) {
+}: HeaderIconButtonProps) {
   const styles = useStyles()
   const t = useTheme()
   return (
@@ -43,7 +48,7 @@ export const HeaderIconButton = forwardRef<RNView, HeaderIconButtonProps>(functi
       )}
     </Pressable>
   )
-})
+}
 
 const useStyles = makeThemedStyles((t) => ({
   target: {

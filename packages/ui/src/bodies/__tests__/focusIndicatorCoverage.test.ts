@@ -47,7 +47,7 @@ describe("the focused-field recipe is ONE recipe", () => {
 
   it.each([
     ["bodies/AddressSearch.tsx", "fieldFocused"],
-    ["bodies/SearchBody.tsx", "fieldFocused"],
+    ["bodies/search/searchStyles.ts", "fieldFocused"],
     ["bodies/EventsBody.tsx", "searchFieldFocused"],
     ["bodies/SocialBody.tsx", "searchFieldFocused"],
     ["bodies/ReportsBody.tsx", "searchFieldFocused"],

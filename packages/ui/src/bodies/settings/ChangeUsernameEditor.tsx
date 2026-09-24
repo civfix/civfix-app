@@ -16,7 +16,9 @@ import { useEditorStyles } from "./editorStyles"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
-export function changeHandleErrorMessage(err: unknown, t: Translate): string {
+const HANDLE_MAX_LENGTH = 20
+
+function changeHandleErrorMessage(err: unknown, t: Translate): string {
   switch (appErrorCode(err)) {
     case "RATE_LIMITED":
       return t("handle.error.rate_limited")
@@ -157,7 +159,7 @@ export function ChangeUsernameEditor({
           onChangeText={setDraft}
           autoCapitalize="none"
           autoCorrect={false}
-          maxLength={20}
+          maxLength={HANDLE_MAX_LENGTH}
           editable={!saving}
           accessibilityLabel={t("handle.field_label")}
         />

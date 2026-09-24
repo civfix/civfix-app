@@ -62,7 +62,9 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
     const donation = read("../settings/DonationLinkEditor.tsx")
     expect(donation).toContain("commit(normalizeDonationLink(draft))")
     expect(donation).toContain("commit(null)")
-    expect(read("../SettingsAccountBody.tsx")).toContain("donationUrl,")
+    expect(read("../SettingsAccountBody.tsx")).toContain(
+      "(donationUrl: string | null): Promise<void> => saveProfile({ donationUrl })",
+    )
   })
 
   it("keeps the handle cooldown a DISABLED ROW - a locked field has no dialog to open", () => {

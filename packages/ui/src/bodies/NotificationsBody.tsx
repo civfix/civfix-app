@@ -9,7 +9,7 @@ import { useNavStore, entryFromPath, isRootLink } from "../nav"
 import { useOpenInternalHref } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { useListTimeAgo } from "./useListTimeAgo"
 
 function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: string; tint: string } {

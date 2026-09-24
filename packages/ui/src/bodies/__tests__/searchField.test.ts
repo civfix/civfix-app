@@ -2,9 +2,11 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+import { searchBodySource } from "../search/__tests__/searchBodySource"
+
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const body = read("../SearchBody.tsx")
+const body = searchBodySource()
 const bodyCode = strip(body)
 const shell = strip(read("../../shell/ExpandedShell.tsx"))
 const rail = strip(read("../../shell/Rail.tsx"))
@@ -17,7 +19,7 @@ describe("where the field lives", () => {
     expect(bodyCode).toMatch(/function ExpandedSearchHeader\(\)[\s\S]*?<ExpandedSearchField \/>/)
     for (const surface of ["RecentlySearched", "Discovery", "SearchResting"]) {
       const fn = bodyCode.match(new RegExp(`function ${surface}\\([\\s\\S]*?\\n}`))?.[0]
-      expect(fn, `${surface} must still be a top-level function here`).toBeTruthy()
+      expect(fn, `${surface} must still be a top-level function of the search surface`).toBeTruthy()
       expect(fn, `${surface} must not host the field`).not.toContain("ExpandedSearchField")
     }
   })

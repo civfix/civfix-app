@@ -253,8 +253,8 @@ export function ProfileEventsSection({
 const useStyles = makeThemedStyles((t) => ({
   seg: {
     flexDirection: "row",
-    gap: 4,
-    padding: 4,
+    gap: t.space["1"],
+    padding: t.space["1"],
     backgroundColor: t.colors.bgAlt,
     borderRadius: t.radius.pill,
   },
@@ -336,7 +336,7 @@ const useStyles = makeThemedStyles((t) => ({
   erowSub: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   erowSubLast: {
@@ -348,7 +348,7 @@ const useStyles = makeThemedStyles((t) => ({
   erowTag: {
     flexShrink: 0,
     paddingHorizontal: 9,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
     borderRadius: t.radius.pill,
   },
   erowTagText: {

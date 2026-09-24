@@ -9,7 +9,7 @@ import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useUserSearch, normalizeUserSearchTerm } from "../data"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { toggleMember, removeMember, filterExcluded, searchResultToPerson } from "./memberSelect"
 
 export interface MemberPickerProps {

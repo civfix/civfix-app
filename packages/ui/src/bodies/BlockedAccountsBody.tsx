@@ -8,7 +8,7 @@ import { useListBlocks, useUnblockUser } from "../data"
 import { blockedAccountsOf } from "../data/hooks/direct"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 
 const BlockedRow = memo(function BlockedRow({
   person,
@@ -180,7 +180,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {
@@ -205,7 +205,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   unblockText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
 }))

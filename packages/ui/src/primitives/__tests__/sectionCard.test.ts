@@ -86,6 +86,7 @@ describe('variant="list" turns the card into a divided row stack', () => {
   it("never carries a SegmentedControl as `trailing` - a range switch is a listHeader", () => {
     const surfaces = [
       "../../bodies/host/EventDashboardBody.tsx",
+      "../../bodies/host/dashboard/HostedEventsSection.tsx",
       "../../bodies/host/HostInsightsPanels.tsx",
       "../../../../../apps/community-web/src/components/dev/primitives-gallery.tsx",
     ]

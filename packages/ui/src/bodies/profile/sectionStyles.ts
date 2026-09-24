@@ -24,7 +24,7 @@ export const useSectionStyles = makeThemedStyles((t) => ({
     color: t.colors.textMuted,
   },
   subheadCt: {
-    paddingHorizontal: 8,
+    paddingHorizontal: t.space["2"],
     paddingVertical: 1,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.bgAlt,
@@ -54,12 +54,12 @@ export const useSectionStyles = makeThemedStyles((t) => ({
   },
   loadMoreText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   loadMoreAccentText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   loadMoreError: {
