@@ -188,7 +188,7 @@ module.exports = ({ config }) => ({
   },
   android: {
     package: "org.civfix.community",
-    versionCode: 6,
+    versionCode: 7,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: SPLASH_BG_LIGHT,
