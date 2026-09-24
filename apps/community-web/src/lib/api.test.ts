@@ -20,12 +20,12 @@ async function catchFrom(api: ReturnType<typeof clientRespondingWith>): Promise<
     (err: unknown) => err,
   )
   expect(caught).toBeInstanceOf(Error)
-  expect(caught).not.toBeInstanceOf(AppError)
+  expect(caught).toBeInstanceOf(AppError)
   return caught
 }
 
 describe("toAppError over what the real typed client throws", () => {
-  it("exercises the structural branch: the client's throw is NOT an instance of the app's AppError", async () => {
+  it("the client's throw is the app's own AppError (one module instance across entries)", async () => {
     const caught = await catchFrom(
       clientRespondingWith(429, { code: ErrorCode.RATE_LIMITED, message: "nope" }),
     )
