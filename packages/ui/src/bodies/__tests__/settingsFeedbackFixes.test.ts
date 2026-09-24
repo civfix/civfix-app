@@ -7,6 +7,7 @@ import {
   profileSaveErrorKey,
 } from "../../data/errorCode"
 import { sheetCommit } from "../settings/useSheetEditor"
+import { expectThemeTouchTarget } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -150,7 +151,8 @@ describe("delete-account dialog", () => {
   })
 
   it("gives Resend a 44pt target and exposes its in-flight state", () => {
-    expect(src).toMatch(/resend: \{\s*alignSelf: "flex-start",\s*minHeight: 44,/)
+    expect(src).toMatch(/resend: \{\s*alignSelf: "flex-start",\s*minHeight: MIN_TOUCH_TARGET,/)
+    expect(expectThemeTouchTarget(src)).toBe(44)
     expect(src).toContain(
       "accessibilityState={{ disabled: requestCode.isPending, busy: requestCode.isPending }}",
     )

@@ -8,7 +8,7 @@ import type {
 } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { announce } from "../../announce"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel } from "../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../../theme"
 import {
   Avatar,
   EmptyState,
@@ -389,7 +389,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   morePill: {
     alignSelf: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     marginTop: t.space["2"],
     paddingHorizontal: t.space["4"],

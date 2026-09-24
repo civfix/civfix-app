@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
-import { makeThemedStyles, space, useTheme } from "@/theme"
+import { MIN_TOUCH_TARGET, makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
   Avatar,
@@ -32,7 +32,6 @@ import { friendlyError } from "@/lib/errors"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
-const MIN_TOUCH_TARGET = 44
 // The upper bound of the shared HANDLE_REGEX, so the field stops where validation would reject.
 const HANDLE_MAX_LENGTH = 20
 

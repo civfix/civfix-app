@@ -32,7 +32,7 @@ import {
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
 import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
+import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, inputFocusedStyle, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"
@@ -713,7 +713,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.bloom["600"],
   },
   signInPill: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",

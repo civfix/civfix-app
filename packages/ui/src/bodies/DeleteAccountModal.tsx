@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
@@ -249,7 +249,7 @@ const useStyles = makeThemedStyles((t) => ({
   codeInputFocused: inputFocusedStyle(t),
   resend: {
     alignSelf: "flex-start",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
   },
   resendText: {

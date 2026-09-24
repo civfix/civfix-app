@@ -9,6 +9,7 @@ import {
   webHover,
   webNoSelect,
   webTransition,
+  MIN_TOUCH_TARGET,
 } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import type { IconName } from "../../typography"
@@ -331,8 +332,8 @@ const useStyles = makeThemedStyles((t) => ({
     paddingRight: t.space["3"],
   },
   backButton: {
-    width: 44,
-    height: 44,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.md,
@@ -365,7 +366,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textMuted,
   },
   listAction: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     paddingHorizontal: 10,
     borderRadius: t.radius.pill,

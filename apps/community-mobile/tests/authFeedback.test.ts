@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { MIN_TOUCH_TARGET } from "../../../packages/ui/src/theme/touchTarget.ts"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const otp = read("../app/auth/otp.tsx")
@@ -60,6 +61,8 @@ test("a failed username check is announced, and its retry is a full-size touch t
   assert.ok(retryEnd > retryStart)
   const retry = firstRun.slice(retryStart, retryEnd)
   assert.match(retry, /styles\.retryTarget/)
-  assert.match(firstRun, /const MIN_TOUCH_TARGET = 44\n/)
+  assert.equal(MIN_TOUCH_TARGET, 44)
+  assert.match(firstRun, /import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "@\/theme"/)
+  assert.doesNotMatch(firstRun, /const MIN_TOUCH_TARGET =/)
   assert.match(firstRun, /retryTarget: \{[^}]*minHeight: MIN_TOUCH_TARGET/)
 })

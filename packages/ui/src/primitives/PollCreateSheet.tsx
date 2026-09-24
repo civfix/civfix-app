@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
@@ -153,7 +153,7 @@ const useStyles = makeThemedStyles((t) => ({
   optionInput: {
     ...modalSheetInputStyle(t),
     flex: 1,
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   removeBtn: {
     width: 32,

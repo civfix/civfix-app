@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { makeThemedStyles, hitSlopToTarget } from "../../../theme"
+import { makeThemedStyles, hitSlopToTarget, MIN_TOUCH_TARGET } from "../../../theme"
 
 const CONFIRM_BTN_HEIGHT = 34
 export const CONFIRM_BTN_HIT_SLOP = {
@@ -31,7 +31,7 @@ export const useCertificateCardStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: t.space["2"],
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.surface,
     borderWidth: 1.5,

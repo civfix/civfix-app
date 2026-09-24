@@ -9,6 +9,7 @@ import {
   webHover,
   focusRingProps,
   hitSlopToTarget,
+  MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text, type LucideIcon } from "../typography"
 
@@ -95,7 +96,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   md: {
     gap: t.space["2"],
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["5"],
   },
   lg: {
