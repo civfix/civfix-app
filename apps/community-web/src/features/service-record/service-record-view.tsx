@@ -14,9 +14,11 @@ import {
   ErrorCode,
   formatCertificateCode,
   formatCertificateHours,
+  formatCount,
   normalizeCertificateCode,
   type VerifyCertificateResponse,
 } from "@civfix/shared"
+import { safeDateFormat } from "@civfix/shared/datetime"
 import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
 
 import { DetailShell } from "@/components/detail-shell"
@@ -405,23 +407,9 @@ function Disclaimer() {
   )
 }
 
+const ISSUED_DATE_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: "medium" }
+
 /** An absent or unparseable timestamp renders as a placeholder, never "Invalid Date". */
 function formatDate(iso: string | null | undefined, locale: string): string {
-  if (!iso) return EMPTY_VALUE
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return EMPTY_VALUE
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(date)
-  } catch {
-    // An unsupported locale tag must not blank the verdict.
-    return date.toISOString().slice(0, 10)
-  }
-}
-
-function formatCount(count: number, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale).format(count)
-  } catch {
-    return String(count)
-  }
+  return safeDateFormat(iso, locale, ISSUED_DATE_OPTIONS) || EMPTY_VALUE
 }
