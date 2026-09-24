@@ -36,6 +36,7 @@ import { checkinResultRender, manualCodeReady, normalizeManualCode, MANUAL_CODE_
 import { useCheckinOutbox } from "./useCheckinOutbox"
 import { TilesSkeleton } from "./HostSkeletons"
 import { RosterCheckinList } from "./RosterCheckinList"
+import { rosterMutationErrorKey } from "./rosterFiltersModel"
 
 interface ResultState {
   result: CheckinResultDTO
@@ -110,7 +111,7 @@ export function HostCheckinBody({ id }: { id: string }) {
     (seatId: string) => {
       checkIn.mutate(
         { seatId },
-        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
       )
     },
     [checkIn, tRoster, toast],
@@ -119,7 +120,7 @@ export function HostCheckinBody({ id }: { id: string }) {
     (seatId: string) => {
       undo.mutate(
         { seatId },
-        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
       )
     },
     [tRoster, toast, undo],

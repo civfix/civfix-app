@@ -14,9 +14,8 @@ import {
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
 import { useCleanup } from "../../data"
-import { appErrorCode } from "../errorCode"
 import { RosterCheckinList } from "./RosterCheckinList"
-import { visibleRosterFilters } from "./rosterFiltersModel"
+import { rosterMutationErrorKey, visibleRosterFilters } from "./rosterFiltersModel"
 
 const NO_SLOTS: readonly EventSlotDTO[] = []
 
@@ -49,9 +48,7 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
 
   const onError = useCallback(
     (err: unknown) => {
-      toast.show(appErrorCode(err) === "FORBIDDEN" ? t("roster.error_forbidden") : t("roster.error"), {
-        variant: "error",
-      })
+      toast.show(t(rosterMutationErrorKey(err)), { variant: "error" })
     },
     [t, toast],
   )
