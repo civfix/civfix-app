@@ -1,36 +1,29 @@
 import React from "react"
 import { View } from "react-native"
-import type { CleanupDTO, EventRegistrationDTO } from "@civfix/shared"
+import type { EventRegistrationDTO } from "@civfix/shared"
 import { headingLevel, makeThemedStyles } from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"
 import { FeedNotice } from "../../FeedNotice"
-import { RosterPagedList, RosterSearchField, type RosterPaging } from "../RosterPagedList"
+import { RosterSearchField } from "../RosterPagedList"
 
 export interface CheckinRosterSectionProps {
-  cleanup: CleanupDTO
   search: string
   onSearchChange: (value: string) => void
   searchFocused: boolean
   onSearchFocusChange: (focused: boolean) => void
-  roster: RosterPaging & { isLoading: boolean; isError: boolean }
+  roster: { isLoading: boolean; isError: boolean }
   waiting: readonly EventRegistrationDTO[]
-  pending: boolean
-  onCheckIn: (seatId: string) => void
-  onUndo: (seatId: string) => void
 }
 
+/** The roster's head. Its rows are the check-in screen's own list rows, so it renders none itself. */
 export function CheckinRosterSection({
-  cleanup,
   search,
   onSearchChange,
   searchFocused,
   onSearchFocusChange,
   roster,
   waiting,
-  pending,
-  onCheckIn,
-  onUndo,
 }: CheckinRosterSectionProps) {
   const styles = useStyles()
   const { t } = useT("host-checkin")
@@ -56,18 +49,7 @@ export function CheckinRosterSection({
         </Text>
       ) : waiting.length === 0 ? (
         <FeedNotice plain icon="UserCheck" title={t("roster.empty_title")} body={t("roster.empty_body")} />
-      ) : (
-        <RosterPagedList
-          rows={waiting}
-          slots={cleanup.slots}
-          timeZone={cleanup.timezone ?? undefined}
-          canCheckIn
-          pending={pending}
-          onCheckIn={onCheckIn}
-          onUndo={onUndo}
-          paging={roster}
-        />
-      )}
+      ) : null}
     </View>
   )
 }

@@ -31,6 +31,7 @@ export function AllEventsMode({
   const checkIn = held.count > 0 ? ratePercent(held.checkInRate) : null
   const daily = data.signupsDaily
   const rows = data.byEvent.rows.slice(0, MAX_HOST_SUMMARY_EVENT_ROWS)
+  const rowMax = chartMax(rows.map(visibleValue))
 
   return (
     <>
@@ -84,7 +85,7 @@ export function AllEventsMode({
               <EventBarRow
                 key={`${index}:${row.key}`}
                 row={row}
-                max={chartMax(rows.map(visibleValue))}
+                max={rowMax}
                 onPress={() => onPickEvent(row)}
               />
             ))}

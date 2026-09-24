@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react"
+import React, { useCallback, useEffect, useMemo, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type {
   CleanupDTO,
@@ -43,9 +43,11 @@ import {
   filterEventHits,
   groupSearchResults,
   searchAnnouncement,
+  searchResultRows,
   searchResultsView,
   searchSourcesSettled,
   selectSearchHits,
+  type SearchResultRow,
   type SearchSourceState,
 } from "./searchResultsModel"
 export { SEARCH_RESULT_CARD_LAYOUT, groupSearchResults } from "./searchResultsModel"
@@ -147,6 +149,12 @@ export function ReportHitRow({ report, viewer }: { report: ReportPinDTO; viewer:
   )
 }
 
+type ResultRow = SearchResultRow<CleanupDTO, ReportPinDTO, UserSearchResultDTO>
+
+const NO_ROWS: readonly ResultRow[] = []
+
+const rowKey = (row: ResultRow) => row.key
+
 interface SearchHits {
   events: readonly CleanupDTO[]
   reports: readonly ReportPinDTO[]
@@ -158,7 +166,7 @@ const NO_HITS: SearchHits = { events: [], reports: [], people: [] }
 export function SearchResults({ query: rawQuery }: { query: string }) {
   const styles = useStyles()
   const th = useTheme()
-  const { ScrollView } = useScrollHost()
+  const { FlatList } = useScrollHost()
   const { t } = useT("home-sidebar")
   const { data: location } = useUserLocation()
   const { isAuthenticated } = useAuthState()
@@ -232,116 +240,149 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
     if (cleanupsQuery.isError) void cleanupsQuery.refetch()
   }
 
+  const loadMoreReports = reportSearch.fetchNextPage
+  const rows = searchResultRows(hits, {
+    show: showMoreReports,
+    loading: reportSearch.isFetchingNextPage,
+  })
+  const viewer = location ?? null
+  const renderItem = useCallback(
+    ({ item }: { item: ResultRow }) => {
+      switch (item.kind) {
+        case "header":
+          return (
+            <SectionHeader
+              title={
+                item.group === "events"
+                  ? t("results.events")
+                  : item.group === "reports"
+                    ? t("results.reports")
+                    : t("results.people")
+              }
+            />
+          )
+        case "event":
+          return (
+            <View style={item.gapBefore ? styles.hitGap : null}>
+              <EventHitRow cleanup={item.event} />
+            </View>
+          )
+        case "report":
+          return (
+            <View style={item.gapBefore ? styles.hitGap : null}>
+              <ReportHitRow report={item.report} viewer={viewer} />
+            </View>
+          )
+        case "more-reports":
+          return <MoreReportsPill loading={item.loading} onLoadMore={loadMoreReports} />
+        case "person":
+          return (
+            <View style={item.gapBefore ? styles.hitGap : null}>
+              <PersonHitRow person={item.person} />
+            </View>
+          )
+      }
+    },
+    [loadMoreReports, styles, t, viewer],
+  )
+
+  const phaseState =
+    view.phase === "loading" ? (
+      <View
+        accessibilityRole="progressbar"
+        accessibilityLabel={t("search.loading_a11y")}
+        accessibilityLiveRegion="polite"
+      >
+        <SkeletonGroup>
+          <View style={styles.sectionHeader}>
+            <SkeletonText width="22%" height={11} />
+          </View>
+          <SkeletonList rows={2} kind="report" style={styles.group} />
+          <View style={styles.sectionHeader}>
+            <SkeletonText width="26%" height={11} />
+          </View>
+          <SkeletonList rows={3} kind="report" style={styles.group} />
+          <View style={styles.sectionHeader}>
+            <SkeletonText width="20%" height={11} />
+          </View>
+          <SkeletonList rows={2} kind="person" style={styles.group} />
+        </SkeletonGroup>
+      </View>
+    ) : view.phase === "error" ? (
+      <EmptyState
+        tone="neutral"
+        icon={iconMap.CloudOff}
+        iconColor={th.colors.textSubtle}
+        iconSize={30}
+        title={t("search.error_title")}
+        body={t("search.error")}
+        cta={{ label: t("search.retry"), onPress: onRetry, variant: "outline" }}
+      />
+    ) : view.phase === "empty" ? (
+      <EmptyState
+        tone="neutral"
+        icon={iconMap.Search}
+        iconColor={th.colors.textSubtle}
+        title={t("search.no_results_title")}
+        body={emptyBody}
+      />
+    ) : null
+
   return (
-    <ScrollView
+    <FlatList
+      data={view.phase === "results" ? rows : NO_ROWS}
+      keyExtractor={rowKey}
+      renderItem={renderItem}
       style={styles.scroll}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      accessibilityState={view.phase === "results" ? { busy: !view.settled } : undefined}
+      ListHeaderComponent={
+        view.showErrorNotice ? (
+          <View style={styles.notice}>
+            <Icon icon={iconMap.CloudOff} size={18} color={th.colors.textSubtle} />
+            <Text style={styles.noticeText}>{t("search.error")}</Text>
+            <Pressable
+              onPress={onRetry}
+              accessibilityRole="button"
+              accessibilityLabel={t("search.retry")}
+              {...focusRingProps}
+              style={(state) => [styles.retryPill, state.pressed ? styles.pressed : null]}
+            >
+              <Text style={styles.retryText}>{t("search.retry")}</Text>
+            </Pressable>
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={phaseState}
+      ListFooterComponent={<View style={styles.bottomPad} />}
+    />
+  )
+}
+
+function MoreReportsPill({ loading, onLoadMore }: { loading: boolean; onLoadMore: () => void }) {
+  const styles = useStyles()
+  const { t } = useT("home-sidebar")
+  return (
+    <Pressable
+      onPress={() => {
+        if (!loading) onLoadMore()
+      }}
+      disabled={loading}
+      accessibilityRole="button"
+      accessibilityLabel={t("results.load_more_reports")}
+      accessibilityState={{
+        disabled: loading,
+        busy: loading,
+      }}
+      {...focusRingProps}
+      style={(state) => [styles.morePill, state.pressed ? styles.pressed : null]}
     >
-      {view.showErrorNotice ? (
-        <View style={styles.notice}>
-          <Icon icon={iconMap.CloudOff} size={18} color={th.colors.textSubtle} />
-          <Text style={styles.noticeText}>{t("search.error")}</Text>
-          <Pressable
-            onPress={onRetry}
-            accessibilityRole="button"
-            accessibilityLabel={t("search.retry")}
-            {...focusRingProps}
-            style={(state) => [styles.retryPill, state.pressed ? styles.pressed : null]}
-          >
-            <Text style={styles.retryText}>{t("search.retry")}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-      {view.phase === "loading" ? (
-        <View
-          accessibilityRole="progressbar"
-          accessibilityLabel={t("search.loading_a11y")}
-          accessibilityLiveRegion="polite"
-        >
-          <SkeletonGroup>
-            <View style={styles.sectionHeader}>
-              <SkeletonText width="22%" height={11} />
-            </View>
-            <SkeletonList rows={2} kind="report" style={styles.group} />
-            <View style={styles.sectionHeader}>
-              <SkeletonText width="26%" height={11} />
-            </View>
-            <SkeletonList rows={3} kind="report" style={styles.group} />
-            <View style={styles.sectionHeader}>
-              <SkeletonText width="20%" height={11} />
-            </View>
-            <SkeletonList rows={2} kind="person" style={styles.group} />
-          </SkeletonGroup>
-        </View>
-      ) : null}
-      {view.phase === "error" ? (
-        <EmptyState
-          tone="neutral"
-          icon={iconMap.CloudOff}
-          iconColor={th.colors.textSubtle}
-          iconSize={30}
-          title={t("search.error_title")}
-          body={t("search.error")}
-          cta={{ label: t("search.retry"), onPress: onRetry, variant: "outline" }}
-        />
-      ) : null}
-      {view.phase === "empty" ? (
-        <EmptyState
-          tone="neutral"
-          icon={iconMap.Search}
-          iconColor={th.colors.textSubtle}
-          title={t("search.no_results_title")}
-          body={emptyBody}
-        />
-      ) : null}
-      {view.phase === "results" ? (
-        <View accessibilityState={{ busy: !view.settled }}>
-          {hits.events.length > 0 ? (
-            <>
-              <SectionHeader title={t("results.events")} />
-              <View style={styles.group}>{hits.events.map((cleanup) => <EventHitRow key={cleanup.id} cleanup={cleanup} />)}</View>
-            </>
-          ) : null}
-          {hits.reports.length > 0 ? (
-            <>
-              <SectionHeader title={t("results.reports")} />
-              <View style={styles.group}>{hits.reports.map((report) => <ReportHitRow key={report.id} report={report} viewer={location ?? null} />)}</View>
-              {showMoreReports ? (
-                <Pressable
-                  onPress={() => {
-                    if (!reportSearch.isFetchingNextPage) void reportSearch.fetchNextPage()
-                  }}
-                  disabled={reportSearch.isFetchingNextPage}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("results.load_more_reports")}
-                  accessibilityState={{
-                    disabled: reportSearch.isFetchingNextPage,
-                    busy: reportSearch.isFetchingNextPage,
-                  }}
-                  {...focusRingProps}
-                  style={(state) => [styles.morePill, state.pressed ? styles.pressed : null]}
-                >
-                  <Text style={styles.retryText}>
-                    {reportSearch.isFetchingNextPage
-                      ? t("results.loading_more")
-                      : t("results.load_more_reports")}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </>
-          ) : null}
-          {hits.people.length > 0 ? (
-            <>
-              <SectionHeader title={t("results.people")} />
-              <View style={styles.group}>{hits.people.map((person) => <PersonHitRow key={person.id} person={person} />)}</View>
-            </>
-          ) : null}
-        </View>
-      ) : null}
-      <View style={styles.bottomPad} />
-    </ScrollView>
+      <Text style={styles.retryText}>
+        {loading ? t("results.loading_more") : t("results.load_more_reports")}
+      </Text>
+    </Pressable>
   )
 }
 
@@ -351,6 +392,7 @@ const useStyles = makeThemedStyles((t) => ({
   sectionHeader: { paddingTop: t.space["3"], paddingBottom: t.space["2"] },
   sectionTitle: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 11.5, lineHeight: 16, letterSpacing: 1.2, textTransform: "uppercase", color: t.colors.textMuted },
   group: { gap: SEARCH_RESULT_CARD_LAYOUT.gap },
+  hitGap: { marginTop: SEARCH_RESULT_CARD_LAYOUT.gap },
   row: {
     flexDirection: "row",
     alignItems: "center",
