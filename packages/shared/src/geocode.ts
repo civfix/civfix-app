@@ -13,8 +13,7 @@
  * geolocation API (browser navigator.geolocation / expo-location) with the civfix API's approximate
  * location as the fallback. Everything degrades gracefully - offline you still get pasted coordinates.
  */
-import type { LatLngLike } from "./geo.js"
-import { coordsLabel } from "./address.js"
+import { coordsLabel, type LatLngLike } from "./geo.js"
 
 export type LatLng = LatLngLike
 

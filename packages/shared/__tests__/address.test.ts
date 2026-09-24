@@ -8,8 +8,8 @@ import {
   isVerifiedEventAddress,
   isVerifiedReportAddress,
   needsNearPrefix,
-  roundGeocodeCoord,
 } from "../src/address.js"
+import { roundGeocodeCoord } from "../src/geo.js"
 import {
   AddressPrecisionSchema,
   CleanupDTOSchema,

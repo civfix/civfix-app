@@ -4,12 +4,10 @@ import {
   type EventAddressSource,
   type ReportAddressSource,
 } from "./schemas/entities.js"
-import type { LatLngLike } from "./geo.js"
+import { GEOCODE_POINT_KEY_DECIMALS, roundGeocodeCoord, type LatLngLike } from "./geo.js"
 
 // A copy, so the ranking never aliases the live enum options array.
 export const ADDRESS_PRECISION_LADDER: readonly AddressPrecision[] = [...AddressPrecisionSchema.options]
-
-export const GEOCODE_POINT_KEY_DECIMALS = 5
 
 export function isLocatedPrecision(precision: AddressPrecision | null | undefined): boolean {
   return precision === "street" || precision === "intersection" || precision === "landmark"
@@ -39,16 +37,6 @@ export function isVerifiedReportAddress(
   if (!addr || addr.trim().length === 0) return false
   if (addrSource === "user") return true
   return addrSource === "resolved" && addrPrecision === "street"
-}
-
-export function roundGeocodeCoord(n: number): number {
-  const factor = 10 ** GEOCODE_POINT_KEY_DECIMALS
-  return Math.round(n * factor) / factor
-}
-
-/** The exact-coordinate label shown when no address resolves, at the geocode key's precision. */
-export function coordsLabel(point: LatLngLike): string {
-  return `${point.lat.toFixed(GEOCODE_POINT_KEY_DECIMALS)}, ${point.lng.toFixed(GEOCODE_POINT_KEY_DECIMALS)}`
 }
 
 export function geocodePointKey(point: LatLngLike): string {

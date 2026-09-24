@@ -39,3 +39,15 @@ export function haversineKm(a: LatLngLike, b: LatLngLike): number {
  * settle in one wave.
  */
 export const DEVICE_FIX_TIMEOUT_MS = 4000
+
+export const GEOCODE_POINT_KEY_DECIMALS = 5
+
+export function roundGeocodeCoord(n: number): number {
+  const factor = 10 ** GEOCODE_POINT_KEY_DECIMALS
+  return Math.round(n * factor) / factor
+}
+
+/** The exact-coordinate label shown when no address resolves, at the geocode key's precision. */
+export function coordsLabel(point: LatLngLike): string {
+  return `${point.lat.toFixed(GEOCODE_POINT_KEY_DECIMALS)}, ${point.lng.toFixed(GEOCODE_POINT_KEY_DECIMALS)}`
+}
