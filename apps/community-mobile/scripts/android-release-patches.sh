@@ -35,7 +35,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-sdk_dir="${CIVFIX_ANDROID_SDK_DIR:-/opt/homebrew/share/android-commandlinetools}"
+sdk_dir="${CIVFIX_ANDROID_SDK_DIR:-${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/homebrew/share/android-commandlinetools}}}"
 keystore_dir="${CIVFIX_KEYSTORE_DIR:-$HOME/civfix-keystore}"
 keystore_file="${CIVFIX_KEYSTORE_FILE:-$keystore_dir/civfix-upload.keystore}"
 password_file="${CIVFIX_KEYSTORE_PASSWORD_FILE:-$keystore_dir/.password.txt}"
@@ -261,7 +261,7 @@ echo "=========================== ANDROID RELEASE PATCHES ======================
 echo "  sdk.dir       $(sed -n 's/^sdk\.dir=//p' android/local.properties | head -1)"
 echo "  keystore      $(sed -n 's/^storeFile=//p' android/keystore.properties | head -1)"
 echo "  key alias     $(sed -n 's/^keyAlias=//p' android/keystore.properties | head -1)"
-echo "  perms         $(stat -f '%Lp' android/keystore.properties) (android/keystore.properties)"
+echo "  perms         $(stat -c '%a' android/keystore.properties 2>/dev/null || stat -f '%Lp' android/keystore.properties) (android/keystore.properties)"
 echo "  release sign  $(grep -c 'signingConfigs\.release' android/app/build.gradle) reference(s) in app/build.gradle"
 echo "  jvmargs       $(sed -n 's/^org\.gradle\.jvmargs=//p' android/gradle.properties | head -1)"
 echo "  kotlin args   $(sed -n 's/^kotlin\.daemon\.jvmargs=//p' android/gradle.properties | head -1)"
