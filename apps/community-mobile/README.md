@@ -222,7 +222,9 @@ scripts/android-build.sh production   # Play production: no baked URL, so Androi
 node scripts/play-publish.mjs upload build/civfix-<target>-<stamp>.aab --track internal|production
 ```
 
-`internal` is released to internal testers at once; `production` only ever lands as a **draft**,
+CI runs exactly this: `.github/workflows/deploy-android.yml` builds `internal` on every push to `main`
+that touches the app, and `production` on a manual run (on `main` or a `v*` release tag, which is how
+dev-env's `release/prod.mjs` ships a release). `internal` is released to internal testers at once; `production` only ever lands as a **draft**,
 which someone sends for review in Play Console. Play itself is the version-code counter:
 `scripts/play-publish.mjs next-version-code` returns one above every code Play has seen, and the
 build takes it from `CIVFIX_ANDROID_VERSION_CODE` (`app.config.js` keeps `6` only as the floor), so
