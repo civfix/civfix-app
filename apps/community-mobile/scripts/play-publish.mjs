@@ -143,13 +143,22 @@ export function highestVersionCode({ bundles = [], apks = [], tracks = [] }) {
   return codes.length ? Math.max(...codes) : 0
 }
 
+// An abandoned edit expires on its own, so failing to delete one never fails the command.
+async function discardEdit(client, id) {
+  try {
+    await client.deleteEdit(id)
+  } catch (error) {
+    console.warn(`warning: could not discard Play edit ${id}: ${error.message}`)
+  }
+}
+
 export async function nextVersionCode(client, floor) {
   const id = await client.insertEdit()
   try {
     const [bundles, apks, tracks] = await Promise.all(["bundles", "apks", "tracks"].map((kind) => client.list(id, kind)))
     return Math.max(highestVersionCode({ bundles: bundles.bundles, apks: apks.apks, tracks: tracks.tracks }) + 1, floor)
   } finally {
-    await client.deleteEdit(id).catch(() => {})
+    await discardEdit(client, id)
   }
 }
 
@@ -164,7 +173,10 @@ export async function publishBundle(client, { bytes, track, name }) {
     await client.commit(id)
     return { versionCode, track, status }
   } catch (error) {
-    await client.deleteEdit(id).catch(() => {})
+    await discardEdit(client, id)
+    if (/cannot be sent for review automatically/i.test(error.message)) {
+      throw new PlayError(`${error.message}\nPlay is holding earlier changes for a manual send (e.g. after a rejection); send or discard them in Play Console's Publishing overview, then retry.`)
+    }
     if (/only releases with status draft/i.test(error.message)) {
       throw new PlayError(
         `${error.message}\nThe app has never been published in Play Console, so Play only accepts drafts until its first release is rolled out by hand.`,

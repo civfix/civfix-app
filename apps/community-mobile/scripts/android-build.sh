@@ -68,7 +68,7 @@ unset EXPO_PUBLIC_API_URL CIVFIX_UPDATE_CHANNEL
 export EXPO_NO_DOTENV=1
 profile_env="$(node scripts/eas-profile-env.mjs "$profile")"
 while IFS= read -r line; do
-  export "$line"
+  if [ -n "$line" ]; then export "$line"; fi
 done <<<"$profile_env"
 
 if [ -z "${CIVFIX_ANDROID_VERSION_CODE:-}" ]; then
@@ -76,8 +76,10 @@ if [ -z "${CIVFIX_ANDROID_VERSION_CODE:-}" ]; then
 fi
 export CIVFIX_ANDROID_VERSION_CODE
 
-echo "Syncing node_modules to pnpm-lock.yaml..."
-(cd ../.. && pnpm install --frozen-lockfile)
+if [ -z "${CI:-}" ]; then
+  echo "Syncing node_modules to pnpm-lock.yaml..."
+  (cd ../.. && pnpm install --frozen-lockfile)
+fi
 
 echo "Regenerating android/ from scratch (expo prebuild --clean, profile ${profile})..."
 npx expo prebuild --platform android --clean --no-install
@@ -112,8 +114,8 @@ if [ "$baked_version_code" != "$CIVFIX_ANDROID_VERSION_CODE" ]; then
   exit 1
 fi
 signer="$(keytool -printcert -jarfile "$aab" 2>&1 || true)"
-if ! printf '%s' "$signer" | grep -q '^Owner:' || printf '%s' "$signer" | grep -q 'CN=Android Debug'; then
-  echo "${aab} is not signed with the release upload key (keytool: $(printf '%s' "$signer" | head -1)). Play would reject it." >&2
+if ! grep -q '^Owner:' <<<"$signer" || grep -q 'CN=Android Debug' <<<"$signer"; then
+  echo "${aab} is not signed with the release upload key (keytool: $(head -1 <<<"$signer")). Play would reject it." >&2
   exit 1
 fi
 

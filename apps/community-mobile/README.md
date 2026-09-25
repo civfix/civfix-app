@@ -85,8 +85,10 @@ baked API base URL and their EAS Update channel:
 ### How the runtime split is decided (iOS only)
 
 **This split exists on iOS and nowhere else.** `src/lib/nativeBetaInstall.ts` returns `false` for any
-other platform, so an Android release build - including one handed to internal-track testers - always
-resolves to the production API. Android's own testing tracks have no equivalent on-device marker.
+other platform, and Android's testing tracks have no equivalent on-device marker, so an Android build
+talks to whatever it bakes: a Play internal build (`scripts/android-build.sh internal`, the
+`testflight` profile's values) bakes the staging API, and a Play production build bakes nothing and
+resolves to `https://api.civfix.org`.
 
 iOS ships the App Store and TestFlight copies of a build with different StoreKit receipts: a store
 download gets `StoreKit/receipt` in the app's data container, a TestFlight install gets
@@ -227,7 +229,7 @@ that touches the app, and `production` on a manual run (on `main` or a `v*` rele
 dev-env's `release/prod.mjs` ships a release). `internal` is released to internal testers at once; `production` only ever lands as a **draft**,
 which someone sends for review in Play Console. Play itself is the version-code counter:
 `scripts/play-publish.mjs next-version-code` returns one above every code Play has seen, and the
-build takes it from `CIVFIX_ANDROID_VERSION_CODE` (`app.config.js` keeps `6` only as the floor), so
+build takes it from `CIVFIX_ANDROID_VERSION_CODE` (`app.config.js` keeps the last hand-managed code, `7`, as the floor), so
 nothing is committed per upload. Both scripts need `PLAY_SERVICE_ACCOUNT_JSON`, the JSON key of a
 Google Cloud service account that Play Console has granted release rights on this app.
 
