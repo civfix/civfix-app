@@ -229,7 +229,7 @@ that touches the app, and `production` on a manual run (on `main` or a `v*` rele
 dev-env's `release/prod.mjs` ships a release). `internal` is released to internal testers at once; `production` only ever lands as a **draft**,
 which someone sends for review in Play Console. Play itself is the version-code counter:
 `scripts/play-publish.mjs next-version-code` returns one above every code Play has seen, and the
-build takes it from `CIVFIX_ANDROID_VERSION_CODE` (`app.config.js` keeps the last hand-managed code, `7`, as the floor), so
+build takes it from `CIVFIX_ANDROID_VERSION_CODE` (`app.config.js` keeps `8`, the lowest code no upload has claimed, as the floor), so
 nothing is committed per upload. Both scripts need `PLAY_SERVICE_ACCOUNT_JSON`, the JSON key of a
 Google Cloud service account that Play Console has granted release rights on this app.
 

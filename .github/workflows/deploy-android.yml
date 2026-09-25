@@ -98,7 +98,7 @@ jobs:
         run: |
           set -euo pipefail
           for var in PLAY_SERVICE_ACCOUNT_JSON ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD; do
-            [ -n "${!var}" ] || { echo "::error::repository secret $var is not set."; exit 1; }
+            [ -n "${!var}" ] || { echo "::error::environment secret $var is not set (Settings -> Environments -> google-play, deployment branches main + tag pattern v*; never a repository or organization secret)."; exit 1; }
           done
 
       - uses: actions/checkout@v4

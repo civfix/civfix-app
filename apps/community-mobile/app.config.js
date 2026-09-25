@@ -19,10 +19,10 @@ const GOOGLE_IOS_URL_SCHEME =
 
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
 
-// The last hand-managed Play version code (the 1.3.0 upload). Release builds pass the real code in
-// CIVFIX_ANDROID_VERSION_CODE, taken from Play itself (scripts/play-publish.mjs next-version-code), so
-// nothing is committed per upload; a code below this one can never be valid.
-const ANDROID_VERSION_CODE_FLOOR = 7
+// The lowest version code nobody has claimed: the hand-built 1.3.0 upload took 7. Release builds pass
+// the real code in CIVFIX_ANDROID_VERSION_CODE, taken from Play itself (scripts/play-publish.mjs
+// next-version-code), so nothing is committed per upload and no release build can reuse a claimed code.
+const ANDROID_VERSION_CODE_FLOOR = 8
 
 function androidVersionCode() {
   const raw = process.env.CIVFIX_ANDROID_VERSION_CODE
