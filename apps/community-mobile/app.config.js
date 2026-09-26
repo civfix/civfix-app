@@ -18,6 +18,21 @@ const GOOGLE_IOS_URL_SCHEME =
   "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
 
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
+
+// The lowest version code nobody has claimed: the hand-built 1.3.0 upload took 7. Release builds pass
+// the real code in CIVFIX_ANDROID_VERSION_CODE, taken from Play itself (scripts/play-publish.mjs
+// next-version-code), so nothing is committed per upload and no release build can reuse a claimed code.
+const ANDROID_VERSION_CODE_FLOOR = 8
+
+function androidVersionCode() {
+  const raw = process.env.CIVFIX_ANDROID_VERSION_CODE
+  if (raw === undefined || raw === "") return ANDROID_VERSION_CODE_FLOOR
+  const code = Number(raw)
+  if (!Number.isInteger(code) || code < ANDROID_VERSION_CODE_FLOOR) {
+    throw new Error(`CIVFIX_ANDROID_VERSION_CODE must be a whole number >= ${ANDROID_VERSION_CODE_FLOOR}, got '${raw}'`)
+  }
+  return code
+}
 const SOURCE_COMMIT = resolveSourceCommit()
 
 function resolveSourceCommit() {
@@ -188,7 +203,7 @@ module.exports = ({ config }) => ({
   },
   android: {
     package: "org.civfix.community",
-    versionCode: 6,
+    versionCode: androidVersionCode(),
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: SPLASH_BG_LIGHT,

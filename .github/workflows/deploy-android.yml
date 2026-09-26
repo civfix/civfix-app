@@ -1,0 +1,187 @@
+name: Deploy mobile (Android)
+
+# Builds apps/community-mobile for Android and uploads it to Google Play. The Android twin of
+# deploy-mobile.yml, one lane, on a free Linux runner and with no EAS anywhere:
+#
+#   push to main                     -> Play internal testing track, released at once -> staging API
+#                                       (api.civfix.dev) baked, the same values as TestFlight
+#   manual run, profile=production   -> Play production track as a DRAFT -> no baked API URL, so Android
+#     on main, or on a v* release tag   resolves api.civfix.org (dev-env's release/prod.mjs runs it at the
+#                                       tag it released; the tag must be merged into main)
+#
+# Nothing here puts a build in front of Play users. A production upload is a draft release; sending it
+# for review / starting the rollout in Play Console is the manual step, as App Store review is for iOS.
+# Publishing a v* release does not trigger this workflow on its own.
+#
+# scripts/android-build.sh does the build (clean prebuild, the release-signing patches, gradle, then it
+# reads the config back out of the .aab and refuses a wrong API URL, version code or a debug signature);
+# scripts/play-publish.mjs talks to the Google Play Developer API. Play is the version-code counter,
+# asked in its own step. The Play key is passed only to the steps that call Play and the keystore
+# exists on disk for the build step only; that narrows exposure but is no boundary against code that
+# pnpm install or gradle already ran in this job, which is why the secrets below are ENVIRONMENT
+# secrets: the google-play environment only admits main and v* tags, so a workflow edited on any other
+# branch of this public repo cannot read them (with the Play key, the draft-only rule above is merely
+# the client's; the key itself could roll production out).
+#
+# Required configuration (Settings -> Environments -> google-play; deployment branches and tags:
+# selected, `main` and the tag pattern `v*`). Never as repository or organization secrets:
+#   Secrets:  PLAY_SERVICE_ACCOUNT_JSON          — JSON key of a Google Cloud service account that Play
+#                                                  Console (Users and permissions) may release this app with.
+#             ANDROID_UPLOAD_KEYSTORE_BASE64     — the upload keystore, base64 encoded on one line.
+#             ANDROID_UPLOAD_KEYSTORE_PASSWORD   — its store password (also the key password).
+#   Variable: ANDROID_UPLOAD_KEY_ALIAS           — optional, defaults to civfix-upload.
+# Play only accepts API uploads once the app exists in Play Console; while it has never been rolled out
+# by hand, Play refuses every non-draft release and the upload step says so.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/community-mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".npmrc"
+      - ".github/workflows/deploy-android.yml"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "internal (staging API, Play internal track) or production (prod API, Play production draft)"
+        type: choice
+        options: [internal, production]
+        default: internal
+
+permissions:
+  contents: read
+
+# One upload at a time: two concurrent runs would be handed the same version code by Play, and the
+# second upload would be refused after its whole build. GitHub keeps one PENDING run per group and a
+# newer one replaces it, so release/prod.mjs starts its production run only once this group is idle.
+concurrency:
+  group: deploy-android
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: build + upload Android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: google-play
+    env:
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'internal' }}
+    steps:
+      - name: Refuse a build from any ref but main, or a v* tag for a production build
+        run: |
+          set -euo pipefail
+          case "$GITHUB_REF" in
+            refs/heads/main) ;;
+            refs/tags/v*)
+              if [ "$TARGET" != production ]; then
+                echo "::error::a release tag builds the production track only; refusing '$TARGET' on '$GITHUB_REF'."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::deploy-android.yml may only run on main or a v* tag; refusing '$GITHUB_REF'."
+              exit 1
+              ;;
+          esac
+          echo "ref $GITHUB_REF -> $TARGET"
+
+      - name: Refuse to build without the Play key and the upload keystore
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for var in PLAY_SERVICE_ACCOUNT_JSON ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD; do
+            [ -n "${!var}" ] || { echo "::error::environment secret $var is not set (Settings -> Environments -> google-play, deployment branches main + tag pattern v*; never a repository or organization secret)."; exit 1; }
+          done
+
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the tag gate below proves the tag is an ancestor of main.
+          fetch-depth: 0
+
+      - name: Prove the release tag (tag shape + merged into main)
+        # Same control as deploy-web.yml and deploy-mobile.yml; keep the regex identical to theirs and to
+        # CIVFIX_RELEASE_TAG_REGEX in civfix-infra.
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          RELEASE_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'
+          if ! printf '%s' "$tag" | grep -qE "$RELEASE_RE"; then
+            echo "::error::'$tag' is not a vMAJOR.MINOR.PATCH release tag; refusing to build production."
+            exit 1
+          fi
+          git fetch --quiet --force origin '+refs/heads/main:refs/remotes/origin/main'
+          if ! git merge-base --is-ancestor "$tag" origin/main; then
+            echo "::error::tag '$tag' is not merged into main. Refusing to build production."
+            exit 1
+          fi
+          echo "$tag is a release tag merged into main"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # Gradle 8.14.3 runs on a JDK from 17 to 24; 17 is React Native's reference JDK.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # Caches ~/.gradle without keying on build files: android/ does not exist until the prebuild.
+      - uses: gradle/actions/setup-gradle@v4
+      # app.config.js requires @civfix/shared/tokens from the workspace; the mobile app's postinstall
+      # builds that package's dist.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Ask Play for the next version code
+        working-directory: apps/community-mobile
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          code="$(node scripts/play-publish.mjs next-version-code)"
+          [[ "$code" =~ ^[0-9]+$ ]] || { echo "::error::Play returned no usable version code: '$code'"; exit 1; }
+          echo "CIVFIX_ANDROID_VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "version code $code"
+
+      - name: Write the upload keystore
+        env:
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.keystore"
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_PASSWORD" > "$RUNNER_TEMP/upload.keystore.password"
+
+      - name: Build the aab
+        working-directory: apps/community-mobile
+        env:
+          CI: "true"
+          CIVFIX_KEYSTORE_FILE: ${{ runner.temp }}/upload.keystore
+          CIVFIX_KEYSTORE_PASSWORD_FILE: ${{ runner.temp }}/upload.keystore.password
+          CIVFIX_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS || 'civfix-upload' }}
+        run: scripts/android-build.sh "$TARGET" --output "$RUNNER_TEMP/civfix-$TARGET.aab"
+
+      - name: Remove the upload keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.keystore" "$RUNNER_TEMP/upload.keystore.password" apps/community-mobile/android/keystore.properties
+
+      - name: Upload the aab to Google Play
+        working-directory: apps/community-mobile
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          version="$(node -p 'require("./app.config.js")({ config: {} }).version')"
+          node scripts/play-publish.mjs upload "$RUNNER_TEMP/civfix-$TARGET.aab" --track "$TARGET" --name "$version ($CIVFIX_ANDROID_VERSION_CODE)"
