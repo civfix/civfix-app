@@ -154,6 +154,12 @@ describe("EventHoursBlock renders inside its host's scroller", () => {
     expect(code(hoursBlock)).toContain("log_hours.row_unknown")
   })
 
+  it("labels an operator-credited non-member as credited by CivFix, not as a former attendee", () => {
+    const source = code(hoursBlock)
+    expect(source).toContain("hoursRowSubject(entry, byId)")
+    expect(source).toContain("log_hours.row_official")
+  })
+
   it("uses the WCAG-safe coral ink token and never the fill token for text", () => {
     expect(code(hoursBlock)).not.toMatch(/theme\.colors\.accent\b(?!Text)/)
   })
