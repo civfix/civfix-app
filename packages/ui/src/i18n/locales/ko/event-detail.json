@@ -107,7 +107,7 @@
     "summary_edit_a11y": "기록한 봉사 시간 수정",
     "row_logged": "{{ago}} 기록",
     "row_unknown": "이전 참석자",
-    "row_official": "CivFix 인정",
+    "row_official": "CivFix에서 인정",
     "blank_hint": "참석하지 않은 사람은 비워 두세요.",
     "blank_hint_edit": "이미 인정된 시간을 수정하려면 새 숫자를 입력하세요. 빈 칸은 건너뜁니다. 칸을 비워도 이미 인정된 시간은 사라지지 않습니다.",
     "self_note": "본인의 시간은 여기에 표시되지 않습니다. 다른 주최자가 인정해 주어야 합니다.",
