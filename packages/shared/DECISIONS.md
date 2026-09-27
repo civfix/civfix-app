@@ -2062,8 +2062,9 @@ data export carries them. The user is notified of a credit and not of a void.
 cancelled, ran at least 15 minutes, the event's creditable window, the daily cap) except roster
 membership, which is the whole point. A live row for that user and event is a CONFLICT; the operator
 voids it first. `kind: "manual"` is work outside any event and carries a `serviceDate` (`YYYY-MM-DD`,
-`ServiceDateSchema`). The server refuses a future date, because "today" depends on a time zone the
-contract does not carry. A manual row has no jurisdiction: it counts toward the user's total and toward
+`ServiceDateSchema`, floored at `SERVICE_DATE_MIN`, 2000-01-01, so a year Postgres cannot store is a
+VALIDATION error). The server refuses a future date, because "today" depends on a time zone the
+contract does not carry. The floor binds the request only: the ledger DTO parses any calendar date. A manual row has no jurisdiction: it counts toward the user's total and toward
 no leaderboard, and its `occurredAt` (on the user's ledger and on a transcript) is the service date.
 The response returns the new `entryId` and the user's recomputed `totalHours`.
 

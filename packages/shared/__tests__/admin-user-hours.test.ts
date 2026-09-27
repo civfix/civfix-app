@@ -11,6 +11,7 @@ import {
   AdminUserHoursResponseSchema,
   AdminVoidUserHoursRequestSchema,
   AdminVoidUserHoursResponseSchema,
+  SERVICE_DATE_MIN,
   ServiceDateSchema,
 } from "../src/schemas/admin/user-hours.js"
 import {
@@ -199,6 +200,14 @@ describe("ServiceDate", () => {
     expect(ServiceDateSchema.safeParse("2028-02-29").success).toBe(true)
     for (const bad of ["2026-9-20", "2026-02-30", "2026-13-01", "2026-09-20T00:00:00Z", "20/09/2026", ""]) {
       expect(ServiceDateSchema.safeParse(bad).success).toBe(false)
+    }
+  })
+
+  it("refuses dates before the floor, so year 0000 never reaches Postgres", () => {
+    expect(ServiceDateSchema.safeParse(SERVICE_DATE_MIN).success).toBe(true)
+    for (const early of ["0000-01-01", "0001-01-01", "1900-06-15", "1999-12-31"]) {
+      expect(ServiceDateSchema.safeParse(early).success).toBe(false)
+      expect(AdminCreditUserHoursRequestSchema.safeParse({ ...manualCredit, serviceDate: early }).success).toBe(false)
     }
   })
 })

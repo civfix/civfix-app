@@ -10,10 +10,6 @@ import { AdminReasonSchema } from "./common.js"
  * the human operator and the reason exist only on this plane.
  */
 
-// ---------------------------------------------------------------------------
-// Ledger read
-// ---------------------------------------------------------------------------
-
 export const ADMIN_USER_HOURS_PAGE_MAX = 50
 
 /** `id` fills the :id path param; the client omits it from the serialized query. */
@@ -27,7 +23,18 @@ export const AdminUserHoursQuerySchema = z
 export type AdminUserHoursQuery = z.infer<typeof AdminUserHoursQuerySchema>
 
 /** A calendar date (`YYYY-MM-DD`) with no time zone: the day a manual credit's service happened. */
-export const ServiceDateSchema = z.string().date()
+const CalendarDateSchema = z.string().date()
+
+/**
+ * `z.string().date()` accepts any four-digit year, including 0000, which Postgres `date` rejects;
+ * without a floor such a value would reach the insert and fail as a 500 instead of a VALIDATION error.
+ * The floor lives on the credit request only, so a stored row keeps parsing if it is ever raised.
+ */
+export const SERVICE_DATE_MIN = "2000-01-01"
+
+export const ServiceDateSchema = CalendarDateSchema.refine((date) => date >= SERVICE_DATE_MIN, {
+  message: `Service date must be on or after ${SERVICE_DATE_MIN}`,
+})
 export type ServiceDate = z.infer<typeof ServiceDateSchema>
 
 const AdminHoursPersonRefSchema = z
@@ -45,7 +52,7 @@ export const AdminUserHoursEntryDTOSchema = z
     occurredAt: ISODateSchema,
     creditedAt: ISODateSchema,
     /** Set on manual rows only. */
-    serviceDate: ServiceDateSchema.nullable(),
+    serviceDate: CalendarDateSchema.nullable(),
     event: z
       .object({
         id: IdSchema,
@@ -100,10 +107,6 @@ export const AdminUserHoursResponseSchema = pageResponse(AdminUserHoursEntryDTOS
 })
 export type AdminUserHoursResponse = z.infer<typeof AdminUserHoursResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Credit
-// ---------------------------------------------------------------------------
-
 const AdminCreditHoursSchema = z.number().min(MIN_EVENT_HOURS).max(MAX_EVENT_HOURS)
 
 /**
@@ -140,10 +143,6 @@ export const AdminCreditUserHoursResponseSchema = z
   })
   .strict()
 export type AdminCreditUserHoursResponse = z.infer<typeof AdminCreditUserHoursResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Void
-// ---------------------------------------------------------------------------
 
 export const AdminVoidUserHoursRequestSchema = z
   .object({
