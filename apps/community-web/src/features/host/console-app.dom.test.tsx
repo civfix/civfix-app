@@ -12,6 +12,9 @@ import { renderConsole } from "@/components/console/__testing__/harness"
 import { useUiStore } from "@/store/ui-store"
 import { ConsoleApp } from "./console-app"
 import { ORG_INVITE_TOKEN_STASH_KEY } from "./org/org-invites"
+// OrgScreen is the heaviest React.lazy screen; loading it cold inside a findBy window can outrun the
+// 1 s default on a busy CI runner. Loading it here keeps each test independent of which ran first.
+import "./org/org-screen"
 
 const ORG_ID = "11111111-1111-4111-8111-111111111111"
 const TOKEN = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
