@@ -107,6 +107,7 @@
     "summary_edit_a11y": "Erfasste Freiwilligenstunden bearbeiten",
     "row_logged": "erfasst {{ago}}",
     "row_unknown": "Ehemalige teilnehmende Person",
+    "row_official": "Von CivFix gutgeschrieben",
     "blank_hint": "Lass eine Zeile leer, wenn jemand nicht da war.",
     "blank_hint_edit": "Gib eine neue Zahl ein, um bereits gutgeschriebene Stunden zu korrigieren. Eine leere Zeile wird übersprungen: sie zu leeren entfernt bereits gutgeschriebene Stunden nicht.",
     "self_note": "Deine eigenen Stunden stehen hier nicht. Eine andere gastgebende Person muss sie dir gutschreiben.",

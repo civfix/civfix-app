@@ -289,6 +289,13 @@ export const AdminActorRefSchema = z
   .strict()
 export type AdminActorRef = z.infer<typeof AdminActorRefSchema>
 
+/**
+ * The mandatory operator reason an audited admin mutation writes to the audit log (DECISIONS §32).
+ * Trimmed before the length check so a whitespace-only reason cannot satisfy the requirement.
+ */
+export const AdminReasonSchema = z.string().trim().min(1).max(1000)
+export type AdminReason = z.infer<typeof AdminReasonSchema>
+
 /** A simple ok-acknowledgement for admin mutations that return no resource body. */
 export const AdminOkResponseSchema = z.object({ ok: z.literal(true) }).strict()
 export type AdminOkResponse = z.infer<typeof AdminOkResponseSchema>

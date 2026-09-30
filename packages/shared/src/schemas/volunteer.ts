@@ -242,6 +242,11 @@ export const EventHoursResponseSchema = z.object({
         userId: IdSchema,
         hours: z.number().nonnegative(),
         loggedAt: ISODateSchema,
+        /**
+         * 0.58.0: true when an operator credited this row as the CivFix official account (DECISIONS
+         * §58), so the host can label a non-member's row "Credited by CivFix". Absent means false.
+         */
+        creditedByOfficial: z.boolean().optional(),
       }),
     )
     .default([]),

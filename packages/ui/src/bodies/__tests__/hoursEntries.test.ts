@@ -4,6 +4,7 @@ import type { EventSlotDTO } from "@civfix/shared"
 import {
   parseHoursDraft,
   hoursDraftValid,
+  hoursRowSubject,
   buildHoursEntries,
   plannedEventHours,
   seedHoursDrafts,
@@ -267,5 +268,29 @@ describe("suggestedHoursFor", () => {
   it("produces a value the row editor accepts", () => {
     const suggestion = suggestedHoursFor({ slot: { id: "s1" } }, cleanup({ slots: board }))
     expect(hoursDraftValid(formatHours(suggestion?.hours ?? 0), MAX)).toBe(true)
+  })
+})
+
+describe("hoursRowSubject", () => {
+  const roster = new Map([["a", { id: "a", name: "Ada" }]])
+
+  it("names a roster member even when an operator credited their row", () => {
+    expect(hoursRowSubject({ userId: "a" }, roster)).toEqual({
+      kind: "attendee",
+      attendee: { id: "a", name: "Ada" },
+    })
+    expect(hoursRowSubject({ userId: "a", creditedByOfficial: true }, roster).kind).toBe("attendee")
+  })
+
+  it("attributes an operator-credited non-member to CivFix rather than calling them a former attendee", () => {
+    expect(hoursRowSubject({ userId: "z", creditedByOfficial: true }, roster)).toEqual({ kind: "official" })
+  })
+
+  it("keeps the former-attendee label for a host-credited row whose user left the roster", () => {
+    expect(hoursRowSubject({ userId: "z", creditedByOfficial: false }, roster)).toEqual({ kind: "former" })
+  })
+
+  it("treats an absent flag from an older server as a host credit", () => {
+    expect(hoursRowSubject({ userId: "z" }, roster)).toEqual({ kind: "former" })
   })
 })
