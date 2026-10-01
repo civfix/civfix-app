@@ -61,7 +61,6 @@ import {
   hasValidEventEnd,
   emptyCleanupForm,
   isCleanupFormComplete,
-  mergeDateTime,
   type CleanupFormSection,
   type CleanupFormValue,
 } from "./CleanupForm"
@@ -222,18 +221,19 @@ function ReviewSummary({
   const label = useReverseLabel(value.coords)
 
   const empty = t("wizard.empty")
+  const startMs =
+    value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
   const whenText =
-    value.date && value.time
-      ? mergeDateTime(value.date, value.time).toLocaleString(locale, {
+    startMs !== null
+      ? new Date(startMs).toLocaleString(locale, {
           weekday: "short",
           month: "short",
           day: "numeric",
           hour: "numeric",
           minute: "2-digit",
+          timeZone: value.timezone,
         })
       : empty
-  const startMs =
-    value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
   const endMs =
     value.date && value.time && value.endTime
       ? formEndInstantMs(value.date, value.time, value.endTime, value.timezone)
