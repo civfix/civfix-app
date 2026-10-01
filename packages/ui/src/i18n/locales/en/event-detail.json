@@ -107,6 +107,7 @@
     "summary_edit_a11y": "Edit the volunteer hours you logged",
     "row_logged": "logged {{ago}}",
     "row_unknown": "Former attendee",
+    "row_official": "Credited by CivFix",
     "blank_hint": "Leave a row blank for anyone who did not attend.",
     "blank_hint_edit": "Type a new number to correct hours already credited. A blank row is skipped: clearing it does not remove hours someone already has.",
     "self_note": "Your own hours aren't listed here. Another host has to credit you.",
