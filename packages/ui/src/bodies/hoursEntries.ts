@@ -72,3 +72,19 @@ export function seedHoursDrafts(
   for (const entry of entries) drafts[entry.userId] = formatHours(entry.hours)
   return drafts
 }
+
+export type HoursRowSubject<A> =
+  | { kind: "attendee"; attendee: A }
+  | { kind: "official" }
+  | { kind: "former" }
+
+export function hoursRowSubject<A>(
+  entry: { userId: string; creditedByOfficial?: boolean },
+  rosterById: ReadonlyMap<string, A>,
+): HoursRowSubject<A> {
+  const attendee = rosterById.get(entry.userId)
+  if (attendee !== undefined) return { kind: "attendee", attendee }
+  // An operator can credit someone who never joined the roster; calling them a "former attendee"
+  // would tell the host something false about who was at their event.
+  return entry.creditedByOfficial === true ? { kind: "official" } : { kind: "former" }
+}

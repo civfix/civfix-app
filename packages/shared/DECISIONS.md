@@ -2037,3 +2037,57 @@ under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with i
 0.57.0 for the endpoints and the new fields, and civfix-admin adopts it for the unified Inbox and the
 review action; `services/media-worker` bumps alongside the api and civfix-govt-web with the routine
 propagation. No seam or fake changes.
+
+## 58. An operator corrects a user's hours through the ledger, as CivFix, and a void is the only correction (0.58.0)
+
+People who attend a CivFix-sponsored event before they have the app sign up during or after it, and
+nothing could credit them: the host's `logEventHours` only credits the event roster, the ledger's
+`manual` source had no writer, and the "admin void" the integrity notes relied on did not exist. The
+users surface gains three endpoints: `getUserHours` (`GET /admin/users/:id/hours`), `creditUserHours`
+(`POST /admin/users/:id/hours`, csrf) and `voidUserHours` (`POST /admin/users/:id/hours/:entryId/void`,
+csrf).
+
+**A credit is a ledger row attributed to CivFix; the human stays on the admin plane.** An operator
+credit writes an ordinary `volunteer_hours` row whose creditor is the CivFix official account (§56), so
+the user, the event page, the public history and the leaderboard all see "credited by CivFix" and
+nothing else. The acting operator and the mandatory `reason` (`AdminReasonSchema`, the §32 rule, now
+exported from `schemas/admin/common.ts` so the org writes and the hours writes share one definition)
+are stored beside the row and written to the audit log in the same transaction. They appear only in
+`AdminUserHoursEntryDTO` (`operator`, `note`, `voidedBy`, `voidReason`); no user-facing read and no
+data export carries them. The user is notified of a credit and not of a void.
+
+**`creditUserHours` is a union on `kind`.** Both members are `.strict()` and bound `hours` to
+`MIN_EVENT_HOURS`..`MAX_EVENT_HOURS`. `kind: "event"` names a real event and yields a genuine
+`source: "event"` row: it obeys every rule the host path obeys (the event has ended, is not
+cancelled, ran at least 15 minutes, the event's creditable window, the daily cap) except roster
+membership, which is the whole point. A live row for that user and event is a CONFLICT; the operator
+voids it first. `kind: "manual"` is work outside any event and carries a `serviceDate` (`YYYY-MM-DD`,
+`ServiceDateSchema`, floored at `SERVICE_DATE_MIN`, 2000-01-01, so a year Postgres cannot store is a
+VALIDATION error). The server refuses a future date, because "today" depends on a time zone the
+contract does not carry. The floor binds the request only: the ledger DTO parses any calendar date. A manual row has no jurisdiction: it counts toward the user's total and toward
+no leaderboard, and its `occurredAt` (on the user's ledger and on a transcript) is the service date.
+The response returns the new `entryId` and the user's recomputed `totalHours`.
+
+**A void is the only correction.** Entries are never edited in place: a wrong credit is voided with a
+reason and a new one is credited. `voidUserHours` refuses an already-void entry with CONFLICT and never
+touches a historical `source: "report"` row (`voidable: false`), which only a migration may change. A
+host may credit a person again after an operator voided their event row; the row is revived rather than
+duplicated. Issued certificates are frozen snapshots and keep verifying with the old total, so the void
+response lists the live certificates whose snapshot contains the entry (`affectedCertificates`). The
+operator revokes them with the backend's `db:certificate:revoke` CLI; the console never revokes one.
+
+**The ledger read shows everything.** `getUserHours` pages the user's rows newest first, voided rows
+included, 1-50 per page under a keyset cursor. `totals.totalHours` is computed exactly as the user's
+profile total, so the tab and the profile can never disagree; `liveEntries` and `voidedEntries` count
+the rows. `EventHoursResponse.entries[].creditedByOfficial` is a new optional boolean so the host's
+hours block can label an operator-credited non-member "Credited by CivFix" instead of "Former
+attendee"; absent means false.
+
+**Registry and delivery set.** The three endpoints are a sixth group, `adminUserHoursEndpoints`,
+spread into `endpoints` for the TS7056 reason §52 gives. The registry moves 333 to 336, 109 of them
+under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. Additive: every
+change is a new endpoint, a new schema, or an optional field. civfix-backend `services/api` adopts
+0.58.0 to serve the endpoints and set the flag, `services/media-worker` bumps alongside it, and
+civfix-admin adopts it for the Hours tab. civfix-app's web and mobile read `creditedByOfficial` with no
+adoption step. civfix-govt-web reads nothing new and stays on its tokens-only `^0.24.2` pin; closing that gap is a
+separate, still-open decision. No seam or fake changes.
