@@ -14,6 +14,9 @@ import { ConsoleApp } from "../console-app"
 import { ConsoleNavigationProvider } from "../console-context"
 import { CreateOrgScreen } from "./create-org-screen"
 import { OrgProfileForm, socialLinksFromDraft, EMPTY_ORG_DRAFT } from "./org-profile-form"
+// ConsoleApp mounts OrgScreen through React.lazy; loading its module graph cold inside a findBy
+// window outran the 1 s default on a busy CI runner. Loading it here makes the lazy import instant.
+import "./org-screen"
 
 const ORG_ID = "11111111-1111-4111-8111-111111111111"
 
