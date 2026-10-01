@@ -8,7 +8,7 @@ import { useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useLocale } from "../i18n"
 import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
-import { uses24HourClock } from "./calendarModel"
+import { timeCarrier, uses24HourClock } from "./calendarModel"
 import {
   TIME_PICKER_MINUTE_INTERVAL,
   type DateFieldRowProps,
@@ -102,14 +102,13 @@ export function TimeFieldRow({
 }: TimeFieldRowProps) {
   const th = useTheme()
   const { locale } = useLocale()
-  const current = value ?? day ?? new Date()
+  const base = day ?? new Date()
+  const current = value ?? timeCarrier(base, base.getHours(), base.getMinutes())
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
       if (event.type === "dismissed" || picked === undefined) return
-      const next = new Date(day ?? value ?? picked)
-      next.setHours(picked.getHours(), picked.getMinutes(), 0, 0)
-      onChange(next)
+      onChange(timeCarrier(day ?? value ?? picked, picked.getHours(), picked.getMinutes()))
     },
     [day, onChange, value],
   )

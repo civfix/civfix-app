@@ -55,8 +55,8 @@ import {
   endTimeAfter,
   endTimeSelectable,
   formInstantMs,
-  mergeDateTime,
   scheduleFieldErrors,
+  timeCarrier,
 } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { ReportLinkPicker } from "./ReportLinkPicker"
@@ -498,8 +498,10 @@ export function CleanupForm({
     (date: Date) => {
       const before =
         value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
-      const time = value.time ? mergeDateTime(date, value.time) : value.time
-      const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
+      const time = value.time ? timeCarrier(date, value.time.getHours(), value.time.getMinutes()) : value.time
+      const endTime = value.endTime
+        ? timeCarrier(date, value.endTime.getHours(), value.endTime.getMinutes())
+        : value.endTime
       const after = time ? formInstantMs(date, time, value.timezone) : null
       patch({
         date,
@@ -595,6 +597,7 @@ export function CleanupForm({
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
+        timeZone: value.timezone,
       }),
     }
   }, [value, locale])
