@@ -1,0 +1,102 @@
+/* The export's 404.html. It has no metadata of its own: the branded link-preview
+   head comes from the root layout, and cf-pages-postbuild.mjs fails the build if
+   404.html loses it. */
+
+.nf-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-base);
+}
+
+.nf-top {
+  padding: var(--space-5) var(--space-6);
+}
+.nf-top a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-24);
+  text-decoration: none;
+}
+.nf-top a:focus-visible,
+.nf-cta:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.nf-body {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--space-5) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+
+.nf-stage {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nf-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  max-width: 480px;
+}
+.nf-eyebrow {
+  margin: 0;
+  font-size: var(--fs-12);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.nf-copy h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-38);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+.nf-copy p.nf-sub {
+  margin: 0;
+  color: var(--fg-2);
+}
+.nf-cta {
+  margin-top: var(--space-3);
+  min-height: 48px;
+  text-decoration: none;
+}
+
+/* Digits share the wordmark's display face so the stage reads as civfix. */
+.nf-digit {
+  font-family: "Baloo2_800ExtraBold", var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .nf-top { padding: var(--space-4) var(--space-5); }
+  .nf-body { gap: var(--space-6); justify-content: flex-start; padding-top: var(--space-6); }
+  .nf-stage { height: 240px; }
+  .nf-copy h1 { font-size: var(--fs-30); }
+}
