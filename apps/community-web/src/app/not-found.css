@@ -101,3 +101,60 @@
   .nf-stage { height: 240px; }
   .nf-copy h1 { font-size: var(--fs-30); }
 }
+
+/* Option A: tumbling tiles */
+.nf-stage { --nf-tile: 128px; }
+.nf-tiles {
+  position: absolute;
+  inset: 0 0 6px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: calc(var(--nf-tile) * 0.14);
+}
+.nf-tile {
+  width: var(--nf-tile);
+  height: var(--nf-tile);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  color: var(--fg-on-color);
+  font-size: calc(var(--nf-tile) * 0.74);
+  padding-top: calc(var(--nf-tile) * 0.08);
+  box-shadow: var(--shadow-3), var(--sheen-top);
+}
+.nf-tile--bloom { background: var(--bloom); }
+.nf-tile--sky { background: var(--sky-600); }
+.nf-tile--moss { background: var(--moss); }
+.nf-tiles.is-live .nf-tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: grab;
+  will-change: transform;
+}
+.nf-tiles.is-live .nf-tile:active { cursor: grabbing; }
+.nf-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-5);
+}
+.nf-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-13);
+  color: var(--fg-3);
+}
+@media (max-width: 640px) {
+  .nf-stage { --nf-tile: 92px; }
+}
