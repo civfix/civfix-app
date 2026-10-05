@@ -76,6 +76,7 @@
   letter-spacing: -0.02em;
   line-height: var(--lh-snug);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .nf-copy p.nf-sub {
   margin: 0;
