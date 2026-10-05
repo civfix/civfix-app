@@ -80,6 +80,9 @@ jobs:
     name: build + upload iOS
     runs-on: macos-26
     timeout-minutes: 120
+    # Mirrors PROFILE below (the job's `env` is not readable here): a production-profile build waits
+    # for reviewer approval and runs only from main or a v* tag.
+    environment: ${{ (github.event_name == 'workflow_dispatch' && inputs.profile || 'testflight') == 'production' && 'production' || 'staging' }}
     env:
       PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'testflight' }}
     steps:
