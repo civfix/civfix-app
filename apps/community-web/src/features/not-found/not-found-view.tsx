@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 import { Wordmark } from "@/components/brand"
 
 import { NotFoundStage } from "./not-found-stage"
@@ -9,9 +11,9 @@ export function NotFoundView() {
   return (
     <main className="nf-page">
       <header className="nf-top">
-        <a href="/" aria-label="civfix home">
+        <Link href="/" aria-label="civfix home">
           <Wordmark />
-        </a>
+        </Link>
       </header>
       <div className="nf-body">
         <NotFoundStage />
@@ -19,9 +21,9 @@ export function NotFoundView() {
           <p className="nf-eyebrow">{NOT_FOUND_COPY.eyebrow}</p>
           <h1>{NOT_FOUND_COPY.headline}</h1>
           <p className="nf-sub">{NOT_FOUND_COPY.supporting}</p>
-          <a className="btn primary lg nf-cta" href="/map/">
+          <Link className="btn primary lg nf-cta" href="/map/">
             {NOT_FOUND_COPY.cta}
-          </a>
+          </Link>
         </div>
       </div>
     </main>
