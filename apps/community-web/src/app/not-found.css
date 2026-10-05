@@ -101,3 +101,114 @@
   .nf-stage { height: 240px; }
   .nf-copy h1 { font-size: var(--fs-30); }
 }
+
+/* Option B: the pothole */
+.nf-street { --nf-glyph: 168px; overflow: visible; }
+.nf-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 84px;
+  border-radius: var(--radius-lg);
+  background: var(--ink-5);
+  overflow: hidden;
+}
+.nf-lane {
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: 18px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--sun-300) 0 36px,
+    transparent 36px 64px
+  );
+}
+.nf-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 52px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-4);
+}
+.nf-glyph {
+  display: inline-block;
+  font-size: var(--nf-glyph);
+  line-height: 0.78;
+  color: var(--fg-1);
+  transform-origin: 50% 100%;
+}
+.nf-street.is-live .nf-glyph,
+.nf-street.is-live .nf-pin { will-change: transform; }
+.nf-hole-slot {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  width: calc(var(--nf-glyph) * 0.78);
+}
+.nf-pothole {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  width: calc(var(--nf-glyph) * 0.92);
+  height: 40px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--ink-3);
+  box-shadow: inset 0 8px 0 var(--ink-2);
+}
+:root.dark .nf-pothole {
+  background: var(--paper);
+  box-shadow: inset 0 8px 0 var(--bg-1);
+}
+/* Clips only below the pothole's centre line, so the zero can fly out the top. */
+.nf-hole-clip {
+  display: inline-flex;
+  clip-path: inset(-400px -200px 0 -200px);
+  cursor: pointer;
+}
+.nf-glyph--zero {
+  position: relative;
+  top: calc(var(--nf-glyph) * 0.14);
+  color: var(--bloom);
+  transform: rotate(-9deg);
+}
+.nf-pin {
+  position: absolute;
+  right: calc(var(--nf-glyph) * -0.5);
+  bottom: -30px;
+  width: 34px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  transform-origin: 50% 100%;
+}
+.nf-pin-head {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pin);
+  transform: rotate(-45deg);
+  background: var(--cat-hazard);
+  box-shadow: var(--shadow-pin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nf-pin-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--card);
+}
+@media (max-width: 640px) {
+  .nf-street { --nf-glyph: 116px; }
+  .nf-road { height: 64px; }
+  .nf-lane { bottom: 12px; }
+  .nf-row { bottom: 40px; }
+}
