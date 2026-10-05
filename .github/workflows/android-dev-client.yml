@@ -1,0 +1,94 @@
+name: Android dev client
+
+# Builds the debug Expo dev client of apps/community-mobile for arm64 Android. The agent box (CLAUDE.md
+# §11) installs it on its containerized Android device and runs the branch under test's JavaScript in
+# it through Metro, so the native app is built here (Google's Android build tools do not run on that
+# arm64 Linux box) and only when its native side changes.
+#
+# The artifact is named after the app's native fingerprint (scripts/native-fingerprint.mjs): one build
+# serves every branch whose native side matches, and a run whose fingerprint already has a live
+# artifact stops before building. Debug-signed, no secrets, nothing leaves this repo's artifacts.
+#
+#   push to main / pull request touching the app or its dependencies -> build when the fingerprint is new
+#   manual run                                                       -> same, for any branch
+
+on:
+  push:
+    branches: [main]
+    paths: &app_paths
+      - "apps/community-mobile/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".npmrc"
+      - "patches/**"
+      - ".github/workflows/android-dev-client.yml"
+  pull_request:
+    branches: [main]
+    paths: *app_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: android-dev-client-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dev-client:
+    name: Android dev client (arm64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CI: "true"
+      EXPO_NO_DOTENV: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Fingerprint the native side
+        id: fingerprint
+        working-directory: apps/community-mobile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          hash="$(node scripts/native-fingerprint.mjs)"
+          name="android-dev-client-$hash"
+          live="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=$name" --jq '[.artifacts[] | select(.expired | not)] | length')"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "live=$live" >> "$GITHUB_OUTPUT"
+          echo "fingerprint $hash, live artifacts: $live"
+
+      - if: steps.fingerprint.outputs.live == '0'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - if: steps.fingerprint.outputs.live == '0'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build the debug dev client
+        if: steps.fingerprint.outputs.live == '0'
+        working-directory: apps/community-mobile
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform android --clean --no-install
+          (cd android && ./gradlew --no-daemon :app:assembleDebug -PreactNativeArchitectures=arm64-v8a)
+
+      - if: steps.fingerprint.outputs.live == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.fingerprint.outputs.name }}
+          path: apps/community-mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 90
