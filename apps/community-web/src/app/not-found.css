@@ -101,3 +101,88 @@
   .nf-stage { height: 240px; }
   .nf-copy h1 { font-size: var(--fs-30); }
 }
+
+/* Option C: the street sign */
+.nf-signpost {
+  --nf-sign-w: 300px;
+  --nf-sign-h: 150px;
+  --nf-bar-top: 14px;
+  --nf-chain: 38px;
+  --nf-bolt-inset: 22px;
+  height: 320px;
+}
+.nf-bar {
+  position: absolute;
+  left: 50%;
+  top: var(--nf-bar-top);
+  width: calc(var(--nf-sign-w) + 56px);
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-pill);
+  background: var(--ink-3);
+}
+.nf-chain {
+  position: absolute;
+  top: var(--nf-bar-top);
+  width: 4px;
+  height: var(--nf-chain);
+  margin-left: -2px;
+  border-radius: var(--radius-pill);
+  background: repeating-linear-gradient(180deg, var(--ink-3) 0 6px, transparent 6px 9px);
+  transform-origin: 50% 0;
+}
+.nf-chain--left { left: calc(50% - var(--nf-sign-w) / 2 + var(--nf-bolt-inset)); }
+.nf-chain--right { left: calc(50% + var(--nf-sign-w) / 2 - var(--nf-bolt-inset)); }
+.nf-signpost.is-live .nf-chain--left { left: 0; top: 0; }
+.nf-sign {
+  position: absolute;
+  left: calc(50% - var(--nf-sign-w) / 2);
+  top: calc(var(--nf-bar-top) + var(--nf-chain));
+  width: var(--nf-sign-w);
+  height: var(--nf-sign-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--moss-700);
+  color: var(--fg-on-color);
+  box-shadow: var(--shadow-3), inset 0 0 0 6px var(--moss-700), inset 0 0 0 9px var(--fg-on-color);
+  transform-origin: calc(100% - var(--nf-bolt-inset)) 0;
+}
+.nf-signpost.is-live .nf-sign {
+  left: 0;
+  top: 0;
+  cursor: grab;
+  will-change: transform;
+}
+.nf-signpost.is-live .nf-sign:active { cursor: grabbing; }
+.nf-bolt {
+  position: absolute;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-on-color);
+}
+.nf-bolt--left { left: calc(var(--nf-bolt-inset) - 4px); }
+.nf-bolt--right { right: calc(var(--nf-bolt-inset) - 4px); }
+.nf-sign-number {
+  font-size: calc(var(--nf-sign-h) * 0.56);
+  margin-top: calc(var(--nf-sign-h) * 0.08);
+}
+.nf-sign-street {
+  font-size: var(--fs-14);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .nf-signpost {
+    --nf-sign-w: 230px;
+    --nf-sign-h: 116px;
+    height: 250px;
+  }
+  .nf-sign-street { font-size: var(--fs-12); }
+}
