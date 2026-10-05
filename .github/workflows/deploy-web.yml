@@ -57,8 +57,11 @@ jobs:
     # `github.ref_name == ...` ternary in four separate `env:` expressions, which is how a build once
     # shipped a test key to civfix.org and a live key to a public preview: four chances to get the same
     # decision wrong independently, and no check that they agreed. Decide once, here, then assert.
+    # The GitHub environment is that same decision (the YAML alias below), so a production deploy
+    # always waits for reviewer approval and can never run from a ref other than main or a v* tag.
+    environment: &deploy_env ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'staging' }}
     env:
-      DEPLOY_ENV: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'staging' }}
+      DEPLOY_ENV: *deploy_env
     steps:
       - name: Refuse a deploy from any ref but main or a v* release tag
         run: |

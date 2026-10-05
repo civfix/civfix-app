@@ -67,6 +67,9 @@ jobs:
     name: build + upload Android
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    # Mirrors TARGET below (the job's `env` is not readable here): a production-track build waits for
+    # reviewer approval and runs only from main or a v* tag.
+    environment: ${{ (github.event_name == 'workflow_dispatch' && inputs.profile || 'internal') == 'production' && 'production' || 'staging' }}
     env:
       TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'internal' }}
     steps:
