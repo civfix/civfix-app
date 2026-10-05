@@ -80,6 +80,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@expo/fingerprint": "~0.15.5",
     "@types/react": "~19.1.0",
     "eslint": "^9.16.0",
     "eslint-config-expo": "~10.0.0",

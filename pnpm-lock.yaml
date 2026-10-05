@@ -212,6 +212,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.15(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
     devDependencies:
+      '@expo/fingerprint':
+        specifier: ~0.15.5
+        version: 0.15.5
       '@types/react':
         specifier: ~19.1.0
         version: 19.1.17
