@@ -133,7 +133,12 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
+
+function enterFromTabIndex(index: number): void {
+  vi.stubGlobal("navigation", { currentEntry: { index } })
+}
 
 describe("mount", () => {
   it("stamps the in-app root when the app boots at /", () => {
@@ -212,6 +217,64 @@ describe("mount", () => {
 
     expect(nav().stack).toEqual([PIN_A])
     expect(depth()).toBe(1)
+  })
+})
+
+describe("a shell entered from another civfix page in the same tab", () => {
+  it("takes over the entry it landed on, so one Back returns to that page", () => {
+    enterFromTabIndex(1)
+    window.history.replaceState(null, "", "/map")
+    const length = window.history.length
+    mount()
+    expect(path()).toBe("/map/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("map")
+    expect(readNavHistory(window.history.state)?.beneath).toBeNull()
+    expect(window.history.length).toBe(length)
+  })
+
+  it("keeps a surface it lands on at the same entry too", () => {
+    enterFromTabIndex(2)
+    window.history.replaceState(null, "", "/settings")
+    const length = window.history.length
+    mount()
+    expect(path()).toBe("/settings/")
+    expect(depth()).toBe(0)
+    expect(nav().stack).toEqual([entryFromPath("/settings")])
+    expect(window.history.length).toBe(length)
+  })
+
+  it("walks surfaces opened inside it with Back and Forward as before", async () => {
+    enterFromTabIndex(1)
+    window.history.replaceState(null, "", "/map")
+    mount()
+    await drive(() => nav().push(PIN_A))
+    expect(path()).toBe("/pin/a/")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(path()).toBe("/map/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("map")
+    expect(nav().stack).toEqual([])
+
+    await browserForward()
+    expect(path()).toBe("/pin/a/")
+    expect(depth()).toBe(1)
+    expect(nav().stack).toEqual([PIN_A])
+  })
+
+  it("still writes the synthetic root when the tab has no civfix page behind it", async () => {
+    enterFromTabIndex(0)
+    window.history.replaceState(null, "", "/map")
+    mount()
+    expect(path()).toBe("/map/")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
   })
 })
 
