@@ -270,6 +270,10 @@ function ViewChatRow({ report }: { report: ReportDTO }) {
   const members = report.chatMemberCount ?? 0
   const messages = report.chatMessageCount ?? 0
   const unread = report.chatUnread ?? 0
+  const meta = [
+    t("chat.view_chat_members", { count: members }),
+    t("chat.view_chat_messages", { count: messages }),
+  ].join(" · ")
   const onPress = useCallback(() => {
     useNavStore.getState().push({ kind: "thread", id: report.id, roomKind: "report" })
   }, [report.id])
@@ -288,7 +292,7 @@ function ViewChatRow({ report }: { report: ReportDTO }) {
           {t("chat.view_chat")}
         </Text>
         <Text style={styles.viewChatMeta} numberOfLines={1}>
-          {t("chat.view_chat_meta", { members, messages })}
+          {meta}
         </Text>
       </View>
       {unread > 0 ? <View style={styles.viewChatUnreadDot} /> : null}
