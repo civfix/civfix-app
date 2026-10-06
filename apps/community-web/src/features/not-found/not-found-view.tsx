@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useT } from "@civfix/ui/i18n"
 import { useReducedMotion } from "@civfix/ui/theme"
 
 import { Wordmark } from "@/components/brand"
 
-import { NOT_FOUND_COPY, pickNotFoundVariant, type NotFoundVariant } from "./not-found-copy"
+import { pickNotFoundVariant, type NotFoundVariant } from "./not-found-variant"
 import { PotholeStage } from "./stage-pothole"
 import { SignStage } from "./stage-sign"
 import { TilesStage } from "./stage-tiles"
@@ -18,6 +19,7 @@ const STAGES: Record<NotFoundVariant, React.ComponentType<{ live: boolean }>> = 
 }
 
 export function NotFoundView() {
+  const { t } = useT("not-found")
   const reduced = useReducedMotion()
   const [picked, setPicked] = React.useState<NotFoundVariant | null>(null)
 
@@ -30,31 +32,30 @@ export function NotFoundView() {
 
   const variant = reduced === null ? null : picked
   const Stage = variant ? STAGES[variant] : null
-  const copy = variant ? NOT_FOUND_COPY.variants[variant] : null
 
   return (
     <main className="nf-page">
       <header className="nf-top">
-        <Link href="/" aria-label="civfix home">
+        <Link href="/" aria-label={t("home_label")}>
           <Wordmark />
         </Link>
       </header>
-      <div className={copy ? "nf-body is-picked" : "nf-body"} data-variant={variant ?? undefined}>
+      <div className={variant ? "nf-body is-picked" : "nf-body"} data-variant={variant ?? undefined}>
         <div className="nf-stage" aria-hidden="true">
           {Stage ? <Stage live={reduced === false} /> : null}
         </div>
         <div className="nf-copy">
-          <p className="nf-eyebrow">{NOT_FOUND_COPY.eyebrow}</p>
+          <p className="nf-eyebrow">{t("eyebrow")}</p>
           <div className="nf-message">
-            {copy ? (
+            {variant ? (
               <>
-                <h1>{copy.headline}</h1>
-                <p className="nf-sub">{copy.supporting}</p>
+                <h1>{t(`variants.${variant}.headline`)}</h1>
+                <p className="nf-sub">{t(`variants.${variant}.supporting`)}</p>
               </>
             ) : null}
           </div>
           <Link className="btn primary lg nf-cta" href="/map/">
-            {NOT_FOUND_COPY.cta}
+            {t("cta")}
           </Link>
         </div>
       </div>

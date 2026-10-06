@@ -1,0 +1,21 @@
+{
+  "home_label": "civfix Startseite",
+  "eyebrow": "Fehler 404 · Seite nicht gefunden",
+  "cta": "Zurück zur Karte",
+  "tiles_hint": "Psst: Du kannst die Blöcke werfen",
+  "sign_street": "Nirgendwo-Allee",
+  "variants": {
+    "tiles": {
+      "headline": "Diese Seite ist verschwunden.",
+      "supporting": "Wir würden eine Meldung machen, aber wir wissen nicht, wo sie war. Der Link ist vielleicht veraltet oder falsch geschrieben."
+    },
+    "pothole": {
+      "headline": "Diese Seite ist in ein Schlagloch gefallen.",
+      "supporting": "Wir haben eine Meldung gemacht. Jemand aus der Nachbarschaft ist mit einer Schaufel unterwegs. Bis dahin führt der Link, dem du gefolgt bist, nirgendwohin."
+    },
+    "sign": {
+      "headline": "Diese Straße führt nirgendwohin.",
+      "supporting": "Sogar das Schild hat aufgegeben. Der Link, dem du gefolgt bist, ist vielleicht veraltet oder falsch geschrieben. Wir haben dem Bauamt Bescheid gegeben."
+    }
+  }
+}

@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { useT } from "@civfix/ui/i18n"
 
-import { NOT_FOUND_COPY } from "./not-found-copy"
 import { useMotionLoop } from "./use-motion-loop"
 
 const DIGITS = [
@@ -34,6 +34,7 @@ type Body = {
 }
 
 export function TilesStage({ live }: { live: boolean }) {
+  const { t } = useT("not-found")
   const stageRef = React.useRef<HTMLDivElement>(null)
   const tileRefs = React.useRef<(HTMLDivElement | null)[]>([])
   const bodies = React.useRef<Body[]>([])
@@ -148,7 +149,7 @@ export function TilesStage({ live }: { live: boolean }) {
         ))}
       </div>
       <div className="nf-ground" />
-      {live ? <p className="nf-hint">{NOT_FOUND_COPY.tilesHint}</p> : null}
+      {live ? <p className="nf-hint">{t("tiles_hint")}</p> : null}
     </>
   )
 }

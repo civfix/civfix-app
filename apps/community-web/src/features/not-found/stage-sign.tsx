@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useT } from "@civfix/ui/i18n"
 
 import { useMotionLoop } from "./use-motion-loop"
 
@@ -18,6 +19,7 @@ const SAG = (-22 * Math.PI) / 180
  * rest pose straight away, so the still keeps the joke.
  */
 export function SignStage({ live }: { live: boolean }) {
+  const { t } = useT("not-found")
   const signRef = React.useRef<HTMLDivElement>(null)
   const chainRef = React.useRef<HTMLDivElement>(null)
   const angle = React.useRef(live ? 0 : SAG)
@@ -83,7 +85,7 @@ export function SignStage({ live }: { live: boolean }) {
         <span className="nf-bolt nf-bolt--left" />
         <span className="nf-bolt nf-bolt--right" />
         <span className="nf-digit nf-sign-number">404</span>
-        <span className="nf-sign-street">Nowhere Ave</span>
+        <span className="nf-sign-street">{t("sign_street")}</span>
       </div>
     </div>
   )

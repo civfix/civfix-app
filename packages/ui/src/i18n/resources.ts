@@ -76,6 +76,7 @@ import en_mobile_onboarding from "./locales/en/mobile-onboarding.json"
 import en_mobile_report_camera from "./locales/en/mobile-report-camera.json"
 import en_mobile_system from "./locales/en/mobile-system.json"
 import en_nav from "./locales/en/nav.json"
+import en_not_found from "./locales/en/not-found.json"
 import en_notifications from "./locales/en/notifications.json"
 import en_notifications_prefs from "./locales/en/notifications-prefs.json"
 import en_onboarding_age from "./locales/en/onboarding-age.json"
@@ -176,6 +177,7 @@ import es_mobile_onboarding from "./locales/es/mobile-onboarding.json"
 import es_mobile_report_camera from "./locales/es/mobile-report-camera.json"
 import es_mobile_system from "./locales/es/mobile-system.json"
 import es_nav from "./locales/es/nav.json"
+import es_not_found from "./locales/es/not-found.json"
 import es_notifications from "./locales/es/notifications.json"
 import es_notifications_prefs from "./locales/es/notifications-prefs.json"
 import es_onboarding_age from "./locales/es/onboarding-age.json"
@@ -276,6 +278,7 @@ import de_mobile_onboarding from "./locales/de/mobile-onboarding.json"
 import de_mobile_report_camera from "./locales/de/mobile-report-camera.json"
 import de_mobile_system from "./locales/de/mobile-system.json"
 import de_nav from "./locales/de/nav.json"
+import de_not_found from "./locales/de/not-found.json"
 import de_notifications from "./locales/de/notifications.json"
 import de_notifications_prefs from "./locales/de/notifications-prefs.json"
 import de_onboarding_age from "./locales/de/onboarding-age.json"
@@ -376,6 +379,7 @@ import ko_mobile_onboarding from "./locales/ko/mobile-onboarding.json"
 import ko_mobile_report_camera from "./locales/ko/mobile-report-camera.json"
 import ko_mobile_system from "./locales/ko/mobile-system.json"
 import ko_nav from "./locales/ko/nav.json"
+import ko_not_found from "./locales/ko/not-found.json"
 import ko_notifications from "./locales/ko/notifications.json"
 import ko_notifications_prefs from "./locales/ko/notifications-prefs.json"
 import ko_onboarding_age from "./locales/ko/onboarding-age.json"
@@ -479,6 +483,7 @@ export const namespaces = [
   "mobile-report-camera",
   "mobile-system",
   "nav",
+  "not-found",
   "notifications",
   "notifications-prefs",
   "onboarding-age",
@@ -584,6 +589,7 @@ export const resources: Resource = {
     "mobile-report-camera": en_mobile_report_camera,
     "mobile-system": en_mobile_system,
     "nav": en_nav,
+    "not-found": en_not_found,
     "notifications": en_notifications,
     "notifications-prefs": en_notifications_prefs,
     "onboarding-age": en_onboarding_age,
@@ -686,6 +692,7 @@ export const resources: Resource = {
     "mobile-report-camera": es_mobile_report_camera,
     "mobile-system": es_mobile_system,
     "nav": es_nav,
+    "not-found": es_not_found,
     "notifications": es_notifications,
     "notifications-prefs": es_notifications_prefs,
     "onboarding-age": es_onboarding_age,
@@ -788,6 +795,7 @@ export const resources: Resource = {
     "mobile-report-camera": de_mobile_report_camera,
     "mobile-system": de_mobile_system,
     "nav": de_nav,
+    "not-found": de_not_found,
     "notifications": de_notifications,
     "notifications-prefs": de_notifications_prefs,
     "onboarding-age": de_onboarding_age,
@@ -890,6 +898,7 @@ export const resources: Resource = {
     "mobile-report-camera": ko_mobile_report_camera,
     "mobile-system": ko_mobile_system,
     "nav": ko_nav,
+    "not-found": ko_not_found,
     "notifications": ko_notifications,
     "notifications-prefs": ko_notifications_prefs,
     "onboarding-age": ko_onboarding_age,
