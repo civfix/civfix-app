@@ -81,8 +81,8 @@ export function useMobileNavAdapter(): void {
       if (route) router.push(route)
     }
 
-    // A notification tap on a cold start opens its conversation before the Stack
-    // below has registered, so that entry is bridged once the Stack is in place.
+    // On a cold start a tapped notification's conversation reaches the nav store
+    // before the root layout's Stack has registered; it is bridged once it has.
     const stopWaiting = navigationRef.addListener("state", () => {
       if (!shellMounted()) return
       stopWaiting()

@@ -79,14 +79,23 @@ test("a tapped notification dismisses to the shell whenever the action says to",
 
 test("the bridge asks the router which screen is actually on top before it pushes", () => {
   assert.match(adapter, /useNavigationContainerRef/)
-  assert.match(
-    adapter,
-    /navigationRef\.isReady\(\) \? \(navigationRef\.getCurrentRoute\(\) \?\? null\) : null/,
-  )
+  assert.match(adapter, /shellMounted\(\) \? \(navigationRef\.getCurrentRoute\(\) \?\? null\) : null/)
   assert.match(adapter, /const focusedKey = \(\): string \| null => nativeBridgeKey\(focusedRoute\(\)\)/)
   assert.match(adapter, /readFocusedRoute = focusedRoute/)
   assert.match(adapter, /readFocusedRoute = \(\) => null/)
   assert.match(adapter, /bridgeDecision\(active, bridgeGuard, Date\.now\(\), focusedKey\(\)\)/)
+})
+
+test("a cold-start bridge waits for the root layout's Stack instead of pushing a second root", () => {
+  assert.match(
+    adapter,
+    /navigationRef\.isReady\(\) && shellNavigatorMounted\(navigationRef\.getRootState\(\)\)/,
+  )
+  const decide = adapter.slice(adapter.indexOf("const decide ="))
+  assert.match(decide.slice(0, decide.indexOf("bridgeDecision(")), /if \(!shellMounted\(\)\) return/)
+  const waiting = adapter.slice(adapter.indexOf('navigationRef.addListener("state"'))
+  assert.match(waiting.slice(0, waiting.indexOf("})")), /decide\(useNavStore\.getState\(\)\.active\)/)
+  assert.match(adapter, /stopWaiting\(\)\n\s+unsubscribe\(\)/)
 })
 
 test("the strip and the push stay synchronous inside the store notification", () => {
