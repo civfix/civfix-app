@@ -22,7 +22,7 @@ function assertSettledRow(bodies: readonly TileBody[], box: TileBox): void {
   const half = box.tile / 2
   for (const b of bodies) {
     assert.ok(Math.abs(b.y - (box.height - half)) < 0.5, `on the floor: y=${b.y}`)
-    assert.ok(b.x >= half && b.x <= box.width - half, `inside the walls: x=${b.x}`)
+    assert.ok(b.x >= half - 0.5 && b.x <= box.width - half + 0.5, `inside the walls: x=${b.x}`)
     const upright = ((b.angle % 360) + 360) % 360
     assert.ok(Math.min(upright, 360 - upright) < 1, `upright: angle=${b.angle}`)
   }
@@ -135,4 +135,29 @@ test("the tiles report motion while they fall and while one is held, even held s
   run(bodies, BOX, 600)
   assert.equal(stepTiles(bodies, BOX, FRAME), false, "back at rest")
   assertRenderable(bodies)
+})
+
+// The wall clamp and the pair separation take turns after the stage narrows; the
+// loop stops on the first step that reports rest, so that step's pose is what stays drawn.
+test("after the stage narrows under a resting row, rest is only reported once the tiles stop moving", () => {
+  for (const [from, to] of [
+    [320, 280],
+    [320, 290],
+    [312, 272],
+  ] as const) {
+    const wide: TileBox = { ...BOX, width: from }
+    const bodies = dropTiles(wide)
+    run(bodies, wide, 600)
+    assert.equal(stepTiles(bodies, wide, FRAME), false)
+    const narrow: TileBox = { ...BOX, width: to }
+    let steps = 0
+    while (stepTiles(bodies, narrow, FRAME)) assert.ok(++steps < 600, `${from}→${to} comes to rest`)
+    const rest = bodies.map((b) => ({ ...b }))
+    run(bodies, narrow, 600)
+    bodies.forEach((b, i) => {
+      const shift = Math.hypot(b.x - rest[i]!.x, b.y - rest[i]!.y)
+      assert.ok(shift < 0.05, `${from}→${to}: tile ${i} moves ${shift} after reporting rest`)
+    })
+    assertSettledRow(rest, narrow)
+  }
 })

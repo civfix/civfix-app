@@ -20,6 +20,12 @@ import { useStageLoop } from "./useStageLoop"
 // The phone geometry of community-web's not-found.css.
 const TILE = 92
 const GROUND = 6
+// On Android, Reanimated 4.1 can leave a view drawn at an earlier frame when the
+// last style updates land while a gesture is still ending, and once the loop stops
+// nothing sends the style again: a tile let go at the end of a quick swipe stayed
+// where the finger left it. So the row keeps re-sending its rest pose this long
+// (in stepped seconds) before the loop stops.
+const REST_HOLD_S = 0.5
 
 const DIGITS = ["4", "0", "4"] as const
 
@@ -34,6 +40,7 @@ export function TilesStage({ live }: { live: boolean }) {
   const bodies = useSharedValue<TileBody[]>([])
   const box = useSharedValue<TileBox | null>(null)
   const grabbed = useSharedValue(-1)
+  const restFor = useSharedValue(0)
 
   const step = useCallback(
     (dt: number) => {
@@ -46,9 +53,10 @@ export function TilesStage({ live }: { live: boolean }) {
         moving = stepTiles(list, size, dt)
         return list
       })
-      return moving
+      restFor.value = moving ? 0 : restFor.value + dt
+      return moving || restFor.value < REST_HOLD_S
     },
-    [bodies, box],
+    [bodies, box, restFor],
   )
   // The loop stops once the row rests, so a phone left on this screen (or with
   // the app in the background) draws nothing; a grab or a new stage size wakes it.

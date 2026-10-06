@@ -18,6 +18,10 @@ const MAX_FLING = 2800
 const REST_ANGLE = 0.01
 const REST_SPIN = 0.5
 const REST_SPEED = 1
+// The wall clamp runs before the pair separation, which can push a tile back past
+// the wall, so after the stage narrows they take turns over several steps; a
+// tile only rests once a step moves it less than this.
+const REST_SHIFT = 0.01
 
 export type TileBody = {
   x: number
@@ -104,11 +108,16 @@ export function releaseTile(b: TileBody): void {
   b.spin += b.vx * 0.15
 }
 
-/** Advances the tiles by `dt` seconds; false once none is held and every one rests upright on the floor. */
+/**
+ * Advances the tiles by `dt` seconds; false once none is held and every one
+ * rests upright on the floor where a further step would leave it.
+ */
 export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): boolean {
   "worklet"
   const half = box.tile / 2
   const floor = box.height - half
+  const before: number[] = []
+  for (const b of bodies) before.push(b.x, b.y)
   for (const b of bodies) {
     if (b.grabbed) {
       const lean = b.vx * 0.012
@@ -205,6 +214,10 @@ export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): boolean
     } else {
       moving = true
     }
+  }
+  for (let i = 0; i < bodies.length && !moving; i++) {
+    const b = bodies[i]!
+    if (Math.hypot(b.x - before[2 * i]!, b.y - before[2 * i + 1]!) >= REST_SHIFT) moving = true
   }
   return moving
 }
