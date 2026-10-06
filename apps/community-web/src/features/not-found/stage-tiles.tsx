@@ -154,7 +154,7 @@ export function TilesStage({ live }: { live: boolean }) {
   )
 }
 
-function step(bodies: Body[], box: { width: number; height: number; tile: number }, dt: number) {
+export function step(bodies: Body[], box: { width: number; height: number; tile: number }, dt: number) {
   const half = box.tile / 2
   const floor = box.height - half
   for (const b of bodies) {
@@ -181,7 +181,7 @@ function step(bodies: Body[], box: { width: number; height: number; tile: number
     }
     if (b.y < half - box.tile * 4) b.vy = Math.max(b.vy, 0)
     if (grounded) {
-      // Tiles right themselves so the row always ends up reading "404".
+      // Grounded tiles right themselves, so a thrown tile settles upright.
       const target = Math.round(b.angle / 360) * 360
       b.spin += ((target - b.angle) * 120 - b.spin * 14) * dt
       b.vx *= 1 - Math.min(1, FLOOR_FRICTION * dt)
@@ -197,10 +197,12 @@ function step(bodies: Body[], box: { width: number; height: number; tile: number
       const b = bodies[j]!
       const dx = b.x - a.x
       const dy = b.y - a.y
-      const dist = Math.hypot(dx, dy) || 0.001
+      const dist = Math.hypot(dx, dy)
       if (dist >= minDist) continue
-      const nx = dx / dist
-      const ny = dy / dist
+      // A narrowing stage clamps tiles onto the same wall spot, where the centre
+      // line has no direction; split them sideways in reading order instead.
+      const nx = dist > 0 ? dx / dist : 1
+      const ny = dist > 0 ? dy / dist : 0
       const overlap = minDist - dist
       const aShare = a.grabbed ? 0 : b.grabbed ? 1 : 0.5
       const bShare = 1 - aShare
