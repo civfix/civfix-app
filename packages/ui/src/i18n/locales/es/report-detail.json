@@ -108,7 +108,10 @@
     "sign_in_cta_a11y": "Inicia sesión para unirte al chat",
     "composer_placeholder": "Escribe un mensaje...",
     "view_chat": "Ver chat",
-    "view_chat_meta": "{{members}} miembros · {{messages}} mensajes",
+    "view_chat_members_one": "{{count}} miembro",
+    "view_chat_members_other": "{{count}} miembros",
+    "view_chat_messages_one": "{{count}} mensaje",
+    "view_chat_messages_other": "{{count}} mensajes",
     "view_chat_a11y": "Ver el chat de este informe"
   }
 }

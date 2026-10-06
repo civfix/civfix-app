@@ -190,6 +190,12 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Korean breaks between words, not between syllables. keep-all leaves non-CJK breaking as it is,
+     so long URLs and words still wrap through overflow-wrap. */
+  :lang(ko) {
+    word-break: keep-all;
+  }
+
   h1,
   h2,
   h3,

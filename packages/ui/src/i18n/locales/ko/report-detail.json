@@ -108,7 +108,10 @@
     "sign_in_cta_a11y": "채팅에 참여하려면 로그인하세요",
     "composer_placeholder": "메시지 작성...",
     "view_chat": "채팅 보기",
-    "view_chat_meta": "멤버 {{members}}명 · 메시지 {{messages}}개",
+    "view_chat_members_one": "멤버 {{count}}명",
+    "view_chat_members_other": "멤버 {{count}}명",
+    "view_chat_messages_one": "메시지 {{count}}개",
+    "view_chat_messages_other": "메시지 {{count}}개",
     "view_chat_a11y": "이 신고의 채팅 보기"
   }
 }
