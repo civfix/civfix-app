@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react"
 import { View } from "react-native"
-import { useRouter, type Href } from "expo-router"
+import { useNavigationContainerRef, useRouter, type Href } from "expo-router"
 import { goHome, shimNavPlan } from "@/lib/goHome"
+import { whenNavigationReady } from "@/lib/navigationReady"
 import { makeThemedStyles } from "@/theme"
 
 export interface DeepLinkHostProps {
@@ -12,6 +13,7 @@ export interface DeepLinkHostProps {
 
 export default function DeepLinkHost({ seed, to, deps = [] }: DeepLinkHostProps): React.JSX.Element {
   const router = useRouter()
+  const navigationRef = useNavigationContainerRef()
   const styles = useStyles()
   const seedRef = useRef(seed)
   seedRef.current = seed
@@ -19,12 +21,14 @@ export default function DeepLinkHost({ seed, to, deps = [] }: DeepLinkHostProps)
   toRef.current = to
 
   useEffect(() => {
-    seedRef.current?.()
-    const plan = shimNavPlan(toRef.current)
-    if (plan.type === "home") goHome(router)
-    else router.replace(plan.href)
+    return whenNavigationReady(navigationRef, () => {
+      seedRef.current?.()
+      const plan = shimNavPlan(toRef.current)
+      if (plan.type === "home") goHome(router)
+      else router.replace(plan.href)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, router])
+  }, [...deps, router, navigationRef])
 
   return <View style={styles.host} />
 }
