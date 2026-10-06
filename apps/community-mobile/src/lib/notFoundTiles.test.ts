@@ -85,3 +85,54 @@ test("tiles clamped onto one wall spot after the stage narrows separate again", 
   run(bodies, narrow, 240)
   assertSettledRow(bodies, narrow)
 })
+
+// The smallest normal 32-bit float: Reanimated's `std::stof` throws below it.
+const FLT_MIN = 1.1754943508222875e-38
+
+function assertRenderable(bodies: readonly TileBody[]): void {
+  for (const b of bodies) {
+    for (const value of [b.x, b.y, b.angle]) {
+      assert.ok(value === 0 || Math.abs(value) >= FLT_MIN, `renders a subnormal float: ${value}`)
+    }
+  }
+}
+
+// The stage loop clamps its step to 1/30 s, so a slower device still steps at 30 fps.
+test("left alone for a minute, the tiles snap to an exact rest and report it", () => {
+  for (const fps of [30, 60, 120]) {
+    const bodies = dropTiles(BOX)
+    let moving = true
+    for (let i = 0; i < fps * 60; i++) {
+      moving = stepTiles(bodies, BOX, 1 / fps)
+      assertRenderable(bodies)
+    }
+    assert.equal(moving, false, `at rest at ${fps} fps`)
+    assertSettledRow(bodies, BOX)
+    for (const b of bodies) {
+      assert.equal(b.angle % 360, 0, `exactly upright at ${fps} fps: ${b.angle}`)
+      assert.equal(b.y, BOX.height - BOX.tile / 2)
+    }
+    const rest = bodies.map((b) => ({ ...b }))
+    assert.equal(stepTiles(bodies, BOX, 1 / fps), false)
+    assert.deepEqual(bodies, rest, "a resting row stays exactly where it is")
+  }
+})
+
+test("the tiles report motion while they fall and while one is held, even held still", () => {
+  const bodies = dropTiles(BOX)
+  assert.equal(stepTiles(bodies, BOX, FRAME), true, "falling")
+  run(bodies, BOX, 600)
+  assert.equal(stepTiles(bodies, BOX, FRAME), false)
+  const tile = bodies[0]!
+  grabTile(tile, tile.x, tile.y)
+  dragTile(tile, tile.x, tile.y - 40, 0, 0)
+  for (let i = 0; i < 3600; i++) {
+    assert.equal(stepTiles(bodies, BOX, FRAME), true, "held")
+    assertRenderable(bodies)
+  }
+  releaseTile(tile)
+  assert.equal(stepTiles(bodies, BOX, FRAME), true, "dropped")
+  run(bodies, BOX, 600)
+  assert.equal(stepTiles(bodies, BOX, FRAME), false, "back at rest")
+  assertRenderable(bodies)
+})

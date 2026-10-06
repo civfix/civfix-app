@@ -9,14 +9,14 @@ import { Pressable, View } from "react-native"
 import { useRouter } from "expo-router"
 import { ScrollView } from "react-native-gesture-handler"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { PrimaryButton, Text } from "@civfix/ui"
+import { PrimaryButton, Text, useNavStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { lineHeight, makeThemedStyles, useReducedMotion, useTheme } from "@/theme"
 import { Wordmark } from "@/components/Wordmark"
 import { PotholeStage } from "@/components/notFound/PotholeStage"
 import { SignStage } from "@/components/notFound/SignStage"
 import { TilesStage } from "@/components/notFound/TilesStage"
-import { goHome } from "@/lib/goHome"
+import { goToMap } from "@/lib/goHome"
 import { pickNotFoundVariant, type NotFoundVariant } from "@/lib/notFoundVariant"
 
 const STAGES: Record<NotFoundVariant, React.ComponentType<{ live: boolean }>> = {
@@ -39,7 +39,7 @@ export default function NotFoundScreen() {
   const reduced = useReducedMotion()
   const Stage = STAGES[variant]
 
-  const home = useCallback(() => goHome(router), [router])
+  const home = useCallback(() => goToMap(router, useNavStore.getState()), [router])
 
   return (
     <ScrollView

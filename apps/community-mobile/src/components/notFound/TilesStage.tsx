@@ -35,30 +35,33 @@ export function TilesStage({ live }: { live: boolean }) {
   const box = useSharedValue<TileBox | null>(null)
   const grabbed = useSharedValue(-1)
 
-  const onLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      const { width, height } = event.nativeEvent.layout
-      box.value = { width, height, tile: TILE }
-    },
-    [box],
-  )
-
   const step = useCallback(
     (dt: number) => {
       "worklet"
       const size = box.value
       if (!size) return true
       if (bodies.value.length === 0) bodies.value = dropTiles(size)
+      let moving = true
       bodies.modify(<T extends TileBody[]>(list: T): T => {
-        stepTiles(list, size, dt)
+        moving = stepTiles(list, size, dt)
         return list
       })
-      // Keeps running: a tile can be thrown at any time.
-      return true
+      return moving
     },
     [bodies, box],
   )
-  useStageLoop(live ? step : null)
+  // The loop stops once the row rests, so a phone left on this screen (or with
+  // the app in the background) draws nothing; a grab or a new stage size wakes it.
+  const wake = useStageLoop(live ? step : null)
+
+  const onLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { width, height } = event.nativeEvent.layout
+      box.value = { width, height, tile: TILE }
+      wake()
+    },
+    [box, wake],
+  )
 
   const throwing = useMemo(
     () =>
@@ -78,6 +81,7 @@ export function TilesStage({ live }: { live: boolean }) {
             if (list[hit]) grabTile(list[hit], touch.x, touch.y)
             return list
           })
+          wake()
           manager.activate()
         })
         .onUpdate((event) => {
@@ -97,7 +101,7 @@ export function TilesStage({ live }: { live: boolean }) {
             return list
           })
         }),
-    [bodies, grabbed],
+    [bodies, grabbed, wake],
   )
 
   return (

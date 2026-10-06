@@ -11,6 +11,13 @@ const TILE_BOUNCE = 0.3
 const AIR_DRAG = 0.4
 const FLOOR_FRICTION = 6
 const MAX_FLING = 2800
+// Reanimated parses a rotate string with C++ `std::stof`, which throws on a value
+// below the smallest normal float and takes the app down. The eased angles decay
+// exponentially and would get there within seconds, so inside these bounds a
+// tile snaps to its exact angle instead.
+const REST_ANGLE = 0.01
+const REST_SPIN = 0.5
+const REST_SPEED = 1
 
 export type TileBody = {
   x: number
@@ -97,13 +104,16 @@ export function releaseTile(b: TileBody): void {
   b.spin += b.vx * 0.15
 }
 
-export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): void {
+/** Advances the tiles by `dt` seconds; false once none is held and every one rests upright on the floor. */
+export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): boolean {
   "worklet"
   const half = box.tile / 2
   const floor = box.height - half
   for (const b of bodies) {
     if (b.grabbed) {
-      b.angle += (b.vx * 0.012 - b.angle) * Math.min(1, dt * 10)
+      const lean = b.vx * 0.012
+      b.angle += (lean - b.angle) * Math.min(1, dt * 10)
+      if (Math.abs(lean - b.angle) < REST_ANGLE) b.angle = lean
       continue
     }
     b.vy += GRAVITY * dt
@@ -170,7 +180,31 @@ export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): void {
       }
     }
   }
+  let moving = false
   for (const b of bodies) {
-    if (!b.grabbed && b.y > floor) b.y = floor
+    if (b.grabbed) {
+      moving = true
+      continue
+    }
+    if (b.y > floor) b.y = floor
+    if (b.y < floor - 0.5) {
+      moving = true
+      continue
+    }
+    const upright = Math.round(b.angle / 360) * 360
+    if (Math.abs(upright - b.angle) < REST_ANGLE && Math.abs(b.spin) < REST_SPIN) {
+      b.angle = upright
+      b.spin = 0
+    } else {
+      moving = true
+    }
+    if (Math.hypot(b.vx, b.vy) < REST_SPEED) {
+      b.y = floor
+      b.vx = 0
+      b.vy = 0
+    } else {
+      moving = true
+    }
   }
+  return moving
 }
