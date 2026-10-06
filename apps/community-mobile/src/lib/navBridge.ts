@@ -36,6 +36,21 @@ export interface BridgeDecision {
 
 export const INITIAL_BRIDGE_GUARD: BridgeGuard = { openKey: null, recentKey: null, recentAt: 0 }
 
+export interface NativeNavState {
+  index?: number
+  routes: readonly { state?: object }[]
+}
+
+/**
+ * Until the root layout's own Stack has joined the navigation state, expo-router
+ * resolves a push against the top-level `__root` navigator and stacks a second
+ * root layout over the first. Back then pops to a freshly mounted root layout,
+ * which replays the launch splash.
+ */
+export function shellNavigatorMounted(rootState: NativeNavState | null | undefined): boolean {
+  return rootState?.routes[rootState.index ?? 0]?.state != null
+}
+
 export function bridgeKey(entry: DetailEntry | null | undefined): string | null {
   if (!entry) return null
   if (entry.kind === "composer") {
