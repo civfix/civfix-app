@@ -1,0 +1,21 @@
+{
+  "home_label": "Inicio de civfix",
+  "eyebrow": "Error 404 · Página no encontrada",
+  "cta": "Volver al mapa",
+  "tiles_hint": "Psst: puedes lanzar los bloques",
+  "sign_street": "Av. Ninguna Parte",
+  "variants": {
+    "tiles": {
+      "headline": "Esta página desapareció.",
+      "supporting": "Haríamos un reporte, pero no sabemos dónde estaba. Es posible que el enlace sea antiguo o tenga un error."
+    },
+    "pothole": {
+      "headline": "Esta página se cayó en un bache.",
+      "supporting": "Ya hicimos un reporte. Un vecino viene en camino con una pala. Mientras tanto, el enlace que seguiste no lleva a ninguna parte."
+    },
+    "sign": {
+      "headline": "Esta calle no lleva a ninguna parte.",
+      "supporting": "Hasta el letrero se rindió. Es posible que el enlace que seguiste sea antiguo o tenga un error. Ya avisamos a obras públicas."
+    }
+  }
+}

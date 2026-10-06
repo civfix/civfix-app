@@ -1,0 +1,346 @@
+/* The export's 404.html. It has no metadata of its own: the branded link-preview
+   head comes from the root layout, and cf-pages-postbuild.mjs fails the build if
+   404.html loses it. */
+
+.nf-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-base);
+}
+
+.nf-top {
+  padding: var(--space-5) var(--space-6);
+}
+.nf-top a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-24);
+  text-decoration: none;
+}
+.nf-top a:focus-visible,
+.nf-cta:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.nf-body {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--space-5) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+
+.nf-stage {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.nf-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.nf-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  max-width: 480px;
+}
+.nf-eyebrow {
+  margin: 0;
+  font-size: var(--fs-12);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.nf-copy h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-38);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.nf-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* The export prerenders one HTML file and the variant is picked on the client,
+   so until the pick the body keeps its space but shows nothing: no variant's
+   headline can flash, and the eyebrow and button do not jump when the copy
+   arrives. Above it the page is the wordmark alone, like the boot splash. */
+.nf-body:not(.is-picked) {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .nf-body.is-picked {
+    animation: nf-appear var(--dur-2) var(--ease-out);
+  }
+}
+@keyframes nf-appear {
+  from { opacity: 0; }
+}
+.nf-copy p.nf-sub {
+  margin: 0;
+  color: var(--fg-2);
+}
+.nf-cta {
+  margin-top: var(--space-3);
+  min-height: 48px;
+  text-decoration: none;
+}
+
+/* Digits share the wordmark's display face so the stage reads as civfix. */
+.nf-digit {
+  font-family: "Baloo2_800ExtraBold", var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .nf-top { padding: var(--space-4) var(--space-5); }
+  .nf-body { gap: var(--space-6); justify-content: flex-start; padding-top: var(--space-6); }
+  .nf-stage { height: 240px; }
+  .nf-copy h1 { font-size: var(--fs-30); }
+}
+
+/* A · Tumbling tiles */
+.nf-tiles {
+  --nf-tile: 128px;
+  position: absolute;
+  inset: 0 0 6px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: calc(var(--nf-tile) * 0.14);
+}
+.nf-tile {
+  width: var(--nf-tile);
+  height: var(--nf-tile);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  color: var(--fg-on-color);
+  font-size: calc(var(--nf-tile) * 0.74);
+  padding-top: calc(var(--nf-tile) * 0.08);
+  box-shadow: var(--shadow-3), var(--sheen-top);
+}
+.nf-tile--bloom { background: var(--bloom); }
+.nf-tile--sky { background: var(--sky-600); }
+.nf-tile--moss { background: var(--moss); }
+.nf-tiles.is-live .nf-tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: grab;
+  will-change: transform;
+}
+.nf-tiles.is-live .nf-tile:active { cursor: grabbing; }
+.nf-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-5);
+}
+.nf-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-13);
+  color: var(--fg-3);
+}
+@media (max-width: 640px) {
+  .nf-tiles { --nf-tile: 92px; }
+}
+
+/* B · The pothole */
+.nf-street { --nf-glyph: 168px; overflow: visible; }
+.nf-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 84px;
+  border-radius: var(--radius-lg);
+  background: var(--ink-5);
+  overflow: hidden;
+}
+.nf-lane {
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: 18px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--sun-300) 0 36px,
+    transparent 36px 64px
+  );
+}
+.nf-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 52px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-4);
+}
+.nf-glyph {
+  display: inline-block;
+  font-size: var(--nf-glyph);
+  line-height: 0.78;
+  color: var(--fg-1);
+  transform-origin: 50% 100%;
+}
+.nf-street.is-live .nf-glyph { will-change: transform; }
+.nf-hole-slot {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  width: calc(var(--nf-glyph) * 0.78);
+}
+.nf-pothole {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  width: calc(var(--nf-glyph) * 0.92);
+  height: 40px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--ink-3);
+  box-shadow: inset 0 8px 0 var(--ink-2);
+}
+:root.dark .nf-pothole {
+  background: var(--paper);
+  box-shadow: inset 0 8px 0 var(--bg-1);
+}
+/* Clips only below the pothole's centre line: the zero sinks in, and still falls in from above. */
+.nf-hole-clip {
+  display: inline-flex;
+  clip-path: inset(-400px -200px 0 -200px);
+}
+.nf-glyph--zero {
+  position: relative;
+  top: calc(var(--nf-glyph) * 0.14);
+  color: var(--bloom);
+  transform: rotate(-9deg);
+}
+@media (max-width: 640px) {
+  .nf-street { --nf-glyph: 116px; }
+  .nf-road { height: 64px; }
+  .nf-lane { bottom: 12px; }
+  .nf-row { bottom: 40px; }
+}
+
+/* C · The street sign */
+.nf-signpost {
+  --nf-sign-w: 300px;
+  --nf-sign-h: 150px;
+  --nf-bar-top: 14px;
+  --nf-chain: 38px;
+  --nf-bolt-inset: 22px;
+}
+.nf-bar {
+  position: absolute;
+  left: 50%;
+  top: var(--nf-bar-top);
+  width: calc(var(--nf-sign-w) + 56px);
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-pill);
+  background: var(--ink-3);
+}
+.nf-chain {
+  position: absolute;
+  top: var(--nf-bar-top);
+  width: 4px;
+  height: var(--nf-chain);
+  margin-left: -2px;
+  border-radius: var(--radius-pill);
+  background: repeating-linear-gradient(180deg, var(--ink-3) 0 6px, transparent 6px 9px);
+  transform-origin: 50% 0;
+}
+.nf-chain--left { left: calc(50% - var(--nf-sign-w) / 2 + var(--nf-bolt-inset)); }
+.nf-chain--right { left: calc(50% + var(--nf-sign-w) / 2 - var(--nf-bolt-inset)); }
+.nf-sign {
+  position: absolute;
+  left: calc(50% - var(--nf-sign-w) / 2);
+  top: calc(var(--nf-bar-top) + var(--nf-chain));
+  width: var(--nf-sign-w);
+  height: var(--nf-sign-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--moss-700);
+  color: var(--fg-on-color);
+  box-shadow: var(--shadow-3), inset 0 0 0 6px var(--moss-700), inset 0 0 0 9px var(--fg-on-color);
+  transform-origin: calc(100% - var(--nf-bolt-inset)) 0;
+}
+.nf-bolt {
+  position: absolute;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-on-color);
+}
+.nf-bolt--left { left: calc(var(--nf-bolt-inset) - 4px); }
+.nf-bolt--right { right: calc(var(--nf-bolt-inset) - 4px); }
+.nf-sign-number {
+  font-size: calc(var(--nf-sign-h) * 0.56);
+  /* The display face leaves empty space above its digits; pulling the number up
+     centres the number and name together on the plate. */
+  margin-top: calc(var(--nf-sign-h) * -0.05);
+}
+.nf-sign-street {
+  font-size: var(--fs-14);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  /* Letter-spacing trails the last letter too; matching it on the left keeps the name centred. */
+  padding-left: 0.16em;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .nf-signpost {
+    --nf-sign-w: 230px;
+    --nf-sign-h: 116px;
+  }
+  .nf-sign-street { font-size: var(--fs-12); }
+}
