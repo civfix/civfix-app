@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
 import type { Href } from "expo-router"
-import { HOME_HREF, goHome, navTeardownEpoch, shimNavPlan } from "./goHome.ts"
+import { HOME_HREF, goHome, goToMap, navTeardownEpoch, shimNavPlan } from "./goHome.ts"
 
 test("goHome dismisses TO the home route and never replaces onto it", () => {
   const calls: Href[] = []
@@ -13,6 +13,15 @@ test("goHome marks a nav teardown, the signal the refocused root reads to drop a
   const before = navTeardownEpoch()
   goHome({ dismissTo: () => undefined })
   assert.equal(navTeardownEpoch(), before + 1)
+})
+
+test("goToMap selects the map view, closing any shell panel, before it dismisses to home", () => {
+  const calls: string[] = []
+  goToMap(
+    { dismissTo: (href) => calls.push(`dismissTo ${String(href)}`) },
+    { selectView: (view) => calls.push(`selectView ${view}`) },
+  )
+  assert.deepEqual(calls, ["selectView map", `dismissTo ${HOME_HREF}`])
 })
 
 test("a shim with no explicit target goes home", () => {
