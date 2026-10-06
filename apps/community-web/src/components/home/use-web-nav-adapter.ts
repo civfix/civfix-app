@@ -77,6 +77,18 @@ function isRootSnapshot(snapshot: NavSnapshot): boolean {
   return snapshot.view === "home" && snapshot.stack.length === 0
 }
 
+/**
+ * The Navigation API lists only this tab's contiguous same-origin entries, so index 0 is a cold entry
+ * (new tab, external link) and anything above it means a civfix page sits right behind this one. An
+ * engine without the API is treated as a cold entry.
+ */
+function cameFromCivfixPage(): boolean {
+  const { navigation } = window as Window & {
+    navigation?: { currentEntry: { index: number } | null }
+  }
+  return (navigation?.currentEntry?.index ?? 0) > 0
+}
+
 const TRAVERSAL_TIMEOUT_MS = 400
 
 interface TraversalTarget {
@@ -265,7 +277,9 @@ export function useWebNavAdapter(): void {
     }
     drive(() => seedStoreFromPath(seedPathname()))
     const live = liveSnapshot()
-    if (isRootSnapshot(live)) {
+    // The synthetic in-app root keeps Back inside the app on a cold deep link; when the tab came from
+    // another civfix page, that page is what Back must return to.
+    if (isRootSnapshot(live) || cameFromCivfixPage()) {
       write("replace", 0, live, null)
       return
     }
