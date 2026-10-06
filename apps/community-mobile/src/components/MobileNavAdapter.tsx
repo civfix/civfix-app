@@ -9,6 +9,7 @@ import {
   bridgeDecision,
   bridgeKey,
   nativeBridgeKey,
+  shellNavigatorMounted,
   stackWithoutBridged,
   type BridgeGuard,
   type NativeRoute,
@@ -59,14 +60,17 @@ export function useMobileNavAdapter(): void {
   const navigationRef = useNavigationContainerRef()
 
   useEffect(() => {
+    const shellMounted = (): boolean =>
+      navigationRef.isReady() && shellNavigatorMounted(navigationRef.getRootState())
     const focusedRoute = (): NativeRoute | null =>
-      navigationRef.isReady() ? (navigationRef.getCurrentRoute() ?? null) : null
+      shellMounted() ? (navigationRef.getCurrentRoute() ?? null) : null
     const focusedKey = (): string | null => nativeBridgeKey(focusedRoute())
     readFocusedRoute = focusedRoute
     pushDetailRoute = (route) =>
       router.push({ pathname: route.pathname as never, params: route.params })
 
     const decide = (active: DetailEntry | null): void => {
+      if (!shellMounted()) return
       const decision = bridgeDecision(active, bridgeGuard, Date.now(), focusedKey())
       bridgeGuard = decision.guard
       if (decision.action.type === "none") return
@@ -77,11 +81,20 @@ export function useMobileNavAdapter(): void {
       if (route) router.push(route)
     }
 
+    // On a cold start a tapped notification's conversation reaches the nav store
+    // before the root layout's Stack has registered; it is bridged once it has.
+    const stopWaiting = navigationRef.addListener("state", () => {
+      if (!shellMounted()) return
+      stopWaiting()
+      decide(useNavStore.getState().active)
+    })
+    if (shellMounted()) stopWaiting()
     decide(useNavStore.getState().active)
     const unsubscribe = useNavStore.subscribe((state) => decide(state.active))
     return () => {
       readFocusedRoute = () => null
       pushDetailRoute = null
+      stopWaiting()
       unsubscribe()
     }
   }, [router, navigationRef])
