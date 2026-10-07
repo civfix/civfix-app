@@ -1,72 +1,47 @@
 /**
- * useKeyboardAnchor — THE canonical keyboard primitive's FROZEN public contract.
+ * The keyboard anchor's public contract, shared by both platform seams and by platform-neutral bodies.
+ * The dock, the reply composer and the sheet handoff code against these shapes, so a change needs all
+ * three reviewed.
  *
- * This file is types only, so it is shared by BOTH platform seams and by shared (platform-neutral)
- * bodies. The `SharedValue` import is `import type`, erased at compile time exactly like
- * `surface/liquidGlass/LiquidGlassDock.types.ts` does — no reanimated runtime reaches the web bundle.
- *
- * FROZEN: three other workstreams (dock keyboard alignment, the reply composer, the sheet handoff)
- * code against these shapes. Changing them requires a cross-workstream decision.
- *
- * THE INVARIANT that governs every consumer: `lift` is PER-FRAME and lives on the UI thread;
- * `reserved` is PER-TRANSITION and lives on the JS thread. Never animate a layout property off
- * `reserved`; never read `lift` from JS.
+ * `lift` is per-frame on the UI thread; `reserved` is per-transition on the JS thread. Never animate a
+ * layout property off `reserved`, and never read `lift` from JS.
  */
 import type { StyleProp, ViewStyle } from "react-native"
-// The lint ban on reanimated outside *.native.* seams guards the RUNTIME web bundle; this is a
-// type-ONLY import (fully erased by tsc/bundlers), so the web seam still ships zero reanimated code
-// while call sites keep the exact `SharedValue<number>` contract. Same exemption, same reason, as
-// surface/liquidGlass/LiquidGlassDock.types.ts.
-// eslint-disable-next-line no-restricted-imports
+// eslint-disable-next-line no-restricted-imports -- type-only, erased at compile time, so no reanimated reaches the web bundle
 import type { SharedValue } from "react-native-reanimated"
 
 export interface KeyboardAnchorOptions {
   /**
-   * Does THIS surface own the focused input? Only an enabled surface starts a rise; a surface that
-   * LOSES ownership while the keyboard stays up animates back down over MOTION.keyboardHandoffMs, and a
-   * surface that GAINS ownership while a keyboard is already up adopts it over the same duration.
-   * ENFORCED ON THE UI THREAD, not merely in the reducer. Default true.
+   * Whether this surface owns the focused input. Gaining or losing ownership while a keyboard is up
+   * animates over MOTION.keyboardHandoffMs. Enforced on the UI thread, not merely in the reducer.
    */
   enabled?: boolean
   /**
-   * pt already between the surface's VISIBLE bottom edge and the window bottom AT REST (safe-area
-   * padding, floating margin, container padding, dead band). The lift subtracts it so the surface lands
-   * exactly `gap` above the keyboard. MUST be a plain number: it is read on BOTH threads. Default 0.
-   * Known values: docked search bar native = dockKeyboardRestOffset(insets.bottom) (36 on a 34pt inset);
-   * docked search bar web = theme.space["3"] + 10 = 22.
+   * pt between the surface's visible bottom edge and the window bottom at rest, subtracted so the surface
+   * lands exactly `gap` above the keyboard. Must be a plain number: it is read on both threads.
    */
   restOffset?: number
-  /** Desired visual gap between the surface's VISIBLE bottom edge and the keyboard top.
-   *  Default KEYBOARD_SURFACE_GAP (8). */
   gap?: number
   /**
-   * WEB ONLY. True when an ANCESTOR already reserved the keyboard overlap (the full-social-modal overlay
-   * in PortraitShell.shared applies `paddingBottom: keyboardInset`). Suppresses this surface's own lift
-   * so the inset is never applied twice. IGNORED on native, where no ancestor reserves anything.
-   * Default false.
+   * Web only: an ancestor already reserved the keyboard overlap, so this surface's own lift is suppressed
+   * and the inset is never applied twice. Ignored on native, where no ancestor reserves anything.
    */
   hostReserved?: boolean
 }
 
 export interface KeyboardAnchor {
   /**
-   * APPLY THIS to the element that must rise.
-   *   NATIVE: a reanimated animated style — the element MUST be an Animated.View (or use
-   *           <KeyboardAnchorView>, which is what SHARED files must use so they never import reanimated).
-   *   WEB:    a plain style object carrying a CSS translateY + transition.
+   * On native a reanimated animated style, so the element must be an Animated.View; shared files use
+   * <KeyboardAnchorView> so they never import reanimated. On web a plain CSS translateY + transition.
    */
   liftStyle: StyleProp<ViewStyle>
-  /** UI-thread lift magnitude in pt, for consumers composing it into their OWN worklet. NULL ON WEB —
-   *  do not dereference without a null check. */
+  /** Null on web. */
   lift: SharedValue<number> | null
   /**
-   * JS-thread bottom space (pt) the surface's CONTENT must reserve while the keyboard is up.
-   * Changes AT MOST TWICE per keyboard transition (will-show / did-settle) — NEVER per frame. It is
-   * HELD through the close animation and released only at did-settle, so content does not re-expand
-   * under a still-travelling bar.
+   * Bottom space the content must reserve. Changes at most twice per keyboard transition, never per
+   * frame, and is held until did-settle so content does not re-expand under a still-travelling bar.
    */
   reserved: number
-  /** True while this surface owns the keyboard (its input is focused, or the keyboard it raised is
-   *  still animating away). Gate pointer/scroll behaviour with this — never layout. */
+  /** Also true while the keyboard this surface raised is still animating away. Never gate layout on it. */
   engaged: boolean
 }

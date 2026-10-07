@@ -1,15 +1,15 @@
-import type { LocationPermission } from "@/hooks/useUserLocation"
+import type { AuthStatus } from "@/lib/lifecycleTypes"
+
+export type LocationPermission = "undetermined" | "granted" | "denied"
 
 export type LocationPrimerDecision = "wait" | "prompt" | "resolve" | "ip-only"
-
-export type LocationPrimerAuthStatus = "idle" | "loading" | "authed" | "unauthed"
 
 export interface LocationPrimerInput {
   permission: LocationPermission
   permissionResolved: boolean
   primerShown: boolean
   gateActive: boolean
-  authStatus: LocationPrimerAuthStatus
+  authStatus: AuthStatus
   onboardingDone: boolean
   tourPresenting: boolean
   profileIncomplete: boolean

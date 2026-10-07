@@ -1,8 +1,4 @@
-/**
- * memberSelect (P4 Task 4.7) - the PURE selection logic behind MemberPicker: toggling a person in the
- * selected list (dedupe by id), and filtering excluded ids out of both the selection and the search
- * results. Kept RN-free so it unit-tests directly under vitest (like chatPowers / pinCycle).
- */
+/** The selection logic behind MemberPicker, kept RN-free so it unit-tests directly under vitest. */
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 
 /**
@@ -24,13 +20,11 @@ export function toggleMember(
   return [...selected, person]
 }
 
-/** Remove one selected member by id (the chip's X). Same-reference no-op when absent. */
 export function removeMember(selected: PersonDTO[], id: string): PersonDTO[] {
   if (!selected.some((p) => p.id === id)) return selected
   return selected.filter((p) => p.id !== id)
 }
 
-/** Search results minus the excluded ids (e.g. people already in the group when adding members). */
 export function filterExcluded<T extends { id: string }>(
   results: readonly T[],
   excludeIds?: readonly string[],

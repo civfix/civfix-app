@@ -4,11 +4,9 @@ import { type ReportStatus } from "@civfix/shared"
 import { makeThemedStyles, useTheme, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
-import { citizenStatusLabel } from "./report-timeline-labels"
+import { citizenStatusLabel } from "./reportTimelineLabels"
 
 type Tone = { fg: string; bg: string }
-
-export { citizenStatusLabel as citizenReportStatusLabel } from "./report-timeline-labels"
 
 function toneFor(status: ReportStatus, th: Theme): Tone {
   switch (status) {

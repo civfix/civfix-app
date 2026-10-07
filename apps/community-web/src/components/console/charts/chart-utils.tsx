@@ -6,6 +6,10 @@ import { cn } from "@/lib/utils"
 
 export const NUM_CLASS = "font-display [font-feature-settings:'tnum']"
 
+export const CHART_LABEL_FONT_SIZE = 11
+
+const TOOLTIP_LIFT = 8
+
 export function useMeasuredWidth<T extends HTMLElement>() {
   const ref = useRef<T | null>(null)
   const [width, setWidth] = useState(0)
@@ -29,12 +33,16 @@ export function useMeasuredWidth<T extends HTMLElement>() {
   return { ref, width }
 }
 
-export function niceTicks(maxValue: number, count = 4): number[] {
+export function niceTicks(
+  maxValue: number,
+  count = 4,
+  options: { integer?: boolean } = {},
+): number[] {
   if (maxValue <= 0) return [0, 1]
   const rawStep = maxValue / count
   const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
   const residual = rawStep / magnitude
-  const step =
+  const niceStep =
     residual > 5
       ? 10 * magnitude
       : residual > 2
@@ -42,6 +50,7 @@ export function niceTicks(maxValue: number, count = 4): number[] {
         : residual > 1
           ? 2 * magnitude
           : magnitude
+  const step = options.integer ? Math.max(1, niceStep) : niceStep
   const ticks: number[] = []
   for (let value = 0; value <= maxValue + step * 0.001; value += step) {
     ticks.push(Number(value.toFixed(6)))
@@ -49,14 +58,6 @@ export function niceTicks(maxValue: number, count = 4): number[] {
   const last = ticks[ticks.length - 1]
   if (last !== undefined && last < maxValue) ticks.push(Number((last + step).toFixed(6)))
   return ticks
-}
-
-export function formatCompact(value: number): string {
-  if (Math.abs(value) >= 1000) {
-    const scaled = value / 1000
-    return `${Math.abs(scaled) >= 10 ? Math.round(scaled) : scaled.toFixed(1)}k`
-  }
-  return String(Math.round(value))
 }
 
 export function sparseIndices(length: number, target = 6): number[] {
@@ -67,6 +68,31 @@ export function sparseIndices(length: number, target = 6): number[] {
   const lastIndex = length - 1
   if (indices[indices.length - 1] !== lastIndex) indices.push(lastIndex)
   return indices
+}
+
+export interface RunPoint {
+  index: number
+  value: number
+}
+
+// A null is a k-suppressed point: it ends the run so a line never bridges the gap or dips to zero.
+export function valueRuns(values: readonly (number | null)[]): RunPoint[][] {
+  const runs: RunPoint[][] = []
+  let current: RunPoint[] = []
+  values.forEach((value, index) => {
+    if (value === null) {
+      if (current.length > 0) runs.push(current)
+      current = []
+      return
+    }
+    current.push({ index, value })
+  })
+  if (current.length > 0) runs.push(current)
+  return runs
+}
+
+export function linePath(points: readonly { x: number; y: number }[]): string {
+  return points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ")
 }
 
 export interface TooltipRow {
@@ -86,9 +112,8 @@ export function ChartTooltip({ tip }: { tip: TooltipState | null }) {
   if (!tip) return null
   return (
     <div
-      role="status"
-      className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
-      style={{ left: tip.x, top: tip.y - 8 }}
+      className="pointer-events-none absolute z-console-raised -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
+      style={{ left: tip.x, top: tip.y - TOOLTIP_LIFT }}
     >
       <p className="whitespace-nowrap text-token-12 font-semibold text-console-ink">{tip.title}</p>
       {tip.rows.map((row) => (
@@ -130,34 +155,6 @@ export function ChartLegend({ items, className }: { items: LegendItem[]; classNa
           <span aria-hidden className="h-2 w-2 rounded-pill" style={{ background: item.color }} />
           {item.label}
         </span>
-      ))}
-    </div>
-  )
-}
-
-export function ChartSummary({ text }: { text: string }) {
-  return <p className="sr-only">{text}</p>
-}
-
-export interface ChartMark {
-  key: string
-  label: string
-  onSelect: () => void
-}
-
-export function ChartKeyboardTwins({ marks }: { marks: readonly ChartMark[] }) {
-  if (marks.length === 0) return null
-  return (
-    <div className="relative">
-      {marks.map((mark) => (
-        <button
-          key={mark.key}
-          type="button"
-          onClick={mark.onSelect}
-          className="sr-only rounded-sm focus:not-sr-only focus:absolute focus:left-0 focus:top-0 focus:z-30 focus:border focus:border-console-line focus:bg-console-surface focus:px-token-2 focus:py-1 focus:text-token-12 focus:font-semibold focus:text-console-ink focus:shadow-console-2 focus-visible:shadow-console-ring"
-        >
-          {mark.label}
-        </button>
       ))}
     </div>
   )

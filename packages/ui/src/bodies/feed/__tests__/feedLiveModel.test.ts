@@ -1,11 +1,13 @@
+import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
 import {
   FEED_TOP_CLEAR_OFFSET,
   addPendingNewPost,
   clearsPendingAtOffset,
-  dedupePostsById,
-} from "../feedLiveModel"
-import { useFeedLiveStore } from "../feedLiveStore"
+  shouldAnnounceNewPosts,
+} from "../../../data/feedLiveModel"
+import { useFeedLiveStore } from "../../../data/feedLiveStore"
+import { dedupeById } from "../../../primitives/listKeys"
 
 describe("addPendingNewPost", () => {
   it("accumulates ids in arrival order", () => {
@@ -32,15 +34,15 @@ describe("clearsPendingAtOffset", () => {
   })
 })
 
-describe("dedupePostsById", () => {
+describe("dedupeById", () => {
   it("keeps the FIRST occurrence and preserves server rank order", () => {
     const items = [{ id: "a" }, { id: "b" }, { id: "a" }, { id: "c" }]
-    expect(dedupePostsById(items).map((p) => p.id)).toEqual(["a", "b", "c"])
+    expect(dedupeById(items).map((p) => p.id)).toEqual(["a", "b", "c"])
   })
 
   it("returns the same array identity when nothing is duplicated", () => {
     const items = [{ id: "a" }, { id: "b" }]
-    expect(dedupePostsById(items)).toBe(items)
+    expect(dedupeById(items)).toBe(items)
   })
 })
 
@@ -101,5 +103,21 @@ describe("useFeedLiveStore", () => {
     store.getState().noteNewPost("p1")
     store.getState().adoptViewer("viewer-c")
     expect(store.getState().pendingNewPostIds).toEqual([])
+  })
+})
+
+describe("shouldAnnounceNewPosts", () => {
+  it("speaks once when the pill appears, not on every later arrival or when it clears", () => {
+    expect(shouldAnnounceNewPosts(0, 1)).toBe(true)
+    expect(shouldAnnounceNewPosts(0, 3)).toBe(true)
+    expect(shouldAnnounceNewPosts(1, 2)).toBe(false)
+    expect(shouldAnnounceNewPosts(2, 0)).toBe(false)
+    expect(shouldAnnounceNewPosts(0, 0)).toBe(false)
+  })
+
+  it("is what the pill uses to announce on native, where there is no polite live region", () => {
+    const source = readFileSync(new URL("../NewPostsPill.tsx", import.meta.url), "utf8")
+    expect(source).toContain("ANNOUNCES_NATIVELY && shouldAnnounceNewPosts(previous, count)")
+    expect(source).toContain("AccessibilityInfo.announceForAccessibility(label)")
   })
 })

@@ -112,6 +112,14 @@ describe("feed score cursor", () => {
     expect(parseFeedScoreCursor(encoded)).toEqual({ score: 0, postId: UUID_B })
   })
 
+  it("lowercases the post id so it orders like the stored lowercase ids", () => {
+    const upper = "ABCDEF12-3456-7890-ABCD-EF1234567890"
+    const parsed = parseFeedScoreCursor(`5.000000|${upper}`)
+    expect(parsed).toEqual({ score: 5, postId: upper.toLowerCase() })
+    const nextRow = { score: 5, postId: "abcdef12-3456-7890-abcd-ef1234567889" }
+    expect(isAfterFeedScoreCursor(nextRow, parsed!)).toBe(true)
+  })
+
   it("does not claim a legacy ISO time cursor", () => {
     expect(parseFeedScoreCursor(`2026-09-14T10:00:00.000Z|${UUID_A}`)).toBeNull()
   })

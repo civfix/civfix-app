@@ -1,7 +1,3 @@
-/**
- * The pure half of "Share to the feed": the wire-input contract, the preview projections, the optimistic
- * PostDTO, the failure classifier and the retry dedupe scan.
- */
 import { describe, expect, it } from "vitest"
 import { AppError, ErrorCode, type PersonDTO, type PostDTO } from "@civfix/shared"
 import {

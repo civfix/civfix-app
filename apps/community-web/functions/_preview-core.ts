@@ -56,11 +56,14 @@ export interface PreviewDeps {
 export const API_TIMEOUT_MS = 1500
 export const PREVIEW_CACHE_TTL_SEC = 300
 export const PREVIEW_NEGATIVE_CACHE_TTL_SEC = 60
-export const NEGATIVE_CACHE_HEADER = "x-civfix-preview-miss"
-export const CACHE_KEY_ORIGIN = "https://link-preview.civfix.internal"
+// A timeout, 5xx or 429 says nothing about the entity, so it must not pin the default card on every
+// share for as long as a definite miss does.
+export const PREVIEW_TRANSIENT_CACHE_TTL_SEC = 15
+const NEGATIVE_CACHE_HEADER = "x-civfix-preview-miss"
+const CACHE_KEY_ORIGIN = "https://link-preview.civfix.internal"
 
-export const PROD_API = "https://api.civfix.org"
-export const STAGING_API = "https://api.civfix.dev"
+const PROD_API = "https://api.civfix.org"
+const STAGING_API = "https://api.civfix.dev"
 
 const ALLOWED_API_HOSTNAMES: readonly string[] = ["api.civfix.org", "api.civfix.dev"]
 
@@ -72,7 +75,7 @@ const EVENT_REF = /^EVENT-\d{1,6}-\d{6}$/
 const PAGE_SLUG = new RegExp(`^(?=.{${PAGE_SLUG_MIN},${PAGE_SLUG_MAX}}$)[a-z0-9]+(?:-[a-z0-9]+)*$`)
 const ORG_SLUG = new RegExp(`^(?=.{${ORG_SLUG_MIN},${ORG_SLUG_MAX}}$)[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
-export const ID_PATTERNS: Record<PreviewKind, readonly RegExp[]> = {
+const ID_PATTERNS: Record<PreviewKind, readonly RegExp[]> = {
   report: [UUID, REPORT_REF],
   event: [UUID, EVENT_REF, PAGE_SLUG],
   person: [UUID, HANDLE_REGEX],
@@ -81,7 +84,7 @@ export const ID_PATTERNS: Record<PreviewKind, readonly RegExp[]> = {
   post: [UUID],
 }
 
-export const SHELL_PATH: Record<PreviewKind, string> = {
+const SHELL_PATH: Record<PreviewKind, string> = {
   report: "/pin/_/",
   event: "/cleanups/_/",
   person: "/people/_/",
@@ -90,7 +93,7 @@ export const SHELL_PATH: Record<PreviewKind, string> = {
   post: "/post/_/",
 }
 
-export const BROWSE_PATH: Record<PreviewKind, string> = {
+const BROWSE_PATH: Record<PreviewKind, string> = {
   report: "/pin/_/",
   event: "/__spa/cleanups/",
   person: "/__spa/people/",
@@ -99,7 +102,7 @@ export const BROWSE_PATH: Record<PreviewKind, string> = {
   post: "/post/_/",
 }
 
-export const CANONICAL_PREFIX: Record<PreviewKind, string> = {
+const CANONICAL_PREFIX: Record<PreviewKind, string> = {
   report: "/pin/",
   event: "/cleanups/",
   person: "/people/",
@@ -108,7 +111,7 @@ export const CANONICAL_PREFIX: Record<PreviewKind, string> = {
   post: "/post/",
 }
 
-export const API_PREFIX: Record<PreviewKind, string> = {
+const API_PREFIX: Record<PreviewKind, string> = {
   report: "/v1/reports/",
   event: "/v1/cleanups/",
   person: "/v1/people/",
@@ -120,7 +123,6 @@ export const API_PREFIX: Record<PreviewKind, string> = {
 export type PreviewOutcome = "found" | "missing" | "transient"
 
 export type PreviewRoute =
-  | { action: "passthrough" }
   | { action: "browse" }
   | { action: "shell" }
   | { action: "preview"; id: string }
@@ -131,10 +133,8 @@ export function isValidPreviewId(kind: PreviewKind, id: string): boolean {
 
 export function parsePreviewRoute(
   kind: PreviewKind,
-  method: string,
   raw: string | string[] | undefined,
 ): PreviewRoute {
-  if (method.toUpperCase() !== "GET") return { action: "passthrough" }
   const segments = (Array.isArray(raw) ? raw : raw ? [raw] : []).filter((part) => part.length > 0)
   if (segments.length === 0) return { action: "browse" }
   const id = segments[0] as string
@@ -180,7 +180,7 @@ export function previewCacheKey(kind: PreviewKind, id: string, apiHost: string):
   return `${CACHE_KEY_ORIGIN}/${encodeURIComponent(apiHost)}/${kind}/${encodeURIComponent(id)}`
 }
 
-export function apiHostOf(apiBase: string): string {
+function apiHostOf(apiBase: string): string {
   try {
     return new URL(apiBase).hostname
   } catch {
@@ -195,10 +195,6 @@ export function upstreamOutcome(status: number): PreviewOutcome {
 
 export function shouldNoindex(origin: string, outcome: PreviewOutcome): boolean {
   return outcome === "missing" || origin !== PRODUCTION_SITE_URL
-}
-
-export function cacheTtlSeconds(found: boolean): number {
-  return found ? PREVIEW_CACHE_TTL_SEC : PREVIEW_NEGATIVE_CACHE_TTL_SEC
 }
 
 export function cacheablePayloadResponse(body: string): Response {
@@ -216,7 +212,9 @@ export function negativeCacheResponse(outcome: "missing" | "transient"): Respons
     status: 200,
     headers: {
       [NEGATIVE_CACHE_HEADER]: outcome,
-      "Cache-Control": `public, max-age=${PREVIEW_NEGATIVE_CACHE_TTL_SEC}`,
+      "Cache-Control": `public, max-age=${
+        outcome === "transient" ? PREVIEW_TRANSIENT_CACHE_TTL_SEC : PREVIEW_NEGATIVE_CACHE_TTL_SEC
+      }`,
     },
   })
 }
@@ -224,10 +222,6 @@ export function negativeCacheResponse(outcome: "missing" | "transient"): Respons
 export function negativeCacheOutcome(response: Response): "missing" | "transient" | null {
   const value = response.headers.get(NEGATIVE_CACHE_HEADER)
   return value === "missing" || value === "transient" ? value : null
-}
-
-export function isNegativeCacheEntry(response: Response): boolean {
-  return negativeCacheOutcome(response) !== null
 }
 
 export function withPervasiveHeaders(response: Response): Response {
@@ -240,7 +234,7 @@ export function withPervasiveHeaders(response: Response): Response {
   })
 }
 
-export function htmlResponse(response: Response): Response {
+function htmlResponse(response: Response): Response {
   const shaped = withPervasiveHeaders(response)
   shaped.headers.set("Content-Type", HTML_CONTENT_TYPE)
   return shaped
@@ -251,12 +245,12 @@ export interface EdgeCache {
   put(request: Request, response: Response): Promise<void>
 }
 
-export function edgeCache(): EdgeCache | null {
+function edgeCache(): EdgeCache | null {
   const store = (globalThis as { caches?: { default?: EdgeCache } }).caches
   return store?.default ?? null
 }
 
-export function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: string): string {
+function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: string): string {
   const root = payload as { id?: unknown; slug?: unknown; profile?: { id?: unknown } } | null
   const raw =
     kind === "person"
@@ -267,7 +261,7 @@ export function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: s
   return typeof raw === "string" && isValidPreviewId(kind, raw) ? raw : fallback
 }
 
-export function previewContextFor(
+function previewContextFor(
   kind: PreviewKind,
   id: string,
   origin: string,
@@ -312,12 +306,12 @@ async function fetchUpstreamBody(
   }
 }
 
-export interface LoadedPayload {
+interface LoadedPayload {
   payload: unknown | null
   outcome: PreviewOutcome
 }
 
-export async function loadPayload(
+async function loadPayload(
   kind: PreviewKind,
   id: string,
   requestUrl: string,
@@ -333,7 +327,7 @@ export async function loadPayload(
     if (hit) {
       const cached = negativeCacheOutcome(hit)
       if (cached) return { payload: null, outcome: cached }
-      const payload = await hit.json().catch(() => null)
+      const payload: unknown = await hit.json().catch(() => null)
       return { payload, outcome: payload === null ? "transient" : "found" }
     }
   }
@@ -361,11 +355,7 @@ export async function runPreview(
   deps: PreviewDeps,
 ): Promise<Response> {
   const { request, env } = context
-  const route = parsePreviewRoute(kind, request.method, context.params.path)
-
-  if (route.action === "passthrough") {
-    return withPervasiveHeaders(await env.ASSETS.fetch(request))
-  }
+  const route = parsePreviewRoute(kind, context.params.path)
 
   if (route.action === "browse") {
     return htmlResponse(await env.ASSETS.fetch(new URL(BROWSE_PATH[kind], request.url)))

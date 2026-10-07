@@ -1,24 +1,13 @@
-/**
- * Unit tests for `resolveMenuPlacement` (P1 Task 1.4) - the pure vertical-layout core of
- * MessageContextMenu's native variant (reaction row ABOVE the pressed bubble, action card BELOW,
- * flipping above when the card would overflow the bottom edge, and clamped so nothing ever renders
- * off-screen / at a negative top). The component is a thin renderer over this helper (package
- * convention: pure-logic vitest, no React renderer).
- *
- * Also carries the type-level test that the forward-declared `ContextMenuActionKey` union includes
- * every key later phases wire (reply / pin / unpin / retractVote / stopPoll land in P2/P3/P6, but the
- * TYPE ships complete from day one so the menu's shape never changes).
- */
 import { describe, expect, it } from "vitest"
 import {
   resolveMenuPlacement,
   resolveBandLeft,
+  resolveWebMenuFrame,
   CONTEXT_MENU_GAP,
   CONTEXT_MENU_EDGE_MARGIN,
 } from "../messageContextMenuLayout"
 import type { ContextMenuActionKey } from "../MessageContextMenu"
 
-/** A bubble anchor rect (measureInWindow shape); x/width are irrelevant to the vertical solver. */
 function anchor(y: number, height: number) {
   return { x: 24, y, width: 220, height }
 }
@@ -34,7 +23,6 @@ describe("resolveMenuPlacement", () => {
     expect(p.bubbleTop).toBe(120)
     expect(p.reactionsTop).toBe(120 - CONTEXT_MENU_GAP - ROW_H)
     expect(p.menuTop).toBe(120 + 40 + CONTEXT_MENU_GAP)
-    // Stack order: reactions above bubble above menu.
     expect(p.reactionsTop).toBeLessThan(p.bubbleTop)
     expect(p.bubbleTop).toBeLessThan(p.menuTop)
   })
@@ -45,7 +33,6 @@ describe("resolveMenuPlacement", () => {
     expect(p.bubbleTop).toBe(700)
     expect(p.reactionsTop).toBe(700 - CONTEXT_MENU_GAP - ROW_H)
     expect(p.menuTop).toBe(p.reactionsTop - CONTEXT_MENU_GAP - MENU_H)
-    // Flipped stack order: menu above reactions above bubble; menu fully on screen.
     expect(p.menuTop).toBeLessThan(p.reactionsTop)
     expect(p.menuTop).toBeGreaterThanOrEqual(CONTEXT_MENU_EDGE_MARGIN)
     expect(p.menuTop + MENU_H).toBeLessThanOrEqual(SCREEN_H - CONTEXT_MENU_EDGE_MARGIN)
@@ -153,5 +140,34 @@ describe("ContextMenuActionKey", () => {
     const exhaustive: [ContextMenuActionKey] extends [(typeof keys)[number]] ? true : false = true
     expect(exhaustive).toBe(true)
     expect(keys).toHaveLength(11)
+  })
+})
+
+describe("resolveWebMenuFrame", () => {
+  const frame = { actionCount: 4, actionRowH: 38, reactionRowH: 48, cardPadV: 8, cardWidth: 264 }
+  const screen = { width: 1280, height: 800 }
+
+  it("sizes the card from its rows and opens it below a bubble near the top", () => {
+    const f = resolveWebMenuFrame(anchor(120, 40), screen, frame, false)
+    expect(f.cardH).toBe(48 + 4 * 38 + 8)
+    expect(f.position).toEqual({ top: 120 + 40 + CONTEXT_MENU_GAP, left: 24 })
+  })
+
+  it("opens above a bubble near the bottom and trails the viewer's own bubble", () => {
+    const mine = { x: 600, y: 700, width: 220, height: 40 }
+    const f = resolveWebMenuFrame(mine, screen, frame, true)
+    expect(f.position?.top).toBe(700 - CONTEXT_MENU_GAP - f.cardH)
+    expect(f.position?.left).toBe(600 + 220 - 264)
+  })
+
+  it("caps the action list to the window and never places above the edge margin", () => {
+    const tall = resolveWebMenuFrame(anchor(10, 40), { width: 1280, height: 200 }, { ...frame, actionCount: 20 }, false)
+    expect(tall.actionsMaxH).toBe(Math.max(38 * 2, 200 - CONTEXT_MENU_EDGE_MARGIN * 2 - 48 - 8))
+    expect(tall.cardH).toBe(48 + tall.actionsMaxH + 8)
+    expect(tall.position?.top).toBeGreaterThanOrEqual(CONTEXT_MENU_EDGE_MARGIN)
+  })
+
+  it("centres (no position) without an anchor", () => {
+    expect(resolveWebMenuFrame(null, screen, frame, false).position).toBeNull()
   })
 })

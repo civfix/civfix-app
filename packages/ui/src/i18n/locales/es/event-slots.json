@@ -27,7 +27,10 @@
     "expand_a11y": "{{title}}, {{count}} inscritos",
     "expand_hint": "Muestra quién se inscribió",
     "collapse_hint": "Oculta quién se inscribió",
-    "faces_more": "+{{count}}"
+    "faces_more": "+{{count}}",
+    "window_count_a11y_one": "{{title}}, {{range}}, {{count}} inscrito",
+    "window_count_a11y_other": "{{title}}, {{range}}, {{count}} inscritos",
+    "faces_names_more": "{{names}} +{{count}}"
   },
   "editor": {
     "add_first": "Añadir un puesto",
@@ -87,7 +90,11 @@
   "roster": {
     "unassigned": "Sin puesto",
     "empty_slot": "Nadie todavía",
-    "window_a11y": "{{title}} de {{range}}"
+    "window_a11y": "{{title}} de {{range}}",
+    "window_count_a11y_one": "{{title}} de {{range}}, {{count}} inscrito",
+    "window_count_a11y_other": "{{title}} de {{range}}, {{count}} inscritos",
+    "window_capacity_a11y_one": "{{title}} de {{range}}, {{count}} de {{capacity}} inscritos",
+    "window_capacity_a11y_other": "{{title}} de {{range}}, {{count}} de {{capacity}} inscritos"
   },
   "toast": {
     "claimed": "Inscripción hecha",

@@ -78,7 +78,8 @@
     "title": "티켓 종류별",
     "of": "{{capacity}}석 중 {{registered}}석",
     "waiting_one": "{{count}}명 대기",
-    "waiting_other": "{{count}}명 대기"
+    "waiting_other": "{{count}}명 대기",
+    "meter_a11y": "{{name}}: 정원 {{capacity}}명 중 {{registered}}명 등록"
   },
   "arrivals": {
     "title": "도착 시간",

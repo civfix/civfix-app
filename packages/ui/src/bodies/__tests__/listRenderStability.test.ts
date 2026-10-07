@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { visibleAttendeeSlots } from "../linkedEventCardModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -58,10 +59,11 @@ describe("FeedBody hands the FlatList stable props", () => {
   })
 
   it("keeps the entrance style STABLE, or the header memo below it is dead on arrival", () => {
-    expect(SRC).toContain(
-      "return useMemo(() => ({ opacity, transform: [{ translateY }] }), [opacity, translateY])",
-    )
-    expect(SRC).not.toMatch(/return \{ opacity, transform: \[\{ translateY \}\] \}/)
+    const entrance = read("../useEntranceAnimation.ts")
+    expect(SRC).toContain("const entranceStyle = useEntranceAnimation({")
+    expect(entrance).toMatch(/^ {2}return useMemo\(\(\) => \{/m)
+    expect(entrance).toContain("}, [progress, scale, translateY])")
+    expect(entrance).not.toMatch(/^ {2}return \{/m)
     expect(SRC).toContain(
       "const headerStyle = useMemo(() => [entranceStyle, styles.headerInset], [entranceStyle, styles])",
     )
@@ -135,8 +137,10 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
 
   it("still paints a stack once the footer is asked for, so it is never a bare count", () => {
     expect(SRC).toContain(
-      "const visibleCount = Math.min(3, Math.max(model.attendeePreview.length, Math.min(3, model.going)))",
+      "const visibleCount = visibleAttendeeSlots(model.attendeePreview.length, model.going)",
     )
+    expect(visibleAttendeeSlots(1, 3)).toBe(3)
+    expect(visibleAttendeeSlots(1, 40)).toBe(3)
     expect(SRC).toContain("{showAvatars ? (")
   })
 
@@ -218,17 +222,80 @@ describe("ConversationBody surfaces the chat hook's transient error", () => {
 })
 
 describe("the thumbnail contexts spend the 400px rendition, and the lightbox gets real dimensions", () => {
+  const LIGHTBOX_ITEMS = code(read("../../lightbox/lightboxItems.ts"))
+
   it("ReportDetailBody's strip reads thumbUrl for images too, and passes width/height on", () => {
-    const SRC = code(read("../ReportDetailBody.tsx"))
+    const SRC = code(read("../reportDetail/ReportGallery.tsx"))
     expect(SRC).toContain("const thumbUri = m.thumbUrl ?? m.url")
     expect(SRC).not.toContain('m.kind === "video" ? (m.thumbUrl ?? m.url) : m.url')
-    expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
+    expect(SRC).toContain("const lightboxItems = toLightboxItems(ready)")
+    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
   })
 
   it("MessageBubble's 220pt attachment decodes the thumb, and its lightbox keeps full resolution", () => {
-    const SRC = code(read("../conversation/MessageBubble.tsx"))
+    const SRC = code(read("../conversation/BubbleAttachments.tsx"))
     expect(SRC).toContain("thumbUri={m.thumbUrl ?? null}")
-    expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
-    expect(SRC).toContain("url: m.url")
+    expect(SRC).toContain("const lightboxItems = toLightboxItems(attachments)")
+    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
+    expect(LIGHTBOX_ITEMS).toContain("url: item.url")
+  })
+})
+
+describe("slot board rows repaint only when their own props change", () => {
+  const BLOCK = code(read("../EventSlotsBlock.tsx"))
+  const ROW = code(read("../EventSlotRow.tsx"))
+
+  it("memoizes SlotRow and hands it slot-id handlers instead of per-row closures", () => {
+    expect(ROW).toContain("export const SlotRow = memo(function SlotRow(")
+    expect(BLOCK).toContain("onToggle={onToggle}")
+    expect(BLOCK).toContain("{...(interactive ? { onClaim: run } : {})}")
+    expect(BLOCK).not.toMatch(/onToggle=\{\(\) => onToggle\(slot\.id\)\}/)
+    expect(ROW).toContain("onClaim(mine ? null : slot.id, slot.id, slot.title)")
+  })
+
+  it("depends on the mutations' stable mutate and the query's refetch", () => {
+    expect(BLOCK).toContain("[boardBusy, mutateClaim, cleanupId, general, mutateJoin, onError, requireAuth, slots, t, toast]")
+    expect(BLOCK).toContain("[refetchAttendees]")
+  })
+})
+
+describe("member lists do not rebuild per render", () => {
+  it("MemberPicker memoizes its rows and reads selection from a Set", () => {
+    const SRC = code(read("../MemberPicker.tsx"))
+    expect(SRC).toMatch(/const rows = useMemo\(/)
+    expect(SRC).toContain("const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])")
+    expect(SRC).toContain("selected={selectedIds.has(item.id)}")
+  })
+
+  it("GroupInfoBody's row action keeps its identity across renders", () => {
+    const SRC = code(read("../GroupInfoBody.tsx"))
+    expect(SRC).toContain("[mutateRemove, mutateRole, id, onRowActionError]")
+  })
+})
+
+describe("message bubbles keep their memoized children stable", () => {
+  it("the context-menu opener is a stable callback, and an empty attachment list is shared", () => {
+    const MENU = code(read("../conversation/useBubbleContextMenu.ts"))
+    const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
+    expect(MENU).toContain("const open = useCallback(")
+    expect(MENU).toContain("const close = useCallback(")
+    expect(BUBBLE).toContain("const atts = message.attachments ?? NO_ATTACHMENTS")
+  })
+})
+
+describe("animated styles and component types are built once, not per render", () => {
+  it("the feed share preview and the new-posts pill memoize their interpolations", () => {
+    expect(code(read("../FeedShareBlock.tsx"))).toMatch(/const enterStyle = useMemo\(/)
+    expect(code(read("../feed/NewPostsPill.tsx"))).toMatch(/const motionStyle = useMemo\(/)
+  })
+
+  it("the dashboard scope avatar keeps one component type while the scope is unchanged", () => {
+    const SRC = code(read("../host/dashboard/DashboardHeader.tsx"))
+    expect(SRC).toMatch(/const scopeIcon = useMemo\(\s*\(\) => avatarIcon\(avatarName, avatarSeed, avatarPhoto\),\s*\[avatarName, avatarSeed, avatarPhoto\],/)
+  })
+
+  it("address URLs are keyed on the coordinates, not the caller's point literal", () => {
+    const SRC = code(read("../useAddressActions.ts"))
+    expect(SRC).toContain("[resolved, lat, lng, verified, title]")
   })
 })

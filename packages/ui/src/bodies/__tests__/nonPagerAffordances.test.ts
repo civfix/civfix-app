@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -7,7 +8,7 @@ const POST_DETAIL = read("../PostDetailBody.tsx")
 const PROFILE_EVENTS = read("../profile/ProfileEventsSection.tsx")
 const SECTION_STYLES = read("../profile/sectionStyles.ts")
 const SAVED_POSTS = read("../SavedPostsBody.tsx")
-const PERSON_DETAIL = read("../PersonDetailBody.tsx")
+const PERSON_DETAIL = surfaceSource("personDetail")
 const EVENT_HOURS = read("../EventHoursBlock.tsx")
 
 function styleBlock(source: string, name: string): string {

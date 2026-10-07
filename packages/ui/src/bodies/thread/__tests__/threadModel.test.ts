@@ -7,6 +7,7 @@ import {
   buildThreadRows,
   composerFocusAfterSend,
   isOptimisticPostId,
+  optimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
   threadItems,
@@ -349,6 +350,13 @@ describe("isOptimisticPostId", () => {
     expect(isOptimisticPostId("optimistic-1712345678901")).toBe(true)
     expect(isOptimisticPostId("0f9a-real-uuid")).toBe(false)
     expect(isOptimisticPostId("")).toBe(false)
+  })
+})
+
+describe("optimisticPostId", () => {
+  it("mints an id isOptimisticPostId recognises, keyed by the clock", () => {
+    expect(optimisticPostId(1712345678901)).toBe("optimistic-1712345678901")
+    expect(isOptimisticPostId(optimisticPostId(0))).toBe(true)
   })
 })
 

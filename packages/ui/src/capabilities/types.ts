@@ -1,7 +1,6 @@
 import type { ComponentType } from "react"
 import type { DetailEntry } from "../nav/types"
 
-
 export interface CapturedMedia {
   uri: string
   kind: "image" | "video"
@@ -10,6 +9,12 @@ export interface CapturedMedia {
   height?: number
   durationSec?: number
   location?: { lat: number; lng: number; source: "device" | "exif" }
+  /**
+   * Frees what the host allocated for `uri` (a web object URL and the bytes behind it). The holder
+   * calls it once, when nothing can render or upload the uri any more; hosts whose uris own no
+   * memory (native file paths) leave it out.
+   */
+  release?(): void
 }
 
 export interface PreparedUpload {
@@ -95,12 +100,6 @@ export interface CalendarFileCapability {
   save(input: { filename: string; ics: string }): Promise<boolean>
 }
 
-export interface ContactsInviteAdapter {
-  available: boolean
-  inviteContacts(opts: { message: string; url: string }): Promise<void>
-  copyToClipboard?(text: string): Promise<void>
-}
-
 export interface PlatformCapabilities {
   camera: CameraCapability
   geolocation: GeolocationCapability
@@ -111,7 +110,6 @@ export interface PlatformCapabilities {
   haptics?: HapticsCapability
   openExternal?: OpenExternalCapability
   openInternalHref?: OpenInternalHrefCapability
-  contactsInvite?: ContactsInviteAdapter
   clipboard?: ClipboardCapability
   calendarFile?: CalendarFileCapability
 }

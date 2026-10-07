@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles, motion } from "../theme"
+import { makeThemedStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
 import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -12,10 +12,9 @@ import {
   pageLayerPointerEvents,
   pageLayerTokens,
   type PageLayerPointerEvents,
-  type PageMotionTokens,
   type PageTransitionPlan,
-  type PageTransitionTiming,
 } from "./pageStackModel"
+import { PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING } from "./pageStackMotion"
 import {
   isInstantPagePlan,
   pagePlanDuration,
@@ -27,18 +26,9 @@ import {
 } from "./pageStackWebModel"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
+import { forceReflow, useFlipPhase, type LayerTransitionEndEvent } from "./useFlipPhase"
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 
-const TIMING: PageTransitionTiming = {
-  pushDuration: motion.pagePush.duration,
-  popDuration: motion.pagePop.duration,
-  fadeDuration: motion.bodyReplace.duration,
-}
-const PAGE_MOTION: PageMotionTokens = {
-  travelRatio: motion.pageTravelRatio,
-  parallaxRatio: motion.pageParallaxRatio,
-  scrimOpacity: motion.pageScrimOpacity,
-}
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
 const REDUCED_TOKENS = pageLayerTokens(PAGE_MOTION, true, false)
 const SETTLE_SLACK_MS = 60
@@ -106,7 +96,7 @@ export function PageStack({
         keyboardBound: keyboardAvoidance,
         coarsePointer: isCoarsePointer(),
       },
-      TIMING,
+      PAGE_TIMING,
     )
     const nav = state.nav + 1
     const committed = committedRef.current
@@ -128,19 +118,19 @@ export function PageStack({
     setState((cur) => (cur.phase && cur.phase.nav === nav ? { ...cur, phase: null } : cur))
   }, [])
 
-  useLayoutEffect(() => {
-    if (!phase || phase.flipped) return
-    const host = hostRef.current as unknown as { offsetHeight?: number } | null
-    void host?.offsetHeight
-    const nav = phase.nav
-    setState((cur) =>
-      cur.phase && cur.phase.nav === nav && !cur.phase.flipped
-        ? { ...cur, phase: { ...cur.phase, flipped: true } }
-        : cur,
-    )
-    const fallback = setTimeout(() => settle(nav), pagePlanDuration(phase.plan) + SETTLE_SLACK_MS)
-    return () => clearTimeout(fallback)
-  }, [phase?.nav])
+  useFlipPhase({
+    pendingNav: phase && !phase.flipped ? phase.nav : null,
+    phaseNav: phase ? phase.nav : null,
+    fallbackMs: phase ? pagePlanDuration(phase.plan) + SETTLE_SLACK_MS : 0,
+    reflow: () => forceReflow([hostRef.current], false),
+    flip: (flipNav) =>
+      setState((cur) =>
+        cur.phase && cur.phase.nav === flipNav && !cur.phase.flipped
+          ? { ...cur, phase: { ...cur.phase, flipped: true } }
+          : cur,
+      ),
+    settle,
+  })
 
   const rendered = phase?.leaving ? [...layers, phase.leaving] : layers
   const topIndex = rendered.length - 1
@@ -252,7 +242,7 @@ const WebPageLayer = memo(function WebPageLayer({
     else node.setAttribute("inert", "")
   }, [active])
 
-  const onTransitionEnd = (event: any) => {
+  const onTransitionEnd = (event: LayerTransitionEndEvent) => {
     if (settleNav === null) return
     if (event?.target !== event?.currentTarget) return
     if (event?.propertyName && event.propertyName !== settleProperty) return
@@ -299,11 +289,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
-  header: {
-    flexShrink: 0,
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
+  header: PAGE_HEADER_STYLE,
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: t.colors.shadowColor,

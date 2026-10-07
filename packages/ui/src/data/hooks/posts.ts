@@ -1,9 +1,7 @@
 /**
- * Shared React Query hooks for the X-style social feed - queries for reading posts + optimistic
- * mutations for the full action set (like / repost / save / create / delete). Authored framework-light
- * like the rest of the data seam: they reach the host API client through the injected data context
- * (`useApi` / `useAuthState`), use the SHARED `queryKeys`, and the shared optimistic helpers
- * (`optimisticPatch` + `also`). No expo / next / store imports.
+ * Shared React Query hooks for the social feed: queries for reading posts and optimistic mutations for
+ * like / repost / save / create / delete. Framework-light like the rest of the data seam: the host API
+ * client and auth come through the injected data context. No expo / next / store imports.
  *
  * QUERIES
  *   usePost(id)          - GET /posts/:id          -> a single PostDTO (the `["post", id]` detail cache).
@@ -13,7 +11,7 @@
  *   useUserPosts(userId) - GET /people/:id/posts   -> infinite FeedPageDTO (a person's own posts).
  *   useSaves()           - GET /me/saves           -> infinite FeedPageDTO (the viewer's bookmarks).
  *
- * MUTATIONS (optimistic; clone the `useFollowPerson` multi-cache pattern in ./social.ts)
+ * MUTATIONS (optimistic)
  *   useLikePost(id)      - flip viewer.liked    + counts.likes    across every cache holding the post.
  *   useSavePost(id)      - flip viewer.saved    + counts.saves    AND add/remove it from the saves list.
  *   useRepost(id)        - flip viewer.reposted + counts.reposts  across every cache holding the post.
@@ -21,18 +19,18 @@
  *                          instead appends to the parent's replies and bumps the parent's reply count.
  *   useDeletePost()      - remove the post from every list + drop its detail cache.
  *
- * OPTIMISM. Each toggle patches TWO cache shapes, exactly like the follow toggle: the SINGLE-ENTITY
+ * OPTIMISM. Each toggle patches TWO cache shapes, like the follow toggle: the SINGLE-ENTITY
  * post detail (`queryKeys.post(id)`) via the primary `optimisticPatch`, and EVERY infinite LIST holding
  * the post (home feed / replies / user posts / saves) via an `also` prefix patch over `queryKeys.postsRoot`.
- * Rollback is TARGETED - `onError` re-writes ONLY the target post's pre-mutation value back into the
+ * Rollback is TARGETED: `onError` re-writes ONLY the target post's pre-mutation value back into the
  * lists (captured per-call in the `also` context), so two concurrent toggles on DIFFERENT posts never
  * clobber each other. `onSuccess` reconciles with the server's authoritative full PostDTO; `onSettled`
  * invalidates the authoritative key.
  *
- * AUTH POSTURE. Every post endpoint is `auth:"required"` (§4.4), so the queries bake
- * `enabled: isAuthenticated` in here (web's posture, matching `useMyProfile` / `useFollowSuggestions`)
- * and never fire a guaranteed-401 while signed out. The per-person / per-post reads additionally gate
- * on a present id.
+ * AUTH POSTURE. The auth-required reads (`usePostReplies`, `useSaves`) gate on `isAuthenticated` so
+ * they never fire a guaranteed-401 while signed out. `getPost`, `homeFeed` and `listUserPosts` are
+ * auth-OPTIONAL: `usePost` and `useUserPosts` gate on the id alone, and `useHomeFeed` is always enabled.
+ * Every per-person / per-post read also gates on a present id.
  */
 import type { QueryClient, InfiniteData, UseMutationOptions } from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -46,8 +44,8 @@ import type {
   ListRepliesResponse,
   DeletePostResponse,
 } from "@civfix/shared"
-import { useApi } from "../context"
-import { useAuthState } from "../context"
+import { useApi, useAuthState } from "../context"
+import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { optimisticPatch, type OptimisticContext } from "../optimistic"
 
@@ -62,11 +60,6 @@ const COUNT_KEY: Record<ToggleField, keyof PostDTO["counts"]> = {
   reposted: "reposts",
   saved: "saves",
 }
-
-// ---------------------------------------------------------------------------
-// Pure cache-shape helpers (exported for the unit tests, mirroring how ./social.ts
-// exports `patchPersonInConnectionLists` etc. for follow-cache.test.ts).
-// ---------------------------------------------------------------------------
 
 /** Apply a like/repost/save toggle to a post, nudging the paired count by one (clamped at 0). */
 export function applyToggle(post: PostDTO, field: ToggleField, next: boolean): PostDTO {
@@ -86,10 +79,9 @@ function isInfinitePosts(v: unknown): v is InfiniteData<FeedPageDTO> {
 
 /**
  * Patch the target post in EVERY infinite LIST cache under the `["posts"]` prefix (home feed, replies,
- * user posts, saves). Any entry that is not an infinite post list is left untouched. Mirrors the follow
- * toggle's `patchPersonInFlatLists` prefix `setQueriesData`.
+ * user posts, saves). Any entry that is not an infinite post list is left untouched.
  */
-export function patchPostInListCaches(
+function patchPostInListCaches(
   qc: QueryClient,
   postId: string,
   patch: (post: PostDTO) => PostDTO,
@@ -142,7 +134,7 @@ export function patchPostCountsInCaches(
 }
 
 /** Find the target post's current value in any list cache under the prefix (for the rollback snapshot). */
-export function findPostInLists(qc: QueryClient, postId: string): PostDTO | undefined {
+function findPostInLists(qc: QueryClient, postId: string): PostDTO | undefined {
   for (const [, data] of qc.getQueriesData<InfiniteData<FeedPageDTO>>({
     queryKey: queryKeys.postsRoot,
   })) {
@@ -156,7 +148,7 @@ export function findPostInLists(qc: QueryClient, postId: string): PostDTO | unde
 }
 
 /** Prepend a post to page 0 of a specific infinite list cache (no-op when the list is not loaded). */
-export function prependToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
+function prependToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
   qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
     isInfinitePosts(prev)
       ? {
@@ -170,7 +162,7 @@ export function prependToList(qc: QueryClient, key: readonly unknown[], post: Po
 }
 
 /** Append a post to the LAST page of a specific infinite list cache (replies are chronological). */
-export function appendToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
+function appendToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
   qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
     isInfinitePosts(prev)
       ? {
@@ -183,23 +175,32 @@ export function appendToList(qc: QueryClient, key: readonly unknown[], post: Pos
   )
 }
 
+function withoutPost(
+  prev: InfiniteData<FeedPageDTO> | undefined,
+  postId: string,
+): InfiniteData<FeedPageDTO> | undefined {
+  return isInfinitePosts(prev)
+    ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== postId) })) }
+    : prev
+}
+
 /** Remove a post (by id) from every page of a specific infinite list cache. */
-export function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string): void {
-  qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
-    isInfinitePosts(prev)
-      ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== postId) })) }
-      : prev,
-  )
+function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string): void {
+  qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) => withoutPost(prev, postId))
+}
+
+function removeFromAllLists(qc: QueryClient, postId: string): void {
+  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) => withoutPost(prev, postId))
 }
 
 /** True when a specific infinite list cache already contains the post. */
-export function listHasPost(qc: QueryClient, key: readonly unknown[], postId: string): boolean {
+function listHasPost(qc: QueryClient, key: readonly unknown[], postId: string): boolean {
   const data = qc.getQueryData<InfiniteData<FeedPageDTO>>(key)
   return isInfinitePosts(data) ? data.pages.some((p) => p.items.some((it) => it.id === postId)) : false
 }
 
 /** Replace the optimistic (temp-id) post with the authoritative server post in a specific list cache. */
-export function replaceInList(
+function replaceInList(
   qc: QueryClient,
   key: readonly unknown[],
   tempId: string,
@@ -217,11 +218,6 @@ export function replaceInList(
       : prev,
   )
 }
-
-// ---------------------------------------------------------------------------
-// Mutation option builders (exported so the hook AND the unit test share one truth,
-// mirroring how follow-cache.test.ts drives the follow options directly).
-// ---------------------------------------------------------------------------
 
 /** Per-call snapshot of the side caches a toggle patches besides the single `post(id)` detail. */
 interface ToggleAlsoCtx {
@@ -255,7 +251,7 @@ export function buildToggleMutation(
     // Only the authoritative single-post key (and, for save, the saves LIST whose membership changed)
     // is refetched. The lists are already correct: the `also` optimistic patch flips the post in every
     // cache holding it and `onSuccess` re-writes the server's authoritative DTO over that patch. A
-    // blanket `postsRoot` invalidation instead refetched EVERY active post list (home feed - all pages -
+    // blanket `postsRoot` invalidation would refetch EVERY active post list (all home-feed pages,
     // replies, user posts, saves) on every like tap, and could visibly reshuffle an infinite list.
     invalidate: options.manageSaves
       ? [queryKeys.post(id), savesKey]
@@ -265,7 +261,6 @@ export function buildToggleMutation(
       onMutate: (client, currently): ToggleAlsoCtx => {
         const next = !currently
         const original = findPostInLists(client, id) ?? client.getQueryData<PostDTO>(queryKeys.post(id))
-        // Flip the post in every list holding it (home feed / replies / user posts / saves).
         patchPostInListCaches(client, id, (p) => applyToggle(p, field, next))
         // Save also mutates the saves-list MEMBERSHIP (a structural add/remove, not just a flag flip).
         if (options.manageSaves && original) {
@@ -315,7 +310,7 @@ export interface CreatePostVars {
 }
 
 /** Per-call snapshot of what a create touched, so error/success can undo/reconcile precisely. */
-interface CreateCtx {
+export interface CreateCtx {
   /** The list caches we prepended/appended the optimistic post to. */
   touchedKeys: readonly (readonly unknown[])[]
   /** The parent post id when this create is a reply (its reply count was bumped). */
@@ -346,7 +341,7 @@ export function buildCreateMutation(
         const repliesKey = queryKeys.postReplies(input.replyToId)
         // `listReplies` is ASC/oldest-first, so a new reply belongs at the very END of the thread. On a
         // MULTI-PAGE thread whose tail has not been fetched, appending to the last LOADED page puts it in
-        // the middle - where it sits looking wrong and then vanishes on the onSettled invalidation. So the
+        // the middle, where it sits looking wrong and then vanishes on the onSettled invalidation. So the
         // optimistic append only happens when the tail really is loaded (`nextCursor == null`); otherwise
         // the reply simply arrives with the refetch. `touchedKeys` is then empty and onError/onSuccess/
         // onSettled iterate nothing, while `repliedTo` still un-bumps the count in both branches.
@@ -360,10 +355,9 @@ export function buildCreateMutation(
         return { touchedKeys, repliedTo: input.replyToId }
       }
       // Creating a post requires auth, so the only feed entry a new post can belong to is the
-      // signed-in ("me") scope - the SAME key `useHomeFeed` builds while authenticated.
+      // signed-in ("me") scope, the SAME key `useHomeFeed` builds while authenticated.
       // A post with an attached EVENT additionally belongs to the "events" filter, whose server predicate
-      // is exactly `p.event_id IS NOT NULL` - mirrored here. Guarded on `input.eventId`, so the reply,
-      // quote and bare-post paths touch byte-identically the keys they touched before.
+      // is exactly `p.event_id IS NOT NULL`.
       const feedKeys: (readonly unknown[])[] = [queryKeys.homeFeed("all", "me")]
       if (input.eventId) feedKeys.push(queryKeys.homeFeed("events", "me"))
       const authorKey = queryKeys.userPosts(optimistic.author.id)
@@ -416,11 +410,7 @@ export function buildDeleteMutation(
       await qc.cancelQueries({ queryKey: queryKeys.post(id) })
       const prevLists = qc.getQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot })
       const prevDetail = qc.getQueryData<PostDTO>(queryKeys.post(id))
-      qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) =>
-        isInfinitePosts(prev)
-          ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== id) })) }
-          : prev,
-      )
+      removeFromAllLists(qc, id)
       // `setQueryData(key, undefined)` is a no-op in react-query (returning undefined skips the write), so
       // drop the detail cache with removeQueries; onError re-seeds it from the snapshot.
       qc.removeQueries({ queryKey: queryKeys.post(id) })
@@ -436,48 +426,21 @@ export function buildDeleteMutation(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Queries
-// ---------------------------------------------------------------------------
+const coercePostPages = coercePages<FeedPageDTO>("items")
 
-/** Coerce each infinite page's `items` to a real array of non-null posts (the client does not validate). */
-function coercePostPages(data: InfiniteData<FeedPageDTO>): InfiniteData<FeedPageDTO> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
-    })),
-  }
-}
-
-/** GET /posts/:id - a single post's detail. Auth-required; additionally gated on a present id. */
+/** GET /posts/:id - a single post's detail. Auth-OPTIONAL (a guest reads the public projection); gated on a present id. */
 export function usePost(id: string | undefined) {
   const api = useApi()
-  const { isAuthenticated } = useAuthState()
   return useQuery<PostDTO>({
     queryKey: queryKeys.post(id ?? "unknown"),
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
     queryFn: () => api.getPost({ id: id as string }),
     retry: false,
   })
 }
 
-/** Coerce a replies page's two post arrays, so a malformed payload cannot reach the row builder. */
-function coerceReplyPages(
-  data: InfiniteData<ListRepliesResponse>,
-): InfiniteData<ListRepliesResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
-      authorReplies: Array.isArray(p?.authorReplies)
-        ? p.authorReplies.filter((it) => it != null)
-        : [],
-    })),
-  }
-}
+/** Both post arrays are coerced, so a malformed payload cannot reach the row builder. */
+const coerceReplyPages = coercePages<ListRepliesResponse>("items", "authorReplies")
 
 /** GET /posts/:id/replies - a thread's replies, cursor-infinite. Auth-required; gated on a present id. */
 export function usePostReplies(id: string | undefined) {
@@ -504,14 +467,14 @@ export function usePostReplies(id: string | undefined) {
  * Why: `useHomeFeed`'s key carries an auth scope that boots from the host's persisted snapshot GUESS and
  * is reconciled against `GET /auth/session` afterwards (web's `AuthHydrator`). When the terminal answer
  * differs from the guess (cleared storage + a still-valid cookie, or a stale snapshot + an expired
- * session) the key flips seconds into a cold load and — without a placeholder — `data` is `undefined`
+ * session) the key flips seconds into a cold load, and without a placeholder `data` is `undefined`
  * until the re-fetch lands, so FeedBody visibly falls BACK from rendered posts to skeletons ("the feed
  * loads twice"). Keeping the previous scope's pages on screen while the correct scope loads is safe:
  * both scopes belong to the same viewer on the same device, and the fetched result replaces it.
  *
  * A FILTER change (All -> Events) is deliberately NOT bridged: those tabs show different content on
  * purpose, and holding the old tab's posts under the new tab's heading would misattribute them. That
- * flip keeps the pre-existing skeleton handoff (`previousQuery`'s key differs at the filter segment, so
+ * flip keeps the skeleton handoff (`previousQuery`'s key differs at the filter segment, so
  * this returns `undefined`).
  */
 export function homeFeedPlaceholder(
@@ -529,7 +492,7 @@ export function homeFeedPlaceholder(
 /**
  * GET /feed/home - the feed, cursor-infinite, keyed by the feed filter. OPTIONAL auth: a signed-in reader
  * gets their followed-users + self timeline; a signed-out reader gets the public/global feed (you don't
- * have to sign in to read a feed). Always enabled — the client omits the bearer/cookie when signed out and
+ * have to sign in to read a feed). Always enabled: the client omits the bearer/cookie when signed out and
  * the query key carries the auth state so the cache doesn't leak one viewer's feed into the other.
  * `placeholderData` bridges the boot-time auth-scope key flip (see `homeFeedPlaceholder`).
  */
@@ -553,7 +516,7 @@ export function useHomeFeed(filter: FeedFilter = "all") {
 
 /**
  * GET /people/:id/posts - a person's own posts, cursor-infinite. Auth-OPTIONAL, so this gates on the id
- * ALONE: a public profile is a public surface, and gating it on `isAuthenticated` left a signed-out
+ * ALONE: a public profile is a public surface, and gating it on `isAuthenticated` would leave a signed-out
  * visitor looking at an empty timeline on a profile whose posts anyone can read. The client omits the
  * bearer/cookie when signed out and the server returns the public projection.
  */
@@ -588,10 +551,6 @@ export function useSaves() {
     select: coercePostPages,
   })
 }
-
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
 
 /** POST/DELETE /posts/:id/like - optimistically flip `viewer.liked` + `counts.likes` everywhere. */
 export function useLikePost(id: string) {

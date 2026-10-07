@@ -1,10 +1,6 @@
 /**
- * Platform selector for the portrait overlay's page host. Metro resolves `./PageStack` to the native
- * seam (retained layers + edge-swipe back + push/pop slides); webpack/Next and plain `tsc` resolve it
- * here, which re-exports the worklet-free web seam. Mirrors BodyTransition.tsx / PortraitShell.tsx.
- *
- * The explicit `./PageStack.web` specifier (not the bare `./PageStack`) avoids resolving back into this
- * module.
+ * Platform selector: Metro resolves the native seam, while Next and plain `tsc` land here and get the
+ * worklet-free web seam through the explicit `.web` specifier, which never resolves back into this module.
  */
 export { PageStack } from "./PageStack.web"
 export type { PageStackProps, PageStackRenderBody } from "./PageStack.types"

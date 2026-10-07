@@ -13,5 +13,6 @@
     "privacy_a11y": "Datenschutzerklärung",
     "source": "Quellcode",
     "source_a11y": "Quellcode auf GitHub"
-  }
+  },
+  "dialog_a11y": "Über civfix"
 }

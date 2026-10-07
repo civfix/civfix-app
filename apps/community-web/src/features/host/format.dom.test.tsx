@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, renderHook, screen } from "@testing-library/react"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")
@@ -55,5 +55,29 @@ describe("useConsoleFormat time zones", () => {
   it("lets a list row override the hook's zone per event", () => {
     render(<Probe timeZone="America/Los_Angeles" />)
     expect(text("override")).toBe("Sep 12, 2026, 12:00 PM CDT")
+  })
+})
+
+describe("useConsoleFormat output", () => {
+  const LA = "America/Los_Angeles"
+
+  it("matches a freshly built Intl formatter for every value kind", () => {
+    const { result } = renderHook(() => useConsoleFormat(LA))
+    const format = result.current
+    for (const value of [0, 7, 1234.5678, -42]) {
+      expect(format.number(value)).toBe(new Intl.NumberFormat("en").format(value))
+    }
+    for (const value of [0, 0.1234, 1]) {
+      expect(format.percent(value)).toBe(
+        new Intl.NumberFormat("en", { style: "percent", maximumFractionDigits: 1 }).format(value),
+      )
+    }
+    const fresh = (options: Intl.DateTimeFormatOptions, timeZone: string) =>
+      new Intl.DateTimeFormat("en", { ...options, timeZone }).format(new Date(AT))
+    expect(format.date(AT)).toBe(fresh({ dateStyle: "medium" }, LA))
+    expect(format.dateTime(AT)).toBe(fresh({ dateStyle: "medium", timeStyle: "short" }, LA))
+    expect(format.time(AT)).toBe(fresh({ timeStyle: "short" }, LA))
+    expect(format.dayShort(AT)).toBe(fresh({ month: "short", day: "numeric" }, LA))
+    expect(format.time(AT, "Asia/Tokyo")).toBe(fresh({ timeStyle: "short" }, "Asia/Tokyo"))
   })
 })

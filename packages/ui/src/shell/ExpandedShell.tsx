@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
   Animated,
   PanResponder,
@@ -23,10 +23,12 @@ import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
 import { showBackAffordance } from "./backAffordance"
+import { hasDetailHeader } from "./SheetHeader.shared"
 import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrailingAction"
 import { DetailTrailingButton } from "./DetailTrailingButton"
-import { expandedFramePlan, NAV_FOOTPRINT, NAV_LEFT } from "./expandedFramePlan"
+import { expandedFramePlan, NAV_FOOTPRINT, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
 import { cssTransition } from "./motionCss"
+import { surfaceKey } from "./bodyLayout"
 import { clearOcclusionLeft, writeOcclusionLeft } from "./occlusionVar"
 import { useShellKeys } from "./useShellKeys"
 import { prefersReducedMotion } from "./webMedia"
@@ -194,11 +196,10 @@ export function ExpandedShell({
     setWidth(clampSidebarWidth(next, width))
   }
 
-  const titleKey = held.active ? titleForEntry(held.active) : ""
-  const hasHeader = titleKey.trim() !== ""
-  const title = hasHeader ? t(titleKey, titleParamsForEntry(held.active)) : ""
+  const hasHeader = hasDetailHeader(held.active)
+  const title = hasHeader ? t(titleForEntry(held.active), titleParamsForEntry(held.active)) : ""
 
-  const transitionKey = held.active ? `${held.active.kind}:${held.active.id ?? ""}` : `view:${held.view}`
+  const transitionKey = surfaceKey(held.view, held.active)
 
   const direction: BodyTransitionDirection = useStackDirection(held.stack.length)
 
@@ -320,7 +321,8 @@ function Body({
   renderBody: RenderBody
 }) {
   const styles = useStyles()
-  return <View style={styles.fill}>{renderBody(entry, view)}</View>
+  const body = useMemo(() => renderBody(entry, view), [renderBody, entry, view])
+  return <View style={styles.fill}>{body}</View>
 }
 
 const useStyles = makeThemedStyles((t) => ({
@@ -328,7 +330,7 @@ const useStyles = makeThemedStyles((t) => ({
     position: "absolute",
     top: NAV_FOOTPRINT,
     left: NAV_LEFT,
-    bottom: 14,
+    bottom: NAV_TOP,
     borderRadius: 24,
     backgroundColor: t.colors.bg,
     overflow: "hidden",
@@ -340,7 +342,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: 10,
     paddingTop: 14,
     paddingHorizontal: 18,
-    paddingBottom: 12,
+    paddingBottom: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: isWeb ? wash(t.colors.borderStrong, 0.45, t) : t.colors.border,
     backgroundColor: t.colors.bg,
@@ -366,7 +368,7 @@ const useStyles = makeThemedStyles((t) => ({
   resizeHandle: {
     position: "absolute",
     top: NAV_FOOTPRINT,
-    bottom: 14,
+    bottom: NAV_TOP,
     left: NAV_LEFT - RESIZE_HANDLE_W / 2,
     width: RESIZE_HANDLE_W,
     zIndex: 61,

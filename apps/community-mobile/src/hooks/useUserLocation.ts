@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import * as Location from "expo-location"
+import { withTimeout } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
-import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
-
-export type LocationPermission = "undetermined" | "granted" | "denied"
+import type { LocationPermission } from "@/lib/locationPrimerPlan"
+import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 
 export interface LocationRefreshResult {
   coords: LatLng | null
@@ -15,7 +15,6 @@ export interface UserLocationState {
   permissionResolved: boolean
   coords: LatLng | null
   resolve: () => Promise<LocationRefreshResult>
-  refresh: () => Promise<LocationRefreshResult>
   awaitFirstFix: () => Promise<LatLng | null>
 }
 
@@ -27,7 +26,7 @@ export function useUserLocation(): UserLocationState {
   const readFix = useCallback(async (timeoutMs: number = GPS_TIMEOUT_MS): Promise<LatLng | null> => {
     try {
       const pos =
-        (await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })) ??
+        (await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(() => null)) ??
         (await withTimeout(
           Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
           timeoutMs,
@@ -80,7 +79,6 @@ export function useUserLocation(): UserLocationState {
       permissionResolved,
       coords,
       resolve: refresh,
-      refresh,
       awaitFirstFix,
     }),
     [permission, permissionResolved, coords, refresh, awaitFirstFix],

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
 
 export interface EventActionRowProps {
@@ -72,7 +72,7 @@ export function EventActionRows({ children }: { children: React.ReactNode }) {
   return (
     <View>
       {rows.map((row, index) => (
-        <React.Fragment key={index}>
+        <React.Fragment key={React.isValidElement(row) ? (row.key ?? index) : index}>
           {index > 0 ? <View style={styles.divider} /> : null}
           {row}
         </React.Fragment>
@@ -83,7 +83,7 @@ export function EventActionRows({ children }: { children: React.ReactNode }) {
 
 const useStyles = makeThemedStyles((t) => ({
   row: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],

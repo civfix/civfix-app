@@ -21,8 +21,8 @@ const rsvpPill = code("../RsvpPill.tsx")
 
 describe("usePopScale", () => {
   it("uses react-native Animated, NOT reanimated", () => {
-    // This hook is consumed by primitives rendering inside the gorhom sheet; reanimated is where the
-    // 0.36.1 worklet-factory crash class lives, so it must stay out of this module entirely.
+    // Primitives rendering inside the gorhom sheet consume this hook, and reanimated is where the
+    // worklet-factory crash class lives, so it must stay out of this module entirely.
     expect(source).toContain('from "react-native"')
     expect(source).not.toContain("reanimated")
   })
@@ -34,13 +34,16 @@ describe("usePopScale", () => {
 
   it("stays native-only and honours OS reduce-motion", () => {
     expect(source).toContain('Platform.OS !== "web"')
-    expect(source).toContain("AccessibilityInfo.isReduceMotionEnabled()")
-    expect(source).toContain("reduceMotionChanged")
+    expect(source).toContain('import { useReducedMotion } from "../theme/useReducedMotion"')
+    expect(source).toContain("const reduceMotion = useReducedMotion() === true")
+    const reducedMotion = code("../../theme/useReducedMotion.ts")
+    expect(reducedMotion).toContain("AccessibilityInfo.isReduceMotionEnabled()")
+    expect(reducedMotion).toContain("reduceMotionChanged")
   })
 
   it("pops on the false -> true confirmation only, from the motion.pop tokens", () => {
     expect(source).toContain(
-      "if (!POP_ENABLED || !active || wasActive || reduceMotionRef.current) return",
+      "if (!POP_ENABLED || !active || wasActive || reduceMotion) return",
     )
     expect(source).toContain("motion.pop.from")
     expect(source).toContain("motion.pop.to")

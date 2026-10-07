@@ -1,19 +1,16 @@
 import type { TFunction } from "i18next"
-import type { LayoutMode } from "../shell/expandedFramePlan"
+import { tokens } from "@civfix/shared/tokens"
+import type { LayoutMode } from "../nav"
 
 export type FeedViewState = "loading" | "error" | "empty" | "loaded"
 
+export const POST_LIST_END_REACHED_THRESHOLD = 0.6
+
 /**
- * Row entrance timing. 280 -> 200ms: with the stagger below, the LAST row of a batch used to finish at
- * 275 + 280 = 555ms, i.e. the feed was still assembling itself more than half a second after it appeared.
- * 140 + 200 = 340ms is under the ~350ms threshold where a list stops reading as "loading" and starts
- * reading as "there".
+ * The row duration plus the stagger cap below (200 + 140 = 340ms) must stay under ~350ms, past which a
+ * list reads as still loading rather than there.
  */
-export function buildFeedMotionModel(reducedMotion: boolean) {
-  return reducedMotion
-    ? { duration: 0, easing: "linear" as const, animated: false }
-    : { duration: 200, easing: "ease-out" as const, animated: true }
-}
+export const FEED_ROW_ENTER_MS = tokens.motion.dur.d2
 
 export function buildFeedHeaderModel(
   { isAuthenticated, layout }: { isAuthenticated: boolean; layout: LayoutMode },
@@ -26,41 +23,24 @@ export function buildFeedHeaderModel(
   }
 }
 
-/**
- * Stagger between rows entering together, and the cap on it (a batch never waits longer than this).
- * Tightened 55 -> 35 and 275 -> 140 alongside the 200ms row duration: the cap is what bounds the whole
- * batch, and at 275 the last row of a screenful started a quarter of a second after the first one. The
- * ripple is still legible at 35ms/row; it just stops being something you wait for.
- */
+/** The cap bounds the whole batch against the 350ms budget above; 35ms/row still reads as a ripple. */
 export const FEED_ROW_STAGGER_MS = 35
 export const FEED_ROW_STAGGER_MAX_MS = 140
 /** A mount this long after the batch started begins a NEW batch, at zero delay. */
 export const FEED_ROW_BATCH_MS = 120
 
 export interface FeedRowEntrance {
-  /** Play the entrance: this post has never been shown in this feed mount. */
   animate: boolean
-  /** How long the row waits before animating in, in ms (0 for the first row of a batch). */
   delay: number
 }
 
 /**
- * Who has already made an entrance, so the timeline animates each post EXACTLY ONCE.
- *
- * The feed is a virtualized FlatList: rows unmount when they leave the render window and remount when
- * they come back. Animating in a mount effect therefore replayed the fade/slide on every re-entry -
- * already-read posts blanked out and slid in again on the way back up. And keying the stagger to the
- * ABSOLUTE list index meant every row past the first screen mounted with the maxed-out delay, so a
- * freshly windowed post sat invisible for ~275ms mid-scroll.
- *
- * So: the entrance is claimed per post id (a recycled row renders fully visible on its first frame), and
- * the stagger counts position WITHIN THE CURRENT MOUNT BATCH - rows windowed in the same tick fan out
- * 0/55/110ms, and a batch that starts later starts at zero again.
+ * The feed is a virtualized FlatList, so rows remount on every re-entry: the entrance is claimed per post
+ * id so a recycled row renders fully visible instead of replaying. The stagger counts position within the
+ * current mount batch, not the list index, or every row past the first screen would wait the full cap.
  */
 export interface FeedEntranceTracker {
-  /** Whether this post has already been shown (a recycled row must not blank out and re-enter). */
   hasShown: (postId: string) => boolean
-  /** Claim this post's one entrance. Repeat claims (and recycled rows) resolve to no animation. */
   claim: (postId: string, now: number) => FeedRowEntrance
 }
 
@@ -97,4 +77,48 @@ export function feedViewState({
   if (isLoading) return "loading"
   if (isError) return "error"
   return "empty"
+}
+
+export type FeedFooterState = "loading-more" | "load-more-failed" | "caught-up" | "idle"
+
+/**
+ * A failed `fetchNextPage` leaves `hasNextPage` true and the list length unchanged, so FlatList never fires
+ * `onEndReached` again; the footer needs its own failed state or the feed silently stops.
+ */
+export function feedFooterState({
+  state,
+  isFetchingNextPage,
+  isFetchNextPageError,
+  hasNextPage,
+}: {
+  state: FeedViewState
+  isFetchingNextPage: boolean
+  isFetchNextPageError: boolean
+  hasNextPage: boolean
+}): FeedFooterState {
+  if (state !== "loaded") return "idle"
+  if (isFetchingNextPage) return "loading-more"
+  if (isFetchNextPageError) return "load-more-failed"
+  if (!hasNextPage) return "caught-up"
+  return "idle"
+}
+
+export type PostDetailViewState = "loading" | "error" | "ready"
+
+/**
+ * Only an actual failure (or no id at all) is an error. A query that is still pending but not fetching,
+ * such as one paused while offline, is still loading and must not read as "This post couldn't be loaded".
+ */
+export function postDetailViewState({
+  hasId,
+  hasData,
+  isError,
+}: {
+  hasId: boolean
+  hasData: boolean
+  isError: boolean
+}): PostDetailViewState {
+  if (hasData) return "ready"
+  if (isError || !hasId) return "error"
+  return "loading"
 }

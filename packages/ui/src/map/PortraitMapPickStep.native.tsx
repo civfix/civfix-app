@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BackHandler, Modal, View, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { space, makeThemedStyles } from "../theme"
@@ -13,11 +13,14 @@ import {
 import type { PortraitMapPickStepProps } from "./PortraitMapPickStep.types"
 
 const BOTTOM_BAR_CLEARANCE = 124
+const BAR_Z_INDEX = 10
+const LAYER_Z_INDEX = 20
 
 export function PortraitMapPickStep({
   visible,
   value,
   initialCenter,
+  centerSettled,
   onConfirm,
   onCancel,
   pin,
@@ -42,9 +45,11 @@ export function PortraitMapPickStep({
   )
 
   const onConfirmRef = useRef(onConfirm)
-  onConfirmRef.current = onConfirm
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  useLayoutEffect(() => {
+    onConfirmRef.current = onConfirm
+    onCancelRef.current = onCancel
+  })
 
   usePickStepSheetSnap(visible && presentation === "modal")
 
@@ -52,9 +57,9 @@ export function PortraitMapPickStep({
 
   const onPickPlace = useCallback(
     (place: AddressPick) => setLocalPoint({ lat: place.lat, lng: place.lng }),
-    [],
+    [setLocalPoint],
   )
-  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [])
+  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [setLocalPoint])
 
   const confirm = useCallback(() => {
     if (!localPoint) return
@@ -83,6 +88,7 @@ export function PortraitMapPickStep({
         value={localPoint}
         onChange={onMapDrop}
         initialCenter={initialCenter ?? undefined}
+        centerSettled={centerSettled}
         mode="standalone"
         interactive
         fullBleed
@@ -126,20 +132,20 @@ const useStyles = makeThemedStyles((t) => ({
     position: "absolute",
     left: t.space["3"],
     right: t.space["3"],
-    zIndex: 10,
-    elevation: 10,
+    zIndex: BAR_Z_INDEX,
+    elevation: BAR_Z_INDEX,
   },
   bottomBar: {
     position: "absolute",
     left: t.space["3"],
     right: t.space["3"],
-    zIndex: 10,
-    elevation: 10,
+    zIndex: BAR_Z_INDEX,
+    elevation: BAR_Z_INDEX,
   },
   layer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 20,
-    elevation: 20,
+    zIndex: LAYER_Z_INDEX,
+    elevation: LAYER_Z_INDEX,
     backgroundColor: t.colors.bg,
   },
 }))

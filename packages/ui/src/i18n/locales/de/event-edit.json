@@ -19,5 +19,9 @@
   "denied": {
     "title": "Nur Hosts, die diese Veranstaltung verwalten dürfen, können sie bearbeiten",
     "body": "Bitte den Gastgeber, die Angaben zu ändern, oder trag dich auf der Veranstaltungsseite für eine Aufgabe ein."
+  },
+  "signIn": {
+    "title": "Melde dich an, um diese Veranstaltung zu bearbeiten",
+    "body": "Hosts, die diese Veranstaltung verwalten, können ihre Details nach der Anmeldung ändern."
   }
 }

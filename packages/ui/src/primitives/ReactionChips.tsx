@@ -21,6 +21,13 @@ export interface ReactionChipsProps {
   disabled?: boolean
 }
 
+type CountStyleKey = "countMine" | "countMineSelected" | "countTheirs" | "countTheirsSelected"
+
+function countStyleKey(mineRow: boolean, chipMine: boolean): CountStyleKey {
+  if (mineRow) return chipMine ? "countMineSelected" : "countMine"
+  return chipMine ? "countTheirsSelected" : "countTheirs"
+}
+
 export function ReactionChips({ reactions, onToggle, mine, disabled = false }: ReactionChipsProps) {
   const styles = useStyles()
   const { t } = useT("conversation-reactions")
@@ -29,13 +36,7 @@ export function ReactionChips({ reactions, onToggle, mine, disabled = false }: R
   return (
     <View style={styles.row}>
       {chips.map((chip) => {
-        const countStyle = mine
-          ? chip.mine
-            ? styles.countMineSelected
-            : styles.countMine
-          : chip.mine
-            ? styles.countTheirsSelected
-            : styles.countTheirs
+        const countStyle = styles[countStyleKey(mine, chip.mine)]
         return (
           <Pressable
             key={chip.emoji}
@@ -72,13 +73,13 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: 4,
+    gap: t.space["1"],
     marginTop: 6,
   },
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: 7,
     height: 22,
     borderRadius: t.radius.pill,
@@ -99,7 +100,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.onAccent,
   },
   glyph: {
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     lineHeight: 15,
   },
   count: {

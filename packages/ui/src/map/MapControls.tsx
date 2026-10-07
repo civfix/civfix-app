@@ -1,20 +1,28 @@
-import React, { useEffect, useRef, useState } from "react"
+import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { space, useLayoutMode, focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
+import {
+  space,
+  useLayoutMode,
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+  HOVERED_OPACITY,
+} from "../theme"
 import { Brand, GlassButton, Avatar, openBrandAbout } from "../primitives"
 import { Text, Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
 import { useNavStore } from "../nav"
 import { useAuthState, useNotifications, useRequireAuth } from "../data"
-import { LayersPopover, LAYERS_POPOVER_ANIM_MS } from "./LayersPopover"
+import { LayersPopover, useLayersPopoverPresence } from "./LayersPopover"
 import { MapHeaderActions } from "./MapHeaderActions"
 import { MapThemeToggle } from "./MapThemeToggle"
 import { useReportFilterStore } from "./filterStore"
 import { useT } from "../i18n"
-import { HEADER_AVATAR_SIZE, HEADER_GLYPH_SIZE } from "../bodies/headerControls"
-import { MAP_ACTION_SIZE } from "../shell/expandedFramePlan"
-
-export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE
+import { HEADER_AVATAR_SIZE, HEADER_GLYPH_SIZE } from "../primitives/headerControls"
+import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"
 
 export interface MapControlsProps {
   topInset?: number
@@ -33,44 +41,7 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
   const layersOpen = useReportFilterStore((s) => s.layersOpen)
   const setLayersOpen = useReportFilterStore((s) => s.setLayersOpen)
 
-  const [isClosing, setIsClosing] = useState(false)
-  const prevOpenRef = useRef(layersOpen)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    const wasOpen = prevOpenRef.current
-    prevOpenRef.current = layersOpen
-    if (wasOpen && !layersOpen) {
-      setIsClosing(true)
-      if (closeTimer.current) clearTimeout(closeTimer.current)
-      closeTimer.current = setTimeout(() => {
-        setIsClosing(false)
-      }, LAYERS_POPOVER_ANIM_MS + 40)
-    } else if (!wasOpen && layersOpen) {
-      if (closeTimer.current) {
-        clearTimeout(closeTimer.current)
-        closeTimer.current = null
-      }
-      setIsClosing(false)
-    }
-  }, [layersOpen])
-
-  useEffect(
-    () => () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current)
-    },
-    [],
-  )
-
-  const onPopoverClosed = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current)
-      closeTimer.current = null
-    }
-    setIsClosing(false)
-  }
-
-  const popoverVisible = layersOpen || isClosing
+  const popover = useLayersPopoverPresence(layersOpen)
 
   const onBrand = () => openBrandAbout()
 
@@ -125,9 +96,9 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
           <ProfileEntry />
         </View>
 
-        {popoverVisible ? (
+        {popover.mounted ? (
           <View style={styles.topPopoverAnchor}>
-            <LayersPopover isClosing={isClosing} onClosed={onPopoverClosed} />
+            <LayersPopover isClosing={popover.isClosing} onClosed={popover.onClosed} />
           </View>
         ) : null}
       </View>
@@ -149,9 +120,9 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
           {layersButton}
         </View>
 
-        {popoverVisible ? (
+        {popover.mounted ? (
           <View style={styles.popoverAnchor}>
-            <LayersPopover isClosing={isClosing} onClosed={onPopoverClosed} />
+            <LayersPopover isClosing={popover.isClosing} onClosed={popover.onClosed} />
           </View>
         ) : null}
       </View>
@@ -183,13 +154,14 @@ function ProfileEntry() {
   const { user, isAuthenticated, isPending } = useAuthState()
   const requireAuth = useRequireAuth()
   const { t } = useT("map-ui")
+  const { t: tNav } = useT("nav")
 
   if (isPending) return null
 
   if (!isAuthenticated) {
     return (
       <Pressable
-        onPress={() => requireAuth(() => {})}
+        onPress={() => requireAuth(() => useNavStore.getState().push({ kind: "profile" }))}
         accessibilityRole="button"
         accessibilityLabel={t("profile.signIn")}
         hitSlop={6}
@@ -226,7 +198,7 @@ function ProfileEntry() {
       ]}
     >
       <Avatar
-        name={user?.displayName ?? "You"}
+        name={user?.displayName ?? tNav("fallback_you")}
         photoUrl={user?.avatarUrl ?? null}
         seed={user?.id}
         size={HEADER_AVATAR_SIZE}
@@ -305,7 +277,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   hovered: {
-    opacity: 0.85,
+    opacity: HOVERED_OPACITY,
   },
   pressed: {
     opacity: 0.9,

@@ -1,11 +1,13 @@
 import { z } from "zod"
 import {
   CleanupMemberRoleSchema,
+  EMAIL_MAX_LENGTH,
   IdSchema,
   ISODateSchema,
   pageResponse,
   PaginationQuerySchema,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import { CleanupDTOSchema, InviteEventRefSchema, PersonDTOSchema } from "../entities.js"
 
 
@@ -70,7 +72,7 @@ export const InviteEventTeamMemberRequestSchema = z
   .object({
     id: IdSchema,
     identifierKind: EventTeamInviteIdentifierKindSchema,
-    identifier: z.string().trim().min(1).max(254),
+    identifier: z.string().trim().min(1).max(EMAIL_MAX_LENGTH),
     role: EventTeamRoleSchema,
   })
   .strict()
@@ -89,10 +91,9 @@ export const RevokeEventTeamInviteRequestSchema = z
   .strict()
 export type RevokeEventTeamInviteRequest = z.infer<typeof RevokeEventTeamInviteRequestSchema>
 
-const RevokeEventTeamInviteResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RevokeEventTeamInviteResponse = z.infer<typeof RevokeEventTeamInviteResponseObjectSchema>
+export type RevokeEventTeamInviteResponse = z.infer<typeof OkResponseSchema>
 export const RevokeEventTeamInviteResponseSchema: z.ZodType<RevokeEventTeamInviteResponse, z.ZodTypeDef, unknown> =
-  RevokeEventTeamInviteResponseObjectSchema
+  OkResponseSchema
 
 export const ACCEPT_TEAM_INVITE_TOKEN_MIN = 20
 export const ACCEPT_TEAM_INVITE_TOKEN_MAX = 128
@@ -148,7 +149,6 @@ export const AcceptMyEventInviteResponseSchema: z.ZodType<AcceptMyEventInviteRes
 export const DeclineMyEventInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
 export type DeclineMyEventInviteRequest = z.infer<typeof DeclineMyEventInviteRequestSchema>
 
-const DeclineMyEventInviteResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type DeclineMyEventInviteResponse = z.infer<typeof DeclineMyEventInviteResponseObjectSchema>
+export type DeclineMyEventInviteResponse = z.infer<typeof OkResponseSchema>
 export const DeclineMyEventInviteResponseSchema: z.ZodType<DeclineMyEventInviteResponse, z.ZodTypeDef, unknown> =
-  DeclineMyEventInviteResponseObjectSchema
+  OkResponseSchema

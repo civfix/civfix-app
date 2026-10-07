@@ -115,5 +115,11 @@
     "partial_other": "{{count}} no se pudieron completar.",
     "export_hint": "Exportar",
     "export_reason": "Las exportaciones cubren todo el evento, no una selección. Usa el botón Exportar de arriba."
+  },
+  "bulk_remove": {
+    "title_one": "¿Quitar {{count}} inscripción?",
+    "title_other": "¿Quitar {{count}} inscripciones?",
+    "body_one": "{{count}} inscripción perderá sus plazas. La persona podrá volver a inscribirse mientras la inscripción siga abierta.",
+    "body_other": "{{count}} inscripciones perderán sus plazas. Esas personas podrán volver a inscribirse mientras la inscripción siga abierta."
   }
 }

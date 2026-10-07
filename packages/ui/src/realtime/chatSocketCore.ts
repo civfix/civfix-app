@@ -12,6 +12,10 @@ import type { ChatSocketCoreOptions, WsConnection, WsTransport } from "./types"
 
 const WS_OPEN = 1
 
+const DEFAULT_BASE_BACKOFF_MS = 1_000
+
+const DEFAULT_MAX_BACKOFF_MS = 15_000
+
 function roomKeyOf(roomId: string, roomKind: RoomKind): string {
   return `${roomKind}:${roomId}`
 }
@@ -56,8 +60,8 @@ export class ChatSocketCore implements ChatSocketLike {
 
   constructor(options: ChatSocketCoreOptions) {
     this.transport = options.transport
-    this.baseBackoffMs = options.baseBackoffMs ?? 1000
-    this.maxBackoffMs = options.maxBackoffMs ?? 15000
+    this.baseBackoffMs = options.baseBackoffMs ?? DEFAULT_BASE_BACKOFF_MS
+    this.maxBackoffMs = options.maxBackoffMs ?? DEFAULT_MAX_BACKOFF_MS
     this.retryWhenUnavailable = options.retryWhenUnavailable ?? false
     this.queueWhileClosed = options.queueWhileClosed ?? false
     this.teardownPolicy = options.teardownPolicy ?? "intent"
@@ -171,14 +175,22 @@ export class ChatSocketCore implements ChatSocketLike {
         this.socket!.send(JSON.stringify(frame))
         return "sent"
       } catch {
-        if (!this.queueWhileClosed) return "dropped"
-        this.sendQueue.push(frame)
-        return "queued"
+        // A socket that reports OPEN but throws on send never fires onclose by itself, so a queued
+        // frame would wait for an unrelated close. Recycle it so the queue flushes on the next open.
+        this.closeSocket()
+        this.scheduleReconnect()
+        return this.enqueue(frame)
       }
     }
-    if (!this.queueWhileClosed) return "dropped"
+    const outcome = this.enqueue(frame)
+    if (outcome === "queued") this.ensureOpen()
+    return outcome
+  }
+
+  private enqueue(frame: WsClientMessage): ChatSendOutcome {
+    // Typing is ephemeral: flushed after a reconnect it would show peers a stale indicator.
+    if (!this.queueWhileClosed || frame.type === "typing") return "dropped"
     this.sendQueue.push(frame)
-    this.ensureOpen()
     return "queued"
   }
 
@@ -275,6 +287,7 @@ export class ChatSocketCore implements ChatSocketLike {
     }
 
     socket.onerror = () => {
+      // Every error is followed by a close event, and onclose owns the reconnect.
     }
 
     socket.onclose = () => {

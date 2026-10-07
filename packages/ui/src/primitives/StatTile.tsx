@@ -1,9 +1,10 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
+import { useT } from "../i18n"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { TrendSparkline } from "./TrendSparkline"
-import { statValueSize, STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
+import { statTileSpokenLabel, statValueSize, STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
 import type { SparkPoint } from "./trendSparklineModel"
 
 export const STAT_TILE_MIN_HEIGHT = 88
@@ -43,14 +44,16 @@ export function StatTile({
   accessibilityLabel,
 }: StatTileProps) {
   const styles = useStyles()
+  const { t } = useT("common")
   const columns = React.useContext(StatTileColumnsContext)
   const shown = value ?? STAT_VALUE_UNKNOWN
   const size = statValueSize(value, columns)
   return (
     <View
       style={styles.tile}
-      accessibilityLabel={accessibilityLabel ?? `${label}: ${shown}`}
-      accessibilityRole="summary"
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={accessibilityLabel ?? statTileSpokenLabel(label, value, t("stat_unknown"))}
     >
       <Text variant="caption" numberOfLines={2} style={styles.label}>
         {label}
@@ -92,7 +95,10 @@ export function StatTileRow({ children, columns = 2 }: StatTileRowProps) {
     <StatTileColumnsContext.Provider value={columns}>
       <View style={styles.row}>
         {cells.map((cell, index) => (
-          <View key={index} style={[styles.cell, { flexBasis: CELL_BASIS[columns] }]}>
+          <View
+            key={React.isValidElement(cell) && cell.key != null ? cell.key : index}
+            style={[styles.cell, { flexBasis: CELL_BASIS[columns] }]}
+          >
             {cell}
           </View>
         ))}

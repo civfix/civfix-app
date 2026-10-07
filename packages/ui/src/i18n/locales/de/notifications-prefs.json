@@ -30,5 +30,6 @@
       "label": "Neue Follower",
       "helper": "Wenn jemand dir auf civfix folgt."
     }
-  }
+  },
+  "save_error": "Diese Änderung konnte nicht gespeichert werden. Versuche es erneut."
 }

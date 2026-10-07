@@ -1,17 +1,10 @@
 /**
- * The mobile sheet -> PAGE presentation seam (`resolveBodyLayout` + `SHEET_ONLY_KINDS`).
+ * The sheet-to-page presentation seam (`resolveBodyLayout` + `SHEET_ONLY_KINDS`). The flag is a plain
+ * parameter so both values are testable here without a bundler, renderer or mock.
  *
- * WHY THIS FILE EXISTS AT ALL. `bodyLayout` is shared by civfix-web and civfix-mobile, and
- * `DETAILS_ARE_FULL_PAGE` is now true on both. The flag is a plain parameter precisely so both values can
- * be passed here without a bundler, a renderer or a mock.
- *
- * The two halves are deliberately different in kind:
- *   - the INVARIANTS (drop-pin is never a page, the dock never shows over a detail, `home-view` never
- *     converts, the resolver is the identity at flag=false) must hold in every wave, forever;
- *   - the WAVE MARKER below pins WHICH kinds have converted. It read "armed but NOT FIRED" while the
- *     seam shipped ahead of the conversion; it now reads "FIRED, everything but the permanent
- *     exemption", which is the same assertion with the exemption set narrowed to its floor. It is the
- *     one assertion here that is EXPECTED to be edited again if a kind is ever parked back on the sheet.
+ * The invariants (drop-pin is never a page, the dock never shows over a detail, `home-view` never
+ * converts, the resolver is the identity at flag=false) must always hold. The exemption-set marker below
+ * is the one assertion expected to change if a kind is ever parked back on the sheet.
  */
 import { describe, expect, it } from "vitest"
 import type { DetailEntry, DetailKind, View } from "../../nav"
@@ -27,7 +20,7 @@ import {
   topmostFullEntry,
 } from "../bodyLayout"
 
-/** A minimal valid entry for a kind - every kind's extra fields are optional on DetailEntry. */
+/** Every kind's extra fields are optional on DetailEntry. */
 const entryFor = (kind: DetailKind): DetailEntry =>
   ({ kind, id: "x", lat: 1, lng: 2 }) as DetailEntry
 
@@ -50,8 +43,8 @@ describe("resolveBodyLayout - the sheet/page seam", () => {
   })
 
   it("leaves the EXEMPT kinds exactly as the table declares them", () => {
-    // Reading the table (rather than asserting the literal "scroll") is the point: an exempt kind that is
-    // already "full" must not be silently demoted to a sheet by being listed here.
+    // Read from the table, not the literal "scroll": an exempt kind that is already "full" must not be
+    // demoted to a sheet by being listed here.
     for (const kind of ALL_DETAIL_KINDS) {
       if (!SHEET_ONLY_KINDS.has(kind)) continue
       expect(resolveBodyLayout(kind, true), kind).toBe(BODY_LAYOUT[kind])
@@ -64,10 +57,8 @@ describe("resolveBodyLayout - the sheet/page seam", () => {
   })
 
   it("keeps `drop-pin` a SHEET forever - the one true casualty", () => {
-    // The drop-pin menu's whole purpose is the coral pin visible in the map strip BESIDE it, and the
-    // camera offset is computed from the live sheet detents (map/dropPinCamera's `occludedHeight(
-    // sheetSnapPoints(...), sheetDetent)`, map/dropPinFlow settling at MID). A page covers the map: the
-    // pin is invisible and the camera math is meaningless. This assertion must survive every wave.
+    // The drop-pin menu exists for the pin visible in the map strip beside it, and dropPinCamera's
+    // offset is computed from the live sheet detents. A page would cover the map and the pin.
     expect(SHEET_ONLY_KINDS.has("drop-pin")).toBe(true)
     expect(resolveBodyLayout("drop-pin", true)).toBe("scroll")
     expect(resolveBodyLayout("drop-pin", false)).toBe("scroll")
@@ -86,23 +77,15 @@ describe("resolveBodyLayout - the sheet/page seam", () => {
     }
   })
 
-  // ---- THE WAVE MARKER. Expected to change; everything above is not. ----
+  // Expected to change if a kind is re-exempted; everything above is not.
   it("THE CONVERSION HAS FIRED: every pull-up except the permanent exemption is a PAGE on native", () => {
-    // The post-fire counterpart of the "armed but NOT FIRED" guard this file shipped with. All three
-    // waves (pure content / map-coupled / flows) landed in ONE pass because the request was categorical,
-    // so the exemption set is now at its floor: the exact PERMANENT_SHEET_KINDS list and nothing else.
-    //
-    // Stated as an equality rather than a subset on purpose. A subset check would pass just as happily if
-    // a future edit quietly parked half a dozen kinds back on the sheet; this fails, and the failure names
-    // the kinds - so re-exempting anything stays a visible, intentional edit, exactly as firing a wave was.
+    // An equality rather than a subset, so parking kinds back on the sheet fails and names them.
     expect([...SHEET_ONLY_KINDS]).toEqual(["drop-pin"])
-    // Every kind the table calls a pull-up, except that one, now presents as a page on native...
     for (const kind of SCROLL_KINDS) {
       if (kind === "drop-pin") continue
       expect(resolveBodyLayout(kind, true), kind).toBe("full")
     }
-    // ...and the SHEET path did not move an inch with it (the web guarantee, restated at the wave marker
-    // because this is the assertion a future wave edits, and it must not be able to drag web along).
+    // Restated here so an edit to this marker cannot drag the sheet path along with it.
     for (const kind of ALL_DETAIL_KINDS) {
       expect(resolveBodyLayout(kind, false), kind).toBe(BODY_LAYOUT[kind])
     }
@@ -113,10 +96,7 @@ describe("portraitShellPlan in PAGE mode", () => {
   const page = (view: View, active: DetailEntry | null) => portraitShellPlan(view, active, true)
 
   it("HIDES the dock over EVERY detail, page or sheet, on every view", () => {
-    // The invariant the presentation-derived gate exists for. In sheet mode a table-"full" kind outside
-    // the hard-coded three-kind literal (thread / pinned-messages / new-group / new-channel) KEPT the
-    // dock; converting ~24 more kinds that way would have floated it over every one of them, where its
-    // re-tap-deselect semantics fight the page's own Back.
+    // The dock's re-tap-deselect semantics would fight a page's own Back.
     for (const view of ["home", "map", "messaging", "report", "search", "social"] as const) {
       for (const kind of ALL_DETAIL_KINDS) {
         const result = page(view, entryFor(kind))
@@ -128,9 +108,8 @@ describe("portraitShellPlan in PAGE mode", () => {
 
   it("RESTORES the dock the moment there is no detail (the gate is about details, not about pages)", () => {
     for (const view of ["home", "map", "messaging", "report", "search", "social"] as const) {
-      // A BARE view is identical in both modes - asserted as a whole plan (not field by field) so a
-      // future field cannot drift the two apart unnoticed. The Report tab is the one that matters:
-      // portrait-shell.test's WS3 guard depends on it keeping its dock.
+      // Asserted as a whole plan so a future field cannot drift the two modes apart. The Report tab
+      // must keep its dock.
       expect(page(view, null), view).toEqual(portraitShellPlan(view, null))
       expect(page(view, null).bottomChromeVisible, view).toBe(true)
       expect(page(view, null).detailPresentation, view).toBe("none")
@@ -142,7 +121,7 @@ describe("portraitShellPlan in PAGE mode", () => {
       const expected = SHEET_ONLY_KINDS.has(kind) ? "sheet" : "full"
       expect(page("home", entryFor(kind)).detailPresentation, kind).toBe(expected)
     }
-    // The seven own-header bodies were already pages and stay pages in either mode.
+    // The own-header bodies are pages in either mode.
     for (const kind of FULL_KINDS) {
       expect(page("home", entryFor(kind)).detailPresentation, kind).toBe("full")
       expect(portraitShellPlan("home", entryFor(kind)).detailPresentation, kind).toBe("full")
@@ -158,7 +137,7 @@ describe("portraitShellPlan in PAGE mode", () => {
 
   it("keeps shell keyboard avoidance the COMPOSER's alone, in both modes", () => {
     // Presentation is not ownership: the composer owns the shell's keyboard inset because it has a docked
-    // input, and post-thread / person deliberately do not (see portrait-shell.test's regression guard).
+    // input; post-thread and person deliberately do not.
     expect(page("home", { kind: "composer" }).surfaceKeyboardAvoidance).toBe(true)
     expect(page("home", { kind: "post-thread", id: "p" }).surfaceKeyboardAvoidance).toBe(false)
     expect(page("home", { kind: "profile" }).surfaceKeyboardAvoidance).toBe(false)
@@ -171,7 +150,6 @@ describe("the overlay layer in PAGE mode", () => {
       const entry = entryFor(kind)
       const expected = resolveBodyLayout(kind, true) === "full" ? entry : null
       expect(topmostFullEntry([entry], true), kind).toEqual(expected)
-      // ...and at flag=false the answer is the table's, unchanged.
       expect(topmostFullEntry([entry], false), kind).toEqual(
         BODY_LAYOUT[kind] === "full" ? entry : null,
       )
@@ -187,10 +165,8 @@ describe("the overlay layer in PAGE mode", () => {
   })
 
   it("reserves NO dock footprint for a page - the bottom safe area is the shell's job instead", () => {
-    // `frame.overlay.bottomInset` is the DOCK's footprint, and the dock is hidden over every detail in
-    // page mode, so it is 0 - which is exactly why PortraitShell.shared falls back to `bottomSafeArea`
-    // (insets.bottom on native, 0 on web). Without that fallback a converted page's last row would run
-    // under the home indicator.
+    // `overlay.bottomInset` is the hidden dock's footprint (0), which is why PortraitShell.shared falls
+    // back to `bottomSafeArea`; otherwise a page's last row would run under the home indicator.
     const active: DetailEntry = { kind: "person", id: "p" }
     const frame = portraitFramePlan(
       "social",
@@ -205,23 +181,14 @@ describe("the overlay layer in PAGE mode", () => {
     expect(frame.overlay.bottomInset).toBe(0)
     expect(frame.sheet.visible).toBe(false)
     expect(frame.bottomChrome.visible).toBe(false)
-    // The BASE surface keeps its footprint regardless: the dock's absence is a paint decision, and the
-    // base is not what the user is looking at.
+    // The dock's absence is a paint decision, and the base is not what the user is looking at.
     expect(frame.base.bottomInset).toBe(80)
   })
 
   it("NO CONVERTED KIND MAY BE HEADERLESS - a page with no header has no exit at all", () => {
-    // The trap this whole workstream exists to avoid, stated as a gate on the NEXT wave rather than as
-    // prose in a risk list. A page has no drag and the dock is hidden over it, so the shell header's
-    // leading chip is the only way off. `titleForEntry` has exactly three outcomes:
-    //   "title.x" -> the shell draws the bar.                                                    OK
-    //   " "       -> the BODY owns a header (the seven own-header full bodies).                  OK
-    //   ""        -> nothing draws anything.                                              TRAPPED USER
-    // `blend` WAS the live hazard and is what this guard caught: its title was `entry.event?.title ?? ""`,
-    // i.e. DATA-dependent, so a blend entry that arrived before (or without) its event produced the blank.
-    // Wave B could not fire until it had a real fallback, and `nav/routes.ts` now returns the existing
-    // `title.cleanup` key when the event title is missing. Note this runs on a MINIMAL entry - no `event`
-    // field at all - so it exercises precisely that fallback rather than the happy path.
+    // A page has no drag and the dock is hidden, so the header's leading chip is the only way off.
+    // `titleForEntry` returning "" means nothing draws a header: a trapped user. The minimal entry has no
+    // `event` field, so this exercises data-dependent titles' fallbacks (such as `blend`'s).
     for (const kind of ALL_DETAIL_KINDS) {
       if (SHEET_ONLY_KINDS.has(kind)) continue
       expect(
@@ -232,11 +199,9 @@ describe("the overlay layer in PAGE mode", () => {
   })
 
   it("still lets the surviving SHEET ride over a retained page (the layering machinery outlives the waves)", () => {
-    // The overlay's `interactive` gate exists for a sheet riding ABOVE a still-mounted full body: the
-    // sheet card leaves a bare strip at the top of the screen, and a tap there must not reach the page
-    // behind it. Now that everything but `drop-pin` is a page, drop-pin is the only sheet that can ever
-    // be the upper half of that pair - so it is the one the assertion uses. The lower half stays a page
-    // and must stay PAINTED (not unmounted, revealing the base view) while the sheet is up.
+    // A sheet over a still-mounted page leaves a bare strip at the top, and a tap there must not reach
+    // the page, which must stay painted rather than unmount and reveal the base. drop-pin is the only
+    // sheet that can be the upper half.
     const stack: DetailEntry[] = [{ kind: "composer" }, { kind: "drop-pin", lat: 1, lng: 2 }]
     const active = stack[1]!
     const shell = portraitShellPlan("home", active, true)
@@ -249,9 +214,8 @@ describe("the overlay layer in PAGE mode", () => {
   })
 
   it("hands the frame BOTH shapes, and they cannot disagree about the top", () => {
-    // `entry` is what the WEB overlay renders and `entries` is what the native page stack mounts; both
-    // come from ONE `fullEntryStack` scan in `portraitFramePlan`, so the web body is by construction the
-    // last layer. A second scan (or a re-derived `topmostFullEntry` call) is exactly how they would drift.
+    // `entry` (the web overlay) and `entries` (the native page stack) come from one `fullEntryStack` scan;
+    // a second scan is how they would drift.
     const stack: DetailEntry[] = [{ kind: "profile" }, { kind: "followers", id: "u1" }]
     const active = stack[1]!
     const frame = portraitFramePlan(
@@ -272,10 +236,8 @@ describe("the overlay layer in PAGE mode", () => {
   })
 
   it("gives a CONVERTED kind on top of a page the overlay layer outright (no sheet is left to ride)", () => {
-    // The mirror of the case above, and the one the waves actually created: `create-cleanup` used to ride
-    // as a sheet over the composer page ("+ New event" from the composer) and is now a page itself, so it
-    // TAKES the overlay layer rather than floating over it. `topmostFullEntry` scanning from the top is
-    // what makes that correct - the newest page wins, and Back re-reveals the composer underneath.
+    // `create-cleanup` opened from the composer is a page itself, so it takes the overlay layer: the
+    // newest page wins and Back re-reveals the composer underneath.
     const stack: DetailEntry[] = [{ kind: "composer" }, { kind: "create-cleanup" }]
     const active = stack[1]!
     const shell = portraitShellPlan("home", active, true)
@@ -288,12 +250,9 @@ describe("the overlay layer in PAGE mode", () => {
 })
 
 /**
- * `fullEntryStack` - the derivation the native PAGE STACK is mounted from.
- *
- * `topmostFullEntry` answered "which ONE body owns the overlay layer", which is all a hard cut needs. A
- * pop cannot be animated against a page that was never mounted, so the whole list is now the primitive
- * and the old function is its last element. These tests exist to keep that relationship exact: the moment
- * the two are derived separately, the page the shell ANIMATES and the page it RENDERS can disagree.
+ * A pop cannot animate against a page that was never mounted, so the whole list is the primitive and
+ * `topmostFullEntry` is its last element. Derived separately, the page the shell animates and the page it
+ * renders could disagree.
  */
 describe("fullEntryStack - the page stack itself", () => {
   it("is EXACTLY the entries `topmostFullEntry` would have scanned, in stack order", () => {
@@ -307,8 +266,6 @@ describe("fullEntryStack - the page stack itself", () => {
   })
 
   it("keeps `topmostFullEntry` its LAST element at both flag values - one scan, two answers", () => {
-    // The equivalence that makes growing the frame plan safe: every historic caller and assertion of
-    // `topmostFullEntry` still gets the identical value, because it is now literally derived from this.
     const stacks: DetailEntry[][] = [
       [],
       [{ kind: "view", view: "map" }],
@@ -342,9 +299,9 @@ describe("fullEntryStack - the page stack itself", () => {
       { kind: "profile" },
       { kind: "drop-pin", lat: 1, lng: 2 },
     ]
-    // In PAGE mode the drop-pin sheet is the only thing filtered out besides the route entry...
+    // In page mode only the drop-pin sheet is filtered out besides the route entry.
     expect(fullEntryStack(stack, true)).toEqual([{ kind: "profile" }])
-    // ...and in SHEET mode (web) `profile` is a pull-up too, so nothing claims the layer.
+    // In sheet mode `profile` is a pull-up too, so nothing claims the layer.
     expect(fullEntryStack(stack, false)).toEqual([])
   })
 

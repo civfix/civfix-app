@@ -159,7 +159,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },
@@ -168,7 +168,7 @@ const useStyles = makeThemedStyles((t) => ({
     textAlign: "center",
     flexShrink: 0,
     fontFamily: t.fontFamily.displayBold,
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     color: t.colors.textSubtle,
   },
   meta: {
@@ -183,7 +183,7 @@ const useStyles = makeThemedStyles((t) => ({
   name: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {
@@ -195,7 +195,7 @@ const useStyles = makeThemedStyles((t) => ({
   hours: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.accentText,
   },
   footer: {

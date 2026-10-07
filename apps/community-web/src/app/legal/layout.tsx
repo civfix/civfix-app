@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 
-// Long-form document styling for every /legal/* route. Imported once here (the route-group layout) so
-// each document page stays content-only. See src/app/legal/legal.css.
+// Imported once in the layout so every /legal/* document page stays content-only.
 import "./legal.css"
 
 export const metadata: Metadata = {

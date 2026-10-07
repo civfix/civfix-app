@@ -18,11 +18,15 @@
     "video": "Video",
     "image_unavailable": "Imagen no disponible",
     "video_unavailable": "Video no disponible",
-    "remove_attachment": "Quitar adjunto"
+    "remove_attachment_n_one": "Quitar el adjunto {{index}} de {{count}}",
+    "remove_attachment_n_other": "Quitar el adjunto {{index}} de {{count}}",
+    "uploading": "Subiendo"
   },
   "verification_code": {
     "label": "Código de verificación",
-    "hint": "Abre el teclado para escribir el código"
+    "hint": "Abre el teclado para escribir el código",
+    "progress_one": "{{count}} de {{total}} dígitos escritos",
+    "progress_other": "{{count}} de {{total}} dígitos escritos"
   },
   "post_actions": {
     "like": "Me gusta",
@@ -37,5 +41,21 @@
   },
   "wizard_step_count": "Paso {{current}} de {{total}}",
   "verified_badge": "Verificado",
-  "org_affiliation": "Afiliado a {{name}}"
+  "org_affiliation": "Afiliado a {{name}}",
+  "attach_error": {
+    "busy": "Espera a que termine de subirse el archivo adjunto actual.",
+    "limit_one": "Solo puedes adjuntar {{count}} a la vez.",
+    "limit_other": "Puedes adjuntar hasta {{count}} a la vez.",
+    "library": "No se pudo abrir la galería de fotos.",
+    "camera": "No se pudo abrir la cámara.",
+    "rejected": "No se pudo usar ese archivo. Prueba con otra foto o video.",
+    "rate_limited": "Demasiadas subidas. Espera un momento e inténtalo de nuevo.",
+    "upload": "No se pudo subir ese archivo adjunto."
+  },
+  "stat_unknown": "No disponible",
+  "qr_ticket": {
+    "unavailable": "No se pudo generar el código QR. Muestra el código de abajo."
+  },
+  "caption_remaining_a11y_one": "Queda {{count}} carácter",
+  "caption_remaining_a11y_other": "Quedan {{count}} caracteres"
 }

@@ -62,7 +62,7 @@ function fakeClient(overrides: Record<string, unknown> = {}) {
 }
 
 test("parseServiceAccount accepts a service account key and rejects anything else", () => {
-  assert.equal(parseServiceAccount(JSON.stringify(account)).client_email, account.client_email)
+  assert.equal((parseServiceAccount(JSON.stringify(account)) as typeof account).client_email, account.client_email)
   assert.throws(() => parseServiceAccount("{not json"), PlayError)
   assert.throws(() => parseServiceAccount(JSON.stringify({ type: "authorized_user" })), /not a service account key/)
 })

@@ -44,11 +44,10 @@ describe("the onboarding-tour presenter seam", () => {
     expect(calls).toBe(1)
   })
 
-  it("is exported from the bodies barrel, types included", () => {
+  it("exports the host-facing setter from the bodies barrel, types included", () => {
     const barrel = read("../index.ts")
     expect(barrel).toContain("setOnboardingTourPresenter")
-    expect(barrel).toContain("getOnboardingTourPresenter")
-    expect(barrel).toContain("useOnboardingTourPresenter")
+    expect(barrel).not.toContain("getOnboardingTourPresenter")
     expect(barrel).toContain('export type { OnboardingTourPresenter } from "./onboardingTour"')
   })
 })
@@ -74,7 +73,7 @@ describe("Settings > App carries the tour row only when a host registers a prese
   })
 
   it("takes Compass from the shared icon map rather than a one-off glyph", () => {
-    expect(read("../../typography/icon-map.ts")).toContain('| "Compass"')
+    expect(read("../../typography/iconMap.ts")).toContain('| "Compass"')
   })
 
   it("has the row's copy in all four settings catalogs", () => {

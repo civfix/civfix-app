@@ -1,15 +1,19 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const searchBody = strip(read("../SearchBody.tsx"))
-const searchResults = strip(read("../SearchResults.tsx"))
+const searchBody = strip(surfaceSource("search"))
+const searchResults = strip(read("../search/SearchResults.tsx"))
 const leaderboardRow = strip(read("../LeaderboardRow.tsx"))
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
 const composer = strip(read("../conversation/ConversationComposer.tsx"))
-const convoStyles = strip(read("../conversation/styles.ts"))
+const convoStyles = strip(read("../conversation/transcriptStyles.ts"))
+const composerStyles = strip(read("../conversation/composerStyles.ts"))
 const reportRow = strip(read("../ReportRow.tsx"))
 const events = strip(read("../EventsBody.tsx"))
 const people = strip(read("../SocialBody.tsx"))
@@ -78,9 +82,7 @@ describe("the chat composer has a visible focus state", () => {
   })
 
   it("uses the same tokens the search field's ring uses", () => {
-    expect(convoStyles).toMatch(
-      /inputFocused:\s*Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: t\.colors\.accent \}/,
-    )
+    expect(composerStyles).toMatch(/inputFocused: inputFocusedStyle\(t, \{\}\),/)
   })
 })
 
@@ -93,9 +95,10 @@ describe("the coral links keep their contrast in EVERY state", () => {
 })
 
 describe("coral TEXT is accentText", () => {
-  it("the landscape link ink clears AA, and portrait's is layered rather than forked away", () => {
-    expect(searchBody).toMatch(/clearLabelExpanded: \{ color: t\.colors\.accentText \}/)
-    expect(searchBody).toContain("expanded ? styles.clearLabelExpanded : null")
+  it("the link ink clears AA in every layout, not only landscape", () => {
+    expect(searchBody).toMatch(/clearLabel: \{\s*color: t\.colors\.accentText,/)
+    expect(searchBody).not.toContain('t.colors.bloom["600"]')
+    expect(searchBody).not.toContain("clearLabelExpanded")
   })
 })
 

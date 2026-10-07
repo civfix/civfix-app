@@ -89,7 +89,10 @@
     "error_subject": "Add a subject.",
     "error_body": "Write the message.",
     "error_audience": "Choose who receives this.",
-    "error_channels": "Choose at least one channel."
+    "error_channels": "Choose at least one channel.",
+    "save_before_send": "Save your changes before you send, test or schedule this message.",
+    "schedule_not_in_zone": "That time does not exist in {{zone}} because the clocks change. Pick another time.",
+    "schedule_zone_hint": "Sends at this time in the event's time zone ({{zone}})."
   },
   "audience": {
     "all_registered": "Everyone registered",
@@ -204,6 +207,7 @@
     "error_conflict": "This event is closed to announcements.",
     "error_validation": "Please check the title, the message and any links.",
     "error_held": "This announcement was held for review.",
-    "error_generic": "Your announcement could not be sent. Please try again."
+    "error_generic": "Your announcement could not be sent. Please try again.",
+    "see_all_open": "All announcements"
   }
 }

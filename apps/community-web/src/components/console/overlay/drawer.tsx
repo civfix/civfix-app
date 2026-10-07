@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 
 import { ConsoleIconButton } from "../button"
 import { useIsNarrow, useMediaQuery, CONSOLE_DRAWER_SHRINK_QUERY } from "../use-media-query"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export type DrawerSize = "sm" | "md" | "lg"
@@ -52,7 +53,7 @@ export function Drawer({
   const modal = narrow || !wide
 
   useEscape(open, onClose)
-  useFocusTrap(panelRef, open && modal)
+  useFocusTrap(panelRef, open, modal)
 
   if (!open || typeof document === "undefined") return null
 
@@ -66,8 +67,8 @@ export function Drawer({
       className={cn(
         "pointer-events-auto flex flex-col bg-console-surface",
         narrow
-          ? "fixed inset-0 z-50 animate-in slide-in-from-bottom duration-d3 ease-out"
-          : "fixed bottom-0 right-0 top-0 z-50 border-l border-console-line shadow-console-3 animate-in slide-in-from-right duration-d2 ease-out",
+          ? "fixed inset-0 z-console-sheet animate-in slide-in-from-bottom duration-d3 ease-out"
+          : "fixed bottom-0 right-0 top-0 z-console-sheet border-l border-console-line shadow-console-3 animate-in slide-in-from-right duration-d2 ease-out",
         className,
       )}
       style={narrow ? undefined : { width: DRAWER_WIDTH[size], maxWidth: "100vw" }}
@@ -121,15 +122,9 @@ export function Drawer({
   )
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-0 z-50">
+    <div className="pointer-events-none fixed inset-0 z-console-sheet">
       {modal ? (
-        <button
-          type="button"
-          aria-hidden
-          tabIndex={-1}
-          onClick={onClose}
-          className="pointer-events-auto absolute inset-0 bg-console-scrim animate-in fade-in duration-d2"
-        />
+        <Scrim onDismiss={onClose} className="pointer-events-auto" />
       ) : null}
       {panel}
     </div>,

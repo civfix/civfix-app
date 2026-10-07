@@ -51,7 +51,6 @@ export function OnboardingGate({
     completedVersion,
     currentVersion: ONBOARDING_VERSION,
     replayRequested,
-    fontsReady: !gateActive,
     gateActive,
     authStatus: status,
     profileIncomplete,

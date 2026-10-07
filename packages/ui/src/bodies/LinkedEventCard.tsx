@@ -1,19 +1,28 @@
 import React, { useMemo, useState } from "react"
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
+import {
+  MIN_TOUCH_TARGET,
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
+import { DateTile } from "../primitives/DateBadge"
 import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,
+  visibleAttendeeSlots,
   type LinkedEventCardModel,
 } from "./linkedEventCardModel"
 import { hasEventEnded } from "./eventLifecycle"
-export { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
 
 export type LinkedEventCardVariant = "feed" | "detail"
 
@@ -40,7 +49,7 @@ function AttendeeStack({
 }) {
   const styles = useStyles()
   const t = useTheme()
-  const visibleCount = Math.min(3, Math.max(model.attendeePreview.length, Math.min(3, model.going)))
+  const visibleCount = visibleAttendeeSlots(model.attendeePreview.length, model.going)
 
   return (
     <View style={styles.attendeeGroup} accessible={false}>
@@ -97,11 +106,12 @@ function EventCardFooter({
 }) {
   const styles = useStyles()
   const join = useJoinCleanup(eventId)
+  const { mutate: mutateJoin } = join
   const [footerWidth, setFooterWidth] = useState<number | null>(null)
   const showAvatars = footerWidth === null || footerWidth >= FOOTER_STACK_MIN_WIDTH
   const onToggle = React.useCallback(
-    (currentlyGoing: boolean) => join.mutate(currentlyGoing),
-    [join],
+    (currentlyGoing: boolean) => mutateJoin(currentlyGoing),
+    [mutateJoin],
   )
   const onLayout = React.useCallback((event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width
@@ -185,10 +195,7 @@ export function LinkedEventCard({
           state.pressed && onPress ? styles.pressed : null,
         ]}
       >
-        <View style={[styles.dateChip, isList ? styles.dateChipList : null]}>
-          <Text style={styles.month}>{model.month}</Text>
-          <Text style={styles.day}>{model.day}</Text>
-        </View>
+        <DateTile variant="linkedEvent" day={model.day} month={model.month} />
 
         <View style={styles.body}>
           <Text variant="bodyStrong" numberOfLines={2} style={styles.title}>
@@ -282,34 +289,6 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.82,
     transform: [{ scale: 0.985 }],
   },
-  dateChip: {
-    width: 52,
-    minHeight: 58,
-    flexShrink: 0,
-    borderRadius: t.radius.md,
-    paddingVertical: 7,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.surfaceTint,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-  },
-  dateChipList: {
-    width: 52,
-  },
-  month: {
-    color: t.colors.sun["700"],
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 10,
-    lineHeight: 12,
-    letterSpacing: 0.8,
-  },
-  day: {
-    color: t.colors.text,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 21,
-    lineHeight: 24,
-  },
   body: {
     flex: 1,
     minWidth: 0,
@@ -323,14 +302,14 @@ const useStyles = makeThemedStyles((t) => ({
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
   },
   location: {
     flex: 1,
   },
   footerRow: {
-    minHeight: 44,
-    marginTop: 8,
+    minHeight: MIN_TOUCH_TARGET,
+    marginTop: t.space["2"],
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -403,8 +382,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   removeButton: {
     position: "absolute",
-    top: -16,
-    right: -16,
+    top: -t.space["4"],
+    right: -t.space["4"],
     alignItems: "center",
     justifyContent: "center",
   },

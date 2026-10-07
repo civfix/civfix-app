@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
+import { OkResponseSchema, PageLimitSchema } from "./internal-fields.js"
 import {
   PersonDTOSchema,
   CleanupDTOSchema,
@@ -7,7 +8,7 @@ import {
   HttpsUrlSchema,
   SocialLinksSchema,
 } from "./entities.js"
-import { UserDTOSchema, LocaleEnum } from "./auth.js"
+import { EMAIL_OTP_CODE_LENGTH, UserDTOSchema, SupportedLocaleSchema } from "./auth.js"
 
 
 export { PersonDTOSchema } from "./entities.js"
@@ -24,7 +25,7 @@ export type ListPeopleResponse = z.infer<typeof ListPeopleResponseSchema>
 export const ConnectionsListQuerySchema = z.object({
   id: z.string(),
   cursor: z.string().optional(),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: PageLimitSchema,
 })
 export type ConnectionsListQuery = z.infer<typeof ConnectionsListQuerySchema>
 
@@ -42,10 +43,8 @@ export const UserProfileDTOSchema = PersonDTOSchema.extend({
     cleanups: z.number().int().nonnegative(),
   }),
   volunteerHours: z.number().nonnegative().optional(),
-  // Whether this person publishes their volunteer hours. Present on YOUR OWN profile (so the settings
-  // toggle renders without a second call) and, when false, on another user's profile alongside an
-  // ABSENT `volunteerHours` - which is how the UI tells "hidden" apart from "genuinely zero".
-  // Optional so already-built consumers/older servers still parse; absent => treat as true.
+  // Present on the viewer's own profile and, when false, on another user's profile alongside an absent
+  // `volunteerHours`, which is how the UI tells "hidden" apart from "genuinely zero". Absent means true.
   showVolunteerHours: z.boolean().optional(),
   socialLinks: SocialLinksSchema.nullable().optional(),
   blockedByMe: z.boolean().optional(),
@@ -68,18 +67,21 @@ export const ProfileEventsResponseSchema = pageResponse(CleanupDTOSchema)
 export type ProfileEventsResponse = z.infer<typeof ProfileEventsResponseSchema>
 
 
-export const HANDLE_REGEX = /^[a-zA-Z0-9_]{3,20}$/
+const HANDLE_MIN_LENGTH = 3
+export const HANDLE_MAX_LENGTH = 20
+export const HANDLE_REGEX = new RegExp(`^[a-zA-Z0-9_]{${HANDLE_MIN_LENGTH},${HANDLE_MAX_LENGTH}}$`)
 export function isValidHandle(handle: string): boolean {
   return HANDLE_REGEX.test(handle.trim())
 }
 export const HandleSchema = z.string().trim().regex(HANDLE_REGEX)
 
 export const MAX_BIO_LENGTH = 500
+export const DISPLAY_NAME_MAX_LENGTH = 80
 
 export const UpdateProfileRequestSchema = z
   .object({
     handle: HandleSchema,
-    displayName: z.string().trim().min(1).max(80),
+    displayName: z.string().trim().min(1).max(DISPLAY_NAME_MAX_LENGTH),
     bio: z.string().trim().max(MAX_BIO_LENGTH).nullable().optional(),
     avatarUploadId: IdSchema.optional(),
     socialLinks: SocialLinksSchema.nullable().optional(),
@@ -104,9 +106,8 @@ export type HandleAvailableResponse = z.infer<typeof HandleAvailableResponseSche
 
 
 /**
- * GET /users/follow-suggestions — recommended people to follow for the signed-in viewer.
- * Ranked nearby-first (people active in the viewer's area), with community organizers (users who
- * host cleanups/events) ahead of ordinary nearby users; excludes self, already-followed, blocked.
+ * GET /users/follow-suggestions: people to follow for the signed-in viewer, ranked nearby-first with
+ * event hosts ahead of ordinary nearby users. Excludes self, already-followed and blocked users.
  */
 export const FollowSuggestionsRequestSchema = z
   .object({
@@ -153,13 +154,12 @@ export type MentionSearchRequest = z.infer<typeof MentionSearchRequestSchema>
 export const UpdateSettingsRequestSchema = z
   .object({
     allowDirectMessages: z.boolean().optional(),
-    locale: LocaleEnum.optional(),
-    // Whether the public profile publishes volunteer hours. Defaults to true server-side. When false
-    // the public profile omits volunteerHours AND the per-event breakdown, and the user drops out of
-    // the public jurisdiction leaderboard. The OWNER's own profile always shows their hours.
+    locale: SupportedLocaleSchema.optional(),
+    // Defaults to true server-side. When false the public profile omits volunteerHours and the
+    // per-event breakdown, and the user drops off the jurisdiction leaderboard; the owner still sees them.
     showVolunteerHours: z.boolean().optional(),
-    // 0.43.0: which organization the profile publishes as the affiliation badge. Must be an org the
-    // user is a member of; null clears the pin and falls back to the earliest membership.
+    // The organization published as the affiliation badge (DECISIONS §34). Must be one the user belongs
+    // to; null falls back to the earliest membership.
     primaryOrganizationId: IdSchema.nullable().optional(),
   })
   .strict()
@@ -173,12 +173,12 @@ export type UpdateSettingsResponse = z.infer<typeof UpdateSettingsResponseSchema
 
 export const DeleteAccountRequestSchema = z
   .object({
-    emailOtp: z.string().regex(/^\d{6}$/),
+    emailOtp: z.string().regex(new RegExp(`^\\d{${EMAIL_OTP_CODE_LENGTH}}$`)),
   })
   .strict()
 export type DeleteAccountRequest = z.infer<typeof DeleteAccountRequestSchema>
 
-export const DeleteAccountResponseSchema = z.object({ ok: z.literal(true) })
+export const DeleteAccountResponseSchema = OkResponseSchema
 export type DeleteAccountResponse = z.infer<typeof DeleteAccountResponseSchema>
 
 export const RequestDataExportResponseSchema = z.object({

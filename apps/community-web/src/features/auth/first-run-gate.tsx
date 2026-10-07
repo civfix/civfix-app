@@ -2,18 +2,26 @@
 
 import * as React from "react"
 import { Loader2, Check, X } from "lucide-react"
-import { isValidHandle } from "@civfix/shared"
+import { HANDLE_MAX_LENGTH } from "@civfix/shared"
+import { space } from "@civfix/shared/tokens"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
+import {
+  FIRST_NAME_MAX,
+  LAST_NAME_MAX,
+  firstRunModel,
+  splitName,
+  stripHandlePrefix,
+  useHandleAvailabilityCheck,
+  useUpdateProfile,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
+import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
 import { useCurrentUser, useLogout } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
-import {
-  useFirstRunRequired,
-  useHandleAvailability,
-  useUpdateProfile,
-} from "@/hooks/use-profile-registration"
+import { useFirstRunRequired } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
+import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
 
 export function FirstRunGate() {
   const required = useFirstRunRequired()
@@ -21,10 +29,27 @@ export function FirstRunGate() {
   return <FirstRunForm />
 }
 
-function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
+/**
+ * Make everything outside `el` inert (unfocusable, hidden from assistive tech) and return the undo.
+ * aria-modal alone does not stop Tab from reaching the app behind a blocking gate. The session-alert
+ * layer sits above the gate on purpose (a failed sign-out from the gate reports there), so it stays live.
+ */
+function inertOutside(el: HTMLElement): () => void {
+  const changed: Element[] = []
+  let node: HTMLElement | null = el
+  while (node && node !== document.body) {
+    const parent: HTMLElement | null = node.parentElement
+    if (!parent) break
+    for (const sibling of Array.from(parent.children)) {
+      if (sibling === node || sibling.hasAttribute("inert") || sibling.hasAttribute(SESSION_ALERT_ATTR)) continue
+      sibling.setAttribute("inert", "")
+      changed.push(sibling)
+    }
+    node = parent
+  }
+  return () => {
+    for (const sibling of changed) sibling.removeAttribute("inert")
+  }
 }
 
 function FirstRunForm() {
@@ -40,48 +65,61 @@ function FirstRunForm() {
   const [ageConfirmed, setAgeConfirmed] = React.useState(false)
   const [termsConfirmed, setTermsConfirmed] = React.useState(false)
 
-  const avail = useHandleAvailability(handle)
-  const trimmedHandle = handle.trim()
-  const handleValid = isValidHandle(trimmedHandle)
-  const available = handleValid && avail.data?.available === true
-  const displayName = `${first.trim()} ${last.trim()}`.trim()
-  const canSubmit =
-    available && displayName.length > 0 && ageConfirmed && termsConfirmed && !update.isPending
+  const { availability, checkedHandle } = useHandleAvailabilityCheck(handle, null)
+  const { trimmedHandle, handleValid, displayName, previewName, checking, available, taken, canSubmit } =
+    firstRunModel({
+      first,
+      last,
+      handle,
+      checkedHandle,
+      availability,
+      ageConfirmed,
+      termsConfirmed,
+      submitting: update.isPending,
+    })
 
   const onSubmit = React.useCallback(() => {
     if (!canSubmit) return
     update.mutate({ handle: trimmedHandle, displayName })
   }, [canSubmit, update, trimmedHandle, displayName])
 
-  const previewName = trimmedHandle || displayName || "?"
-
   const vvShift = useVisualViewportShift()
+
+  const dialogRef = React.useRef<HTMLDivElement | null>(null)
+  const cardRef = React.useRef<HTMLDivElement | null>(null)
+  useFocusTrap(cardRef, true)
+  React.useEffect(() => {
+    const dialog = dialogRef.current
+    return dialog ? inertOutside(dialog) : undefined
+  }, [])
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="first-run-title"
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 200,
+        zIndex: Z_FIRST_RUN_GATE,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 20,
+        padding: space["5"],
         background: "var(--scrim)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
       }}
     >
       <div
+        ref={cardRef}
         style={{
           width: "100%",
           maxWidth: 440,
           background: "var(--card)",
           borderRadius: 24,
-          padding: 24,
+          padding: space["6"],
           boxShadow: "var(--shadow-4), var(--sheen-top)",
           maxHeight: "calc(100vh - 40px)",
           overflowY: "auto",
@@ -93,7 +131,7 @@ function FirstRunForm() {
           <h2 id="first-run-title" style={{ marginTop: 14, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>
             {t("title")}
           </h2>
-          <p className="help" style={{ marginTop: 4, maxWidth: 320 }}>
+          <p className="help" style={{ marginTop: space["1"], maxWidth: 320 }}>
             {t("subtitle")}
           </p>
         </div>
@@ -107,7 +145,7 @@ function FirstRunForm() {
                 className="input"
                 value={first}
                 onChange={(e) => setFirst(e.target.value)}
-                maxLength={40}
+                maxLength={FIRST_NAME_MAX}
                 autoComplete="given-name"
                 placeholder={t("first_name_placeholder")}
               />
@@ -119,7 +157,7 @@ function FirstRunForm() {
                 className="input"
                 value={last}
                 onChange={(e) => setLast(e.target.value)}
-                maxLength={40}
+                maxLength={LAST_NAME_MAX}
                 autoComplete="family-name"
                 placeholder={t("last_name_placeholder")}
               />
@@ -132,32 +170,37 @@ function FirstRunForm() {
               id="fr-handle"
               className="input"
               value={handle}
-              onChange={(e) => setHandle(e.target.value.replace(/^@+/, ""))}
-              maxLength={20}
+              onChange={(e) => setHandle(stripHandlePrefix(e.target.value))}
+              maxLength={HANDLE_MAX_LENGTH}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
               placeholder={t("username_placeholder")}
               aria-describedby="fr-handle-hint"
             />
-            <p id="fr-handle-hint" className="help" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <p
+              id="fr-handle-hint"
+              className="help"
+              aria-live="polite"
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
               <HandleHint
                 handle={trimmedHandle}
                 valid={handleValid}
-                checking={handleValid && avail.isFetching}
+                checking={checking}
                 available={available}
-                taken={handleValid && avail.data?.available === false}
+                taken={taken}
               />
             </p>
           </div>
 
-          <div style={{ marginBottom: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ marginBottom: space["3"], display: "flex", flexDirection: "column", gap: space["2"] }}>
             <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
             <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
           </div>
 
           {update.isError && (
-            <p role="alert" className="cf-clean-error" style={{ marginBottom: 8 }}>
+            <p role="alert" className="cf-clean-error" style={{ marginBottom: space["2"] }}>
               {errorMessage(update.error, {
                 VALIDATION: t("error.validation"),
                 CONFLICT: t("error.conflict"),
@@ -180,7 +223,7 @@ function FirstRunForm() {
             )}
           </button>
 
-          <div className="help" style={{ textAlign: "center", marginTop: 12 }}>
+          <div className="help" style={{ textAlign: "center", marginTop: space["3"] }}>
             {t("not_you")}{" "}
             <button
               type="button"

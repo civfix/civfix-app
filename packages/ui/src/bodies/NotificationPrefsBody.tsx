@@ -1,8 +1,8 @@
 import React, { useCallback } from "react"
 import { View } from "react-native"
 import type { NotificationPrefsDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, headingLevel } from "../theme"
-import { Text, iconMap } from "../typography"
+import { makeThemedStyles, useTheme } from "../theme"
+import { iconMap } from "../typography"
 import {
   Toggle,
   EmptyState,
@@ -10,6 +10,7 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
+  useToast,
 } from "../primitives"
 import {
   useNotificationPrefs,
@@ -20,12 +21,13 @@ import {
 import { usePush } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
+import { SectionEyebrow } from "./profile/SectionHeadings"
 
 function SectionLabel({ children }: { children: string }) {
   const styles = useStyles()
   return (
     <View style={styles.sectionLabelRow}>
-      <Text style={styles.sectionLabel} accessibilityRole="header" {...headingLevel(2)}>{children}</Text>
+      <SectionEyebrow inline>{children}</SectionEyebrow>
     </View>
   )
 }
@@ -41,21 +43,27 @@ export function NotificationPrefsBody() {
 
   const query = useNotificationPrefs()
   const update = useUpdateNotificationPrefs()
+  const toast = useToast()
   const prefs = query.data
+
+  const onSaveError = useCallback(
+    () => toast.show(t("save_error"), { variant: "error" }),
+    [toast, t],
+  )
 
   const onTogglePush = useCallback(
     (next: boolean) => {
-      update.mutate({ push: next })
+      update.mutate({ push: next }, { onError: onSaveError })
       if (next && push.isAvailable()) void push.registerForToken()
     },
-    [update, push],
+    [update, push, onSaveError],
   )
 
   const onToggle = useCallback(
     (key: keyof NotificationPrefsDTO, next: boolean) => {
-      update.mutate({ [key]: next })
+      update.mutate({ [key]: next }, { onError: onSaveError })
     },
-    [update],
+    [update, onSaveError],
   )
 
   if (!isAuthenticated && !isPending) {
@@ -171,13 +179,6 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: 6,
     marginBottom: t.space["3"],
-  },
-  sectionLabel: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    color: t.colors.textSubtle,
-    textTransform: "uppercase",
   },
   sectionGap: {
     marginTop: t.space["6"],

@@ -1,13 +1,14 @@
-import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import React, { memo, useCallback, useMemo, useState } from "react"
+import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, hitSlopToTarget } from "../theme"
 import { Text, iconMap } from "../typography"
-import { Avatar, EmptyState, LoadingState, useToast } from "../primitives"
+import { Avatar, ListBodyEmpty, useListBodyStyles, useListEndReached, useToast } from "../primitives"
 import { useListBlocks, useUnblockUser } from "../data"
+import { blockedAccountsOf } from "../data/hooks/direct"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 
 const BlockedRow = memo(function BlockedRow({
   person,
@@ -46,6 +47,8 @@ const BlockedRow = memo(function BlockedRow({
         disabled={pending}
         accessibilityRole="button"
         accessibilityLabel={t("row.unblockA11y", { name: person.name })}
+        accessibilityState={{ disabled: pending, busy: pending }}
+        hitSlop={UNBLOCK_HIT_SLOP}
         {...focusRingProps}
         style={({ pressed }) => [styles.unblock, pressed ? styles.unblockPressed : null]}
       >
@@ -59,13 +62,14 @@ const BlockedRow = memo(function BlockedRow({
 
 export function BlockedAccountsBody() {
   const { FlatList } = useScrollHost()
-  const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const th = useTheme()
   const { t } = useT("account-blocked")
   const toast = useToast()
   const query = useListBlocks()
   const unblock = useUnblockUser()
-  const items = query.data?.blocked ?? []
+  const items = useMemo(() => blockedAccountsOf(query.data), [query.data])
+  const onEndReached = useListEndReached(query)
 
   const [pendingIds, setPendingIds] = useState<readonly string[]>([])
 
@@ -91,50 +95,40 @@ export function BlockedAccountsBody() {
     <FlatList
       data={items}
       keyExtractor={idKeyExtractor}
-      style={styles.list}
-      contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={items.length === 0 ? listStyles.listEmpty : listStyles.listContentInset}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.4}
+      ListFooterComponent={
+        query.isFetchingNextPage ? (
+          <View style={listStyles.footerCentered}>
+            <ActivityIndicator size="small" color={th.colors.textSubtle} />
+          </View>
+        ) : null
+      }
       ListEmptyComponent={
-        query.isLoading ? (
-          <LoadingState skeleton="person" rows={6} />
-        ) : query.isError ? (
-          <EmptyState
-            variant="detail"
-            tone="neutral"
-            icon={iconMap.CloudOff}
-            iconColor={th.colors.textSubtle}
-            iconSize={30}
-            title={t("error.title")}
-            body={t("error.body")}
-          />
-        ) : (
-          <EmptyState
-            variant="detail"
-            icon={iconMap.Ban}
-            title={t("empty.title")}
-            body={t("empty.body")}
-          />
-        )
+        <ListBodyEmpty
+          phase={query.isLoading ? "loading" : query.isError ? "error" : "empty"}
+          skeleton="person"
+          skeletonRows={SKELETON_ROWS}
+          copy={{
+            error: { title: t("error.title"), body: t("error.body") },
+            empty: { icon: iconMap.Ban, title: t("empty.title"), body: t("empty.body") },
+          }}
+        />
       }
     />
   )
 }
 
+const SKELETON_ROWS = 6
+const UNBLOCK_HEIGHT = 34
+const UNBLOCK_HIT_SLOP = hitSlopToTarget(UNBLOCK_HEIGHT)
+
 const useStyles = makeThemedStyles((t) => ({
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -156,7 +150,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {
@@ -168,7 +162,7 @@ const useStyles = makeThemedStyles((t) => ({
   unblock: {
     flexShrink: 0,
     paddingHorizontal: t.space["3"] + 1,
-    height: 34,
+    height: UNBLOCK_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,
@@ -181,7 +175,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   unblockText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
 }))

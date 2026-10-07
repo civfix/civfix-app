@@ -63,7 +63,7 @@ describe("AcceptInviteScreen", () => {
     await waitFor(() =>
       expect(client.acceptOrganizationInvite).toHaveBeenCalledWith({ token: TOKEN }),
     )
-    const sent = client.acceptOrganizationInvite.mock.calls[0]?.[0]
+    const sent: unknown = client.acceptOrganizationInvite.mock.calls[0]?.[0]
     expect(AcceptOrganizationInviteRequestSchema.safeParse(sent).success).toBe(true)
     await waitFor(() => expect(window.location.pathname).toBe(`/manage/orgs/${ORG_ID}/`))
     expect(window.sessionStorage.getItem(ORG_INVITE_TOKEN_STASH_KEY)).toBeNull()

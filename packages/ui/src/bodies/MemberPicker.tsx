@@ -1,15 +1,14 @@
-import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import React, { memo, useCallback, useMemo, useState } from "react"
+import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, EmptyState } from "../primitives"
+import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useUserSearch, normalizeUserSearchTerm } from "../data"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { toggleMember, removeMember, filterExcluded, searchResultToPerson } from "./memberSelect"
 
 export interface MemberPickerProps {
@@ -113,16 +112,22 @@ export function MemberPicker({
   const th = useTheme()
   const { FlatList } = useScrollHost()
   const { t } = useT("group-create")
+  const { t: tCommon } = useT("common")
   const [query, setQuery] = useState("")
   const [focused, setFocused] = useState(false)
   const search = useUserSearch(query)
-  const results = filterExcluded(search.data?.results ?? [], excludeIds)
+  const searchResults = search.data?.results
   const typed = normalizeUserSearchTerm(query)
   const hasQuery = typed.length > 0
   const searchPending = search.isLoading || search.term !== typed
-  const suggestions = filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds)
+  // Memoized so a keystroke that has not changed the results hands the list the same `data`.
+  const suggestions = useMemo(() => filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds), [suggested, excludeIds])
   const showSuggestions = !hasQuery && suggestions.length > 0
-  const rows = showSuggestions ? suggestions : results
+  const rows = useMemo(
+    () => (showSuggestions ? suggestions : filterExcluded(searchResults ?? NO_SUGGESTIONS, excludeIds)),
+    [showSuggestions, suggestions, searchResults, excludeIds],
+  )
+  const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])
 
   const onToggle = useCallback(
     (person: UserSearchResultDTO) => {
@@ -140,11 +145,11 @@ export function MemberPicker({
     ({ item }: { item: UserSearchResultDTO }) => (
       <ResultRow
         person={item}
-        selected={selected.some((p) => p.id === item.id)}
+        selected={selectedIds.has(item.id)}
         onToggle={onToggle}
       />
     ),
-    [selected, onToggle],
+    [selectedIds, onToggle],
   )
 
   return (
@@ -195,7 +200,16 @@ export function MemberPicker({
             title={t("empty.prompt.title")}
             body={emptyPromptBody ?? t("empty.prompt.body")}
           />
-        ) : searchPending ? null : search.isError ? (
+        ) : searchPending ? (
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={tCommon("loading")}
+            accessibilityState={{ busy: true }}
+          >
+            <LoadingState skeleton="person" rows={3} />
+          </View>
+        ) : search.isError ? (
           <EmptyState
             variant="detail"
             tone="neutral"
@@ -223,7 +237,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -276,16 +290,13 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     marginBottom: t.space["2"],
   },
-  searchWrapFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  searchWrapFocused: inputFocusedStyle(t),
   searchInput: {
     flex: 1,
     minWidth: 0,
     paddingVertical: 10,
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   row: {

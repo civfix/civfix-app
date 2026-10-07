@@ -8,7 +8,7 @@ import {
   searchRecentCommit,
   trackSearchInput,
   useSearchRecentStore,
-} from "../searchRecentStore"
+} from "../search/searchRecentStore"
 
 beforeEach(() => {
   useSearchRecentStore.setState({ recent: [] })

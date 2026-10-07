@@ -46,5 +46,7 @@
   "link_copied": "Link kopiert",
   "visibility_label": "Sichtbarkeit",
   "visibility_public": "Öffentlich",
-  "visibility_private": "Privat"
+  "visibility_private": "Privat",
+  "link_copy_failed": "Link konnte nicht kopiert werden",
+  "avatar_clear_a11y": "Neues Foto verwerfen"
 }

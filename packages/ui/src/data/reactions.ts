@@ -1,13 +1,11 @@
 /**
- * toggleReactionBucket - the single pure reaction-toggle reducer used by the chat hook (useChat).
+ * toggleReactionBucket: the single pure reaction-toggle reducer used by the chat hook (useChat).
  * Operates on a message's `ReactionSummaryDTO[]` summary so it patches a ChatMessageDTO's `reactions`.
  *
  * Optimistically flip one reaction bucket: if the viewer already reacted, decrement + clear `mine` (dropping
  * the bucket when it hits 0); otherwise increment + set `mine` (creating the bucket if absent). Pure.
  *
- * INTERNAL to the data seam (imported by relative path; NOT exported from the data barrel). The data
- * `__tests__` deliberately re-implement this reducer to verify the hooks independently and must NOT import
- * this copy.
+ * INTERNAL to the data seam (imported by relative path; NOT exported from the data barrel).
  */
 import type { ReactionSummaryDTO } from "@civfix/shared"
 

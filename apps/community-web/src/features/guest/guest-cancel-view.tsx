@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import { readGuestManageToken } from "@/features/guest/guest-cancel-token"
 
 type Phase = "confirm" | "cancelling" | "done" | "error"
@@ -50,6 +51,7 @@ export function GuestCancelView() {
         <EmptyState
           icon={<SearchX className="h-6 w-6" aria-hidden="true" />}
           title={t("invalid.title")}
+          titleAs="h1"
           body={t("invalid.body")}
           action={
             <Button variant="outline" onClick={goHome}>
@@ -86,6 +88,7 @@ export function GuestCancelView() {
       ) : phase === "error" ? (
         <EmptyState
           title={t("error.title")}
+          titleAs="h1"
           body={error ?? t("error.fallback")}
           action={
             <Button variant="outline" onClick={() => void cancelRsvp()}>
@@ -122,7 +125,7 @@ export function GuestCancelView() {
  */
 function scrubTokenFromUrl(): void {
   if (typeof window === "undefined") return
-  window.history.replaceState(null, "", window.location.pathname)
+  replaceUrlInPlace(window.location.pathname)
 }
 
 function cancelErrorMessage(err: unknown, t: (key: string) => string): string {

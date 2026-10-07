@@ -16,14 +16,6 @@ import {
 import { resolveCsrfToken } from "@/lib/api"
 import { readAuthSnapshot, SNAPSHOT_KEY } from "@/lib/auth-snapshot"
 
-/**
- * The CSRF token lifecycle, end to end (statically):
- *  1. setSession stores the token (captured on OTP verify / OAuth-return / reload), getCsrfToken reads
- *     it, and a token-less refresh PRESERVES the previously captured value.
- *  2. The shared API client, wired with getCsrfToken, echoes x-csrf-token on csrf:true endpoints (e.g.
- *     POST /reports) and omits it on csrf:false endpoints (e.g. GET /reports).
- */
-
 const USER: UserDTO = {
   id: "11111111-1111-4111-8111-111111111111",
   displayName: "Ada",
@@ -50,11 +42,9 @@ function makeStorage() {
 let storage: ReturnType<typeof makeStorage>
 
 beforeEach(() => {
-  // setSession/clear now read & write the localStorage snapshot; stub a fresh store so those writes work
-  // and are observable. The node env has no real localStorage.
+  // setSession/clear write the localStorage snapshot, and the node env has no real localStorage.
   storage = makeStorage()
   vi.stubGlobal("window", { localStorage: storage })
-  // Reset the singleton store between tests.
   useAuthStore.setState({
     status: "idle",
     user: null,
@@ -284,7 +274,7 @@ describe("resolveCsrfToken boot-race wiring (async token getter)", () => {
   it("holds a mutation fired in the optimistic window until hydration, then sends the live token", async () => {
     bootOptimistic()
     const { client, fetchSpy } = clientWithSpy()
-    // Fire the mutation DURING the boot window (this is the reported RSVP race).
+    // Fire the mutation during the boot window.
     const inFlight = client.createReport({
       category: "trash",
       lat: 34,

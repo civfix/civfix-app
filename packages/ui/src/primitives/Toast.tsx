@@ -24,7 +24,7 @@ import {
   type ToastOptions,
   type ToastVariant,
 } from "./toastContext"
-import { TOAST_MAX_WIDTH, toastBottomOffset, toastDurationMs } from "./toastModel"
+import { TOAST_MAX_WIDTH, toastBottomOffset, toastDurationMs, toastLiveSemantics } from "./toastModel"
 
 export { useToast }
 export type { ToastAction, ToastApi, ToastOptions, ToastVariant }
@@ -32,7 +32,7 @@ export type { ToastAction, ToastApi, ToastOptions, ToastVariant }
 const ENTER = motion.fadeUp
 const EXIT = motion.menuOut
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
-const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
+const IS_WEB = Platform.OS === "web"
 
 const VARIANT_ICON: Record<ToastVariant, IconName> = {
   success: "CheckCircle2",
@@ -70,6 +70,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const nextId = useRef(0)
   const currentId = useRef<number | null>(null)
   const timers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
+  const durations = useRef<Map<number, number>>(new Map())
 
   const clearTimer = useCallback((id: number) => {
     const timer = timers.current.get(id)
@@ -81,6 +82,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const remove = useCallback(
     (id: number) => {
       clearTimer(id)
+      durations.current.delete(id)
       setEntries((prev) => prev.filter((entry) => entry.item.id !== id))
     },
     [clearTimer],
@@ -110,13 +112,33 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       if (previous !== null) retire(previous)
       currentId.current = id
       setEntries((prev) => [...prev, { item: { id, message, variant, action }, phase: "in" }])
+      const duration = toastDurationMs(variant, action !== null, opts?.durationMs)
+      durations.current.set(id, duration)
       timers.current.set(
         id,
-        setTimeout(() => retire(id), toastDurationMs(variant, action !== null, opts?.durationMs)),
+        setTimeout(() => retire(id), duration),
       )
       if (Platform.OS !== "web") AccessibilityInfo.announceForAccessibility(message)
     },
     [retire],
+  )
+
+  // WCAG 2.2.1: a toast the viewer is pointing at or has focused (to reach its action) does not time out.
+  const hold = useCallback(
+    (id: number, held: boolean) => {
+      if (currentId.current !== id) return
+      if (held) {
+        clearTimer(id)
+        return
+      }
+      const duration = durations.current.get(id)
+      if (timers.current.has(id) || duration === undefined) return
+      timers.current.set(
+        id,
+        setTimeout(() => retire(id), duration),
+      )
+    },
+    [clearTimer, retire],
   )
 
   const timersRef = timers
@@ -133,7 +155,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      {entries.length > 0 ? <ToastHost entries={entries} onDismiss={retire} /> : null}
+      {entries.length > 0 ? <ToastHost entries={entries} onDismiss={retire} onHold={hold} /> : null}
     </ToastContext.Provider>
   )
 }
@@ -153,16 +175,18 @@ function useToastBottomOffset(): number {
 function ToastHost({
   entries,
   onDismiss,
+  onHold,
 }: {
   entries: ToastEntry[]
   onDismiss: (id: number) => void
+  onHold: (id: number, held: boolean) => void
 }) {
   const styles = useStyles()
   const offset = useToastBottomOffset()
   return (
     <View style={styles.overlay} pointerEvents="box-none">
       {entries.map((entry) => (
-        <ToastCard key={entry.item.id} entry={entry} offset={offset} onDismiss={onDismiss} />
+        <ToastCard key={entry.item.id} entry={entry} offset={offset} onDismiss={onDismiss} onHold={onHold} />
       ))}
     </View>
   )
@@ -172,10 +196,12 @@ function ToastCard({
   entry,
   offset,
   onDismiss,
+  onHold,
 }: {
   entry: ToastEntry
   offset: number
   onDismiss: (id: number) => void
+  onHold: (id: number, held: boolean) => void
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -187,6 +213,14 @@ function ToastCard({
   const iconColor = variantColor(entry.item.variant, th)
   const action = entry.item.action
   const id = entry.item.id
+  const live = toastLiveSemantics(entry.item.variant, IS_WEB)
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const held = hovered || focused
+
+  useEffect(() => {
+    onHold(id, held)
+  }, [held, id, onHold])
 
   useEffect(() => {
     const recipe = leaving ? EXIT : ENTER
@@ -224,8 +258,12 @@ function ToastCard({
     <Animated.View style={[styles.slot, { bottom: offset }, motionStyle]} pointerEvents="box-none">
       <View
         style={styles.card}
-        accessibilityRole="alert"
-        accessibilityLiveRegion={LIVE_REGION}
+        role={live.role}
+        accessibilityLiveRegion={live.liveRegion}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       >
         <Pressable
           accessibilityRole="button"

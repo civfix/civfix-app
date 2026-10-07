@@ -9,7 +9,7 @@ describe("slugFromOrgName", () => {
   })
 
   it("folds accents and drops punctuation instead of leaving gaps", () => {
-    expect(slugFromOrgName("Café Río — Friends & Neighbors!")).toBe("cafe-rio-friends-neighbors")
+    expect(slugFromOrgName("Café Río · Friends & Neighbors!")).toBe("cafe-rio-friends-neighbors")
   })
 
   it("never starts or ends with a dash, even after truncation", () => {

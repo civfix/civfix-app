@@ -1,10 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react"
-import {
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  type View as RNView,
-} from "react-native"
+import { Pressable, useWindowDimensions, type View as RNView } from "react-native"
 import {
   makeThemedStyles,
   space,
@@ -13,16 +8,19 @@ import {
   webTransition,
   webHover,
   focusRingProps,
-  webNoSelect,
 } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import { positionPostActionMenu } from "./postActionModel"
+import { pressPopoverMenuItem } from "./popoverMenuModel"
 import { menuOrigin, useMenuMotion } from "./menuMotion"
 import { AnchoredPopover, useMenuCardSize } from "./AnchoredPopover"
 import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
 import { useModalClosed } from "./useModalClosed"
+import type { AnchorRect } from "./menuMotionModel"
+import { MenuItemContent } from "./MenuItemContent"
+import { menuRowStyles, menuSurfaceStyle } from "./menuSurface"
 
 export interface PopoverMenuItem {
   key: string
@@ -31,15 +29,12 @@ export interface PopoverMenuItem {
   icon?: IconName
   destructive?: boolean
   disabled?: boolean
+  /** Run without closing, for a row that changes the menu itself, such as loading more rows into it. */
+  keepOpen?: boolean
   onPress: () => void
 }
 
-export interface AnchorRect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+export type { AnchorRect }
 
 export interface PopoverMenuProps {
   visible: boolean
@@ -93,7 +88,7 @@ export function PopoverMenu({
   const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)
   const onModalDismiss = useModalClosed(rendered, settled)
 
-  const handlePress = useCallback((item: PopoverMenuItem) => run(item.onPress), [run])
+  const handlePress = useCallback((item: PopoverMenuItem) => pressPopoverMenuItem(item, run), [run])
 
   const cardSizeOrEstimate = cardSize ?? {
     width: CARD_WIDTH,
@@ -145,15 +140,13 @@ export function PopoverMenu({
               item.disabled ? styles.rowDisabled : null,
             ]}
           >
-            {item.icon ? <Icon icon={iconMap[item.icon]} size={16} color={color} /> : null}
-            <Text
-              variant="body"
+            <MenuItemContent
+              icon={item.icon ? iconMap[item.icon] : null}
+              iconSize={16}
               color={color}
-              numberOfLines={1}
-              style={[styles.rowLabel, webNoSelect]}
-            >
-              {item.label}
-            </Text>
+              label={item.label}
+              labelStyle={styles.rowLabel}
+            />
           </Pressable>
         )
       })}
@@ -181,37 +174,14 @@ const useStyles = makeThemedStyles((t) => ({
   card: {
     minWidth: CARD_WIDTH,
     maxWidth: 320,
-    paddingVertical: t.space["1"],
-    paddingHorizontal: t.space["1"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
+    ...menuSurfaceStyle(t),
   },
   cardCentered: {
     width: "100%",
     maxWidth: 320,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-    paddingHorizontal: t.space["2"],
-    paddingVertical: t.space["2"],
-    borderRadius: t.radius.md,
-  },
-  rowHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  rowPressed: {
-    backgroundColor: t.colors.surfaceTint,
-    opacity: 0.85,
-  },
+  ...menuRowStyles(t, t.space["2"]),
   rowDisabled: {
     opacity: 0.45,
-  },
-  rowLabel: {
-    flex: 1,
   },
 }))

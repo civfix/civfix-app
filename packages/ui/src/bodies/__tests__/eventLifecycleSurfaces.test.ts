@@ -1,18 +1,17 @@
 /**
- * Source-text guards for the event LIFECYCLE surfaces: the restructured `EventDetailBody` region, the
- * `EventHoursBlock` and the relocated `LogHoursEditor`.
+ * Source-text guards for the event LIFECYCLE surfaces: the `EventDetailBody` region, the `EventHoursBlock`
+ * and the `LogHoursEditor`.
  *
  * The pure state machines are covered by `eventLifecycle.test.ts`. What is left is the wiring, and every
  * assertion here guards a rule that typecheck cannot see and review reliably misses:
  *
- *   1. Nothing marks an event completed any more. Status is a clock reading, so a surface that still
- *      imported the retired confirm dialog or the retired completion gate would be writing state the
- *      server no longer changes.
+ *   1. Nothing marks an event completed. Status is a clock reading, so a surface that imported a confirm
+ *      dialog or a completion gate would be writing state the server does not change.
  *   2. `EventHoursBlock` imports no reanimated and no `Modal`/`FlatList`/`ScrollView`. It renders inside
  *      the event body's scroller, which on compact IS the gorhom sheet: a nested vertical scroller
- *      swallows the sheet's pan, and reanimated is the 0.36.1 worklet-factory crash class.
- *   3. The hours editor is GONE from the body. Its whole point was moving out of the dead zone below the
- *      host card and into the DONE region; a stray re-mount would show it twice on a finished event.
+ *      swallows the sheet's pan, and reanimated brings the worklet-factory crash class.
+ *   3. The hours editor is NOT in the body. It belongs in the DONE region; a stray re-mount would show it
+ *      twice on a finished event.
  *   4. The attendee receipt degrades through `?? false`. `anyLogged` is `.optional()` on the wire, and a
  *      bare truthiness read against an older server would tell every attendee they were skipped.
  *   5. Every `t("…")` key these files reference exists in `en/event-detail.json`. i18next has no
@@ -138,12 +137,14 @@ describe("EventHoursBlock renders inside its host's scroller", () => {
     // The package convention (BodyTransition.native.tsx, usePopScale): reduce-motion suppresses the
     // POSITIONAL half only. This block wraps all four of its arms, so a missing path slid every one.
     const source = code(hoursBlock)
-    expect(source).toContain("AccessibilityInfo.isReduceMotionEnabled()")
-    expect(source).toContain('AccessibilityInfo.addEventListener("reduceMotionChanged"')
-    expect(source).toContain("translateY.setValue(0)")
+    expect(source).toContain('import { useReducedMotion } from "../theme/useReducedMotion"')
+    expect(source).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(source).not.toContain("AccessibilityInfo")
+    expect(source).toMatch(/if \(reduceMotion\) \{\s*translateY\.stopAnimation\(\)\s*translateY\.setValue\(0\)/)
+    expect(source).toContain("}, [reduceMotion, translateY])")
     // The fade still plays under reduce motion - it is only the offset that is settled outright.
-    expect(source).toMatch(/timing\(opacity, 1\)\.start\(\)/)
-    expect(source).toContain("sub?.remove()")
+    expect(source).toMatch(/fadeUpTiming\(opacity, 1\)\.start\(\)/)
+    expect(source).toContain("}, [opacity])")
   })
 
   it("degrades an absent `anyLogged` to pending instead of accusing the host of skipping people", () => {
@@ -232,6 +233,7 @@ describe("the lifecycle surfaces reference only real keys", () => {
 
   const SOURCES = {
     "EventDetailBody.tsx": body,
+    "eventDetailModel.ts": readFileSync(new URL("../eventDetailModel.ts", import.meta.url), "utf8"),
     "EventHoursBlock.tsx": hoursBlock,
     "LogHoursEditor.tsx": editor,
   }

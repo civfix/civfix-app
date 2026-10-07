@@ -1,13 +1,12 @@
 import assert from "node:assert/strict"
 import { existsSync, readFileSync } from "node:fs"
-import { createRequire } from "node:module"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { tokens } from "@civfix/shared/tokens"
+import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 import { decodeRgbaPng, pixelAt, transparentShare } from "./helpers/png.ts"
 
-const require = createRequire(import.meta.url)
-const appConfig = require("../app.config.js")({ config: {} })
+const appConfig = appConfigFactory({ config: {} })
 
 const appDir = new URL("../", import.meta.url)
 const SPLASH_SOURCE = "./assets/splash.png"
@@ -29,7 +28,19 @@ function readGenerated(url: URL): string {
   return readFileSync(fileURLToPath(url), "utf8")
 }
 
-function isDarkEntry(entry: { appearances?: { appearance: string; value: string }[] }): boolean {
+interface AppearanceEntry {
+  appearances?: { appearance: string; value: string }[]
+}
+
+interface ColorsetContents {
+  colors: (AppearanceEntry & { color: { components: Record<string, string> } })[]
+}
+
+interface ImagesetContents {
+  images: (AppearanceEntry & { filename?: unknown })[]
+}
+
+function isDarkEntry(entry: AppearanceEntry): boolean {
   return (entry.appearances ?? []).some(
     (appearance) => appearance.appearance === "luminosity" && appearance.value === "dark",
   )
@@ -49,12 +60,8 @@ function assertComponents(components: Record<string, string>, hex: string, label
   assert.equal(Number(components.alpha), 1, `${label}: alpha must be opaque`)
 }
 
-function splashPluginOptions(): Record<string, any> {
-  const entry = appConfig.plugins.find(
-    (plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-splash-screen",
-  )
-  assert.ok(Array.isArray(entry), "expo-splash-screen plugin tuple")
-  return entry[1]
+function splashPluginOptions(): Record<string, unknown> {
+  return pluginOptions(appConfig, "expo-splash-screen", "expo-splash-screen plugin tuple")
 }
 
 function assertTransparentCorners(png: ReturnType<typeof load>, label: string) {
@@ -110,7 +117,7 @@ test(
   "the generated ios background colorset carries the light paper and nothing else",
   { skip: skipWithoutPrebuild },
   () => {
-    const { colors } = JSON.parse(readGenerated(COLORSET))
+    const { colors } = JSON.parse(readGenerated(COLORSET)) as ColorsetContents
     assert.equal(
       colors.length,
       1,
@@ -125,7 +132,7 @@ test(
   "the generated ios imageset carries no dark logo entry, and no dark file on disk",
   { skip: skipWithoutPrebuild },
   () => {
-    const { images } = JSON.parse(readGenerated(new URL("Contents.json", IMAGESET)))
+    const { images } = JSON.parse(readGenerated(new URL("Contents.json", IMAGESET))) as ImagesetContents
     assert.equal(images.filter(isDarkEntry).length, 0)
     for (const entry of images) {
       assert.ok(

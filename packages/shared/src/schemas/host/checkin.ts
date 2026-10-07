@@ -6,17 +6,13 @@ import {
   RegistrationStatusSchema,
 } from "../common.js"
 import { EventRegistrationDTOSchema, EventSeatDTOSchema } from "../entities.js"
-import {
-  GUEST_MANAGE_TOKEN_MAX_LENGTH,
-  GUEST_MANAGE_TOKEN_MIN_LENGTH,
-} from "../cleanups.js"
-
+import { GuestManageTokenSchema } from "../internal-fields.js"
+import { TICKET_TOKEN_MAX, TICKET_TOKEN_MIN } from "./ticket-token.js"
 
 export { CheckinMethodSchema } from "../common.js"
 export type { CheckinMethod } from "../common.js"
 
-export const TICKET_TOKEN_MIN = 8
-export const TICKET_TOKEN_MAX = 64
+export { TICKET_TOKEN_MAX, TICKET_TOKEN_MIN } from "./ticket-token.js"
 export const TicketTokenSchema = z.string().trim().min(TICKET_TOKEN_MIN).max(TICKET_TOKEN_MAX)
 
 export const MyEventTicketSeatSchema = z.object({
@@ -55,10 +51,7 @@ export type GetMyEventTicketResponse = z.infer<typeof GetMyEventTicketResponseSc
 
 export const GetGuestEventTicketRequestSchema = z
   .object({
-    token: z
-      .string()
-      .min(GUEST_MANAGE_TOKEN_MIN_LENGTH)
-      .max(GUEST_MANAGE_TOKEN_MAX_LENGTH),
+    token: GuestManageTokenSchema,
   })
   .strict()
 export type GetGuestEventTicketRequest = z.infer<typeof GetGuestEventTicketRequestSchema>

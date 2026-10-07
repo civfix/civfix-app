@@ -3,9 +3,16 @@ import { StyleSheet } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { makeThemedStyles } from "../theme"
 import { searchRevealExitStyle, searchRevealStyle } from "./bodyLayout"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { dockMorphProgress } from "./dockMorphProgress.native"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
-import { PLAIN_SCROLL_HOST, ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
+import {
+  PLAIN_SCROLL_HOST,
+  ScrollHostProvider,
+  decorateScrollHost,
+  type DecoratedScrollProps,
+  type ScrollHostValue,
+} from "./ScrollHost"
 import { useSearchBarStore } from "./searchBarStore"
 import { resolveTabBarFootprint } from "./tabBarLogic"
 import { useTabBarStore } from "./tabBarStore"
@@ -15,7 +22,7 @@ const DockClearanceFallbackContext = createContext(0)
 DockClearanceFallbackContext.displayName = "DockClearanceFallbackContext"
 
 function makeDockClearanceScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
-  const DockClearanceScroll = forwardRef<any, any>(function DockClearanceScroll(
+  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(function DockClearanceScroll(
     { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
     ref,
   ) {
@@ -24,11 +31,10 @@ function makeDockClearanceScroll(Base: React.ComponentType<any>): React.Componen
     const fallback = useContext(DockClearanceFallbackContext)
     const clearance = horizontal ? 0 : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
 
-    const mergedContentStyle = useMemo(() => {
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + clearance }]
-    }, [contentContainerStyle, clearance])
+    const mergedContentStyle = useMemo(
+      () => withExtraBottomPadding(contentContainerStyle, clearance),
+      [contentContainerStyle, clearance],
+    )
 
     const indicatorInsets = useMemo(
       () => scrollIndicatorInsets ?? { bottom: clearance },
@@ -50,10 +56,7 @@ function makeDockClearanceScroll(Base: React.ComponentType<any>): React.Componen
 }
 
 function makeDockClearanceScrollHost(base: ScrollHostValue): ScrollHostValue {
-  return {
-    ScrollView: makeDockClearanceScroll(base.ScrollView),
-    FlatList: makeDockClearanceScroll(base.FlatList),
-  }
+  return decorateScrollHost(base, makeDockClearanceScroll)
 }
 
 const PORTRAIT_SCROLL_HOST = makeDockClearanceScrollHost(

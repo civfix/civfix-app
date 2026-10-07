@@ -1,15 +1,7 @@
-/* =========================================================================
-   Public organization page: /orgs/<slug>
-
-   A standalone DOM route in the /e mould: the audience is a
-   visitor arriving from a shared link (often signed out, often on a phone),
-   so the page is plain semantic HTML that paints without the app shell, the
-   map or the RN stack. In-app navigation to an organization still opens the
-   shared OrgPageBody inside the shell; this is the cold-load surface.
-
-   Every value is a design token from src/styles/design.css, which already
-   flips for `.dark`; there are no literal colors here.
-   ========================================================================= */
+/* A standalone DOM route like /e: the audience arrives from a shared link, often signed out and on a
+   phone, so the page is plain semantic HTML that paints without the app shell, the map or the RN
+   stack. In-app navigation still opens the shared OrgPageBody inside the shell; this is the cold-load
+   surface. Every value is a design.css token, which already flips for `.dark`. */
 
 .orgpage {
   min-height: 100dvh;
@@ -29,7 +21,6 @@
   gap: var(--space-6);
 }
 
-/* ---- Identity ---- */
 .orgpage-header {
   display: flex;
   align-items: flex-start;
@@ -99,7 +90,6 @@
   color: var(--moss-600);
 }
 
-/* ---- Donate CTA ---- */
 .orgpage-donate {
   display: inline-flex;
   align-items: center;
@@ -125,7 +115,6 @@
   outline-offset: 2px;
 }
 
-/* ---- Sections ---- */
 .orgpage-section {
   padding: var(--space-5);
   border-radius: var(--radius-lg);
@@ -206,7 +195,6 @@
   outline-offset: 2px;
 }
 
-/* ---- Footer / states ---- */
 .orgpage-foot {
   color: var(--fg-3);
   font-size: var(--fs-13);

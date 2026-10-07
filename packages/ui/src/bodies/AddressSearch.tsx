@@ -1,26 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
-import { View, Pressable, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native"
+import React, { useState } from "react"
+import { View, Pressable, ActivityIndicator, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { tokens } from "@civfix/shared/tokens"
-import { parseLatLng, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
-import { makeThemedStyles, useTheme, focusRingProps, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webInputReset, PRESSED_OPACITY, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { useGeolocation } from "../capabilities"
-import { useApi, fetchApproximateLocation } from "../data"
-import { useMapViewport, viewportBias } from "../map/mapViewportStore"
 import { useT } from "../i18n"
-import { buildSuggestRequest } from "./addressSuggestRequest"
+import { useAddressSearch, type AddressPick } from "./useAddressSearch"
 
-const MAP_BIAS_SCALE = 0.6
-
-type Bias = { proximity?: LatLng | null; proximityZoom?: number; locationBiasScale?: number }
-
-export interface AddressPick {
-  name: string
-  lat: number
-  lng: number
-}
+export type { AddressPick } from "./useAddressSearch"
 
 export interface AddressSearchProps {
   value: string
@@ -28,139 +14,16 @@ export interface AddressSearchProps {
   onPick: (place: AddressPick) => void
 }
 
-const DEBOUNCE_MS = 280
-
 export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("map-address")
-  const geo = useGeolocation()
-  const api = useApi()
-  const qc = useQueryClient()
-  const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<GeoSuggestion[]>([])
-  const abortRef = useRef<AbortController | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const proximityRef = useRef<Promise<LatLng | null> | null>(null)
-
-  const resolveProximity = useCallback((): Promise<LatLng | null> => {
-    if (!proximityRef.current) {
-      proximityRef.current = (async () => {
-        const pos = geo.isAvailable() ? await geo.getCurrentPosition().catch(() => null) : null
-        if (pos) return { lat: pos.latitude, lng: pos.longitude }
-        const approximate = await fetchApproximateLocation(api, qc)
-        if (approximate) return approximate
-        proximityRef.current = null
-        return null
-      })()
-    }
-    return proximityRef.current
-  }, [geo, api, qc])
-
-  const resolveBias = useCallback(async (): Promise<Bias> => {
-    return (
-      viewportBias(useMapViewport.getState().viewport, MAP_BIAS_SCALE) ?? {
-        proximity: await resolveProximity(),
-      }
-    )
-  }, [resolveProximity])
-
-  const cancelPending = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-      debounceRef.current = null
-    }
-    abortRef.current?.abort()
-    abortRef.current = null
-  }, [])
-
-  useEffect(() => cancelPending, [cancelPending])
-
-  const runSearch = useCallback(
-    async (q: string) => {
-      const trimmed = q.trim()
-      if (!trimmed) {
-        abortRef.current?.abort()
-        abortRef.current = null
-        setResults([])
-        setLoading(false)
-        return
-      }
-      const coord = parseLatLng(trimmed)
-      if (coord) {
-        abortRef.current?.abort()
-        setResults([
-          {
-            id: `coordinate:${coord.lat},${coord.lng}`,
-            label: `${coord.lat.toFixed(5)}, ${coord.lng.toFixed(5)}`,
-            secondary: t("coordinate.exact"),
-            lat: coord.lat,
-            lng: coord.lng,
-            source: "coordinate",
-          },
-        ])
-        setOpen(true)
-        setLoading(false)
-        return
-      }
-      abortRef.current?.abort()
-      const ac = new AbortController()
-      abortRef.current = ac
-      setLoading(true)
-      try {
-        let bias: Bias = {}
-        try {
-          bias = await resolveBias()
-        } catch {
-          bias = {}
-        }
-        if (ac.signal.aborted) return
-        const res = await api.suggest(buildSuggestRequest(trimmed, bias), { signal: ac.signal })
-        if (ac.signal.aborted) return
-        setResults(res.suggestions)
-        setOpen(true)
-      } catch {
-        if (!ac.signal.aborted) setResults([])
-      } finally {
-        if (!ac.signal.aborted) setLoading(false)
-      }
-    },
-    [resolveBias, t, api],
-  )
-
-  const onChange = useCallback(
-    (next: string) => {
-      onChangeText(next)
-      setOpen(true)
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => void runSearch(next), DEBOUNCE_MS)
-    },
-    [onChangeText, runSearch],
-  )
-
-  const choose = useCallback(
-    (s: GeoSuggestion) => {
-      cancelPending()
-      onPick({ name: s.label, lat: s.lat, lng: s.lng })
-      onChangeText(s.label)
-      setResults([])
-      setLoading(false)
-      setOpen(false)
-    },
-    [cancelPending, onPick, onChangeText],
-  )
-
-  const clear = useCallback(() => {
-    cancelPending()
-    onChangeText("")
-    setResults([])
-    setLoading(false)
-    setOpen(false)
-  }, [cancelPending, onChangeText])
-
-  const showEmpty = open && !loading && results.length === 0 && value.trim().length > 0
+  const { loading, results, status, runSearch, onChange, reopen, choose, clear } = useAddressSearch({
+    value,
+    onChangeText,
+    onPick,
+  })
 
   return (
     <View>
@@ -171,10 +34,11 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
           onChangeText={onChange}
           onFocus={() => {
             setFocused(true)
-            if (value.trim().length > 0) setOpen(true)
+            reopen()
           }}
           onBlur={() => setFocused(false)}
           placeholder={t("input.placeholder")}
+          accessibilityLabel={t("input.a11y")}
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
           autoCorrect={false}
@@ -196,7 +60,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
         ) : null}
       </View>
 
-      {open && results.length > 0 ? (
+      {status === "results" ? (
         <View style={styles.results}>
           {results.map((s, i) => (
             <Pressable
@@ -228,7 +92,27 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
             <Text style={styles.attribution}>© Mapbox © OpenStreetMap</Text>
           ) : null}
         </View>
-      ) : showEmpty ? (
+      ) : status === "failed" ? (
+        <View style={styles.results}>
+          <View style={styles.result}>
+            <Icon icon={iconMap.AlertCircle} size={16} color={th.colors.textSubtle} />
+            <View style={styles.resultMeta}>
+              <Text style={styles.resultAddr} numberOfLines={2}>
+                {t("error.failed")}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => void runSearch(value)}
+              accessibilityRole="button"
+              accessibilityLabel={t("error.retry")}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.retry, pressed ? styles.pressed : null]}
+            >
+              <Text style={styles.retryText}>{t("error.retry")}</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : status === "empty" ? (
         <View style={styles.results}>
           <View style={styles.result}>
             <Icon icon={iconMap.Info} size={16} color={th.colors.textSubtle} />
@@ -256,10 +140,7 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     minHeight: 52,
   },
-  fieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  fieldFocused: inputFocusedStyle(t),
   input: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,
@@ -304,17 +185,27 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resultName: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   resultAddr: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
     marginTop: 1,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
+  },
+  retry: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
+    paddingHorizontal: t.space["2"],
+  },
+  retryText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.accentText,
   },
   attribution: {
     fontFamily: t.fontFamily.bodyRegular,

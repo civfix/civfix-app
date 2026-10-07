@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Keyboard,
   Platform,
   Pressable,
@@ -21,7 +20,8 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { makeThemedStyles, useTheme } from "../theme"
+import { makeThemedStyles, motion, space, useTheme } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import {
   LiquidGlassDock,
@@ -47,6 +47,7 @@ import {
   TAB_ICON_STROKE_WIDTH,
   TAB_ICON_CENTER_Y,
   TAB_PILL_LOCK_COUNT,
+  activeTabIndex,
   lockedIndexForPillCenter,
   pillDragRect,
   selectedPillRect,
@@ -77,7 +78,7 @@ import {
   type TabDef,
 } from "./TabBar.shared"
 
-const EASING = Easing.bezier(0.22, 1, 0.36, 1)
+const EASING = Easing.bezier(...motion.easing)
 
 const DOCK_PLATFORM: DockPlatform = Platform.OS === "android" ? "android" : "other"
 
@@ -89,12 +90,11 @@ const ICON_CENTER_Y = TAB_ICON_CENTER_Y
 const PILL_TOP = selectedPillRect(0, 0).y
 const PILL_HEIGHT = selectedPillRect(0, 0).height
 const DOCKED_D = H - DOCK_MORPH_SHRINK
-const FIELD_PAD = 20
+const FIELD_PAD = space["5"]
+const FIELD_H = space["10"]
+const CLEAR_BUTTON_SIZE = space["10"]
+const FIELD_GUTTER = space["4"]
 const DOCKED_MAG_X = DOCKED_D + G + FIELD_PAD
-
-function tabIndexForView(view: NavView): number {
-  return TABS.findIndex((tab) => tab.view === view)
-}
 
 function MorphTabCell({
   index,
@@ -154,6 +154,7 @@ function MorphTabCell({
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
       pointerEvents={interactive ? "auto" : "none"}
+      {...a11yReachableWhen(interactive)}
       style={[styles.tabHit, { left: index * tabW, width: tabW }]}
     >
       <Animated.View style={[styles.iconBox, wrapStyle]}>
@@ -164,6 +165,15 @@ function MorphTabCell({
 }
 
 const MorphTab = memo(MorphTabCell)
+
+// pointerEvents only stops touches: a screen reader still reaches a view it
+// gates, so every morphing hit target also leaves the a11y tree while inert.
+function a11yReachableWhen(reachable: boolean) {
+  return {
+    accessibilityElementsHidden: !reachable,
+    importantForAccessibility: reachable ? ("auto" as const) : ("no-hide-descendants" as const),
+  }
+}
 
 export function TabBar() {
   const styles = useStyles()
@@ -184,18 +194,7 @@ export function TabBar() {
   const tabW = wide / TAB_COUNT
   const pillW = selectedPillRect(0, tabW).width
 
-  const [reduceMotion, setReduceMotion] = useState(false)
-  useEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => mounted && setReduceMotion(!!enabled))
-      .catch(() => {})
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => setReduceMotion(!!enabled))
-    return () => {
-      mounted = false
-      sub?.remove()
-    }
-  }, [])
+  const reduceMotion = useReducedMotion() === true
 
   const [prevView, setPrevView] = useState<NavView>(() =>
     seedPreviousView(view, useTabBarStore.getState().lastNonSearchView),
@@ -248,7 +247,7 @@ export function TabBar() {
   }, [reduceMotion, mount])
 
   const visible = activeIndex >= 0
-  const persistIndex = visible ? activeIndex : Math.max(tabIndexForView(prevView), 0)
+  const persistIndex = visible ? activeIndex : Math.max(activeTabIndex(prevView), 0)
   const pillIndex = visible ? activeIndex : persistIndex
   const targetX = selectedPillRect(pillIndex, tabW).x
   const tx = useSharedValue(targetX)
@@ -366,9 +365,9 @@ export function TabBar() {
       ],
     }
   })
-  const dockedFieldLeft = DOCKED_MAG_X + 16
-  const dockedFieldW = Math.max(regionW - dockedFieldLeft - 16, 0)
-  const focusedFieldW = Math.max(regionW - DOCKED_D - G - dockedFieldLeft - 8, 0)
+  const dockedFieldLeft = DOCKED_MAG_X + FIELD_GUTTER
+  const dockedFieldW = Math.max(regionW - dockedFieldLeft - FIELD_GUTTER, 0)
+  const focusedFieldW = Math.max(regionW - DOCKED_D - G - dockedFieldLeft - space["2"], 0)
   const fieldStyle = useAnimatedStyle(() => {
     const right = shapes.value.right
     return {
@@ -421,7 +420,7 @@ export function TabBar() {
                 />
 
                 <GestureDetector gesture={pan}>
-                  <Animated.View style={[styles.tabStrip, { width: wide }]}>
+                  <Animated.View style={[styles.tabStrip, { width: wide }]} accessibilityRole="tablist">
                     {TABS.map((tab, i) => (
                       <MorphTab
                         key={tab.id}
@@ -446,8 +445,9 @@ export function TabBar() {
                 <Pressable
                   onPress={resetMinimize}
                   accessibilityRole="button"
-                  accessibilityLabel={t(TABS[Math.max(persistIndex, 0)]!.labelKey)}
+                  accessibilityLabel={t("a11y.show_tab_bar")}
                   pointerEvents={minimizedActive ? "auto" : "none"}
+                  {...a11yReachableWhen(minimizedActive)}
                   style={styles.exitHit}
                 />
 
@@ -456,6 +456,7 @@ export function TabBar() {
                   accessibilityRole="button"
                   accessibilityLabel={tSearch("a11y.home")}
                   pointerEvents={searchActive ? "auto" : "none"}
+                  {...a11yReachableWhen(searchActive)}
                   style={styles.exitHit}
                 />
 
@@ -465,6 +466,7 @@ export function TabBar() {
                   accessibilityState={{ selected: searchActive }}
                   accessibilityLabel={t("tab.search")}
                   pointerEvents={searchActive ? "none" : "auto"}
+                  {...a11yReachableWhen(!searchActive)}
                   style={[styles.orbHit, { left: regionW - H, width: H }]}
                 />
 
@@ -478,11 +480,13 @@ export function TabBar() {
                 <Animated.View
                   style={[styles.field, fieldStyle]}
                   pointerEvents={searchActive ? "auto" : "none"}
+                  {...a11yReachableWhen(searchActive)}
                 >
                   <Animated.View style={[StyleSheet.absoluteFill, inputStyle]}>
                     <TextInput
                       value={dockedSearch.value}
                       placeholder=""
+                      accessibilityLabel={dockedSearch.placeholder}
                       style={styles.input}
                       returnKeyType="search"
                       editable={searchActive}
@@ -494,12 +498,18 @@ export function TabBar() {
                       onBlur={onFieldBlur}
                     />
                   </Animated.View>
-                  <Animated.Text style={[styles.placeholderLabel, placeholderStyle]} numberOfLines={1} pointerEvents="none">
+                  <Animated.Text
+                    style={[styles.placeholderLabel, placeholderStyle]}
+                    numberOfLines={1}
+                    pointerEvents="none"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  >
                     {dockedSearch.placeholder}
                   </Animated.Text>
                 </Animated.View>
 
-                <Animated.View style={[styles.clear, clearStyle]} pointerEvents={pinned ? "auto" : "none"}>
+                <Animated.View style={[styles.clear, clearStyle]} pointerEvents={pinned ? "auto" : "none"} {...a11yReachableWhen(pinned)}>
                   <Pressable
                     onPress={onClearSearch}
                     accessibilityRole="button"
@@ -583,8 +593,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   field: {
     position: "absolute",
-    top: H / 2 - 20,
-    height: 40,
+    top: H / 2 - FIELD_H / 2,
+    height: FIELD_H,
     justifyContent: "center",
   },
   placeholderLabel: {
@@ -601,14 +611,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   clear: {
     position: "absolute",
-    top: H / 2 - 20,
-    right: (DOCKED_D - 40) / 2,
-    width: 40,
-    height: 40,
+    top: H / 2 - CLEAR_BUTTON_SIZE / 2,
+    right: (DOCKED_D - CLEAR_BUTTON_SIZE) / 2,
+    width: CLEAR_BUTTON_SIZE,
+    height: CLEAR_BUTTON_SIZE,
   },
   clearHit: {
-    width: 40,
-    height: 40,
+    width: CLEAR_BUTTON_SIZE,
+    height: CLEAR_BUTTON_SIZE,
     alignItems: "center",
     justifyContent: "center",
   },

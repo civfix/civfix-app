@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { LegalPage } from "@/components/legal/legal-page"
+import { LegalContactLink } from "../legal-contact-link"
 
 export const metadata: Metadata = {
   title: "Cookies & Storage · civfix",
@@ -108,7 +109,7 @@ export default function CookiesPage() {
             <tbody>
               {WEB_ROWS.map((r) => (
                 <tr key={r.item}>
-                  <th scope="row" style={{ textAlign: "left", fontWeight: 700 }}>
+                  <th scope="row">
                     {r.item}
                   </th>
                   <td>{r.where}</td>
@@ -141,7 +142,7 @@ export default function CookiesPage() {
             <tbody>
               {MOBILE_ROWS.map((r) => (
                 <tr key={r.item}>
-                  <th scope="row" style={{ textAlign: "left", fontWeight: 700 }}>
+                  <th scope="row">
                     {r.item}
                   </th>
                   <td>{r.where}</td>
@@ -190,7 +191,7 @@ export default function CookiesPage() {
         <h2>6. Contact us</h2>
         <p>
           Questions about cookies or storage? Email{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.
+          <LegalContactLink />.
         </p>
       </section>
     </LegalPage>

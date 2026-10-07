@@ -4,12 +4,12 @@ import { motion, type TimingRecipe } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 
-export { MENU_SCALE_FROM, menuOrigin }
-export type { MenuAnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
+export { menuOrigin }
+export type { AnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
 
 declare const process: { env: { NODE_ENV?: string } }
 
-export const MENU_NATIVE_DRIVER = Platform.OS !== "web"
+const MENU_NATIVE_DRIVER = Platform.OS !== "web"
 
 const MENU_MOTION_DEV_ASSERTS = process.env.NODE_ENV !== "production"
 
@@ -26,7 +26,7 @@ export interface MenuMotionRecipes {
   exit: TimingRecipe
 }
 
-export const MENU_RECIPES: MenuMotionRecipes = { enter: motion.menuIn, exit: motion.menuOut }
+const MENU_RECIPES: MenuMotionRecipes = { enter: motion.menuIn, exit: motion.menuOut }
 
 export function useMenuMotion({
   visible,

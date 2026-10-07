@@ -1,20 +1,8 @@
-/* =========================================================================
-   /service-record - the PUBLIC certificate verification page.
-
-   Audience: a school registrar or a court clerk on a desktop browser, who will
-   very often PRINT (or "save as PDF") the confirmation and staple it to the
-   transcript the holder handed them. So, like the /legal documents, this route
-   carries a small hand-written stylesheet rather than living entirely in
-   Tailwind utilities - a `@media print` block cannot be expressed as one.
-
-   The print rules: drop the app chrome and the page's own controls (a sticky
-   back bar and a "Verify" button are meaningless on paper), flatten the warm
-   card tints to ink-on-white so a monochrome office printer stays legible, and
-   keep the verdict card and its disclaimer together on one sheet.
-
-   `.sr-page` wraps the whole route (outside DetailShell) so these rules can
-   reach the shell's own <header> / <main> without leaking to other routes.
-   ========================================================================= */
+/* A registrar or court clerk very often prints this confirmation, and a `@media print` block cannot be
+   expressed as Tailwind utilities. On paper: drop the app chrome and the page's controls, flatten the
+   warm tints to ink on white for monochrome printers, and keep the verdict card and its disclaimer on
+   one sheet. `.sr-page` wraps the whole route (outside DetailShell) so these rules reach the shell's
+   own <header> / <main> without leaking to other routes. */
 
 @media print {
   /* Interactive-only chrome: the shell's sticky back bar and this page's buttons. */

@@ -18,12 +18,13 @@ import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { buildPostIdentity } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
+import { normalizeHandle } from "../mentionText"
 import { useEmbedGate } from "./chatEmbedScope"
 import { civfixEntityRef, type CivfixLinkKind, type CivfixLinkRef } from "./civfixLinks"
 
-export const EMBED_CARD_WIDTH = 260
+const EMBED_CARD_WIDTH = 260
 
-export const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = {
+const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = {
   report: 64,
   event: 68,
   post: 88,
@@ -118,7 +119,7 @@ function ReportEmbed(props: EmbedProps) {
   )
 }
 
-export function eventRefFromCleanup(cleanup: CleanupDTO): LinkedEventRef {
+function eventRefFromCleanup(cleanup: CleanupDTO): LinkedEventRef {
   return {
     id: cleanup.id,
     title: cleanup.title,
@@ -289,7 +290,7 @@ function PersonEmbedCard({ profile, onPress }: { profile: UserProfileDTO; onPres
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
-  const handle = profile.handle?.replace(/^@/, "").trim() || null
+  const handle = (profile.handle ? normalizeHandle(profile.handle).trim() : "") || null
   const bio = profile.bio?.trim() || null
   return (
     <Pressable
@@ -469,7 +470,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   fallbackLink: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
     textDecorationLine: "underline",
   },
@@ -510,14 +511,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
     color: t.colors.text,
   },
   meta: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
@@ -525,7 +526,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 0,
   },
   body: {
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
 }))

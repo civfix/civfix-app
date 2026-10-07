@@ -1,7 +1,6 @@
 /**
- * Unit tests for the chatPowers matrix (P3 Task 3.7): who may pin/unpin and who may delete
- * OTHERS' messages, per room kind. These flags only gate the UI - the server matrix stays
- * authoritative and re-checks every request - so the suite exercises the FULL client mirror.
+ * These flags only gate the UI (the server matrix stays authoritative and re-checks every request), so
+ * the suite exercises the FULL client mirror.
  */
 import { describe, expect, it } from "vitest"
 import { canPinIn, canDeleteOthersIn, type ChatPowerSignals } from "../chatPowers"

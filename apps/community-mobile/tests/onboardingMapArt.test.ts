@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { readFileSync, readdirSync } from "node:fs"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { space } from "../../../packages/shared/src/tokens/design-tokens.ts"
 import { DEFAULT_ATTRIBUTION } from "../../../packages/ui/src/map/mapStyle.ts"
@@ -28,7 +28,20 @@ const appDir = new URL("../", import.meta.url)
 const assetsDir = new URL("assets/onboarding/", appDir)
 const onboardingDir = new URL("src/components/onboarding/", appDir)
 const stagesDir = new URL("stages/", onboardingDir)
-const manifest = JSON.parse(readFileSync(new URL("manifest.json", assetsDir), "utf8"))
+interface ManifestEntry {
+  bytes: number
+  sha256: string
+  width: number
+  height: number
+  scene: unknown
+}
+
+interface OnboardingArtManifest {
+  attribution: string
+  files: Record<string, ManifestEntry>
+}
+
+const manifest = JSON.parse(readFileSync(new URL("manifest.json", assetsDir), "utf8")) as OnboardingArtManifest
 const script = readFileSync(new URL("scripts/onboarding-map-art.mjs", appDir), "utf8")
 
 const MAX_TOTAL_BYTES = 1_500_000
@@ -269,7 +282,7 @@ test("every still was cut from the scene the table describes today", () => {
 
 test("the stills stay inside the weight budget and light differs from dark", () => {
   const total = Object.values(manifest.files).reduce(
-    (sum: number, entry: any) => sum + entry.bytes,
+    (sum: number, entry: ManifestEntry) => sum + entry.bytes,
     0,
   )
   assert.ok(total <= MAX_TOTAL_BYTES, `onboarding stills weigh ${total} bytes`)

@@ -1,22 +1,14 @@
 import React from "react"
-import { Modal, View, Pressable, StyleSheet, Platform, useWindowDimensions } from "react-native"
-import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import {
-  makeThemedStyles,
-  space,
-  useTheme,
-  webCursorPointer,
-  webTransition,
-  webHover,
-  webNoSelect,
-  focusRingProps,
-  webScrimProps,
-} from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { Pressable, Platform } from "react-native"
+import { makeThemedStyles, useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../theme"
+import { iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import type { AnchorRect } from "./PopoverMenu"
+import { AnchoredActionSheet } from "./AnchoredActionSheet"
 import { composerAttachRows, type ComposerAttachRowKey } from "./composerAttachRows"
+import { MenuItemContent } from "./MenuItemContent"
+import { menuRowStyles } from "./menuSurface"
 
 export interface ComposerAttachSheetProps {
   visible: boolean
@@ -35,8 +27,8 @@ const ROW_ICON: Record<ComposerAttachRowKey, IconName> = {
 }
 
 const CARD_WIDTH = 232
-const EDGE_MARGIN = space["2"]
-const GAP = space["1"]
+const CARD_MAX_WIDTH = 320
+const ROW_ICON_SIZE = 18
 
 export function ComposerAttachSheet({
   visible,
@@ -50,178 +42,51 @@ export function ComposerAttachSheet({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
-  const { width: winW, height: winH } = useWindowDimensions()
-  const isWeb = Platform.OS === "web"
-  const insets = React.useContext(SafeAreaInsetsContext)
 
-  const rows = composerAttachRows({ isWeb, canCreatePoll })
+  const rows = composerAttachRows({ isWeb: Platform.OS === "web", canCreatePoll })
 
-  const handlerFor = (key: ComposerAttachRowKey): (() => void) =>
-    key === "photo" ? onPhoto : key === "camera" ? onCamera : onPoll
-
-  const pendingActionRef = React.useRef<(() => void) | null>(null)
-  const choose = (key: ComposerAttachRowKey) => {
-    const action = handlerFor(key)
-    if (Platform.OS === "ios") {
-      pendingActionRef.current = action
-      onClose()
-      return
-    }
-    onClose()
-    action()
-  }
-  const onModalDismiss = () => {
-    const action = pendingActionRef.current
-    pendingActionRef.current = null
-    if (action) action()
-  }
-
-  const renderRow = (key: ComposerAttachRowKey) => {
-    const label = t(`attach.${key}`)
-    return (
-      <Pressable
-        key={key}
-        onPress={() => choose(key)}
-        accessibilityRole="menuitem"
-        accessibilityLabel={label}
-        {...focusRingProps}
-        style={(state) => [
-          styles.row,
-          webTransition,
-          webCursorPointer,
-          webHover(state) ? styles.rowHovered : null,
-          state.pressed ? styles.rowPressed : null,
-        ]}
-      >
-        <Icon icon={iconMap[ROW_ICON[key]]} size={18} color={th.colors.text} />
-        <Text variant="body" color={th.colors.text} numberOfLines={1} style={[styles.rowLabel, webNoSelect]}>
-          {label}
-        </Text>
-      </Pressable>
-    )
-  }
-
-  if (isWeb) {
-    let cardPosition: { bottom: number; left: number } | null = null
-    if (anchor) {
-      const rawLeft = anchor.x
-      const maxLeft = Math.max(EDGE_MARGIN, winW - CARD_WIDTH - EDGE_MARGIN)
-      cardPosition = {
-        bottom: Math.max(EDGE_MARGIN, winH - anchor.y + GAP),
-        left: Math.min(Math.max(rawLeft, EDGE_MARGIN), maxLeft),
-      }
-    }
-    return (
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={onClose}
-        onDismiss={onModalDismiss}
-      >
-        <View style={styles.rootWeb}>
-          <Pressable
-            style={styles.backdropWeb}
-            accessibilityRole="button"
-            accessibilityLabel={t("attach.dismiss")}
-            onPress={onClose}
-            {...webScrimProps}
-          />
-          <View
-            style={[styles.card, cardPosition ? { position: "absolute", ...cardPosition } : styles.cardCentered]}
-            accessibilityRole="menu"
-          >
-            {rows.map(renderRow)}
-          </View>
-        </View>
-      </Modal>
-    )
-  }
+  const handlers: Record<ComposerAttachRowKey, () => void> = { photo: onPhoto, camera: onCamera, poll: onPoll }
 
   return (
-    <Modal
+    <AnchoredActionSheet
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-      onDismiss={onModalDismiss}
+      onClose={onClose}
+      anchor={anchor}
+      cardWidth={CARD_WIDTH}
+      cardMaxWidth={CARD_MAX_WIDTH}
+      dismissLabel={t("attach.dismiss")}
     >
-      <View style={styles.rootNative}>
-        <Pressable
-          style={styles.scrim}
-          accessibilityRole="button"
-          accessibilityLabel={t("attach.dismiss")}
-          onPress={onClose}
-          {...webScrimProps}
-        />
-        <View
-          style={[styles.sheet, { paddingBottom: (insets?.bottom ?? 0) + th.space["3"] }]}
-          accessibilityRole="menu"
-        >
-          {rows.map(renderRow)}
-        </View>
-      </View>
-    </Modal>
+      {(runAfterDismiss) =>
+        rows.map((key) => {
+          const label = t(`attach.${key}`)
+          return (
+            <Pressable
+              key={key}
+              onPress={() => runAfterDismiss(handlers[key])}
+              accessibilityRole="menuitem"
+              accessibilityLabel={label}
+              {...focusRingProps}
+              style={(state) => [
+                styles.row,
+                webTransition,
+                webCursorPointer,
+                webHover(state) ? styles.rowHovered : null,
+                state.pressed ? styles.rowPressed : null,
+              ]}
+            >
+              <MenuItemContent
+                icon={iconMap[ROW_ICON[key]]}
+                iconSize={ROW_ICON_SIZE}
+                color={th.colors.text}
+                label={label}
+                labelStyle={styles.rowLabel}
+              />
+            </Pressable>
+          )
+        })
+      }
+    </AnchoredActionSheet>
   )
 }
 
-const useStyles = makeThemedStyles((t) => ({
-  rootWeb: {
-    flex: 1,
-  },
-  backdropWeb: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  rootNative: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  scrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: t.colors.scrimModal,
-  },
-  card: {
-    minWidth: CARD_WIDTH,
-    maxWidth: 320,
-    paddingVertical: t.space["1"],
-    paddingHorizontal: t.space["1"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
-  cardCentered: {
-    alignSelf: "center",
-    marginTop: "auto",
-    marginBottom: "auto",
-  },
-  sheet: {
-    paddingTop: t.space["2"],
-    paddingHorizontal: t.space["2"],
-    borderTopLeftRadius: t.radius.xl,
-    borderTopRightRadius: t.radius.xl,
-    backgroundColor: t.colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingHorizontal: t.space["3"],
-    paddingVertical: t.space["3"],
-    borderRadius: t.radius.md,
-  },
-  rowHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  rowPressed: {
-    backgroundColor: t.colors.surfaceTint,
-    opacity: 0.85,
-  },
-  rowLabel: {
-    flex: 1,
-  },
-}))
+const useStyles = makeThemedStyles((t) => menuRowStyles(t, t.space["3"]))

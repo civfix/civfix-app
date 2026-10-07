@@ -1,12 +1,13 @@
 import { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
+import { queryKeys } from "@civfix/ui/data"
 import { describe, expect, it } from "vitest"
 
 import {
-  checkInSeatsInRow,
+  invalidateEvent,
   invalidateOrg,
+  invalidateRoster,
   markRosterSeatsCheckedIn,
-  rowStillPendingCheckIn,
   upsertMyOrganization,
 } from "./console-invalidate"
 import { consoleKeys } from "./console-keys"
@@ -52,41 +53,6 @@ function page(items: EventRegistrationDTO[], total?: number) {
   }
 }
 
-describe("checkInSeatsInRow", () => {
-  it("checks in every seat it is given", () => {
-    const next = checkInSeatsInRow(row(), ["s1", "s2", "s3"], AT)
-    expect(next.seats.map((s) => s.checkedInAt)).toEqual([AT, AT, AT])
-    expect(next.checkedInAt).toBe(AT)
-  })
-
-  it("leaves seats it was not given alone", () => {
-    const next = checkInSeatsInRow(row(), ["s1"], AT)
-    expect(next.seats.map((s) => s.checkedInAt)).toEqual([AT, null, null])
-    expect(rowStillPendingCheckIn(next)).toBe(true)
-  })
-
-  it("never re-stamps a seat that was already checked in", () => {
-    const earlier = "2026-09-06T17:00:00.000Z"
-    const next = checkInSeatsInRow(
-      row({ seats: [seat("s1", { checkedInAt: earlier }), seat("s2")], seatCount: 2 }),
-      ["s1", "s2"],
-      AT,
-    )
-    expect(next.seats[0]?.checkedInAt).toBe(earlier)
-    expect(next.seats[1]?.checkedInAt).toBe(AT)
-  })
-
-  it("does not check in a cancelled seat", () => {
-    const next = checkInSeatsInRow(
-      row({ seats: [seat("s1", { status: "cancelled" })], seatCount: 1 }),
-      ["s1"],
-      AT,
-    )
-    expect(next.seats[0]?.checkedInAt).toBeNull()
-    expect(rowStillPendingCheckIn(next)).toBe(false)
-  })
-})
-
 describe("markRosterSeatsCheckedIn", () => {
   it("keeps the row in the attendees list with its seats updated", () => {
     const qc = new QueryClient()
@@ -124,6 +90,19 @@ describe("markRosterSeatsCheckedIn", () => {
     }
     const door = qc.getQueryData(rosterKey("not_checked_in")) as ReturnType<typeof page>
     expect(door.pages[0]?.items).toHaveLength(0)
+  })
+
+  it("drops a settled row from the shared data layer's door list too", () => {
+    const qc = new QueryClient()
+    const uiDoorKey = ["host", "evt_1", "roster", "not_checked_in", ""]
+    const uiSearchKey = ["host", "evt_1", "roster", "all", "not_checked_in"]
+    qc.setQueryData(uiDoorKey, page([row()], 1))
+    qc.setQueryData(uiSearchKey, page([row()], 1))
+    markRosterSeatsCheckedIn(qc, "evt_1", "reg_1", ["s1", "s2", "s3"], AT)
+    const door = qc.getQueryData(uiDoorKey) as ReturnType<typeof page>
+    expect(door.pages[0]?.items).toHaveLength(0)
+    const search = qc.getQueryData(uiSearchKey) as ReturnType<typeof page>
+    expect(search.pages[0]?.items[0]?.checkedInAt).toBe(AT)
   })
 
   it("leaves another event's roster untouched", () => {
@@ -208,5 +187,63 @@ describe("upsertMyOrganization", () => {
       org({ name: "River Keepers", myRole: "owner", memberCount: 3 }),
       org({ id: "org_2" }),
     ])
+  })
+})
+
+describe("invalidateRoster", () => {
+  const EVT = "evt_1"
+  const rosterDependent: readonly (readonly unknown[])[] = [
+    consoleKeys.roster(EVT, "all", "name_asc", "", null),
+    queryKeys.hostRoster(EVT, "not_checked_in", ""),
+    queryKeys.hostCounters(EVT),
+    queryKeys.eventInsights(EVT),
+    queryKeys.eventAnalytics(EVT, "summary"),
+    consoleKeys.analytics(EVT, "funnel", "30d"),
+    queryKeys.hostTicketTypes(EVT),
+    queryKeys.eventAudiencePreview(EVT, "checked_in"),
+    consoleKeys.broadcastPreview(EVT, "b_1"),
+    consoleKeys.broadcasts(EVT),
+    queryKeys.eventAnnouncements(EVT),
+    queryKeys.cleanup(EVT),
+    queryKeys.cleanupAttendees(EVT),
+  ]
+  const configuration: readonly (readonly unknown[])[] = [
+    consoleKeys.page(EVT),
+    consoleKeys.slugCheck(EVT, "river"),
+    queryKeys.hostQuestions(EVT),
+    queryKeys.hostTeam(EVT),
+    consoleKeys.exports(EVT),
+    consoleKeys.answers(EVT, "reg_1"),
+  ]
+
+  function seeded(): QueryClient {
+    const qc = new QueryClient()
+    for (const key of [...rosterDependent, ...configuration]) qc.setQueryData(key, {})
+    qc.setQueryData(queryKeys.hostCounters("evt_2"), {})
+    return qc
+  }
+
+  const stale = (qc: QueryClient, key: readonly unknown[]) =>
+    qc.getQueryState(key)?.isInvalidated === true
+
+  it("invalidates every cache that reads registrations, seats or check-ins", () => {
+    const qc = seeded()
+    invalidateRoster(qc, EVT)
+    for (const key of rosterDependent) expect(stale(qc, key), JSON.stringify(key)).toBe(true)
+  })
+
+  it("leaves event configuration, answers and other events alone", () => {
+    const qc = seeded()
+    invalidateRoster(qc, EVT)
+    for (const key of configuration) expect(stale(qc, key), JSON.stringify(key)).toBe(false)
+    expect(stale(qc, queryKeys.hostCounters("evt_2"))).toBe(false)
+  })
+
+  it("covers a subset of what invalidateEvent covers", () => {
+    const qc = seeded()
+    invalidateEvent(qc, EVT)
+    for (const key of [...rosterDependent, ...configuration]) {
+      expect(stale(qc, key), JSON.stringify(key)).toBe(true)
+    }
   })
 })

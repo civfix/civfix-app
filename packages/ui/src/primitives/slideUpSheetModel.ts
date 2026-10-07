@@ -1,6 +1,6 @@
 export const SLIDE_UP_DISMISS_DISTANCE = 96
 export const SLIDE_UP_DISMISS_VELOCITY = 0.9
-export const SLIDE_UP_CAPTURE_SLOP = 4
+const SLIDE_UP_CAPTURE_SLOP = 4
 
 export type SlideUpDragOutcome = "dismiss" | "settle"
 

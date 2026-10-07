@@ -68,6 +68,7 @@
     "revoke_error": "증명서를 철회하지 못했습니다. 다시 시도해 주세요.",
     "disabled_hint": "먼저 봉사 시간을 기록하세요.",
     "error_generic": "기록을 준비하지 못했습니다. 다시 시도해 주세요.",
-    "error_rate_limited": "몇 분에 한 번씩 기록을 생성할 수 있습니다."
+    "error_rate_limited": "몇 분에 한 번씩 기록을 생성할 수 있습니다.",
+    "copy_error": "복사하지 못했습니다. 다시 시도해 주세요."
   }
 }

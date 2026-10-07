@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { LegalPage } from "@/components/legal/legal-page"
+import { LegalContactLink } from "../legal-contact-link"
 
 export const metadata: Metadata = {
   title: "Privacy Policy · civfix",
@@ -411,7 +412,7 @@ export default function PrivacyPage() {
             <tbody>
               {RETENTION_ROWS.map((r) => (
                 <tr key={r.category}>
-                  <th scope="row" style={{ textAlign: "left", fontWeight: 700 }}>
+                  <th scope="row">
                     {r.category}
                   </th>
                   <td>{r.period}</td>
@@ -473,7 +474,7 @@ export default function PrivacyPage() {
         <p>
           We do not make decisions about you that produce legal or similarly significant effects based
           solely on automated processing. To exercise a right, email{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>; we respond within the timeframes
+          <LegalContactLink />; we respond within the timeframes
           the law requires (generally within one month under the GDPR/UK GDPR). We will not discriminate
           against you for exercising your rights, and we do not sell or &ldquo;share&rdquo; personal
           information for cross-context behavioral advertising as those terms are defined under US state
@@ -482,7 +483,7 @@ export default function PrivacyPage() {
         <p>
           <strong>EEA / UK data-protection contact and complaints.</strong> For any privacy matter, EEA
           and UK users can contact <strong>Roman Aytur</strong> at{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>. Because civfix is operated from
+          <LegalContactLink />. Because civfix is operated from
           outside the EEA and the UK, we are also appointing a representative established in the European
           Union and in the United Kingdom under Article 27 of the GDPR / UK GDPR; we will publish that
           representative&rsquo;s name and contact details here. You also have the right to lodge a complaint
@@ -518,7 +519,7 @@ export default function PrivacyPage() {
         <p>
           The data controller is <strong>Reach Out Los Angeles Inc.</strong>, a California 501(&zwnj;c)(3)
           nonprofit. For privacy questions or to exercise any of the rights in Section 8, contact{" "}
-          <strong>Roman Aytur</strong> at <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.
+          <strong>Roman Aytur</strong> at <LegalContactLink />.
           EEA and UK users have additional contact and complaint options in Section 8.
         </p>
       </section>

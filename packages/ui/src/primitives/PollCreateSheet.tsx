@@ -1,13 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { Toggle } from "./Toggle"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
+import { POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
 import {
   emptyPollDraft,
   setQuestion,
@@ -15,9 +17,6 @@ import {
   removeOption,
   canCreatePoll,
   toCreateInput,
-  POLL_QUESTION_MAX,
-  POLL_OPTION_MAX,
-  POLL_MIN_OPTIONS,
   type PollDraft,
 } from "./pollDraft"
 
@@ -45,13 +44,12 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
   const [anonymous, setAnonymous] = useState(true)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (visible) {
-      setDraft(emptyPollDraft())
-      setAllowMultiple(false)
-      setAnonymous(true)
-    }
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setDraft(emptyPollDraft())
+    setAllowMultiple(false)
+    setAnonymous(true)
+    setFocusedField(null)
+  })
 
   const canSubmit = !pending && canCreatePoll(draft)
 
@@ -90,26 +88,26 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
         accessibilityLabel={t("question_placeholder")}
         onFocus={() => setFocusedField("q")}
         onBlur={() => setFocusedField(null)}
-        style={[webInputReset, styles.questionInput, focusedField === "q" ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.questionInput, focusedField === "q" ? inputFocusedStyle(th) : null]}
       />
 
       <View style={styles.options}>
         {draft.options.map((opt, idx) => (
-          <View key={idx} style={styles.optionRow}>
+          <View key={opt.id} style={styles.optionRow}>
             <TextInput
-              value={opt}
+              value={opt.text}
               onChangeText={(v) => setDraft((d) => setOption(d, idx, v))}
               editable={!pending}
               maxLength={POLL_OPTION_MAX}
               placeholder={t("option_placeholder", { index: idx + 1 })}
               placeholderTextColor={th.colors.textSubtle}
               accessibilityLabel={t("option_placeholder", { index: idx + 1 })}
-              onFocus={() => setFocusedField(`o${idx}`)}
+              onFocus={() => setFocusedField(opt.id)}
               onBlur={() => setFocusedField(null)}
               style={[
                 webInputReset,
                 styles.optionInput,
-                focusedField === `o${idx}` ? modalSheetInputFocusedStyle(th) : null,
+                focusedField === opt.id ? inputFocusedStyle(th) : null,
               ]}
             />
             {removable ? (
@@ -153,7 +151,7 @@ const useStyles = makeThemedStyles((t) => ({
   optionInput: {
     ...modalSheetInputStyle(t),
     flex: 1,
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   removeBtn: {
     width: 32,

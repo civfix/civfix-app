@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
-import type { ContentReportReason } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { CONTENT_REPORT_DETAILS_MAX, type ContentReportReason } from "@civfix/shared"
+import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
 
 const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
   "spam",
@@ -20,7 +21,6 @@ const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
   "other",
 ]
 
-const DETAILS_MAX = 1000
 
 export interface ReportContentSheetProps {
   visible: boolean
@@ -48,12 +48,11 @@ export function ReportContentSheet({
   const [details, setDetails] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) {
-      setReason(null)
-      setDetails("")
-    }
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setReason(null)
+    setDetails("")
+    setFocused(false)
+  })
 
   const canSubmit = !pending && reason != null
 
@@ -84,7 +83,7 @@ export function ReportContentSheet({
         {t("prompt")}
       </Text>
 
-      <View style={styles.reasons}>
+      <View style={styles.reasons} accessibilityRole="radiogroup" accessibilityLabel={t("prompt")}>
         {REASON_VALUES.map((value) => {
           const selected = reason === value
           const label = t(`reason.${value}`)
@@ -97,9 +96,9 @@ export function ReportContentSheet({
                 selected ? styles.reasonRowSelected : null,
                 pressed ? styles.reasonRowPressed : null,
               ]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={label}
-              accessibilityState={{ selected }}
+              {...a11yState({ checked: selected })}
               disabled={pending}
               onPress={() => setReason(value)}
             >
@@ -118,16 +117,16 @@ export function ReportContentSheet({
 
       <TextInput
         value={details}
-        onChangeText={(next) => setDetails(next.slice(0, DETAILS_MAX))}
+        onChangeText={(next) => setDetails(next.slice(0, CONTENT_REPORT_DETAILS_MAX))}
         editable={!pending}
         multiline
-        maxLength={DETAILS_MAX}
+        maxLength={CONTENT_REPORT_DETAILS_MAX}
         placeholder={t("details.placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("details.a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

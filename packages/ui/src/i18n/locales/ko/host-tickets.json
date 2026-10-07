@@ -14,7 +14,10 @@
     "unlimited": "제한 없음",
     "party": "1회 등록당 최대 {{max}}자리",
     "empty_title": "아직 티켓 종류가 없습니다",
-    "empty_body": "참여 방식을 고를 수 있도록 하나 추가해 보세요. 티켓 종류가 없으면 행사는 간단한 참가 신청으로 진행됩니다."
+    "empty_body": "참여 방식을 고를 수 있도록 하나 추가해 보세요. 티켓 종류가 없으면 행사는 간단한 참가 신청으로 진행됩니다.",
+    "move_up_named": "{{name}} 위로 이동",
+    "move_down_named": "{{name}} 아래로 이동",
+    "delete_named": "{{name}} 삭제"
   },
   "drawer": {
     "new_title": "새 티켓 종류",
@@ -39,7 +42,9 @@
     "maxPartySize": "1회 등록당 자리 수",
     "salesOpensAt": "신청 시작",
     "salesClosesAt": "신청 마감",
-    "ticketTypeIds": "순서"
+    "ticketTypeIds": "순서",
+    "sales_zone_hint": "신청 시간은 행사 시간대({{zone}}) 기준입니다.",
+    "sales_time_not_in_zone": "서머타임 전환으로 {{zone}}에는 없는 시간입니다. 다른 시간을 선택하세요."
   },
   "visibility": {
     "public": "공개",
@@ -78,6 +83,10 @@
     "required": "필수",
     "ticket_scope": "다음에만 질문",
     "ticket_all": "모든 티켓 종류",
-    "ticket_scope_hint": "특정 티켓 유형으로 제한한 질문은 그 유형을 선택했을 때만 표시되므로, 모든 유형을 숨기면 전혀 표시되지 않습니다. 항상 묻고 싶다면 모든 티켓 유형으로 두세요."
+    "ticket_scope_hint": "특정 티켓 유형으로 제한한 질문은 그 유형을 선택했을 때만 표시되므로, 모든 유형을 숨기면 전혀 표시되지 않습니다. 항상 묻고 싶다면 모든 티켓 유형으로 두세요.",
+    "move_up_named": "{{name}} 위로 이동",
+    "move_down_named": "{{name}} 아래로 이동",
+    "remove_named": "{{name}} 제거",
+    "untitled": "질문 {{n}}"
   }
 }

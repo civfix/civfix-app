@@ -2,6 +2,5 @@
   "title": "Sprache",
   "subtitle": "Wähle die Sprache der App. Dies ändert den gesamten Text in der App.",
   "nav_label": "Sprache",
-  "nav_sub": "App-Sprache auswählen",
-  "selected": "Ausgewählt"
+  "nav_sub": "App-Sprache auswählen"
 }

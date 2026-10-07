@@ -1,7 +1,7 @@
 import React from "react"
 import { View, Pressable } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { makeThemedStyles, focusRingProps, webCursorPointer, webTransition } from "../../theme"
+import { makeThemedStyles, focusRingProps, webCursorPointer, webTransition, MIN_TOUCH_TARGET } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { PostCard } from "../PostCard"
@@ -86,8 +86,6 @@ export function ProfilePostsSection({ posts, onOpenSaved }: ProfilePostsSectionP
   )
 }
 
-const SAVED_MIN_HEIGHT = 44
-
 const useStyles = makeThemedStyles((t) => ({
   lane: {
     marginTop: t.space["3"],
@@ -100,7 +98,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["3"],
   },
   saved: {
-    minHeight: SAVED_MIN_HEIGHT,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     alignItems: "flex-end",
     paddingLeft: t.space["3"],

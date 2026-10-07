@@ -24,8 +24,9 @@ import { Chip } from "@/components/console/chips/chip"
 import { ConsoleShell } from "../layout/console-shell"
 import { Breadcrumbs } from "../layout/breadcrumbs"
 import { OrgSwitcher } from "../layout/org-switcher"
+import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import type { ConsoleNavItem } from "../layout/nav-items"
-import { ConsoleOrgProvider, useConsoleNavigation } from "../console-context"
+import { ConsoleOrgProvider, orgRoleFlags, useConsoleNavigation } from "../console-context"
 import { OrgOverview } from "./org-overview"
 import { OrgEventsSection } from "./org-events-section"
 import { MembersScreen } from "./members-screen"
@@ -63,7 +64,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
   const gate = useGate(orgs)
   const org: OrganizationDTO | null = (orgs.data ?? []).find((entry) => entry.id === orgId) ?? null
 
-  const canManage = org?.myRole === "owner" || org?.myRole === "admin"
+  const { canManage } = orgRoleFlags(org?.myRole)
 
   const navItems = useMemo<ConsoleNavItem[]>(() => {
     const items: ConsoleNavItem[] = [
@@ -103,7 +104,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
   return (
     <ConsoleShell
       navItems={navItems}
-      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, 5)}
+      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, MAX_BOTTOM_TABS)}
       activeId={section}
       title={org?.name ?? tc("state.loading")}
       headerActions={

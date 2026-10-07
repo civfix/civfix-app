@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeHitSlop, folderSourceFiles } from "../../../../__tests__/sourceGuards"
 import type {
   HostedEventDTO,
   HostedEventsAnalyticsResponse,
@@ -18,10 +19,8 @@ import {
   duplicateReady,
   firstEventState,
   hostedEventActions,
-  hostedEventCan,
   hostedEventHasActions,
   hostedEventPhase,
-  hostedEventStage,
   hostedEventStatus,
   impactModel,
   nextDuplicateStart,
@@ -35,16 +34,33 @@ import {
   pastRowMeta,
   pendingOrgInvites,
   portfolioKpis,
-  sharePathFor,
 } from "../dashboardModel"
+import { hasHostCapability } from "../../../../data/hooks/host"
 
 const DAY_MS = 86_400_000
 
 const source = (file: string): string =>
   readFileSync(new URL(file, import.meta.url), "utf8")
 
+const DASHBOARD_PAGE_FILES = [
+  "../../EventDashboardBody.tsx",
+  "../DashboardHeader.tsx",
+  "../HostedEventsSection.tsx",
+  "../useHostedEventNav.ts",
+]
+
+/** The body plus every file in the dashboard folder, so a part split out later is guarded too. */
+const DASHBOARD_FILES = folderSourceFiles(
+  new URL("../", import.meta.url),
+  new URL("../../EventDashboardBody.tsx", import.meta.url),
+)
+
+const dashboardNavSource = (): string => source("../useHostedEventNav.ts")
+
 const catalog = (lng: string, ns: string): Record<string, unknown> =>
-  JSON.parse(readFileSync(new URL(`../../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"))
+  JSON.parse(
+    readFileSync(new URL(`../../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
+  ) as Record<string, unknown>
 
 function org(id: string, over: Partial<OrganizationDTO> = {}): OrganizationDTO {
   return {
@@ -160,7 +176,7 @@ describe("event row actions", () => {
 
   it("prefers the server capability list over the legacy role fallback", () => {
     const event = hosted({ myRole: "organizer", myCapabilities: ["view_roster"] })
-    expect(hostedEventCan(event, "manage_event")).toBe(false)
+    expect(hasHostCapability(event, "manage_event")).toBe(false)
     expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
       chat: true,
@@ -433,14 +449,15 @@ describe("dashboard wiring", () => {
   })
 
   it("keeps the dashboard body clear of the feed", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("FeedBody")
-    expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/NextUpCard")
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("FeedBody")
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("feed/")
+    }
+    expect(source("../../EventDashboardBody.tsx")).toContain("./dashboard/NextUpCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
-    const body = source("../../EventDashboardBody.tsx")
+    const body = dashboardNavSource()
     expect(body).toContain('kind: "create-cleanup"')
     expect(body).toContain('kind: "edit-cleanup"')
     expect(body).toContain('kind: "host-announce"')
@@ -449,8 +466,9 @@ describe("dashboard wiring", () => {
   })
 
   it("stops pointing the host at the web console at all", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("ConsoleLinkRow")
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("ConsoleLinkRow")
+    }
     expect(source("../../HostModeBody.tsx")).not.toContain("ConsoleLinkRow")
   })
 
@@ -522,32 +540,6 @@ describe("next up", () => {
     expect(hostedEventPhase(row("a", { status: "cancelled" }), now)).toBe("cancelled")
     expect(hostedEventPhase(row("b", { startsAt: "2026-09-10T13:00:00.000Z" }), now)).toBe("live")
     expect(hostedEventPhase(row("c"), now)).toBe("upcoming")
-  })
-
-  it("names the five host-tooling stages off the same window", () => {
-    expect(hostedEventStage(row("a", { status: "cancelled" }), now)).toBe("cancelled")
-    expect(hostedEventStage(row("b"), now)).toBe("upcoming")
-    expect(
-      hostedEventStage(row("c", { startsAt: "2026-09-10T13:00:00.000Z" }), now),
-    ).toBe("soon")
-    expect(
-      hostedEventStage(
-        row("d", { startsAt: "2026-09-10T11:00:00.000Z", endsAt: "2026-09-10T15:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("underway")
-    expect(
-      hostedEventStage(
-        row("e", { startsAt: "2026-09-10T06:00:00.000Z", endsAt: "2026-09-10T11:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("wrapping_up")
-    expect(
-      hostedEventStage(
-        row("f", { startsAt: "2026-09-08T17:00:00.000Z", endsAt: "2026-09-08T21:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("past")
   })
 
   it("finds a LIVE event in the past window, which is where the server puts it", () => {
@@ -632,7 +624,7 @@ describe("impact", () => {
     expect(model?.hero).toEqual({ value: 79, unit: "volunteers" })
   })
 
-  it("reads a 0.44-shaped payload without the hours fields", () => {
+  it("reads a payload without the hours fields", () => {
     const legacy = analytics()
     delete (legacy as { totalHours?: number }).totalHours
     delete (legacy as { volunteersCredited?: number }).volunteersCredited
@@ -709,18 +701,12 @@ describe("first event and past rows", () => {
     expect(source).toContain('tone: "muted" as const')
     expect(source).toContain("color: t.colors.textSubtle")
   })
-
-  it("shares the public page slug, then the reference code, then the id", () => {
-    expect(sharePathFor(row("a", { pageSlug: "ted-watkins" }))).toBe("/cleanups/ted-watkins")
-    expect(sharePathFor(row("b", { referenceCode: "CF-1234" }))).toBe("/cleanups/CF-1234")
-    expect(sharePathFor(row("c"))).toBe("/cleanups/c")
-  })
 })
 
 describe("portfolio surface", () => {
   const dashboardSource = (file: string): string => source(`../${file}`)
 
-  it("retires the old strip, bar row, tile grid and top-events card", () => {
+  it("ships no KPI strip, sparkline, portfolio stats or top-events card", () => {
     expect(existsSync(new URL("../KpiStrip.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../Sparkline.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../PortfolioStats.tsx", import.meta.url))).toBe(false)
@@ -728,35 +714,29 @@ describe("portfolio surface", () => {
   })
 
   it("keeps one coral fill on the page, in whichever card is showing", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("<PrimaryButton")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("<PrimaryButton")
+    }
     expect(dashboardSource("NextUpCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
     expect(dashboardSource("FirstEventCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
   })
 
   it("leaves no bloom selection fill anywhere under the dashboard", () => {
-    const files = [
-      "../../EventDashboardBody.tsx",
-      "../NextUpCard.tsx",
-      "../ImpactCard.tsx",
-      "../FirstEventCard.tsx",
-      "../HostedEventRow.tsx",
-      "../CollaboratorsSection.tsx",
-      "../OrgInviteSheet.tsx",
-      "../DuplicateEventSheet.tsx",
-      "../AnalyticsCarouselCard.tsx",
-    ]
-    for (const file of files) {
-      expect(source(file)).not.toContain("brand.bloom")
-      expect(source(file)).not.toContain('"#')
+    expect(DASHBOARD_FILES.length).toBeGreaterThan(DASHBOARD_PAGE_FILES.length)
+    for (const file of DASHBOARD_FILES) {
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain("brand.bloom")
+      expect(readFileSync(file, "utf8"), file.pathname).not.toContain('"#')
     }
   })
 
   it("keeps the only window switch inside the events card", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body.match(/<SegmentedControl/g)).toHaveLength(1)
-    expect(body).toContain("listHeader")
-    expect(body).not.toContain("SegmentedRow")
+    const page = DASHBOARD_PAGE_FILES.map(source).join("\n")
+    expect(page.match(/<SegmentedControl/g)).toHaveLength(1)
+    expect(page).not.toContain("SegmentedRow")
+    const section = dashboardSource("HostedEventsSection.tsx")
+    expect(section.match(/<SegmentedControl/g)).toHaveLength(1)
+    expect(section).toContain("listHeader")
+    expect(source("../../EventDashboardBody.tsx")).toContain("<HostedEventsSection")
   })
 
   it("drops the tab and range state the page no longer owns", () => {
@@ -769,7 +749,8 @@ describe("portfolio surface", () => {
   it("reads the portfolio through the new all-time model", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("portfolioKpis(upcoming.data?.pages)")
-    expect(body).toContain("header.summary")
+    expect(body).toContain("kpis={kpis}")
+    expect(dashboardSource("DashboardHeader.tsx")).toContain("header.summary")
     expect(body).toContain('useHostedEventsAnalytics(ANALYTICS_RANGE')
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
@@ -778,13 +759,13 @@ describe("portfolio surface", () => {
   })
 
   it("demotes create-event to secondary", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("<SecondaryButton")
+    expect(dashboardSource("DashboardHeader.tsx")).toContain("<SecondaryButton")
   })
 
   it("keeps the team in the shared list card, and leaves donation editing to the org page", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("DonationLinkRow")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("DonationLinkRow")
+    }
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")
@@ -877,13 +858,15 @@ describe("portfolio surface", () => {
   })
 
   it("drops the needs-attention card, and leaves invitations to the profile", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("AttentionCard")
-    expect(body).not.toContain("attentionRows")
-    expect(body).not.toContain("host-log-hours")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      const body = source(file)
+      expect(body, file).not.toContain("AttentionCard")
+      expect(body, file).not.toContain("attentionRows")
+      expect(body, file).not.toContain("host-log-hours")
+      expect(body, file).not.toContain("Invite")
+      expect(body, file).not.toContain("invite")
+    }
     expect(existsSync(new URL("../AttentionCard.tsx", import.meta.url))).toBe(false)
-    expect(body).not.toContain("Invite")
-    expect(body).not.toContain("invite")
     expect(existsSync(new URL("../InvitationsCard.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../InviteRows.tsx", import.meta.url))).toBe(false)
   })
@@ -912,13 +895,14 @@ describe("portfolio surface", () => {
     expect(card).toContain("accessibilityLabel={cardLabel}")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onOpen={onOpenEvent}")
-    expect(body).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
+    expect(body).toContain("const { onCreate, onOpenEvent, onHostTools, onShare } = nav")
+    expect(dashboardNavSource()).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
   })
 
   it("keeps the staffing and shift lines audible by folding them into the card label", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toMatch(
-      /const cardLabel = \[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
+      /const cardLabel = joinParts\(\s*\[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
     )
     expect(card).toContain('t("next_up.waiting", { count: event.waitlistCount }) : null')
     expect(card).toContain('t("next_up.checked_in", { count: liveCheckedIn }) : null')
@@ -932,22 +916,23 @@ describe("portfolio surface", () => {
     expect(source("../dashboardModel.ts")).not.toContain("nextUpCta")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onHostTools={onHostTools}")
-    expect(body).toContain("openHostDashboard({ eventId: event.id })")
+    expect(dashboardNavSource()).toContain("openHostDashboard({ eventId: event.id })")
   })
 
   it("shares from an icon button pinned to the top right of the card", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expect(card).toContain("const MIN_TOUCH_TARGET = 44")
-    expect(card).toContain("const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2")
-    expect(card).toMatch(/<Pressable\s+onPress=\{share\}/)
+    expect(card).toMatch(/<IconActionButton\s+icon=\{iconMap\.Share\}[^>]*?onPress=\{share\}/)
     expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')
-    expect(card).toContain("hitSlop={SHARE_HIT_SLOP}")
-    expect(card).toContain("<Icon icon={iconMap.Share}")
+    expect(card).toContain("style={styles.share}")
     expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,\s*zIndex: 1,/)
-    expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
+    expect(card).toContain("paddingRight: ICON_ACTION_SIZE + t.space[\"2\"]")
+    const button = source("../../../../primitives/IconActionButton.tsx")
+    expectThemeHitSlop(button)
+    expect(button).toContain("const ICON_ACTION_HIT_SLOP = hitSlopToTarget(ICON_ACTION_SIZE)")
+    expect(button).toContain("hitSlop={ICON_ACTION_HIT_SLOP}")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onShare={onShare}")
-    expect(body).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: cleanupSharePath(event) })")
   })
 
   it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {
@@ -959,10 +944,12 @@ describe("portfolio surface", () => {
 
   it("keeps the share icon and the host-tools button OUTSIDE the card pressable", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expect(card.match(/<Pressable/g)).toHaveLength(2)
+    expect(card.match(/<Pressable/g)).toHaveLength(1)
+    expect(card.match(/<IconActionButton/g)).toHaveLength(1)
     const opens = card.indexOf("onPress={open}")
     const region = card.slice(opens, card.indexOf("</Pressable>", opens))
     expect(region).not.toContain("<Pressable")
+    expect(region).not.toContain("<IconActionButton")
     expect(region).not.toContain("<PrimaryButton")
     expect(region).not.toContain("<TextLink")
     expect(region).not.toContain("onPress={share}")
@@ -972,7 +959,9 @@ describe("portfolio surface", () => {
   it("keeps the live dot, the started line and the shifts strip inside the card body", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toContain("<PhaseDot phase={phase} />")
-    expect(card).toContain('t("next_up.started", { ago: relative(event.startsAt, now) })')
+    expect(card).toContain(
+      'relativeLineFor(relative(event.startsAt, now), (ago) => t("next_up.started", { ago }))',
+    )
     expect(card).toContain("<ShiftRow")
     expect(card).toContain("when.timeWithZone")
   })

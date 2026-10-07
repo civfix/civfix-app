@@ -2,20 +2,18 @@ import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/shared"
-import { Repeat2 } from "lucide-react-native/icons"
 import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash } from "../../theme"
-import { Text, Icon } from "../../typography"
-import { useT } from "../../i18n"
+import { Text, Icon, iconMap } from "../../typography"
+import { useLocale, useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
+import { PostActionBar } from "../../primitives/PostActionBar"
 import {
-  PostActionBar,
   formatPostActionCount,
   postActionGlyphInset,
   postActionLayout,
-} from "../../primitives/PostActionBar"
-import { useNavStore } from "../../nav/useNavStore"
+} from "../../primitives/postActionModel"
 import type { DetailEntry } from "../../nav/types"
 import { EmbeddedPost } from "../EmbeddedPost"
 import { LinkedEventCard } from "../LinkedEventCard"
@@ -26,18 +24,15 @@ import { PostOverflowButton } from "../../primitives/PostOverflowButton"
 import {
   buildPostCardModel,
   identityA11yLabel,
-  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
 import { PostOverflowMenu } from "../PostOverflowMenu"
-import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
-import { useLightbox } from "../../lightbox"
+import { usePostRowActions } from "../postCardActions"
 import { focalTimestamp } from "../relativeTime"
+import { normalizeHandle } from "../mentionText"
 import { useListTimeAgo } from "../useListTimeAgo"
 import { buildFocalPostStats } from "./threadModel"
-
-const EMPTY_MEDIA: PostDTO["media"] = []
 
 export type ThreadFocalParent = PostDTO | PostRefDTO | null
 
@@ -72,7 +67,7 @@ function ReplyToLine({
     )
   }
   const author = parent.author
-  const handle = author?.handle?.replace(/^@/, "") ?? null
+  const handle = author?.handle ? normalizeHandle(author.handle) : null
   const label = handle
     ? t("thread.replying_to", { handle: `@${handle}` })
     : t("thread.replying_to_name", { name: author?.name ?? t("post_card.deleted_account") })
@@ -102,8 +97,7 @@ export function ThreadFocalPost({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-feed")
-  const push = useNavStore((state) => state.push)
-  const openEntry = onOpenEntry ?? push
+  const { locale } = useLocale()
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const stats = React.useMemo(() => buildFocalPostStats(post.counts, t), [post.counts, t])
@@ -111,36 +105,12 @@ export function ThreadFocalPost({
     () => splitPostBodyMentions(post.body ?? "", post.mentions),
     [post.body, post.mentions],
   )
-  const openPerson = React.useCallback(
-    (personId: string) => openEntry({ kind: "person", id: personId }),
-    [openEntry],
-  )
-  const onQuote = React.useCallback(
-    () => openEntry({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
-    [openEntry, post.id],
-  )
   const isFix = model.variant === "fix-confirmed"
   const isRepost = model.variant === "repost" && model.embeddedPost != null
   const identity = model.identity
-  const openActingPerson = React.useCallback(() => {
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openPerson])
-  const openIdentity = React.useCallback(() => {
-    if (identity.organization) {
-      openEntry({ kind: "org", slug: identity.organization.slug })
-      return
-    }
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openEntry, openPerson])
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
+  const { openEntry, openPerson, onQuote, openIdentity, openActingPerson, menu, media, openMedia } =
+    usePostRowActions({ post, identity, onOpenEntry })
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
   const embedded = model.embeddedPost
   const openOriginal = React.useMemo(
     () =>
@@ -149,22 +119,7 @@ export function ThreadFocalPost({
         : undefined,
     [isRepost, embedded, openEntry],
   )
-  const lightbox = useLightbox()
-  const media = post.media ?? EMPTY_MEDIA
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
-  )
-  const timestamp = focalTimestamp(post.createdAt)
+  const timestamp = focalTimestamp(post.createdAt, locale)
   const timestampLine = post.editedAt != null ? `${timestamp} · ${t("thread.edited")}` : timestamp
 
   return (
@@ -173,7 +128,7 @@ export function ThreadFocalPost({
 
       {model.repostAttribution ? (
         <View style={styles.repostAttribution}>
-          <Icon icon={Repeat2} size={15} color={th.colors.textMuted} />
+          <Icon icon={iconMap.Repeat2} size={15} color={th.colors.textMuted} />
           <Text variant="caption" color={th.colors.textMuted} style={styles.repostAttributionText}>
             {model.repostAttribution}
           </Text>
@@ -220,6 +175,7 @@ export function ThreadFocalPost({
           label={t("post_card.more_a11y")}
           onPress={openMenu}
           buttonRef={menuTrigger.ref}
+          expanded={menuOpen}
         />
       </View>
 
@@ -246,6 +202,7 @@ export function ThreadFocalPost({
               <Text
                 key={`${segment.userId}-${index}`}
                 style={styles.bodyMention}
+                accessibilityRole="link"
                 onPress={() => openPerson(segment.userId)}
               >
                 {segment.text}
@@ -451,7 +408,7 @@ const useStyles = makeThemedStyles((t) => ({
   authorName: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     lineHeight: 21,
     color: t.colors.text,
   },
@@ -482,7 +439,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resolutionText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 17,
     color: t.colors.moss["700"],
   },
@@ -512,7 +469,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   statCount: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   statLabel: {

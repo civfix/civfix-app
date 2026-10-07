@@ -1,3 +1,5 @@
+import { clamp01 } from "../math/clamp"
+
 export interface ChartPoint {
   x: number
   y: number | null
@@ -17,9 +19,11 @@ export const DEFAULT_BAR_GAP = 2
 
 export const DEFAULT_RING_THICKNESS = 6
 
+export const AXIS_LABEL_HEIGHT = 14
+
+/** A chart reads a non-finite value as empty, where the worklet `clamp01` would pass NaN through. */
 export function clampFraction(value: number): number {
-  if (!Number.isFinite(value)) return 0
-  return value < 0 ? 0 : value > 1 ? 1 : value
+  return Number.isFinite(value) ? clamp01(value) : 0
 }
 
 export function chartMax(values: readonly (number | null)[], floor = 1): number {
@@ -119,6 +123,18 @@ export function lineGeometry(
 export function xToPixels(x: number, xMin: number, xMax: number, width: number): number {
   if (xMax <= xMin) return 0
   return round(((x - xMin) / (xMax - xMin)) * width)
+}
+
+const AXIS_LABEL_END_FRACTION = 0.85
+
+export type AxisLabelPlacement = { left: number } | { right: 0; textAlign: "right" }
+
+// A label anchored by its left edge near the right end would run past the plot, so the last stretch of
+// the axis anchors by the right edge instead.
+export function axisLabelPlacement(fraction: number, width: number): AxisLabelPlacement {
+  const at = clampFraction(fraction)
+  if (at > AXIS_LABEL_END_FRACTION) return { right: 0, textAlign: "right" }
+  return { left: round(at * Math.max(0, width)) }
 }
 
 export function valueToPixels(value: number, max: number, height: number): number {

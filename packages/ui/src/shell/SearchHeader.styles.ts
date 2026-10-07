@@ -1,5 +1,7 @@
 import { StyleSheet } from "react-native"
-import { makeThemedStyles } from "../theme"
+import { makeThemedStyles, space } from "../theme"
+
+const DOCK_CONTROL_SIZE = space["10"]
 
 export const useSearchHeaderStyles = makeThemedStyles((t) => ({
   row: {
@@ -12,7 +14,7 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    height: 40,
+    height: t.space["10"],
     paddingHorizontal: 14,
     borderRadius: 12,
     backgroundColor: t.glass.sheet.input,
@@ -26,8 +28,8 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     minWidth: 0,
   },
   signIn: {
-    width: 32,
-    height: 32,
+    width: t.space["8"],
+    height: t.space["8"],
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -43,8 +45,8 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
   },
   dockedSearch: {
     flex: 1,
-    height: 40,
-    borderRadius: 20,
+    height: DOCK_CONTROL_SIZE,
+    borderRadius: DOCK_CONTROL_SIZE / 2,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.button.border,
     overflow: "hidden",
@@ -57,9 +59,9 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     paddingHorizontal: 14,
   },
   dockButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: DOCK_CONTROL_SIZE,
+    height: DOCK_CONTROL_SIZE,
+    borderRadius: DOCK_CONTROL_SIZE / 2,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.button.border,
     overflow: "hidden",

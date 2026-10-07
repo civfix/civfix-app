@@ -1,24 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
-import { MAX_ATTENDEE_NAME } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/shared"
+import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
 import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
-  modalSheetInputFocusedStyle,
   modalSheetInputStyle,
   useToast,
 } from "../../primitives"
 import { useT } from "../../i18n"
 import { useWalkupRegistration } from "../../data/hooks/host"
-import { appErrorCode } from "../errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "./registration/PartySizeStepper"
-import { defaultTicketTypeId, registerOutcomeKey, selectableTicketTypes } from "./registration/registrationModel"
+import { PartySizeStepper } from "./registration/PartySizeStepper"
+import { INPUT_MIN_HEIGHT } from "./hostLayout"
+import { resolveTicketTypeId } from "./registration/registrationModel"
 
 export interface HostWalkupSheetProps {
   visible: boolean
@@ -34,21 +34,23 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
   const toast = useToast()
   const walkup = useWalkupRegistration(cleanupId)
 
-  const types = selectableTicketTypes(ticketTypes)
+  const types = sortedTicketTypes(ticketTypes)
   const [name, setName] = useState("")
-  const [ticketTypeId, setTicketTypeId] = useState<string | null>(null)
+  const [pickedTypeId, setPickedTypeId] = useState<string | null>(null)
   const [partySize, setPartySize] = useState(1)
   const [focused, setFocused] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!visible) return
+  const ticketTypeId = resolveTicketTypeId(types, pickedTypeId)
+
+  const onClosed = useCallback(() => {
     setName("")
     setPartySize(1)
     setErrorText(null)
-    setTicketTypeId(defaultTicketTypeId(types))
-    walkup.reset()
-  }, [visible])
+    setPickedTypeId(null)
+    setFocused(false)
+    if (!walkup.isPending) walkup.reset()
+  }, [walkup])
 
   const selected = types.find((type) => type.id === ticketTypeId) ?? null
   const trimmed = name.trim()
@@ -75,7 +77,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           onClose()
         },
         onError: (err) =>
-          setErrorText(appErrorCode(err) === "FORBIDDEN" ? t("walkup.error_forbidden") : t("walkup.error")),
+          setErrorText(appErrorCode(err) === ErrorCode.FORBIDDEN ? t("walkup.error_forbidden") : t("walkup.error")),
       },
     )
   }, [canSubmit, onClose, partySize, selected, t, toast, trimmed, walkup])
@@ -84,6 +86,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}
@@ -120,7 +123,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
         autoCorrect={false}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
 
       {types.length > 1 ? (
@@ -129,7 +132,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           <TicketTypePicker
             ticketTypes={types}
             selectedId={ticketTypeId}
-            onSelect={setTicketTypeId}
+            onSelect={setPickedTypeId}
             disabled={walkup.isPending}
           />
         </View>
@@ -150,7 +153,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
 const useStyles = makeThemedStyles((t) => ({
   input: {
     ...modalSheetInputStyle(t),
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
   },
   section: {
     gap: t.space["2"],

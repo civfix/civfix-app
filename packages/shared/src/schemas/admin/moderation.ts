@@ -7,18 +7,12 @@ import {
   ModerationKindSchema,
   ModerationSubjectTypeSchema,
   ModerationToneSchema,
+  ModerationItemStatusSchema,
   PrioritySchema,
 } from "./common.js"
+import { AdminMediaRefSchema } from "./internal-fields.js"
 
-/**
- * Moderation queue: held media / coordinated clusters / appeals with signals, user context, similar
- * items, and the approve / remove / hold / appeal actions. List + detail. Items clear from the queue
- * on action. See enumeration 2.I, endpoints #41-#46.
- */
-
-// ---------------------------------------------------------------------------
-// Fragments
-// ---------------------------------------------------------------------------
+/** Moderation queue. An item clears from the queue once an operator acts on it. */
 
 /** A single signal cell in the moderation detail grid (label, value, tone). */
 export const ModerationSignalSchema = z
@@ -58,19 +52,8 @@ export const ModerationSimilarSchema = z
 export type ModerationSimilar = z.infer<typeof ModerationSimilarSchema>
 
 /** A held media reference shown in the moderation detail (the actual asset, by kind). */
-export const ModerationMediaSchema = z
-  .object({
-    id: z.string(),
-    kind: z.enum(["image", "video"]),
-    url: z.string(),
-    thumbUrl: z.string().nullable().optional(),
-  })
-  .strict()
+export const ModerationMediaSchema = AdminMediaRefSchema
 export type ModerationMedia = z.infer<typeof ModerationMediaSchema>
-
-// ---------------------------------------------------------------------------
-// List item
-// ---------------------------------------------------------------------------
 
 /**
  * A moderation queue row. `flag` is the label; `reporter` the who; `reason` the why; `kind` what the
@@ -86,20 +69,19 @@ export const ModerationListItemDTOSchema = z
     age: z.string(),
     priority: PrioritySchema,
     kind: ModerationKindSchema,
-    // What KIND of subject this item points at (chiefly for citizen `user_report` items: report|comment|
-    // message|event|profile|photo|user|chat). Additive + optional so an older server that does not yet
-    // compute it still parses; inherited by ModerationItemDTO via .extend.
+    // What KIND of subject this item points at (chiefly for citizen `user_report` items). Optional so an
+    // older server still parses.
     subjectType: ModerationSubjectTypeSchema.optional(),
     // The id of the reported SUBJECT (report/user/event/comment/…, per `subjectType`). This remains the
     // real content id even when navigation requires a different parent entity.
     subjectId: z.string(),
     // Explicit admin navigation target. Chat/photo subjects resolve to a parent report/event only when
-    // repository metadata proves that relationship; standalone content keeps both fields null. Defaults
-    // preserve compatibility while an older backend is still being rolled forward.
+    // repository metadata proves that relationship; standalone content keeps both fields null. Defaulted so
+    // an older server still parses.
     destinationKind: ModerationDestinationKindSchema.nullable().default(null),
     destinationId: z.string().nullable().default(null),
     // The id of the REPORTER (the who behind `reporter`), so their name can link to their account. Null
-    // for anonymous/system-originated reports. Inherited by ModerationItemDTO via .extend.
+    // for anonymous/system-originated reports.
     reporterId: z.string().nullable(),
   })
   .strict()
@@ -120,10 +102,6 @@ export type ModerationListQuery = z.infer<typeof ModerationListQuerySchema>
 export const ModerationListResponseSchema = pageResponse(ModerationListItemDTOSchema)
 export type ModerationListResponse = z.infer<typeof ModerationListResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
-
 /**
  * Full moderation detail: the list shape plus the description, the auto-action banner, the place, the
  * signals grid, the user-context snapshot, similar items, and the held media references.
@@ -136,15 +114,13 @@ export const ModerationItemDTOSchema = ModerationListItemDTOSchema.extend({
   user: ModerationUserSchema,
   similar: z.array(ModerationSimilarSchema),
   media: z.array(ModerationMediaSchema),
+  // The detail endpoint also returns resolved items, which must not offer the decision actions again.
+  status: ModerationItemStatusSchema.optional(),
 }).strict()
 export type ModerationItemDTO = z.infer<typeof ModerationItemDTOSchema>
 
 export const GetModerationItemResponseSchema = ModerationItemDTOSchema
 export type GetModerationItemResponse = z.infer<typeof GetModerationItemResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
 
 /** Approve / publish a held item. */
 export const ApproveModerationRequestSchema = z
@@ -164,7 +140,6 @@ export const RemoveModerationRequestSchema = z
   .strict()
 export type RemoveModerationRequest = z.infer<typeof RemoveModerationRequestSchema>
 
-/** Extend the hold on an item ("Hold"). */
 export const HoldModerationRequestSchema = z
   .object({
     id: z.string(),

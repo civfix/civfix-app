@@ -1,3 +1,5 @@
+import { stripTrailingSlashes } from "@civfix/shared"
+
 const ROOT_ROUTE = "/"
 
 function routeQuery(params: unknown): string {
@@ -27,7 +29,7 @@ export function resumePathname(href: string): string {
   const cut = href.search(/[?#]/)
   const path = cut === -1 ? href : href.slice(0, cut)
   if (path.length > 1 && path.endsWith("/")) {
-    const trimmed = path.replace(/\/+$/, "")
+    const trimmed = stripTrailingSlashes(path)
     return trimmed.length > 0 ? trimmed : "/"
   }
   return path

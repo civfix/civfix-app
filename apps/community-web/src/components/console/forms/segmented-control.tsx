@@ -1,5 +1,6 @@
 "use client"
 
+import { Fragment, useId } from "react"
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -34,6 +35,7 @@ export function SegmentedControl<V extends string>({
   label,
   className,
 }: SegmentedControlProps<V>) {
+  const reasonIdBase = useId()
   return (
     <div
       role="group"
@@ -46,26 +48,38 @@ export function SegmentedControl<V extends string>({
       {options.map((option) => {
         const active = option.value === value
         const Icon = option.icon
+        const reasonId =
+          option.disabled && option.disabledReason ? `${reasonIdBase}-${option.value}` : undefined
         return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            disabled={option.disabled}
-            title={option.disabled ? option.disabledReason : undefined}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xs font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
-              SEGMENT_SIZE[size],
-              active
-                ? "bg-console-surface text-console-ink shadow-console-1"
-                : "text-console-ink-3 hover:text-console-ink-2",
-              option.disabled && "cursor-not-allowed opacity-50",
-            )}
-          >
-            {Icon ? <Icon aria-hidden className="h-3.5 w-3.5" /> : null}
-            {option.label}
-          </button>
+          <Fragment key={option.value}>
+            <button
+              type="button"
+              aria-pressed={active}
+              // aria-disabled keeps the option focusable so its disabled reason can be heard.
+              aria-disabled={option.disabled || undefined}
+              aria-describedby={reasonId}
+              title={option.disabled ? option.disabledReason : undefined}
+              onClick={() => {
+                if (!option.disabled) onChange(option.value)
+              }}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xs font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
+                SEGMENT_SIZE[size],
+                active
+                  ? "bg-console-surface text-console-ink shadow-console-1"
+                  : "text-console-ink-3 hover:text-console-ink-2",
+                option.disabled && "cursor-not-allowed opacity-50",
+              )}
+            >
+              {Icon ? <Icon aria-hidden className="h-3.5 w-3.5" /> : null}
+              {option.label}
+            </button>
+            {reasonId ? (
+              <span id={reasonId} className="sr-only">
+                {option.disabledReason}
+              </span>
+            ) : null}
+          </Fragment>
         )
       })}
     </div>

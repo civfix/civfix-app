@@ -1,4 +1,5 @@
 import type { CheckinOutcome } from "@civfix/shared"
+import { ErrorCode } from "@civfix/shared"
 import type { PersistenceCapability, SecureStoreCapability } from "../capabilities"
 
 export type OutboxStore = PersistenceCapability | SecureStoreCapability
@@ -13,7 +14,9 @@ export const CHECKIN_OUTBOX_TTL_MS = 48 * 60 * 60 * 1000
 
 export const CHECKIN_OUTBOX_MAX = 500
 
-export const CHECKIN_RETRY_BACKOFF_MS: readonly number[] = [0, 5_000, 30_000, 120_000, 600_000]
+const CHECKIN_REPLAY_BATCH = 25
+
+const CHECKIN_RETRY_BACKOFF_MS: readonly number[] = [0, 5_000, 30_000, 120_000, 600_000]
 
 export type CheckinOutboxMethod = "scan" | "manual"
 
@@ -99,7 +102,7 @@ export function dequeueReady(
   now: number,
   scope: OutboxScope = {},
 ): readonly CheckinOutboxEntry[] {
-  const limit = scope.limit ?? 25
+  const limit = scope.limit ?? CHECKIN_REPLAY_BATCH
   const out: CheckinOutboxEntry[] = []
   for (const entry of state.entries) {
     if (out.length >= limit) break
@@ -152,14 +155,14 @@ export interface ReplayOutcome {
 }
 
 export function replayOutcome(errorCode: string | undefined): ReplayOutcome {
-  if (errorCode === undefined || errorCode === "CONFLICT") {
+  if (errorCode === undefined || errorCode === ErrorCode.CONFLICT) {
     return { disposition: "sent", dropReason: null }
   }
-  if (errorCode === "RATE_LIMITED" || errorCode === "INTERNAL") {
+  if (errorCode === ErrorCode.RATE_LIMITED || errorCode === ErrorCode.INTERNAL) {
     return { disposition: "retry", dropReason: null }
   }
-  if (errorCode === "UNAUTHORIZED") return { disposition: "hold", dropReason: null }
-  if (errorCode === "FORBIDDEN") return { disposition: "drop", dropReason: "forbidden" }
+  if (errorCode === ErrorCode.UNAUTHORIZED) return { disposition: "hold", dropReason: null }
+  if (errorCode === ErrorCode.FORBIDDEN) return { disposition: "drop", dropReason: "forbidden" }
   return { disposition: "drop", dropReason: "refused" }
 }
 
@@ -198,15 +201,6 @@ const REPLAY_OUTCOME_KIND: Record<CheckinOutcome, "sent" | "refused"> = {
 const REFUSAL_ORDER: readonly CheckinOutcome[] = (
   Object.keys(REPLAY_OUTCOME_KIND) as CheckinOutcome[]
 ).filter((outcome) => REPLAY_OUTCOME_KIND[outcome] === "refused")
-
-export const EMPTY_REPLAY_REPORT: CheckinReplayReport = {
-  sent: 0,
-  refusals: [],
-  held: 0,
-  forbidden: 0,
-  discarded: 0,
-  retry: 0,
-}
 
 export function summarizeReplay(events: readonly ReplayEvent[]): CheckinReplayReport {
   const refused = new Map<CheckinOutcome, number>()
@@ -364,7 +358,7 @@ export function serializeOutbox(state: CheckinOutboxState, ownerId: string): str
   return JSON.stringify({ owner: ownerId, entries: state.entries })
 }
 
-export async function dropLegacyOutbox(persistence: OutboxStore): Promise<void> {
+async function dropLegacyOutbox(persistence: OutboxStore): Promise<void> {
   try {
     await persistence.del(CHECKIN_OUTBOX_KEY)
   } catch {

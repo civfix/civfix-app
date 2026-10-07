@@ -1,0 +1,83 @@
+{
+  "state": {
+    "loading_title": "Cargando",
+    "loading_body": "Cargando la página de este evento.",
+    "not_found_title": "No encontramos esa página",
+    "not_found_body": "Este enlace de inscripción no es válido o la página se retiró. Busca el evento en <0>civfix</0>.",
+    "offline_title": "No pudimos cargar esta página",
+    "offline_body": "Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Intentar de nuevo"
+  },
+  "calendar": "Añadir al calendario",
+  "footer": "Alojado en <0>civfix</0> · <1>Términos</1> · <2>Privacidad</2>",
+  "blocks": {
+    "about": "Sobre este evento",
+    "agenda": "Programa",
+    "contact": "Ponte en contacto",
+    "donate": "Apoya este trabajo",
+    "donate_cta": "Donar",
+    "donate_hint": "Este enlace lleva a un sitio que civfix no administra. civfix nunca gestiona el dinero.",
+    "faq": "Preguntas",
+    "hosts": "Quién organiza",
+    "location": "Dónde",
+    "open_in_maps": "Abrir en mapas",
+    "sponsors": "Con el apoyo de"
+  },
+  "outcome": {
+    "registered": "Ya estás inscrito.",
+    "waitlisted": "Estás en la lista de espera."
+  },
+  "widget": {
+    "cancelled_title": "Este evento se canceló",
+    "closed_title": "Las inscripciones están cerradas",
+    "not_yet_open_title": "Las inscripciones aún no están abiertas",
+    "not_yet_open_body": "Vuelve cuando se acerque el evento.",
+    "waitlisted_title": "Estás en la lista de espera",
+    "waitlisted_body": "Te enviaremos un correo si se libera una plaza."
+  },
+  "errors": {
+    "required": "Responde las preguntas obligatorias.",
+    "access_code": "Escribe el código de acceso de esta entrada.",
+    "terms": "Acepta los términos para inscribirte.",
+    "name": "Escribe tu nombre.",
+    "email": "Escribe una dirección de correo para que el anfitrión pueda contactarte.",
+    "guest_unavailable": "Inscribirse sin una cuenta de civfix no está disponible ahora mismo. Inicia sesión para inscribirte.",
+    "bot": "No pudimos confirmar que no eres un bot. Recarga la página e inténtalo de nuevo.",
+    "rate_limited": "Demasiados intentos. Espera un minuto e inténtalo de nuevo.",
+    "validation": "Revisa los datos de arriba e inténtalo de nuevo.",
+    "conflict": "Algo cambió mientras completabas el formulario. Recarga la página.",
+    "not_found": "Este evento ya no está disponible.",
+    "generic": "No pudimos completarlo. Inténtalo de nuevo."
+  },
+  "code": {
+    "title": "Revisa tu correo",
+    "sent": "Enviamos un código a {{email}}. Escríbelo para terminar tu inscripción.",
+    "label": "Código de confirmación",
+    "submit": "Terminar inscripción",
+    "resend": "Enviar un código nuevo",
+    "resend_wait_one": "Puedes pedir un código nuevo en {{count}} segundo",
+    "resend_wait_other": "Puedes pedir un código nuevo en {{count}} segundos",
+    "change_email": "Usar otro correo"
+  },
+  "form": {
+    "title_register": "Inscribirse",
+    "title_full": "Este evento está lleno",
+    "full_none": "No quedan plazas.",
+    "full_guest": "No quedan plazas. Inicia sesión con una cuenta de civfix para unirte a la lista de espera, así tendremos cómo avisarte cuando se libere una.",
+    "full_waitlist": "Únete a la lista de espera y te avisaremos si se libera una plaza.",
+    "ticket_legend": "Entrada",
+    "ticket_sold_out": "Agotado",
+    "party_label": "¿Cuántas personas, contándote a ti?",
+    "access_code_label": "Código de acceso",
+    "name_label": "Tu nombre",
+    "email_label": "Dirección de correo",
+    "email_hint": "El anfitrión lo usa para enviarte novedades del evento. No se muestra públicamente.",
+    "host_contact": "El anfitrión puede contactarme sobre futuros eventos, no solo sobre este.",
+    "terms": "Acepto los <0>Términos del servicio</0> y la <1>Política de privacidad</1>, y entiendo que el anfitrión verá mi nombre y mis respuestas.",
+    "join_waitlist": "Unirme a la lista de espera",
+    "sold_out": "Agotado",
+    "count_me_in": "Cuenta conmigo",
+    "register": "Inscribirme",
+    "guest_unavailable_hint": "Inscribirse sin una cuenta de civfix no está disponible en esta versión. Inicia sesión para inscribirte."
+  }
+}

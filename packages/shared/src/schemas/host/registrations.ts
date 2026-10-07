@@ -6,8 +6,9 @@ import {
   PaginationQuerySchema,
 } from "../common.js"
 import { EventAnswerDTOSchema, EventRegistrationDTOSchema } from "../entities.js"
+import { IdempotencyKeySchema, OkResponseSchema } from "../internal-fields.js"
 import { AccessCodeSchema, MAX_PARTY_SIZE } from "./tickets.js"
-import { EventAnswerInputSchema } from "./questions.js"
+import { EventAnswerInputSchema, MAX_EVENT_QUESTIONS } from "./questions.js"
 
 
 export {
@@ -63,12 +64,12 @@ export type RegisterOutcome = z.infer<typeof RegisterOutcomeSchema>
 export const RegisterForEventRequestSchema = z
   .object({
     id: IdSchema,
-    idempotencyKey: z.string().min(8).max(128),
+    idempotencyKey: IdempotencyKeySchema,
     ticketTypeId: IdSchema.optional(),
     partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
     attendeeNames: z.array(z.string().trim().min(1).max(MAX_ATTENDEE_NAME)).max(MAX_PARTY_SIZE).optional(),
     accessCode: AccessCodeSchema.optional(),
-    answers: z.array(EventAnswerInputSchema).max(20).optional(),
+    answers: z.array(EventAnswerInputSchema).max(MAX_EVENT_QUESTIONS).optional(),
     consent: EventConsentInputSchema.optional(),
     slotId: IdSchema.nullable().optional(),
     joinWaitlistIfFull: z.boolean().default(false),
@@ -163,10 +164,9 @@ export const RemoveEventRegistrationRequestSchema = z
   .strict()
 export type RemoveEventRegistrationRequest = z.infer<typeof RemoveEventRegistrationRequestSchema>
 
-const RemoveEventRegistrationResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RemoveEventRegistrationResponse = z.infer<typeof RemoveEventRegistrationResponseObjectSchema>
+export type RemoveEventRegistrationResponse = z.infer<typeof OkResponseSchema>
 export const RemoveEventRegistrationResponseSchema: z.ZodType<RemoveEventRegistrationResponse, z.ZodTypeDef, unknown> =
-  RemoveEventRegistrationResponseObjectSchema
+  OkResponseSchema
 
 export const TransferEventRegistrationRequestSchema = z
   .object({
@@ -194,6 +194,9 @@ export const CreateWalkupRegistrationRequestSchema = z
     name: z.string().trim().min(1).max(MAX_ATTENDEE_NAME),
     partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
     checkInNow: z.boolean().default(true),
+    // Without it the backend derives a key from the name and the minute, which merges two same-name
+    // walk-ups and splits one double-tap across a minute boundary.
+    idempotencyKey: IdempotencyKeySchema.optional(),
   })
   .strict()
 export type CreateWalkupRegistrationRequest = z.infer<typeof CreateWalkupRegistrationRequestSchema>
@@ -215,7 +218,7 @@ export const SetEventRegistrationNoteRequestSchema = z
   .strict()
 export type SetEventRegistrationNoteRequest = z.infer<typeof SetEventRegistrationNoteRequestSchema>
 
-export const SetEventRegistrationNoteResponseSchema = z.object({ ok: z.literal(true) })
+export const SetEventRegistrationNoteResponseSchema = OkResponseSchema
 export type SetEventRegistrationNoteResponse = z.infer<
   typeof SetEventRegistrationNoteResponseSchema
 >

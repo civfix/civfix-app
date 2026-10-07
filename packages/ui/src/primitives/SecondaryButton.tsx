@@ -8,12 +8,13 @@ import {
   webNoSelect,
   webHover,
   focusRingProps,
+  hitSlopToTarget,
+  MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text, type LucideIcon } from "../typography"
 
-const SECONDARY_MIN_TOUCH_TARGET = 44
 const SECONDARY_HEIGHT_SM = 32
-const SECONDARY_SM_HIT_SLOP = (SECONDARY_MIN_TOUCH_TARGET - SECONDARY_HEIGHT_SM) / 2
+const SECONDARY_SM_HIT_SLOP = hitSlopToTarget(SECONDARY_HEIGHT_SM)
 
 export interface SecondaryButtonProps {
   label: string
@@ -95,7 +96,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   md: {
     gap: t.space["2"],
-    height: 44,
+    height: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["5"],
   },
   lg: {

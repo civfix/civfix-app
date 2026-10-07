@@ -27,7 +27,10 @@
     "expand_a11y": "{{title}}, {{count}} signed up",
     "expand_hint": "Shows who signed up",
     "collapse_hint": "Hides who signed up",
-    "faces_more": "+{{count}}"
+    "faces_more": "+{{count}}",
+    "window_count_a11y_one": "{{title}}, {{range}}, {{count}} signed up",
+    "window_count_a11y_other": "{{title}}, {{range}}, {{count}} signed up",
+    "faces_names_more": "{{names}} +{{count}}"
   },
   "editor": {
     "add_first": "Add a slot",
@@ -87,7 +90,11 @@
   "roster": {
     "unassigned": "No slot",
     "empty_slot": "Nobody yet",
-    "window_a11y": "{{title}} from {{range}}"
+    "window_a11y": "{{title}} from {{range}}",
+    "window_count_a11y_one": "{{title}} from {{range}}, {{count}} signed up",
+    "window_count_a11y_other": "{{title}} from {{range}}, {{count}} signed up",
+    "window_capacity_a11y_one": "{{title}} from {{range}}, {{count}} of {{capacity}} signed up",
+    "window_capacity_a11y_other": "{{title}} from {{range}}, {{count}} of {{capacity}} signed up"
   },
   "toast": {
     "claimed": "Signed up",

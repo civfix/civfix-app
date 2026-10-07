@@ -7,8 +7,6 @@ import {
   PaginationQuerySchema,
   pageResponse,
   WEB_REPORT_TYPES,
-  WEB_REPORT_TYPE_BY_ID,
-  webReportTypeToCategory,
   PushPlatformSchema,
   OAuthProviderSchema,
   CleanupMemberRoleSchema,
@@ -96,11 +94,9 @@ describe("common enums + taxonomy", () => {
   it("WEB_REPORT_TYPES map to valid canonical categories", () => {
     for (const t of WEB_REPORT_TYPES) {
       expect(ReportCategorySchema.safeParse(t.category).success).toBe(true)
-      expect(t.gov.email).toMatch(/@/)
     }
-    expect(WEB_REPORT_TYPE_BY_ID.graffiti.category).toBe("graffiti")
-    expect(webReportTypeToCategory("dump")).toBe("trash")
-    expect(webReportTypeToCategory("unknown-id")).toBe("other")
+    expect(WEB_REPORT_TYPES.find((t) => t.id === "graffiti")?.category).toBe("graffiti")
+    expect(WEB_REPORT_TYPES.find((t) => t.id === "dump")?.category).toBe("trash")
   })
 })
 

@@ -1,5 +1,7 @@
 import { avatarGradient } from "../avatar.js"
-import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/analytics.js"
+import { hostCapabilities } from "../host/capabilities.js"
+import type { CleanupMemberRole, HostCapability } from "../schemas/common.js"
+import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/suppression.js"
 import type {
   BreakdownRow,
   HostedEventsAnalyticsResponse,
@@ -23,18 +25,14 @@ import type {
 } from "../schemas/host/portfolio.js"
 import type { LeaderboardEntryDTO } from "../schemas/entities.js"
 import { makeIdFactory } from "./ids.js"
-
-
-const MINUTE_MS = 60_000
-const HOUR_MS = 3_600_000
-const DAY_MS = 86_400_000
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "../time-units.js"
 
 const FAKE_CAPACITY = 60
 const FAKE_REGISTERED = 42
 const FAKE_WAITLISTED = 7
 const FAKE_CANCELLED_SEATS = 5
 const FAKE_TREND_DAYS = 14
-const FAKE_EVENT_DURATION_MS = 4 * HOUR_MS
+const FAKE_EVENT_DURATION_MS = 4 * MS_PER_HOUR
 const FAKE_TIMEZONE = "America/Los_Angeles"
 
 export interface FakeEventInsightsOptions {
@@ -54,6 +52,8 @@ const FAKE_PORTFOLIO_VOLUNTEER_HOURS = [41.5, 33, 27.25] as const
 const FAKE_EVENT_VOLUNTEER_HOURS = [6, 5.5, 4.25] as const
 const FAKE_PORTFOLIO_TOTAL_HOURS = 486.75
 const FAKE_PORTFOLIO_VOLUNTEERS_CREDITED = 96
+const FAKE_PORTFOLIO_REGISTRATIONS = 412
+const FAKE_PORTFOLIO_CHECK_INS = 337
 
 function fakeTopVolunteers(
   nextId: () => string,
@@ -140,7 +140,7 @@ function phaseProfile(phase: EventPhase, now: number): PhaseProfile {
   if (phase === "live") {
     return {
       status: "active",
-      startsAt: now - 45 * MINUTE_MS,
+      startsAt: now - 45 * MS_PER_MINUTE,
       completedAt: null,
       checkedIn: 27,
       noShow: 0,
@@ -149,7 +149,7 @@ function phaseProfile(phase: EventPhase, now: number): PhaseProfile {
     }
   }
   if (phase === "ended") {
-    const startsAt = now - 9 * DAY_MS
+    const startsAt = now - 9 * MS_PER_DAY
     return {
       status: "done",
       startsAt,
@@ -163,7 +163,7 @@ function phaseProfile(phase: EventPhase, now: number): PhaseProfile {
   if (phase === "cancelled") {
     return {
       status: "cancelled",
-      startsAt: now + 5 * DAY_MS,
+      startsAt: now + 5 * MS_PER_DAY,
       completedAt: null,
       checkedIn: 0,
       noShow: 0,
@@ -173,7 +173,7 @@ function phaseProfile(phase: EventPhase, now: number): PhaseProfile {
   }
   return {
     status: "upcoming",
-    startsAt: now + 3 * DAY_MS,
+    startsAt: now + 3 * MS_PER_DAY,
     completedAt: null,
     checkedIn: 0,
     noShow: 0,
@@ -223,9 +223,9 @@ function fakeBroadcasts(
   phase: EventPhase,
   startsAt: number,
 ): InsightsBroadcast[] {
-  const confirmationAt = startsAt - 12 * DAY_MS
-  const reminderAt = startsAt - 2 * DAY_MS
-  const recapAt = startsAt + FAKE_EVENT_DURATION_MS + HOUR_MS
+  const confirmationAt = startsAt - 12 * MS_PER_DAY
+  const reminderAt = startsAt - 2 * MS_PER_DAY
+  const recapAt = startsAt + FAKE_EVENT_DURATION_MS + MS_PER_HOUR
   const pending = phase === "upcoming" || phase === "cancelled"
   return [
     {
@@ -243,7 +243,7 @@ function fakeBroadcasts(
       finishedAt: pending ? null : new Date(reminderAt).toISOString(),
       recipients: 40,
       sent: pending ? 0 : 38,
-      failed: pending ? 0 : 0,
+      failed: 0,
       suppressed: 2,
     },
     {
@@ -274,7 +274,7 @@ function fakeTrend(
 ): SeatPoint[] {
   const points = cumulative(registered, FAKE_TREND_DAYS, rng)
   return points.map((seats, i) => ({
-    day: dayKey(lastDayMs - (FAKE_TREND_DAYS - 1 - i) * DAY_MS),
+    day: dayKey(lastDayMs - (FAKE_TREND_DAYS - 1 - i) * MS_PER_DAY),
     seats,
   }))
 }
@@ -300,7 +300,7 @@ export function fakeEventInsights(
       startsAt: new Date(profile.startsAt).toISOString(),
       endsAt: new Date(endsAt).toISOString(),
       completedAt: profile.completedAt === null ? null : new Date(profile.completedAt).toISOString(),
-      registrationClosesAt: new Date(profile.startsAt - 12 * HOUR_MS).toISOString(),
+      registrationClosesAt: new Date(profile.startsAt - 12 * MS_PER_HOUR).toISOString(),
       timezone: options.timezone ?? FAKE_TIMEZONE,
     },
     seats: {
@@ -327,7 +327,7 @@ export function fakeEventInsights(
   }
 }
 
-const PORTFOLIO_SERIES_DAYS: Readonly<Record<PortfolioAnalyticsRange, number>> = {
+const FAKE_PORTFOLIO_SERIES_POINTS: Readonly<Record<PortfolioAnalyticsRange, number>> = {
   "30d": 30,
   "90d": 60,
   "365d": 90,
@@ -351,17 +351,17 @@ export function fakeHostedEventsAnalytics(
   const now = options.now
   const rng = rngFrom(seed)
   const nextId = makeIdFactory(seed)
-  const days = PORTFOLIO_SERIES_DAYS[range]
+  const points = FAKE_PORTFOLIO_SERIES_POINTS[range]
   const series: SeriesPoint[] = []
-  for (let i = days - 1; i >= 0; i -= 1) {
+  for (let i = points - 1; i >= 0; i -= 1) {
     series.push({
-      day: dayKey(now - i * DAY_MS),
+      day: dayKey(now - i * MS_PER_DAY),
       value: Math.round(4 + rng() * 22),
       suppressed: false,
     })
   }
-  const registrations = 412
-  const checkIns = 337
+  const registrations = FAKE_PORTFOLIO_REGISTRATIONS
+  const checkIns = FAKE_PORTFOLIO_CHECK_INS
   const uniqueAttendees = 268
   const rows: BreakdownRow[] = PORTFOLIO_EVENT_TITLES.slice(0, 5).map((label, i) => ({
     key: `top-event-${i + 1}`,
@@ -405,9 +405,13 @@ export function fakeHostPortfolioKpis(): HostPortfolioKpis {
   return {
     eventsHosted: 9,
     upcomingEvents: 3,
-    totalRegistrations: 412,
-    totalCheckedIn: 337,
+    totalRegistrations: FAKE_PORTFOLIO_REGISTRATIONS,
+    totalCheckedIn: FAKE_PORTFOLIO_CHECK_INS,
   }
+}
+
+function eventRoleCapabilities(eventRole: CleanupMemberRole): HostCapability[] {
+  return [...hostCapabilities({ eventRole, orgRole: null })]
 }
 
 export function fakeHostedEvents(
@@ -423,8 +427,8 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[0],
-      startsAt: new Date(now + 3 * DAY_MS).toISOString(),
-      endsAt: new Date(now + 3 * DAY_MS + FAKE_EVENT_DURATION_MS).toISOString(),
+      startsAt: new Date(now + 3 * MS_PER_DAY).toISOString(),
+      endsAt: new Date(now + 3 * MS_PER_DAY + FAKE_EVENT_DURATION_MS).toISOString(),
       timezone: FAKE_TIMEZONE,
       status: "upcoming",
       visibility: "public",
@@ -434,17 +438,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 7,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "manage_tickets",
-        "manage_team",
-        "broadcast",
-        "export",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -453,8 +447,8 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[3],
-      startsAt: new Date(now + 11 * DAY_MS).toISOString(),
-      endsAt: new Date(now + 11 * DAY_MS + FAKE_EVENT_DURATION_MS).toISOString(),
+      startsAt: new Date(now + 11 * MS_PER_DAY).toISOString(),
+      endsAt: new Date(now + 11 * MS_PER_DAY + FAKE_EVENT_DURATION_MS).toISOString(),
       timezone: FAKE_TIMEZONE,
       status: "upcoming",
       visibility: "unlisted",
@@ -464,7 +458,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "cohost",
-      myCapabilities: ["view_event_private", "view_roster", "check_in", "broadcast"],
+      myCapabilities: eventRoleCapabilities("cohost"),
       orgId,
       orgName,
       pageSlug: null,
@@ -473,7 +467,7 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[5],
-      startsAt: new Date(now + 24 * DAY_MS).toISOString(),
+      startsAt: new Date(now + 24 * MS_PER_DAY).toISOString(),
       endsAt: null,
       timezone: FAKE_TIMEZONE,
       status: "upcoming",
@@ -484,7 +478,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "coordinator",
-      myCapabilities: ["view_event_private", "view_roster", "view_analytics"],
+      myCapabilities: eventRoleCapabilities("coordinator"),
       orgId,
       orgName,
       pageSlug: null,
@@ -495,8 +489,8 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[1],
-      startsAt: new Date(now - 9 * DAY_MS).toISOString(),
-      endsAt: new Date(now - 9 * DAY_MS + FAKE_EVENT_DURATION_MS).toISOString(),
+      startsAt: new Date(now - 9 * MS_PER_DAY).toISOString(),
+      endsAt: new Date(now - 9 * MS_PER_DAY + FAKE_EVENT_DURATION_MS).toISOString(),
       timezone: FAKE_TIMEZONE,
       status: "done",
       visibility: "public",
@@ -507,17 +501,7 @@ export function fakeHostedEvents(
       waitlistCount: 7,
       hoursCredited: 114.5,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "manage_tickets",
-        "manage_team",
-        "broadcast",
-        "export",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -526,8 +510,8 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[2],
-      startsAt: new Date(now - 26 * DAY_MS).toISOString(),
-      endsAt: new Date(now - 26 * DAY_MS + FAKE_EVENT_DURATION_MS).toISOString(),
+      startsAt: new Date(now - 26 * MS_PER_DAY).toISOString(),
+      endsAt: new Date(now - 26 * MS_PER_DAY + FAKE_EVENT_DURATION_MS).toISOString(),
       timezone: FAKE_TIMEZONE,
       status: "done",
       visibility: "public",
@@ -538,14 +522,7 @@ export function fakeHostedEvents(
       waitlistCount: 3,
       hoursCredited: 0,
       myRole: "organizer",
-      myCapabilities: [
-        "view_event_private",
-        "view_roster",
-        "view_analytics",
-        "check_in",
-        "manage_event",
-        "broadcast",
-      ],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,
@@ -554,7 +531,7 @@ export function fakeHostedEvents(
     {
       id: nextId(),
       title: PORTFOLIO_EVENT_TITLES[4],
-      startsAt: new Date(now - 41 * DAY_MS).toISOString(),
+      startsAt: new Date(now - 41 * MS_PER_DAY).toISOString(),
       endsAt: null,
       timezone: FAKE_TIMEZONE,
       status: "cancelled",
@@ -565,7 +542,7 @@ export function fakeHostedEvents(
       checkedInCount: 0,
       waitlistCount: 0,
       myRole: "organizer",
-      myCapabilities: ["view_event_private", "view_roster", "view_analytics", "manage_event"],
+      myCapabilities: eventRoleCapabilities("organizer"),
       orgId,
       orgName,
       pageSlug: null,

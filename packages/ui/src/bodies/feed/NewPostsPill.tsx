@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react"
-import { Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
-import { focusRingProps, makeThemedStyles, motion, useTheme } from "../../theme"
+import React, { useEffect, useMemo, useRef } from "react"
+import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
+import { focusRingProps, makeThemedStyles, motion, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Icon, Text, iconMap } from "../../typography"
 import { useT } from "../../i18n"
+import { shouldAnnounceNewPosts } from "../../data/feedLiveModel"
 
 const ENTER = motion.fadeUp
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
 const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
-const MIN_TOUCH_TARGET = 44
+const ANNOUNCES_NATIVELY = Platform.OS !== "web"
 
 export function NewPostsPill({ count, onPress }: { count: number; onPress: () => void }) {
   const styles = useStyles()
@@ -17,6 +18,16 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
   const reducedMotion = useReducedMotion() === true
   const progress = useRef(new Animated.Value(0)).current
   const visible = count > 0
+  const label = t("feed.new_posts", { count })
+  const previousCountRef = useRef(0)
+
+  useEffect(() => {
+    const previous = previousCountRef.current
+    previousCountRef.current = count
+    if (ANNOUNCES_NATIVELY && shouldAnnounceNewPosts(previous, count)) {
+      AccessibilityInfo.announceForAccessibility(label)
+    }
+  }, [count, label])
 
   useEffect(() => {
     if (!visible) {
@@ -33,23 +44,25 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
     return () => animation.stop()
   }, [visible, progress])
 
-  if (!visible) return null
-
-  const motionStyle = reducedMotion
-    ? { opacity: progress }
-    : {
-        opacity: progress,
-        transform: [
-          {
-            translateY: progress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-ENTER.distance, 0],
-            }),
+  const motionStyle = useMemo(
+    () =>
+      reducedMotion
+        ? { opacity: progress }
+        : {
+            opacity: progress,
+            transform: [
+              {
+                translateY: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-ENTER.distance, 0],
+                }),
+              },
+            ],
           },
-        ],
-      }
+    [reducedMotion, progress],
+  )
 
-  const label = t("feed.new_posts", { count })
+  if (!visible) return null
 
   return (
     <Animated.View style={[styles.slot, motionStyle]} pointerEvents="box-none">

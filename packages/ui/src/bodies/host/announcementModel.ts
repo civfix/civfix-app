@@ -1,6 +1,12 @@
 import type { AnnouncementAudience, AnnouncementDTO } from "@civfix/shared"
-import { ANNOUNCEMENT_AUDIENCE_KINDS, MAX_ANNOUNCEMENT_BODY } from "@civfix/shared"
-import type { IconName } from "../../typography/icon-map"
+import {
+  ANNOUNCEMENT_AUDIENCE_KINDS,
+  ErrorCode,
+  MAX_ANNOUNCEMENT_BODY,
+  byErrorCode,
+  type ErrorCodeTable,
+} from "@civfix/shared"
+import type { IconName } from "../../typography/iconMap"
 
 export const ANNOUNCEMENT_PREVIEW_LINES = 2
 
@@ -10,7 +16,7 @@ export const HOST_HISTORY_ANNOUNCEMENTS = 3
 
 export const ANNOUNCEMENT_PREVIEW_CHARS = 180
 
-export const ANNOUNCEMENT_BODY_COUNTER_AT = 0.9
+const ANNOUNCEMENT_BODY_COUNTER_AT = 0.9
 
 export const AUDIENCE_OPTIONS = ANNOUNCEMENT_AUDIENCE_KINDS
 
@@ -66,6 +72,27 @@ export function announcementHeading(announcement: AnnouncementDTO): string | nul
   return title && title.length > 0 ? title : null
 }
 
+export interface AnnouncementByline {
+  name: string
+  seed: string
+  photoUrl: string | null
+  gradient: readonly [string, string] | null
+}
+
+export function announcementByline(
+  announcement: AnnouncementDTO,
+  hostLabel: string,
+): AnnouncementByline {
+  const org = announcement.authorOrg ?? null
+  const author = announcement.author ?? null
+  return {
+    name: org?.name ?? author?.name ?? hostLabel,
+    seed: org?.id ?? author?.id ?? announcement.id,
+    photoUrl: org?.logoUrl ?? author?.avatarUrl ?? null,
+    gradient: org ? null : (author?.avatar ?? null),
+  }
+}
+
 export function announcementCounts(announcement: AnnouncementDTO): {
   recipients: number
   sent: number
@@ -79,15 +106,22 @@ export function announcementCounts(announcement: AnnouncementDTO): {
   }
 }
 
+export function seeAllTotal(loaded: number, hasMore: boolean): number | null {
+  return hasMore ? null : loaded
+}
+
 export function announcementSentAt(announcement: AnnouncementDTO): string {
   return announcement.sentAt ?? announcement.createdAt
 }
 
+const ANNOUNCEMENT_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "announce.error_rate_limited",
+  [ErrorCode.FORBIDDEN]: "announce.error_forbidden",
+  [ErrorCode.CONFLICT]: "announce.error_conflict",
+  [ErrorCode.VALIDATION]: "announce.error_validation",
+  [ErrorCode.ABUSE_HELD]: "announce.error_held",
+}
+
 export function announcementErrorKey(code: string | undefined): string {
-  if (code === "RATE_LIMITED") return "announce.error_rate_limited"
-  if (code === "FORBIDDEN") return "announce.error_forbidden"
-  if (code === "CONFLICT") return "announce.error_conflict"
-  if (code === "VALIDATION") return "announce.error_validation"
-  if (code === "ABUSE_HELD") return "announce.error_held"
-  return "announce.error_generic"
+  return byErrorCode(code, ANNOUNCEMENT_ERROR_KEYS, "announce.error_generic")
 }

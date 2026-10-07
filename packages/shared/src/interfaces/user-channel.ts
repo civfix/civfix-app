@@ -4,14 +4,12 @@ import type { UserSignal } from "../types/ws.js"
 /**
  * Per-user realtime signal fan-out behind a vendor-neutral interface.
  *
- * This is a NEW seam rather than an extension of `ChatService`: per-user invalidate events are a
- * distinct concern from chat ROOMS (interface-segregation - a consumer wanting "tell this user to
- * refetch" should not depend on join/persist/history). A connection is addressed by `userId` and stays
- * "always joined" for the socket's whole lifetime, so there is no room key and no per-message leaveRoom;
- * `subscribeUser` instead returns an async unsubscribe handle, matching pub/sub ergonomics and letting
- * the gateway hold exactly one disposer per socket. The delivery model is signal/invalidate: a frame
- * carries only a topic + optional scoping id, never entity data - the client refetches authoritative
- * state once it learns a domain is stale.
+ * A separate seam from `ChatService` because per-user invalidate events are a distinct concern from chat
+ * ROOMS: a consumer wanting "tell this user to refetch" should not depend on join/persist/history. A
+ * connection is addressed by `userId` and stays "always joined" for the socket's whole lifetime, so
+ * `subscribeUser` returns an async unsubscribe handle and the gateway holds exactly one disposer per
+ * socket. A frame carries only a topic + optional scoping id, never entity data; the client refetches
+ * authoritative state once it learns a domain is stale.
  */
 export interface UserChannel {
   /** Register conn (held by userId) to receive this user's signal frames on THIS worker. Returns an

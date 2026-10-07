@@ -2,7 +2,9 @@
  * The composer draft's media survives a remount ONLY because the persisted list is merged with this
  * mount's picks instead of being overwritten by the (always-empty-on-mount) local attachment hook.
  */
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import type { PendingAttachment } from "../../primitives/useComposerAttachments"
 import {
   POST_COMPOSER_MEDIA_CAP,
@@ -10,6 +12,7 @@ import {
   isCarriedMediaId,
   mergePostComposerMedia,
   mergePostComposerThumbs,
+  postComposerCanAttach,
   snapshotCarriedMedia,
   toPostComposerMedia,
 } from "../postComposerMedia"
@@ -33,7 +36,7 @@ const picked: PendingAttachment = {
 
 describe("post composer media merge", () => {
   it("keeps the persisted draft media when the composer remounts with an empty pick list", () => {
-    // The regression: an empty local hook used to overwrite the draft, orphaning finalized uploadIds.
+    // An empty local hook must not overwrite the draft and orphan its finalized uploadIds.
     expect(mergePostComposerMedia([carried], [])).toEqual([carried])
     expect(mergePostComposerThumbs([carried], [])).toEqual([
       { id: "carried:0:file:///staged.jpg", uri: carried.uri, kind: "image", posterUri: null, uploadId: "upload-1" },
@@ -65,8 +68,8 @@ describe("post composer media merge", () => {
   })
 
   it("gives the SAME asset picked twice two distinct carried keys", () => {
-    // The regression: keying on the uri alone produced duplicate React keys, and removing one thumb
-    // filtered on that uri — deleting both copies at once.
+    // Keying on the uri alone would give duplicate React keys, and removing one thumb by uri would delete
+    // both copies.
     const twin = { ...carried, uploadId: "upload-2" }
     const thumbs = mergePostComposerThumbs([carried, twin], [])
     expect(thumbs.map((thumb) => thumb.id)).toEqual([
@@ -92,8 +95,8 @@ describe("carried media snapshot", () => {
   })
 
   it("drops an upload that can never finish and reports how many went", () => {
-    // The regression: the pipeline that would have written this item's uploadId died with the mount that
-    // picked it, so carrying it forward spun its thumbnail forever and kept Post disabled for good.
+    // The pipeline that would write this item's uploadId died with the mount that picked it, so carrying
+    // it forward would spin its thumbnail forever and keep Post disabled.
     expect(snapshotCarriedMedia([carried, unfinished])).toEqual({ carried: [carried], dropped: 1 })
     expect(snapshotCarriedMedia([unfinished, { ...unfinished, status: "failed" }])).toEqual({
       carried: [],
@@ -107,5 +110,31 @@ describe("carried media snapshot", () => {
 
   it("is a no-op for an empty draft", () => {
     expect(snapshotCarriedMedia([])).toEqual({ carried: [], dropped: 0 })
+  })
+})
+
+describe("postComposerCanAttach", () => {
+  it("counts carried draft media against the cap, not just this mount's picks", () => {
+    // Two carried + two picked is full: the hook alone (2 of 4 picks) would still open the picker, and
+    // the merge would then slice the fifth item off after it uploaded.
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 2 })).toBe(false)
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 1 })).toBe(true)
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 0, picked: POST_COMPOSER_MEDIA_CAP })).toBe(false)
+  })
+
+  it("never overrides the hook's own refusal (no camera, busy, or its own cap)", () => {
+    expect(postComposerCanAttach({ hookCanAttach: false, carried: 0, picked: 0 })).toBe(false)
+  })
+
+  it("is what BOTH composers gate the add-media control on", () => {
+    const composers: Record<string, string> = {
+      "../PostComposer.tsx": surfaceSource("postComposer"),
+      "../feed/InlineComposer.tsx": readFileSync(new URL("../feed/InlineComposer.tsx", import.meta.url), "utf8"),
+    }
+    for (const [file, source] of Object.entries(composers)) {
+      expect(source, file).toMatch(/const canAttachMedia = postComposerCanAttach\(\{/)
+      expect(source, file).toContain("disabled={!canAttachMedia}")
+      expect(source, file).not.toContain("disabled={!attachments.canAttach}")
+    }
   })
 })

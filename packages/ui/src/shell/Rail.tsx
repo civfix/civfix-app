@@ -29,7 +29,13 @@ import {
 } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
-import { activeTabIndex, tabPillTransition } from "./tabBarLogic"
+import {
+  DOCK_ORB_GLYPH_SIZE,
+  DOCK_TAB_GLYPH_SIZE,
+  TAB_ICON_STROKE_WIDTH,
+  activeTabIndex,
+  tabPillTransition,
+} from "./tabBarLogic"
 import {
   NAV_GAP,
   NAV_H,
@@ -42,7 +48,7 @@ import {
   RAIL_CAPSULE_W,
   RAIL_ITEM,
   RAIL_ITEM_GAP,
-  RAIL_ORB,
+  DOCK_ORB,
   RAIL_PAD_H,
   railActiveView,
   railItemLeft,
@@ -50,9 +56,6 @@ import {
 import { cssTransition } from "./motionCss"
 import { prefersReducedMotion } from "./webMedia"
 
-const RAIL_ICON = 24
-const RAIL_ICON_STROKE = 2.4
-const ORB_ICON = 22
 const BRAND_SIZE = RAIL_BRAND_SIZE
 const RAIL_BORDER = StyleSheet.hairlineWidth
 const LOZENGE_TOP = (RAIL_CAPSULE_H - RAIL_BORDER * 2 - RAIL_ITEM) / 2
@@ -173,7 +176,7 @@ export function Rail() {
                 <View style={[styles.hoverLozenge, styles.orbHoverLozenge, styles.noPointer]} />
               ) : null}
               <View style={styles.noPointer}>
-                <Icon icon={iconMap.Search} size={ORB_ICON} color={th.colors.textMuted} strokeWidth={RAIL_ICON_STROKE} />
+                <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={th.colors.textMuted} strokeWidth={TAB_ICON_STROKE_WIDTH} />
               </View>
             </>
           )}
@@ -215,9 +218,9 @@ function RailTab({
           {webHover(state) && !selected ? <View style={[styles.hoverLozenge, styles.noPointer]} /> : null}
           <Icon
             icon={tab.icon}
-            size={RAIL_ICON}
+            size={DOCK_TAB_GLYPH_SIZE}
             color={th.colors.textMuted}
-            strokeWidth={RAIL_ICON_STROKE}
+            strokeWidth={TAB_ICON_STROKE_WIDTH}
           />
         </>
       )}
@@ -289,9 +292,9 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.6,
   },
   orb: {
-    width: RAIL_ORB,
-    height: RAIL_ORB,
-    borderRadius: RAIL_ORB / 2,
+    width: DOCK_ORB,
+    height: DOCK_ORB,
+    borderRadius: DOCK_ORB / 2,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: StyleSheet.hairlineWidth,
@@ -300,11 +303,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   orbSelected: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: RAIL_ORB / 2,
+    borderRadius: DOCK_ORB / 2,
     backgroundColor: t.glass.dock.selected,
   },
   orbHoverLozenge: {
-    borderRadius: RAIL_ORB / 2,
+    borderRadius: DOCK_ORB / 2,
   },
   pressed: {
     opacity: 0.9,

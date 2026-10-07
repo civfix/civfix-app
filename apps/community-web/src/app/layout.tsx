@@ -17,10 +17,10 @@ import {
   SITE_NAME,
   normalizeSiteUrl,
 } from "@/lib/site-meta"
+import { APPEARANCE_SCRIPT } from "@/lib/appearance-script"
 import "./globals.css"
 import "@/styles/design.css"
 import "@/styles/contract-fonts.css"
-
 
 const siteOrigin = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL)
 
@@ -68,14 +68,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 }
-
-const APPEARANCE_SCRIPT = `(function(){try{
-var s=localStorage.getItem("civfix.appearance");
-if(s!=="light"&&s!=="dark"&&s!=="system")s="system";
-var d=s==="dark"||(s==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);
-document.documentElement.classList.toggle("dark",d);
-document.documentElement.style.colorScheme=d?"dark":"light";
-}catch(e){}})();`
 
 export default function RootLayout({
   children,

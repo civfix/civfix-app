@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { ALL_DETAIL_KINDS } from "../../nav"
 import { BODY_LAYOUT, pageBottomReserve } from "../bodyLayout"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -59,7 +60,7 @@ describe("ContentBottomReserve - the one additive content-padding decorator", ()
 
   it("adds the reserve ON TOP of the body's own bottom gutter and leaves horizontal scrollers alone", () => {
     expect(src).toMatch(/if \(horizontal \|\| reserve <= 0\) return contentContainerStyle/)
-    expect(src).toMatch(/return \[contentContainerStyle, \{ paddingBottom: basePad \+ reserve \}\]/)
+    expect(src).toMatch(/return withExtraBottomPadding\(contentContainerStyle, reserve\)/)
   })
 
   it("memoizes the decorated host per base so a page body never remounts on a re-render", () => {
@@ -78,7 +79,7 @@ describe("ContentBottomReserve - the one additive content-padding decorator", ()
 
 describe("the profile bodies take the page's scroll host, so the reserve reaches them", () => {
   it("PersonDetailBody inherits the shell host instead of building its own", () => {
-    const src = read("../../bodies/PersonDetailBody.tsx")
+    const src = surfaceSource("personDetail")
     expect(src).toMatch(/const \{ ScrollView \} = useScrollHost\(\)/)
     expect(src).not.toMatch(/PERSON_SCROLL_HOST|makeKeyboardAwareScrollHost|ScrollHostProvider/)
   })

@@ -131,6 +131,33 @@ describe("RichTextEditor", () => {
     expect(document.querySelector("a[href^='javascript']")).toBeNull()
   })
 
+  it("does not move the caret on the next keystroke after a command that changed nothing", async () => {
+    const user = userEvent.setup()
+    renderConsole(<Harness initial={"ab\n\ncd"} />, { withToasts: false })
+    const area = editor()
+    area.focus()
+    area.setSelectionRange(3, 3)
+    await user.click(screen.getByRole("button", { name: "editor.bullet_list" }))
+    expect(currentValue()).toBe("ab\n\ncd")
+    area.setSelectionRange(7, 7)
+    await user.keyboard("xy")
+    expect(currentValue()).toBe("ab\n\ncdxy")
+  })
+
+  it("names the formatting buttons without a baked-in shortcut and exposes both modifiers", () => {
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("aria-keyshortcuts")).toBe("Meta+B Control+B")
+  })
+
+  it("describes the textarea with the remaining character count", () => {
+    renderConsole(<Harness initial="hi" />, { withToasts: false })
+    const area = editor()
+    const ids = (area.getAttribute("aria-describedby") ?? "").split(" ")
+    const text = ids.map((id) => document.getElementById(id)?.textContent ?? "").join(" ")
+    expect(text).toMatch(/editor\.remaining\(count=\d+\)/)
+  })
+
   it("does not inject markup from an angle-bracket payload", async () => {
     const user = userEvent.setup()
     renderConsole(<Harness />, { withToasts: false })

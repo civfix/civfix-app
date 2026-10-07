@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   Platform,
@@ -21,82 +20,33 @@ import { useReducedMotion } from "../theme/useReducedMotion"
 import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
-import { HEADER_CONTROL_SIZE } from "./headerControls"
+import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
+import { useEntranceAnimation } from "./useEntranceAnimation"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
-import { useFeedLiveStore } from "./feed/feedLiveStore"
-import { clearsPendingAtOffset, dedupePostsById } from "./feed/feedLiveModel"
+import { useFeedLiveStore } from "../data/feedLiveStore"
+import { clearsPendingAtOffset } from "../data/feedLiveModel"
+import { dedupeById } from "../primitives/listKeys"
 import { NewPostsPill } from "./feed/NewPostsPill"
-import { POST_CARD_RHYTHM } from "./postCardRhythm"
+import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import {
+  FEED_ROW_ENTER_MS,
+  POST_LIST_END_REACHED_THRESHOLD,
   buildFeedHeaderModel,
-  buildFeedMotionModel,
   createFeedEntranceTracker,
+  feedFooterState,
   feedViewState,
   type FeedEntranceTracker,
 } from "./feedModel"
-export {
-  buildFeedHeaderModel,
-  buildFeedMotionModel,
-  createFeedEntranceTracker,
-  feedViewState,
-} from "./feedModel"
 
-function useFeedEntrance(): Animated.WithAnimatedValue<ViewStyle> {
-  const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(14)).current
-
-  useEffect(() => {
-    let mounted = true
-    const settle = () => {
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-      opacity.setValue(1)
-      translateY.setValue(0)
-    }
-    const enter = () => {
-      const motion = buildFeedMotionModel(false)
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: motion.duration,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: motion.duration,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-      ]).start()
-    }
-
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((reduceMotion) => {
-        if (!mounted) return
-        if (reduceMotion) settle()
-        else enter()
-      })
-      .catch(enter)
-
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (reduceMotion) => {
-      if (reduceMotion) settle()
-    })
-    return () => {
-      mounted = false
-      subscription?.remove()
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-    }
-  }, [opacity, translateY])
-
-  return useMemo(() => ({ opacity, transform: [{ translateY }] }), [opacity, translateY])
-}
+const HEADER_ENTER_RISE = 14
+const ROW_ENTER_RISE = 22
+const ROW_ENTER_SCALE_FROM = 0.975
 
 function FeedPostRow({
   postId,
@@ -120,12 +70,11 @@ function FeedPostRow({
       progress.setValue(1)
       return
     }
-    const motion = buildFeedMotionModel(false)
     progress.setValue(0)
     Animated.timing(progress, {
       toValue: 1,
       delay: plan.delay,
-      duration: motion.duration,
+      duration: FEED_ROW_ENTER_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: Platform.OS !== "web",
     }).start()
@@ -139,8 +88,8 @@ function FeedPostRow({
       style={{
         opacity: progress,
         transform: [
-          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [22, 0] }) },
-          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.975, 1] }) },
+          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_RISE, 0] }) },
+          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_SCALE_FROM, 1] }) },
         ],
       }}
     >
@@ -180,14 +129,17 @@ export function FeedBody() {
   const feed = useHomeFeed()
   useFeedRealtime()
   const pendingNewPosts = useFeedLiveStore((s) => s.pendingNewPostIds.length)
-  const entranceStyle = useFeedEntrance()
+  const entranceStyle = useEntranceAnimation({
+    from: { translateY: HEADER_ENTER_RISE },
+    duration: FEED_ROW_ENTER_MS,
+  })
   const [entrance] = useState(createFeedEntranceTracker)
   const reducedMotion = useReducedMotion()
   const { t } = useT("home-feed")
   const headerModel = buildFeedHeaderModel({ isAuthenticated, layout }, t)
   const composeLabel = useT("nav").t("title.post_composer")
   const posts = useMemo(
-    () => dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? []),
+    () => dedupeById(feed.data?.pages.flatMap((page) => page.items) ?? []),
     [feed.data],
   )
   const state = feedViewState({
@@ -220,6 +172,12 @@ export function FeedBody() {
   const fetchNextPage = feed.fetchNextPage
   const hasNextPage = feed.hasNextPage
   const isFetchingNextPage = feed.isFetchingNextPage
+  const footerState = feedFooterState({
+    state,
+    isFetchingNextPage,
+    isFetchNextPageError: feed.isFetchNextPageError,
+    hasNextPage,
+  })
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
@@ -267,6 +225,7 @@ export function FeedBody() {
     ),
     [
       headerStyle,
+      styles,
       headerModel.title,
       headerModel.showComposer,
       headerModel.showInlineComposer,
@@ -279,11 +238,16 @@ export function FeedBody() {
     () => (
       <View style={emptyStyle}>
         {state === "loading" ? (
-          <>
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={t("feed.loading")}
+            accessibilityState={{ busy: true }}
+          >
             <FeedSkeleton />
             <FeedSkeleton />
             <FeedSkeleton />
-          </>
+          </View>
         ) : null}
         {state === "error" && isAuthenticated ? (
           <FeedNotice
@@ -323,8 +287,17 @@ export function FeedBody() {
   const footer = useMemo(
     () => (
       <View style={footerStyle}>
-        {state === "loaded" && isFetchingNextPage ? <FeedSkeleton /> : null}
-        {state === "loaded" && !hasNextPage && !isFetchingNextPage ? (
+        {footerState === "loading-more" ? <FeedSkeleton /> : null}
+        {footerState === "load-more-failed" ? (
+          <FeedNotice
+            icon="CloudOff"
+            title={t("feed.load_more_error")}
+            body={t("feed.error_body")}
+            actionLabel={t("feed.retry")}
+            onAction={loadMore}
+          />
+        ) : null}
+        {footerState === "caught-up" ? (
           <View style={styles.caughtUp}>
             <Text style={styles.caughtUpText}>{t("feed.caught_up")}</Text>
           </View>
@@ -332,14 +305,14 @@ export function FeedBody() {
         {promoHeight > 0 ? null : <View style={styles.bottomPad} />}
       </View>
     ),
-    [state, isFetchingNextPage, hasNextPage, promoHeight, t, footerStyle, styles],
+    [footerState, loadMore, promoHeight, t, footerStyle, styles],
   )
 
   const contentStyle = useMemo(
     () => [
       styles.content,
       isExpanded ? styles.contentExpanded : null,
-      promoHeight > 0 ? { paddingBottom: promoHeight + 14 } : null,
+      promoHeight > 0 ? { paddingBottom: promoHeight + PROMO_CLEARANCE } : null,
     ],
     [isExpanded, promoHeight, styles],
   )
@@ -370,7 +343,7 @@ export function FeedBody() {
       ListFooterComponent={footer}
       showsVerticalScrollIndicator={false}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.6}
+      onEndReachedThreshold={POST_LIST_END_REACHED_THRESHOLD}
       onScroll={onListScroll}
       scrollEventThrottle={16}
       refreshControl={refresh}
@@ -389,6 +362,8 @@ export function FeedBody() {
 const IS_WEB = Platform.OS === "web"
 
 const FEED_SCROLL_FADE_HEIGHT = 24
+/** Gap kept between the last row and the floating app-promo card the list pads itself above. */
+const PROMO_CLEARANCE = 14
 const EMPTY_FILL_MIN_HEIGHT = 300
 const webScrollFade = (t: Theme): ViewStyle =>
   IS_WEB
@@ -410,9 +385,9 @@ const useStyles = makeThemedStyles((t) => ({
   contentExpanded: { paddingTop: 14 },
   headerInset: { paddingHorizontal: POST_SURFACE === "flat" ? POST_CARD_RHYTHM.rowPaddingH : 0 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
-  heading: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 32, lineHeight: 39, letterSpacing: -0.5, color: t.colors.text },
+  heading: tabRootTitleStyle(t),
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
-  list: { gap: POST_SURFACE === "flat" ? 0 : 12 },
+  list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] },
   emptyFill: { flexGrow: 1, minHeight: EMPTY_FILL_MIN_HEIGHT },
   skeletonCard: { flexDirection: "row", gap: POST_CARD_RHYTHM.gutterGap, paddingVertical: POST_CARD_RHYTHM.rowPaddingTop },
   skeletonAvatar: { width: POST_CARD_RHYTHM.avatar, height: POST_CARD_RHYTHM.avatar, borderRadius: POST_CARD_RHYTHM.avatar / 2, backgroundColor: t.colors.bgAlt },
@@ -420,8 +395,8 @@ const useStyles = makeThemedStyles((t) => ({
   skeletonLine: { height: 10, borderRadius: 5, backgroundColor: t.colors.bgAlt },
   skeletonLineWide: { width: "88%" },
   skeletonLineShort: { width: "62%" },
-  rowSeparator: { height: 12 },
-  footer: { gap: 12 },
+  rowSeparator: { height: t.space["3"] },
+  footer: { gap: t.space["3"] },
   caughtUp: { alignItems: "center", paddingVertical: t.space["4"] },
   caughtUpText: { fontFamily: t.fontFamily.bodyBold, fontSize: 11.5, lineHeight: 16, color: t.colors.textSubtle },
   bottomPad: { height: t.space["8"] },

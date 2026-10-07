@@ -1,18 +1,10 @@
-/* =========================================================================
-   Public signup page: /e/<pageSlug>
+/* A standalone DOM route, not a react-native-web body: the audience is an anonymous visitor from a
+   shared link, often on mobile data, so the page is plain semantic HTML that paints without the app
+   shell, the map or the RN stack.
 
-   A standalone DOM route (the /legal and /service-record precedent), NOT a
-   react-native-web body. The audience is an anonymous visitor arriving from a
-   shared link, often on mobile data, who has never heard of civfix - so the
-   page is plain semantic HTML that paints without the app shell, the map or
-   the RN stack.
-
-   THEME ACCENT: the host picks one of five accents. Rather than five sets of
-   rules, the page publishes `--signup-accent*` custom properties on the <main>
-   element (features/signup-page/page-theme.ts) that alias the design-token
-   ramps in src/styles/design.css. Those ramps already flip under `.dark`, so
-   the accent follows the viewer's color scheme with no per-scheme branch here.
-   ========================================================================= */
+   The host picks one of five accents. The page publishes `--signup-accent*` custom properties on
+   <main> (features/signup-page/page-theme.ts) that alias the design.css ramps, which already flip
+   under `.dark`, so the accent follows the color scheme with no per-scheme branch here. */
 
 .signup-page {
   --signup-accent: var(--bloom);
@@ -30,17 +22,18 @@
 }
 
 .signup-shell {
+  /* The full-bleed hero cancels this gutter with a negative margin, so both read the one variable. */
+  --signup-gutter: var(--space-5);
   max-width: 680px;
   margin: 0 auto;
-  padding: 0 var(--space-5) var(--space-16);
+  padding: 0 var(--signup-gutter) var(--space-16);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 }
 
-/* ---- Hero ---- */
 .signup-hero {
-  margin: 0 calc(var(--space-5) * -1);
+  margin: 0 calc(var(--signup-gutter) * -1);
 }
 .signup-hero-cover {
   display: block;
@@ -50,7 +43,7 @@
   background: var(--bg-2);
 }
 .signup-hero-body {
-  padding: var(--space-6) var(--space-5) 0;
+  padding: var(--space-6) var(--signup-gutter) 0;
 }
 .signup-hero-org {
   display: flex;
@@ -85,7 +78,6 @@
   font-size: var(--fs-18);
 }
 
-/* ---- Content blocks ---- */
 .signup-block h2,
 .signup-block-title {
   margin: 0 0 var(--space-3);
@@ -217,7 +209,6 @@
   text-decoration: none;
 }
 
-/* ---- Registration widget ---- */
 .signup-widget {
   padding: var(--space-5);
   border-radius: var(--radius-lg);
@@ -425,8 +416,7 @@
 
 @media (max-width: 380px) {
   .signup-shell {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
+    --signup-gutter: var(--space-4);
   }
   .signup-agenda li {
     flex-direction: column;

@@ -1,5 +1,9 @@
-import type { PostCounts, PostViewer } from "@civfix/shared"
-import type { MenuAnchorRect } from "./menuMotionModel"
+import { formatCount, type PostCounts, type PostViewer } from "@civfix/shared"
+import { space } from "@civfix/shared/tokens"
+import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
+import type { AnchorRect } from "./menuMotionModel"
+import { resolveBandLeft } from "./messageContextMenuLayout"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 
 export type PostActionKey = "like" | "repost" | "comment" | "save" | "share"
 
@@ -43,12 +47,12 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
       return {
         keys: TIMELINE_KEYS,
         glyphSize: 18,
-        gap: 4,
+        gap: space["1"],
         justify: "flex-start",
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         showCounts: true,
         haloSize: 34,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
         trailing: "share",
       }
     case "focal":
@@ -60,13 +64,13 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
         minHeight: 48,
         showCounts: false,
         haloSize: 38,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
       }
     case "reply":
       return {
         keys: REPLY_KEYS,
         glyphSize: 17,
-        gap: 8,
+        gap: space["2"],
         justify: "flex-start",
         minHeight: 32,
         showCounts: true,
@@ -79,10 +83,10 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
         glyphSize: 19,
         gap: 2,
         justify: "space-between",
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         showCounts: true,
         haloSize: 34,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
       }
   }
 }
@@ -149,15 +153,9 @@ export interface PostActionMenuLabels {
   quote: string
 }
 
-const DEFAULT_MENU_LABELS: PostActionMenuLabels = {
-  repost: "Repost",
-  undoRepost: "Undo repost",
-  quote: "Quote post",
-}
-
 export function buildPostActionMenuModel(
   reposted: boolean,
-  labels: PostActionMenuLabels = DEFAULT_MENU_LABELS,
+  labels: PostActionMenuLabels,
 ): readonly [{ key: "repost"; label: string }, { key: "quote"; label: string }] {
   return [
     { key: "repost" as const, label: reposted ? labels.undoRepost : labels.repost },
@@ -166,23 +164,19 @@ export function buildPostActionMenuModel(
 }
 
 export function positionPostActionMenu(
-  anchor: MenuAnchorRect,
+  anchor: AnchorRect,
   viewport: { width: number; height: number },
   menu: { width: number; height: number },
   align: "left" | "right" = "right",
 ): { left: number; top: number } {
-  const margin = 8
-  const gap = 4
+  const margin = space["2"]
+  const gap = space["1"]
   const below = anchor.y + anchor.height + gap
   const preferredTop = below + menu.height <= viewport.height - margin
     ? below
     : anchor.y - menu.height - gap
-  const preferredLeft = align === "right" ? anchor.x + anchor.width - menu.width : anchor.x
   return {
-    left: Math.min(
-      Math.max(preferredLeft, margin),
-      Math.max(margin, viewport.width - menu.width - margin),
-    ),
+    left: resolveBandLeft(anchor, viewport.width, menu.width, align === "right", { edgeMargin: margin }),
     top: Math.min(
       Math.max(preferredTop, margin),
       Math.max(margin, viewport.height - menu.height - margin),
@@ -190,22 +184,15 @@ export function positionPostActionMenu(
   }
 }
 
-export function buildPostActionMotionModel(reducedMotion: boolean) {
-  return reducedMotion
-    ? { duration: 0, easing: "linear" as const, animated: false }
-    : { duration: 280, easing: "ease-out" as const, animated: true }
+export const POST_ACTION_POP_MS = 280
+
+export function formatPostActionCount(value: number, locale: string = FALLBACK_LOCALE): string {
+  return formatCount(Math.max(0, Math.trunc(value)), locale, { compact: true })
 }
 
-export function formatPostActionCount(value: number): string {
-  const count = Math.max(0, Math.trunc(value))
-  if (count < 1_000) return String(count)
-  const formatUnit = (divisor: number, suffix: string): string => {
-    const scaled = count / divisor
-    return `${Number(scaled.toFixed(scaled < 10 ? 1 : 0))}${suffix}`
-  }
-  if (count < 1_000_000) return formatUnit(1_000, "K")
-  if (count < 1_000_000_000) return formatUnit(1_000_000, "M")
-  return formatUnit(1_000_000_000, "B")
+/** The post's own detail route: what Share links to and where a sign-in started here returns. */
+export function postDetailPath(postId: string): string {
+  return `/post/${postId}`
 }
 
 export function buildPostActionModel(
@@ -213,7 +200,7 @@ export function buildPostActionModel(
   callbacks: PostActionCallbacks = {},
   options?: { omit?: readonly PostActionKey[] },
 ): PostActionModel[] {
-  const sharePath = `/post/${input.postId}`
+  const sharePath = postDetailPath(input.postId)
   const countLabel = (value: number) => value > 0 ? formatPostActionCount(value) : null
   const all: PostActionModel[] = [
     { key: "like", countLabel: countLabel(input.counts.likes), active: input.viewer.liked,

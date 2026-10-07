@@ -1,5 +1,6 @@
 import React from "react"
 import { Text as RNText, type TextProps, type TextStyle } from "react-native"
+import { tokens } from "@civfix/shared/tokens"
 import {
   themes,
   useColorSchemeName,
@@ -20,19 +21,27 @@ type Variant =
 
 type VariantStyles = Record<Variant, TextStyle>
 
+// RN's letterSpacing takes pixels, so an em tracking token is scaled by the font size it sits on.
+function trackingPx(em: string, size: number): number {
+  return parseFloat(em) * size
+}
+
+// A design-system gap: -0.015em at 20px sits between the tight and snug tracking tokens.
+const TITLE_LETTER_SPACING = -0.3
+
 function makeVariantStyles(t: Theme): VariantStyles {
   return {
     display: {
       fontFamily: t.fontFamily.displayBold,
       fontSize: t.fontSize["30"],
       color: t.colors.text,
-      letterSpacing: -0.6,
+      letterSpacing: trackingPx(tokens.tracking.tight, t.fontSize["30"]),
     },
     title: {
       fontFamily: t.fontFamily.displaySemiBold,
       fontSize: t.fontSize["20"],
       color: t.colors.text,
-      letterSpacing: -0.3,
+      letterSpacing: TITLE_LETTER_SPACING,
     },
     heading: {
       fontFamily: t.fontFamily.displaySemiBold,
@@ -73,16 +82,9 @@ const VARIANT_STYLES: Record<ColorSchemeName, VariantStyles> = {
 }
 
 function withSelect(styles: VariantStyles): Record<Variant, [TextStyle, TextStyle]> {
-  return {
-    display: [styles.display, webSelectableText],
-    title: [styles.title, webSelectableText],
-    heading: [styles.heading, webSelectableText],
-    body: [styles.body, webSelectableText],
-    bodyStrong: [styles.bodyStrong, webSelectableText],
-    label: [styles.label, webSelectableText],
-    caption: [styles.caption, webSelectableText],
-    mono: [styles.mono, webSelectableText],
-  }
+  return Object.fromEntries(
+    Object.entries(styles).map(([variant, style]) => [variant, [style, webSelectableText]]),
+  ) as Record<Variant, [TextStyle, TextStyle]>
 }
 
 const VARIANT_STYLES_WITH_SELECT: Record<

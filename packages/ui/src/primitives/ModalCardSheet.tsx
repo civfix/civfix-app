@@ -11,7 +11,6 @@ import {
   type ViewStyle,
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { tokens } from "@civfix/shared/tokens"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -25,6 +24,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
+import { announce } from "../announce"
 import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
@@ -114,6 +114,11 @@ export function ModalCardSheet({
   const { rendered } = cardMotion
   const onDismiss = useModalClosed(rendered, onClosed)
 
+  // iOS VoiceOver does not speak a newly mounted alert; web and Android announce it from its role/live region.
+  useEffect(() => {
+    if (visible && error && Platform.OS === "ios") announce(error)
+  }, [visible, error])
+
   return (
     <Modal
       visible={rendered}
@@ -199,7 +204,8 @@ export function ModalCardSheet({
               <Text
                 variant="caption"
                 color={tone === "danger" ? t.colors.bloom["700"] : t.colors.bloom["600"]}
-                numberOfLines={2}
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
                 style={fullBleed ? styles.errorFull : null}
               >
                 {error}
@@ -222,12 +228,6 @@ export function ModalCardSheet({
       </Animated.View>
     </Modal>
   )
-}
-
-export function modalSheetInputFocusedStyle(t: Theme): ViewStyle {
-  return Platform.OS === "web"
-    ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-    : { borderColor: t.colors.accent }
 }
 
 export function modalSheetInputStyle(t: Theme) {

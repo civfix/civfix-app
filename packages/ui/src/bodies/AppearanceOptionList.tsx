@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
+import { View, StyleSheet } from "react-native"
 import {
   APPEARANCE_PREFERENCES,
   makeThemedStyles,
   setAppearancePreference,
   useAppearancePreference,
-  useTheme,
-  focusRingProps,
   type AppearancePreference,
 } from "../theme"
 import { useHaptics } from "../capabilities"
-import { Text, Icon, iconMap } from "../typography"
+import { RadioOptionRow } from "../primitives/RadioOptionRow"
 import { useT } from "../i18n"
 import {
   appearanceCommit,
@@ -26,7 +24,6 @@ const AppearanceRow = React.memo(function AppearanceRow({
   sub,
   selected,
   pending,
-  selectedLabel,
   onSelect,
 }: {
   code: AppearancePreference
@@ -34,46 +31,18 @@ const AppearanceRow = React.memo(function AppearanceRow({
   sub?: string
   selected: boolean
   pending: boolean
-  selectedLabel: string
   onSelect: (code: AppearancePreference) => void
 }) {
-  const styles = useStyles()
-  const t = useTheme()
   const onPress = useCallback(() => onSelect(code), [onSelect, code])
   return (
-    <Pressable
+    <RadioOptionRow
+      layout="flush"
+      label={label}
+      sub={sub}
+      selected={selected}
+      pending={pending}
       onPress={onPress}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected, busy: pending }}
-      aria-checked={selected}
-      aria-busy={pending}
-      accessibilityLabel={label}
-      {...focusRingProps}
-      style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
-    >
-      <View style={styles.rowText}>
-        <View style={styles.rowLabelLine}>
-          <Text
-            style={[styles.rowLabel, selected ? styles.rowLabelSelected : null]}
-            numberOfLines={1}
-          >
-            {label}
-          </Text>
-        </View>
-        {sub ? (
-          <Text style={styles.rowSub} numberOfLines={2}>
-            {sub}
-          </Text>
-        ) : null}
-      </View>
-      <View style={styles.trailing} accessibilityLabel={selected ? selectedLabel : undefined}>
-        {pending ? (
-          <ActivityIndicator size="small" color={t.colors.brand.bloom} />
-        ) : selected ? (
-          <Icon icon={iconMap.Check} size={18} color={t.colors.brand.bloom} />
-        ) : null}
-      </View>
-    </Pressable>
+    />
   )
 })
 
@@ -117,7 +86,6 @@ export function AppearanceOptionList() {
               sub={code === "system" ? t("option.system_sub") : undefined}
               selected={row.selected}
               pending={row.pending}
-              selectedLabel={t("selected")}
               onSelect={onSelect}
             />
           </React.Fragment>
@@ -130,46 +98,6 @@ export function AppearanceOptionList() {
 const useStyles = makeThemedStyles((t) => ({
   list: {
     alignSelf: "stretch",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    minHeight: 52,
-    paddingVertical: 14,
-    paddingHorizontal: t.space["1"],
-  },
-  rowPressed: {
-    opacity: 0.7,
-  },
-  rowText: {
-    flex: 1,
-  },
-  rowLabelLine: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  rowLabel: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["15"],
-    color: t.colors.text,
-    flexShrink: 1,
-  },
-  rowLabelSelected: {
-    fontFamily: t.fontFamily.bodyBold,
-  },
-  rowSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textSubtle,
-    marginTop: 2,
-  },
-  trailing: {
-    width: 24,
-    height: 24,
-    alignItems: "flex-end",
-    justifyContent: "center",
   },
   divider: {
     height: StyleSheet.hairlineWidth,

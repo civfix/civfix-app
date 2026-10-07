@@ -1,17 +1,14 @@
 import { describe, expect, it } from "vitest"
 import { MARKER_HIT, longPressHitsMarker, type LongPressBounds } from "../longPressGate"
 
-// A 402x874 pt viewport (the sim device) over a small SF window. Round numbers on purpose: the spans are
-// chosen so degPerPx is an exact power-of-ten fraction and "N px away" is trivially expressible.
+// Round numbers so degPerPx is exactly 1e-5 on both axes and "N px away" is trivial to express.
 const SIZE = { width: 400, height: 800 }
-/** 0.004 deg over 400px = 1e-5 deg/px on X; 0.008 deg over 800px = 1e-5 deg/px on Y. */
 const BOUNDS: LongPressBounds = { west: -122.422, east: -122.418, south: 37.771, north: 37.779 }
 const DEG_PER_PX = 1e-5
 
 const MARKER = { lat: 37.775, lng: -122.42 }
 /** `px` north of the marker (positive = above it on screen). */
 const north = (px: number) => ({ lat: MARKER.lat + px * DEG_PER_PX, lng: MARKER.lng })
-/** `px` east of the marker. */
 const east = (px: number) => ({ lat: MARKER.lat, lng: MARKER.lng + px * DEG_PER_PX })
 
 const hits = (press: { lat: number; lng: number }, anchor: "bottom" | "center" = "bottom") =>

@@ -8,17 +8,11 @@ import type {
   ReportDTO,
   UserMentionDTO,
 } from "@civfix/shared"
+import type { MentionCandidate } from "../primitives/MentionAutocomplete"
 import { splitPostBodyMentions } from "./postCardModel"
 import type { PostComposerMode } from "./postComposerStore"
 
-export type PostComposerPlatform = "ios" | "android" | "web" | "other"
 export type PostComposerAttachmentPanel = "events" | "reports" | null
-
-export interface PostComposerKeyboardPlan {
-  scrollView: {
-    keyboardDismissMode: "interactive" | "on-drag"
-  }
-}
 
 export interface PostComposerModel {
   title: string
@@ -61,20 +55,17 @@ export function activePostMentions(
   return mentions.filter((mention) => present.has(mention.id))
 }
 
-export function buildPostComposerKeyboardPlan({
-  platform,
-}: {
-  platform: PostComposerPlatform
-}): PostComposerKeyboardPlan {
-  return {
-    scrollView: {
-      keyboardDismissMode: platform === "ios" ? "interactive" : "on-drag",
-    },
-  }
-}
-
-export function initialPostComposerAttachmentPanel(): PostComposerAttachmentPanel {
-  return null
+/**
+ * The draft's mention list after picking `candidate`, or null when there is nothing to record: a
+ * jurisdiction handle stays plain body text. A re-picked user moves to the end with its fresh names.
+ */
+export function mergeMention(
+  mentioned: readonly UserMentionDTO[],
+  candidate: MentionCandidate,
+): UserMentionDTO[] | null {
+  if (candidate.kind === "jurisdiction") return null
+  const user: UserMentionDTO = { id: candidate.id, handle: candidate.handle, displayName: candidate.displayName }
+  return [...mentioned.filter((item) => item.id !== user.id), user]
 }
 
 export function togglePostComposerAttachmentPanel(
@@ -228,7 +219,7 @@ export function resolveComposerEvent(
   return availableEvent ? buildComposerEventRef(availableEvent) : null
 }
 
-export function buildComposerReportRef(
+function buildComposerReportRef(
   report: Pick<ReportDTO, "id" | "category" | "type" | "status" | "lat" | "lng" | "addr" | "title" | "description" | "media">,
   linkedAt = new Date().toISOString(),
 ): LinkedReportRef {

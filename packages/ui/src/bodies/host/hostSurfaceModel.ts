@@ -8,11 +8,20 @@ import type {
   InsightsSourceCount,
   SeatPoint,
 } from "@civfix/shared"
+import { hasHostCapability, type HostStandingView } from "../../data/hooks/host"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
-import type { IconName } from "../../typography/icon-map"
+import type { IconName } from "../../typography/iconMap"
 import { linkSheetMode } from "../linkReportsModel"
 
 export const ANNOUNCE_CTA_WINDOW_MS = 48 * 3_600_000
+
+// relativeAgo answers "" for a timestamp it cannot parse; phrasing that would leave "Starts in " hanging.
+export function relativeLineFor(
+  relative: string,
+  phrase: (relative: string) => string,
+): string | null {
+  return relative === "" ? null : phrase(relative)
+}
 
 export const ARRIVAL_BUCKET_MINUTES = 15
 
@@ -89,6 +98,23 @@ export interface HostSurfaceCapabilities {
   cancelEvent: boolean
   requestResources: boolean
   logHours: boolean
+}
+
+export function hostSurfaceCapabilities(
+  standing: HostStandingView | null,
+): HostSurfaceCapabilities {
+  return {
+    checkIn: hasHostCapability(standing, "check_in"),
+    broadcast: hasHostCapability(standing, "broadcast"),
+    manageEvent: hasHostCapability(standing, "manage_event"),
+    manageTickets: hasHostCapability(standing, "manage_tickets"),
+    manageTeam: hasHostCapability(standing, "manage_team"),
+    viewRoster: hasHostCapability(standing, "view_roster"),
+    viewAnalytics: hasHostCapability(standing, "view_analytics"),
+    cancelEvent: hasHostCapability(standing, "cancel_event"),
+    requestResources: hasHostCapability(standing, "request_resources"),
+    logHours: hasHostCapability(standing, "manage_event"),
+  }
 }
 
 export interface HostSurfaceInput {

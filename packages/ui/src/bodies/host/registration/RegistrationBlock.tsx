@@ -2,14 +2,26 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import { ACCESS_CODE_MAX } from "@civfix/shared"
-import { hasEventEnded } from "@civfix/shared/host"
-import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
+import { ACCESS_CODE_MAX, appErrorCode } from "@civfix/shared"
+import {
+  answerPayload,
+  clampPartySize,
+  hasEventEnded,
+  missingRequired,
+  registerOutcomeKey,
+  sortedTicketTypes,
+  visibleQuestions,
+  type AnswerMap,
+} from "@civfix/shared/host"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
-import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
+import {
+  ModalCardSheet,
+} from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
+import { joinParts } from "../../../primitives/joinParts"
 import { useAuthState, useNow, useRequireAuth } from "../../../data"
 import { randomId } from "../../../data/randomId"
 import {
@@ -20,9 +32,8 @@ import {
 } from "../../../data/hooks/host"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
-import { appErrorCode } from "../../errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
+import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
 import { ConsentChecks } from "./ConsentChecks"
 import {
@@ -32,20 +43,9 @@ import {
   type ConsentState,
 } from "./consentModel"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
-import {
-  answerPayload,
-  seedAnswers,
-  missingRequired,
-  visibleQuestions,
-  type AnswerMap,
-} from "./questionModel"
-import {
-  defaultTicketTypeId,
-  registerErrorKey,
-  registerOutcomeKey,
-  registrationSurface,
-  selectableTicketTypes,
-} from "./registrationModel"
+import { INPUT_MIN_HEIGHT } from "../hostLayout"
+import { seedAnswers } from "./questionModel"
+import { registerErrorKey, registrationSurface, resolveTicketTypeId } from "./registrationModel"
 
 const NO_QUESTIONS: readonly EventQuestionDTO[] = []
 
@@ -63,7 +63,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   const { isAuthenticated, isPending: authPending } = useAuthState()
 
   const now = useNow()
-  const ticketTypes = useMemo(() => selectableTicketTypes(cleanup.ticketTypes), [cleanup.ticketTypes])
+  const ticketTypes = useMemo(() => sortedTicketTypes(cleanup.ticketTypes), [cleanup.ticketTypes])
   const surface = registrationSurface({
     status: cleanup.status,
     ended: hasEventEnded(cleanup, now),
@@ -72,7 +72,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     myRegistration: cleanup.myRegistration,
   })
 
-  const [ticketTypeId, setTicketTypeId] = useState<string | null>(() => defaultTicketTypeId(ticketTypes))
+  const [pickedTypeId, setPickedTypeId] = useState<string | null>(null)
   const [partySize, setPartySize] = useState(1)
   const [accessCode, setAccessCode] = useState("")
   const [answers, setAnswers] = useState<AnswerMap>({})
@@ -81,7 +81,9 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   const [idempotencyKey, setIdempotencyKey] = useState(() => randomId())
   const [errorText, setErrorText] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
 
+  const ticketTypeId = resolveTicketTypeId(ticketTypes, pickedTypeId)
   const selectedType = useMemo(
     () => ticketTypes.find((type) => type.id === ticketTypeId) ?? null,
     [ticketTypes, ticketTypeId],
@@ -111,7 +113,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
 
   const onSelectType = useCallback(
     (nextId: string) => {
-      setTicketTypeId(nextId)
+      setPickedTypeId(nextId)
       setInvalidQuestions(new Set())
       setErrorText(null)
       const next = ticketTypes.find((type) => type.id === nextId)
@@ -202,8 +204,14 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     cancel.mutate(
       { registrationId },
       {
-        onSuccess: () => toast.show(t("toast.cancelled"), { variant: "success" }),
-        onError: (err) => setErrorText(t(registerErrorKey(appErrorCode(err)))),
+        onSuccess: () => {
+          setConfirmingCancel(false)
+          toast.show(t("toast.cancelled"), { variant: "success" })
+        },
+        onError: (err) => {
+          setConfirmingCancel(false)
+          setErrorText(t(registerErrorKey(appErrorCode(err))))
+        },
       },
     )
   }, [cancel, cleanup.myRegistration?.id, t, toast])
@@ -226,15 +234,13 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
           </Text>
         </View>
         <Text style={styles.mineMeta}>
-          {[
+          {joinParts([
             mine?.ticketTypeName ?? null,
             mine ? t("mine.seats", { count: mine.seatCount }) : null,
             waitlisted && mine?.waitlistPosition != null
               ? t("mine.position", { position: mine.waitlistPosition })
               : null,
-          ]
-            .filter((part): part is string => part !== null)
-            .join(" · ")}
+          ])}
         </Text>
         {errorText ? (
           <Text style={styles.error} accessibilityRole="alert">
@@ -248,12 +254,19 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
           {mine?.canCancel === false ? null : (
             <SecondaryButton
               label={t("mine.cancel")}
-              onPress={onCancelSeat}
+              onPress={() => setConfirmingCancel(true)}
               size="sm"
               disabled={cancel.isPending}
             />
           )}
         </View>
+        <CancelRegistrationSheet
+          visible={confirmingCancel}
+          waitlisted={waitlisted}
+          pending={cancel.isPending}
+          onConfirm={onCancelSeat}
+          onClose={() => setConfirmingCancel(false)}
+        />
       </View>
     )
   }
@@ -326,7 +339,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
             accessibilityLabel={t("form.access_code_label")}
             onFocus={() => setCodeFocused(true)}
             onBlur={() => setCodeFocused(false)}
-            style={[webInputReset, styles.input, codeFocused ? fieldFocusedStyle(th) : null]}
+            style={[webInputReset, styles.input, codeFocused ? inputFocusedStyle(th) : null]}
           />
         </View>
       ) : null}
@@ -374,6 +387,68 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   )
 }
 
+export interface CancelRegistrationSheetProps {
+  visible: boolean
+  waitlisted: boolean
+  pending: boolean
+  onConfirm: () => void
+  onClose: () => void
+}
+
+export function CancelRegistrationSheet({
+  visible,
+  waitlisted,
+  pending,
+  onConfirm,
+  onClose,
+}: CancelRegistrationSheetProps) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-ticket")
+
+  const dismiss = useCallback(() => {
+    if (!pending) onClose()
+  }, [onClose, pending])
+
+  const confirm = useCallback(() => {
+    if (!pending) onConfirm()
+  }, [onConfirm, pending])
+
+  return (
+    <ModalCardSheet
+      visible={visible}
+      onClose={dismiss}
+      onCommit={confirm}
+      headerIcon="Ticket"
+      headerIconColor={th.colors.dangerInk}
+      title={waitlisted ? t("mine.cancel_waitlist_title") : t("mine.cancel_title")}
+      dismissLabel={t("common:dismiss")}
+      backdropDismissDisabled={pending}
+      actions={
+        <>
+          <SecondaryButton
+            label={t("mine.cancel_keep")}
+            size="sm"
+            disabled={pending}
+            onPress={dismiss}
+          />
+          <PrimaryButton
+            label={t("mine.cancel")}
+            variant="destructive"
+            onPress={confirm}
+            loading={pending}
+            disabled={pending}
+          />
+        </>
+      }
+    >
+      <Text style={styles.mineMeta}>
+        {waitlisted ? t("mine.cancel_waitlist_body") : t("mine.cancel_body")}
+      </Text>
+    </ModalCardSheet>
+  )
+}
+
 const useStyles = makeThemedStyles((t) => ({
   card: {
     gap: t.space["3"],
@@ -413,7 +488,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   input: {
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,

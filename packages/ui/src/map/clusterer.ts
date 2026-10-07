@@ -48,7 +48,7 @@ export const CLUSTER_LIST_ZOOM = 11
 export const CLUSTER_MIN_POINTS = 3
 export const CLUSTER_ZOOM_STEP = 2
 export const AGGREGATE_EXPAND_ZOOM = 10
-export const KEY_PRECISION = 5
+const KEY_PRECISION = 5
 export const WORLD_BBOX: BBox = { west: -180, south: -85, east: 180, north: 85 }
 
 export type MapClusterIndex = Supercluster<MapPoint, ClusterWeights>
@@ -145,6 +145,30 @@ export function queryClusters(index: MapClusterIndex, bbox: BBox, zoom: number):
   })
 }
 
+/**
+ * True when two nodes draw the same marker. Each recompute returns fresh node objects, so a memoised marker
+ * compares content; DTOs compare by reference because an unchanged index hands back the same point objects.
+ */
+export function sameRenderedNode(a: ClusterNode, b: ClusterNode): boolean {
+  if (a === b) return true
+  if (a.key !== b.key || a.lng !== b.lng || a.lat !== b.lat) return false
+  switch (a.type) {
+    case "cluster":
+      return (
+        b.type === "cluster" &&
+        a.count === b.count &&
+        a.reportCount === b.reportCount &&
+        a.eventCount === b.eventCount
+      )
+    case "report":
+      return b.type === "report" && a.pin === b.pin
+    case "event":
+      return b.type === "event" && a.event === b.event
+    case "blend":
+      return b.type === "blend" && a.event === b.event && a.reports === b.reports
+  }
+}
+
 export function leavesOfCluster(index: MapClusterIndex, clusterId: number): MapPoint[] {
   return index.getLeaves(clusterId, Infinity).map((f) => f.properties)
 }
@@ -188,6 +212,15 @@ export function clusterZoomTarget(
   if (Math.floor(zoom) >= CLUSTER_LIST_ZOOM) return null
   const target = expansion === null ? stepped : Math.min(Math.max(expansion, zoom + 1), ceiling)
   return target > zoom ? target : null
+}
+
+export function clusterPressTarget(
+  index: MapClusterIndex,
+  node: Extract<ClusterNode, { type: "cluster" }>,
+  currentZoom: number,
+): number | null {
+  const expansion = node.clusterId === null ? null : expansionZoomOfCluster(index, node.clusterId)
+  return clusterZoomTarget(node, currentZoom, expansion)
 }
 
 export function clusterFallbackZoom(currentZoom: number): number {

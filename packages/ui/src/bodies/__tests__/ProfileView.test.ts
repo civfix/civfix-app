@@ -7,6 +7,7 @@ import {
   type ProfileTabAvailability,
   type ProfileTabId,
 } from "../profileTabsModel"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const SOURCE = readFileSync(new URL("../ProfileView.tsx", import.meta.url), "utf8")
 
@@ -82,11 +83,16 @@ describe("the hero's trailing affordance", () => {
     expect(BODY).not.toMatch(/push\(\{ kind: "settings" \}\)/)
   })
 
-  it("keeps the hero chip family for share and close, with no gap where the gear was", () => {
-    expect(SOURCE).toMatch(/heroBtn: \{\s*width: 36,\s*height: 36,\s*borderRadius: 18,/)
-    expect(SOURCE).toContain('t("hero.share_a11y")')
-    expect(SOURCE).toContain('t("hero.close_a11y")')
+  it("carries no trailing hero control at all - neither host ever passed share or close", () => {
+    expect(SOURCE).not.toMatch(/onShare|onClose|heroBtn/)
+    expect(SOURCE).not.toContain('t("hero.')
     expect(SOURCE).not.toContain("heroSignOut")
+    for (const lng of ["en", "es", "de", "ko"]) {
+      const catalog = JSON.parse(
+        readFileSync(new URL(`../../i18n/locales/${lng}/profile-view.json`, import.meta.url), "utf8"),
+      ) as { hero?: unknown }
+      expect(catalog.hero, `${lng}/profile-view keeps orphaned hero copy`).toBeUndefined()
+    }
   })
 
   it("leaves ProfileBody with no settings list of its own - Saved posts lives in the Posts tab", () => {
@@ -102,7 +108,7 @@ describe("the hero's trailing affordance", () => {
   })
 
   it("keeps the Saved affordance off a stranger's profile, which never passes the handler", () => {
-    const PERSON = readFileSync(new URL("../PersonDetailBody.tsx", import.meta.url), "utf8")
+    const PERSON = surfaceSource("personDetail")
     expect(PERSON).not.toContain("ProfilePostsSection")
     expect(PERSON).not.toContain("onOpenSaved")
   })
@@ -119,7 +125,7 @@ describe("the hero's trailing affordance", () => {
   })
 
   it("keeps Activity off both profiles, hook and all", () => {
-    const PERSON = readFileSync(new URL("../PersonDetailBody.tsx", import.meta.url), "utf8")
+    const PERSON = surfaceSource("personDetail")
     const SOCIAL = readFileSync(new URL("../../data/hooks/social.ts", import.meta.url), "utf8")
     expect(SOURCE).not.toContain("ActivitySection")
     expect(PERSON).not.toContain("ActivitySection")

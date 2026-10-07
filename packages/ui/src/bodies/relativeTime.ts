@@ -1,4 +1,4 @@
-import { relativeAgo, EDIT_WINDOW_HOURS, type RelativeUnitLabels } from "@civfix/shared"
+import { relativeAgo, EDIT_WINDOW_HOURS, MS_PER_HOUR, type RelativeUnitLabels } from "@civfix/shared"
 
 export interface ListTimeAgoOptions {
   justNow?: string
@@ -14,22 +14,28 @@ export function listTimeAgo(iso: string, opts: ListTimeAgoOptions = {}): string 
   })
 }
 
-export function distanceLabel(dist: number | null | undefined): string {
+export function distanceLabel(dist: number | null | undefined, locale = "en"): string {
   if (dist == null || Number.isNaN(dist)) return ""
-  return dist < 10 ? `${dist.toFixed(1)} mi` : `${Math.round(dist)} mi`
+  const digits = dist < 10 ? 1 : 0
+  const value = dist.toLocaleString(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  })
+  return `${value} mi`
 }
 
-export function clockTime(iso: string): string {
+export function clockTime(iso: string, locale?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+  return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
 }
 
-export function focalTimestamp(iso: string): string {
+export function focalTimestamp(iso: string, locale?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  const date = d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-  return `${clockTime(iso)} · ${date}`
+  const date = d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
+  return `${clockTime(iso, locale)} · ${date}`
 }
 
 function dayKeyOf(d: Date): string {
@@ -80,5 +86,5 @@ export function dayLabel(iso: string, opts: DayLabelOptions = {}): string {
 export function withinEditWindow(createdAt: string, now: Date = new Date()): boolean {
   const t = new Date(createdAt).getTime()
   if (Number.isNaN(t)) return false
-  return now.getTime() - t < EDIT_WINDOW_HOURS * 3600_000
+  return now.getTime() - t < EDIT_WINDOW_HOURS * MS_PER_HOUR
 }

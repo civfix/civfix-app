@@ -1,13 +1,7 @@
 /**
- * The "Show more past events" controller, pinned at the level `useProfilePastEvents` actually decides
- * things - a pure view + action over the query's observable state, because this package's node-run vitest
- * cannot render a hook.
- *
- * THE REGRESSION THESE EXIST FOR: react-query's `hasNextPage` is FALSE whenever the infinite query holds
- * no pages, so an earlier `canLoadMore = !armed || hasNextPage` hid the control for the whole duration of
- * the first fetch - the only fetch most viewers ever trigger - and, because the query is `retry: false`,
- * hid it forever once that fetch failed, stranding the rest of someone's civic history behind an inert
- * error string. "Exhausted" must mean a SUCCESSFUL page with no cursor after it, never "no pages yet".
+ * The "Show more past events" controller, tested as the pure view + action `useProfilePastEvents` wires
+ * up, because this package's node-run vitest cannot render a hook. "Exhausted" must mean a SUCCESSFUL page
+ * with no cursor after it, never "no pages yet" (see profilePastEventsModel).
  */
 import { describe, expect, it } from "vitest"
 import {

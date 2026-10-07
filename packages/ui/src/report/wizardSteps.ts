@@ -1,3 +1,4 @@
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
 import type { LayoutMode } from "../theme"
 import type { DraftReport } from "./draftStore"
 
@@ -5,7 +6,6 @@ export type Step = "capture" | "location" | "category" | "details" | "review"
 
 export const STEP_ORDER_EXPANDED: Step[] = ["capture", "category", "details", "review"]
 export const STEP_ORDER_COMPACT: Step[] = ["capture", "location", "category", "details", "review"]
-
 
 export interface StepOrderOptions {
   skipLocation?: boolean
@@ -37,6 +37,30 @@ export function stepAfterCapture(
   if (resumed !== "capture" && order.includes(resumed)) return resumed
   const i = order.indexOf("capture")
   return (order[i + 1] as Step | undefined) ?? "capture"
+}
+
+export interface StepReadiness {
+  hasMedia: boolean
+  hasLocation: boolean
+  hasReportType: boolean
+  hasTitle: boolean
+}
+
+export function canAdvanceStep(step: Step, ready: StepReadiness): boolean {
+  switch (step) {
+    case "capture":
+      return ready.hasMedia
+    case "location":
+      return ready.hasLocation
+    case "category":
+      return ready.hasReportType
+    case "details":
+      return ready.hasTitle
+    case "review":
+      return ready.hasLocation
+    default:
+      return false
+  }
 }
 
 export function showsWizardFooter(step: Step, hasMedia: boolean): boolean {
@@ -96,4 +120,50 @@ export function pickLayerVisible(
   isReportView: boolean,
 ): boolean {
   return picking && !coveredByDetail && isReportView
+}
+
+// These refusals come back identical however often the same draft is re-sent, so a bare retry loops.
+const DEFINITIVE_SUBMIT_CODES: ReadonlySet<string> = new Set<string>([
+  ErrorCode.VALIDATION,
+  ErrorCode.GPS_IMPLAUSIBLE,
+  ErrorCode.MEDIA_REJECTED,
+  ErrorCode.NOT_ROUTABLE,
+])
+
+const FIELD_STEPS: Readonly<Record<string, Step>> = {
+  mediaUploadIds: "capture",
+  media: "capture",
+  category: "category",
+  type: "category",
+  title: "details",
+  description: "details",
+  lat: "location",
+  lng: "location",
+  geomSource: "location",
+  addr: "review",
+}
+
+const CODE_STEPS: ErrorCodeTable<Step> = {
+  [ErrorCode.MEDIA_REJECTED]: "capture",
+  [ErrorCode.GPS_IMPLAUSIBLE]: "location",
+  [ErrorCode.NOT_ROUTABLE]: "location",
+}
+
+export interface SubmitRecovery {
+  retryable: boolean
+  editStep: Step
+}
+
+export function submitErrorRecovery(
+  code: string | undefined,
+  fields: Record<string, string> | undefined,
+  order: readonly Step[],
+): SubmitRecovery {
+  const fieldKeys = Object.keys(fields ?? {}).map((key) => key.split(".")[0] ?? key)
+  const fieldStep = fieldKeys.map((key) => FIELD_STEPS[key]).find((s): s is Step => s !== undefined)
+  const wanted = fieldStep ?? byErrorCode(code, CODE_STEPS, "review")
+  const editStep = order.includes(wanted) ? wanted : "review"
+  const staleUploads = code === ErrorCode.VALIDATION && fieldKeys.includes("mediaUploadIds")
+  const retryable = code === undefined || !DEFINITIVE_SUBMIT_CODES.has(code) || staleUploads
+  return { retryable, editStep }
 }

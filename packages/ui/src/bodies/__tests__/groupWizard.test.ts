@@ -1,14 +1,11 @@
-/**
- * Unit tests for the New-group wizard's pure step gating + draft normalization (P4 Task 4.7):
- * Next is disabled at 0 selected members; Create is disabled on a blank name; names/descriptions trim.
- */
 import { describe, expect, it } from "vitest"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/shared"
+import type { DetailEntry } from "../../nav/types"
 import {
   canProceedToIdentity,
   canCreateGroup,
   normalizeGroupDraft,
-  GROUP_NAME_MAX,
-  GROUP_DESCRIPTION_MAX,
+  stackOpeningGroup,
 } from "../groupWizard"
 
 describe("canProceedToIdentity (step 1 Next gate)", () => {
@@ -35,16 +32,16 @@ describe("canCreateGroup (step 2 Create gate)", () => {
   it("enables on any non-blank name within the cap", () => {
     expect(canCreateGroup("Block cleanup crew")).toBe(true)
     expect(canCreateGroup("  padded  ")).toBe(true)
-    expect(canCreateGroup("x".repeat(GROUP_NAME_MAX))).toBe(true)
+    expect(canCreateGroup("x".repeat(CHAT_GROUP_NAME_MAX))).toBe(true)
   })
 
   it("is disabled when the trimmed name exceeds the 80-char contract cap", () => {
-    expect(canCreateGroup("x".repeat(GROUP_NAME_MAX + 1))).toBe(false)
+    expect(canCreateGroup("x".repeat(CHAT_GROUP_NAME_MAX + 1))).toBe(false)
   })
 
   it("is disabled when the description exceeds the 500-char contract cap", () => {
-    expect(canCreateGroup("ok", "d".repeat(GROUP_DESCRIPTION_MAX))).toBe(true)
-    expect(canCreateGroup("ok", "d".repeat(GROUP_DESCRIPTION_MAX + 1))).toBe(false)
+    expect(canCreateGroup("ok", "d".repeat(CHAT_GROUP_DESCRIPTION_MAX))).toBe(true)
+    expect(canCreateGroup("ok", "d".repeat(CHAT_GROUP_DESCRIPTION_MAX + 1))).toBe(false)
   })
 })
 
@@ -64,5 +61,25 @@ describe("normalizeGroupDraft", () => {
     const draft = normalizeGroupDraft("Crew", "   ")
     expect(draft).toEqual({ name: "Crew" })
     expect("description" in draft).toBe(false)
+  })
+})
+
+describe("stackOpeningGroup (where Create lands)", () => {
+  it("replaces the wizard entry with the new group's thread, keeping what the wizard opened over", () => {
+    const stack: DetailEntry[] = [
+      { kind: "thread", id: "dm1", roomKind: "dm", title: "Ana" },
+      { kind: "new-group" },
+    ]
+    expect(stackOpeningGroup(stack, { id: "g1", name: "Block club" })).toEqual([
+      { kind: "thread", id: "dm1", roomKind: "dm", title: "Ana" },
+      { kind: "thread", id: "g1", roomKind: "group", title: "Block club" },
+    ])
+  })
+
+  it("opens the room as the only entry when the wizard was the root", () => {
+    const stack: DetailEntry[] = [{ kind: "new-channel" }]
+    expect(stackOpeningGroup(stack, { id: "c1", name: "Updates" })).toEqual([
+      { kind: "thread", id: "c1", roomKind: "group", title: "Updates" },
+    ])
   })
 })

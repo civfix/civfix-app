@@ -3,7 +3,7 @@ import { resolveIncomingPath } from "@/lib/universalLinks"
 
 export function redirectSystemPath({ path }: { path: string; initial: boolean }): string {
   try {
-    const resolved = resolveIncomingPath(path)
+    const resolved = resolveIncomingPath(path, { isDev: __DEV__ })
     if (resolved.type === "internal") return resolved.path
     if (resolved.type === "external") {
       void WebBrowser.openBrowserAsync(resolved.url).catch(() => undefined)

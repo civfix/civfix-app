@@ -1,6 +1,25 @@
 import { create } from "zustand"
-import type { LinkedReportRef, ReportDTO, ReportPinDTO } from "@civfix/shared"
-import type { LinkedReportCardData } from "./LinkedReportCard"
+import type {
+  LinkedReportRef,
+  ReportCategory,
+  ReportDTO,
+  ReportPinDTO,
+  ReportStatus,
+  ReportType,
+} from "@civfix/shared"
+import { reportThumbUrl } from "./reportsListModel"
+
+export interface LinkedReportCardData {
+  id: string
+  category: ReportCategory
+  type?: ReportType | null
+  title?: string | null
+  description?: string | null
+  status: ReportStatus | null
+  thumbUrl?: string | null
+  addr?: string | null
+  referenceCode?: string | null
+}
 
 export interface LinkedReportCardEntry extends LinkedReportCardData {
   lat: number
@@ -35,11 +54,6 @@ export function linkedRefToCardData(ref: LinkedReportRef): LinkedReportCardEntry
     ...(ref.addr !== undefined ? { addr: ref.addr } : {}),
     ...(ref.thumbUrl !== undefined ? { thumbUrl: ref.thumbUrl } : {}),
   }
-}
-
-export function reportThumbUrl(report: ReportDTO): string | null {
-  const photo = report.media.find((m) => m.kind === "image" && m.status === "ready")
-  return photo ? (photo.thumbUrl ?? photo.url) : null
 }
 
 export function reportToCardData(report: ReportDTO): LinkedReportCardEntry {

@@ -4,7 +4,7 @@ import { useTheme, pinGlow } from "../../theme"
 import { PinSvg } from "./PinSvg"
 import { DROP_PIN_GLYPH } from "./glyphs"
 
-export const DROP_PIN_SIZE = 52
+const DROP_PIN_SIZE = 52
 
 export const DropPin = React.memo(function DropPin({ size = DROP_PIN_SIZE }: { size?: number }) {
   const t = useTheme()

@@ -30,7 +30,7 @@ function isJurisdiction(c: MentionCandidate): c is JurisdictionMentionCandidate 
   return (c as JurisdictionMentionCandidate).kind === "jurisdiction"
 }
 
-export const MENTION_TRAY_MAX_HEIGHT = 192
+const MENTION_TRAY_MAX_HEIGHT = 192
 
 const TRAILING_MENTION = /(^|\s)@([^\s@]*)$/
 

@@ -4,6 +4,6 @@ export const metadata: Metadata = {
   title: "Host a cleanup · civfix",
 }
 
-export default function L({ children }: { children: React.ReactNode }) {
+export default function HostLayout({ children }: { children: React.ReactNode }) {
   return children
 }

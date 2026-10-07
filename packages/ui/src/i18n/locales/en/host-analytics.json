@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Messaging",
-    "active_days": "Days with a send",
     "recipients": "Recipients",
     "unsubscribes": "Unsubscribes",
     "no_tracking": "civfix does not track opens or clicks, so there is nothing here to report.",
@@ -86,7 +85,8 @@
     "suppressed": "Suppressed",
     "over_time": "Sends over time",
     "over_time_a11y": "Sends per day",
-    "sends": "Sends"
+    "sends": "Sends",
+    "broadcasts_sent": "Broadcasts sent"
   },
   "page": {
     "views": "Page views",
@@ -133,10 +133,12 @@
     "by_event_section": "By event",
     "by_event_empty": "No events in this range yet.",
     "by_event_a11y": "{{name}}, {{value}} sign-ups. Open this event's analytics.",
+    "by_event_unknown_a11y": "{{name}}, sign-ups not available. Open this event's analytics.",
     "capacity_line": "{{signups}} of {{capacity}} spots",
     "sources_caption": "{{rate}}% of {{views}} page views signed up"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Source",
     "reference": "Event reference",
     "generated_at": "Generated",
@@ -177,11 +179,12 @@
     "impact_caption": "Reports linked to your events",
     "impact_donations": "{{n}} donation-link taps",
     "checkins_ring_a11y": "{{rate}}% of sign-ups checked in",
+    "checkins_ring_unknown_a11y": "Check-in rate not available",
     "window": "Last 30 days",
     "panel_hours": "Volunteer hours",
     "checkins_caption": "of {{registered}} sign-ups · {{count}} events held",
     "hours_caption": "logged by {{volunteers}} volunteers",
-    "hours_empty": "No hours logged in the last 30 days — log them from Host tools",
+    "hours_empty": "No hours logged in the last 30 days. Log them from Host tools.",
     "hours_bars_a11y": "Volunteer hours per event",
     "impact_resolved": "{{n}} resolved",
     "impact_posts": "{{n}} posts about your events"
@@ -194,6 +197,8 @@
   },
   "filter": {
     "all_events": "All events",
-    "event_a11y": "Event: {{name}}"
+    "event_a11y": "Event: {{name}}",
+    "more_events": "Show more events",
+    "loading_more": "Loading more events…"
   }
 }

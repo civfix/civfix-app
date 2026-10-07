@@ -97,7 +97,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
     marginTop: 1,
   },

@@ -1,19 +1,19 @@
 import { create } from "zustand"
-import type { UserDTO } from "@civfix/shared"
+import { isAppErrorLike, type SessionCheckResponse, type UserDTO } from "@civfix/shared"
+import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
+import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"
-import {
-  SESSION_RESTORE_DEADLINE_MS,
-  isRequestDeadlineError,
-  withRequestDeadline,
-} from "@/api/deadline"
+import type { AuthStatus } from "@/lib/lifecycleTypes"
+import { SESSION_RESTORE_DEADLINE_MS, isRequestDeadlineError } from "@/api/deadline"
+import { sessionCheck } from "@/api/sessionCheck"
 import type { BootNetworkOutcome } from "@/boot/bootGateModel"
 import { readToken, setToken, clearToken } from "@/auth/storage"
 import { isForeignIdentity } from "@/lib/authLifecycle"
-import { isAppError, isUnauthorized } from "@/lib/errors"
+import { isUnauthorized } from "@/lib/errors"
 import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
-import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkv-keys"
+import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkvKeys"
 import {
   signOutUnregisteringPush,
   unregisterLapsedSessionPush,
@@ -24,9 +24,7 @@ import {
   clearPersistedCache,
   purgeQueryCache,
   resumeCachePersistence,
-} from "@/query/mmkv-persister"
-
-export type AuthStatus = "idle" | "loading" | "authed" | "unauthed"
+} from "@/query/mmkvPersister"
 
 export type HydrateMode = "boot" | "foreground"
 
@@ -79,13 +77,13 @@ type SetAuthState = (next: {
   restoreStartedAt?: number
 }) => void
 
-function restoreSession(): Promise<Awaited<ReturnType<typeof api.session>>> {
-  return withRequestDeadline(SESSION_RESTORE_DEADLINE_MS, (signal) => api.session({ signal }))
+function restoreSession(): Promise<SessionCheckResponse> {
+  return sessionCheck(SESSION_RESTORE_DEADLINE_MS)
 }
 
 function reachabilityOutcome(err: unknown): BootNetworkOutcome {
   if (isRequestDeadlineError(err)) return "timeout"
-  if (isAppError(err)) return "ok"
+  if (isAppErrorLike(err)) return "ok"
   return "error"
 }
 
@@ -116,6 +114,7 @@ function tearDownIdentity(set: SetAuthState): Promise<void> {
   cacheUser(null)
   const pushReleased = unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
+  discardViewerDrafts()
   set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
   identityTornDown = true
@@ -125,6 +124,25 @@ function tearDownIdentity(set: SetAuthState): Promise<void> {
 function dropForeignIdentityState(): void {
   purgeQueryCache(queryClient)
   void clearSecureBlobs()
+}
+
+// Caches a guest filled (feeds, post, report and event details, profiles) carry the guest's empty
+// liked, saved, following and registration flags; a sign-in refetches them as the account.
+const VIEWER_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
+  queryKeys.myReportsRoot,
+  queryKeys.threads,
+  queryKeys.notificationsRoot,
+  queryKeys.profileRoot,
+  queryKeys.postsRoot,
+  queryKeys.postRoot,
+  queryKeys.reportRoot,
+  queryKeys.cleanupRoot,
+  queryKeys.chatRoot,
+  ["volunteer"],
+]
+
+function invalidateViewerDependentQueries(): void {
+  for (const queryKey of VIEWER_DEPENDENT_KEYS) void queryClient.invalidateQueries({ queryKey })
 }
 
 function adoptIdentity(user: UserDTO, set: SetAuthState): void {
@@ -232,6 +250,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (isForeignIdentity(previousIdentity, user.id)) dropForeignIdentityState()
     await setToken(token)
     adoptIdentity(user, set)
+    invalidateViewerDependentQueries()
   },
 
   setUser: (user) => {
@@ -261,3 +280,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     void tearDownIdentity(set)
   },
 }))
+
+// Drafts (post, reply, report, event) belong to the account that wrote them: an account switch on a shared
+// device must not hand them to the next account. Subscribing covers every path that moves `user`, the
+// foreign-identity sign-in included (the registry wipes when a different account arrives); a confirmed
+// teardown wipes them in tearDownIdentity, while a transient unauthed state (an unreadable Keychain)
+// keeps them for the same account.
+useAuthStore.subscribe((state) => adoptViewer(state.user?.id ?? null))

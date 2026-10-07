@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import { motion } from "../theme"
-import { timingConfig } from "../shell/motionConfigs.native"
+import { timingConfig } from "../theme/motionTiming.native"
 import { useT } from "../i18n"
 import {
   ZOOM_IDENTITY,
@@ -24,8 +24,9 @@ import {
   type ZoomTransform,
 } from "./lightboxZoom"
 import type { ZoomableMediaProps } from "./ZoomableMedia.types"
+import { zoomSurfaceStyle, zoomSurfaceZoomedStyle, zoomViewportStyle } from "./ZoomableMedia.styles"
 
-const SETTLE_CFG = timingConfig(motion.pageSwipeSettle)
+const SETTLE_CFG = timingConfig(motion.zoomSettle)
 
 const DOUBLE_TAP_MAX_TRAVEL = 40
 
@@ -233,18 +234,7 @@ export function ZoomableMedia({
 }
 
 const styles = StyleSheet.create({
-  viewport: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  surface: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  surfaceZoomed: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  viewport: zoomViewportStyle,
+  surface: zoomSurfaceStyle,
+  surfaceZoomed: zoomSurfaceZoomedStyle,
 })

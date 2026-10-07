@@ -1,7 +1,4 @@
-/**
- * Clean domain type aliases. App code imports these names instead of the verbose XxxDTO names.
- * These are pure type re-exports of the inferred Zod entity types.
- */
+/** Short aliases so app code can import domain names instead of the XxxDTO names. */
 
 import type { ReportDTO } from "../schemas/entities.js"
 import type { CleanupDTO } from "../schemas/entities.js"

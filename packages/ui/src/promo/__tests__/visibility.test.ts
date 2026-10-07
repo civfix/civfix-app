@@ -1,10 +1,3 @@
-/**
- * Unit tests for the single decision that drives BOTH promo surfaces.
- *
- * This is the whole feature's logic in one pure function: given the layout mode, the detected platform,
- * and the suppression flags, which surface (if any) renders. Both the web banner and the shared side-card
- * section call it, so they can never disagree about whether the promo is showing.
- */
 import { describe, expect, it } from "vitest"
 import { appPromoSurface, type AppPromoInput } from "../visibility"
 

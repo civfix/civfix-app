@@ -1,6 +1,6 @@
-import { z } from "zod"
+import type { z } from "zod"
 import { AppErrorSchema } from "../schemas/common.js"
-import { AppError, ErrorCode } from "../types/errors.js"
+import { AppError, ErrorCode, isErrorCode } from "../types/errors.js"
 import {
   endpoints,
   type EndpointDef,
@@ -73,7 +73,6 @@ export function buildQuery(query?: Record<string, unknown>, omitKeys?: ReadonlyS
     if (Array.isArray(value)) {
       for (const v of value) sp.append(key, String(v))
     } else if (typeof value === "object") {
-      // Objects (bbox, near, ...) are JSON-encoded so they survive a query string.
       sp.append(key, JSON.stringify(value))
     } else {
       sp.append(key, String(value))
@@ -99,13 +98,12 @@ export async function parseError(res: Response, requestId?: string): Promise<App
   }
   const parsed = AppErrorSchema.safeParse(payload)
   if (parsed.success) {
-    const code = (Object.values(ErrorCode) as string[]).includes(parsed.data.code)
-      ? (parsed.data.code as ErrorCode)
-      : ErrorCode.INTERNAL
-    return new AppError(code, parsed.data.message, {
+    const envelope = parsed.data
+    const code = isErrorCode(envelope.code) ? envelope.code : ErrorCode.INTERNAL
+    return new AppError(code, envelope.message, {
       httpStatus: res.status,
-      ...(parsed.data.fields !== undefined ? { fields: parsed.data.fields } : {}),
-      requestId: parsed.data.requestId ?? requestId,
+      ...(envelope.fields !== undefined ? { fields: envelope.fields } : {}),
+      requestId: envelope.requestId ?? requestId,
     })
   }
   // Fall back to a status-derived code when the body is not our envelope.
@@ -138,26 +136,20 @@ for (const name of Object.keys(endpoints) as EndpointName[]) {
 /** Endpoint names already warned about, so a mismatching server logs once instead of per call. */
 const warnedEndpoints = new Set<string>()
 
-/** Reset the once-per-endpoint warning memo. Exported for unit testing only. */
-export function resetResponseWarnings(): void {
-  warnedEndpoints.clear()
-}
-
 /**
- * Run a 2xx body through the endpoint's response schema so the registry's compatibility rules actually
- * apply on the read path: the `.default()`s and `.catch()`es the DTOs document ("defaults so a server
- * that does not yet supply it, and already-built consumers, still parse") only exist if something
- * parses. Without this the inferred types lie whenever the deployed server is older than the client.
+ * Run a 2xx body through the endpoint's response schema so the DTOs' `.default()`s and `.catch()`es
+ * actually apply on the read path; without this the inferred types lie whenever the deployed server is
+ * older than the client.
  *
- * Never throws: a body that does NOT match the schema is passed through raw (exactly the pre-parsing
- * behavior) after a single console.warn per endpoint, so an unexpected server shape degrades instead of
- * breaking every call. Exported for unit testing.
+ * Never throws: a body that does NOT match the schema is passed through raw after a single console.warn
+ * per endpoint, so an unexpected server shape degrades instead of breaking every call. Exported for unit
+ * testing.
  */
 export function parseResponse<Res>(
   endpoint: EndpointDef<z.ZodTypeAny | null, z.ZodTypeAny>,
   data: unknown,
 ): Res {
-  // No body (204, or an unparsable/empty payload): nothing to validate, keep the legacy passthrough.
+  // No body (204, or an unparsable/empty payload): nothing to validate.
   if (data === undefined) return data as Res
   const parsed = endpoint.response.safeParse(data)
   if (parsed.success) return parsed.data as Res
@@ -268,8 +260,12 @@ export function createApiClient(opts: CreateApiClientOptions): ApiClient {
     let data: unknown
     try {
       data = await res.json()
-    } catch {
-      data = undefined
+    } catch (err) {
+      if (args.signal?.aborted) throw err
+      throw new AppError(ErrorCode.INTERNAL, `Response body for HTTP ${res.status} is not JSON`, {
+        ...(requestId !== undefined ? { requestId } : {}),
+        cause: err,
+      })
     }
     return parseResponse<Res>(endpoint, data)
   }
@@ -340,9 +336,12 @@ export function extractParams(
       let v = rec[name]
       let sourceKey = name
       // Tolerate the few endpoints whose path says ":id" while the DTO field is "<resource>Id"
-      // (e.g. /anon/reports/:id/status carries { reportId }). Match a single *Id-suffixed key.
+      // (e.g. /anon/reports/:id/status carries { reportId }). Only an unambiguous single *Id-suffixed
+      // key qualifies: with two, key order would pick the resource, so the param stays unfilled and
+      // fillPath refuses the request.
       if ((v === undefined || v === null) && name === "id") {
-        const idKey = Object.keys(rec).find((k) => /Id$/.test(k))
+        const idKeys = Object.keys(rec).filter((k) => /Id$/.test(k))
+        const idKey = idKeys.length === 1 ? idKeys[0] : undefined
         if (idKey) {
           v = rec[idKey]
           sourceKey = idKey

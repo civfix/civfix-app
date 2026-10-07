@@ -1,7 +1,7 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
-import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
+import React, { memo, useCallback, useMemo, useRef, useState } from "react"
+import { View, Pressable, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import {
@@ -19,16 +19,17 @@ import {
   useReportChatParticipants,
   useLeaveReportChat,
   useToggleMute,
-  useThreads,
   useSetMemberRole,
   useRemoveMember,
   useBlockUser,
   useAuthState,
 } from "../data"
+import { useThreadForRoom } from "../data/hooks/chat"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
+import { ChatInfoActionRow, ChatInfoHero } from "./ChatInfoParts"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
 import { chatInfoRosterView } from "./chatInfoVisibility"
@@ -37,7 +38,7 @@ import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import {
   settableRolesOtherThan,
   type SettableEventMemberRole,
-} from "./host/eventTeamTiers"
+} from "../data/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
 import { SlotGroupHeader } from "./SlotGroupHeader"
 
@@ -214,90 +215,6 @@ function LinkedEntityRow({
   )
 }
 
-function ActionRow({
-  icon,
-  label,
-  a11y,
-  destructive,
-  disabled,
-  onPress,
-}: {
-  icon: IconName
-  label: string
-  a11y?: string
-  destructive?: boolean
-  disabled?: boolean
-  onPress: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={a11y ?? label}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.actionRow,
-        pressed ? styles.rowPressed : null,
-        disabled ? styles.actionDisabled : null,
-      ]}
-    >
-      <Icon
-        icon={iconMap[icon]}
-        size={18}
-        color={destructive ? th.colors.bloom["600"] : th.colors.text}
-      />
-      <Text style={[styles.actionLabel, destructive ? styles.actionLabelDestructive : null]}>
-        {label}
-      </Text>
-    </Pressable>
-  )
-}
-
-function ChatInfoHero({
-  imageUrl,
-  glyph,
-  title,
-  subtitle,
-  memberLine,
-}: {
-  imageUrl: string | null
-  glyph: IconName
-  title: string
-  subtitle: string | null
-  memberLine: string
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <View style={styles.hero}>
-      <View style={[styles.heroAvatar, imageUrl ? styles.heroAvatarFramed : null]}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.heroAvatarImage} resizeMode="cover" />
-        ) : (
-          <Icon icon={iconMap[glyph]} size={34} color={th.colors.onAccent} />
-        )}
-      </View>
-      <Text
-        style={styles.heroName}
-        numberOfLines={2}
-        accessibilityRole="header"
-        {...headingLevel(2)}
-      >
-        {title}
-      </Text>
-      {subtitle ? (
-        <Text style={styles.heroSubtitle} numberOfLines={2}>
-          {subtitle}
-        </Text>
-      ) : null}
-      <Text style={styles.heroMembers}>{memberLine}</Text>
-    </View>
-  )
-}
-
 export interface MembersBodyProps {
   id: string
   roomKind?: "cleanup" | "dm" | "report" | "group"
@@ -392,24 +309,22 @@ export function MembersBody({
   const report = reportQuery.data
   const cleanup = cleanupQuery.data
 
-  const threads = useThreads()
-  const threadRow = useMemo(
-    () =>
-      (threads.data?.pages ?? [])
-        .flatMap((p) => p.items)
-        .find((thr) => (thr.refId ?? thr.id) === id),
-    [threads.data, id],
-  )
+  const threadRow = useThreadForRoom(roomKind, id)
   const muted = threadRow?.muted ?? false
-  const toggleMute = useToggleMute(roomKind === "report" ? "report" : "cleanup", id)
+  const toggleMute = useToggleMute()
+  const { mutate: mutateMute } = toggleMute
   const onToggleMute = useCallback(() => {
-    toggleMute.mutate({ muted: !muted }, { onError: onMutationError })
-  }, [toggleMute, muted, onMutationError])
+    mutateMute({ roomKind, roomId: id, muted: !muted }, { onError: onMutationError })
+  }, [mutateMute, roomKind, id, muted, onMutationError])
 
   const leaveReportChat = useLeaveReportChat()
   const [leaveOpen, setLeaveOpen] = useState(false)
+  // Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat).
+  const leavingRef = useRef(false)
   const canLeave = canLeaveChat(roomKind, report?.chatJoined)
   const onConfirmLeave = useCallback(() => {
+    if (leavingRef.current) return
+    leavingRef.current = true
     leaveReportChat.mutate(id, {
       onSuccess: () => {
         setLeaveOpen(false)
@@ -419,6 +334,9 @@ export function MembersBody({
       onError: () => {
         setLeaveOpen(false)
         onMutationError()
+      },
+      onSettled: () => {
+        leavingRef.current = false
       },
     })
   }, [leaveReportChat, id, onLeftProp, onMutationError])
@@ -505,6 +423,7 @@ export function MembersBody({
       managePending,
       grouped,
       cleanupTimeZone,
+      styles,
     ],
   )
 
@@ -536,6 +455,7 @@ export function MembersBody({
             : cleanup?.title ?? ""
         }
         subtitle={roomKind === "report" ? report?.addr ?? null : cleanup?.address ?? null}
+        subtitleLines={2}
         memberLine={
           roster.access === "followed-only"
             ? t("hero.members_partial", { shown: roster.shown, going: roster.going })
@@ -545,7 +465,7 @@ export function MembersBody({
       {roster.canMute || canLeave ? (
         <View style={styles.actions}>
           {roster.canMute ? (
-            <ActionRow
+            <ChatInfoActionRow
               icon={muted ? "BellOff" : "Bell"}
               label={muted ? t("action.unmute") : t("action.mute")}
               disabled={toggleMute.isPending}
@@ -553,7 +473,7 @@ export function MembersBody({
             />
           ) : null}
           {canLeave ? (
-            <ActionRow
+            <ChatInfoActionRow
               icon="LogOut"
               label={t("action.leave")}
               destructive
@@ -670,15 +590,11 @@ const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
   },
-  reportOnly: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-  },
   linkedRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     paddingHorizontal: t.space["3"],
     marginBottom: t.space["3"],
     borderRadius: t.radius.lg,
@@ -689,72 +605,15 @@ const useStyles = makeThemedStyles((t) => ({
   linkedRowPressed: {
     opacity: 0.7,
   },
-  hero: {
-    alignItems: "center",
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["4"],
-    gap: t.space["2"],
-  },
-  heroAvatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.brand.moss,
-  },
-  heroAvatarFramed: t.imageFrame,
-  heroAvatarImage: {
-    width: "100%",
-    height: "100%",
-  },
-  heroName: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 19,
-    color: t.colors.text,
-    textAlign: "center",
-  },
-  heroSubtitle: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
-    color: t.colors.textMuted,
-    textAlign: "center",
-  },
-  heroMembers: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.textSubtle,
-  },
   actions: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
     paddingVertical: t.space["1"],
     marginBottom: t.space["3"],
   },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: 12,
-  },
-  actionDisabled: {
-    opacity: 0.5,
-  },
-  actionLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
-    color: t.colors.text,
-  },
-  actionLabelDestructive: {
-    color: t.colors.bloom["600"],
-  },
-  rowPressed: {
-    opacity: 0.7,
-  },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -809,7 +668,7 @@ const useStyles = makeThemedStyles((t) => ({
   linkedLabel: {
     flex: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   listContent: {
@@ -823,14 +682,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   chipRow: {
     flexDirection: "row",
-    gap: 4,
+    gap: t.space["1"],
     flexShrink: 1,
     minWidth: 0,
   },
   slotEmpty: {
     paddingVertical: t.space["2"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
   },
 }))

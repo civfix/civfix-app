@@ -1,14 +1,15 @@
 "use client"
 
 import { CircleAlert, Info, TriangleAlert } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import type { ReactNode } from "react"
+import { useId, useRef, useState } from "react"
+import type { ReactNode, RefObject } from "react"
 import { createPortal } from "react-dom"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
 import { ConsoleButton } from "../button"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export type ConfirmSeverity = "neutral" | "warn" | "danger"
@@ -49,8 +50,20 @@ const SEVERITY_STYLES: Record<ConfirmSeverity, { banner: string; icon: typeof In
   },
 }
 
-export function ConfirmModal({
-  open,
+export function ConfirmModal(props: ConfirmModalProps) {
+  const { open, onCancel } = props
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEscape(open, onCancel)
+  useFocusTrap(panelRef, open)
+
+  if (!open || typeof document === "undefined") return null
+  // The panel mounts per opening, so every confirmation starts with an empty reason and an
+  // unticked agreement.
+  return createPortal(<ConfirmPanel {...props} panelRef={panelRef} />, document.body)
+}
+
+function ConfirmPanel({
   severity = "neutral",
   title,
   body,
@@ -64,39 +77,32 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
   className,
-}: ConfirmModalProps) {
+  panelRef,
+}: ConfirmModalProps & { panelRef: RefObject<HTMLDivElement | null> }) {
   const { t } = useT("host-common")
-  const panelRef = useRef<HTMLDivElement>(null)
   const [reason, setReason] = useState("")
   const [agreed, setAgreed] = useState(false)
-
-  useEscape(open, onCancel)
-  useFocusTrap(panelRef, open)
-
-  useEffect(() => {
-    if (!open) {
-      setReason("")
-      setAgreed(false)
-    }
-  }, [open])
-
-  if (!open || typeof document === "undefined") return null
+  const titleId = useId()
+  const bannerId = useId()
+  const bodyId = useId()
 
   const styles = SEVERITY_STYLES[severity]
   const BannerIcon = styles.icon
+  const describedBy = [banner ? bannerId : null, body ? bodyId : null].filter(Boolean).join(" ")
   const confirmDisabled =
     Boolean(busy) ||
     (agreement ? !agreed : false) ||
     (reasonField?.required ? reason.trim().length === 0 : false)
 
-  return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-end justify-center p-token-4 sm:items-center">
-      <div aria-hidden className="absolute inset-0 bg-console-scrim animate-in fade-in duration-d2" />
+  return (
+    <div className="fixed inset-0 z-console-dialog flex items-end justify-center p-token-4 sm:items-center">
+      <Scrim />
       <div
         ref={panelRef}
         role="alertdialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={titleId}
+        aria-describedby={describedBy || undefined}
         className={cn(
           "relative flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-md border border-console-line bg-console-surface shadow-console-4",
           "animate-in fade-in zoom-in-95 duration-d2 ease-out",
@@ -104,7 +110,9 @@ export function ConfirmModal({
         )}
       >
         <div className="flex flex-col gap-token-3 p-token-5">
-          <h2 className="font-display text-token-18 font-bold text-console-ink">{title}</h2>
+          <h2 id={titleId} className="font-display text-token-18 font-bold text-console-ink">
+            {title}
+          </h2>
           {banner ? (
             <div
               className={cn(
@@ -113,10 +121,16 @@ export function ConfirmModal({
               )}
             >
               <BannerIcon aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
-              <div className="min-w-0">{banner}</div>
+              <div id={bannerId} className="min-w-0">
+                {banner}
+              </div>
             </div>
           ) : null}
-          {body ? <div className="text-token-14 text-console-ink-2">{body}</div> : null}
+          {body ? (
+            <div id={bodyId} className="text-token-14 text-console-ink-2">
+              {body}
+            </div>
+          ) : null}
           {scopeSummary ? (
             <div className="rounded-sm border border-console-line bg-console-tint p-token-3 text-token-13 text-console-ink-2">
               {scopeSummary}
@@ -169,7 +183,6 @@ export function ConfirmModal({
           </ConsoleButton>
         </footer>
       </div>
-    </div>,
-    document.body,
+    </div>
   )
 }

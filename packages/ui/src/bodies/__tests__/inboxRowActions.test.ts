@@ -1,10 +1,10 @@
 /**
- * THE INBOX ROW'S TWO NEW AFFORDANCES - a live timestamp, and per-row mute / mark-read - pinned at the
- * seams a screenshot cannot reach.
+ * The inbox row's live timestamp and per-row mute / mark-read, pinned at the seams a screenshot cannot
+ * reach.
  *
- *  1. THE TIMESTAMP IS RENDERED, NOT RECEIVED. The row used to print the server's `ago` string, which is
- *     computed once per response and then frozen: an inbox left open reads "now" an hour later. The row
- *     now formats `lastMessageAt` (the ISO stamp the API sends beside `ago`) through the SAME localized
+ *  1. THE TIMESTAMP IS RENDERED, NOT RECEIVED. The server's `ago` string is computed once per response
+ *     and then frozen, so an inbox left open would read "now" an hour later. The row formats
+ *     `lastMessageAt` (the ISO stamp the API sends beside `ago`) through the SAME localized
  *     seam every other list uses, and only falls back to `ago` for pages cached before the field existed.
  *     Ticking is ONE module-level interval with a `useSyncExternalStore` subscription per row - a
  *     `setInterval` inside the row component would be one timer per visible thread.
@@ -26,15 +26,20 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeHitSlop, sliceBetween } from "../../__tests__/sourceGuards"
+import { threadRowActions } from "../messagesListModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-const inbox = strip(read("../MessagingListBody.tsx"))
+const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
+const ROW_ACTION_LABELS = { mute: "Mute", markRead: "Mark read", delete: "Delete", deleteA11y: "Delete conversation" }
 const timeAgoHook = strip(read("../useListTimeAgo.ts"))
 const swipeHook = strip(read("../../primitives/useSwipeActions.ts"))
 const swipeModel = strip(read("../../primitives/swipeActionsModel.ts"))
-const reportChat = strip(read("../../data/hooks/report-chat.ts"))
+const reportChat = strip(read("../../data/hooks/reportChat.ts"))
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 describe("the row's timestamp is client-rendered and ticks", () => {
@@ -42,7 +47,7 @@ describe("the row's timestamp is client-rendered and ticks", () => {
     expect(inbox).toContain("const timeAgo = useTickingListTimeAgo()")
     expect(inbox).toContain("const stamp = thread.lastMessageAt ? timeAgo(thread.lastMessageAt) : thread.ago")
     expect(inbox).toContain("{stamp ? <Text style={styles.ago}>{stamp}</Text> : null}")
-    // The raw server string is no longer rendered directly.
+    // The frozen server string must not render directly.
     expect(inbox).not.toContain("{thread.ago ? <Text")
   })
 
@@ -73,9 +78,11 @@ describe("the native swipe uses the house gesture primitive", () => {
   it("never claims on touch-down, so a row tap still opens the thread", () => {
     expect(swipeHook).toContain("onStartShouldSetPanResponder: () => false")
     expect(swipeHook).toContain("onPanResponderTerminationRequest: () => false")
-    const at = swipeHook.indexOf("onStartShouldSetPanResponderCapture: (evt) => {")
-    expect(at, "the capture handler no longer exists").toBeGreaterThan(-1)
-    const body = swipeHook.slice(at, swipeHook.indexOf("onMoveShouldSetPanResponderCapture", at))
+    const body = sliceBetween(
+      swipeHook,
+      "onStartShouldSetPanResponderCapture: (evt) => {",
+      "onMoveShouldSetPanResponderCapture",
+    )
     expect(body).toContain("return false")
   })
 
@@ -117,7 +124,7 @@ describe("the native swipe uses the house gesture primitive", () => {
   it("is inert on web: the lane only arms off web and behind a real action count", () => {
     expect(swipeHook).toContain('const isNative = Platform.OS !== "web"')
     expect(swipeHook).toContain("const active = isNative && enabled && width > 0")
-    expect(inbox).toContain("useSwipeActions({ enabled: !IS_WEB, actionCount: unread ? 3 : 2 })")
+    expect(inbox).toContain("useSwipeActions({ enabled: !IS_WEB, actionCount: rowActions.length })")
   })
 
   it("always animates home on release - a short drag on a CLOSED row never parks mid-lane", () => {
@@ -152,8 +159,9 @@ describe("the native swipe uses the house gesture primitive", () => {
 
 describe("the destructive third action", () => {
   it("hides the conversation for THIS viewer through the shared mutation, never a local filter", () => {
-    expect(inbox).toContain("const hideConversation = useHideConversation(roomKind, roomId)")
-    expect(inbox).toContain("hideConversation.mutate({ hidden: true })")
+    expect(inbox).toContain("const { mutate: hideConversation } = useHideConversation()")
+    expect(inbox).toContain("onHide={hideConversation}")
+    expect(inbox).toContain("onHide({ roomKind, roomId, hidden: true })")
     expect(reportChat).toContain("export function useHideConversation(")
     expect(reportChat).toContain("api.toggleConversationHidden({ roomKind, roomId, hidden })")
   })
@@ -167,21 +175,26 @@ describe("the destructive third action", () => {
 
   it("reads destructive from the token scale and is reachable without a gesture", () => {
     expect(inbox).toContain("backgroundColor: t.colors.bloom[\"600\"]")
-    expect(inbox).toContain('icon="Trash2"')
+    const del = threadRowActions({ unread: false, muted: false, labels: ROW_ACTION_LABELS }).at(-1)
+    expect(del).toMatchObject({ key: "delete", icon: "Trash2", destructive: true, a11yLabel: "Delete conversation" })
+    expect(inbox).toContain("icon={action.icon}")
     expect(inbox).toMatch(/actionName === "delete"/)
-    expect(inbox).toContain('{ name: "delete", label: deleteA11yLabel }')
+    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toContain("deleteA11y: deleteA11yLabel")
   })
 })
 
 describe("web gets a hover menu instead, and both platforms get a non-gesture path", () => {
   it("reveals the overflow chip on hover (or while its menu is open) and opens the house PopoverMenu", () => {
     expect(inbox).toContain("const { hovered, hoverProps } = useRowHover()")
-    expect(inbox).toContain("{IS_WEB && (hovered || menuOpen) ? (")
+    expect(inbox).toContain("{IS_WEB ? (")
+    expect(inbox).toContain("rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed")
     expect(inbox).toContain("icon={iconMap.Ellipsis}")
     expect(inbox).toContain("<PopoverMenu")
     expect(inbox).toContain("usePopoverAnchor(setAnchorRect)")
     // The chip clears the 44pt floor by slop, on the file's own arithmetic.
-    expect(inbox).toContain("const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2")
+    expectThemeHitSlop(inbox)
+    expect(inbox).toContain("const ROW_MENU_HIT_SLOP = hitSlopToTarget(ROW_MENU_CHIP)")
     expect(inbox).toContain("hitSlop={ROW_MENU_HIT_SLOP}")
   })
 
@@ -193,9 +206,15 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
   })
 
   it("offers mark-read ONLY where there is something to clear", () => {
-    expect(inbox).toMatch(/unread\s*\?\s*\[\s*\{ name: "mute", label: muteLabel \},\s*\{ name: "markRead", label: markReadLabel \},/)
-    expect(inbox).toMatch(/if \(unread\) \{\s*items\.push\(\{ key: "markRead"/)
-    expect(inbox).toMatch(/actionCount: unread \? 3 : 2/)
+    const keys = (unread: boolean) =>
+      threadRowActions({ unread, muted: false, labels: ROW_ACTION_LABELS }).map((action) => action.key)
+    expect(keys(true)).toEqual(["mute", "markRead", "delete"])
+    expect(keys(false)).toEqual(["mute", "delete"])
+    expect(inbox).toMatch(/threadRowActions\(\{\s*unread,\s*muted,/)
+    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toMatch(/rowActions\.map\(\(action\) => \(\{\s*key: action\.key,/)
+    expect(inbox).toMatch(/\{rowActions\.map\(\(action\) => \(\s*<ThreadRowAction/)
+    expect(inbox).toContain("actionCount: rowActions.length")
   })
 
   it("takes every label from the catalog, in all four locales", () => {
@@ -227,10 +246,13 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
 
 describe("the two mutations", () => {
   it("reuse the existing mute hook and add a mark-read one with the same invalidate-only posture", () => {
-    expect(inbox).toContain("const toggleMute = useToggleMute(roomKind, roomId)")
-    expect(inbox).toContain("const markRead = useMarkThreadRead()")
-    expect(inbox).toContain("toggleMute.mutate({ muted: !muted })")
-    expect(inbox).toContain("markRead.mutate({ roomKind, roomId })")
+    expect(inbox).toContain("const { mutate: toggleMute } = useToggleMute()")
+    expect(inbox).toContain("const { mutate: markRead } = useMarkThreadRead()")
+    expect(inbox).toContain("onToggleMute={toggleMute}")
+    expect(inbox).toContain("onMarkRead={markRead}")
+    expect(inbox).toContain("onToggleMute({ roomKind, roomId, muted: !muted })")
+    expect(inbox).toContain("markRead({ roomKind, roomId })")
+    expect(reportChat).toContain("api.toggleConversationMute({ roomKind, roomId, muted })")
     expect(reportChat).toContain("export function useMarkThreadRead()")
     expect(reportChat).toContain("api.markThreadRead(vars)")
     expect(reportChat).toMatch(
@@ -238,8 +260,16 @@ describe("the two mutations", () => {
     )
   })
 
+  it("are owned once by the inbox, so a mounted row adds no mutation observers", () => {
+    const row = strip(read("../inbox/ThreadRow.tsx"))
+    for (const hook of ["useToggleMute(", "useMarkThreadRead(", "useHideConversation("]) {
+      expect(row).not.toContain(hook)
+    }
+  })
+
   it("addresses the room the way the rest of the package does", () => {
-    expect(inbox).toContain("const roomId = thread.refId ?? thread.id")
+    expect(inbox).toContain("const roomId = threadRoomId(thread)")
+    expect(inbox).toContain('import { threadRoomId } from "../../data/threadRoom"')
     expect(inbox).toContain("const roomKind = thread.kind")
   })
 })

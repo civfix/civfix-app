@@ -1,8 +1,10 @@
 import type {
   EventRegistrationDTO,
+  ListEventRegistrationsResponse,
   RegistrationRosterFilter,
   RegistrationRosterSort,
 } from "@civfix/shared"
+import { RegistrationRosterSortSchema } from "@civfix/shared"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "all",
@@ -16,12 +18,7 @@ export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "members",
 ]
 
-export const ROSTER_SORTS: readonly RegistrationRosterSort[] = [
-  "registered_at_desc",
-  "registered_at_asc",
-  "name_asc",
-  "checked_in_at_desc",
-]
+const ROSTER_SORTS: readonly RegistrationRosterSort[] = RegistrationRosterSortSchema.options
 
 export function isRosterFilter(value: string | undefined): value is RegistrationRosterFilter {
   return value !== undefined && (ROSTER_FILTERS as readonly string[]).includes(value)
@@ -42,18 +39,6 @@ export function rowSupportsRegistrationActions(
   return !isWaitlistProjection(filter) && row.status !== "cancelled"
 }
 
-export function checkableSeatIds(row: EventRegistrationDTO): string[] {
-  return row.seats
-    .filter((seat) => seat.status === "active" && seat.checkedInAt === null)
-    .map((seat) => seat.id)
-}
-
-export function checkedInSeatIds(row: EventRegistrationDTO): string[] {
-  return row.seats
-    .filter((seat) => seat.status === "active" && seat.checkedInAt !== null)
-    .map((seat) => seat.id)
-}
-
 export function attendanceOf(
   row: EventRegistrationDTO,
 ): "checked_in" | "not_checked_in" | "no_show" {
@@ -62,30 +47,30 @@ export function attendanceOf(
   return "not_checked_in"
 }
 
-export function attendeeDisplayName(
+export function checkInSeatsInRow(
   row: EventRegistrationDTO,
-  fallbacks: { guest: string; deleted: string },
-): string {
-  if (row.person) return row.person.deleted ? fallbacks.deleted : row.person.name
-  return row.guestName ?? fallbacks.guest
-}
-
-export function shouldResetCursor(
-  prev: { filter: string; sort: string; q: string; ticket: string },
-  next: { filter: string; sort: string; q: string; ticket: string },
-): boolean {
-  return (
-    prev.filter !== next.filter ||
-    prev.sort !== next.sort ||
-    prev.q !== next.q ||
-    prev.ticket !== next.ticket
+  seatIds: readonly string[],
+  at: string,
+): EventRegistrationDTO {
+  const checked = new Set(seatIds)
+  const seats = row.seats.map((seat) =>
+    checked.has(seat.id) && seat.status === "active" && !seat.checkedInAt
+      ? { ...seat, checkedInAt: at, checkinMethod: "manual" as const }
+      : seat,
   )
+  return { ...row, seats, checkedInAt: row.checkedInAt ?? at }
 }
 
-export function rosterTotals(
-  loadedRows: number,
-  eventTotal: number | undefined,
-  hasMore: boolean,
-): { shown: number; eventTotal: number | null; hasMore: boolean } {
-  return { shown: loadedRows, eventTotal: eventTotal ?? null, hasMore }
+export function rowStillPendingCheckIn(row: EventRegistrationDTO): boolean {
+  return row.seats.some((seat) => seat.status === "active" && !seat.checkedInAt)
+}
+
+/**
+ * The server sends the whole-event total with the first page. It stays distinct from the loaded row
+ * count, which a filter or an unfetched next page makes smaller.
+ */
+export function rosterEventTotal(
+  pages: readonly ListEventRegistrationsResponse[] | undefined,
+): number | null {
+  return pages?.[0]?.total ?? null
 }

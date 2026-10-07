@@ -33,5 +33,9 @@
       "unauthorized": "Bitte melde dich erneut an, um die Meldung zu verknüpfen.",
       "fallback": "Beim Verknüpfen ist ein Fehler aufgetreten. Bitte versuche es erneut."
     }
+  },
+  "lookup_failed": {
+    "title": "Suche nach deiner Meldung fehlgeschlagen",
+    "body": "Wir konnten civfix nicht erreichen, um nach einer Meldung zum Beanspruchen zu suchen. Prüfe deine Verbindung und versuche es erneut."
   }
 }

@@ -17,7 +17,7 @@ ChatEmbedScopeContext.displayName = "ChatEmbedScopeContext"
 
 export const ChatEmbedScopeProvider = ChatEmbedScopeContext.Provider
 
-export function useChatEmbedScope(): ChatEmbedScope {
+function useChatEmbedScope(): ChatEmbedScope {
   const provided = useContext(ChatEmbedScopeContext)
   const unscoped = useRef<ChatEmbedScope | null>(null)
   if (provided) return provided

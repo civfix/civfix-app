@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema, pageResponse, PushPlatformSchema } from "./common.js"
+import { OkResponseSchema } from "./internal-fields.js"
 
 
 export const NotificationTypeSchema = z.enum([
@@ -48,9 +49,7 @@ export const MarkReadRequestSchema = z
   .strict()
 export type MarkReadRequest = z.infer<typeof MarkReadRequestSchema>
 
-export const MarkReadResponseSchema = z.object({
-  ok: z.literal(true),
-})
+export const MarkReadResponseSchema = OkResponseSchema
 export type MarkReadResponse = z.infer<typeof MarkReadResponseSchema>
 
 export const QuietHoursSchema = z.object({
@@ -87,9 +86,7 @@ export const RegisterPushTokenRequestSchema = z
   .strict()
 export type RegisterPushTokenRequest = z.infer<typeof RegisterPushTokenRequestSchema>
 
-export const RegisterPushTokenResponseSchema = z.object({
-  ok: z.literal(true),
-})
+export const RegisterPushTokenResponseSchema = OkResponseSchema
 export type RegisterPushTokenResponse = z.infer<typeof RegisterPushTokenResponseSchema>
 
 export const UnregisterPushTokenRequestSchema = z

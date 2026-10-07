@@ -69,6 +69,7 @@
     "revoke_error": "Couldn't revoke this transcript. Try again.",
     "disabled_hint": "Log some volunteer hours first.",
     "error_generic": "Couldn't prepare your record. Try again.",
-    "error_rate_limited": "You can generate one record every few minutes."
+    "error_rate_limited": "You can generate one record every few minutes.",
+    "copy_error": "Couldn't copy. Try again."
   }
 }

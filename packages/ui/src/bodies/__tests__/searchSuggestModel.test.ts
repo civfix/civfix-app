@@ -175,7 +175,7 @@ describe("assembleSearchSuggestions", () => {
   })
 
   /**
-   * The leaderboard is GEOID-gated, not auth- or location-gated — the one gate in this file that is
+   * The leaderboard is GEOID-gated, not auth- or location-gated: the one gate in this file that is
    * neither of the other two. A signed-out visitor whose device resolved a jurisdiction sees the board;
    * a signed-in viewer whose jurisdiction could not be resolved does not, no matter what rows the query
    * happens to be holding.
@@ -213,8 +213,8 @@ describe("assembleSearchSuggestions", () => {
 
   /**
    * EMPTINESS IS A RENDER DECISION, NOT A MODEL ONE. A resolved geoid whose board has no rows yet is a
-   * perfectly valid, RENDERABLE state — SearchBody shows the section with the full page's "be the first"
-   * copy — so the model must report it as "a board that is empty", indistinguishable in shape from any
+   * perfectly valid, RENDERABLE state (SearchBody shows the section with the full page's "be the first"
+   * copy), so the model must report it as "a board that is empty", indistinguishable in shape from any
    * other board. It must NOT start signalling "no board here" (that is what a null geoid means, the case
    * directly below), or the render gate loses the only thing that tells the two apart.
    */
@@ -248,7 +248,7 @@ describe("assembleSearchSuggestions", () => {
   })
 
   it("still slices to three when the request asked for the whole extras-threshold page", () => {
-    // Discovery now REQUESTS 25 rows (the server only computes viewerRank/viewerHours at limit >= 25)
+    // Discovery REQUESTS 25 rows (the server only computes viewerRank/viewerHours at limit >= 25)
     // and renders three. That split only works because the slice lives here, so this asserts the model
     // handles a full request page, not just a page that happened to arrive pre-trimmed.
     const out = assembleSearchSuggestions({

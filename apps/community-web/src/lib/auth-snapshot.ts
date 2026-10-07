@@ -1,46 +1,31 @@
 import { UserDTOSchema, type UserDTO } from "@civfix/shared"
 
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+
 /**
- * Optimistic, display-only cache of the signed-in user's profile, persisted in localStorage so the
- * header can paint the signed-in chrome (avatar) on the first frame instead of flashing the actionable
- * "Sign in" pill while GET /auth/session resolves.
+ * A display-only cache so the header paints the signed-in chrome on the first frame instead of flashing
+ * "Sign in" while GET /auth/session resolves. It is cosmetic only: the session is the httpOnly cookie and
+ * the CSRF token is never persisted, so a stale snapshot cannot grant access. Store the user's own
+ * non-secret UserDTO and nothing else (no roles, no token).
  *
- * This is COSMETIC ONLY. The real session is the httpOnly cookie (invisible to JS) and the CSRF token
- * is deliberately never persisted, so a stale snapshot can never grant access: mutations stay blocked
- * until the live session check returns a fresh CSRF token, exactly as on any reload. We store the
- * user's own non-secret UserDTO and nothing else (no roles, no token).
- *
- * Every function is guarded against a missing `window` because the store module that consumes them is
- * evaluated during the Next.js static-export build, where there is no localStorage. The functions never
- * throw - quota, private-mode SecurityError, corrupt JSON, and shape/version drift all degrade to a
- * clean miss.
+ * Every function guards `window` because the consuming store is evaluated during the static-export build,
+ * and never throws: quota, private-mode SecurityError, corrupt JSON and version drift are a clean miss.
  */
 
-/** Storage key. Version is in the key so a future shape bump is a clean miss, not a wrong-shape parse. */
+/** The version is in the key so a future shape bump is a clean miss, not a wrong-shape parse. */
 export const SNAPSHOT_KEY = "civfix.auth.snapshot.v1"
 const SNAPSHOT_VERSION = 1
 
-/** Persisted body. The version literal also lives here to guard a hand-edited or half-migrated value. */
+/** The version also lives in the body to guard a hand-edited or half-migrated value. */
 interface SnapshotBody {
   v: typeof SNAPSHOT_VERSION
   user: UserDTO
 }
 
-/**
- * Read the cached profile, or null when absent/unreadable. Any failure - no window, missing key, bad
- * JSON, schema or version mismatch, or a SecurityError from a privacy-mode localStorage - clears the
- * key (best effort) and returns null. Never throws.
- */
 export function readAuthSnapshot(): UserDTO | null {
   if (typeof window === "undefined") return null
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(SNAPSHOT_KEY)
-  } catch {
-    // SecurityError (storage disabled / partitioned). Nothing to clear; treat as a miss.
-    return null
-  }
+  const raw = safeGet("local", SNAPSHOT_KEY)
   if (raw === null) return null
 
   try {
@@ -50,7 +35,6 @@ export function readAuthSnapshot(): UserDTO | null {
       body !== null &&
       (body as { v?: unknown }).v === SNAPSHOT_VERSION
     ) {
-      // Validate the cosmetic shape with the single-sourced contract schema rather than redefining it.
       const parsed = UserDTOSchema.safeParse((body as { user?: unknown }).user)
       if (parsed.success) return parsed.data
     }
@@ -62,23 +46,13 @@ export function readAuthSnapshot(): UserDTO | null {
   return null
 }
 
-/** Best-effort persist of the signed-in profile. Ignores quota / private-mode write failures. */
 export function writeAuthSnapshot(user: UserDTO): void {
   if (typeof window === "undefined") return
   const body: SnapshotBody = { v: SNAPSHOT_VERSION, user }
-  try {
-    window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(body))
-  } catch {
-    // Quota exceeded or storage unavailable (private mode): the snapshot is an optimization, not state.
-  }
+  safeSet("local", SNAPSHOT_KEY, JSON.stringify(body))
 }
 
-/** Best-effort removal of the cached profile. */
 export function clearAuthSnapshot(): void {
   if (typeof window === "undefined") return
-  try {
-    window.localStorage.removeItem(SNAPSHOT_KEY)
-  } catch {
-    // Storage unavailable: nothing to do.
-  }
+  safeRemove("local", SNAPSHOT_KEY)
 }

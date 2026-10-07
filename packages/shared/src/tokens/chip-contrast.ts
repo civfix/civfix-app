@@ -13,15 +13,13 @@ export interface ChipHuePair {
   minRatio: number
 }
 
+const HEX_COLOR = /^#?([0-9a-fA-F]{6})$/
+
 function channels(hex: string): [number, number, number] {
-  const raw = hex.replace("#", "")
-  if (raw.length !== 6) throw new RangeError(`chip-contrast expects a 6-digit hex color, got "${hex}"`)
-  const parts = [0, 2, 4].map((i) => {
-    const value = parseInt(raw.slice(i, i + 2), 16)
-    if (!Number.isFinite(value)) throw new RangeError(`chip-contrast expects a 6-digit hex color, got "${hex}"`)
-    return value
-  })
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0]
+  const raw = HEX_COLOR.exec(hex)?.[1]
+  if (raw === undefined) throw new RangeError(`chip-contrast expects a 6-digit hex color, got "${hex}"`)
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(raw.slice(i, i + 2), 16))
+  return [r ?? 0, g ?? 0, b ?? 0]
 }
 
 export function relativeLuminance(hex: string): number {
@@ -38,12 +36,6 @@ export function contrastRatio(a: string, b: string): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
-export function mixWithWhite(hex: string, amount: number): string {
-  const weight = Math.min(1, Math.max(0, amount))
-  const mixed = channels(hex).map((value) => Math.round(weight * value + (1 - weight) * 255))
-  return `#${mixed.map((c) => c.toString(16).padStart(2, "0")).join("").toUpperCase()}`
-}
-
 export function chipHuePairs(scheme: ColorSchemeName): readonly ChipHuePair[] {
   const palette = colorSchemes[scheme]
   return CHIP_HUE_NAMES.map((name) => ({
@@ -52,8 +44,4 @@ export function chipHuePairs(scheme: ColorSchemeName): readonly ChipHuePair[] {
     bg: palette[name]["50"],
     minRatio: MIN_CHIP_RATIO,
   }))
-}
-
-export function chipPairPasses(pair: ChipHuePair): boolean {
-  return contrastRatio(pair.text, pair.bg) >= pair.minRatio
 }

@@ -1,3 +1,5 @@
+import { createListenerSet } from "./listenerSet"
+
 export interface KeyboardFocusNode {
   measureInWindow: (
     callback: (x: number, y: number, width: number, height: number) => void,
@@ -12,21 +14,16 @@ export interface KeyboardFocusState {
 }
 
 let state: KeyboardFocusState = { node: null, revealNode: null, scope: null, version: 0 }
-const listeners = new Set<() => void>()
+const listeners = createListenerSet()
 
 function publish(next: KeyboardFocusState): void {
   state = next
-  for (const listener of [...listeners]) listener()
+  listeners.notify()
 }
 
 export const keyboardFocusStore = {
   getState: (): KeyboardFocusState => state,
-  subscribe: (listener: () => void): (() => void) => {
-    listeners.add(listener)
-    return () => {
-      listeners.delete(listener)
-    }
-  },
+  subscribe: listeners.subscribe,
   setFocused: (
     node: KeyboardFocusNode | null,
     scope: string | null,

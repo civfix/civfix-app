@@ -1,7 +1,6 @@
 /**
- * Capture-step file DROP target - NATIVE seam: there is no drag source on a phone or tablet, so this is a
- * no-op that reports `active: false`. The wizard's caption and ring are gated on that flag, which is why
- * the capture card stays byte-identical on native without a single `Platform.OS` branch in the body.
+ * A phone or tablet has no drag source, so this reports `active: false`; the wizard gates its drop caption
+ * and ring on that flag instead of branching on `Platform.OS`.
  */
 import type { ViewStyle } from "react-native"
 import type { Theme } from "../theme"

@@ -1,7 +1,3 @@
-/**
- * Unit tests for the MemberPicker's pure selection logic (P4 Task 4.7): toggle add/remove with
- * id-dedupe, exclusion, chip removal, and the search-result -> PersonDTO mapping.
- */
 import { describe, expect, it } from "vitest"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { toggleMember, removeMember, filterExcluded, searchResultToPerson } from "../memberSelect"

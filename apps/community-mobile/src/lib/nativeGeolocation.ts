@@ -1,6 +1,7 @@
 import * as Location from "expo-location"
 import type { GeolocationCapability, GeoPosition } from "@civfix/ui/capabilities"
-import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { withTimeout } from "@civfix/shared"
+import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 
 async function foregroundPermissionGranted(): Promise<boolean> {
   const current = await Location.getForegroundPermissionsAsync().catch(() => null)
@@ -57,6 +58,7 @@ export const nativeGeolocation: GeolocationCapability = {
         }
         subscription = sub
       } catch {
+        // The live watch is best-effort; getCurrentPosition reports failures and callers keep their last fix.
       }
     })()
     return () => {

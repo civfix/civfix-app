@@ -1,6 +1,6 @@
 {
   "name": "@civfix/shared",
-  "version": "0.58.0",
+  "version": "0.59.0",
   "description": "civfix shared contract package: zod schemas, domain types, vendor interfaces, in-memory fakes, design tokens, and a typed API client. Single source of truth for backend, web, and mobile.",
   "license": "AGPL-3.0-only",
   "private": false,
@@ -170,7 +170,7 @@
     "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "clean": "rimraf dist *.tsbuildinfo",
     "dev": "tsup --watch"
   },
@@ -180,10 +180,7 @@
   "devDependencies": {
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.16.0",
-    "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3",

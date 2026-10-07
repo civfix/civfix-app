@@ -1,13 +1,14 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { INVITE_MAX_ROWS, inviteRowSlice } from "../profile/invitesModel"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const source = (file: string): string => readFileSync(new URL(file, import.meta.url), "utf8")
 
 const catalog = (lng: string, ns: string): Record<string, unknown> =>
   JSON.parse(
     readFileSync(new URL(`../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
-  )
+  ) as Record<string, unknown>
 
 const ev = (id: string): { id: string } => ({ id })
 
@@ -48,7 +49,7 @@ describe("invitations live on the viewer's own profile", () => {
   })
 
   it("keeps it off other people's profiles", () => {
-    expect(source("../PersonDetailBody.tsx")).not.toContain("Invitation")
+    expect(surfaceSource("personDetail")).not.toContain("Invitation")
     expect(source("../ProfileView.tsx")).not.toContain("Invitation")
   })
 
@@ -93,7 +94,14 @@ describe("invitations live on the viewer's own profile", () => {
   })
 
   it("is gone from the event dashboard entirely", () => {
-    const dashboard = source("../host/EventDashboardBody.tsx")
+    const dashboard = [
+      "../host/EventDashboardBody.tsx",
+      "../host/dashboard/DashboardHeader.tsx",
+      "../host/dashboard/HostedEventsSection.tsx",
+      "../host/dashboard/useHostedEventNav.ts",
+    ]
+      .map(source)
+      .join("\n")
     expect(dashboard).not.toContain("Invitation")
     expect(dashboard).not.toContain("Invite")
     expect(dashboard).not.toContain("invite")

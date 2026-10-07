@@ -134,6 +134,13 @@ export function playClient({ packageName, token, fetchImpl = fetch }) {
   }
 }
 
+/**
+ * @param {{
+ *   bundles?: { versionCode: number }[],
+ *   apks?: { versionCode: number }[],
+ *   tracks?: { track: string, releases?: { versionCodes?: string[] }[] }[],
+ * }} listing
+ */
 export function highestVersionCode({ bundles = [], apks = [], tracks = [] }) {
   const codes = [
     ...bundles.map((bundle) => bundle.versionCode),
@@ -162,6 +169,10 @@ export async function nextVersionCode(client, floor) {
   }
 }
 
+/**
+ * @param {*} client
+ * @param {{ bytes: Buffer, track: string, name?: string }} release
+ */
 export async function publishBundle(client, { bytes, track, name }) {
   const status = TRACK_STATUS[track]
   if (!status) throw new PlayError(`unknown track '${track}'; expected one of ${Object.keys(TRACK_STATUS).join(", ")}`)

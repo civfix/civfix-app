@@ -9,7 +9,8 @@ vi.mock("@civfix/ui", async () => {
 import { entryFromPath, useNavStore, type DetailEntry } from "@civfix/ui/nav"
 
 import { readNavHistory } from "./nav-history"
-import { useWebNavAdapter, webOpenInternalHref } from "./use-web-nav-adapter"
+import { useWebNavAdapter } from "./use-web-nav-adapter"
+import { webOpenInternalHref } from "./web-internal-href"
 
 function Host() {
   useWebNavAdapter()
@@ -32,9 +33,11 @@ function nav() {
   return useNavStore.getState()
 }
 
+// jsdom queues history traversals (and their popstate) as window timers, so fake timers drive the
+// browser's side and the controller's traversal timeout on one deterministic clock.
 async function wait(ms: number): Promise<void> {
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms))
+    await vi.advanceTimersByTimeAsync(ms)
   })
 }
 
@@ -57,7 +60,7 @@ async function browserBack(): Promise<void> {
 }
 
 async function reload(): Promise<void> {
-  const state = window.history.state
+  const state: unknown = window.history.state
   const pathname = window.location.pathname
   cleanup()
   useNavStore.setState({
@@ -113,6 +116,7 @@ function dropSecondGoOfEachTask(): void {
 }
 
 beforeEach(() => {
+  vi.useFakeTimers()
   window.history.replaceState(null, "", "/")
   useNavStore.setState({
     view: "home",
@@ -133,6 +137,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.useRealTimers()
 })
 
 describe("mount", () => {
@@ -203,7 +208,7 @@ describe("mount", () => {
   it("restores the stamped snapshot instead of re-seeding, so a reload keeps the stack", async () => {
     mount()
     await drive(() => nav().push(PIN_A))
-    const reloadedState = window.history.state
+    const reloadedState: unknown = window.history.state
 
     cleanup()
     useNavStore.setState({ view: "home", stack: [], active: null })
@@ -758,7 +763,7 @@ describe("a landing carries the live search text and the seq already spent", () 
     expect(aheadSeq).toBeGreaterThan(0)
 
     await browserBack()
-    const rootState = window.history.state
+    const rootState: unknown = window.history.state
     cleanup()
     useNavStore.setState({ view: "home", stack: [], active: null })
     window.history.replaceState(rootState, "", "/")

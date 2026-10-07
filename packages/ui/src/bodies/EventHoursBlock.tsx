@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { AccessibilityInfo, View, Pressable, StyleSheet, Animated, Easing } from "react-native"
+import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { Avatar } from "../primitives"
 import { useAuthState, useCleanupAttendees, useEventHours } from "../data"
 import { useNavStore } from "../nav"
@@ -65,52 +67,40 @@ export function EventHoursBlock({
   )
 }
 
+function fadeUpTiming(value: Animated.Value, toValue: number): Animated.CompositeAnimation {
+  return Animated.timing(value, {
+    toValue,
+    duration: motion.fadeUp.duration,
+    easing: Easing.bezier(...motion.fadeUp.easing),
+    useNativeDriver: true,
+  })
+}
+
 function FadeUp({ children }: { children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current
   const translateY = useRef(new Animated.Value(motion.fadeUp.distance)).current
+  // Unanswered (null) plays the rise; a later "reduce" answer settles it at once, fade untouched.
+  const reduceMotion = useReducedMotion() === true
 
   useEffect(() => {
-    let mounted = true
-    const timing = (value: Animated.Value, toValue: number) =>
-      Animated.timing(value, {
-        toValue,
-        duration: motion.fadeUp.duration,
-        easing: Easing.bezier(...motion.fadeUp.easing),
-        useNativeDriver: true,
-      })
+    fadeUpTiming(opacity, 1).start()
+    return () => opacity.stopAnimation()
+  }, [opacity])
 
-    const enter = (reduceMotion: boolean) => {
-      if (!mounted) return
-      if (reduceMotion) {
-        translateY.setValue(0)
-        timing(opacity, 1).start()
-        return
-      }
-      Animated.parallel([timing(opacity, 1), timing(translateY, 0)]).start()
-    }
-
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => enter(!!enabled))
-      .catch(() => enter(false))
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
-      if (!enabled) return
+  useEffect(() => {
+    if (reduceMotion) {
       translateY.stopAnimation()
       translateY.setValue(0)
-    })
-
-    return () => {
-      mounted = false
-      sub?.remove()
-      opacity.stopAnimation()
-      translateY.stopAnimation()
+      return
     }
-  }, [opacity, translateY])
+    fadeUpTiming(translateY, 0).start()
+    return () => translateY.stopAnimation()
+  }, [reduceMotion, translateY])
 
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }] }}>{children}</Animated.View>
   )
 }
-
 
 function HostHours({
   cleanupId,
@@ -182,11 +172,10 @@ function HoursSummaryCard({
         </View>
         <Pressable
           onPress={onEdit}
-          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t("log_hours.summary_edit_a11y")}
           {...focusRingProps}
-          style={({ pressed }) => [pressed ? styles.pressed : null]}
+          style={({ pressed }) => [styles.editTarget, pressed ? styles.pressed : null]}
         >
           <Text style={styles.editText}>{t("log_hours.summary_edit")}</Text>
         </Pressable>
@@ -281,25 +270,6 @@ function AttendeeReceipt({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  verifyNote: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-    marginTop: t.space["3"],
-    paddingVertical: t.space["3"],
-    paddingHorizontal: t.space["3"] + 1,
-    borderRadius: t.radius.md,
-    backgroundColor: t.colors.sky["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sky["100"],
-  },
-  verifyNoteText: {
-    flex: 1,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.sky["700"],
-  },
-
   card: {
     marginTop: t.space["3"],
     padding: t.space["4"],
@@ -335,17 +305,23 @@ const useStyles = makeThemedStyles((t) => ({
   },
   totalValue: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   totalCount: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
+  },
+  editTarget: {
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: "center",
+    justifyContent: "center",
   },
   editText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   people: {
@@ -360,13 +336,13 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
   personHours: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
 
@@ -397,7 +373,7 @@ const useStyles = makeThemedStyles((t) => ({
   flatRowText: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
 

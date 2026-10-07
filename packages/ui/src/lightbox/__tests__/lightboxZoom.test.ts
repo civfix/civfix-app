@@ -12,6 +12,7 @@ import {
   doubleTapZoomTransform,
   focalZoomTransform,
   isZoomed,
+  keyZoomScale,
   panZoomTransform,
   pointerDistance,
   pointerMidpoint,
@@ -19,6 +20,7 @@ import {
   travelExceeds,
   wheelZoomScale,
   zoomGeometry,
+  zoomKeyAction,
   zoomTranslationLimits,
 } from "../lightboxZoom"
 
@@ -330,6 +332,31 @@ describe("zoomGeometry", () => {
     expect(zoomGeometry({ ...phone, maxScale: 2 }).maxScale).toBe(2)
     expect(zoomGeometry({ ...phone, maxScale: 99 }).maxScale).toBe(LIGHTBOX_MAX_SCALE)
     expect(zoomGeometry({ ...phone, maxScale: 0.1 }).maxScale).toBe(LIGHTBOX_MIN_SCALE)
+  })
+})
+
+describe("keyboard zoom", () => {
+  it("maps plus, equals, minus and zero to zoom in, out and reset", () => {
+    expect(zoomKeyAction({ key: "+" })).toBe("in")
+    expect(zoomKeyAction({ key: "=" })).toBe("in")
+    expect(zoomKeyAction({ key: "-" })).toBe("out")
+    expect(zoomKeyAction({ key: "0" })).toBe("reset")
+    expect(zoomKeyAction({ key: "ArrowRight" })).toBeNull()
+    expect(zoomKeyAction({ key: "Escape" })).toBeNull()
+  })
+
+  it("leaves Ctrl, Cmd and Alt chords to the browser's own page zoom", () => {
+    expect(zoomKeyAction({ key: "+", ctrlKey: true })).toBeNull()
+    expect(zoomKeyAction({ key: "-", metaKey: true })).toBeNull()
+    expect(zoomKeyAction({ key: "0", altKey: true })).toBeNull()
+  })
+
+  it("steps the scale and stays inside the allowed range", () => {
+    expect(keyZoomScale(1, "in")).toBeCloseTo(1.5)
+    expect(keyZoomScale(1.5, "out")).toBeCloseTo(1)
+    expect(keyZoomScale(LIGHTBOX_MAX_SCALE, "in")).toBe(LIGHTBOX_MAX_SCALE)
+    expect(keyZoomScale(LIGHTBOX_MIN_SCALE, "out")).toBe(LIGHTBOX_MIN_SCALE)
+    expect(keyZoomScale(1.5, "in", 2)).toBe(2)
   })
 })
 

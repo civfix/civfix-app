@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string =>
   readFileSync(new URL(relative, import.meta.url), "utf8")
@@ -9,7 +10,7 @@ const stripComments = (source: string): string =>
 
 const HOSTS = {
   "profile/ProfilePostsSection.tsx": read("../profile/ProfilePostsSection.tsx"),
-  "PersonDetailBody.tsx": read("../PersonDetailBody.tsx"),
+  "PersonDetailBody.tsx": surfaceSource("personDetail"),
   "SavedPostsBody.tsx": read("../SavedPostsBody.tsx"),
   "PostDetailBody.tsx": read("../PostDetailBody.tsx"),
 }
@@ -29,7 +30,7 @@ describe("no timeline host declares its own full-bleed margin", () => {
 
 const PAGE_SURFACES: Record<keyof typeof HOSTS, { file: string; style: string }> = {
   "profile/ProfilePostsSection.tsx": { file: "ProfileBody.tsx", style: "scroll" },
-  "PersonDetailBody.tsx": { file: "PersonDetailBody.tsx", style: "root" },
+  "PersonDetailBody.tsx": { file: "personDetail/personDetailStyles.ts", style: "root" },
   "SavedPostsBody.tsx": { file: "SavedPostsBody.tsx", style: "root" },
   "PostDetailBody.tsx": { file: "PostDetailBody.tsx", style: "root" },
 }

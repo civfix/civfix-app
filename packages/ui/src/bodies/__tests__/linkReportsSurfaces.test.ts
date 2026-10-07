@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { LINKED_REPORTS_COUNT_AT, NEARBY_PREVIEW, linkedReportsPatch } from "../linkReportsModel"
 import { HOST_ROW_ICONS } from "../host/hostSurfaceModel"
 
@@ -9,17 +10,29 @@ const code = (src: string): string =>
 
 const picker = code(read("../ReportLinkPicker.tsx"))
 const row = code(read("../ReportLinkRow.tsx"))
-const surface = code(read("../reportPicker/ReportPicker.tsx"))
+const SURFACE_FILES = [
+  "ReportPicker.tsx",
+  "usePickerSelection.ts",
+  "usePickerData.ts",
+  "usePickerListScroll.ts",
+  "PickerSearchField.tsx",
+  "PickerList.tsx",
+  "PickerFooter.tsx",
+] as const
+const surface = SURFACE_FILES.map((file) => code(read(`../reportPicker/${file}`))).join("\n")
 const pickerRow = code(read("../reportPicker/PickerReportRow.tsx"))
 const chips = code(read("../reportPicker/LayerChipRow.tsx"))
 const mapNative = code(read("../../map/ReportPickMap.native.tsx"))
 const mapWeb = code(read("../../map/ReportPickMap.web.tsx"))
+const webMarkerLayer = code(read("../../map/domMarkerLayer.web.ts"))
 const mapSelector = code(read("../../map/ReportPickMap.tsx"))
 const form = code(read("../CleanupForm.tsx"))
 const create = code(read("../CreateCleanupBody.tsx"))
 const edit = code(read("../EditCleanupBody.tsx"))
 const detail = code(read("../EventDetailBody.tsx"))
 const hostBody = code(read("../host/HostModeBody.tsx"))
+const hostSheets = code(read("../host/HostModeSheets.tsx"))
+const hostCopy = code(read("../host/hostModeCopy.ts"))
 const hostSheet = code(read("../host/LinkedReportsSheet.tsx"))
 const modalSheet = code(read("../../primitives/ModalCardSheet.tsx"))
 const bodiesIndex = code(read("../index.ts"))
@@ -83,7 +96,7 @@ describe("the inline block is a summary plus a door to the map picker", () => {
     expect(picker).toContain('t("linkedReports.pick_on_map")')
   })
 
-  it("the old text-only search sheet is gone", () => {
+  it("no text-only search sheet exists; the barrel exports the ReportPicker", () => {
     expect(existsSync(new URL("../ReportSearchSheet.tsx", import.meta.url))).toBe(false)
     expect(bodiesIndex).not.toContain("ReportSearchSheet")
     expect(bodiesIndex).toContain('from "./reportPicker/ReportPicker"')
@@ -147,7 +160,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("recomputes the zoom-in state on every region change, not only when it refetches", () => {
-    const region = surface.slice(surface.indexOf("const onRegionChange"), surface.indexOf("const listState"))
+    const region = sliceBetween(surface, "const onRegionChange", "const listState")
     expect(region).toContain("const next = pickerFetchRegion(bbox)")
     expect(region).toContain("setTooWide(next === null)")
     expect(region).toContain("setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))")
@@ -161,7 +174,8 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("starts every event with the default layers instead of the last event's", () => {
-    expect(surface).toMatch(/useEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
+    // A layout effect: the reset lands before the first paint, so no frame shows the last event's layers.
+    expect(surface).toMatch(/useLayoutEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
   })
 
   it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {
@@ -192,9 +206,12 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     expect(mapNative).toContain("accessibilityLabel={pinLabel(node.pin, state)}")
     expect(mapNative).toContain("accessibilityLabel={clusterLabel(node.count)}")
     expect(mapNative).toContain("accessibilityLabel={meetingPointLabel}")
-    expect(mapWeb).toContain('el.setAttribute("aria-label", want.label)')
-    expect(mapWeb).toContain('el.setAttribute("role", "button")')
-    expect(mapWeb).toContain('el.setAttribute("tabindex", "0")')
+    expect(mapWeb).toContain("label: pinLabelRef.current(node.pin, state),")
+    expect(mapWeb).toContain("label: clusterLabelRef.current(node.count),")
+    expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired)")
+    expect(webMarkerLayer).toContain('el.setAttribute("aria-label", want.label)')
+    expect(webMarkerLayer).toContain('el.setAttribute("role", "button")')
+    expect(webMarkerLayer).toContain('el.setAttribute("tabindex", "0")')
   })
 
   it("draws the meeting point and its radius hint on both seams from the shared circle helper", () => {
@@ -211,6 +228,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     for (const [name, src] of [
       ["native", mapNative],
       ["web", mapWeb],
+      ["web marker layer", webMarkerLayer],
     ] as const) {
       expect(src, name).not.toContain("useMapViewport")
       expect(src, name).not.toContain("useMapFocus")
@@ -234,7 +252,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("the full-bleed close button obeys the same busy lock as the backdrop", () => {
-    const closeBtn = modalSheet.slice(modalSheet.indexOf("{fullBleed ? ("), modalSheet.indexOf("iconMap.Close"))
+    const closeBtn = sliceBetween(modalSheet, "{fullBleed ? (", "iconMap.Close")
     expect(closeBtn).toContain("onPress={backdropDismissDisabled ? undefined : onClose}")
     expect(closeBtn).toContain("accessibilityState={{ disabled: backdropDismissDisabled }}")
   })
@@ -247,11 +265,11 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
 
 describe("the form and the wizard are unchanged around the block", () => {
   it("renders the block in the WHERE section, from the pure state helper", () => {
-    const where = form.slice(form.indexOf('shows("where")'), form.indexOf('shows("when")'))
+    const where = sliceBetween(form, 'shows("where")', 'shows("when")')
     expect(where).toContain("<ReportLinkPicker")
     expect(where).toContain("state={linkBlockState({")
     expect(where).toContain("center={value.coords}")
-    const basics = form.slice(form.indexOf('shows("basics")'), form.indexOf('shows("where")'))
+    const basics = sliceBetween(form, 'shows("basics")', 'shows("where")')
     expect(basics).not.toContain("linkedReportIds")
   })
 
@@ -284,7 +302,8 @@ describe("host tools open the same picker in commit mode", () => {
     expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
     expect(hostBody).toContain("HOST_ROW_ICONS[row]")
     expect(hostBody).toContain('case "linked_reports":')
-    expect(hostBody).toContain("<LinkedReportsSheet")
+    expect(hostBody).toContain("<HostModeSheets")
+    expect(hostSheets).toContain("<LinkedReportsSheet")
     expect(hostBody).toContain("linkSheetMode({")
   })
 
@@ -347,7 +366,7 @@ describe("every key these surfaces name exists in en", () => {
   })
 
   it.each([
-    ["ReportPicker.tsx", surface],
+    ["ReportPicker.tsx and its hooks and parts", surface],
     ["PickerReportRow.tsx", pickerRow],
     ["LayerChipRow.tsx", chips],
   ])("%s's picker keys are all in en/report-picker.json", (_name, source) => {
@@ -396,6 +415,7 @@ describe("every key these surfaces name exists in en", () => {
     const keys = [
       ...hostSheet.matchAll(/"(linked_reports_sheet\.[a-z0-9_]+)"/g),
       ...hostBody.matchAll(/"(row\.linked_reports[a-z0-9_]*)"/g),
+      ...hostCopy.matchAll(/"(row\.linked_reports[a-z0-9_]*)"/g),
     ].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)
     expect(keys.filter((key) => !catalogHas(hostMode, key))).toEqual([])

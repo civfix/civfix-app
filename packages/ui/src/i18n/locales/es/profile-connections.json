@@ -2,14 +2,16 @@
   "search": {
     "placeholder": "Buscar por nombre o @handle",
     "a11y": "Buscar personas por nombre o handle",
-    "clear_a11y": "Borrar búsqueda"
+    "clear_a11y": "Borrar búsqueda",
+    "more": "Buscar más personas"
   },
   "row": {
     "open_a11y": "{{name}}, ver perfil"
   },
   "no_matches": {
     "title": "Sin resultados",
-    "body": "Nadie en esta lista coincide con \"{{query}}\"."
+    "body": "Nadie en esta lista coincide con \"{{query}}\".",
+    "body_partial": "Nadie de los que se cargaron hasta ahora coincide con \"{{query}}\"."
   },
   "error": {
     "title": "No se pudo cargar",

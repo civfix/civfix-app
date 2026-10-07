@@ -1,4 +1,4 @@
-# App Review notes — civfix (community app)
+# App Review notes: civfix (community app)
 
 Paste the relevant section into **App Store Connect → App Review Information → Notes**
 (and into the Play Console reviewer notes where the equivalent field exists).
@@ -8,25 +8,25 @@ reviewer-facing copy. Do not paste it into App Store Connect.
 
 ---
 
-## Environment — App Review runs against STAGING (internal; do not paste)
+## Environment: App Review runs against STAGING (internal; do not paste)
 
 **The binary a reviewer runs talks to `api.civfix.dev`, not `api.civfix.org`.** This is deliberate
 and needs to be understood before every submission.
 
 The `production` EAS profile bakes no `EXPO_PUBLIC_API_URL`; the app picks its API at launch from its
-iOS install source — a TestFlight/beta install (`StoreKit/sandboxReceipt`) resolves to
+iOS install source. A TestFlight/beta install (`StoreKit/sandboxReceipt`) resolves to
 `https://api.civfix.dev`, an App Store download (`StoreKit/receipt`) to `https://api.civfix.org`
 (`src/lib/apiUrl.ts`, `src/lib/nativeBetaInstall.ts`; the mechanism is written up in `README.md`).
-App Review installs through the beta/sandbox path — the same fact behind StoreKit's 21007 sandbox
-receipt status — so the reviewer's copy sees a sandbox receipt and runs against **staging**.
+App Review installs through the beta/sandbox path (the same fact behind StoreKit's 21007 sandbox
+receipt status), so the reviewer's copy sees a sandbox receipt and runs against **staging**.
 
 Consequences, accepted knowingly: the approval verdict is rendered against a binary whose production
 behaviour was never exercised by the reviewer, and anything the reviewer is asked to find has to exist
 on staging. There is no OTA update channel in this project that could flip an override for review
-only, and routing beta installs to staging is the property this app deliberately wants — testers must
+only, and routing beta installs to staging is the property this app deliberately wants: testers must
 never write to the live civic record.
 
-**Pre-submission checklist — all of these are about the STAGING environment:**
+**Pre-submission checklist (all of these are about the STAGING environment):**
 
 - [ ] `api.civfix.dev` is up and healthy (`/readyz`), and staging is on the same commit as the build
       being submitted.
@@ -77,7 +77,7 @@ chose, and it opens in the browser.**
 3. Dismiss the Safari view with **Close** to return to the app. No state in the app changes.
 
 **If a reviewer objects to the SFSafariViewController**, flip the app to hand donation links to the
-system browser instead — no binary change and no resubmission:
+system browser instead, with no binary change and no resubmission:
 
 ```sh
 EXPO_PUBLIC_DONATE_BROWSER_MODE=system eas update --branch production

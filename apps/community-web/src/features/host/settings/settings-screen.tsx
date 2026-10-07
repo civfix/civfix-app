@@ -1,8 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { EventVisibility, OrganizationDTO } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH, MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
+import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/shared"
+import { datetimeLocalFromIso } from "@civfix/shared/datetime"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -20,17 +22,49 @@ import { ConsoleLink } from "../layout/console-link"
 import { hrefForRoute } from "@/components/console/route"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
+import {
+  useConsoleInputZone,
+  useInputZoneNames,
+  zonedFieldPatch,
+} from "../format"
+import type { ZonedFieldPatch } from "../format"
 
 const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const
 
-function toLocal(iso: string | null | undefined): string {
-  return iso ? iso.slice(0, 16) : ""
+interface RegistrationWindow {
+  registrationOpensAt: string
+  registrationClosesAt: string
 }
 
-function toIso(local: string): string | null {
-  if (local === "") return null
-  const parsed = new Date(local)
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
+interface SettingsDraft {
+  visibility: EventVisibility
+  opensAt: string
+  closesAt: string
+  donationUrl: string
+  reminders: string[]
+  organizationId: string
+}
+
+function settingsDraftFrom(event: CleanupDTO, zone: string): SettingsDraft {
+  return {
+    visibility: event.visibility,
+    opensAt: datetimeLocalFromIso(event.registrationOpensAt, zone),
+    closesAt: datetimeLocalFromIso(event.registrationClosesAt, zone),
+    donationUrl: event.donationUrl ?? "",
+    reminders: (event.reminderOffsetsMinutes ?? []).map(String),
+    organizationId: event.organization?.id ?? "",
+  }
+}
+
+function settingsDraftDiffers(draft: SettingsDraft, saved: SettingsDraft): boolean {
+  return (
+    draft.visibility !== saved.visibility ||
+    draft.opensAt !== saved.opensAt ||
+    draft.closesAt !== saved.closesAt ||
+    draft.donationUrl !== saved.donationUrl ||
+    draft.reminders.join(",") !== saved.reminders.join(",") ||
+    draft.organizationId !== saved.organizationId
+  )
 }
 
 export function SettingsScreen() {
@@ -43,56 +77,75 @@ export function SettingsScreen() {
   const { eventId, event, can } = useConsoleEvent()
   const { go } = useConsoleNavigation()
   const { t: to } = useT("host-org")
+  const zone = useConsoleInputZone(event.timezone)
 
   const canLinkOrg = can("manage_org_link")
   const orgs = useMyOrganizations()
   // A suspended org refuses every write, so it cannot be picked; one that is ALREADY linked stays
   // in the list (disabled, with a hint) so the current value is never silently blank.
-  // Typed against the app's @civfix/shared (0.41.0, `suspended`), like org-screen.tsx does.
   const myOrgs: OrganizationDTO[] = orgs.data ?? []
   const linkableOrgs = myOrgs.filter(
     (org) => (org.myRole === "owner" || org.myRole === "admin") && org.suspended !== true,
   )
-  const linkedOrg = event?.organization ?? null
+  const linkedOrg = event.organization ?? null
   const linkedSuspended =
     linkedOrg !== null && myOrgs.some((org) => org.id === linkedOrg.id && org.suspended === true)
 
   const [visibility, setVisibility] = useState<EventVisibility>("public")
   const [opensAt, setOpensAt] = useState("")
   const [closesAt, setClosesAt] = useState("")
+  const [savedWindow, setSavedWindow] = useState<RegistrationWindow>({
+    registrationOpensAt: "",
+    registrationClosesAt: "",
+  })
   const [donationUrl, setDonationUrl] = useState("")
   const [replyTo, setReplyTo] = useState("")
   const [reminders, setReminders] = useState<string[]>([])
   const [organizationId, setOrganizationId] = useState("")
   const [fields, setFields] = useState<Record<string, string>>({})
   const [confirmCancel, setConfirmCancel] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
+  const [seededFrom, setSeededFrom] = useState<CleanupDTO | null>(null)
 
-  useEffect(() => {
-    if (!event || hydrated) return
-    setVisibility(event.visibility)
-    setOpensAt(toLocal(event.registrationOpensAt))
-    setClosesAt(toLocal(event.registrationClosesAt))
-    setDonationUrl(event.donationUrl ?? "")
-    setReminders((event.reminderOffsetsMinutes ?? []).map(String))
-    setOrganizationId(event.organization?.id ?? "")
-    setHydrated(true)
-  }, [event, hydrated])
+  // A refetch reseeds the form only while it still matches the event it was seeded from, so a server
+  // change shows up without ever overwriting the host's unsaved edits.
+  if (event && event !== seededFrom) {
+    setSeededFrom(event)
+    const draft = { visibility, opensAt, closesAt, donationUrl, reminders, organizationId }
+    if (seededFrom === null || !settingsDraftDiffers(draft, settingsDraftFrom(seededFrom, zone))) {
+      const next = settingsDraftFrom(event, zone)
+      setVisibility(next.visibility)
+      setOpensAt(next.opensAt)
+      setClosesAt(next.closesAt)
+      setSavedWindow({ registrationOpensAt: next.opensAt, registrationClosesAt: next.closesAt })
+      setDonationUrl(next.donationUrl)
+      setReminders(next.reminders)
+      setOrganizationId(next.organizationId)
+    }
+  }
+
+  const zoneNames = useInputZoneNames(zone, [opensAt, closesAt], event.scheduledAt)
+  const currentWindow = { registrationOpensAt: opensAt, registrationClosesAt: closesAt }
+  const windowPatch = zonedFieldPatch(savedWindow, currentWindow, zone)
 
   const save = useMutation({
-    mutationFn: () =>
+    mutationFn: ({
+      patch,
+    }: {
+      patch: ZonedFieldPatch<keyof RegistrationWindow>["patch"]
+      window: RegistrationWindow
+    }) =>
       api.updateCleanup({
         id: eventId,
         visibility,
-        registrationOpensAt: toIso(opensAt),
-        registrationClosesAt: toIso(closesAt),
+        ...patch,
         donationUrl: donationUrl.trim() === "" ? null : donationUrl.trim(),
         reminderOffsetsMinutes: reminders.length > 0 ? reminders.map(Number) : null,
         ...(replyTo.trim() !== "" ? { hostReplyTo: replyTo.trim() } : {}),
         ...(canLinkOrg ? { organizationId: organizationId === "" ? null : organizationId } : {}),
       }),
-    onSuccess: () => {
+    onSuccess: (_result, { window: savedInputs }) => {
       toast.toast({ title: t("saved"), tone: "success" })
+      setSavedWindow(savedInputs)
       setFields({})
       invalidateEvent(qc, eventId)
     },
@@ -101,6 +154,15 @@ export function SettingsScreen() {
       toast.toast({ title: errors.message(err), tone: "danger" })
     },
   })
+
+  const onSave = () => {
+    if (windowPatch.invalid.length > 0) {
+      const message = t("registration.time_not_in_zone", { zone: zoneNames.name })
+      setFields(Object.fromEntries(windowPatch.invalid.map((field) => [field, message])))
+      return
+    }
+    save.mutate({ patch: windowPatch.patch, window: currentWindow })
+  }
 
   const cancelEvent = useMutation({
     mutationFn: (reason: string | undefined) =>
@@ -161,6 +223,11 @@ export function SettingsScreen() {
               />
             </Field>
           </div>
+          {zoneNames.hint ? (
+            <p className="text-token-12 text-console-ink-3">
+              {t("registration.zone_hint", { zone: zoneNames.hint })}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -169,7 +236,13 @@ export function SettingsScreen() {
           {t("messaging.title")}
         </h2>
         <div className="flex flex-col gap-token-4">
-          <Field label={t("messaging.reminders")} hint={t("messaging.reminders_hint")}>
+          <Field
+            label={t("messaging.reminders")}
+            hint={`${t("messaging.reminders_hint")} ${t("messaging.reminders_max", {
+              count: MAX_EVENT_REMINDER_OFFSETS,
+            })}`}
+            error={fields.reminderOffsetsMinutes}
+          >
             <ChipMultiSelect
               label={t("messaging.reminders")}
               values={reminders}
@@ -177,6 +250,9 @@ export function SettingsScreen() {
               options={REMINDER_OFFSETS.map((minutes) => ({
                 value: String(minutes),
                 label: t(`messaging.offset_${minutes}`),
+                disabled:
+                  !reminders.includes(String(minutes)) &&
+                  reminders.length >= MAX_EVENT_REMINDER_OFFSETS,
               }))}
             />
           </Field>
@@ -190,7 +266,7 @@ export function SettingsScreen() {
             <TextInput
               id="settings-reply-to"
               type="email"
-              maxLength={254}
+              maxLength={EMAIL_MAX_LENGTH}
               value={replyTo}
               placeholder={t("messaging.reply_to_placeholder")}
               onChange={(event) => setReplyTo(event.target.value)}
@@ -278,11 +354,11 @@ export function SettingsScreen() {
             id="settings-donation-url"
             value={donationUrl}
             placeholder="https://"
-            maxLength={500}
+            maxLength={HTTPS_URL_MAX_LENGTH}
             onChange={(event) => setDonationUrl(event.target.value)}
           />
         </Field>
-        {event?.organization?.donationUrl ? (
+        {event.organization?.donationUrl ? (
           <p className="mt-token-2 text-token-12 text-console-ink-3">
             {t("donations.org_fallback", { org: event.organization.name })}
           </p>
@@ -290,7 +366,7 @@ export function SettingsScreen() {
       </section>
 
       <div className="flex justify-end">
-        <ConsoleButton disabled={save.isPending} onClick={() => save.mutate()}>
+        <ConsoleButton disabled={save.isPending} onClick={onSave}>
           {tc("action.save")}
         </ConsoleButton>
       </div>
@@ -303,7 +379,7 @@ export function SettingsScreen() {
         <ConsoleButton
           variant="destructive"
           size="sm"
-          disabled={event?.status === "cancelled"}
+          disabled={event.status === "cancelled"}
           onClick={() => setConfirmCancel(true)}
         >
           {t("danger.cancel_event")}

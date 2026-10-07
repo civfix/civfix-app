@@ -14,11 +14,19 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
   const { t } = useT("event-card")
   const when = useEventWhen(cleanup)
   const where = cleanup.address?.trim()
+  const affiliation = cleanup.organization ?? cleanup.organizer.organization
+  const a11yLabel = t("a11y.card_detail", {
+    title: cleanup.title,
+    when: when.time === "" ? t("linked.schedule_unavailable") : `${when.dow}, ${when.date}, ${when.timeWithZone}`,
+    location: where || t("linked.location_fallback"),
+    going: t("going", { count: cleanup.going }),
+    organizer: `${t("organizer.by_prefix")} ${cleanup.organizer.name}`,
+  })
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t("a11y.card", { title: cleanup.title, count: cleanup.going })}
+      accessibilityLabel={a11yLabel}
       {...focusRingProps}
       style={(state) => [
         styles.card,
@@ -81,10 +89,8 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
               {cleanup.organizer.name}
             </Text>
           </Text>
-          {cleanup.organization ? (
-            <OrgAffiliationBadge organization={cleanup.organization} size="sm" interactive={false} />
-          ) : cleanup.organizer.organization ? (
-            <OrgAffiliationBadge organization={cleanup.organizer.organization} size="sm" interactive={false} />
+          {affiliation ? (
+            <OrgAffiliationBadge organization={affiliation} size="sm" interactive={false} />
           ) : null}
         </View>
       </View>
@@ -124,7 +130,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
   },
   joinedTag: {
-    paddingHorizontal: 8,
+    paddingHorizontal: t.space["2"],
     paddingVertical: 2,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.moss["50"],
@@ -141,7 +147,7 @@ const useStyles = makeThemedStyles((t) => ({
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
   },
   metaItemGrow: {
     flexShrink: 1,

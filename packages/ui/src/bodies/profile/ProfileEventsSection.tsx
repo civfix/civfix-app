@@ -3,12 +3,16 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
+import { hexWithAlpha } from "../../theme/color"
 import { Text } from "../../typography"
 import { MetaDot } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { useEventWhen, useLocale, useT } from "../../i18n"
 import { SectionEyebrow, SubHead } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
 import type { ProfileEventSplit, ProfileEventTab } from "./profileEventSplit"
+
+const EVENT_TAG_WASH = 0.1
 
 const EVENT_TABS: readonly ProfileEventTab[] = ["upcoming", "past"]
 
@@ -30,7 +34,7 @@ function EventRow({
   const when = useEventWhen(event)
   const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   const where = event.address?.trim()
-  const tint = `${badgeColor}1A`
+  const tint = hexWithAlpha(badgeColor, EVENT_TAG_WASH)
   const subParts = [when.dow, when.timeWithZone, where].filter((s): s is string => !!s)
   return (
     <Pressable
@@ -41,10 +45,7 @@ function EventRow({
       {...focusRingProps}
       style={({ pressed }) => [styles.erow, pressed && onPress ? styles.erowPressed : null]}
     >
-      <View style={[styles.erowDate, { backgroundColor: tint }]}>
-        <Text style={[styles.erowDay, { color: badgeColor }]}>{day}</Text>
-        <Text style={[styles.erowMonth, { color: badgeColor }]}>{month}</Text>
-      </View>
+      <DateTile variant="profileEvent" day={day} month={month} color={badgeColor} />
       <View style={styles.erowMeta}>
         <Text style={styles.erowTitle} numberOfLines={1}>
           {event.title}
@@ -159,7 +160,14 @@ export function ProfileEventsSection({
               accessibilityState={{ selected }}
               {...({ "aria-selected": selected } as object)}
               {...focusRingProps}
-              style={[styles.segBtn, selected ? styles.segBtnOn : null]}
+              // 34pt pill + 5pt top/bottom reaches the 44pt floor; vertical only, since the segments
+              // are flex neighbours and horizontal slop would overlap the other segment.
+              hitSlop={{ top: 5, bottom: 5 }}
+              style={({ pressed }) => [
+                styles.segBtn,
+                selected ? styles.segBtnOn : null,
+                pressed && !selected ? styles.segBtnPressed : null,
+              ]}
             >
               <Text style={[styles.segText, selected ? styles.segTextOn : null]}>
                 {id === "upcoming" ? t("events.tab_upcoming") : t("events.tab_past")}
@@ -246,8 +254,8 @@ export function ProfileEventsSection({
 const useStyles = makeThemedStyles((t) => ({
   seg: {
     flexDirection: "row",
-    gap: 4,
-    padding: 4,
+    gap: t.space["1"],
+    padding: t.space["1"],
     backgroundColor: t.colors.bgAlt,
     borderRadius: t.radius.pill,
   },
@@ -261,6 +269,9 @@ const useStyles = makeThemedStyles((t) => ({
   segBtnOn: {
     backgroundColor: t.colors.surface,
     ...t.shadows.s1,
+  },
+  segBtnPressed: {
+    opacity: 0.7,
   },
   segText: {
     fontFamily: t.fontFamily.bodyBold,
@@ -290,25 +301,6 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.92,
     transform: [{ scale: 0.99 }],
   },
-  erowDate: {
-    width: 46,
-    height: 46,
-    flexShrink: 0,
-    borderRadius: t.radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  erowDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 19,
-    lineHeight: 20,
-  },
-  erowMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9,
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
   erowMeta: {
     flex: 1,
     minWidth: 0,
@@ -326,7 +318,7 @@ const useStyles = makeThemedStyles((t) => ({
   erowSub: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   erowSubLast: {
@@ -338,7 +330,7 @@ const useStyles = makeThemedStyles((t) => ({
   erowTag: {
     flexShrink: 0,
     paddingHorizontal: 9,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
     borderRadius: t.radius.pill,
   },
   erowTagText: {

@@ -7,6 +7,7 @@ import { Avatar } from "../../primitives"
 import { useRelativeTime, useT } from "../../i18n"
 import {
   ANNOUNCEMENT_PREVIEW_LINES,
+  announcementByline,
   announcementCounts,
   announcementHeading,
   announcementPreview,
@@ -36,24 +37,22 @@ export function AnnouncementCard({
   const preview = announcementPreview(announcement.bodyMd)
   const counts = showDelivery ? announcementCounts(announcement) : null
   const audience = showDelivery ? announcement.audience : null
-  const org = announcement.authorOrg ?? null
-  const author = announcement.author ?? null
-  const byline = org?.name ?? author?.name ?? t("announce.byline_host")
+  const byline = announcementByline(announcement, t("announce.byline_host"))
   const when = relative(announcementSentAt(announcement))
 
   const body = (
     <View style={styles.card}>
       <View style={styles.byline}>
         <Avatar
-          name={byline}
-          seed={org?.id ?? author?.id ?? announcement.id}
-          photoUrl={org?.logoUrl ?? author?.avatarUrl ?? null}
-          gradient={org ? null : (author?.avatar ?? null)}
+          name={byline.name}
+          seed={byline.seed}
+          photoUrl={byline.photoUrl}
+          gradient={byline.gradient}
           size={AVATAR_SIZE}
           decorative
         />
         <Text variant="caption" numberOfLines={1} style={styles.bylineText}>
-          {t("announce.byline", { name: byline, when })}
+          {t("announce.byline", { name: byline.name, when })}
         </Text>
       </View>
 
@@ -172,7 +171,7 @@ const useStyles = makeThemedStyles((t) => ({
   failedChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
   },
   failedText: {
     fontFamily: t.fontFamily.bodySemiBold,

@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Mensajes",
-    "active_days": "Días con envíos",
     "recipients": "Destinatarios",
     "unsubscribes": "Bajas",
     "no_tracking": "civfix no rastrea aperturas ni clics, así que aquí no hay nada que mostrar.",
@@ -86,7 +85,8 @@
     "suppressed": "Suprimidos",
     "over_time": "Envíos a lo largo del tiempo",
     "over_time_a11y": "Envíos por día",
-    "sends": "Envíos"
+    "sends": "Envíos",
+    "broadcasts_sent": "Mensajes enviados"
   },
   "page": {
     "views": "Visitas a la página",
@@ -133,10 +133,12 @@
     "by_event_section": "Por evento",
     "by_event_empty": "Aún no hay eventos en este rango.",
     "by_event_a11y": "{{name}}, {{value}} inscripciones. Abrir las analíticas de este evento.",
+    "by_event_unknown_a11y": "{{name}}, inscripciones no disponibles. Abrir las analíticas de este evento.",
     "capacity_line": "{{signups}} de {{capacity}} plazas",
     "sources_caption": "El {{rate}} % de {{views}} visitas a la página se inscribió"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Fuente",
     "reference": "Referencia del evento",
     "generated_at": "Generado",
@@ -177,11 +179,12 @@
     "impact_caption": "Reportes vinculados a tus eventos",
     "impact_donations": "{{n}} toques en el enlace de donación",
     "checkins_ring_a11y": "{{rate}}% de las inscripciones registraron su entrada",
+    "checkins_ring_unknown_a11y": "Tasa de registro no disponible",
     "window": "Últimos 30 días",
     "panel_hours": "Horas de voluntariado",
     "checkins_caption": "de {{registered}} inscripciones · {{count}} eventos celebrados",
     "hours_caption": "registradas por {{volunteers}} voluntarios",
-    "hours_empty": "Sin horas registradas en los últimos 30 días: regístralas desde Herramientas de anfitrión",
+    "hours_empty": "Sin horas registradas en los últimos 30 días: regístralas desde Herramientas de anfitrión.",
     "hours_bars_a11y": "Horas de voluntariado por evento",
     "impact_resolved": "{{n}} resueltos",
     "impact_posts": "{{n}} publicaciones sobre tus eventos"
@@ -194,6 +197,8 @@
   },
   "filter": {
     "all_events": "Todos los eventos",
-    "event_a11y": "Evento: {{name}}"
+    "event_a11y": "Evento: {{name}}",
+    "more_events": "Mostrar más eventos",
+    "loading_more": "Cargando más eventos…"
   }
 }

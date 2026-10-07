@@ -23,6 +23,7 @@ export const nativeCalendarFile: CalendarFileCapability | undefined = calendarSh
           try {
             if (file.exists) file.delete()
           } catch {
+            // The share already settled; a leftover .ics in the cache dir is harmless and the OS purges it.
           }
         }
       },

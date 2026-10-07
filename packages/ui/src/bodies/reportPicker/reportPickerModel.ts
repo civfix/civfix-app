@@ -1,19 +1,19 @@
 import {
-  MAX_LINKED_REPORTS,
   haversineMeters,
+  isUuid,
   type BBox,
   type LinkedReportRef,
   type ReportCategory,
   type ReportPinDTO,
 } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
-import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../data/hooks/nearbyBbox"
+import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../data/geoBounds"
 import type { LinkedReportCardEntry } from "../linkedReportCards"
 
 export const PICKER_ZOOM = 14
 export const PICKER_RADIUS_M = 500
-export const PICKER_FETCH_PAD = 0.5
-export const PICKER_FETCH_PRECISION = 3
+const PICKER_FETCH_PAD = 0.5
+const PICKER_FETCH_PRECISION = 3
 export const PICKER_MAX_FETCH_SPAN_DEG = PIN_SPAN_MAX_DEG
 export const PICKER_MAX_PINS = 400
 export const PICKER_SEARCH_MIN_CHARS = 3
@@ -61,10 +61,6 @@ export function isChosen(state: PickerPinState): boolean {
 function roundCoord(n: number): number {
   const factor = 10 ** PICKER_FETCH_PRECISION
   return Math.round(n * factor) / factor
-}
-
-export function bboxSpan(bbox: BBox): number {
-  return Math.max(bbox.east - bbox.west, bbox.north - bbox.south)
 }
 
 export function bboxContains(outer: BBox, inner: BBox): boolean {
@@ -182,13 +178,12 @@ export function mergePins(...groups: ReadonlyArray<readonly ReportPinDTO[]>): Re
   return [...byId.values()]
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const REFERENCE_CODE_PATTERN = /^[a-z]{2,4}-\d{1,6}-\d{6}$/i
-export const SHORT_ID_LENGTH = 8
+const SHORT_ID_LENGTH = 8
 
 export function reportLookupKey(query: string): string | null {
   const q = query.trim()
-  if (UUID_PATTERN.test(q)) return q.toLowerCase()
+  if (isUuid(q)) return q.toLowerCase()
   if (REFERENCE_CODE_PATTERN.test(q)) return q.toUpperCase()
   return null
 }
@@ -328,7 +323,7 @@ export interface PickerSections {
   matches: PickerRow[]
 }
 
-export const SECTION_ORDER: readonly PickerRowPlace[] = ["matches", "linked", "view"]
+const SECTION_ORDER: readonly PickerRowPlace[] = ["matches", "linked", "view"]
 
 export function pickerSections(rows: readonly PickerRow[]): PickerSections {
   const out: PickerSections = { linked: [], view: [], matches: [] }
@@ -376,6 +371,27 @@ export function rowOrdinalOf(items: readonly PickerListItem[], id: string): numb
     ordinal++
   }
   return -1
+}
+
+export const PICKER_ROW_GAP = 8
+export const PICKER_ESTIMATED_ROW_HEIGHT = 84
+export const PICKER_ESTIMATED_HEADER_HEIGHT = 30
+
+// A row that has not rendered yet has no measured height, so its estimate stands in until it lays out.
+export function rowOffset(
+  items: readonly PickerListItem[],
+  index: number,
+  measured: ReadonlyMap<string, number>,
+): number {
+  let offset = 0
+  for (let i = 0; i < index; i++) {
+    const item = items[i]!
+    offset +=
+      (measured.get(item.key) ??
+        (item.kind === "header" ? PICKER_ESTIMATED_HEADER_HEIGHT : PICKER_ESTIMATED_ROW_HEIGHT)) +
+      PICKER_ROW_GAP
+  }
+  return offset
 }
 
 export function nextPageSize(shown: number, total: number, step = PICKER_PAGE_STEP): number {
@@ -501,23 +517,6 @@ export function pickerAction(mode: PickerMode, diff: SelectionDiff, busy: boolea
   return { key: "action_link", count: diff.selected, enabled: !busy }
 }
 
-export type PickerToggleOutcome = "added" | "removed" | "at_limit"
-
-export interface PickerToggleResult {
-  ids: string[]
-  outcome: PickerToggleOutcome
-}
-
-export function togglePickerId(
-  ids: readonly string[],
-  id: string,
-  max = MAX_LINKED_REPORTS,
-): PickerToggleResult {
-  if (ids.includes(id)) return { ids: ids.filter((x) => x !== id), outcome: "removed" }
-  if (ids.length >= max) return { ids: [...ids], outcome: "at_limit" }
-  return { ids: [...ids, id], outcome: "added" }
-}
-
 export type PickerPinTap = "focus" | "toggle"
 
 export function pinTapIntent(id: string, focusedId: string | null): PickerPinTap {
@@ -549,4 +548,29 @@ export function pickerListState(input: {
   if (!input.hasRegion) return "too_wide"
   if (input.layerCount === 0) return "no_layers"
   return "empty"
+}
+
+/**
+ * Which of the picker's queries failed. A failed search or code lookup is an error, not "no reports match"
+ * for the typed query; a lookup that answers NOT_FOUND is the honest "no such code", so it is not a failure.
+ */
+export interface PickerQueryFailures {
+  region: boolean
+  search: boolean
+  lookup: boolean
+}
+
+export function pickerQueryFailures(input: {
+  regionError: boolean
+  searching: boolean
+  searchError: boolean
+  lookupActive: boolean
+  lookupError: boolean
+  lookupErrorCode?: string | undefined
+}): PickerQueryFailures {
+  return {
+    region: input.regionError,
+    search: input.searching && input.searchError,
+    lookup: input.lookupActive && input.lookupError && input.lookupErrorCode !== "NOT_FOUND",
+  }
 }

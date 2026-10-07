@@ -4,8 +4,10 @@ import Svg, { Rect } from "react-native-svg"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import {
+  AXIS_LABEL_HEIGHT,
   DEFAULT_BAR_GAP,
   DEFAULT_BAR_RADIUS,
+  axisLabelPlacement,
   barFraction,
   barRects,
   chartMax,
@@ -116,7 +118,7 @@ export function BarChart({
   )
 
   return (
-    <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.column}>
+    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.column}>
       <Svg width={width} height={height}>
         {rects.map((rect, index) => {
           const bar = bars[index] as ChartBar
@@ -157,9 +159,7 @@ export function BarChart({
                 style={[
                   styles.xLabel,
                   { color: labelColor },
-                  position > 0.85
-                    ? { right: 0, textAlign: "right" }
-                    : { left: Math.max(0, position * width) },
+                  axisLabelPlacement(position, width),
                 ]}
               >
                 {label.text}
@@ -198,7 +198,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   xLabels: {
-    height: 14,
+    height: AXIS_LABEL_HEIGHT,
   },
   xLabel: {
     position: "absolute",

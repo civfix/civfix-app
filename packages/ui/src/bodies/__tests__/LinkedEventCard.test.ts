@@ -4,6 +4,7 @@ import type { LinkedEventRef } from "@civfix/shared"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,
+  visibleAttendeeSlots,
 } from "../linkedEventCardModel"
 
 /**
@@ -154,5 +155,26 @@ describe("LinkedEventCard model", () => {
       removeTarget: { width: 44, height: 44 },
       removeVisual: { width: 24, height: 24 },
     })
+  })
+
+  it("hands every render the same target plan, so the style array does not churn", () => {
+    expect(buildLinkedEventCardTargetPlan()).toBe(buildLinkedEventCardTargetPlan())
+  })
+})
+
+describe("visibleAttendeeSlots", () => {
+  it("pads the preview faces with placeholders up to the going count", () => {
+    expect(visibleAttendeeSlots(1, 3)).toBe(3)
+    expect(visibleAttendeeSlots(0, 2)).toBe(2)
+  })
+
+  it("never draws more than three cells, however many are going or previewed", () => {
+    expect(visibleAttendeeSlots(1, 40)).toBe(3)
+    expect(visibleAttendeeSlots(3, 3)).toBe(3)
+  })
+
+  it("keeps every preview face even when the going count lags behind it", () => {
+    expect(visibleAttendeeSlots(2, 0)).toBe(2)
+    expect(visibleAttendeeSlots(0, 0)).toBe(0)
   })
 })

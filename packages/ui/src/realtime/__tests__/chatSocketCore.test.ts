@@ -41,6 +41,10 @@ class FakeWebSocket {
 const ROOM_A = "11111111-1111-4111-8111-111111111111"
 const ROOM_B = "22222222-2222-4222-8222-222222222222"
 
+function sendFrame(cleanupId: string, clientId: string) {
+  return { type: "send" as const, cleanupId, clientId, body: "hi" }
+}
+
 function latest(): FakeWebSocket {
   const s = FakeWebSocket.instances.at(-1)
   if (!s) throw new Error("no socket constructed")
@@ -182,15 +186,42 @@ describe("send", () => {
   it("queueWhileClosed (web): frames sent while down report 'queued' and are flushed IN ORDER on the next open", () => {
     const socket = new ChatSocketCore({ transport: syncTransport(), queueWhileClosed: true })
     socket.connect()
-    expect(socket.send({ type: "typing", cleanupId: ROOM_A })).toBe("queued")
-    expect(socket.send({ type: "typing", cleanupId: ROOM_B })).toBe("queued")
+    expect(socket.send(sendFrame(ROOM_A, "c1"))).toBe("queued")
+    expect(socket.send(sendFrame(ROOM_B, "c2"))).toBe("queued")
     const s = latest()
     expect(s.sent).toEqual([])
     s.fireOpen()
-    expect(s.parsedSent()).toEqual([
-      { type: "typing", cleanupId: ROOM_A },
-      { type: "typing", cleanupId: ROOM_B },
-    ])
+    expect(s.parsedSent()).toEqual([sendFrame(ROOM_A, "c1"), sendFrame(ROOM_B, "c2")])
+  })
+
+  it("queueWhileClosed never queues a typing frame: it would flush a stale 'is typing' on reconnect", () => {
+    const socket = new ChatSocketCore({ transport: syncTransport(), queueWhileClosed: true })
+    socket.connect()
+    expect(socket.send({ type: "typing", cleanupId: ROOM_A })).toBe("dropped")
+    latest().fireOpen()
+    expect(latest().sent).toEqual([])
+  })
+
+  it("a send that THROWS on an open socket recycles it, so the queued frame flushes on the next open", () => {
+    vi.useFakeTimers()
+    try {
+      const socket = new ChatSocketCore({ transport: syncTransport(), queueWhileClosed: true })
+      socket.connect()
+      const broken = latest()
+      broken.fireOpen()
+      broken.send = () => {
+        throw new Error("InvalidStateError")
+      }
+      expect(socket.send(sendFrame(ROOM_A, "c1"))).toBe("queued")
+      expect(broken.closed).toBe(true)
+      vi.advanceTimersByTime(60_000)
+      const next = latest()
+      expect(next).not.toBe(broken)
+      next.fireOpen()
+      expect(next.parsedSent()).toEqual([sendFrame(ROOM_A, "c1")])
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("without queueWhileClosed (mobile): a send while down is 'dropped', one while open is 'sent'", () => {
@@ -226,14 +257,11 @@ describe("send", () => {
     first.fireOpen()
     first.fireClose()
 
-    expect(socket.send({ type: "typing", cleanupId: ROOM_A })).toBe("queued")
+    expect(socket.send(sendFrame(ROOM_A, "c1"))).toBe("queued")
     socket.connect()
     const second = latest()
     second.fireOpen()
-    expect(second.parsedSent()).toEqual([
-      { type: "join", cleanupId: ROOM_A },
-      { type: "typing", cleanupId: ROOM_A },
-    ])
+    expect(second.parsedSent()).toEqual([{ type: "join", cleanupId: ROOM_A }, sendFrame(ROOM_A, "c1")])
   })
 
   it("eager teardown (last release) WIPES the queue: queued frames do not resurface on a later open", () => {
@@ -243,7 +271,7 @@ describe("send", () => {
       teardownPolicy: "eager",
     })
     socket.retain()
-    expect(socket.send({ type: "typing", cleanupId: ROOM_A })).toBe("queued")
+    expect(socket.send(sendFrame(ROOM_A, "c1"))).toBe("queued")
     socket.release()
 
     socket.retain()

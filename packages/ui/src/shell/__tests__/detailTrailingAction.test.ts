@@ -14,7 +14,7 @@ const PAGE_NATIVE = read("../PageStack.native.tsx")
 const PAGE_WEB = read("../PageStack.web.tsx")
 const HEADER_ICON_BUTTON = read("../../bodies/HeaderIconButton.tsx")
 const GEOMETRY = read("../detailHeader.ts")
-const CONTROLS = read("../../bodies/headerControls.ts")
+const CONTROLS = read("../../primitives/headerControls.ts")
 
 const MIN_TOUCH_TARGET = 44
 

@@ -4,13 +4,12 @@ import type { HostedEventsAnalyticsResponse } from "@civfix/shared"
 import { makeThemedStyles } from "../../../theme"
 import { Text } from "../../../typography"
 import { formatRate, formatStatValue, HeroFigure, SectionCard } from "../../../primitives"
+import { joinParts } from "../../../primitives/joinParts"
 import { useLocale, useT } from "../../../i18n"
 import { FeedNotice } from "../../FeedNotice"
 import { formatHoursDisplay } from "../../formatHours"
 import { ImpactSkeleton } from "../HostSkeletons"
 import { impactModel } from "./dashboardModel"
-
-const META_SEPARATOR = " · "
 
 export interface ImpactCardProps {
   analytics: HostedEventsAnalyticsResponse | undefined
@@ -59,7 +58,7 @@ export function ImpactCard({ analytics, isPending, isError, onRetry }: ImpactCar
     hours ? t("impact.volunteers", { count: model.uniqueAttendees }) : null,
     t("impact.events", { count: model.events }),
     showedUp === null ? null : t("impact.showed_up", { rate: showedUp }),
-  ].filter((part): part is string => part !== null)
+  ]
 
   return (
     <SectionCard label={t("impact.section")} trailing={allTime}>
@@ -70,7 +69,7 @@ export function ImpactCard({ analytics, isPending, isError, onRetry }: ImpactCar
           unit={t(hours ? "impact.unit_hours" : "impact.unit_volunteers")}
         />
         <Text variant="label" numberOfLines={1}>
-          {meta.join(META_SEPARATOR)}
+          {joinParts(meta)}
         </Text>
         {cameBack === null ? null : (
           <Text variant="caption" numberOfLines={1}>

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { viewerTimeZone } from "../../i18n/useViewerTimeZone"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -10,11 +11,13 @@ const SURFACES: Record<string, string> = {
   "primitives/DateBadge.tsx": code(read("../../primitives/DateBadge.tsx")),
   "primitives/EventCard.tsx": code(read("../../primitives/EventCard.tsx")),
   "bodies/EventsBody.tsx": code(read("../EventsBody.tsx")),
-  "bodies/PersonDetailBody.tsx": code(read("../PersonDetailBody.tsx")),
-  "bodies/SearchResults.tsx": code(read("../SearchResults.tsx")),
+  "bodies/PersonDetailBody.tsx": code(surfaceSource("personDetail")),
+  "bodies/search/SearchResults.tsx": code(read("../search/SearchResults.tsx")),
   "bodies/MembersBody.tsx": code(read("../MembersBody.tsx")),
   "bodies/SlotGroupHeader.tsx": code(read("../SlotGroupHeader.tsx")),
   "bodies/EventSlotsBlock.tsx": code(read("../EventSlotsBlock.tsx")),
+  "bodies/EventSlotRow.tsx": code(read("../EventSlotRow.tsx")),
+  "bodies/eventSlotsModel.ts": code(read("../eventSlotsModel.ts")),
   "bodies/profile/ProfileEventsSection.tsx": code(read("../profile/ProfileEventsSection.tsx")),
   "bodies/host/EventRosterBlock.tsx": code(read("../host/EventRosterBlock.tsx")),
   "bodies/host/HostInsightsPanels.tsx": code(read("../host/HostInsightsPanels.tsx")),
@@ -59,7 +62,7 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/PersonDetailBody.tsx"]).toContain(
       "eventChip(event.scheduledAt, locale, when.timeZone)",
     )
-    expect(SURFACES["bodies/SearchResults.tsx"]).toContain(
+    expect(SURFACES["bodies/search/SearchResults.tsx"]).toContain(
       "eventChip(cleanup.scheduledAt, locale, when.timeZone)",
     )
     expect(SURFACES["bodies/profile/ProfileEventsSection.tsx"]).toContain(
@@ -68,9 +71,15 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/SlotGroupHeader.tsx"]).toContain(
       "timeRangeLabel(startsAt, endsAt, locale, timeZone)",
     )
-    expect(SURFACES["bodies/EventSlotsBlock.tsx"]).toContain(
+    expect(SURFACES["bodies/eventSlotsModel.ts"]).toContain(
       "window.end.toISOString(), locale, timeZone)",
     )
+    for (const name of ["bodies/EventSlotsBlock.tsx", "bodies/EventSlotRow.tsx"]) {
+      expect(SURFACES[name], `${name} must print windows in the event's zone`).toContain(
+        "slotWindowRangeLabel(",
+      )
+      expect(SURFACES[name]).toMatch(/slotWindowRangeLabel\([^)]*, locale, timeZone\)/)
+    }
     expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toContain(
       "timeLabel(insights.generatedAt, locale, timeZone)",
     )
@@ -80,7 +89,7 @@ describe("event surfaces render in the event's zone", () => {
     for (const name of [
       "bodies/EventsBody.tsx",
       "bodies/PersonDetailBody.tsx",
-      "bodies/SearchResults.tsx",
+      "bodies/search/SearchResults.tsx",
       "bodies/profile/ProfileEventsSection.tsx",
       "primitives/EventCard.tsx",
       "bodies/host/dashboard/NextUpCard.tsx",
@@ -159,7 +168,7 @@ describe("event surfaces render in the event's zone", () => {
 describe("the attached-event card is told which zone the event is in", () => {
   const CALLERS: Record<string, string> = {
     "PostCard.tsx": code(read("../PostCard.tsx")),
-    "PostComposer.tsx": code(read("../PostComposer.tsx")),
+    "PostComposer.tsx": code(surfaceSource("postComposer")),
     "thread/ThreadFocalPost.tsx": code(read("../thread/ThreadFocalPost.tsx")),
     "thread/ThreadReplyRow.tsx": code(read("../thread/ThreadReplyRow.tsx")),
     "thread/ReplyAttachSheet.tsx": code(read("../thread/ReplyAttachSheet.tsx")),

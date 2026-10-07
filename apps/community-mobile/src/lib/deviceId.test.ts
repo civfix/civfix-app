@@ -1,9 +1,3 @@
-/**
- * Pure-logic tests for resolveDeviceId. Run with the Node built-in test runner + type stripping:
- *   node --experimental-strip-types --test src/lib/deviceId.test.ts
- * No native modules are imported (the SecureStore/Crypto seams are injected as fakes), so this runs
- * outside the Metro/Expo runtime. Excluded from the app tsc/eslint via tsconfig.
- */
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { resolveDeviceId, DEVICE_ID_KEY, type DeviceIdStore } from "./deviceId.ts"
@@ -38,7 +32,7 @@ test("generates, persists, and returns a new id when none is stored", async () =
   assert.equal(writes.length, 1)
 })
 
-test("is stable across calls — reuses the id it persisted", async () => {
+test("is stable across calls: reuses the id it persisted", async () => {
   const { store } = makeStore()
   let n = 0
   const gen = () => `uuid-${n++}`

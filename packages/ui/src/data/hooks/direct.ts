@@ -1,16 +1,29 @@
 import { useCallback } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  infiniteQueryOptions,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
 import type {
   BlockUserResponse,
   ListBlocksResponse,
   OpenDmResponse,
+  PersonDTO,
   SearchUsersResponse,
   MessageThreadDTO,
 } from "@civfix/shared"
-import { useApi } from "../context"
-import { useAuthState, useRequireAuth } from "../context"
+import type { ApiClient } from "@civfix/shared/client"
+import { useApi, useAuthState, useRequireAuth } from "../context"
 import { queryKeys } from "../keys"
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "./useDebouncedValue"
+import { threadRoomId } from "../threadRoom"
+
+const USER_SEARCH_LIMIT = 20
+
+const USER_SEARCH_STALE_MS = 30_000
 
 export function normalizeUserSearchTerm(rawQuery: string): string {
   return rawQuery.trim().replace(/^@+/, "")
@@ -24,14 +37,17 @@ export function useUserSearch(rawQuery: string) {
   const query = useQuery<SearchUsersResponse, unknown, SearchUsersResponse>({
     queryKey: queryKeys.userSearch(trimmed),
     enabled: isAuthenticated && trimmed.length > 0,
-    queryFn: () => api.searchUsers({ q: trimmed, limit: 20 }),
+    queryFn: ({ signal }) => api.searchUsers({ q: trimmed, limit: USER_SEARCH_LIMIT }, { signal }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: USER_SEARCH_STALE_MS,
   })
-  return { ...query, term: trimmed }
+  // Picking fields keeps TanStack's tracked-property subscription; a spread reads every getter and
+  // re-renders the caller on each fetchStatus/dataUpdatedAt change as well.
+  const { data, isLoading, isPending, isError, refetch } = query
+  return { data, isLoading, isPending, isError, refetch, term: trimmed }
 }
 
-export function useOpenDm() {
+function useOpenDm() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation<OpenDmResponse, unknown, string>({
@@ -61,16 +77,16 @@ export interface StartDmHandlers {
 
 export function useStartDm() {
   const requireAuth = useRequireAuth()
-  const openDm = useOpenDm()
+  const { mutate: openDm, isPending } = useOpenDm()
 
   const start = useCallback(
     (target: DmTarget, resumePath: string, handlers: StartDmHandlers) => {
       requireAuth(
         () => {
-          openDm.mutate(target.id, {
+          openDm(target.id, {
             onSuccess: (res) => {
               const thread = res.thread
-              const roomId = thread.refId ?? thread.id
+              const roomId = threadRoomId(thread)
               handlers.onResolved({ roomId, thread, target })
             },
             onError: (err) => handlers.onError?.(err),
@@ -82,7 +98,7 @@ export function useStartDm() {
     [requireAuth, openDm],
   )
 
-  return { start, isPending: openDm.isPending }
+  return { start, isPending }
 }
 
 export function useBlockUser() {
@@ -98,13 +114,26 @@ export function useBlockUser() {
   })
 }
 
+export function listBlocksQueryOptions(api: ApiClient) {
+  return infiniteQueryOptions({
+    queryKey: queryKeys.blocks,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }): Promise<ListBlocksResponse> =>
+      api.listBlocks(pageParam ? { cursor: pageParam } : {}),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  })
+}
+
+export function blockedAccountsOf(data: InfiniteData<ListBlocksResponse> | undefined): PersonDTO[] {
+  return (data?.pages ?? []).flatMap((page) => page.blocked)
+}
+
 export function useListBlocks() {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
-  return useQuery<ListBlocksResponse, unknown, ListBlocksResponse>({
-    queryKey: queryKeys.blocks,
+  return useInfiniteQuery({
+    ...listBlocksQueryOptions(api),
     enabled: isAuthenticated,
-    queryFn: () => api.listBlocks({}),
     retry: false,
   })
 }

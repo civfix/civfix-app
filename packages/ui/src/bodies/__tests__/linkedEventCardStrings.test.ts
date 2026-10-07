@@ -1,14 +1,14 @@
 /**
- * Locale regression coverage for two strings that were shipped as byte-copies of the English source.
+ * Locale coverage for two strings that a byte-copy of the English source gets wrong.
  *
  * 1. `event-card` linked.a11y_card interpolates an Intl SHORT MONTH NAME and a numeric day. The English
  *    order is month-then-day; German and Spanish say the day first ("12. JULI", "12 JUL"), so a copied
- *    English template made screen readers announce "JULI 12." Reordering placeholders is exactly what
- *    per-language catalogs exist for. (Korean's "{{month}} {{day}}" is already correct - its month is
+ *    English template makes screen readers announce "JULI 12." Reordering placeholders is exactly what
+ *    per-language catalogs exist for. (Korean's "{{month}} {{day}}" is correct as is - its month is
  *    "7월".)
  * 2. `map-ui` layers.clearAll / clearAllA11y label a control that DESELECTS the report-category filters.
- *    The Spanish copy said "Borrar" (delete/erase), which reads as a destructive action on a filter
- *    panel; German ("abwählen") and Korean ("해제") correctly say deselect.
+ *    A word like "Borrar" (delete/erase) reads as a destructive action on a filter panel; German
+ *    ("abwählen") and Korean ("해제") say deselect.
  */
 import { describe, expect, it } from "vitest"
 import enCard from "../../i18n/locales/en/event-card.json"

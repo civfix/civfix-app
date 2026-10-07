@@ -1,4 +1,3 @@
-
 import {
   existsSync,
   readFileSync,
@@ -22,8 +21,11 @@ import {
 import {
   aasaExcludeOrder,
   isPlaceholderLegalHash,
-  legalDocumentHash,
+  leakedDevRoutes,
   missingAasaExcludes,
+  OG_IMAGE_MAX_BYTES,
+  REQUIRED_AASA_EXCLUDES,
+  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 
@@ -35,9 +37,22 @@ if (!existsSync(outDir)) {
   process.exit(1)
 }
 
-const collisions = readdirSync(outDir, { withFileTypes: true })
+const outEntries = readdirSync(outDir, { withFileTypes: true })
+const outRouteDirs = outEntries
   .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
   .map((entry) => entry.name)
+
+const leakedDev = leakedDevRoutes(outEntries.map((entry) => entry.name))
+if (leakedDev.length > 0) {
+  console.error(
+    `[cf-pages] ERROR: dev-only gallery route(s) reached the export: ${leakedDev.join(", ")}. They ` +
+      `must stay \`page.dev.tsx\` / \`layout.dev.tsx\`, which only \`next dev\` treats as routes ` +
+      `(pageExtensionsFor in apps/community-web/next.config.mjs).`,
+  )
+  process.exit(1)
+}
+
+const collisions = outRouteDirs
   .filter(
     (route) =>
       existsSync(join(outDir, route, "index.html")) &&
@@ -73,9 +88,7 @@ if (unprotected.length > 0) {
 const siteOrigin = normalizeSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const productionBuild = isProductionOrigin(siteOrigin)
 
-const shellRoutes = readdirSync(outDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
-  .map((entry) => entry.name)
+const shellRoutes = outRouteDirs
   .filter((route) => existsSync(join(outDir, route, "_", "index.html")))
   .sort()
 
@@ -117,8 +130,9 @@ if (!existsSync(aasaOut)) {
   process.exit(1)
 }
 
+let association
 try {
-  JSON.parse(readFileSync(aasaOut, "utf8"))
+  association = JSON.parse(readFileSync(aasaOut, "utf8"))
 } catch (error) {
   console.error(
     `[cf-pages] ERROR: ${AASA_RELATIVE} is not valid JSON (${error.message}). iOS rejects a ` +
@@ -127,17 +141,6 @@ try {
   process.exit(1)
 }
 
-const REQUIRED_AASA_EXCLUDES = [
-  "/legal/*",
-  "/service-record/*",
-  "/guest*",
-  "/claim*",
-  "/manage*",
-  "/e/*",
-  "/unsubscribe*",
-]
-
-const association = JSON.parse(readFileSync(aasaOut, "utf8"))
 const missingExcludes = missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)
 
 if (missingExcludes.length > 0) {
@@ -215,7 +218,6 @@ if (unexcluded.length > 0) {
 }
 
 const OG_IMAGE = "og.png"
-const OG_IMAGE_MAX_BYTES = 300 * 1024
 const SHARE_ASSETS = [OG_IMAGE, "apple-touch-icon.png"]
 
 for (const asset of SHARE_ASSETS) {
@@ -328,24 +330,14 @@ console.log(
         `"${NOINDEX_RULE}" on /* so no staging URL is indexed as a duplicate of civfix.org.`,
 )
 
-const legalOutDir = join(outDir, "legal")
-const legalRoutes = existsSync(legalOutDir)
-  ? readdirSync(legalOutDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .filter((route) => existsSync(join(legalOutDir, route, "index.html")))
-      .sort()
-  : []
+const legalDocuments = renderedLegalDocuments(outDir)
 
 const legalDrift = []
 const legalPlaceholders = []
 const legalRendered = new Map()
 
-for (const route of legalRoutes) {
-  const html = readFileSync(join(legalOutDir, route, "index.html"), "utf8")
-  const type = /data-legal-doc="([^"]*)"/.exec(html)?.[1] ?? null
+for (const { route, type, hashed } of legalDocuments) {
   if (type === null) continue
-  const hashed = legalDocumentHash(html)
   if (hashed === null) continue
   legalRendered.set(type, { route, ...hashed })
 
@@ -372,10 +364,9 @@ for (const route of legalRoutes) {
   }
 }
 
-const legalRoutesMissingStamp = legalRoutes.filter((route) => {
-  const html = readFileSync(join(legalOutDir, route, "index.html"), "utf8")
-  return !/data-legal-doc="[^"]+"/.test(html) || legalDocumentHash(html) === null
-})
+const legalRoutesMissingStamp = legalDocuments
+  .filter(({ html, hashed }) => !/data-legal-doc="[^"]+"/.test(html) || hashed === null)
+  .map(({ route }) => route)
 
 if (legalRoutesMissingStamp.length > 0) {
   console.error(
@@ -396,7 +387,7 @@ if (legalDrift.length > 0) {
   console.error(
     `[cf-pages] ERROR: legal document drift:\n  ${legalDrift.join("\n  ")}\n` +
       `  consent_records.document_sha256 is the evidence that a donor accepted THAT EXACT TEXT ` +
-      `(D13 C.5), and the backend validates consent payloads against @civfix/shared/legal. A page ` +
+      `and the backend validates consent payloads against @civfix/shared/legal. A page ` +
       `whose text moved without its version and hash moving with it makes every consent record ` +
       `written since unverifiable. Run \`node scripts/legal-hashes.mjs\` and update ` +
       `packages/shared/src/legal/documents.ts (version, effectiveAt and sha256 change ` +
@@ -423,8 +414,8 @@ if (legalPlaceholders.length > 0) {
       `  A placeholder hashes no document, so a consent record citing it is unverifiable evidence. ` +
       `Paste the real hashes (printed above, and by \`node scripts/legal-hashes.mjs\`) into ` +
       `packages/shared/src/legal/documents.ts - version, effectiveAt and sha256 move ` +
-      `as ONE edit - and mirror them into the backend seed migration ` +
-      `services/api/drizzle/0151_legal_documents_consents.sql.`,
+      `as ONE edit - and mirror them into the backend legal seed ` +
+      `migration.`,
   )
   process.exit(1)
 }

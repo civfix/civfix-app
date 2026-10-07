@@ -1,22 +1,17 @@
 import assert from "node:assert/strict"
 import { existsSync } from "node:fs"
-import { createRequire } from "node:module"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { tokens } from "@civfix/shared/tokens"
+import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
-const require = createRequire(import.meta.url)
-const appConfig = require("../app.config.js")({ config: {} })
+const appConfig = appConfigFactory({ config: {} })
 const appDir = new URL("../", import.meta.url)
 
 const LIGHT = tokens.color.neutral.paper
 
-function splashPlugin(): Record<string, any> {
-  const entry = appConfig.plugins.find(
-    (plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-splash-screen",
-  )
-  assert.ok(Array.isArray(entry), "app.config.js declares no expo-splash-screen plugin tuple")
-  return entry[1]
+function splashPlugin(): Record<string, unknown> {
+  return pluginOptions(appConfig, "expo-splash-screen", "app.config.js declares no expo-splash-screen plugin tuple")
 }
 
 test("the app itself still follows the device appearance", () => {
@@ -55,7 +50,7 @@ test("the android splash and adaptive icon sit on the same single light field", 
 test("every splash image the config names is a file that exists", () => {
   const references = [appConfig.splash.image, splashPlugin().image]
   for (const reference of references) {
-    assert.equal(typeof reference, "string", "a splash image reference is missing")
+    assert.ok(typeof reference === "string", "a splash image reference is missing")
     assert.ok(
       existsSync(fileURLToPath(new URL(reference, appDir))),
       `${reference} is referenced by app.config.js but does not exist`,

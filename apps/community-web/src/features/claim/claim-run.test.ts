@@ -3,12 +3,9 @@ import { describe, expect, it, vi } from "vitest"
 import { createClaimGate, runGuardedClaim } from "./claim-run"
 
 /**
- * Sequencing for the /claim page's claim POST (see claim-run.ts).
- *
- * The regression: a claim for code X still in flight when the URL's ?code= switched to Y used to write
- * its result into the page anyway - showing X's report as linked under Y's URL, clearing the handoff and
- * parking the phase on "done", which left Y (whose auto-claim only fires from phase "intro") never
- * attempted.
+ * A claim for code X still in flight when the URL's ?code= switches to Y must not write its result into
+ * the page: that would show X's report under Y's URL and park the phase on "done", and Y's auto-claim
+ * only fires from phase "intro".
  */
 
 function deferred<T>() {
@@ -191,7 +188,6 @@ describe("runGuardedClaim", () => {
 })
 
 describe("claim page sequence", () => {
-  /** The page state the finding is about: phase + the report the page announces as linked. */
   type Page = { phase: "intro" | "claiming" | "done" | "error"; report: string | null }
 
   it("attempts a new ?code= that arrives mid-claim, and never announces the old report", async () => {
@@ -217,21 +213,17 @@ describe("claim page sequence", () => {
       })
     }
 
-    // Auto-claim fires for the code in the URL.
     const runX = run("CODE-X", () => pendingX.promise)
     expect(page.phase).toBe("claiming")
 
-    // ?code=CODE-Y arrives: the page resets to "intro" and abandons the in-flight claim.
     gate.abandon()
     page.phase = "intro"
 
-    // CODE-X's POST lands late. It must not force "done" - that is what used to block CODE-Y's
-    // auto-claim (it only runs from phase "intro") and announce the wrong report.
+    // CODE-X's POST lands late and must not force "done", which would block CODE-Y's auto-claim.
     pendingX.resolve({ report: "report-X" })
     await runX
     expect(page).toEqual({ phase: "intro", report: null })
 
-    // So the re-armed auto-claim can actually attempt CODE-Y.
     await run("CODE-Y", () => Promise.resolve({ report: "report-Y" }))
     expect(page).toEqual({ phase: "done", report: "report-Y" })
   })

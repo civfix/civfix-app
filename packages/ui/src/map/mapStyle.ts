@@ -14,6 +14,9 @@ export const BASEMAP_TILES: Readonly<Record<ColorSchemeName, readonly string[]>>
   dark: cartoTiles("dark_all"),
 }
 
+// CARTO's own tile ground colours, vendor values rather than design tokens: the basemap paper has to match
+// what the raster tiles actually paint.
+const VOYAGER_GROUND = "#F5F3EE"
 const DARK_MATTER_GROUND = "#0E0E0E"
 
 export const DARK_RASTER_BRIGHTNESS_MIN = 0.18
@@ -40,7 +43,7 @@ function liftHex(hex: string, min: number): string {
 }
 
 const BASEMAP_PAPER: Readonly<Record<ColorSchemeName, string>> = {
-  light: "#F5F3EE",
+  light: VOYAGER_GROUND,
   dark: liftHex(DARK_MATTER_GROUND, DARK_RASTER_BRIGHTNESS_MIN),
 }
 
@@ -94,5 +97,27 @@ export function rasterMapStyle(
         paint: scheme === "dark" ? { ...DARK_RASTER_PAINT } : { "raster-opacity": 1 },
       },
     ],
+  }
+}
+
+interface OverlayCarrierStyle {
+  sources: Record<string, unknown>
+  layers: readonly { id: string; source?: string }[]
+}
+
+/**
+ * A maplibre `setStyle` transformStyle that keeps one app-owned geojson overlay across a basemap swap.
+ * The default diffing swap drops every source and layer the next style does not list, and never fires
+ * `style.load`, so an overlay re-added from that event would stay gone until its own data next changed.
+ */
+export function carryStyleOverlay(sourceId: string) {
+  return <S extends OverlayCarrierStyle>(previous: S | undefined, next: S): S => {
+    const source = previous?.sources[sourceId]
+    if (!previous || !source) return next
+    return {
+      ...next,
+      sources: { ...next.sources, [sourceId]: source },
+      layers: [...next.layers, ...previous.layers.filter((layer) => layer.source === sourceId)],
+    }
   }
 }

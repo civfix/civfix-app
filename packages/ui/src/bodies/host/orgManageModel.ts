@@ -6,13 +6,22 @@ import type {
   UpdateOrganizationRequest,
 } from "@civfix/shared"
 import {
+  ErrorCode,
+  SOCIAL_HANDLE_MAX_LENGTH,
   SOCIAL_PLATFORMS,
   SafeHttpsLinkSchema,
   SocialLinksSchema,
   UpdateOrganizationRequestSchema,
+  WHATSAPP_NUMBER_MAX_LENGTH,
+  byErrorCode,
+  type ErrorCodeTable,
 } from "@civfix/shared"
 
-export const ORG_COUNTER_AT = 0.9
+const ORG_COUNTER_AT = 0.9
+
+// UpdateOrganizationRequestSchema requires a uuid id; profile validation only reads the name and
+// description issues, so any well-formed id stands in.
+const VALIDATION_PLACEHOLDER_ID = "00000000-0000-4000-8000-000000000000"
 
 export interface OrgProfileDraft {
   name: string
@@ -102,7 +111,7 @@ export function linksDirty(draft: OrgLinksDraft, initial: OrgLinksDraft): boolea
 
 export function profileErrors(draft: OrgProfileDraft): Record<string, string> {
   const parsed = UpdateOrganizationRequestSchema.safeParse({
-    ...profilePayload("00000000-0000-4000-8000-000000000000", draft),
+    ...profilePayload(VALIDATION_PLACEHOLDER_ID, draft),
   })
   const out: Record<string, string> = {}
   if (!parsed.success) {
@@ -135,12 +144,8 @@ export function linksErrors(draft: OrgLinksDraft): Record<string, string> {
   return out
 }
 
-export const SOCIAL_PREFIX: Readonly<Record<SocialPlatform, string>> = {
-  facebook: "facebook.com/",
-  instagram: "instagram.com/",
-  tiktok: "tiktok.com/@",
-  x: "x.com/",
-  whatsapp: "+",
+export function socialHandleMax(platform: SocialPlatform): number {
+  return platform === "whatsapp" ? WHATSAPP_NUMBER_MAX_LENGTH : SOCIAL_HANDLE_MAX_LENGTH
 }
 
 export function counterVisible(length: number, max: number): boolean {
@@ -155,16 +160,33 @@ export function lastAdminSeat(members: readonly OrganizationMemberDTO[]): boolea
   return members.filter((member) => member.role !== "member").length <= 1
 }
 
-export function orgManageErrorKey(code: string | undefined): string {
-  if (code === "ORG_LAST_ADMIN" || code === "CONFLICT") return "manage.error_last_admin"
-  if (code === "FORBIDDEN") return "manage.error_forbidden"
-  if (code === "VALIDATION") return "manage.error_validation"
-  if (code === "RATE_LIMITED") return "manage.error_rate_limited"
-  return "manage.error_generic"
+const ORG_LAST_ADMIN_FIELD = "userId"
+
+const ORG_LAST_ADMIN_REASON = "ORG_LAST_ADMIN"
+
+const ORG_MANAGE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.FORBIDDEN]: "manage.error_forbidden",
+  [ErrorCode.VALIDATION]: "manage.error_validation",
+  [ErrorCode.RATE_LIMITED]: "manage.error_rate_limited",
+}
+
+// The server refuses to empty the last admin seat as VALIDATION with the reason on `userId`; CONFLICT
+// means other things, such as a taken handle.
+export function orgManageErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string>,
+): string {
+  if (code === ErrorCode.VALIDATION && fields?.[ORG_LAST_ADMIN_FIELD] === ORG_LAST_ADMIN_REASON) {
+    return "manage.error_last_admin"
+  }
+  return byErrorCode(code, ORG_MANAGE_ERROR_KEYS, "manage.error_generic")
+}
+
+const ORG_LOGO_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.MEDIA_REJECTED]: "manage.logo_rejected",
+  [ErrorCode.RATE_LIMITED]: "manage.error_rate_limited",
 }
 
 export function orgLogoErrorKey(code: string | undefined): string {
-  if (code === "MEDIA_REJECTED") return "manage.logo_rejected"
-  if (code === "RATE_LIMITED") return "manage.error_rate_limited"
-  return "manage.logo_error"
+  return byErrorCode(code, ORG_LOGO_ERROR_KEYS, "manage.logo_error")
 }

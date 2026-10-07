@@ -1,4 +1,28 @@
 import { createHash } from "node:crypto"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
+import { join } from "node:path"
+
+// The fake-data dev galleries (next.config.mjs pageExtensionsFor). A production export must not ship
+// them: they show a fake signed-in shell and pull third-party sample media.
+export const DEV_ONLY_ROUTES = ["bodies", "skeleton", "landscape"]
+
+// WhatsApp silently drops a link-preview image above ~300 KB.
+export const OG_IMAGE_MAX_BYTES = 300 * 1024
+
+export const REQUIRED_AASA_EXCLUDES = [
+  "/legal/*",
+  "/service-record/*",
+  "/guest*",
+  "/claim*",
+  "/manage*",
+  "/e/*",
+  "/unsubscribe*",
+]
+
+export function leakedDevRoutes(outEntries) {
+  const names = new Set(outEntries)
+  return DEV_ONLY_ROUTES.filter((route) => names.has(route) || names.has(`${route}.html`))
+}
 
 export function spaFallbackGaps(shellRoutes, redirects) {
   const rules = new Set()
@@ -99,7 +123,7 @@ const NAMED_ENTITIES = {
   rdquo: "”",
   lsquo: "‘",
   rsquo: "’",
-  mdash: "—",
+  mdash: "\u2014",
   ndash: "–",
   hellip: "…",
   zwnj: "",
@@ -156,4 +180,23 @@ export function legalDocumentHash(html) {
 
 export function isPlaceholderLegalHash(type, version, sha256) {
   return createHash("sha256").update(`${type}@${version}`, "utf8").digest("hex") === sha256
+}
+
+export function renderedLegalDocuments(outDir) {
+  const legalOutDir = join(outDir, "legal")
+  if (!existsSync(legalOutDir)) return []
+  return readdirSync(legalOutDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((route) => existsSync(join(legalOutDir, route, "index.html")))
+    .sort()
+    .map((route) => {
+      const html = readFileSync(join(legalOutDir, route, "index.html"), "utf8")
+      return {
+        route,
+        html,
+        type: /data-legal-doc="([^"]*)"/.exec(html)?.[1] ?? null,
+        hashed: legalDocumentHash(html),
+      }
+    })
 }

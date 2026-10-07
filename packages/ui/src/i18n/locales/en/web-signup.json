@@ -1,0 +1,83 @@
+{
+  "state": {
+    "loading_title": "Loading",
+    "loading_body": "Fetching this event's page.",
+    "not_found_title": "We couldn't find that page",
+    "not_found_body": "This signup link is not valid, or the page has been taken down. Find the event on <0>civfix</0>.",
+    "offline_title": "We couldn't load this page",
+    "offline_body": "Check your connection and try again.",
+    "retry": "Try again"
+  },
+  "calendar": "Add to calendar",
+  "footer": "Hosted on <0>civfix</0> · <1>Terms</1> · <2>Privacy</2>",
+  "blocks": {
+    "about": "About this event",
+    "agenda": "Schedule",
+    "contact": "Get in touch",
+    "donate": "Support this work",
+    "donate_cta": "Donate",
+    "donate_hint": "This link goes to a site civfix does not run. civfix never handles the money.",
+    "faq": "Questions",
+    "hosts": "Who's hosting",
+    "location": "Where",
+    "open_in_maps": "Open in maps",
+    "sponsors": "With support from"
+  },
+  "outcome": {
+    "registered": "You're registered.",
+    "waitlisted": "You're on the waitlist."
+  },
+  "widget": {
+    "cancelled_title": "This event was cancelled",
+    "closed_title": "Registration is closed",
+    "not_yet_open_title": "Registration hasn't opened yet",
+    "not_yet_open_body": "Check back closer to the event.",
+    "waitlisted_title": "You're on the waitlist",
+    "waitlisted_body": "We'll email you if a spot opens up."
+  },
+  "errors": {
+    "required": "Please answer the required questions.",
+    "access_code": "Enter the access code for this ticket.",
+    "terms": "Please accept the terms to register.",
+    "name": "Enter your name.",
+    "email": "Enter an email address so the host can reach you.",
+    "guest_unavailable": "Signing up without a civfix account isn't available right now. Sign in to register instead.",
+    "bot": "We couldn't confirm you're not a bot. Reload the page and try again.",
+    "rate_limited": "Too many attempts. Wait a minute and try again.",
+    "validation": "Please check the details above and try again.",
+    "conflict": "Something changed while you were filling this in. Reload the page.",
+    "not_found": "This event is no longer available.",
+    "generic": "We couldn't complete that. Please try again."
+  },
+  "code": {
+    "title": "Check your email",
+    "sent": "We sent a code to {{email}}. Enter it to finish registering.",
+    "label": "Confirmation code",
+    "submit": "Finish registering",
+    "resend": "Send a new code",
+    "resend_wait_one": "You can get a new code in {{count}} second",
+    "resend_wait_other": "You can get a new code in {{count}} seconds",
+    "change_email": "Use a different email"
+  },
+  "form": {
+    "title_register": "Register",
+    "title_full": "This event is full",
+    "full_none": "There are no spots left.",
+    "full_guest": "There are no spots left. Sign in to a civfix account to join the waitlist, so we have somewhere to reach you when one opens up.",
+    "full_waitlist": "Join the waitlist and we'll let you know if a spot opens up.",
+    "ticket_legend": "Ticket",
+    "ticket_sold_out": "Sold out",
+    "party_label": "How many people, including you?",
+    "access_code_label": "Access code",
+    "name_label": "Your name",
+    "email_label": "Email address",
+    "email_hint": "The host uses this to send you event updates. It is not shown publicly.",
+    "host_contact": "The host may contact me about future events, not just this one.",
+    "terms": "I agree to the <0>Terms of Service</0> and the <1>Privacy Policy</1>, and I understand the host will see my name and my answers.",
+    "join_waitlist": "Join the waitlist",
+    "sold_out": "Sold out",
+    "count_me_in": "Count me in",
+    "register": "Register",
+    "guest_unavailable_hint": "Signing up without a civfix account isn't available on this build. Sign in to register."
+  }
+}

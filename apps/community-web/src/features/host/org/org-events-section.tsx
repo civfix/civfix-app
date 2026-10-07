@@ -10,20 +10,14 @@ import { useGate } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { EmptyState, StateGate } from "@/components/console/states"
 import { SegmentedControl } from "@/components/console/forms/segmented-control"
-import { Chip } from "@/components/console/chips/chip"
-import { QRow } from "@/components/console/qrow"
 
-import { useConsoleNavigation, useConsoleOrg } from "../console-context"
-import { useConsoleFormat } from "../format"
-
-const WHENS: readonly HostedEventsWhen[] = ["upcoming", "past", "all"]
+import { useConsoleOrg } from "../console-context"
+import { HOSTED_WHENS, HostedEventRow, openEventCreator } from "../hosted-events"
 
 export function OrgEventsSection() {
   const { t } = useT("host-org")
   const { t: tp } = useT("host-portfolio")
   const { t: tc } = useT("host-common")
-  const format = useConsoleFormat()
-  const { go } = useConsoleNavigation()
   const { orgId } = useConsoleOrg()
   const [when, setWhen] = useState<HostedEventsWhen>("upcoming")
 
@@ -50,7 +44,7 @@ export function OrgEventsSection() {
           label={tp("list.when")}
           value={when}
           onChange={setWhen}
-          options={WHENS.map((value) => ({ value, label: tp(`list.when_${value}`) }))}
+          options={HOSTED_WHENS.map((value) => ({ value, label: tp(`list.when_${value}`) }))}
         />
       </div>
 
@@ -69,37 +63,14 @@ export function OrgEventsSection() {
             })}
             cta={{
               label: tp("list.create"),
-              onPress: () => window.location.assign("/events/"),
+              onPress: openEventCreator,
             }}
           />
         }
       >
         <div className="overflow-hidden rounded-md border border-console-line bg-console-surface shadow-console-1">
           {rows.map((row) => (
-            <QRow
-              key={row.id}
-              title={row.title}
-              pressLabel={tp("list.open", { title: row.title })}
-              ident={row.referenceCode ?? undefined}
-              sub={
-                <span className="flex flex-wrap items-center gap-token-2">
-                  <span>{format.whenLabel(row.startsAt, row.timezone ?? undefined)}</span>
-                  <span>
-                    {tp("list.counts", {
-                      registered: format.number(row.registeredCount),
-                      checked: format.number(row.checkedInCount),
-                    })}
-                  </span>
-                </span>
-              }
-              chips={
-                <>
-                  <Chip kind="event-status" value={row.status} size="sm" />
-                  <Chip kind="event-visibility" value={row.visibility} size="sm" />
-                </>
-              }
-              onPress={() => go({ kind: "event", eventId: row.id, section: "overview" })}
-            />
+            <HostedEventRow key={row.id} row={row} />
           ))}
         </div>
         {events.hasNextPage ? (

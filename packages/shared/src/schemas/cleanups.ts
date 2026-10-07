@@ -5,23 +5,34 @@ import {
   LatLngFields,
   LatLngSchema,
   BBoxSchema,
+  EMAIL_MAX_LENGTH,
   EventVisibilitySchema,
   PaginationQuerySchema,
+  MAX_PARTY_SIZE,
 } from "./common.js"
 import { OtpCodeSchema } from "./auth.js"
 import {
   AttendeeDTOSchema as AttendeeDTOSchemaInternal,
   CleanupDTOSchema,
+  CleanupTypeSchema,
   EventAddressSourceSchema,
   EventKindSchema,
   EventRegistrationDTOSchema,
   HostEventEmailSchema,
+  HttpsUrlSchema,
 } from "./entities.js"
-import { AccessCodeSchema, MAX_PARTY_SIZE } from "./host/tickets.js"
-import { EventAnswerInputSchema } from "./host/questions.js"
+import {
+  GuestManageTokenSchema,
+  IdempotencyKeySchema,
+  OkResponseSchema,
+  PageLimitSchema,
+  SortOrderInputSchema,
+} from "./internal-fields.js"
+import { AccessCodeSchema } from "./host/tickets.js"
+import { EventAnswerInputSchema, MAX_EVENT_QUESTIONS } from "./host/questions.js"
 import { EventConsentInputSchema, RegisterOutcomeSchema } from "./host/registrations.js"
-import { HttpsUrlSchema } from "./host/organizations.js"
 import { PageSlugSchema } from "./host/pages.js"
+import { EventTeamRoleSchema } from "./host/team.js"
 
 
 export { CleanupDTOSchema, CleanupTypeSchema, CleanupStatusSchema } from "./entities.js"
@@ -44,7 +55,11 @@ export const MAX_LINKED_REPORTS = 200
 export const MAX_EVENT_ADDRESS_LENGTH = 200
 export const MIN_EVENT_DURATION_MINUTES = 15
 export const MAX_EVENT_DURATION_MINUTES = 1440
-export const DEFAULT_EVENT_DURATION_MINUTES = 240
+export const MAX_EVENT_TITLE = 120
+export const MAX_EVENT_DESCRIPTION = 2000
+export const MAX_EVENT_CANCEL_REASON = 500
+export const MAX_EVENT_RESOURCES_MESSAGE = 2000
+export { DEFAULT_EVENT_DURATION_MINUTES } from "./event-duration.js"
 
 const EventSlotInputObjectSchema = z
   .object({
@@ -52,7 +67,7 @@ const EventSlotInputObjectSchema = z
     title: z.string().trim().min(1).max(MAX_SLOT_TITLE),
     description: z.string().max(MAX_SLOT_DESCRIPTION).nullable().optional(),
     capacity: z.number().int().positive().max(MAX_SLOT_CAPACITY).nullable().optional(),
-    sortOrder: z.number().int().min(0).max(1000).optional(),
+    sortOrder: SortOrderInputSchema,
     startsAt: ISODateSchema.nullable().optional(),
     endsAt: ISODateSchema.nullable().optional(),
   })
@@ -108,10 +123,10 @@ const HostEventFields = {
 
 export const CreateCleanupRequestSchema = z
   .object({
-    title: z.string().min(1).max(120),
-    type: z.enum(["site", "route"]),
+    title: z.string().min(1).max(MAX_EVENT_TITLE),
+    type: CleanupTypeSchema,
     eventKind: EventKindSchema.default("cleanup"),
-    description: z.string().max(2000).optional(),
+    description: z.string().max(MAX_EVENT_DESCRIPTION).optional(),
     ...LatLngFields,
     scheduledAt: ISODateSchema,
     bring: z.array(z.string()).max(MAX_BRING_ITEMS).optional(),
@@ -120,7 +135,7 @@ export const CreateCleanupRequestSchema = z
     linkedReportIds: z.array(IdSchema).max(MAX_LINKED_REPORTS).optional(),
     slots: z.array(EventSlotInputSchema).max(MAX_EVENT_SLOTS).optional(),
     ...HostEventFields,
-    idempotencyKey: z.string().min(8).max(128).optional(),
+    idempotencyKey: IdempotencyKeySchema.optional(),
   })
   .strict()
 export type CreateCleanupRequest = z.infer<typeof CreateCleanupRequestSchema>
@@ -128,13 +143,13 @@ export type CreateCleanupRequest = z.infer<typeof CreateCleanupRequestSchema>
 export const UpdateCleanupRequestSchema = z
   .object({
     id: IdSchema,
-    title: z.string().min(1).max(120).optional(),
-    description: z.string().max(2000).optional(),
+    title: z.string().min(1).max(MAX_EVENT_TITLE).optional(),
+    description: z.string().max(MAX_EVENT_DESCRIPTION).optional(),
     eventKind: EventKindSchema.optional(),
-    type: z.enum(["site", "route"]).optional(),
+    type: CleanupTypeSchema.optional(),
     scheduledAt: ISODateSchema.optional(),
-    lat: z.number().min(-90).max(90).optional(),
-    lng: z.number().min(-180).max(180).optional(),
+    lat: LatLngFields.lat.optional(),
+    lng: LatLngFields.lng.optional(),
     address: z.string().max(MAX_EVENT_ADDRESS_LENGTH).optional(),
     addressSource: EventAddressSourceSchema.optional(),
     bring: z.array(z.string()).max(MAX_BRING_ITEMS).optional(),
@@ -146,12 +161,11 @@ export const UpdateCleanupRequestSchema = z
 export type UpdateCleanupRequest = z.infer<typeof UpdateCleanupRequestSchema>
 
 /**
- * POST /cleanups/:id/duplicate (0.43.0, DECISIONS §34). Copies the source event's content into a
- * NEW draft at `scheduledAt`; the copy resets everything that identifies the original occurrence -
- * page slug, reference code, status, counts - and carries no registrations, no team and no
- * broadcasts. `id` consumes the path param. The three include flags are the only choices: ticket
- * types and registration questions travel with a recurring event, a published event PAGE does not
- * (it has its own slug and its own analytics), so it defaults off.
+ * POST /cleanups/:id/duplicate (DECISIONS §34). Copies the source event's content into a new draft
+ * at `scheduledAt`. The copy resets everything that identifies the original occurrence (page slug,
+ * reference code, status, counts) and carries no registrations, team or broadcasts. `id` consumes the
+ * path param. Ticket types and registration questions travel with a recurring event; a published
+ * event page does not (it has its own slug and analytics), so that flag defaults off.
  */
 export const DuplicateCleanupRequestSchema = z
   .object({
@@ -168,7 +182,7 @@ export type DuplicateCleanupRequest = z.infer<typeof DuplicateCleanupRequestSche
 export const CancelCleanupRequestSchema = z
   .object({
     id: IdSchema,
-    reason: z.string().max(500).optional(),
+    reason: z.string().max(MAX_EVENT_CANCEL_REASON).optional(),
   })
   .strict()
 export type CancelCleanupRequest = z.infer<typeof CancelCleanupRequestSchema>
@@ -195,7 +209,7 @@ export const ListCleanupsRequestSchema = z
     near: LatLngSchema.optional(),
     when: z.enum(["upcoming", "past", "attending"]).optional(),
     cursor: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type ListCleanupsRequest = z.infer<typeof ListCleanupsRequestSchema>
@@ -224,24 +238,24 @@ export type CleanupAttendeesResponse = z.infer<typeof CleanupAttendeesResponseSc
 export const RequestEventResourcesRequestSchema = z
   .object({
     id: IdSchema,
-    message: z.string().min(1).max(2000),
+    message: z.string().min(1).max(MAX_EVENT_RESOURCES_MESSAGE),
   })
   .strict()
 export type RequestEventResourcesRequest = z.infer<typeof RequestEventResourcesRequestSchema>
 
-export const RequestEventResourcesResponseSchema = z.object({ ok: z.literal(true) })
+export const RequestEventResourcesResponseSchema = OkResponseSchema
 export type RequestEventResourcesResponse = z.infer<typeof RequestEventResourcesResponseSchema>
 
 export const SetMemberRoleRequestSchema = z
   .object({
     id: IdSchema,
     userId: IdSchema,
-    role: z.enum(["cohost", "staff", "coordinator", "member"]),
+    role: z.enum([...EventTeamRoleSchema.options, "member"]),
   })
   .strict()
 export type SetMemberRoleRequest = z.infer<typeof SetMemberRoleRequestSchema>
 
-export const SetMemberRoleResponseSchema = z.object({ ok: z.literal(true) })
+export const SetMemberRoleResponseSchema = OkResponseSchema
 export type SetMemberRoleResponse = z.infer<typeof SetMemberRoleResponseSchema>
 
 export const RemoveMemberRequestSchema = z
@@ -264,8 +278,7 @@ export type GuestContactChannel = z.infer<typeof GuestContactChannelSchema>
 
 export const MAX_GUEST_NAME = 80
 
-export const GUEST_MANAGE_TOKEN_MIN_LENGTH = 20
-export const GUEST_MANAGE_TOKEN_MAX_LENGTH = 128
+export { GUEST_MANAGE_TOKEN_MIN_LENGTH, GUEST_MANAGE_TOKEN_MAX_LENGTH } from "./common.js"
 
 export const GUEST_OTP_ERROR_FIELD = "otp"
 
@@ -276,9 +289,25 @@ export const GuestOtpErrorReason = {
 } as const
 export type GuestOtpErrorReason = (typeof GuestOtpErrorReason)[keyof typeof GuestOtpErrorReason]
 
+export const GUEST_REGISTRATION_ERROR_FIELD = "registration"
+
+export const GuestRegistrationRefusalReason = {
+  soldOut: "sold_out",
+  registrationClosed: "registration_closed",
+  salesClosed: "sales_closed",
+  eventClosed: "event_closed",
+  partyTooLarge: "party_too_large",
+  ticketTypeUnavailable: "ticket_type_unavailable",
+  accessCodeRequired: "access_code_required",
+  accessCodeInvalid: "access_code_invalid",
+  answersInvalid: "answers_invalid",
+} as const
+export type GuestRegistrationRefusalReason =
+  (typeof GuestRegistrationRefusalReason)[keyof typeof GuestRegistrationRefusalReason]
+
 export const GuestPhoneSchema = z.string().regex(/^\+1[2-9]\d{9}$/)
 
-const GuestEmailSchema = z.string().email().max(254).toLowerCase()
+const GuestEmailSchema = z.string().email().max(EMAIL_MAX_LENGTH).toLowerCase()
 
 const GuestContactFields = {
   channel: GuestContactChannelSchema,
@@ -312,7 +341,7 @@ const GuestRegistrationFields = {
   ticketTypeId: IdSchema.optional(),
   partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).optional(),
   accessCode: AccessCodeSchema.optional(),
-  answers: z.array(EventAnswerInputSchema).max(20).optional(),
+  answers: z.array(EventAnswerInputSchema).max(MAX_EVENT_QUESTIONS).optional(),
   consent: EventConsentInputSchema.optional(),
 } as const
 
@@ -349,7 +378,7 @@ export type GuestRsvpVerifyRequest = z.infer<typeof GuestRsvpVerifyRequestSchema
 export const GuestRsvpVerifyResponseSchema = z.object({
   joined: z.literal(true),
   going: z.number().int().nonnegative(),
-  manageToken: z.string().min(GUEST_MANAGE_TOKEN_MIN_LENGTH).max(GUEST_MANAGE_TOKEN_MAX_LENGTH),
+  manageToken: GuestManageTokenSchema,
   registration: EventRegistrationDTOSchema.nullable().optional(),
   registrationOutcome: RegisterOutcomeSchema.nullable().optional(),
   ticketTokens: z.array(z.string()).default([]),
@@ -358,12 +387,12 @@ export type GuestRsvpVerifyResponse = z.infer<typeof GuestRsvpVerifyResponseSche
 
 export const GuestRsvpCancelRequestSchema = z
   .object({
-    token: z.string().min(GUEST_MANAGE_TOKEN_MIN_LENGTH).max(GUEST_MANAGE_TOKEN_MAX_LENGTH),
+    token: GuestManageTokenSchema,
   })
   .strict()
 export type GuestRsvpCancelRequest = z.infer<typeof GuestRsvpCancelRequestSchema>
 
-export const GuestRsvpCancelResponseSchema = z.object({ ok: z.literal(true) })
+export const GuestRsvpCancelResponseSchema = OkResponseSchema
 export type GuestRsvpCancelResponse = z.infer<typeof GuestRsvpCancelResponseSchema>
 
 export const CleanupGuestDTOSchema = z.object({

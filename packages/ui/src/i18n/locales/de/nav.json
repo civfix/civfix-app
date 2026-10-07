@@ -64,7 +64,13 @@
     "close": "Schließen",
     "settings": "Einstellungen",
     "resize_sidebar": "Seitenleiste anpassen",
-    "drag_handle": "Ziehpunkt"
+    "drag_handle": "Ziehpunkt",
+    "show_tab_bar": "Tab-Leiste einblenden",
+    "sheet_snap": {
+      "collapsed": "Eingeklappt",
+      "half": "Halb geöffnet",
+      "full": "Vollständig geöffnet"
+    }
   },
   "fallback_you": "Du"
 }

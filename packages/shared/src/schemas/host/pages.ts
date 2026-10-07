@@ -5,8 +5,10 @@ import {
   IdSchema,
   ISODateSchema,
   LatLngFields,
+  MAX_PARTY_SIZE,
   PageViewSourceSchema,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import {
   CleanupStatusSchema,
   EventPageBlockSchema,
@@ -94,7 +96,7 @@ export const PublicPageTicketTypeSchema = z.object({
   id: IdSchema,
   name: z.string(),
   description: z.string().nullable().optional(),
-  maxPartySize: z.number().int().min(1).max(10).default(1),
+  maxPartySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
   salesOpensAt: ISODateSchema.nullable().optional(),
   salesClosesAt: ISODateSchema.nullable().optional(),
   soldOut: z.boolean().default(false),
@@ -165,7 +167,6 @@ export const RecordEventPageViewRequestSchema = z
   .strict()
 export type RecordEventPageViewRequest = z.infer<typeof RecordEventPageViewRequestSchema>
 
-const RecordEventPageViewResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RecordEventPageViewResponse = z.infer<typeof RecordEventPageViewResponseObjectSchema>
+export type RecordEventPageViewResponse = z.infer<typeof OkResponseSchema>
 export const RecordEventPageViewResponseSchema: z.ZodType<RecordEventPageViewResponse, z.ZodTypeDef, unknown> =
-  RecordEventPageViewResponseObjectSchema
+  OkResponseSchema

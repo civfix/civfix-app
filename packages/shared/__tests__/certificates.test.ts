@@ -62,15 +62,14 @@ describe("normalizeCertificateCode", () => {
   it("returns null for input that cannot be a code", () => {
     expect(normalizeCertificateCode("nope")).toBeNull()
     expect(normalizeCertificateCode("")).toBeNull()
-    expect(normalizeCertificateCode("A1B2C3D4E5F")).toBeNull() // 11 chars
-    expect(normalizeCertificateCode("A1B2C3D4E5F6G")).toBeNull() // 13 chars
+    expect(normalizeCertificateCode("A1B2C3D4E5F")).toBeNull()
+    expect(normalizeCertificateCode("A1B2C3D4E5F6G")).toBeNull()
   })
 
   it("leaves a genuine code that begins with CFX unharmed (no unconditional prefix strip)", () => {
-    // C, F and X are all valid Crockford symbols, so the BARE form must be tried first.
+    // C, F and X are all valid Crockford symbols, so the bare form must be tried first.
     expect(normalizeCertificateCode(CFX_CODE)).toBe(CFX_CODE)
     expect(normalizeCertificateCode("cfx123456789")).toBe(CFX_CODE)
-    // ...and its display form still round-trips, which is the CFX-stripped branch.
     expect(normalizeCertificateCode(formatCertificateCode(CFX_CODE))).toBe(CFX_CODE)
   })
 
@@ -99,8 +98,8 @@ describe("CertificateCodeSchema (loose-in, canonical-out)", () => {
   })
 
   it("rejects the wrong length", () => {
-    expect(CertificateCodeSchema.safeParse("A1B2C3D4E5F").success).toBe(false) // 11
-    expect(CertificateCodeSchema.safeParse("A1B2C3D4E5F6G").success).toBe(false) // 13
+    expect(CertificateCodeSchema.safeParse("A1B2C3D4E5F").success).toBe(false)
+    expect(CertificateCodeSchema.safeParse("A1B2C3D4E5F6G").success).toBe(false)
     expect(CertificateCodeSchema.safeParse("").success).toBe(false)
   })
 
@@ -127,7 +126,7 @@ describe("certificate request schemas (.strict())", () => {
     )
   })
 
-  it("issue rejects the dropped v1 filters (C2: whole-ledger only)", () => {
+  it("issue rejects period, jurisdiction and recipient filters (whole ledger only)", () => {
     for (const body of [
       { geoid: "0644000" },
       { from: "2026-01-01" },
@@ -193,7 +192,6 @@ describe("certificate response schemas (tolerant)", () => {
     expect(
       ServiceHoursCertificateDTOSchema.safeParse({ ...MINIMAL_CERT, somethingNew: true }).success,
     ).toBe(true)
-    // The narrow enum still exists for the writer side.
     expect(CertificateStatusSchema.safeParse("pending").success).toBe(false)
     expect(CertificateStatusSchema.parse("revoked")).toBe("revoked")
   })

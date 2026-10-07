@@ -1,11 +1,24 @@
 import React from "react"
 import { View, StyleSheet } from "react-native"
 import type { ChatMessageDTO, ReportStatus } from "@civfix/shared"
+import type { TFunction } from "i18next"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { citizenStatusLabel, kindForStatus, NODE_GLYPH, nodeColor } from "./report-timeline-labels"
-import { visibilityKindOf } from "./report-timeline-model"
+import { citizenStatusLabel, kindForStatus, NODE_GLYPH, nodeColor } from "./reportTimelineLabels"
+import { visibilityKindOf, type TimelineVisibilityKind } from "./reportTimelineModel"
+
+function systemRowLabel(
+  t: TFunction,
+  visibility: TimelineVisibilityKind | null,
+  sys: ChatMessageDTO["system"] | null,
+  status: ReportStatus,
+): string {
+  if (visibility === "hidden") return t("timeline.hidden_from_map")
+  if (visibility === "unhidden") return t("timeline.shown_on_map_again")
+  if (sys?.status) return citizenStatusLabel(t, status)
+  return sys?.note ?? sys?.body ?? ""
+}
 
 export const SystemMessageRow = React.memo(function SystemMessageRow({ message }: { message: ChatMessageDTO }) {
   const styles = useStyles()
@@ -30,14 +43,7 @@ export const SystemMessageRow = React.memo(function SystemMessageRow({ message }
     )
   }
   const nodeKind = visibility ?? kindForStatus(status)
-  const label =
-    visibility === "hidden"
-      ? t("timeline.hidden_from_map")
-      : visibility === "unhidden"
-        ? t("timeline.shown_on_map_again")
-        : sys?.status
-          ? citizenStatusLabel(t, status)
-          : (sys?.note ?? sys?.body ?? "")
+  const label = systemRowLabel(t, visibility, sys, status)
   const color = nodeColor(nodeKind, th.scheme)
   if (!label) return null
   return (
@@ -67,7 +73,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   text: { fontFamily: t.fontFamily.bodySemiBold, fontSize: 11.5, textAlign: "center" },
   reply: {
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"],
     borderRadius: t.radius.md,
@@ -76,5 +82,5 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
   },
   replyHead: { flexDirection: "row", alignItems: "center", gap: 6 },
-  replyBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: 13, color: t.colors.text },
+  replyBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: t.fontSize["13"], color: t.colors.text },
 }))

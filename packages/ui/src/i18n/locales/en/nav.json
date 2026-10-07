@@ -64,7 +64,13 @@
     "close": "Close",
     "settings": "Settings",
     "resize_sidebar": "Resize sidebar",
-    "drag_handle": "Drag handle"
+    "drag_handle": "Drag handle",
+    "show_tab_bar": "Show tab bar",
+    "sheet_snap": {
+      "collapsed": "Collapsed",
+      "half": "Half open",
+      "full": "Fully open"
+    }
   },
   "fallback_you": "You"
 }

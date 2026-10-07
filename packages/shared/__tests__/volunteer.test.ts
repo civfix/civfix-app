@@ -14,12 +14,13 @@ import {
   PublicVolunteerHoursResponseSchema,
   EventHoursQuerySchema,
   EventHoursResponseSchema,
-  REPORT_VOLUNTEER_HOURS,
   VOLUNTEER_HOURS_SOURCES,
   VolunteerHoursSourceSchema,
   MAX_EVENT_HOURS,
   MAX_EVENT_HOURS_ENTRIES,
 } from "../src/schemas/volunteer.js"
+import * as entities from "../src/schemas/entities.js"
+import * as root from "../src/index.js"
 
 const UUID = "00000000-0000-0000-0000-000000000001"
 
@@ -46,7 +47,7 @@ describe("LogEventHoursRequestSchema (per-attendee entries)", () => {
     ).toBe(false)
   })
 
-  it("rejects the old flat { id, hours } body (no fallback - apps move in lockstep)", () => {
+  it("rejects a flat { id, hours } body (no fallback - apps move in lockstep)", () => {
     expect(LogEventHoursRequestSchema.safeParse({ id: UUID, hours: 2 }).success).toBe(false)
   })
 
@@ -275,16 +276,8 @@ describe("volunteer DTOs", () => {
     expect(MAX_EVENT_HOURS).toBe(24)
   })
 
-  /**
-   * REPORT_VOLUNTEER_HOURS is RETIRED (deprecated 2026-07-28): filing a report is not volunteer service,
-   * nothing credits it any more, and backend migration 0065 voided every credit it ever wrote. It is kept
-   * only to document what the historical `source='report'` rows are worth — hence a frozen value, not an
-   * "agreed" one. `"report"` likewise stays in VOLUNTEER_HOURS_SOURCES: those old ledger rows, the frozen
-   * snapshot of every issued certificate, and older servers all still carry it, so dropping the enum
-   * member would make their payloads fail to parse.
-   */
-  it("the retired report auto-award constant is frozen, and its source stays parseable", () => {
-    expect(REPORT_VOLUNTEER_HOURS).toBe(0.1)
+  // Old ledger rows, issued certificate snapshots and older servers still carry "report".
+  it("the retired report source stays parseable", () => {
     expect(VOLUNTEER_HOURS_SOURCES).toContain("report")
     expect(VolunteerHoursSourceSchema.safeParse("report").success).toBe(true)
   })
@@ -310,18 +303,16 @@ describe("volunteer DTOs", () => {
   })
 })
 
-describe("hours by organization (0.45.0, DECISIONS §39)", () => {
+describe("hours by organization (DECISIONS §39)", () => {
   const org = {
     id: UUID2,
     slug: "bayview-stewards",
     name: "Bayview Stewards",
   }
 
-  it("still exports LeaderboardEntryDTOSchema from the package root after the entities.ts move", async () => {
-    const root = await import("../src/index.js")
+  it("still exports LeaderboardEntryDTOSchema from the package root after the entities.ts move", () => {
     expect(root.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
     expect(root.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
-    const entities = await import("../src/schemas/entities.js")
     expect(entities.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
     expect(entities.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
   })

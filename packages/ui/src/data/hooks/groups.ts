@@ -1,6 +1,6 @@
 /**
- * Shared React Query hooks for chat GROUPS (P4 Task 4.6) - the management surface of a user-created
- * group room (`chat_groups`). The group's MESSAGES ride the unified chat rails (`useChat(id, "group")`
+ * Shared React Query hooks for chat GROUPS: the management surface of a user-created group room
+ * (`chat_groups`). The group's MESSAGES ride the unified chat rails (`useChat(id, "group")`
  * pages GET /groups/:id/messages via the roomKind dispatch in ./chat.ts); these hooks cover everything
  * else: create, info, roster, updates and membership.
  *
@@ -28,6 +28,8 @@ import { queryKeys } from "../keys"
 
 const GROUP_MEMBERS_PAGE_SIZE = 30
 
+const GROUP_INFO_STALE_MS = 30_000
+
 /**
  * Create a group (POST /groups). On success the fresh DTO seeds `groupInfo(id)` (the wizard navigates
  * straight into the new room, so its header/info read warm) and the inbox thread list refreshes (the
@@ -46,7 +48,7 @@ export function useCreateGroup() {
 }
 
 /**
- * Self-serve join a PUBLIC group / channel (POST /groups/:id/join, P5 Task 5.4). The mutation variable
+ * Self-serve join a PUBLIC group / channel (POST /groups/:id/join). The mutation variable
  * is the group id; the server 403s (not_public) for a private group. On success the returned DTO
  * settles `groupInfo(id)` directly (so the viewer's `myRole` flips off null -> "member" and the channel
  * composer slot's join pill becomes the mute pill) and the inbox thread list refreshes (the joined room
@@ -80,7 +82,7 @@ export function useGroupInfo(id: string | undefined) {
     enabled: isAuthenticated && !!id,
     queryFn: () => api.getChatGroup({ id: id ?? "" }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: GROUP_INFO_STALE_MS,
   })
 }
 

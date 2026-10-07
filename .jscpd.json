@@ -1,0 +1,45 @@
+{
+  "path": [
+    "packages/shared/src",
+    "packages/ui/src",
+    "packages/ui/scripts",
+    "apps/community-web/src",
+    "apps/community-web/functions",
+    "apps/community-web/scripts",
+    "apps/community-mobile/app",
+    "apps/community-mobile/src",
+    "apps/community-mobile/scripts",
+    "scripts"
+  ],
+  "format": ["typescript", "javascript"],
+  "formatsExts": {
+    "typescript": ["ts", "tsx", "mts", "cts"],
+    "javascript": ["js", "mjs", "cjs"]
+  },
+  "minTokens": 60,
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-types/**",
+    "**/out/**",
+    "**/.next/**",
+    "**/.expo/**",
+    "**/.turbo/**",
+    "**/ios/**",
+    "**/android/**",
+    "**/locales/**",
+    "**/catalogs/**",
+    "**/__tests__/**",
+    "**/__testing__/**",
+    "**/tests/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.test.mjs",
+    "**/*.d.ts",
+    "**/i18n/resources.ts"
+  ],
+  "gitignore": true,
+  "reporters": ["console"],
+  "absolute": false,
+  "threshold": 0.7
+}

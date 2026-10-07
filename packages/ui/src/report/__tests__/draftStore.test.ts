@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest"
-import { useDraftReportStore, MAX_DRAFT_MEDIA } from "../draftStore"
+import { describe, it, expect, beforeEach, vi } from "vitest"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { useDraftReportStore, captureSeedsNewReport } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 
 /**
- * Draft-store media tests. The reported bug: adding a second image/video DROPPED the first because the
- * capture step called `startFromCapture` (which RESETS the draft) for every add. The fix routes the
- * first capture through `startFromCapture` (seed) and every later one through `addCapture` (append).
+ * `startFromCapture` resets the draft, so only the first capture may seed through it; every later one must
+ * append through `addCapture` or the earlier media is dropped.
  */
 
 function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
@@ -36,11 +36,11 @@ describe("draftStore media", () => {
     expect(useDraftReportStore.getState().draft.idempotencyKey).toBeTruthy()
   })
 
-  it("caps the media list at MAX_DRAFT_MEDIA", () => {
+  it("caps the media list at MAX_REPORT_MEDIA", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("0"))
-    for (let i = 1; i < MAX_DRAFT_MEDIA + 3; i++) s.addCapture(cap(String(i)))
-    expect(useDraftReportStore.getState().draft.media.length).toBe(MAX_DRAFT_MEDIA)
+    for (let i = 1; i < MAX_REPORT_MEDIA + 3; i++) s.addCapture(cap(String(i)))
+    expect(useDraftReportStore.getState().draft.media.length).toBe(MAX_REPORT_MEDIA)
   })
 
   it("removeMedia drops one item by uri, keeping the rest in order", () => {
@@ -95,8 +95,7 @@ describe("draftStore media", () => {
     ])
   })
 
-  // The review-step map "Reset" (issue #50) wipes the placed pin via clearLocation, returning the location
-  // to unset so the routing card shows the passive "place the pin" prompt again.
+  // The review-step map "Reset" returns the location to unset so the routing card prompts for a pin again.
   it("clearLocation wipes lat/lng (back to unset) without disturbing the rest of the draft", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("a"))
@@ -113,7 +112,7 @@ describe("draftStore media", () => {
 })
 
 /**
- * The map long-press "Report an issue here" provenance (Area 3). `locationPrefilled` is a DISTINCT flag
+ * The map long-press "Report an issue here" provenance. `locationPrefilled` is a DISTINCT flag
  * from geomSource "manual": the wizard's own compact LocationStep and the ReviewStep's onDropPin /
  * onPickPlace all call setLocation(lat, lng, "manual"), so keying off geomSource would silently drop the
  * LOCATION step for every ordinary reporter who confirms a location.
@@ -270,5 +269,143 @@ describe("draftStore address ownership", () => {
     const d = useDraftReportStore.getState().draft
     expect(d.addr).toBeNull()
     expect(d.addrEdited).toBe(false)
+  })
+})
+
+describe("removing the capture that placed the pin", () => {
+  beforeEach(() => useDraftReportStore.getState().reset())
+
+  const located = (uri: string) => cap(uri, { location: { lat: 1, lng: 2, source: "exif" } })
+
+  it("clears the location the removed capture supplied", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b"))
+    const first = useDraftReportStore.getState().draft.media[0]!
+    s.removeMedia(first.id)
+    const d = useDraftReportStore.getState().draft
+    expect(d.media.map((m) => m.uri)).toEqual(["b"])
+    expect(d.lat).toBeNull()
+    expect(d.lng).toBeNull()
+  })
+
+  it("keeps the location when a different capture is removed", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[1]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBe(1)
+  })
+
+  it("keeps a pin the reporter placed by hand after the capture", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.setLocation(40.5, -74.2, "manual")
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    const d = useDraftReportStore.getState().draft
+    expect(d.lat).toBe(40.5)
+    expect(d.geomSource).toBe("manual")
+  })
+
+  it("keeps a prefilled map point when the capture is removed", () => {
+    const s = useDraftReportStore.getState()
+    s.setPrefilledLocation(37.7749, -122.4194)
+    s.startFromCapture(located("a"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBe(37.7749)
+  })
+
+  it("does not treat a media-less draft with authored details as a new report", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.setCategory("graffiti", "Graffiti", "graffiti")
+    s.setDescription("On the north wall")
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(false)
+    s.addCapture(cap("b", { location: { lat: 3, lng: 4, source: "device" } }))
+    const d = useDraftReportStore.getState().draft
+    expect(d.category).toBe("graffiti")
+    expect(d.description).toBe("On the north wall")
+    expect(d.media.map((m) => m.uri)).toEqual(["b"])
+    expect([d.lat, d.lng, d.geomSource]).toEqual([3, 4, "device"])
+    s.removeMedia(d.media[0]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBeNull()
+  })
+
+  it("still seeds a new report from an empty or prefilled-only draft", () => {
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(true)
+    useDraftReportStore.getState().setPrefilledLocation(1, 2)
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(true)
+  })
+
+  it("never lets a later capture replace an existing pin", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b", { location: { lat: 9, lng: 9, source: "device" } }))
+    expect(useDraftReportStore.getState().draft.lat).toBe(1)
+  })
+})
+
+describe("releasing captures that leave the draft", () => {
+  beforeEach(() => useDraftReportStore.getState().reset())
+
+  function releasable(uri: string) {
+    const release = vi.fn()
+    return { media: cap(uri, { release }), release }
+  }
+
+  it("releases a removed capture once, and keeps the others", () => {
+    const a = releasable("blob:a")
+    const b = releasable("blob:b")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.addCapture(b.media)
+    s.removeMedia("blob:a")
+    expect(a.release).toHaveBeenCalledTimes(1)
+    expect(b.release).not.toHaveBeenCalled()
+    s.setTitle("still editing")
+    expect(a.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("releases every never-uploaded capture when the draft is discarded", () => {
+    const a = releasable("blob:a")
+    const b = releasable("blob:b")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.addCapture(b.media)
+    s.reset()
+    expect(a.release).toHaveBeenCalledTimes(1)
+    expect(b.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps an uploaded capture, which the success card or a local thumb may still show", () => {
+    const a = releasable("blob:a")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(a.media)
+    s.setMediaUploadId(useDraftReportStore.getState().draft.media[0]!.id, "up_1")
+    s.reset()
+    expect(a.release).not.toHaveBeenCalled()
+    s.startFromCapture(cap("blob:a"))
+    s.reset()
+    expect(a.release).not.toHaveBeenCalled()
+  })
+
+  it("releases a capture the media cap turned away", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(cap("0"))
+    for (let i = 1; i < MAX_REPORT_MEDIA; i++) s.addCapture(cap(String(i)))
+    const extra = releasable("blob:extra")
+    s.addCapture(extra.media)
+    expect(useDraftReportStore.getState().draft.media.map((m) => m.uri)).not.toContain("blob:extra")
+    expect(extra.release).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps a uri another item still shows", () => {
+    const first = releasable("same")
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(first.media)
+    s.addCapture(cap("same"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(first.release).not.toHaveBeenCalled()
   })
 })

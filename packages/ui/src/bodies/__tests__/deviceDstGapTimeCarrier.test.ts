@@ -79,8 +79,10 @@ describe("a clock inside the DEVICE's DST gap survives the event form", () => {
     expect(native).toContain(
       "onChange(timeCarrier(day ?? value ?? picked, picked.getHours(), picked.getMinutes()))",
     )
-    expect(native).toContain("const current = value ?? timeCarrier(base, base.getHours(), base.getMinutes())")
-    expect(code("../CleanupForm.tsx")).toContain("timeCarrier(date, value.time.getHours(), value.time.getMinutes())")
+    expect(native).toContain("return value ?? timeCarrier(base, base.getHours(), base.getMinutes())")
+    expect(native).toContain("const current = timePickerSeed(value, day)")
+    expect(native).toContain("value: timePickerSeed(value, day),")
+    expect(code("../cleanupFormModel.ts")).toContain("timeCarrier(date, value.time.getHours(), value.time.getMinutes())")
     expect(code("../host/dashboard/DuplicateEventSheet.tsx")).toContain("setTime(wallClockToFormTime(wallClock))")
     expect(code("../EditCleanupBody.tsx")).toContain("time: wallClockToFormTime(start)")
     expect(code("../eventWizard.ts")).toContain("wallClockToFormTime(wallClockInZone(endMs, timeZone))")

@@ -2,27 +2,30 @@ import type { RoomKind } from "@civfix/shared"
 
 export const queryKeys = {
   session: ["session"] as const,
+  mapReportsRoot: ["map", "reports"] as const,
   mapReports: (bbox: unknown, categories: readonly string[]) =>
     ["map", "reports", bbox, categories] as const,
   nearbyReportPins: (lat: number, lng: number) => ["map", "reports", "picker", lat, lng] as const,
   nearbyReports: (lat: number, lng: number, radiusKm: number) =>
     ["map", "reports", "near", lat, lng, radiusKm] as const,
   jurisdiction: (lat: number, lng: number) => ["jurisdiction", lat, lng] as const,
-  resolvedAddressRoot: ["geocode", "address"] as const,
   resolvedAddress: (pointKey: string) => ["geocode", "address", pointKey] as const,
   cleanups: (when: string, limit: number) => ["cleanups", when, limit] as const,
   cleanupsNearby: (when: string, limit: number, lat: number, lng: number) =>
     ["cleanups", when, "nearby", lat, lng, limit] as const,
+  cleanupRoot: ["cleanup"] as const,
   cleanup: (id: string) => ["cleanup", id] as const,
   cleanupAttendees: (id: string) => ["cleanup", id, "attendees"] as const,
+  reportRoot: ["report"] as const,
   report: (id: string) => ["report", id] as const,
   reportChatParticipants: (id: string) => ["report", id, "chat-participants"] as const,
-  reportSearch: (q: string, categories: readonly string[]) =>
-    ["reports", "search", q, categories] as const,
+  reportSearch: (q: string, categories: readonly string[] = [], types: readonly string[] = []) =>
+    ["reports", "search", q, [...categories].sort(), [...types].sort()] as const,
   myReportsRoot: ["reports", "mine"] as const,
   myReports: (limit: number) => ["reports", "mine", limit] as const,
   threads: ["threads"] as const,
   threadsUnread: ["threads", "unread"] as const,
+  chatRoot: ["chat"] as const,
   chatHistory: (roomId: string, roomKind: RoomKind = "cleanup") =>
     ["chat", roomKind, roomId] as const,
   groupInfo: (id: string) => ["group", id] as const,
@@ -33,8 +36,6 @@ export const queryKeys = {
   notificationsRoot: ["notifications"] as const,
   notifications: (limit: number) => ["notifications", limit] as const,
   notificationPrefs: ["notifications", "prefs"] as const,
-  people: (q: string) => ["people", q] as const,
-  peopleSearch: (q: string) => ["people", "search", q] as const,
   followSuggestions: ["people", "suggestions"] as const,
   profileRoot: ["profile"] as const,
   profile: (id: string) => ["profile", id] as const,
@@ -45,6 +46,8 @@ export const queryKeys = {
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,
   approximateLocation: ["geo", "approximate"] as const,
+  reverseLabel: (lat: number | null, lng: number | null) => ["reverse-label", lat, lng] as const,
+  handleAvailable: (handle: string) => ["handle-available", handle] as const,
 
   postsRoot: ["posts"] as const,
   homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,
@@ -80,8 +83,6 @@ export const queryKeys = {
     ["host", id, "announcements", "one", announcementId] as const,
   eventAudiencePreview: (id: string, segment: string) =>
     ["host", id, "audience-preview", segment] as const,
-  hostWaitlist: (id: string) => ["host", id, "waitlist"] as const,
-  myRegistration: (id: string) => ["host", id, "my-registration"] as const,
   myTickets: (id: string) => ["tickets", "mine", id] as const,
   eventIcs: (id: string) => ["cleanup", id, "ics"] as const,
   orgRoot: ["org"] as const,

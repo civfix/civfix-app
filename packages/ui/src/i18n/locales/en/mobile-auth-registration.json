@@ -20,7 +20,9 @@
     "rule_invalid": "Use 3-20 letters, numbers, or underscores.",
     "checking": "Checking...",
     "available": "@{{handle}} is available",
-    "taken": "@{{handle}} is taken"
+    "taken": "@{{handle}} is taken",
+    "check_failed": "We could not check that username.",
+    "retry": "Try again"
   },
   "continue": "Continue",
   "signout": {

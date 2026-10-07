@@ -11,15 +11,14 @@ import React, {
 import {
   Dimensions,
   Keyboard,
-  Platform,
-  StyleSheet,
   type KeyboardEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { motion } from "../theme"
-import type { ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
 import {
@@ -37,16 +36,22 @@ import {
 } from "./keyboardScrollModel"
 import { KeyboardScrollScopeProvider, useKeyboardHostReserveScope } from "./keyboardScrollScope"
 import { usePageIsActive } from "./pageActive"
+import { useMergedRef } from "./useMergedRef"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
+import { KEYBOARD_HIDE_EVENT, KEYBOARD_PLATFORM, KEYBOARD_SHOW_EVENT } from "./keyboardPlatform"
 
-const PLATFORM: "ios" | "android" | "other" =
-  Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
+type MeasureInWindow = (callback: (x: number, y: number, width: number, height: number) => void) => void
 
-const SHOW_EVENT = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
-const HIDE_EVENT = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
+/** The imperative surface of whichever RN ScrollView / FlatList the decorator wraps. */
+interface ScrollableNode {
+  scrollTo?: (options: { y: number; animated?: boolean }) => void
+  scrollToOffset?: (options: { offset: number; animated?: boolean }) => void
+  measureInWindow?: MeasureInWindow
+  getNativeScrollRef?: () => { measureInWindow?: MeasureInWindow } | null
+}
 
 interface ScrollableAdapter {
-  scrollToOffset: (node: any, offset: number) => void
+  scrollToOffset: (node: ScrollableNode, offset: number) => void
   scrollEventThrottle?: number
 }
 
@@ -63,7 +68,7 @@ const FLAT_LIST: ScrollableAdapter = {
   },
 }
 
-function measureViewportTop(node: any, apply: (top: number) => void): void {
+function measureViewportTop(node: ScrollableNode, apply: (top: number) => void): void {
   const measurable =
     typeof node?.measureInWindow === "function" ? node : node?.getNativeScrollRef?.()
   if (!measurable || typeof measurable.measureInWindow !== "function") {
@@ -80,12 +85,12 @@ function makeKeyboardAwareScrollable(
 ): React.ComponentType<any> {
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
-  const KeyboardAwareScrollable = forwardRef<any, any>(function KeyboardAwareScrollable(
+  const KeyboardAwareScrollable = forwardRef<ScrollableNode, DecoratedScrollProps>(function KeyboardAwareScrollable(
     { contentContainerStyle, onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
   ) {
     const scopeId = useId()
-    const innerRef = useRef<any>(null)
+    const innerRef = useRef<ScrollableNode | null>(null)
     const offsetRef = useRef(0)
     const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [state, setState] = useState(() => initialScrollKeyboardState(scopeId))
@@ -106,14 +111,7 @@ function makeKeyboardAwareScrollable(
       setState((previous) => reduceScrollKeyboard(previous, signal))
     }, [])
 
-    const setRefs = useCallback(
-      (node: any) => {
-        innerRef.current = node
-        if (typeof ref === "function") ref(node)
-        else if (ref) (ref as React.MutableRefObject<any>).current = node
-      },
-      [ref],
-    )
+    const setRefs = useMergedRef(innerRef, ref)
 
     const handleScroll = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -129,7 +127,7 @@ function makeKeyboardAwareScrollable(
           endCoordinates,
           windowHeight: Dimensions.get("window").height,
           restingWindowHeight: restingWindowHeight.current,
-          platform: PLATFORM,
+          platform: KEYBOARD_PLATFORM,
           systemBarInset: bottomInsetRef.current,
         }),
       [restingWindowHeight],
@@ -172,7 +170,7 @@ function makeKeyboardAwareScrollable(
         clearTimeout(holdRef.current)
         holdRef.current = null
       }
-      const showSub = Keyboard.addListener(SHOW_EVENT, (e) => {
+      const showSub = Keyboard.addListener(KEYBOARD_SHOW_EVENT, (e) => {
         clearHold()
         dispatch({
           type: "show",
@@ -184,7 +182,7 @@ function makeKeyboardAwareScrollable(
           options.onKeyboardShow?.()
         }
       })
-      const hideSub = Keyboard.addListener(HIDE_EVENT, () => {
+      const hideSub = Keyboard.addListener(KEYBOARD_HIDE_EVENT, () => {
         dispatch({ type: "hide" })
         clearHold()
         holdRef.current = setTimeout(() => {
@@ -199,8 +197,11 @@ function makeKeyboardAwareScrollable(
       }
     }, [dispatch, horizontal, overlapOfEvent, scopeId])
 
+    const reveals = scrollKeyboardReveals(state)
+    // Re-measure only when the focused field, keyboard height, padding or reveal request moves, never
+    // on every reducer step: each run may scroll the list.
     useEffect(() => {
-      if (!scrollKeyboardReveals(state)) return
+      if (!reveals) return
       if (!pageActiveRef.current || !ownsFocusedInput()) return
       const node = innerRef.current
       const focus = keyboardFocusStore.getState()
@@ -221,13 +222,11 @@ function makeKeyboardAwareScrollable(
           if (delta > 0) adapter.scrollToOffset(node, revealScrollTarget(offsetRef.current, delta))
         })
       })
-    }, [state.focusedScope, state.overlap, state.reserve, state.revealVersion])
+    }, [reveals, state.focusedScope, state.overlap, state.reserve, state.revealVersion])
 
     const mergedContentStyle = useMemo(() => {
       if (horizontal) return contentContainerStyle
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + state.reserve }]
+      return withExtraBottomPadding(contentContainerStyle, state.reserve)
     }, [contentContainerStyle, horizontal, state.reserve])
 
     const scrollable = (

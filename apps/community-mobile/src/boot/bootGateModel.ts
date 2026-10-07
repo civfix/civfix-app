@@ -2,7 +2,20 @@ export const BOOT_NOTICE_MS = 4000
 
 export const BOOT_DEADLINE_MS = 8000
 
-export const BOOT_GATE_TICK_MS = 500
+/**
+ * Every elapsed time `bootGateState` compares against. Its output is constant between two of these,
+ * so the hooks wake at each one instead of ticking.
+ */
+export const BOOT_GATE_THRESHOLDS_MS: readonly number[] = [BOOT_NOTICE_MS, BOOT_DEADLINE_MS]
+
+export const BOOT_PHASE_THRESHOLDS_MS: readonly number[] = [BOOT_DEADLINE_MS]
+
+/** The largest threshold `elapsedMs` has reached, or 0: an elapsed time the gate reads identically. */
+export function reachedThreshold(elapsedMs: number, thresholds: readonly number[]): number {
+  let reached = 0
+  for (const at of thresholds) if (elapsedMs >= at && at > reached) reached = at
+  return reached
+}
 
 export type BootNetworkOutcome = "pending" | "ok" | "timeout" | "error"
 

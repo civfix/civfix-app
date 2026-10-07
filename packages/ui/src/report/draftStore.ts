@@ -1,5 +1,8 @@
 import { create } from "zustand"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
 import type { CapturedMedia } from "../capabilities"
+import { registerViewerScopedDrafts } from "../viewerScope"
+import { randomId } from "../data/randomId"
 
 export interface DraftMedia {
   id: string
@@ -33,6 +36,7 @@ export interface DraftReport {
   lng: number | null
   geomSource: GeomSource
   locationPrefilled: boolean
+  locationMediaId: string | null
   capturedAt: string | null
   addr: string | null
   addrEdited: boolean
@@ -61,13 +65,12 @@ interface DraftReportState {
   addMedia: (media: DraftMediaInput) => void
   removeMedia: (idOrUri: string) => void
   setMediaUploadId: (id: string, uploadId: string) => void
+  clearMediaUploadIds: () => void
   setShareToFeed: (value: boolean) => void
   setFeedCaption: (caption: string) => void
   setFeedPostId: (postId: string | null) => void
   reset: () => void
 }
-
-export const MAX_DRAFT_MEDIA = 5
 
 const EMPTY_FLAGS: DraftFlags = {
   blockingSidewalk: false,
@@ -86,6 +89,7 @@ const EMPTY: DraftReport = {
   lng: null,
   geomSource: "device",
   locationPrefilled: false,
+  locationMediaId: null,
   capturedAt: null,
   addr: null,
   addrEdited: false,
@@ -95,21 +99,35 @@ const EMPTY: DraftReport = {
   feedPostId: null,
 }
 
-function randomUuid(): string {
-  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto
-  if (c && typeof c.randomUUID === "function") return c.randomUUID()
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
-    const r = (Math.random() * 16) | 0
-    const v = ch === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+export type DraftMediaInput = Omit<DraftMedia, "id">
+
+const releaseByUri = new Map<string, () => void>()
+
+function holdRelease(media: CapturedMedia, kept: boolean): void {
+  const release = media.release
+  if (!release) return
+  if (!kept) release.call(media)
+  else releaseByUri.set(media.uri, () => release.call(media))
 }
 
-export type DraftMediaInput = Omit<DraftMedia, "id">
+// An uploaded item may still be on screen after it leaves the draft (the success card, a composer
+// attachment, a feed card's local thumb), so only a never-uploaded capture is freed here; an uploaded
+// one lives as long as the page, as before.
+function releaseDroppedMedia(next: readonly DraftMedia[], previous: readonly DraftMedia[]): void {
+  if (next === previous || releaseByUri.size === 0) return
+  const remaining = new Set(next.map((m) => m.uri))
+  for (const m of previous) {
+    if (remaining.has(m.uri)) continue
+    const release = releaseByUri.get(m.uri)
+    if (release === undefined) continue
+    releaseByUri.delete(m.uri)
+    if (m.uploadId === undefined) release()
+  }
+}
 
 function draftMediaFromCapture(media: CapturedMedia): DraftMedia {
   return {
-    id: randomUuid(),
+    id: randomId(),
     uri: media.uri,
     kind: media.kind,
     mime: media.mime,
@@ -119,6 +137,28 @@ function draftMediaFromCapture(media: CapturedMedia): DraftMedia {
   }
 }
 
+// A capture into a media-less draft only starts a NEW report when nothing else was authored: removing every
+// capture must not throw away the category, title and description the reporter already wrote.
+export function captureSeedsNewReport(
+  draft: Pick<
+    DraftReport,
+    "media" | "category" | "reportTypeId" | "title" | "description" | "flags" | "lat" | "locationPrefilled" | "addrEdited"
+  >,
+): boolean {
+  if (draft.media.length > 0) return false
+  const manualPoint = draft.lat != null && !draft.locationPrefilled
+  return (
+    draft.category === null &&
+    draft.reportTypeId === null &&
+    draft.title.trim() === "" &&
+    draft.description.trim() === "" &&
+    !draft.flags.blockingSidewalk &&
+    !draft.flags.safetyHazard &&
+    !manualPoint &&
+    (!draft.addrEdited || draft.locationPrefilled)
+  )
+}
+
 export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   draft: EMPTY,
   freshSeeds: 0,
@@ -126,7 +166,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   ensureIdempotencyKey: () => {
     const existing = get().draft.idempotencyKey
     if (existing) return existing
-    const key = randomUuid()
+    const key = randomId()
     set((s) => ({ draft: { ...s.draft, idempotencyKey: key } }))
     return key
   },
@@ -146,22 +186,33 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     set((s) => ({ draft: { ...s.draft, flags: { ...s.draft.flags, [flag]: value } } })),
   setLocation: (lat, lng, geomSource, capturedAt) =>
     set((s) => ({
-      draft: { ...s.draft, lat, lng, geomSource, capturedAt: capturedAt ?? s.draft.capturedAt },
+      draft: {
+        ...s.draft,
+        lat,
+        lng,
+        geomSource,
+        locationMediaId: null,
+        capturedAt: capturedAt ?? s.draft.capturedAt,
+      },
     })),
   setPrefilledLocation: (lat, lng) =>
     set((s) => ({
-      draft: { ...s.draft, lat, lng, geomSource: "manual", locationPrefilled: true },
+      draft: { ...s.draft, lat, lng, geomSource: "manual", locationPrefilled: true, locationMediaId: null },
       freshSeeds: s.freshSeeds + 1,
     })),
   clearLocation: () =>
-    set((s) => ({ draft: { ...s.draft, lat: null, lng: null, locationPrefilled: false } })),
+    set((s) => ({
+      draft: { ...s.draft, lat: null, lng: null, locationPrefilled: false, locationMediaId: null },
+    })),
   setAddress: (addr) => set((s) => ({ draft: { ...s.draft, addr, addrEdited: true } })),
   setPrefilledAddress: (addr) =>
     set((s) => (s.draft.addrEdited ? s : { draft: { ...s.draft, addr } })),
-  setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomUuid(), ...media }] } })),
+  setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomId(), ...media }] } })),
 
   startFromCapture: (media) => {
     const capturedAt = new Date().toISOString()
+    const seeded = draftMediaFromCapture(media)
+    holdRelease(media, true)
     set((s) => {
       const prefilled =
         s.draft.locationPrefilled && s.draft.lat != null && s.draft.lng != null
@@ -178,30 +229,49 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
         draft: {
           ...EMPTY,
           flags: { ...EMPTY_FLAGS },
-          idempotencyKey: randomUuid(),
-          media: [draftMediaFromCapture(media)],
+          idempotencyKey: randomId(),
+          media: [seeded],
           capturedAt,
           ...(media.location
-            ? { lat: media.location.lat, lng: media.location.lng, geomSource: media.location.source }
+            ? {
+                lat: media.location.lat,
+                lng: media.location.lng,
+                geomSource: media.location.source,
+                locationMediaId: seeded.id,
+              }
             : {}),
-          ...(prefilled ?? {}),
+          ...(prefilled ? { ...prefilled, locationMediaId: null } : {}),
         },
       }
     })
   },
 
-  addCapture: (media) =>
-    set((s) => ({
-      draft: {
-        ...s.draft,
-        media: [...s.draft.media, draftMediaFromCapture(media)].slice(0, MAX_DRAFT_MEDIA),
-      },
-    })),
+  addCapture: (media) => {
+    const added = draftMediaFromCapture(media)
+    set((s) => {
+      const becomesLocationSource = s.draft.media.length === 0 && s.draft.lat == null && media.location != null
+      return {
+        draft: {
+          ...s.draft,
+          media: [...s.draft.media, added].slice(0, MAX_REPORT_MEDIA),
+          ...(becomesLocationSource && media.location
+            ? {
+                lat: media.location.lat,
+                lng: media.location.lng,
+                geomSource: media.location.source,
+                locationMediaId: added.id,
+              }
+            : {}),
+        },
+      }
+    })
+    holdRelease(media, get().draft.media.some((m) => m.id === added.id))
+  },
   addMedia: (media) =>
     set((s) => ({
       draft: {
         ...s.draft,
-        media: [...s.draft.media, { id: randomUuid(), ...media }].slice(0, MAX_DRAFT_MEDIA),
+        media: [...s.draft.media, { id: randomId(), ...media }].slice(0, MAX_REPORT_MEDIA),
       },
     })),
   removeMedia: (idOrUri) =>
@@ -209,7 +279,10 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       const i = s.draft.media.findIndex((m) => m.id === idOrUri)
       const at = i >= 0 ? i : s.draft.media.findIndex((m) => m.uri === idOrUri)
       if (at < 0) return s
-      return { draft: { ...s.draft, media: s.draft.media.filter((_, j) => j !== at) } }
+      const removed = s.draft.media[at]
+      const media = s.draft.media.filter((_, j) => j !== at)
+      if (removed === undefined || removed.id !== s.draft.locationMediaId) return { draft: { ...s.draft, media } }
+      return { draft: { ...s.draft, media, lat: null, lng: null, locationMediaId: null } }
     }),
   setMediaUploadId: (id, uploadId) =>
     set((s) => ({
@@ -217,6 +290,10 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
         ...s.draft,
         media: s.draft.media.map((m) => (m.id === id ? { ...m, uploadId } : m)),
       },
+    })),
+  clearMediaUploadIds: () =>
+    set((s) => ({
+      draft: { ...s.draft, media: s.draft.media.map(({ uploadId: _dropped, ...m }) => m) },
     })),
   setShareToFeed: (shareToFeed) => set((s) => ({ draft: { ...s.draft, shareToFeed } })),
   setFeedCaption: (feedCaption) => set((s) => ({ draft: { ...s.draft, feedCaption } })),
@@ -227,3 +304,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       freshSeeds: s.freshSeeds + 1,
     })),
 }))
+
+useDraftReportStore.subscribe((state, previous) => releaseDroppedMedia(state.draft.media, previous.draft.media))
+
+registerViewerScopedDrafts(useDraftReportStore, { discard: () => useDraftReportStore.getState().reset() })

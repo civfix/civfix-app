@@ -7,9 +7,10 @@ const code = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 
 const CONVERSATION = code(read("../ConversationBody.tsx"))
+const MESSAGE_ACTIONS = code(read("../conversation/useChatMessageActions.ts"))
 const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
 const COMPOSER_ATTACHMENTS = code(read("../../primitives/useComposerAttachments.ts"))
-const INBOX = code(read("../MessagingListBody.tsx"))
+const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"].map((file) => code(read(file))).join("\n")
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
 
 describe("the message list's virtualization", () => {
@@ -62,7 +63,10 @@ describe("the row memo can actually skip", () => {
 describe("failures are surfaced, not swallowed", () => {
   it("a failed delete toasts like its pin/vote siblings", () => {
     expect(CONVERSATION).not.toMatch(/chat\.delete\(messageId\)\.catch\(\(\) => \{\}\)/)
-    expect(CONVERSATION).toMatch(/menu\.delete_failed/)
+    expect(CONVERSATION).toContain("useChatMessageActions({ createPoll, votePoll, closePoll, setPinned, deleteMessage })")
+    expect(CONVERSATION).toContain("onDelete={onDeleteMessage}")
+    expect(MESSAGE_ACTIONS).not.toMatch(/deleteMessage\(messageId\)\.catch\(\(\) => \{\}\)/)
+    expect(MESSAGE_ACTIONS).toMatch(/deleteMessage\(messageId\)\.catch\(\(\) => \{\s*toast\.show\(t\("menu\.delete_failed"\)/)
   })
 
   it("a blocked attachment pick says why instead of returning silently", () => {

@@ -1,31 +1,33 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
-import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE } from "@civfix/shared"
+import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE, appErrorCode } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import {
   focusRingProps,
   makeThemedStyles,
+  hitSlopToTarget,
+  MIN_TOUCH_TARGET,
   useTheme,
   webCursor,
   webHover,
   webInputReset,
+  inputFocusedStyle,
 } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
-import { FilterChip, PrimaryButton, fieldFocusedStyle, useToast } from "../../primitives"
+import { FilterChip, PrimaryButton, useToast } from "../../primitives"
 import { Markdown } from "../../primitives/Markdown"
-import { useCleanup } from "../../data"
+import { useAuthState, useCleanup } from "../../data"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
   AUDIENCE_PREVIEW_DEBOUNCE_MS,
   useAudiencePreview,
   useCreateAnnouncement,
 } from "../../data/hooks/announcements"
-import { hasHostCapability } from "../../data/hooks/host"
+import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../errorCode"
+import { HostBodyState } from "./HostBodyState"
 import {
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,
@@ -38,6 +40,14 @@ import {
 } from "./announcementModel"
 
 const AUDIENCE_ICON_SIZE = 16
+
+const TOGGLE_MIN_HEIGHT = 24
+
+const COMPOSER_MIN_HEIGHT = 140
+
+const TOGGLE_SLOP_Y = hitSlopToTarget(TOGGLE_MIN_HEIGHT)
+
+const TOGGLE_HIT_SLOP = { top: TOGGLE_SLOP_Y, bottom: TOGGLE_SLOP_Y }
 
 export function HostAnnounceBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -59,7 +69,8 @@ export function HostAnnounceBody({ id }: { id: string }) {
   const [focusedField, setFocusedField] = useState<"title" | "body" | null>(null)
 
   const slots = cleanup.data?.slots ?? []
-  const canBroadcast = hasHostCapability(cleanup.data, "broadcast")
+  const viewerId = useAuthState().user?.id ?? null
+  const canBroadcast = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "broadcast")
   const audience = useMemo(() => audienceFor(audienceKind, slotIds), [audienceKind, slotIds])
   const settled = useDebouncedValue(audience, AUDIENCE_PREVIEW_DEBOUNCE_MS)
   const recipients = useAudiencePreview(id, settled, {
@@ -101,19 +112,11 @@ export function HostAnnounceBody({ id }: { id: string }) {
   }, [])
 
   if (cleanup.isError) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   if (cleanup.data && !canBroadcast) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-      </View>
-    )
+    return <HostBodyState state="denied" t={t} />
   }
 
   const count = recipients.data?.recipientCount ?? null
@@ -149,7 +152,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
           style={[
             webInputReset,
             styles.input,
-            focusedField === "title" ? fieldFocusedStyle(th) : null,
+            focusedField === "title" ? inputFocusedStyle(th) : null,
           ]}
         />
       </View>
@@ -164,6 +167,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
             accessibilityLabel={
               preview ? t("announce.preview_off_a11y") : t("announce.preview_on_a11y")
             }
+            hitSlop={TOGGLE_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [
               styles.toggle,
@@ -200,7 +204,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
               webInputReset,
               styles.input,
               styles.inputMultiline,
-              focusedField === "body" ? fieldFocusedStyle(th) : null,
+              focusedField === "body" ? inputFocusedStyle(th) : null,
             ]}
           />
         )}
@@ -229,7 +233,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
                 onPress={() => setAudienceKind(option)}
                 disabled={create.isPending}
                 accessibilityRole="radio"
-                accessibilityState={{ selected, disabled: create.isPending }}
+                accessibilityState={{ checked: selected, disabled: create.isPending }}
                 accessibilityLabel={tEnums(`broadcastSegment.${option}`)}
                 {...focusRingProps}
                 style={(state) => [
@@ -267,6 +271,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
                   key={slot.id}
                   label={slot.title}
                   selected={slotIds.includes(slot.id)}
+                  selection="multiple"
                   onPress={() => toggleSlot(slot.id)}
                 />
               ))
@@ -299,9 +304,6 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
   },
-  fill: {
-    flex: 1,
-  },
   content: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
@@ -328,7 +330,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
   input: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"],
     borderRadius: t.radius.md,
@@ -340,11 +342,11 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   inputMultiline: {
-    minHeight: 140,
+    minHeight: COMPOSER_MIN_HEIGHT,
     textAlignVertical: "top",
   },
   previewBox: {
-    minHeight: 140,
+    minHeight: COMPOSER_MIN_HEIGHT,
     padding: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,
@@ -352,7 +354,8 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   toggle: {
-    paddingVertical: 4,
+    minHeight: TOGGLE_MIN_HEIGHT,
+    justifyContent: "center",
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.sm,
   },
@@ -371,7 +374,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,

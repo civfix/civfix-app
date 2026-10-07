@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { describe, expect, it, vi } from "vitest"
-import { act, screen } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { act, cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 vi.mock("@civfix/ui/i18n", async () => {
@@ -11,6 +11,8 @@ vi.mock("@civfix/ui/i18n", async () => {
 import { renderConsole } from "../__testing__/harness"
 import { closeConsoleDrawer, setConsoleParams, useConsoleUrlState } from "../url-state"
 import { Drawer } from "./drawer"
+
+afterEach(cleanup)
 
 function Harness({ onClose }: { onClose?: () => void }) {
   const [open, setOpen] = useState(true)
@@ -136,5 +138,76 @@ describe("a drawer addressed by a pushed URL param", () => {
     expect(window.location.search).toBe("")
     expect(window.history.length).toBe(lengthWithDrawer)
     expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("keeps a filter changed while the drawer was open instead of reverting it on close", async () => {
+    window.history.replaceState(null, "", "/manage/events/e1/attendees/?ticket=t1")
+    renderConsole(<ParamDrawerHarness />)
+
+    await act(async () => {
+      setConsoleParams({ attendee: "a1" }, "push")
+    })
+    await act(async () => {
+      setConsoleParams({ q: "ann", cursor: null })
+    })
+    expect(window.location.search).toBe("?q=ann&ticket=t1&attendee=a1")
+    const lengthWithDrawer = window.history.length
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole("button", { name: "action.close" }))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
+
+    expect(window.location.search).toBe("?q=ann&ticket=t1")
+    expect(window.history.length).toBe(lengthWithDrawer)
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+})
+
+function WideDrawerHarness() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        open attendee
+      </button>
+      <Drawer open={open} onClose={() => setOpen(false)} title="Attendee">
+        <button type="button">detail</button>
+      </Drawer>
+    </>
+  )
+}
+
+describe("a non-modal drawer on a wide screen", () => {
+  const original = window.matchMedia
+
+  afterEach(() => {
+    window.matchMedia = original
+  })
+
+  it("moves focus into the panel on open and returns it to the opener on close", async () => {
+    window.matchMedia = ((query: string) => ({
+      matches: query === "(min-width: 1440px)",
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+    const user = userEvent.setup()
+    renderConsole(<WideDrawerHarness />)
+    const opener = screen.getByRole("button", { name: "open attendee" })
+    await user.click(opener)
+
+    const dialog = screen.getByRole("dialog", { name: "Attendee" })
+    expect(dialog.getAttribute("aria-modal")).toBeNull()
+    expect(dialog.contains(document.activeElement)).toBe(true)
+
+    await user.click(screen.getByRole("button", { name: "action.close" }))
+    expect(screen.queryByRole("dialog")).toBeNull()
+    expect(document.activeElement).toBe(opener)
   })
 })

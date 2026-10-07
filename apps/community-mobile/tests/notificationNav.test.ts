@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 import { isInternalLink } from "../src/lib/links.ts"
 import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBridge.ts"
 import { shellHostsEntries } from "../src/lib/internalHref.ts"
@@ -71,10 +72,13 @@ test("an entity link tapped on a full-screen route is pushed on top of it, never
 })
 
 test("a tapped notification dismisses to the shell whenever the action says to", () => {
-  const listener = layout.slice(layout.indexOf("function useNotificationDeepLinks"))
+  const hookSource = readFileSync(new URL("../src/push/useNotificationDeepLinks.ts", import.meta.url), "utf8")
+  const listener = hookSource.slice(hookSource.indexOf("function useNotificationDeepLinks"))
   const body = listener.slice(0, listener.indexOf("\n}"))
   assert.match(body, /const applied = applyInternalHref\(href as string\)/)
-  assert.match(body, /if \(applied\?\.dismissToShell\) dismissToShell\?\.\(\)/)
+  assert.match(body, /if \(applied\?\.dismissToShell\) dismissToShell\(\)/)
+  assert.match(layout, /useNotificationDeepLinks\(requestDismissToShell\)/)
+  assert.match(layout, /function requestDismissToShell\(\): void \{\n\s+dismissToShell\?\.\(\)\n\}/)
 })
 
 test("the bridge asks the router which screen is actually on top before it pushes", () => {

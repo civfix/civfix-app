@@ -20,7 +20,9 @@
     "rule_invalid": "3~20자의 영문자, 숫자 또는 밑줄을 사용하세요.",
     "checking": "확인 중...",
     "available": "@{{handle}} 사용 가능",
-    "taken": "@{{handle}} 이미 사용 중"
+    "taken": "@{{handle}} 이미 사용 중",
+    "check_failed": "사용자 이름을 확인하지 못했어요.",
+    "retry": "다시 시도"
   },
   "continue": "계속",
   "signout": {

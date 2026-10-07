@@ -10,15 +10,9 @@ import { MailAttachmentSchema } from "./mail.js"
 
 /**
  * Inbox: catch-all `*@civfix.org` inbound mail that is NOT an outreach reply (a reply carries a
- * `reply+{token}@` thread token and threads into the Mail feature instead). These are cold/support
- * messages stored in the backend `inbound_emails` table and triaged in the admin Inbox feature
- * (list + reader, mark read / archive). The Cloudflare Email Worker -> R2 -> backend webhook/sweep
- * pipeline writes them; see documents/17-inbound-email-worker.md.
+ * `reply+{token}@` thread token and threads into Mail instead). The Cloudflare Email Worker -> R2 ->
+ * backend webhook/sweep pipeline writes them to the `inbound_emails` table.
  */
-
-// ---------------------------------------------------------------------------
-// Status
-// ---------------------------------------------------------------------------
 
 /** Lifecycle of an inbound email in the operator inbox. */
 export const InboundEmailStatusSchema = z.enum(["unread", "read", "archived"])
@@ -29,10 +23,6 @@ export const INBOUND_EMAIL_STATUS_LABELS: Record<InboundEmailStatus, string> = {
   read: "Read",
   archived: "Archived",
 }
-
-// ---------------------------------------------------------------------------
-// List item
-// ---------------------------------------------------------------------------
 
 /**
  * An inbox list row. `from` is the sender address; `recipient` the full catch-all address it was sent
@@ -70,10 +60,6 @@ export type InboxListQuery = z.infer<typeof InboxListQuerySchema>
 export const InboxListResponseSchema = pageResponse(InboundEmailListItemDTOSchema)
 export type InboxListResponse = z.infer<typeof InboxListResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
-
 /** Full inbound email: the list shape plus the body + attachment refs (single message, not a thread). */
 export const InboundEmailDTOSchema = InboundEmailListItemDTOSchema.extend({
   bodyText: z.string(),
@@ -86,11 +72,7 @@ export type InboundEmailDTO = z.infer<typeof InboundEmailDTOSchema>
 export const GetInboxMessageResponseSchema = InboundEmailDTOSchema
 export type GetInboxMessageResponse = z.infer<typeof GetInboxMessageResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
-/** Set an inbound email's triage status ("Mark read" -> read, "Archive" -> archived). */
+/** Set an inbound email's triage status. */
 export const SetInboxStatusRequestSchema = z
   .object({
     id: z.string(),

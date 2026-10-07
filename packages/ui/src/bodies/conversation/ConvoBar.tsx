@@ -7,7 +7,7 @@ import type { AnchorRect, PopoverMenuItem } from "../../primitives"
 import { useT } from "../../i18n"
 import { DETAIL_BACK_ICON_SIZE } from "../../shell/detailHeader"
 import type { ConvoMeta } from "./conversationModel"
-import { useConversationStyles } from "./styles"
+import { useConvoHeaderStyles } from "./convoHeaderStyles"
 
 export function ConvoBar({
   meta,
@@ -30,7 +30,7 @@ export function ConvoBar({
   onMembers?: () => void
   onTitlePress?: () => void
 }) {
-  const styles = useConversationStyles()
+  const styles = useConvoHeaderStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   const isGroup = meta.kind === "group" || meta.kind === "cleanup" || meta.kind === "report"
@@ -76,12 +76,15 @@ export function ConvoBar({
         <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
       </Pressable>
       {onTitlePress ? (
+        // A pointer shortcut only: the title below is the one control screen readers and Tab reach.
         <Pressable
           onPress={onTitlePress}
-          accessibilityRole="button"
-          accessibilityLabel={titlePressLabel}
+          accessible={false}
+          focusable={false}
+          {...({ tabIndex: -1 } as object)}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
           hitSlop={6}
-          {...focusRingProps}
           style={({ pressed }) => [styles.avatarTap, pressed ? styles.convoSubPressed : null]}
         >
           <ThreadAvatar thread={avatarThread} size={38} />
@@ -230,7 +233,7 @@ export function BlockConfirmCard({
   onCancel: () => void
   onConfirm: () => void
 }) {
-  const styles = useConversationStyles()
+  const styles = useConvoHeaderStyles()
   const { t } = useT("conversation")
   return (
     <View style={styles.confirm}>

@@ -1,6 +1,4 @@
-export type AppLifecycleState = "active" | "background" | "inactive" | "unknown" | "extension"
-
-export type AuthLifecycleStatus = "idle" | "loading" | "authed" | "unauthed"
+import type { AppLifecycleState, AuthStatus } from "@/lib/lifecycleTypes"
 
 export function isFocused(state: AppLifecycleState | null | undefined): boolean {
   return state !== "background"
@@ -11,8 +9,8 @@ export function shouldRevalidateOnState(state: AppLifecycleState | null | undefi
 }
 
 export function isSignOutTransition(
-  previous: AuthLifecycleStatus,
-  next: AuthLifecycleStatus,
+  previous: AuthStatus,
+  next: AuthStatus,
 ): boolean {
   return previous === "authed" && next === "unauthed"
 }

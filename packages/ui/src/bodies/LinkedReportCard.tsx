@@ -1,27 +1,11 @@
 import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import {
-  type ReportCategory,
-  type ReportType,
-  type ReportStatus,
-} from "@civfix/shared"
-import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition } from "../theme"
+import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { CategoryChip, StatusBadge, FramedImage } from "../primitives"
 import { useT } from "../i18n"
 import { linkedReportHeadline, type LinkedReportHeadline } from "./linkedReportHeadline"
-
-export interface LinkedReportCardData {
-  id: string
-  category: ReportCategory
-  type?: ReportType | null
-  title?: string | null
-  description?: string | null
-  status: ReportStatus | null
-  thumbUrl?: string | null
-  addr?: string | null
-  referenceCode?: string | null
-}
+import type { LinkedReportCardData } from "./linkedReportCards"
 
 export function LinkedReportCard({
   report,
@@ -65,31 +49,8 @@ export function LinkedReportCard({
   const isList = layout === "list"
   const interactive = !!onPress && !disabled
 
-  const card = (
-    <Pressable
-      onPress={onPress}
-      disabled={!interactive}
-      accessibilityRole={selectable ? "checkbox" : "button"}
-      accessibilityState={
-        selectable ? { checked: selected, disabled } : disabled ? { disabled } : undefined
-      }
-      accessibilityLabel={a11yLabel ?? t("card.a11yLabel", { title, category: categoryLabel })}
-      {...focusRingProps}
-      style={(state) => [
-        styles.card,
-        isList ? styles.cardList : styles.cardStrip,
-        webTransition,
-        webCursor(!interactive),
-        selectable && selected ? styles.cardSelected : null,
-        webHover(state) && interactive
-          ? selectable && selected
-            ? styles.hoveredSelected
-            : styles.hovered
-          : null,
-        state.pressed && interactive ? styles.pressed : null,
-        disabled ? styles.disabled : null,
-      ]}
-    >
+  const content = (
+    <>
       {report.thumbUrl ? (
         isList ? (
           <FramedImage
@@ -175,8 +136,42 @@ export function LinkedReportCard({
           {selected ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
         </View>
       ) : null}
-    </Pressable>
+    </>
   )
+
+  const card =
+    onPress || selectable ? (
+      <Pressable
+        onPress={onPress}
+        disabled={!interactive}
+        accessibilityRole={selectable ? "checkbox" : "button"}
+        accessibilityState={
+          selectable ? { checked: selected, disabled } : disabled ? { disabled } : undefined
+        }
+        accessibilityLabel={a11yLabel ?? t("card.a11yLabel", { title, category: categoryLabel })}
+        {...focusRingProps}
+        style={(state) => [
+          styles.card,
+          isList ? styles.cardList : styles.cardStrip,
+          webTransition,
+          webCursor(!interactive),
+          selectable && selected ? styles.cardSelected : null,
+          webHover(state) && interactive
+            ? selectable && selected
+              ? styles.hoveredSelected
+              : styles.hovered
+            : null,
+          state.pressed && interactive ? styles.pressed : null,
+          disabled ? styles.disabled : null,
+        ]}
+      >
+        {content}
+      </Pressable>
+    ) : (
+      <View style={[styles.card, isList ? styles.cardList : styles.cardStrip, disabled ? styles.disabled : null]}>
+        {content}
+      </View>
+    )
 
   if (onRemove) {
     return (
@@ -263,7 +258,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   body: {
     padding: t.space["3"],
-    gap: 4,
+    gap: t.space["1"],
   },
   bodyList: {
     flex: 1,
@@ -333,10 +328,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   removeBtn: {
     position: "absolute",
-    top: -16,
-    right: -16,
-    width: 44,
-    height: 44,
+    top: -t.space["4"],
+    right: -t.space["4"],
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
   },

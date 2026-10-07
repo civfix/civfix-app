@@ -2,29 +2,36 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { ErrorCode, isAppErrorLike } from "@civfix/shared"
 
 import { api } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
-import { useAuthStore, selectIsAuthenticated, selectAuthResolved } from "@/store/auth-store"
+import {
+  isConfirmedSignedOut,
+  useAuthStore,
+  selectIsAuthenticated,
+  selectAuthResolved,
+  SESSION_SETTLE_TIMEOUT_MS,
+} from "@/store/auth-store"
+import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
 
 /**
- * Queries whose result depends on the viewer's identity. On sign-in/sign-out we invalidate only
- * these (not every cached query) so a fresh public surface like the map does not refetch needlessly
- * and a flaky backend is not hit with a thundering herd. Each key is a PREFIX so all variants match
- * (e.g. every `myReports(limit)` and `notifications(limit)`, every per-id profile/report/cleanup that
- * carries viewer-specific `mine`/`following` flags).
+ * Only these are invalidated on sign-in/sign-out, so public surfaces like the map do not refetch and a
+ * flaky backend is not hit with a thundering herd. Each key is a prefix that matches every variant.
  */
 const AUTH_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   queryKeys.myReportsRoot,
-  // ["threads"] is a PREFIX of every inbox variant, so this one entry covers the whole family.
   queryKeys.threads,
   queryKeys.notificationsRoot,
-  queryKeys.notificationPrefs,
-  ["profile"],
-  ["report"],
-  ["cleanup"],
-  ["chat"],
+  queryKeys.profileRoot,
+  // Feeds, replies, saves and post details carry the viewer's liked/saved/reposted flags.
+  queryKeys.postsRoot,
+  queryKeys.postRoot,
+  queryKeys.reportRoot,
+  queryKeys.cleanupRoot,
+  queryKeys.chatRoot,
+  ["volunteer"],
 ]
 
 function invalidateAuthDependentQueries(
@@ -35,15 +42,10 @@ function invalidateAuthDependentQueries(
   ).then(() => undefined)
 }
 
-/**
- * Read-side auth hooks plus a session refresh used by the auth modal after a successful sign-in.
- */
-
 export function useIsAuthenticated(): boolean {
   return useAuthStore(selectIsAuthenticated)
 }
 
-/** True once the session check has reached a terminal answer (authenticated or anonymous). */
 export function useAuthResolved(): boolean {
   return useAuthStore(selectAuthResolved)
 }
@@ -52,10 +54,6 @@ export function useCurrentUser() {
   return useAuthStore((s) => s.user)
 }
 
-/**
- * Refresh the auth store from GET /auth/session. Returns a callback the auth modal calls after the
- * OAuth/OTP flow completes so the UI reflects the new session and protected queries can refetch.
- */
 export function useRefreshSession() {
   const setSession = useAuthStore((s) => s.setSession)
   const setStatus = useAuthStore((s) => s.setStatus)
@@ -67,8 +65,8 @@ export function useRefreshSession() {
     try {
       const res = await api.session()
       if (res.authenticated && res.user) {
-        // Thread the CSRF token so the OAuth-return refresh recovers it. The store preserves any
-        // previously captured token when this response omits one. enabledProviders drives the modal.
+        // Threads the CSRF token so the OAuth-return refresh recovers it; the store keeps a previously
+        // captured token when this response omits one.
         setSession({
           user: res.user,
           csrfToken: res.csrfToken,
@@ -84,34 +82,67 @@ export function useRefreshSession() {
           guestSmsEnabled: res.guestSmsEnabled,
         })
       }
-      // Let protected queries (reports/threads/notifications/profiles) refetch under the new identity.
-      // Scoped to the auth-dependent keys so public surfaces (map pins, cleanups) are not refetched.
       await invalidateAuthDependentQueries(queryClient)
       return res.authenticated
     } catch {
-      // The refresh never reached a live answer. Fall back to the signed-out UI, but through
-      // setAnonymous so `user` is cleared with the status (a bare setStatus would leave the stale
-      // profile readable through useCurrentUser while useIsAuthenticated reports false).
+      // setAnonymous, not a bare setStatus: `user` must clear with the status, or the stale profile
+      // stays readable through useCurrentUser while useIsAuthenticated reports false.
       setAnonymous()
       return false
     }
   }, [setSession, setStatus, setAnonymous, queryClient])
 }
 
-/** Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. */
+/**
+ * How long a sign-out waits for POST /auth/logout before giving up and offering the retry. The CSRF
+ * resolver may first wait out the boot-time session check (SESSION_SETTLE_TIMEOUT_MS), so the deadline
+ * covers that wait plus a slow request.
+ */
+export const SIGN_OUT_DEADLINE_MS = SESSION_SETTLE_TIMEOUT_MS + 7_000
+
+/**
+ * POST /auth/logout. True when the server ended the session, or it had already ended (UNAUTHORIZED).
+ * Any other failure, the deadline included, leaves the httpOnly cookie valid. No header is passed: the
+ * client's CSRF resolver reads the token at call time, after the boot-time session check has settled.
+ */
+function revokeServerSession(): Promise<boolean> {
+  const controller = new AbortController()
+  return new Promise<boolean>((resolve) => {
+    const deadline = setTimeout(() => {
+      controller.abort()
+      resolve(false)
+    }, SIGN_OUT_DEADLINE_MS)
+    api.logout({ signal: controller.signal }).then(
+      () => {
+        clearTimeout(deadline)
+        resolve(true)
+      },
+      (err: unknown) => {
+        clearTimeout(deadline)
+        resolve(isAppErrorLike(err) && err.code === ErrorCode.UNAUTHORIZED)
+      },
+    )
+  })
+}
+
+/**
+ * Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. Never rejects (callers
+ * `void` it). Fails closed: while the server has not ended the session the cookie would sign the user
+ * straight back in on reload, so a failed POST keeps them visibly signed in and raises the retry notice.
+ */
 export function useLogout() {
   const clear = useAuthStore((s) => s.clear)
   const queryClient = useQueryClient()
 
   return React.useCallback(async () => {
-    try {
-      await api.logout()
-    } catch {
-      // Even if the call fails (already expired, backend down), drop local state.
-    }
+    const signOut = useSignOutRetryStore.getState()
+    if (!signOut.begin()) return
+    const revoked = await revokeServerSession()
+    // A 401 elsewhere may have signed the user out while this request hung: nothing is left to retry.
+    signOut.finish(revoked || isConfirmedSignedOut(useAuthStore.getState()))
+    if (!revoked) return
     clear()
-    // Fail-closed (shared-device safety): wipe the persisted query cache and the in-memory cache so the
-    // previous user's lists can never paint for the next person on this browser. The next load is cold.
+    // Shared-device safety: the previous user's lists must never paint for the next person here.
     clearPersistedCache()
     queryClient.clear()
   }, [clear, queryClient])

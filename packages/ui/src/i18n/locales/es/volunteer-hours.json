@@ -69,6 +69,7 @@
     "revoke_error": "No se pudo revocar el certificado. Inténtalo de nuevo.",
     "disabled_hint": "Primero registra algunas horas de voluntariado.",
     "error_generic": "No se pudo preparar tu registro. Inténtalo de nuevo.",
-    "error_rate_limited": "Puedes generar un registro cada pocos minutos."
+    "error_rate_limited": "Puedes generar un registro cada pocos minutos.",
+    "copy_error": "No se pudo copiar. Inténtalo de nuevo."
   }
 }

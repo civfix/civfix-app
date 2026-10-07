@@ -1,14 +1,17 @@
 import React, { useCallback } from "react"
-import { Pressable, StyleSheet, View, type ViewStyle } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import { BlurSurface } from "../surface"
 import { searchModeFor, useNavStore, type View as NavView } from "../nav"
-import { discardSearchInput } from "../bodies/searchRecentStore"
+import { discardSearchInput } from "../bodies/search/searchRecentStore"
 import { openReportFlow } from "../bodies/composerCreateFlow"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
+import { DOCK_ORB } from "./expandedFramePlan"
 import {
+  DOCK_ORB_GLYPH_SIZE,
+  DOCK_TAB_GLYPH_SIZE,
   TAB_BAR_HEIGHT,
   TAB_SPECS,
   activeTabIndex,
@@ -35,7 +38,6 @@ export const TABS: readonly TabDef[] = TAB_SPECS.map((spec) => ({ ...spec, ...TA
 export const TAB_COUNT = TABS.length
 
 export const BAR_HEIGHT = TAB_BAR_HEIGHT
-export const ORB_SIZE = 58
 export const PILL_INSET = 6
 
 export type TabPressHandler = (tab: TabDef) => void
@@ -112,10 +114,11 @@ export function TabButton({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
+      {...({ "aria-selected": active } as object)}
       accessibilityLabel={label}
       style={({ pressed }) => [styles.tab, pressed ? styles.pressed : null]}
     >
-      <Icon icon={tab.icon} size={24} color={color} />
+      <Icon icon={tab.icon} size={DOCK_TAB_GLYPH_SIZE} color={color} />
     </Pressable>
   )
 }
@@ -129,12 +132,13 @@ export function SearchOrb({ active, onPress }: { active: boolean; onPress: () =>
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      {...({ "aria-pressed": active } as object)}
       accessibilityLabel={t("tab.search")}
       style={({ pressed }) => [styles.orb, th.shadows.s3, pressed ? styles.pressed : null]}
     >
       <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
       <View style={styles.orbIcon}>
-        <Icon icon={iconMap.Search} size={22} color={active ? th.colors.accent : th.colors.textMuted} />
+        <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={active ? th.colors.accent : th.colors.textMuted} />
       </View>
     </Pressable>
   )
@@ -181,9 +185,9 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
     backgroundColor: t.glass.button.fill,
   },
   orb: {
-    width: ORB_SIZE,
-    height: ORB_SIZE,
-    borderRadius: ORB_SIZE / 2,
+    width: DOCK_ORB,
+    height: DOCK_ORB,
+    borderRadius: DOCK_ORB / 2,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.button.border,
     alignItems: "center",
@@ -208,4 +212,3 @@ export function BarGlass() {
   return <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
 }
 
-export type WebViewStyle = ViewStyle

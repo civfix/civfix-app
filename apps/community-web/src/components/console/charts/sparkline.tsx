@@ -1,5 +1,6 @@
 "use client"
 
+import { linePath, valueRuns } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface SparklineProps {
@@ -15,21 +16,6 @@ export interface SparklineProps {
 interface SparkPoint {
   x: number
   y: number
-}
-
-export function sparklineRuns(values: readonly (number | null)[]): { index: number; value: number }[][] {
-  const runs: { index: number; value: number }[][] = []
-  let current: { index: number; value: number }[] = []
-  values.forEach((value, index) => {
-    if (value === null) {
-      if (current.length > 0) runs.push(current)
-      current = []
-      return
-    }
-    current.push({ index, value })
-  })
-  if (current.length > 0) runs.push(current)
-  return runs
 }
 
 export function Sparkline({
@@ -54,7 +40,7 @@ export function Sparkline({
     x: pad + index * stepX,
     y: pad + (height - pad * 2) * (1 - (value - min) / range),
   })
-  const runs = sparklineRuns(values)
+  const runs = valueRuns(values)
   const lastRun = runs[runs.length - 1]
   const lastPoint = lastRun ? lastRun[lastRun.length - 1] : undefined
   const last = lastPoint ? at(lastPoint.index, lastPoint.value) : null
@@ -78,9 +64,7 @@ export function Sparkline({
         if (points.length === 1) {
           return <circle key={key} cx={first.x} cy={first.y} r={1.5} fill={stroke} />
         }
-        const line = points
-          .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-          .join(" ")
+        const line = linePath(points)
         return (
           <g key={key}>
             {fill ? (

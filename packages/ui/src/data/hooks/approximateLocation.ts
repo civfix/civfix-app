@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import type { GetApproximateLocationResponse } from "@civfix/shared"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 
 export const APPROXIMATE_LOCATION_STALE_MS = 60 * 60 * 1000
+
+// A per-query `retry` replaces the host QueryClient's default cap, so the bound has to live here.
+export const APPROXIMATE_LOCATION_RETRY_LIMIT = 2
 
 const PERMANENT: readonly ErrorCode[] = [
   ErrorCode.NOT_FOUND,
@@ -13,8 +16,10 @@ const PERMANENT: readonly ErrorCode[] = [
   ErrorCode.FORBIDDEN,
 ]
 
-export function approximateLocationShouldRetry(_failureCount: number, error: unknown): boolean {
-  if (error instanceof AppError && PERMANENT.includes(error.code)) return false
+export function approximateLocationShouldRetry(failureCount: number, error: unknown): boolean {
+  if (failureCount >= APPROXIMATE_LOCATION_RETRY_LIMIT) return false
+  const code = appErrorCode(error)
+  if (code !== undefined && PERMANENT.includes(code)) return false
   return true
 }
 

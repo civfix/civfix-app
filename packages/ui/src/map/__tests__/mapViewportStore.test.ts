@@ -1,14 +1,3 @@
-/**
- * Unit tests for the shared "where is the main map currently looking" store. Pure zustand, so vitest
- * exercises it directly (no maplibre / RN renderer). The .web/.native Map seams PUBLISH their region to it
- * on every move-settle; AddressSearch READS it to bias address suggestions toward the visible area.
- *
- * Coverage:
- *   - defaults: no viewport published yet.
- *   - setRegion: stores bbox + zoom and derives center as the bbox midpoint.
- *   - setRegion again: replaces the viewport (the map moved).
- *   - clear: drops the viewport back to null (the map unmounting, so a later flow does not bias to a stale view).
- */
 import { beforeEach, describe, expect, it } from "vitest"
 import { useMapViewport, viewportBias } from "../mapViewportStore"
 

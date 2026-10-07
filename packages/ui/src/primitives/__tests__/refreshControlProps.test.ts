@@ -13,7 +13,7 @@ describe("useRefreshControlProps is the one pull-to-refresh palette", () => {
     expect(hook).toContain("colors: [th.colors.text]")
   })
 
-  it("abandons the low-contrast pair the bodies used to pass", () => {
+  it("avoids the low-contrast accent and textMuted pair", () => {
     expect(hook).not.toContain("th.colors.accent")
     expect(hook).not.toContain("th.colors.textMuted")
   })

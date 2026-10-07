@@ -22,12 +22,9 @@
 <body>
   <main class="wrap">
 
-    <!-- header -->
     <section aria-labelledby="page-title">
       <h1 id="page-title" class="sr-only">Home Turf Initiative</h1>
 
-      <!-- Home Turf lockup (design handoff variant 3a): football field with HOME/TURF end zones,
-           the civfix ball at midfield, and the powered-by row beneath. -->
       <div class="ft-hero">
         <div class="ft-field" role="img" aria-label="Home Turf: a football field with HOME and TURF end zones and a civfix football at midfield">
           <div class="ft-ez ft-ez--home"><span>HOME</span></div>
@@ -70,7 +67,6 @@
       <div class="photo photo--wide"><img src="images/cleanup-2.jpg" alt="A high school football team posed with rakes and shovels alongside city crew members after a neighborhood cleanup"></div>
     </section>
 
-    <!-- what we provide -->
     <section aria-labelledby="provide-head">
       <div class="callout">
         <h2 class="sec-head" id="provide-head">You bring the team. We bring the rest.</h2>
@@ -87,7 +83,6 @@
       </div>
     </section>
 
-    <!-- why teams -->
     <section aria-labelledby="why-head">
       <h2 class="sec-head" id="why-head">Why football teams?</h2>
       <p>Football teams already know how to show up. The discipline it takes to get through August two-a-days is the same discipline a great cleanup runs on: early arrivals and nobody leaving until the job is done. Home Turf puts that culture to work on the streets players grew up on, with coaches leading the way, city crews backing them up, and neighbors joining in. We believe a sixteen-year-old who takes care of their neighborhood now will still be taking care of it at forty.</p>
@@ -98,7 +93,6 @@
       </div>
     </section>
 
-    <!-- coach contact form -->
     <section aria-labelledby="form-head">
       <h2 class="sec-head" id="form-head">Get Your Team on the Field.</h2>
       <p>We're building the fall schedule now, so this is the time to get on the list. Send this over and the civfix event coordination team will give you a call to talk through the details and find a date that works for your season.</p>
@@ -174,12 +168,20 @@
 
   <script>
     (function () {
-      var ENDPOINT = 'https://api.civfix.org/forms/home-turf';
+      // This page ships unchanged to staging and to preview deploys, so only the known production hosts
+      // may reach the production coordination inbox; every other host falls back to staging. Keep in
+      // sync with PRODUCTION_HOSTNAMES in src/lib/site-meta.ts.
+      var PRODUCTION_HOSTNAMES = ['civfix.org', 'www.civfix.org', 'civfix-web.pages.dev'];
+      var API_ORIGIN = PRODUCTION_HOSTNAMES.indexOf(window.location.hostname) === -1
+        ? 'https://api.civfix.dev'
+        : 'https://api.civfix.org';
+      var ENDPOINT = API_ORIGIN + '/forms/home-turf';
       var TURNSTILE_SITEKEY = '0x4AAAAAADdyjEqI8Rc720Mq';
       var TURNSTILE_ACTION = 'home-turf';
 
       var form = document.getElementById('coach-form');
       var status = document.getElementById('form-status');
+      var alertNode = null;
       var btn = form.querySelector('button[type=submit]');
 
       var turnstileToken = '';
@@ -201,17 +203,45 @@
         return document.getElementById(id).value.trim();
       }
 
+      // A blocking error must interrupt, so it goes in a freshly inserted role=alert node: screen
+      // readers announce an alert on insertion, but not reliably when an existing node flips its role.
+      // Success stays in the polite status region, which exists from page load.
+      function showStatus(kind, text) {
+        if (alertNode) {
+          alertNode.parentNode.removeChild(alertNode);
+          alertNode = null;
+        }
+        if (kind === 'err') {
+          status.textContent = '';
+          status.className = 'form-status';
+          alertNode = document.createElement('p');
+          alertNode.id = 'form-error';
+          alertNode.className = 'form-status err';
+          alertNode.setAttribute('role', 'alert');
+          alertNode.textContent = text;
+          status.parentNode.insertBefore(alertNode, status);
+          return;
+        }
+        status.textContent = text;
+        status.className = 'form-status ' + kind;
+      }
+
+      function setBusy(busy) {
+        btn.disabled = busy;
+        if (busy) btn.setAttribute('aria-busy', 'true');
+        else btn.removeAttribute('aria-busy');
+      }
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
         if (!turnstileToken) {
-          status.textContent = "One more step: please complete the “I’m not a robot” check above, then hit the button again.";
-          status.className = 'form-status err';
+          showStatus('err', "One more step: please complete the “I’m not a robot” check above, then hit the button again.");
           return;
         }
 
-        btn.disabled = true;
+        setBusy(true);
         status.className = 'form-status';
 
         var payload = {
@@ -234,22 +264,18 @@
         }).then(function (res) {
           if (res.ok) {
             form.reset();
-            status.textContent = "Got it. Our event coordination team will call you soon to talk through the details. We've sent a confirmation to your email.";
-            status.className = 'form-status ok';
+            showStatus('ok', "Got it. Our event coordination team will call you soon to talk through the details. We've sent a confirmation to your email.");
           } else if (res.status === 403) {
-            status.textContent = "We couldn't verify that you're human. Please redo the “I’m not a robot” check and try again.";
-            status.className = 'form-status err';
+            showStatus('err', "We couldn't verify that you're human. Please redo the “I’m not a robot” check and try again.");
           } else if (res.status === 429) {
-            status.textContent = "Too many attempts from this connection. Please wait a few minutes and try again.";
-            status.className = 'form-status err';
+            showStatus('err', "Too many attempts from this connection. Please wait a few minutes and try again.");
           } else {
             throw new Error('bad response');
           }
         }).catch(function () {
-          status.textContent = "Something went wrong on our end. Please email roman@reachoutla.org and we'll take it from there.";
-          status.className = 'form-status err';
+          showStatus('err', "Something went wrong on our end. Please email roman@reachoutla.org and we'll take it from there.");
         }).finally(function () {
-          btn.disabled = false;
+          setBusy(false);
           turnstileToken = '';
           if (turnstileWidgetId !== null && window.turnstile) {
             turnstile.reset(turnstileWidgetId);

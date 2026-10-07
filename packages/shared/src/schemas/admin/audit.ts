@@ -6,7 +6,7 @@ import { pageResponse } from "../common.js"
 /**
  * Audit log view: every admin write is recorded in audit_log with a stable dotted action
  * (e.g. report.status_changed, user.banned, gov_claim.approved). The view filters by actor / action /
- * target. See enumeration 3 #67.
+ * target.
  */
 
 /** One audit-log row. `meta` is the action's structured context (kept loose). */

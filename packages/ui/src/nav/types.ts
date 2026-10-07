@@ -1,5 +1,7 @@
 import type { CleanupDTO, PersonDTO, ReportPinDTO } from "@civfix/shared"
 
+export type LayoutMode = "compact" | "expanded"
+
 export type View = "home" | "map" | "events" | "messaging" | "social" | "reports" | "search" | "report"
 
 export const ALL_VIEWS = [

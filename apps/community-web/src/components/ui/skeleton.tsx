@@ -1,8 +1,6 @@
 import { cn } from "@/lib/utils"
 
-/**
- * Loading placeholder block. Uses a paper2-tinted pulse so it reads on the white card surface.
- */
+/** paper2-tinted so the pulse reads on the white card surface. */
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div

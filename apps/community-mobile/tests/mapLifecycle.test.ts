@@ -231,7 +231,7 @@ test("a flight that never arrives stops freezing the settled viewport once its d
   assert.deepEqual(state.lastViewport, { lat: later.center.lat, lng: later.center.lng, zoom: later.zoom })
 })
 
-test("a seed viewport survives a MapHomeScreen remount and replays on the next instance (defect 6)", () => {
+test("a seed viewport survives a MapHomeScreen remount and replays on the next instance", () => {
   const seed = { lat: 37.7749, lng: -122.4194, zoom: 13.5 }
   let state = lifecycle.createMapLifecycleState(seed)
   assert.deepEqual(state.lastViewport, seed)

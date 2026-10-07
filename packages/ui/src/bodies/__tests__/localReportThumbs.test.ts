@@ -1,8 +1,6 @@
 /**
- * The session-scoped local thumb overlay. This is the regression net for "the user watches their photo
- * appear and then vanish": a just-created report's media asset is still `validating`, so the server's
- * linked-report projection carries no thumbUrl and neither the optimistic swap nor the immediate refetch
- * can supply one.
+ * A just-created report's media asset is still `validating`, so the server's linked-report projection has no
+ * thumbUrl and neither the optimistic swap nor the refetch can supply one; this overlay keeps the photo up.
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import {
@@ -32,9 +30,7 @@ describe("localReportThumbs", () => {
 
   it("refreshes recency when the same id is remembered again", () => {
     for (let i = 0; i < 20; i++) rememberLocalReportThumb(`report-${i}`, `file:///${i}.jpg`)
-    // report-0 is now the oldest; touching it moves it to the newest slot...
     rememberLocalReportThumb("report-0", "file:///0-again.jpg")
-    // ...so the NEXT insertion evicts report-1 instead.
     rememberLocalReportThumb("report-20", "file:///20.jpg")
     expect(localReportThumb("report-0")).toBe("file:///0-again.jpg")
     expect(localReportThumb("report-1")).toBeNull()

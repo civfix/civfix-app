@@ -1,46 +1,61 @@
 /**
- * <I18nProvider> — the single i18n provider the host mounts high in the tree (wrapping AppShell), so
- * every shared body + every host-local screen shares ONE i18next instance.
+ * The host detects and resolves the locale and passes it in: the provider never reads `navigator` or a
+ * native module, either of which would break the other platform. One i18next instance serves every
+ * shared body and host screen.
  *
- * It wraps:
- *   - <I18nextProvider i18n={instance}> — so `useTranslation`/`useT` resolve against this instance.
- *   - <LocaleProvider value={{ locale, setLocale }}> — the host-neutral locale seam the shared bodies
- *     (e.g. LanguageSettingsBody) consume.
- *
- * The host DETECTS + RESOLVES the locale (device/browser/user/storage) and passes it as the `locale`
- * prop (the provider never reads `navigator`/native modules — that would break the other platform). The
- * instance is created ONCE (useState initializer); `changeLanguage(locale)` runs on mount and whenever
- * the `locale` prop changes. `setLocale` (optional) is the host's persistence+sync action.
+ * The context's `locale` is the APPLIED one: while a requested locale's catalog is still loading (web),
+ * strings stay in the current language, so dates, numbers and `lang` must stay in it too.
  */
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { I18nextProvider } from "react-i18next"
 import type { SupportedLocale } from "@civfix/shared"
+import { loadCatalog } from "./bundledCatalogs"
 import { createI18n } from "./config"
 import { LocaleProvider, type LocaleContextValue } from "./LocaleContext"
+import { makeLocaleSwitcher } from "./localeSwitcher"
+import { resolveLocale } from "./resolveLocale"
 
 export interface I18nProviderProps {
-  /** The active, already-resolved (clamped) app locale. The host injects it. */
   locale: SupportedLocale
-  /**
-   * Switch the locale (write storage, change the language, PATCH /me when authed). Wired by the host;
-   * the shared LanguageSettingsBody calls it. Optional — read-only mounts omit it.
-   */
   setLocale?: (code: SupportedLocale) => void
   children: React.ReactNode
 }
 
 export function I18nProvider({ locale, setLocale, children }: I18nProviderProps) {
-  // Create the instance exactly once, seeded at the initial locale (later changes go via changeLanguage).
   const [instance] = useState(() => createI18n(locale))
+  const [switchLocale] = useState(() => makeLocaleSwitcher(instance, loadCatalog))
 
-  // Keep i18next's active language in lock-step with the prop (mount + every change).
+  const requestedRef = useRef(locale)
   useEffect(() => {
-    if (instance.language !== locale) void instance.changeLanguage(locale)
-  }, [instance, locale])
+    requestedRef.current = locale
+    void switchLocale(locale)
+  }, [switchLocale, locale])
+
+  // Read from the instance, not the prop, so the context flips in the same render batch as the strings
+  // (react-i18next re-renders on the same `languageChanged` event).
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      instance.on("languageChanged", onChange)
+      return () => instance.off("languageChanged", onChange)
+    },
+    [instance],
+  )
+  const readLanguage = useCallback(() => instance.language, [instance])
+  const appliedLocale = resolveLocale(useSyncExternalStore(subscribe, readLanguage, readLanguage))
+
+  // Choosing the locale that is already requested leaves the prop unchanged, so the effect cannot retry a
+  // catalog that failed to load; the explicit choice retries it here instead.
+  const requestLocale = useCallback(
+    (code: SupportedLocale) => {
+      setLocale?.(code)
+      if (code === requestedRef.current) void switchLocale(code)
+    },
+    [setLocale, switchLocale],
+  )
 
   const value = useMemo<LocaleContextValue>(
-    () => ({ locale, setLocale: setLocale ?? (() => {}) }),
-    [locale, setLocale],
+    () => ({ locale: appliedLocale, setLocale: requestLocale }),
+    [appliedLocale, requestLocale],
   )
 
   return (

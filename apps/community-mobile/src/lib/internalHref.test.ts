@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { readdirSync, readFileSync, statSync } from "node:fs"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, URL } from "node:url"
 import { join } from "node:path"
 import { test } from "node:test"
 import {

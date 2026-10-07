@@ -4,8 +4,8 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
-import { ToastProvider, setSourceCommit } from "@civfix/ui"
-import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
+import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
+import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
   setAppearancePreferenceStore,
@@ -28,6 +28,7 @@ import {
 
 import { makeQueryClient } from "@/lib/query"
 import { restorePersistedCache, installCachePersistenceWriter } from "@/lib/query-persist"
+import { installViewerScope } from "@/lib/viewer-scope"
 import { api } from "@/lib/api"
 import { chatSocket } from "@/lib/ws"
 import { webCamera } from "@/lib/web-camera"
@@ -41,10 +42,11 @@ import { useResolvedLocale } from "@/lib/locale"
 import { useAuthGate } from "@/hooks/use-auth-gate"
 import { useLogout } from "@/hooks/use-auth"
 import { AuthHydrator } from "@/components/auth/auth-hydrator"
+import { SignOutFailureNotice } from "@/components/auth/sign-out-failure-notice"
 import { BootSplash } from "@/components/boot-splash"
 import { RealtimeChannel } from "@/components/realtime/realtime-channel"
 import { FirstRunGate } from "@/features/auth/first-run-gate"
-import { webOpenInternalHref } from "@/components/home/use-web-nav-adapter"
+import { webOpenInternalHref } from "@/components/home/web-internal-href"
 
 setAppearancePreferenceStore({
   get: () => useAppearanceStore.getState().preference,
@@ -53,6 +55,7 @@ setAppearancePreferenceStore({
 })
 
 setSourceCommit(process.env.NEXT_PUBLIC_COMMIT_SHA ?? "")
+if (typeof window !== "undefined") setWebOrigin(window.location.origin)
 
 const webCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
@@ -95,18 +98,7 @@ function WebDataProvider({ children }: { children: React.ReactNode }) {
 
   const submitReport = React.useCallback(
     async (submission: ReportSubmission): Promise<ReportSubmitResult> => {
-      const base = {
-        idempotencyKey: submission.idempotencyKey,
-        category: submission.category,
-        type: submission.type,
-        lat: submission.lat,
-        lng: submission.lng,
-        geomSource: submission.geomSource,
-        mediaUploadIds: submission.mediaUploadIds,
-        ...(submission.title ? { title: submission.title } : {}),
-        ...(submission.description ? { description: submission.description } : {}),
-        ...(submission.addr ? { addr: submission.addr } : {}),
-      }
+      const base = toCreateReportRequest(submission)
 
       if (isAuthenticated) {
         const dto = await api.createReport({ ...base, honeypot: "" })
@@ -155,6 +147,18 @@ function WebDataProvider({ children }: { children: React.ReactNode }) {
   return <ApiProvider value={value}>{children}</ApiProvider>
 }
 
+// Follows the applied locale, not the requested one: until a lazily loaded catalog arrives the page is
+// still English and must say so to screen readers and hyphenation.
+function DocumentLangBinding(): null {
+  const { locale } = useLocale()
+
+  React.useEffect(() => {
+    if (typeof document !== "undefined") document.documentElement.lang = locale
+  }, [locale])
+
+  return null
+}
+
 function I18nMount({ children }: { children: React.ReactNode }) {
   const { locale, setLocale } = useResolvedLocale()
 
@@ -162,12 +166,9 @@ function I18nMount({ children }: { children: React.ReactNode }) {
   React.useEffect(() => setHydrated(true), [])
   const activeLocale = hydrated ? locale : FALLBACK_LOCALE
 
-  React.useEffect(() => {
-    if (typeof document !== "undefined") document.documentElement.lang = activeLocale
-  }, [activeLocale])
-
   return (
     <I18nProvider locale={activeLocale} setLocale={setLocale}>
+      <DocumentLangBinding />
       {children}
     </I18nProvider>
   )
@@ -212,6 +213,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return installCachePersistenceWriter(clientRef.current!)
   }, [])
 
+  React.useEffect(() => {
+    return installViewerScope(clientRef.current!)
+  }, [])
+
   return (
     <QueryClientProvider client={clientRef.current}>
       <WebDataProvider>
@@ -223,6 +228,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <ToastProvider>
                 <BootSplash>{children}</BootSplash>
                 <FirstRunGate />
+                <SignOutFailureNotice />
               </ToastProvider>
             </I18nMount>
           </ThemeMount>

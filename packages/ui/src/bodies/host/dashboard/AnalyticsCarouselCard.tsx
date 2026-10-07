@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useState } from "react"
 import {
   Platform,
   Pressable,
@@ -9,12 +9,13 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import type { HostAnalyticsSummaryResponse } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover } from "../../../theme"
+import { visibleValue } from "@civfix/shared/host"
+import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, hitSlopToTarget } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
 import { useHostAnalyticsSummary } from "../../../data/hooks/analytics"
-import { useLocale, useT } from "../../../i18n"
+import { EMPTY_VALUE, useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import {
@@ -22,11 +23,14 @@ import {
   busiestRows,
   carouselPage,
   hasSeriesData,
+  checkInRingA11y,
   ratePercent,
   summaryImpactRows,
   weeklyXLabels,
   type SummaryPanelKey,
 } from "../analyticsModel"
+import { useWeekLabel } from "../useWeekLabel"
+import { seriesBars } from "../analytics/chartBars"
 
 const HEADER_HEIGHT = 30
 
@@ -46,6 +50,12 @@ const RING_GUTTER = 12
 
 const DOT_SIZE = 6
 
+const DOT_TARGET = 24
+
+const DOT_SLOP_Y = hitSlopToTarget(DOT_TARGET)
+
+const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }
+
 const CHEVRON_HIT = 28
 
 const FLAT_SERIES = [
@@ -53,9 +63,9 @@ const FLAT_SERIES = [
   { x: 1, y: 0 },
 ]
 
-const DASH = "—"
-
 const IS_WEB = Platform.OS === "web"
+
+const WEB_PAGE_SCROLL_THROTTLE_MS = 100
 
 export interface AnalyticsCarouselCardProps {
   orgId: string | null
@@ -73,12 +83,18 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
   const data = query.data ?? null
   const panels = SUMMARY_PANELS
 
-  const onMomentumScrollEnd = useCallback(
+  const onPageSettled = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       setIndex(carouselPage(event.nativeEvent.contentOffset.x, width, panels.length))
     },
     [panels.length, width],
   )
+
+  // react-native-web never emits momentum events; its onScroll fires on a throttle and once more
+  // when the scroll settles.
+  const pageSettleProps = IS_WEB
+    ? { onScroll: onPageSettled, scrollEventThrottle: WEB_PAGE_SCROLL_THROTTLE_MS }
+    : { onMomentumScrollEnd: onPageSettled }
 
   const goTo = useCallback(
     (next: number) => {
@@ -158,15 +174,15 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
               disableIntervalMomentum
               decelerationRate="fast"
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={onMomentumScrollEnd}
+              {...pageSettleProps}
               accessibilityLabel={t("card.carousel_a11y")}
             >
-              {panels.map((panel) => (
+              {panels.map((panel, position) => (
                 <View
                   key={panel}
                   accessible
                   accessibilityLabel={t("card.panel_a11y", {
-                    index: panels.indexOf(panel) + 1,
+                    index: position + 1,
                     total: panels.length,
                     name: t(`card.panel_${panel}`),
                   })}
@@ -224,10 +240,12 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
                 total: panels.length,
                 name: t(`card.panel_${panel}`),
               })}
-              hitSlop={8}
+              hitSlop={DOT_HIT_SLOP}
               {...focusRingProps}
-              style={[styles.dot, dot === index ? styles.dotOn : null]}
-            />
+              style={styles.dotTarget}
+            >
+              <View style={[styles.dot, dot === index ? styles.dotOn : null]} />
+            </Pressable>
           ))}
         </View>
       </View>
@@ -248,8 +266,7 @@ function Panel({
 }) {
   const th = useTheme()
   const { t } = useT("host-analytics")
-  const { locale } = useLocale()
-  const weekLabel = useWeekLabel(locale)
+  const weekLabel = useWeekLabel()
 
   if (panel === "signups") {
     const daily = data.signupsDaily
@@ -260,11 +277,7 @@ function Panel({
       >
         {hasSeriesData(daily) ? (
           <BarChart
-            bars={daily.map((point) => ({
-              key: point.day,
-              value: point.suppressed ? null : point.value,
-              color: th.colors.accent,
-            }))}
+            bars={seriesBars(daily, th.colors.accent)}
             xLabels={weeklyXLabels(daily, weekLabel)}
             width={width}
             height={CHART_HEIGHT - X_LABEL_ROW}
@@ -292,8 +305,8 @@ function Panel({
       >
         <RingPanel
           ring={(rate ?? 0) / 100}
-          ringLabel={rate === null ? DASH : `${rate}%`}
-          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
+          ringLabel={rate === null ? EMPTY_VALUE : `${rate}%`}
+          ringA11y={checkInRingA11y(t, rate)}
           note={ran ? null : t("card.checkins_empty")}
         />
       </PanelFrame>
@@ -314,9 +327,9 @@ function Panel({
             bars={rows.map((row, index) => ({
               key: `${index}:${row.key}`,
               label: row.label,
-              value: row.suppressed ? null : row.value,
+              value: visibleValue(row),
               color: th.colors.accent,
-              valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
+              valueLabel: row.suppressed ? EMPTY_VALUE : String(row.value ?? 0),
             }))}
             width={width}
             horizontal
@@ -342,18 +355,6 @@ function Panel({
       />
     </PanelFrame>
   )
-}
-
-function useWeekLabel(locale: string): (day: string) => string {
-  return useMemo(() => {
-    let format: Intl.DateTimeFormat
-    try {
-      format = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" })
-    } catch {
-      format = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
-    }
-    return (day: string) => format.format(new Date(day))
-  }, [locale])
 }
 
 function PanelFrame({
@@ -537,8 +538,13 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: t.space["2"],
-    paddingVertical: t.space["2"],
+  },
+  dotTarget: {
+    width: DOT_TARGET,
+    height: DOT_TARGET,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: DOT_TARGET / 2,
   },
   dot: {
     width: DOT_SIZE,

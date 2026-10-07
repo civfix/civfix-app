@@ -5,9 +5,10 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const toggle = strip(read("../../primitives/Toggle.tsx"))
+const toggleRow = strip(read("../../primitives/ToggleRowContent.tsx"))
 const settingsToggle = strip(read("../../primitives/SettingsToggle.web.tsx"))
 const locationPicker = strip(read("../../map/LocationPicker.web.tsx"))
-const reportFlow = strip(read("../ReportFlowBody.tsx"))
+const captureStep = strip(read("../reportFlow/CaptureStep.tsx"))
 const addressSearch = strip(read("../AddressSearch.tsx"))
 const linkedEvent = strip(read("../LinkedEventCard.tsx"))
 const linkedReport = strip(read("../LinkedReportCard.tsx"))
@@ -17,20 +18,24 @@ const eventDetail = strip(read("../EventDetailBody.tsx"))
 
 describe("Toggle: one row, one tab stop", () => {
   it("takes the label column out of the tab order with BOTH the web and the native prop", () => {
-    expect(toggle).toMatch(/focusable=\{false\}/)
-    expect(toggle).toMatch(/tabIndex: -1/)
+    expect(toggle).toContain("<ToggleRowContent")
+    expect(toggleRow).toMatch(/focusable=\{false\}/)
+    expect(toggleRow).toMatch(/tabIndex: -1/)
   })
 
   it("leaves the switch as the single stop that owns the role, the label and the ring", () => {
     expect(settingsToggle).toContain('accessibilityRole="switch"')
     expect(settingsToggle).toContain("focusRingProps")
-    expect(toggle).toMatch(/accessibilityLabel=\{label\}/)
+    expect(toggle).toMatch(/label=\{label\}/)
+    expect(toggleRow).toMatch(/accessibilityLabel=\{label\}/)
     expect(toggle).not.toMatch(/accessibilityRole/)
+    expect(toggleRow).not.toMatch(/accessibilityRole/)
   })
 
   it("keeps the label column clickable, and ring-tagged so a click cannot paint the UA outline", () => {
-    expect(toggle).toMatch(/onPress=\{\(\) => onValueChange\(!value\)\}/)
-    expect(toggle).toContain("focusRingProps")
+    expect(toggle).toMatch(/onValueChange=\{onValueChange\}/)
+    expect(toggleRow).toMatch(/onPress=\{\(\) => onValueChange\(!value\)\}/)
+    expect(toggleRow).toContain("focusRingProps")
   })
 })
 
@@ -46,16 +51,13 @@ describe("controls that are not RNW Pressables still get the house ring", () => 
     expect(addressSearch).toMatch(/style=\{\[styles\.field, focused \? styles\.fieldFocused : null\]\}/)
     expect(addressSearch).toMatch(/onFocus=\{\(\) => \{\s*setFocused\(true\)/)
     expect(addressSearch).toMatch(/onBlur=\{\(\) => setFocused\(false\)\}/)
-    const focusedStyle = addressSearch.match(/fieldFocused:([\s\S]*?)\n {2}input: \{/)?.[1] ?? ""
-    expect(focusedStyle).toContain("tokens.shadow.ring")
-    expect(focusedStyle).toContain("t.colors.accent")
-    expect(focusedStyle).toContain('Platform.OS === "web"')
+    expect(addressSearch).toMatch(/fieldFocused: inputFocusedStyle\(t\),\n {2}input: \{/)
   })
 })
 
 describe("the report wizard's rings hug their controls", () => {
   it("the library link is a hugging capsule, not a full-width square", () => {
-    const style = reportFlow.match(/\n {2}libraryLink: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+    const style = captureStep.match(/\n {2}libraryLink: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(style).toContain("borderRadius: t.radius.pill")
     expect(style).toContain('alignSelf: "center"')
     expect(style).not.toContain("backgroundColor")
@@ -124,7 +126,7 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     const rsvpElements = (src: string) =>
       src.split("<RsvpPill").slice(1).map((seg) => seg.slice(0, seg.indexOf("/>")))
     const cards: Array<[string, string]> = [
-      ["SearchResults", strip(read("../SearchResults.tsx"))],
+      ["SearchResults", strip(read("../search/SearchResults.tsx"))],
       ["EventsBody", strip(read("../EventsBody.tsx"))],
       ["LinkedEventCard", linkedEvent],
     ]
@@ -176,6 +178,7 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     expect(leave).toContain('hint={t("actions.leave_hint")}')
     expect(leave).toContain("onPress={onLeave}")
     expect(eventDetail).toContain("const showLeave = going && !actsAsHost && isLive && !isEnded")
-    expect(eventDetail).toContain("join.mutate(true, {")
+    expect(eventDetail).toContain("const { mutate: mutateJoin } = join")
+    expect(eventDetail).toContain("mutateJoin(true, {")
   })
 })

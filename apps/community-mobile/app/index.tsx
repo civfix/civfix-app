@@ -9,21 +9,20 @@ import {
   space,
   useNavStore,
   useLayoutMode,
-  Map as SharedMap,
   MapControls,
   useMapFlyTo,
   useMapFocus,
   useMapViewport,
   useReportFilterStore,
   enabledCategoriesArray,
-  useSidebarStore,
-  clampSidebarWidth,
+  shellOcclusionLeft,
   defaultRenderBody,
   openDropPinMenu,
   dropPinCameraTarget,
   captureDropPinCamera,
   setDropPinCameraRestorer,
   MapPending,
+  decideRegionFetch,
   resolveMapCenter,
   shouldAdoptCenter,
   PRECISE_ZOOM,
@@ -31,7 +30,6 @@ import {
   type MapCenterSource,
   type MapCenterTarget,
   type MapHandle,
-  type MapProps,
   type RememberedCenter,
 } from "@civfix/ui"
 import {
@@ -43,6 +41,7 @@ import {
 } from "@civfix/ui/data"
 import { useHaptics } from "@civfix/ui/capabilities"
 import { mobileHostMapPlan } from "@/components/hostMapPlan"
+import { ManagedMap } from "@/components/ManagedMap"
 import {
   ROOT_SHELL_ID,
   clearNestedShellHosts,
@@ -53,7 +52,6 @@ import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
 import { markRootShellSeen } from "@/lib/rootShellSeen"
 import { useUserLocation } from "@/hooks/useUserLocation"
-import { decideRegionFetch } from "@/lib/mapRegion"
 import { readLastCenter, writeLastCenter } from "@/lib/lastCenter"
 import { locationPrimerDecision } from "@/lib/locationPrimerPlan"
 import { useLocationPrimerStore } from "@/store/locationPrimerStore"
@@ -73,40 +71,15 @@ import {
   unmountMap,
 } from "@/lib/mapLifecycle"
 
-let nextMapMountGeneration = 0
-
-type ManagedMapProps = Omit<MapProps, "onRegionChange"> & {
-  onMapHandle: (generation: number, map: MapHandle | null) => void
-  onInstanceRegionChange: (generation: number, bbox: BBox, zoom: number) => void
-}
-
-function ManagedMap({
-  onMapHandle,
-  onInstanceRegionChange,
-  ...mapProps
-}: ManagedMapProps) {
-  const generationRef = useRef<number | null>(null)
-  if (generationRef.current === null) {
-    nextMapMountGeneration += 1
-    generationRef.current = nextMapMountGeneration
-  }
-  const generation = generationRef.current
-
-  const setMapHandle = useCallback(
-    (map: MapHandle | null) => onMapHandle(generation, map),
-    [generation, onMapHandle],
-  )
-  const onRegionChange = useCallback(
-    (bbox: BBox, zoom: number) => onInstanceRegionChange(generation, bbox, zoom),
-    [generation, onInstanceRegionChange],
-  )
-
-  return <SharedMap {...mapProps} ref={setMapHandle} onRegionChange={onRegionChange} />
-}
-
 const NEARBY_CLEANUPS_LIMIT = 20
 
 const CONTROL_LONG_PRESS_GUARD_MS = 800
+
+const REGION_FETCH_DEBOUNCE_MS = 350
+
+const MAP_TAP_AFTER_CONTROL_GUARD_MS = 350
+
+const LONG_PRESS_REPEAT_GUARD_MS = 400
 
 export default function MapHomeScreen() {
   const insets = useSafeAreaInsets()
@@ -227,7 +200,7 @@ export default function MapHomeScreen() {
       if (decision.action === "keep") return
       requestedBboxRef.current = decision.region
       setBbox(decision.region)
-    }, 350)
+    }, REGION_FETCH_DEBOUNCE_MS)
   }, [replayPendingMapTarget])
 
   useEffect(() => {
@@ -269,7 +242,7 @@ export default function MapHomeScreen() {
     lastControlTapRef.current = Date.now()
   }, [])
   const onMapPress = useCallback(() => {
-    if (Date.now() - lastControlTapRef.current < 350) return
+    if (Date.now() - lastControlTapRef.current < MAP_TAP_AFTER_CONTROL_GUARD_MS) return
     useReportFilterStore.getState().setLayersOpen(false)
     useNavStore.getState().setSnap(0)
   }, [])
@@ -429,7 +402,7 @@ export default function MapHomeScreen() {
   const onLongPressMap = useCallback(
     (lat: number, lng: number) => {
       if (Date.now() - lastControlTapRef.current < CONTROL_LONG_PRESS_GUARD_MS) return
-      if (Date.now() - lastLongPressRef.current < 400) return
+      if (Date.now() - lastLongPressRef.current < LONG_PRESS_REPEAT_GUARD_MS) return
       lastLongPressRef.current = Date.now()
       useReportFilterStore.getState().setLayersOpen(false)
       const viewportBefore = useMapViewport.getState().viewport
@@ -447,7 +420,7 @@ export default function MapHomeScreen() {
         topInset: insets.top,
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,
-        sidebarWidth: clampSidebarWidth(useSidebarStore.getState().width, windowWidth),
+        occlusionLeft: shellOcclusionLeft(windowWidth),
       })
       if (viewportBefore) {
         captureDropPinCamera(
@@ -544,7 +517,7 @@ export default function MapHomeScreen() {
       <AppShell
         renderBody={defaultRenderBody}
         {...(ownedStack ? { stack: ownedStack } : {})}
-        map={mapPlan.renderMap ? mapElement : null}
+        map={mapElement}
         mapControls={
           mapPlan.renderMapControls ? (
             <View

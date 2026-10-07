@@ -33,7 +33,16 @@ export async function getToken(): Promise<string | null> {
   return read.ok ? read.token : null
 }
 
+// Bumped on every token write, so a request shared across callers is only joined by callers that
+// would have sent the same credential.
+let tokenWrites = 0
+
+export function tokenGeneration(): number {
+  return tokenWrites
+}
+
 export async function setToken(token: string): Promise<void> {
+  tokenWrites += 1
   try {
     await SecureStore.setItemAsync(TOKEN_KEY, token, OPTIONS)
     return
@@ -65,6 +74,7 @@ async function clearSecureToken(): Promise<void> {
 }
 
 export async function clearToken(): Promise<void> {
+  tokenWrites += 1
   await clearSecureToken()
   if (__DEV__) clearDevFallback()
 }

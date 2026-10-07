@@ -55,7 +55,7 @@ export function ConsoleShell({
     <div className="flex min-h-screen w-full flex-col bg-console-canvas text-console-ink">
       <a
         href="#console-content"
-        className="sr-only left-token-3 top-token-3 z-[80] rounded-sm bg-console-surface px-token-3 py-token-2 text-token-13 font-semibold text-console-ink shadow-console-3 focus:not-sr-only focus:absolute focus-visible:outline-none focus-visible:shadow-console-ring"
+        className="sr-only left-token-3 top-token-3 z-console-skip-link rounded-sm bg-console-surface px-token-3 py-token-2 text-token-13 font-semibold text-console-ink shadow-console-3 focus:not-sr-only focus:absolute focus-visible:outline-none focus-visible:shadow-console-ring"
       >
         {t("shell.skip_to_content")}
       </a>

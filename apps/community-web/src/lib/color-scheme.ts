@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { DEFAULT_COLOR_SCHEME, resolveSchemeName } from "@civfix/ui/theme/schemes"
 import type { ColorSchemeName } from "@civfix/ui/theme/schemes"
 
-export function readColorScheme(): ColorSchemeName {
+function readColorScheme(): ColorSchemeName {
   if (typeof document === "undefined") return DEFAULT_COLOR_SCHEME
   return resolveSchemeName(document.documentElement.classList.contains("dark") ? "dark" : "light")
 }

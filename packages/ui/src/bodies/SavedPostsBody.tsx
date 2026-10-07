@@ -7,6 +7,7 @@ import { useSaves } from "../data/hooks/posts"
 import { useT } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
 import { PostCard } from "./PostCard"
+import { POST_LIST_END_REACHED_THRESHOLD } from "./feedModel"
 import { ProfileTimelineLane } from "./profile/ProfileTimelineLane"
 import { useSectionStyles } from "./profile/sectionStyles"
 
@@ -69,7 +70,7 @@ export function SavedPostsBody() {
       ListFooterComponent={footer}
       showsVerticalScrollIndicator={false}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.6}
+      onEndReachedThreshold={POST_LIST_END_REACHED_THRESHOLD}
     />
   )
 }

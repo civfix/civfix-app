@@ -1,6 +1,5 @@
 /**
- * resolveJump (P2 Task 2.7) - the PURE jump-to-message decision for ConversationBody's quoted-reply
- * taps: scroll to the target if it is already rendered, otherwise fetch an around-mode window.
+ * The jump-to-message decision for ConversationBody's quoted-reply taps: scroll to the target if it is already rendered, otherwise fetch an around-mode window.
  *
  * The helper takes the FlatList's ACTUAL render-row array - the inverted (already-reversed) rows,
  * day separators and typing row included - and matches by SERVER message id (`item.message.id`, the

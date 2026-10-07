@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent } from "react"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/shared/markdown"
 import { useT } from "@civfix/ui/i18n"
@@ -51,6 +51,7 @@ export function RichTextEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pendingSelection = useRef<[number, number] | null>(null)
   const [linkError, setLinkError] = useState<string | null>(null)
+  const counterId = useId()
 
   useLayoutEffect(() => {
     const pending = pendingSelection.current
@@ -64,10 +65,19 @@ export function RichTextEditor({
   const apply = useCallback(
     (result: CommandResult | null) => {
       if (!result) return
+      const next = result.value.slice(0, maxChars)
+      // An unchanged value never re-runs the layout effect, so a pending selection would linger
+      // and move the caret on the next keystroke.
+      if (next === value) {
+        const el = textareaRef.current
+        el?.focus()
+        el?.setSelectionRange(result.start, result.end)
+        return
+      }
       pendingSelection.current = [result.start, result.end]
-      onChange(result.value.slice(0, maxChars))
+      onChange(next)
     },
-    [maxChars, onChange],
+    [maxChars, onChange, value],
   )
 
   const selectionOf = useCallback((): TextSelection | null => {
@@ -140,7 +150,7 @@ export function RichTextEditor({
           maxLength={maxChars}
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
-          aria-describedby={describedBy}
+          aria-describedby={describedBy ? `${describedBy} ${counterId}` : counterId}
           onKeyDown={onKeyDown}
           onChange={(event) => onChange(event.target.value)}
           className="w-full resize-y bg-console-surface px-token-3 py-token-2 font-mono text-token-13 leading-base text-console-ink placeholder:text-console-ink-3 focus-visible:outline-none focus-visible:shadow-console-ring"
@@ -155,8 +165,14 @@ export function RichTextEditor({
         <p className="text-token-12 font-semibold uppercase tracking-wider text-console-ink-3">
           {t("editor.preview")}
         </p>
-        <span className="text-token-12 text-console-ink-3 [font-feature-settings:'tnum']">
+        <span
+          aria-hidden
+          className="text-token-12 text-console-ink-3 [font-feature-settings:'tnum']"
+        >
           {remaining}
+        </span>
+        <span id={counterId} className="sr-only">
+          {t("editor.remaining", { count: remaining })}
         </span>
       </div>
       <div className="rounded-xs border border-console-line bg-console-tint px-token-3 py-token-3">

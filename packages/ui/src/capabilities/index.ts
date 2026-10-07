@@ -1,16 +1,13 @@
-export { CapabilitiesProvider, useCapabilities } from "./context"
+export { CapabilitiesProvider } from "./context"
 export type { CapabilitiesProviderProps } from "./context"
 export {
   useCamera,
   useGeolocation,
   usePush,
   useSecureStore,
-  usePersistence,
-  useBlurSurface,
   useHaptics,
   useOpenExternal,
   useOpenInternalHref,
-  useContactsInvite,
   useClipboard,
   useCalendarFile,
 } from "./hooks"
@@ -26,7 +23,6 @@ export type {
   HapticsCapability,
   OpenExternalCapability,
   OpenInternalHrefCapability,
-  ContactsInviteAdapter,
   ClipboardCapability,
   CalendarFileCapability,
   CapturedMedia,
@@ -34,17 +30,4 @@ export type {
   GeoPosition,
 } from "./types"
 export { webClipboardCapability } from "./webClipboard"
-export {
-  makeFakeCapabilities,
-  FakeCamera,
-  FakeGeolocation,
-  FakePush,
-  FakeSecureStore,
-  FakePersistence,
-  FakeClipboard,
-  fakeBlurSurface,
-  fakeHaptics,
-  fakeOpenExternal,
-  fakeOpenInternalHref,
-  FakeContactsInvite,
-} from "./fakes"
+export { makeFakeCapabilities } from "./fakes"

@@ -139,7 +139,7 @@ test("re-opening the same thread after the window bridges again", () => {
   assert.equal(actions[2].type, "bridge")
 })
 
-test("open A, close, reopen A is the sequence the old id guard broke - both opens bridge", () => {
+test("open A, close, reopen A bridges both opens", () => {
   const { actions } = run([
     { active: thread("A"), now: 0 },
     { active: null, now: 0 },

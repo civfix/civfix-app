@@ -8,14 +8,7 @@ import { Wordmark } from "@/components/brand"
 import { LEGAL_ENTITY } from "./legal-entity"
 import { SOURCE } from "@/lib/source"
 
-export type LegalDocId = "terms" | "privacy" | "cookies" | "subprocessors"
-
-export const LEGAL_DOC_TYPE: Readonly<Record<LegalDocId, LegalDocumentType>> = {
-  terms: "terms",
-  privacy: "privacy",
-  cookies: "cookies",
-  subprocessors: "subprocessors",
-}
+export type LegalDocId = Extract<LegalDocumentType, "terms" | "privacy" | "cookies" | "subprocessors">
 
 const DOCS: { id: LegalDocId; href: string; label: string }[] = [
   { id: "terms", href: "/legal/terms", label: "Terms of Service" },
@@ -24,10 +17,10 @@ const DOCS: { id: LegalDocId; href: string; label: string }[] = [
   { id: "subprocessors", href: "/legal/subprocessors", label: "Sub-processors" },
 ]
 
-export { LEGAL_ENTITY }
+export const LEGAL_DOC_IDS: readonly LegalDocId[] = DOCS.map((doc) => doc.id)
 
 export function legalVersionFor(id: LegalDocId): LegalDocumentVersion {
-  return legalDocument(LEGAL_DOC_TYPE[id])
+  return legalDocument(id)
 }
 
 const EFFECTIVE_DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
@@ -37,7 +30,7 @@ const EFFECTIVE_DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 })
 
-export function formatEffectiveDate(effectiveAt: string): string {
+function formatEffectiveDate(effectiveAt: string): string {
   const at = new Date(effectiveAt)
   return Number.isNaN(at.getTime()) ? effectiveAt : EFFECTIVE_DATE_FORMAT.format(at)
 }

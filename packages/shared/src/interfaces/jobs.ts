@@ -12,6 +12,10 @@ export interface EnqueueOptions {
 export interface JobHandlerArg {
   id: string
   data: any
+  /** Retries already spent. Absent when the implementation does not track attempts. */
+  retryCount?: number
+  /** Set with `retryCount`; `retryCount >= retryLimit` marks the final attempt. */
+  retryLimit?: number
 }
 
 export type JobHandler = (job: JobHandlerArg) => Promise<void>

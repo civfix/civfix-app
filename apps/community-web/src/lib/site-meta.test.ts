@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  DEFAULT_SITE_URL,
   PRODUCTION_SITE_URL,
   STAGING_SITE_URL,
   canonicalSiteOriginFor,
@@ -42,7 +41,7 @@ describe("normalizeSiteUrl", () => {
       undefined,
       null,
     ]) {
-      expect(normalizeSiteUrl(value)).toBe(DEFAULT_SITE_URL)
+      expect(normalizeSiteUrl(value)).toBe(PRODUCTION_SITE_URL)
     }
   })
 })
@@ -59,7 +58,7 @@ describe("resolveSiteOrigin", () => {
     for (const url of [
       "https://civfix.dev/cleanups/abc",
       "https://www.civfix.dev/cleanups/abc",
-      "https://dev.civfix-web.pages.dev/cleanups/abc",
+      "https://staging.civfix-web.pages.dev/cleanups/abc",
     ]) {
       expect(resolveSiteOrigin(url)).toBe(STAGING_SITE_URL)
     }
@@ -79,7 +78,7 @@ describe("resolveSiteOrigin", () => {
       null,
       undefined,
     ]) {
-      expect(resolveSiteOrigin(url)).toBe(DEFAULT_SITE_URL)
+      expect(resolveSiteOrigin(url)).toBe(PRODUCTION_SITE_URL)
     }
   })
 
@@ -92,10 +91,10 @@ describe("resolveSiteOrigin", () => {
 
   it("matches hostnames exactly, with no suffix or substring rule", () => {
     expect(canonicalSiteOriginFor("civfix.org")).toBe(PRODUCTION_SITE_URL)
-    expect(canonicalSiteOriginFor("dev.civfix-web.pages.dev")).toBe(STAGING_SITE_URL)
+    expect(canonicalSiteOriginFor("staging.civfix-web.pages.dev")).toBe(STAGING_SITE_URL)
+    expect(canonicalSiteOriginFor("dev.civfix-web.pages.dev")).toBeNull()
     expect(canonicalSiteOriginFor("preview.civfix-web.pages.dev")).toBeNull()
     expect(canonicalSiteOriginFor("civfix.org.evil.com")).toBeNull()
     expect(canonicalSiteOriginFor("notcivfix.dev")).toBeNull()
-    expect(DEFAULT_SITE_URL).toBe(PRODUCTION_SITE_URL)
   })
 })

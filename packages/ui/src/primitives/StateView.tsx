@@ -58,10 +58,18 @@ export function LoadingState({
 }) {
   const styles = useStyles()
   const t = useTheme()
-  if (skeleton) return <SkeletonList rows={rows} kind={skeleton} style={styles.skeletonList} />
+  const { t: tCommon } = useT("common")
+  const loading = tCommon("loading")
+  if (skeleton) {
+    return (
+      <View style={styles.skeletonList} accessible accessibilityRole="progressbar" accessibilityLabel={loading}>
+        <SkeletonList rows={rows} kind={skeleton} />
+      </View>
+    )
+  }
   return (
     <CenterBox variant={variant}>
-      <ActivityIndicator color={t.colors.brand.bloom} />
+      <ActivityIndicator color={t.colors.brand.bloom} accessibilityLabel={loading} />
     </CenterBox>
   )
 }

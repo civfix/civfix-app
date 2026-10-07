@@ -1,6 +1,6 @@
 /**
- * The shared profile tab bar. Two things are LOCKED here on purpose: the order, and the fact that the
- * default is `posts` on BOTH profiles (the other-person profile used to default to Events).
+ * Two things are LOCKED here on purpose: the order, and the fact that the default is `posts` on BOTH
+ * profiles.
  */
 import { describe, expect, it } from "vitest"
 import {

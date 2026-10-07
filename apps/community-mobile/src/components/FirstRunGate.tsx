@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
-import { isValidHandle } from "@civfix/shared"
-import { makeThemedStyles, space, useTheme } from "@/theme"
+import Ionicons from "@expo/vector-icons/Ionicons"
+import { HANDLE_MAX_LENGTH } from "@civfix/shared"
+import { MIN_TOUCH_TARGET, makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
   Avatar,
@@ -15,8 +15,17 @@ import {
   TermsConfirmation,
   Text,
   TextField,
+  announce,
   makeKeyboardAwareScrollHost,
 } from "@civfix/ui"
+import {
+  FIRST_NAME_MAX,
+  LAST_NAME_MAX,
+  firstRunModel,
+  splitName,
+  stripHandlePrefix,
+  useHandleAvailabilityCheck,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
@@ -31,14 +40,6 @@ export function FirstRunGate() {
   return <FirstRunForm />
 }
 
-function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
-}
-
-type Availability = { checking: boolean; available: boolean | null; reason: string | null }
-
 function FirstRunForm() {
   const { t } = useT("mobile-auth-registration")
   const th = useTheme()
@@ -52,39 +53,43 @@ function FirstRunForm() {
   const [first, setFirst] = useState(seeded.first)
   const [last, setLast] = useState(seeded.last)
   const [handle, setHandle] = useState("")
-  const [avail, setAvail] = useState<Availability>({ checking: false, available: null, reason: null })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [termsConfirmed, setTermsConfirmed] = useState(false)
 
-  const trimmedHandle = handle.trim()
-  const handleValid = isValidHandle(trimmedHandle)
-  const displayName = `${first.trim()} ${last.trim()}`.trim()
-  const available = handleValid && avail.available === true
-  const canSubmit =
-    available && displayName.length > 0 && ageConfirmed && termsConfirmed && !submitting
+  const { availability, checkedHandle } = useHandleAvailabilityCheck(handle, null)
+  const { refetch: recheckHandle } = availability
+  const {
+    trimmedHandle,
+    handleValid,
+    displayName,
+    previewName,
+    checking,
+    available,
+    taken,
+    checkFailed,
+    canSubmit,
+  } = firstRunModel({
+    first,
+    last,
+    handle,
+    checkedHandle,
+    availability,
+    ageConfirmed,
+    termsConfirmed,
+    submitting,
+  })
+
+  const retryHandleCheck = useCallback(() => void recheckHandle(), [recheckHandle])
 
   useEffect(() => {
-    if (!handleValid) {
-      setAvail({ checking: false, available: null, reason: null })
-      return
-    }
-    let cancelled = false
-    setAvail({ checking: true, available: null, reason: null })
-    const t = setTimeout(async () => {
-      try {
-        const res = await api.checkHandle({ handle: trimmedHandle })
-        if (!cancelled) setAvail({ checking: false, available: res.available, reason: res.reason ?? null })
-      } catch {
-        if (!cancelled) setAvail({ checking: false, available: null, reason: null })
-      }
-    }, 350)
-    return () => {
-      cancelled = true
-      clearTimeout(t)
-    }
-  }, [trimmedHandle, handleValid])
+    if (error) announce(error)
+  }, [error])
+
+  useEffect(() => {
+    if (checkFailed) announce(t("handle.check_failed"))
+  }, [checkFailed, t])
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit) return
@@ -95,11 +100,10 @@ function FirstRunForm() {
       setUser(res.user)
     } catch (err) {
       setError(friendlyError(t, err))
+    } finally {
       setSubmitting(false)
     }
   }, [canSubmit, trimmedHandle, displayName, setUser, t])
-
-  const previewName = trimmedHandle || displayName || "?"
 
   return (
     <View style={styles.overlay}>
@@ -126,7 +130,7 @@ function FirstRunForm() {
                   placeholder={t("field.first_name.placeholder")}
                   value={first}
                   onChangeText={setFirst}
-                  maxLength={40}
+                  maxLength={FIRST_NAME_MAX}
                   autoComplete="given-name"
                 />
               </View>
@@ -136,7 +140,7 @@ function FirstRunForm() {
                   placeholder={t("field.last_name.placeholder")}
                   value={last}
                   onChangeText={setLast}
-                  maxLength={40}
+                  maxLength={LAST_NAME_MAX}
                   autoComplete="family-name"
                 />
               </View>
@@ -146,17 +150,19 @@ function FirstRunForm() {
               label={t("field.username.label")}
               placeholder={t("field.username.placeholder")}
               value={handle}
-              onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
-              maxLength={20}
+              onChangeText={(text) => setHandle(stripHandlePrefix(text))}
+              maxLength={HANDLE_MAX_LENGTH}
               autoCapitalize="none"
               autoCorrect={false}
             />
             <HandleHint
               handle={trimmedHandle}
               valid={handleValid}
-              checking={avail.checking}
+              checking={checking}
               available={available}
-              taken={handleValid && avail.available === false}
+              taken={taken}
+              checkFailed={checkFailed}
+              onRetry={retryHandleCheck}
             />
 
             {error ? (
@@ -200,12 +206,16 @@ function HandleHint({
   checking,
   available,
   taken,
+  checkFailed,
+  onRetry,
 }: {
   handle: string
   valid: boolean
   checking: boolean
   available: boolean
   taken: boolean
+  checkFailed: boolean
+  onRetry: () => void
 }) {
   const { t } = useT("mobile-auth-registration")
   const th = useTheme()
@@ -223,6 +233,9 @@ function HandleHint({
   } else if (taken) {
     content = t("handle.taken", { handle })
     color = th.colors.brand.bloom
+  } else if (checkFailed) {
+    content = t("handle.check_failed")
+    color = th.colors.dangerInk
   }
   return (
     <View style={styles.hintRow}>
@@ -230,6 +243,17 @@ function HandleHint({
       <Text variant="caption" color={color}>
         {content}
       </Text>
+      {checkFailed && !checking ? (
+        <Pressable
+          onPress={onRetry}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.retryTarget, pressed ? styles.retryPressed : null]}
+        >
+          <Text variant="caption" color={th.colors.accentText} style={styles.retryText}>
+            {t("handle.retry")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   )
 }
@@ -266,4 +290,7 @@ const useStyles = makeThemedStyles((t) => ({
   signOut: { alignSelf: "center", marginTop: t.space["3"] },
   signOutPressed: { opacity: 0.6 },
   signOutText: { textAlign: "center" },
+  retryTarget: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["2"] },
+  retryText: { fontFamily: t.fontFamily.bodySemiBold },
+  retryPressed: { opacity: 0.6 },
 }))

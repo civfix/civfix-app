@@ -8,6 +8,7 @@ import {
   webCursor,
   webHover,
   webTransition,
+  type Theme,
 } from "../theme"
 import { Icon, Text, iconMap, type IconName } from "../typography"
 
@@ -15,30 +16,40 @@ export const LIST_TILE = 40
 export const LIST_ROW_MIN_HEIGHT = 56
 export const LIST_DIVIDER_INSET = space["4"] + LIST_TILE + space["3"]
 
-export type IconTileTone = "neutral" | "attention" | "success"
+export type IconTileTone = "neutral" | "attention" | "success" | "danger"
 
 export interface IconTileProps {
   icon: IconName
   tone?: IconTileTone
 }
 
+function iconTileInk(tone: IconTileTone, t: Theme): string {
+  switch (tone) {
+    case "attention":
+      return t.colors.sun["700"]
+    case "success":
+      return t.colors.successInk
+    case "danger":
+      return t.colors.dangerInk
+    case "neutral":
+      return t.colors.textMuted
+  }
+}
+
+const TONE_FILL_KEY: Record<IconTileTone, "tileAttention" | "tileSuccess" | "tileDanger" | null> = {
+  neutral: null,
+  attention: "tileAttention",
+  success: "tileSuccess",
+  danger: "tileDanger",
+}
+
 export function IconTile({ icon, tone = "neutral" }: IconTileProps) {
   const styles = useStyles()
   const t = useTheme()
-  const ink =
-    tone === "attention"
-      ? t.colors.sun["700"]
-      : tone === "success"
-        ? t.colors.successInk
-        : t.colors.textMuted
+  const ink = iconTileInk(tone, t)
+  const fillKey = TONE_FILL_KEY[tone]
   return (
-    <View
-      style={[
-        styles.tile,
-        tone === "attention" ? styles.tileAttention : null,
-        tone === "success" ? styles.tileSuccess : null,
-      ]}
-    >
+    <View style={[styles.tile, fillKey ? styles[fillKey] : null]}>
       <Icon icon={iconMap[icon]} size={18} color={ink} />
     </View>
   )
@@ -199,5 +210,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   tileSuccess: {
     backgroundColor: t.colors.successWash,
+  },
+  tileDanger: {
+    backgroundColor: t.colors.dangerWash,
   },
 }))

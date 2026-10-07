@@ -20,6 +20,11 @@ export interface FieldProps {
   error?: string
   counter?: string
   htmlFor?: string
+  /**
+   * Announce the error as it appears. Forms that render an ErrorSummary pass false: the summary
+   * already announces every error, and a second alert per field talks over it.
+   */
+  announceError?: boolean
   children: ReactNode | ((props: FieldRenderProps) => ReactNode)
   className?: string
 }
@@ -31,6 +36,7 @@ export function Field({
   error,
   counter,
   htmlFor,
+  announceError = true,
   children,
   className,
 }: FieldProps) {
@@ -39,15 +45,35 @@ export function Field({
   const id = htmlFor ?? generatedId
   const errorId = `${id}-error`
   const hintId = `${id}-hint`
+  const labelId = `${id}-label`
   const describedBy = error ? errorId : hint ? hintId : undefined
+  // Plain children with no htmlFor have no control for a <label> to point at (a segmented
+  // control, a chip set), so the field becomes a group named by its label instead.
+  const grouped = typeof children !== "function" && htmlFor === undefined
+  const labelContent = (
+    <>
+      {label}
+      {optional ? (
+        <span className="ml-1 font-normal text-console-ink-3">({t("form.optional")})</span>
+      ) : null}
+    </>
+  )
   return (
-    <div className={cn("flex flex-col gap-token-1", className)}>
-      <label htmlFor={id} className="text-token-13 font-semibold text-console-ink-2">
-        {label}
-        {optional ? (
-          <span className="ml-1 font-normal text-console-ink-3">({t("form.optional")})</span>
-        ) : null}
-      </label>
+    <div
+      role={grouped ? "group" : undefined}
+      aria-labelledby={grouped ? labelId : undefined}
+      aria-describedby={grouped ? describedBy : undefined}
+      className={cn("flex flex-col gap-token-1", className)}
+    >
+      {grouped ? (
+        <span id={labelId} className="text-token-13 font-semibold text-console-ink-2">
+          {labelContent}
+        </span>
+      ) : (
+        <label htmlFor={id} className="text-token-13 font-semibold text-console-ink-2">
+          {labelContent}
+        </label>
+      )}
       {typeof children === "function"
         ? children({
             id,
@@ -59,7 +85,11 @@ export function Field({
       <div className="flex items-start gap-token-2">
         <div className="min-w-0 flex-1">
           {error ? (
-            <p id={errorId} role="alert" className="text-token-12 font-medium text-console-bloom-strong">
+            <p
+              id={errorId}
+              role={announceError ? "alert" : undefined}
+              className="text-token-12 font-medium text-console-bloom-strong"
+            >
               {error}
             </p>
           ) : hint ? (

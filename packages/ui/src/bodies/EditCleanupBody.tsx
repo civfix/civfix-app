@@ -1,21 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
-import { geocodePointKey } from "@civfix/shared"
+import { ErrorCode, errorCopyKey, geocodePointKey, type ErrorCodeTable } from "@civfix/shared"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import {
-  EmptyState,
-  SkeletonBlock,
-  SkeletonGroup,
-  SkeletonText,
-} from "../primitives"
-import { useCleanup, useUpdateCleanup, useAuthState } from "../data"
+import { EmptyState, SignInPrompt } from "../primitives"
+import { useCleanup, useUpdateCleanup, useAuthState, useRequireAuth } from "../data"
 import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
-import { useNavStore } from "../nav"
+import { pathForEntry, useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT, viewerTimeZone } from "../i18n"
-import { appErrorCode } from "./errorCode"
 import {
   formEndInstantMs,
   formInstantMs,
@@ -25,27 +19,27 @@ import {
   wallClockToFormTime,
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
-import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
+import { CleanupForm } from "./CleanupForm"
+import { isCleanupFormComplete, type CleanupFormValue } from "./cleanupFormModel"
 import { composeEventAddress } from "./eventAddressField"
 import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
+import { useCleanupDraft } from "./cleanupDraftStore"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
 import { eventCoverChanged } from "./eventCoverModel"
+import { EventFormSkeleton, FORM_CONTROL_HEIGHT, FormValidationRow } from "./eventFormParts"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
+const SAVE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.VALIDATION]: "save.error.validation",
+  [ErrorCode.RATE_LIMITED]: "save.error.rate_limited",
+  [ErrorCode.UNAUTHORIZED]: "save.error.forbidden",
+  [ErrorCode.FORBIDDEN]: "save.error.forbidden",
+}
+
 function saveErrorMessage(err: unknown, t: Translate): string {
-  switch (appErrorCode(err)) {
-    case "VALIDATION":
-      return t("save.error.validation")
-    case "RATE_LIMITED":
-      return t("save.error.rate_limited")
-    case "UNAUTHORIZED":
-    case "FORBIDDEN":
-      return t("save.error.forbidden")
-    default:
-      return t("save.error.generic")
-  }
+  return t(errorCopyKey(err, SAVE_ERROR_KEYS, "save.error.generic"))
 }
 
 function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
@@ -87,15 +81,27 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const { t: tForm } = useT("event-form")
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
+  // The cover the form was seeded from. A refetch mid-edit must not turn an untouched cover field into
+  // a change: compared against a newer URL, the seeded null would send a delete of a co-host's cover.
+  const [seededCoverUrl] = useState(() => cleanup.coverUrl ?? null)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const mergeForm = useCallback(
+    (partial: Partial<CleanupFormValue>) => setForm((prev) => ({ ...prev, ...partial })),
+    [],
+  )
 
   const linkedReports = cleanup.linkedReports
-  const linkedReportIds = linkedReports.map((report) => report.id).join(",")
   useEffect(() => {
     useLinkedReportCards.getState().put(linkedReports.map(linkedRefToCardData))
-  }, [linkedReportIds])
+  }, [linkedReports])
 
-  useEffect(() => () => useLinkedReportCards.getState().clear(), [])
+  useEffect(
+    () => () => {
+      // The card cache also backs an in-progress create draft's links; that draft clears it itself.
+      if (!useCleanupDraft.getState().active) useLinkedReportCards.getState().clear()
+    },
+    [],
+  )
 
   const scheduleUntouched =
     form.date != null &&
@@ -151,7 +157,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         ? { organizationId: form.organizationId }
         : {}),
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
-      ...(eventCoverChanged(form, cleanup.coverUrl) ? { coverMediaId: form.coverMediaId } : {}),
+      ...(eventCoverChanged(form, seededCoverUrl) ? { coverMediaId: form.coverMediaId } : {}),
     }
     update.mutate(
       { id: cleanup.id, patch },
@@ -173,6 +179,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     persistEventEnd,
     scheduleUntouched,
     scheduledAt,
+    seededCoverUrl,
     update,
     t,
     tForm,
@@ -188,6 +195,8 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       <CleanupForm
         value={form}
         onChange={setForm}
+        onPatch={mergeForm}
+        centerSettled
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
         eventEndUnsaved={cleanup.endsAt == null}
@@ -195,17 +204,10 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         currentOrganization={cleanup.organization ?? null}
       />
 
-      {saveError ? (
-        <View style={styles.validationRow}>
-          <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.brand.bloom} />
-          <Text style={styles.errorText}>{saveError}</Text>
-        </View>
-      ) : !canSave && !update.isPending ? (
-        <View style={styles.validationRow}>
-          <Icon icon={iconMap.Info} size={15} color={th.colors.textSubtle} />
-          <Text style={styles.hintText}>{t("validation.incomplete")}</Text>
-        </View>
-      ) : null}
+      <FormValidationRow
+        error={saveError}
+        hint={!canSave && !update.isPending ? t("validation.incomplete") : null}
+      />
 
       <Pressable
         onPress={onSave}
@@ -230,35 +232,29 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   )
 }
 
-function EditCleanupSkeleton() {
-  const { ScrollView } = useScrollHost()
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {SKELETON_FIELDS.map((height, index) => (
-        <SkeletonGroup key={index} style={styles.skeletonField}>
-          <SkeletonText width="34%" height={11} />
-          <SkeletonBlock width="100%" height={height} radius={th.radius.lg} />
-        </SkeletonGroup>
-      ))}
-      <SkeletonBlock width="100%" height={44} radius={th.radius.pill} />
-    </ScrollView>
-  )
-}
-
 export function EditCleanupBody({ id }: { id: string }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-edit")
   const query = useCleanup(id)
-  const { user } = useAuthState()
+  const { user, isAuthenticated, isPending } = useAuthState()
+  const requireAuth = useRequireAuth()
 
-  if (query.isLoading) return <EditCleanupSkeleton />
+  if (isPending || query.isLoading) return <EventFormSkeleton />
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.stateFill}>
+        <SignInPrompt
+          icon={iconMap.Lock}
+          tone="neutral"
+          variant="detail"
+          title={t("signIn.title")}
+          body={t("signIn.body")}
+          onSignIn={() => requireAuth(() => {}, { next: pathForEntry({ kind: "edit-cleanup", id }) })}
+        />
+      </View>
+    )
+  }
   if (query.isError || !query.data) {
     return (
       <View style={styles.stateFill}>
@@ -295,10 +291,7 @@ export function EditCleanupBody({ id }: { id: string }) {
   return <EditForm cleanup={query.data} />
 }
 
-const SKELETON_FIELDS = [44, 88, 44, 44, 44] as const
-
 const useStyles = makeThemedStyles((t) => ({
-  skeletonField: { gap: t.space["2"] },
   scroll: {
     flex: 1,
   },
@@ -311,30 +304,12 @@ const useStyles = makeThemedStyles((t) => ({
   stateFill: {
     flex: 1,
   },
-  validationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    justifyContent: "center",
-  },
-  errorText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.accentText,
-  },
-  hintText: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
   saveBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: t.space["2"],
-    height: 52,
+    height: FORM_CONTROL_HEIGHT,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.brand.bloom,
     ...t.shadows.pin,
@@ -345,7 +320,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   saveText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.onAccent,
   },
   pressed: {

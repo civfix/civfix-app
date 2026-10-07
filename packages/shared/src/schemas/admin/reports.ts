@@ -1,29 +1,22 @@
 import { z } from "zod"
-import { ReportCategorySchema } from "../common.js"
-import { IdSchema, pageResponse } from "../common.js"
+import { IdSchema, MESSAGE_BODY_MAX, pageResponse, ReportCategorySchema } from "../common.js"
 import { ChatHistoryResponseSchema, ReportChatHistoryRequestSchema } from "../chat.js"
 import type { ChatHistoryResponse, ReportChatHistoryRequest } from "../chat.js"
 import { ChatMessageDTOSchema, LinkedEventRefSchema } from "../entities.js"
-import { MESSAGE_BODY_MAX } from "../../types/ws.js"
 import {
   AdminActorRefSchema,
   AdminCoordsSchema,
   AdminReportStatusSchema,
   AdminListQuerySchema,
+  AdminOkResponseSchema,
   RelAbsTimeSchema,
 } from "./common.js"
+import { AdminMediaRefSchema } from "./internal-fields.js"
 
 /**
- * Admin reports surface: every neighbor report routed to a city department. List (filter by civfix
- * status + flagged + search), detail (desc, timeline, reporter, routing, media), and the operator
- * actions: set status, flag/unflag, remove (-> rejected), send a follow-up to the reporter or city.
- * Reconciliation: design submitted|in-progress|completed -> civfix submitted|in_progress|resolved;
- * "flagged" is an abuse marker, not a status; "Remove" -> rejected. See enumeration 2.C.
+ * Admin reports surface. "flagged" is an abuse marker, not a status, and removing a report sets it to
+ * `rejected`.
  */
-
-// ---------------------------------------------------------------------------
-// Fragments
-// ---------------------------------------------------------------------------
 
 /** A reporter reference. Anonymous reports have no account id and therefore no profile destination. */
 export const ReportReporterSchema = AdminActorRefSchema.extend({ id: z.string().nullable() }).strict()
@@ -90,26 +83,15 @@ export const ReportOutreachSchema = z
     routedTo: z.string().email().nullable(),
     /** ISO timestamp of the (first) send to the jurisdiction, or null. */
     routedAt: z.string().nullable(),
-    /** True when the latest send attempt was rejected by the mail provider (0.52.0; a resend is allowed). */
+    /** True when the latest send attempt was rejected by the mail provider; a resend is allowed. */
     sendFailed: z.boolean().optional(),
   })
   .strict()
 export type ReportOutreach = z.infer<typeof ReportOutreachSchema>
 
 /** A media asset on a report (image/video reference; the real media URL, not a placeholder). */
-export const ReportMediaSchema = z
-  .object({
-    id: z.string(),
-    kind: z.enum(["image", "video"]),
-    url: z.string(),
-    thumbUrl: z.string().nullable().optional(),
-  })
-  .strict()
+export const ReportMediaSchema = AdminMediaRefSchema
 export type ReportMedia = z.infer<typeof ReportMediaSchema>
-
-// ---------------------------------------------------------------------------
-// List item
-// ---------------------------------------------------------------------------
 
 /**
  * A report list row. `status` is the civfix report status; `flagged` is the orthogonal abuse marker.
@@ -139,9 +121,9 @@ export const AdminReportListItemDTOSchema = z
 export type AdminReportListItemDTO = z.infer<typeof AdminReportListItemDTOSchema>
 
 /**
- * Report list query: search matches title/place/id/reporter; `filter` is the status+flag facet the
- * design shows (all|submitted|in_progress|completed|flagged|needs_verification). `needs_verification`
- * is the review queue: reports with no verification verdict yet, orthogonal to the civic status.
+ * Report list query: search matches title/place/id/reporter; `filter` is the status+flag facet.
+ * `needs_verification` is the review queue: reports with no verification verdict yet, orthogonal to
+ * the civic status.
  */
 export const AdminReportListQuerySchema = AdminListQuerySchema.extend({
   filter: z
@@ -172,51 +154,39 @@ export const AdminReportListResponseSchema = pageResponse(AdminReportListItemDTO
 })
 export type AdminReportListResponse = z.infer<typeof AdminReportListResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
-
 /** Full report detail: the list shape plus description, timeline, routing, and media assets. */
 export const AdminReportDTOSchema = AdminReportListItemDTOSchema.extend({
   desc: z.string(),
   timeline: z.array(ReportTimelineItemSchema),
   city: ReportRoutingSchema,
   media: z.array(ReportMediaSchema),
-  // Events (cleanups) this report is linked to (its "linked events" gallery; reuses the shared light
-  // ref from entities). Defaults to [] so a server that does not yet supply it, and older consumers, parse.
+  // Events (cleanups) this report is linked to. Defaulted so an older server's response still parses.
   linkedEvents: z.array(LinkedEventRefSchema).default([]),
-  // The report's resolved jurisdiction GEOID (lets the admin deep-link to the Jurisdictions row to edit
-  // its routing contact). Nullable + defaulted so older servers / first-deploy responses still parse.
+  // The resolved jurisdiction GEOID, so the admin can deep-link to that jurisdiction's routing contact.
+  // Defaulted so an older server's response still parses.
   geoid: z.string().nullable().default(null),
-  // The outreach lifecycle (was it emailed to the jurisdiction, did they reply/bounce) + the per-report
-  // mail thread link. Defaulted to "not_sent" so older servers / first-deploy responses still parse.
+  // Defaulted to "not_sent" so an older server's response still parses.
   outreach: ReportOutreachSchema.default({
     status: "not_sent",
     threadId: null,
     routedTo: null,
     routedAt: null,
   }),
-  // Immutable human reference (e.g. "DU-42-000001"). Optional + additive so older servers / un-migrated
-  // rows still parse.
+  // Immutable human reference (e.g. "DU-42-000001"). Optional so older servers and un-migrated rows
+  // still parse.
   referenceCode: z.string().optional(),
-  // The report-verification verdict an operator set (Approve/Reject buttons), orthogonal to the civic
-  // status. Nullish + additive so older servers / un-reviewed reports still parse; null => no verdict yet.
+  // The operator's verification verdict, orthogonal to the civic status; null means no verdict yet.
+  // Nullish so older servers still parse.
   verificationVerdict: z.enum(["approved", "rejected"]).nullish(),
-  // ISO timestamp of the verdict. Nullish (matching the ISO-string convention used by outreach.routedAt)
-  // so older servers / un-reviewed reports still parse.
+  // ISO timestamp of the verdict. Nullish so older servers and un-reviewed reports still parse.
   verifiedAt: z.string().nullish(),
-  // Whether the REPORTER has earned the report-verified state (lets admin surface it on the report).
-  // Optional + additive so older servers still parse.
+  // Whether the REPORTER has earned the report-verified state. Optional so older servers still parse.
   reporterReportVerified: z.boolean().optional(),
 }).strict()
 export type AdminReportDTO = z.infer<typeof AdminReportDTOSchema>
 
 export const GetAdminReportResponseSchema = AdminReportDTOSchema
 export type GetAdminReportResponse = z.infer<typeof GetAdminReportResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
 
 /** Set the report status from the quick-status buttons (writes report_timeline; audited). */
 export const SetReportStatusRequestSchema = z
@@ -227,16 +197,16 @@ export const SetReportStatusRequestSchema = z
   .strict()
 export type SetReportStatusRequest = z.infer<typeof SetReportStatusRequestSchema>
 
-/** Flag / unflag a report ("Flag"/"Flagged" toggle). */
 export const FlagReportRequestSchema = z
   .object({
     id: z.string(),
     reason: z.string().max(500).optional(),
+    flagged: z.boolean().optional(),
   })
   .strict()
 export type FlagReportRequest = z.infer<typeof FlagReportRequestSchema>
 
-/** Remove a report ("Remove report" -> rejected / soft-delete). */
+/** Remove a report: sets it to `rejected` (a soft delete). */
 export const RemoveReportRequestSchema = z
   .object({
     id: z.string(),
@@ -245,7 +215,7 @@ export const RemoveReportRequestSchema = z
   .strict()
 export type RemoveReportRequest = z.infer<typeof RemoveReportRequestSchema>
 
-/** Send a follow-up to the reporter or the routed city contact ("Send a follow-up"). */
+/** Send a follow-up to the reporter or the routed city contact. */
 export const SendFollowupRequestSchema = z
   .object({
     id: z.string(),
@@ -256,7 +226,7 @@ export const SendFollowupRequestSchema = z
 export type SendFollowupRequest = z.infer<typeof SendFollowupRequestSchema>
 
 /**
- * Approve a report and email it to its jurisdiction ("Approve & send to jurisdiction"). Sends the full
+ * Approve a report and email it to its jurisdiction. Sends the full
  * report packet (details + photos) to the jurisdiction's resolved routing contact, opens/reuses a
  * per-report mail thread (so the city's reply auto-routes back onto this report), and advances the
  * report toward `acknowledged` when it is still in a pre-routed status. Fails 422 (NOT_ROUTABLE) when
@@ -283,10 +253,9 @@ export const RouteReportResponseSchema = z
 export type RouteReportResponse = z.infer<typeof RouteReportResponseSchema>
 
 /**
- * Set a report's verification verdict (POST /admin/reports/:id/verdict). `id` consumes the path param
- * (mirrors RouteReportRequest / SetReportStatusRequest, which also carry the id the client reads to fill
- * `:id`); an `approved` verdict for a report whose reporter has >=2 approved reports earns them
- * report-verified (server-side recompute). Orthogonal to the civic report status. Returns a simple ok.
+ * Set a report's verification verdict, orthogonal to the civic status. `id` fills the `:id` path param.
+ * An `approved` verdict that gives the reporter two or more approved reports earns them report-verified
+ * (recomputed server-side).
  */
 export const SetReportVerdictRequestSchema = z
   .object({
@@ -296,7 +265,7 @@ export const SetReportVerdictRequestSchema = z
   .strict()
 export type SetReportVerdictRequest = z.infer<typeof SetReportVerdictRequestSchema>
 
-export const SetReportVerdictResponseSchema = z.object({ ok: z.literal(true) }).strict()
+export const SetReportVerdictResponseSchema = AdminOkResponseSchema
 export type SetReportVerdictResponse = z.infer<typeof SetReportVerdictResponseSchema>
 
 export const AdminReportMessagesRequestSchema = ReportChatHistoryRequestSchema

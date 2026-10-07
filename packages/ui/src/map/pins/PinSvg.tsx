@@ -3,18 +3,28 @@ import { View } from "react-native"
 import Svg, { Path, G } from "react-native-svg"
 import { useTheme } from "../../theme"
 import { Icon, iconMap } from "../../typography"
+import { inkOnFill, pinOutlineFor } from "./appearance"
+
+const BODY_OUTLINE_WIDTH = 2.5
 
 const BODY_PATH =
   "M32 4 C46 4 58 16 58 30 C58 46 40 60 34 68 C33 69 31 69 30 68 C24 60 6 46 6 30 C6 16 18 4 32 4 Z"
 
 export function PinSvg({ fill, glyph, size }: { fill: string; glyph: string; size: number }) {
   const t = useTheme()
+  const outline = pinOutlineFor(t.scheme)
   return (
     <Svg width={size} height={size * (76 / 64)} viewBox="0 0 64 76" fill="none">
-      <Path d={BODY_PATH} fill={fill} />
+      <Path
+        d={BODY_PATH}
+        fill={fill}
+        stroke={outline ?? undefined}
+        strokeWidth={outline ? BODY_OUTLINE_WIDTH : undefined}
+        strokeLinejoin="round"
+      />
       <G
         transform="translate(20 16)"
-        stroke={t.colors.onAccent}
+        stroke={inkOnFill(fill, t.scheme, t.colors.onAccent)}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"

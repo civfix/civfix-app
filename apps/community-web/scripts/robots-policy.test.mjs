@@ -70,7 +70,7 @@ describe("withNoindexRule", () => {
   })
 
   it("appends a /* noindex rule for any non-production origin", () => {
-    for (const origin of ["https://civfix.dev", "https://dev.civfix-web.pages.dev"]) {
+    for (const origin of ["https://civfix.dev", "https://staging.civfix-web.pages.dev"]) {
       const guarded = withNoindexRule(HEADERS, origin)
       expect(guarded).toContain(`/*\n  ${NOINDEX_RULE}`)
       expect(guarded.endsWith("\n")).toBe(true)

@@ -6,6 +6,7 @@ import {
   PostRefDTOSchema,
 } from "../entities.js"
 import {
+  POST_BODY_MAX,
   PostComposeInputSchema,
   FeedPageDTOSchema,
   HomeFeedQuerySchema,
@@ -14,12 +15,6 @@ import {
 } from "../posts.js"
 import { MediaPurposeSchema } from "../common.js"
 import { endpoints } from "../../client/endpoints.js"
-
-/**
- * Social-feed contract (P0): the PostDTO round-trips; the PostComposeInput cross-field refinements
- * hold (quote⇒repostOfId, reply⇒replyToId, and a post must carry a body/attachment/media); the
- * shared FeedPageDTO shape; and the 13 post endpoints are wired into the registry.
- */
 
 const UUID_A = "11111111-1111-1111-1111-111111111111"
 const UUID_B = "22222222-2222-2222-2222-222222222222"
@@ -86,6 +81,14 @@ describe("PostDTOSchema round-trip", () => {
 })
 
 describe("PostComposeInputSchema refinements", () => {
+  it("caps the body at POST_BODY_MAX characters", () => {
+    expect(POST_BODY_MAX).toBe(2000)
+    expect(PostComposeInputSchema.safeParse({ body: "a".repeat(POST_BODY_MAX) }).success).toBe(true)
+    expect(PostComposeInputSchema.safeParse({ body: "a".repeat(POST_BODY_MAX + 1) }).success).toBe(
+      false,
+    )
+  })
+
   it("passes a text-only post (kind defaults to 'post')", () => {
     const res = PostComposeInputSchema.safeParse({ body: "hello neighbors" })
     expect(res.success).toBe(true)
@@ -175,10 +178,9 @@ describe("FeedPageDTOSchema + HomeFeedQuerySchema", () => {
 })
 
 describe("post endpoint registry", () => {
-  // [endpoint, method, path, csrf, auth]. The home feed is OPTIONAL auth so a signed-out reader can read
-  // the public/global feed; every write + the personal lists stay required. listUserPosts is OPTIONAL for
-  // the same reason: getProfile is already "optional", so a signed-out profile page would otherwise render
-  // a readable header next to a 401'd posts tab.
+  // [endpoint, method, path, csrf, auth]. The home feed is optional auth so a signed-out reader can read
+  // the public feed. listUserPosts is optional because getProfile is, so a signed-out profile page would
+  // otherwise render a readable header next to a 401'd posts tab.
   const specs = [
     [endpoints.createPost, "POST", "/posts", true, "required"],
     [endpoints.getPost, "GET", "/posts/:id", false, "optional"],

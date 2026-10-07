@@ -1,6 +1,3 @@
-/**
- * PRIVACY & SAFETY settings deep-link host (/settings/privacy). See settings/index.tsx.
- */
 import { seedEntry } from "@/components/MobileNavAdapter"
 import DeepLinkHost from "@/components/DeepLinkHost"
 

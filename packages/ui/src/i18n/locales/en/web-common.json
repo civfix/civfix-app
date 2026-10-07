@@ -19,6 +19,7 @@
     "card_body": "Report issues, track fixes, and join cleanups from your phone.",
     "dismiss": "Dismiss",
     "badge_app_store": "Download civfix on the App Store",
-    "badge_google_play": "Get civfix on Google Play"
+    "badge_google_play": "Get civfix on Google Play",
+    "open_failed": "Couldn't open the store. Try again."
   }
 }

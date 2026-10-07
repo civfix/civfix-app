@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { MediaPreview } from "./MediaPreview"
@@ -20,7 +20,7 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
   if (attachments.length === 0) return null
   return (
     <View style={[styles.thumbs, singleRow ? styles.thumbsSingleRow : null, style]}>
-      {attachments.map((a) => (
+      {attachments.map((a, index) => (
         <View key={a.id} style={styles.thumb}>
           <MediaPreview
             uri={a.uri}
@@ -31,13 +31,13 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
           />
           {!a.uploadId ? (
             <View style={styles.thumbUploading}>
-              <ActivityIndicator size="small" color={th.colors.onScrim} />
+              <ActivityIndicator size="small" color={th.colors.onScrim} accessibilityLabel={t("media.uploading")} />
             </View>
           ) : null}
           <Pressable
             onPress={() => onRemove(a.id)}
             accessibilityRole="button"
-            accessibilityLabel={t("media.remove_attachment")}
+            accessibilityLabel={t("media.remove_attachment_n", { index: index + 1, count: attachments.length })}
             hitSlop={THUMB_REMOVE_HIT_SLOP}
             {...focusRingProps}
             style={({ pressed }) => [styles.thumbRemove, pressed ? styles.pressed : null]}
@@ -52,12 +52,11 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
 
 const THUMB_SIZE = 64
 const THUMB_REMOVE_SIZE = 22
-const THUMB_REMOVE_TARGET = 44
 const THUMB_REMOVE_HIT_SLOP = {
   top: 0,
   right: 0,
-  bottom: THUMB_REMOVE_TARGET - THUMB_REMOVE_SIZE,
-  left: THUMB_REMOVE_TARGET - THUMB_REMOVE_SIZE,
+  bottom: MIN_TOUCH_TARGET - THUMB_REMOVE_SIZE,
+  left: MIN_TOUCH_TARGET - THUMB_REMOVE_SIZE,
 }
 
 const useStyles = makeThemedStyles((t) => ({

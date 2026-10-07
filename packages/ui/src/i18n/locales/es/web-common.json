@@ -19,6 +19,7 @@
     "card_body": "Informa de problemas, sigue las reparaciones y únete a limpiezas desde tu teléfono.",
     "dismiss": "Descartar",
     "badge_app_store": "Descarga civfix en el App Store",
-    "badge_google_play": "Consigue civfix en Google Play"
+    "badge_google_play": "Consigue civfix en Google Play",
+    "open_failed": "No se pudo abrir la tienda. Inténtalo de nuevo."
   }
 }

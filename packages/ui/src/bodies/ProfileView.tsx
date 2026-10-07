@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
-import {
-  type UserProfileDTO,
-  type CleanupDTO,
-  type OrganizationRefDTO,
-} from "@civfix/shared"
-import { makeThemedStyles, space, radius, useTheme, noShadow, focusRingProps, headingLevel } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { View } from "react-native"
+import type { UserProfileDTO, CleanupDTO } from "@civfix/shared"
+import { makeThemedStyles, space, radius, headingLevel } from "../theme"
+import { Text } from "../typography"
 import {
   Avatar,
   DonateBlock,
@@ -17,7 +13,6 @@ import {
   SkeletonText,
 } from "../primitives"
 import { useNavStore } from "../nav"
-import { useT } from "../i18n"
 import { AffiliationRow } from "./AffiliationRow"
 import { ProfileStatsRow } from "./ProfileStatsRow"
 import {
@@ -37,13 +32,8 @@ export type { ProfileReports } from "./profile/ProfileReportsSection"
 
 export interface ProfileViewProps {
   profile: UserProfileDTO
-  subtitle?: string
-  onShare?: () => void
-  onClose?: () => void
   onOpenEvent?: (event: CleanupDTO) => void
   onOpenConnections?: (which: "followers" | "following") => void
-  actions?: React.ReactNode
-  organization?: OrganizationRefDTO | null
   dashboardSlot?: React.ReactNode
   posts?: ProfilePosts
   onOpenSaved?: () => void
@@ -53,13 +43,8 @@ export interface ProfileViewProps {
 
 export function ProfileView({
   profile,
-  subtitle,
-  onShare,
-  onClose,
   onOpenEvent,
   onOpenConnections,
-  actions,
-  organization,
   dashboardSlot,
   posts,
   onOpenSaved,
@@ -67,8 +52,6 @@ export function ProfileView({
   hours,
 }: ProfileViewProps) {
   const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("profile-view")
   const [eventTab, setEventTab] = useState<ProfileEventTab>("upcoming")
   const [requestedTab, setRequestedTab] = useState<ProfileTabId>(
     () => useNavStore.getState().active?.profileTab ?? PROFILE_DEFAULT_TAB,
@@ -82,12 +65,12 @@ export function ProfileView({
     consumedNavTabRef.current = navProfileTab
     setRequestedTab(navProfileTab)
   }, [navProfileTab])
-  const affiliation = organization ?? profile.organization ?? null
-  const heroSub = subtitle ?? (profile.handle ? `@${profile.handle}` : "")
+  const affiliation = profile.organization ?? null
+  const heroSub = profile.handle ? `@${profile.handle}` : ""
 
   const pastEvents = useProfilePastEvents(profile)
   const eventSplit = useMemo(
-    () => splitProfileEvents(pastEvents.events, profile.upcomingEvents, profile.id, Date.now()),
+    () => splitProfileEvents(pastEvents.events, profile.upcomingEvents, profile.id),
     [pastEvents.events, profile.upcomingEvents, profile.id],
   )
 
@@ -144,30 +127,6 @@ export function ProfileView({
             </Text>
           ) : null}
         </View>
-        {onShare ? (
-          <Pressable
-            onPress={onShare}
-            accessibilityRole="button"
-            accessibilityLabel={t("hero.share_a11y")}
-            hitSlop={6}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.heroBtn, pressed ? styles.heroBtnPressed : null]}
-          >
-            <Icon icon={iconMap.Share} size={17} color={th.colors.text} />
-          </Pressable>
-        ) : null}
-        {onClose ? (
-          <Pressable
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel={t("hero.close_a11y")}
-            hitSlop={6}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.heroBtn, styles.heroBtnPlain, pressed ? styles.heroBtnPressed : null]}
-          >
-            <Icon icon={iconMap.Close} size={18} color={th.colors.textSubtle} />
-          </Pressable>
-        ) : null}
       </View>
 
       {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
@@ -188,8 +147,6 @@ export function ProfileView({
       </View>
 
       {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
-
-      {actions ? <View style={styles.actions}>{actions}</View> : null}
 
       <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
       {renderTab(tabsModel.active)}
@@ -264,32 +221,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   heroSub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     marginTop: 1,
   },
-  heroBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s1,
-  },
-  heroBtnPlain: {
-    backgroundColor: t.colors.bgAlt,
-    borderColor: "transparent",
-    ...noShadow,
-  },
-  heroBtnPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.94 }],
-  },
-
   heroNameRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -317,12 +252,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   dashboardSlot: {
-    marginTop: HEADER_CLUSTER_GAP,
-  },
-
-  actions: {
-    flexDirection: "row",
-    gap: t.space["3"],
     marginTop: HEADER_CLUSTER_GAP,
   },
 }))

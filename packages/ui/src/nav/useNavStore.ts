@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { DetailEntry, DetailKind, NavState, Snap, View } from "./types"
+import type { DetailEntry, DetailKind, LayoutMode, NavState, Snap, View } from "./types"
 import { entryIdentity, parentViewForEntry, seedFor } from "./routes"
 import { isFlowKind } from "./flowKinds"
 import { stackTransition, type NavTransition } from "./navTransition"
@@ -10,8 +10,6 @@ import {
   type NavSnapshot,
 } from "./navSnapshot"
 
-type NavMode = "compact" | "expanded"
-
 const PAGE_SEED_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
   "cleanup",
   "pin",
@@ -20,8 +18,8 @@ const PAGE_SEED_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
 ])
 
 export interface NavStore extends NavState {
-  mode: NavMode
-  setMode: (mode: NavMode) => void
+  mode: LayoutMode
+  setMode: (mode: LayoutMode) => void
 
   originView: View | null
   seededDetailPage: boolean
@@ -39,8 +37,8 @@ export interface NavStore extends NavState {
   setSnap: (snap: Snap, animated?: boolean) => void
   setQuery: (query: string) => void
   setStack: (stack: DetailEntry[]) => void
-  seed: (entry: DetailEntry | null, mode: NavMode) => void
-  navigateTo: (entry: DetailEntry | null, mode: NavMode) => void
+  seed: (entry: DetailEntry | null, mode: LayoutMode) => void
+  navigateTo: (entry: DetailEntry | null, mode: LayoutMode) => void
   restore: (snapshot: NavSnapshot) => void
   leaveReportFlow: () => void
   finishReportFlow: (next: DetailEntry) => void

@@ -39,7 +39,7 @@ test("maps every push-capable thread tap to a pushed route", () => {
   })
 })
 
-test("the shell kinds a thread can now reach stack on top instead of tearing the stack down", () => {
+test("the shell kinds a thread can reach stack on top instead of tearing the stack down", () => {
   assert.deepEqual(threadEntryRoute({ kind: "announcements", id: "c1" }), {
     pathname: "/cleanups/[id]/announcements",
     params: { id: "c1" },

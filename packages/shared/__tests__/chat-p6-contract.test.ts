@@ -13,7 +13,7 @@ import {
 import { endpoints } from "../src/client/endpoints.js"
 
 /**
- * Chat P6 contract: polls — the "poll" message kind + PollDTO payload on ChatMessageDTO, plus the
+ * Chat poll contract: the "poll" message kind + PollDTO payload on ChatMessageDTO, plus the
  * create/vote/close request schemas and the 3-route /messages/poll* surface.
  */
 

@@ -34,5 +34,6 @@
   "terms": "Términos del servicio",
   "privacy_policy": "Política de privacidad",
   "source_code": "Código fuente",
-  "sign_out": "Cerrar sesión"
+  "sign_out": "Cerrar sesión",
+  "open_error": "No se pudo abrir ese enlace. Inténtalo de nuevo."
 }

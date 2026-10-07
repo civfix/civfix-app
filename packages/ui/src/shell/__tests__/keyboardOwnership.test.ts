@@ -259,9 +259,9 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
 
   it("reveals only for a focus that landed in ITS OWN scope", () => {
     const seam = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
-    expect(seam).toMatch(/if \(!scrollKeyboardReveals\(state\)\) return/)
+    expect(seam).toMatch(/const reveals = scrollKeyboardReveals\(state\)\n[\s\S]*?if \(!reveals\) return/)
     expect(seam).toMatch(
-      /\}, \[state\.focusedScope, state\.overlap, state\.reserve, state\.revealVersion\]\)/,
+      /\}, \[reveals, state\.focusedScope, state\.overlap, state\.reserve, state\.revealVersion\]\)/,
     )
   })
 

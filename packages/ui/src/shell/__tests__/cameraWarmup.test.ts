@@ -5,7 +5,7 @@ import { portraitShellPlan } from "../bodyLayout"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const appShell = read("../AppShell.tsx")
 const portrait = read("../PortraitShell.shared.tsx")
-const bodyTransition = read("../BodyTransition.native.tsx")
+const bodyTransition = read("../useEntranceTransition.native.ts")
 const mapNative = read("../../map/Map.native.tsx")
 const reportBody = read("../../bodies/ReportFlowBody.tsx")
 
@@ -73,6 +73,9 @@ describe("3. the report slot is PRE-WARMED after boot, and OFF the boot path", (
 
 describe("4. the body swap declares itself a non-interaction", () => {
   it("declares BOTH entrance channels non-interactions", () => {
+    expect(read("../BodyTransition.native.tsx")).toContain(
+      "const { onLayout, animatedStyle } = useEntranceTransition(transitionKey, direction)",
+    )
     expect(bodyTransition.match(/isInteraction: false,/g) ?? []).toHaveLength(2)
     expect(bodyTransition).toMatch(/useNativeDriver: true,\n\s*isInteraction: false,/)
   })

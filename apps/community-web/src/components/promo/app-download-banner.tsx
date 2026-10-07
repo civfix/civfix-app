@@ -4,22 +4,15 @@ import * as React from "react"
 import { useAppPromo, useAppPromoStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
+import { Z_APP_BANNER } from "@/styles/z-layers"
+
 /**
- * The fixed top "download the app" banner, shown to phones/tablets in PORTRAIT (see
- * docs/superpowers/specs/2026-07-18-web-app-download-promo-design.md). The landscape/desktop counterpart
- * is <AppPromoCard/>, which renders at the bottom of the home side card from inside @civfix/ui.
+ * The portrait counterpart of the landscape <AppPromoCard/>. Both read one promo store, so dismissing here
+ * also removes the side card section (visible when a tablet is rotated).
  *
- * All of the "should this show, and which store" logic lives in the shared, unit-tested `useAppPromo()`:
- * web-only, portrait, a detected store platform, not dismissed, not an installed PWA. Both surfaces read
- * ONE store, so dismissing here also removes the side card section (visible when a tablet is rotated).
- *
- * Layering: z-index 100 sits above the whole AppShell stack (whose layers cap at 71) and below the
- * modal/gate tier (200) and the boot splash (300), so an auth modal still covers it.
- *
- * The banner OVERLAYS the full-bleed map rather than displacing it, and pushes only the floating map
- * controls down: it publishes its measured height into the shared promo store, which web-map-controls
- * folds into `MapControls topInset`. The height is measured (not hardcoded) because the subtitle wraps
- * at different heights across locales - the German string is markedly longer than the English one.
+ * The banner overlays the map and pushes only the floating map controls down, through the height it
+ * publishes to the promo store. The height is measured rather than hardcoded because the subtitle wraps
+ * differently across locales.
  */
 export function AppDownloadBanner() {
   const { surface, links, dismiss } = useAppPromo()
@@ -29,10 +22,7 @@ export function AppDownloadBanner() {
 
   const visible = surface === "banner"
 
-  // Publish the live height so the map controls clear the banner. A layout effect (not a plain effect)
-  // runs before paint, so the controls are never painted underneath the banner for a frame. ResizeObserver
-  // keeps it correct across rotation, font swaps, and locale changes; unmount resets it to 0 so the
-  // controls slide back up.
+  // A layout effect runs before paint, so the controls are never painted under the banner for a frame.
   React.useLayoutEffect(() => {
     const el = ref.current
     if (!visible || !el) {
@@ -51,8 +41,8 @@ export function AppDownloadBanner() {
 
   if (!visible) return null
 
-  // In portrait `useAppPromo` always narrows to exactly one store (Apple OR Google); `other` never
-  // reaches this surface. Guard anyway so a future platform can never render an empty banner.
+  // In portrait `useAppPromo` narrows to exactly one store; the guard keeps a future platform from
+  // rendering an empty banner.
   const link = links[0]
   if (!link) return null
 
@@ -65,7 +55,7 @@ export function AppDownloadBanner() {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 100,
+        zIndex: Z_APP_BANNER,
         display: "flex",
         alignItems: "center",
         gap: 10,
@@ -73,7 +63,7 @@ export function AppDownloadBanner() {
         // status bar) but keeps the banner clear of the notch in any edge-to-edge browser chrome.
         padding:
           "calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px))",
-        background: "var(--card, #fff)",
+        background: "var(--card)",
         borderBottom: "1px solid var(--ink-5)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
@@ -98,8 +88,7 @@ export function AppDownloadBanner() {
           cursor: "pointer",
         }}
       >
-        {/* A literal multiplication sign, not the letter x - the button's accessible name comes from
-            aria-label, so this glyph is decorative. */}
+        {/* Decorative: the button's accessible name comes from aria-label. */}
         <span aria-hidden="true">&#215;</span>
       </button>
 
@@ -110,7 +99,7 @@ export function AppDownloadBanner() {
             fontWeight: 700,
             fontSize: 14,
             lineHeight: 1.2,
-            color: "var(--ink, #1a1714)",
+            color: "var(--ink)",
           }}
         >
           {t("app_promo.banner_title")}
@@ -134,9 +123,8 @@ export function AppDownloadBanner() {
         aria-label={t(link.labelKey)}
         style={{ flex: "0 0 auto", display: "inline-block" }}
       >
-        {/* Intrinsic badge artwork is 40px tall; rendered at 32px to keep the banner compact. A tiny
-            static local SVG - next/image is disabled under output:"export" and would only add overhead. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* The badge artwork is 40px tall; 32px keeps the banner compact. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
         <img
           src={link.badgeSrc}
           alt=""

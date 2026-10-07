@@ -20,7 +20,8 @@
     "required_error": "Esta respuesta es obligatoria.",
     "required_summary": "Responde las preguntas obligatorias.",
     "loading": "Cargando las preguntas…",
-    "error": "No se pudieron cargar las preguntas."
+    "error": "No se pudieron cargar las preguntas.",
+    "required_a11y": "{{prompt}}, obligatoria"
   },
   "consent": {
     "terms_lead": "Acepto los ",
@@ -51,7 +52,12 @@
     "seats_other": "{{count}} plazas",
     "position": "Posición {{position}} en la lista de espera",
     "view_ticket": "Ver entrada",
-    "cancel": "Cancelar inscripción"
+    "cancel": "Cancelar inscripción",
+    "cancel_title": "¿Cancelar tu inscripción?",
+    "cancel_body": "Tu plaza se libera de inmediato. Si el evento se llena, al volver a inscribirte quedarás en la lista de espera.",
+    "cancel_waitlist_title": "¿Salir de la lista de espera?",
+    "cancel_waitlist_body": "Pierdes tu lugar en la fila. Si vuelves a unirte, quedarás al final.",
+    "cancel_keep": "Mantener mi plaza"
   },
   "state": {
     "loading": "Cargando tu entrada…",

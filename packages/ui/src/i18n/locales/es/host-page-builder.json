@@ -51,7 +51,12 @@
     "empty": "Todavía no hay bloques. Añade uno para empezar a construir la página.",
     "move_up": "Subir",
     "move_down": "Bajar",
-    "remove": "Quitar este bloque"
+    "remove": "Quitar este bloque",
+    "fix_errors": "Algunos bloques necesitan correcciones antes de poder guardar la página.",
+    "item_name": "bloque {{kind}} {{n}}",
+    "move_up_named": "Subir {{name}}",
+    "move_down_named": "Bajar {{name}}",
+    "remove_named": "Quitar {{name}}"
   },
   "block": {
     "title": "Encabezado",
@@ -116,6 +121,13 @@
       "body": "Datos de contacto",
       "reply_to": "Dirección de respuesta",
       "reply_to_hint": "Se muestra en la página para que la gente pueda escribirte."
+    },
+    "remove_row": "Quitar {{label}}",
+    "error": {
+      "required": "Completa este campo o quita la fila.",
+      "url": "Escribe un enlace completo que empiece por https://.",
+      "email": "Escribe una dirección de correo válida.",
+      "invalid": "Revisa este campo."
     }
   },
   "preview": {

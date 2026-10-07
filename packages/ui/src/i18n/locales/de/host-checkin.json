@@ -56,9 +56,7 @@
     "party_other": "{{count}} Plätze",
     "undo": "Rückgängig",
     "undo_done": "Check-in rückgängig gemacht.",
-    "dismiss": "Schließen",
-    "unknown_token_title": "Ticket nicht erkannt",
-    "unknown_token_body": "Wir erkennen diesen Code für diese Veranstaltung nicht."
+    "dismiss": "Schließen"
   },
   "error": {
     "code_length": "Dieser Code sieht nicht richtig aus. Prüfe ihn und versuche es erneut.",

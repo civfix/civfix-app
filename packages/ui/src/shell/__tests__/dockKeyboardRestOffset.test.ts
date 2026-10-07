@@ -1,12 +1,7 @@
 /**
- * `dockKeyboardRestOffset` (shell/tabBarLogic.ts) — the `restOffset` the docked search bar hands
- * `useKeyboardAnchor`, and the reason the bar can land exactly 8pt above the keyboard instead of 36pt.
- *
- * It is DERIVED from two terms, never guessed:
- *   1. dockBottomGap(safeAreaBottom) — the dock container's paddingBottom.
- *   2. The dead band under the slimmed glass at full morph: DOCK_MORPH_SHRINK - DOCK_MORPH_TOP_OFFSET.
- *
- * Lives in its own file rather than in tabBar.test.ts so this wave adds no edit to an existing suite.
+ * `dockKeyboardRestOffset` is the `restOffset` the docked search bar hands `useKeyboardAnchor`, derived
+ * from two terms, never guessed: `dockBottomGap(safeAreaBottom)` (the dock container's paddingBottom) and
+ * the dead band under the slimmed glass at full morph (DOCK_MORPH_SHRINK - DOCK_MORPH_TOP_OFFSET).
  */
 import { describe, expect, it } from "vitest"
 import {
@@ -18,8 +13,7 @@ import { DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../../surface/liquidGl
 import { keyboardLift } from "../keyboardInsetModel"
 
 describe("dockKeyboardRestOffset", () => {
-  it("is 36pt on a 34pt-inset iPhone — the exact dead gap measured in the simulator", () => {
-    // Bar bottom y494 vs keyboard top y529 before the fix.
+  it("is 36pt on a 34pt-inset iPhone: the exact dead gap measured in the simulator", () => {
     expect(dockKeyboardRestOffset(34)).toBe(36)
   })
   it("is 22pt on a zero-inset device", () => {
@@ -38,11 +32,9 @@ describe("dockKeyboardRestOffset", () => {
   })
 
   it("TRACKS the Android nav-bar reservation instead of desyncing from it", () => {
-    // THE reason the Android fix lives inside dockBottomGap rather than at TabBar.native's paddingBottom.
-    // The gap term grows by 20dp on Android; because this function is defined ON TOP of dockBottomGap,
-    // the rest offset grows by exactly the same 20dp and `keyboardLift` keeps landing the bar 8dp above
-    // the IME. Had the reservation been added at the call site, restOffset would still report the old,
-    // smaller gap and the bar would rise 20dp too far — resting ~28dp above the keyboard.
+    // Why the Android reservation lives inside dockBottomGap rather than at TabBar.native's paddingBottom:
+    // the rest offset grows by the same 20dp, so `keyboardLift` still lands the bar 8dp above the IME.
+    // Added at the call site, the bar would rise 20dp too far.
     const deadBand = DOCK_MORPH_SHRINK - DOCK_MORPH_TOP_OFFSET
     expect(dockKeyboardRestOffset(48, "android")).toBe(dockBottomGap(48, "android") + deadBand)
     expect(dockKeyboardRestOffset(48, "android") - dockKeyboardRestOffset(48)).toBe(20)

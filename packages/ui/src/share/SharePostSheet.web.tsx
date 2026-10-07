@@ -1,25 +1,19 @@
 import React, { useCallback, useState } from "react"
 import { StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles } from "../theme"
 import { iconMap } from "../typography"
 import { useT } from "../i18n"
-import {
-  ModalCardSheet,
-  modalSheetInputFocusedStyle,
-  modalSheetInputStyle,
-} from "../primitives/ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "../primitives/ModalCardSheet"
 import { PrimaryButton } from "../primitives/PrimaryButton"
 import { SecondaryButton } from "../primitives/SecondaryButton"
-import { SignInPrompt } from "../primitives/StateView"
-import { TextInput } from "../primitives/TextInput"
 import { useDeferredOverlayAction } from "../primitives/useDeferredOverlayAction"
 import { MemberPicker } from "../bodies/MemberPicker"
 import { useSharePostSession } from "./useSharePostSession"
 import type { SharePostSheetProps } from "./SharePostSheet.types"
+import { ShareNoteInput, ShareSignedOut } from "./ShareSheetParts"
 
 export function SharePostSheet({ visible, target, onClose, onClosed }: SharePostSheetProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("share-post")
   const session = useSharePostSession({ visible, target, onClose })
   const { isAuthenticated, selected, pending, canSend, onSend, onCancel } = session
@@ -71,29 +65,18 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
             suggested={session.suggested}
             suggestedLabel={t("recipients.recent")}
           />
-          <TextInput
+          <ShareNoteInput
             value={session.note}
             onChangeText={session.setNote}
             editable={!pending}
             maxLength={session.noteMax}
-            placeholder={t("note.placeholder")}
-            placeholderTextColor={th.colors.textSubtle}
-            accessibilityLabel={t("note.a11y")}
-            onFocus={() => setNoteFocused(true)}
-            onBlur={() => setNoteFocused(false)}
-            style={[webInputReset, styles.note, noteFocused ? modalSheetInputFocusedStyle(th) : null]}
+            focused={noteFocused}
+            onFocusedChange={setNoteFocused}
+            style={styles.note}
           />
         </>
       ) : (
-        <View style={styles.signedOut}>
-          <SignInPrompt
-            icon={iconMap.MessageCircle}
-            title={t("signed_out.title")}
-            body={t("signed_out.body")}
-            variant="detail"
-            onSignIn={onSignIn}
-          />
-        </View>
+        <ShareSignedOut onSignIn={onSignIn} style={styles.signedOut} />
       )}
       <View style={styles.divider} />
       <SecondaryButton

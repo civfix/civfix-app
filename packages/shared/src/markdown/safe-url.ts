@@ -3,7 +3,7 @@ export const MARKDOWN_MAX_HREF_CHARS = SAFE_HTTPS_URL_MAX_CHARS
 
 export type UnsafeHostReason = "ip_literal" | "punycode" | "non_ascii_host"
 
-// eslint-disable-next-line no-control-regex
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
 const CONTROL_CHAR = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u
 const ASCII_HOST = /^[a-z0-9.-]+$/
 const IPV4_LITERAL = /^\d{1,3}(?:\.\d{1,3}){3}$/

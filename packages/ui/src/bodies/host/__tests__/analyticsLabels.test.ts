@@ -1,12 +1,13 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { RegistrationSourceSchema } from "@civfix/shared"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 const EVENT_FUNNEL_STEPS = ["signups", "checked_in", "logged_hours"] as const
 
-const body = readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8")
+const body = surfaceSource("eventAnalytics")
 const markdown = readFileSync(
   new URL("../../../primitives/Markdown.tsx", import.meta.url),
   "utf8",
@@ -15,7 +16,7 @@ const markdown = readFileSync(
 function catalog(lng: string, ns: string): Record<string, Record<string, string>> {
   return JSON.parse(
     readFileSync(new URL(`../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
-  )
+  ) as Record<string, Record<string, string>>
 }
 
 function code(source: string): string {
@@ -39,7 +40,7 @@ describe("the funnel labels key off the wire step id, not a prettier synonym", (
     }
   })
 
-  it("names the funnel for what it actually measures now", () => {
+  it("names the funnel for what it measures", () => {
     expect(catalog("en", "host-analytics").page?.["funnel_section"]).toBe("From sign-up to hours")
     expect(code(body)).not.toContain("funnel.page_views")
   })

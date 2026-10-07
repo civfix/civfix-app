@@ -10,8 +10,8 @@ import {
 } from "react-native"
 import { makeThemedStyles, space, radius as radiusScale, useReducedMotion } from "../../theme"
 
-export const SKELETON_PULSE_MS = 820
-export const SKELETON_PULSE_MIN = 0.45
+const SKELETON_PULSE_MS = 820
+const SKELETON_PULSE_MIN = 0.45
 
 const pulseValue = new Animated.Value(1)
 let pulseSubscribers = 0
@@ -48,7 +48,7 @@ function releasePulse(): void {
   pulseValue.setValue(1)
 }
 
-export function useSkeletonPulse(): Animated.Value | 1 {
+function useSkeletonPulse(): Animated.Value | 1 {
   const reducedMotion = useReducedMotion()
   const animate = reducedMotion !== true
   useEffect(() => {
@@ -124,7 +124,7 @@ export interface SkeletonRowKindSpec {
   readonly align: "center" | "flex-start"
 }
 
-export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = {
+const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = {
   person: {
     avatar: 46,
     avatarRadius: 23,

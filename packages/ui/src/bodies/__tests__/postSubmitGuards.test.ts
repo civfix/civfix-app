@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -8,7 +9,7 @@ const code = (source: string): string =>
 
 describe("the post composers guard against a double submit", () => {
   const COMPOSERS = {
-    "PostComposer.tsx": code(read("../PostComposer.tsx")),
+    "postComposer/useSubmitPost.ts": code(read("../postComposer/useSubmitPost.ts")),
     "thread/ReplyComposer.tsx": code(read("../thread/ReplyComposer.tsx")),
   }
 
@@ -23,7 +24,7 @@ describe("the post composers guard against a double submit", () => {
     it(`${name} checks the ref before it does any work`, () => {
       const check = source.indexOf("if (submittingRef.current) return")
       const claim = source.indexOf("submittingRef.current = true")
-      const mutate = source.search(/create\.mutate\(/)
+      const mutate = source.search(/create\.mutate(Async)?\(/)
       expect(check).toBeGreaterThan(-1)
       expect(claim).toBeGreaterThan(check)
       expect(mutate).toBeGreaterThan(claim)
@@ -31,8 +32,15 @@ describe("the post composers guard against a double submit", () => {
   }
 })
 
+describe("the post composers take their double-submit guard from the shared submit hook", () => {
+  it("PostComposer and InlineComposer both submit through useSubmitPost", () => {
+    expect(code(surfaceSource("postComposer"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
+    expect(code(read("../feed/InlineComposer.tsx"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
+  })
+})
+
 describe("PostComposer subscribes to the nav store by selector", () => {
-  const source = code(read("../PostComposer.tsx"))
+  const source = code(surfaceSource("postComposer"))
 
   it("takes only back, never the whole store", () => {
     expect(source).toMatch(/const back = useNavStore\(\(state\) => state\.back\)/)
@@ -60,9 +68,8 @@ describe("PostOverflowMenu mounts on demand", () => {
   })
 
   it("confirms the delete IN the menu, never in an Alert that outlives it", () => {
-    // A native Alert fired from a PopoverMenu row survives the popover (PopoverMenu closes itself BEFORE
-    // running onPress), so it could sit over a scrolled-away, unmounted row. The confirm is a second menu
-    // step instead - the RosterRow pattern - which cannot outlive the surface that owns it.
+    // A native Alert fired from a PopoverMenu row outlives the popover (it closes before running onPress),
+    // so it could sit over an unmounted row; a second menu step cannot outlive the surface that owns it.
     expect(source).not.toMatch(/\bAlert\b/)
     expect(source).toMatch(/onPress: \(\) => onConfirmingDeleteChange\(true\)/)
     expect(source).toMatch(/key: "confirm-delete"/)
@@ -74,7 +81,7 @@ describe("PostOverflowMenu mounts on demand", () => {
     // The confirm menu closes the moment the row fires, so without the busy flag the 400ms retention
     // timer would unmount this subtree mid-request and drop the success/failure toast.
     expect(source).toMatch(/const active = props\.visible \|\| reportOpen \|\| busy \|\| confirmingDelete/)
-    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*del\.mutate\(subjectId/)
-    expect(source).toMatch(/onSettled: \(\) => onBusyChange\(false\)/)
+    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*deletePost\(subjectId\)/)
+    expect(source).toMatch(/\.finally\(\(\) => onBusyChange\(false\)\)/)
   })
 })

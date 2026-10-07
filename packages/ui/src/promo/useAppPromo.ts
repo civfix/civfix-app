@@ -1,13 +1,7 @@
 /**
- * The React seam over the (pure, unit-tested) promo logic - the one hook BOTH surfaces call.
- *
- * It owns exactly one piece of impurity: reading the live `navigator` / `window` once, after mount, and
- * feeding them into `detectAppPlatform` / `isStandalonePWA`. Everything downstream is the pure
- * `appPromoSurface` decision, so the interesting behavior stays testable without a DOM.
- *
- * Why detection is deferred to an effect: civfix-web is a Next STATIC EXPORT. The prerendered HTML cannot
- * know the visitor's user agent, so deciding during the first render would hydration-mismatch. Until the
- * effect runs, `mounted` is false and `appPromoSurface` returns "none".
+ * The one impure step: read the live `navigator` / `window` once, after mount. Detection waits for an
+ * effect because the web app is a Next static export, whose prerendered HTML cannot know the user agent;
+ * until then `appPromoSurface` returns "none".
  */
 import React from "react"
 import { Platform } from "react-native"
@@ -31,13 +25,9 @@ interface PromoEnv {
 const UNMOUNTED: PromoEnv = { mounted: false, platform: "other", standalone: false }
 
 export interface AppPromo {
-  /** Which surface should render right now. */
   surface: AppPromoSurface
-  /** The detected store platform (drives which badges the card shows). */
   platform: AppPlatform
-  /** The store link(s) to offer this platform - already narrowed, render them as-is. */
   links: StoreLink[]
-  /** Dismiss the promo permanently, on every surface. */
   dismiss: () => void
 }
 
@@ -45,8 +35,7 @@ export function useAppPromo(): AppPromo {
   const [env, setEnv] = React.useState<PromoEnv>(UNMOUNTED)
 
   React.useEffect(() => {
-    // Web-only by construction: you do not advertise the app inside the app. On native this leaves `env`
-    // at UNMOUNTED forever, so `surface` stays "none" and neither surface ever renders.
+    // You do not advertise the app inside the app: on native `env` stays UNMOUNTED, so nothing renders.
     if (Platform.OS !== "web" || typeof navigator === "undefined") return
 
     setEnv({

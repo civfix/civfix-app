@@ -24,7 +24,7 @@ import {
   stageWindow,
   useStageTimeline,
 } from "./stageMotion"
-import { STAGE_ASPECT_RATIO, type StageProps } from "./stageTypes"
+import { STAGE_ASPECT_RATIO, pinHeightFor, type StageProps } from "./stageTypes"
 
 const TOTAL_MS = 5060
 
@@ -51,7 +51,7 @@ const ROW_WINDOWS = REPORT_STAGE_TYPES.map((_, i) =>
 )
 
 const PIN_SIZE = 38
-const PIN_HEIGHT = Math.round(PIN_SIZE * (76 / 64))
+const PIN_HEIGHT = pinHeightFor(PIN_SIZE)
 const PIN_DROP = STAGE_DROP_PX * 4
 const CARD_RISE = STAGE_DROP_PX * 3
 const ROW_RISE = 10

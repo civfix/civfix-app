@@ -1,5 +1,5 @@
 import type { LatLng } from "@civfix/shared/geocode"
-import { MIN_LNG_COSINE, clampLat } from "../data/hooks/nearbyBbox"
+import { MIN_LNG_COSINE, clampLat } from "../data/geoBounds"
 
 export const RADIUS_CIRCLE_STEPS = 48
 

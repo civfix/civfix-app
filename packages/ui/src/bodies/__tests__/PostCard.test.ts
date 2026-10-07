@@ -1,8 +1,14 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
 import type { MediaDTO, PostDTO } from "@civfix/shared"
-import { buildPostCardModel, buildPostIdentity, splitPostBodyMentions } from "../postCardModel"
+import {
+  buildPostCardModel,
+  buildPostIdentity,
+  postMediaA11yLabel,
+  splitPostBodyMentions,
+} from "../postCardModel"
 
 /**
  * Stand-in for the `home-feed` namespace (plus the shared `enums:` labels) bound by useT: interpolates
@@ -10,7 +16,6 @@ import { buildPostCardModel, buildPostIdentity, splitPostBodyMentions } from "..
  */
 const EN: Record<string, string> = {
   "post_card.repost_attribution": "{{name}} reposted",
-  "post_card.reported_by": "Reported by {{name}}",
   "post_card.cleared_at": "Cleared at the {{title}}",
   "post_card.open_thread_a11y": "Open {{name}}'s post",
   "post_card.permalink_a11y": "Posted {{time}} ago. Open this post",
@@ -19,6 +24,9 @@ const EN: Record<string, string> = {
   "post_card.org_a11y": "Open {{name}}",
   "post_card.via": "via {{author}}",
   "post_card.deleted_account": "Deleted account",
+  "post_card.media_a11y": "Post attachment",
+  "post_card.media_photo_position_a11y": "Photo {{index}} of {{count}}",
+  "post_card.media_video_position_a11y": "Video {{index}} of {{count}}",
   "enums:reportType.dump": "Dump",
   "enums:reportType.pavement": "Pavement distress",
   "enums:category.trash": "Trash",
@@ -100,11 +108,10 @@ const resolvedReport = {
 describe("PostCard model", () => {
   it("models an organizer event-promo post and mention body", () => {
     const post = basePost({ event })
-    const model = buildPostCardModel(post, t, { neighborhood: "Playa del Rey" })
+    const model = buildPostCardModel(post, t)
 
     expect(model.variant).toBe("event")
     expect(model.handleLabel).toBe("@friendsofballona")
-    expect(model.metaLabel).toContain("Playa del Rey")
     expect(splitPostBodyMentions(post.body ?? "", post.mentions)).toEqual([
       { kind: "text", text: "Join " },
       { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
@@ -156,25 +163,14 @@ describe("PostCard model", () => {
     const model = buildPostCardModel(
       basePost({ report: resolvedReport, media: [media("before"), media("after")] }),
       t,
-      { neighborhood: "Echo Park", reportedBy: "Maria G.", resolutionLabel: "Fixed in 6 days" },
     )
 
     expect(model).toMatchObject({
       variant: "fix-confirmed",
       fixLayout: "before-after",
       categoryLabel: "Pavement distress",
-      reportedByLabel: "Reported by Maria G",
-      resolutionLabel: "Fixed in 6 days",
+      resolutionLabel: null,
     })
-  })
-
-  it("normalizes report attribution for the compact dot-separated fix header", () => {
-    const model = buildPostCardModel(basePost({ report: resolvedReport }), t, {
-      neighborhood: "Echo Park",
-      reportedBy: "Maria G...",
-    })
-
-    expect(model.reportedByLabel).toBe("Reported by Maria G")
   })
 
   it("models a fix-confirmed cleared post linked to an event", () => {
@@ -189,10 +185,9 @@ describe("PostCard model", () => {
     })
   })
 
-  // The fix showcase is an ATTACHMENT on the row, never a replacement for it: a post's linked report
-  // resolves on the CITY's schedule, so a card that swapped out the author + body would make an ordinary
-  // post mutate days after publication. `showFixShowcase` is the only fix-driven render switch, and the
-  // author row / body / handle / tap-through are unconditional. See postCardModel's invariant note.
+  // The fix showcase is an attachment on the row, never a replacement: a linked report resolves on the
+  // city's schedule, so swapping out the author and body would make an ordinary post mutate days after
+  // publication. `showFixShowcase` is the only fix-driven render switch.
   it("keeps the fix treatment additive - the post itself is never replaced", () => {
     const model = buildPostCardModel(
       basePost({ report: resolvedReport, media: [media("before"), media("after")] }),
@@ -200,7 +195,6 @@ describe("PostCard model", () => {
     )
 
     expect(model.showFixShowcase).toBe(true)
-    // Everything the old fix-confirmed header deleted is still modelled.
     expect(model.handleLabel).toBe("@friendsofballona")
     expect(model.timeLabel).not.toBe("")
   })
@@ -211,13 +205,11 @@ describe("PostCard model", () => {
     expect(model.showFixShowcase).toBe(false)
   })
 
-  it("splits the meta line into handle, timestamp and context", () => {
-    const model = buildPostCardModel(basePost(), t, { neighborhood: "Playa del Rey" })
+  it("splits the meta line into handle and timestamp", () => {
+    const model = buildPostCardModel(basePost(), t, { timeAgo: () => "2h" })
 
     expect(model.handleLabel).toBe("@friendsofballona")
-    expect(model.contextLabel).toBe("Playa del Rey")
-    // metaLabel stays the joined form for the surfaces that still render one string.
-    expect(model.metaLabel).toBe(`${model.timeLabel} · Playa del Rey`)
+    expect(model.timeLabel).toBe("2h")
   })
 
   it("has a null handle label when the author has no handle", () => {
@@ -255,7 +247,7 @@ describe("PostCard model", () => {
         new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url),
         "utf8",
       )
-      expect(JSON.parse(catalog).post_card, locale).not.toHaveProperty("organizer")
+      expect((JSON.parse(catalog) as Record<string, unknown>).post_card, locale).not.toHaveProperty("organizer")
     }
   })
 
@@ -284,11 +276,41 @@ describe("PostCard model", () => {
 })
 
 /**
- * The "Replying to @x" line. A reply no longer reaches the HOME feed, but it still surfaces on its author's
- * profile, in Saved and at its own permalink - where without a parent reference the row reads as a
- * non-sequitur exactly as it did in the feed. Every "say nothing" case has to stay silent rather than
- * degrade to something vague.
+ * A reply surfaces on its author's profile, in Saved and at its own permalink, where without a parent
+ * reference it reads as a non-sequitur. Every "say nothing" case stays silent rather than going vague.
  */
+describe("post body mentions need a left boundary", () => {
+  const maria = [{ id: "person-2", handle: "maria", displayName: "Maria G." }]
+
+  it("does not tint a staged handle inside an email address", () => {
+    expect(splitPostBodyMentions("write to bob@maria.com", maria)).toEqual([
+      { kind: "text", text: "write to bob@maria.com" },
+    ])
+  })
+
+  it("still tints a mention at the start, after whitespace and after punctuation", () => {
+    expect(splitPostBodyMentions("@maria, (@maria) hi,@Maria", maria)).toEqual([
+      { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
+      { kind: "text", text: ", (" },
+      { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
+      { kind: "text", text: ") hi," },
+      { kind: "mention", text: "@Maria", userId: "person-2", handle: "maria" },
+    ])
+  })
+
+  it("does not start a mention right after another @", () => {
+    expect(splitPostBodyMentions("@@maria", maria)).toEqual([{ kind: "text", text: "@@maria" }])
+  })
+})
+
+describe("post media grid labels each cell", () => {
+  it("keeps the single-item label and numbers a multi-item grid by kind", () => {
+    expect(postMediaA11yLabel(t, "image", 0, 1)).toBe("Post attachment")
+    expect(postMediaA11yLabel(t, "image", 0, 3)).toBe("Photo 1 of 3")
+    expect(postMediaA11yLabel(t, "video", 2, 3)).toBe("Video 3 of 3")
+  })
+})
+
 describe("PostCard replying-to line", () => {
   const parent = (over: Partial<NonNullable<PostDTO["replyTo"]>> = {}) => ({
     id: "post-parent",
@@ -448,33 +470,36 @@ describe("post identity resolves who the card presents as", () => {
 })
 
 /**
- * THE ROW'S WEB AFFORDANCES, asserted by SOURCE because this package has no RN renderer (the house pattern
- * - see PostActionBar.test.ts's header for why a grep is the right instrument for "which element carries
- * which prop"). Each block below is a defect that shipped once and cannot be expressed as a pure value.
+ * Asserted against the source because this package has no RN renderer, and "which element carries which
+ * prop" cannot be expressed as a pure value.
  */
 describe("PostCard's link-role controls answer the keyboard", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
 
   /** The JSX props block of the Pressable whose `accessibilityLabel` matches, so a grep is per control. */
   const pressableWith = (marker: string): string => {
     const at = SRC.indexOf(marker)
     expect(at, `${marker} is gone from PostCard.tsx - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
     const open = SRC.lastIndexOf("<Pressable", at)
-    const close = SRC.indexOf(">", SRC.indexOf("style=", open))
+    expect(open, `no <Pressable opens before ${marker}`).toBeGreaterThan(-1)
+    const style = SRC.indexOf("style=", open)
+    expect(style, `${marker} is not inside a Pressable props block`).toBeGreaterThan(at)
+    const close = SRC.indexOf(">", style)
+    expect(close).toBeGreaterThan(style)
     return SRC.slice(open, close)
   }
 
   it("hands Enter AND Space back to every role=link control, not just the row", () => {
-    // react-native-web activates `role="link"` with NEITHER key (PressResponder.isValidKeyPress accepts
-    // Space only for a button-ish element; the keyup handler skips onPress for a link, assuming a browser
-    // click that only ever comes from a real <a href>). The first cut of this fix taught the ROW and
-    // stopped there, leaving the name link - which is the ANNOUNCED profile affordance, since the avatar
-    // deliberately leaves the tab order - and the timestamp permalink as keyboard-dead tab stops.
-    expect(SRC).toContain("export function linkKeyProps")
+    // react-native-web activates `role="link"` with neither key (PressResponder.isValidKeyPress accepts
+    // Space only for a button-ish element; the keyup handler skips onPress for a link, assuming a real
+    // <a href>). The name link is the announced profile affordance because the avatar leaves the tab order.
+    expect(AFFORDANCES).toContain("export function linkKeyProps")
+    expect(SRC).toMatch(/import \{[^}]*\blinkKeyProps,[^}]*\} from "\.\.\/theme"/)
     for (const marker of [
-      "accessibilityLabel={identityA11yLabel(identity, t)}", // MetaRow name
-      'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // MetaRow "via"
-      'accessibilityLabel={t("post_card.permalink_a11y", { time: model.timeLabel })}', // MetaRow timestamp
+      "accessibilityLabel={identityA11yLabel(identity, t)}", // PostMetaRow name
+      'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // PostMetaRow "via"
+      'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}', // PostMetaRow timestamp
       "accessibilityLabel={model.replyingToLabel}", // the reply's parent link
     ]) {
       expect(pressableWith(marker), `${marker} lost its keyboard activation`).toContain("linkKeyProps(")
@@ -490,12 +515,10 @@ describe("PostCard's link-role controls answer the keyboard", () => {
         "linkKeyProps(",
       )
     }
-    // ...and the ROW itself, whose role is the platform-branched `ROW_ROLE` constant.
-    expect(SRC).toContain("const rowKeyProps = linkKeyProps(")
   })
 
   it("stops Space scrolling the feed under the focused link, and ignores keys from nested controls", () => {
-    const helper = SRC.slice(SRC.indexOf("function activateOnLinkKey"), SRC.indexOf("export function linkKeyProps"))
+    const helper = sliceBetween(AFFORDANCES, "function activateOnLinkKey", "export function linkKeyProps")
     expect(helper).toContain('e.key !== "Enter"')
     expect(helper).toContain("e.target !== e.currentTarget")
     expect(helper).toContain("e.preventDefault?.()")
@@ -509,7 +532,7 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
     // React's mouse-compat events fire for a tap and never fire the matching leave, so tapping Like left
     // the whole row painted in the hover fill - reading as selected - until the reader touched elsewhere.
     // RNW's own useHover skips `getPointerType(e) === 'touch'` in three places; this is that guard.
-    const block = SRC.slice(SRC.indexOf("const rowHoverProps"), SRC.indexOf("const rowKeyProps"))
+    const block = sliceBetween(SRC, "const rowHoverProps", "const pressFill")
     expect(block).toContain("onPointerEnter")
     expect(block).toContain('event?.pointerType !== "touch"')
     expect(block).toContain("onPointerLeave")
@@ -520,21 +543,25 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
 
 describe("the flat row's focus ring is drawn INSIDE its own box", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
 
   it("insets the ring by its own footprint so the scroller cannot clip it", () => {
     // The row is exactly the width of an `overflow: hidden auto` scroller and the next row's opaque
     // background is a later sibling, so an outside ring lost its left, right AND bottom strokes - the
     // indicator was one coral bar ABOVE the row, i.e. pointing at the row above it.
-    expect(SRC).toContain("outlineOffset: -RING_FOOTPRINT")
-    expect(SRC).toMatch(/RING_FOOTPRINT = Number\.parseFloat\(.*tokens\.shadow\.ring/s)
+    expect(AFFORDANCES).toContain("outlineOffset: -FOCUS_RING_FOOTPRINT")
+    expect(AFFORDANCES).toMatch(/const RING_SPEC = .*\.exec\(tokens\.shadow\.ring\)/)
+    expect(AFFORDANCES).toMatch(/export const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/)
   })
 
   it("passes it as a PLAIN style object, which is the only form that wins the cascade", () => {
     // RNW compiles StyleSheet entries into atomic CLASSES (specificity 0,1,0) and the ring rule is
     // `[data-focus-ring]:focus-visible` (0,2,0) - so as a StyleSheet entry the inset silently loses and
     // the ring stays outside. A plain object is written inline, which outranks any stylesheet rule.
-    expect(SRC).toMatch(/const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB/)
-    const rowFlat = SRC.slice(SRC.indexOf("rowFlat: {"), SRC.indexOf("rowFlatHovered"))
+    expect(AFFORDANCES).toMatch(/export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\n\s*\? \(\{ outlineOffset:/)
+    expect(SRC).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
+    expect(SRC).not.toMatch(/const WEB_ROW_FOCUS_INSET/)
+    const rowFlat = sliceBetween(SRC, "rowFlat: {", "rowFlatHovered")
     expect(rowFlat).not.toContain("WEB_ROW_FOCUS_INSET")
     expect(SRC).toContain("isFlat ? WEB_ROW_FOCUS_INSET : null")
   })

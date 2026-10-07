@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { timelineEntryRender, visibilityKindOf } from "../report-timeline-model"
+import { timelineEntryRender, visibilityKindOf } from "../reportTimelineModel"
 
 describe("visibilityKindOf", () => {
   it("recognizes only the two visibility kinds", () => {

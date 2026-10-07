@@ -12,8 +12,7 @@ import type {
 } from "@civfix/ui/capabilities"
 import { MAX_VIDEO_SECONDS } from "./cameraSession"
 import { resolveUploadContentType, stripJpegMetadata } from "./mediaBytes"
-import { ReportViewfinder } from "@/components/report/ReportViewfinder"
-export { MAX_VIDEO_SECONDS }
+import { capturedMediaFromPickerAsset, fileUri } from "./capturedMedia"
 
 type Navigator = (captureId: string) => void
 let navigateToSurface: Navigator | null = null
@@ -56,10 +55,6 @@ function localPath(uri: string): string {
   }
 }
 
-function fileUri(uri: string): string {
-  return uri.startsWith("file://") ? uri : `file://${uri}`
-}
-
 function isTempOutputName(uri: string): boolean {
   const name = localPath(uri).split("/").pop() ?? ""
   return TEMP_OUTPUT_NAME.test(name)
@@ -70,6 +65,7 @@ function deleteTempFile(uri: string): void {
     const file = new File(fileUri(uri))
     if (file.exists) file.delete()
   } catch {
+    // Best-effort cleanup: a temp file that survives is removed by the next session's stale sweep.
   }
 }
 
@@ -88,6 +84,7 @@ function sweepDirectory(directory: Directory, now: number, budget: number): numb
       entry.delete()
       removed += 1
     } catch {
+      // A file the OS reclaimed or still holds open is skipped; the next session retries it.
     }
   }
   return removed
@@ -102,11 +99,13 @@ function sweepStaleMediaTempFiles(): void {
     try {
       removed = sweepDirectory(new Directory(Paths.cache, "ImageManipulator"), now, SWEEP_DELETE_LIMIT)
     } catch {
+      // The sweep is housekeeping; an unreadable directory must never fail the capture that triggered it.
     }
     setTimeout(() => {
       try {
         sweepDirectory(Paths.cache, now, SWEEP_DELETE_LIMIT - removed)
       } catch {
+        // Housekeeping only: an unreadable cache dir must never fail the capture that triggered it.
       }
     }, 0)
   }, SWEEP_DELAY_MS)
@@ -161,8 +160,6 @@ async function reencodeImageWithoutMetadata(uri: string): Promise<string> {
 }
 
 export const nativeCamera: CameraCapability = {
-  Viewfinder: ReportViewfinder,
-
   isAvailable(): boolean {
     return navigateToSurface !== null
   },
@@ -187,16 +184,7 @@ export const nativeCamera: CameraCapability = {
     })
     sweepStaleMediaTempFiles()
     if (result.canceled || result.assets.length === 0) return null
-    const asset = result.assets[0]!
-    const isVideo = asset.type === "video"
-    return {
-      uri: asset.uri,
-      kind: isVideo ? "video" : "image",
-      mime: asset.mimeType ?? (isVideo ? "video/mp4" : "image/jpeg"),
-      ...(asset.width ? { width: asset.width } : {}),
-      ...(asset.height ? { height: asset.height } : {}),
-      ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
-    }
+    return capturedMediaFromPickerAsset(result.assets[0]!)
   },
 
   async prepareUpload(media: CapturedMedia): Promise<PreparedUpload> {

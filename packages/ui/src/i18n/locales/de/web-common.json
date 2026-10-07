@@ -19,6 +19,7 @@
     "card_body": "Melde Probleme, verfolge Reparaturen und mach bei Aufräumaktionen mit – direkt vom Handy.",
     "dismiss": "Schließen",
     "badge_app_store": "civfix im App Store laden",
-    "badge_google_play": "civfix bei Google Play holen"
+    "badge_google_play": "civfix bei Google Play holen",
+    "open_failed": "Store konnte nicht geöffnet werden. Versuche es erneut."
   }
 }

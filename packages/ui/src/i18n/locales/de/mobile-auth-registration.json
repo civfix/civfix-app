@@ -20,7 +20,9 @@
     "rule_invalid": "Verwende 3–20 Buchstaben, Zahlen oder Unterstriche.",
     "checking": "Wird geprüft...",
     "available": "@{{handle}} ist verfügbar",
-    "taken": "@{{handle}} ist vergeben"
+    "taken": "@{{handle}} ist vergeben",
+    "check_failed": "Wir konnten diesen Benutzernamen nicht prüfen.",
+    "retry": "Erneut versuchen"
   },
   "continue": "Weiter",
   "signout": {

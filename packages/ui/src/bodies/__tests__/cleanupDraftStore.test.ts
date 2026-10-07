@@ -1,37 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { useCleanupDraft } from "../cleanupDraftStore"
 import { commitHostDraftMount, planHostDraftMount } from "../cleanupDraftExit"
-import type { CleanupFormValue } from "../CleanupForm"
+import { emptyCleanupForm, type CleanupFormValue } from "../cleanupFormModel"
 
-// NOTE: we do NOT import the runtime `emptyCleanupForm` from ../CleanupForm here. That module imports
-// `react-native` (and the maplibre-heavy ../map), whose Flow-typed entry (`import typeof`) fails to parse
-// under this package's plain vitest/node setup — the same constraint documented in shell/body-render.test.ts.
-// So we inline an RN-free factory matching emptyCleanupForm's shape and import only the (erased) type.
+// The real factory, pinned to a fixed zone and an empty board so the assertions below do not depend on the
+// machine's zone or the slot-key counter. "Announce to the feed" stays the factory's default (ON).
 function mkForm(seedLinkedReportId?: string): CleanupFormValue {
-  return {
-    organizationId: null,
-    title: "",
-    description: "",
-    eventKind: "cleanup",
-    addrQuery: "",
-    spot: "",
-    address: "",
-    addressSource: null,
-    addressPointKey: null,
-    coords: null,
-    date: null,
-    time: null,
-    endTime: null,
-    timezone: "America/Los_Angeles",
-    bring: [],
-    slots: [],
-    linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
-    // "Announce to the feed" defaults ON for a NEW event (emptyCleanupForm), and carries an empty caption.
-    shareToFeed: true,
-    feedCaption: "",
-    coverMediaId: null,
-    coverPreviewUrl: null,
-  }
+  return { ...emptyCleanupForm(seedLinkedReportId), timezone: "America/Los_Angeles", slots: [] }
 }
 
 beforeEach(() => useCleanupDraft.getState().clear())
@@ -73,14 +48,13 @@ describe("cleanupDraftStore", () => {
 })
 
 /**
- * The host form's mount step against the REAL store. The regression this guards: "Host an event" from
- * report B while a draft started from report A is live used to CLEAR that draft — silently destroying the
- * title/description/bring list/point the host had already typed.
+ * The host form's mount step against the REAL store. "Host an event" from report B while a draft started
+ * from report A is live must merge into that draft, never clear the title/description/bring list/point the
+ * host had already typed.
  *
- * The step is split in two — a pure `planHostDraftMount` (render) and `commitHostDraftMount` (an effect) —
- * because doing it in one pass inside the form's lazy `useState` initializer wrote the store DURING RENDER
- * and crashed every subscriber with "Cannot update a component (`ReportDetailContent`) while rendering a
- * different component (`HostForm`)". So every case below asserts BOTH halves, and asserts they agree: the
+ * The step is split into a pure `planHostDraftMount` (render) and `commitHostDraftMount` (an effect)
+ * because a store write during render crashes every other subscriber of the store. So every case below
+ * asserts BOTH halves, and asserts they agree: the
  * plan's `value` is what the form renders before the commit lands, so any drift between it and the store
  * is a one-frame flash of the wrong draft.
  */

@@ -25,7 +25,7 @@ test("the sign-in screen still hands off to the resume target", () => {
   assert.equal(shouldReplaceOnSignIn("/", "/cleanups/xyz"), true)
 })
 
-test("an unknown current route keeps the old unconditional replace", () => {
+test("an unknown current route always replaces", () => {
   assert.equal(shouldReplaceOnSignIn(null, "/"), true)
   assert.equal(shouldReplaceOnSignIn(undefined, "/"), true)
   assert.equal(shouldReplaceOnSignIn("", "/"), true)

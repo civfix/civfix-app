@@ -7,8 +7,6 @@ import {
   approximateLocationShouldRetry,
 } from "./hooks/approximateLocation"
 
-const IMPERATIVE_RETRY_LIMIT = 2
-
 export async function fetchApproximateLocation(
   api: ApiClient,
   qc: QueryClient,
@@ -21,8 +19,7 @@ export async function fetchApproximateLocation(
       queryFn: () => api.getApproximateLocation({}),
       staleTime: APPROXIMATE_LOCATION_STALE_MS,
       gcTime: APPROXIMATE_LOCATION_STALE_MS,
-      retry: (failureCount, error) =>
-        failureCount < IMPERATIVE_RETRY_LIMIT && approximateLocationShouldRetry(failureCount, error),
+      retry: approximateLocationShouldRetry,
     })
     return { lat: resolved.lat, lng: resolved.lng }
   } catch {

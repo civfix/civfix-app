@@ -1,33 +1,20 @@
 /**
- * useKeyboardAnchor (web seam) — the same FROZEN contract as the native anchor, over the visual
- * viewport instead of RN's Keyboard module.
+ * useKeyboardAnchor (web seam) over the visual viewport: RN's `Keyboard` events never fire on
+ * react-native-web.
  *
- * OVERLAP SOURCE: `useKeyboardInset.web` verbatim (`innerHeight - visualViewport.height -
- * visualViewport.offsetTop`). RN's `Keyboard` events never fire on react-native-web, so the visual
- * viewport is the only reliable signal. Explicit `.web` specifier because this file is itself a seam.
+ * A coarse pointer gets `transition: none`, because animating a focused field while iOS Safari presents
+ * the keyboard makes the keyboard glitch or fail to appear; OS reduced motion also gets `none`.
  *
- * TRANSITION: `searchRiseTransition({coarsePointer, reduceMotion})` verbatim, so the two behaviours the
- * docked bar already depends on are preserved — a COARSE pointer (i.e. a device with a soft keyboard)
- * gets `transition: none`, because animating a focused field while iOS Safari presents the keyboard
- * makes the keyboard glitch or fail to appear; and OS reduced-motion also gets `none`.
- *
- * OWNERSHIP, and the bug it fixes: today `translateY = focused ? -keyboardInset : 0` snaps to 0 the
- * instant the field blurs, while the keyboard is still closing — the bar drops through the still-present
- * keyboard. Here `engaged` is HELD until the visual viewport recovers, mirroring the native reducer's
- * "engaged through will-hide, released at did-settle".
- *
- * NO REANIMATED. `lift` is therefore `null` on this seam (frozen contract) — a web consumer composes
- * `liftStyle` or reads `reserved`, never a shared value.
+ * `engaged` is held until the visual viewport recovers, so the bar does not drop through a keyboard that
+ * is still closing after the field blurs. `lift` is always null here.
  */
 import { useEffect, useState } from "react"
 import type { ViewStyle } from "react-native"
 import { KEYBOARD_SURFACE_GAP, keyboardLift } from "./keyboardInsetModel"
 import { searchRiseTransition } from "./tabBarLogic"
 import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
-// Explicit `.web` specifier (this file is itself a `.web` seam, so it must not rely on bundler resolution).
+// Explicit `.web` specifier: this file is itself a `.web` seam and must not rely on bundler resolution.
 import { useKeyboardInset } from "./useKeyboardInset.web"
-// The shared matchMedia guards (a coarse pointer means a soft keyboard: the rise is applied INSTANTLY on
-// touch so the bar never animates across the screen while the browser presents the keyboard).
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 
 export function useKeyboardAnchor({
@@ -41,8 +28,7 @@ export function useKeyboardAnchor({
 
   useEffect(() => {
     if (hostReserved) {
-      // An ancestor already reserved the overlap (PortraitShell.shared's full-social-modal overlay
-      // applies `paddingBottom: keyboardInset`); applying it here too would double-inset the surface.
+      // PortraitShell.shared's overlay already applies `paddingBottom: keyboardInset`.
       setEngaged(false)
       return
     }
@@ -50,8 +36,7 @@ export function useKeyboardAnchor({
       setEngaged(true)
       return
     }
-    // NOTE the deliberately missing `else`: losing focus while the keyboard is still on screen must NOT
-    // drop the bar. Ownership is released only when the visual viewport has actually recovered.
+    // Deliberately no `else`: losing focus while the keyboard is still on screen must not drop the bar.
     if (overlap <= 0) setEngaged(false)
   }, [enabled, overlap, hostReserved])
 
@@ -64,7 +49,6 @@ export function useKeyboardAnchor({
     }),
   } as unknown as ViewStyle
 
-  // `reserved` mirrors `lift` on web: the overlap is a layout-viewport fact that changes at most twice
-  // per keyboard transition (the visual-viewport resize events), never per frame.
+  // The overlap changes only on visual-viewport resize events, never per frame, so `reserved` can mirror it.
   return { liftStyle, lift: null, reserved: lift, engaged }
 }

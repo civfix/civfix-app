@@ -2,14 +2,16 @@
   "search": {
     "placeholder": "Search by name or @handle",
     "a11y": "Search people by name or handle",
-    "clear_a11y": "Clear search"
+    "clear_a11y": "Clear search",
+    "more": "Search more people"
   },
   "row": {
     "open_a11y": "{{name}}, view profile"
   },
   "no_matches": {
     "title": "No matches",
-    "body": "No one in this list matches \"{{query}}\"."
+    "body": "No one in this list matches \"{{query}}\".",
+    "body_partial": "No one loaded so far matches \"{{query}}\"."
   },
   "error": {
     "title": "Could not load",

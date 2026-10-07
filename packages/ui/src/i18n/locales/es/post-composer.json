@@ -65,5 +65,6 @@
     "personal": "Tú",
     "a11y": "Publicar como {{name}}",
     "group_a11y": "Elige de parte de quién es esta publicación"
-  }
+  },
+  "submit_error_restored": "Tu publicación no se pudo enviar. El borrador quedó guardado en el editor."
 }

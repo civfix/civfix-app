@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated"
 import type { ChatItem } from "@civfix/shared"
@@ -17,6 +17,7 @@ import {
 } from "@civfix/ui"
 import { useLocale, useT } from "@civfix/ui/i18n"
 import { makeThemedStyles, space, useTheme } from "@/theme"
+import { demoChatAt, demoEventAt } from "@/lib/onboardingPlan"
 import {
   DEMO_ATTENDEES,
   DEMO_GOING_AFTER,
@@ -40,7 +41,7 @@ import {
   useStageStep,
   useStageTimeline,
 } from "./stageMotion"
-import type { StageProps } from "./stageTypes"
+import { noop, pinHeightFor, type StageProps } from "./stageTypes"
 
 const TOTAL_MS = 5200
 
@@ -61,7 +62,7 @@ const STEP_STOPS = stageStops(TOTAL_MS, 1300, 1880, TYPING_IN_MS, TYPING_OUT_MS)
 const TYPING_STEP = 3
 
 const PIN_SIZE = 34
-const PIN_HEIGHT = Math.round(PIN_SIZE * (76 / 64))
+const PIN_HEIGHT = pinHeightFor(PIN_SIZE)
 const PIN_DROP = STAGE_DROP_PX * 4
 const AVATAR_SIZE = 22
 const AVATAR_OVERLAP = -8
@@ -70,8 +71,6 @@ const STRIP_ASPECT_RATIO = sceneAspectRatio(ONBOARDING_MAP_SCENES.together)
 const CARD_OVERLAP = space["4"]
 const ATTRIBUTION_INSET = CARD_OVERLAP + space["2"]
 const GUEST_PATH = "/"
-
-function noop(): void {}
 
 function StageBubble({ item }: { item: ChatItem }) {
   return (
@@ -109,16 +108,20 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
   const goingCount = step >= 2 ? DEMO_GOING_AFTER : DEMO_GOING_BEFORE
   const typingVisible = active && step === TYPING_STEP
 
+  const [shownAt] = useState(() => new Date())
+  const scheduledAt = useMemo(() => demoEventAt(shownAt), [shownAt])
+  const sentAt = useMemo(() => demoChatAt(shownAt), [shownAt])
+
   const eventTitle = t("together.stage.event_title")
   const eventAddress = t("together.stage.event_address")
   const cleanup = useMemo(
-    () => demoCleanup(eventTitle, eventAddress, goingCount),
-    [eventTitle, eventAddress, goingCount],
+    () => demoCleanup(eventTitle, eventAddress, goingCount, scheduledAt),
+    [eventTitle, eventAddress, goingCount, scheduledAt],
   )
 
   const askBody = t("together.stage.chat_1")
   const replyBody = t("together.stage.chat_2")
-  const chat = useMemo(() => demoChatItems(askBody, replyBody), [askBody, replyBody])
+  const chat = useMemo(() => demoChatItems(askBody, replyBody, sentAt), [askBody, replyBody, sentAt])
 
   const pinStyle = useAnimatedStyle(() => {
     const drop = GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))

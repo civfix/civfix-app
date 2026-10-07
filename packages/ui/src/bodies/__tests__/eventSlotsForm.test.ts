@@ -306,9 +306,8 @@ describe("slotsValid", () => {
   })
 
   it("REJECTS a capacity lowered below that slot's live claims once the counts are supplied", () => {
-    // The edit card has always PAINTED this error (SlotCard passes `claimed`); the submit gate did not,
-    // so Save stayed enabled and the lowered capacity published anyway. The gate now runs the same check
-    // the card runs.
+    // The edit card PAINTS this error (SlotCard passes `claimed`), so the submit gate must run the same
+    // check, or Save stays enabled and the lowered capacity publishes.
     const drafts = [draft("a", { id: "s1", title: "Truck driver", capacity: "2" })]
     const claimed = claimedBySlotId([slot("s1", { capacity: 4, claimed: 4 })])
     expect(slotsValid(drafts, claimed)).toBe(false)
