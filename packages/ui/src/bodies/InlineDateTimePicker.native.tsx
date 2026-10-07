@@ -9,7 +9,7 @@ import { Icon, iconMap } from "../typography"
 import { useLocale } from "../i18n"
 import { DateTimeFieldRow, fieldRowChrome } from "./DateTimeFieldRow"
 import { InlineDateTimePickerLayout } from "./InlineDateTimePicker.shared"
-import { uses24HourClock } from "./calendarModel"
+import { timeCarrier, uses24HourClock } from "./calendarModel"
 import {
   TIME_PICKER_MINUTE_INTERVAL,
   type DateFieldRowProps,
@@ -21,6 +21,13 @@ const isAndroid = Platform.OS === "android"
 
 function pickerSeed(value: Date | null | undefined, fallback: Date | null | undefined): Date {
   return value ?? fallback ?? new Date()
+}
+
+// Seeded on the time carrier, not on `day`: the picker returns the seed's day with the picked clock, and
+// on the device's spring-forward day a Date cannot hold a clock inside the gap.
+function timePickerSeed(value: Date | null | undefined, day: Date | null | undefined): Date {
+  const base = day ?? new Date()
+  return value ?? timeCarrier(base, base.getHours(), base.getMinutes())
 }
 
 function Caret() {
@@ -80,21 +87,19 @@ export function TimeFieldRow(props: TimeFieldRowProps) {
   const { value, accessibilityLabel, onChange, day, minTime, maxTime, minuteInterval } = props
   const th = useTheme()
   const { locale } = useLocale()
-  const current = pickerSeed(value, day)
+  const current = timePickerSeed(value, day)
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
       if (event.type === "dismissed" || picked === undefined) return
-      const next = new Date(day ?? value ?? picked)
-      next.setHours(picked.getHours(), picked.getMinutes(), 0, 0)
-      onChange(next)
+      onChange(timeCarrier(day ?? value ?? picked, picked.getHours(), picked.getMinutes()))
     },
     [day, onChange, value],
   )
 
   const openDialog = useCallback(() => {
     DateTimePickerAndroid.open({
-      value: pickerSeed(value, day),
+      value: timePickerSeed(value, day),
       mode: "time",
       display: "default",
       is24Hour: uses24HourClock(locale),

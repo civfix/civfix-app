@@ -51,10 +51,10 @@ corrected in 0.52.0 to match the code; it previously described `infrastructure -
 and "Overgrown vegetation" to its RECYCLING contact is an open product decision - changing it is a
 contract change with a category backfill, like 0.20.0's `encampment` split.
 
-A record carries no routing. Until 0.58.0 each entry also held a `gov` name and email (placeholder Los
+A record carries no routing. Until 0.59.0 each entry also held a `gov` name and email (placeholder Los
 Angeles fallback routing from Phase 1), with a `WEB_REPORT_TYPE_BY_ID` lookup and a
-`webReportTypeToCategory` helper beside the array; nothing read any of them, and 0.58.0 removed all
-three together with the `GovTarget` type (§58). Routing comes only from the `jurisdictions` table
+`webReportTypeToCategory` helper beside the array; nothing read any of them, and 0.59.0 removed all
+three together with the `GovTarget` type (§59). Routing comes only from the `jurisdictions` table
 resolved from a pin's PostGIS-derived GEOID; when a jurisdiction has no saved contact, a discovery
 task is queued. `WEB_REPORT_TYPES` is the single source of truth, exposed as the array and its
 `WebReportTypeId` union.
@@ -815,7 +815,7 @@ is no analytics SDK, no cookie, no identifier, and no per-person series anywhere
   all gated on the SAME `totalPublishable`, because they are all the same cut at the end of the same
   chain; a KPI gated only by `suppressCount` would hand back what the series just withheld. The same
   interval rule gates the total of `arrivalsCurve`. (`cumulativeSeries`, a wrapper over the closure,
-  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.58.0, §58; the
+  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.59.0, §59; the
   cumulative invariant tests now run against `seriesClosure().cumulative`, and the hourly tests went
   with the removed code.)
 - **A breakdown yields to the number it partitions; the KPI never yields to the breakdown.**
@@ -1437,7 +1437,7 @@ This retires the "geographic centre of the contiguous US" (39.8283, -98.5795) fr
 
 Registry count 344 → 345.
 
-**`ipLocate()` (and its internal `GEOJS_URL` endpoint, `src/geocode.ts`) was deprecated in 0.47.0 and removed in 0.58.0 (§58).** It called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint gives first-party. The consumer plane had no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). Nothing in civfix-backend, civfix-admin or the gov plane ever imported it. The web and mobile guard tests that fail the build on a reintroduced `ipLocate` import stay.
+**`ipLocate()` (and its internal `GEOJS_URL` endpoint, `src/geocode.ts`) was deprecated in 0.47.0 and removed in 0.59.0 (§59).** It called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint gives first-party. The consumer plane had no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). Nothing in civfix-backend, civfix-admin or the gov plane ever imported it. The web and mobile guard tests that fail the build on a reintroduced `ipLocate` import stay.
 
 ## 46. Platform-processed donations removed; a donation link is an external URL (0.48.0)
 
@@ -1811,7 +1811,7 @@ not computed it yet and a client that never reads it both still parse.
 `hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
 (TS7056), so at the time a new group (not a new key on `coreEndpoints`) was how the registry grew. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
-`test/unit/route-coverage.test.ts` moves to 324. **Superseded in 0.58.0 (§58):** the registry is split
+`test/unit/route-coverage.test.ts` moves to 324. **Superseded in 0.59.0 (§59):** the registry is split
 into one file per domain under `src/client/endpoints/`, and each group is typed as the intersection of
 those files' `typeof`s, so the declaration never inlines one huge object type. A new endpoint goes into
 its domain's file; the "new group because of TS7056" rule no longer applies.
@@ -2042,17 +2042,71 @@ an already published reply is a no-op that writes no second audit row; a thread 
 is refused with CONFLICT because there is nowhere public to publish to.
 
 **Registry.** The two endpoints are a fifth group, `adminInboxEndpoints`, spread into `endpoints` beside
-`adminReportChatEndpoints` for the TS7056 reason §52 gave (since 0.58.0 both live in per-domain files,
-§58). The registry moves 331 to 333, 106 of them under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
+`adminReportChatEndpoints` for the TS7056 reason §52 gave (since 0.59.0 both live in per-domain files,
+§59). The registry moves 331 to 333, 106 of them under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
 0.57.0 for the endpoints and the new fields, and civfix-admin adopts it for the unified Inbox and the
 review action; `services/media-worker` bumps alongside the api and civfix-govt-web with the routine
 propagation. No seam or fake changes.
 
-## 58. Campaign contract cleanup: unused exports removed, limits and shared helpers exported (0.58.0)
+## 58. An operator corrects a user's hours through the ledger, as CivFix, and a void is the only correction (0.58.0)
+
+People who attend a CivFix-sponsored event before they have the app sign up during or after it, and
+nothing could credit them: the host's `logEventHours` only credits the event roster, the ledger's
+`manual` source had no writer, and the "admin void" the integrity notes relied on did not exist. The
+users surface gains three endpoints: `getUserHours` (`GET /admin/users/:id/hours`), `creditUserHours`
+(`POST /admin/users/:id/hours`, csrf) and `voidUserHours` (`POST /admin/users/:id/hours/:entryId/void`,
+csrf).
+
+**A credit is a ledger row attributed to CivFix; the human stays on the admin plane.** An operator
+credit writes an ordinary `volunteer_hours` row whose creditor is the CivFix official account (§56), so
+the user, the event page, the public history and the leaderboard all see "credited by CivFix" and
+nothing else. The acting operator and the mandatory `reason` (`AdminReasonSchema`, the §32 rule, now
+exported from `schemas/admin/common.ts` so the org writes and the hours writes share one definition)
+are stored beside the row and written to the audit log in the same transaction. They appear only in
+`AdminUserHoursEntryDTO` (`operator`, `note`, `voidedBy`, `voidReason`); no user-facing read and no
+data export carries them. The user is notified of a credit and not of a void.
+
+**`creditUserHours` is a union on `kind`.** Both members are `.strict()` and bound `hours` to
+`MIN_EVENT_HOURS`..`MAX_EVENT_HOURS`. `kind: "event"` names a real event and yields a genuine
+`source: "event"` row: it obeys every rule the host path obeys (the event has ended, is not
+cancelled, ran at least 15 minutes, the event's creditable window, the daily cap) except roster
+membership, which is the whole point. A live row for that user and event is a CONFLICT; the operator
+voids it first. `kind: "manual"` is work outside any event and carries a `serviceDate` (`YYYY-MM-DD`,
+`ServiceDateSchema`, floored at `SERVICE_DATE_MIN`, 2000-01-01, so a year Postgres cannot store is a
+VALIDATION error). The server refuses a future date, because "today" depends on a time zone the
+contract does not carry. The floor binds the request only: the ledger DTO parses any calendar date. A manual row has no jurisdiction: it counts toward the user's total and toward
+no leaderboard, and its `occurredAt` (on the user's ledger and on a transcript) is the service date.
+The response returns the new `entryId` and the user's recomputed `totalHours`.
+
+**A void is the only correction.** Entries are never edited in place: a wrong credit is voided with a
+reason and a new one is credited. `voidUserHours` refuses an already-void entry with CONFLICT and never
+touches a historical `source: "report"` row (`voidable: false`), which only a migration may change. A
+host may credit a person again after an operator voided their event row; the row is revived rather than
+duplicated. Issued certificates are frozen snapshots and keep verifying with the old total, so the void
+response lists the live certificates whose snapshot contains the entry (`affectedCertificates`). The
+operator revokes them with the backend's `db:certificate:revoke` CLI; the console never revokes one.
+
+**The ledger read shows everything.** `getUserHours` pages the user's rows newest first, voided rows
+included, 1-50 per page under a keyset cursor. `totals.totalHours` is computed exactly as the user's
+profile total, so the tab and the profile can never disagree; `liveEntries` and `voidedEntries` count
+the rows. `EventHoursResponse.entries[].creditedByOfficial` is a new optional boolean so the host's
+hours block can label an operator-credited non-member "Credited by CivFix" instead of "Former
+attendee"; absent means false.
+
+**Registry and delivery set.** The three endpoints are a sixth group, `adminUserHoursEndpoints`,
+spread into `endpoints` for the TS7056 reason §52 gives. The registry moves 333 to 336, 109 of them
+under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. Additive: every
+change is a new endpoint, a new schema, or an optional field. civfix-backend `services/api` adopts
+0.58.0 to serve the endpoints and set the flag, `services/media-worker` bumps alongside it, and
+civfix-admin adopts it for the Hours tab. civfix-app's web and mobile read `creditedByOfficial` with no
+adoption step. civfix-govt-web reads nothing new and stays on its tokens-only `^0.24.2` pin; closing that gap is a
+separate, still-open decision. No seam or fake changes.
+
+## 59. Campaign contract cleanup: unused exports removed, limits and shared helpers exported (0.59.0)
 
 The civfix-app cleanup campaign touched `packages/shared` in 36 commits across its PRs 3 to 14. They
 ship as one minor so every registry consumer adopts once. No endpoint is added or removed and no
-path, method, auth or csrf flag moves: the registry stays at 333 entries, and the only shape changes
+path, method, auth or csrf flag moves: the registry stays at 336 entries, and the only shape changes
 are the optional fields listed under the handoff paragraph below.
 
 **Removed: value exports no consumer used (the CLAUDE.md §4.2 0.x removal rule).** Each name below
@@ -2156,10 +2210,11 @@ without re-setting it.
 `endpoints.ts`. Each group is typed as the intersection of its files' `typeof`s, so the declaration no
 longer approaches the TS7056 ceiling; this supersedes §52's "grow by a new group" rule (a new endpoint
 goes into its domain's file). Entries, paths, methods, auth and csrf flags are unchanged; only the
-key order of `Object.keys(endpoints)` moved.
+key order of `Object.keys(endpoints)` moved. §58's `adminUserHoursEndpoints` lives in the users domain file
+(`endpoints/admin/users.ts`) and stays its own exported group spread into `endpoints`.
 
 **Delivery set (§4.2, no consumer left behind).** civfix-backend `services/api` and
-`services/media-worker` and civfix-admin `apps/admin` move to `^0.58.0` (range edit and lockfile;
+`services/media-worker` and civfix-admin `apps/admin` move to `^0.59.0` (range edit and lockfile;
 no code change is required, since none imports a removed name). civfix-govt-web stays on `^0.24.2`
 for tokens only, the open decision CLAUDE.md §4.2 records; nothing it uses was removed. civfix-app's
 web and mobile are workspace consumers and already run this contract.
@@ -2178,7 +2233,7 @@ this release does not attempt them; each needs its own coordinated PR:
   the new values.
 - `MediaDTO.url` nullable (backend H-013) and the Jobs `enqueue` return type (H-010): both narrow a
   type every consumer reads.
-- Dropping `.strict()` from response DTOs: 72 of 333 registry responses are strict at the top level,
+- Dropping `.strict()` from response DTOs: 74 of 336 registry responses are strict at the top level,
   which is what forces the adoption order above.
 - The forward template's hardcoded `https://civfix.org/pin/{reportId}` (staging mail links to
   production) and its promise of publication for withheld replies: an additive `{reportUrl}` token

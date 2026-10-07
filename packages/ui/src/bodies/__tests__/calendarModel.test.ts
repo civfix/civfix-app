@@ -45,8 +45,10 @@ describe("calendarModel", () => {
     expect(sameDay(new Date(2026, 6, 24), new Date(2026, 6, 25))).toBe(false)
   })
 
-  it("labels a draft's start as a short weekday, date and clock in the device's own wall clock", () => {
-    expect(draftWhenLabel(new Date(2026, 6, 24, 9, 5), "en-US")).toMatch(/^Fri, Jul 24, 9:05\sAM$/u)
+  it("labels a draft's start as a short weekday, date and clock in the event's zone", () => {
+    expect(draftWhenLabel(new Date(Date.UTC(2026, 6, 24, 16, 5)), "en-US", "America/Los_Angeles")).toMatch(
+      /^Fri, Jul 24, 9:05\sAM$/u,
+    )
   })
 })
 

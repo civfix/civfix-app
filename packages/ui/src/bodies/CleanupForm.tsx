@@ -690,7 +690,7 @@ function ShareSection({
     if (!ref) return null
     return {
       title: ref.title,
-      whenLabel: draftWhenLabel(new Date(ref.scheduledAt), locale),
+      whenLabel: draftWhenLabel(new Date(ref.scheduledAt), locale, value.timezone),
     }
   }, [value, locale])
 

@@ -4,7 +4,7 @@ import {
   formInstantMs,
   isScheduleInFutureInZone,
   isScheduleUntouched,
-  wallClockToFormDate,
+  wallClockToFormTime,
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
 import { isEventAddressComplete } from "./eventAddressField"
@@ -38,7 +38,7 @@ export function seededEndTime(cleanup: EventScheduleSource, timeZone?: string): 
   if (Number.isNaN(endMs)) return new Date(Number.NaN)
   return timeZone === undefined
     ? new Date(endMs)
-    : wallClockToFormDate(wallClockInZone(endMs, timeZone))
+    : wallClockToFormTime(wallClockInZone(endMs, timeZone))
 }
 
 export function eventWindowUntouched(

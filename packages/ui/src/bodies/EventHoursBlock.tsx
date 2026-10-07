@@ -13,7 +13,7 @@ import { formatHoursDisplay } from "./formatHours"
 import { hoursReceiptState, type HoursReceiptState } from "./eventLifecycle"
 import { slotWindow } from "./eventSlotsModel"
 import { LogHoursEditor, type LoggedHoursEntry } from "./LogHoursEditor"
-import type { HoursCleanup } from "./hoursEntries"
+import { hoursRowSubject, type HoursCleanup } from "./hoursEntries"
 
 export interface EventHoursBlockProps {
   cleanupId: string
@@ -184,12 +184,15 @@ function HoursSummaryCard({
       {rosterSettled ? (
         <View style={styles.people}>
           {entries.map((entry) => {
-            const attendee = byId.get(entry.userId)
+            const subject = hoursRowSubject(entry, byId)
+            const attendee = subject.kind === "attendee" ? subject.attendee : undefined
             const name = attendee
               ? user && attendee.id === user.id
                 ? t("going.you")
                 : attendee.name
-              : t("log_hours.row_unknown")
+              : subject.kind === "official"
+                ? t("log_hours.row_official")
+                : t("log_hours.row_unknown")
             return (
               <View key={entry.userId} style={styles.personRow}>
                 <Avatar

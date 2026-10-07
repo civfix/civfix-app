@@ -21,6 +21,14 @@ import {
   ApproveGovClaimRequestSchema,
   RejectGovClaimRequestSchema,
 } from "../../../schemas/admin/gov.js"
+import {
+  AdminCreditUserHoursRequestSchema,
+  AdminCreditUserHoursResponseSchema,
+  AdminUserHoursQuerySchema,
+  AdminUserHoursResponseSchema,
+  AdminVoidUserHoursRequestSchema,
+  AdminVoidUserHoursResponseSchema,
+} from "../../../schemas/admin/user-hours.js"
 import { AdminOkResponseSchema } from "../../../schemas/admin/common.js"
 
 export const adminUserEndpoints = {
@@ -156,6 +164,36 @@ export const adminUserEndpoints = {
     path: "/admin/gov-claims/:id/reject",
     request: RejectGovClaimRequestSchema,
     response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const
+
+export const adminUserHoursEndpoints = {
+  getUserHours: def({
+    method: "GET",
+    path: "/admin/users/:id/hours",
+    request: AdminUserHoursQuerySchema,
+    response: AdminUserHoursResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  creditUserHours: def({
+    method: "POST",
+    path: "/admin/users/:id/hours",
+    request: AdminCreditUserHoursRequestSchema,
+    response: AdminCreditUserHoursResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  voidUserHours: def({
+    method: "POST",
+    path: "/admin/users/:id/hours/:entryId/void",
+    request: AdminVoidUserHoursRequestSchema,
+    response: AdminVoidUserHoursResponseSchema,
     auth: "required",
     csrf: true,
     version: "v1",

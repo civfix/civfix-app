@@ -1,10 +1,10 @@
 # @civfix/shared
 
-## 0.58.0
+## 0.59.0
 
 ### Minor Changes
 
-- 7c45af1: Contract cleanup from the civfix-app campaign: unused value exports removed, the schemas' input limits and the helpers ui, web and mobile shared by copy exported once, the optional fields the backend and admin asked for, and a set of behaviour fixes. No endpoint is added or removed and no path, method, auth or csrf flag moves (the registry stays at 333 entries). See DECISIONS §58.
+- Contract cleanup from the civfix-app campaign: unused value exports removed, the schemas' input limits and the helpers ui, web and mobile shared by copy exported once, the optional fields the backend and admin asked for, and a set of behaviour fixes. No endpoint is added or removed and no path, method, auth or csrf flag moves (the registry stays at 336 entries). See DECISIONS §59.
 
   **Removed.** No consumer used any of these (checked against civfix-backend `services/api` and `services/media-worker`, civfix-admin `apps/admin`, civfix-govt-web, civfix-govt-shared, civfix-app ui and apps, and the open backend and admin PRs).
 
@@ -44,7 +44,13 @@
 
   **Internal (no API change).** The endpoint registry is one file per domain under `src/client/endpoints/`, composed in `endpoints.ts`; every entry, path, method and flag is identical and only the key order of `Object.keys(endpoints)` changed. Fields two schema files share live in an unexported module. Design token rows alias their colour ramps with identical values. `fakes/hmac.ts` (never on an entry point) is deleted.
 
-  **Adoption.** civfix-backend `services/api` and `services/media-worker` and civfix-admin `apps/admin` move to `^0.58.0`; none imports a removed name. The new optional fields sit on `.strict()` schemas: clients adopt a new response field before the backend emits it, and the backend accepts a new request field before any client sends it (`excludeOrgId` is on a non-strict query and works in either order). civfix-govt-web stays on `^0.24.2` for tokens only, by the open decision in CLAUDE.md §4.2.
+  **Adoption.** civfix-backend `services/api` and `services/media-worker` and civfix-admin `apps/admin` move to `^0.59.0`; none imports a removed name. The new optional fields sit on `.strict()` schemas: clients adopt a new response field before the backend emits it, and the backend accepts a new request field before any client sends it (`excludeOrgId` is on a non-strict query and works in either order). civfix-govt-web stays on `^0.24.2` for tokens only, by the open decision in CLAUDE.md §4.2.
+
+## 0.58.0
+
+### Minor Changes
+
+- Operator volunteer-hours corrections on the admin users surface: `getUserHours` (`GET /admin/users/:id/hours`, the user's whole ledger with voided rows and totals), `creditUserHours` (`POST /admin/users/:id/hours`, a strict union on `kind` — an `event` credit for a real event or a `manual` adjustment with a `serviceDate`) and `voidUserHours` (`POST /admin/users/:id/hours/:entryId/void`, which returns the live certificates that still list the entry), in a new `adminUserHoursEndpoints` registry group (333 → 336 endpoints). `AdminReasonSchema` is now exported from the admin common schemas and shared with the org writes. `EventHoursResponse.entries[].creditedByOfficial` is a new optional boolean. Additive. See DECISIONS §58.
 
 ## 0.57.0
 

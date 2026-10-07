@@ -16,7 +16,12 @@ import {
   MAX_ORG_NAME,
   OrgSlugSchema,
 } from "../host/organizations.js"
-import { AdminActorRefSchema, AdminListQuerySchema, AdminOkResponseSchema } from "./common.js"
+import {
+  AdminActorRefSchema,
+  AdminListQuerySchema,
+  AdminOkResponseSchema,
+  AdminReasonSchema,
+} from "./common.js"
 import { AdminEventListItemDTOSchema } from "./events.js"
 
 
@@ -100,8 +105,6 @@ export type DecideOrgVerificationRequest = z.infer<typeof DecideOrgVerificationR
 
 export const DecideOrgVerificationResponseSchema = AdminOrgDTOSchema
 export type DecideOrgVerificationResponse = z.infer<typeof DecideOrgVerificationResponseSchema>
-
-const AdminReasonSchema = z.string().trim().min(1).max(1000)
 
 /** Org list query: search matches name/slug/id; every facet is optional and query-string safe. */
 export const AdminOrgListQuerySchema = AdminListQuerySchema.extend({

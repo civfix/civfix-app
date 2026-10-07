@@ -8,7 +8,7 @@ import { useNavStore } from "../../../nav"
 import { useDuplicateCleanup } from "../../../data/hooks/cleanups"
 import { InlineDateTimePicker } from "../../InlineDateTimePicker"
 import { TimezoneField } from "../../TimezoneField"
-import { formInstantMs, mergeDateTime, wallClockToFormDate } from "../../calendarModel"
+import { formInstantMs, timeCarrier, wallClockToFormDate, wallClockToFormTime } from "../../calendarModel"
 import { appErrorCode } from "@civfix/shared"
 import { duplicateErrorKey, duplicateReady, nextDuplicateStart } from "./dashboardModel"
 
@@ -36,11 +36,9 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
   if (eventId !== seededFor) {
     setSeededFor(eventId)
     if (event) {
-      const seed = wallClockToFormDate(
-        nextDuplicateStart(event.startsAt, event.timezone, new Date()).wallClock,
-      )
-      setDate(seed)
-      setTime(seed)
+      const { wallClock } = nextDuplicateStart(event.startsAt, event.timezone, new Date())
+      setDate(wallClockToFormDate(wallClock))
+      setTime(wallClockToFormTime(wallClock))
       setErrorText(null)
     }
   }
@@ -116,7 +114,7 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
         timeZone={timeZone}
         onDateChange={(next) => {
           setDate(next)
-          setTime((current) => (current ? mergeDateTime(next, current) : current))
+          setTime((current) => (current ? timeCarrier(next, current.getHours(), current.getMinutes()) : current))
         }}
         onTimeChange={setTime}
       />

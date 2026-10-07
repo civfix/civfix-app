@@ -16,6 +16,7 @@ import {
   isScheduleInFutureInZone,
   isScheduleUntouched,
   wallClockToFormDate,
+  wallClockToFormTime,
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm } from "./CleanupForm"
@@ -43,7 +44,7 @@ function saveErrorMessage(err: unknown, t: Translate): string {
 
 function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
   const timezone = cleanup.timezone ?? viewerTimeZone()
-  const when = wallClockToFormDate(wallClockInZone(Date.parse(cleanup.scheduledAt), timezone))
+  const start = wallClockInZone(Date.parse(cleanup.scheduledAt), timezone)
   return {
     organizationId: cleanup.organization?.id ?? null,
     title: cleanup.title,
@@ -58,8 +59,8 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
         ? geocodePointKey({ lat: cleanup.lat, lng: cleanup.lng })
         : null,
     coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
-    date: when,
-    time: when,
+    date: wallClockToFormDate(start),
+    time: wallClockToFormTime(start),
     endTime: seededEndTime(cleanup, timezone),
     timezone,
     bring: cleanup.bring ?? [],

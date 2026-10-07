@@ -9,7 +9,7 @@ import type {
   ReportType,
 } from "@civfix/shared"
 import { ErrorCode, appErrorCode } from "@civfix/shared"
-import { mergeDateTime } from "./calendarModel"
+import { formInstantMs } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
 import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "./postComposerSubmit"
 
@@ -108,6 +108,7 @@ export interface FeedShareEventDraft {
   coords: { lat: number; lng: number } | null
   date: Date | null
   time: Date | null
+  timezone: string
 }
 
 export function buildEventPreviewCard(
@@ -117,13 +118,14 @@ export function buildEventPreviewCard(
 ): LinkedEventRef | null {
   const title = draft.title.trim()
   if (!title || !draft.date || !draft.time) return null
-  const scheduled = mergeDateTime(draft.date, draft.time)
+  const scheduledMs = formInstantMs(draft.date, draft.time, draft.timezone)
+  if (scheduledMs === null) return null
   return {
     id: "draft",
     title,
     eventKind: draft.eventKind,
     status: "upcoming",
-    scheduledAt: scheduled.toISOString(),
+    scheduledAt: new Date(scheduledMs).toISOString(),
     lat: draft.coords?.lat ?? 0,
     lng: draft.coords?.lng ?? 0,
     going: 1,

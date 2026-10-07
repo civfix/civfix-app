@@ -12,8 +12,9 @@
 #
 #   1. android/local.properties   -> gradle dies at configuration time with "SDK location not found".
 #                                    Only `expo run:android` writes it. The SDK comes from
-#                                    CIVFIX_ANDROID_SDK_DIR, else the Homebrew android-commandlinetools
-#                                    cask under `brew --prefix` (NOT ~/Library/Android/sdk).
+#                                    CIVFIX_ANDROID_SDK_DIR, else ANDROID_HOME or ANDROID_SDK_ROOT (the
+#                                    CI runner), else the Homebrew android-commandlinetools cask under
+#                                    `brew --prefix` (NOT ~/Library/Android/sdk).
 #   2. android/keystore.properties-> without it the release build silently falls back to the DEBUG
 #                                    keystore and Play rejects the upload.
 #   3. app/build.gradle signing   -> the stock template ships `release { signingConfig signingConfigs.debug }`
@@ -29,19 +30,22 @@
 #                                    screen dark in dark mode. A clean prebuild writes an empty
 #                                    <resources/> there, which is what deleting the stale file leaves.
 #
-# Build afterwards with JDK 22 (the Gradle 8.14.3 wrapper cannot use the default Temurin 25):
-#   export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
-#   cd android && ./gradlew --no-daemon :app:assembleRelease :app:bundleRelease
+# scripts/android-build.sh runs this after its clean prebuild and then builds; run it by hand only
+# before a hand-driven gradle build (JDK 17-24; the Gradle 8.14.3 wrapper refuses Temurin 25).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 if [ -n "${CIVFIX_ANDROID_SDK_DIR:-}" ]; then
   sdk_dir="$CIVFIX_ANDROID_SDK_DIR"
+elif [ -n "${ANDROID_HOME:-}" ]; then
+  sdk_dir="$ANDROID_HOME"
+elif [ -n "${ANDROID_SDK_ROOT:-}" ]; then
+  sdk_dir="$ANDROID_SDK_ROOT"
 elif command -v brew >/dev/null 2>&1; then
   sdk_dir="$(brew --prefix)/share/android-commandlinetools"
 else
-  echo "Set CIVFIX_ANDROID_SDK_DIR to your Android SDK directory (no Homebrew to derive it from)." >&2
+  echo "Set CIVFIX_ANDROID_SDK_DIR to your Android SDK directory (no ANDROID_HOME, and no Homebrew to derive it from)." >&2
   exit 1
 fi
 keystore_dir="${CIVFIX_KEYSTORE_DIR:-$HOME/civfix-keystore}"
@@ -50,7 +54,7 @@ password_file="${CIVFIX_KEYSTORE_PASSWORD_FILE:-$keystore_dir/.password.txt}"
 key_alias="${CIVFIX_KEY_ALIAS:-civfix-upload}"
 
 if [ ! -d android ]; then
-  echo "android/ not found - run scripts/prep-archive.sh <target> --platform android first." >&2
+  echo "android/ not found - build with scripts/android-build.sh, which prebuilds first." >&2
   exit 1
 fi
 
@@ -269,7 +273,7 @@ echo "=========================== ANDROID RELEASE PATCHES ======================
 echo "  sdk.dir       $(sed -n 's/^sdk\.dir=//p' android/local.properties | head -1)"
 echo "  keystore      $(sed -n 's/^storeFile=//p' android/keystore.properties | head -1)"
 echo "  key alias     $(sed -n 's/^keyAlias=//p' android/keystore.properties | head -1)"
-echo "  perms         $(stat -f '%Lp' android/keystore.properties) (android/keystore.properties)"
+echo "  perms         $(stat -c '%a' android/keystore.properties 2>/dev/null || stat -f '%Lp' android/keystore.properties) (android/keystore.properties)"
 echo "  release sign  $(grep -c 'signingConfigs\.release' android/app/build.gradle) reference(s) in app/build.gradle"
 echo "  jvmargs       $(sed -n 's/^org\.gradle\.jvmargs=//p' android/gradle.properties | head -1)"
 echo "  kotlin args   $(sed -n 's/^kotlin\.daemon\.jvmargs=//p' android/gradle.properties | head -1)"

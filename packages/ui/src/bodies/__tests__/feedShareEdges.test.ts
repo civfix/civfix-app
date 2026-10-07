@@ -99,7 +99,7 @@ describe("buildEventPreviewCard edges", () => {
 
   it("merges the chosen day with the chosen clock and counts the organizer as going", () => {
     const card = buildEventPreviewCard(
-      { title: "Beach", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time },
+      { title: "Beach", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time, timezone: "UTC" },
       me,
       "now",
     )
@@ -108,12 +108,12 @@ describe("buildEventPreviewCard edges", () => {
   })
 
   it("places a location-less draft at 0,0", () => {
-    const card = buildEventPreviewCard({ title: "Beach", eventKind: "cleanup", coords: null, date, time }, me)
+    const card = buildEventPreviewCard({ title: "Beach", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" }, me)
     expect(card).toMatchObject({ lat: 0, lng: 0 })
   })
 
   it("rejects a whitespace-only title", () => {
-    expect(buildEventPreviewCard({ title: "   ", eventKind: "cleanup", coords: null, date, time }, me)).toBeNull()
+    expect(buildEventPreviewCard({ title: "   ", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" }, me)).toBeNull()
   })
 })
 
@@ -168,7 +168,14 @@ describe("buildOptimisticFeedSharePost shape", () => {
 
   it("carries a report and an event together when both are given", () => {
     const event = buildEventPreviewCard(
-      { title: "Beach", eventKind: "cleanup", coords: null, date: new Date(2026, 7, 1), time: new Date(2000, 0, 1, 9) },
+      {
+        title: "Beach",
+        eventKind: "cleanup",
+        coords: null,
+        date: new Date(2026, 7, 1),
+        time: new Date(2000, 0, 1, 9),
+        timezone: "UTC",
+      },
       me,
       "t",
     )

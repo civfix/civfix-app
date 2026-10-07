@@ -18,7 +18,7 @@ import { adminOverviewEndpoints } from "./endpoints/admin/overview.js"
 import { adminJurisdictionEndpoints } from "./endpoints/admin/jurisdictions.js"
 import { adminReportEndpoints, adminReportChatEndpoints } from "./endpoints/admin/reports.js"
 import { adminEventEndpoints } from "./endpoints/admin/events.js"
-import { adminUserEndpoints } from "./endpoints/admin/users.js"
+import { adminUserEndpoints, adminUserHoursEndpoints } from "./endpoints/admin/users.js"
 import { adminModerationEndpoints } from "./endpoints/admin/moderation.js"
 import { adminMailEndpoints, adminInboxEndpoints } from "./endpoints/admin/mail.js"
 import { adminAnalyticsEndpoints } from "./endpoints/admin/analytics.js"
@@ -33,7 +33,7 @@ import { hostBroadcastEndpoints } from "./endpoints/host/broadcasts.js"
 import { hostAnalyticsEndpoints } from "./endpoints/host/analytics.js"
 
 export type { EndpointAuth, EndpointDef, HttpMethod } from "./endpoints/def.js"
-export { adminInboxEndpoints, adminReportChatEndpoints, hostAdminEndpoints }
+export { adminInboxEndpoints, adminReportChatEndpoints, adminUserHoursEndpoints, hostAdminEndpoints }
 
 export const coreEndpoints: typeof systemEndpoints &
   typeof authEndpoints &
@@ -105,12 +105,14 @@ export const endpoints: typeof coreEndpoints &
   typeof hostEndpoints &
   typeof hostAdminEndpoints &
   typeof adminReportChatEndpoints &
-  typeof adminInboxEndpoints = {
+  typeof adminInboxEndpoints &
+  typeof adminUserHoursEndpoints = {
   ...coreEndpoints,
   ...hostEndpoints,
   ...hostAdminEndpoints,
   ...adminReportChatEndpoints,
   ...adminInboxEndpoints,
+  ...adminUserHoursEndpoints,
 }
 
 export type Endpoints = typeof endpoints

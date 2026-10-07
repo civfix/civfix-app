@@ -1,20 +1,26 @@
 import assert from "node:assert/strict"
-import { test } from "node:test"
+import { afterEach, test } from "node:test"
 import { appConfigFactory } from "./helpers/appConfig.ts"
 
-const appConfig = appConfigFactory({ config: {} })
+const LOWEST_UNCLAIMED_VERSION_CODE = 8
 
-const LOWEST_UNUSED_PLAY_VERSION_CODE = 6
+afterEach(() => {
+  delete process.env.CIVFIX_ANDROID_VERSION_CODE
+})
 
-test("android.versionCode is a whole number no Play upload has consumed", () => {
-  const { versionCode } = appConfig.android
-  assert.equal(
-    Number.isInteger(versionCode),
-    true,
-    `android.versionCode must be an integer, got ${JSON.stringify(versionCode)}`,
-  )
-  assert.ok(
-    versionCode >= LOWEST_UNUSED_PLAY_VERSION_CODE,
-    `android.versionCode ${versionCode} is already taken - builds 4 and 5 shipped from hand edits to the gitignored android/, so Play rejects anything below ${LOWEST_UNUSED_PLAY_VERSION_CODE}`,
-  )
+test("android.versionCode defaults to the lowest code no upload has claimed", () => {
+  delete process.env.CIVFIX_ANDROID_VERSION_CODE
+  assert.equal(appConfigFactory({ config: {} }).android.versionCode, LOWEST_UNCLAIMED_VERSION_CODE)
+})
+
+test("CIVFIX_ANDROID_VERSION_CODE sets the version code a release build carries", () => {
+  process.env.CIVFIX_ANDROID_VERSION_CODE = "42"
+  assert.equal(appConfigFactory({ config: {} }).android.versionCode, 42)
+})
+
+test("a version code Play has already consumed, or one that is not a whole number, is refused", () => {
+  for (const bad of ["7", "8.5", "seven", "-1"]) {
+    process.env.CIVFIX_ANDROID_VERSION_CODE = bad
+    assert.throws(() => appConfigFactory({ config: {} }), /CIVFIX_ANDROID_VERSION_CODE must be a whole number >= 8/)
+  }
 })

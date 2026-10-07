@@ -23,6 +23,30 @@ export function sameDay(a: Date, b: Date): boolean {
 
 export const PAST_SCHEDULE_GRACE_MS = MS_PER_MINUTE
 
+// Probed at instants 12 h either side of local noon, never at a local midnight: in zones whose gap starts at
+// 00:00 (Santiago, Havana, Beirut) midnight itself does not exist and would read the new offset.
+function clockAnchorDay(day: Date): Date {
+  const noon = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12)
+  const halfDayMs = 12 * MS_PER_HOUR
+  const offsetChanges =
+    new Date(noon.getTime() - halfDayMs).getTimezoneOffset() !==
+    new Date(noon.getTime() + halfDayMs).getTimezoneOffset()
+  if (offsetChanges) noon.setDate(noon.getDate() - 1)
+  return noon
+}
+
+/**
+ * The form's time field: a device-local Date whose hours and minutes are the event-zone clock; the day
+ * comes from the date field. A Date on the DEVICE's own DST-change day cannot hold a clock in its
+ * spring-forward gap (setHours moves 02:30 to 03:30, and that clock would be saved), so on such a day
+ * the carrier sits on the day before, which never changes offset too.
+ */
+export function timeCarrier(day: Date, hours: number, minutes: number): Date {
+  const carrier = clockAnchorDay(day)
+  carrier.setHours(hours, minutes, 0, 0)
+  return carrier
+}
+
 export function mergeDateTime(date: Date, time: Date): Date {
   const merged = new Date(date)
   merged.setHours(time.getHours(), time.getMinutes(), 0, 0)
@@ -37,9 +61,9 @@ const DRAFT_WHEN_FORMAT: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 }
 
-/** The host form's own one-line "when" for a draft, in the device zone the form's pickers use. */
-export function draftWhenLabel(at: Date, locale: string): string {
-  return at.toLocaleString(locale, DRAFT_WHEN_FORMAT)
+/** The host form's own one-line "when" for a draft instant, read in the event's zone. */
+export function draftWhenLabel(at: Date, locale: string, timeZone: string): string {
+  return at.toLocaleString(locale, { ...DRAFT_WHEN_FORMAT, timeZone })
 }
 
 export function isScheduleUntouched(
@@ -150,7 +174,7 @@ export function durationChipFor(
   return DURATION_CHIP_HOURS.find((h) => h * MS_PER_HOUR === elapsed) ?? null
 }
 
-function formWallClock(date: Date, time: Date): WallClock {
+export function formWallClock(date: Date, time: Date): WallClock {
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1,
@@ -169,6 +193,14 @@ export function wallClockToFormDate(wallClock: WallClock): Date {
     wallClock.minutes,
     0,
     0,
+  )
+}
+
+export function wallClockToFormTime(wallClock: WallClock): Date {
+  return timeCarrier(
+    new Date(wallClock.year, wallClock.month - 1, wallClock.day, 12),
+    wallClock.hours,
+    wallClock.minutes,
   )
 }
 
@@ -215,7 +247,7 @@ export function todayInZone(timeZone: string, now: number = Date.now()): Date {
 }
 
 export function nowClockInZone(timeZone: string, now: number = Date.now()): Date {
-  return wallClockToFormDate(wallClockInZone(now, timeZone))
+  return wallClockToFormTime(wallClockInZone(now, timeZone))
 }
 
 export function eventWindowInZone(

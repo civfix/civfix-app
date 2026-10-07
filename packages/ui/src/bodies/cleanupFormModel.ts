@@ -4,7 +4,7 @@
  */
 import type { EventAddressSource, EventKind, EventSlotDTO } from "@civfix/shared"
 import { viewerTimeZone } from "../i18n/useViewerTimeZone"
-import { endOffsetMs, endTimeAfter, formInstantMs, mergeDateTime } from "./calendarModel"
+import { endOffsetMs, endTimeAfter, formInstantMs, timeCarrier } from "./calendarModel"
 import { isEventAddressComplete } from "./eventAddressField"
 import {
   DEFAULT_WIZARD_DURATION_MS,
@@ -118,8 +118,10 @@ function slotsFollowingStart(
 export function dateChangePatch(value: CleanupFormValue, date: Date): Partial<CleanupFormValue> {
   const before =
     value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
-  const time = value.time ? mergeDateTime(date, value.time) : value.time
-  const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
+  const time = value.time ? timeCarrier(date, value.time.getHours(), value.time.getMinutes()) : value.time
+  const endTime = value.endTime
+    ? timeCarrier(date, value.endTime.getHours(), value.endTime.getMinutes())
+    : value.endTime
   const after = time ? formInstantMs(date, time, value.timezone) : null
   return { date, time, endTime, ...slotsFollowingStart(value.slots, before, after) }
 }

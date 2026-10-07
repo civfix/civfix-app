@@ -56,7 +56,6 @@ import {
   formEndInstantMs,
   formInstantMs,
   isScheduleInFutureInZone,
-  mergeDateTime,
 } from "./calendarModel"
 import { buildSlotInputs } from "./eventSlotsForm"
 import { EventFormSkeleton, FORM_CONTROL_HEIGHT, FormValidationRow } from "./eventFormParts"
@@ -206,10 +205,10 @@ function ReviewSummary({
   const label = useReverseLabel(value.coords)
 
   const empty = t("wizard.empty")
-  const whenText =
-    value.date && value.time ? draftWhenLabel(mergeDateTime(value.date, value.time), locale) : empty
   const startMs =
     value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
+  const whenText =
+    startMs !== null ? draftWhenLabel(new Date(startMs), locale, value.timezone) : empty
   const endMs =
     value.date && value.time && value.endTime
       ? formEndInstantMs(value.date, value.time, value.endTime, value.timezone)
