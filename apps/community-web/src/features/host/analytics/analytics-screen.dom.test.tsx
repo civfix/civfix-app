@@ -98,7 +98,7 @@ describe("AnalyticsScreen", () => {
     })
     expect(await screen.findByText("messaging.broadcasts_sent")).toBeTruthy()
     expect(screen.queryByText("messaging.active_days")).toBeNull()
-    expect(screen.getAllByText("broadcastChannel.inapp").length).toBeGreaterThan(0)
+    expect((await screen.findAllByText("broadcastChannel.inapp")).length).toBeGreaterThan(0)
     expect(screen.queryByText("inapp")).toBeNull()
   })
 
