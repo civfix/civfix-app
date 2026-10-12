@@ -43,14 +43,17 @@ export function I18nProvider({ locale, setLocale, children }: I18nProviderProps)
   const readLanguage = useCallback(() => instance.language, [instance])
   const appliedLocale = resolveLocale(useSyncExternalStore(subscribe, readLanguage, readLanguage))
 
+  // Callers compare a choice with the APPLIED locale, which lags the requested one while a catalog loads
+  // or after it failed, so only a choice that is both requested and applied is a no-op here.
   // Choosing the locale that is already requested leaves the prop unchanged, so the effect cannot retry a
   // catalog that failed to load; the explicit choice retries it here instead.
   const requestLocale = useCallback(
     (code: SupportedLocale) => {
+      if (code === requestedRef.current && code === resolveLocale(instance.language)) return
       setLocale?.(code)
       if (code === requestedRef.current) void switchLocale(code)
     },
-    [setLocale, switchLocale],
+    [instance, setLocale, switchLocale],
   )
 
   const value = useMemo<LocaleContextValue>(

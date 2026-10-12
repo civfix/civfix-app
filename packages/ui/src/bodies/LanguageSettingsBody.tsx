@@ -1,6 +1,5 @@
-import React, { useCallback } from "react"
+import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { SupportedLocale } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useLocale, useT, supportedLocales } from "../i18n"
@@ -50,13 +49,6 @@ export function LanguageSettingsBody() {
   const { locale, setLocale } = useLocale()
   const { t } = useT("language-settings")
 
-  const onSelect = useCallback(
-    (code: SupportedLocale) => {
-      if (code !== locale) setLocale(code)
-    },
-    [locale, setLocale],
-  )
-
   return (
     <SettingsSubpage title={t("title")} subtitle={t("subtitle")} subtitleStyle={styles.subtitle}>
       <View style={styles.list} accessibilityRole="radiogroup">
@@ -65,7 +57,7 @@ export function LanguageSettingsBody() {
             key={l.code}
             nativeName={l.nativeName}
             selected={l.code === locale}
-            onPress={() => onSelect(l.code)}
+            onPress={() => setLocale(l.code)}
           />
         ))}
       </View>
