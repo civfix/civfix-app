@@ -3,14 +3,31 @@
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
-import { formatEventInstant } from "@civfix/shared/datetime"
+import { safeDateFormat } from "@civfix/shared/datetime"
 
 type HeroBlockData = Extract<EventPageBlock, { kind: "hero" }>
+
+const WHEN_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZoneName: "short",
+}
+
+/**
+ * The start in the event's own zone. An event without a usable one (a row from before events had a
+ * zone) is shown in the visitor's zone, which the label still names. "" for an unreadable instant.
+ */
+export function formatEventWhen(startsAt: string, timezone: string | null | undefined, locale: string): string {
+  return safeDateFormat(startsAt, locale, WHEN_OPTIONS, timezone)
+}
 
 export function HeroBlock({ block, page }: { block: HeroBlockData; page: PublicEventPageDTO }) {
   const { i18n } = useT("web-signup")
   const image = block.imageUrl ?? page.coverUrl
-  const when = formatEventInstant(page.event.startsAt, page.event.timezone, "long", i18n.language)
+  const when = formatEventWhen(page.event.startsAt, page.event.timezone, i18n.language)
 
   return (
     <header className="signup-hero">

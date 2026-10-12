@@ -7,7 +7,6 @@ import {
   Avatar,
   FollowButton,
   ListSearchField,
-  LoadingState,
   SignInPrompt,
   useListBodyStyles,
 } from "../primitives"
@@ -131,6 +130,30 @@ const SuggestedPersonRow = memo(function SuggestedPersonRow({
   )
 })
 
+function RowSkeleton() {
+  const styles = useStyles()
+  return (
+    <View style={styles.row}>
+      <View style={styles.skelAvatar} />
+      <View style={styles.meta}>
+        <View style={[styles.skelLine, { width: "45%" }]} />
+        <View style={[styles.skelLine, styles.skelLineSm, { width: "60%" }]} />
+      </View>
+    </View>
+  )
+}
+
+function PeopleSkeleton() {
+  const styles = useStyles()
+  return (
+    <View style={styles.skelList}>
+      <RowSkeleton />
+      <RowSkeleton />
+      <RowSkeleton />
+    </View>
+  )
+}
+
 export function SocialBody() {
   const styles = useStyles()
   const listStyles = useListBodyStyles()
@@ -227,7 +250,7 @@ export function SocialBody() {
       ListEmptyComponent={
         !hasQuery ? (
           suggestions.isLoading ? (
-            <LoadingState skeleton="person" rows={SKELETON_ROWS} />
+            <PeopleSkeleton />
           ) : (
             <View style={styles.emptyFill}>
               <FeedNotice
@@ -247,7 +270,7 @@ export function SocialBody() {
             onSignIn={() => requireAuth(() => {}, { next: "/people" })}
           />
         ) : searchPending ? (
-          <LoadingState skeleton="person" rows={SKELETON_ROWS} />
+          <PeopleSkeleton />
         ) : search.isError ? (
           <View style={styles.emptyFill}>
             <FeedNotice
@@ -352,7 +375,6 @@ const ICON_BTN_HIT_SLOP = {
   left: ROW_GAP,
   right: 0,
 }
-const SKELETON_ROWS = 3
 
 const useStyles = makeThemedStyles((t) => ({
   emptyFill: {
@@ -456,5 +478,23 @@ const useStyles = makeThemedStyles((t) => ({
   iconBtnPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
+  },
+  skelList: {
+    alignSelf: "stretch",
+  },
+  skelAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: t.colors.bgAlt,
+  },
+  skelLine: {
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: t.colors.bgAlt,
+  },
+  skelLineSm: {
+    height: 10,
+    marginTop: 7,
   },
 }))
