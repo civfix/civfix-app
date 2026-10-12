@@ -38,7 +38,7 @@ export type TileBody = {
 /** The stage's size and the tile's edge, in points; the floor is the stage's bottom edge. */
 export type TileBox = { width: number; height: number; tile: number }
 
-export const TILE_COUNT = 3
+const TILE_COUNT = 3
 
 /** Staggered heights and tilts above the stage, so the tiles land one after another, not as a block. */
 export function dropTiles(box: TileBox): TileBody[] {
