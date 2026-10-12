@@ -427,6 +427,28 @@ describe("query-persist is SSR-safe (no window)", () => {
   })
 })
 
+describe("query-persist with site data blocked", () => {
+  beforeEach(() => {
+    // Blocking site data makes the localStorage accessor itself throw, not just getItem/setItem.
+    vi.stubGlobal("window", {
+      get localStorage(): Storage {
+        throw new DOMException("The operation is insecure.", "SecurityError")
+      },
+    })
+  })
+
+  it("boots, reports no cache and clears without throwing", () => {
+    const qc = new QueryClient()
+    let teardown: () => void = () => {}
+    expect(() => {
+      teardown = installCachePersistence(qc)
+    }).not.toThrow()
+    expect(() => teardown()).not.toThrow()
+    expect(hasPersistedCache()).toBe(false)
+    expect(() => clearPersistedCache()).not.toThrow()
+  })
+})
+
 describe("cache buster", () => {
   afterEach(() => {
     vi.unstubAllEnvs()
