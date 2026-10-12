@@ -80,4 +80,15 @@ describe("useConsoleFormat output", () => {
     expect(format.dayShort(AT)).toBe(fresh({ month: "short", day: "numeric" }, LA))
     expect(format.time(AT, "Asia/Tokyo")).toBe(fresh({ timeStyle: "short" }, "Asia/Tokyo"))
   })
+
+  it("leaves an empty or unreadable instant blank instead of throwing in a render", () => {
+    const { result } = renderHook(() => useConsoleFormat(LA))
+    const format = result.current
+    for (const iso of ["", "not a date"]) {
+      expect(format.date(iso)).toBe("")
+      expect(format.dateTime(iso)).toBe("")
+      expect(format.time(iso)).toBe("")
+      expect(format.dayShort(iso)).toBe("")
+    }
+  })
 })

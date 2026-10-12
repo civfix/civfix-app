@@ -59,5 +59,6 @@ describe("normalizeInviteIdentifier", () => {
     expect(normalizeInviteIdentifier("handle", "  @rosa ")).toBe("rosa")
     expect(normalizeInviteIdentifier("handle", "rosa")).toBe("rosa")
     expect(normalizeInviteIdentifier("email", " rosa@example.org ")).toBe("rosa@example.org")
+    expect(normalizeInviteIdentifier("email", "@rosa@example.org")).toBe("@rosa@example.org")
   })
 })

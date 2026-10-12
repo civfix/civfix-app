@@ -259,6 +259,25 @@ describe("postComposerStore", () => {
     usePostComposerStore.getState().adoptViewer(null)
   })
 
+  it("a reset under another viewer never hands that viewer the author's organization", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+    usePostComposerStore.getState().adoptViewer(null)
+
+    usePostComposerStore.getState().reset()
+    expect(usePostComposerStore.getState().draft).toMatchObject({ organizationId: null, ownerId: null })
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+    usePostComposerStore.getState().adoptViewer(null)
+    usePostComposerStore.getState().reset({ mode: "reply", targetPostId: "post-parent" })
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      organizationId: null,
+      ownerId: null,
+      replyToPostId: "post-parent",
+    })
+  })
+
   it("an explicit sign-out wipes the draft but keeps the composer's route", () => {
     usePostComposerStore.getState().adoptViewer("user-a")
     usePostComposerStore.getState().reset({ mode: "quote", targetPostId: "post-quoted" })

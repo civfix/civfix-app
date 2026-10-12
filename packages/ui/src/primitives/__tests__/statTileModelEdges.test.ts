@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { STAT_VALUE_SIZES, formatRate, formatStatValue, statTileColumns, statValueSize } from "../statTileModel"
+import {
+  STAT_VALUE_SIZES,
+  STAT_VALUE_UNKNOWN,
+  formatRate,
+  formatStatValue,
+  statTileColumns,
+  statValueSize,
+} from "../statTileModel"
 
 describe("formatStatValue edges", () => {
   it("returns null for both infinities", () => {
@@ -63,7 +70,7 @@ describe("statValueSize boundaries", () => {
     expect(statValueSize("😀".repeat(6), 4)).toBe("24")
   })
 
-  it("keeps the em dash placeholder at display size", () => {
-    expect(statValueSize("—", 4)).toBe("24")
+  it("keeps the unknown-value placeholder at display size", () => {
+    expect(statValueSize(STAT_VALUE_UNKNOWN, 4)).toBe("24")
   })
 })
