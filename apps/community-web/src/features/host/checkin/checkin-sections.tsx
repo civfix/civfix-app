@@ -17,7 +17,6 @@ import {
   formatTicketCode,
   normalizeTicketCode,
   ticketCodeReady,
-  type CheckinTone,
 } from "@civfix/shared/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
@@ -45,10 +44,25 @@ import {
 
 const WALKUP_MIN_PARTY = 1
 
-const TONE_CLASSES: Record<CheckinTone, string> = {
-  success: "border-console-moss-strong/40 bg-console-moss-soft text-console-moss-strong",
-  warning: "border-console-sun-strong/40 bg-console-sun-soft text-console-sun-strong",
-  error: "border-console-bloom-strong/40 bg-console-bloom-soft text-console-bloom-strong",
+type ResultTone = "moss" | "sky" | "sun" | "bloom"
+
+// The web desk keeps its own palette and shows the outcome as the server sent it: a repeat scan of an
+// already checked-in ticket still reads "Checked in" here.
+const OUTCOME_TONE: Record<CheckinResultDTO["outcome"], ResultTone> = {
+  checked_in: "moss",
+  already: "sky",
+  waitlisted: "sun",
+  cancelled: "bloom",
+  no_show: "bloom",
+  wrong_event: "bloom",
+  unknown_token: "bloom",
+}
+
+const TONE_CLASSES: Record<ResultTone, string> = {
+  moss: "border-console-moss-strong/40 bg-console-moss-soft text-console-moss-strong",
+  sky: "border-console-sky-strong/40 bg-console-sky-soft text-console-sky-strong",
+  sun: "border-console-sun-strong/40 bg-console-sun-soft text-console-sun-strong",
+  bloom: "border-console-bloom-strong/40 bg-console-bloom-soft text-console-bloom-strong",
 }
 
 const PANEL_CLASS =
@@ -63,15 +77,15 @@ export function ScanResultCard({
   onDismiss: () => void
 }) {
   const { t } = useT("host-checkin")
-  const render = checkinResultRender(result.outcome, result.firstTime)
+  const { titleKey, bodyKey } = checkinResultRender(result.outcome, true)
   return (
     <div
       role="status"
-      className={`flex items-start gap-token-3 rounded-md border p-token-4 ${TONE_CLASSES[render.tone]}`}
+      className={`flex items-start gap-token-3 rounded-md border p-token-4 ${TONE_CLASSES[OUTCOME_TONE[result.outcome]]}`}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-token-15 font-bold">{t(render.titleKey)}</p>
-        <p className="text-token-13">{t(render.bodyKey)}</p>
+        <p className="text-token-15 font-bold">{t(titleKey)}</p>
+        <p className="text-token-13">{t(bodyKey)}</p>
         {result.attendeeName ? (
           <p className="mt-token-1 text-token-14 font-semibold">{result.attendeeName}</p>
         ) : null}
