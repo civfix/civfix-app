@@ -52,14 +52,16 @@ export function consoleDraftOwner(key: string): string {
   return key.slice(DRAFT_KEY_PREFIX.length).split(".")[0] ?? "anon"
 }
 
-// Nothing reads these scopes any more, and they can hold an access code or an unsent message body,
-// so they are removed on sight.
-const RETIRED_SCOPE_PREFIXES = ["ticket.v1.", "broadcast.v1."]
+// Ticket and broadcast drafts saved before their scope carried a version (`ticket.<eventId>`, now
+// `ticket.v2.<eventId>`) are never read again, and they can hold an access code or an unsent message
+// body, so they are removed on sight.
+const VERSIONED_SCOPES: Readonly<Record<string, string>> = { ticket: "v2", broadcast: "v2" }
 
 function isRetiredDraftKey(key: string): boolean {
   if (!key.startsWith(DRAFT_KEY_PREFIX)) return false
-  const afterOwner = key.slice(DRAFT_KEY_PREFIX.length).split(".").slice(1).join(".")
-  return RETIRED_SCOPE_PREFIXES.some((prefix) => afterOwner.startsWith(prefix))
+  const [, scope, version] = key.slice(DRAFT_KEY_PREFIX.length).split(".")
+  const current = scope === undefined ? undefined : VERSIONED_SCOPES[scope]
+  return current !== undefined && version !== current
 }
 
 function sweepRetiredDrafts(): void {
@@ -121,7 +123,23 @@ export function useDraft<T extends object>(
   const [activeKey, setActiveKey] = useState(key)
   const loaded = useRef(false)
 
+  const pendingWrite = useRef<PendingWrite | null>(null)
+  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flushPendingWrite = useCallback(() => {
+    if (writeTimer.current !== null) {
+      clearTimeout(writeTimer.current)
+      writeTimer.current = null
+    }
+    const pending = pendingWrite.current
+    pendingWrite.current = null
+    if (pending) safeSet("local", pending.key, JSON.stringify(pending.envelope))
+  }, [])
+
   if (key !== activeKey) {
+    // The write still waiting out the delay can belong to the key being returned to (A, B, then A
+    // again), and reading storage before it lands would restore that draft's older text.
+    flushPendingWrite()
     setActiveKey(key)
     setDirty(false)
     initialRef.current = initial
@@ -146,19 +164,6 @@ export function useDraft<T extends object>(
       setRestored(true)
     }
   }, [key, skipRestore])
-
-  const pendingWrite = useRef<PendingWrite | null>(null)
-  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const flushPendingWrite = useCallback(() => {
-    if (writeTimer.current !== null) {
-      clearTimeout(writeTimer.current)
-      writeTimer.current = null
-    }
-    const pending = pendingWrite.current
-    pendingWrite.current = null
-    if (pending) safeSet("local", pending.key, JSON.stringify(pending.envelope))
-  }, [])
 
   useEffect(() => {
     if (!dirty || typeof window === "undefined") return

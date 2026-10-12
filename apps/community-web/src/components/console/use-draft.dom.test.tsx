@@ -9,7 +9,7 @@ afterEach(() => {
   window.localStorage.clear()
 })
 
-const KEY = consoleDraftKey("ticket.evt_1", "tt_1", "viewer-1")
+const KEY = consoleDraftKey("ticket.v2.evt_1", "tt_1", "viewer-1")
 
 describe("useDraft restore", () => {
   it("discards a stored entry that is valid JSON but not a draft envelope", () => {
@@ -49,12 +49,19 @@ describe("useDraft restore", () => {
 describe("useDraft retired scopes", () => {
   it("sweeps the pre-event-zone ticket and broadcast drafts of every viewer, and nothing else", () => {
     const envelope = JSON.stringify({ version: "v1", savedAt: Date.now(), owner: "viewer-1", value: {} })
+    const eventId = "0d6f1c52-3b7e-4c1a-9f0e-2a7c5b8d9e10"
+    // The keys the drafts were stored under before the scopes were versioned.
     const retired = [
-      consoleDraftKey("ticket.v1.evt_1", "tt_1", "viewer-1"),
-      consoleDraftKey("broadcast.v1.evt_1", "new", "viewer-2"),
-      consoleDraftKey("ticket.v1.evt_2", "new", null),
+      consoleDraftKey(`ticket.${eventId}`, "tt_1", "viewer-1"),
+      consoleDraftKey(`broadcast.${eventId}`, "new", "viewer-2"),
+      consoleDraftKey(`ticket.${eventId}`, "new", null),
     ]
-    const kept = [consoleDraftKey("ticket.v2.evt_1", "tt_1", "viewer-1"), "civfix.locale"]
+    const kept = [
+      consoleDraftKey(`ticket.v2.${eventId}`, "tt_1", "viewer-1"),
+      consoleDraftKey(`broadcast.v2.${eventId}`, "new", "viewer-2"),
+      consoleDraftKey("org-profile", "org_1", "viewer-1"),
+      "civfix.locale",
+    ]
     for (const key of [...retired, ...kept]) window.localStorage.setItem(key, envelope)
 
     renderHook(() => useDraft(KEY, { title: "" }))
@@ -117,7 +124,7 @@ describe("useDraft write", () => {
 
   it("keeps a pending draft under its own key when the key changes", () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
-    const other = consoleDraftKey("ticket.evt_1", "tt_2", "viewer-1")
+    const other = consoleDraftKey("ticket.v2.evt_1", "tt_2", "viewer-1")
     const { result, rerender } = renderHook(({ key }) => useDraft(key, { title: "" }), {
       initialProps: { key: KEY },
     })
@@ -129,5 +136,22 @@ describe("useDraft write", () => {
     })
     expect(storedValue(KEY)).toEqual({ title: "First" })
     expect(storedValue(other)).toEqual({ title: "Second" })
+  })
+
+  it("restores the newest text when the key comes back before the pending write lands", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const other = consoleDraftKey("ticket.v2.evt_1", "tt_2", "viewer-1")
+    const { result, rerender } = renderHook(({ key }) => useDraft(key, { title: "" }), {
+      initialProps: { key: KEY },
+    })
+    act(() => result.current.patch({ title: "First" }))
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+    act(() => result.current.patch({ title: "First draft" }))
+    rerender({ key: other })
+    rerender({ key: KEY })
+    expect(result.current.draft.title).toBe("First draft")
+    expect(result.current.restored).toBe(true)
   })
 })
