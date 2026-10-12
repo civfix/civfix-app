@@ -46,7 +46,7 @@ describe("useThreadForRoom", () => {
   })
 
   it("returns nothing for a kind no loaded thread has, even when the id matches", async () => {
-    const { result } = renderLookup("event")
+    const { result } = renderLookup("cleanup")
     await waitFor(() => expect(result.current.loaded).toBe(true))
     expect(result.current.thread).toBeUndefined()
   })
