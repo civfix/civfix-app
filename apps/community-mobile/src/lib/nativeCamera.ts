@@ -12,6 +12,7 @@ import type {
 } from "@civfix/ui/capabilities"
 import { MAX_VIDEO_SECONDS } from "./cameraSession"
 import { resolveUploadContentType, stripJpegMetadata } from "./mediaBytes"
+import { overVideoDuration } from "./videoLimits"
 import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 export { MAX_VIDEO_SECONDS }
 
@@ -200,6 +201,10 @@ export const nativeCamera: CameraCapability = {
       ...(asset.height ? { height: asset.height } : {}),
       ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
     }
+  },
+
+  async exceedsVideoLimits(media: CapturedMedia): Promise<boolean> {
+    return overVideoDuration(media)
   },
 
   async prepareUpload(media: CapturedMedia): Promise<PreparedUpload> {
