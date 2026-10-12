@@ -132,3 +132,27 @@ test("the offline gate's sign-out shows it is working and cannot be pressed twic
   assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{\(\) => void onSignOut\(\)\}/)
   assert.match(button, /\{signingOut \? \(\s*<ActivityIndicator color=\{th\.colors\.textMuted\} \/>/)
 })
+
+test("the offline gate's sign-out keeps a translated accessible name while its label is a spinner", () => {
+  const start = connectivity.indexOf("export function BootOfflineGate")
+  const end = connectivity.indexOf("export function BootConnectivityNotice")
+  assert.ok(start > -1 && end > start)
+  const gate = connectivity.slice(start, end)
+  assert.match(gate, /const \{ t \} = useT\("mobile-branding"\)/)
+  const press = gate.indexOf("onPress={() => void onSignOut()}")
+  assert.ok(press > -1)
+  const button = gate.slice(gate.lastIndexOf("<Pressable", press), gate.indexOf("</Pressable>", press))
+  assert.match(button, /accessibilityLabel=\{t\("boot\.sign_out"\)\}/)
+  assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}/)
+  assert.match(button, /disabled=\{signingOut\}/)
+  assert.match(button, /\{signingOut \? \(\s*<ActivityIndicator /)
+
+  const catalog = JSON.parse(
+    readFileSync(
+      new URL("../../../packages/ui/src/i18n/locales/en/mobile-branding.json", import.meta.url),
+      "utf8",
+    ),
+  ) as { boot?: { sign_out?: unknown } }
+  assert.equal(typeof catalog.boot?.sign_out, "string")
+  assert.notEqual((catalog.boot?.sign_out as string).trim(), "")
+})

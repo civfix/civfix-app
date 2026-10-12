@@ -110,3 +110,16 @@ describe("ClaimView pending-claim lookup", () => {
     expect(screen.getByText("empty.title")).toBeTruthy()
   })
 })
+
+describe("ClaimView page heading", () => {
+  it("titles the 'nothing to claim' page with a level-one heading", async () => {
+    await renderView()
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("empty.title")
+  })
+
+  it("titles the failed lookup page with a level-one heading", async () => {
+    claimNudge.mockRejectedValueOnce(new TypeError("Failed to fetch"))
+    await renderView()
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("lookup_failed.title")
+  })
+})

@@ -41,7 +41,7 @@ function registration(over: Partial<EventRegistrationDTO> = {}): EventRegistrati
   } as EventRegistrationDTO
 }
 
-function renderAttendees(rows: EventRegistrationDTO[]) {
+function renderAttendees(rows: EventRegistrationDTO[], event: CleanupDTO = EVENT) {
   const client = {
     listEventTicketTypes: vi.fn().mockResolvedValue({ items: [] }),
     listEventRegistrations: vi.fn().mockResolvedValue({ items: rows, nextCursor: null }),
@@ -51,7 +51,7 @@ function renderAttendees(rows: EventRegistrationDTO[]) {
   }
   renderConsole(
     <ConsoleNavigationProvider>
-      <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
+      <ConsoleEventProvider eventId={EVENT_ID} event={event}>
         <AttendeesScreen />
       </ConsoleEventProvider>
     </ConsoleNavigationProvider>,
@@ -147,6 +147,28 @@ describe("AttendeesScreen", () => {
     }).format(new Date("2026-09-12T17:00:00.000Z"))
     expect(await screen.findAllByText(eventZoneTime)).not.toHaveLength(0)
     expect(screen.getAllByText("state.no_value").length).toBeGreaterThan(0)
+  })
+
+  it("tells screen readers None for an empty ticket type and an unanswered question", async () => {
+    const user = userEvent.setup()
+    const client = renderAttendees([registration({ ticketTypeName: null })], {
+      ...EVENT,
+      myCapabilities: [...EVENT.myCapabilities, "view_answers"],
+    })
+    client.getEventRegistrationAnswers.mockResolvedValue({
+      answers: [{ questionId: "q1", prompt: "Dietary needs", value: null }],
+    })
+    await user.click(await screen.findByRole("button", { name: "table.open_row(name=Ada)" }))
+    const drawer = await screen.findByRole("dialog", { name: "Ada" })
+
+    const ticketType = within(drawer).getByText("drawer.ticket_type").nextElementSibling
+    expect(within(ticketType as HTMLElement).getByText("state.no_value").className).toContain(
+      "sr-only",
+    )
+    const answer = (await within(drawer).findByText("Dietary needs")).nextElementSibling
+    expect(within(answer as HTMLElement).getByText("state.no_value").className).toContain(
+      "sr-only",
+    )
   })
 
   it("heads the waitlist's party column with a real label", async () => {

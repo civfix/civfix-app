@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { cleanup, screen } from "@testing-library/react"
+import { cleanup, screen, within } from "@testing-library/react"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")
@@ -54,5 +54,14 @@ describe("PortfolioScreen suppression", () => {
     renderPortfolio()
     expect(await screen.findByText("suppressed.note(k=11)")).toBeTruthy()
     expect(screen.getAllByLabelText("suppressed.explain(k=11)")).toHaveLength(3)
+  })
+})
+
+describe("PortfolioScreen KPIs", () => {
+  it("tells screen readers None for each KPI the server did not return", async () => {
+    renderPortfolio()
+    await screen.findByText("suppressed.note(k=11)")
+    const kpis = screen.getByRole("region", { name: "kpis.heading" })
+    expect(within(kpis).getAllByText("state.no_value")).toHaveLength(4)
   })
 })

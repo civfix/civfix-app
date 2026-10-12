@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
@@ -39,6 +39,14 @@ function editor(): HTMLTextAreaElement {
 function currentValue(): string {
   return screen.getByTestId("value").textContent ?? ""
 }
+
+function onPlatform(platform: string) {
+  vi.spyOn(navigator, "platform", "get").mockReturnValue(platform)
+}
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe("RichTextEditor", () => {
   it("bolds the selection with the keyboard shortcut", async () => {
@@ -148,6 +156,23 @@ describe("RichTextEditor", () => {
     renderConsole(<Harness />, { withToasts: false })
     const bold = screen.getByRole("button", { name: "editor.bold" })
     expect(bold.getAttribute("aria-keyshortcuts")).toBe("Meta+B Control+B")
+  })
+
+  it("hints the Command shortcut in the button tooltip on Apple platforms", () => {
+    onPlatform("MacIntel")
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("title")).toBe("editor.bold (⌘B)")
+  })
+
+  it("hints the Ctrl shortcut in the button tooltip on other platforms", () => {
+    onPlatform("Win32")
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("title")).toBe("editor.bold (editor.shortcut_ctrl(key=B))")
+    expect(screen.getByRole("button", { name: "editor.bullet_list" }).getAttribute("title")).toBe(
+      "editor.bullet_list",
+    )
   })
 
   it("describes the textarea with the remaining character count", () => {

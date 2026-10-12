@@ -68,6 +68,24 @@ function Harness({
   )
 }
 
+function stubNarrowViewport(): () => void {
+  const matchMedia = window.matchMedia
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: query.includes("max-width: 767px"),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+  return () => Object.defineProperty(window, "matchMedia", { writable: true, value: matchMedia })
+}
+
 describe("DataTable", () => {
   it("publishes aria-sort only on sortable column headers and marks the active one", () => {
     renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} onSortChange={() => {}} />)
@@ -162,20 +180,7 @@ describe("DataTable", () => {
   })
 
   it("renders cards instead of a table on a narrow viewport", () => {
-    const matchMedia = window.matchMedia
-    Object.defineProperty(window, "matchMedia", {
-      writable: true,
-      value: (query: string) => ({
-        matches: query.includes("max-width: 767px"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      }),
-    })
+    const restore = stubNarrowViewport()
     renderConsole(
       <Harness renderCard={(row) => <article data-testid="card">{row.name}</article>} />,
     )
@@ -183,7 +188,31 @@ describe("DataTable", () => {
     const cards = screen.getAllByTestId("card")
     expect(cards).toHaveLength(ROWS.length)
     expect(within(cards[0] as HTMLElement).getByText("Ann")).toBeTruthy()
-    Object.defineProperty(window, "matchMedia", { writable: true, value: matchMedia })
+    restore()
+  })
+
+  it("announces loading with a single label on a narrow viewport", () => {
+    const restore = stubNarrowViewport()
+    try {
+      renderConsole(
+        <DataTable
+          caption="Attendees"
+          columns={COLUMNS}
+          rows={[]}
+          rowKey={(row) => row.id}
+          renderCard={(row) => <article>{row.name}</article>}
+          loading
+        />,
+        { withToasts: false },
+      )
+      expect(screen.queryByRole("table")).toBeNull()
+      const status = screen.getByRole("status")
+      expect(status.textContent).toBe("state.loading")
+      expect(status.getAttribute("aria-label")).toBeNull()
+      expect(screen.getAllByText("state.loading")).toHaveLength(1)
+    } finally {
+      restore()
+    }
   })
 
   it("names the table for assistive tech with a caption", () => {
