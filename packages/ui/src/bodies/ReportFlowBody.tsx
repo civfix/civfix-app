@@ -157,17 +157,20 @@ function CaptureStep({ mode }: { mode: LayoutMode }) {
       setHint(null)
       try {
         const captured = await produce()
-        if (captured) {
-          if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)
-          else addCapture(captured)
+        if (!captured) return
+        if (await camera.exceedsVideoLimits?.(captured)) {
+          setHint(t("common:media.video_limits"))
+          return
         }
+        if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)
+        else addCapture(captured)
       } catch {
         setHint(t("capture.camera_error"))
       } finally {
         setBusy(false)
       }
     },
-    [busy, startFromCapture, addCapture, t],
+    [busy, camera, startFromCapture, addCapture, t],
   )
 
   const run = useCallback(

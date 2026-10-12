@@ -33,6 +33,10 @@ export interface CameraCapability {
   capture(opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null>
   pickFromLibrary(): Promise<CapturedMedia | null>
   acceptFile?(item: unknown): Promise<CapturedMedia | null>
+  // Web only: the browser uploads the original file, so it screens a picked video against the worker's
+  // limits up front, resolving false when it cannot read the file. Mobile has none because it compresses
+  // every video before upload.
+  exceedsVideoLimits?(media: CapturedMedia): Promise<boolean>
   prepareUpload(media: CapturedMedia): Promise<PreparedUpload>
 }
 

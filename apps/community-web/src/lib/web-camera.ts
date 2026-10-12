@@ -33,6 +33,7 @@ import type {
 
 import { readExifGps } from "@/lib/exif"
 import { sha256Hex, mediaKindFromFile } from "@/lib/media"
+import { overVideoLimits, readVideoMetadata } from "@/lib/video-limits"
 
 /** object-URL -> the File it was created from, so prepareUpload can read the original bytes. */
 const fileByUri = new Map<string, File>()
@@ -106,6 +107,12 @@ export const webCamera: CameraCapability = {
   async acceptFile(item: unknown): Promise<CapturedMedia | null> {
     if (typeof File === "undefined" || !(item instanceof File)) return null
     return toCapturedMedia(item)
+  },
+
+  async exceedsVideoLimits(media: CapturedMedia): Promise<boolean> {
+    if (media.kind !== "video") return false
+    const meta = await readVideoMetadata(media.uri)
+    return meta !== null && overVideoLimits(meta)
   },
 
   async prepareUpload(media: CapturedMedia): Promise<PreparedUpload> {

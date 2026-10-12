@@ -3,6 +3,7 @@ import { AppError } from "@civfix/shared"
 import { useApi } from "../data"
 import { uploadMediaId } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
+import { useT } from "../i18n"
 import type { CapturedMedia } from "../capabilities"
 import { nextAttachmentId } from "./composerAttachmentId"
 
@@ -29,6 +30,7 @@ export interface ComposerAttachments {
 export function useComposerAttachments(maxAttachments = 5): ComposerAttachments {
   const api = useApi()
   const camera = useCamera()
+  const { t } = useT("common")
   const [attachments, setAttachments] = useState<PendingAttachment[]>([])
   const [uploading, setUploading] = useState(false)
   const [attachError, setAttachError] = useState<string | null>(null)
@@ -59,6 +61,10 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
         return
       }
       if (!picked) return
+      if (await camera.exceedsVideoLimits?.(picked)) {
+        setAttachError(t("media.video_limits"))
+        return
+      }
       const local: PendingAttachment = { id: nextAttachmentId(), uri: picked.uri, kind: picked.kind, posterUri: null }
       setAttachments((prev) => [...prev, local].slice(0, maxAttachments))
       setUploading(true)
@@ -72,7 +78,7 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
         setUploading(false)
       }
     },
-    [api, camera, attachments.length, maxAttachments, uploading],
+    [api, camera, attachments.length, maxAttachments, uploading, t],
   )
 
   const onAttach = useCallback(
