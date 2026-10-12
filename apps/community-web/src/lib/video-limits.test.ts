@@ -8,8 +8,14 @@ describe("overVideoLimits", () => {
     expect(overVideoLimits({ durationSec: 10, width: 1080, height: 1920 })).toBe(false)
   })
 
-  it("rejects a clip longer than 10 s", () => {
+  it("passes a clip that rounds to 10 s, as the worker does", () => {
+    expect(overVideoLimits({ durationSec: 10.03, width: 1280, height: 720 })).toBe(false)
+    expect(overVideoLimits({ durationSec: 10.49, width: 1280, height: 720 })).toBe(false)
+  })
+
+  it("rejects a clip that rounds to more than 10 s", () => {
     expect(overVideoLimits({ durationSec: 10.5, width: 1280, height: 720 })).toBe(true)
+    expect(overVideoLimits({ durationSec: 11, width: 1280, height: 720 })).toBe(true)
   })
 
   it("rejects a 4K clip in either orientation", () => {
