@@ -9,6 +9,7 @@ const code = (source: string): string =>
 const CONVERSATION = code(read("../ConversationBody.tsx"))
 const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
 const COMPOSER = code(read("../conversation/ConversationComposer.tsx"))
+const STYLES = code(read("../conversation/styles.ts"))
 const COMPOSER_ATTACHMENTS = code(read("../../primitives/useComposerAttachments.ts"))
 const INBOX = code(read("../MessagingListBody.tsx"))
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
@@ -78,6 +79,8 @@ describe("failures are surfaced, not swallowed", () => {
     const caption = COMPOSER.match(/<Text[^>]*>\s*\{att\.attachError\}/)
     expect(caption, "the attach-error caption").not.toBeNull()
     expect(caption![0]).not.toMatch(/numberOfLines/)
+    expect(caption![0], "native measures a row child at the full row width").toMatch(/style=\{styles\.composerAttachErrorText\}/)
+    expect(STYLES).toMatch(/composerAttachErrorText: \{ flexShrink: 1 \}/)
   })
 })
 
