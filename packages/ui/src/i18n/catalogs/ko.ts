@@ -74,6 +74,7 @@ import ko_mobile_onboarding from "../locales/ko/mobile-onboarding.json"
 import ko_mobile_report_camera from "../locales/ko/mobile-report-camera.json"
 import ko_mobile_system from "../locales/ko/mobile-system.json"
 import ko_nav from "../locales/ko/nav.json"
+import ko_not_found from "../locales/ko/not-found.json"
 import ko_notifications from "../locales/ko/notifications.json"
 import ko_notifications_prefs from "../locales/ko/notifications-prefs.json"
 import ko_onboarding_age from "../locales/ko/onboarding-age.json"
@@ -177,6 +178,7 @@ const catalog: ResourceLanguage = {
   "mobile-report-camera": ko_mobile_report_camera,
   "mobile-system": ko_mobile_system,
   "nav": ko_nav,
+  "not-found": ko_not_found,
   "notifications": ko_notifications,
   "notifications-prefs": ko_notifications_prefs,
   "onboarding-age": ko_onboarding_age,

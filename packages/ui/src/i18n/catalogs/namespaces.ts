@@ -75,6 +75,7 @@ export const namespaces = [
   "mobile-report-camera",
   "mobile-system",
   "nav",
+  "not-found",
   "notifications",
   "notifications-prefs",
   "onboarding-age",

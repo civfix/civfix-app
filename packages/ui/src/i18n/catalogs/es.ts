@@ -74,6 +74,7 @@ import es_mobile_onboarding from "../locales/es/mobile-onboarding.json"
 import es_mobile_report_camera from "../locales/es/mobile-report-camera.json"
 import es_mobile_system from "../locales/es/mobile-system.json"
 import es_nav from "../locales/es/nav.json"
+import es_not_found from "../locales/es/not-found.json"
 import es_notifications from "../locales/es/notifications.json"
 import es_notifications_prefs from "../locales/es/notifications-prefs.json"
 import es_onboarding_age from "../locales/es/onboarding-age.json"
@@ -177,6 +178,7 @@ const catalog: ResourceLanguage = {
   "mobile-report-camera": es_mobile_report_camera,
   "mobile-system": es_mobile_system,
   "nav": es_nav,
+  "not-found": es_not_found,
   "notifications": es_notifications,
   "notifications-prefs": es_notifications_prefs,
   "onboarding-age": es_onboarding_age,
