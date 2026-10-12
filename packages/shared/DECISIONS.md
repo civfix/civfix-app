@@ -412,7 +412,7 @@ is optional so existing implementers keep compiling. Nothing here is a shape cha
   older payloads stay valid.
 
 - **Input tightenings (no shipped client violates them)**: the WS client `send` frame `clientId` is bounded
-  `1..64` (producers emit ≤36-char ids: `packages/ui/src/data/hooks/chat.ts` `newClientId()`); RESPONSE /
+  `1..64` (producers emit ≤36-char ids: `packages/ui/src/data/hooks/chatOutbox.ts` `randomId()`); RESPONSE /
   server-ack `clientId` fields are deliberately NOT touched (tightening a payload a new client must parse
   from an old server would break it). `RegisterPushTokenRequest.token` (and the new unregister twin) is
   bounded `1..2048` (Expo device tokens ~40 chars). `EventHoursEntry.hours` gains a `MIN_EVENT_HOURS`

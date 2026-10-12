@@ -58,7 +58,7 @@ and `react-native-is-edge-to-edge`.
 | `theme/` | the design-token -> RN adapter (fontSize/fontFamily/colors/glass/shadow/radius/space); `useLayoutMode` (orientation: landscape -> expanded, portrait -> compact); `supportsBlur`; the web affordances (cursor / focus-visible ring / hover / text-selection, native-safe no-ops) |
 | `typography/` | the shared `Text` variant component; `TextLink` (the one inline prose link); the lucide `Icon` wrapper + `LucideIcon` type; the semantic `iconMap` vocabulary |
 | `surface/` | `BlurSurface` - the glass seam (`.web` CSS backdrop-filter / `.native` expo-blur) |
-| `capabilities/` | the `PlatformCapabilities` shape + `CapabilitiesProvider` + the `useCamera()`/`useGeolocation()`/`usePush()`/`useSecureStore()`/`usePersistence()`/`useBlurSurface()`/`useHaptics()`/`useOpenExternal()` hooks + the in-memory fakes |
+| `capabilities/` | the `PlatformCapabilities` shape + `CapabilitiesProvider` + the `useCamera()`/`useGeolocation()`/`usePush()`/`useSecureStore()`/`useHaptics()`/`useOpenExternal()` hooks + the in-memory fakes |
 | `data/` | the `DataContextValue` + `ApiProvider` + `useApi`/`useAuthState`/`useRequireAuth`/`useLogout`/`useChatSocket`/`useSubmitReport`; the shared React Query feature hooks; the single `queryKeys` factory; the optimistic-cache helpers; the fakes |
 | `nav/` | the unified zustand `useNavStore` (compact-replace vs expanded-append) + the pure route helpers (`pathForEntry`/`entryFromPath`/`seedFor`) + the nav types |
 | `shell/` | `AppShell` + `ExpandedShell` (sidebar) + `CompactShell` (`.native` gorhom sheet / `.web` worklet-free PanResponder sheet) + `BodyRouter` + the pure `bodyRoutes`/`bodyLayout` tables + the `ScrollHost` seam + the header seams |
@@ -114,7 +114,7 @@ and `react-native-is-edge-to-edge`.
   `makeThemedStyles` runs the factory once per scheme (two module-level cache slots per call site) and
   returns a hook, so the hot path is a context read plus an object lookup - no per-render allocation.
   `useStyles.for("dark")` gives the sheet outside a component (tests, worklets). Inline colors in JSX
-  (`color={theme.colors.textSubtle}`, `tint(theme.colors.brand.bloom, 0.2)`) switch to
+  (`color={theme.colors.textSubtle}`, `wash(theme.colors.brand.bloom, 0.2, theme)`) switch to
   `const t = useTheme()` inside the component. Pure helpers and non-component modules that take a color
   should take it as a parameter or accept a `Theme`; `categoryColor(category, scheme)` and
   `cleanupColorFor(scheme)` take the scheme explicitly. `space`/`radius`/`fontSize`/`fontFamily`/
@@ -175,8 +175,8 @@ The pieces live in `src/primitives/skeleton` and are exported from the root barr
 | `SkeletonDetail` | hero block + title/body bars, optionally trailed by rows |
 
 `kind` is one of `person | report | notification | settings | text`; each is a row geometry, not a
-colour, and `SKELETON_ROW_KINDS` holds the specs. Fill is `theme.colors.bgAlt`; every piece pulses on one
-shared, ref-counted `Animated.Value` (`useSkeletonPulse`) so all the rows breathe together, and
+colour, and `primitives/skeleton/Skeleton.tsx` holds the specs. Fill is `theme.colors.bgAlt`; every piece
+pulses on one shared, ref-counted `Animated.Value` so all the rows breathe together, and
 `useReducedMotion()` renders them STATIC. Every piece is `accessibilityElementsHidden` +
 `importantForAccessibility="no-hide-descendants"` and announces nothing - a screen's own loading label
 (e.g. the search results `accessibilityRole="progressbar"` wrapper) is what speaks.

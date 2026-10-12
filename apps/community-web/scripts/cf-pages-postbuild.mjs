@@ -449,9 +449,9 @@ const appErrorSites = scriptFilesUnder(chunksDir)
 const appErrorCopies = appErrorSites.reduce((total, site) => total + site.count, 0)
 
 const WHY_ONE_COPY =
-  `@civfix/shared builds every entry with \`splitting: false\` (packages/shared/tsup.config.ts), so ` +
-  `src/types/errors.ts is INLINED into BOTH dist/index.js and dist/client/index.js. Bundle those two ` +
-  `entries as separate modules and the app ends up with two DISTINCT AppError classes: ` +
+  `@civfix/shared builds with \`splitting: true\` (packages/shared/tsup.config.ts), so its entries ` +
+  `share ONE chunk holding src/types/errors.ts. A bundle that still carries two copies of it (an unsplit ` +
+  `build, or the root and client entries resolved as separate modules) has two DISTINCT AppError classes: ` +
   `\`err instanceof AppError\` is then ALWAYS false across the boundary, the typed client's ` +
   `normalizeError re-wraps EVERY API error as INTERNAL, and every error-code branch in the UI - rate ` +
   `limit, validation, conflict, abuse hold, not-routable - collapses into the generic outage state, ` +

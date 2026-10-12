@@ -114,7 +114,7 @@ App Store users are not signed out by this change.
 
 Three stores are deliberately NOT scoped, because none of them holds identity or server state: the map
 filter prefs including recent-search history (`civfix.ui.filters`, `@civfix/ui`
-`map/filterStorage.native.ts`), the sidebar width (`civfix.ui.sidebar`,
+`storage/persistentStorage.native.ts`), the sidebar width (`civfix.ui.sidebar`,
 `shell/sidebarStorage.native.ts`), and the push `device_id` (`civfix.device_id`, `src/lib/deviceId.ts`),
 which must stay stable per install for the backend's push-token ownership guard to recognise a
 same-device handoff.
@@ -258,10 +258,10 @@ JS wordmark screen that follows it are both painted on light paper in every appe
 match instead of one switching a beat before the other. That is why `app.config.js` carries no `dark`
 splash block (not on `splash`, not on the `expo-splash-screen` plugin tuple), and why
 `src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate`, the
-pre-fonts backdrop in `app/_layout.tsx` and that file's system chrome: while `gateMounted` is true,
-`RootStack` holds the status bar, the Android nav-bar glyphs and the native root background
-(`SystemUI.setBackgroundColorAsync`) on the launch scheme, so none of them turns dark behind the
-light gate. The app proper is unaffected: `userInterfaceStyle` stays `automatic` and every shell
+pre-fonts backdrop (`src/boot/BootBackdrop.tsx`) and the system chrome (`src/boot/RootStack.tsx`):
+while `gateMounted` is true, `RootStack` holds the status bar, the Android nav-bar glyphs and the
+native root background (`SystemUI.setBackgroundColorAsync`) on the launch scheme, so none of them turns
+dark behind the light gate. The app proper is unaffected: `userInterfaceStyle` stays `automatic` and every shell
 frame once the gate has unmounted follows the device.
 
 There is no dark variant of the artwork and none is needed. `assets/splash.png` is the wordmark on a

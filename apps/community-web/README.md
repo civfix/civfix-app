@@ -111,8 +111,8 @@ code uses semantic utilities and never hardcodes a hex that exists in tokens:
 - Shadow: `shadow-s1 .. shadow-s4`, `shadow-pin`, `shadow-ring`. Motion: `duration-d1..d4`,
   `ease-out`/`ease-spring`/`ease-in-out`.
 
-Map pin colors come from the shared `categoryColor()` / `cleanupColor` helpers inside `@civfix/ui`'s
-Map seam, so they always match the tokens.
+Map pin colors come from the shared `categoryColor()` / `cleanupColorFor()` helpers in
+`@civfix/shared/tokens`, which `@civfix/ui`'s Map seam uses, so they always match the tokens.
 
 ### Fonts
 
@@ -162,9 +162,9 @@ emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css`
 `src/app/*` holds thin route shells. Most routes (`/`, `/pin/*`, `/cleanups/*`, `/people/*`,
 `/messages/*`, `/post/*`, `/compose/*`, ...) render the same `HomeShell`
 (`src/components/home/home-shell.tsx`), which mounts `@civfix/ui`'s `AppShell` client-side
-(`dynamic(..., { ssr: false })`). `use-web-nav-adapter.ts` seeds the shared nav store from
-`window.location` and keeps the URL in sync with raw `history.pushState`, so the shell never remounts
-on navigation.
+(`dynamic(..., { ssr: false })`). `use-web-nav-adapter.ts`, through `web-nav-controller.ts`, seeds the
+shared nav store from `window.location` and keeps the URL in sync with raw `history.pushState`, so the
+shell never remounts on navigation.
 
 With `output: "export"` a dynamic segment must enumerate its params at build time, and real ids are
 unknown then. Every detail route is therefore a CATCH-ALL (`app/pin/[...id]`, `app/e/[...slug]`,
@@ -233,7 +233,7 @@ through the real Pages routing engine.
    `metadataBase` (and therefore every absolute image URL) is
    `NEXT_PUBLIC_SITE_URL`, inlined per Pages environment by `.github/workflows/deploy-web.yml`
    (a `v*` release -> `https://civfix.org`, `main` -> `https://civfix.dev`), falling back to
-   `DEFAULT_SITE_URL`. Regenerate the artwork with
+   `PRODUCTION_SITE_URL`. Regenerate the artwork with
    `pnpm --filter community-web og-image` (headless Chrome renders the favicon pin + the Baloo 2
    wordmark from `public/fonts/` into `public/og.png`, and the pin alone into the 180x180
    `public/apple-touch-icon.png`; set `CHROME_BIN` if it cannot find a browser). `og.png` is held
@@ -328,7 +328,7 @@ through the real Pages routing engine.
    `src/lib/site-meta.ts`, which maps an exact known hostname onto that environment's ONE canonical
    origin (`civfix.org` / `www.civfix.org` / `civfix-web.pages.dev` -> `https://civfix.org`;
    `civfix.dev` / `www.civfix.dev` / `staging.civfix-web.pages.dev` -> `https://civfix.dev`), requires
-   https on the default port, and otherwise falls back to `DEFAULT_SITE_URL`. There is no suffix or
+   https on the default port, and otherwise falls back to `PRODUCTION_SITE_URL`. There is no suffix or
    substring rule, and one environment still has exactly one canonical host, so the alias hostnames
    cannot be indexed as duplicates. It never reads `Host`, `X-Forwarded-Host` or any other client-supplied
    header, so the origin cannot be poisoned into a preview; it exists so a staging card points at
