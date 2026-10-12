@@ -134,8 +134,13 @@ describe("exported contract limits are the schema boundaries", () => {
 
   it("SOCIAL_HANDLE_PREFIX has one display prefix per platform", () => {
     expect(Object.keys(SOCIAL_HANDLE_PREFIX).sort()).toEqual([...SOCIAL_PLATFORMS].sort())
-    expect(SOCIAL_HANDLE_PREFIX.tiktok).toBe("tiktok.com/@")
-    expect(SOCIAL_HANDLE_PREFIX.whatsapp).toBe("+")
+    expect(SOCIAL_HANDLE_PREFIX).toEqual({
+      facebook: "facebook.com/",
+      instagram: "instagram.com/",
+      tiktok: "tiktok.com/@",
+      x: "x.com/",
+      whatsapp: "+",
+    })
   })
 
   it("EMAIL_OTP_CODE_LENGTH is the numeric OTP length for sign-in and account deletion", () => {

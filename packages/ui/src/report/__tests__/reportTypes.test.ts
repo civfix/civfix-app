@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 import { REPORT_TYPE_TO_CATEGORY, REPORT_TYPE_VALUES } from "@civfix/shared"
 import { REPORT_TYPES } from "../reportTypes"
+import enums from "../../i18n/locales/en/enums.json"
+import wizard from "../../i18n/locales/en/report-wizard.json"
 
 describe("REPORT_TYPES", () => {
   it("lists the rows in the wizard's display order", () => {
@@ -32,6 +34,18 @@ describe("REPORT_TYPES", () => {
       vegetation: "recycling",
       other: "other",
     })
+  })
+
+  it("pins the English label and sub line, the label doubling as the draft's default title", () => {
+    expect(REPORT_TYPES.map((row) => [enums.reportType[row.id], wizard.types[row.id].sub])).toEqual([
+      ["Dump", "Illegal dumping, bulky items"],
+      ["Encampment", "Unhoused encampment"],
+      ["Graffiti", "Tags, vandalism"],
+      ["Broken infrastructure", "Traffic light, streetlamp, flooding"],
+      ["Pavement distress", "Pothole, bad sidewalk"],
+      ["Overgrown vegetation", "Brush, weeds, blocked path"],
+      ["Other", "Something else"],
+    ])
   })
 
   it("marks only the Other row with the neutral glyph", () => {

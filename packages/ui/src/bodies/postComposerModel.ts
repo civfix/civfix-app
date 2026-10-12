@@ -10,7 +10,7 @@ import type {
 } from "@civfix/shared"
 import type { MentionCandidate } from "../primitives/MentionAutocomplete"
 import { splitPostBodyMentions } from "./postCardModel"
-import type { PostComposerMode } from "./postComposerStore"
+import type { PostComposerMedia, PostComposerMode } from "./postComposerStore"
 
 export type PostComposerAttachmentPanel = "events" | "reports" | null
 
@@ -73,6 +73,11 @@ export function togglePostComposerAttachmentPanel(
   requested: Exclude<PostComposerAttachmentPanel, null>,
 ): PostComposerAttachmentPanel {
   return current === requested ? null : requested
+}
+
+// A failed or unfinished upload has no media row to point at, so it never goes into the post.
+export function readyMediaUploadIds(media: readonly PostComposerMedia[]): string[] {
+  return media.flatMap((item) => (item.status === "ready" && item.uploadId ? [item.uploadId] : []))
 }
 
 export const POST_COMPOSER_ATTACH_CANDIDATE_CAP = 2

@@ -14,7 +14,13 @@ import { AuthorAsChips } from "./AuthorAsChips"
 import { useListTimeAgo } from "./useListTimeAgo"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
-import { activePostMentions, buildComposerQuoteRef, buildPostComposerModel, mergeMention } from "./postComposerModel"
+import {
+  activePostMentions,
+  buildComposerQuoteRef,
+  buildPostComposerModel,
+  mergeMention,
+  readyMediaUploadIds,
+} from "./postComposerModel"
 import { keyboardDismissModeFor } from "./keyboardDismissMode"
 import {
   POST_COMPOSER_MEDIA_CAP,
@@ -139,10 +145,7 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
     setAttachedReportId,
   })
   const { attachPlan, attachedEvent, attachedReport } = attach
-  const mediaUploadIds = useMemo(
-    () => draft.media.flatMap((media) => media.status === "ready" && media.uploadId ? [media.uploadId] : []),
-    [draft.media],
-  )
+  const mediaUploadIds = useMemo(() => readyMediaUploadIds(draft.media), [draft.media])
   const quoteTargetId = mode === "quote" ? targetPostId : undefined
   const quotedPost = usePost(quoteTargetId)
   const quotedRef = useMemo(

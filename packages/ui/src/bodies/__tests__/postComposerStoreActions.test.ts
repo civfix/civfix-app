@@ -6,6 +6,7 @@ import {
   usePostComposerStore,
   type PostComposerMedia,
 } from "../postComposerStore"
+import { readyMediaUploadIds } from "../postComposerModel"
 
 const store = () => usePostComposerStore.getState()
 const draft = () => usePostComposerStore.getState().draft
@@ -108,6 +109,16 @@ describe("postComposerStore media", () => {
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)
     store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b")])
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)
+  })
+
+  it("submits only ready items that carry an upload id", () => {
+    store().setMedia([
+      media("a", { status: "ready", uploadId: "u-a" }),
+      media("b", { status: "ready", uploadId: null }),
+      media("c", { status: "failed", uploadId: "u-c" }),
+      media("d", { status: "uploading", uploadId: "u-d" }),
+    ])
+    expect(readyMediaUploadIds(draft().media)).toEqual(["u-a"])
   })
 })
 
