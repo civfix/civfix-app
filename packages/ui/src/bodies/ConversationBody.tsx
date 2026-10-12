@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable } from "react-native"
+import { View, Pressable, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { PersonDTO, RoomKind } from "@civfix/shared"
 import { space, useLayoutMode, useTheme, focusRingProps, type LayoutMode } from "../theme"
@@ -90,13 +90,25 @@ function PinnedOnlyHeader({ mode, onBack }: { mode: LayoutMode; onBack: () => vo
   )
 }
 
-function TranscriptEmpty({ pinnedOnly, isGroup }: { pinnedOnly: boolean; isGroup: boolean }) {
+// The inverted list flips its empty cell back upright by cloning it with `style` (and measures it with
+// `onLayout`), so both have to reach the root view.
+function TranscriptEmpty({
+  pinnedOnly,
+  isGroup,
+  style,
+  onLayout,
+}: {
+  pinnedOnly: boolean
+  isGroup: boolean
+  style?: StyleProp<ViewStyle>
+  onLayout?: ViewProps["onLayout"]
+}) {
   const styles = useTranscriptStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   if (pinnedOnly) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, style]} onLayout={onLayout}>
         <View style={[styles.emptyIcon, styles.emptyIconMoss]}>
           <Icon icon={iconMap.Pin} size={28} color={th.colors.brand.moss} />
         </View>
@@ -107,7 +119,7 @@ function TranscriptEmpty({ pinnedOnly, isGroup }: { pinnedOnly: boolean; isGroup
     )
   }
   return (
-    <View style={styles.center}>
+    <View style={[styles.center, style]} onLayout={onLayout}>
       <View style={[styles.emptyIcon, styles.emptyIconMoss]}>
         <Icon icon={iconMap.MessageCircle} size={28} color={th.colors.brand.moss} />
       </View>

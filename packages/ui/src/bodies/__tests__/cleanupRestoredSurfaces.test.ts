@@ -1,6 +1,7 @@
 /**
  * Surfaces a refactor campaign changed by accident and that were put back as they shipped: the static
- * People and service-hours loading rows, and the cluster list's raw address line.
+ * People and service-hours loading rows, the cluster list's raw address line, and the chat transcript's
+ * empty state standing upright in its inverted list.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -35,5 +36,14 @@ describe("cluster report rows", () => {
     expect(cluster).toContain(
       "subtitle={report ? report.addr ?? pin.description ?? null : pin.description ?? null}",
     )
+  })
+})
+
+describe("chat transcript empty state", () => {
+  const conversation = read("../ConversationBody.tsx")
+
+  it("hands the inverted list's flip-back style and layout handler to both empty views", () => {
+    expect(conversation.match(/<View style=\{\[styles\.center, style\]\} onLayout=\{onLayout\}>/g)).toHaveLength(2)
+    expect(conversation).toContain("ListEmptyComponent={<TranscriptEmpty pinnedOnly={pinnedOnly} isGroup={isGroup} />}")
   })
 })
