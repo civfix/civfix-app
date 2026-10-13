@@ -108,7 +108,10 @@
     "sign_in_cta_a11y": "Anmelden, um am Chat teilzunehmen",
     "composer_placeholder": "Nachricht schreiben...",
     "view_chat": "Chat ansehen",
-    "view_chat_meta": "{{members}} Mitglieder · {{messages}} Nachrichten",
+    "view_chat_members_one": "{{count}} Mitglied",
+    "view_chat_members_other": "{{count}} Mitglieder",
+    "view_chat_messages_one": "{{count}} Nachricht",
+    "view_chat_messages_other": "{{count}} Nachrichten",
     "view_chat_a11y": "Chat zu dieser Meldung ansehen"
   }
 }

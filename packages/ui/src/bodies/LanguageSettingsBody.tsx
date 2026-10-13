@@ -35,12 +35,15 @@ function LocaleRow({
       <Text style={[styles.rowLabel, selected ? styles.rowLabelSelected : null]} numberOfLines={1}>
         {nativeName}
       </Text>
+      {/* Distinct keys so a deselected row unmounts the labelled check: React Native Android never
+          clears a view's content description when its accessibilityLabel is removed, so a reused
+          view would keep announcing "Selected". */}
       {selected ? (
-        <View style={styles.check} accessibilityLabel={selectedLabel}>
+        <View key="check" style={styles.check} accessibilityLabel={selectedLabel}>
           <Icon icon={iconMap.Check} size={16} color={t.colors.onAccent} />
         </View>
       ) : (
-        <View style={styles.radioEmpty} />
+        <View key="empty" style={styles.radioEmpty} />
       )}
     </Pressable>
   )
