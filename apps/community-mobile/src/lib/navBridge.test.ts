@@ -9,6 +9,7 @@ import {
   bridgeKey,
   bridgeRoute,
   nativeBridgeKey,
+  shellNavigatorMounted,
   stackWithoutBridged,
   type BridgeGuard,
 } from "./navBridge.ts"
@@ -339,4 +340,20 @@ test("the announcement composer stays in the sheet so its draft guard applies", 
   assert.equal(bridgeRoute({ kind: "host-announce", id: "c1" }), null)
   const { actions } = run([{ active: { kind: "host-announce", id: "c1" }, now: 0 }])
   assert.equal(actions[0].type, "none")
+})
+
+test("a cold-start bridge waits until the root layout's Stack is in the navigation state", () => {
+  assert.equal(shellNavigatorMounted(undefined), false)
+  assert.equal(shellNavigatorMounted({ routes: [{}] }), false)
+  assert.equal(shellNavigatorMounted({ index: 0, routes: [{ state: undefined }] }), false)
+  assert.equal(
+    shellNavigatorMounted({ index: 0, routes: [{ state: { index: 0, routes: [{ name: "index" }] } }] }),
+    true,
+  )
+})
+
+test("the focused root route decides, not the first one", () => {
+  const stacked = { index: 1, routes: [{ state: { routes: [{ name: "index" }] } }, {}] }
+  assert.equal(shellNavigatorMounted(stacked), false)
+  assert.equal(shellNavigatorMounted({ ...stacked, index: 0 }), true)
 })
