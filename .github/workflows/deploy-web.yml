@@ -55,8 +55,11 @@ jobs:
     # One derived value decides every environment-specific setting below, and a later step asserts the
     # resolved values agree. Deciding it separately per setting lets one of them pick the wrong
     # environment (a test key on civfix.org, a live key on a public preview) with nothing to catch it.
+    # The GitHub environment is that same decision (the YAML alias below), so a production deploy
+    # always waits for reviewer approval and can never run from a ref other than main or a v* tag.
+    environment: &deploy_env ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'staging' }}
     env:
-      DEPLOY_ENV: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'staging' }}
+      DEPLOY_ENV: *deploy_env
     steps:
       - name: Refuse a deploy from any ref but main or a v* release tag
         run: |
