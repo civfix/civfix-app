@@ -181,6 +181,7 @@ function report(
     following: false,
     media: [],
     mediaPending: 0,
+    mediaRejected: 0,
     linkedEvents: [],
     timeline: [{ status: "submitted", at: createdAt, note: null }],
   }
