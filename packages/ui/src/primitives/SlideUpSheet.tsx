@@ -19,6 +19,7 @@ import { makeThemedStyles, motion, useTheme, webScrimProps } from "../theme"
 import { KeyboardAnchorView } from "../shell/KeyboardAnchorView"
 import { useKeyboardAnchor } from "../shell/useKeyboardAnchor"
 import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
+import { ToastOutlet } from "./Toast"
 import { useModalClosed } from "./useModalClosed"
 import {
   slideUpDragOffset,
@@ -188,6 +189,7 @@ export function SlideUpSheet({
             </Animated.View>
           </KeyboardAnchorView>
         </View>
+        {visible ? <ToastOutlet /> : null}
       </View>
     </Modal>
   )

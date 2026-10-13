@@ -320,7 +320,7 @@ export {
 } from "./pollDraft"
 export type { PollDraft } from "./pollDraft"
 
-export { ToastProvider, useToast } from "./Toast"
+export { ToastOutlet, ToastProvider, useToast } from "./Toast"
 export type { ToastAction, ToastApi, ToastOptions, ToastVariant } from "./Toast"
 export { PostActionBar } from "./PostActionBar"
 export type { PostActionBarProps } from "./PostActionBar"

@@ -99,6 +99,17 @@ export const webCursorColResize: ViewStyle = isWeb
 export const webSelectableText: TextStyle = isWeb ? ({ userSelect: "text" } as TextStyle) : {}
 
 /**
+ * Let a long unbreakable run (a name or handle with no spaces, a URL) break inside its box on web. Browsers
+ * never break inside a word by default, so such a run sets the text's min-content width and pushes a
+ * content-sized container past the viewport. `anywhere` (unlike `break-word`) also lowers that min-content
+ * width, so a shrinking container gets narrow enough for the break to happen; ordinary text still breaks at
+ * spaces. Empty on native, where RN Text already breaks an overlong word.
+ */
+export const webBreakAnywhere: TextStyle = isWeb
+  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)
+  : {}
+
+/**
  * Keep a control's label NON-selectable on web (so dragging across a button does not highlight its text).
  * RNW already defaults Text to none, but button label Text inside a Pressable can inherit selection in
  * some browsers; spread this to be explicit. Empty on native.

@@ -49,6 +49,18 @@ async function drive(run: () => void): Promise<void> {
   await settle()
 }
 
+// jsdom lands `history.go` two timer tasks later, so a fixed wait races it on a loaded box. Waiting for the
+// popstate instead lets the adapter's own listener, registered at mount and so called first, handle it.
+async function driveTraversal(run: () => void): Promise<void> {
+  await act(async () => {
+    const landed = new Promise<void>((resolve) => {
+      window.addEventListener("popstate", () => resolve(), { once: true })
+    })
+    run()
+    await landed
+  })
+}
+
 async function browserBack(): Promise<void> {
   await act(async () => {
     window.history.back()
@@ -290,13 +302,13 @@ describe("in-app Back consumes a history entry instead of appending one", () => 
     expect(depth()).toBe(2)
 
     const lengthBeforeBack = window.history.length
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(path()).toBe("/pin/a/")
     expect(depth()).toBe(1)
     expect(nav().stack).toEqual([PIN_A])
     expect(window.history.length).toBe(lengthBeforeBack)
 
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(path()).toBe("/")
     expect(nav().stack).toEqual([])
   })

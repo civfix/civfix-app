@@ -23,6 +23,7 @@ import {
   SocialLinksRow,
   usePopoverAnchor,
   useToast,
+  ToastOutlet,
   VerifiedBadge,
 } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
@@ -643,6 +644,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
             </View>
           </View>
         </View>
+        {confirmingBlock ? <ToastOutlet /> : null}
       </Modal>
 
       <ReportContentSheet
