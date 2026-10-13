@@ -18,8 +18,8 @@ const { sessionCheck } = await import("./sessionCheck.ts")
 const DEADLINE_MS = 5000
 
 // Each request reports the credential it was sent with, and answers only when the test releases it.
-function holdSessionRequests(): Array<() => void> {
-  const answers: Array<() => void> = []
+function holdSessionRequests(): (() => void)[] {
+  const answers: (() => void)[] = []
   control.session = async () => {
     const sentWith = await getToken()
     await new Promise<void>((resolve) => answers.push(resolve))
