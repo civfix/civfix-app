@@ -108,7 +108,10 @@
     "sign_in_cta_a11y": "Sign in to join the chat",
     "composer_placeholder": "Write a message...",
     "view_chat": "View chat",
-    "view_chat_meta": "{{members}} members · {{messages}} messages",
+    "view_chat_members_one": "{{count}} member",
+    "view_chat_members_other": "{{count}} members",
+    "view_chat_messages_one": "{{count}} message",
+    "view_chat_messages_other": "{{count}} messages",
     "view_chat_a11y": "View the chat for this report"
   }
 }
