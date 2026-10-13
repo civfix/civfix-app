@@ -95,4 +95,12 @@ describe("Toast host", () => {
     expect(TOAST_SOURCE).toContain("const EXIT = motion.menuOut")
     expect(TOAST_SOURCE).toContain("reducedMotion\n    ? { opacity: progress }")
   })
+
+  it("shows the whole message, never clamped, and keeps the action link to one line", () => {
+    const message = TOAST_SOURCE.match(/<Text[^>]*>\s*\{entry\.item\.message\}/)
+    expect(message, "the toast message text").not.toBeNull()
+    expect(message![0]).not.toMatch(/numberOfLines/)
+    expect(message![0]).toContain("style={styles.message}")
+    expect(TOAST_SOURCE).toMatch(/<TextLink[^>]*numberOfLines=\{1\}[^>]*>\s*\{action\.label\}/)
+  })
 })

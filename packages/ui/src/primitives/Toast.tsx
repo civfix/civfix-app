@@ -236,12 +236,7 @@ function ToastCard({
           style={({ pressed }) => [styles.body, pressed ? styles.bodyPressed : null]}
         >
           <Icon icon={iconMap[iconName]} size={16} color={iconColor} />
-          <Text
-            variant="bodyStrong"
-            color={th.colors.text}
-            style={styles.message}
-            numberOfLines={3}
-          >
+          <Text variant="bodyStrong" color={th.colors.text} style={styles.message}>
             {entry.item.message}
           </Text>
         </Pressable>
