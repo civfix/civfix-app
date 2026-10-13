@@ -30,6 +30,7 @@ import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
+import { ToastOutlet } from "./Toast"
 import { useModalClosed } from "./useModalClosed"
 
 const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
@@ -220,6 +221,7 @@ export function ModalCardSheet({
           </View>
         </IosKeyboardAvoidingView>
       </Animated.View>
+      {visible ? <ToastOutlet /> : null}
     </Modal>
   )
 }

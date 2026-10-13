@@ -8,7 +8,7 @@ import { type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
+import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck, useToast } from "../primitives"
 import { LocationPicker, PortraitMapPickStep, useLocationPick, reportPinTarget } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
@@ -157,17 +157,20 @@ function CaptureStep({ mode }: { mode: LayoutMode }) {
       setHint(null)
       try {
         const captured = await produce()
-        if (captured) {
-          if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)
-          else addCapture(captured)
+        if (!captured) return
+        if (await camera.exceedsVideoLimits?.(captured)) {
+          setHint(t("common:media.video_limits"))
+          return
         }
+        if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)
+        else addCapture(captured)
       } catch {
         setHint(t("capture.camera_error"))
       } finally {
         setBusy(false)
       }
     },
-    [busy, startFromCapture, addCapture, t],
+    [busy, camera, startFromCapture, addCapture, t],
   )
 
   const run = useCallback(
@@ -855,7 +858,9 @@ export function ReportFlowBody() {
   const reset = useDraftReportStore((s) => s.reset)
   const mode = useLayoutMode()
   const haptics = useHaptics()
-  const Viewfinder = useCamera().Viewfinder ?? null
+  const camera = useCamera()
+  const Viewfinder = camera.Viewfinder ?? null
+  const toast = useToast()
   const stackNonEmpty = useNavStore((s) => s.stack.length > 0)
   const runActive = useNavStore((s) => s.view === "report")
   const runSurvives = useNavStore((s) => reportRunSurvivesView(s.view))
@@ -1033,11 +1038,18 @@ export function ReportFlowBody() {
     })
   }, [stepOrder])
 
-  const onViewfinderCaptured = useCallback((media: CapturedMedia) => {
-    const store = useDraftReportStore.getState()
-    if (store.draft.media.length === 0) store.startFromCapture(media)
-    else store.addCapture(media)
-  }, [])
+  const onViewfinderCaptured = useCallback(
+    async (media: CapturedMedia) => {
+      if (await camera.exceedsVideoLimits?.(media)) {
+        toast.show(t("common:media.video_limits"), { variant: "error" })
+        return
+      }
+      const store = useDraftReportStore.getState()
+      if (store.draft.media.length === 0) store.startFromCapture(media)
+      else store.addCapture(media)
+    },
+    [camera, toast, t],
+  )
 
   const draftLat = useDraftReportStore((s) => s.draft.lat)
   const draftLng = useDraftReportStore((s) => s.draft.lng)

@@ -18,7 +18,8 @@
     "video": "동영상",
     "image_unavailable": "이미지를 불러올 수 없어요",
     "video_unavailable": "동영상을 불러올 수 없어요",
-    "remove_attachment": "첨부 파일 삭제"
+    "remove_attachment": "첨부 파일 삭제",
+    "video_limits": "동영상은 최대 10초, 1080p까지 올릴 수 있어요. 동영상을 자르거나 civfix 앱에서 촬영해 주세요."
   },
   "verification_code": {
     "label": "인증 코드",

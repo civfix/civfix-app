@@ -49,11 +49,40 @@ async function drive(run: () => void): Promise<void> {
   await settle()
 }
 
-async function browserBack(): Promise<void> {
+const LANDING_LIMIT_MS = 2000
+
+// jsdom lands `history.go` two timer tasks later, so a fixed wait races it on a loaded box. Waiting for the
+// popstates instead lets the adapter's own listener, registered at mount and so called first, handle each
+// one. `landings` counts the follow-up traversal a landing can start (a queued Back, a reconcile onto the
+// entry beneath). The limit turns a landing that never comes into a failure instead of a hung test.
+async function driveTraversal(run: () => void, landings = 1): Promise<void> {
   await act(async () => {
-    window.history.back()
+    let seen = 0
+    let onPop = (): void => {}
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const landed = new Promise<void>((resolve, reject) => {
+      onPop = () => {
+        seen += 1
+        if (seen === landings) resolve()
+      }
+      timer = setTimeout(
+        () => reject(new Error(`expected ${landings} popstate(s), saw ${seen}`)),
+        LANDING_LIMIT_MS,
+      )
+    })
+    window.addEventListener("popstate", onPop)
+    try {
+      run()
+      await landed
+    } finally {
+      clearTimeout(timer)
+      window.removeEventListener("popstate", onPop)
+    }
   })
-  await settle()
+}
+
+async function browserBack(): Promise<void> {
+  await driveTraversal(() => window.history.back())
 }
 
 async function reload(): Promise<void> {
@@ -77,10 +106,7 @@ async function reload(): Promise<void> {
 }
 
 async function browserForward(): Promise<void> {
-  await act(async () => {
-    window.history.forward()
-  })
-  await settle()
+  await driveTraversal(() => window.history.forward())
 }
 
 const PIN_A: DetailEntry = { kind: "pin", id: "a" }
@@ -290,13 +316,13 @@ describe("in-app Back consumes a history entry instead of appending one", () => 
     expect(depth()).toBe(2)
 
     const lengthBeforeBack = window.history.length
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(path()).toBe("/pin/a/")
     expect(depth()).toBe(1)
     expect(nav().stack).toEqual([PIN_A])
     expect(window.history.length).toBe(lengthBeforeBack)
 
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(path()).toBe("/")
     expect(nav().stack).toEqual([])
   })
@@ -328,7 +354,7 @@ describe("lateral opens and dismissals leave nothing resurrectable", () => {
     expect(path()).toBe("/pin/b/")
     expect(depth()).toBe(afterFirst)
 
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/map/")
   })
@@ -339,7 +365,7 @@ describe("lateral opens and dismissals leave nothing resurrectable", () => {
     await drive(() => nav().push(PERSON))
     expect(depth()).toBe(2)
 
-    await drive(() => nav().collapseToParent())
+    await driveTraversal(() => nav().collapseToParent())
     expect(nav().stack).toEqual([])
     expect(depth()).toBe(0)
     expect(path()).toBe("/")
@@ -361,12 +387,12 @@ describe("the report wizard returns to the surface it was launched from", () => 
     await drive(() => nav().selectView("search"))
     expect(depth()).toBe(3)
     const entriesBefore = window.history.length
-    await drive(() => nav().selectView("report"))
+    await driveTraversal(() => nav().selectView("report"))
     expect(depth()).toBe(2)
     expect(window.history.length).toBe(entriesBefore)
     expect(readNavHistory(window.history.state)?.returnDepth).toBe(1)
 
-    await drive(() => nav().leaveReportFlow())
+    await driveTraversal(() => nav().leaveReportFlow())
     expect(nav().view).toBe("events")
     expect(path()).toBe("/cleanups/")
     expect(depth()).toBe(1)
@@ -377,7 +403,7 @@ describe("the report wizard returns to the surface it was launched from", () => 
     await drive(() => nav().selectView("events"))
     await drive(() => nav().selectView("report"))
 
-    await drive(() => nav().finishReportFlow({ kind: "pin", id: "new" }))
+    await driveTraversal(() => nav().finishReportFlow({ kind: "pin", id: "new" }))
     expect(path()).toBe("/pin/new/")
     expect(depth()).toBe(2)
 
@@ -474,7 +500,7 @@ describe("entries with no address are never traversed for", () => {
     expect(depth()).toBe(1)
     expect(path()).toBe("/pin/a/")
 
-    await drive(() => nav().collapseToParent())
+    await driveTraversal(() => nav().collapseToParent())
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/")
     expect(depth()).toBe(0)
@@ -487,11 +513,10 @@ describe("two Backs before the first has landed", () => {
     await drive(() => nav().push(PIN_A))
     await drive(() => nav().push(PERSON))
 
-    await act(async () => {
+    await driveTraversal(() => {
       nav().back()
       nav().back()
-    })
-    await settle()
+    }, 2)
 
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/")
@@ -504,11 +529,10 @@ describe("two Backs before the first has landed", () => {
     await drive(() => nav().push(PERSON))
     dropSecondGoOfEachTask()
 
-    await act(async () => {
+    await driveTraversal(() => {
       nav().back()
       nav().back()
-    })
-    await settle()
+    }, 2)
 
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/")
@@ -588,7 +612,7 @@ describe("transitions that change nothing a URL can address", () => {
     expect(depth()).toBe(2)
     const entriesBefore = window.history.length
 
-    await drive(() => nav().openDetail(CLUSTER))
+    await driveTraversal(() => nav().openDetail(CLUSTER))
     expect(path()).toBe("/map/")
     expect(depth()).toBe(1)
     expect(window.history.length).toBe(entriesBefore)
@@ -632,12 +656,11 @@ describe("a landing reconciles every surface the store gained mid-flight", () =>
     await drive(() => nav().push(PIN_A))
     await drive(() => nav().push(PERSON))
 
-    await act(async () => {
+    await driveTraversal(() => {
       nav().back()
       nav().push(PIN_B)
       nav().push(PERSON_B)
     })
-    await settle()
 
     expect(path()).toBe("/people/p2/")
     expect(depth()).toBe(3)
@@ -657,7 +680,7 @@ describe("a landing reconciles every surface the store gained mid-flight", () =>
     mount()
     expect(depth()).toBe(1)
 
-    await drive(() => nav().collapseToParent())
+    await driveTraversal(() => nav().collapseToParent())
     expect(nav().view).toBe("reports")
     expect(path()).toBe("/reports/")
     expect(depth()).toBe(1)
@@ -678,7 +701,7 @@ describe("a lateral open after a drill-down", () => {
     expect(path()).toBe("/pin/b/")
     expect(depth()).toBe(2)
 
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back(), 2)
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/")
     expect(depth()).toBe(0)
@@ -693,7 +716,7 @@ describe("leaving a view consumes its entry instead of twinning the surface bene
     expect(depth()).toBe(1)
     const entriesBefore = window.history.length
 
-    await drive(() => nav().selectView("home"))
+    await driveTraversal(() => nav().selectView("home"))
     expect(path()).toBe("/")
     expect(depth()).toBe(0)
     expect(nav().view).toBe("home")
@@ -713,7 +736,7 @@ describe("leaving a view consumes its entry instead of twinning the surface bene
     const entriesBefore = window.history.length
 
     await drive(() => nav().setQuery("abc"))
-    await drive(() => nav().selectView("map"))
+    await driveTraversal(() => nav().selectView("map"))
     expect(path()).toBe("/map/")
     expect(depth()).toBe(1)
     expect(window.history.length).toBe(entriesBefore)
@@ -771,7 +794,7 @@ describe("leaving a view consumes its entry instead of twinning the surface bene
     expect(depth()).toBe(1)
 
     await drive(() => nav().setQuery("abc"))
-    await drive(() => nav().selectView("home"))
+    await driveTraversal(() => nav().selectView("home"))
     expect(path()).toBe("/")
     expect(depth()).toBe(0)
 
@@ -807,7 +830,7 @@ describe("a landing carries the live search text and the seq already spent", () 
     const entriesBefore = window.history.length
 
     await drive(() => nav().setQuery("abc"))
-    await drive(() => nav().back())
+    await driveTraversal(() => nav().back())
     expect(path()).toBe("/map/")
     expect(depth()).toBe(1)
     expect(window.history.length).toBe(entriesBefore)
@@ -897,7 +920,7 @@ describe("a reload leaves the next write everything it needs", () => {
     expect(nav().stack).toEqual([PIN_A])
     const entriesBefore = window.history.length
 
-    await drive(() => nav().openDetail(CLUSTER))
+    await driveTraversal(() => nav().openDetail(CLUSTER))
     expect(path()).toBe("/map/")
     expect(depth()).toBe(1)
     expect(window.history.length).toBe(entriesBefore)

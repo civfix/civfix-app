@@ -18,7 +18,8 @@
     "video": "Video",
     "image_unavailable": "Imagen no disponible",
     "video_unavailable": "Video no disponible",
-    "remove_attachment": "Quitar adjunto"
+    "remove_attachment": "Quitar adjunto",
+    "video_limits": "Los videos pueden durar hasta 10 segundos y tener hasta 1080p. Recórtalo o grábalo en la app de civfix."
   },
   "verification_code": {
     "label": "Código de verificación",

@@ -40,7 +40,7 @@ import {
 import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/report-timeline-labels"
 import { timelineEntryRender } from "../primitives/report-timeline-model"
 import { AddressRow } from "./AddressRow"
-import { clampGallerySelection, linkedEventToCleanup } from "./reportDetailModel"
+import { clampGallerySelection, linkedEventToCleanup, refusedGalleryTiles } from "./reportDetailModel"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -365,6 +365,25 @@ function ReportGallery({
   const ready = mediaList.filter((m) => m.status === "ready")
   const ownerPending = mediaList.filter((m) => m.status === "validating")
   const ownerFailed = mediaList.filter((m) => m.status === "rejected" || m.status === "held")
+  const refused = refusedGalleryTiles({
+    ready: ready.length,
+    processing: ownerPending.length + pending,
+    refused: report.mediaRejected ?? 0,
+  })
+  const refusedTiles = Array.from({ length: refused.strip }, (_, i) => (
+    <StatusTile key={`refused-${i}`} kind="rejected" variant="thumb" />
+  ))
+  const refusedStrip =
+    refusedTiles.length > 0 ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.strip}
+        style={styles.stripScroll}
+      >
+        {refusedTiles}
+      </ScrollView>
+    ) : null
 
   const { open } = useLightbox()
   const [selected, setSelected] = useState(0)
@@ -378,7 +397,7 @@ function ReportGallery({
     height: m.height ?? null,
   }))
 
-  const tileCount = ready.length + ownerPending.length + ownerFailed.length + pending
+  const tileCount = ready.length + ownerPending.length + ownerFailed.length + pending + refused.strip
 
   if (!active) {
     if (ownerPending.length > 0 || pending > 0) {
@@ -390,6 +409,7 @@ function ReportGallery({
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
             <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
           </View>
+          {refusedStrip}
         </View>
       )
     }
@@ -398,6 +418,14 @@ function ReportGallery({
       return (
         <View style={styles.gallery}>
           <StatusTile kind={first.status === "rejected" ? "rejected" : "held"} variant="hero" />
+        </View>
+      )
+    }
+    if (refused.hero) {
+      return (
+        <View style={styles.gallery}>
+          <StatusTile kind="rejected" variant="hero" />
+          {refusedStrip}
         </View>
       )
     }
@@ -487,6 +515,7 @@ function ReportGallery({
           {Array.from({ length: pending }, (_, i) => (
             <StatusTile key={`pending-${i}`} kind="processing" variant="thumb" />
           ))}
+          {refusedTiles}
         </ScrollView>
       ) : null}
     </View>

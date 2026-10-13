@@ -163,6 +163,7 @@ export {
   webCursorDefault,
   webCursorColResize,
   webSelectableText,
+  webBreakAnywhere,
   webNoSelect,
   webInputReset,
   webTransition,

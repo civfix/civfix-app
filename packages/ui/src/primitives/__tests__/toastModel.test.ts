@@ -5,10 +5,12 @@ import {
   TOAST_ERROR_MS,
   TOAST_QUIET_MS,
   toastBottomOffset,
+  toastDockFootprint,
   toastDurationMs,
 } from "../toastModel"
 
-const TOAST_SOURCE = readFileSync(new URL("../Toast.tsx", import.meta.url), "utf8")
+const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8")
+const TOAST_SOURCE = read("../Toast.tsx")
 
 describe("toastDurationMs", () => {
   it("keeps success and info short", () => {
@@ -56,6 +58,18 @@ describe("toastBottomOffset", () => {
   })
 })
 
+describe("toastDockFootprint", () => {
+  it("clears the tab bar from the root host", () => {
+    expect(toastDockFootprint("root", 94)).toBe(94)
+  })
+
+  it("drops the tab-bar gap inside a sheet, which covers the tab bar", () => {
+    expect(toastDockFootprint("sheet", 94)).toBe(0)
+    expect(toastBottomOffset(toastDockFootprint("sheet", 94), 34, 12)).toBe(46)
+    expect(toastBottomOffset(toastDockFootprint("sheet", 94), 34, 12, 336)).toBe(348)
+  })
+})
+
 describe("Toast host", () => {
   it("derives the dock footprint from the shell's tab bar store, never a constant", () => {
     expect(TOAST_SOURCE).toContain('import { useTabBarStore } from "../shell/tabBarStore"')
@@ -80,8 +94,15 @@ describe("Toast host", () => {
     expect(TOAST_SOURCE).toContain(
       'const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"',
     )
-    expect(TOAST_SOURCE).toContain("accessibilityLiveRegion={LIVE_REGION}")
-    expect(TOAST_SOURCE).toContain('accessibilityRole="alert"')
+    expect(TOAST_SOURCE).toContain('accessibilityLiveRegion={moved ? "none" : LIVE_REGION}')
+    expect(TOAST_SOURCE).toContain('accessibilityRole={moved ? undefined : "alert"}')
+  })
+
+  it("does not re-announce or replay a toast that moved between hosts", () => {
+    expect(TOAST_SOURCE).toContain("const [moved] = useState(() => shown.has(entry.item.id))")
+    expect(TOAST_SOURCE).toContain("new Animated.Value(moved ? 1 : 0)")
+    expect(TOAST_SOURCE).toContain("shown.add(id)")
+    expect(TOAST_SOURCE).toContain("shown.current.delete(id)")
   })
 
   it("names the dismiss control by the MESSAGE, keeping the affordance in the hint", () => {
@@ -94,5 +115,70 @@ describe("Toast host", () => {
     expect(TOAST_SOURCE).toContain("const ENTER = motion.fadeUp")
     expect(TOAST_SOURCE).toContain("const EXIT = motion.menuOut")
     expect(TOAST_SOURCE).toContain("reducedMotion\n    ? { opacity: progress }")
+  })
+
+  it("clamps the message to exactly 6 lines and keeps the action link to one line", () => {
+    const message = TOAST_SOURCE.match(/<Text[^>]*>\s*\{entry\.item\.message\}/)
+    expect(message, "the toast message text").not.toBeNull()
+    expect(message![0].match(/numberOfLines=\{(\d+)\}/g)).toEqual(["numberOfLines={6}"])
+    expect(message![0]).toContain("style={[styles.message, webBreakAnywhere]}")
+    expect(TOAST_SOURCE).toMatch(/<TextLink[^>]*numberOfLines=\{1\}[^>]*>\s*\{action\.label\}/)
+  })
+})
+
+describe("Toast over an open sheet", () => {
+  it("renders the root host only while no outlet is mounted, so a toast paints once", () => {
+    expect(TOAST_SOURCE).toContain("entries.length > 0 && topOutlet === null")
+    expect(TOAST_SOURCE).toContain('<ToastHost stage={stage} placement="root" />')
+    expect(TOAST_SOURCE).toContain("stage.topOutlet !== seq")
+    expect(TOAST_SOURCE).toContain('<ToastHost stage={stage} placement="sheet" />')
+  })
+
+  it("hands over before paint and lets the newest outlet win", () => {
+    expect(TOAST_SOURCE).toContain("useLayoutEffect(() => register?.(seq), [register, seq])")
+    expect(TOAST_SOURCE).toContain("const [seq] = useState(() => ++outletSeq)")
+    expect(TOAST_SOURCE).toContain("Math.max(...outlets)")
+  })
+
+  it("keeps the overlay's own z-index rather than climbing over the first-run gate and boot splash", () => {
+    expect(TOAST_SOURCE).toContain("zIndex: 80,")
+  })
+
+  it("clears the tab bar only from the root host", () => {
+    expect(TOAST_SOURCE).toContain("toastDockFootprint(placement, tabBarHeight)")
+  })
+
+  it("is mounted as the last child of every open sheet's Modal", () => {
+    expect(read("../ModalCardSheet.tsx")).toMatch(
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/Modal>/,
+    )
+    // Inside the root, not beside it: the root is accessibilityViewIsModal, which hides its siblings.
+    expect(read("../SlideUpSheet.tsx")).toMatch(
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/Modal>/,
+    )
+    expect(read("../../bodies/PersonDetailBody.tsx")).toMatch(
+      /\{confirmingBlock \? <ToastOutlet \/> : null\}\s*<\/Modal>/,
+    )
+  })
+})
+
+describe("Toast card layout", () => {
+  it("breaks an unbreakable message inside the card on web", () => {
+    expect(TOAST_SOURCE).toContain("style={[styles.message, webBreakAnywhere]}")
+    expect(read("../../theme/webAffordances.ts")).toContain(
+      'export const webBreakAnywhere: TextStyle = isWeb\n  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)\n  : {}',
+    )
+  })
+
+  it("never shrinks the action label", () => {
+    expect(TOAST_SOURCE).toMatch(/action: \{\s*flexShrink: 0,/)
+    expect(TOAST_SOURCE).toContain("style={styles.action}")
+  })
+
+  it("holds the icon at 16 px in a non-shrinking box", () => {
+    expect(TOAST_SOURCE).toMatch(
+      /<View style=\{styles\.icon\}>\s*<Icon icon=\{iconMap\[iconName\]\} size=\{16\}/,
+    )
+    expect(TOAST_SOURCE).toMatch(/icon: \{\s*flexShrink: 0,\s*\}/)
   })
 })

@@ -12,6 +12,7 @@ import type {
 } from "@civfix/ui/capabilities"
 import { MAX_VIDEO_SECONDS } from "./cameraSession"
 import { resolveUploadContentType, stripJpegMetadata } from "./mediaBytes"
+import { overVideoDuration } from "./videoLimits"
 import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 export { MAX_VIDEO_SECONDS }
 
@@ -36,6 +37,8 @@ const IMAGE_MAX_DIMENSION = 1920
 const IMAGE_QUALITY = 0.8
 
 const VIDEO_MIN_COMPRESS_MB = 0
+// The media worker serves video at 720p, so compressing to that long edge uploads nothing it would drop.
+const VIDEO_MAX_DIMENSION = 1280
 
 const STALE_TEMP_AGE_MS = 60 * 60_000
 const SWEEP_DELETE_LIMIT = 40
@@ -124,6 +127,7 @@ async function compressMedia(media: CapturedMedia): Promise<string> {
   if (media.kind === "video") {
     return VideoCompressor.compress(media.uri, {
       compressionMethod: "auto",
+      maxSize: VIDEO_MAX_DIMENSION,
       minimumFileSizeForCompress: VIDEO_MIN_COMPRESS_MB,
     })
   }
@@ -197,6 +201,10 @@ export const nativeCamera: CameraCapability = {
       ...(asset.height ? { height: asset.height } : {}),
       ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
     }
+  },
+
+  async exceedsVideoLimits(media: CapturedMedia): Promise<boolean> {
+    return overVideoDuration(media)
   },
 
   async prepareUpload(media: CapturedMedia): Promise<PreparedUpload> {

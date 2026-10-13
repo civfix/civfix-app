@@ -593,6 +593,7 @@ export const useConversationStyles = makeThemedStyles((t) => ({
     gap: 6,
     marginBottom: t.space["2"],
   },
+  composerAttachErrorText: { flexShrink: 1 },
   composerNotice: {
     flexDirection: "row",
     alignItems: "center",

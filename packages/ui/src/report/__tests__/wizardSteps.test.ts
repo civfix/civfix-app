@@ -586,7 +586,7 @@ describe("a landed capture lands on 'Your captures', it does not advance the wiz
   })
 
   it("has the EMBEDDED viewfinder's landing do the same, so both layouts land on the review", () => {
-    const onCaptured = /const onViewfinderCaptured = useCallback\(\(media: CapturedMedia\) => \{[\s\S]*?\}, \[[^\]]*\]\)/.exec(
+    const onCaptured = /const onViewfinderCaptured = useCallback\(\s*async \(media: CapturedMedia\) => \{[\s\S]*?\},\s*\[[^\]]*\],?\s*\)/.exec(
       wizardSource,
     )?.[0]
     expect(onCaptured).toBeTruthy()

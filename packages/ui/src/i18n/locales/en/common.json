@@ -18,7 +18,8 @@
     "video": "Video",
     "image_unavailable": "Image unavailable",
     "video_unavailable": "Video unavailable",
-    "remove_attachment": "Remove attachment"
+    "remove_attachment": "Remove attachment",
+    "video_limits": "Videos can be up to 10 seconds and 1080p. Trim it, or record it in the civfix app."
   },
   "verification_code": {
     "label": "Verification code",
