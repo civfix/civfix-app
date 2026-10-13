@@ -373,6 +373,17 @@ function ReportGallery({
   const refusedTiles = Array.from({ length: refused.strip }, (_, i) => (
     <StatusTile key={`refused-${i}`} kind="rejected" variant="thumb" />
   ))
+  const refusedStrip =
+    refusedTiles.length > 0 ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.strip}
+        style={styles.stripScroll}
+      >
+        {refusedTiles}
+      </ScrollView>
+    ) : null
 
   const { open } = useLightbox()
   const [selected, setSelected] = useState(0)
@@ -398,16 +409,7 @@ function ReportGallery({
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
             <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
           </View>
-          {refusedTiles.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.strip}
-              style={styles.stripScroll}
-            >
-              {refusedTiles}
-            </ScrollView>
-          ) : null}
+          {refusedStrip}
         </View>
       )
     }
@@ -423,6 +425,7 @@ function ReportGallery({
       return (
         <View style={styles.gallery}>
           <StatusTile kind="rejected" variant="hero" />
+          {refusedStrip}
         </View>
       )
     }
