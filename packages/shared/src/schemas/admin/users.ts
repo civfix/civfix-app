@@ -191,7 +191,6 @@ export const FlagUserRequestSchema = z
   .object({
     id: z.string(),
     reason: z.string().max(500).optional(),
-    flagged: z.boolean().optional(),
   })
   .strict()
 export type FlagUserRequest = z.infer<typeof FlagUserRequestSchema>

@@ -2181,9 +2181,8 @@ number.
 **Additive handoff fields, and the order they are adopted in.** Asked for by the backend and admin
 campaigns: `AnalyticsKpi.key` (an open string; the known values are `AnalyticsKpiKey`) and `.unit`,
 `HomeSummaryResponse.degraded`, `MailAttachment.url`, `ModerationItemDTO.status`,
-`UserMessageItemDTO.removedBy`, `DiscoveryContact.bouncedAt` (responses); `flagged` on
-`FlagEventRequest` / `FlagReportRequest` / `FlagUserRequest` and `idempotencyKey` on
-`CreateWalkupRegistrationRequest` (requests); `excludeOrgId` on `AdminUserListQuery`; plus
+`UserMessageItemDTO.removedBy`, `DiscoveryContact.bouncedAt` (responses); `excludeOrgId` on
+`AdminUserListQuery`; plus
 `ADMIN_REPORT_STATUS_BUCKETS`, `GUEST_REGISTRATION_ERROR_FIELD` / `GuestRegistrationRefusalReason`,
 `DISPLAY_NAME_MAX_LENGTH` and the optional `retryCount` / `retryLimit` on `JobHandlerArg`. Every one is
 optional, but the carrying schemas are `.strict()`, which fixes the order:
@@ -2191,10 +2190,6 @@ optional, but the carrying schemas are `.strict()`, which fixes the order:
 - A new field on a strict RESPONSE is adopted by every client before the backend emits it. An older
   client's typed response parse fails on the unknown key, passes the raw body through with one warning
   and loses the schema's defaults for that call.
-- A new field on a strict REQUEST is IMPLEMENTED by the backend before any client sends it. Accepting
-  it is not enough: a backend that bumps the manifest but still toggles would parse `flagged: true` and
-  unflag an already-flagged item, the retry bug the field exists to fix. An older backend answers
-  VALIDATION.
 - `excludeOrgId` rides a non-strict query, so either order is safe; an older backend strips it and
   returns the unfiltered page, so admin keeps its client-side filter until the backend filters.
 
@@ -2228,6 +2223,11 @@ this release does not attempt them; each needs its own coordinated PR:
   backend's route-coverage count, so its adoption is not manifest-only.
 - Tightening `SuggestContactRequestSchema` (email 254, formUrl 2048 http/https, geoid 64; backend
   H-004): a request tightening, not additive.
+- `flagged` on `FlagEventRequest` / `FlagReportRequest` / `FlagUserRequest` (set the marker instead
+  of toggling it) and a client `idempotencyKey` on `CreateWalkupRegistrationRequest`: dropped before
+  0.59.0 published (issue-tracker#154). The backend accepted both and ignored them, so a client that
+  sent `flagged: true` would still have toggled an already-flagged item off. A new field on a strict
+  request ships with the backend change that implements it; an older backend answers VALIDATION.
 - Enum growth: a `DeliveryFailureKind` value, a terminal conflict code, `RegisterOutcome`
   `slot_full` / `slot_not_found` (backend H-010, H-012). Older clients in the field would fail to parse
   the new values.

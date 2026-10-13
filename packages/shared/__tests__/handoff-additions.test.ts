@@ -92,17 +92,21 @@ describe("UserMessageItemDTOSchema removedBy", () => {
   })
 })
 
-describe("flag requests flagged", () => {
+// issue-tracker#154 dropped `flagged` before 0.59.0 published: the backend toggles and ignored it.
+describe("flag requests", () => {
   const schemas = [FlagEventRequestSchema, FlagReportRequestSchema, FlagUserRequestSchema]
 
-  it("still parses a toggle request", () => {
-    for (const schema of schemas) expect(schema.safeParse({ id: "x" }).success).toBe(true)
+  it("parses a toggle request", () => {
+    for (const schema of schemas) {
+      expect(schema.safeParse({ id: "x" }).success).toBe(true)
+      expect(schema.safeParse({ id: "x", reason: "spam" }).success).toBe(true)
+    }
   })
 
-  it("parses an explicit value and rejects a non-boolean", () => {
+  it("rejects flagged", () => {
     for (const schema of schemas) {
-      expect(schema.parse({ id: "x", flagged: false }).flagged).toBe(false)
-      expect(schema.safeParse({ id: "x", flagged: "yes" }).success).toBe(false)
+      expect(schema.safeParse({ id: "x", flagged: true }).success).toBe(false)
+      expect(schema.safeParse({ id: "x", flagged: false }).success).toBe(false)
     }
   })
 })
@@ -219,19 +223,18 @@ describe("HomeSummaryResponseSchema degraded", () => {
   })
 })
 
-describe("CreateWalkupRegistrationRequestSchema idempotencyKey", () => {
+// issue-tracker#154 dropped the client idempotencyKey before 0.59.0 published: the backend dedupes
+// walk-ups on a server time bucket and ignored it.
+describe("CreateWalkupRegistrationRequestSchema", () => {
   const walkup = { id: UUID, name: "Rosa" }
 
-  it("still parses a request without idempotencyKey", () => {
+  it("parses a walk-up", () => {
     expect(CreateWalkupRegistrationRequestSchema.safeParse(walkup).success).toBe(true)
   })
 
-  it("applies the shared idempotency key bounds", () => {
-    const parse = (idempotencyKey: string) =>
-      CreateWalkupRegistrationRequestSchema.safeParse({ ...walkup, idempotencyKey }).success
-    expect(parse("a".repeat(8))).toBe(true)
-    expect(parse("a".repeat(128))).toBe(true)
-    expect(parse("a".repeat(7))).toBe(false)
-    expect(parse("a".repeat(129))).toBe(false)
+  it("rejects idempotencyKey", () => {
+    expect(
+      CreateWalkupRegistrationRequestSchema.safeParse({ ...walkup, idempotencyKey: "a".repeat(16) }).success,
+    ).toBe(false)
   })
 })
