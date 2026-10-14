@@ -11,18 +11,28 @@ const EDITORS = [
   "../settings/DonationLinkEditor.tsx",
 ]
 
+const SHEET = "../settings/SettingsEditorSheet.tsx"
+
 describe("every Settings > Account editor is a row that opens a modal", () => {
-  it.each(EDITORS)("%s renders a SettingsRow and edits inside ModalCardSheet", (rel) => {
-    const src = read(rel)
+  it("the shared editor sheet renders a SettingsRow and edits inside ModalCardSheet", () => {
+    const src = read(SHEET)
     expect(src).toContain("<SettingsRow")
+    expect(src).toContain("onPress={editor.begin}")
     expect(src).toContain("<ModalCardSheet")
-    expect(src).toContain("visible={editing}")
-    expect(src).toContain("onClose={cancel}")
+    expect(src).toContain("visible={editor.editing}")
+    expect(src).toContain("onClose={editor.cancel}")
+    expect(src).toContain("onCommit={onCommit}")
+  })
+
+  it.each(EDITORS)("%s mounts the shared editor sheet with its own commit", (rel) => {
+    const src = read(rel)
+    expect(src).toContain("<SettingsEditorSheet")
+    expect(src).toContain("editor={editor}")
     expect(src).toContain("onCommit={save}")
   })
 
-  it.each(EDITORS)("%s takes the house dialog buttons, not hand-rolled Pressables", (rel) => {
-    const src = read(rel)
+  it("the shared editor sheet takes the house dialog buttons, not hand-rolled Pressables", () => {
+    const src = read(SHEET)
     expect(src).toContain("<SecondaryButton")
     expect(src).toContain("<PrimaryButton")
     expect(src).toContain("loading={saving}")
@@ -30,10 +40,19 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
     expect(src).not.toContain("ActivityIndicator")
   })
 
-  it.each(EDITORS)("%s surfaces the mapped submit error in the dialog's error slot", (rel) => {
+  it.each(EDITORS)("%s hands the sheet its saving and canSave gates", (rel) => {
     const src = read(rel)
-    expect(src).toContain("error={submitError}")
-    expect(src).toContain("dismissLabel=")
+    expect(src).toContain("saving={saving}")
+    expect(src).toContain("canSave={canSave}")
+    expect(src).not.toContain("ActivityIndicator")
+  })
+
+  it("the shared editor sheet surfaces the mapped submit error in the dialog's error slot", () => {
+    expect(read(SHEET)).toContain("error={editor.submitError}")
+  })
+
+  it.each(EDITORS)("%s names the dialog's dismiss label", (rel) => {
+    expect(read(rel)).toContain("dismissLabel=")
   })
 
   it.each(EDITORS)("%s keeps its fields uneditable while a save is in flight", (rel) => {
@@ -62,16 +81,19 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
     const donation = read("../settings/DonationLinkEditor.tsx")
     expect(donation).toContain("commit(normalizeDonationLink(draft))")
     expect(donation).toContain("commit(null)")
-    expect(read("../SettingsAccountBody.tsx")).toContain("donationUrl,")
+    expect(read("../SettingsAccountBody.tsx")).toContain(
+      "(donationUrl: string | null): Promise<void> => saveProfile({ donationUrl })",
+    )
   })
 
   it("keeps the handle cooldown a DISABLED ROW - a locked field has no dialog to open", () => {
     const src = read("../settings/ChangeUsernameEditor.tsx")
-    const locked = src.slice(src.indexOf("if (locked) {"), src.indexOf("return (\n    <>"))
+    const locked = src.slice(src.indexOf("if (locked) {"), src.indexOf("return (\n    <SettingsEditorSheet"))
     expect(locked).toContain("<SettingsRow")
     expect(locked).toContain("disabled")
     expect(locked).toContain('t("handle.cooldown_locked"')
     expect(locked).not.toContain("ModalCardSheet")
+    expect(locked).not.toContain("SettingsEditorSheet")
   })
 
   it("caps the bio at the contract's own maximum rather than a re-typed 500", () => {
@@ -100,12 +122,12 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
   })
 })
 
-describe("the cross-fading Collapsible the editors used to expand through", () => {
+describe("the cross-fading Collapsible primitive", () => {
   it("is gone from the package, primitive and barrel alike", () => {
     const primitives = readdirSync(new URL("../../primitives/", import.meta.url))
     expect(primitives.filter((name) => name.startsWith("Collapsible"))).toEqual([])
     expect(read("../../primitives/index.ts")).not.toContain("Collapsible")
-    for (const rel of EDITORS) expect(read(rel)).not.toContain("Collapsible")
+    for (const rel of [...EDITORS, SHEET]) expect(read(rel)).not.toContain("Collapsible")
   })
 })
 
@@ -121,7 +143,7 @@ describe("the profile is display-only - the bio is edited in Settings > Account"
     expect(VIEW).not.toMatch(/bioEdit|bioSave|bioCancel|bioCount|bioBlock|bioActions|bioBtn/)
   })
 
-  it("drops the bio-editing props the host used to pass", () => {
+  it("takes no bio-editing props from the host", () => {
     expect(VIEW).not.toMatch(/editableBio|onSaveBio|bioSaving/)
     expect(BODY).not.toMatch(/editableBio|onSaveBio|bioSaving/)
   })

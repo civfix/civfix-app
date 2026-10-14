@@ -88,9 +88,8 @@ echo "Wrote .env for target '${target}' (API ${api_url:-unset, resolved at runti
 
 # Bring node_modules into agreement with the lockfile BEFORE bundling anything. The Xcode archive
 # bundles JS straight out of node_modules, and nothing else in the pipeline notices when that is
-# behind: `pnpm-lock.yaml` can say @civfix/ui 0.51.1 while node_modules still holds 0.50.0, and
-# typecheck + tests go green because they resolve the same stale copy. That is how a "latest" archive
-# silently ships week-old @civfix/ui to TestFlight (hit exactly this on 2026-08-11).
+# behind the lockfile: typecheck and tests go green because they resolve the same stale copy, so the
+# archive would silently ship stale dependencies to TestFlight.
 # --frozen-lockfile so this can only correct node_modules, never quietly re-resolve the lockfile.
 echo "Syncing node_modules to pnpm-lock.yaml..."
 (cd ../.. && pnpm install --frozen-lockfile)
@@ -158,12 +157,6 @@ console.log("  buildNumber   " + (cfg.ios && cfg.ios.buildNumber) + "   (iOS)")
 console.log("  versionCode   " + (cfg.android && cfg.android.versionCode) + "    (Android)")
 console.log("  extra.apiUrl  " + (apiUrl === undefined ? "unset (resolved at runtime from the install source)" : JSON.stringify(apiUrl)))
 console.log("  channel       " + JSON.stringify(cfg.updates && cfg.updates.requestHeaders))
-// What will actually be bundled, read off disk - not what package.json asks for.
-for (const dep of ["@civfix/ui", "@civfix/shared"]) {
-  const want = require("./package.json").dependencies[dep]
-  const got = require(require.resolve(dep + "/package.json")).version
-  console.log(("  " + dep).padEnd(18) + got + "   (package.json wants " + want + ")")
-}
 const expected = process.argv[2]
 if ((apiUrl === undefined ? "" : apiUrl) !== expected) {
   const want = expected === "" ? "no apiUrl at all (the runtime install-source split)" : "the string " + expected
@@ -196,6 +189,6 @@ else
   cat <<EOF
 Ready to build. Nothing has been built.
 
-  cd apps/community-mobile/android && ./gradlew :app:bundleRelease   # JDK 20 - see README
+  cd apps/community-mobile/android && ./gradlew :app:bundleRelease   # JDK 22 - see README
 EOF
 fi

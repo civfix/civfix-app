@@ -9,11 +9,8 @@ import {
 } from "@/lib/auth-snapshot"
 
 /**
- * The localStorage snapshot is the optimistic-boot cache that lets the header paint the signed-in avatar
- * before GET /auth/session resolves. These tests run in the node env (no jsdom / no real localStorage),
- * so we stub `window` with a Map-backed fake storage and assert the read path is self-healing: any
- * failure (corrupt JSON, version/shape drift) returns null AND clears the key, and every function is a
- * no-op when `window` is absent (the static-export build has no window).
+ * The node env has no localStorage, so `window` is stubbed with a Map-backed fake. The read path must
+ * be self-healing: any failure returns null and clears the key.
  */
 
 const USER: UserDTO = {
@@ -26,7 +23,6 @@ const USER: UserDTO = {
   createdAt: "2026-01-01T00:00:00.000Z",
 }
 
-/** Minimal Storage stand-in backed by a Map (the subset auth-snapshot touches). */
 function makeStorage() {
   const map = new Map<string, string>()
   return {

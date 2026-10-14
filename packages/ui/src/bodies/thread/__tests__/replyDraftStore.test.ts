@@ -1,8 +1,6 @@
 /**
- * replyDraftStore - the keyed reply draft.
- *
- * The point of this store is that two threads can NEVER see each other's text (the single global
- * `postComposerStore` could, and did), that an unfinalized upload can never be persisted into a draft
+ * The point of this store is that two threads can NEVER see each other's text (unlike the single global
+ * `postComposerStore`), that an unfinalized upload can never be persisted into a draft
  * that would then hold Reply disabled forever, and that the map cannot grow without bound.
  */
 import { beforeEach, describe, expect, it } from "vitest"
@@ -10,8 +8,6 @@ import type { PostComposerMedia } from "../../postComposerStore"
 import {
   EMPTY_REPLY_DRAFT,
   MAX_REPLY_DRAFTS,
-  selectReplyHasPendingMedia,
-  selectReplyMediaUploadIds,
   useReplyDraftStore,
 } from "../replyDraftStore"
 
@@ -67,11 +63,8 @@ describe("replyDraftStore", () => {
     const stored = useReplyDraftStore.getState().get("post-1").media
     expect(stored.map((item) => item.uri)).toEqual(["a", "e"])
     // ...so the "spinner over a permanently disabled Reply button" state is unrepresentable.
-    expect(selectReplyHasPendingMedia("post-1")(useReplyDraftStore.getState())).toBe(false)
-    expect(selectReplyMediaUploadIds("post-1")(useReplyDraftStore.getState())).toEqual([
-      "upload-a",
-      "upload-e",
-    ])
+    expect(stored.some((item) => item.status === "pending" || item.status === "uploading")).toBe(false)
+    expect(stored.map((item) => item.uploadId)).toEqual(["upload-a", "upload-e"])
   })
 
   it("caps the map at MAX_REPLY_DRAFTS, evicting the oldest EMPTY draft first", () => {

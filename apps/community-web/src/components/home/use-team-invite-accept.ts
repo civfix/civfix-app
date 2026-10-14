@@ -1,12 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { AcceptEventTeamInviteRequestSchema, ErrorCode } from "@civfix/shared"
+import { AcceptEventTeamInviteRequestSchema, ErrorCode, toAppError } from "@civfix/shared"
 import { useToast } from "@civfix/ui"
 import { useAcceptEventTeamInvite, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { toAppError } from "@/lib/api"
 import {
   clearStashedTeamInvite,
   readStashedTeamInvite,
@@ -15,14 +14,14 @@ import {
   type EventTeamInviteLink,
 } from "@/lib/team-invite"
 
-const TERMINAL_CODES: readonly string[] = [
+const TERMINAL_CODES: readonly ErrorCode[] = [
   ErrorCode.NOT_FOUND,
   ErrorCode.CONFLICT,
   ErrorCode.FORBIDDEN,
   ErrorCode.VALIDATION,
 ]
 
-function problemKey(code: string): string {
+function problemKey(code: ErrorCode): string {
   if (code === ErrorCode.NOT_FOUND) return "accept.error_invalid"
   if (code === ErrorCode.CONFLICT) return "accept.error_unavailable"
   if (code === ErrorCode.FORBIDDEN) return "accept.error_removed"

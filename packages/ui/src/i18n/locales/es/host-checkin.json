@@ -56,9 +56,7 @@
     "party_other": "{{count}} plazas",
     "undo": "Deshacer",
     "undo_done": "Registro deshecho.",
-    "dismiss": "Descartar",
-    "unknown_token_title": "Entrada no reconocida",
-    "unknown_token_body": "No reconocemos este código para este evento."
+    "dismiss": "Descartar"
   },
   "error": {
     "code_length": "Ese código no parece correcto. Revísalo e inténtalo de nuevo.",

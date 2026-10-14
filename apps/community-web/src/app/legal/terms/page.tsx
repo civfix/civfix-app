@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { LegalPage } from "@/components/legal/legal-page"
+import { LegalContactLink } from "../legal-contact-link"
 
 export const metadata: Metadata = {
   title: "Terms of Service · civfix",
@@ -363,7 +364,7 @@ export default function TermsPage() {
         <h2>18. Contact</h2>
         <p>
           Questions about these Terms? Email{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.
+          <LegalContactLink />.
         </p>
       </section>
     </LegalPage>

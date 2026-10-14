@@ -10,12 +10,12 @@ import {
   useRef,
   useState,
 } from "react"
-import type { ReactNode } from "react"
+import type { FocusEvent, ReactNode } from "react"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
-import { DEFAULT_TOAST_DURATION_MS, resolveUndoDuration, withinCap } from "./toast-policy"
+import { DEFAULT_TOAST_DURATION_MS, withinCap } from "./toast-policy"
 
 export type ToastTone = "default" | "success" | "danger"
 
@@ -24,18 +24,16 @@ export interface ToastOptions {
   description?: string
   tone?: ToastTone
   durationMs?: number
-  countdown?: boolean
-  action?: { label: string; onPress: () => void }
 }
 
 interface ToastItem extends ToastOptions {
   id: string
   expiresAt: number | null
+  pausedRemainingMs: number | null
 }
 
 export interface ConsoleToastApi {
   toast: (options: ToastOptions) => string
-  undoToast: (title: string, onUndo: () => void, options?: Partial<ToastOptions>) => string
   dismiss: (id: string) => void
 }
 
@@ -47,21 +45,6 @@ export function useConsoleToast(): ConsoleToastApi {
   return api
 }
 
-function CountdownLabel({ expiresAt }: { expiresAt: number }) {
-  const [remaining, setRemaining] = useState(() => Math.max(0, expiresAt - Date.now()))
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setRemaining(Math.max(0, expiresAt - Date.now()))
-    }, 250)
-    return () => window.clearInterval(interval)
-  }, [expiresAt])
-  return (
-    <span className="font-mono text-token-12 text-console-toast-ink-dim [font-feature-settings:'tnum']">
-      {Math.ceil(remaining / 1000)}s
-    </span>
-  )
-}
-
 const TONE_ACCENT: Record<ToastTone, string> = {
   default: "bg-console-sky-strong",
   success: "bg-console-moss-strong",
@@ -71,53 +54,117 @@ const TONE_ACCENT: Record<ToastTone, string> = {
 export function ConsoleToastProvider({ children }: { children: ReactNode }) {
   const { t } = useT("host-common")
   const [items, setItems] = useState<ToastItem[]>([])
+  const itemsRef = useRef(items)
+  itemsRef.current = items
   const counter = useRef(0)
-  const timers = useRef<number[]>([])
+  const timers = useRef(new Map<string, number>())
+  const stackRef = useRef<HTMLElement>(null)
+  const pointerInside = useRef(false)
+  const paused = useRef(false)
 
-  useEffect(
-    () => () => {
-      for (const handle of timers.current) window.clearTimeout(handle)
-      timers.current = []
-    },
-    [],
-  )
-
-  const dismiss = useCallback((id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+  useEffect(() => {
+    const pending = timers.current
+    return () => {
+      for (const handle of pending.values()) window.clearTimeout(handle)
+      pending.clear()
+    }
   }, [])
 
-  const toast = useCallback((options: ToastOptions) => {
-    counter.current += 1
-    const id = `console-toast-${counter.current}`
-    const duration = options.durationMs ?? DEFAULT_TOAST_DURATION_MS
-    const item: ToastItem = {
-      ...options,
-      id,
-      expiresAt: duration > 0 ? Date.now() + duration : null,
-    }
-    setItems((prev) => withinCap(prev, item))
-    if (duration > 0) {
+  const clearTimer = useCallback((id: string) => {
+    const handle = timers.current.get(id)
+    if (handle === undefined) return
+    window.clearTimeout(handle)
+    timers.current.delete(id)
+  }, [])
+
+  const schedule = useCallback(
+    (id: string, ms: number) => {
+      clearTimer(id)
       const handle = window.setTimeout(() => {
+        timers.current.delete(id)
         setItems((prev) => prev.filter((existing) => existing.id !== id))
-      }, duration)
-      timers.current.push(handle)
-    }
-    return id
-  }, [])
-
-  const undoToast = useCallback(
-    (title: string, onUndo: () => void, options?: Partial<ToastOptions>) =>
-      toast({
-        title,
-        countdown: true,
-        ...options,
-        durationMs: resolveUndoDuration(options?.durationMs),
-        action: { label: t("action.undo"), onPress: onUndo },
-      }),
-    [toast, t],
+      }, ms)
+      timers.current.set(id, handle)
+    },
+    [clearTimer],
   )
 
-  const api = useMemo(() => ({ toast, undoToast, dismiss }), [toast, undoToast, dismiss])
+  const dismiss = useCallback(
+    (id: string) => {
+      clearTimer(id)
+      setItems((prev) => prev.filter((item) => item.id !== id))
+    },
+    [clearTimer],
+  )
+
+  const setPaused = useCallback(
+    (next: boolean) => {
+      if (next === paused.current) return
+      paused.current = next
+      const now = Date.now()
+      if (next) {
+        for (const handle of timers.current.values()) window.clearTimeout(handle)
+        timers.current.clear()
+        setItems(
+          itemsRef.current.map((item) =>
+            item.expiresAt === null
+              ? item
+              : { ...item, pausedRemainingMs: Math.max(0, item.expiresAt - now) },
+          ),
+        )
+        return
+      }
+      const resumed = itemsRef.current.map((item) =>
+        item.pausedRemainingMs === null
+          ? item
+          : { ...item, expiresAt: now + item.pausedRemainingMs, pausedRemainingMs: null },
+      )
+      for (const item of resumed) {
+        if (item.expiresAt !== null) schedule(item.id, item.expiresAt - now)
+      }
+      setItems(resumed)
+    },
+    [schedule],
+  )
+
+  // Timed toasts hold while the pointer or keyboard focus is on them (WCAG 2.2.1), so one cannot
+  // expire while someone is still reading or operating it.
+  const syncPause = useCallback(
+    (focusTarget: EventTarget | null) => {
+      const stack = stackRef.current
+      const focused = stack !== null && focusTarget instanceof Node && stack.contains(focusTarget)
+      setPaused(pointerInside.current || focused)
+    },
+    [setPaused],
+  )
+
+  useEffect(() => {
+    // A toast removed from under the pointer does not reliably fire pointerleave on the stack, and an
+    // empty stack has no hit area left to leave, so a stale hover would hold every later toast.
+    if (items.length === 0) pointerInside.current = false
+    if (typeof document !== "undefined") syncPause(document.activeElement)
+  }, [items, syncPause])
+
+  const toast = useCallback(
+    (options: ToastOptions) => {
+      counter.current += 1
+      const id = `console-toast-${counter.current}`
+      const duration = options.durationMs ?? DEFAULT_TOAST_DURATION_MS
+      const timed = duration > 0
+      const item: ToastItem = {
+        ...options,
+        id,
+        expiresAt: timed ? Date.now() + duration : null,
+        pausedRemainingMs: timed && paused.current ? duration : null,
+      }
+      setItems((prev) => withinCap(prev, item))
+      if (timed && !paused.current) schedule(id, duration)
+      return id
+    },
+    [schedule],
+  )
+
+  const api = useMemo(() => ({ toast, dismiss }), [toast, dismiss])
 
   const polite = items.filter((item) => item.tone !== "danger")
   const assertive = items.filter((item) => item.tone === "danger")
@@ -139,9 +186,20 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
           </p>
         ))}
       </div>
-      <div
-        aria-hidden
-        className="pointer-events-none fixed bottom-token-4 right-token-4 z-[70] flex w-[min(360px,calc(100vw-32px))] flex-col gap-token-2"
+      <section
+        ref={stackRef}
+        aria-label={t("toast.region")}
+        onPointerEnter={() => {
+          pointerInside.current = true
+          syncPause(document.activeElement)
+        }}
+        onPointerLeave={() => {
+          pointerInside.current = false
+          syncPause(document.activeElement)
+        }}
+        onFocus={(event: FocusEvent) => syncPause(event.target)}
+        onBlur={(event: FocusEvent) => syncPause(event.relatedTarget)}
+        className="pointer-events-none fixed bottom-token-4 right-token-4 z-console-toast flex w-[min(360px,calc(100vw-theme(spacing.token-8)))] flex-col gap-token-2"
       >
         {items.map((item) => (
           <div
@@ -163,21 +221,6 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
                 </p>
               ) : null}
             </div>
-            {item.countdown && item.expiresAt ? (
-              <CountdownLabel expiresAt={item.expiresAt} />
-            ) : null}
-            {item.action ? (
-              <button
-                type="button"
-                onClick={() => {
-                  item.action?.onPress()
-                  dismiss(item.id)
-                }}
-                className="shrink-0 rounded-xs px-token-2 py-1 text-token-13 font-bold underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
-              >
-                {item.action.label}
-              </button>
-            ) : null}
             <button
               type="button"
               aria-label={t("action.dismiss")}
@@ -188,7 +231,7 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
             </button>
           </div>
         ))}
-      </div>
+      </section>
     </ToastContext.Provider>
   )
 }

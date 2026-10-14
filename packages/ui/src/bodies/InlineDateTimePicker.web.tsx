@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useRef } from "react"
 import { useTheme } from "../theme"
 import { iconMap } from "../typography"
-import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
+import { DateTimeFieldRow, fieldRowChrome } from "./DateTimeFieldRow"
+import { InlineDateTimePickerLayout } from "./InlineDateTimePicker.shared"
 import {
   TIME_PICKER_MINUTE_INTERVAL,
   type DateFieldRowProps,
@@ -61,34 +62,25 @@ function useNativeInput() {
     const input = ref.current
     if (input === null) return
     input.focus()
-    input.showPicker?.()
+    try {
+      input.showPicker?.()
+    } catch {
+      // showPicker throws without user activation and inside cross-origin frames. Focus has already
+      // landed on the input, which still opens from the keyboard or a direct click.
+    }
   }, [])
   return { ref, open }
 }
 
-export function DateFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  minDate,
-  label,
-  error,
-  spaced,
-}: DateFieldRowProps) {
+export function DateFieldRow(props: DateFieldRowProps) {
+  const { value, accessibilityLabel, onChange, minDate } = props
   const style = useNativeInputStyle()
   const { ref, open } = useNativeInput()
 
   return (
     <DateTimeFieldRow
       icon={iconMap.Calendar}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={open}
       valueSlot={
         <input
@@ -110,34 +102,15 @@ export function DateFieldRow({
   )
 }
 
-export function TimeFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  day,
-  minTime,
-  maxTime,
-  minuteInterval,
-  suffix,
-  label,
-  error,
-  spaced,
-}: TimeFieldRowProps) {
+export function TimeFieldRow(props: TimeFieldRowProps) {
+  const { value, accessibilityLabel, onChange, day, minTime, maxTime, minuteInterval } = props
   const style = useNativeInputStyle()
   const { ref, open } = useNativeInput()
 
   return (
     <DateTimeFieldRow
       icon={iconMap.Clock}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      suffix={suffix}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={open}
       valueSlot={
         <input

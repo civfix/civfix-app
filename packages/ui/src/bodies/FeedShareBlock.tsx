@@ -1,11 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
+import { useT } from "../i18n"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, Toggle } from "../primitives"
 import { useAuthState, useMyProfile } from "../data"
 import { FEED_CAPTION_MAX, FEED_CAPTION_COUNTER_AT } from "./feedShare"
+
+const ENTRANCE_MS = 180
 
 export interface FeedShareBlockProps {
   enabled: boolean
@@ -116,15 +120,31 @@ export function FeedSharePreview({
 }: FeedSharePreviewProps) {
   const styles = useStyles()
   const t = useTheme()
+  const { t: tc } = useT("common")
+  const reducedMotion = useReducedMotion()
   const [enter] = useState(() => new Animated.Value(0))
   useEffect(() => {
-    Animated.timing(enter, {
+    if (reducedMotion == null) return
+    if (reducedMotion) {
+      enter.stopAnimation()
+      enter.setValue(1)
+      return
+    }
+    const animation = Animated.timing(enter, {
       toValue: 1,
-      duration: 180,
+      duration: ENTRANCE_MS,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start()
-  }, [enter])
+      useNativeDriver: Platform.OS !== "web",
+    })
+    animation.start()
+    return () => animation.stop()
+  }, [enter, reducedMotion])
+  // One interpolation node for the preview's life; building it in render re-attached a fresh node to the
+  // native driver on every caption keystroke.
+  const enterStyle = useMemo(
+    () => ({ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] }),
+    [enter],
+  )
 
   const readOnly = onChangeCaption === undefined
   const overCap = caption.length >= FEED_CAPTION_MAX
@@ -172,7 +192,7 @@ export function FeedSharePreview({
       {!readOnly && caption.length >= FEED_CAPTION_COUNTER_AT ? (
         <Text
           style={[styles.counter, overCap ? styles.counterMax : null]}
-          accessibilityLabel={`${caption.length} / ${FEED_CAPTION_MAX}`}
+          accessibilityLabel={tc("caption_remaining_a11y", { count: FEED_CAPTION_MAX - caption.length })}
         >
           {FEED_CAPTION_MAX - caption.length}
         </Text>
@@ -194,7 +214,7 @@ export function FeedSharePreview({
     <Animated.View
       style={[
         styles.preview,
-        { opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] },
+        enterStyle,
       ]}
     >
       {onPress ? (
@@ -244,7 +264,7 @@ const useStyles = makeThemedStyles((t) => ({
 
   preview: {
     padding: t.space["3"],
-    borderRadius: 20,
+    borderRadius: t.radius.lg,
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -262,15 +282,15 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: t.space["2"],
     paddingHorizontal: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   captionRead: {
     marginTop: t.space["2"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
   },
@@ -298,7 +318,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    minHeight: 64,
+    minHeight: t.space["16"],
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -306,7 +326,7 @@ const useStyles = makeThemedStyles((t) => ({
     overflow: "hidden",
   },
   eventGlyph: {
-    width: 64,
+    width: t.space["16"],
     alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "center",
@@ -315,7 +335,7 @@ const useStyles = makeThemedStyles((t) => ({
   eventBody: {
     flex: 1,
     minWidth: 0,
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"] + 2,
     justifyContent: "center",

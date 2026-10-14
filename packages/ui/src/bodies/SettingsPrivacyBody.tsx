@@ -9,8 +9,14 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
+  useToast,
 } from "../primitives"
-import { useAuthState, useRequireAuth, useUpdatePrivacySettings } from "../data"
+import {
+  useAuthState,
+  useRequireAuth,
+  useUpdatePrivacySettings,
+  type PrivacySettingsVars,
+} from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -21,9 +27,19 @@ export function SettingsPrivacyBody() {
   const { isAuthenticated, isPending, user } = useAuthState()
   const requireAuth = useRequireAuth()
   const updatePrivacy = useUpdatePrivacySettings()
+  const toast = useToast()
 
   const allowDms = user?.allowDirectMessages ?? true
   const showHours = user?.showVolunteerHours === true
+
+  const savePrivacy = useCallback(
+    (next: PrivacySettingsVars) => {
+      updatePrivacy.mutate(next, {
+        onError: () => toast.show(t("save_error"), { variant: "error" }),
+      })
+    },
+    [updatePrivacy, toast, t],
+  )
 
   const openBlocked = useCallback(() => {
     useNavStore.getState().push({ kind: "blocked" })
@@ -73,14 +89,14 @@ export function SettingsPrivacyBody() {
         <SettingsRow
           label={t("allowDms.label")}
           sub={t("allowDms.helper")}
-          toggle={{ value: allowDms, onValueChange: (next) => updatePrivacy.mutate(next) }}
+          toggle={{ value: allowDms, onValueChange: (next) => savePrivacy(next) }}
         />
         <SettingsRow
           label={t("showHours.label")}
           sub={t("showHours.helper")}
           toggle={{
             value: showHours,
-            onValueChange: (next) => updatePrivacy.mutate({ showVolunteerHours: next }),
+            onValueChange: (next) => savePrivacy({ showVolunteerHours: next }),
           }}
         />
       </SettingsSection>

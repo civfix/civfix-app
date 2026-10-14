@@ -1,21 +1,18 @@
 import type { TFunction } from "i18next"
 import type { PostCounts, PostDTO } from "@civfix/shared"
+import { clamp } from "../../math/clamp"
 
 
-export const THREAD_HEADER_H = 52
+const THREAD_HEADER_H = 52
 export const MIN_THREAD_VISIBLE = 132
 export const REPLY_SURFACE_MIN = 96
-export const REPLY_CHROME_FALLBACK = 92
-export const REPLY_THUMBS_H = 72
+const REPLY_CHROME_FALLBACK = 92
+const REPLY_THUMBS_H = 72
 export const REPLY_INPUT_MIN = 40
 export const REPLY_INPUT_MAX_CAP = 132
-export const REPLY_TRAY_MIN = 96
-export const REPLY_TRAY_MAX_CAP = 168
-export const REPLY_SURFACE_FRACTION = 0.62
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
+const REPLY_TRAY_MIN = 96
+const REPLY_TRAY_MAX_CAP = 168
+const REPLY_SURFACE_FRACTION = 0.62
 
 export interface ReplyComposerHeightPlan {
   available: number
@@ -141,6 +138,10 @@ const OPTIMISTIC_PREFIX = "optimistic-"
 
 export function isOptimisticPostId(id: string): boolean {
   return id.startsWith(OPTIMISTIC_PREFIX)
+}
+
+export function optimisticPostId(now: number): string {
+  return `${OPTIMISTIC_PREFIX}${now}`
 }
 
 export interface ThreadRowPost {

@@ -6,8 +6,8 @@ export type CsvRow = readonly CsvValue[]
 
 function escapeCell(value: CsvValue): string {
   if (value === null || value === undefined) return ""
-  const text = typeof value === "boolean" ? (value ? "true" : "false") : String(value)
-  const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text
+  if (typeof value !== "string") return String(value)
+  const guarded = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value
   if (/[",\n\r]/.test(guarded)) return `"${guarded.replace(/"/g, '""')}"`
   return guarded
 }

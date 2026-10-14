@@ -16,13 +16,13 @@ import {
   webNoSelect,
   focusRingProps,
   useLayoutMode,
+  type Theme,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
-import { buildRsvpPillLayoutPlan, rsvpPillState } from "./rsvpPillModel"
+import { buildRsvpPillLayoutPlan, rsvpPillState, type RsvpPillState } from "./rsvpPillModel"
 import { POP_ENABLED, usePopScale } from "./usePopScale"
-export { buildRsvpPillLayoutPlan } from "./rsvpPillModel"
 
 export interface RsvpPillProps {
   going: boolean
@@ -34,6 +34,17 @@ export interface RsvpPillProps {
   style?: StyleProp<ViewStyle>
   fill?: boolean
   onSignedOutPress?: () => void
+}
+
+function pillForeground(pillState: RsvpPillState, th: Theme): string {
+  switch (pillState) {
+    case "ended":
+      return th.colors.textMuted
+    case "going":
+      return th.colors.moss["700"]
+    case "rsvp":
+      return th.colors.onAccent
+  }
 }
 
 export function RsvpPill({
@@ -67,16 +78,10 @@ export function RsvpPill({
 
   const popScale = usePopScale(going)
 
-  const state = rsvpPillState({ going, ended })
+  const pillState = rsvpPillState({ going, ended })
+  const fg = pillForeground(pillState, th)
 
-  const fg =
-    state === "ended"
-      ? th.colors.textMuted
-      : state === "going"
-        ? th.colors.moss["700"]
-        : th.colors.onAccent
-
-  if (state === "ended") {
+  if (pillState === "ended") {
     return (
       <View
         accessibilityRole="text"
@@ -199,10 +204,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   label: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
   },
   labelSm: {
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
   },
   hovered: {
     opacity: 0.92,

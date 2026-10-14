@@ -46,6 +46,7 @@ import {
   toastBottomOffset,
   toastDockFootprint,
   toastDurationMs,
+  toastLiveSemantics,
   type ToastPlacement,
 } from "./toastModel"
 
@@ -55,7 +56,7 @@ export type { ToastAction, ToastApi, ToastOptions, ToastVariant }
 const ENTER = motion.fadeUp
 const EXIT = motion.menuOut
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
-const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
+const IS_WEB = Platform.OS === "web"
 
 const VARIANT_ICON: Record<ToastVariant, IconName> = {
   success: "CheckCircle2",
@@ -94,6 +95,7 @@ interface ToastStage {
   shown: Set<number>
   register: (seq: number) => () => void
   onDismiss: (id: number) => void
+  onHold: (id: number, held: boolean) => void
 }
 
 const ToastStageContext = createContext<ToastStage | null>(null)
@@ -105,6 +107,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const nextId = useRef(0)
   const currentId = useRef<number | null>(null)
   const timers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
+  const durations = useRef<Map<number, number>>(new Map())
   const shown = useRef<Set<number>>(new Set())
   const [outlets, setOutlets] = useState<number[]>([])
 
@@ -118,6 +121,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const remove = useCallback(
     (id: number) => {
       clearTimer(id)
+      durations.current.delete(id)
       shown.current.delete(id)
       setEntries((prev) => prev.filter((entry) => entry.item.id !== id))
     },
@@ -148,13 +152,33 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       if (previous !== null) retire(previous)
       currentId.current = id
       setEntries((prev) => [...prev, { item: { id, message, variant, action }, phase: "in" }])
+      const duration = toastDurationMs(variant, action !== null, opts?.durationMs)
+      durations.current.set(id, duration)
       timers.current.set(
         id,
-        setTimeout(() => retire(id), toastDurationMs(variant, action !== null, opts?.durationMs)),
+        setTimeout(() => retire(id), duration),
       )
       if (Platform.OS !== "web") AccessibilityInfo.announceForAccessibility(message)
     },
     [retire],
+  )
+
+  // WCAG 2.2.1: a toast the viewer is pointing at or has focused (to reach its action) does not time out.
+  const hold = useCallback(
+    (id: number, held: boolean) => {
+      if (currentId.current !== id) return
+      if (held) {
+        clearTimer(id)
+        return
+      }
+      const duration = durations.current.get(id)
+      if (timers.current.has(id) || duration === undefined) return
+      timers.current.set(
+        id,
+        setTimeout(() => retire(id), duration),
+      )
+    },
+    [clearTimer, retire],
   )
 
   const timersRef = timers
@@ -174,8 +198,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [])
   const topOutlet = outlets.length > 0 ? Math.max(...outlets) : null
   const stage = useMemo<ToastStage>(
-    () => ({ entries, topOutlet, shown: shown.current, register, onDismiss: retire }),
-    [entries, topOutlet, register, retire],
+    () => ({ entries, topOutlet, shown: shown.current, register, onDismiss: retire, onHold: hold }),
+    [entries, topOutlet, register, retire, hold],
   )
 
   return (
@@ -232,6 +256,7 @@ function ToastHost({ stage, placement }: { stage: ToastStage; placement: ToastPl
           offset={offset}
           shown={stage.shown}
           onDismiss={stage.onDismiss}
+          onHold={stage.onHold}
         />
       ))}
     </View>
@@ -243,11 +268,13 @@ function ToastCard({
   offset,
   shown,
   onDismiss,
+  onHold,
 }: {
   entry: ToastEntry
   offset: number
   shown: Set<number>
   onDismiss: (id: number) => void
+  onHold: (id: number, held: boolean) => void
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -262,6 +289,14 @@ function ToastCard({
   const iconColor = variantColor(entry.item.variant, th)
   const action = entry.item.action
   const id = entry.item.id
+  const live = toastLiveSemantics(entry.item.variant, IS_WEB)
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const held = hovered || focused
+
+  useEffect(() => {
+    onHold(id, held)
+  }, [held, id, onHold])
 
   useEffect(() => {
     shown.add(id)
@@ -303,8 +338,12 @@ function ToastCard({
     <Animated.View style={[styles.slot, { bottom: offset }, motionStyle]} pointerEvents="box-none">
       <View
         style={styles.card}
-        accessibilityRole={moved ? undefined : "alert"}
-        accessibilityLiveRegion={moved ? "none" : LIVE_REGION}
+        role={moved ? undefined : live.role}
+        accessibilityLiveRegion={moved ? "none" : live.liveRegion}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       >
         <Pressable
           accessibilityRole="button"

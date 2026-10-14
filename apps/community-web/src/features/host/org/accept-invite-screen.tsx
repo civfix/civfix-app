@@ -1,9 +1,9 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Building2, CalendarDays, CircleAlert, MailOpen } from "lucide-react"
+import { CircleAlert, MailOpen } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { AcceptOrganizationInviteRequestSchema, ErrorCode } from "@civfix/shared"
+import { AcceptOrganizationInviteRequestSchema, ErrorCode, toAppError } from "@civfix/shared"
 import type { AcceptOrganizationInviteResponse } from "@civfix/shared"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
@@ -11,11 +11,11 @@ import { useT } from "@civfix/ui/i18n"
 import { hrefForRoute } from "@/components/console/route"
 import { ConsoleButton } from "@/components/console/button"
 import { useConsoleToast } from "@/components/console/overlay/toast"
-import { toAppError } from "@/lib/api"
 
 import { ConsoleShell } from "../layout/console-shell"
 import { Breadcrumbs } from "../layout/breadcrumbs"
-import type { ConsoleNavItem } from "../layout/nav-items"
+import { useConsoleHomeNav } from "../layout/home-nav"
+import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import { useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateOrg, upsertMyOrganization } from "../console-invalidate"
@@ -114,32 +114,14 @@ export function AcceptInviteScreen({ token: routeToken }: AcceptInviteScreenProp
     go({ kind: "portfolio" })
   }
 
-  const navItems = useMemo<ConsoleNavItem[]>(() => {
-    const items: ConsoleNavItem[] = [
-      {
-        id: "portfolio",
-        label: t("nav.events"),
-        icon: CalendarDays,
-        href: hrefForRoute({ kind: "portfolio" }),
-      },
-    ]
-    for (const org of orgs.data ?? []) {
-      items.push({
-        id: `org:${org.id}`,
-        label: org.name,
-        icon: Building2,
-        href: hrefForRoute({ kind: "org", orgId: org.id, section: "overview" }),
-      })
-    }
-    return items
-  }, [orgs.data, t])
+  const navItems = useConsoleHomeNav(orgs.data, { portfolio: t("nav.events") })
 
   const title = t("accept.title", { defaultValue: "Organization invitation" })
 
   return (
     <ConsoleShell
       navItems={navItems}
-      bottomTabs={navItems.slice(0, 5)}
+      bottomTabs={navItems.slice(0, MAX_BOTTOM_TABS)}
       activeId={null}
       title={title}
       breadcrumbs={

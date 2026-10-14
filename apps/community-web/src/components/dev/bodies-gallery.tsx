@@ -1,6 +1,5 @@
 "use client"
 
-
 import React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
 import type { ApiClient } from "@civfix/shared/client"
@@ -15,15 +14,14 @@ import type {
   NotificationPrefsDTO,
   MarkReadResponse,
   UpdateSettingsResponse,
-  UserDTO,
   ListThreadsResponse,
   ChatHistoryResponse,
-  ChatMessageDTO,
   JurisdictionDTO,
   ReportClusterResponse,
   PostDTO,
 } from "@civfix/shared"
 import type { CleanupAttendeesResponse } from "@civfix/shared"
+import { MS_PER_DAY, MS_PER_MINUTE } from "@civfix/shared"
 import type {
   EventHoursResponse,
   EventSlotDTO,
@@ -81,7 +79,20 @@ import {
   pendingForever,
   portfolioOverrides,
 } from "./dashboard-fixtures"
-
+import {
+  GALLERY_LEADERBOARD_PODIUM,
+  GALLERY_MY_PROFILE,
+  GALLERY_NOTIFICATIONS,
+  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_SEARCH_RESULTS,
+  GALLERY_VIEWER,
+  daysAgo,
+  galleryChatHistory,
+  galleryThreads,
+  hoursAgo,
+  isoFromNow,
+  makeCannedApi,
+} from "./fixtures"
 
 const ORGANIZER = {
   id: "p-ann",
@@ -96,7 +107,7 @@ const ORGANIZER = {
 }
 
 function event(id: string, title: string, daysAgo: number, organizerId: string): CleanupDTO {
-  const scheduledAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+  const scheduledAt = isoFromNow(-daysAgo * MS_PER_DAY)
   return {
     id,
     title,
@@ -142,44 +153,24 @@ const PERSON_PROFILE: UserProfileDTO = {
 }
 
 const MY_PROFILE: UserProfileDTO = {
-  id: "me",
-  name: "Sam Okafor",
-  handle: "samok",
-  bio: "Reporting potholes and joining neighborhood cleanups around the Mission.",
-  avatar: null,
-  avatarUrl: null,
-  followers: 42,
-  following: 31,
-  isFollowing: false,
+  ...GALLERY_MY_PROFILE,
   pastEvents: [
     event("e3", "24th St planter day", 4, "me"),
     event("e4", "Bayview shoreline cleanup", 14, "p-ann"),
   ],
-  stats: { reports: 5, fixed: 3, cleanups: 3 },
-  volunteerHours: 12.5,
-  showVolunteerHours: true,
 }
-
-const SEARCH_RESULTS: SearchUsersResponse = {
-  results: [
-    { id: "p-ann", handle: "annrivera", displayName: "Ann Rivera", avatar: null, avatarUrl: null },
-    { id: "p-lee", handle: "leetran", displayName: "Lee Tran", avatar: null, avatarUrl: null },
-    { id: "p-mei", handle: "meiwong", displayName: "Mei Wong", avatar: null, avatarUrl: null },
-  ],
-}
-
 
 const LINKED_EVENTS = [
   {
     id: "e1",
     title: "Creekside litter sweep",
     eventKind: "cleanup",
-    scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    scheduledAt: isoFromNow(2 * MS_PER_DAY),
     lat: 37.77,
     lng: -122.42,
     going: 8,
     organizer: ORGANIZER,
-    linkedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    linkedAt: daysAgo(1),
   },
 ] as ReportDTO["linkedEvents"]
 
@@ -196,7 +187,7 @@ function report(
   status: ReportDTO["status"],
   opts: Partial<ReportDTO> = {},
 ): ReportDTO {
-  const createdAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  const createdAt = daysAgo(3)
   return {
     id,
     category,
@@ -208,7 +199,7 @@ function report(
     visibility: "public",
     lat: 37.7599,
     lng: -122.4148,
-    geomSource: "user",
+    geomSource: "manual",
     createdAt,
     publishedAt: status === "submitted" ? null : createdAt,
     mine: true,
@@ -218,7 +209,7 @@ function report(
     timeline: [
       { status: "submitted", at: createdAt, note: null },
       ...(status !== "submitted"
-        ? [{ status, at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), note: "City crew assigned to inspect the site." }]
+        ? [{ status, at: daysAgo(1), note: "City crew assigned to inspect the site." }]
         : []),
     ],
     ...opts,
@@ -254,53 +245,25 @@ const REPORT_DETAIL: ReportDTO = report("r-pothole", "hazard", "Deep pothole on 
 
 const NOTIFICATIONS: ListNotificationsResponse = {
   items: [
-    {
-      id: "n1",
-      type: "report_update",
-      title: "Your pothole report is in progress",
-      body: "The city crew has been assigned to inspect the site this week.",
-      read: false,
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      link: "/pin/r-pothole",
-    },
-    {
-      id: "n2",
-      type: "cleanup_reminder",
-      title: "Creekside litter sweep is tomorrow",
-      body: "Don't forget gloves - meet at the Dolores Park gate at 9am.",
-      read: true,
-      createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
-      link: "/cleanups/e1",
-    },
+    ...GALLERY_NOTIFICATIONS,
     {
       id: "n3",
       type: "new_follower",
       title: "Ann Rivera started following you",
       body: null,
       read: true,
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: daysAgo(3),
       link: "/people/p-ann",
     },
   ],
   nextCursor: null,
 }
 
-const NOTIFICATION_PREFS: NotificationPrefsDTO = {
-  push: true,
-  mentions: true,
-  cleanupChat: true,
-  reportUpdates: true,
-  follows: false,
-  postInteractions: true,
-  hostBroadcasts: true,
-  quietHours: { start: "22:00", end: "07:00" },
-}
-
 const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
   items: [
     {
       ...event("e1", "Creekside litter sweep", -2, "p-ann"),
-      scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAt: isoFromNow(2 * MS_PER_DAY),
       status: "upcoming",
       joined: true,
       going: 8,
@@ -309,7 +272,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     {
       ...event("e2", "Mission mural touch-up", -2, "p-lee"),
       organizer: { ...ORGANIZER, id: "p-lee", name: "Lee Tran", handle: "leetran" },
-      scheduledAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAt: isoFromNow(5 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 14,
@@ -318,7 +281,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     {
       ...event("e5", "Dolores Park planting", -2, "p-mei"),
       organizer: { ...ORGANIZER, id: "p-mei", name: "Mei Wong", handle: "meiwong" },
-      scheduledAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAt: isoFromNow(6 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 5,
@@ -326,7 +289,7 @@ const NEARBY_CLEANUPS: { items: CleanupDTO[]; nextCursor: string | null } = {
     },
     {
       ...event("e6", "Bayview shoreline sweep", -2, "p-ann"),
-      scheduledAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+      scheduledAt: isoFromNow(8 * MS_PER_DAY),
       status: "upcoming",
       joined: false,
       going: 21,
@@ -358,7 +321,7 @@ const FEED_POSTS: PostDTO[] = [
     author: ORGANIZER,
     kind: "post",
     body: "We are meeting by the east gate Saturday morning. Come help us reset the creek path before summer.",
-    createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+    createdAt: isoFromNow(-35 * MS_PER_MINUTE),
     event: {
       id: "e1",
       title: "Creekside litter sweep",
@@ -369,7 +332,7 @@ const FEED_POSTS: PostDTO[] = [
       lng: NEARBY_CLEANUPS.items[0]!.lng,
       going: 8,
       organizer: ORGANIZER,
-      linkedAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+      linkedAt: isoFromNow(-35 * MS_PER_MINUTE),
     },
     report: null,
     repostOf: null,
@@ -380,7 +343,7 @@ const FEED_POSTS: PostDTO[] = [
     author: { ...ORGANIZER, id: "p-lee", name: "Lee Tran", handle: "leetran" },
     kind: "post",
     body: "Fix confirmed: the overflowing bin at the Mission stop was cleared this morning.",
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    createdAt: hoursAgo(3),
     counts: { likes: 41, reposts: 12, replies: 6, saves: 9 },
     viewer: { liked: true, reposted: false, saved: true },
     event: null,
@@ -393,7 +356,7 @@ const FEED_POSTS: PostDTO[] = [
       lng: -122.416,
       addr: "24th St & Mission St, San Francisco, CA",
       thumbUrl: null,
-      linkedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      linkedAt: hoursAgo(3),
     },
     repostOf: null,
   },
@@ -403,7 +366,7 @@ const FEED_POSTS: PostDTO[] = [
     author: MY_PROFILE,
     kind: "quote",
     body: "This is what fast neighborhood coordination looks like. Thanks @annrivera and everyone who joined.",
-    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    createdAt: hoursAgo(8),
     mentions: [{ id: "p-ann", handle: "annrivera", displayName: "Ann Rivera" }],
     event: null,
     report: null,
@@ -413,7 +376,7 @@ const FEED_POSTS: PostDTO[] = [
       kind: "post",
       media: [],
       excerpt: "We are meeting by the east gate Saturday morning.",
-      createdAt: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(),
+      createdAt: hoursAgo(9),
     },
   },
 ]
@@ -428,7 +391,7 @@ const LINKED_REPORTS = [
     lng: -122.4148,
     addr: "2401 Mission St, San Francisco, CA",
     thumbUrl: null,
-    linkedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    linkedAt: daysAgo(1),
   },
   {
     id: "r-trash",
@@ -439,7 +402,7 @@ const LINKED_REPORTS = [
     lng: -122.416,
     addr: "Mission & 22nd",
     thumbUrl: null,
-    linkedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    linkedAt: hoursAgo(12),
   },
 ] as CleanupDTO["linkedReports"]
 
@@ -448,7 +411,7 @@ const CLEANUP_DETAIL: CleanupDTO = {
   eventKind: "cleanup",
   description:
     "Join us for a morning sweep along the creek path. We will tackle the litter that washed up after the rain, then grab coffee. Newcomers welcome - tools provided if you do not have your own.",
-  scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+  scheduledAt: isoFromNow(2 * MS_PER_DAY),
   status: "upcoming",
   joined: false,
   going: 8,
@@ -457,7 +420,6 @@ const CLEANUP_DETAIL: CleanupDTO = {
   address: "Boathouse dock, Echo Park Lake",
   linkedReports: LINKED_REPORTS,
 } as CleanupDTO
-
 
 const SLOTS: EventSlotDTO[] = [
   {
@@ -477,7 +439,7 @@ const EDIT_CLEANUP_DETAIL: CleanupDTO = {
   ...event("e-mine", "24th St planter day", -3, "me"),
   eventKind: "cleanup",
   description: "We are refreshing the sidewalk planters along 24th St. Tools and soil provided.",
-  scheduledAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+  scheduledAt: isoFromNow(6 * MS_PER_DAY),
   status: "upcoming",
   joined: false,
   going: 5,
@@ -508,7 +470,7 @@ const READY_CLEANUP: CleanupDTO = {
   ...EDIT_CLEANUP_DETAIL,
   id: "e-ready",
   title: "Bayview shoreline cleanup",
-  scheduledAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+  scheduledAt: hoursAgo(3),
   slots: [],
 }
 
@@ -516,7 +478,7 @@ const DONE_CLEANUP: CleanupDTO = {
   ...EDIT_CLEANUP_DETAIL,
   id: "e-done",
   status: "done",
-  scheduledAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+  scheduledAt: daysAgo(1),
   slots: [],
 }
 
@@ -530,77 +492,14 @@ const DONE_ATTENDED_CLEANUP: CleanupDTO = {
   ...CLEANUP_DETAIL,
   id: "e-done-attended",
   status: "done",
-  scheduledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  scheduledAt: daysAgo(2),
   joined: true,
   slots: [],
 }
 
+const THREADS = galleryThreads(ORGANIZER)
 
-const THREADS: ListThreadsResponse = {
-  items: [
-    {
-      id: "th-crew",
-      kind: "cleanup",
-      title: "Creekside litter sweep",
-      refId: "e1",
-      last: "Bring gloves - we have extra bags at the gate.",
-      lastFromMe: false,
-      ago: "2h",
-      unread: 3,
-      members: 8,
-      muted: false,
-    },
-    {
-      id: "th-dm",
-      kind: "dm",
-      title: "Ann Rivera",
-      refId: "dm-ann",
-      peer: ORGANIZER,
-      last: "Thanks for joining Saturday!",
-      lastFromMe: true,
-      ago: "1d",
-      unread: 0,
-      members: 0,
-      muted: false,
-    },
-  ],
-  nextCursor: null,
-}
-
-function message(
-  id: string,
-  roomId: string,
-  fromId: string,
-  fromName: string,
-  body: string,
-  minsAgo: number,
-): ChatMessageDTO {
-  return {
-    id,
-    cleanupId: roomId,
-    from: {
-      id: fromId,
-      name: fromName,
-      avatar: null,
-      followers: 0,
-      following: 0,
-      isFollowing: false,
-    },
-    body,
-    kind: "text",
-    createdAt: new Date(Date.now() - minsAgo * 60 * 1000).toISOString(),
-  } as ChatMessageDTO
-}
-
-const CHAT_HISTORY: ChatHistoryResponse = {
-  items: [
-    message("m1", "e1", "p-ann", "Ann Rivera", "Morning! Meeting at the Dolores Park gate at 9.", 180),
-    message("m2", "e1", "p-lee", "Lee Tran", "On my way - bringing a wagon for the heavy bags.", 150),
-    message("m3", "e1", "me", "Sam Okafor", "Nice. I have grabbers for four people.", 120),
-    message("m4", "e1", "p-ann", "Ann Rivera", "Bring gloves - we have extra bags at the gate.", 90),
-  ],
-  nextCursor: null,
-}
+const CHAT_HISTORY = galleryChatHistory("e1")
 
 const CLEANUP_ATTENDEES: CleanupAttendeesResponse = {
   attendees: [
@@ -651,10 +550,6 @@ const HOST_ROSTER: CleanupAttendeesResponse = {
 }
 
 const HOST_ROSTER_IDS = new Set(["e-mine", "e-slots-mine", "e-ready", "e-done", "e-done-new"])
-
-
-const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString()
-const daysAgo = (d: number) => new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString()
 
 const CREDITOR = { id: "p-ann", name: "Ann Rivera", handle: "annrivera" }
 
@@ -828,9 +723,7 @@ const LEADERBOARD: LeaderboardResponse = {
   geoid: "0644000",
   jurisdictionName: "Los Angeles",
   entries: [
-    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
-    { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
-    { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
+    ...GALLERY_LEADERBOARD_PODIUM,
     { rank: 4, userId: "p-jae", name: "Jae Park", handle: "jaepark", avatar: null, avatarUrl: null, hours: 30 },
     { rank: 5, userId: "p-ravi", name: "Ravi Shah", handle: "ravishah", avatar: null, avatarUrl: null, hours: 22.5 },
     { rank: 6, userId: "p-nour", name: "Nour Haddad", handle: "nourh", avatar: null, avatarUrl: null, hours: 18 },
@@ -858,16 +751,6 @@ const CERTIFICATE: ServiceHoursCertificateDTO = {
 }
 
 let CERT_MODE: "fresh" | "expired" = "fresh"
-
-const VIEWER = {
-  id: "me",
-  displayName: "Sam Okafor",
-  handle: "samok",
-  avatarUrl: null,
-  role: "user",
-  allowDirectMessages: true,
-  showVolunteerHours: true,
-} as unknown as UserDTO
 
 const CLEANUPS_BY_ID: Record<string, CleanupDTO> = {
   "e-mine": EDIT_CLEANUP_DETAIL,
@@ -909,190 +792,124 @@ function slotCleanupWithClaim(base: CleanupDTO, slotId: string | null): CleanupD
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
-const fakeApi: ApiClient = new Proxy(
-  {},
+const postActionFake = async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!
+
+const chatHistoryFake = async (): Promise<ChatHistoryResponse> => CHAT_HISTORY
+
+const fakeApi: ApiClient = makeCannedApi(
   {
-    get(_t, prop) {
-      if (prop === "then") return undefined
-      if (prop === "getProfile") {
-        return async (): Promise<GetProfileResponse> => ({ profile: PERSON_PROFILE })
-      }
-      if (prop === "myProfile") {
-        return async (): Promise<GetProfileResponse> => ({ profile: MY_PROFILE })
-      }
-      if (prop === "searchUsers") {
-        return async (): Promise<SearchUsersResponse> => SEARCH_RESULTS
-      }
-      if (prop === "listMyReports") {
-        return async (): Promise<ListMyReportsResponse> => MY_REPORTS
-      }
-      if (prop === "getReport") {
-        return async (): Promise<ReportDTO> => REPORT_DETAIL
-      }
-      if (prop === "listNotifications") {
-        return async (): Promise<ListNotificationsResponse> => NOTIFICATIONS
-      }
-      if (prop === "markNotificationsRead") {
-        return async (): Promise<MarkReadResponse> => ({ ok: true })
-      }
-      if (prop === "getNotificationPrefs") {
-        return async (): Promise<NotificationPrefsDTO> => NOTIFICATION_PREFS
-      }
-      if (prop === "updateNotificationPrefs") {
-        return async (): Promise<NotificationPrefsDTO> => NOTIFICATION_PREFS
-      }
-      if (prop === "updateSettings") {
-        return async (): Promise<UpdateSettingsResponse> => ({ user: VIEWER })
-      }
-      if (prop === "homeFeed") {
-        return async (args?: { filter?: string }) => ({
-          items: FEED_POSTS.filter((post) => {
-            if (args?.filter === "events") return post.event != null
-            if (args?.filter === "fixes") return post.report?.status === "resolved"
-            return true
-          }),
-          nextCursor: null,
-        })
-      }
-      if (prop === "listUserPosts") {
-        return async (args?: { id?: string }) => ({
-          items: FEED_POSTS.filter((post) => !args?.id || post.author.id === args.id),
-          nextCursor: null,
-        })
-      }
-      if (prop === "listSaves") {
-        return async () => ({ items: FEED_POSTS.filter((post) => post.viewer.saved), nextCursor: null })
-      }
-      if (prop === "listReplies") {
-        return async () => ({ items: [], nextCursor: null })
-      }
-      if (prop === "getPost") {
-        return async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!
-      }
-      if (["likePost", "unlikePost", "savePost", "unsavePost", "repostPost", "unrepostPost"].includes(String(prop))) {
-        return async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!
-      }
-      if (prop === "createPost") {
-        return async (): Promise<PostDTO> => FEED_POSTS[0]!
-      }
-      if (prop === "deletePost") {
-        return async () => ({ ok: true })
-      }
-      if (prop === "listCleanups") {
-        return async (
-          args?: { when?: string },
-        ): Promise<{ items: CleanupDTO[]; nextCursor: string | null }> =>
-          args?.when === "attending" ? ATTENDING_CLEANUPS : NEARBY_CLEANUPS
-      }
-      if (prop === "getCleanup") {
-        return async (args?: { id?: string }): Promise<CleanupDTO> =>
-          CLEANUPS_BY_ID[args?.id ?? ""] ?? CLEANUP_DETAIL
-      }
-      if (prop === "updateCleanup") {
-        return async (args: Record<string, unknown>): Promise<CleanupDTO> => ({
-          ...EDIT_CLEANUP_DETAIL,
-          ...(typeof args.title === "string" ? { title: args.title } : {}),
-          ...(typeof args.description === "string" ? { description: args.description } : {}),
-        })
-      }
-      if (prop === "mapReports") {
-        return async (): Promise<ReportClusterResponse> => ({ clusters: [], pins: PICKER_PINS })
-      }
-      if (prop === "getCleanupAttendees") {
-        return async (args?: { id?: string }): Promise<CleanupAttendeesResponse> =>
-          HOST_ROSTER_IDS.has(args?.id ?? "") ? HOST_ROSTER : CLEANUP_ATTENDEES
-      }
-      if (prop === "listThreads") {
-        return async (): Promise<ListThreadsResponse> => THREADS
-      }
-      if (prop === "cleanupMessages" || prop === "dmMessages") {
-        return async (): Promise<ChatHistoryResponse> => CHAT_HISTORY
-      }
-      if (prop === "getMyHours") {
-        return async (): Promise<GetMyHoursResponse> => MY_HOURS
-      }
-      if (prop === "getMyHoursEntries") {
-        return async (): Promise<MyVolunteerHoursEntriesResponse> => MY_HOURS_ENTRIES
-      }
-      if (prop === "getPublicVolunteerHours") {
-        return async (): Promise<PublicVolunteerHoursResponse> => PUBLIC_HOURS_ENTRIES
-      }
-      if (prop === "getJurisdictionLeaderboard") {
-        return async (): Promise<LeaderboardResponse> => LEADERBOARD
-      }
-      if (prop === "getEventHours") {
-        return async (args?: { id?: string }): Promise<EventHoursResponse> => {
-          if (args?.id === "e-done") return DONE_HOURS
-          if (args?.id === "e-done-attended") return ATTENDED_HOURS
-          return { scope: "self", entries: [], anyLogged: false }
-        }
-      }
-      if (prop === "logEventHours") {
-        return async (args?: { entries?: unknown[] }): Promise<LogEventHoursResponse> => ({
-          credited: args?.entries?.length ?? 0,
-        })
-      }
-      if (prop === "claimEventSlot") {
-        return async (args?: { id?: string; slotId?: string | null }): Promise<CleanupDTO> => {
-          const id = args?.id ?? ""
-          const next = slotCleanupWithClaim(CLEANUPS_BY_ID[id] ?? SLOT_CLEANUP, args?.slotId ?? null)
-          if (id) CLEANUPS_BY_ID[id] = next
-          return next
-        }
-      }
-      if (prop === "issueServiceHoursCertificate") {
-        return async (): Promise<IssueServiceHoursCertificateResponse> => {
-          await sleep(700)
-          return {
-            certificate: {
-              ...CERTIFICATE,
-              issuedAt: new Date().toISOString(),
-              urlExpiresAt: new Date(
-                Date.now() + (CERT_MODE === "expired" ? -60_000 : 15 * 60_000),
-              ).toISOString(),
-            },
-            reused: false,
-          }
-        }
-      }
-      if (prop === "listMyServiceHoursCertificates") {
-        return async (): Promise<ListMyCertificatesResponse> => ({ certificates: [] })
-      }
-      if (prop === "revokeServiceHoursCertificate") {
-        return async (args?: { code?: string }): Promise<RevokeCertificateResponse> => ({
-          certificate: {
-            ...CERTIFICATE,
-            code: args?.code ?? CERTIFICATE.code,
-            status: "revoked",
-            url: null,
-            urlExpiresAt: null,
-            revokedAt: new Date().toISOString(),
-          },
-        })
-      }
-      if (prop === "resolveJurisdiction") {
-        return async (): Promise<JurisdictionDTO> => ({
-          geoid: "0644000",
-          name: "Los Angeles Bureau of Sanitation",
-          layer: "place",
-          cityStateLabel: "Los Angeles, CA",
-          routable: true,
-        })
-      }
-      return (..._args: unknown[]): Promise<never> =>
-        Promise.reject(new Error(`bodies-gallery fake api: "${String(prop)}" not stubbed`))
+    getProfile: async (): Promise<GetProfileResponse> => ({ profile: PERSON_PROFILE }),
+    myProfile: async (): Promise<GetProfileResponse> => ({ profile: MY_PROFILE }),
+    searchUsers: async (): Promise<SearchUsersResponse> => GALLERY_SEARCH_RESULTS,
+    listMyReports: async (): Promise<ListMyReportsResponse> => MY_REPORTS,
+    getReport: async (): Promise<ReportDTO> => REPORT_DETAIL,
+    listNotifications: async (): Promise<ListNotificationsResponse> => NOTIFICATIONS,
+    markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
+    getNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
+    updateNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
+    updateSettings: async (): Promise<UpdateSettingsResponse> => ({ user: GALLERY_VIEWER }),
+    homeFeed: async (args?: { filter?: string }) => ({
+      items: FEED_POSTS.filter((post) => {
+        if (args?.filter === "events") return post.event != null
+        if (args?.filter === "fixes") return post.report?.status === "resolved"
+        return true
+      }),
+      nextCursor: null,
+    }),
+    listUserPosts: async (args?: { id?: string }) => ({
+      items: FEED_POSTS.filter((post) => !args?.id || post.author.id === args.id),
+      nextCursor: null,
+    }),
+    listSaves: async () => ({ items: FEED_POSTS.filter((post) => post.viewer.saved), nextCursor: null }),
+    listReplies: async () => ({ items: [], nextCursor: null }),
+    getPost: async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!,
+    likePost: postActionFake,
+    unlikePost: postActionFake,
+    savePost: postActionFake,
+    unsavePost: postActionFake,
+    repostPost: postActionFake,
+    unrepostPost: postActionFake,
+    createPost: async (): Promise<PostDTO> => FEED_POSTS[0]!,
+    deletePost: async () => ({ ok: true }),
+    listCleanups: async (
+      args?: { when?: string },
+    ): Promise<{ items: CleanupDTO[]; nextCursor: string | null }> =>
+      args?.when === "attending" ? ATTENDING_CLEANUPS : NEARBY_CLEANUPS,
+    getCleanup: async (args?: { id?: string }): Promise<CleanupDTO> =>
+      CLEANUPS_BY_ID[args?.id ?? ""] ?? CLEANUP_DETAIL,
+    updateCleanup: async (args: Record<string, unknown>): Promise<CleanupDTO> => ({
+      ...EDIT_CLEANUP_DETAIL,
+      ...(typeof args.title === "string" ? { title: args.title } : {}),
+      ...(typeof args.description === "string" ? { description: args.description } : {}),
+    }),
+    mapReports: async (): Promise<ReportClusterResponse> => ({ clusters: [], pins: PICKER_PINS }),
+    getCleanupAttendees: async (args?: { id?: string }): Promise<CleanupAttendeesResponse> =>
+      HOST_ROSTER_IDS.has(args?.id ?? "") ? HOST_ROSTER : CLEANUP_ATTENDEES,
+    listThreads: async (): Promise<ListThreadsResponse> => THREADS,
+    cleanupMessages: chatHistoryFake,
+    dmMessages: chatHistoryFake,
+    getMyHours: async (): Promise<GetMyHoursResponse> => MY_HOURS,
+    getMyHoursEntries: async (): Promise<MyVolunteerHoursEntriesResponse> => MY_HOURS_ENTRIES,
+    getPublicVolunteerHours: async (): Promise<PublicVolunteerHoursResponse> => PUBLIC_HOURS_ENTRIES,
+    getJurisdictionLeaderboard: async (): Promise<LeaderboardResponse> => LEADERBOARD,
+    getEventHours: async (args?: { id?: string }): Promise<EventHoursResponse> => {
+      if (args?.id === "e-done") return DONE_HOURS
+      if (args?.id === "e-done-attended") return ATTENDED_HOURS
+      return { scope: "self", entries: [], anyLogged: false }
     },
+    logEventHours: async (args?: { entries?: unknown[] }): Promise<LogEventHoursResponse> => ({
+      credited: args?.entries?.length ?? 0,
+    }),
+    claimEventSlot: async (args?: { id?: string; slotId?: string | null }): Promise<CleanupDTO> => {
+      const id = args?.id ?? ""
+      const next = slotCleanupWithClaim(CLEANUPS_BY_ID[id] ?? SLOT_CLEANUP, args?.slotId ?? null)
+      if (id) CLEANUPS_BY_ID[id] = next
+      return next
+    },
+    issueServiceHoursCertificate: async (): Promise<IssueServiceHoursCertificateResponse> => {
+      await sleep(700)
+      return {
+        certificate: {
+          ...CERTIFICATE,
+          issuedAt: new Date().toISOString(),
+          urlExpiresAt: new Date(
+            Date.now() + (CERT_MODE === "expired" ? -60_000 : 15 * 60_000),
+          ).toISOString(),
+        },
+        reused: false,
+      }
+    },
+    listMyServiceHoursCertificates: async (): Promise<ListMyCertificatesResponse> => ({ certificates: [] }),
+    revokeServiceHoursCertificate: async (args?: { code?: string }): Promise<RevokeCertificateResponse> => ({
+      certificate: {
+        ...CERTIFICATE,
+        code: args?.code ?? CERTIFICATE.code,
+        status: "revoked",
+        url: null,
+        urlExpiresAt: null,
+        revokedAt: new Date().toISOString(),
+      },
+    }),
+    resolveJurisdiction: async (): Promise<JurisdictionDTO> => ({
+      geoid: "0644000",
+      name: "Los Angeles Bureau of Sanitation",
+      layer: "place",
+      cityStateLabel: "Los Angeles, CA",
+      routable: true,
+    }),
   },
-) as ApiClient
+  (name) => (..._args: unknown[]): Promise<never> =>
+    Promise.reject(new Error(`bodies-gallery fake api: "${name}" not stubbed`)),
+)
 
 const fakeData = makeFakeDataContext({
   api: fakeApi,
-  auth: { isAuthenticated: true, user: VIEWER, isPending: false },
+  auth: { isAuthenticated: true, user: GALLERY_VIEWER, isPending: false },
 })
 
 const fakeCaps = makeFakeCapabilities()
 
-const DASHBOARD_AUTH = { isAuthenticated: true, user: VIEWER, isPending: false }
+const DASHBOARD_AUTH = { isAuthenticated: true, user: GALLERY_VIEWER, isPending: false }
 
 const dashboardData = makeFakeDataContext({
   api: makeDashboardFakeApi(),
@@ -1118,7 +935,6 @@ const dashboardErrorData = makeFakeDataContext({
   api: makeDashboardFakeApi(portfolioOverrides((name) => failing(name))),
   auth: DASHBOARD_AUTH,
 })
-
 
 function BodyFrame({
   title,
@@ -1165,7 +981,6 @@ function BodyFrame({
       >
         {title}
       </div>
-      { }
       <div style={{ height, display: "flex", flexDirection: "column" }}>{children}</div>
     </section>
   )
@@ -1281,12 +1096,10 @@ export default function BodiesGallery() {
               <SocialBody />
             </BodyFrame>
 
-            { }
             <BodyFrame title="PersonDetailBody (FULL PAGE: own header, Posts default, Hours tab)" height={760}>
               <PersonDetailBody id="p-ann" />
             </BodyFrame>
 
-            { }
             <BodyFrame
               title="PersonDetailBody (DESKTOP WIDTH: the header must show Back only)"
               height={760}
@@ -1295,7 +1108,6 @@ export default function BodiesGallery() {
               <PersonDetailBody id="p-ann" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="ProfileBody (own profile: Posts / Events / Hours tabs)" height={760}>
               <ProfileBody />
             </BodyFrame>
@@ -1317,54 +1129,42 @@ export default function BodiesGallery() {
             </BodyFrame>
 
             <BodyFrame title="EventDetailBody (cleanup detail + Reports we'll handle gallery)" height={820}>
-              { }
               <EventDetailBody id="e1" />
             </BodyFrame>
 
             <BodyFrame title="EventDetailBody (viewer-hosted -> Edit affordance shows)" height={820}>
-              { }
               <EventDetailBody id="e-mine" />
             </BodyFrame>
 
-            { }
-
-            { }
             <BodyFrame title="EventDetailBody (host, started -> underway, no completion affordance)" height={860}>
               <EventDetailBody id="e-ready" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (signup slots: open / full / mine)" height={860}>
               <EventDetailBody id="e-slots" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (host, DONE, nothing logged -> hours editor)" height={860}>
               <EventDetailBody id="e-done-new" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (host, DONE, hours credited -> summary card + Edit)" height={860}>
               <EventDetailBody id="e-done" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (attendee, DONE -> credited receipt)" height={820}>
               <EventDetailBody id="e-done-attended" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="MembersBody (per-slot roster, host view)" height={560}>
               <MembersBody id="e-slots-mine" roomKind="cleanup" />
             </BodyFrame>
 
             <BodyFrame title="CreateCleanupBody (host form: kind selector + linked-reports picker)" height={900}>
-              { }
               <CreateCleanupBody />
             </BodyFrame>
 
             <BodyFrame title="EditCleanupBody (host edit screen, prefilled)" height={900}>
-              { }
               <EditCleanupBody id="e-mine" />
             </BodyFrame>
 
@@ -1381,23 +1181,17 @@ export default function BodiesGallery() {
             </BodyFrame>
 
             <BodyFrame title="ConversationBody (crew chat - fake history + composer)" height={640}>
-              { }
               <ConversationBody id="e1" roomKind="cleanup" />
             </BodyFrame>
 
             <BodyFrame title="ConversationBody (direct message - peer header + composer)" height={640}>
-              { }
               <ConversationBody id="dm-ann" roomKind="dm" />
             </BodyFrame>
 
-            { }
-
-            { }
             <BodyFrame title="LeaderboardBody (jurisdiction leaderboard)" height={620}>
               <LeaderboardBody geoid="0644000" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="DiscoveryLeaderboard (search page section, isolated)" height={360}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <DiscoveryLeaderboard
@@ -1410,26 +1204,22 @@ export default function BodiesGallery() {
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursSection (variant='own': ledger + transcript card)" height={720}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="own" totalHours={12.5} />
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursSection (variant='public': another person's ledger)" height={620}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="public" userId="p-ann" totalHours={8} />
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursCertificateCard (idle / preparing / ready / expired / revoked / disabled)" height={700}>
               <CertificateHarness />
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursCertificateCard (no openExternal -> degraded copy-the-link)" height={520}>
               <CapabilitiesProvider value={CAPS_WITHOUT_OPEN_EXTERNAL}>
                 <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
@@ -1438,7 +1228,6 @@ export default function BodiesGallery() {
               </CapabilitiesProvider>
             </BodyFrame>
 
-            { }
             <DashboardFrame
               title="EventDashboardBody (portfolio, personal only - no orgs)"
               data={dashboardSoloData}
@@ -1486,7 +1275,6 @@ export default function BodiesGallery() {
               <EventDashboardBody />
             </DashboardFrame>
 
-            { }
             <DashboardFrame title="HostModeBody (phase: upcoming)" height={820}>
               <HostModeBody id={DASHBOARD_EVENT_IDS.upcoming} />
             </DashboardFrame>
@@ -1516,11 +1304,9 @@ export default function BodiesGallery() {
             </DashboardFrame>
 
             <BodyFrame title="ReportFlowBody (report wizard - capture/category/details/review)" height={760}>
-              { }
               <ReportFlowBody />
             </BodyFrame>
 
-            { }
             <BodyFrame title='BodyRouter(view="reports") -> ReportsBody'>
               <div data-router="view-reports" style={{ flex: 1, display: "flex" }}>
                 <BodyRouter entry={null} view="reports" />

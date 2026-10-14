@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from "react"
 import { Animated, StyleSheet } from "react-native"
-import { haversineMeters } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import { useTheme } from "../theme"
 import { SkeletonBlock, POP_ENABLED, usePopScale } from "../primitives"
@@ -14,8 +13,9 @@ import {
 } from "./linkedReportCards"
 import { localReportThumb } from "./localReportThumbs"
 import { reportShortCode } from "./reportPicker/reportPickerModel"
-import { METERS_PER_MILE } from "./reportHitRowModel"
-import { distanceLabel } from "./relativeTime"
+import { reportHitRowModel } from "./reportHitRowModel"
+
+const ROW_SKELETON_HEIGHT = 64
 
 export interface ReportLinkRowProps {
   id: string
@@ -42,7 +42,10 @@ export function ReportLinkRow({
   const known = given ?? cached
   const query = useReport(known ? undefined : id)
   const fetchedId = query.data?.id === id ? id : null
-  const fetched = fetchedId && query.data ? reportToCardData(query.data) : null
+  const fetched = useMemo(
+    () => (fetchedId && query.data ? reportToCardData(query.data) : null),
+    [fetchedId, query.data],
+  )
   const popScale = usePopScale(selected)
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export function ReportLinkRow({
       const report = useLinkedReportCards.getState().cards[fetchedId]
       if (!report && query.data) useLinkedReportCards.getState().put([reportToCardData(query.data)])
     }
-  }, [fetchedId])
+  }, [fetchedId, query.data])
 
   const resolved: LinkedReportCardEntry | undefined = known ?? fetched ?? undefined
   const card = useMemo(
@@ -61,17 +64,12 @@ export function ReportLinkRow({
   const view = useMemo(() => {
     if (!card) return null
     const categoryLabel = tEnums(`category.${card.category}`)
-    const title = card.title?.trim() || categoryLabel
-    const distance = center
-      ? distanceLabel(haversineMeters(center, { lat: card.lat, lng: card.lng }) / METERS_PER_MILE)
-      : ""
-    const addr = card.addr?.trim() ?? ""
-    const location = [distance, addr].filter(Boolean).join(" · ")
+    const { title, distance, subtitle } = reportHitRowModel({ report: card, categoryLabel, viewer: center })
     const code = reportShortCode(card)
     return {
       title,
       code,
-      subtitle: location || card.description?.trim() || null,
+      subtitle,
       a11yLabel: distance
         ? tLinked("card.a11yLabelCode", { title, category: categoryLabel, code, distance })
         : tLinked("card.a11yLabel", { title, category: categoryLabel }),
@@ -79,7 +77,7 @@ export function ReportLinkRow({
   }, [card, center, tEnums, tLinked])
 
   if (!card || !view) {
-    if (query.isLoading) return <SkeletonBlock width="100%" height={64} radius={th.radius.lg} />
+    if (query.isLoading) return <SkeletonBlock width="100%" height={ROW_SKELETON_HEIGHT} radius={th.radius.lg} />
     const unavailable = t("linkedReports.unavailable_row")
     return (
       <LinkedReportCard

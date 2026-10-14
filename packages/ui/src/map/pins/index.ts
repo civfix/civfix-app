@@ -1,17 +1,17 @@
-// The unified react-native-svg map pins (UI-unification Stage 4 slice 5A). ONE set used by BOTH the
-// native map (MarkerView children) and the web map (mounted into maplibre markers via createRoot).
+// One pin set for both maps: native renders them as MarkerView children, web mounts them into maplibre
+// markers via createRoot.
 export { TeardropPin } from "./TeardropPin"
 export { EventPin } from "./EventPin"
 export { BlendPin } from "./BlendPin"
 export { ClusterBubble } from "./ClusterBubble"
-export { DropPin, DROP_PIN_SIZE } from "./DropPin"
+export { DropPin } from "./DropPin"
 export { PinSvg } from "./PinSvg"
-export { PIN_GLYPHS, DROP_PIN_GLYPH, glyphForCategory } from "./glyphs"
+export { glyphForCategory } from "./glyphs"
 export {
   pinAppearanceFor,
   eventPinTarget,
   reportPinTarget,
   clusterToneFor,
-  clusterBubbleAppearance,
+  inkOnFill,
 } from "./appearance"
 export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./appearance"

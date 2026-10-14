@@ -14,7 +14,6 @@ out/
 .wrangler/
 
 .expo/
-web-build/
 expo-env.d.ts
 apps/*/ios/
 apps/*/android/
@@ -23,8 +22,8 @@ apps/*/build/
 .metro-health-check*
 
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 *.log
 npm-debug.*
@@ -33,12 +32,15 @@ yarn-error.*
 pnpm-debug.log*
 
 coverage/
-.vitest
+.eslintcache
+*.orig
 
 .DS_Store
 Thumbs.db
 *.pem
 *.swp
 .idea/
+.claude/
+.mcp.json
 .vscode/*
 !.vscode/extensions.json

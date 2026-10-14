@@ -3,7 +3,6 @@
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
-import { CountBadge } from "@/components/console/chips/badges"
 
 import { ConsoleLink } from "./console-link"
 import type { ConsoleNavItem } from "./nav-items"
@@ -47,7 +46,6 @@ export function ConsoleRail({ items, activeId, compact }: ConsoleRailProps) {
             ) : (
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
             )}
-            {item.badge !== undefined && !compact ? <CountBadge count={item.badge} /> : null}
           </ConsoleLink>
         )
       })}

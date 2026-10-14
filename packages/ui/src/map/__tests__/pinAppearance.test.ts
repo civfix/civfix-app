@@ -1,16 +1,11 @@
 /**
- * Issue #115 - "Wrong icon during report": the pin-drop map showed the EVENT pin (the gold calendar
- * teardrop) while the reporter was placing a dump report, and only turned into the report's own marker
- * once the report existed on the map.
- *
- * The cause was an implicit default. `LocationPickerProps.markerCategory` was OPTIONAL and "omitted"
- * meant "draw the event pin", so the report wizard - which never passed it - silently inherited the
- * host-an-event appearance. This suite pins the replacement: ONE derivation shared by the picker and by
- * the map's own markers, driven by a REQUIRED `pin` target, so "what am I placing" can no longer be left
- * unanswered and default to the wrong answer.
+ * An optional `markerCategory` once let the report wizard silently inherit the event pin. The picker and
+ * the map's own markers now share one derivation driven by a required `pin` target, so "what am I
+ * placing" cannot default to the wrong answer.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import { ReportCategorySchema } from "@civfix/shared"
 import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/shared/tokens"
 import {
@@ -100,7 +95,7 @@ describe("the picker cannot silently inherit the event pin again (source-pinned)
   const pickerTypes = read("../LocationPicker.types.ts")
   const pickStepTypes = read("../PortraitMapPickStep.types.ts")
   const nativePicker = read("../LocationPicker.native.tsx")
-  const wizard = read("../../bodies/ReportFlowBody.tsx")
+  const wizard = reportFlowSource()
   const cleanupForm = read("../../bodies/CleanupForm.tsx")
 
   it("both picker contracts take a REQUIRED pin target, with the optional category gone", () => {
@@ -125,7 +120,7 @@ describe("the picker cannot silently inherit the event pin again (source-pinned)
     expect(wizard).toContain("pin={pickPin}")
   })
 
-  it("the host-an-event form keeps the event appearance, now stated rather than defaulted", () => {
+  it("the host-an-event form keeps the event appearance, stated rather than defaulted", () => {
     expect(cleanupForm).toContain(
       "const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])",
     )

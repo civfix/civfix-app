@@ -46,5 +46,7 @@
   "link_copied": "링크가 복사되었습니다",
   "visibility_label": "공개 범위",
   "visibility_public": "공개",
-  "visibility_private": "비공개"
+  "visibility_private": "비공개",
+  "link_copy_failed": "링크를 복사하지 못했어요",
+  "avatar_clear_a11y": "새로 고른 사진 취소"
 }

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "../markerFocus"
+import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive, nativeMarkerId } from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
 const mapNative = readFileSync(new URL("../Map.native.tsx", import.meta.url), "utf8")
@@ -74,6 +74,23 @@ describe("flyToTargetOffMap", () => {
   })
 })
 
+describe("nativeMarkerId", () => {
+  it("prefixes each marker kind so the press handler can tell them apart by id alone", () => {
+    expect(nativeMarkerId(reportNode)).toBe("pin-r1")
+    expect(nativeMarkerId(eventNode)).toBe("cleanup-c1")
+    expect(nativeMarkerId(blendNode)).toBe("blend-c1")
+    expect(nativeMarkerId(clusterNode)).toBe("cl:1")
+  })
+
+  it("routes every rendered node through it and presses by node kind", () => {
+    expect(mapNative).toContain("const markerId = nativeMarkerId(node)")
+    expect(mapNative).toContain("onPress={pressByType[node.type]}")
+    expect(mapNative).toMatch(
+      /cluster: handlePressCluster,\n\s+report: handlePressPin,\n\s+event: handlePressCleanup,\n\s+blend: handlePressBlend,/,
+    )
+  })
+})
+
 describe("a focus change must not re-render every marker", () => {
   it("renders each marker through one memoized component, not inline JSX", () => {
     expect(mapNative).toContain("const MarkerNode = memo(function MarkerNode(")
@@ -88,5 +105,13 @@ describe("a focus change must not re-render every marker", () => {
       "const lngLat = useMemo<[number, number]>(() => [node.lng, node.lat], [node.lng, node.lat])",
     )
     expect(mapNative).not.toMatch(/lngLat=\{\[node\.lng, node\.lat\]\}/)
+  })
+
+  it("compares marker content, since every camera settle hands MarkerNode fresh node objects", () => {
+    expect(mapNative).toMatch(/\n\}, sameMarkerNodeProps\)\n/)
+    expect(mapNative).toContain("sameRenderedNode(prev.node, next.node)")
+    expect(mapNative).toContain("prev.active === next.active")
+    expect(mapNative).toContain("prev.onPress === next.onPress")
+    expect(mapNative).toContain("prev.markerId === next.markerId")
   })
 })

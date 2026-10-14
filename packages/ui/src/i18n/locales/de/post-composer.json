@@ -65,5 +65,6 @@
     "personal": "Du",
     "a11y": "Als {{name}} posten",
     "group_a11y": "Wähle, von wem dieser Beitrag stammt"
-  }
+  },
+  "submit_error_restored": "Dein Beitrag konnte nicht veröffentlicht werden. Dein Entwurf ist im Editor gespeichert."
 }

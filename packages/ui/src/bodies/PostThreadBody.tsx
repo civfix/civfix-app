@@ -1,14 +1,16 @@
 import React from "react"
-import { Platform, Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
-import type { PostDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
 import {
-  DETAIL_BACK_SIZE,
-  DETAIL_BACK_RADIUS,
-  DETAIL_BACK_ICON_SIZE,
-  detailTitleStyle,
-} from "../shell/detailHeader"
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type FlatListProps,
+  type LayoutChangeEvent,
+  type ListRenderItemInfo,
+} from "react-native"
+import type { PostDTO } from "@civfix/shared"
+import { focusRingProps, makeThemedStyles } from "../theme"
+import { Text, iconMap } from "../typography"
 import { usePost, usePostReplies } from "../data/hooks/posts"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -22,34 +24,42 @@ import {
   type ScrollHostListHandle,
 } from "../shell/ScrollHost"
 import { SignInPrompt } from "../primitives/StateView"
+import { useViewerDraftGeneration } from "../viewerScope"
 import { ReplyComposer, type ReplyComposerHandle } from "./thread/ReplyComposer"
 import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
 import { ThreadFocalPost, ThreadFocalSkeleton } from "./thread/ThreadFocalPost"
 import { ThreadReplyRow } from "./thread/ThreadReplyRow"
 import { buildThreadRows, type ThreadRow } from "./thread/threadModel"
+import { keyboardDismissModeFor } from "./keyboardDismissMode"
+import { POST_LIST_END_REACHED_THRESHOLD } from "./feedModel"
+import { DetailBodyHeader } from "./DetailBodyHeader"
 
-const KEYBOARD_DISMISS_MODE: "interactive" | "on-drag" =
-  Platform.OS === "ios" ? "interactive" : "on-drag"
+const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor(Platform.OS)
 
 const THREAD_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   ownsFocusedInput: false,
   reserveKeyboardPadding: false,
 })
 
-const ThreadList = React.forwardRef<ScrollHostListHandle, Record<string, unknown>>(function ThreadList(
-  props,
-  ref,
-) {
+type ThreadListProps = FlatListProps<ThreadRow<PostDTO>> & { ref?: React.Ref<ScrollHostListHandle> }
+
+function ThreadList({ ref, ...props }: ThreadListProps) {
   const { FlatList } = useScrollHost()
   return <FlatList ref={ref} {...props} />
-})
+}
 
-const threadKeyExtractor = (item: unknown) => (item as ThreadRow<PostDTO>).key
+const threadKeyExtractor = (item: ThreadRow<PostDTO>) => item.key
 
 function ThreadRepliesSkeleton() {
   const styles = useStyles()
+  const { t } = useT("home-feed")
   return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={t("thread.loading_replies")}
+      accessibilityState={{ busy: true }}
+    >
       {[0, 1, 2].map((row) => (
         <View key={row} style={styles.skeletonRow}>
           <View style={styles.skeletonAvatar} />
@@ -76,7 +86,6 @@ export function PostThreadBody(props: PostThreadBodyProps) {
 
 function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("home-feed")
   const back = useNavStore((state) => state.back)
   const { isAuthenticated } = useAuthState()
@@ -86,10 +95,10 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const parent = usePost(post.data?.replyToId ?? undefined)
 
   const [rootHeight, setRootHeight] = React.useState(0)
-  const expandedChrome = useLayoutMode() === "expanded"
   const [sentReplies, setSentReplies] = React.useState<PostDTO[]>([])
 
   const composerRef = React.useRef<ReplyComposerHandle | null>(null)
+  const draftGeneration = useViewerDraftGeneration()
   const listRef = React.useRef<ScrollHostListHandle | null>(null)
   const focusComposer = React.useCallback(() => composerRef.current?.focus(), [])
   const onRootLayout = React.useCallback(
@@ -145,19 +154,16 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   )
 
   const renderItem = React.useCallback(
-    ({ item }: { item: unknown }) => {
-      const listRow = item as ThreadRow<PostDTO>
-      return (
-        <ThreadReplyRow
-          post={listRow.post}
-          rail={listRow.rail}
-          hairline={listRow.hairline}
-          isOptimistic={listRow.optimistic}
-          onOpenEntry={onOpenEntry}
-          onDeleted={onReplyDeleted}
-        />
-      )
-    },
+    ({ item }: ListRenderItemInfo<ThreadRow<PostDTO>>) => (
+      <ThreadReplyRow
+        post={item.post}
+        rail={item.rail}
+        hairline={item.hairline}
+        isOptimistic={item.optimistic}
+        onOpenEntry={onOpenEntry}
+        onDeleted={onReplyDeleted}
+      />
+    ),
     [onOpenEntry, onReplyDeleted],
   )
 
@@ -201,39 +207,13 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
     [replies.isLoading, replies.isError, post.data],
   )
 
-  const header = expandedChrome ? (
-    <View style={[styles.header, styles.headerPanel]}>
-      <Pressable
-        onPress={goBack}
-        accessibilityRole="button"
-        accessibilityLabel={t("thread.back")}
-        hitSlop={6}
-        {...focusRingProps}
-        style={styles.headerChip}
-      >
-        <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-      </Pressable>
-      <Text style={styles.headerPanelTitle} numberOfLines={1} accessibilityRole="header">
-        {t("thread.title")}
-      </Text>
-    </View>
-  ) : (
-    <View style={styles.header}>
-      <Pressable
-        onPress={goBack}
-        accessibilityRole="button"
-        accessibilityLabel={t("thread.back")}
-        hitSlop={6}
-        {...focusRingProps}
-        style={styles.headerButton}
-      >
-        <Icon icon={iconMap.ArrowLeft} size={21} color={th.colors.text} />
-      </Pressable>
-      <View pointerEvents="none" style={styles.headerTitleWrap}>
-        <Text variant="heading">{t("thread.title")}</Text>
-      </View>
-      <View style={styles.headerSpacer} />
-    </View>
+  const header = (
+    <DetailBodyHeader
+      title={t("thread.title")}
+      backLabel={t("thread.back")}
+      onBack={goBack}
+      compactTitle="heading"
+    />
   )
 
   if (!isAuthenticated) {
@@ -284,7 +264,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
           ListEmptyComponent={listEmpty}
           ListFooterComponent={listFooter}
           onEndReached={onEndReached}
-          onEndReachedThreshold={0.6}
+          onEndReachedThreshold={POST_LIST_END_REACHED_THRESHOLD}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={KEYBOARD_DISMISS_MODE}
           contentContainerStyle={styles.listContent}
@@ -294,6 +274,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
       </ScrollHostProvider>
       {post.data ? (
         <ReplyComposer
+          key={draftGeneration}
           ref={composerRef}
           focalPost={post.data}
           rootHeight={rootHeight}
@@ -306,50 +287,6 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
 
 const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
-  header: {
-    minHeight: 52,
-    flexShrink: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: t.space["4"],
-    backgroundColor: t.colors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.colors.border,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -t.space["3"],
-  },
-  headerPanel: {
-    minHeight: 0,
-    gap: 10,
-    paddingTop: 14,
-    paddingHorizontal: 18,
-    paddingBottom: 12,
-    borderBottomColor:
-      Platform.OS === "web" ? wash(t.colors.borderStrong, 0.45, t) : t.colors.border,
-  },
-  headerChip: {
-    width: DETAIL_BACK_SIZE,
-    height: DETAIL_BACK_SIZE,
-    borderRadius: DETAIL_BACK_RADIUS,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surfaceTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerPanelTitle: { ...detailTitleStyle(18, t), flex: 1 },
-  headerTitleWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  headerSpacer: { width: 44 },
   list: { flex: 1, minHeight: 0 },
   listContent: { flexGrow: 1, paddingBottom: t.space["2"] },
   footerPad: { height: t.space["2"] },
@@ -370,7 +307,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
     color: t.colors.textMuted,
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   retryPill: {

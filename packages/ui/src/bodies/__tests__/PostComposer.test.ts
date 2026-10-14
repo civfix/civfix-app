@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import { pageBottomReserve } from "../../shell/bodyLayout"
 import type { TFunction } from "i18next"
 import type { CleanupDTO, PostDTO } from "@civfix/shared"
@@ -9,16 +10,16 @@ import {
   buildComposerEventRef,
   buildComposerQuoteRef,
   buildPostComposerAttachPlan,
-  buildPostComposerKeyboardPlan,
   buildPostComposerModel,
-  initialPostComposerAttachmentPanel,
+  mergeMention,
   resolveComposerEvent,
   shouldClearStaleAttachedEvent,
   shouldClearStaleAttachedReport,
   togglePostComposerAttachmentPanel,
+  type PostComposerAttachmentPanel,
 } from "../postComposerModel"
+import { keyboardDismissModeFor } from "../keyboardDismissMode"
 
-/** Stand-in for the `post-composer` namespace bound by useT (see LinkedEventCard.test for the pattern). */
 const EN: Record<string, string> = {
   "mode.post.title": "New post",
   "mode.post.placeholder": "Share an update with your neighborhood...",
@@ -49,7 +50,6 @@ const nonAttendingEvent = {
   organizer: { id: "organizer-1", name: "Maya Lopez" },
 } as CleanupDTO
 
-/** Signed-in full-screen "post" baseline for attach-plan cases; override per test. */
 function planArgs(overrides: Partial<Parameters<typeof buildPostComposerAttachPlan>[0]> = {}) {
   return {
     mode: "post" as const,
@@ -92,23 +92,20 @@ describe("PostComposer presentation model", () => {
     expect(resolveComposerEvent(nonAttendingEvent.id, selectedEvent, [])).toEqual(selectedEvent)
   })
 
-  // The `owner` field and the `compact: true` case are GONE with the compact composer itself. The
-  // docked reply bar is now bodies/thread/ReplyComposer, which owns its keyboard inset via
-  // `useReplyDockInset` instead of declaring a host that could not honor it on native.
+  // The docked reply bar (thread/ReplyComposer) owns its keyboard inset via `useReplyDockInset`, so this
+  // plan declares no host inset that native could not honor.
   it("leaves the keyboard plan free of iOS-only scroll insets on every platform", () => {
-    expect(buildPostComposerKeyboardPlan({ platform: "ios" })).toEqual({
-      scrollView: { keyboardDismissMode: "interactive" },
-    })
-    expect(buildPostComposerKeyboardPlan({ platform: "android" })).toEqual({
-      scrollView: { keyboardDismissMode: "on-drag" },
-    })
-    expect(buildPostComposerKeyboardPlan({ platform: "web" })).toEqual({
-      scrollView: { keyboardDismissMode: "on-drag" },
-    })
+    expect(keyboardDismissModeFor("ios")).toBe("interactive")
+    expect(keyboardDismissModeFor("android")).toBe("on-drag")
+    expect(keyboardDismissModeFor("web")).toBe("on-drag")
+    const source = surfaceSource("postComposer")
+    expect(source).toMatch(/^const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor\(Platform\.OS\)$/m)
+    expect(source).toContain("keyboardDismissMode={KEYBOARD_DISMISS_MODE}")
+    expect(source).not.toMatch(/automaticallyAdjustKeyboardInsets|contentInset=/)
   })
 
   it("takes its keyboard-aware host ONLY on the standalone route, and the injected one in the shell", () => {
-    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(
       /^const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost\(PLAIN_SCROLL_HOST\)$/m,
     )
@@ -122,7 +119,7 @@ describe("PostComposer presentation model", () => {
   })
 
   it("reads standalone-ness from an explicit host prop, never from a nav guess", () => {
-    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(/export interface PostComposerStandaloneHost \{\s*\n\s*onBack: \(\) => void/)
     expect(source).toMatch(/standalone\?: PostComposerStandaloneHost/)
     expect(source).not.toMatch(/^\s*onBack\?: \(\) => void$/m)
@@ -155,9 +152,10 @@ describe("PostComposer presentation model", () => {
   })
 
   it("keeps the pill panels one-at-a-time via explicit toggles", () => {
-    const initial = initialPostComposerAttachmentPanel()
+    const initial: PostComposerAttachmentPanel = null
+    const source = readFileSync(new URL("../usePostComposerAttach.ts", import.meta.url), "utf8")
 
-    expect(initial).toBeNull()
+    expect(source).toContain("useState<PostComposerAttachmentPanel>(null)")
     expect(togglePostComposerAttachmentPanel(initial, "events")).toBe("events")
     expect(togglePostComposerAttachmentPanel("events", "events")).toBeNull()
     expect(togglePostComposerAttachmentPanel("events", "reports")).toBe("reports")
@@ -293,8 +291,8 @@ describe("activePostMentions", () => {
   const foo = { id: "person-3", handle: "foo", displayName: "Foo B." }
 
   it("drops a mention whose @handle the author deleted from the body", () => {
-    // Repro: autocomplete "@foo", delete the text, post something unrelated. `onMention` only ever ADDS,
-    // so without this re-filter the unrelated post would persist (and notify) a stale mention.
+    // `onMention` only ever adds, so without this re-filter a post whose "@foo" was deleted would persist
+    // (and notify) a stale mention.
     expect(activePostMentions("Fresh trash on 4th.", [foo])).toEqual([])
   })
 
@@ -342,5 +340,26 @@ describe("buildComposerQuoteRef", () => {
     const ref = buildComposerQuoteRef({ ...post, body: null } as PostDTO)
     expect(ref.excerpt).toBe("")
     expect(ref.body).toBeNull()
+  })
+})
+
+describe("mergeMention", () => {
+  const alex = { id: "u1", handle: "alex", displayName: "Alex" }
+
+  it("records a picked user as a mention DTO, dropping the search row's extra fields", () => {
+    const picked = { ...alex, avatar: null, avatarUrl: "https://cdn/a.jpg" } as unknown as Parameters<typeof mergeMention>[1]
+    expect(mergeMention([], picked)).toEqual([alex])
+  })
+
+  it("moves a re-picked user to the end with its fresh names instead of listing it twice", () => {
+    const bea = { id: "u2", handle: "bea", displayName: "Bea" }
+    const renamed = { ...alex, displayName: "Alex R" } as unknown as Parameters<typeof mergeMention>[1]
+    expect(mergeMention([alex, bea], renamed)).toEqual([bea, { ...alex, displayName: "Alex R" }])
+  })
+
+  it("records nothing for a jurisdiction handle, which stays plain body text", () => {
+    expect(
+      mergeMention([alex], { kind: "jurisdiction", id: "city", handle: "cityofla", displayName: "City of LA" }),
+    ).toBeNull()
   })
 })

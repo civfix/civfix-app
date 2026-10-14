@@ -1,14 +1,12 @@
 /**
- * `useRowHover` - the pointer hover of a ROW whose Pressable is only PART of it.
- *
- * §5's hover row asks every row in the card to answer the pointer with ONE vocabulary: the row's own fill.
- * `webHover(state)` delivers exactly that wherever the row IS a single Pressable (the inbox thread row, the
- * person and leaderboard hits, the report row). It cannot where the row is a plain View holding a tap column
- * plus a SIBLING control - the event hit, the people rows, the event card - because siblings are how this
- * package keeps a nested <button> out of the DOM on react-native-web, and RNW reports `hovered` only for the
- * element that owns the press. Hovering the trailing pill, or the gutter beside it, therefore left those rows
- * flat, and hovering the copy column dimmed only the copy column: a third hover vocabulary in one list, which
- * is what round-2 SM-03 reopened.
+ * For a row whose Pressable is only PART of it. Every row in a card should answer the pointer the same
+ * way, with the row's own fill. `webHover(state)` delivers exactly that wherever the row IS a single
+ * Pressable (the inbox thread row, the person and leaderboard hits, the report row). It cannot where the
+ * row is a plain View holding a tap column plus a SIBLING control (the event hit, the people rows, the
+ * event card), because siblings are how this package keeps a nested <button> out of the DOM on
+ * react-native-web, and RNW reports `hovered` only for the element that owns the press. Hovering the
+ * trailing pill, or the gutter beside it, would leave those rows flat, and hovering the copy column
+ * would dim only the copy column: a third hover vocabulary in one list.
  *
  * So the CONTAINER answers, through W3C pointer events, which are the right primitive twice over:
  *   - ENTER/LEAVE-CORRECT: `pointerenter`/`pointerleave` do NOT fire as the cursor crosses between
@@ -25,7 +23,7 @@
 import { useMemo, useState } from "react"
 import { Platform, type PointerEvent as RNPointerEvent, type ViewProps } from "react-native"
 
-/** The three handlers a hovering row spreads onto its container View. Empty off web. */
+/** Empty off web. */
 export type RowHoverProps = Pick<ViewProps, "onPointerEnter" | "onPointerLeave" | "onPointerCancel">
 
 export function useRowHover(): { hovered: boolean; hoverProps: RowHoverProps } {

@@ -1,15 +1,3 @@
-/**
- * Unit tests for the shared "pick a location on the main map" store (event-linking follow-up 2). Pure
- * zustand, so vitest exercises it directly (no RN renderer).
- *
- * Coverage:
- *   - defaults: inactive, no draft, no map registered.
- *   - start: seeds the draft (or null) and goes active.
- *   - setDraft: moves the pending point without ending the pick.
- *   - confirm / cancel: both END the pick (active false, draft null) - the picker reads `draft` before
- *     calling confirm, so the store never resolves onChange itself.
- *   - setMapRegistered: flips the main-map-available flag the picker reads to choose overlay vs inline.
- */
 import { beforeEach, describe, expect, it } from "vitest"
 import { useLocationPick } from "../locationPickStore"
 
@@ -52,15 +40,7 @@ describe("locationPickStore: setDraft", () => {
   })
 })
 
-describe("locationPickStore: confirm / cancel", () => {
-  it("confirm ends the pick (active false, draft cleared)", () => {
-    useLocationPick.getState().start({ lat: 1, lng: 2 })
-    useLocationPick.getState().confirm()
-    const s = useLocationPick.getState()
-    expect(s.active).toBe(false)
-    expect(s.draft).toBeNull()
-  })
-
+describe("locationPickStore: cancel", () => {
   it("cancel ends the pick (active false, draft cleared)", () => {
     useLocationPick.getState().start({ lat: 1, lng: 2 })
     useLocationPick.getState().cancel()

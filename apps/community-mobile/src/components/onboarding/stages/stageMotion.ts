@@ -14,7 +14,7 @@ import {
 } from "react-native-reanimated"
 import { motion } from "@/theme"
 
-export const STAGE_HOLD_MS = 2000
+const STAGE_HOLD_MS = 2000
 export const STAGE_STAGGER_MS = motion.gravityStagger
 export const STAGE_DROP_PX = motion.gravityDrop
 export const STAGE_RISE_PX = motion.fadeUp.distance
@@ -50,7 +50,7 @@ export function segment(progress: number, from: number, to: number): number {
   return t
 }
 
-export function stageStepFor(progress: number, stops: readonly number[]): number {
+function stageStepFor(progress: number, stops: readonly number[]): number {
   "worklet"
   let step = 0
   for (let i = 0; i < stops.length; i += 1) {

@@ -6,32 +6,37 @@ import {
   View,
   type BlurEvent,
   type TextInput as RNTextInput,
-  type ViewStyle,
 } from "react-native"
+import { POST_BODY_MAX } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
-import type { PostDTO, UserMentionDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../../primitives/useComposerAttachments"
 import { Icon, Text, iconMap } from "../../typography"
-import { actableOrganizations, useMyOrganizations, useMyProfile } from "../../data"
-import { useCreatePost } from "../../data/hooks/posts"
+import { useMyProfile } from "../../data"
 import { useT } from "../../i18n"
-import { useHaptics } from "../../capabilities"
-import { activePostMentions } from "../postComposerModel"
+import { activePostMentions, mergeMention } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
   mergePostComposerMedia,
   mergePostComposerThumbs,
+  postComposerCanAttach,
   snapshotCarriedMedia,
 } from "../postComposerMedia"
-import { resolvePostSubmit } from "../postComposerSubmit"
-import { usePostComposerStore, type PostComposerMedia } from "../postComposerStore"
-import { AuthorAsChips, authorAsSelection } from "../AuthorAsChips"
+import { buildOptimisticPost, resolvePostSubmit, toPostOrganizationRef } from "../postComposerSubmit"
+import {
+  selectPostComposerDraft,
+  selectPostComposerDraftOwner,
+  usePostComposerStore,
+  type PostComposerMedia,
+} from "../postComposerStore"
+import { AuthorAsChips } from "../AuthorAsChips"
+import { usePostAsOrganization } from "../postComposer/usePostAsOrganization"
+import { useSubmitPost } from "../postComposer/useSubmitPost"
+import { postComposerStyleParts } from "../postComposer/postComposerStyleParts"
 import { useNavStore } from "../../nav"
 import {
   buildInlineComposerModel,
@@ -45,32 +50,33 @@ import {
 const AVATAR_SIZE = 40
 
 export function InlineComposer() {
+  const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)
+  return <InlineComposerForOwner key={draftOwner ?? ""} />
+}
+
+function InlineComposerForOwner() {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("post-composer")
-  const haptics = useHaptics()
   const profile = useMyProfile().data?.profile
-  const create = useCreatePost()
+  const { create, submit: submitPost } = useSubmitPost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const inputRef = useRef<RNTextInput>(null)
   const cardRef = useRef<View>(null)
-  const submittingRef = useRef(false)
 
-  const body = usePostComposerStore((state) => state.draft.body)
-  const mentionedUsers = usePostComposerStore((state) => state.draft.mentionedUsers)
+  const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
+  const mentionedUsers = usePostComposerStore((state) => selectPostComposerDraft(state).mentionedUsers)
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setMedia = usePostComposerStore((state) => state.setMedia)
   const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
-  const draftOrganizationId = usePostComposerStore((state) => state.draft.organizationId)
-  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(state.draft))
+  const draftOrganizationId = usePostComposerStore((state) => selectPostComposerDraft(state).organizationId)
+  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(selectPostComposerDraft(state)))
 
-  const myOrgs = useMyOrganizations()
-  const actableOrgs = actableOrganizations(myOrgs.data)
-  const postAsOrganizations = actableOrgs ?? []
-  const postAsOrganizationId = authorAsSelection(draftOrganizationId, actableOrgs)
-  const postAsOrganization =
-    postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
+  const { postAsOrganizations, postAsOrganizationId, postAsOrganization } = usePostAsOrganization(
+    { organizationId: draftOrganizationId },
+    setOrganizationId,
+  )
 
   const [open, setOpen] = useState(false)
   const [bodyFocused, setBodyFocused] = useState(false)
@@ -93,9 +99,11 @@ export function InlineComposer() {
     setMedia(composerMedia)
   }, [open, composerMedia, setMedia])
 
-  useEffect(() => {
-    if (draftOrganizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
-  }, [draftOrganizationId, postAsOrganizationId, setOrganizationId])
+  const canAttachMedia = postComposerCanAttach({
+    hookCanAttach: attachments.canAttach,
+    carried: carriedMedia.length,
+    picked: attachments.attachments.length,
+  })
 
   const mediaUploadIds = useMemo(
     () => composerMedia.flatMap((media) => (media.uploadId ? [media.uploadId] : [])),
@@ -129,12 +137,12 @@ export function InlineComposer() {
   )
 
   const openComposer = useCallback(() => {
-    const draft = usePostComposerStore.getState().draft
+    const draft = selectPostComposerDraft(usePostComposerStore.getState())
     if (!inlineComposerOwnsDraft(draft)) {
       useNavStore.getState().push({ kind: "composer", ...composerEntryFor(draft) })
       return
     }
-    const snapshot = snapshotCarriedMedia(usePostComposerStore.getState().draft.media)
+    const snapshot = snapshotCarriedMedia(draft.media)
     setCarriedMedia(snapshot.carried)
     setDroppedMedia(snapshot.dropped)
     setOpen(true)
@@ -219,96 +227,38 @@ export function InlineComposer() {
   const onMention = useCallback(
     (candidate: MentionCandidate, nextDraft: string) => {
       setBody(nextDraft)
-      if ((candidate as { kind?: string }).kind === "jurisdiction") return
-      const user: UserMentionDTO = {
-        id: candidate.id,
-        handle: candidate.handle,
-        displayName: candidate.displayName,
-      }
-      setMentionedUsers([...mentionedUsers.filter((item) => item.id !== user.id), user])
+      const mentioned = mergeMention(mentionedUsers, candidate)
+      if (mentioned) setMentionedUsers(mentioned)
     },
     [mentionedUsers, setBody, setMentionedUsers],
   )
 
-  const submit = useCallback(() => {
-    if (submittingRef.current) return
-    if (!open || !ownsDraft) return
-    if (!profile || resolution.action !== "submit") return
-    submittingRef.current = true
-    const optimistic: PostDTO = {
-      id: `optimistic-${Date.now()}`,
-      author: profile,
-      organization: postAsOrganization
-        ? {
-            id: postAsOrganization.id,
-            slug: postAsOrganization.slug,
-            name: postAsOrganization.name,
-            logoUrl: postAsOrganization.logoUrl ?? null,
-            verified: postAsOrganization.verifiedStatus === "verified",
-            ...(postAsOrganization.verifiedKind
-              ? { verifiedKind: postAsOrganization.verifiedKind }
-              : {}),
-          }
-        : null,
-      kind: resolution.input.kind,
-      body: resolution.input.body ?? null,
-      createdAt: new Date().toISOString(),
-      editedAt: null,
-      counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
-      viewer: { liked: false, reposted: false, saved: false },
-      media: composerMedia.flatMap((item) =>
-        item.uploadId
-          ? [
-              {
-                id: item.uploadId,
-                kind: item.kind,
-                url: item.uri,
-                thumbUrl: item.posterUri,
-                status: "ready" as const,
-              },
-            ]
-          : [],
-      ),
-      mentions: activeMentions,
-      event: null,
-      report: null,
-      repostOf: null,
-      replyToId: null,
-      threadRootId: null,
-    }
-    const staged = usePostComposerStore.getState().draft
-    usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
-    create.mutate(
-      { input: resolution.input, optimistic },
-      {
-        onError: () => {
-          haptics.error()
-          usePostComposerStore.getState().restore(staged)
-        },
-        onSuccess: () => {
-          haptics.success()
-          attachments.reset()
-          setCarriedMedia([])
-          setDroppedMedia(0)
-          setOpen(false)
-        },
-        onSettled: () => {
-          submittingRef.current = false
-        },
+  const submit = () =>
+    submitPost(
+      () => {
+        if (!open || !ownsDraft) return null
+        if (!profile || resolution.action !== "submit") return null
+        return {
+          input: resolution.input,
+          optimistic: buildOptimisticPost({
+            author: profile,
+            organization: postAsOrganization ? toPostOrganizationRef(postAsOrganization) : null,
+            kind: resolution.input.kind,
+            body: resolution.input.body ?? null,
+            now: new Date(),
+            media: composerMedia,
+            mentions: activeMentions,
+          }),
+          resetTo: { mode: "post", targetPostId: null },
+        }
+      },
+      () => {
+        attachments.reset()
+        setCarriedMedia([])
+        setDroppedMedia(0)
+        setOpen(false)
       },
     )
-  }, [
-    activeMentions,
-    attachments,
-    composerMedia,
-    create,
-    haptics,
-    open,
-    ownsDraft,
-    postAsOrganization,
-    profile,
-    resolution,
-  ])
 
   if (!profile) return null
 
@@ -378,7 +328,7 @@ export function InlineComposer() {
             placeholder={model.placeholder}
             placeholderTextColor={th.colors.textSubtle}
             multiline
-            maxLength={2000}
+            maxLength={POST_BODY_MAX}
             autoFocus
             style={[webInputReset, styles.input]}
           />
@@ -410,8 +360,8 @@ export function InlineComposer() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t("add_media_a11y")}
-            accessibilityState={{ disabled: !attachments.canAttach }}
-            disabled={!attachments.canAttach}
+            accessibilityState={{ disabled: !canAttachMedia }}
+            disabled={!canAttachMedia}
             onPressIn={holdOwnControl}
             onPressOut={releaseOwnControl}
             onPress={() => void attachments.onAttach()}
@@ -419,16 +369,18 @@ export function InlineComposer() {
             {...focusRingProps}
             style={({ pressed }) => [
               styles.addMedia,
-              !attachments.canAttach ? styles.addMediaDisabled : null,
+              !canAttachMedia ? styles.addMediaDisabled : null,
               pressed ? styles.pressed : null,
             ]}
           >
-            <Icon
-              icon={iconMap.Image}
-              size={18}
-              color={attachments.canAttach ? th.colors.accent : th.colors.textSubtle}
-              strokeWidth={2.2}
-            />
+            <View style={styles.addMediaDisc}>
+              <Icon
+                icon={iconMap.Image}
+                size={18}
+                color={canAttachMedia ? th.colors.accent : th.colors.textSubtle}
+                strokeWidth={2.2}
+              />
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -449,6 +401,7 @@ export function InlineComposer() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  ...postComposerStyleParts(t),
   card: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -482,10 +435,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
     paddingVertical: t.space["1"],
   },
-  inputSurfaceFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
   input: {
     minHeight: 72,
     maxHeight: 220,
@@ -500,37 +449,26 @@ const useStyles = makeThemedStyles((t) => ({
   actions: { flexDirection: "row", alignItems: "center", gap: t.space["2"] },
   actionsSpacer: { flex: 1 },
   addMedia: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: t.colors.surfaceTint,
   },
-  addMediaDisabled: { opacity: 0.52 },
   close: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    borderRadius: MIN_TOUCH_TARGET / 2,
     alignItems: "center",
     justifyContent: "center",
   },
   postButton: {
-    minHeight: 36,
-    paddingHorizontal: 16,
+    minHeight: MIN_TOUCH_TARGET,
+    paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.colors.accent,
   },
-  postButtonDisabled: { backgroundColor: t.colors.surfaceTint },
-  postButtonText: {
-    color: t.colors.neutral.card,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  postButtonTextDisabled: { color: t.colors.textSubtle },
   error: {
     color: t.colors.accentText,
     fontFamily: t.fontFamily.bodySemiBold,

@@ -1,10 +1,7 @@
-import type { View } from "../nav"
+import type { Snap, View } from "../nav"
 import { MOTION } from "../theme/motion"
-import {
-  DOCK_H,
-  DOCK_MORPH_SHRINK,
-  DOCK_MORPH_TOP_OFFSET,
-} from "../surface/liquidGlass/liquidGlassModel"
+import { clamp01 } from "../math/clamp"
+import { DOCK_H, DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../surface/liquidGlass/liquidGlassModel"
 
 export type TabId = "home" | "map" | "messages" | "report"
 
@@ -31,6 +28,9 @@ export const TAB_EASING_CSS = "cubic-bezier(.22,1,.36,1)"
 export const TAB_BAR_HEIGHT = 60
 
 export const TAB_ICON_SIZE = 25
+/** The web dock's tab and search-orb glyphs, which the expanded rail repeats. */
+export const DOCK_TAB_GLYPH_SIZE = 24
+export const DOCK_ORB_GLYPH_SIZE = 22
 export const TAB_ICON_STROKE_WIDTH = 2.4
 export const TAB_ICON_CENTER_Y = DOCK_H / 2
 export const TAB_PILL_INSET_Y = 4
@@ -117,19 +117,6 @@ export function resolveTabBarFootprint(measured: number, fallback: number): numb
   return measuredFootprint > 0 ? measuredFootprint : Math.max(1, Math.round(fallback))
 }
 
-export function compactShellChromePlan(
-  measured: number,
-  platform: "native" | "web",
-  safeAreaBottom = 0,
-): { bottomInset: number } {
-  return {
-    bottomInset: resolveTabBarFootprint(
-      measured,
-      initialTabBarFootprint(platform, safeAreaBottom),
-    ),
-  }
-}
-
 export function searchMorphTarget(view: View): 0 | 1 {
   return view === "search" ? 1 : 0
 }
@@ -140,16 +127,6 @@ export function resolvePreviousView(stored: View, view: View): View {
 
 export function seedPreviousView(currentView: View, lastNonSearch: View): View {
   return currentView === "search" ? lastNonSearch : currentView
-}
-
-export function exitTabId(previousView: View): TabId {
-  const spec = TAB_SPECS.find((tab) => tab.view === previousView)
-  return spec ? spec.id : "home"
-}
-
-function clamp01(value: number): number {
-  "worklet"
-  return value < 0 ? 0 : value > 1 ? 1 : value
 }
 
 export function windowProgress(progress: number, start: number, end: number): number {
@@ -185,11 +162,6 @@ export function placeholderMorph(progress: number): {
   "worklet"
   const w = windowProgress(progress, 0.85, 1.0)
   return { opacity: w, translateX: (1 - w) * 8, blur: (1 - w) * 6 }
-}
-
-export function clearMorph(progress: number): { opacity: number } {
-  "worklet"
-  return { opacity: windowProgress(progress, 0.7, 1.0) }
 }
 
 export const DOCK_SHEET_CLEAR = 32
@@ -231,6 +203,61 @@ export function sheetSnapPoints(windowHeight: number, topReserve: number): [numb
   const full = Math.round(Math.min(SHEET_REF_FULL * scale, maxFull))
   const midStop = Math.max(mid, peek + 1)
   return [peek, midStop, Math.max(full, midStop + 1)]
+}
+
+export const SHEET_SNAP_RANGE = { min: 0, max: 2 } as const
+
+export function stepSheetSnap(current: Snap, delta: number): Snap {
+  return Math.min(Math.max(current + delta, SHEET_SNAP_RANGE.min), SHEET_SNAP_RANGE.max) as Snap
+}
+
+export function sheetSnapForAccessibilityAction(current: Snap, actionName: string): Snap | null {
+  if (actionName === "increment") return stepSheetSnap(current, 1)
+  if (actionName === "decrement") return stepSheetSnap(current, -1)
+  return null
+}
+
+export function sheetSnapForKey(current: Snap, key: string | undefined): Snap | null {
+  switch (key) {
+    case "ArrowUp":
+    case "ArrowRight":
+      return stepSheetSnap(current, 1)
+    case "ArrowDown":
+    case "ArrowLeft":
+      return stepSheetSnap(current, -1)
+    case "Home":
+      return SHEET_SNAP_RANGE.min
+    case "End":
+      return SHEET_SNAP_RANGE.max
+    case "Enter":
+    case " ":
+      return ((current + 1) % (SHEET_SNAP_RANGE.max + 1)) as Snap
+    default:
+      return null
+  }
+}
+
+/**
+ * A slider key is consumed even at a bound (so it never scrolls the page), but only a changed snap is
+ * applied: re-applying peek would run the settle-at-peek collapse again and pop one more detail per press.
+ */
+export function sheetSnapKeyOutcome(
+  current: Snap,
+  key: string | undefined,
+): { consumed: boolean; next: Snap | null } {
+  const next = sheetSnapForKey(current, key)
+  if (next === null) return { consumed: false, next: null }
+  return { consumed: true, next: next === current ? null : next }
+}
+
+const SHEET_SNAP_VALUE_KEYS = [
+  "a11y.sheet_snap.collapsed",
+  "a11y.sheet_snap.half",
+  "a11y.sheet_snap.full",
+] as const satisfies readonly string[]
+
+export function sheetSnapValueKey(snap: Snap): (typeof SHEET_SNAP_VALUE_KEYS)[Snap] {
+  return SHEET_SNAP_VALUE_KEYS[snap]
 }
 
 export function searchRiseTransition({

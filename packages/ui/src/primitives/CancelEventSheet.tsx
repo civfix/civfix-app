@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
+import { MAX_EVENT_CANCEL_REASON } from "@civfix/shared"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useT } from "../i18n"
-
-const REASON_MAX = 500
+import { useResetOnOpen } from "./useModalClosed"
 
 export interface CancelEventSheetProps {
   visible: boolean
@@ -30,9 +30,10 @@ export function CancelEventSheet({
   const [reason, setReason] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) setReason("")
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setReason("")
+    setFocused(false)
+  })
 
   const commit = useCallback(() => {
     if (pending) return
@@ -69,16 +70,16 @@ export function CancelEventSheet({
 
       <TextInput
         value={reason}
-        onChangeText={(next) => setReason(next.slice(0, REASON_MAX))}
+        onChangeText={(next) => setReason(next.slice(0, MAX_EVENT_CANCEL_REASON))}
         editable={!pending}
         multiline
-        maxLength={REASON_MAX}
+        maxLength={MAX_EVENT_CANCEL_REASON}
         placeholder={t("reason.placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("reason.a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

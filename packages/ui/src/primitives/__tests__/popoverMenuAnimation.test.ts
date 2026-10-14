@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { reportDetailSource } from "../../bodies/reportDetail/__tests__/reportDetailSource"
 import { MOTION } from "../../theme/motion"
 import { menuOrigin, MENU_SCALE_FROM } from "../menuMotionModel"
 
@@ -19,8 +20,10 @@ const contextMenu = strip(read("../MessageContextMenu.tsx"))
 const postActionBar = strip(read("../PostActionBar.tsx"))
 const convoBar = strip(read("../../bodies/conversation/ConvoBar.tsx"))
 const conversation = strip(read("../../bodies/ConversationBody.tsx"))
-const inbox = strip(read("../../bodies/MessagingListBody.tsx"))
-const reportDetail = strip(read("../../bodies/ReportDetailBody.tsx"))
+const inbox = ["../../bodies/MessagingListBody.tsx", "../../bodies/inbox/ThreadRow.tsx"]
+  .map((file) => strip(read(file)))
+  .join("\n")
+const reportDetail = strip(reportDetailSource())
 
 describe("menu motion tokens", () => {
   it("names an entrance and a QUICKER exit in the shared motion vocabulary", () => {
@@ -218,7 +221,8 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("runs an item's action only after it has asked the menu to close, never before", () => {
-    expect(popover).toMatch(/run\(item\.onPress\)/)
+    expect(popover).toMatch(/pressPopoverMenuItem\(item, run\)/)
+    expect(strip(read("../popoverMenuModel.ts"))).toMatch(/else run\(item\.onPress\)/)
     const gateHook = strip(read("../useDeferredOverlayAction.ts"))
     expect(gateHook).toMatch(/onClose\(\)\s+gate\.choose\(action\)/)
   })
@@ -228,7 +232,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
     expect(anchoredPopover).not.toMatch(/backgroundColor: t\.colors\.surface/)
   })
 
-  it("is the presentation for the menus that used to wire their own Modal", () => {
+  it("is the presentation for PopoverMenu and the map theme toggle, neither wiring its own Modal", () => {
     expect(popover).toMatch(/<AnchoredPopover/)
     expect(popover).not.toMatch(/<Modal/)
     expect(mapThemeToggle).toMatch(/<AnchoredPopover/)
@@ -262,7 +266,7 @@ describe("PopoverMenu owns the animation for every menu that uses it", () => {
 })
 
 describe("every dropdown in the package rides the same motion", () => {
-  it("the chat header overflow is the house PopoverMenu now, not a hand-placed card", () => {
+  it("the chat header overflow is the house PopoverMenu, not a hand-placed card", () => {
     expect(convoBar).toMatch(/<PopoverMenu\s/)
     expect(convoBar).toMatch(/const items: PopoverMenuItem\[\]/)
     expect(convoBar).not.toMatch(/styles\.menuBackdrop/)
@@ -294,7 +298,7 @@ describe("every dropdown in the package rides the same motion", () => {
     expect(contextMenu).toMatch(/return \(\) => springIn\.stop\(\)/)
   })
 
-  it("the repost menu is the house PopoverMenu now, so it finally tints the screen behind it", () => {
+  it("the repost menu is the house PopoverMenu, so it tints the screen behind it", () => {
     expect(postActionBar).toMatch(/<PopoverMenu\s/)
     expect(postActionBar).toMatch(/usePopoverAnchor\(openRepostMenuAt\)/)
     expect(postActionBar).toMatch(/anchorRect=\{repostAnchor\}/)
@@ -318,7 +322,7 @@ describe("every dropdown in the package rides the same motion", () => {
     }
   })
 
-  it("callers that used to unmount on close now stay mounted long enough to animate out", () => {
+  it("the inbox menu stays mounted after close long enough to animate out", () => {
     expect(inbox).toMatch(/\{menuEverOpened \? \(\s*<PopoverMenu\s+visible=\{menuOpen\}/)
     expect(inbox).not.toMatch(/\{menuOpen \? \(\s*<PopoverMenu\s+visible\s/)
   })

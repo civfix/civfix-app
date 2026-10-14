@@ -15,7 +15,7 @@ export type AppearanceCommit =
   | { kind: "clear" }
   | { kind: "apply"; preference: AppearancePreference }
 
-export function appearanceSelection(
+function appearanceSelection(
   pending: AppearancePending | null,
   applied: AppearancePreference,
 ): AppearancePreference {

@@ -1,10 +1,10 @@
 /**
  * The composer's state machine: the draft, its staged @mentions and attachments, and the two inline
- * modes - "edit" (P1: the composer field itself becomes the edit box, parking the in-progress draft)
- * and "reply" (P2: a plain send aimed at a quoted message). Owns submit, so the edit/send/reply
+ * modes: "edit" (the composer field itself becomes the edit box, parking the in-progress draft) and
+ * "reply" (a plain send aimed at a quoted message). Owns submit, so the edit/send/reply
  * decision lives in one place (the pure resolveComposerSubmit) instead of in the JSX.
  */
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform } from "react-native"
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native"
 import { MESSAGE_BODY_MAX, type ChatMessageDTO, type UserSearchResultDTO } from "@civfix/shared"
@@ -16,9 +16,11 @@ import { useAutoGrowInput } from "../../primitives/useAutoGrowInput"
 import { isComposerSendKey, isComposerCancelKey } from "../../primitives/composerKeyPress"
 import { conversationFieldEscape } from "../../shell/shellKeyModel"
 import { useT } from "../../i18n"
-import { resolveComposerSubmit, type ComposerSubmitMode } from "../composerSubmit"
+import { resolveComposerSubmit, type ComposerSubmitMode } from "./composerSubmit"
 import { bodyMentionsHandle } from "./mentionMatch"
-import { CONTROL, COMPOSER_MAX } from "./styles"
+import { MODAL_DISMISS_FOCUS_DELAY_MS } from "../modalFocusDelay"
+import { editErrorCopyKey } from "./conversationModel"
+import { CONTROL, COMPOSER_MAX } from "./styleParts"
 
 export type ComposerModeValue = { kind: "edit" | "reply"; message: ChatMessageDTO } | null
 
@@ -29,7 +31,6 @@ export interface ComposerModeState {
   submitMode: ComposerSubmitMode | null
   /** Staged attachments (shared hook) - the thumb strip, the attach sheet and the upload gate. */
   att: ReturnType<typeof useComposerAttachments>
-  /** The auto-growing TextInput's ref + measured height. */
   grow: ReturnType<typeof useAutoGrowInput>
   onChangeDraft: (text: string) => void
   onPickMention: (candidate: MentionCandidate, nextDraft: string) => void
@@ -59,25 +60,22 @@ export function useComposerMode({
   const [mentioned, setMentioned] = useState<UserSearchResultDTO[]>([])
   const att = useComposerAttachments()
   const grow = useAutoGrowInput(draft, CONTROL, COMPOSER_MAX)
-  // Inline composer mode: "edit" (P1) repurposes the composer field itself (no modal); "reply" (P2)
-  // keeps the composer as a plain send aimed at the quoted message (mode bar shows author + excerpt).
   const [composerMode, setComposerMode] = useState<ComposerModeValue>(null)
   const [editPending, setEditPending] = useState(false)
 
   // Mirror of the live draft state for callbacks that must stay referentially STABLE (onOpenEdit feeds
   // every rendered Bubble via renderItem - depending on `draft` directly would re-render the whole list
-  // per keystroke). Assigned every render, so reads are always fresh.
+  // per keystroke). Assigned on every commit (never during render), so handler reads are always fresh.
   const draftStateRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] }>({ draft: "", mentioned: [] })
-  draftStateRef.current = { draft, mentioned }
   // Same stability trick for the composer mode: onOpenReply is fed to every Bubble via renderItem and
-  // must not churn when the mode or an edit save toggles. Assigned every render, reads always fresh.
+  // must not churn when the mode or an edit save toggles.
   const composerModeStateRef = useRef<{ mode: ComposerModeValue; editPending: boolean }>({ mode: null, editPending: false })
-  composerModeStateRef.current = { mode: composerMode, editPending }
-  // The pre-edit composer draft, parked when edit mode opens and restored when it ends (cancel or save).
+  useLayoutEffect(() => {
+    draftStateRef.current = { draft, mentioned }
+    composerModeStateRef.current = { mode: composerMode, editPending }
+  })
   const savedDraftRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] } | null>(null)
 
-  // The pure view of the active mode for resolveComposerSubmit (shared by the press handler and the
-  // submit button's disabled state).
   const submitMode = useMemo<ComposerSubmitMode | null>(
     () =>
       composerMode
@@ -105,8 +103,8 @@ export function useComposerMode({
 
   const onSend = useCallback(() => {
     // Edits are text-only: staged attachments stay parked in `att` (strip hidden, attach disabled
-    // while editing) and are never sent with an edit - they come back when the mode ends. Gated on
-    // the EDIT kind specifically: P2's reply mode is a send with a reference, media and all.
+    // while editing) and are never sent with an edit; they come back when the mode ends. Gated on
+    // the EDIT kind specifically: a reply is a send with a reference, media and all.
     const media: ComposerMedia[] = submitMode?.kind === "edit"
       ? []
       : att.attachments
@@ -127,19 +125,17 @@ export function useComposerMode({
         .then(() => {
           setEditPending(false)
           setComposerMode(null)
-          // The edit consumed the composer box; the parked pre-edit draft comes back.
           restoreSavedDraft()
         })
         .catch((err: unknown) => {
           // Keep the mode + edited text so the user can retry; surface the failure as a toast.
           setEditPending(false)
-          toast.show(err instanceof Error ? err.message : t("composer.save_error"), { variant: "error" })
+          toast.show(t(editErrorCopyKey(err)), { variant: "error" })
         })
       return
     }
     if (att.uploading) return
-    // Reply is a plain send with a reference: pass the quoted message's id, fire-and-forget like any
-    // send, and drop the mode with the rest of the composer state (no parked draft to restore).
+    // A reply parked no draft, so its mode drops with the rest of the composer state.
     send(resolved.body, mentionedUserIds, media, submitMode?.kind === "reply" ? submitMode.messageId : undefined)
     setComposerMode(null)
     setDraft("")
@@ -168,10 +164,8 @@ export function useComposerMode({
     [onSend, composerMode, cancelComposerMode, grow.ref],
   )
 
-  // Context-menu "Edit": flip the composer itself into edit mode (no modal). Park the in-progress
-  // draft (cancel/save restores it), pre-fill the field with the original body, and seed the mention
-  // list from the message's existing mentions so the submit-time re-filter keeps the ones the edited
-  // text still contains. Reads live draft state through the mirror ref (stability, above).
+  // The mention list is seeded from the message's existing mentions so the submit-time re-filter keeps
+  // the ones the edited text still contains.
   const onOpenEdit = useCallback((message: ChatMessageDTO) => {
     // Re-entrant guard: picking Edit on message B while already editing A must NOT re-park A's
     // in-progress edit text over the user's ORIGINAL draft - only the first entry parks.
@@ -189,7 +183,7 @@ export function useComposerMode({
     )
     // Deferred: the context-menu Modal is dismissing right now, and its teardown can swallow a
     // synchronous focus on native - focus once it is gone.
-    setTimeout(() => grow.ref.current?.focus(), 50)
+    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
   }, [grow.ref])
 
   // Context-menu "Reply": aim the composer at the quoted message. The draft is untouched - the user
@@ -203,7 +197,7 @@ export function useComposerMode({
     if (mode?.kind === "edit") restoreSavedDraft()
     setComposerMode({ kind: "reply", message })
     // Same deferred focus as edit: the context-menu Modal is tearing down right now.
-    setTimeout(() => grow.ref.current?.focus(), 50)
+    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
   }, [restoreSavedDraft, grow.ref])
 
   const onChangeDraft = useCallback(

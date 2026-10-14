@@ -129,7 +129,8 @@
     "cancel_edit": "Cancel editing",
     "save_error": "Couldn't save your edit. Try again.",
     "reply_title": "Reply to {{name}}",
-    "cancel_reply": "Cancel reply"
+    "cancel_reply": "Cancel reply",
+    "edit_unavailable": "That message is no longer available."
   },
   "report": {
     "subject_message": "this message",
@@ -148,7 +149,8 @@
     "block": "Block",
     "copied": "Copied",
     "dismiss": "Dismiss menu",
-    "reactions": "React to this message"
+    "reactions": "React to this message",
+    "copy_failed": "Couldn't copy"
   },
   "pins": {
     "bar_label": "Pinned message",

@@ -1,7 +1,9 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import type { UseQueryResult } from "@tanstack/react-query"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
 import type {
   AnalyticsRange,
   EventAnalyticsBroadcastsResponse,
@@ -11,8 +13,16 @@ import type {
   EventAnalyticsSourcesResponse,
   Panel,
 } from "@civfix/shared"
+import {
+  panelIsBlank,
+  seriesHasSuppressedPoints,
+  seriesValuesForChart as seriesValues,
+  visibleRows,
+  weekDayLabel,
+} from "@civfix/shared/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
 import { useConsoleUrlState } from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
@@ -33,14 +43,8 @@ import type { CsvRow } from "@/components/console/export"
 
 import { useConsoleEvent } from "../console-context"
 import { consoleKeys } from "../console-keys"
-import { useConsoleFormat, seriesDayLabel } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
 import { AnalyticsValue, PanelSuppressed, SuppressionNote } from "./analytics-value"
-import {
-  panelIsBlank,
-  seriesHasSuppressedPoints,
-  seriesValuesForChart as seriesValues,
-  visibleRows,
-} from "./suppression"
 
 const RANGES: readonly AnalyticsRange[] = ["7d", "30d", "90d", "all"]
 const TABS = ["registration", "attendance", "messaging", "page"] as const
@@ -89,12 +93,69 @@ function PanelBars({
   )
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1">
       <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">{title}</h2>
       {children}
     </section>
+  )
+}
+
+interface AnalyticsTabData {
+  registration: EventAnalyticsRegistrationsResponse | undefined
+  attendance: EventAnalyticsCheckinsResponse | undefined
+  messaging: EventAnalyticsBroadcastsResponse | undefined
+  page: EventAnalyticsSourcesResponse | undefined
+}
+
+function analyticsCsvBody(tab: AnalyticsTab, data: AnalyticsTabData, t: Translate): CsvRow[] {
+  switch (tab) {
+    case "registration": {
+      const registrations = data.registration
+      if (!registrations) return []
+      return [
+        [t("csv.day"), t("csv.registrations"), t("csv.cumulative")],
+        ...registrations.series.map((point, index) => [
+          point.day,
+          point.value,
+          registrations.cumulative[index]?.value ?? null,
+        ]),
+      ]
+    }
+    case "attendance":
+      if (!data.attendance) return []
+      return [
+        [t("csv.minute_offset"), t("csv.arrivals")],
+        ...data.attendance.arrivals.map((point) => [point.day, point.value]),
+      ]
+    case "messaging":
+      if (!data.messaging) return []
+      return [
+        [t("csv.channel"), t("csv.sent"), t("csv.failed"), t("csv.suppressed")],
+        ...data.messaging.byChannel.map((row) => [row.channel, row.sent, row.failed, row.suppressed]),
+      ]
+    case "page":
+      if (!data.page) return []
+      return [
+        [t("csv.day"), t("csv.page_views")],
+        ...data.page.pageViews.map((point) => [point.day, point.value]),
+      ]
+  }
+}
+
+function AnalyticsTabGate<T>({
+  query,
+  children,
+}: {
+  query: UseQueryResult<T>
+  children: (data: T) => ReactNode
+}) {
+  const gate = useGate(query)
+  return (
+    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
+      {query.data ? children(query.data) : null}
+    </StateGate>
   )
 }
 
@@ -139,16 +200,15 @@ export function AnalyticsScreen() {
   })
 
   const overviewGate = useGate(overview)
-  const k = overview.data?.k ?? 5
+  const k = overview.data?.k ?? ANALYTICS_SUPPRESSION_K
   const rangeApplies = tab !== "attendance"
-  const tabQuery =
-    tab === "registration"
-      ? registrations
-      : tab === "attendance"
-        ? checkins
-        : tab === "messaging"
-          ? broadcasts
-          : sources
+  const tabQueries = {
+    registration: registrations,
+    attendance: checkins,
+    messaging: broadcasts,
+    page: sources,
+  } satisfies Record<AnalyticsTab, UseQueryResult<{ generatedAt: string }>>
+  const tabQuery = tabQueries[tab]
 
   const exportCurrent = () => {
     const labels = {
@@ -163,8 +223,8 @@ export function AnalyticsScreen() {
     const generatedAt =
       tabQuery.data?.generatedAt ?? overview.data?.generatedAt ?? new Date().toISOString()
     const head = provenanceRows({
-      title: `${event?.title ?? ""} — ${t(`tab.${tab}`)}`,
-      reference: event?.referenceCode ?? null,
+      title: t("csv.title", { event: event.title ?? "", tab: t(`tab.${tab}`) }),
+      reference: event.referenceCode ?? null,
       generatedAt,
       generatedAtLabel: format.dateTime(generatedAt),
       filters: [
@@ -179,39 +239,14 @@ export function AnalyticsScreen() {
       labels,
     })
 
-    let body: CsvRow[] = []
-    if (tab === "registration" && registrations.data) {
-      body = [
-        [t("csv.day"), t("csv.registrations"), t("csv.cumulative")],
-        ...registrations.data.series.map((point, index) => [
-          point.day,
-          point.value,
-          registrations.data?.cumulative[index]?.value ?? null,
-        ]),
-      ]
-    } else if (tab === "attendance" && checkins.data) {
-      body = [
-        [t("csv.minute_offset"), t("csv.arrivals")],
-        ...checkins.data.arrivals.map((point) => [point.day, point.value]),
-      ]
-    } else if (tab === "messaging" && broadcasts.data) {
-      body = [
-        [t("csv.channel"), t("csv.sent"), t("csv.failed"), t("csv.suppressed")],
-        ...broadcasts.data.byChannel.map((row) => [
-          row.channel,
-          row.sent,
-          row.failed,
-          row.suppressed,
-        ]),
-      ]
-    } else if (tab === "page" && sources.data) {
-      body = [
-        [t("csv.day"), t("csv.page_views")],
-        ...sources.data.pageViews.map((point) => [point.day, point.value]),
-      ]
-    }
+    const body = analyticsCsvBody(tab, {
+      registration: registrations.data,
+      attendance: checkins.data,
+      messaging: broadcasts.data,
+      page: sources.data,
+    }, t)
 
-    downloadCsv(csvFilename([event?.title ?? "event", tab], new Date()), [...head, ...body])
+    downloadCsv(csvFilename([event.title ?? "event", tab], new Date()), [...head, ...body])
   }
 
   return (
@@ -235,7 +270,12 @@ export function AnalyticsScreen() {
           ) : (
             <p className="text-token-12 text-console-ink-3">{t("range.whole_event")}</p>
           )}
-          <ConsoleButton variant="outline" size="sm" onClick={exportCurrent}>
+          <ConsoleButton
+            variant="outline"
+            size="sm"
+            disabled={!tabQuery.data}
+            onClick={exportCurrent}
+          >
             {t("export_csv")}
           </ConsoleButton>
         </div>
@@ -274,7 +314,7 @@ export function AnalyticsScreen() {
                 stages={overview.data.funnel.map((step, index) => ({
                   id: step.step,
                   label: step.label,
-                  value: step.value === null ? "—" : format.number(step.value),
+                  value: step.value === null ? EMPTY_VALUE : format.number(step.value),
                   tone: index === 0 ? "sky" : index === overview.data!.funnel.length - 1 ? "moss" : "neutral",
                 }))}
               />
@@ -306,18 +346,17 @@ function RegistrationTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
+  const dayLabel = weekDayLabel(format.locale)
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("registration.over_time")}>
             <LineArea
               area
               suppressedLabel={t("suppressed.point")}
               summary={t("registration.over_time_a11y")}
-              labels={data.series.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.series.map((point) => dayLabel(point.day))}
               series={[
                 { id: "new", label: t("registration.new"), values: seriesValues(data.series) },
                 {
@@ -333,7 +372,7 @@ function RegistrationTab({
             <StackedBars
               suppressedLabel={t("suppressed.point")}
               summary={t("registration.cancellations_a11y")}
-              labels={data.cancellations.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.cancellations.map((point) => dayLabel(point.day))}
               series={[
                 {
                   id: "cancelled",
@@ -360,8 +399,8 @@ function RegistrationTab({
             </div>
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -373,11 +412,9 @@ function AttendanceTab({
   k: number
 }) {
   const { t } = useT("host-analytics")
-  const gate = useGate(query)
-  const data = query.data
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("attendance.arrivals")}>
             <p className="mb-token-2 text-token-12 text-console-ink-3">
@@ -393,6 +430,7 @@ function AttendanceTab({
                   count: point.value as number,
                 }))}
             />
+            {seriesHasSuppressedPoints(data.arrivals) ? <SuppressionNote k={k} /> : null}
           </Card>
           <Card title={t("attendance.rates")}>
             <dl className="grid grid-cols-2 gap-token-4">
@@ -427,8 +465,8 @@ function AttendanceTab({
             </div>
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -440,17 +478,19 @@ function MessagingTab({
   k: number
 }) {
   const { t } = useT("host-analytics")
+  const { t: te } = useT("enums")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
+  const dayLabel = weekDayLabel(format.locale)
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("messaging.totals")}>
             <dl className="grid grid-cols-3 gap-token-4">
               <div>
-                <dt className="text-token-12 text-console-ink-3">{t("messaging.active_days")}</dt>
+                <dt className="text-token-12 text-console-ink-3">
+                  {t("messaging.broadcasts_sent")}
+                </dt>
                 <dd className="text-token-20 font-bold text-console-ink">
                   <AnalyticsValue value={data.broadcastsSent} k={k} />
                 </dd>
@@ -476,7 +516,7 @@ function MessagingTab({
             <StackedBars
               suppressedLabel={t("suppressed.point")}
               summary={t("messaging.by_channel_a11y")}
-              labels={data.byChannel.map((row) => row.channel)}
+              labels={data.byChannel.map((row) => te(`broadcastChannel.${row.channel}`))}
               series={[
                 {
                   id: "sent",
@@ -500,15 +540,15 @@ function MessagingTab({
             <LineArea
               suppressedLabel={t("suppressed.point")}
               summary={t("messaging.over_time_a11y")}
-              labels={data.series.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.series.map((point) => dayLabel(point.day))}
               series={[
                 { id: "sends", label: t("messaging.sends"), values: seriesValues(data.series) },
               ]}
             />
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }
 
@@ -521,18 +561,17 @@ function PageTab({
 }) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
-  const gate = useGate(query)
-  const data = query.data
+  const dayLabel = weekDayLabel(format.locale)
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
-      {data ? (
+    <AnalyticsTabGate query={query}>
+      {(data) => (
         <div className="flex flex-col gap-token-4">
           <Card title={t("page.views")}>
             <LineArea
               area
               suppressedLabel={t("suppressed.point")}
               summary={t("page.views_a11y")}
-              labels={data.pageViews.map((point) => seriesDayLabel(point.day, format.locale))}
+              labels={data.pageViews.map((point) => dayLabel(point.day))}
               series={[
                 { id: "views", label: t("page.views"), values: seriesValues(data.pageViews) },
               ]}
@@ -551,7 +590,7 @@ function PageTab({
               summary={t("page.donation_clicks")}
               size={120}
               centerValue={
-                data.donationClicks === null ? "—" : format.number(data.donationClicks)
+                data.donationClicks === null ? EMPTY_VALUE : format.number(data.donationClicks)
               }
               centerLabel={t("page.donation_clicks")}
               segments={
@@ -568,7 +607,7 @@ function PageTab({
             />
           </Card>
         </div>
-      ) : null}
-    </StateGate>
+      )}
+    </AnalyticsTabGate>
   )
 }

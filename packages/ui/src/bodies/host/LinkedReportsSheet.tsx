@@ -7,7 +7,7 @@ import { ModalCardSheet, PrimaryButton, useToast } from "../../primitives"
 import { useUpdateCleanup } from "../../data"
 import { queryKeys } from "../../data/keys"
 import { useT } from "../../i18n"
-import { appErrorCode } from "../errorCode"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { ReportLinkPicker } from "../ReportLinkPicker"
 import { ReportPicker } from "../reportPicker/ReportPicker"
 import { optimisticLinkedRefs, refToPin } from "../reportPicker/reportPickerModel"
@@ -30,13 +30,18 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
   const saved = useMemo(() => cleanup.linkedReports.map((report) => report.id), [cleanup.linkedReports])
   const linkedPins = useMemo(() => cleanup.linkedReports.map(refToPin), [cleanup.linkedReports])
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [shown, setShown] = useState(visible)
   const readonly = mode === "readonly"
+
+  if (visible !== shown) {
+    setShown(visible)
+    if (visible) setErrorText(null)
+  }
 
   useEffect(() => {
     if (!visible) return
-    setErrorText(null)
     useLinkedReportCards.getState().put(cleanup.linkedReports.map(linkedRefToCardData))
-  }, [visible])
+  }, [visible, cleanup.linkedReports])
 
   const onSave = useCallback(
     (ids: string[]) => {
@@ -61,7 +66,7 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
           },
           onError: (err) => {
             setErrorText(
-              appErrorCode(err) === "FORBIDDEN"
+              appErrorCode(err) === ErrorCode.FORBIDDEN
                 ? t("linked_reports_sheet.error_forbidden")
                 : t("linked_reports_sheet.error"),
             )

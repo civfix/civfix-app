@@ -118,16 +118,26 @@ describe("BODY_TIMING - one vocabulary for every seam", () => {
 })
 
 describe("the body-transition seams honour the plan", () => {
-  const native = readFileSync(new URL("../BodyTransition.native.tsx", import.meta.url), "utf8")
+  const native = readFileSync(new URL("../useEntranceTransition.native.ts", import.meta.url), "utf8")
   const web = readFileSync(new URL("../BodyTransition.web.tsx", import.meta.url), "utf8")
-  const step = readFileSync(new URL("../StepTransition.native.tsx", import.meta.url), "utf8")
+  const bodyNative = readFileSync(new URL("../BodyTransition.native.tsx", import.meta.url), "utf8")
+  const stepNative = readFileSync(new URL("../StepTransition.native.tsx", import.meta.url), "utf8")
   const stepWeb = readFileSync(new URL("../StepTransition.web.tsx", import.meta.url), "utf8")
+
+  it("runs body and step swaps on native through the one entrance hook", () => {
+    for (const [name, src] of [
+      ["body.native", bodyNative],
+      ["step.native", stepNative],
+    ] as const) {
+      expect(src, name).toContain("const { onLayout, animatedStyle } = useEntranceTransition(transitionKey, direction)")
+      expect(src, name).toMatch(/<Animated\.View onLayout=\{onLayout\} style=\{\[[\w.]+, animatedStyle\]\}>/)
+    }
+  })
 
   it("takes every duration and distance from BODY_TIMING - no seam-local literals", () => {
     for (const [name, src] of [
       ["native", native],
       ["web", web],
-      ["step.native", step],
       ["step.web", stepWeb],
     ] as const) {
       expect(src, name).toContain("BODY_TIMING")
@@ -139,7 +149,6 @@ describe("the body-transition seams honour the plan", () => {
   it("turns the plan's ratio into a real distance: measured width on native, a percentage on web", () => {
     expect(native).toMatch(/translateX\.setValue\(plan\.fromRatio \* widthRef\.current\)/)
     expect(native).toMatch(/widthRef\.current = e\.nativeEvent\.layout\.width/)
-    expect(step).toMatch(/translateX\.setValue\(plan\.fromRatio \* widthRef\.current\)/)
     expect(web).toMatch(/translateRatio\(plan\.fromRatio\)/)
     expect(web).toMatch(/translateRatio\(plan\.exitRatio\)/)
     expect(stepWeb).toMatch(/translateRatio\(flipped \? 0 : plan\.fromRatio\)/)
@@ -148,15 +157,13 @@ describe("the body-transition seams honour the plan", () => {
   it("is DIRECTION-aware in every seam: the plan is built from the incoming `direction`", () => {
     expect(native).toMatch(/bodyTransitionPlan\(direction, reduceMotionRef\.current, BODY_TIMING\)/)
     expect(web).toMatch(/bodyTransitionPlan\(direction, false, BODY_TIMING\)/)
-    expect(step).toMatch(/bodyTransitionPlan\(direction, reduceMotionRef\.current, BODY_TIMING\)/)
     expect(stepWeb).toMatch(/bodyTransitionPlan\(direction, false, BODY_TIMING\)/)
   })
 
   it("short-circuits on the platform's reduce-motion signal before any slide is scheduled", () => {
-    expect(native).toMatch(/AccessibilityInfo\.isReduceMotionEnabled\(\)/)
+    expect(native).toMatch(/useReducedMotion\(\) === true/)
     expect(web).toMatch(/const instant = prefersReducedMotion\(\)/)
     expect(web).toMatch(/anim: instant\s*\?\s*null/)
-    expect(step).toMatch(/useReducedMotion\(\) === true/)
     expect(stepWeb).toMatch(/if \(prefersReducedMotion\(\)\) \{/)
   })
 

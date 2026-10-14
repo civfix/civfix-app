@@ -129,7 +129,8 @@
     "cancel_edit": "Cancelar edición",
     "save_error": "No se pudo guardar el cambio. Inténtalo de nuevo.",
     "reply_title": "Responder a {{name}}",
-    "cancel_reply": "Cancelar respuesta"
+    "cancel_reply": "Cancelar respuesta",
+    "edit_unavailable": "Ese mensaje ya no está disponible."
   },
   "report": {
     "subject_message": "este mensaje",
@@ -148,7 +149,8 @@
     "block": "Bloquear",
     "copied": "Copiado",
     "dismiss": "Cerrar menú",
-    "reactions": "Reaccionar a este mensaje"
+    "reactions": "Reaccionar a este mensaje",
+    "copy_failed": "No se pudo copiar"
   },
   "pins": {
     "bar_label": "Mensaje fijado",

@@ -88,7 +88,10 @@
     "error_subject": "제목을 입력하세요.",
     "error_body": "메시지를 작성하세요.",
     "error_audience": "받는 사람을 선택하세요.",
-    "error_channels": "채널을 하나 이상 선택하세요."
+    "error_channels": "채널을 하나 이상 선택하세요.",
+    "save_before_send": "이 메시지를 보내거나 테스트 전송 또는 예약하기 전에 변경 사항을 저장하세요.",
+    "schedule_not_in_zone": "서머타임 전환으로 {{zone}}에는 없는 시간입니다. 다른 시간을 선택하세요.",
+    "schedule_zone_hint": "행사 시간대({{zone}}) 기준으로 이 시각에 전송됩니다."
   },
   "audience": {
     "all_registered": "등록자 전체",
@@ -203,6 +206,7 @@
     "error_conflict": "이 행사는 더 이상 공지를 받지 않습니다.",
     "error_validation": "제목과 내용, 링크를 확인해 주세요.",
     "error_held": "이 공지는 검토를 위해 보류되었습니다.",
-    "error_generic": "공지를 보내지 못했습니다. 다시 시도해 주세요."
+    "error_generic": "공지를 보내지 못했습니다. 다시 시도해 주세요.",
+    "see_all_open": "공지 전체 보기"
   }
 }

@@ -6,10 +6,9 @@ import {
 } from "@/features/service-record/service-record-code"
 
 /**
- * The public /service-record page reads its code from `window.location.pathname` rather than from
- * `usePathname()`, because the Cloudflare rewrite serves the static-export PLACEHOLDER document while
- * the browser's address bar keeps the real deep link. That parsing is the page's one piece of real
- * logic, and the web suite has no jsdom, so it lives in a pure module and is pinned here.
+ * The page reads its code from `window.location.pathname` rather than `usePathname()`, because the
+ * Cloudflare rewrite serves the static-export placeholder document while the address bar keeps the real
+ * deep link.
  */
 describe("serviceRecordCodeFromPath", () => {
   it("reads the printed code off a deep link, with or without a trailing slash", () => {

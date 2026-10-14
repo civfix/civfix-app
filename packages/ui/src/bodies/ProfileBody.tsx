@@ -22,7 +22,9 @@ import {
 } from "./ProfileView"
 import { ServiceHoursSection } from "./profile/ServiceHoursSection"
 import { InvitationsSection } from "./profile/InvitationsSection"
-import { pushCleanup } from "./navHelpers"
+import { pushCleanup } from "../nav/verbs"
+
+const REPORTS_PREVIEW_LIMIT = 3
 
 function DashboardRow({ onOpen }: { onOpen: () => void }) {
   const styles = useStyles()
@@ -63,7 +65,7 @@ export function ProfileBody() {
   const profile = query.data?.profile
 
   const postsQuery = useUserPosts(profile?.id)
-  const reportsQuery = useMyReports(3)
+  const reportsQuery = useMyReports(REPORTS_PREVIEW_LIMIT)
 
   const onOpenConnections = useCallback(
     (which: "followers" | "following") => {
@@ -94,7 +96,7 @@ export function ProfileBody() {
 
   const profileReports: ProfileReports = useMemo(
     () => ({
-      items: (reportsQuery.data?.pages ?? []).flatMap((page) => page.items).slice(0, 3),
+      items: (reportsQuery.data?.pages ?? []).flatMap((page) => page.items).slice(0, REPORTS_PREVIEW_LIMIT),
       isLoading: reportsQuery.isLoading,
       isError: reportsQuery.isError,
       onOpen: onOpenReport,
@@ -102,35 +104,6 @@ export function ProfileBody() {
     }),
     [onOpenReport, pushKind, reportsQuery.data, reportsQuery.isError, reportsQuery.isLoading],
   )
-
-  const stateContent = (() => {
-    if (!isAuthenticated && !isPending) {
-      return (
-        <SignInPrompt
-          icon={iconMap.User}
-          iconSize={32}
-          variant="detail"
-          title={t("signin.title")}
-          body={t("signin.body")}
-          onSignIn={() => requireAuth(() => {}, { next: "/profile" })}
-        />
-      )
-    }
-    if (query.isError || !profile) {
-      return (
-        <EmptyState
-          variant="detail"
-          tone="neutral"
-          icon={iconMap.CloudOff}
-          iconColor={th.colors.textSubtle}
-          iconSize={30}
-          title={t("error.title")}
-          body={t("error.body")}
-        />
-      )
-    }
-    return null
-  })()
 
   if (isPending || query.isLoading) {
     return (
@@ -144,14 +117,41 @@ export function ProfileBody() {
     )
   }
 
-  if (stateContent || !profile) {
+  if (!isAuthenticated) {
     return (
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.stateContent}
         showsVerticalScrollIndicator={false}
       >
-        {stateContent}
+        <SignInPrompt
+          icon={iconMap.User}
+          iconSize={32}
+          variant="detail"
+          title={t("signin.title")}
+          body={t("signin.body")}
+          onSignIn={() => requireAuth(() => {}, { next: "/profile" })}
+        />
+      </ScrollView>
+    )
+  }
+
+  if (query.isError || !profile) {
+    return (
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.stateContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <EmptyState
+          variant="detail"
+          tone="neutral"
+          icon={iconMap.CloudOff}
+          iconColor={th.colors.textSubtle}
+          iconSize={30}
+          title={t("error.title")}
+          body={t("error.body")}
+        />
       </ScrollView>
     )
   }
@@ -169,7 +169,6 @@ export function ProfileBody() {
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <ProfileView
         profile={profile}
-        subtitle={profile.handle ? `@${profile.handle}` : undefined}
         onOpenEvent={onOpenEvent}
         onOpenConnections={onOpenConnections}
         posts={posts}
@@ -235,12 +234,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   dashboardTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   dashboardSub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
     marginTop: 1,
   },

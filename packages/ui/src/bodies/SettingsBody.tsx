@@ -11,6 +11,7 @@ import {
   TERMS_URL,
   sourceCommit,
   sourceUrl,
+  useToast,
 } from "../primitives"
 import { useAuthState, useLogout, useRequireAuth } from "../data"
 import { useOpenExternal } from "../capabilities"
@@ -19,6 +20,8 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { useLocale, useT, supportedLocales } from "../i18n"
 import { useOnboardingTourPresenter } from "./onboardingTour"
 
+const SHORT_COMMIT_LENGTH = 7
+
 export function SettingsBody() {
   const { ScrollView } = useScrollHost()
   const { t } = useT("settings")
@@ -26,6 +29,7 @@ export function SettingsBody() {
   const requireAuth = useRequireAuth()
   const logout = useLogout()
   const openExternal = useOpenExternal()
+  const toast = useToast()
   const { locale } = useLocale()
   const appearance = useAppearancePreference()
   const { t: tAppearance } = useT("appearance-settings")
@@ -37,9 +41,14 @@ export function SettingsBody() {
 
   const openUrl = useCallback(
     (url: string) => {
-      void openExternal?.open(url)
+      const showOpenError = () => toast.show(t("open_error"), { variant: "error" })
+      if (!openExternal) {
+        showOpenError()
+        return
+      }
+      openExternal.open(url).catch(showOpenError)
     },
-    [openExternal],
+    [openExternal, toast, t],
   )
 
   const localeName =
@@ -119,7 +128,7 @@ export function SettingsBody() {
         <SettingsRow
           icon="ExternalLink"
           label={t("source_code")}
-          value={sourceCommit().slice(0, 7) || undefined}
+          value={sourceCommit().slice(0, SHORT_COMMIT_LENGTH) || undefined}
           onPress={() => openUrl(sourceUrl())}
         />
       </SettingsSection>

@@ -19,5 +19,9 @@
   "denied": {
     "title": "Solo los anfitriones que pueden gestionar este evento pueden editarlo",
     "body": "Pide al anfitrión que actualice los detalles, o inscríbete en un puesto desde la página del evento."
+  },
+  "signIn": {
+    "title": "Inicia sesión para editar este evento",
+    "body": "Los anfitriones que gestionan este evento pueden cambiar sus detalles después de iniciar sesión."
   }
 }

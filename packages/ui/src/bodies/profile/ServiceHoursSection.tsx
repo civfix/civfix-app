@@ -5,6 +5,7 @@ import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, EmptyState, MetaDot } from "../../primitives"
+import { DateTile } from "../../primitives/DateBadge"
 import { useAuthState, useMyHours, useMyHoursEntries, usePublicHoursEntries } from "../../data"
 import { useNavStore } from "../../nav"
 import { useLocale, useT } from "../../i18n"
@@ -43,9 +44,11 @@ function OwnServiceHours({ totalHours }: { totalHours?: number }) {
   const byOrganization = hoursQuery.data?.hours.byOrganization ?? []
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
+  const { hasNextPage: entriesHaveNext, isFetchingNextPage: entriesFetchingNext, fetchNextPage: fetchNextEntries } =
+    entriesQuery
   const onLoadMore = useCallback(() => {
-    if (entriesQuery.hasNextPage && !entriesQuery.isFetchingNextPage) void entriesQuery.fetchNextPage()
-  }, [entriesQuery])
+    if (entriesHaveNext && !entriesFetchingNext) void fetchNextEntries()
+  }, [entriesHaveNext, entriesFetchingNext, fetchNextEntries])
 
   return (
     <>
@@ -75,9 +78,10 @@ function PublicServiceHours({ userId, totalHours }: { userId?: string; totalHour
   const firstPage = pages?.[0]
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
   const onLoadMore = useCallback(() => {
-    if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage()
-  }, [query])
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   if (query.isError) {
     return (
@@ -268,7 +272,7 @@ function VisibilityIndicator() {
   const label = t(`visibility.${state}`)
   return (
     <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "notification-prefs" })}
+      onPress={() => useNavStore.getState().push({ kind: "settings-privacy" })}
       accessibilityRole="button"
       accessibilityLabel={`${label}. ${t("visibility.a11y")}`}
       hitSlop={{ top: 12, bottom: 12, right: 12 }}
@@ -321,7 +325,7 @@ function HoursLedger({
       ) : isLoading ? (
         <View>
           {SKELETON_ROWS.map((i) => (
-            <SkeletonRow key={i} />
+            <LedgerRowSkeleton key={i} />
           ))}
         </View>
       ) : items.length === 0 ? (
@@ -345,6 +349,7 @@ function HoursLedger({
               disabled={isFetchingNextPage}
               accessibilityRole="button"
               accessibilityLabel={t("ledger.load_more_a11y")}
+              accessibilityState={{ disabled: isFetchingNextPage, busy: isFetchingNextPage }}
               {...focusRingProps}
               style={({ pressed }) => [
                 sectionStyles.loadMore,
@@ -406,10 +411,7 @@ function LedgerRow({ entry }: { entry: VolunteerHoursEntryDTO }) {
       {...focusRingProps}
       style={({ pressed }) => [styles.row, pressed && pressable ? styles.pressedDim : null]}
     >
-      <View style={styles.dateChip}>
-        <Text style={styles.dateDay}>{day}</Text>
-        <Text style={styles.dateMonth}>{month}</Text>
-      </View>
+      <DateTile variant="ledger" day={day} month={month} />
       <View style={styles.rowMeta}>
         <Text style={styles.rowTitle} numberOfLines={1}>
           {title}
@@ -435,7 +437,7 @@ function LedgerRow({ entry }: { entry: VolunteerHoursEntryDTO }) {
   )
 }
 
-function SkeletonRow() {
+function LedgerRowSkeleton() {
   const styles = useStyles()
   return (
     <View style={styles.row}>
@@ -476,7 +478,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   totalValue: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: 30,
+    fontSize: t.fontSize["30"],
     lineHeight: 34,
     letterSpacing: -0.6,
     color: t.colors.text,
@@ -521,7 +523,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 5,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
     marginTop: t.space["2"],
   },
   visibilityText: {
@@ -534,32 +536,9 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
-  },
-  dateChip: {
-    width: 38,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-    borderRadius: 9,
-    backgroundColor: t.colors.sun["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["100"],
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 15,
-    lineHeight: 16,
-    color: t.colors.sun["700"],
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 8,
-    letterSpacing: 0.5,
-    color: t.colors.sun["700"],
   },
   rowMeta: {
     flex: 1,
@@ -567,7 +546,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rowTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   rowSubRow: {
@@ -590,7 +569,7 @@ const useStyles = makeThemedStyles((t) => ({
   rowHours: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.accentText,
   },
 

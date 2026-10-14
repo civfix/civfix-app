@@ -11,7 +11,7 @@ import {
 } from "../src/schemas/chat.js"
 
 /**
- * Chat P2 contract: reply threading (ReplyToDTO nested on the message DTO, replyToId on the WS
+ * Chat reply contract: reply threading (ReplyToDTO nested on the message DTO, replyToId on the WS
  * send frame) and around-mode history (center-window fetch, mutually exclusive with `before`,
  * with a prevCursor toward newer messages on the response).
  */

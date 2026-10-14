@@ -8,7 +8,6 @@ import {
   ALL_EVENTS_RANGE_PRESETS,
   ANALYTICS_RANGE_PRESETS,
   ARRIVAL_LABEL_MINUTES,
-  DAY_MS,
   DEFAULT_ALL_EVENTS_PRESET,
   DEFAULT_EVENT_PRESET,
   SUMMARY_PANELS,
@@ -23,13 +22,14 @@ import {
   presetDays,
   rangeSlice,
   ratePercent,
-  seriesPoints,
-  seriesValues,
   summaryImpactRows,
   weeklyXLabels,
   wholeEventCheckedIn,
   wholeEventSignups,
 } from "../analyticsModel"
+import { MS_PER_DAY } from "@civfix/shared"
+import { breakdownBars, seriesBars } from "../analytics/chartBars"
+import { EMPTY_VALUE } from "../../../i18n/emptyValue"
 
 const CREATED = Date.parse("2026-09-01T00:00:00.000Z")
 const START = Date.parse("2026-09-10T16:00:00.000Z")
@@ -167,7 +167,7 @@ describe("slicing a series only ever drops points", () => {
   })
 
   it("returns an EMPTY series rather than silently falling back to the whole one", () => {
-    expect(rangeSlice(series, 1, now + 30 * DAY_MS)).toEqual([])
+    expect(rangeSlice(series, 1, now + 30 * MS_PER_DAY)).toEqual([])
   })
 
   it("passes the whole series through when there is no window to apply", () => {
@@ -319,10 +319,13 @@ describe("a by-event row drills down to one event, never to a title", () => {
 
 describe("a suppressed point never reads as a zero", () => {
   it("hands the charts a null, not the value the server hid", () => {
-    expect(seriesValues([point(CREATED, 4), point(START, 2, true)])).toEqual([4, null])
-    expect(seriesPoints([point(CREATED, 4), point(START, 2, true)])).toEqual([
-      { x: CREATED, y: 4 },
-      { x: START, y: null },
+    expect(seriesBars([point(CREATED, 4), point(START, 2, true)], "accent")).toEqual([
+      { key: iso(CREATED), value: 4, color: "accent" },
+      { key: iso(START), value: null, color: "accent" },
+    ])
+    expect(breakdownBars([row("a", 3), row("b", 2, true)], "accent")).toEqual([
+      { key: "a", label: "a", value: 3, color: "accent", valueLabel: "3" },
+      { key: "b", label: "b", value: null, color: "accent", valueLabel: EMPTY_VALUE },
     ])
   })
 

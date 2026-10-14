@@ -24,19 +24,11 @@ function replace(sel: TextSelection, text: string, start: number, end: number): 
   }
 }
 
-function wrapped(sel: TextSelection, marker: string): boolean {
-  const before = sel.value.slice(sel.start - marker.length, sel.start)
-  const after = sel.value.slice(sel.end, sel.end + marker.length)
-  if (before === marker && after === marker) return true
-  const inner = slice(sel)
-  return (
-    inner.length >= marker.length * 2 &&
-    inner.startsWith(marker) &&
-    inner.endsWith(marker)
-  )
+function innerWrapped(inner: string, marker: string): boolean {
+  return inner.length >= marker.length * 2 && inner.startsWith(marker) && inner.endsWith(marker)
 }
 
-export function toggleWrap(sel: TextSelection, marker: string): CommandResult {
+function toggleWrap(sel: TextSelection, marker: string): CommandResult {
   const inner = slice(sel)
 
   const outerBefore = sel.value.slice(sel.start - marker.length, sel.start)
@@ -49,7 +41,7 @@ export function toggleWrap(sel: TextSelection, marker: string): CommandResult {
     return { value, start: sel.start - marker.length, end: sel.end - marker.length }
   }
 
-  if (wrapped(sel, marker)) {
+  if (innerWrapped(inner, marker)) {
     const stripped = inner.slice(marker.length, inner.length - marker.length)
     return replace(sel, stripped, sel.start, sel.start + stripped.length)
   }

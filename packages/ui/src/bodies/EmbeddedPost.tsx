@@ -17,8 +17,11 @@ import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { buildPostIdentity } from "./postCardModel"
+import { embeddedPostA11yLabel } from "./embeddedPostLabel"
 
-export const EMBEDDED_POST_BODY_CLAMP_LINES = 4
+const EMBEDDED_POST_BODY_CLAMP_LINES = 4
+const MEDIA_RADIUS = 12
+const MEDIA_MAX_HEIGHT = 220
 
 export interface EmbeddedPostProps {
   post: PostRefDTO
@@ -78,7 +81,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         {post.deleted ? t("post_card.unavailable") : post.excerpt}
       </Text>
       {post.media.length > 0 && !post.deleted ? (
-        <PostMediaGrid media={post.media} t={t} radius={12} maxHeight={220} />
+        <PostMediaGrid media={post.media} t={t} radius={MEDIA_RADIUS} maxHeight={MEDIA_MAX_HEIGHT} />
       ) : null}
     </>
   )
@@ -87,6 +90,13 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
     return <View style={[styles.card, prominent ? styles.prominent : null]}>{content}</View>
   }
 
+  const label = embeddedPostA11yLabel(t, {
+    prominent,
+    name: identity.name,
+    excerpt: post.excerpt,
+    deleted: post.deleted === true,
+  })
+
   return (
     <Pressable
       onPress={(event) => {
@@ -94,7 +104,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         onPress()
       }}
       accessibilityRole="button"
-      accessibilityLabel={prominent ? t("post_card.open_repost_a11y") : t("post_card.open_quote_a11y")}
+      accessibilityLabel={label}
       {...focusRingProps}
       style={(state) => [
         styles.card,
@@ -143,24 +153,24 @@ const useStyles = makeThemedStyles((t) => ({
   },
   author: {
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   handle: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
   time: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
   body: {
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   bodyProminent: {

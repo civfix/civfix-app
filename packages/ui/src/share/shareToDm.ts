@@ -1,10 +1,9 @@
-import { MESSAGE_BODY_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { threadRoomId } from "../data/threadRoom"
 
 export const SHARE_DM_MAX_RECIPIENTS = 10
 
-export const SHARE_DM_RECENT_LIMIT = 20
-
-export const SHARE_CLIENT_ID_MAX = 64
+const SHARE_DM_RECENT_LIMIT = 20
 
 export interface ShareRecipient {
   id: string
@@ -52,6 +51,15 @@ export function shareNoteMaxLength(url: string): number {
   return Math.max(0, MESSAGE_BODY_MAX - url.length - 1)
 }
 
+// The cap counts UTF-16 code units like the server does, but a paste on web can land mid surrogate pair;
+// the orphaned high surrogate would reach the recipient as a broken glyph.
+export function clampShareNote(note: string, max: number): string {
+  if (note.length <= max) return note
+  const cut = note.slice(0, Math.max(0, max))
+  const last = cut.charCodeAt(cut.length - 1)
+  return last >= 0xd800 && last <= 0xdbff ? cut.slice(0, -1) : cut
+}
+
 export function toShareRecipient(person: PersonDTO): ShareRecipient {
   return { id: person.id, name: person.name }
 }
@@ -68,7 +76,7 @@ export function buildSharePlan(
     seen.add(recipient.id)
     entries.push({
       recipient,
-      clientId: newClientId(entries.length).slice(0, SHARE_CLIENT_ID_MAX),
+      clientId: newClientId(entries.length).slice(0, WS_CLIENT_ID_MAX),
     })
     if (entries.length === max) break
   }
@@ -111,7 +119,7 @@ export function dmThreadIdsByPeer(
     for (const thread of page.items ?? []) {
       if (thread?.kind !== "dm") continue
       const peerId = thread.peer?.id
-      const roomId = thread.refId ?? thread.id
+      const roomId = threadRoomId(thread)
       if (!peerId || !roomId || byPeer.has(peerId)) continue
       byPeer.set(peerId, roomId)
     }

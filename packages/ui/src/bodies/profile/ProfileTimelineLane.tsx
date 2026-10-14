@@ -4,7 +4,7 @@ import { makeThemedStyles, space } from "../../theme"
 
 export const PROFILE_TIMELINE_BLEED = space["4"]
 
-export function timelineLaneBleedStyle(bleed: number): { marginHorizontal: number } {
+function timelineLaneBleedStyle(bleed: number): { marginHorizontal: number } {
   return { marginHorizontal: -bleed }
 }
 

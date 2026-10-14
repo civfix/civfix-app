@@ -6,7 +6,7 @@ import {
   type ReportStatus,
   type ReportType,
 } from "@civfix/shared"
-import { isValidTimeZone } from "@civfix/shared/datetime"
+import { formatEventInstant } from "@civfix/shared/datetime"
 
 import {
   APPLE_TOUCH_ICON_PATH,
@@ -23,7 +23,6 @@ import {
   SITE_NAME,
 } from "./site-meta"
 
-export const EVENT_TIME_ZONE = "America/Los_Angeles"
 
 const TITLE_MAX = 90
 const EVENT_TITLE_MAX = 80
@@ -48,7 +47,7 @@ export interface PreviewContext {
   origin: string
 }
 
-export function brandImageUrl(origin: string): string {
+function brandImageUrl(origin: string): string {
   return `${origin}${BRAND_IMAGE_PATH}`
 }
 
@@ -70,7 +69,7 @@ export function withNoindex(preview: LinkPreview): LinkPreview {
   return preview.noindex ? preview : { ...preview, noindex: true }
 }
 
-export function escapeHtml(value: string): string {
+function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -79,11 +78,11 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;")
 }
 
-export function oneLine(value: string): string {
+function oneLine(value: string): string {
   return value.replace(/\s+/g, " ").trim()
 }
 
-export function clamp(value: string, max: number): string {
+function truncateText(value: string, max: number): string {
   const chars = Array.from(oneLine(value))
   if (chars.length <= max) return chars.join("")
   const cut = chars.slice(0, max)
@@ -91,7 +90,7 @@ export function clamp(value: string, max: number): string {
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).join("").trimEnd()}…`
 }
 
-export function isPublicMediaUrl(url: string | null | undefined): url is string {
+function isPublicMediaUrl(url: string | null | undefined): url is string {
   if (!url) return false
   let parsed: URL
   try {
@@ -108,7 +107,7 @@ function joinParts(parts: readonly (string | null | undefined)[]): string {
 }
 
 function finishDescription(parts: readonly (string | null | undefined)[]): string {
-  return clamp(joinParts(parts), DESCRIPTION_MAX)
+  return truncateText(joinParts(parts), DESCRIPTION_MAX)
 }
 
 const ON_SITE_SUFFIX = ` on ${SITE_NAME}`
@@ -141,7 +140,7 @@ export interface MediaSlideInput {
   thumbUrl?: string | null
 }
 
-export function firstCarouselImage(
+function firstCarouselImage(
   media: readonly MediaSlideInput[] | null | undefined,
 ): string | null {
   const slide = (media ?? []).find((item) => item.status === "ready")
@@ -206,12 +205,12 @@ export function previewForReport(
   const description =
     (joinParts([input.title, input.description])
       ? finishDescription([statusLabel, input.title, input.description])
-      : finishDescription([statusLabel ? `${kindLabel} — ${statusLabel}` : kindLabel, cityName])) ||
+      : finishDescription([statusLabel ? `${kindLabel} · ${statusLabel}` : kindLabel, cityName])) ||
     DEFAULT_DESCRIPTION
 
   const image = firstCarouselImage(input.media)
   return {
-    title: onSite(clamp(headline, TITLE_MAX)),
+    title: onSite(truncateText(headline, TITLE_MAX)),
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
@@ -223,34 +222,15 @@ export function previewForReport(
   }
 }
 
-export function formatEventWhen(
-  iso: string | null | undefined,
-  timeZone?: string | null,
-): string {
-  if (!iso) return ""
-  const at = new Date(iso)
-  if (Number.isNaN(at.getTime())) return ""
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }
-  const zone = timeZone && isValidTimeZone(timeZone) ? timeZone : EVENT_TIME_ZONE
-  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: zone }).format(at)
-}
-
 export function previewForEvent(
   input: EventPreviewInput,
   context: PreviewContext,
 ): LinkPreview | null {
   if (input.visibility === "private") return null
-  const title = input.title ? clamp(input.title, EVENT_TITLE_MAX) : ""
+  const title = input.title ? truncateText(input.title, EVENT_TITLE_MAX) : ""
   if (!title) return null
 
-  const when = formatEventWhen(input.scheduledAt, input.timezone)
+  const when = formatEventInstant(input.scheduledAt, input.timezone, "short")
   const cancelled = input.status === "cancelled" ? "Cancelled" : null
   const tagline = `A volunteer event on ${SITE_NAME}`
   const isPublic = isPublicVisibility(input.visibility)
@@ -290,11 +270,11 @@ export function previewForPerson(
   const byline = personByline(input)
   if (!byline) return null
 
-  const description = (input.bio ? clamp(input.bio, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
+  const description = (input.bio ? truncateText(input.bio, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
   const image = isPublicMediaUrl(input.avatarUrl) ? input.avatarUrl : null
 
   return {
-    title: onSite(clamp(byline, TITLE_MAX)),
+    title: onSite(truncateText(byline, TITLE_MAX)),
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
@@ -328,15 +308,15 @@ export function previewForSignupPage(
 ): LinkPreview | null {
   const event = input.event ?? null
   const rawTitle = input.seo?.title ?? event?.title ?? ""
-  const title = rawTitle ? clamp(rawTitle, EVENT_TITLE_MAX) : ""
+  const title = rawTitle ? truncateText(rawTitle, EVENT_TITLE_MAX) : ""
   if (!title) return null
 
   const isPublic = input.visibility === "public"
-  const when = formatEventWhen(event?.startsAt, event?.timezone)
+  const when = formatEventInstant(event?.startsAt, event?.timezone, "short")
   const cancelled = event?.status === "cancelled" ? "Cancelled" : null
   const host = input.organization?.name ? oneLine(input.organization.name) : ""
   const description =
-    (input.seo?.description ? clamp(input.seo.description, DESCRIPTION_MAX) : "") ||
+    (input.seo?.description ? truncateText(input.seo.description, DESCRIPTION_MAX) : "") ||
     finishDescription([cancelled, when, host || `An event on ${SITE_NAME}`]) ||
     DEFAULT_DESCRIPTION
 
@@ -378,7 +358,7 @@ export function previewForOrganization(
   const name = input.name ? oneLine(input.name) : ""
   if (!name) return null
 
-  const title = onSite(clamp(withHandle(name, input.slug), TITLE_MAX))
+  const title = onSite(truncateText(withHandle(name, input.slug), TITLE_MAX))
   const verified =
     input.verifiedStatus === "verified"
       ? (ORG_KIND_LABEL[input.verifiedKind ?? ""] ?? "Verified organization")
@@ -446,9 +426,9 @@ export function previewForPost(
   const byline = bylineOf(subject)
   if (!byline) return null
 
-  const body = clamp(subject.body ?? "", DESCRIPTION_MAX)
+  const body = truncateText(subject.body ?? "", DESCRIPTION_MAX)
   const attached = subject.report?.title ?? subject.event?.title ?? ""
-  const description = body || (attached ? clamp(attached, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
+  const description = body || (attached ? truncateText(attached, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
 
   const quoted = !isRepost && input.repostOf && !input.repostOf.deleted ? input.repostOf : null
   const image =
@@ -457,7 +437,7 @@ export function previewForPost(
     (quoted ? (firstCarouselImage(quoted.media) ?? attachmentThumb(quoted)) : null)
 
   return {
-    title: onSite(clamp(byline, TITLE_MAX)),
+    title: onSite(truncateText(byline, TITLE_MAX)),
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,

@@ -1,18 +1,16 @@
-/**
- * The "Your reports" section of the own profile: the three most recent reports plus a "See all" row.
- * Extracted from ProfileView (which also rendered every string here in raw English).
- */
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ReportDTO } from "@civfix/shared"
 import { categoryColor, makeThemedStyles, useTheme, focusRingProps } from "../../theme"
+import { hexWithAlpha } from "../../theme/color"
 import { Text, Icon, iconMap } from "../../typography"
 import { StatusBadge } from "../../primitives"
 import { useT } from "../../i18n"
 import { SectionEyebrow } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
 
-/** What ProfileView's host feeds the reports section. */
+const REPORT_ICON_WASH = 0.12
+
 export interface ProfileReports {
   items: ReportDTO[]
   isLoading: boolean
@@ -40,7 +38,7 @@ function ProfileReportRow({ report, onPress }: { report: ReportDTO; onPress: () 
       {...focusRingProps}
       style={({ pressed }) => [styles.reportRow, pressed ? styles.reportRowPressed : null]}
     >
-      <View style={[styles.reportIcon, { backgroundColor: `${color}1F` }]}>
+      <View style={[styles.reportIcon, { backgroundColor: hexWithAlpha(color, REPORT_ICON_WASH) }]}>
         <Icon icon={iconMap.MapPin} size={17} color={color} />
       </View>
       <View style={styles.reportMeta}>
@@ -150,7 +148,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
   },
   seeAllReportsText: {

@@ -24,10 +24,12 @@ import {
   FOCUS_RING_WIDTH,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 import { FilterChip, FILTER_CHIP_HEIGHT } from "../primitives"
 import { useLocale, useT } from "../i18n"
 import {
   addSlotDraft,
+  claimedBySlotId,
   generateShiftDrafts,
   isBlankSlotDraft,
   makeSlotKey,
@@ -63,6 +65,13 @@ function bumpCapacity(raw: string, delta: 1 | -1): string {
   return String(Math.min(next, MAX_SLOT_CAPACITY))
 }
 
+// The two chevrons stack into one 44pt column, so each spends its slop on its OUTER edge only; slop on
+// the shared edge would overlap its sibling. rn-web drops hitSlop, so the 44pt width lives in the box.
+const MOVE_UP_HIT_SLOP = { top: MIN_TOUCH_TARGET / 4 }
+const MOVE_DOWN_HIT_SLOP = { bottom: MIN_TOUCH_TARGET / 4 }
+
+const CAPACITY_MAX_DIGITS = String(MAX_SLOT_CAPACITY).length
+
 const WEB_FIELD_RING: TextStyle =
   Platform.OS === "web"
     ? ({
@@ -81,6 +90,273 @@ export interface SlotEditorProps {
   window?: SlotWindowBounds | null
   timeZone: string
   eventEndUnsaved?: boolean
+}
+
+type SlotField = "title" | "description" | "capacity"
+
+interface SlotFieldFocus {
+  focusedField: SlotField | null
+  setFocusedField: (field: SlotField | null) => void
+}
+
+function SlotCardHeader({
+  draft,
+  index,
+  total,
+  focusedField,
+  setFocusedField,
+  onPatch,
+  onRemove,
+  onMove,
+}: SlotFieldFocus & {
+  draft: SlotDraft
+  index: number
+  total: number
+  onPatch: (key: string, patch: Partial<SlotDraft>) => void
+  onRemove: (key: string) => void
+  onMove: (key: string, direction: -1 | 1) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-slots")
+  const position = index + 1
+  const canMoveUp = index > 0
+  const canMoveDown = index < total - 1
+
+  return (
+    <View style={styles.cardHead}>
+      <View style={styles.indexBadge}>
+        <Text style={styles.indexBadgeText}>{String(position)}</Text>
+      </View>
+      <TextInput
+        value={draft.title}
+        onChangeText={(title) => onPatch(draft.key, { title })}
+        accessibilityLabel={t("editor.title_a11y", { index: position })}
+        placeholder={t(index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder")}
+        placeholderTextColor={th.colors.textSubtle}
+        selectionColor={th.colors.brand.bloom}
+        maxLength={MAX_SLOT_TITLE}
+        onFocus={() => setFocusedField("title")}
+        onBlur={() => setFocusedField(null)}
+        style={[styles.titleInput, webInputReset, focusedField === "title" ? WEB_FIELD_RING : null]}
+      />
+      <View style={styles.reorder}>
+        <Pressable
+          onPress={() => onMove(draft.key, -1)}
+          disabled={!canMoveUp}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canMoveUp }}
+          accessibilityLabel={t("editor.move_up_a11y", { index: position })}
+          hitSlop={MOVE_UP_HIT_SLOP}
+          {...focusRingProps}
+          style={(state) => [
+            styles.reorderBtn,
+            webCursorPointer,
+            webTransition,
+            !canMoveUp ? styles.disabled : null,
+            webHover(state) && canMoveUp ? styles.iconBtnHovered : null,
+            state.pressed && canMoveUp ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.ChevronUp} size={14} color={th.colors.textSubtle} />
+        </Pressable>
+        <Pressable
+          onPress={() => onMove(draft.key, 1)}
+          disabled={!canMoveDown}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canMoveDown }}
+          accessibilityLabel={t("editor.move_down_a11y", { index: position })}
+          hitSlop={MOVE_DOWN_HIT_SLOP}
+          {...focusRingProps}
+          style={(state) => [
+            styles.reorderBtn,
+            webCursorPointer,
+            webTransition,
+            !canMoveDown ? styles.disabled : null,
+            webHover(state) && canMoveDown ? styles.iconBtnHovered : null,
+            state.pressed && canMoveDown ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.ChevronDown} size={14} color={th.colors.textSubtle} />
+        </Pressable>
+      </View>
+      <Pressable
+        onPress={() => onRemove(draft.key)}
+        disabled={total === 1}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: total === 1 }}
+        accessibilityLabel={t("editor.remove_a11y", { index: position })}
+        {...(total === 1 ? { accessibilityHint: t("editor.remove_last_hint") } : {})}
+        {...focusRingProps}
+        style={(state) => [
+          styles.discTarget,
+          webCursorPointer,
+          total === 1 ? styles.disabled : null,
+          state.pressed && total > 1 ? styles.pressed : null,
+        ]}
+      >
+        {(state) => (
+          <View
+            style={[
+              styles.removeBtn,
+              webTransition,
+              webHover(state) && total > 1 ? styles.discHovered : null,
+            ]}
+          >
+            <Icon
+              icon={iconMap.Close}
+              size={14}
+              color={total === 1 ? th.colors.textSubtle : th.colors.textMuted}
+            />
+          </View>
+        )}
+      </Pressable>
+    </View>
+  )
+}
+
+function CapacityStepper({
+  draft,
+  position,
+  claimed,
+  focusedField,
+  setFocusedField,
+  onPatch,
+}: SlotFieldFocus & {
+  draft: SlotDraft
+  position: number
+  claimed: number | undefined
+  onPatch: (key: string, patch: Partial<SlotDraft>) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-slots")
+
+  return (
+    <View style={styles.capacityRow}>
+      <Text style={styles.capacityLabel}>{t("editor.capacity_label")}</Text>
+      <Pressable
+        onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, -1) })}
+        accessibilityRole="button"
+        accessibilityLabel={t("editor.capacity_less_a11y")}
+        {...focusRingProps}
+        style={(state) => [
+          styles.discTarget,
+          webCursorPointer,
+          state.pressed ? styles.pressed : null,
+        ]}
+      >
+        {(state) => (
+          <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+            <Icon icon={iconMap.Minus} size={14} color={th.colors.textMuted} />
+          </View>
+        )}
+      </Pressable>
+      <TextInput
+        value={draft.capacity}
+        onChangeText={(capacity) => onPatch(draft.key, { capacity })}
+        accessibilityLabel={t("editor.capacity_a11y", { index: position })}
+        placeholder={t("editor.capacity_any")}
+        placeholderTextColor={th.colors.textSubtle}
+        selectionColor={th.colors.brand.bloom}
+        keyboardType="number-pad"
+        maxLength={CAPACITY_MAX_DIGITS}
+        onFocus={() => setFocusedField("capacity")}
+        onBlur={() => setFocusedField(null)}
+        style={[styles.capacityInput, webInputReset, focusedField === "capacity" ? WEB_FIELD_RING : null]}
+      />
+      <Pressable
+        onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, 1) })}
+        accessibilityRole="button"
+        accessibilityLabel={t("editor.capacity_more_a11y")}
+        {...focusRingProps}
+        style={(state) => [
+          styles.discTarget,
+          webCursorPointer,
+          state.pressed ? styles.pressed : null,
+        ]}
+      >
+        {(state) => (
+          <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+            <Icon icon={iconMap.Plus} size={14} color={th.colors.textMuted} />
+          </View>
+        )}
+      </Pressable>
+      {claimed !== undefined && claimed > 0 ? (
+        <Text style={styles.claimedCount} numberOfLines={1}>
+          {t("editor.claimed_count", { count: claimed })}
+        </Text>
+      ) : null}
+    </View>
+  )
+}
+
+function SlotTimeBlock({
+  draft,
+  position,
+  window,
+  timeZone,
+  eventEndUnsaved,
+  onPatch,
+}: {
+  draft: SlotDraft
+  position: number
+  window: SlotWindowBounds | null
+  timeZone: string
+  eventEndUnsaved: boolean
+  onPatch: (key: string, patch: Partial<SlotDraft>) => void
+}) {
+  const styles = useStyles()
+  const { t } = useT("event-slots")
+  const { locale } = useLocale()
+  const eventEnd = window?.end ?? null
+  const timed = draft.startsAt !== null && draft.endsAt !== null
+  const onWholeEvent = () => onPatch(draft.key, { startsAt: null, endsAt: null })
+  const onSetTime = () => {
+    if (!window || !eventEnd || timed) return
+    onPatch(draft.key, { startsAt: window.start, endsAt: eventEnd })
+  }
+
+  return (
+    <View style={styles.timeBlock}>
+      <View style={styles.timeRow}>
+        <Text style={styles.capacityLabel}>{t("editor.time_label")}</Text>
+        <FilterChip
+          label={t("editor.whole_event")}
+          selected={!timed}
+          onPress={onWholeEvent}
+          accessibilityLabel={t("editor.whole_event_a11y", { index: position })}
+        />
+        <FilterChip
+          label={t("editor.set_time")}
+          selected={timed}
+          disabled={eventEnd === null}
+          onPress={onSetTime}
+          accessibilityLabel={t("editor.set_time_a11y", { index: position })}
+        />
+      </View>
+      {!eventEnd ? (
+        <Text style={styles.timeHint}>{t("editor.time_needs_event_end")}</Text>
+      ) : eventEndUnsaved && timed ? (
+        <Text style={styles.timeHint}>
+          {t("editor.time_stores_event_end", {
+            time: timeLabel(eventEnd.toISOString(), locale, timeZone),
+          })}
+        </Text>
+      ) : null}
+      {timed && window && eventEnd && draft.startsAt && draft.endsAt ? (
+        <SlotWindowPicker
+          index={position}
+          eventStart={window.start}
+          eventEnd={eventEnd}
+          startsAt={draft.startsAt}
+          endsAt={draft.endsAt}
+          timeZone={timeZone}
+          onChange={(next) => onPatch(draft.key, next)}
+        />
+      ) : null}
+    </View>
+  )
 }
 
 function SlotCard({
@@ -110,103 +386,24 @@ function SlotCard({
   const th = useTheme()
   const { t } = useT("event-slots")
   const { locale } = useLocale()
-  const [focusedField, setFocusedField] = useState<"title" | "description" | "capacity" | null>(null)
+  const [focusedField, setFocusedField] = useState<SlotField | null>(null)
   const position = index + 1
   const error = slotDraftError(draft, claimed, window)
   const eventEnd = window?.end ?? null
-  const timed = draft.startsAt !== null && draft.endsAt !== null
   const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale, timeZone) : ""
-  const onWholeEvent = () => onPatch(draft.key, { startsAt: null, endsAt: null })
-  const onSetTime = () => {
-    if (!window || !eventEnd || timed) return
-    onPatch(draft.key, { startsAt: window.start, endsAt: eventEnd })
-  }
-  const canMoveUp = index > 0
-  const canMoveDown = index < total - 1
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardHead}>
-        <View style={styles.indexBadge}>
-          <Text style={styles.indexBadgeText}>{String(position)}</Text>
-        </View>
-        <TextInput
-          value={draft.title}
-          onChangeText={(title) => onPatch(draft.key, { title })}
-          accessibilityLabel={t("editor.title_a11y", { index: position })}
-          placeholder={t(index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder")}
-          placeholderTextColor={th.colors.textSubtle}
-          selectionColor={th.colors.brand.bloom}
-          maxLength={MAX_SLOT_TITLE}
-          onFocus={() => setFocusedField("title")}
-          onBlur={() => setFocusedField(null)}
-          style={[styles.titleInput, webInputReset, focusedField === "title" ? WEB_FIELD_RING : null]}
-        />
-        <View style={styles.reorder}>
-          <Pressable
-            onPress={() => onMove(draft.key, -1)}
-            disabled={!canMoveUp}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canMoveUp }}
-            accessibilityLabel={t("editor.move_up_a11y", { index: position })}
-            hitSlop={4}
-            {...focusRingProps}
-            style={(state) => [
-              styles.reorderBtn,
-              webCursorPointer,
-              webTransition,
-              !canMoveUp ? styles.disabled : null,
-              webHover(state) && canMoveUp ? styles.iconBtnHovered : null,
-              state.pressed && canMoveUp ? styles.pressed : null,
-            ]}
-          >
-            <Icon icon={iconMap.ChevronUp} size={14} color={th.colors.textSubtle} />
-          </Pressable>
-          <Pressable
-            onPress={() => onMove(draft.key, 1)}
-            disabled={!canMoveDown}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canMoveDown }}
-            accessibilityLabel={t("editor.move_down_a11y", { index: position })}
-            hitSlop={4}
-            {...focusRingProps}
-            style={(state) => [
-              styles.reorderBtn,
-              webCursorPointer,
-              webTransition,
-              !canMoveDown ? styles.disabled : null,
-              webHover(state) && canMoveDown ? styles.iconBtnHovered : null,
-              state.pressed && canMoveDown ? styles.pressed : null,
-            ]}
-          >
-            <Icon icon={iconMap.ChevronDown} size={14} color={th.colors.textSubtle} />
-          </Pressable>
-        </View>
-        <Pressable
-          onPress={() => onRemove(draft.key)}
-          disabled={total === 1}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: total === 1 }}
-          accessibilityLabel={t("editor.remove_a11y", { index: position })}
-          {...(total === 1 ? { accessibilityHint: t("editor.remove_last_hint") } : {})}
-          hitSlop={6}
-          {...focusRingProps}
-          style={(state) => [
-            styles.removeBtn,
-            webCursorPointer,
-            webTransition,
-            total === 1 ? styles.disabled : null,
-            webHover(state) && total > 1 ? styles.discHovered : null,
-            state.pressed && total > 1 ? styles.pressed : null,
-          ]}
-        >
-          <Icon
-            icon={iconMap.Close}
-            size={14}
-            color={total === 1 ? th.colors.textSubtle : th.colors.textMuted}
-          />
-        </Pressable>
-      </View>
+      <SlotCardHeader
+        draft={draft}
+        index={index}
+        total={total}
+        focusedField={focusedField}
+        setFocusedField={setFocusedField}
+        onPatch={onPatch}
+        onRemove={onRemove}
+        onMove={onMove}
+      />
 
       <TextInput
         value={draft.description}
@@ -227,101 +424,26 @@ function SlotCard({
         ]}
       />
 
-      <View style={styles.capacityRow}>
-        <Text style={styles.capacityLabel}>{t("editor.capacity_label")}</Text>
-        <Pressable
-          onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, -1) })}
-          accessibilityRole="button"
-          accessibilityLabel={t("editor.capacity_less_a11y")}
-          hitSlop={4}
-          {...focusRingProps}
-          style={(state) => [
-            styles.stepBtn,
-            webCursorPointer,
-            webTransition,
-            webHover(state) ? styles.discHovered : null,
-            state.pressed ? styles.pressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Minus} size={14} color={th.colors.textMuted} />
-        </Pressable>
-        <TextInput
-          value={draft.capacity}
-          onChangeText={(capacity) => onPatch(draft.key, { capacity })}
-          accessibilityLabel={t("editor.capacity_a11y", { index: position })}
-          placeholder={t("editor.capacity_any")}
-          placeholderTextColor={th.colors.textSubtle}
-          selectionColor={th.colors.brand.bloom}
-          keyboardType="decimal-pad"
-          maxLength={3}
-          onFocus={() => setFocusedField("capacity")}
-          onBlur={() => setFocusedField(null)}
-          style={[styles.capacityInput, webInputReset, focusedField === "capacity" ? WEB_FIELD_RING : null]}
-        />
-        <Pressable
-          onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, 1) })}
-          accessibilityRole="button"
-          accessibilityLabel={t("editor.capacity_more_a11y")}
-          hitSlop={4}
-          {...focusRingProps}
-          style={(state) => [
-            styles.stepBtn,
-            webCursorPointer,
-            webTransition,
-            webHover(state) ? styles.discHovered : null,
-            state.pressed ? styles.pressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Plus} size={14} color={th.colors.textMuted} />
-        </Pressable>
-        {claimed !== undefined && claimed > 0 ? (
-          <Text style={styles.claimedCount} numberOfLines={1}>
-            {t("editor.claimed_count", { count: claimed })}
-          </Text>
-        ) : null}
-      </View>
+      <CapacityStepper
+        draft={draft}
+        position={position}
+        claimed={claimed}
+        focusedField={focusedField}
+        setFocusedField={setFocusedField}
+        onPatch={onPatch}
+      />
 
-      <View style={styles.timeBlock}>
-        <View style={styles.timeRow}>
-          <Text style={styles.capacityLabel}>{t("editor.time_label")}</Text>
-          <FilterChip
-            label={t("editor.whole_event")}
-            selected={!timed}
-            onPress={onWholeEvent}
-            accessibilityLabel={t("editor.whole_event_a11y", { index: position })}
-          />
-          <FilterChip
-            label={t("editor.set_time")}
-            selected={timed}
-            disabled={eventEnd === null}
-            onPress={onSetTime}
-            accessibilityLabel={t("editor.set_time_a11y", { index: position })}
-          />
-        </View>
-        {!eventEnd ? (
-          <Text style={styles.timeHint}>{t("editor.time_needs_event_end")}</Text>
-        ) : eventEndUnsaved && timed ? (
-          <Text style={styles.timeHint}>
-            {t("editor.time_stores_event_end", {
-              time: timeLabel(eventEnd.toISOString(), locale, timeZone),
-            })}
-          </Text>
-        ) : null}
-        {timed && window && eventEnd && draft.startsAt && draft.endsAt ? (
-          <SlotWindowPicker
-            index={position}
-            eventStart={window.start}
-            eventEnd={eventEnd}
-            startsAt={draft.startsAt}
-            endsAt={draft.endsAt}
-            timeZone={timeZone}
-            onChange={(next) => onPatch(draft.key, next)}
-          />
-        ) : null}
-      </View>
+      <SlotTimeBlock
+        draft={draft}
+        position={position}
+        window={window}
+        timeZone={timeZone}
+        eventEndUnsaved={eventEndUnsaved}
+        onPatch={onPatch}
+      />
 
       {error ? (
-        <Text style={styles.errorLine}>
+        <Text style={styles.errorLine} accessibilityRole="alert" accessibilityLiveRegion="polite">
           {t(ERROR_KEY[error], {
             max: MAX_SLOT_TITLE,
             count: claimed ?? 0,
@@ -407,7 +529,7 @@ export function SlotEditor({
     onPatch(first.key, { title: t("editor.suggest_general") })
   }, [onPatch, t, value])
 
-  const claimedById = new Map(existing.map((s) => [s.id, s.claimed]))
+  const claimedById = claimedBySlotId(existing)
   const removedClaimed = removedClaimedCount(existing, value)
   const offeredSplits = splitCounts(eventWindow, value, shiftTitle)
   const splitRow =
@@ -419,6 +541,7 @@ export function SlotEditor({
             key={count}
             label={String(count)}
             selected={false}
+            selection="action"
             disabled={!offeredSplits.includes(count)}
             onPress={() => onSplit(count)}
             accessibilityLabel={t("editor.split_count_a11y", { count })}
@@ -475,6 +598,7 @@ export function SlotEditor({
           <FilterChip
             label={t("editor.suggest_general")}
             selected={false}
+            selection="action"
             onPress={onSuggestGeneral}
             accessibilityLabel={t("editor.suggest_general_a11y")}
           />
@@ -554,7 +678,7 @@ const useStyles = makeThemedStyles((t) => ({
   addRowText: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.textSubtle,
   },
   addBtn: {
@@ -596,9 +720,9 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
   },
   reorder: {
     alignItems: "center",
@@ -617,11 +741,18 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bloom["50"],
   },
   reorderBtn: {
-    width: 24,
-    height: 24,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET / 2,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: t.radius.pill,
+  },
+  discTarget: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    borderRadius: MIN_TOUCH_TARGET / 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   removeBtn: {
     width: 30,
@@ -633,7 +764,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   descriptionInput: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
     minHeight: 34,
     textAlignVertical: "top",
@@ -660,9 +791,9 @@ const useStyles = makeThemedStyles((t) => ({
     width: 56,
     textAlign: "center",
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
   },
   claimedCount: {
     flexShrink: 1,
@@ -672,7 +803,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   errorLine: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.bloom["700"],
   },
 
@@ -720,12 +851,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   addMoreText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   capReached: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
 

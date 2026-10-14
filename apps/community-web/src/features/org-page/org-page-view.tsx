@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { CircleAlert, Globe, HeartHandshake, Loader2 } from "lucide-react"
-import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
+import { Globe, HeartHandshake } from "lucide-react"
+import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl, toAppError } from "@civfix/shared"
 import type { OrganizationDTO, SocialPlatform } from "@civfix/shared"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
@@ -13,23 +13,24 @@ import {
   presentSocialPlatforms,
 } from "@civfix/ui/social"
 
-import { toAppError } from "@/lib/api"
-import { renderMarkdownNodes } from "@/features/signup-page/markdown-dom"
-import { parseMarkdownSubset } from "@civfix/shared/markdown"
+import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
+import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
+import { isSafeHttpsUrl, parseMarkdownSubset } from "@civfix/shared/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"
-
-const KIND_LABEL: Record<NonNullable<OrganizationDTO["verifiedKind"]>, string> = {
-  nonprofit: "Verified nonprofit",
-  government: "Verified government",
-  community: "Verified community group",
-}
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
 /** The public page's copy lives in the `host-org` namespace next to its stats (`stats.*`). */
 function kindLabel(t: Translate, kind: NonNullable<OrganizationDTO["verifiedKind"]>): string {
-  return t(`public.kind_${kind}`, { defaultValue: KIND_LABEL[kind] })
+  switch (kind) {
+    case "nonprofit":
+      return t("public.kind_nonprofit")
+    case "government":
+      return t("public.kind_government")
+    case "community":
+      return t("public.kind_community")
+  }
 }
 
 function SocialGlyph({ platform }: { platform: SocialPlatform }) {
@@ -46,8 +47,10 @@ function SocialGlyph({ platform }: { platform: SocialPlatform }) {
   )
 }
 
+// The same safe-link rule the event page's donate and sponsor blocks apply: no credentials, IP literal or
+// punycode host, so an org's profile cannot link somewhere its page blocks could not.
 function httpsHref(url: string | null | undefined): string | null {
-  if (!url || !url.startsWith("https://")) return null
+  if (!url || !url.startsWith("https://") || !isSafeHttpsUrl(url)) return null
   try {
     return new URL(url).href
   } catch {
@@ -64,12 +67,19 @@ function websiteLabel(href: string): string {
   }
 }
 
+const ORG_STATE_CLASSES: PublicPageStateClasses = {
+  page: "orgpage",
+  shell: "orgpage-shell orgpage-state",
+  spin: "orgpage-spin",
+  action: "orgpage-button",
+}
+
 export function OrgPageLoading() {
   const { t } = useT("host-org")
   return (
-    <OrgPageState busy title={t("public.loading_title", { defaultValue: "Loading" })}>
-      {t("public.loading_body", { defaultValue: "Fetching this organization." })}
-    </OrgPageState>
+    <PublicPageState classes={ORG_STATE_CLASSES} busy title={t("public.loading_title")}>
+      {t("public.loading_body")}
+    </PublicPageState>
   )
 }
 
@@ -84,16 +94,13 @@ export function OrgPageView() {
   if (source === null) return <OrgPageLoading />
   if (source.kind !== "slug") {
     return (
-      <OrgPageState
-        title={t("public.not_found_title", { defaultValue: "We couldn't find that organization" })}
-      >
+      <PublicPageState classes={ORG_STATE_CLASSES} title={t("public.not_found_title")}>
         <Trans
           t={t}
           i18nKey="public.invalid_link_body"
-          defaults="This link is not valid. Check the link you followed, or find organizations on <0>civfix</0>."
           components={[<Link key="home" href="/" />]}
         />
-      </OrgPageState>
+      </PublicPageState>
     )
   }
   return <OrgDocument slug={source.slug} />
@@ -109,28 +116,26 @@ function OrgDocument({ slug }: { slug: string }) {
     const code = query.isError ? toAppError(query.error).code : ErrorCode.NOT_FOUND
     if (code === ErrorCode.NOT_FOUND) {
       return (
-        <OrgPageState
-          title={t("public.not_found_title", { defaultValue: "We couldn't find that organization" })}
-        >
+        <PublicPageState classes={ORG_STATE_CLASSES} title={t("public.not_found_title")}>
           <Trans
             t={t}
             i18nKey="public.not_found_body"
-            defaults="It may have been renamed or removed. Find organizations on <0>civfix</0>."
             components={[<Link key="home" href="/" />]}
           />
-        </OrgPageState>
+        </PublicPageState>
       )
     }
     return (
-      <OrgPageState
-        title={t("public.error_title", { defaultValue: "We couldn't load this page" })}
+      <PublicPageState
+        classes={ORG_STATE_CLASSES}
+        title={t("public.error_title")}
         action={{
-          label: t("public.retry", { defaultValue: "Try again" }),
+          label: t("public.retry"),
           onClick: () => void query.refetch(),
         }}
       >
-        {t("public.error_body", { defaultValue: "Check your connection and try again." })}
-      </OrgPageState>
+        {t("public.error_body")}
+      </PublicPageState>
     )
   }
 
@@ -146,7 +151,7 @@ function OrgDocument({ slug }: { slug: string }) {
       <div className="orgpage-shell">
         <header className="orgpage-header">
           {org.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
             <img className="orgpage-logo" src={org.logoUrl} alt="" width={88} height={88} />
           ) : (
             <span className="orgpage-logo orgpage-logo-fallback" aria-hidden="true">
@@ -156,10 +161,7 @@ function OrgDocument({ slug }: { slug: string }) {
           <div className="orgpage-identity">
             <h1>{org.name}</h1>
             <p className="orgpage-handle">{t("header.slug", { slug: org.slug })}</p>
-            <ul
-              className="orgpage-stats"
-              aria-label={t("public.at_a_glance", { defaultValue: "At a glance" })}
-            >
+            <ul className="orgpage-stats" aria-label={t("public.at_a_glance")}>
               {verified && org.verifiedKind ? (
                 <li className="orgpage-stat orgpage-stat-verified">
                   {kindLabel(t, org.verifiedKind)}
@@ -183,24 +185,18 @@ function OrgDocument({ slug }: { slug: string }) {
             rel="noopener noreferrer"
           >
             <HeartHandshake aria-hidden="true" size={18} />
-            {t("public.donate", { name: org.name, defaultValue: `Donate to ${org.name}` })}
+            {t("public.donate", { name: org.name })}
           </a>
         ) : null}
 
         {description.length > 0 ? (
-          <section
-            className="orgpage-section"
-            aria-label={t("public.about", { defaultValue: "About" })}
-          >
+          <section className="orgpage-section" aria-label={t("public.about")}>
             <div className="orgpage-prose">{renderMarkdownNodes(description)}</div>
           </section>
         ) : null}
 
         {website || socials.length > 0 ? (
-          <section
-            className="orgpage-section"
-            aria-label={t("public.links", { defaultValue: "Links" })}
-          >
+          <section className="orgpage-section" aria-label={t("public.links")}>
             {website ? (
               <ul className="orgpage-links">
                 <li>
@@ -239,7 +235,6 @@ function OrgDocument({ slug }: { slug: string }) {
               t={t}
               i18nKey="public.footer_hosts"
               values={{ name: org.name }}
-              defaults="{{name}} hosts volunteer events on <0>civfix</0>."
               components={[<Link key="home" href="/" />]}
             />
           </p>
@@ -247,39 +242,10 @@ function OrgDocument({ slug }: { slug: string }) {
             <Trans
               t={t}
               i18nKey="public.footer_console"
-              defaults="Run an organization? <0>Open the host console</0>."
               components={[<Link key="console" href="/manage/" />]}
             />
           </p>
         </footer>
-      </div>
-    </main>
-  )
-}
-
-interface OrgPageStateProps {
-  title: string
-  busy?: boolean
-  action?: { label: string; onClick: () => void }
-  children: React.ReactNode
-}
-
-function OrgPageState({ title, busy, action, children }: OrgPageStateProps) {
-  return (
-    <main className="orgpage" aria-busy={busy ? true : undefined}>
-      <div className="orgpage-shell orgpage-state">
-        {busy ? (
-          <Loader2 aria-hidden="true" className="orgpage-spin" size={32} />
-        ) : (
-          <CircleAlert aria-hidden="true" size={32} />
-        )}
-        <h1>{title}</h1>
-        <p>{children}</p>
-        {action ? (
-          <button type="button" className="orgpage-button" onClick={action.onClick}>
-            {action.label}
-          </button>
-        ) : null}
       </div>
     </main>
   )

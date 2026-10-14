@@ -3,9 +3,8 @@
  *
  * The bug these encode: on mobile the conversation is an expo-router screen ABOVE the shell, so a
  * default `useNavStore.push` from the header paints the pushed body on the shell's page stack BEHIND
- * the chat - an invisible page and a dead-looking tap. `pinnedList` already guarded exactly this; the
- * other three (members / group-info / view-report) now make the same decision, so the invariant under
- * test is: fullScreen && no host handler => NO affordance.
+ * the chat: an invisible page and a dead-looking tap. So the invariant under test, for all four
+ * (pinned list / members / group-info / view-report), is: fullScreen && no host handler => NO affordance.
  */
 import { describe, expect, it } from "vitest"
 import { convoHeaderTargetEnabled, convoHeaderTargets } from "../conversation/headerTargets"
@@ -67,7 +66,7 @@ describe("convoHeaderTargets", () => {
   })
 
   it("the mobile /messages/[id] shape: members + group-info wired, pins + view-report still hidden", () => {
-    // Exactly what app/messages/[id].tsx passes after BUG 5: the two routes that now exist, and not the
+    // Exactly what app/messages/[id].tsx passes: the two routes that exist, and not the
     // two that do not (/pin/<id> is a DeepLinkHost that replace("/")s; there is no pinned-list screen).
     expect(
       convoHeaderTargets({

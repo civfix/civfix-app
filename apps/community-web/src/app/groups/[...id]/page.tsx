@@ -1,13 +1,9 @@
-import { GroupsRoute } from "@/features/groups/groups-route"
+import { HomeShell } from "@/components/home/home-shell"
 
 /**
- * Static-export note: this is a CATCH-ALL ([...id]) route. With output:"export", dynamic segments
- * must enumerate their params at build time via generateStaticParams. The group paths carry runtime
- * ids and the literal wizard segment ("/groups/new", "/groups/<id>/info"), none knowable ahead of
- * time, so we emit a single placeholder shell ({ id: ["_"] }) and read the actual path client-side
- * (GroupsRoute -> HomeShell -> use-web-nav-adapter). The SPA fallback rule `/groups/* /groups/_/ 200`
- * in public/_redirects rewrites every cold /groups/<...> deep link to this shell so it boots and
- * resolves the path client-side. See the app README.
+ * output: "export" needs every dynamic segment enumerated at build time, so this emits one placeholder
+ * shell and the real path is read client-side. public/_redirects rewrites every /groups/<...> deep
+ * link to that shell.
  */
 export function generateStaticParams(): Array<{ id: string[] }> {
   return [{ id: ["_"] }]
@@ -16,5 +12,5 @@ export function generateStaticParams(): Array<{ id: string[] }> {
 export const dynamicParams = false
 
 export default function GroupsDetailPage() {
-  return <GroupsRoute />
+  return <HomeShell />
 }

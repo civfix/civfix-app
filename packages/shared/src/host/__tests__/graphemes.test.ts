@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
+import type * as GraphemesModule from "../graphemes.js"
 
 const FLAG = "🇺🇸"
 const FAMILY = "👩‍👩‍👧"
 const THUMB = "👍🏽"
 const ACCENT = "é"
 
-async function loadWithoutSegmenter(): Promise<typeof import("../graphemes.js")> {
+async function loadWithoutSegmenter(): Promise<typeof GraphemesModule> {
   vi.resetModules()
   const original = Intl.Segmenter
   Reflect.deleteProperty(Intl as unknown as Record<string, unknown>, "Segmenter")

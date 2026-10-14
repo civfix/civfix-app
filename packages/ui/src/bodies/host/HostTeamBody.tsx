@@ -11,6 +11,7 @@ import {
   SecondaryButton,
   useToast,
 } from "../../primitives"
+import { joinParts } from "../../primitives/joinParts"
 import { useAuthState, useCleanup, useRemoveMember, useSetMemberRole } from "../../data"
 import {
   cleanupHostStanding,
@@ -21,11 +22,11 @@ import {
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
-import { appErrorCode } from "../errorCode"
-import { type SettableEventMemberRole } from "./eventTeamTiers"
+import { appErrorCode } from "@civfix/shared"
+import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
+import { HostBodyState } from "./HostBodyState"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {
   inviteDisplayName,
@@ -146,12 +147,10 @@ function InviteRow({
 
   const sent = teamDateLabel(invite.createdAt, locale)
   const expires = teamDateLabel(invite.expiresAt, locale)
-  const sub = [
+  const sub = joinParts([
     sent ? t("invites.sent", { when: sent }) : null,
     expires ? t("invites.expires", { when: expires }) : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" · ")
+  ])
 
   return (
     <View style={styles.inviteRow}>
@@ -251,27 +250,15 @@ export function HostTeamBody({ id }: { id: string }) {
   }, [onManageError, pendingRevoke, revokeInvite, t, toast])
 
   if (cleanup.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (cleanup.isError || !cleanup.data) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   if (!canManageTeam) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-      </View>
-    )
+    return <HostBodyState state="denied" t={t} />
   }
 
   return (
@@ -385,9 +372,6 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
   },
-  fill: {
-    flex: 1,
-  },
   content: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
@@ -424,7 +408,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },

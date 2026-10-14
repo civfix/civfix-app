@@ -1,11 +1,10 @@
+import { FORMAT_FALLBACK_LOCALE } from "./internal/format-locale.js"
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_WEEK } from "./time-units.js"
+
 /**
- * Framework-neutral relative-time formatting.
+ * The compact "ago" label, shared so the server and both clients produce identical text.
  *
- * This is the SINGLE SOURCE for the compact "ago" label that previously had three near-identical
- * implementations (backend threads service, web `relativeTime`, mobile `relativeTime`). Reconciling
- * them into one function means the server and both clients produce identical text.
- *
- * STYLE + THRESHOLDS (the reconciled, documented behavior):
+ * Thresholds:
  *   - future or < 60 seconds ago  -> "now"
  *   - < 60 minutes                -> "<N>m"   (whole minutes, floored)
  *   - < 24 hours                  -> "<N>h"   (whole hours, floored)
@@ -13,23 +12,15 @@
  *   - >= 7 days                   -> "<N>w"   (whole weeks, floored) by default, OR an absolute date
  *                                    string when an `absoluteFallback` formatter is supplied.
  *
- * Reconciliation notes:
- *   - The web/mobile copies rendered "now" while the backend rendered "just now"; "now" wins (two of
- *     three, and it is the shorter list-row label). Callers that want "just now" can pass `justNow`.
- *   - The web/mobile copies fell back to a short Intl date past one week. To stay strictly portable
- *     (no Intl dependency in the shared core, which must run on any RN engine) the default past-week
- *     bucket is "<N>w"; a caller that wants an absolute date passes `absoluteFallback` (web/mobile can
- *     pass an Intl formatter, the backend passes none).
- *
- * The function is pure: pass `now` to make it deterministic in tests. An unparseable / invalid input
- * yields "" so a bad timestamp never throws in a render path.
+ * The core stays Intl-free so it runs on the most minimal RN engine; a caller that wants an absolute
+ * date past one week passes an Intl formatter as `absoluteFallback`. `now` is injectable for
+ * deterministic tests, and an unparseable input yields "" so a bad timestamp never throws in a render
+ * path.
  */
 
 /**
- * The four compact relative-time unit suffixes, in the default English form. The `@civfix/ui` layer
- * passes localized replacements (sourced from the `common-datetime` catalog) into `relativeAgo` via
- * `RelativeAgoOptions.units`; the backend / any caller that omits them keeps this English default, so
- * existing behavior is unchanged. Each is appended to the floored count, e.g. `${n}${units.minute}`.
+ * Compact unit suffixes appended to the floored count, e.g. `${n}${units.minute}`. The UI layer passes
+ * localized ones; a caller that omits them gets the English `DEFAULT_RELATIVE_UNITS`.
  */
 export interface RelativeUnitLabels {
   /** minutes bucket suffix (default "m"). */
@@ -53,45 +44,27 @@ export const DEFAULT_RELATIVE_UNITS: RelativeUnitLabels = {
 export interface RelativeAgoOptions {
   /** Label for the just-now bucket (< 60s, or a future time). Defaults to "now". */
   justNow?: string
-  /**
-   * Localized compact unit suffixes (minute/hour/day/week). When omitted the English defaults
-   * (`DEFAULT_RELATIVE_UNITS`: "m"/"h"/"d"/"w") are used, so existing callers are unaffected. The
-   * `@civfix/ui` `useRelativeTime` hook feeds these from the active locale's `common-datetime` catalog.
-   */
+  /** Localized unit suffixes; any omitted one falls back to `DEFAULT_RELATIVE_UNITS`. */
   units?: Partial<RelativeUnitLabels>
-  /**
-   * Absolute formatter used past the one-week threshold instead of "<N>w". Receives the parsed Date.
-   * Web/mobile pass an Intl-based short date; the backend omits it (and gets the "<N>w" bucket).
-   */
+  /** Absolute formatter used past the one-week threshold instead of "<N>w". Receives the parsed Date. */
   absoluteFallback?: (d: Date) => string
 }
 
-const SECOND = 1000
-const MINUTE = 60 * SECOND
-const HOUR = 60 * MINUTE
-const DAY = 24 * HOUR
-const WEEK = 7 * DAY
-
-/** Coerce a Date | string | number into epoch ms, or null when it does not parse to a real time. */
 function toEpochMs(value: Date | string | number): number | null {
   if (value instanceof Date) {
     const t = value.getTime()
     return Number.isNaN(t) ? null : t
   }
   if (typeof value === "number") {
-    return Number.isNaN(value) ? null : value
+    // Infinity and out-of-range epochs are not real times: they would render as "now" or reach
+    // absoluteFallback as an Invalid Date.
+    return Number.isNaN(new Date(value).getTime()) ? null : value
   }
   const t = Date.parse(value)
   return Number.isNaN(t) ? null : t
 }
 
-/**
- * Compact relative-time label. See the module header for the exact thresholds.
- *
- * @param date  the timestamp to describe (Date, ISO string, or epoch ms)
- * @param now   the reference "current" time (Date or epoch ms); defaults to Date.now()
- * @param opts  optional `justNow` override and an `absoluteFallback` for the past-week bucket
- */
+/** Compact relative-time label (thresholds in the module header). `now` defaults to `Date.now()`. */
 export function relativeAgo(
   date: Date | string | number,
   now?: Date | number,
@@ -100,7 +73,7 @@ export function relativeAgo(
   const fromMs = toEpochMs(date)
   if (fromMs === null) return ""
   const nowMs = now === undefined ? Date.now() : now instanceof Date ? now.getTime() : now
-  if (Number.isNaN(nowMs)) return ""
+  if (!Number.isFinite(nowMs)) return ""
 
   const justNow = opts?.justNow ?? "now"
   const units = opts?.units
@@ -111,13 +84,13 @@ export function relativeAgo(
   const diff = nowMs - fromMs
 
   // Future timestamps and anything under a minute collapse to the just-now label.
-  if (diff < MINUTE) return justNow
-  if (diff < HOUR) return `${Math.floor(diff / MINUTE)}${minute}`
-  if (diff < DAY) return `${Math.floor(diff / HOUR)}${hour}`
-  if (diff < WEEK) return `${Math.floor(diff / DAY)}${day}`
+  if (diff < MS_PER_MINUTE) return justNow
+  if (diff < MS_PER_HOUR) return `${Math.floor(diff / MS_PER_MINUTE)}${minute}`
+  if (diff < MS_PER_DAY) return `${Math.floor(diff / MS_PER_HOUR)}${hour}`
+  if (diff < MS_PER_WEEK) return `${Math.floor(diff / MS_PER_DAY)}${day}`
 
   if (opts?.absoluteFallback) return opts.absoluteFallback(new Date(fromMs))
-  return `${Math.floor(diff / WEEK)}${week}`
+  return `${Math.floor(diff / MS_PER_WEEK)}${week}`
 }
 
 export interface WallClock {
@@ -140,10 +113,59 @@ export const COMMON_TIMEZONES: readonly string[] = [
   "America/Puerto_Rico",
 ]
 
+const MAX_CACHED_FORMATTERS = 64
+
+// Keys come from caller strings (row zones, locale tags) and the zone picker sweeps every IANA zone
+// through zoneShortName, so each cache is bounded. Eviction is least-recently-used (a hit moves the key
+// to the back of the Map's insertion order): with oldest-first eviction a feed spanning more zones than
+// the cap would cycle every key out before its next use and never hit.
+function recall<V>(cache: Map<string, V>, key: string): V | undefined {
+  const value = cache.get(key)
+  if (value !== undefined) {
+    cache.delete(key)
+    cache.set(key, value)
+  }
+  return value
+}
+
+function remember<V>(cache: Map<string, V>, key: string, value: V): V {
+  if (cache.size >= MAX_CACHED_FORMATTERS) {
+    const oldest = cache.keys().next()
+    if (oldest.done !== true) cache.delete(oldest.value)
+  }
+  cache.set(key, value)
+  return value
+}
+
+const rowFormatters = new Map<string, Intl.DateTimeFormat>()
+const zoneNameFormatters = new Map<string, Intl.DateTimeFormat>()
+
+// Constructing an Intl.DateTimeFormat is one of the costlier built-ins on Hermes, and list rows format
+// on every render. Only a formatter with an explicit locale and zone is cached: one built from the
+// host defaults pins the device zone and language at first use, while getDay/getHours keep following
+// the live device settings. A failed construction throws exactly as `new` does and is never cached.
+function dateTimeFormat(
+  cache: Map<string, Intl.DateTimeFormat>,
+  locale: string | undefined,
+  timeZone: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  if (locale === undefined || timeZone === undefined) {
+    return new Intl.DateTimeFormat(
+      locale,
+      timeZone === undefined ? options : { ...options, timeZone },
+    )
+  }
+  const key = JSON.stringify([locale, timeZone, options])
+  const cached = recall(cache, key)
+  if (cached !== undefined) return cached
+  return remember(cache, key, new Intl.DateTimeFormat(locale, { ...options, timeZone }))
+}
+
 const zoneFormatters = new Map<string, Intl.DateTimeFormat | null>()
 
 function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
-  const cached = zoneFormatters.get(timeZone)
+  const cached = recall(zoneFormatters, timeZone)
   if (cached !== undefined) return cached
   let formatter: Intl.DateTimeFormat | null
   try {
@@ -160,8 +182,7 @@ function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
   } catch {
     formatter = null
   }
-  zoneFormatters.set(timeZone, formatter)
-  return formatter
+  return remember(zoneFormatters, timeZone, formatter)
 }
 
 function numericPart(parts: readonly Intl.DateTimeFormatPart[], type: string): number {
@@ -252,14 +273,14 @@ export function wallClockExistsInZone(wallClock: WallClock, timeZone: string): b
   return wallClockToInstantMs(wallClock, timeZone) !== null
 }
 
+const ZONE_NAME_OPTIONS: Intl.DateTimeFormatOptions = { timeZoneName: "short" }
+
 export function zoneShortName(instantMs: number, timeZone: string, locale?: string): string {
   const date = new Date(instantMs)
   if (Number.isNaN(date.getTime())) return ""
   try {
-    const parts = new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "short" }).formatToParts(
-      date,
-    )
-    return parts.find((p) => p.type === "timeZoneName")?.value ?? ""
+    const formatter = dateTimeFormat(zoneNameFormatters, locale, timeZone, ZONE_NAME_OPTIONS)
+    return formatter.formatToParts(date).find((p) => p.type === "timeZoneName")?.value ?? ""
   } catch {
     return ""
   }
@@ -281,30 +302,24 @@ function zonedWallClock(instantMs: number, timeZone: string | undefined): WallCl
 }
 
 /**
- * Pure, framework-free calendar/clock formatting helpers shared by the event + profile surfaces on
- * every client. These were duplicated in the mobile app's `lib/datetime` and the web app's format
- * helpers; lifting them here makes the two clients (and any future one) read identically.
- *
- * They use the platform `Intl` (via `Date#toLocale*`), which is available on every target the shared
- * package runs on (Node 20+, Hermes/JSC on RN, every browser). Unlike `relativeAgo` - whose core stays
- * Intl-free so it can run on the most minimal RN engine - these are intrinsically locale/calendar
- * formatters, so depending on Intl is unavoidable and acceptable. Every helper guards an unparseable
- * input by returning a benign placeholder instead of throwing in a render path.
+ * Unlike `relativeAgo`, the calendar/clock helpers below are locale formatters and depend on the
+ * platform `Intl`, which every target provides (Node, Hermes/JSC, every browser). Each returns a
+ * benign placeholder for an unparseable input instead of throwing in a render path.
  */
 
 /**
- * Default short weekday labels, indexed by `Date#getDay()` (0 = Sunday). Exported so the `@civfix/ui`
- * layer can show/diff the English defaults; callers localize by passing a 7-length array to `dowLabel`.
+ * English short weekday labels indexed by `Date#getDay()` (0 = Sunday). Callers localize by passing a
+ * 7-length array to `dowLabel`.
  */
 export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const
 
+const CHIP_MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
+const WHEN_DATE_OPTIONS: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
+
 /**
- * { day, month } for the design's `.pi-ev-card .date` / `.erow .date` chip: a big day number over a
- * tiny uppercase month (e.g. { day: "30", month: "MAY" }). Returns "--"/"--" for an invalid input.
- *
- * `locale` (an optional BCP-47 tag) selects the month's language via the platform `Intl`; omitted (the
- * default) uses the host's default locale, so existing callers are unchanged. The `@civfix/ui` layer
- * passes the active locale so the chip month localizes with the rest of the UI.
+ * `{ day, month }` for an event date chip: a day number over an uppercase short month
+ * (e.g. `{ day: "30", month: "MAY" }`), or "--"/"--" for an invalid input. `locale` (a BCP-47 tag)
+ * selects the month's language; omitted, the host default applies.
  */
 export function eventChip(
   iso: string,
@@ -316,16 +331,13 @@ export function eventChip(
   const zone = usableZone(timeZone)
   return {
     day: String(zonedWallClock(d.getTime(), zone).day),
-    month: d.toLocaleDateString(locale, { month: "short", timeZone: zone }).toUpperCase(),
+    month: dateTimeFormat(rowFormatters, locale, zone, CHIP_MONTH_OPTIONS).format(d).toUpperCase(),
   }
 }
 
 /**
- * Short weekday like "Sat" for an event sub line (design `.pi-ev-card .meta .s`). "" if invalid.
- *
- * `weekdays` (optional) is a 7-length array of localized short weekday labels indexed by
- * `Date#getDay()` (0 = Sunday); omitted, the English `WEEKDAYS` default is used so existing callers are
- * unchanged. The `@civfix/ui` layer passes the active locale's labels from the `common-datetime` catalog.
+ * Short weekday like "Sat", or "" for an invalid input. `weekdays` is a 7-length localized array
+ * indexed by `Date#getDay()`; omitted, `WEEKDAYS` applies.
  */
 export function dowLabel(
   iso: string,
@@ -338,36 +350,38 @@ export function dowLabel(
   return labels[weekdayIndex(d, usableZone(timeZone))] ?? ""
 }
 
+const WEEKDAY_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short" }
+
 function weekdayIndex(date: Date, timeZone: string | undefined): number {
   if (timeZone === undefined) return date.getDay()
-  const short = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone }).format(date)
+  const short = dateTimeFormat(rowFormatters, "en-US", timeZone, WEEKDAY_OPTIONS).format(date)
   const index = WEEKDAYS.indexOf(short as (typeof WEEKDAYS)[number])
   return index === -1 ? date.getDay() : index
 }
 
 /**
- * Time of day like "9:00 AM". "" for an invalid input. `locale` (optional BCP-47 tag) localizes the
- * clock format via the platform `Intl`; omitted uses the host default, so existing callers are unchanged.
+ * Time of day like "9:00 AM", or "" for an invalid input. `locale` (a BCP-47 tag) localizes the clock
+ * format; omitted, the host default applies.
  */
 export function timeLabel(iso: string, locale?: string, timeZone?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return d.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: usableZone(timeZone),
-  })
+  return clockFormatter(locale, timeZone).format(d)
+}
+
+// Equivalent to `toLocaleTimeString(locale, CLOCK_OPTIONS)`, as the month options above are to
+// `toLocaleDateString`: with a field of the required kind present no defaults are added, so the output
+// and the RangeError for a bad locale are the same.
+const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" }
+
+function clockFormatter(
+  locale: string | undefined,
+  timeZone: string | undefined,
+): Intl.DateTimeFormat {
+  return dateTimeFormat(rowFormatters, locale, usableZone(timeZone), CLOCK_OPTIONS)
 }
 
 const TIME_RANGE_SEPARATOR = " – "
-
-function clockParts(d: Date, locale?: string, timeZone?: string): Intl.DateTimeFormatPart[] {
-  return new Intl.DateTimeFormat(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: usableZone(timeZone),
-  }).formatToParts(d)
-}
 
 function dayPeriodOf(parts: readonly Intl.DateTimeFormatPart[]): string | null {
   const part = parts.find((p) => p.type === "dayPeriod")
@@ -395,11 +409,12 @@ export function timeRangeLabel(
   const start = new Date(startIso)
   const end = new Date(endIso)
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return ""
-  const startLabel = timeLabel(startIso, locale, timeZone)
-  const endLabel = timeLabel(endIso, locale, timeZone)
-  const startParts = clockParts(start, locale, timeZone)
+  const clock = clockFormatter(locale, timeZone)
+  const startLabel = clock.format(start)
+  const endLabel = clock.format(end)
+  const startParts = clock.formatToParts(start)
   const dayPeriod = dayPeriodOf(startParts)
-  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clockParts(end, locale, timeZone))) {
+  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clock.formatToParts(end))) {
     if (dayPeriodLeadsClock(startParts)) {
       const trimmedEnd = withoutDayPeriod(endLabel, dayPeriod)
       if (trimmedEnd !== "") return `${startLabel}${TIME_RANGE_SEPARATOR}${trimmedEnd}`
@@ -432,15 +447,21 @@ export interface EventWhenParts {
   zone: string | null
 }
 
-function zoneSuffix(
+/**
+ * The event zone's short name ("EDT") to append to a clock the viewer reads in another offset, or
+ * null when either zone is missing or unusable or both read the same offset at that instant.
+ */
+export function eventZoneSuffix(
   instantMs: number,
-  eventZone: string | undefined,
-  viewerZone: string | undefined,
+  eventZone: string | null | undefined,
+  viewerZone: string | null | undefined,
   locale: string | undefined,
 ): string | null {
-  if (eventZone === undefined || viewerZone === undefined) return null
-  if (sameOffsetAt(instantMs, eventZone, viewerZone)) return null
-  const short = zoneShortName(instantMs, eventZone, locale)
+  const event = usableZone(eventZone)
+  const viewer = usableZone(viewerZone)
+  if (event === undefined || viewer === undefined) return null
+  if (sameOffsetAt(instantMs, event, viewer)) return null
+  const short = zoneShortName(instantMs, event, locale)
   return short === "" ? null : short
 }
 
@@ -475,10 +496,10 @@ export function eventWhenParts(event: EventWhenInput, opts: EventWhenOptions = {
 
   return {
     dow: dowLabel(event.scheduledAt, weekdays, zone),
-    date: start.toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: zone }),
+    date: dateTimeFormat(rowFormatters, locale, zone, WHEN_DATE_OPTIONS).format(start),
     time: timeLabel(event.scheduledAt, locale, zone),
     range: hasEnd ? spanLabel(event.scheduledAt, endIso, locale, weekdays, zone) : null,
-    zone: zoneSuffix(start.getTime(), zone, usableZone(opts.viewerTimeZone), locale),
+    zone: eventZoneSuffix(start.getTime(), zone, opts.viewerTimeZone, locale),
   }
 }
 
@@ -487,4 +508,129 @@ export function eventWhenLabel(event: EventWhenInput, opts: EventWhenOptions = {
   if (parts.time === "") return ""
   const when = `${parts.dow}, ${parts.date} · ${parts.range ?? parts.time}`
   return parts.zone === null ? when : `${when} ${parts.zone}`
+}
+
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
+
+// Unlike `dateTimeFormat`, a malformed locale degrades to en-US so safeDateFormat never throws in a
+// render path, and the fallback is cached under the requested locale so a bad preference fails once.
+function cachedDateFormatter(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  timeZone: string | undefined,
+): Intl.DateTimeFormat {
+  const cacheable = locale !== undefined && timeZone !== undefined
+  const key = JSON.stringify([locale, timeZone, options])
+  const cached = cacheable ? recall(dateFormatters, key) : undefined
+  if (cached !== undefined) return cached
+  const zoned = timeZone === undefined ? options : { ...options, timeZone }
+  let made: Intl.DateTimeFormat
+  try {
+    made = new Intl.DateTimeFormat(locale, zoned)
+  } catch {
+    made = new Intl.DateTimeFormat(FORMAT_FALLBACK_LOCALE, zoned)
+  }
+  return cacheable ? remember(dateFormatters, key, made) : made
+}
+
+/**
+ * Formats an instant with `options`, or "" when it is missing or unparseable. An unusable zone is
+ * dropped (the viewer's zone applies) while the locale stays, so one malformed row never flips a
+ * screen to English; a malformed locale falls back to en-US instead of throwing in a render path.
+ */
+export function safeDateFormat(
+  iso: string | null | undefined,
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  timeZone?: string | null,
+): string {
+  if (!iso) return ""
+  const at = Date.parse(iso)
+  if (Number.isNaN(at)) return ""
+  return cachedDateFormatter(locale, options, usableZone(timeZone)).format(at)
+}
+
+/**
+ * The zone an event with no usable zone of its own is shown in. Link previews render on a server
+ * whose clock is UTC, so "the viewer's zone" is not available there; civfix launched in Los Angeles
+ * and legacy rows predate per-event zones.
+ */
+const DEFAULT_EVENT_TIME_ZONE = "America/Los_Angeles"
+
+export type EventInstantStyle = "short" | "long"
+
+const EVENT_INSTANT_OPTIONS: Readonly<Record<EventInstantStyle, Intl.DateTimeFormatOptions>> = {
+  short: {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  },
+  long: {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  },
+}
+
+/**
+ * One self-contained event instant ("Sat, Sep 12, 10:00 AM PDT"), labelled with its zone so it reads
+ * correctly wherever it is shown. "" for a missing or unparseable instant.
+ */
+export function formatEventInstant(
+  iso: string | null | undefined,
+  timeZone: string | null | undefined,
+  style: EventInstantStyle,
+  locale: string = FORMAT_FALLBACK_LOCALE,
+): string {
+  return safeDateFormat(
+    iso,
+    locale,
+    EVENT_INSTANT_OPTIONS[style],
+    usableZone(timeZone) ?? DEFAULT_EVENT_TIME_ZONE,
+  )
+}
+
+const pad = (value: number, width = 2) => String(value).padStart(width, "0")
+
+/** The `<input type="datetime-local">` value showing `iso` on `timeZone`'s wall clock, or "". */
+export function datetimeLocalFromIso(iso: string | null | undefined, timeZone: string): string {
+  if (!iso) return ""
+  const at = Date.parse(iso)
+  if (Number.isNaN(at)) return ""
+  const wall = wallClockInZone(at, timeZone)
+  const date = `${pad(wall.year, 4)}-${pad(wall.month)}-${pad(wall.day)}`
+  return `${date}T${pad(wall.hours)}:${pad(wall.minutes)}`
+}
+
+export type DatetimeLocalValue =
+  | { kind: "empty" }
+  | { kind: "instant"; iso: string }
+  | { kind: "invalid" }
+
+const DATETIME_LOCAL = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
+
+/**
+ * `invalid` covers both a malformed value and a wall clock that does not exist in the zone (the
+ * hour skipped by a spring-forward DST change), which the caller must surface as a field error
+ * rather than silently shifting.
+ */
+export function isoFromDatetimeLocal(value: string, timeZone: string): DatetimeLocalValue {
+  if (value === "") return { kind: "empty" }
+  const match = DATETIME_LOCAL.exec(value)
+  if (!match) return { kind: "invalid" }
+  const wall: WallClock = {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hours: Number(match[4]),
+    minutes: Number(match[5]),
+  }
+  const at = wallClockToInstantMs(wall, timeZone)
+  return at === null ? { kind: "invalid" } : { kind: "instant", iso: new Date(at).toISOString() }
 }

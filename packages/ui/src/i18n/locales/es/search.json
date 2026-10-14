@@ -33,6 +33,10 @@
     "no_results": {
       "title": "Sin resultados",
       "body": "Ninguna cuenta coincide con \"@{{handle}}\". Revisa la ortografía o prueba con otro handle."
+    },
+    "signed_out": {
+      "title": "Inicia sesión para buscar personas",
+      "body": "Para buscar personas por nombre o @usuario necesitas una cuenta."
     }
   }
 }

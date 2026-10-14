@@ -128,7 +128,8 @@
     "cancel_edit": "수정 취소",
     "save_error": "수정 내용을 저장하지 못했어요. 다시 시도해 주세요.",
     "reply_title": "{{name}}님에게 답장",
-    "cancel_reply": "답장 취소"
+    "cancel_reply": "답장 취소",
+    "edit_unavailable": "이 메시지는 더 이상 사용할 수 없어요."
   },
   "report": {
     "subject_message": "이 메시지",
@@ -147,7 +148,8 @@
     "block": "차단",
     "copied": "복사됨",
     "dismiss": "메뉴 닫기",
-    "reactions": "이 메시지에 반응하기"
+    "reactions": "이 메시지에 반응하기",
+    "copy_failed": "복사하지 못했어요"
   },
   "pins": {
     "bar_label": "고정된 메시지",

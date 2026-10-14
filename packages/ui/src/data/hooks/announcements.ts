@@ -11,15 +11,15 @@ import { ANNOUNCEMENT_CHANNELS } from "@civfix/shared"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 
-export const ANNOUNCEMENTS_PAGE_SIZE = 20
+const ANNOUNCEMENTS_PAGE_SIZE = 20
 
 export const AUDIENCE_PREVIEW_DEBOUNCE_MS = 400
 
-export function audienceKey(audience: AnnouncementAudience): string {
+function audienceKey(audience: AnnouncementAudience): string {
   return audience.kind === "slots" ? `slots:${[...audience.ids].sort().join(",")}` : audience.kind
 }
 
-export function invalidateEventAnnouncements(qc: QueryClient, cleanupId: string): void {
+function invalidateEventAnnouncements(qc: QueryClient, cleanupId: string): void {
   void qc.invalidateQueries({ queryKey: queryKeys.eventAnnouncementsRoot(cleanupId) })
 }
 
@@ -96,12 +96,15 @@ export function useAudiencePreview(
   return useQuery<BroadcastPreviewDTO>({
     queryKey: queryKeys.eventAudiencePreview(cleanupId ?? "unknown", audienceKey(audience)),
     enabled: !!cleanupId && (opts.enabled ?? true),
-    queryFn: () =>
-      api.previewEventBroadcast({
-        id: cleanupId as string,
-        segment: audience,
-        channels: [...ANNOUNCEMENT_CHANNELS],
-      }),
+    queryFn: ({ signal }) =>
+      api.previewEventBroadcast(
+        {
+          id: cleanupId as string,
+          segment: audience,
+          channels: [...ANNOUNCEMENT_CHANNELS],
+        },
+        { signal },
+      ),
     staleTime: AUDIENCE_PREVIEW_DEBOUNCE_MS,
     retry: false,
   })

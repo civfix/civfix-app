@@ -6,7 +6,6 @@ export interface MediaPreviewProps {
   posterUri?: string | null
   thumbUri?: string | null
   aspectRatio?: number
-  autoplay?: boolean
   alt?: string | null
   framed?: boolean
   style?: StyleProp<ViewStyle>

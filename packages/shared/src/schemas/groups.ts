@@ -1,27 +1,30 @@
 /**
- * Chat P4 (Groups): user-created group / channel chat rooms (`chat_groups`). A "group" is a
- * member-writable room; a "channel" is broadcast-style (only owner/admins post — server enforced).
- * Rooms ride the existing unified chat rails via roomKind "group" (history shape, edit/pin/mute,
- * WS frames), so only the group-specific management surface lives here.
+ * User-created group / channel chat rooms. A "group" is member-writable; a "channel" is broadcast-style
+ * (only the owner and admins post, server enforced). Rooms ride the unified chat rails via roomKind
+ * "group" (history shape, edit/pin/mute, WS frames), so only the group management surface lives here.
  */
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
+import { PageLimitSchema } from "./internal-fields.js"
 import { ChatHistoryQueryShape, rejectAroundWithBefore } from "./chat.js"
 import { MediaDTOSchema, PersonDTOSchema } from "./entities.js"
 
 export const GroupRoleSchema = z.enum(["owner", "admin", "member"])
 export type GroupRole = z.infer<typeof GroupRoleSchema>
 
+const GroupKindSchema = z.enum(["group", "channel"])
+const GroupVisibilitySchema = z.enum(["private", "public"])
+
 export const ChatGroupDTOSchema = z.object({
   id: IdSchema,
-  kind: z.enum(["group", "channel"]),
+  kind: GroupKindSchema,
   name: z.string(),
   description: z.string().nullable().optional(),
   avatar: MediaDTOSchema.nullable().optional(),
-  visibility: z.enum(["private", "public"]),
+  visibility: GroupVisibilitySchema,
   ownerId: IdSchema,
   memberCount: z.number().int(),
-  // The viewer's role in the group; null/omitted = not a member (public groups are viewable pre-join).
+  // Null or omitted means not a member (public groups are viewable before joining).
   myRole: GroupRoleSchema.nullable().optional(),
   muted: z.boolean().default(false),
   createdAt: ISODateSchema,
@@ -35,13 +38,16 @@ export const GroupMemberDTOSchema = z.object({
 })
 export type GroupMemberDTO = z.infer<typeof GroupMemberDTOSchema>
 
+export const CHAT_GROUP_NAME_MAX = 80
+export const CHAT_GROUP_DESCRIPTION_MAX = 500
+
 export const CreateChatGroupRequestSchema = z
   .object({
-    kind: z.enum(["group", "channel"]).default("group"),
-    name: z.string().min(1).max(80),
-    description: z.string().max(500).optional(),
+    kind: GroupKindSchema.default("group"),
+    name: z.string().min(1).max(CHAT_GROUP_NAME_MAX),
+    description: z.string().max(CHAT_GROUP_DESCRIPTION_MAX).optional(),
     avatarUploadId: IdSchema.optional(),
-    visibility: z.enum(["private", "public"]).default("private"),
+    visibility: GroupVisibilitySchema.default("private"),
     memberIds: z.array(IdSchema).max(50).default([]),
   })
   .strict()
@@ -51,16 +57,16 @@ export const GetChatGroupRequestSchema = z.object({ id: IdSchema }).strict()
 export type GetChatGroupRequest = z.infer<typeof GetChatGroupRequestSchema>
 
 /**
- * All fields are optional set-only patches: omitted = unchanged. Clearing the description is done
- * by passing an empty string "" (there is no null sentinel on this contract).
+ * Set-only patch: an omitted field is unchanged. Clear the description with an empty string; there is
+ * no null sentinel on this contract.
  */
 export const UpdateChatGroupRequestSchema = z
   .object({
     id: IdSchema,
-    name: z.string().min(1).max(80).optional(),
-    description: z.string().max(500).optional(),
+    name: z.string().min(1).max(CHAT_GROUP_NAME_MAX).optional(),
+    description: z.string().max(CHAT_GROUP_DESCRIPTION_MAX).optional(),
     avatarUploadId: IdSchema.optional(),
-    visibility: z.enum(["private", "public"]).optional(),
+    visibility: GroupVisibilitySchema.optional(),
   })
   .strict()
 export type UpdateChatGroupRequest = z.infer<typeof UpdateChatGroupRequestSchema>
@@ -92,7 +98,7 @@ export const RemoveGroupMemberRequestSchema = z
   .strict()
 export type RemoveGroupMemberRequest = z.infer<typeof RemoveGroupMemberRequestSchema>
 
-// Owner is not an assignable role (exactly one owner, fixed at creation) — hence no "owner" here.
+// Owner is not assignable: there is exactly one owner, fixed at creation.
 export const SetGroupMemberRoleRequestSchema = z
   .object({
     id: IdSchema,
@@ -106,7 +112,7 @@ export const ListGroupMembersRequestSchema = z
   .object({
     id: IdSchema,
     cursor: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(50).optional(),
+    limit: PageLimitSchema,
   })
   .strict()
 export type ListGroupMembersRequest = z.infer<typeof ListGroupMembersRequestSchema>

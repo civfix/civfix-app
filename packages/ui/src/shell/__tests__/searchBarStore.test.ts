@@ -1,12 +1,7 @@
 /**
- * searchBarStore — the docked search bar's cross-boundary publish surface.
- *
- * `keyboardReserve` is the number `useKeyboardAnchor` publishes from the dock and ONE consumer reads:
- * SearchBodyReveal's dock-clearance scroll padding, which keeps the search list's tail scrollable clear of
- * the risen bar. (SearchBody read it too until the recents surface went back to being TOP-anchored — see THE
- * RULE in `SearchResting`.) It is
- * the SAME number that lifts the bar, so there is no second derivation — which is why its normalisation
- * (round, floor at 0, reject non-finite) is worth pinning even with a single reader.
+ * `keyboardReserve` is the same number that lifts the bar, read by one consumer (SearchBodyReveal's
+ * scroll padding), so there is no second derivation and its normalisation (round, floor at 0, reject
+ * non-finite) is pinned here.
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { useSearchBarStore } from "../searchBarStore"
@@ -57,10 +52,8 @@ describe("searchBarStore", () => {
   })
 
   it("declares searchExitSettled FALSE in the store's OWN initial state", () => {
-    // Read `getInitialState()`, NOT `getState()`. zustand's `setState` MERGES, so the `reset()` helper
-    // above would inject `searchExitSettled: false` into a store that never declared it and this
-    // assertion would pass against a missing field. `getInitialState()` returns the creator's object, so
-    // it reports `undefined` until the field genuinely exists. (zustand 5.0.14 — verified present.)
+    // `getInitialState()`, not `getState()`: zustand's `setState` merges, so the `reset()` helper would
+    // inject the field and this assertion would pass against a store that never declared it.
     expect(useSearchBarStore.getInitialState().searchExitSettled).toBe(false)
   })
 
@@ -73,14 +66,12 @@ describe("searchBarStore", () => {
 })
 
 /**
- * The landscape focus signal (design §3.5): the rail's Search orb and the `/` key have to focus a field
- * that lives in a BODY they cannot reach, and the body may not even be mounted yet at the moment of the
- * press. A number that the field consumes and zeroes is what makes that a one-shot rather than a mode.
+ * The rail's Search orb and the `/` key must focus a field in a body that may not be mounted yet; a
+ * number the field consumes and zeroes makes that a one-shot rather than a mode.
  */
 describe("searchBarStore focus request", () => {
   it("starts at 0 in the store's OWN initial state - a deep link must never auto-focus", () => {
-    // getInitialState(), not getState(): the `reset()` helper above MERGES, so getState() would report a
-    // field the creator never declared. (Same reasoning as the searchExitSettled assertion.)
+    // getInitialState(), for the same reason as the searchExitSettled assertion.
     expect(useSearchBarStore.getInitialState().focusNonce).toBe(0)
   })
 

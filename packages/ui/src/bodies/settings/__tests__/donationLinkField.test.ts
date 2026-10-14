@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { HttpsUrlSchema } from "@civfix/shared"
+import { HTTPS_URL_MAX_LENGTH, HttpsUrlSchema } from "@civfix/shared"
 import {
-  DONATION_LINK_MAX_LENGTH,
   donationLinkDirty,
   donationLinkFieldError,
   normalizeDonationLink,
@@ -40,7 +39,7 @@ describe("the donation-link field rule", () => {
 
   it("caps the field at the contract's own maximum", () => {
     const base = "https://give.example.org/"
-    const atMax = base + "a".repeat(DONATION_LINK_MAX_LENGTH - base.length)
+    const atMax = base + "a".repeat(HTTPS_URL_MAX_LENGTH - base.length)
     expect(HttpsUrlSchema.safeParse(atMax).success).toBe(true)
     expect(HttpsUrlSchema.safeParse(`${atMax}a`).success).toBe(false)
   })

@@ -3,14 +3,9 @@ import type { ChatMessageDTO, PersonDTO, OutboxEntry } from "@civfix/shared"
 import { mergeChatItems, isMine, effectiveClientId, reconcileInbound } from "@civfix/shared"
 
 /**
- * The chat merge/reconcile primitives now live in @civfix/shared (the SINGLE SOURCE shared with mobile
- * and the server; its own suite exercises the full surface). This web-side test is intentionally thin:
- * it pins the contract THIS app depends on, exercising the helpers exactly the way useChat drives them.
- *
- * In particular it guards the ack-reconcile fix: the WS `ack` frame carries the canonical clientId at
- * the frame's TOP LEVEL ({ type:"ack", clientId, message }) while `message` may omit it. useChat passes
- * that top-level id through `reconcileInbound(..., frame.clientId)`; this must clear the optimistic
- * outbox bubble and leave exactly one (non-pending) row after the merge - never a duplicate.
+ * The primitives are tested fully in @civfix/shared; this pins the contract this app depends on, driven
+ * the way useChat drives them. The WS `ack` frame carries the canonical clientId at the frame's top
+ * level while `message` may omit it, and reconciling with that id must leave exactly one non-pending row.
  */
 
 const ME = "user-me"

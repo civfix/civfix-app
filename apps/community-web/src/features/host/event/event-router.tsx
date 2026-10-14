@@ -25,6 +25,7 @@ import { Chip } from "@/components/console/chips/chip"
 import { ConsoleShell } from "../layout/console-shell"
 import { Breadcrumbs } from "../layout/breadcrumbs"
 import { EventSwitcher } from "../layout/event-switcher"
+import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import type { ConsoleNavItem } from "../layout/nav-items"
 import { ConsoleEventProvider, useConsoleNavigation } from "../console-context"
 import { useConsoleFormat } from "../format"
@@ -87,6 +88,11 @@ const BOTTOM_TAB_ORDER: readonly EventSection[] = [
   "settings",
 ]
 
+/** Overview is the fallback only for someone who may see it; otherwise exit would loop back here. */
+export function noAccessExitRoute(canViewOverview: boolean, eventId: string): ConsoleRoute {
+  return canViewOverview ? { kind: "event", eventId, section: "overview" } : { kind: "portfolio" }
+}
+
 export function EventRouter({ route }: { route: ConsoleRoute }) {
   const { t } = useT("host-event")
   const { t: tc } = useT("host-common")
@@ -137,7 +143,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
   return (
     <ConsoleShell
       navItems={navItems}
-      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, 5)}
+      bottomTabs={bottomTabs.length > 0 ? bottomTabs : navItems.slice(0, MAX_BOTTOM_TABS)}
       activeId={section}
       title={event?.title ?? tc("state.loading")}
       headerActions={<EventSwitcher eventId={eventId} section={section} />}
@@ -178,7 +184,14 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
           <NoAccessState
             title={t("no_access_title")}
             body={t("no_access_body")}
-            onExit={() => go({ kind: "event", eventId, section: "overview" })}
+            onExit={() =>
+              go(
+                noAccessExitRoute(
+                  hasHostCapability(standing, SECTION_CAPABILITY.overview),
+                  eventId,
+                ),
+              )
+            }
           />
         ) : (
           <ConsoleEventProvider eventId={eventId} event={event}>

@@ -51,7 +51,12 @@
     "empty": "Noch keine Blöcke. Füge einen hinzu, um mit der Seite zu starten.",
     "move_up": "Nach oben",
     "move_down": "Nach unten",
-    "remove": "Diesen Block entfernen"
+    "remove": "Diesen Block entfernen",
+    "fix_errors": "Einige Blöcke müssen korrigiert werden, bevor die Seite gespeichert werden kann.",
+    "item_name": "Block {{n}} ({{kind}})",
+    "move_up_named": "{{name}} nach oben verschieben",
+    "move_down_named": "{{name}} nach unten verschieben",
+    "remove_named": "{{name}} entfernen"
   },
   "block": {
     "title": "Überschrift",
@@ -116,6 +121,13 @@
       "body": "Kontaktdaten",
       "reply_to": "Antwortadresse",
       "reply_to_hint": "Wird auf der Seite angezeigt, damit Leute dich erreichen können."
+    },
+    "remove_row": "{{label}} entfernen",
+    "error": {
+      "required": "Fülle das aus oder entferne die Zeile.",
+      "url": "Gib einen vollständigen Link ein, der mit https:// beginnt.",
+      "email": "Gib eine gültige E-Mail-Adresse ein.",
+      "invalid": "Prüfe dieses Feld."
     }
   },
   "preview": {

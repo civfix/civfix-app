@@ -1,17 +1,13 @@
 import React, { memo, useCallback, useState } from "react"
-import { Image, Pressable, View } from "react-native"
+import { Image, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
-import {
-  focusRingProps,
-  makeThemedStyles,
-  useTheme,
-  webCursorPointer,
-  webHover,
-  webTransition,
-} from "../../../theme"
-import { Text, Icon, iconMap } from "../../../typography"
+import { safeDateFormat } from "@civfix/shared/datetime"
+import { makeThemedStyles, useTheme } from "../../../theme"
+import { Text, iconMap } from "../../../typography"
+import type { IconName } from "../../../typography"
 import {
   DateBadge,
+  IconActionButton,
   LIST_TILE,
   ListRow,
   MetaDot,
@@ -25,22 +21,25 @@ import { formatHoursDisplay } from "../../formatHours"
 import { PhaseDot } from "../PhaseHeader"
 import {
   hostedEventActions,
-  hostedEventCan,
   hostedEventHasActions,
   hostedEventStatus,
   hostedEventWhen,
   pastRowMeta,
+  type HostedEventActions,
 } from "./dashboardModel"
+import { hasHostCapability } from "../../../data/hooks/host"
 
 const CLOSED = "closed"
 
-const ACTION_SIZE = 32
-
-const MIN_TOUCH_TARGET = 44
-
-const ACTION_HIT_SLOP = (MIN_TOUCH_TARGET - ACTION_SIZE) / 2
-
 export type HostedEventWindow = "upcoming" | "past"
+
+interface MenuEntry {
+  flag: keyof HostedEventActions
+  key: string
+  label: string
+  icon: IconName
+  action: (event: HostedEventDTO) => void
+}
 
 type MetaTone = "warn" | "muted"
 
@@ -65,20 +64,7 @@ export interface HostedEventRowProps {
   onEdit: (event: HostedEventDTO) => void
 }
 
-function pastDateLabel(iso: string, locale: string, timeZone: string | undefined): string {
-  const at = new Date(iso)
-  if (Number.isNaN(at.getTime())) return ""
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      ...(timeZone ? { timeZone } : {}),
-    }).format(at)
-  } catch {
-    return iso.slice(0, 10)
-  }
-}
+const PAST_DATE_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
 
 function MetaLine({
   parts,
@@ -163,7 +149,7 @@ export const HostedEventRow = memo(function HostedEventRow({
 
   const actions = hostedEventActions(event, now)
   const hasMenu = hostedEventHasActions(actions)
-  const canCheckIn = live && hostedEventCan(event, "check_in")
+  const canCheckIn = live && hasHostCapability(event, "check_in")
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
   const checkIn = useCallback(() => onCheckIn(event), [event, onCheckIn])
@@ -188,7 +174,7 @@ export const HostedEventRow = memo(function HostedEventRow({
   const metaParts: MetaPart[] =
     eventWindow === "past"
       ? [
-          { key: "when", text: pastDateLabel(event.startsAt, locale, event.timezone ?? undefined) },
+          { key: "when", text: safeDateFormat(event.startsAt, locale, PAST_DATE_OPTIONS, event.timezone) },
           ...(past.cancelled
             ? [{ key: "cancelled", text: t("events.meta_cancelled"), tone: "muted" as const }]
             : []),
@@ -243,58 +229,46 @@ export const HostedEventRow = memo(function HostedEventRow({
       <RoleChip label={roleLabel(event.myRole)} tone="neutral" />
     ) : null
 
-  const items: PopoverMenuItem[] = [
-    ...(actions.hostTools
-      ? [
-          {
-            key: "host-tools",
-            label: t("events.host_tools"),
-            icon: "Building" as const,
-            onPress: run(onHostTools),
-          },
-        ]
-      : []),
-    ...(actions.chat
-      ? [
-          {
-            key: "chat",
-            label: t("events.open_chat"),
-            icon: "MessageCircle" as const,
-            onPress: run(onOpenChat),
-          },
-        ]
-      : []),
-    ...(actions.announce
-      ? [
-          {
-            key: "announce",
-            label: t("events.announce"),
-            icon: "Megaphone" as const,
-            onPress: run(onAnnounce),
-          },
-        ]
-      : []),
-    ...(actions.duplicate
-      ? [
-          {
-            key: "duplicate",
-            label: t("events.duplicate"),
-            icon: "Copy" as const,
-            onPress: run(onDuplicate),
-          },
-        ]
-      : []),
-    ...(actions.edit
-      ? [
-          {
-            key: "edit",
-            label: t("events.edit"),
-            icon: "Pencil" as const,
-            onPress: run(onEdit),
-          },
-        ]
-      : []),
+  const menuEntries: readonly MenuEntry[] = [
+    {
+      flag: "hostTools",
+      key: "host-tools",
+      label: t("events.host_tools"),
+      icon: "Building",
+      action: onHostTools,
+    },
+    {
+      flag: "chat",
+      key: "chat",
+      label: t("events.open_chat"),
+      icon: "MessageCircle",
+      action: onOpenChat,
+    },
+    {
+      flag: "announce",
+      key: "announce",
+      label: t("events.announce"),
+      icon: "Megaphone",
+      action: onAnnounce,
+    },
+    {
+      flag: "duplicate",
+      key: "duplicate",
+      label: t("events.duplicate"),
+      icon: "Copy",
+      action: onDuplicate,
+    },
+    {
+      flag: "edit",
+      key: "edit",
+      label: t("events.edit"),
+      icon: "Pencil",
+      action: onEdit,
+    },
   ]
+  const items: PopoverMenuItem[] = menuEntries
+    .filter((entry) => actions[entry.flag])
+    .map(({ key, label, icon, action }) => ({ key, label, icon, onPress: run(action) }))
 
   return (
     <>
@@ -314,42 +288,22 @@ export const HostedEventRow = memo(function HostedEventRow({
           canCheckIn || hasMenu ? (
             <View style={styles.actions}>
               {canCheckIn ? (
-                <Pressable
+                <IconActionButton
+                  icon={iconMap.QrCode}
+                  iconColor={th.colors.textMuted}
                   onPress={checkIn}
-                  accessibilityRole="button"
                   accessibilityLabel={t("events.check_in_a11y", { title: event.title })}
-                  hitSlop={ACTION_HIT_SLOP}
-                  {...focusRingProps}
-                  style={(state) => [
-                    styles.action,
-                    webTransition,
-                    webCursorPointer,
-                    webHover(state) ? styles.actionHovered : null,
-                    state.pressed ? styles.actionPressed : null,
-                  ]}
-                >
-                  <Icon icon={iconMap.QrCode} size={18} color={th.colors.textMuted} />
-                </Pressable>
+                />
               ) : null}
               {hasMenu ? (
-                <Pressable
+                <IconActionButton
                   ref={menuAnchorRef}
+                  icon={iconMap.Ellipsis}
+                  iconColor={th.colors.textSubtle}
                   onPress={openMenu}
-                  accessibilityRole="button"
                   accessibilityLabel={t("events.actions_a11y", { title: event.title })}
                   accessibilityState={{ expanded: menuOpen !== CLOSED }}
-                  hitSlop={ACTION_HIT_SLOP}
-                  {...focusRingProps}
-                  style={(state) => [
-                    styles.action,
-                    webTransition,
-                    webCursorPointer,
-                    webHover(state) ? styles.actionHovered : null,
-                    state.pressed ? styles.actionPressed : null,
-                  ]}
-                >
-                  <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.textSubtle} />
-                </Pressable>
+                />
               ) : null}
             </View>
           ) : null
@@ -372,19 +326,6 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["1"],
-  },
-  action: {
-    width: ACTION_SIZE,
-    height: ACTION_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-  },
-  actionHovered: {
-    backgroundColor: t.colors.bgAlt,
-  },
-  actionPressed: {
-    opacity: 0.92,
   },
   cover: {
     width: LIST_TILE,

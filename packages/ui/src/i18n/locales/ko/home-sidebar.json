@@ -19,7 +19,9 @@
   "results": {
     "people": "사람",
     "events": "이벤트",
-    "reports": "신고"
+    "reports": "신고",
+    "load_more_reports": "신고 더 보기",
+    "loading_more": "불러오는 중…"
   },
   "search_page": {
     "title": "검색",

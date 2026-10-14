@@ -1,6 +1,6 @@
 import type { ThemeAccent } from "@civfix/shared"
 
-export const ACCENT_VAR_PREFIX = "--signup-accent"
+const ACCENT_VAR_PREFIX = "--signup-accent"
 
 const RAMP_STEPS = ["50", "100", "300", "600"] as const
 

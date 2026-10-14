@@ -20,7 +20,8 @@
     "required_error": "Diese Antwort ist erforderlich.",
     "required_summary": "Bitte beantworte die Pflichtfragen.",
     "loading": "Fragen werden geladen…",
-    "error": "Die Fragen konnten nicht geladen werden."
+    "error": "Die Fragen konnten nicht geladen werden.",
+    "required_a11y": "{{prompt}}, Pflichtfeld"
   },
   "consent": {
     "terms_lead": "Ich stimme den ",
@@ -51,7 +52,12 @@
     "seats_other": "{{count}} Plätze",
     "position": "Wartelistenplatz {{position}}",
     "view_ticket": "Ticket ansehen",
-    "cancel": "Anmeldung stornieren"
+    "cancel": "Anmeldung stornieren",
+    "cancel_title": "Anmeldung stornieren?",
+    "cancel_body": "Dein Platz wird sofort freigegeben. Ist die Veranstaltung danach voll, landest du bei einer erneuten Anmeldung auf der Warteliste.",
+    "cancel_waitlist_title": "Warteliste verlassen?",
+    "cancel_waitlist_body": "Du verlierst deinen Wartelistenplatz. Trägst du dich erneut ein, stehst du ganz hinten.",
+    "cancel_keep": "Platz behalten"
   },
   "state": {
     "loading": "Dein Ticket wird geladen…",

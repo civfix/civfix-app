@@ -1,8 +1,7 @@
 import React, { useCallback } from "react"
 import { ActivityIndicator, Pressable, View } from "react-native"
 import { useGlobalSearchParams, usePathname } from "expo-router"
-import type { OAuthProvider } from "@civfix/shared"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"
 import {
   Text,
   Icon,
@@ -17,15 +16,13 @@ import { useT } from "@civfix/ui/i18n"
 import { useHaptics, useOpenExternal } from "@civfix/ui/capabilities"
 import { AuthOptions } from "@/components/AuthOptions"
 import { hrefFromRoute } from "@/lib/authResume"
-import { useEnabledProviders } from "@/hooks/useAuthFlow"
+import { useSignInProviders } from "@/hooks/useAuthFlow"
 import { useAuthStore } from "@/store/authStore"
 import { ReadyStage } from "@/components/onboarding/stages/ReadyStage"
 import {
   OnboardingPageFrame,
   type OnboardingPageProps,
 } from "@/components/onboarding/pages/OnboardingPageFrame"
-
-const ALL_PROVIDERS: OAuthProvider[] = ["apple", "google", "email"]
 
 const LINK_HIT_SLOP = 6
 
@@ -38,11 +35,11 @@ const TRUST_ROWS: readonly { icon: IconName; key: string }[] = [
 function SignInOptions({ onHandoff }: { onHandoff: () => void }) {
   const th = useTheme()
   const styles = useStyles()
-  const providers = useEnabledProviders()
+  const { ready, enabled } = useSignInProviders()
   const pathname = usePathname()
   const params = useGlobalSearchParams()
   const resumeHref = hrefFromRoute(pathname, params)
-  if (providers.isPlaceholderData) {
+  if (!ready) {
     return (
       <View style={styles.optionsLoading}>
         <ActivityIndicator color={th.colors.brand.bloom} />
@@ -51,7 +48,7 @@ function SignInOptions({ onHandoff }: { onHandoff: () => void }) {
   }
   return (
     <AuthOptions
-      enabled={providers.data ?? ALL_PROVIDERS}
+      enabled={enabled}
       onHandoff={onHandoff}
       next={resumeHref}
     />
@@ -192,6 +189,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
   },
   legalLinkPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

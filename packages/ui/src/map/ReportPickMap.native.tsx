@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -25,8 +26,6 @@ import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
 import { alpha } from "../theme/alpha"
-import { Text } from "../typography"
-import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -35,25 +34,29 @@ import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import {
   clusterFallbackZoom,
-  clusterZoomTarget,
-  expansionZoomOfCluster,
+  clusterPressTarget,
+  WORLD_BBOX,
   type ClusterNode,
   type MapClusterIndex,
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
+import { MapCredit } from "./MapCredit"
+import { MARKER_PRESS_GUARD_MS } from "./markerFocus"
 import {
   REPORT_PICK_FLY_MS,
+  REPORT_PICK_MEETING_PIN_OPACITY,
   REPORT_PICK_MEETING_PIN_SIZE,
   REPORT_PICK_MUTED_OPACITY,
   REPORT_PICK_PIN_SIZE,
   REPORT_PICK_RADIUS_FILL_ALPHA,
   REPORT_PICK_RADIUS_LINE_ALPHA,
+  REPORT_PICK_RADIUS_LINE_DASH,
+  REPORT_PICK_RADIUS_LINE_WIDTH,
   type ReportPickMapHandle,
   type ReportPickMapProps,
 } from "./ReportPickMap.types"
 
-const MARKER_PRESS_GUARD_MS = 350
 const RADIUS_SOURCE_ID = "report-pick-radius"
 
 export const ReportPickMap = memo(
@@ -77,20 +80,21 @@ export const ReportPickMap = memo(
     } = props
     const styles = useStyles()
     const th = useTheme()
-    const { t } = useT("map-ui")
     const haptics = useHaptics()
     const hapticsRef = useRef(haptics)
-    hapticsRef.current = haptics
     const cameraRef = useRef<CameraRef>(null)
     const mapNativeRef = useRef<MapRef>(null)
     const mapReadyRef = useRef(false)
     const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
     const onRegionChangeRef = useRef(onRegionChange)
-    onRegionChangeRef.current = onRegionChange
     const onPressPinRef = useRef(onPressPin)
-    onPressPinRef.current = onPressPin
     const onPressMapRef = useRef(onPressMap)
-    onPressMapRef.current = onPressMap
+    useLayoutEffect(() => {
+      hapticsRef.current = haptics
+      onRegionChangeRef.current = onRegionChange
+      onPressPinRef.current = onPressPin
+      onPressMapRef.current = onPressMap
+    })
     const markerPressedAtRef = useRef(0)
 
     const cartoApiKey = useCartoApiKey()
@@ -118,14 +122,19 @@ export const ReportPickMap = memo(
     const { index, query } = useClusters(points)
     const indexRef = useRef<MapClusterIndex>(index)
     const [nodes, setNodes] = useState<ClusterNode[]>([])
-    const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
+    const nodesByMarkerRef = useRef(new globalThis.Map<string, ClusterNode>())
 
     const recomputeRef = useRef<() => void>(() => {})
-    recomputeRef.current = () => {
-      const region = lastRegionRef.current
-      if (!region) return
-      setNodes(query(region.bbox, region.zoom))
-    }
+    useLayoutEffect(() => {
+      recomputeRef.current = () => {
+        const region = lastRegionRef.current
+        if (region) {
+          setNodes(query(region.bbox, region.zoom))
+          return
+        }
+        if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))
+      }
+    })
     const runnerRef = useRef<IdleRunner | null>(null)
     if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
     const runner = runnerRef.current
@@ -171,14 +180,17 @@ export const ReportPickMap = memo(
     const handleMapLoad = useCallback(() => {
       mapReadyRef.current = true
       const pending = mapNativeRef.current?.getViewState()
-      if (!pending) return
+      if (!pending) {
+        runner.request()
+        return
+      }
       void pending
         .then((view: ViewState) => {
           const [west, south, east, north] = view.bounds
           commitRegion({ west, south, east, north }, view.zoom)
         })
-        .catch(() => undefined)
-    }, [commitRegion])
+        .catch(() => runner.request())
+    }, [commitRegion, runner])
 
     const handleMapPress = useCallback(() => {
       if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
@@ -197,9 +209,7 @@ export const ReportPickMap = memo(
       if (!node || node.type !== "cluster") return
       hapticsRef.current.selection()
       const currentZoom = lastRegionRef.current?.zoom ?? seedRef.current.zoom
-      const expansion =
-        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
-      const target = clusterZoomTarget(node, currentZoom, expansion) ?? clusterFallbackZoom(currentZoom)
+      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       cameraRef.current?.flyTo({
         center: [node.lng, node.lat],
         zoom: target,
@@ -251,7 +261,11 @@ export const ReportPickMap = memo(
             <Layer
               id={`${RADIUS_SOURCE_ID}-line`}
               type="line"
-              paint={{ "line-color": radiusLine, "line-width": 1.5, "line-dasharray": [2, 2] }}
+              paint={{
+                "line-color": radiusLine,
+                "line-width": REPORT_PICK_RADIUS_LINE_WIDTH,
+                "line-dasharray": REPORT_PICK_RADIUS_LINE_DASH,
+              }}
             />
           </GeoJSONSource>
 
@@ -300,15 +314,7 @@ export const ReportPickMap = memo(
           })}
         </MlMap>
 
-        <Text
-          style={[
-            styles.credit,
-            attributionBottomInset != null ? { bottom: attributionBottomInset } : null,
-          ]}
-          pointerEvents="none"
-        >
-          {t("a11y.attribution")}
-        </Text>
+        <MapCredit bottomInset={attributionBottomInset} />
       </View>
     )
   }),
@@ -325,17 +331,9 @@ const useStyles = makeThemedStyles((t) => ({
   meetingPin: {
     alignItems: "center",
     justifyContent: "center",
-    opacity: 0.9,
+    opacity: REPORT_PICK_MEETING_PIN_OPACITY,
   },
   mutedPin: {
     opacity: REPORT_PICK_MUTED_OPACITY,
-  },
-  credit: {
-    position: "absolute",
-    bottom: 4,
-    right: 6,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 9,
-    color: t.colors.textSubtle,
   },
 }))

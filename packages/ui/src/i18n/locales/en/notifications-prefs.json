@@ -30,5 +30,6 @@
       "label": "New followers",
       "helper": "When someone follows you on civfix."
     }
-  }
+  },
+  "save_error": "Couldn't save that change. Try again."
 }

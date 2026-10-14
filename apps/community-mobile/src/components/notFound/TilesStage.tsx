@@ -4,7 +4,8 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { fontFamily, makeThemedStyles, shadowSchemes, useTheme, type Theme } from "@/theme"
+import { shadowSchemes } from "@civfix/shared/tokens"
+import { fontFamily, makeThemedStyles, useTheme, type Theme } from "@/theme"
 import {
   dragTile,
   dropTiles,

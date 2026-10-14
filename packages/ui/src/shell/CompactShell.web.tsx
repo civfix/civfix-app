@@ -5,18 +5,36 @@ import {
   useWindowDimensions,
   type ViewStyle,
 } from "react-native"
-import { makeThemedStyles, space, motion } from "../theme"
+import { makeThemedStyles, space, motion, focusRingProps } from "../theme"
+import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
+import { lerp } from "../surface/liquidGlass/liquidGlassModel"
 import { useNavStore, type DetailEntry, type Snap, type View as NavView } from "../nav"
 import { SearchHeader } from "./SearchHeader.web"
 import { SheetHeader } from "./SheetHeader.shared"
-import { shouldCollapseOnSettle } from "./dragCollapse"
+import { isPeekIndex } from "./dragCollapse"
 import { defaultRenderBody } from "./BodyRouter"
 import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { cssTransition } from "./motionCss"
-import { compactBottomChrome, sheetSnapPoints } from "./tabBarLogic"
-import { isCoarsePointer } from "./webMedia"
+import { surfaceKey } from "./bodyLayout"
+import {
+  SHEET_SNAP_RANGE,
+  compactBottomChrome,
+  sheetSnapKeyOutcome,
+  sheetSnapPoints,
+  sheetSnapValueKey,
+} from "./tabBarLogic"
+import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
+import {
+  SHEET_FLOAT_BOTTOM,
+  SHEET_FLOAT_RADIUS,
+  SHEET_FLOAT_SIDE,
+  SHEET_HANDLE_BAR,
+  SHEET_HANDLE_HEIGHT,
+  SHEET_HEADER_SIDE_PAD,
+  sheetHeaderPad,
+} from "./sheetChrome"
 import { BodyTransition } from "./BodyTransition.web"
 import { useStackDirection } from "./useStackDirection"
 import type { CompactShellProps } from "./CompactShell.types"
@@ -25,12 +43,6 @@ const SHEET_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   onKeyboardShow: () => useNavStore.getState().setSnap(2, false),
 })
 
-const SIDE_PEEK = 12
-const SIDE_FULL = 4
-const BOTTOM_PEEK = 0
-const BOTTOM_FULL = 0
-const RADIUS_PEEK = 30
-const RADIUS_FULL = 22
 
 const SETTLE_TRANSITION = cssTransition(
   ["height", "left", "right", "border-radius"],
@@ -39,10 +51,6 @@ const SETTLE_TRANSITION = cssTransition(
 
 const FLING_VELOCITY = 0.5
 const TAP_SLOP = 6
-
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t
-}
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n))
@@ -71,6 +79,7 @@ function WebSheetHeader({
 
 export function CompactShell({ renderBody = defaultRenderBody, closing = false, onClosed }: CompactShellProps) {
   const styles = useStyles()
+  const { t: tNav } = useT("nav")
   const { height: winH } = useWindowDimensions()
 
   useLayoutEffect(() => {
@@ -85,7 +94,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   const stack = useNavStore((s) => s.stack)
   const collapseToParent = useNavStore((s) => s.collapseToParent)
 
-  const transitionKey = active ? `${active.kind}:${active.id ?? ""}` : `home:${view}`
+  const transitionKey = surfaceKey(view, active)
   const direction = useStackDirection(stack.length)
 
   const snapPx = useMemo(() => sheetSnapPoints(winH, space["8"]), [winH])
@@ -111,9 +120,9 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   }
   frac = clamp(frac, 0, 2)
   const t = frac / 2
-  const side = lerp(SIDE_PEEK, SIDE_FULL, t)
-  const bottom = lerp(BOTTOM_PEEK, BOTTOM_FULL, t)
-  const radius = lerp(RADIUS_PEEK, RADIUS_FULL, t)
+  const side = lerp(t, ...SHEET_FLOAT_SIDE)
+  const bottom = lerp(t, ...SHEET_FLOAT_BOTTOM)
+  const radius = lerp(t, ...SHEET_FLOAT_RADIUS)
 
   const panResponder = useMemo(
     () =>
@@ -153,14 +162,25 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
           }
           setDragHeight(null)
           setSnap(next)
-          if (shouldCollapseOnSettle(next, cur)) collapseToParent()
+          if (isPeekIndex(next)) collapseToParent()
         },
         onPanResponderTerminate: () => setDragHeight(null),
       }),
     [setSnap, collapseToParent],
   )
 
-  const settleTransition = dragging || !snapAnimated ? "none" : SETTLE_TRANSITION
+  const onHandleKeyDown = (event: { key?: string; preventDefault?: () => void }) => {
+    const cur = snapRef.current
+    const outcome = sheetSnapKeyOutcome(cur, event.key)
+    if (!outcome.consumed) return
+    event.preventDefault?.()
+    if (outcome.next === null) return
+    setSnap(outcome.next)
+    if (isPeekIndex(outcome.next)) collapseToParent()
+  }
+
+  const settleTransition =
+    dragging || !snapAnimated || prefersReducedMotion() ? "none" : SETTLE_TRANSITION
   const anchorStyle = {
     height,
     bottom: 0,
@@ -178,7 +198,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     transition: settleTransition,
   } as unknown as ViewStyle
 
-  const headerVPad = { paddingTop: 0, paddingBottom: snap === 0 ? 20 : 12 }
+  const headerVPad = sheetHeaderPad(snap)
 
   const body = useMemo(() => renderBody(active, view), [renderBody, active, view])
   const showSheetHeader = active !== null || compactBottomChrome(view) !== "docked-search"
@@ -186,7 +206,22 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   return (
     <View style={[styles.anchor, anchorStyle]}>
       <BlurSurface kind="sheet" style={[styles.card, cardStyle]}>
-        <View style={styles.handleArea} {...panResponder.panHandlers}>
+        <View
+          style={styles.handleArea}
+          {...panResponder.panHandlers}
+          accessibilityRole="adjustable"
+          accessibilityLabel={tNav("a11y.drag_handle")}
+          {...({
+            "aria-valuemin": SHEET_SNAP_RANGE.min,
+            "aria-valuemax": SHEET_SNAP_RANGE.max,
+            "aria-valuenow": snap,
+            "aria-valuetext": tNav(sheetSnapValueKey(snap)),
+            "aria-orientation": "vertical",
+            tabIndex: 0,
+            onKeyDown: onHandleKeyDown,
+          } as object)}
+          {...focusRingProps}
+        >
           <View style={styles.handleBar} />
         </View>
         <View style={styles.contentHost}>
@@ -224,16 +259,14 @@ const useStyles = makeThemedStyles((t) => ({
     ...t.shadows.s4,
   },
   handleArea: {
-    height: 20,
+    height: SHEET_HANDLE_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
     paddingTop: t.space["2"],
     ...({ touchAction: "none", cursor: "grab", userSelect: "none" } as unknown as ViewStyle),
   },
   handleBar: {
-    width: 38,
-    height: 5,
-    borderRadius: 3,
+    ...SHEET_HANDLE_BAR,
     backgroundColor: t.glass.grabHandle,
   },
   contentHost: {
@@ -243,7 +276,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   headerHost: {
-    paddingHorizontal: 14,
+    paddingHorizontal: SHEET_HEADER_SIDE_PAD,
   },
   bodyHost: {
     flex: 1,

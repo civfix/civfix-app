@@ -1,13 +1,9 @@
-import { ChannelsRoute } from "@/features/channels/channels-route"
+import { HomeShell } from "@/components/home/home-shell"
 
 /**
- * Static-export note: this is a CATCH-ALL ([...id]) route. With output:"export", dynamic segments
- * must enumerate their params at build time via generateStaticParams. The channel paths carry the
- * literal wizard segment ("/channels/new"), not knowable ahead of time, so we emit a single
- * placeholder shell ({ id: ["_"] }) and read the actual path client-side (ChannelsRoute -> HomeShell
- * -> use-web-nav-adapter). The SPA fallback rule `/channels/* /channels/_/ 200` in public/_redirects
- * rewrites every cold /channels/<...> deep link to this shell so it boots and resolves the path
- * client-side. See the app README.
+ * output: "export" needs every dynamic segment enumerated at build time, so this emits one placeholder
+ * shell and the real path is read client-side. public/_redirects rewrites every /channels/<...> deep
+ * link to that shell.
  */
 export function generateStaticParams(): Array<{ id: string[] }> {
   return [{ id: ["_"] }]
@@ -15,6 +11,7 @@ export function generateStaticParams(): Array<{ id: string[] }> {
 
 export const dynamicParams = false
 
+// A channel conversation rides the group routes as /messages/group/<id>, not this one.
 export default function ChannelsDetailPage() {
-  return <ChannelsRoute />
+  return <HomeShell />
 }

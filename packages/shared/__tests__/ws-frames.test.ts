@@ -3,9 +3,9 @@ import { WsServerMessageSchema, WsClientMessageSchema, UserSignalSchema } from "
 
 /**
  * The WS frame contract is the wire boundary shared by the server gateway and both clients. These tests
- * lock the realtime additions (typing + presence_snapshot server frames) AND assert the pre-existing
- * frames still parse, so the discriminated-union extension stays backward compatible (an older client
- * built against the prior contract drops the new frames rather than crashing).
+ * lock the typing + presence_snapshot server frames AND assert the older frames still parse, so the
+ * discriminated union stays backward compatible (an older client drops the new frames rather than
+ * crashing).
  */
 
 const ROOM = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
@@ -74,7 +74,7 @@ describe("WsServerMessageSchema realtime additions", () => {
     ).toBe(true)
   })
 
-  it("accepts roomKind 'group' (P4 room kind)", () => {
+  it("accepts roomKind 'group'", () => {
     expect(
       WsServerMessageSchema.safeParse({ type: "typing", cleanupId: ROOM, roomKind: "group", userId: USER })
         .success,
@@ -109,7 +109,7 @@ describe("WsServerMessageSchema realtime additions", () => {
   })
 
   it("still accepts every pre-signal frame (backward-compat lock)", () => {
-    // The signal variant was added to the SAME union; the prior frames must keep parsing unchanged.
+    // The signal variant lives in the SAME union; the other frames must keep parsing unchanged.
     expect(WsServerMessageSchema.safeParse({ type: "presence", cleanupId: ROOM, userId: USER, state: "join" }).success).toBe(true)
     expect(WsServerMessageSchema.safeParse({ type: "typing", cleanupId: ROOM, userId: USER }).success).toBe(true)
     expect(WsServerMessageSchema.safeParse({ type: "ack", clientId: "c1", message: { id: ROOM, cleanupId: ROOM, from: { id: USER, name: "U", handle: null, bio: null, avatar: null, followers: 0, following: 0, isFollowing: false }, body: "hi", kind: "text", attachments: null, createdAt: "2026-01-01T00:00:00.000Z", editedAt: null } }).success).toBe(true)
@@ -132,7 +132,7 @@ describe("WsServerMessageSchema realtime additions", () => {
         roomKind: "dm",
       }).success,
     ).toBe(true)
-    // Bare: a connection-level error (no room) — still valid (older shape).
+    // Bare: a connection-level error (no room) is still valid (older shape).
     expect(
       WsServerMessageSchema.safeParse({ type: "error", code: "BAD_FRAME", message: "no" }).success,
     ).toBe(true)

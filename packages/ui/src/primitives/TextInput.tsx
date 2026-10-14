@@ -1,2 +1,2 @@
 export { TextInput } from "./TextInput.web"
-export type { TextInputProps, TextInputHandle } from "./TextInput.types"
+export type { TextInputProps } from "./TextInput.types"

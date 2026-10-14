@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
+import { MAX_EVENT_RESOURCES_MESSAGE } from "@civfix/shared"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
-
-const MESSAGE_MAX = 2000
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
 
 export interface RequestResourcesSheetProps {
   visible: boolean
@@ -32,9 +32,10 @@ export function RequestResourcesSheet({
   const [message, setMessage] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) setMessage("")
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setMessage("")
+    setFocused(false)
+  })
 
   const canSubmit = !pending && message.trim().length > 0
 
@@ -66,16 +67,16 @@ export function RequestResourcesSheet({
 
       <TextInput
         value={message}
-        onChangeText={(next) => setMessage(next.slice(0, MESSAGE_MAX))}
+        onChangeText={(next) => setMessage(next.slice(0, MAX_EVENT_RESOURCES_MESSAGE))}
         editable={!pending}
         multiline
-        maxLength={MESSAGE_MAX}
+        maxLength={MAX_EVENT_RESOURCES_MESSAGE}
         placeholder={t("message_placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("message_a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

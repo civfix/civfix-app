@@ -12,7 +12,11 @@ import {
 
 export const MailAttachmentSchema = z
   .object({
+    // Read endpoints overwrite `key` with the presigned link for older admin builds; `url` carries the
+    // same link under an honest name. It expires MEDIA_GET_URL_TTL_SEC (15 minutes) after the response
+    // is built, so refetch the message instead of caching the link.
     key: z.string(),
+    url: z.string().url().optional(),
     filename: z.string(),
     size: z.number().int().nonnegative(),
   })
@@ -32,7 +36,7 @@ export const MailMessageDTOSchema = z
     body: z.string(),
     ts: z.string(),
     attachments: z.array(MailAttachmentSchema),
-    // Set when the backend truncated a long mail body. Optional; schema is .strict() so it must be declared.
+    // Set when the backend truncated a long mail body.
     truncated: z.boolean().optional(),
     delivery: MailDeliverySchema.nullable().optional(),
     authVerdict: MailAuthVerdictSchema.nullable().optional(),
@@ -56,7 +60,7 @@ export const MailThreadListItemDTOSchema = z
     status: MailStatusSchema,
     jurisdictionGeoid: z.string().nullable(),
     // The originating report id (the report whose forward started this thread), for the reverse
-    // mail -> report link. Null when the thread has no associated report. Inherited by MailThreadDTO.
+    // mail -> report link. Null when the thread has no associated report.
     reportId: z.string().nullable(),
   })
   .strict()

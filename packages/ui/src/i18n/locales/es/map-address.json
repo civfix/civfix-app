@@ -1,12 +1,21 @@
 {
   "input": {
     "placeholder": "Busca una dirección o pega lat, lng",
-    "clear": "Borrar"
+    "clear": "Borrar",
+    "a11y": "Buscar una dirección"
   },
   "coordinate": {
     "exact": "Coordenadas exactas"
   },
   "empty": {
     "noMatches": "Sin resultados. Prueba con una dirección más específica o pega \"lat, lng\"."
+  },
+  "results": {
+    "count_one": "1 dirección encontrada",
+    "count_other": "{{count}} direcciones encontradas"
+  },
+  "error": {
+    "failed": "No se pudieron cargar las sugerencias de direcciones.",
+    "retry": "Intentar de nuevo"
   }
 }

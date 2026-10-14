@@ -68,14 +68,66 @@ function Harness({
   )
 }
 
+function stubNarrowViewport(): () => void {
+  const matchMedia = window.matchMedia
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: query.includes("max-width: 767px"),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+  return () => Object.defineProperty(window, "matchMedia", { writable: true, value: matchMedia })
+}
+
 describe("DataTable", () => {
-  it("publishes aria-sort on every column header and marks the active one", () => {
+  it("publishes aria-sort only on sortable column headers and marks the active one", () => {
     renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} onSortChange={() => {}} />)
     const headers = screen.getAllByRole("columnheader")
     expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual([
       "ascending",
-      "none",
+      null,
     ])
+  })
+
+  it("marks an inactive sortable column as unsorted", () => {
+    renderConsole(<Harness sort={null} onSortChange={() => {}} />)
+    expect(screen.getAllByRole("columnheader")[0]?.getAttribute("aria-sort")).toBe("none")
+  })
+
+  it("publishes no aria-sort when the table cannot be re-sorted", () => {
+    renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} />)
+    const headers = screen.getAllByRole("columnheader")
+    expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual([null, null])
+  })
+
+  it("announces loading once and marks the table busy while it loads", () => {
+    renderConsole(
+      <DataTable
+        caption="Attendees"
+        columns={COLUMNS}
+        rows={[]}
+        rowKey={(row) => row.id}
+        loading
+      />,
+      { withToasts: false },
+    )
+    const table = screen.getByRole("table", { name: "Attendees" })
+    expect(table.getAttribute("aria-busy")).toBe("true")
+    expect(screen.getByRole("status").textContent).toBe("state.loading")
+    expect(screen.getAllByText("state.loading")).toHaveLength(1)
+  })
+
+  it("does not pretend the header sticks inside its horizontal scroll box", () => {
+    renderConsole(<Harness />)
+    const head = screen.getByRole("table").querySelector("thead")
+    expect(head?.className ?? "").not.toMatch(/\bsticky\b/)
   })
 
   it("flips the direction on a second activation of the same column", async () => {
@@ -128,20 +180,7 @@ describe("DataTable", () => {
   })
 
   it("renders cards instead of a table on a narrow viewport", () => {
-    const matchMedia = window.matchMedia
-    Object.defineProperty(window, "matchMedia", {
-      writable: true,
-      value: (query: string) => ({
-        matches: query.includes("max-width: 767px"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      }),
-    })
+    const restore = stubNarrowViewport()
     renderConsole(
       <Harness renderCard={(row) => <article data-testid="card">{row.name}</article>} />,
     )
@@ -149,7 +188,31 @@ describe("DataTable", () => {
     const cards = screen.getAllByTestId("card")
     expect(cards).toHaveLength(ROWS.length)
     expect(within(cards[0] as HTMLElement).getByText("Ann")).toBeTruthy()
-    Object.defineProperty(window, "matchMedia", { writable: true, value: matchMedia })
+    restore()
+  })
+
+  it("announces loading with a single label on a narrow viewport", () => {
+    const restore = stubNarrowViewport()
+    try {
+      renderConsole(
+        <DataTable
+          caption="Attendees"
+          columns={COLUMNS}
+          rows={[]}
+          rowKey={(row) => row.id}
+          renderCard={(row) => <article>{row.name}</article>}
+          loading
+        />,
+        { withToasts: false },
+      )
+      expect(screen.queryByRole("table")).toBeNull()
+      const status = screen.getByRole("status")
+      expect(status.textContent).toBe("state.loading")
+      expect(status.getAttribute("aria-label")).toBeNull()
+      expect(screen.getAllByText("state.loading")).toHaveLength(1)
+    } finally {
+      restore()
+    }
   })
 
   it("names the table for assistive tech with a caption", () => {

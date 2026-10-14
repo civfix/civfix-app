@@ -23,7 +23,7 @@ function input(overrides: Partial<MentionSourceInput> = {}): MentionSourceInput 
 }
 
 describe("resolveMentionSource", () => {
-  describe("report rooms (P2 Task 2.9: global source re-enabled)", () => {
+  describe("report rooms (global source)", () => {
     it("is UNSCOPED: candidates is null (global mention search), not an empty scoped set", () => {
       const src = resolveMentionSource(input({ roomKind: "report" }))
       expect(src.candidates).toBeNull()
@@ -64,7 +64,6 @@ describe("resolveMentionSource", () => {
         }),
       )
       expect(src.extraCandidates).toEqual([])
-      // The global user source stays on regardless.
       expect(src.candidates).toBeNull()
     })
 
@@ -101,7 +100,7 @@ describe("resolveMentionSource", () => {
     })
   })
 
-  describe("group rooms (P4 Task 4.9: scoped to the member roster, global until loaded)", () => {
+  describe("group rooms (scoped to the member roster, global until loaded)", () => {
     it("scopes to the loaded roster first page, dropping the viewer and the handleless", () => {
       const src = resolveMentionSource(
         input({

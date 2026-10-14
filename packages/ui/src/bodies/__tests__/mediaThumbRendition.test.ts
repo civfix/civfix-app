@@ -10,17 +10,24 @@ const SEAMS = {
   "MediaPreview.native.tsx": code(read("../../primitives/MediaPreview.native.tsx")),
   "MediaPreview.web.tsx": code(read("../../primitives/MediaPreview.web.tsx")),
 }
+const SHARED = code(read("../../primitives/MediaPreview.shared.tsx"))
 
 describe("the MediaPreview seams decode the thumb rendition for images only", () => {
+  it("the shared seam hook resolves the image source from thumbUri and keys the fallback on it", () => {
+    expect(SHARED).toMatch(/const source = kind === "image" && thumbUri \? thumbUri : uri/)
+    expect(SHARED).toMatch(/setFailedUri\(source\)/)
+    expect(SHARED).toMatch(/failed: failedUri === source/)
+  })
+
   for (const [name, source] of Object.entries(SEAMS)) {
     it(`${name} resolves its image source from thumbUri`, () => {
-      expect(source).toMatch(/const source = kind === "image" && thumbUri \? thumbUri : uri/)
+      expect(source).toMatch(/const \{ label, source, failed, onError \} = useMediaPreviewSource\(\{ kind, uri, thumbUri, alt \}\)/)
       expect(source).toMatch(/source=\{\{ uri: source \}\}/)
     })
 
     it(`${name} keys its error fallback on the source it rendered`, () => {
-      expect(source).toMatch(/setFailedUri\(source\)/)
-      expect(source).toMatch(/failedUri === source/)
+      expect(source).toMatch(/if \(failed\) return <MediaPreviewFallback/)
+      expect(source.match(/onError=\{onError\}|\bonError,/g)).toHaveLength(2)
     })
 
     it(`${name} still posters video from posterUri`, () => {
@@ -49,13 +56,20 @@ describe("the thread surfaces open their photos in the lightbox", () => {
     })
 
     it(`${rel} builds the lightbox items once per media array`, () => {
-      expect(source).toContain('import { useLightbox } from "../../lightbox"')
-      expect(source).toContain("const lightbox = useLightbox()")
-      expect(source).toContain("if (items.length > 0) lightbox.open(items, index)")
-      expect(source).toContain("[lightbox, media]")
-      expect(source).toContain("const media = post.media ?? EMPTY_MEDIA")
+      expect(source).toContain('import { usePostRowActions } from "../postCardActions"')
+      expect(source).toMatch(/\bmedia, openMedia \}\s*=\s*usePostRowActions\(/)
     })
   }
+
+  it("builds the lightbox items once per media array in the shared row and lightbox hooks", () => {
+    const actions = code(read("../postCardActions.ts"))
+    expect(actions).toContain("const media = post.media ?? EMPTY_MEDIA")
+    expect(actions).toContain("const openMedia = usePostMediaLightbox(media)")
+    const hook = code(read("../../lightbox/usePostMediaLightbox.ts"))
+    expect(hook).toContain("const lightbox = useLightbox()")
+    expect(hook).toContain("if (items.length > 0) lightbox.open(items, index)")
+    expect(hook).toContain("[lightbox, media]")
+  })
 })
 
 describe("the lightbox keeps full resolution", () => {

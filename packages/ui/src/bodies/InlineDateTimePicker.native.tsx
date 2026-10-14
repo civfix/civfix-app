@@ -7,7 +7,8 @@ import DateTimePicker, {
 import { useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useLocale } from "../i18n"
-import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
+import { DateTimeFieldRow, fieldRowChrome } from "./DateTimeFieldRow"
+import { InlineDateTimePickerLayout } from "./InlineDateTimePicker.shared"
 import { timeCarrier, uses24HourClock } from "./calendarModel"
 import {
   TIME_PICKER_MINUTE_INTERVAL,
@@ -18,24 +19,26 @@ import {
 
 const isAndroid = Platform.OS === "android"
 
+function pickerSeed(value: Date | null | undefined, fallback: Date | null | undefined): Date {
+  return value ?? fallback ?? new Date()
+}
+
+// Seeded on the time carrier, not on `day`: the picker returns the seed's day with the picked clock, and
+// on the device's spring-forward day a Date cannot hold a clock inside the gap.
+function timePickerSeed(value: Date | null | undefined, day: Date | null | undefined): Date {
+  const base = day ?? new Date()
+  return value ?? timeCarrier(base, base.getHours(), base.getMinutes())
+}
+
 function Caret() {
   const th = useTheme()
   return <Icon icon={iconMap.ChevronDown} size={16} color={th.colors.textSubtle} />
 }
 
-export function DateFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  minDate,
-  label,
-  error,
-  spaced,
-}: DateFieldRowProps) {
+export function DateFieldRow(props: DateFieldRowProps) {
+  const { value, accessibilityLabel, onChange, minDate } = props
   const th = useTheme()
-  const current = value ?? minDate ?? new Date()
+  const current = pickerSeed(value, minDate)
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
@@ -47,23 +50,18 @@ export function DateFieldRow({
 
   const openDialog = useCallback(() => {
     DateTimePickerAndroid.open({
-      value: current,
+      value: pickerSeed(value, minDate),
       mode: "date",
       display: "default",
       minimumDate: minDate ?? undefined,
       onChange: commit,
     })
-  }, [commit, current, minDate])
+  }, [commit, minDate, value])
 
   return (
     <DateTimeFieldRow
       icon={iconMap.Calendar}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={isAndroid ? openDialog : undefined}
       trailing={
         isAndroid ? (
@@ -85,25 +83,11 @@ export function DateFieldRow({
   )
 }
 
-export function TimeFieldRow({
-  value,
-  displayValue,
-  placeholder,
-  accessibilityLabel,
-  onChange,
-  day,
-  minTime,
-  maxTime,
-  minuteInterval,
-  suffix,
-  label,
-  error,
-  spaced,
-}: TimeFieldRowProps) {
+export function TimeFieldRow(props: TimeFieldRowProps) {
+  const { value, accessibilityLabel, onChange, day, minTime, maxTime, minuteInterval } = props
   const th = useTheme()
   const { locale } = useLocale()
-  const base = day ?? new Date()
-  const current = value ?? timeCarrier(base, base.getHours(), base.getMinutes())
+  const current = timePickerSeed(value, day)
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
@@ -115,25 +99,19 @@ export function TimeFieldRow({
 
   const openDialog = useCallback(() => {
     DateTimePickerAndroid.open({
-      value: current,
+      value: timePickerSeed(value, day),
       mode: "time",
       display: "default",
       is24Hour: uses24HourClock(locale),
       minuteInterval: minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL,
       onChange: commit,
     })
-  }, [commit, current, locale, minuteInterval])
+  }, [commit, day, locale, minuteInterval, value])
 
   return (
     <DateTimeFieldRow
       icon={iconMap.Clock}
-      value={displayValue}
-      placeholder={placeholder}
-      accessibilityLabel={accessibilityLabel}
-      label={label}
-      suffix={suffix}
-      error={error}
-      spaced={spaced}
+      {...fieldRowChrome(props)}
       onPress={isAndroid ? openDialog : undefined}
       trailing={
         isAndroid ? (

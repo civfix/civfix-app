@@ -1,10 +1,6 @@
 /**
- * Unit tests for the app-download promo store (dismissal + the ephemeral banner height).
- *
- * Pure zustand, so vitest exercises it directly; the localStorage/MMKV persistence seam is a no-op in the
- * node test env. What matters here is the PARTITION between persisted and ephemeral state: `dismissed`
- * must survive a reload, `bannerHeight` must not (a stale persisted height would offset the map controls
- * on a load where no banner renders at all).
+ * The partition between persisted and ephemeral state: `dismissed` must survive a reload, the heights
+ * must not (a stale height would offset the map controls on a load where no banner renders).
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { useAppPromoStore } from "../appPromoStore"

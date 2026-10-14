@@ -109,8 +109,6 @@ describe("buildMessageActions", () => {
     expect(keys(input({ mine: true, canEdit: false, canDelete: true }))).toEqual(["reply", "copy", "delete"])
   })
 
-  // --- P3 Task 3.7: pin/unpin + moderator delete ---
-
   it("pin shown for a pin-power holder (organizer) on others' messages, after copy", () => {
     expect(keys(input({ isGroupRoom: true, canPin: true }))).toEqual([
       "reply",
@@ -179,10 +177,7 @@ describe("buildMessageActions", () => {
     ])
   })
 
-  // --- P6 Task 6.7: poll rows (retractVote / stopPoll) ---
-
   it("poll (others', open, not voted): reply then stopPoll only for a moderator, no copy/edit", () => {
-    // A plain member sees no poll actions beyond the usual reply/report/block (no vote, not moderator).
     expect(keys(input({ isGroupRoom: true, isPoll: true, hasBody: false }))).toEqual([
       "reply",
       "report",
@@ -192,20 +187,16 @@ describe("buildMessageActions", () => {
 
   it("poll: retractVote shows only when the viewer has voted and the poll is open", () => {
     expect(keys(input({ isPoll: true, hasBody: false, hasVoted: true }))).toContain("retractVote")
-    // Voted but closed: no retract.
     expect(keys(input({ isPoll: true, hasBody: false, hasVoted: true, pollClosed: true }))).not.toContain(
       "retractVote",
     )
-    // Open but never voted: no retract.
     expect(keys(input({ isPoll: true, hasBody: false, hasVoted: false }))).not.toContain("retractVote")
   })
 
   it("poll: stopPoll shows for the author (mine) or a room moderator, only while open", () => {
     expect(keys(input({ isPoll: true, hasBody: false, mine: true }))).toContain("stopPoll")
     expect(keys(input({ isPoll: true, hasBody: false, canModeratePoll: true }))).toContain("stopPoll")
-    // A non-author, non-moderator gets no stopPoll.
     expect(keys(input({ isPoll: true, hasBody: false }))).not.toContain("stopPoll")
-    // Closed poll: no stopPoll even for the author.
     expect(keys(input({ isPoll: true, hasBody: false, mine: true, pollClosed: true }))).not.toContain(
       "stopPoll",
     )
@@ -217,7 +208,6 @@ describe("buildMessageActions", () => {
     )
     expect(rows).not.toContain("copy")
     expect(rows).not.toContain("edit")
-    // Own open poll the viewer voted on: reply, retractVote, stopPoll, delete.
     expect(rows).toEqual(["reply", "retractVote", "stopPoll", "delete"])
   })
 
@@ -248,7 +238,7 @@ describe("buildMessageActions", () => {
   })
 })
 
-describe("buildMessageActions - pinnedOnlyView (P3 Task 3.8, the pinned-messages list)", () => {
+describe("buildMessageActions - pinnedOnlyView (the pinned-messages list)", () => {
   /** The pinned-view baseline: a delivered pinned row seen by a viewer WITHOUT the pin power. */
   const pinned = (overrides: Partial<MessageActionsInput> = {}): MessageActionsInput =>
     input({ pinnedOnlyView: true, isPinned: true, canPin: false, ...overrides })
@@ -267,7 +257,6 @@ describe("buildMessageActions - pinnedOnlyView (P3 Task 3.8, the pinned-messages
   })
 
   it("NEVER offers thread-only actions, whatever the caller's live-thread rights say", () => {
-    // Even a moderator-organizer viewing their OWN editable message gets only the reduced set.
     const maxed = pinned({
       mine: true,
       canEdit: true,

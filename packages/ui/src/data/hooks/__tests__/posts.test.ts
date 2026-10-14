@@ -1,10 +1,7 @@
 /**
- * Unit test for the post hooks' optimistic caching (U39). This package tests pure logic only (no React
- * renderer), so - exactly like `data/__tests__/follow-cache.test.ts` drives the follow toggle's
- * `optimisticListPatch` options directly - we build the SAME `useMutation` options the post hooks build
- * (`buildToggleMutation` / `buildCreateMutation` / `buildDeleteMutation`) against a real QueryClient and
- * exercise their onMutate/onError/onSuccess phases. That is the exact optimistic contract the feed /
- * thread / saves surfaces rely on.
+ * The post hooks' optimistic caching, driven through the same `useMutation` options the hooks build
+ * (`buildToggleMutation` / `buildCreateMutation` / `buildDeleteMutation`) against a real QueryClient,
+ * because this package has no React renderer.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"
@@ -15,22 +12,23 @@ import {
   buildCreateMutation,
   buildDeleteMutation,
   homeFeedPlaceholder,
+  type CreateCtx,
   type CreatePostVars,
 } from "../posts"
 
 /**
  * react-query's option callbacks carry extra trailing params (mutation / context) in their full type.
  * The tests exercise only the cache-patch BEHAVIOR, so the built options are viewed through this loose
- * alias (mirroring follow-cache.test.ts's `LooseOptions`) to invoke onMutate/onError/onSuccess directly.
+ * alias to invoke onMutate/onError/onSuccess directly.
  */
-interface Loose<V, R> {
-  onMutate: (v: V) => Promise<any>
+interface Loose<V, R, C = unknown> {
+  onMutate: (v: V) => Promise<C>
   onError: (e: unknown, v: V, c: unknown) => void
   onSuccess: (r: R, v: V, c: unknown) => void
   onSettled: (r: R | undefined, e: unknown, v: V) => void
 }
-function loose<V, R>(opts: unknown): Loose<V, R> {
-  return opts as Loose<V, R>
+function loose<V, R, C = unknown>(opts: unknown): Loose<V, R, C> {
+  return opts as Loose<V, R, C>
 }
 
 function person(id: string): PersonDTO {
@@ -237,7 +235,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     const optimistic = post("temp_1", { body: "brand new" })
     const server = post("server_1", { body: "brand new" })
     const api = { createPost: async (_input: PostComposeInput) => server }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "post", body: "brand new", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic,
@@ -263,7 +261,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
 
     const optimistic = post("temp_reply", { kind: "reply", replyToId: "parent", body: "me too" })
     const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }) }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "reply", replyToId: "parent", body: "me too", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic,
@@ -290,7 +288,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     qc.setQueryData(queryKeys.post("first"), post("first", { kind: "reply", replyToId: "root" }))
 
     const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
@@ -309,7 +307,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
   it("skips the grandparent refresh, without throwing, when the parent detail is not cached", async () => {
     const qc = recordInvalidations(new QueryClient())
     const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
@@ -325,7 +323,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     qc.setQueryData(queryKeys.post("root"), post("root"))
 
     const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "root" }) }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "reply", replyToId: "root", body: "reply", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic: post("temp_reply", { kind: "reply", replyToId: "root" }),
@@ -350,7 +348,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
 
     const optimistic = post("temp_reply", { kind: "reply", replyToId: "parent", body: "me too" })
     const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }) }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "reply", replyToId: "parent", body: "me too", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic,
@@ -383,7 +381,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     const optimistic = post("temp_1")
     const server = post("server_1")
     const api = { createPost: async () => server }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "post", eventId: "event-1", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic,
@@ -412,7 +410,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
 
     const optimistic = post("temp_1")
     const api = { createPost: async () => post("server_1") }
-    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
       input: { kind: "post", body: "hello", mediaUploadIds: [], mentionedUserIds: [] },
       optimistic,

@@ -1,17 +1,11 @@
 /**
- * Unit tests for the expanded (landscape) shell's FRAME PLAN - the ONE place that answers "where does the
- * top nav strip end", "is the card on screen", and "how much of the map is hidden behind it". Pure
- * functions over the nav vocabulary, so vitest drives them directly (house style: backAffordance,
- * dragCollapse, postCardRhythm).
- *
- * WHY the module exists: before it, the card's inset lived in ExpandedShell's private styles, the map
- * camera re-derived the occlusion from a `sidebarWidth` parameter, and the web host's attribution rule
- * hardcoded a stale pixel offset - three copies of one number. Every checkpoint width in the design's
- * table is asserted here so a geometry change cannot pass silently.
+ * Every checkpoint width in the design's table is asserted here so a geometry change cannot pass
+ * silently: the card inset, the map camera's occlusion and the web attribution offset all read this plan.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { space } from "@civfix/shared/tokens"
+import { GLASS_CONTROL_SIZE } from "../../map/mapControlMetrics"
 import {
   EXPANDED_CLUSTER_BREATHING,
   EXPANDED_LEFT_CLUSTER_W,
@@ -41,7 +35,7 @@ import {
   RAIL_BRAND_PAD_H,
   RAIL_BRAND_SIZE,
   RAIL_BRAND_W,
-  RAIL_ORB,
+  DOCK_ORB,
   RAIL_PAD_H,
   RAIL_TAB_COUNT,
   expandedFits,
@@ -78,7 +72,7 @@ describe("rail cluster geometry (horizontal: brand pill, capsule, orb, left to r
     expect(RAIL_ITEM).toBe(56)
     expect(RAIL_ITEM_GAP).toBe(10)
     expect(RAIL_PAD_H).toBe(10)
-    expect(RAIL_ORB).toBe(58)
+    expect(DOCK_ORB).toBe(58)
   })
 
   it("borrows the portrait dock's own cell rhythm instead of a tighter landscape one", () => {
@@ -133,7 +127,6 @@ describe("expandedFramePlan: cardVisible", () => {
   })
 
   it("brings the card back as soon as the map opens a detail on top of it", () => {
-    // Pin tap / cluster tap / long-press drop-pin: the stack goes non-empty, the card returns.
     expect(plan({ view: "map", stackLength: 1 }).cardVisible).toBe(true)
     expect(plan({ view: "map", stackLength: 3 }).cardVisible).toBe(true)
   })
@@ -212,7 +205,7 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
 
   it("adds the left cluster up the way the rail lays it out: inset, pill, capsule, orb", () => {
     expect(EXPANDED_LEFT_CLUSTER_W).toBe(
-      NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + RAIL_ORB,
+      NAV_LEFT + RAIL_BRAND_W + NAV_GAP + RAIL_CAPSULE_W + NAV_GAP + DOCK_ORB,
     )
     expect(EXPANDED_LEFT_CLUSTER_W).toBe(481)
   })
@@ -227,7 +220,8 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
         MAP_PROFILE_EXTRA,
     )
     expect(EXPANDED_RIGHT_ACTIONS_W).toBe(368)
-    expect(mapControls).toContain("export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE")
+    expect(GLASS_CONTROL_SIZE).toBe(MAP_ACTION_SIZE)
+    expect(mapControls).toContain('import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"')
     const plan = readFileSync(new URL("../expandedFramePlan.ts", import.meta.url), "utf8")
     expect(plan).toContain("export const MAP_ACTION_SIZE = HEADER_CONTROL_SIZE")
     const glass = readFileSync(new URL("../../primitives/GlassButton.tsx", import.meta.url), "utf8")

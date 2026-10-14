@@ -3,22 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { chatSocket, wsUrlFromApiBase } from "@/lib/ws"
 
 /**
- * The WEB wiring of the shared chat-socket core (@civfix/ui/realtime): its browser transport (ws URL
- * derivation + a cookie-authenticated `new WebSocket`) and the behavior options this host selects.
+ * The core's generic mechanics are tested once in @civfix/ui; these pin what only this host can get
+ * wrong: the ws URL derivation, `queueWhileClosed` (flushed in order, including the stop-and-requeue on
+ * a mid-flush failure) and `teardownPolicy: "intent"` (the socket is shared with the signals channel).
  *
- * The core's generic mechanics - frame validation, auto-rejoin, room rejection, backoff, the
- * forward-compat drop of unknown frames - are unit-tested once in the package
- * (src/realtime/__tests__/chatSocketCore.test.ts). What is pinned HERE is what only this host can get
- * wrong:
- *   - `wsUrlFromApiBase` (http->ws, https->wss, base path preserved, inert without a window),
- *   - `queueWhileClosed`: a frame sent while the socket is down is queued and flushed IN ORDER on open
- *     (the composer relies on it), including the stop-and-requeue on a mid-flush failure,
- *   - `teardownPolicy: "intent"`: this ONE socket is shared with the always-on signals channel, so
- *     neither a `release()` nor a `disconnect()` may tear it out from under the other holder.
- *
- * These tests run in the node env (no DOM): we stub `window.WebSocket` with a fake that records sent
- * frames and lets us drive open/close events by hand. `chatSocket` is a module singleton, so each test
- * calls `chatSocket.disconnect()` in afterEach to return it to a clean, torn-down state.
+ * The node env has no DOM, so `window.WebSocket` is a fake that records frames. `chatSocket` is a module
+ * singleton, so afterEach disconnects it back to a clean state.
  */
 
 class FakeWebSocket {
@@ -152,21 +142,22 @@ describe("chatSocket send queue (queueWhileClosed)", () => {
   it("queues a frame sent while the socket is down and flushes it on open", () => {
     chatSocket.connect()
     const socket = latest()
-    // Not open yet: the typing frame is queued (no throw, nothing sent).
-    chatSocket.send({ type: "typing", cleanupId: ROOM_A })
+    // Not open yet: the chat message is queued (no throw, nothing sent). Typing frames are ephemeral
+    // and dropped while closed, so a real message is what exercises the queue.
+    chatSocket.send({ type: "send", cleanupId: ROOM_A, clientId: "c1", body: "hi" })
     expect(socket.sent).toHaveLength(0)
 
     socket.fireOpen()
-    expect(socket.parsedSent().some((f) => f.type === "typing" && f.cleanupId === ROOM_A)).toBe(true)
+    expect(socket.parsedSent().some((f) => f.type === "send" && f.cleanupId === ROOM_A)).toBe(true)
   })
 
   it("preserves frame ORDER when a send fails partway through the flush", () => {
     chatSocket.connect()
     const first = latest()
     // Three frames queued while the socket is down, in the order the user produced them.
-    chatSocket.send({ type: "typing", cleanupId: ROOM_A })
-    chatSocket.send({ type: "typing", cleanupId: ROOM_B })
-    chatSocket.send({ type: "typing", cleanupId: ROOM_C })
+    chatSocket.send({ type: "send", cleanupId: ROOM_A, clientId: "a", body: "1" })
+    chatSocket.send({ type: "send", cleanupId: ROOM_B, clientId: "b", body: "2" })
+    chatSocket.send({ type: "send", cleanupId: ROOM_C, clientId: "c", body: "3" })
 
     // The SECOND send throws (the socket flipped to CLOSING mid-flush). The flush must stop there
     // rather than carrying on to the third frame: delivering C while B goes back on the queue would put

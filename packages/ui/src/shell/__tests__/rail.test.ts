@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
-import { DOCK_MOUNT_MS, DOCK_MOUNT_SCALE_FROM } from "../tabBarLogic"
+import { DOCK_MOUNT_MS, DOCK_MOUNT_SCALE_FROM, DOCK_TAB_GLYPH_SIZE, TAB_ICON_STROKE_WIDTH } from "../tabBarLogic"
 
 const rail = readFileSync(new URL("../Rail.tsx", import.meta.url), "utf8")
 const code = rail.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -31,16 +31,16 @@ describe("the rail's material and geometry", () => {
       "RAIL_CAPSULE_W",
       "RAIL_CAPSULE_H",
       "RAIL_CAPSULE_RADIUS",
-      "RAIL_ORB",
+      "DOCK_ORB",
       "railItemLeft",
     ]) {
-      expect(rail, `${c} must come from expandedFramePlan`).toContain(c)
+      expect(rail, `${c} must come from expandedFramePlan`).toMatch(new RegExp(`\\b${c}\\b`))
     }
     expect(rail).toMatch(/zIndex: 65/)
   })
 })
 
-describe("the brand pill lives here now", () => {
+describe("the rail carries the brand pill", () => {
   it("renders the civfix wordmark as the row's first item, never covered", () => {
     expect(rail).toContain('import { Brand, openBrandAbout } from "../primitives"')
     expect(rail).toContain("<Brand size={BRAND_SIZE}")
@@ -64,8 +64,10 @@ describe("system parity: one neutral ink, selection is the lozenge - everywhere,
   it("never tints a glyph with the accent, and draws tab icons at the dock's weight", () => {
     expect(code).not.toContain("colors.accent")
     expect(rail).toContain("color={th.colors.textMuted}")
-    expect(rail).toContain("const RAIL_ICON = 24")
-    expect(rail).toContain("const RAIL_ICON_STROKE = 2.4")
+    expect(rail).toContain("size={DOCK_TAB_GLYPH_SIZE}")
+    expect(DOCK_TAB_GLYPH_SIZE).toBe(24)
+    expect(rail).toContain("strokeWidth={TAB_ICON_STROKE_WIDTH}")
+    expect(TAB_ICON_STROKE_WIDTH).toBe(2.4)
   })
 
   it("lights the orb with the SAME lozenge tint the tabs use, not a solid fill", () => {
@@ -132,7 +134,7 @@ describe("motion", () => {
     expect(rail).toContain("isWeb && !reduceMotion")
   })
 
-  it("slides the lozenge on translateX, not translateY - the row lays out horizontally now", () => {
+  it("slides the lozenge on translateX, not translateY - the row lays out horizontally", () => {
     expect(rail).toContain("transform: [{ translateX: railItemLeft(")
     expect(code).not.toContain("translateY: railItemTop")
   })

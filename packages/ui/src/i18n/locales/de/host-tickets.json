@@ -14,7 +14,10 @@
     "unlimited": "unbegrenzt",
     "party": "bis zu {{max}} pro Anmeldung",
     "empty_title": "Noch keine Ticketarten",
-    "empty_body": "Leg eine an, damit Leute wählen können, wie sie mitmachen. Ohne Ticketarten läuft die Veranstaltung über eine einfache Zusage."
+    "empty_body": "Leg eine an, damit Leute wählen können, wie sie mitmachen. Ohne Ticketarten läuft die Veranstaltung über eine einfache Zusage.",
+    "move_up_named": "{{name}} nach oben verschieben",
+    "move_down_named": "{{name}} nach unten verschieben",
+    "delete_named": "{{name}} löschen"
   },
   "drawer": {
     "new_title": "Neue Ticketart",
@@ -39,7 +42,9 @@
     "maxPartySize": "Plätze pro Anmeldung",
     "salesOpensAt": "Vergabe startet",
     "salesClosesAt": "Vergabe endet",
-    "ticketTypeIds": "Reihenfolge"
+    "ticketTypeIds": "Reihenfolge",
+    "sales_zone_hint": "Die Vergabezeiten gelten in der Zeitzone der Veranstaltung ({{zone}}).",
+    "sales_time_not_in_zone": "Diese Uhrzeit gibt es in {{zone}} wegen der Zeitumstellung nicht. Wähle eine andere."
   },
   "visibility": {
     "public": "Öffentlich",
@@ -78,6 +83,10 @@
     "required": "Pflichtfeld",
     "ticket_scope": "Nur fragen bei",
     "ticket_all": "Allen Ticketarten",
-    "ticket_scope_hint": "Eine Frage, die auf einen Ticket-Typ beschränkt ist, wird nur gestellt, wenn jemand diesen Typ wählt – also nie, wenn alle Typen ausgeblendet sind. Lass sie auf allen Ticket-Typen, damit sie immer gestellt wird."
+    "ticket_scope_hint": "Eine Frage, die auf einen Ticket-Typ beschränkt ist, wird nur gestellt, wenn jemand diesen Typ wählt – also nie, wenn alle Typen ausgeblendet sind. Lass sie auf allen Ticket-Typen, damit sie immer gestellt wird.",
+    "move_up_named": "{{name}} nach oben verschieben",
+    "move_down_named": "{{name}} nach unten verschieben",
+    "remove_named": "{{name}} entfernen",
+    "untitled": "Frage {{n}}"
   }
 }

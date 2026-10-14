@@ -1,11 +1,13 @@
 import {
   ErrorCode,
+  WsErrorCode,
   effectiveClientId,
   preserveViewerFields,
   reconcileInbound,
   type ChatHistoryResponse,
   type ChatMessageDTO,
   type OutboxEntry,
+  type RoomKind,
 } from "@civfix/shared"
 
 export interface InboundFrame {
@@ -224,18 +226,27 @@ const FATAL_ROOM_ERROR_CODES: ReadonlySet<string> = new Set([
   ErrorCode.UNAUTHORIZED,
 ])
 
+// Room ids are unique only within a kind, and the server omits `roomKind` on cleanup-room frames.
+export function frameInRoom(
+  frame: { cleanupId?: string; roomKind?: RoomKind },
+  roomId: string,
+  roomKind: RoomKind,
+): boolean {
+  return frame.cleanupId === roomId && (frame.roomKind ?? "cleanup") === roomKind
+}
+
 export function isFatalRoomErrorCode(code: string): boolean {
   return FATAL_ROOM_ERROR_CODES.has(code)
 }
 
 const SEND_REJECTION_ERROR_CODES: ReadonlySet<string> = new Set([
-  "BAD_FRAME",
-  "BLOCKED",
+  WsErrorCode.BAD_FRAME,
+  WsErrorCode.BLOCKED,
   ErrorCode.RATE_LIMITED,
   ErrorCode.VALIDATION,
-  "channel_read_only",
-  "reply_wrong_room",
-  "reply_deleted_target",
+  WsErrorCode.CHANNEL_READ_ONLY,
+  WsErrorCode.REPLY_WRONG_ROOM,
+  WsErrorCode.REPLY_DELETED_TARGET,
 ])
 
 export function isSendRejectionErrorCode(code: string): boolean {

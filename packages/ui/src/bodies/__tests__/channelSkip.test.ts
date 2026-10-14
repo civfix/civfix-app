@@ -7,8 +7,7 @@ describe("shouldOfferChannelSkip", () => {
   })
 
   it("hides Skip once subscribers are selected (Skip shares onCreate, which submits the selection)", () => {
-    // Regression: Skip used to stay visible and create the channel WITH the picked subscribers - a
-    // mislabeled Create.
+    // A visible Skip here would create the channel WITH the picked subscribers: a mislabeled Create.
     expect(shouldOfferChannelSkip("members", 1)).toBe(false)
     expect(shouldOfferChannelSkip("members", 7)).toBe(false)
   })

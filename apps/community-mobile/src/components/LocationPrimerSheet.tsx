@@ -2,7 +2,7 @@ import React from "react"
 import { Pressable, View } from "react-native"
 import { ModalCardSheet, PrimaryButton, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"
 
 export interface LocationPrimerSheetProps {
   visible: boolean
@@ -64,6 +64,6 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.pill,
   },
   laterPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

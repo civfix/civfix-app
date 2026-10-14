@@ -1,10 +1,6 @@
 /**
- * Unit test for the portrait/compact SearchHeader's profile-vs-sign-in affordance gate. Signed out, the
- * header shows a sign-in icon (tapping it opens auth directly) INSTEAD of the "You" avatar that used to
- * open an empty profile. While the session is still resolving (pending) we keep the avatar so a logged-in
- * viewer reloading never sees the sign-in icon flash before their session confirms.
- *
- * The gate is a pure predicate over the shared AuthState, so vitest exercises it directly (no renderer).
+ * Signed out shows a sign-in icon; while the session is still resolving the avatar stays, so a signed-in
+ * viewer reloading never sees the sign-in icon flash.
  */
 import { describe, expect, it } from "vitest"
 import { headerAuthAffordance } from "../headerAuthAffordance"

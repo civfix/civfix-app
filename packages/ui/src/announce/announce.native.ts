@@ -2,11 +2,11 @@ import { AccessibilityInfo } from "react-native"
 
 import type { AnnounceFn } from "./announce.types"
 
-export const announce: AnnounceFn = (message) => {
+// iOS speaks a queued announcement after the current one; `queue: false` interrupts, which is what an
+// assertive message needs. Android ignores the option.
+export const announce: AnnounceFn = (message, opts) => {
   if (!message) return
-  try {
-    AccessibilityInfo.announceForAccessibility(message)
-  } catch {
-    /* screen reader unavailable */
-  }
+  AccessibilityInfo.announceForAccessibilityWithOptions(message, {
+    queue: (opts?.priority ?? "polite") === "polite",
+  })
 }

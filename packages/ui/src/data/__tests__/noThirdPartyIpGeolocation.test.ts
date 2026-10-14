@@ -57,7 +57,9 @@ describe("no client asks a third party where the viewer is", () => {
     const files = scannedFiles().map((file) => relative(repoRoot, file))
     expect(files.filter((rel) => !isTest(rel)).length).toBeGreaterThan(400)
     expect(files).toContain("packages/ui/src/bodies/ReportFlowBody.tsx")
+    expect(files).toContain("packages/ui/src/bodies/reportFlow/useApproxCenter.ts")
     expect(files).toContain("packages/ui/src/bodies/AddressSearch.tsx")
+    expect(files).toContain("packages/ui/src/bodies/useAddressSearch.ts")
     expect(files).toContain("packages/ui/src/bodies/CreateCleanupBody.tsx")
     expect(files).toContain("packages/ui/src/data/hooks/location.ts")
   })
@@ -77,13 +79,12 @@ describe("no client asks a third party where the viewer is", () => {
     const helper = readFileSync(join(repoRoot, "packages/ui/src/data/fetchApproximateLocation.ts"), "utf8")
     expect(helper).toContain("api.getApproximateLocation({})")
     expect(helper).toContain("queryKeys.approximateLocation")
-    for (const rel of [
-      "packages/ui/src/bodies/ReportFlowBody.tsx",
-      "packages/ui/src/bodies/AddressSearch.tsx",
-      "packages/ui/src/bodies/CreateCleanupBody.tsx",
-      "packages/ui/src/data/hooks/location.ts",
-    ]) {
+    for (const rel of ["packages/ui/src/bodies/useAddressSearch.ts", "packages/ui/src/data/hooks/location.ts"]) {
       expect(readFileSync(join(repoRoot, rel), "utf8")).toContain("fetchApproximateLocation(api, qc)")
     }
+    expect(readFileSync(join(repoRoot, "packages/ui/src/bodies/reportFlow/useApproxCenter.ts"), "utf8")).toContain(
+      "queryFn: () => resolveUserLocation(geo, api, qc),",
+    )
+    expect(readFileSync(join(repoRoot, "packages/ui/src/bodies/CreateCleanupBody.tsx"), "utf8")).toContain("useUserLocation()")
   })
 })

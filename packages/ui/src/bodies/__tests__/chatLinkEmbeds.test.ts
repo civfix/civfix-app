@@ -12,7 +12,7 @@ const CLASSIFIER = code(read("../conversation/civfixLinks.ts"))
 const SCHEDULER = code(read("../conversation/embedScheduler.ts"))
 const SCOPE = code(read("../conversation/chatEmbedScope.ts"))
 const CONVERSATION = code(read("../ConversationBody.tsx"))
-const STYLES = code(read("../conversation/styles.ts"))
+const STYLES = code(read("../conversation/bubbleStyles.ts"))
 const REPORT_CARD = code(read("../LinkedReportCard.tsx"))
 const EVENT_CARD = code(read("../LinkedEventCard.tsx"))
 const LOCALES = ["en", "es", "de", "ko"].map((locale) => ({
@@ -105,7 +105,7 @@ describe("the embed cards reuse the house cards and the cached data hooks", () =
 
 describe("the embed states never break the bubble", () => {
   it("reserves each kind's own card height while it loads and falls back to the plain link on an error", () => {
-    expect(EMBEDS).toMatch(/export const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/)
+    expect(EMBEDS).toMatch(/^const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/m)
     expect(EMBEDS).toContain("<SkeletonBlock height={EMBED_RESERVED_HEIGHT[kind]} radius={th.radius.lg} />")
     expect(EMBEDS).toMatch(/if \(data !== undefined\) return <>\{render\(data\)\}<\/>\s*if \(query\.isLoading\) return <EmbedSkeleton kind=\{props\.link\.kind\} \/>\s*return <EmbedFallback/)
     expect(EMBEDS).toMatch(/function EmbedFallback[\s\S]*?if \(!linkOnly\) return null/)
@@ -117,7 +117,7 @@ describe("the embed states never break the bubble", () => {
   })
 
   it("gives the card column a stable width so scroll anchoring holds", () => {
-    expect(EMBEDS).toContain("export const EMBED_CARD_WIDTH = 260")
+    expect(EMBEDS).toContain("\nconst EMBED_CARD_WIDTH = 260")
     expect(EMBEDS).toMatch(/host: \{\s*width: EMBED_CARD_WIDTH,\s*maxWidth: "100%"/)
   })
 
@@ -242,7 +242,7 @@ describe("an optimistic send is drawn by the same tree the ack will confirm, so 
     expect(attachmentsAt).toBeGreaterThan(0)
     expect(statusAt).toBeGreaterThan(attachmentsAt)
     expect(content).toContain("{(groupEnd || edited) && !inFlight ? (")
-    const status = BUBBLE.slice(BUBBLE.indexOf("function SendStatusLine("), BUBBLE.indexOf("interface MenuModel"))
+    const status = BUBBLE.slice(BUBBLE.indexOf("function SendStatusLine("), BUBBLE.indexOf("export interface BubbleProps"))
     expect(status).toMatch(/accessibilityLabel=\{t\("bubble\.retry_sending"\)\}/)
     expect(status).toMatch(/\{t\("bubble\.failed_retry"\)\}/)
     expect(status).toMatch(/\{t\("bubble\.sending"\)\}/)
@@ -286,7 +286,7 @@ describe("the post card byline gives the name the first line and moves the handl
   })
 
   it("matches the other person-led rows in the package, which all stack name over @handle", () => {
-    for (const file of ["../SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
+    for (const file of ["../search/SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
       const source = code(read(file))
       expect(source).toMatch(/numberOfLines=\{1\}>\s*@\{(person|entry)\.handle\}/)
     }
@@ -304,9 +304,13 @@ describe("a shared post still previews the event or report attached to it", () =
     expect(card).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.linkedRefToCardData\(reportCard\),/)
     expect(card).toMatch(/thumbUrl: reportCard\.thumbUrl \?\? localReportThumb\(reportCard\.id\),/)
     expect(card).toMatch(/layout="list"\s+headline="title"/)
+    const view = code(read("../postCardModel.ts"))
+    expect(view).toContain("displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),")
+    expect(view).toContain("displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),")
     const feed = code(read("../PostCard.tsx"))
-    expect(feed).toContain("const displayEvent = isRepost ? (embedded?.event ?? null) : (post.event ?? null)")
-    expect(feed).toContain("const displayReport = isRepost ? (embedded?.report ?? null) : (post.report ?? null)")
+    expect(feed).toContain("const { isRepost, embedded, media, displayEvent, displayReport } = view")
+    expect(feed).toMatch(/<LinkedEventCard\s+event=\{displayEvent\}/)
+    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{ \.\.\.displayReport,/)
   })
 
   it("hangs the attachment below the body and the photos, never above the byline", () => {

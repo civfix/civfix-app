@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   DEFAULT_WIZARD_DURATION_MS,
   EVENT_WIZARD_STEPS,
+  eventStepErrorKey,
   eventStepIndex,
   eventStepSatisfied,
   firstIncompleteEventStep,
@@ -215,6 +216,28 @@ describe("per-step gating", () => {
     expect(eventStepSatisfied("review", draft({ title: "" }), NOW)).toBe(false)
     expect(eventStepSatisfied("review", draft({ date: PAST_DAY, time: PAST_TIME }), NOW)).toBe(false)
     expect(eventStepSatisfied("review", draft({ endTime: null }), NOW)).toBe(false)
+  })
+})
+
+describe("the hint under a step that cannot advance", () => {
+  it("names the specific problem once the step's first field is in", () => {
+    const start = draft().time as Date
+    expect(eventStepErrorKey("when", draft({ endTime: start }))).toBe("wizard.when.error_end")
+    expect(eventStepErrorKey("where", draft({ address: "" }))).toBe("wizard.where.error_address")
+    expect(eventStepErrorKey("details", draft())).toBe("wizard.details.error_invalid")
+  })
+
+  it("falls back to the step's generic line before that", () => {
+    expect(eventStepErrorKey("when", draft({ date: null }))).toBe("wizard.when.error")
+    expect(eventStepErrorKey("where", draft({ coords: null }))).toBe("wizard.where.error")
+    expect(eventStepErrorKey("details", draft({ slots: [slot({ title: "", capacity: "" })] }))).toBe(
+      "wizard.details.error",
+    )
+    expect(eventStepErrorKey("basics", draft())).toBe("wizard.basics.error")
+  })
+
+  it("reads the end against the event's own zone, so a valid end never shows the end error", () => {
+    expect(eventStepErrorKey("when", draft())).toBe("wizard.when.error")
   })
 })
 

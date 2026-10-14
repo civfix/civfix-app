@@ -1,13 +1,14 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { LEGAL_DOCUMENTS } from "@civfix/shared/legal"
 
-import { isPlaceholderLegalHash, legalDocumentHash } from "./postbuild-gates.mjs"
+import { isPlaceholderLegalHash, renderedLegalDocuments } from "./postbuild-gates.mjs"
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..")
-const legalOutDir = join(appDir, "out", "legal")
+const outDir = join(appDir, "out")
+const legalOutDir = join(outDir, "legal")
 
 if (!existsSync(legalOutDir)) {
   console.error(
@@ -17,19 +18,14 @@ if (!existsSync(legalOutDir)) {
   process.exit(1)
 }
 
-const rows = []
-
-for (const entry of readdirSync(legalOutDir, { withFileTypes: true })) {
-  if (!entry.isDirectory()) continue
-  const file = join(legalOutDir, entry.name, "index.html")
-  if (!existsSync(file)) continue
-  const html = readFileSync(file, "utf8")
-  const type = /data-legal-doc="([^"]*)"/.exec(html)?.[1] ?? null
-  if (type === null) continue
-  const hashed = legalDocumentHash(html)
-  if (hashed === null) continue
-  rows.push({ type, route: `/legal/${entry.name}`, version: hashed.version, sha256: hashed.sha256 })
-}
+const rows = renderedLegalDocuments(outDir)
+  .filter(({ type, hashed }) => type !== null && hashed !== null)
+  .map(({ route, type, hashed }) => ({
+    type,
+    route: `/legal/${route}`,
+    version: hashed.version,
+    sha256: hashed.sha256,
+  }))
 
 rows.sort((a, b) => a.type.localeCompare(b.type))
 

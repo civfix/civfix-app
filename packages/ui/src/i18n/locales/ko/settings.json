@@ -34,5 +34,6 @@
   "terms": "서비스 약관",
   "privacy_policy": "개인정보 처리방침",
   "source_code": "소스 코드",
-  "sign_out": "로그아웃"
+  "sign_out": "로그아웃",
+  "open_error": "링크를 열지 못했어요. 다시 시도해 주세요."
 }

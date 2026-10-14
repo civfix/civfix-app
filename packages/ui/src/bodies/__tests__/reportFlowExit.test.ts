@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
+import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
-const body = read("../ReportFlowBody.tsx")
+const body = reportFlowSource()
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 describe("every exit from the report wizard returns to the surface it was launched from", () => {
@@ -27,11 +28,11 @@ describe("every exit from the report wizard returns to the surface it was launch
     expect(body).toContain('onPress={() => useNavStore.getState().leaveReportFlow()}')
   })
 
-  it("drops the old back_to_map copy from every locale", () => {
+  it("carries no back_to_map copy in any locale", () => {
     for (const locale of LOCALES) {
       const catalog = read(`../../i18n/locales/${locale}/report-wizard.json`)
       expect(catalog).not.toContain("back_to_map")
-      expect(JSON.parse(catalog).submit.done).toBeTruthy()
+      expect((JSON.parse(catalog) as { submit: { done?: string } }).submit.done).toBeTruthy()
     }
   })
 })

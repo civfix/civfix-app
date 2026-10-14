@@ -9,7 +9,9 @@
     "title": "등록",
     "visibility": "이 행사를 찾을 수 있는 사람",
     "opens": "등록 시작",
-    "closes": "등록 마감"
+    "closes": "등록 마감",
+    "zone_hint": "시간은 행사 시간대({{zone}}) 기준입니다.",
+    "time_not_in_zone": "서머타임 전환으로 {{zone}}에는 없는 시간입니다. 다른 시간을 선택하세요."
   },
   "messaging": {
     "title": "메시지",
@@ -22,7 +24,8 @@
     "offset_10080": "1주 전",
     "reply_to": "회신 주소",
     "reply_to_placeholder": "you@example.org",
-    "reply_to_unverified": "아직 회신이 호스트 주소로 전달되지는 않습니다. 해당 기능이 준비될 때를 대비해 저장해 둡니다."
+    "reply_to_unverified": "아직 회신이 호스트 주소로 전달되지는 않습니다. 해당 기능이 준비될 때를 대비해 저장해 둡니다.",
+    "reminders_max_other": "최대 {{count}}개까지 선택하세요."
   },
   "donations": {
     "title": "기부",

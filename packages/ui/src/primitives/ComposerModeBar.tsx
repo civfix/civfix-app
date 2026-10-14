@@ -3,6 +3,7 @@ import { View, Pressable } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
+import { QUOTE_ACCENT_LINE } from "./quoteStrip"
 
 export interface ComposerModeBarProps {
   mode: "edit" | "reply"
@@ -54,23 +55,19 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.md,
     backgroundColor: t.colors.surfaceTint,
   },
-  accentLine: {
-    width: 3,
-    alignSelf: "stretch",
-    borderRadius: 1.5,
-  },
+  accentLine: QUOTE_ACCENT_LINE,
   textCol: {
     flex: 1,
     minWidth: 0,
   },
   title: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.text,
   },
   excerpt: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
     marginTop: 1,
   },

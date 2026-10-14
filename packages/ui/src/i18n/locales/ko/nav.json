@@ -63,7 +63,13 @@
     "close": "닫기",
     "settings": "설정",
     "resize_sidebar": "사이드바 크기 조절",
-    "drag_handle": "드래그 핸들"
+    "drag_handle": "드래그 핸들",
+    "show_tab_bar": "탭 바 표시",
+    "sheet_snap": {
+      "collapsed": "접힘",
+      "half": "반쯤 열림",
+      "full": "완전히 열림"
+    }
   },
   "fallback_you": "나"
 }

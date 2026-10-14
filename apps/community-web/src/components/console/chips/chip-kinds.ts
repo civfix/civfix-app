@@ -10,6 +10,7 @@ import type {
   EventVisibility,
   HostExportStatus,
   OrganizationMemberRole,
+  OrgVerificationKind,
   OrgVerificationStatus,
   RegistrantKind,
   RegistrationState,
@@ -217,10 +218,6 @@ const deliveryStatus = {
   skipped: { hue: "neutral", icon: CircleSlash, labelKey: "enums:deliveryStatus.skipped" },
 } satisfies Record<DeliveryStatus, ChipKindEntry>
 
-
-
-
-
 const exportStatus = {
   queued: { hue: "neutral", icon: CircleDashed, labelKey: "enums:hostExportStatus.queued" },
   running: { hue: "sky", icon: RefreshCw, labelKey: "enums:hostExportStatus.running" },
@@ -233,7 +230,7 @@ const orgKind = {
   nonprofit: { hue: "moss", icon: HandHeart, labelKey: "enums:orgVerificationKind.nonprofit" },
   government: { hue: "sky", icon: Building2, labelKey: "enums:orgVerificationKind.government" },
   community: { hue: "lilac", icon: Sparkles, labelKey: "enums:orgVerificationKind.community" },
-} satisfies Record<"nonprofit" | "government" | "community", ChipKindEntry>
+} satisfies Record<OrgVerificationKind, ChipKindEntry>
 
 const attendance = {
   checked_in: { hue: "moss", icon: UserCheck, labelKey: "host-attendees:chip.checked_in" },

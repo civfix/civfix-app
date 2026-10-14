@@ -1,7 +1,7 @@
 /**
- * Unit tests for `mergePins` (P3 Task 3.6) - the pure merge behind `useChat`'s derived pins list:
- * the initial page's `pins` snapshot overlaid with every loaded/live copy, deduped by id with the
- * LATER (live) copy winning, filtered to truthy pinnedAt, sorted pinnedAt DESC.
+ * `mergePins` is the pure merge behind `useChat`'s derived pins list: the initial page's `pins` snapshot
+ * overlaid with every loaded/live copy, deduped by id with the LATER (live) copy winning, filtered to a
+ * truthy pinnedAt and sorted pinnedAt DESC.
  */
 import { describe, expect, it } from "vitest"
 import type { ChatMessageDTO, PersonDTO } from "@civfix/shared"
@@ -84,7 +84,7 @@ describe("mergePins", () => {
 
   it("a message_update tombstone for a pinned message removes it from the merged pins", () => {
     // Soft-delete does NOT clear pinned_at server-side, but the server's pin list excludes
-    // tombstones - the client merge must match, or a deleted pin ghosts in the PinnedBar with
+    // tombstones. The client merge must match, or a deleted pin ghosts in the PinnedBar with
     // the empty-body "Photo" excerpt fallback.
     const initial = [
       msg({ id: "m1", pinnedAt: "2026-07-18T10:00:00.000Z" }),

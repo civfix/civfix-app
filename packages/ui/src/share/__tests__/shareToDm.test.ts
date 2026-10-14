@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { MESSAGE_BODY_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO } from "@civfix/shared"
 import {
-  SHARE_CLIENT_ID_MAX,
   SHARE_DM_MAX_RECIPIENTS,
   applyRecipientChange,
   buildSharePlan,
+  clampShareNote,
   composeShareBody,
   dmThreadIdsByPeer,
   recentDmPeers,
@@ -15,18 +15,7 @@ import {
   toShareRecipient,
   type ShareDeliveryOutcome,
 } from "../shareToDm"
-
-const person = (id: string, over: Partial<PersonDTO> = {}): PersonDTO => ({
-  id,
-  name: `Name ${id}`,
-  handle: id,
-  avatar: null,
-  avatarUrl: null,
-  followers: 0,
-  following: 0,
-  isFollowing: false,
-  ...over,
-})
+import { person } from "./fixtures"
 
 const thread = (over: Partial<MessageThreadDTO>): MessageThreadDTO =>
   ({
@@ -39,7 +28,7 @@ const thread = (over: Partial<MessageThreadDTO>): MessageThreadDTO =>
     ...over,
   }) as MessageThreadDTO
 
-const URL = "https://civfix.org/post/p1"
+const POST_URL = "https://civfix.org/post/p1"
 
 describe("the per-share recipient cap", () => {
   it("is ten, which keeps one share inside the 20/min openDm budget", () => {
@@ -67,22 +56,41 @@ describe("the per-share recipient cap", () => {
 
 describe("the message body a share sends", () => {
   it("is the link alone when there is no note", () => {
-    expect(composeShareBody("", URL)).toBe(URL)
-    expect(composeShareBody("   \n ", URL)).toBe(URL)
+    expect(composeShareBody("", POST_URL)).toBe(POST_URL)
+    expect(composeShareBody("   \n ", POST_URL)).toBe(POST_URL)
   })
 
   it("puts a trimmed note above the link, on its own line", () => {
-    expect(composeShareBody("  look at this  ", URL)).toBe(`look at this\n${URL}`)
+    expect(composeShareBody("  look at this  ", POST_URL)).toBe(`look at this\n${POST_URL}`)
   })
 
   it("budgets the note so note + newline + link can never exceed the frame's body cap", () => {
-    const max = shareNoteMaxLength(URL)
-    expect(max).toBe(MESSAGE_BODY_MAX - URL.length - 1)
-    expect(composeShareBody("x".repeat(max), URL).length).toBe(MESSAGE_BODY_MAX)
+    const max = shareNoteMaxLength(POST_URL)
+    expect(max).toBe(MESSAGE_BODY_MAX - POST_URL.length - 1)
+    expect(composeShareBody("x".repeat(max), POST_URL).length).toBe(MESSAGE_BODY_MAX)
   })
 
   it("never reports a negative budget for an absurdly long link", () => {
     expect(shareNoteMaxLength("https://civfix.org/".padEnd(MESSAGE_BODY_MAX + 50, "x"))).toBe(0)
+  })
+
+  it("keeps a note that fits untouched", () => {
+    expect(clampShareNote("hi 👋", 10)).toBe("hi 👋")
+  })
+
+  it("never cuts an emoji in half at the cap, which would send a lone surrogate", () => {
+    const clamped = clampShareNote("ab👋cd", 3)
+    expect(clamped).toBe("ab")
+    expect(clamped).not.toMatch(/[\uD800-\uDBFF]$/)
+  })
+
+  it("keeps a whole emoji that ends exactly on the cap", () => {
+    expect(clampShareNote("ab👋cd", 4)).toBe("ab👋")
+  })
+
+  it("cuts plain text at the cap", () => {
+    expect(clampShareNote("abcdef", 3)).toBe("abc")
+    expect(clampShareNote("abc", 0)).toBe("")
   })
 })
 
@@ -113,7 +121,7 @@ describe("buildSharePlan", () => {
 
   it("clamps a clientId to the 64 characters the socket frame accepts", () => {
     const plan = buildSharePlan([toShareRecipient(person("a"))], () => "z".repeat(200))
-    expect(plan[0]?.clientId).toHaveLength(SHARE_CLIENT_ID_MAX)
+    expect(plan[0]?.clientId).toHaveLength(WS_CLIENT_ID_MAX)
   })
 })
 

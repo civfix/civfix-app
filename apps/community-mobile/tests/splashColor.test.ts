@@ -1,12 +1,12 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
-import { createRequire } from "node:module"
 import { test } from "node:test"
+import { URL } from "node:url"
 import { tokens } from "@civfix/shared/tokens"
+import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
-const require = createRequire(import.meta.url)
 const appConfigSource = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
-const appConfig = require("../app.config.js")({ config: {} })
+const appConfig = appConfigFactory({ config: {} })
 const loadingSplash = readFileSync(
   new URL("../src/components/LoadingSplash.tsx", import.meta.url),
   "utf8",
@@ -19,12 +19,8 @@ const launchThemeModule = readFileSync(
 
 const LIGHT = tokens.color.neutral.paper
 
-function splashPlugin(): Record<string, any> {
-  const entry = appConfig.plugins.find(
-    (plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-splash-screen",
-  )
-  assert.ok(Array.isArray(entry), "expo-splash-screen plugin tuple")
-  return entry[1]
+function splashPlugin(): Record<string, unknown> {
+  return pluginOptions(appConfig, "expo-splash-screen", "expo-splash-screen plugin tuple")
 }
 
 test("the native splash background is the light paper token", () => {
@@ -66,5 +62,6 @@ test("the JS boot screen paints the flat launch background, never a wash over it
 test("the native root view sits on the launch paper before the first paint, the app's after", () => {
   assert.match(layout, /import \* as SystemUI from "expo-system-ui"/)
   assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(launchTheme\.colors\.bg\)/)
-  assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/)
+  const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
+  assert.match(rootStack, /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/)
 })

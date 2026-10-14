@@ -22,16 +22,16 @@ import {
 
 const STILLS: Readonly<Record<OnboardingMapStage, Readonly<Record<ColorSchemeName, ImageRequireSource>>>> = {
   report: {
-    light: require("../../../../assets/onboarding/report-light.png"),
-    dark: require("../../../../assets/onboarding/report-dark.png"),
+    light: require("../../../../assets/onboarding/report-light.png") as ImageRequireSource,
+    dark: require("../../../../assets/onboarding/report-dark.png") as ImageRequireSource,
   },
   track: {
-    light: require("../../../../assets/onboarding/track-light.png"),
-    dark: require("../../../../assets/onboarding/track-dark.png"),
+    light: require("../../../../assets/onboarding/track-light.png") as ImageRequireSource,
+    dark: require("../../../../assets/onboarding/track-dark.png") as ImageRequireSource,
   },
   together: {
-    light: require("../../../../assets/onboarding/together-light.png"),
-    dark: require("../../../../assets/onboarding/together-dark.png"),
+    light: require("../../../../assets/onboarding/together-light.png") as ImageRequireSource,
+    dark: require("../../../../assets/onboarding/together-dark.png") as ImageRequireSource,
   },
 }
 

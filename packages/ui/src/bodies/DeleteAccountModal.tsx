@@ -1,19 +1,12 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  Platform,
-  type TextInput as RNTextInput,
-  type ViewStyle,
-} from "react-native"
+import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
+import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { appErrorCode } from "./errorCode"
+import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string
@@ -24,28 +17,23 @@ export interface DeleteAccountModalProps {
   onClose: () => void
 }
 
+const SEND_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "sendError.rateLimited",
+  [ErrorCode.VALIDATION]: "sendError.validation",
+}
+
+const DELETE_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.UNAUTHORIZED]: "deleteError.unauthorized",
+  [ErrorCode.RATE_LIMITED]: "deleteError.rateLimited",
+  [ErrorCode.VALIDATION]: "deleteError.validation",
+}
+
 function sendErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "RATE_LIMITED":
-      return t("sendError.rateLimited")
-    case "VALIDATION":
-      return t("sendError.validation")
-    default:
-      return t("sendError.generic")
-  }
+  return t(errorCopyKey(err, SEND_ERROR_KEYS, "sendError.generic"))
 }
 
 function deleteErrorMessage(err: unknown, t: TFn): string {
-  switch (appErrorCode(err)) {
-    case "UNAUTHORIZED":
-      return t("deleteError.unauthorized")
-    case "RATE_LIMITED":
-      return t("deleteError.rateLimited")
-    case "VALIDATION":
-      return t("deleteError.validation")
-    default:
-      return t("deleteError.generic")
-  }
+  return t(errorCopyKey(err, DELETE_ERROR_KEYS, "deleteError.generic"))
 }
 
 export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountModalProps) {
@@ -58,6 +46,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   const [code, setCode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [codeFocusRequest, setCodeFocusRequest] = useState(0)
   const codeRef = useRef<RNTextInput>(null)
 
   useEffect(() => {
@@ -67,6 +56,12 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
       setError(null)
     }
   }, [visible])
+
+  useEffect(() => {
+    if (!visible || codeFocusRequest === 0) return
+    const timer = setTimeout(() => codeRef.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [visible, codeFocusRequest])
 
   const hasEmail = !!email
 
@@ -79,7 +74,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         onSuccess: () => {
           setStep("verify")
           setCode("")
-          setTimeout(() => codeRef.current?.focus(), 50)
+          setCodeFocusRequest((n) => n + 1)
         },
         onError: (e) => setError(sendErrorMessage(e, t)),
       },
@@ -87,7 +82,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   }
 
   const confirmDelete = () => {
-    if (code.length !== 6 || del.isPending) return
+    if (code.length !== EMAIL_OTP_CODE_LENGTH || del.isPending) return
     setError(null)
     del.mutate(
       { emailOtp: code },
@@ -97,7 +92,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
     )
   }
 
-  const masked = email ?? t("emailFallback")
+  const emailLabel = email ?? t("emailFallback")
 
   const introActions = hasEmail ? (
     <>
@@ -133,7 +128,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
               variant="destructive"
               onPress={confirmDelete}
               loading={del.isPending}
-              disabled={code.length !== 6}
+              disabled={code.length !== EMAIL_OTP_CODE_LENGTH}
               accessibilityLabel={t("a11y.deleteConfirm")}
             />
           </>
@@ -153,7 +148,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         hasEmail ? (
           <Text style={styles.body}>
             {t("intro.sendPre")}
-            <Text style={styles.email}>{masked}</Text>
+            <Text style={styles.email}>{emailLabel}</Text>
             {t("intro.sendPost")}
           </Text>
         ) : (
@@ -163,19 +158,19 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         <>
           <Text style={styles.body}>
             {t("verify.enterPre")}
-            <Text style={styles.email}>{masked}</Text>
+            <Text style={styles.email}>{emailLabel}</Text>
             {t("verify.enterPost")}
           </Text>
           <TextInput
             ref={codeRef}
             value={code}
-            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, 6))}
+            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_CODE_LENGTH))}
             editable={!del.isPending}
             keyboardType="number-pad"
             inputMode="numeric"
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
-            maxLength={6}
+            maxLength={EMAIL_OTP_CODE_LENGTH}
             placeholder="000000"
             placeholderTextColor={th.colors.textSubtle}
             accessibilityLabel={t("a11y.verificationCode")}
@@ -188,7 +183,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
             disabled={requestCode.isPending}
             accessibilityRole="button"
             accessibilityLabel={t("actions.resend")}
-            hitSlop={6}
+            accessibilityState={{ disabled: requestCode.isPending, busy: requestCode.isPending }}
             {...focusRingProps}
             style={styles.resend}
           >
@@ -204,7 +199,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
 
 const useStyles = makeThemedStyles((t) => ({
   warnBox: {
-    gap: 4,
+    gap: t.space["1"],
     padding: t.space["3"],
     borderRadius: t.radius.lg,
     backgroundColor: t.colors.bloom["50"],
@@ -213,19 +208,19 @@ const useStyles = makeThemedStyles((t) => ({
   },
   warnText: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
   warnStrong: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
   warnSub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     lineHeight: 16,
-    color: t.colors.bloom["600"],
+    color: t.colors.dangerInk,
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,
@@ -249,13 +244,11 @@ const useStyles = makeThemedStyles((t) => ({
     letterSpacing: 8,
     color: t.colors.text,
   },
-  codeInputFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  codeInputFocused: inputFocusedStyle(t),
   resend: {
     alignSelf: "flex-start",
-    paddingVertical: 2,
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
   },
   resendText: {
     fontFamily: t.fontFamily.bodyBold,

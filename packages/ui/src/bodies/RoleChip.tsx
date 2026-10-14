@@ -56,7 +56,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   label: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9.5,
+    fontSize: t.fontSize["12"],
     letterSpacing: 0.4,
     color: t.colors.textMuted,
   },

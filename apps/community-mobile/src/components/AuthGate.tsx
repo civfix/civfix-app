@@ -2,8 +2,8 @@ import React, { useEffect } from "react"
 import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
-import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, space, useTheme } from "@/theme"
+import { useReducedMotion } from "@civfix/ui/theme"
 import {
   IosKeyboardAvoidingView,
   PLAIN_SCROLL_HOST,
@@ -17,9 +17,7 @@ import { useBootGate } from "@/hooks/useBootGate"
 import { LoadingSplash } from "@/components/LoadingSplash"
 import { AuthOptions } from "@/components/AuthOptions"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
-import { useEnabledProviders } from "@/hooks/useAuthFlow"
-
-const ALL_PROVIDERS: OAuthProvider[] = ["apple", "google", "email"]
+import { useSignInProviders } from "@/hooks/useAuthFlow"
 
 const { ScrollView: AuthScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
@@ -27,16 +25,16 @@ function WelcomeOptions() {
   const { t } = useT("mobile-auth-welcome")
   const th = useTheme()
   const styles = useStyles()
-  const providers = useEnabledProviders()
+  const { ready, enabled } = useSignInProviders()
   const unreachable = useBootGate().showNotice
-  const ready = !providers.isPlaceholderData
-  const enabled = providers.data ?? ALL_PROVIDERS
 
   const revealed = ready || unreachable
+  const reduceMotion = useReducedMotion() === true
   const fall = useSharedValue(0)
   useEffect(() => {
-    if (revealed) fall.value = withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
-  }, [revealed, fall])
+    if (!revealed) return
+    fall.value = reduceMotion ? 1 : withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
+  }, [revealed, reduceMotion, fall])
   const style = useAnimatedStyle(() => ({
     opacity: fall.value,
     transform: [{ translateY: (1 - fall.value) * -32 }],

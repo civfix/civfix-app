@@ -11,11 +11,13 @@ import {
   webHover,
   webInputReset,
   webTransition,
+  inputFocusedStyle,
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
-import { type AnswerMap, toggleMultiSelect } from "./questionModel"
+import type { AnswerMap } from "@civfix/shared/host"
+import { toggleMultiSelect } from "./questionModel"
+import { INPUT_MIN_HEIGHT } from "../hostLayout"
 
 export interface RegistrationQuestionsProps {
   questions: readonly EventQuestionDTO[]
@@ -82,6 +84,9 @@ export function RegistrationQuestions({
       {questions.map((question) => {
         const value = answers[question.id]
         const isInvalid = invalid?.has(question.id) ?? false
+        const promptA11y = question.required
+          ? t("questions.required_a11y", { prompt: question.prompt })
+          : question.prompt
         return (
           <View key={question.id} style={styles.field}>
             {question.kind === "consent" ? null : (
@@ -103,14 +108,14 @@ export function RegistrationQuestions({
                 }
                 placeholder={t("questions.text_placeholder")}
                 placeholderTextColor={th.colors.textSubtle}
-                accessibilityLabel={question.prompt}
+                accessibilityLabel={promptA11y}
                 onFocus={() => setFocusedId(question.id)}
                 onBlur={() => setFocusedId((prev) => (prev === question.id ? null : prev))}
                 style={[
                   webInputReset,
                   styles.input,
                   question.kind === "long_text" ? styles.inputMultiline : null,
-                  focusedId === question.id ? fieldFocusedStyle(th) : null,
+                  focusedId === question.id ? inputFocusedStyle(th) : null,
                   isInvalid ? styles.inputInvalid : null,
                 ]}
               />
@@ -120,7 +125,7 @@ export function RegistrationQuestions({
               <View
                 style={styles.options}
                 accessibilityRole="radiogroup"
-                accessibilityLabel={question.prompt}
+                accessibilityLabel={promptA11y}
               >
                 {question.options.map((option) => {
                   const selected = value === option.value
@@ -154,7 +159,7 @@ export function RegistrationQuestions({
             ) : null}
 
             {question.kind === "multi_select" ? (
-              <View style={styles.options}>
+              <View style={styles.options} role="group" accessibilityLabel={promptA11y}>
                 {question.options.map((option) => (
                   <CheckRow
                     key={option.value}
@@ -173,7 +178,7 @@ export function RegistrationQuestions({
                 label={question.kind === "consent" ? (question.consentText ?? question.prompt) : question.prompt}
                 checked={value === true}
                 disabled={disabled}
-                a11yLabel={question.prompt}
+                a11yLabel={promptA11y}
                 onToggle={() => onChange(question.id, value !== true)}
               />
             ) : null}
@@ -211,7 +216,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
   input: {
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"],
     borderRadius: t.radius.md,

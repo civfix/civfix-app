@@ -11,9 +11,7 @@ import type { ChatConnState } from "@civfix/ui/data"
 class FakeCore implements AppStateSocket {
   status: ChatConnState = "open"
   suspended = false
-  /** Reconnect attempts accumulated so far - the jittered backoff grows with this. */
   attempt = 0
-  /** A scheduled reconnect is pending (the socket is backing off). */
   pendingReconnect = false
   hasIntent = true
   opens = 0

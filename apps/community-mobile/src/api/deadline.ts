@@ -19,23 +19,68 @@ export function isRequestDeadlineError(err: unknown): err is RequestDeadlineErro
   )
 }
 
-export async function withRequestDeadline<T>(
-  deadlineMs: number,
-  run: (signal: AbortSignal) => Promise<T>,
-): Promise<T> {
-  const controller = new AbortController()
-  let expired = false
-  const timer = setTimeout(() => {
-    expired = true
-    controller.abort()
-  }, deadlineMs)
+interface SharedFlight<T> {
+  key: unknown
+  result: Promise<T>
+  controller: AbortController
+  abortAt: number
+  timer: ReturnType<typeof setTimeout> | undefined
+  expired: boolean
+}
 
-  try {
-    return await run(controller.signal)
-  } catch (err) {
-    if (expired) throw new RequestDeadlineError(deadlineMs)
-    throw err
-  } finally {
-    clearTimeout(timer)
+/**
+ * Callers that arrive while a request is in flight share it instead of sending a twin. Each keeps the
+ * deadline it asked for, failing with a RequestDeadlineError at that moment; the request itself is
+ * aborted only once the latest of those passes.
+ */
+export function sharedDeadlineRequest<T>(
+  run: (signal: AbortSignal) => Promise<T>,
+  flightKey: () => unknown = () => undefined,
+): (deadlineMs: number) => Promise<T> {
+  let flight: SharedFlight<T> | null = null
+
+  const armAbort = (current: SharedFlight<T>, deadlineMs: number): void => {
+    clearTimeout(current.timer)
+    current.abortAt = Date.now() + deadlineMs
+    current.timer = setTimeout(() => {
+      current.expired = true
+      current.controller.abort()
+    }, deadlineMs)
+  }
+
+  const start = (key: unknown): SharedFlight<T> => {
+    const controller = new AbortController()
+    let current: SharedFlight<T> | null = null
+    const result = run(controller.signal).finally(() => {
+      clearTimeout(current?.timer)
+      if (flight === current) flight = null
+    })
+    current = { key, result, controller, abortAt: 0, timer: undefined, expired: false }
+    return current
+  }
+
+  return (deadlineMs) => {
+    const key = flightKey()
+    const current = flight !== null && flight.key === key ? flight : start(key)
+    flight = current
+    if (Date.now() + deadlineMs > current.abortAt) armAbort(current, deadlineMs)
+    return new Promise<T>((resolve, reject) => {
+      const own = setTimeout(() => {
+        // A request that has already missed someone's deadline may be hung: the next caller (a
+        // Retry tap) must send a fresh one instead of joining it.
+        if (flight === current) flight = null
+        reject(new RequestDeadlineError(deadlineMs))
+      }, deadlineMs)
+      current.result.then(
+        (value) => {
+          clearTimeout(own)
+          resolve(value)
+        },
+        (err: unknown) => {
+          clearTimeout(own)
+          reject(current.expired ? new RequestDeadlineError(deadlineMs) : err)
+        },
+      )
+    })
   }
 }

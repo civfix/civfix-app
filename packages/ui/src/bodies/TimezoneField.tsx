@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { View, Pressable } from "react-native"
 import { COMMON_TIMEZONES, supportedTimeZones } from "@civfix/shared/datetime"
 import {
@@ -8,15 +8,16 @@ import {
   webCursorPointer,
   webTransition,
   webHover,
+  MIN_TOUCH_TARGET,
 } from "../theme"
-import { Text, TextLink, Icon, iconMap } from "../typography"
+import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
-import { zoneDisplayName } from "./calendarModel"
+import { makeZoneDisplayNameCache, warmZoneDisplayNames } from "./calendarModel"
 
 const MAX_TIMEZONE_ROWS = 8
 
-const displayNames = new Map<string, string>()
+const displayNames = makeZoneDisplayNameCache()
 
 let everyZone: readonly string[] | null = null
 
@@ -25,20 +26,11 @@ function allTimeZones(): readonly string[] {
   return everyZone
 }
 
-function cachedDisplayName(timeZone: string, locale: string): string {
-  const key = `${locale}|${timeZone}`
-  const cached = displayNames.get(key)
-  if (cached !== undefined) return cached
-  const name = zoneDisplayName(timeZone, locale)
-  displayNames.set(key, name)
-  return name
-}
-
 function normalize(value: string): string {
   return value.toLowerCase().replace(/_/g, " ")
 }
 
-export function matchingTimeZones(
+function matchingTimeZones(
   zones: readonly string[],
   query: string,
   locale: string,
@@ -56,7 +48,7 @@ export function matchingTimeZones(
   const byId = new Set(out)
   for (const zone of zones) {
     if (byId.has(zone)) continue
-    if (normalize(cachedDisplayName(zone, locale)).includes(needle)) {
+    if (normalize(displayNames.get(zone, locale)).includes(needle)) {
       out.push(zone)
       if (out.length === limit) break
     }
@@ -78,8 +70,13 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
 
-  const zoneLabel = cachedDisplayName(value, locale)
-  const deviceLabel = cachedDisplayName(deviceZone, locale)
+  const zoneLabel = displayNames.get(value, locale)
+  const deviceLabel = displayNames.get(deviceZone, locale)
+
+  useEffect(() => {
+    if (!open) return
+    return warmZoneDisplayNames(displayNames, allTimeZones(), locale)
+  }, [open, locale])
 
   const rows = useMemo(
     () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allTimeZones(), query, locale),
@@ -100,9 +97,17 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
           {t("timezone.caption", { zone: zoneLabel })}
         </Text>
         {onChange ? (
-          <TextLink variant="caption" onPress={() => setOpen((prev) => !prev)}>
-            {t("timezone.change")}
-          </TextLink>
+          <Pressable
+            onPress={() => setOpen((prev) => !prev)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            {...focusRingProps}
+            style={(state) => [webCursorPointer, state.pressed ? styles.pressed : null]}
+          >
+            <Text variant="caption" style={styles.changeLink}>
+              {t("timezone.change")}
+            </Text>
+          </Pressable>
         ) : null}
       </View>
 
@@ -133,7 +138,7 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
           {rows.map((zone) => (
             <ZoneRow
               key={zone}
-              title={cachedDisplayName(zone, locale)}
+              title={displayNames.get(zone, locale)}
               subtitle={zone}
               selected={value === zone}
               onPress={() => pick(zone)}
@@ -163,9 +168,9 @@ function ZoneRow({
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
+      accessibilityRole="radio"
       accessibilityLabel={title}
-      accessibilityState={{ selected }}
+      accessibilityState={{ checked: selected }}
       {...focusRingProps}
       style={(state) => [
         styles.zoneRow,
@@ -205,6 +210,11 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
+  changeLink: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    color: t.colors.textMuted,
+    textDecorationLine: "underline",
+  },
   panel: {
     marginTop: t.space["1"],
     gap: t.space["1"],
@@ -219,7 +229,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.md,
   },

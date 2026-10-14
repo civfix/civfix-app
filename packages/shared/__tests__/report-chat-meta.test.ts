@@ -2,9 +2,8 @@ import { describe, it, expect } from "vitest"
 import { ReportDTOSchema } from "../src/schemas/entities.js"
 
 /**
- * Task D-Fmeta: the optional report-chat membership + counts fields on ReportDTO. Populated ONLY on the
- * report-detail payload (omitted on list/pin payloads), so the contract is: the DTO parses BOTH with and
- * without them, and — when present — enforces boolean / non-negative-int bounds.
+ * The report-chat fields are populated only on the report-detail payload, so the DTO must parse both
+ * with and without them, and enforce their bounds when present.
  */
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"
@@ -27,8 +26,8 @@ function baseReport() {
   }
 }
 
-describe("ReportDTO report-chat metadata (D-Fmeta)", () => {
-  it("parses WITHOUT the chat fields (list/pin payload — all four stay undefined)", () => {
+describe("ReportDTO report-chat metadata", () => {
+  it("parses WITHOUT the chat fields (list/pin payload: all four stay undefined)", () => {
     const parsed = ReportDTOSchema.parse(baseReport())
     expect(parsed.chatJoined).toBeUndefined()
     expect(parsed.chatMemberCount).toBeUndefined()

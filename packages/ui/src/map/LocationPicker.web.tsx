@@ -1,50 +1,58 @@
+import { coordsLabel } from "@civfix/shared"
 import * as React from "react"
 import maplibregl from "maplibre-gl"
-import { tokens, shadowSchemes } from "@civfix/shared/tokens"
-import { useTheme, EASE_STANDARD_CSS, type Theme } from "../theme"
+import { shadowSchemes } from "@civfix/shared/tokens"
+import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
-import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
+import {
+  PICKER_EASE_MS,
+  PICKER_ZOOM,
+  PICKER_HEIGHT,
+  pickerSurface,
+  type LatLng,
+  type LocationPickerProps,
+} from "./LocationPicker.types"
 import { useLocationPick } from "./locationPickStore"
 import { pinAppearanceFor } from "./pins"
+import { applyPinElementTheme, makePinElement } from "./pins/pinElement.web"
 
-export function applyPinElementTheme(el: HTMLElement, t: Theme, fill: string): void {
-  el.style.background = fill
-  el.style.boxShadow = shadowSchemes[t.scheme].pin
-  el.style.border = `2px solid ${t.colors.onAccent}`
-}
+/** Below this the marker already sits on the value, so an echo of the picker's own change does not ease. */
+const MARKER_MOVED_EPSILON_DEG = 1e-6
+const SAME_PICK_POINT_EPSILON_DEG = 1e-9
+const RESET_TRANSITION_PROPS = ["opacity", "background-color", "border-color", "transform"]
 
-export function makePinElement(t: Theme, fill: string): HTMLDivElement {
-  const el = document.createElement("div")
-  el.style.width = "24px"
-  el.style.height = "24px"
-  el.style.borderRadius = String(tokens.radius.pin)
-  el.style.transform = "rotate(45deg)"
-  el.style.boxSizing = "border-box"
-  el.style.cursor = "grab"
-  applyPinElementTheme(el, t, fill)
-  return el
-}
-
-function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_HEIGHT, pin }: LocationPickerProps) {
+function InlineLocationPicker({
+  value,
+  onChange,
+  initialCenter,
+  centerSettled,
+  height = PICKER_HEIGHT,
+  pin,
+}: LocationPickerProps) {
   const { t } = useT("map-ui")
   const th = useTheme()
   const styles = React.useMemo(() => makeStyles(th), [th])
   const themeRef = React.useRef(th)
-  themeRef.current = th
   const pinFill = pinAppearanceFor(pin, th.scheme).fill
   const pinFillRef = React.useRef(pinFill)
-  pinFillRef.current = pinFill
   const cartoApiKey = useCartoApiKey()
   const cartoApiKeyRef = React.useRef(cartoApiKey)
-  cartoApiKeyRef.current = cartoApiKey
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<maplibregl.Map | null>(null)
   const markerRef = React.useRef<maplibregl.Marker | null>(null)
+  const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
   const onChangeRef = React.useRef(onChange)
-  onChangeRef.current = onChange
   const [placed, setPlaced] = React.useState<boolean>(value != null)
+  const valueRef = React.useRef(value)
+  React.useLayoutEffect(() => {
+    themeRef.current = th
+    pinFillRef.current = pinFill
+    cartoApiKeyRef.current = cartoApiKey
+    onChangeRef.current = onChange
+    valueRef.current = value
+  })
 
   const seedRef = React.useRef<LatLng | null>(null)
   if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
@@ -75,6 +83,7 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
     if (mapRef.current || !containerRef.current || !cameraSeed) return
     const start: [number, number] = [cameraSeed.lng, cameraSeed.lat]
 
+    styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: rasterMapStyle(DEFAULT_ATTRIBUTION, {
@@ -86,10 +95,13 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
+      touchPitch: false,
     })
+    map.touchZoomRotate.disableRotation()
+    map.keyboard.disableRotation()
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right")
 
-    if (value) ensureMarker(map, start)
+    if (valueRef.current) ensureMarker(map, start)
 
     map.on("click", (e) => {
       ensureMarker(map, e.lngLat).setLngLat(e.lngLat)
@@ -103,12 +115,24 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       mapRef.current = null
       markerRef.current = null
     }
-  }, [cameraSeed])
+  }, [cameraSeed, ensureMarker])
 
   React.useEffect(() => {
     const marker = markerRef.current
     if (marker) applyPinElementTheme(marker.getElement(), th, pinFill)
   }, [th, pinFill])
+
+  React.useEffect(() => {
+    const map = mapRef.current
+    if (!map || styleSchemeRef.current === th.scheme) return
+    styleSchemeRef.current = th.scheme
+    map.setStyle(
+      rasterMapStyle(DEFAULT_ATTRIBUTION, {
+        cartoApiKey: cartoApiKeyRef.current,
+        scheme: th.scheme,
+      }) as maplibregl.StyleSpecification,
+    )
+  }, [th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -122,15 +146,33 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
     setPlaced(true)
     const marker = ensureMarker(map, [value.lng, value.lat])
     const current = marker.getLngLat()
-    if (Math.abs(current.lat - value.lat) > 1e-6 || Math.abs(current.lng - value.lng) > 1e-6) {
+    if (
+      Math.abs(current.lat - value.lat) > MARKER_MOVED_EPSILON_DEG ||
+      Math.abs(current.lng - value.lng) > MARKER_MOVED_EPSILON_DEG
+    ) {
       marker.setLngLat([value.lng, value.lat])
-      map.easeTo({ center: [value.lng, value.lat], zoom: Math.max(map.getZoom(), PICKER_ZOOM), duration: 400 })
+      map.easeTo({
+        center: [value.lng, value.lat],
+        zoom: Math.max(map.getZoom(), PICKER_ZOOM),
+        duration: PICKER_EASE_MS,
+      })
     }
-  }, [value])
+  }, [value, ensureMarker])
 
 
   if (!cameraSeed) {
-    return <div style={{ ...styles.wrap, height }} aria-label={t("a11y.picker")} aria-busy />
+    if (pickerSurface(cameraSeed, centerSettled) === "search") {
+      return (
+        <div style={{ ...styles.wrap, ...styles.pending, height }} role="status">
+          {t("hint.search_address")}
+        </div>
+      )
+    }
+    return (
+      <div style={{ ...styles.wrap, ...styles.pending, height }} role="status" aria-busy>
+        {t("hint.pending")}
+      </div>
+    )
   }
 
   return (
@@ -138,11 +180,16 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       <div
         ref={containerRef}
         style={styles.canvas}
+        role="region"
         aria-label={t("a11y.picker")}
       />
       <div style={styles.hint}>{placed ? t("hint.move") : t("hint.place")}</div>
     </div>
   )
+}
+
+function samePickPoint(a: LatLng, b: LatLng): boolean {
+  return Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG && Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
 }
 
 function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
@@ -152,14 +199,18 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
   const draft = useLocationPick((s) => s.draft)
 
   const onChangeRef = React.useRef(onChange)
-  onChangeRef.current = onChange
   const onClearRef = React.useRef(onClear)
-  onClearRef.current = onClear
   const pinRef = React.useRef(pin)
-  pinRef.current = pin
+  const valueRef = React.useRef(value)
+  React.useLayoutEffect(() => {
+    onChangeRef.current = onChange
+    onClearRef.current = onClear
+    pinRef.current = pin
+    valueRef.current = value
+  })
 
   React.useEffect(() => {
-    useLocationPick.getState().start(value ?? null, pinRef.current)
+    useLocationPick.getState().start(valueRef.current ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }
@@ -171,9 +222,17 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
 
   React.useEffect(() => {
     if (!draft) return
-    if (value && Math.abs(draft.lat - value.lat) < 1e-9 && Math.abs(draft.lng - value.lng) < 1e-9) return
+    const current = valueRef.current
+    if (current && samePickPoint(draft, current)) return
     onChangeRef.current(draft.lat, draft.lng)
-  }, [draft, value])
+  }, [draft])
+
+  React.useEffect(() => {
+    if (!value) return
+    const current = useLocationPick.getState().draft
+    if (current && samePickPoint(current, value)) return
+    useLocationPick.getState().setDraft(value.lat, value.lng)
+  }, [value])
 
   const point = draft ?? value ?? null
 
@@ -215,7 +274,7 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
         </button>
       </div>
       <div style={styles.overlayCoord}>
-        {point ? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}` : t("hint.empty")}
+        {point ? coordsLabel(point) : t("hint.empty")}
       </div>
     </div>
   )
@@ -244,13 +303,22 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       width: "100%",
       height: "100%",
     },
+    pending: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: t.space["4"],
+      textAlign: "center",
+      font: `600 12.5px/1.3 ${t.fontFamily.bodySemiBold}, system-ui, sans-serif`,
+      color: t.colors.textSubtle,
+    },
     hint: {
       position: "absolute",
-      bottom: 12,
+      bottom: t.space["3"],
       left: "50%",
       transform: "translateX(-50%)",
       maxWidth: "90%",
-      padding: "7px 12px",
+      padding: `7px ${t.space["3"]}px`,
       borderRadius: t.radius.pill,
       backgroundColor: t.glass.button.fill,
       border: `1px solid ${t.glass.button.border}`,
@@ -303,7 +371,7 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
     },
     overlayCoord: {
-      font: `400 12px/1.3 ${t.fontFamily.mono}, ui-monospace, SFMono-Regular, Menlo, monospace`,
+      font: `400 ${t.fontSize["12"]}px/1.3 ${t.fontFamily.mono}, ui-monospace, SFMono-Regular, Menlo, monospace`,
       color: t.colors.textSubtle,
     },
     overlayReset: {
@@ -316,7 +384,7 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
       font: `700 13.5px/1 ${t.fontFamily.bodyBold}, system-ui, sans-serif`,
       cursor: "pointer",
-      transition: `opacity 120ms ${EASE_STANDARD_CSS}, background-color 120ms ${EASE_STANDARD_CSS}, border-color 120ms ${EASE_STANDARD_CSS}, transform 120ms ${EASE_STANDARD_CSS}`,
+      transition: RESET_TRANSITION_PROPS.map((prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`).join(", "),
     },
     overlayResetHovered: {
       backgroundColor: t.colors.surfaceTint,

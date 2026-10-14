@@ -1,7 +1,7 @@
 import type { LatLng } from "../schemas/common.js"
 
 /**
- * Route matrix + optimization for gov cleanup/collection routes (Phase 2). Minimal shapes.
+ * Route matrix + optimization for gov cleanup/collection routes.
  */
 
 export interface RouteStop {

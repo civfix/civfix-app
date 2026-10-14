@@ -97,14 +97,18 @@ export function AnchoredPopover({
     })
   }, [cancelPendingFocus])
 
+  // The trigger is read at close time, not open time: a trigger that re-mounted while the popover was
+  // up gets the focus, and one that unmounted with its owner is null, which focuses nothing.
+  const returnFocus = useCallback(() => {
+    cancelPendingFocus()
+    focusAccessibilityNode(returnFocusRef?.current)
+  }, [cancelPendingFocus, returnFocusRef])
+
   const rendered = motion.rendered
   useEffect(() => {
     if (!rendered) return
-    return () => {
-      cancelPendingFocus()
-      focusAccessibilityNode(returnFocusRef?.current)
-    }
-  }, [cancelPendingFocus, rendered, returnFocusRef])
+    return returnFocus
+  }, [rendered, returnFocus])
 
   return (
     <Modal

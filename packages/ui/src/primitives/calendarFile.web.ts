@@ -1,5 +1,8 @@
 import type { CalendarSaveInput, CalendarSaveResult } from "./calendarFile.types"
 
+/** Safari starts the download after `click()` returns, so revoking the URL in the same tick can cancel it. */
+export const CALENDAR_BLOB_REVOKE_MS = 1000
+
 export function calendarSaveAvailable(_input: Pick<CalendarSaveInput, "writer">): boolean {
   return typeof document !== "undefined" && typeof URL !== "undefined" && typeof Blob !== "undefined"
 }
@@ -20,6 +23,6 @@ export async function saveCalendarFile(input: CalendarSaveInput): Promise<Calend
   } catch {
     return "unavailable"
   } finally {
-    setTimeout(() => URL.revokeObjectURL(href), 0)
+    setTimeout(() => URL.revokeObjectURL(href), CALENDAR_BLOB_REVOKE_MS)
   }
 }

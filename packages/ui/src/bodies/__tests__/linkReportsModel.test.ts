@@ -3,7 +3,6 @@ import { MAX_LINKED_REPORTS, type ReportPinDTO, type ReportStatus } from "@civfi
 import type { HostStage } from "@civfix/shared/host"
 import {
   LINKED_REPORTS_COUNT_AT,
-  NEARBY_MAX,
   NEARBY_PREVIEW,
   linkBlockState,
   linkSheetMode,
@@ -85,6 +84,13 @@ describe("toggleLinkedReportId", () => {
     expect(toggleLinkedReportId(ids, "one-more").outcome).toBe("at_limit")
     expect(toggleLinkedReportId(ids.slice(0, -1), "one-more").outcome).toBe("added")
   })
+
+  it("toggles the report picker's selection and refuses past the cap", () => {
+    expect(toggleLinkedReportId(["a"], "b")).toEqual({ ids: ["a", "b"], outcome: "added" })
+    expect(toggleLinkedReportId(["a", "b"], "a")).toEqual({ ids: ["b"], outcome: "removed" })
+    const full = Array.from({ length: MAX_LINKED_REPORTS }, (_u, i) => `r${i}`)
+    expect(toggleLinkedReportId(full, "extra").outcome).toBe("at_limit")
+  })
 })
 
 describe("nearbyReportRows", () => {
@@ -124,7 +130,6 @@ describe("nearbyReportRows", () => {
     const pins = Array.from({ length: 40 }, (_unused, i) => pin(`p${i}`, { lat: north(i / 100) }))
     expect(nearbyReportRows(pins, LA, [], 2)).toHaveLength(40)
     expect(NEARBY_PREVIEW).toBe(3)
-    expect(NEARBY_MAX).toBe(30)
   })
 })
 

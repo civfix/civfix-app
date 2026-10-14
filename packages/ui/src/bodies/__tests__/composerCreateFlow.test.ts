@@ -1,31 +1,24 @@
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import type { DetailEntry } from "../../nav"
 import { useNavStore } from "../../nav"
 import {
   clearStaleReportIntentAtComposerMount,
   openReportFlow,
-  stackAfterComposerReturn,
   stackAfterFlowPublished,
 } from "../composerCreateFlow"
 import * as composerCreateFlow from "../composerCreateFlow"
 import { usePostComposerStore } from "../postComposerStore"
-import { topmostFullEntry } from "../../shell/bodyLayout"
 
 const readSource = (relative: string) =>
   readFileSync(new URL(relative, import.meta.url), "utf8")
 
-const composer: DetailEntry = { kind: "composer" }
 const hostForm: DetailEntry = { kind: "create-cleanup" }
 
 /**
- * THE PLANNER AND THE HOST-PRESENTER SEAM ARE GONE, AND THAT IS THE ASSERTION.
- *
- * `planComposerCreateEvent` / `setComposerEventFormPresenter` / `composerEventFormPresenter` existed only to
- * present the host-an-event form over the post composer's "+ New event" shortcut. That shortcut was removed
- * (the dock's create bubble is the one entry point), which left the planner with no production caller, the
- * presenter singleton with no reader, and mobile's `/compose-host-event` screen unreachable. All three are
- * deleted; this pins the deletion so a revival has to be deliberate rather than accidental.
+ * The dock's create bubble is the one entry point for hosting an event, so the composer -> host-event
+ * presentation seam must not come back by accident.
  */
 describe("the removed composer -> host-event presentation seam", () => {
   it("exports neither the planner nor the presenter singleton any more", () => {
@@ -33,6 +26,7 @@ describe("the removed composer -> host-event presentation seam", () => {
       "planComposerCreateEvent",
       "setComposerEventFormPresenter",
       "composerEventFormPresenter",
+      "stackAfterComposerReturn",
     ]) {
       expect(composerCreateFlow).not.toHaveProperty(name)
     }
@@ -40,72 +34,9 @@ describe("the removed composer -> host-event presentation seam", () => {
     expect(source).not.toMatch(/eventFormPresenter|hasHostPresenter|ComposerCreateEventPlan/)
     // ...and the package barrel does not re-export them either.
     const barrel = readSource("../index.ts")
-    expect(barrel).not.toMatch(/ComposerEventFormPresenter|planComposerCreateEvent|ComposerCreateEventPlan/)
-  })
-})
-
-describe("stackAfterComposerReturn", () => {
-  it("truncates back to the WAITING composer in one step, at any depth", () => {
-    expect(stackAfterComposerReturn([composer, hostForm])).toEqual([composer])
-    // The host form can push forward first (a linked report's detail), so a single `back()` would leave
-    // the user parked mid-flow. Truncating is correct however deep it went.
-    expect(stackAfterComposerReturn([composer, hostForm, { kind: "pin", id: "r1" }])).toEqual([composer])
-    expect(
-      stackAfterComposerReturn([{ kind: "post", id: "p1" }, composer, hostForm]),
-    ).toEqual([{ kind: "post", id: "p1" }, composer])
-  })
-
-  it("returns null when no composer entry survived, so the caller pushes a fresh one", () => {
-    // The report-wizard round trip (`selectView` clears the stack) and the mobile screen-hosted composer.
-    expect(stackAfterComposerReturn([hostForm])).toBeNull()
-    expect(stackAfterComposerReturn([])).toBeNull()
-  })
-
-  it("truncates at the TOPMOST composer, so a nested pair cannot strand the inner one", () => {
-    expect(stackAfterComposerReturn([composer, hostForm, composer, hostForm])).toEqual([
-      composer,
-      hostForm,
-      composer,
-    ])
-  })
-})
-
-describe("the composer <-> host-form round trip over the real nav store", () => {
-  beforeEach(() => {
-    useNavStore.getState().reset()
-  })
-
-  it("opens the host form ON TOP of the composer and lands back IN it on publish", () => {
-    // `reset()` leaves the store on the home view with an empty stack.
-    useNavStore.getState().push(composer)
-    expect(useNavStore.getState().stack).toEqual([composer])
-    const originView = useNavStore.getState().originView
-
-    // --- The launch leg: the host form is PUSHED, never opened with `openDetail` (which replaces the stack
-    // and would destroy the very composer entry the overlay layer needs).
-    useNavStore.getState().push(hostForm)
-
-    const during = useNavStore.getState()
-    expect(during.stack).toEqual([composer, hostForm])
-    expect(during.active).toEqual(hostForm)
-    // The composer entry survived, which is the whole point: the base view is untouched (NOT re-rooted on
-    // home the way the old `nav.back()` + push left it) and the overlay layer still resolves to the composer.
-    expect(during.view).toBe("home")
-    expect(during.originView).toBe(originView)
-    expect(topmostFullEntry(during.stack)).toEqual(composer)
-
-    // --- The return leg: truncate back to the waiting composer in one step.
-    const trimmed = stackAfterComposerReturn(useNavStore.getState().stack)
-    expect(trimmed).toEqual([composer])
-    useNavStore.getState().setStack(trimmed ?? [])
-
-    const after = useNavStore.getState()
-    expect(after.stack).toEqual([composer])
-    expect(after.active).toEqual(composer)
-    expect(after.originView).toBe(originView)
-    // Exactly ONE composer entry — a second `push` here would make Back from the returned composer re-open
-    // the host form the user just published.
-    expect(after.stack.filter((entry) => entry.kind === "composer")).toHaveLength(1)
+    expect(barrel).not.toMatch(
+      /ComposerEventFormPresenter|planComposerCreateEvent|ComposerCreateEventPlan|stackAfterComposerReturn/,
+    )
   })
 })
 
@@ -124,8 +55,8 @@ describe("openReportFlow", () => {
   })
 
   it("is DESELECT-SAFE: re-entering while already on the wizard does not bounce to the home feed", () => {
-    // THE TRAP. `selectView` carries the dock's re-tap rule — the already-current view with an empty stack
-    // DESELECTS back to "home" — so a bare `selectView("report")` answers a second "Report an issue here"
+    // `selectView` carries the dock's re-tap rule (the already-current view with an empty stack DESELECTS
+    // back to "home"), so a bare `selectView("report")` answers a second "Report an issue here"
     // (which has just prefilled the draft's location) with a silent trip to the timeline, and any create
     // intent armed on the way in is left with no run to claim it.
     openReportFlow()
@@ -211,19 +142,16 @@ describe("clearStaleReportIntentAtComposerMount", () => {
 })
 
 /**
- * SOURCE-GREP GUARDS. The rules above are pure and unit-tested, but the USER-FACING wiring is that the
- * standalone host form mounts a keyboard-aware scroller and routes its escapes, and that the composer no
- * longer carries create shortcuts of its own. Neither component can be rendered here (no RN renderer in
- * this suite; both pull in react-native), and without these assertions reverting either wiring leaves the
- * whole suite green while the reported defect walks straight back in. Same technique, and same reason, as
- * shell/__tests__/tabBar.test.ts's scroll-host composition assertions.
+ * Source-grep guards. The rules above are unit-tested, but the user-facing wiring (the standalone host form
+ * mounts a keyboard-aware scroller and routes its escapes; the composer carries no create shortcuts) cannot
+ * be rendered here because both components pull in react-native. Without these assertions, reverting either
+ * wiring leaves the suite green.
  */
 describe("PostComposer's create shortcuts (source-pinned)", () => {
   it("no longer offers a new-report / new-event shortcut, so it never launches either flow", () => {
-    // The composer's "New report" / "New event" affordances are gone: the dock's create bubble is the one
-    // entry point for both. Pinned as an absence, because re-adding either is what would resurrect the
-    // dismiss-then-detour defect the planner above exists to prevent.
-    const source = readSource("../PostComposer.tsx")
+    // The dock's create bubble is the one entry point for new reports and events. Pinned as an absence,
+    // because a composer shortcut that dismisses before launching would detour the user through the feed.
+    const source = surfaceSource("postComposer")
     expect(source).not.toMatch(/leaveForCreate|createReport|createEvent/)
     expect(source).not.toMatch(/planComposerCreateEvent|composerEventFormPresenter/)
     expect(source).not.toMatch(/selectView\("report"\)/)
@@ -235,8 +163,8 @@ describe("the standalone host form's wiring (source-pinned)", () => {
   const source = () => readSource("../CreateCleanupBody.tsx")
 
   it("mounts a keyboard-aware scroll host, built ONCE at module scope", () => {
-    // FINDING 1: with no provider mounted, `useScrollHost()` falls back to PLAIN_SCROLL_HOST — a bare RN
-    // ScrollView. An iOS formSheet does not resize for the keyboard, so the description field, the "what to
+    // With no provider mounted, `useScrollHost()` falls back to PLAIN_SCROLL_HOST, a bare RN ScrollView.
+    // An iOS formSheet does not resize for the keyboard, so the description field, the "what to
     // bring" input and Publish all end up under it with no scroll range to reach them.
     const text = source()
     expect(text).toMatch(
@@ -259,7 +187,7 @@ describe("the standalone host form's wiring (source-pinned)", () => {
     expect(text).toMatch(/export interface CreateCleanupStandaloneHost \{/)
     expect(text).toMatch(/onComposerReturn: \(\) => void/)
     expect(text).toMatch(/standalone\?: CreateCleanupStandaloneHost/)
-    // The old shape (a boolean plus a loose callback) is what shipped the hole.
+    // A boolean plus a loose callback would let a host declare one without the other.
     expect(text).not.toMatch(/standalone\?: boolean/)
   })
 })
@@ -268,9 +196,9 @@ describe("stackAfterFlowPublished", () => {
   const created: DetailEntry = { kind: "cleanup", id: "c1", title: "Beach cleanup", lat: 1, lng: 2 }
 
   it("REPLACES the finished flow entry, so the published event's sheet can be dragged away", () => {
-    // THE REGRESSION. The happy path used to `pushCleanup`, which APPENDS -> [create-cleanup, cleanup].
-    // `collapseToParent` refuses to collapse while ANY entry is a flow kind, so the success sheet's
-    // drag-to-dismiss - the universal exit for a pull-up - was dead, and Back landed on the submitted form.
+    // An append would leave [create-cleanup, cleanup]. `collapseToParent` refuses to collapse while ANY
+    // entry is a flow kind, so the success sheet's drag-to-dismiss (the universal exit for a pull-up) would
+    // be dead, and Back would land on the submitted form.
     expect(stackAfterFlowPublished([hostForm], created)).toEqual([created])
   })
 
@@ -291,9 +219,8 @@ describe("stackAfterFlowPublished", () => {
   })
 
   it("leaves a stack the LIVE collapse guard will actually collapse", () => {
-    // The point of the whole fix, asserted against the real store rather than by reasoning about it: drive
-    // the published stack through `collapseToParent` and require that it really clears. Run against
-    // [create-cleanup, cleanup] this fails, which is precisely the bug.
+    // Asserted against the real store rather than by reasoning about it: drive the published stack through
+    // `collapseToParent` and require that it really clears. [create-cleanup, cleanup] would fail this.
     const nav = useNavStore.getState()
     nav.setStack(stackAfterFlowPublished([hostForm], created) ?? [])
     useNavStore.getState().collapseToParent()

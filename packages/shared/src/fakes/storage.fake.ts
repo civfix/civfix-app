@@ -56,9 +56,8 @@ export class FakeStorage implements Storage {
   }
 
   put(key: string, body: Uint8Array, meta?: StoragePutMeta): Promise<void> {
-    const bytes = body instanceof Uint8Array ? body : new Uint8Array(body)
     this.objects.set(key, {
-      bytes,
+      bytes: body,
       contentType: meta?.contentType ?? "application/octet-stream",
       ...(meta?.contentDisposition !== undefined
         ? { contentDisposition: meta.contentDisposition }

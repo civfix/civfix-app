@@ -24,7 +24,9 @@
     "expand_a11y": "{{title}}, {{count}}명 신청",
     "expand_hint": "신청한 사람을 표시합니다",
     "collapse_hint": "신청한 사람을 숨깁니다",
-    "faces_more": "+{{count}}"
+    "faces_more": "+{{count}}",
+    "window_count_a11y_other": "{{title}}, {{range}}, {{count}}명 신청",
+    "faces_names_more": "{{names}} +{{count}}"
   },
   "editor": {
     "add_first": "역할 추가",
@@ -82,7 +84,9 @@
   "roster": {
     "unassigned": "역할 없음",
     "empty_slot": "아직 없음",
-    "window_a11y": "{{title}}, {{range}}"
+    "window_a11y": "{{title}}, {{range}}",
+    "window_count_a11y_other": "{{title}}, {{range}}, {{count}}명 신청",
+    "window_capacity_a11y_other": "{{title}}, {{range}}, 정원 {{capacity}}명 중 {{count}}명 신청"
   },
   "toast": {
     "claimed": "신청했습니다",

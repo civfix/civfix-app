@@ -11,7 +11,7 @@ import { PageStack } from "./PageStack"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "./ScrollHost"
 import { SearchBodyReveal } from "./SearchBodyReveal"
 import { TabBar } from "./TabBar"
-import { portraitFramePlan, reportDraftStartsFresh, type PortraitShellPlan } from "./bodyLayout"
+import { portraitDockVisible, portraitFramePlan, reportDraftStartsFresh, type PortraitShellPlan } from "./bodyLayout"
 import { useTabBarStore } from "./tabBarStore"
 import type { AppShellProps } from "./types"
 import { useStackDirection } from "./useStackDirection"
@@ -52,7 +52,9 @@ function useKeepAliveSlotMounted(
     const handle = setTimeout(() => setMounted(true), prewarmDelayMs)
     return () => clearTimeout(handle)
   }, [retained, mounted, prewarmDelayMs])
-  return mounted
+  // The commit where `visible` flips must already mount the slot: the base body
+  // is withheld for a visible slot, so waiting for the effect paints a blank frame.
+  return mounted || visible
 }
 
 export interface PortraitShellProps {
@@ -188,10 +190,12 @@ export function PortraitShellFrame({
     ],
   )
 
-  const dockVisible =
-    Platform.OS === "web"
-      ? frame.bottomChrome.visible && !sheetMounted
-      : frame.bottomChrome.visible || sheetActive || sheetMounted
+  const dockVisible = portraitDockVisible(
+    Platform.OS === "web",
+    frame.bottomChrome.visible,
+    sheetActive,
+    sheetMounted,
+  )
 
   return (
     <>

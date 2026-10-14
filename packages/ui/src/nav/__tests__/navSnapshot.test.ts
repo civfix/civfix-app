@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { persistableEntry, persistableStack, takeNavSnapshot } from "../navSnapshot"
+import { ENTRY_IDENTITY_FIELDS, entryIdentity, pathForEntry } from "../routes"
 import { useNavStore } from "../useNavStore"
 import type { DetailEntry } from "../types"
 
@@ -124,5 +125,22 @@ describe("takeNavSnapshot / restore", () => {
       reportReturn,
     })
     expect(useNavStore.getState().reportReturn).toEqual(reportReturn)
+  })
+})
+
+describe("persistableEntry keeps every identity field", () => {
+  it("round-trips each ENTRY_IDENTITY_FIELDS key", () => {
+    for (const field of ENTRY_IDENTITY_FIELDS) {
+      const entry = { kind: "announcement", [field]: "x" } as unknown as DetailEntry
+      expect(persistableEntry(entry)).toHaveProperty(field, "x")
+    }
+  })
+
+  it("keeps an announcement's own id so its path and identity survive persistence", () => {
+    const entry: DetailEntry = { kind: "announcement", id: "c1", announcementId: "a9" }
+    const persisted = persistableEntry(entry)
+    expect(persisted).toEqual(entry)
+    expect(pathForEntry(persisted)).toBe("/cleanups/c1/announcements/a9")
+    expect(entryIdentity(persisted)).toBe(entryIdentity(entry))
   })
 })

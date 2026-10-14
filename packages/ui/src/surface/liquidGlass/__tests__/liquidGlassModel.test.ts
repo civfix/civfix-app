@@ -3,7 +3,6 @@ import { describe, it, expect } from "vitest"
 import {
   dockShapes,
   dockRadius,
-  morphK,
   MIN_K,
   morphUniforms,
   parseRgba,
@@ -241,30 +240,27 @@ describe("dockRadius (constant, never animates)", () => {
   })
 })
 
-describe("morphK (smin blend distance, pinned tiny to kill the blob-neck)", () => {
-  it("is a tiny positive constant at EVERY progress (no mid-morph swell -> hard min union, no neck)", () => {
-    for (const p of [0, 0.15, 0.25, 0.5, 0.75, 0.85, 1]) {
-      expect(morphK(p)).toBe(MIN_K)
-    }
+describe("MIN_K (smin blend distance, pinned tiny to kill the blob-neck)", () => {
+  it("is a tiny positive constant (hard min union, no neck, no divide-by-zero in smin)", () => {
     expect(MIN_K).toBeGreaterThan(0)
     expect(MIN_K).toBeLessThan(1)
-    expect(morphK(0.5)).toBeLessThan(1)
   })
-  it("stays constant for out-of-range progress too", () => {
-    expect(morphK(-1)).toBe(MIN_K)
-    expect(morphK(2)).toBe(MIN_K)
+  it("is what the dock hands the shader at EVERY progress (no mid-morph swell)", () => {
+    const source = readFileSync(new URL("../LiquidGlassDock.native.tsx", import.meta.url), "utf8")
+    expect(source).toMatch(/morphUniforms\(s, dockRadius\(\), MIN_K\)/)
+    expect(source.match(/morphUniforms\(/g)).toHaveLength(1)
   })
 })
 
 describe("morphUniforms (flat SkSL uniforms for the three-box union)", () => {
   it("assembles the left + right + ✕ boxes + radius + k (no Skia types)", () => {
     const shapes = dockShapes(1, REGION_W, 1)
-    const u = morphUniforms(shapes, dockRadius(), morphK(1))
+    const u = morphUniforms(shapes, dockRadius(), MIN_K)
     expect(u.leftBox).toEqual([shapes.left.x, shapes.left.y, shapes.left.width, shapes.left.height])
     expect(u.rightBox).toEqual([shapes.right.x, shapes.right.y, shapes.right.width, shapes.right.height])
     expect(u.clearBox).toEqual([shapes.clear.x, shapes.clear.y, shapes.clear.width, shapes.clear.height])
     expect(u.radius).toBeCloseTo(DOCK_H / 2)
-    expect(u.k).toBeCloseTo(morphK(1))
+    expect(u.k).toBe(MIN_K)
   })
 })
 

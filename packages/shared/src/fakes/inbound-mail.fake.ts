@@ -3,23 +3,23 @@ import type { InboundMail, ParsedMail } from "../interfaces/inbound-mail.js"
 const decoder = new TextDecoder()
 
 /**
- * Shape of a thread token, mirroring the real CfInboundMail adapter. Deliberately PERMISSIVE
- * (lowercase alphanumeric, 8-40 chars) so it accepts both the current 12-char base32 token and the
- * legacy 24-hex token without needing another change when the mint format is tuned - the token's
- * entropy + the unique DB lookup are the real protection; this gate just rejects obviously-malformed
- * candidates (spaces, `@`, junk). The fake MUST validate the same way production does, otherwise a
- * token format the real adapter rejects would still "work" in tests, hiding the bug.
+ * Thread-token shape, mirroring the real CfInboundMail adapter. Deliberately PERMISSIVE so it accepts
+ * both the 12-char base32 and the older 24-hex tokens: the token's entropy + the unique DB lookup are
+ * the real protection, and this gate only rejects obviously malformed candidates. The fake MUST validate
+ * the same way production does, or a token the real adapter rejects would still "work" in tests.
  */
 const THREAD_TOKEN_RE = /^[a-z0-9]{8,40}$/
 
 const DEFAULT_REPLY_DOMAIN = "civfix.org"
 
 /**
- * Anchored reply-address matcher (mirrors the real CfInboundMail adapter): the local-part MUST START with
- * a typed prefix (`reply`/`report`/`event`) + a `-` (current) or `+` (legacy) separator, then the token,
- * then `@domain`. Anchoring + the domain check stop a mid-string or foreign-domain false positive.
+ * Anchored reply-address matcher (mirrors the real CfInboundMail adapter): a typed prefix
+ * (`reply`/`report`/`event`), a `-` or older `+` separator, the token, then `@domain`. Anchoring + the
+ * domain check stop a mid-string or foreign-domain false positive.
  */
 const REPLY_ADDRESS_RE = /^(?:reply|report|event)[-+]([^@\s]+)@([^@\s]+)$/
+
+const REPLY_ADDRESS_SCAN_RE = /(?<![^\s<,;:"])(?:reply|report|event)[-+][^@\s<>,;"]+@[^@\s<>,;"]+/gi
 
 /**
  * In-memory InboundMail. Parses a tiny subset of RFC822: leading "Header: value" lines until a
@@ -75,21 +75,16 @@ export class FakeInboundMail implements InboundMail {
   }
 
   /**
-   * Extract a thread token from a typed reply address on OUR reply domain - `reply-<token>@{domain}`,
-   * `report-<token>@{domain}`, or `event-<token>@{domain}` (the current `-` separator), or the legacy `+`
-   * form, or an X-Thread-Token header. The address is anchored + domain-checked and the token is
-   * SHAPE-VALIDATED against THREAD_TOKEN_RE - exactly like the real CfInboundMail adapter - so a city's
-   * own `report-*@city.gov` alias, a foreign CC, or a junk value cannot create stray threads, and a unit
-   * test sees the same accept/reject behavior production does. Returns null when none matches.
+   * Mirrors the real CfInboundMail adapter: a typed reply address on OUR reply domain, read from To and
+   * then scanned out of the raw Cc header, lowercased before matching. An X-Thread-Token header is ignored
+   * because any sender can set it, which would let a stranger pick the thread. Anchoring, the domain check
+   * and the token shape keep a city's own `report-*@city.gov` alias or a junk value from creating threads.
    */
   extractThreadToken(mail: ParsedMail): string | null {
-    const headerToken = mail.headers["x-thread-token"]
-    if (headerToken && THREAD_TOKEN_RE.test(headerToken)) return headerToken
-    for (const addr of mail.to) {
-      const m = addr.address.match(REPLY_ADDRESS_RE)
-      if (m && m[1] && m[2] && m[2].toLowerCase() === this.replyDomain) {
-        if (THREAD_TOKEN_RE.test(m[1])) return m[1]
-      }
+    const ccAddresses = (mail.headers["cc"] ?? "").match(REPLY_ADDRESS_SCAN_RE) ?? []
+    for (const address of [...mail.to.map((addr) => addr.address), ...ccAddresses]) {
+      const match = address.toLowerCase().match(REPLY_ADDRESS_RE)
+      if (match?.[1] && match[2] === this.replyDomain && THREAD_TOKEN_RE.test(match[1])) return match[1]
     }
     return null
   }

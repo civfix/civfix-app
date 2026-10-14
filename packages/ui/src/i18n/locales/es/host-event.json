@@ -31,11 +31,14 @@
   "details": {
     "title": "Detalles del evento",
     "when": "Cuándo",
+    "when_range": "{{start}} a {{end}}",
     "timezone": "Zona horaria",
     "where": "Dónde",
     "no_address": "Sin dirección",
     "registration": "Periodo de inscripción",
     "registration_open": "Abierto ahora",
+    "registration_range": "Del {{opens}} al {{closes}}",
+    "registration_open_until": "Abierto ahora hasta el {{closes}}",
     "team": "Miembros del equipo",
     "organization": "Organización"
   },

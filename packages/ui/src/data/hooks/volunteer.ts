@@ -19,18 +19,13 @@
  *   useIssueServiceHoursCertificate()   - POST /me/volunteer-hours/certificates (mint or reuse).
  *   useRevokeServiceHoursCertificate()  - POST /me/volunteer-hours/certificates/:code/revoke.
  *
- * KEY HYGIENE: every key here comes from the canonical `queryKeys` factory. The ad-hoc `["volunteer", ...]`
- * literals this module used to declare inline are gone, so a mutation's invalidation and a read surface's
- * key can no longer drift apart. The certificate list is the ONE deliberate exception to the `["volunteer"]`
- * prefix - see the note on `queryKeys.myCertificates`; it must stay off that prefix.
+ * KEY HYGIENE: every key here comes from the canonical `queryKeys` factory, so a mutation's invalidation
+ * and a read surface's key cannot drift apart. The certificate list is the ONE deliberate exception to the
+ * `["volunteer"]` prefix and must stay off it, so volunteer invalidations do not refetch the certificate
+ * list.
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-} from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
 import type {
   EventHoursEntry,
   EventHoursResponse,
@@ -46,64 +41,46 @@ import type {
   RevokeCertificateResponse,
 } from "@civfix/shared"
 import { useApi, useAuthState } from "../context"
+import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { cleanupDetailFilters } from "./cleanups"
 
-export const LEADERBOARD_PAGE_SIZE = 50
+const LEADERBOARD_PAGE_SIZE = 50
 
 /**
  * The leaderboard is a slow-moving aggregate (hours are credited after an event ends, not continuously),
  * so it is cached HARD: fresh for five minutes, retained for thirty. Without these it inherits React
- * Query's `staleTime: 0`, and since the board now sits on a PRIMARY tab (Discovery) rather than its own
+ * Query's `staleTime: 0`, and since the board sits on a PRIMARY tab (Discovery) rather than its own
  * body, every tab switch and every window focus would re-hit a route that computes a ranking.
  */
 const LEADERBOARD_STALE_MS = 5 * 60_000
 const LEADERBOARD_GC_MS = 30 * 60_000
 
 /**
- * The deepest `offset` the endpoint ACCEPTS: `LeaderboardQuerySchema.offset` is `.max(500)`, and the
- * route parses that schema strictly, so an offset past it is a 422 rather than an empty page.
+ * MAX_LEADERBOARD_OFFSET is the deepest `offset` the endpoint ACCEPTS: the route parses
+ * `LeaderboardQuerySchema` strictly, so an offset past it is a 422 rather than an empty page.
  *
  * The response's `nextOffset` is computed with no such ceiling, so at a 50-row page size page 11 comes
- * back advertising `nextOffset: 550` - handing that straight back to the query turned "end of a very
+ * back advertising `nextOffset: 550`; handing that straight back to the query would turn "end of a very
  * long board" into a failed request. The clamp below makes the last accepted page the last page, which
  * is what `hasNextPage` (and therefore LeaderboardBody's `onEndReached`) then reports.
- *
- * The number is duplicated rather than imported because the schema does not export its bound; the unit
- * test asserts it against `LeaderboardQuerySchema` itself so the two cannot drift.
  */
-const LEADERBOARD_MAX_OFFSET = 500
-
 /**
  * The infinite query's `getNextPageParam`, lifted out so it is unit-testable without a query client.
  * `undefined` = end of list. Exported for that test only; it is NOT re-exported from `src/data`.
  */
 export function leaderboardNextOffset(lastPage: LeaderboardResponse): number | undefined {
   const next = lastPage.nextOffset
-  return typeof next === "number" && next <= LEADERBOARD_MAX_OFFSET ? next : undefined
+  return typeof next === "number" && next <= MAX_LEADERBOARD_OFFSET ? next : undefined
 }
 
 /**
  * The infinite query's `select` (drop any null row the route may have emitted), at MODULE scope so its
- * identity is stable.
- *
- * It used to be an inline arrow in the hook's options. React Query re-runs `select` whenever its
- * identity changes, so an inline one re-ran on EVERY render and handed back a freshly-built pages array
- * every time — which made `leaderboardPage` a new object on every render of Discovery, which invalidated
- * that body's `sections` useMemo on every render, on a surface that is mounted once and stays resident
- * for the session. Hoisting it is the whole fix: same behaviour, stable reference.
+ * identity is stable: React Query re-runs `select` whenever its identity changes, and an inline arrow
+ * would hand Discovery a fresh pages array on every render, invalidating its `sections` useMemo on a
+ * surface that stays resident for the session.
  */
-function selectLeaderboardPages(
-  data: InfiniteData<LeaderboardResponse>,
-): InfiniteData<LeaderboardResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      entries: Array.isArray(p?.entries) ? p.entries.filter((e) => e != null) : [],
-    })),
-  }
-}
+const selectLeaderboardPages = coercePages<LeaderboardResponse>("entries")
 
 export function useMyHours() {
   const api = useApi()
@@ -126,9 +103,9 @@ export interface JurisdictionLeaderboardOptions {
  * GET /jurisdictions/:geoid/leaderboard - the ranked volunteers of one jurisdiction, offset-infinite.
  * Auth-OPTIONAL (a signed-out visitor sees the board; only `viewerRank`/`viewerHours` need a session).
  *
- * `geoid` now lives IN `LeaderboardQuerySchema`, so the client extracts it as the `:geoid` path param and
- * keeps it out of the query string - the `as unknown as Parameters<...>` cast this call site used to need
- * is gone, and a future rename of the field is a type error here rather than a runtime 422.
+ * `geoid` is a field of `LeaderboardQuerySchema`, so the client extracts it as the `:geoid` path param and
+ * keeps it out of the query string; the call site stays plainly typed, so a future rename of the field is
+ * a type error here rather than a runtime 422.
  */
 export function useJurisdictionLeaderboard(
   geoid?: string,
@@ -214,10 +191,7 @@ export function useEventHours(cleanupId?: string) {
   })
 }
 
-/**
- * The mutation variable for useLogEventHours: the cleanup id + the PER-ATTENDEE `entries` (WS5 v2 -
- * the flat all-attendees `hours` shape is gone; apps and backend move in lockstep).
- */
+/** The mutation variable for useLogEventHours: the cleanup id + the PER-ATTENDEE `entries`. */
 export interface LogEventHoursVars {
   id: string
   entries: EventHoursEntry[]
@@ -255,8 +229,8 @@ export function useLogEventHours() {
  * GET /me/volunteer-hours/certificates - the viewer's issued service-hours documents.
  *
  * Each row carries a PRESIGNED `url` that expires in minutes, which is why this query is keyed off the
- * `["volunteer"]` prefix entirely (see `queryKeys.myCertificates`) and why a stale entry is refetched
- * rather than trusted: an expired link must be re-minted, not replayed.
+ * `["volunteer"]` prefix entirely and why a stale entry is refetched rather than trusted: an expired
+ * link must be re-minted, not replayed.
  */
 export function useMyServiceHoursCertificates() {
   const api = useApi()

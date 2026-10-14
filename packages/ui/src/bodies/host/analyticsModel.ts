@@ -7,14 +7,14 @@ import type {
   SeriesPoint,
   SuppressedRate,
 } from "@civfix/shared"
-import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
-import { hostedEventCan } from "./dashboard/dashboardModel"
+import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS, MS_PER_DAY, isUuid } from "@civfix/shared"
+import { visibleValue } from "@civfix/shared/host"
+import { hasHostCapability } from "../../data/hooks/host"
+import { dedupeById } from "../../primitives/listKeys"
 
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
 export type SummaryPanelKey = (typeof SUMMARY_PANELS)[number]
-
-export const DAY_MS = 86_400_000
 
 const DAY_BUCKET_KEY = /^\d{4}-\d{2}-\d{2}/
 
@@ -52,29 +52,18 @@ export function rangeSlice(
   now: number,
 ): readonly SeriesPoint[] {
   if (days === null || days <= 0) return points
-  const from = Math.floor(now / DAY_MS) * DAY_MS - (days - 1) * DAY_MS
+  const from = Math.floor(now / MS_PER_DAY) * MS_PER_DAY - (days - 1) * MS_PER_DAY
   return points.filter((point) => {
     const at = parse(point.day)
     return at === null ? true : at >= from
   })
 }
 
-export function seriesValues(points: readonly SeriesPoint[]): (number | null)[] {
-  return points.map((point) => (point.suppressed ? null : point.value))
-}
-
-export function seriesPoints(points: readonly SeriesPoint[]): { x: number; y: number | null }[] {
-  return points.map((point, index) => ({
-    x: parse(point.day) ?? index,
-    y: point.suppressed ? null : point.value,
-  }))
-}
-
 export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
-  return points.some((point) => !point.suppressed && (point.value ?? 0) > 0)
+  return points.some((point) => (visibleValue(point) ?? 0) > 0)
 }
 
-export const CARD_SLOT_ROWS = 4
+const CARD_SLOT_ROWS = 4
 
 export function busiestRows(rows: readonly BreakdownRow[], max = CARD_SLOT_ROWS): BreakdownRow[] {
   if (max <= 0) return []
@@ -140,18 +129,13 @@ export function pickerOptions(
   upcoming: readonly HostedEventDTO[],
   past: readonly HostedEventDTO[],
 ): AnalyticsPickerOption[] {
-  const seen = new Set<string>()
-  return [...upcoming, ...past]
-    .filter((event) => hostedEventCan(event, "view_analytics"))
-    .filter((event) => (seen.has(event.id) ? false : (seen.add(event.id), true)))
+  return [...dedupeById([...upcoming, ...past].filter((event) => hasHostCapability(event, "view_analytics")))]
     .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
     .map((event) => ({ id: event.id, title: event.title }))
 }
 
-const EVENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 export function isEventId(key: string): boolean {
-  return EVENT_ID.test(key)
+  return isUuid(key)
 }
 
 export function eventRowTarget(
@@ -180,6 +164,24 @@ export function ratePercent(rate: SuppressedRate | undefined): number | null {
   return Math.round(rate.value * 100)
 }
 
+export function checkInRingA11y(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  rate: number | null,
+): string {
+  return rate === null ? t("card.checkins_ring_unknown_a11y") : t("card.checkins_ring_a11y", { rate })
+}
+
+/** The visible empty mark reads as "minus" or nothing, so an unknown count is spoken as a word. */
+export function byEventRowA11y(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  name: string,
+  value: number | null,
+): string {
+  return value === null
+    ? t("page.by_event_unknown_a11y", { name })
+    : t("page.by_event_a11y", { name, value })
+}
+
 export interface FunnelBar {
   step: string
   value: number | null
@@ -192,7 +194,7 @@ export function funnelBars(steps: readonly FunnelStep[]): FunnelBar[] {
   const top = steps.find((step) => step.value !== null && !step.suppressed)?.value ?? 0
   let previous: number | null = null
   return steps.map((step) => {
-    const value = step.suppressed ? null : step.value
+    const value = visibleValue(step)
     const fraction = value === null || top <= 0 ? 0 : Math.min(1, value / top)
     const ofPrevious =
       value === null || previous === null || previous <= 0
@@ -204,13 +206,13 @@ export function funnelBars(steps: readonly FunnelStep[]): FunnelBar[] {
   })
 }
 
-export const FUNNEL_SIGNUPS_STEP = "signups"
+const FUNNEL_SIGNUPS_STEP = "signups"
 
-export const FUNNEL_CHECKED_IN_STEP = "checked_in"
+const FUNNEL_CHECKED_IN_STEP = "checked_in"
 
-export function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
+function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
   const found = steps.find((entry) => entry.step === step)
-  return found === undefined || found.suppressed ? null : found.value
+  return found === undefined ? null : visibleValue(found)
 }
 
 export function wholeEventSignups(data: GetEventAnalyticsResponse): number | null {
@@ -228,7 +230,7 @@ export function comparisonVisible(data: GetEventAnalyticsResponse): boolean {
 
 export type ComparisonVerdict = "above" | "typical" | "below" | "unknown"
 
-export const COMPARISON_BAND = 0.1
+const COMPARISON_BAND = 0.1
 
 export function comparisonVerdict(
   value: number | null,

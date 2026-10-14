@@ -1,6 +1,7 @@
 import {
   endTimeSelectable,
   eventWindowInZone,
+  formInstantMs,
   isScheduleInFutureInZone,
   isScheduleUntouched,
   wallClockToFormTime,
@@ -9,6 +10,7 @@ import { wallClockInZone } from "@civfix/shared/datetime"
 import { isEventAddressComplete } from "./eventAddressField"
 import {
   hasNamedSlot,
+  shiftSlotDrafts,
   slotDraftWindow,
   slotsValid,
   type SlotDraft,
@@ -86,8 +88,38 @@ export interface EventWizardDraft {
   slots: readonly SlotDraft[]
 }
 
+/**
+ * Slot drafts hold absolute instants while the event window is a wall clock read in the event's zone, so
+ * a zone change moves the window and must carry every timed slot with it by the same delta. A DST gap in
+ * either zone leaves the slots alone, as the date and start-time handlers do.
+ */
+export function slotsAfterZoneChange(
+  slots: SlotDraft[],
+  date: Date | null,
+  time: Date | null,
+  fromZone: string,
+  toZone: string,
+): SlotDraft[] {
+  if (!date || !time || fromZone === toZone) return slots
+  const before = formInstantMs(date, time, fromZone)
+  const after = formInstantMs(date, time, toZone)
+  if (before === null || after === null) return slots
+  return shiftSlotDrafts(slots, after - before)
+}
+
 export function eventDraftWindow(draft: EventScheduleDraft): SlotWindowBounds | null {
   return eventWindowInZone(draft.date, draft.time, draft.endTime, draft.timezone)
+}
+
+export function hasValidEventEnd(draft: EventScheduleDraft): boolean {
+  if (!draft.date || !draft.time || !draft.endTime) return false
+  return endTimeSelectable(
+    draft.date,
+    draft.time,
+    draft.endTime.getHours(),
+    draft.endTime.getMinutes(),
+    draft.timezone,
+  )
 }
 
 export function eventStepIndex(step: EventWizardStep): number {
@@ -130,6 +162,19 @@ export function eventStepSatisfied(
         (other) => isFinalEventStep(other) || eventStepSatisfied(other, draft, now),
       )
   }
+}
+
+/**
+ * The hint under a step that cannot advance yet. Once the step's first field is in, the generic "fill this
+ * in" gives way to the specific thing still wrong: the end time, the address, or an invalid slot.
+ */
+export function eventStepErrorKey(step: EventWizardStep, draft: EventWizardDraft): string {
+  if (step === "when" && draft.date !== null && draft.time !== null && !hasValidEventEnd(draft)) {
+    return "wizard.when.error_end"
+  }
+  if (step === "where" && draft.coords !== null) return "wizard.where.error_address"
+  if (step === "details" && hasNamedSlot(draft.slots)) return "wizard.details.error_invalid"
+  return `wizard.${step}.error`
 }
 
 export function nextEventStep(step: EventWizardStep): EventWizardStep | null {

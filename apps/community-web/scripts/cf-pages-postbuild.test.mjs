@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
@@ -10,10 +11,15 @@ import {
   canonicalDocumentText,
   extractLegalArticle,
   isPlaceholderLegalHash,
+  DEV_ONLY_ROUTES,
+  leakedDevRoutes,
   legalDocumentHash,
   missingAasaExcludes,
+  REQUIRED_AASA_EXCLUDES,
+  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
+import { pageExtensionsFor } from "../next.config.mjs"
 
 const appDir = join(fileURLToPath(new URL(".", import.meta.url)), "..")
 const publicDir = join(appDir, "public")
@@ -22,16 +28,6 @@ const redirects = readFileSync(join(publicDir, "_redirects"), "utf8")
 const association = JSON.parse(
   readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"),
 )
-
-const REQUIRED_EXCLUDES = [
-  "/legal/*",
-  "/service-record/*",
-  "/guest*",
-  "/claim*",
-  "/manage*",
-  "/e/*",
-  "/unsubscribe*",
-]
 
 describe("SPA-fallback completeness gate", () => {
   it("passes for the committed _redirects and the routes that ship a placeholder shell", () => {
@@ -54,8 +50,20 @@ describe("SPA-fallback completeness gate", () => {
 })
 
 describe("AASA gate", () => {
+  it("requires exactly the web-only paths that must never open the app", () => {
+    expect(REQUIRED_AASA_EXCLUDES).toEqual([
+      "/legal/*",
+      "/service-record/*",
+      "/guest*",
+      "/claim*",
+      "/manage*",
+      "/e/*",
+      "/unsubscribe*",
+    ])
+  })
+
   it("passes for the committed association file", () => {
-    expect(missingAasaExcludes(association, REQUIRED_EXCLUDES)).toEqual([])
+    expect(missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)).toEqual([])
     expect(aasaExcludeOrder(association).ok).toBe(true)
   })
 
@@ -145,6 +153,45 @@ describe("legal document hashing", () => {
   })
 })
 
+describe("rendered legal documents", () => {
+  const stamped =
+    '<article class="legal-prose" data-legal-doc="terms" data-legal-version="2026-09-06"><p>Terms.</p></article>'
+
+  function exportWith(pages) {
+    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
+    for (const [route, html] of Object.entries(pages)) {
+      mkdirSync(join(outDir, "legal", route), { recursive: true })
+      if (html !== null) writeFileSync(join(outDir, "legal", route, "index.html"), html, "utf8")
+    }
+    return outDir
+  }
+
+  it("is empty when the export has no legal directory", () => {
+    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
+    try {
+      expect(renderedLegalDocuments(outDir)).toEqual([])
+    } finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
+  })
+
+  it("lists every route with an index.html in route order, stamped or not, with its type and hash", () => {
+    const outDir = exportWith({ terms: stamped, privacy: "<p>no stamp</p>", empty: null })
+    try {
+      const documents = renderedLegalDocuments(outDir)
+      expect(documents.map((document) => document.route)).toEqual(["privacy", "terms"])
+      const [privacy, terms] = documents
+      expect(privacy.type).toBe(null)
+      expect(privacy.hashed).toBe(null)
+      expect(terms.type).toBe("terms")
+      expect(terms.html).toBe(stamped)
+      expect(terms.hashed).toEqual(legalDocumentHash(stamped))
+    } finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
+  })
+})
+
 describe("legal placeholder detection", () => {
   it("recognizes the sha256(type@version) placeholders the contract still carries", () => {
     for (const document of LEGAL_DOCUMENTS) {
@@ -157,5 +204,31 @@ describe("legal placeholder detection", () => {
 
   it("does not mistake a real content hash for a placeholder", () => {
     expect(isPlaceholderLegalHash("terms", "2026-09-06", "0".repeat(64))).toBe(false)
+  })
+})
+
+describe("dev-only gallery routes", () => {
+  it("flags a gallery that reached the export, as a directory or a flat html file", () => {
+    expect(leakedDevRoutes(["index.html", "bodies", "map", "skeleton.html", "_next"])).toEqual([
+      "bodies",
+      "skeleton",
+    ])
+    expect(leakedDevRoutes(["index.html", "map", "legal"])).toEqual([])
+  })
+
+  it("are routes only under the dev server, never in a production build", () => {
+    expect(pageExtensionsFor("phase-development-server")).toContain("dev.tsx")
+    expect(pageExtensionsFor("phase-production-build")).not.toContain("dev.tsx")
+  })
+
+  it("exist only as page.dev.tsx / layout.dev.tsx so a production export cannot pick them up", () => {
+    for (const route of DEV_ONLY_ROUTES) {
+      const dir = join(appDir, "src", "app", route)
+      expect(existsSync(join(dir, "page.dev.tsx")), route).toBe(true)
+      for (const ext of pageExtensionsFor("phase-production-build")) {
+        expect(existsSync(join(dir, `page.${ext}`)), `${route}/page.${ext}`).toBe(false)
+        expect(existsSync(join(dir, `layout.${ext}`)), `${route}/layout.${ext}`).toBe(false)
+      }
+    }
   })
 })

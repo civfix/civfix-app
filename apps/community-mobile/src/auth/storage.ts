@@ -33,10 +33,18 @@ export async function getToken(): Promise<string | null> {
   return read.ok ? read.token : null
 }
 
+// Bumped once each token write has settled, so a request shared across callers is only joined by
+// callers that would have sent the same credential: a request started while the write was in flight
+// may still have read the previous token.
+let tokenWrites = 0
+
+export function tokenGeneration(): number {
+  return tokenWrites
+}
+
 export async function setToken(token: string): Promise<void> {
   try {
     await SecureStore.setItemAsync(TOKEN_KEY, token, OPTIONS)
-    return
   } catch (err) {
     if (!__DEV__) throw err
     console.warn(
@@ -45,6 +53,8 @@ export async function setToken(token: string): Promise<void> {
       err,
     )
     storage.set(TOKEN_KEY, token)
+  } finally {
+    tokenWrites += 1
   }
 }
 
@@ -67,4 +77,5 @@ async function clearSecureToken(): Promise<void> {
 export async function clearToken(): Promise<void> {
   await clearSecureToken()
   if (__DEV__) clearDevFallback()
+  tokenWrites += 1
 }

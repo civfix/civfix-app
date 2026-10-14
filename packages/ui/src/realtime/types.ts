@@ -43,11 +43,7 @@ export interface WsTransport {
   authKey?: () => string | null | Promise<string | null>
 }
 
-/**
- * The host-selected behaviors where the two apps genuinely differ. Every one of these is a real,
- * pre-existing divergence between the web and mobile sockets, made explicit here instead of being
- * implicit in two 500-line copies.
- */
+/** The host-selected behaviors where the web and mobile sockets genuinely differ. */
 export interface ChatSocketCoreOptions {
   transport: WsTransport
   /** Initial reconnect backoff in ms (doubles per attempt, full jitter). Default 1000. */
@@ -79,12 +75,12 @@ export interface ChatSocketCoreOptions {
   initialStatus?: ChatConnState
   /**
    * Status reported while a reconnect is scheduled. Default "connecting" (web shows a reconnecting
-   * affordance); mobile has always reported "closed" between attempts.
+   * affordance); mobile reports "closed" between attempts.
    */
   statusWhileBackingOff?: ChatConnState
   /**
    * Called at the top of every connect intent (connect / retain / join / a queued send). The mobile host
-   * installs its AppState listener here, preserving the "installed lazily on first use" behavior.
+   * installs its AppState listener here, so it is installed lazily on first use.
    */
   onConnectIntent?: () => void
   /** Dev-only warning sink for dropped frames. Omit to stay silent. */

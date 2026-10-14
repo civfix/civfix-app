@@ -7,6 +7,7 @@ import {
   toastBottomOffset,
   toastDockFootprint,
   toastDurationMs,
+  toastLiveSemantics,
 } from "../toastModel"
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8")
@@ -91,11 +92,13 @@ describe("Toast host", () => {
 
   it("announces exactly once: the native announcement OR the web live region, never both", () => {
     expect(TOAST_SOURCE).toContain("AccessibilityInfo.announceForAccessibility(message)")
-    expect(TOAST_SOURCE).toContain(
-      'const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"',
-    )
-    expect(TOAST_SOURCE).toContain('accessibilityLiveRegion={moved ? "none" : LIVE_REGION}')
-    expect(TOAST_SOURCE).toContain('accessibilityRole={moved ? undefined : "alert"}')
+    expect(TOAST_SOURCE).toContain("const live = toastLiveSemantics(entry.item.variant, IS_WEB)")
+    expect(TOAST_SOURCE).toContain('accessibilityLiveRegion={moved ? "none" : live.liveRegion}')
+    expect(TOAST_SOURCE).toContain("role={moved ? undefined : live.role}")
+    for (const variant of ["success", "info", "error"] as const) {
+      expect(toastLiveSemantics(variant, false).liveRegion).toBe("none")
+      expect(toastLiveSemantics(variant, true).liveRegion).not.toBe("none")
+    }
   })
 
   it("does not re-announce or replay a toast that moved between hosts", () => {
@@ -156,8 +159,9 @@ describe("Toast over an open sheet", () => {
     expect(read("../SlideUpSheet.tsx")).toMatch(
       /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/Modal>/,
     )
-    expect(read("../../bodies/PersonDetailBody.tsx")).toMatch(
-      /\{confirmingBlock \? <ToastOutlet \/> : null\}\s*<\/Modal>/,
+    // The block confirmation is a ModalCardSheet, so it carries the outlet above.
+    expect(read("../../bodies/personDetail/PersonModerationLayer.tsx")).toMatch(
+      /<ModalCardSheet\s+visible=\{confirmingBlock\}/,
     )
   })
 })

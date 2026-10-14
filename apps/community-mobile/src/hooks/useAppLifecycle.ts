@@ -1,7 +1,8 @@
 import { useEffect } from "react"
 import { AppState } from "react-native"
 import { focusManager } from "@tanstack/react-query"
-import { isFocused, shouldRevalidateOnState, type AppLifecycleState } from "@/lib/authLifecycle"
+import { isFocused, shouldRevalidateOnState } from "@/lib/authLifecycle"
+import type { AppLifecycleState } from "@/lib/lifecycleTypes"
 import { useAuthStore } from "@/store/authStore"
 
 export function useAppLifecycle(): void {

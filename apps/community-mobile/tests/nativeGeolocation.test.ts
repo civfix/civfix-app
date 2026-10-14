@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const source = readFileSync(
   new URL("../src/lib/nativeGeolocation.ts", import.meta.url),

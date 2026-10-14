@@ -2,8 +2,17 @@ import React, { useCallback, useContext } from "react"
 import { Modal, View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
 import type { ModalProps, ViewProps } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { makeThemedStyles, useTheme, webCursor, webTransition, focusRingProps, webScrimProps } from "../theme"
-import { Icon, iconMap } from "../typography"
+import {
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webTransition,
+  focusRingProps,
+  webScrimProps,
+  MIN_TOUCH_TARGET,
+  PRESSED_OPACITY,
+} from "../theme"
+import { Icon, iconMap, type LucideIcon } from "../typography"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { useT } from "../i18n"
 import type { LightboxItem } from "./MediaLightbox.types"
@@ -14,8 +23,13 @@ import {
   lightboxControlOffsets,
   lightboxMediaHeight,
   lightboxMediaWidth,
+  stepIndex,
+  type LightboxControlOffsets,
 } from "./lightboxStage"
 import { ZoomableMedia } from "./ZoomableMedia"
+
+const CLOSE_ICON_SIZE = 24
+const CHEVRON_ICON_SIZE = 28
 
 export interface MediaLightboxViewProps {
   visible: boolean
@@ -54,12 +68,12 @@ export function MediaLightboxBase({
 
   const goPrev = useCallback(() => {
     if (count < 2) return
-    onIndexChange((index - 1 + count) % count)
+    onIndexChange(stepIndex(index, -1, count))
   }, [count, index, onIndexChange])
 
   const goNext = useCallback(() => {
     if (count < 2) return
-    onIndexChange((index + 1) % count)
+    onIndexChange(stepIndex(index, 1, count))
   }, [count, index, onIndexChange])
 
   const media = current ? (
@@ -102,40 +116,61 @@ export function MediaLightboxBase({
           </View>
         ) : null}
 
-        <Pressable
+        <LightboxControl
           onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={t("control.close")}
-          {...focusRingProps}
-          style={(state) => [styles.controlBase, offsets.close, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
-        >
-          <Icon icon={iconMap.Close} size={24} color={th.colors.onScrim} />
-        </Pressable>
+          label={t("control.close")}
+          offset={offsets.close}
+          icon={iconMap.Close}
+          iconSize={CLOSE_ICON_SIZE}
+          iconColor={th.colors.onScrim}
+        />
 
         {multi ? (
           <>
-            <Pressable
+            <LightboxControl
               onPress={goPrev}
-              accessibilityRole="button"
-              accessibilityLabel={t("control.previous")}
-              {...focusRingProps}
-              style={(state) => [styles.controlBase, offsets.prev, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
-            >
-              <Icon icon={iconMap.ChevronLeft} size={28} color={th.colors.onScrim} />
-            </Pressable>
-            <Pressable
+              label={t("control.previous")}
+              offset={offsets.prev}
+              icon={iconMap.ChevronLeft}
+              iconSize={CHEVRON_ICON_SIZE}
+              iconColor={th.colors.onScrim}
+            />
+            <LightboxControl
               onPress={goNext}
-              accessibilityRole="button"
-              accessibilityLabel={t("control.next")}
-              {...focusRingProps}
-              style={(state) => [styles.controlBase, offsets.next, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
-            >
-              <Icon icon={iconMap.ChevronRight} size={28} color={th.colors.onScrim} />
-            </Pressable>
+              label={t("control.next")}
+              offset={offsets.next}
+              icon={iconMap.ChevronRight}
+              iconSize={CHEVRON_ICON_SIZE}
+              iconColor={th.colors.onScrim}
+            />
           </>
         ) : null}
       </View>
     </Modal>
+  )
+}
+
+interface LightboxControlProps {
+  onPress: () => void
+  label: string
+  offset: LightboxControlOffsets[keyof LightboxControlOffsets]
+  icon: LucideIcon
+  iconSize: number
+  iconColor: string
+}
+
+function LightboxControl({ onPress, label, offset, icon, iconSize, iconColor }: LightboxControlProps) {
+  const styles = useStyles()
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      {...focusRingProps}
+      style={(state) => [styles.controlBase, offset, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
+    >
+      <Icon icon={icon} size={iconSize} color={iconColor} />
+    </Pressable>
   )
 }
 
@@ -161,14 +196,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   controlBase: {
     position: "absolute",
-    width: 44,
-    height: 44,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.colors.lightboxControl,
   },
   controlPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

@@ -1,7 +1,12 @@
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+
+const EVENT_COVER_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.MEDIA_REJECTED]: "cover.error_rejected",
+  [ErrorCode.RATE_LIMITED]: "cover.error_rate_limited",
+}
+
 export function eventCoverErrorKey(code: string | undefined): string {
-  if (code === "MEDIA_REJECTED") return "cover.error_rejected"
-  if (code === "RATE_LIMITED") return "cover.error_rate_limited"
-  return "cover.error_generic"
+  return byErrorCode(code, EVENT_COVER_ERROR_KEYS, "cover.error_generic")
 }
 
 export interface EventCoverState {

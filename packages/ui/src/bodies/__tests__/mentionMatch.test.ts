@@ -1,11 +1,11 @@
 /**
- * The mention grammar shared by the bubble renderer (what a reader sees tinted) and the composer's
- * submit-time filter (which mention ids actually ship). The regression these lock down: the two used
- * to disagree - a mention typed after punctuation was tinted for everyone but dropped from the send,
- * and `bob@alex.com` tinted a bogus mention.
+ * The bubble renderer (what a reader sees tinted) and the composer's submit-time filter (which mention
+ * ids actually ship) must agree: a mention typed after punctuation is both tinted and sent, and
+ * `bob@alex.com` tints nothing.
  */
 import { describe, expect, it } from "vitest"
-import { bodyMentionsHandle, escapeRegExp, mentionScanRegex, normalizeHandle } from "../conversation/mentionMatch"
+import { bodyMentionsHandle, mentionScanRegex } from "../conversation/mentionMatch"
+import { escapeRegExp, normalizeHandle } from "../mentionText"
 
 /** The renderer's tokenizer, reduced to the handles it would tint (in order). */
 function scan(body: string, handles: string[]): string[] {

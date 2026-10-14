@@ -79,7 +79,7 @@ describe("certificateErrorKey", () => {
   })
 
   it("recognises a cross-realm structurally-cloned AppError", () => {
-    expect(certificateErrorKey({ name: "AppError", code: "RATE_LIMITED" })).toBe("rate_limited")
+    expect(certificateErrorKey({ name: "AppError", code: "RATE_LIMITED", message: "slow down" })).toBe("rate_limited")
   })
 })
 

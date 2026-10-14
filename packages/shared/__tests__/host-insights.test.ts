@@ -5,7 +5,6 @@ import {
 } from "../src/schemas/common.js"
 import {
   ArrivalOffsetBucketSchema,
-  EventInsightsSchema,
   EventPhaseSchema,
   GetEventInsightsRequestSchema,
   GetEventInsightsResponseSchema,
@@ -98,7 +97,6 @@ describe("getEventInsights contract", () => {
     expect(parsed.arrivals).toEqual([])
     expect(parsed.phase).toBe("upcoming")
     expect(parsed.returning).toBeNull()
-    expect(EventInsightsSchema.parse(minimalInsights())).toEqual(parsed)
   })
 
   it("keeps every count a seat count and every seat count non-negative", () => {

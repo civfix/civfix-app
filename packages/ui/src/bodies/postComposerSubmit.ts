@@ -1,72 +1,65 @@
 /**
- * postComposerSubmit - the pure routing brain for the post composer's submit affordance.
- *
- * Mirrors `composerSubmit.ts` (the chat composer's `resolveComposerSubmit`): a single, unit-testable
- * (draft, hasReadyMedia) -> decision so `PostComposer`'s press handler and its Post-button `disabled`
- * prop share one truth. A post may carry a body, an attached event/report, media, or a reference
- * (quote/reply), and the shared `PostComposeInputSchema` refinement requires SOMETHING - so an empty
- * draft is blocked, and a draft whose only content is media that has not finished uploading is blocked
- * until the uploads finalize (the caller stamps the finalized `mediaUploadIds` into the input).
- *
- * Deliberately NOT here: transport concerns the caller owns (running the upload, resolving the viewer as
- * the author, re-filtering mentions to handles still present in the body, the create mutation itself).
- * This stays a pure (draft) -> action map.
+ * One draft -> decision for the Post button, shared by the press handler and its `disabled` prop.
+ * `PostComposeInputSchema` requires some content, and media must finalize before submit because the caller
+ * can only stamp finalized `mediaUploadIds` into the input.
  */
-import type { PostComposeInput, PostKind } from "@civfix/shared"
+import type {
+  LinkedEventRef,
+  LinkedReportRef,
+  OrganizationDTO,
+  OrganizationRefDTO,
+  PersonDTO,
+  PostComposeInput,
+  PostDTO,
+  PostKind,
+  UserMentionDTO,
+} from "@civfix/shared"
+import type { PostComposerMedia } from "./postComposerStore"
+import { optimisticPostId } from "./thread/threadModel"
 
 export type PostSubmitDestination = "origin" | "thread"
+
+/**
+ * `PostComposeInputSchema` caps `mentionedUserIds` at 20. A body naming more still publishes; the handles
+ * past the cap stay plain text instead of the whole post failing with the generic submit error.
+ */
+export const POST_MENTION_CAP = 20
+
+/** Mirrors the server's own projection (`r.title ?? "Report"`), so an optimistic card never snaps. */
+export const REPORT_TITLE_FALLBACK = "Report"
 
 export function postSubmitDestination(kind: PostKind): PostSubmitDestination {
   return kind === "post" ? "origin" : "thread"
 }
 
-/** The composer's editable draft - the fields that decide whether (and as what) a post can be submitted. */
 export interface PostDraft {
-  /** The free-form body text (may contain @mentions). */
   body: string
-  /** An attached event the author is attending/hosting (its id), or null/undefined for none. */
+  /** The server refuses an event the author neither hosts nor attends. */
   eventId?: string | null
-  /** An attached/referenced report (its id), or null/undefined for none. */
   reportId?: string | null
-  /** How many media attachments the user has STAGED (may still be uploading). */
+  /** Staged items, including ones still uploading. */
   mediaCount?: number
-  /** The finalized media upload ids to claim (the caller sets these once the uploads finish). */
   mediaUploadIds?: string[]
-  /** The post kind. Defaults to "post"; "quote"/"reply" carry a reference below. */
   kind?: PostKind
-  /** The parent post id for a reply (kind:"reply"). */
   replyToId?: string | null
-  /** The quoted post id for a quote (kind:"quote"). */
   repostOfId?: string | null
-  /** The resolved @mention user ids to persist. */
   mentionedUserIds?: string[]
-  /** The organization the post is published as, or null/undefined to post as the acting person. */
   organizationId?: string | null
 }
 
-/**
- * The submit decision. `submit` carries the ready-to-send `PostComposeInput`; the two `blocked-*`
- * variants map to a disabled Post button (empty draft) or a "still uploading" hold (media pending).
- */
 export type PostSubmitResolution =
   | { action: "submit"; input: PostComposeInput }
   | { action: "blocked-empty" }
   | { action: "blocked-media-pending" }
 
-/**
- * Resolve what pressing the composer's Post button should do right now (and, by extension, whether it is
- * enabled - the two `blocked-*` actions = disabled). `hasReadyMedia` is the "all staged attachments have
- * finished uploading" flag; while media is staged but not ready the post is held (`blocked-media-pending`).
- */
+/** Both `blocked-*` actions mean a disabled Post button. */
 export function resolvePostSubmit(draft: PostDraft, hasReadyMedia = false): PostSubmitResolution {
   const body = draft.body.trim()
   const hasBody = body.length > 0
   const hasAttachment = Boolean(draft.eventId) || Boolean(draft.reportId)
   const wantsMedia = (draft.mediaCount ?? 0) > 0
 
-  // Nothing to post at all -> the Post button is disabled.
   if (!hasBody && !hasAttachment && !wantsMedia) return { action: "blocked-empty" }
-  // The only/some content is media still uploading -> hold until it finalizes.
   if (wantsMedia && !hasReadyMedia) return { action: "blocked-media-pending" }
 
   const input: PostComposeInput = {
@@ -77,10 +70,63 @@ export function resolvePostSubmit(draft: PostDraft, hasReadyMedia = false): Post
     ...(draft.eventId ? { eventId: draft.eventId } : {}),
     ...(draft.reportId ? { reportId: draft.reportId } : {}),
     mediaUploadIds: draft.mediaUploadIds ?? [],
-    mentionedUserIds: draft.mentionedUserIds ?? [],
+    mentionedUserIds: [...new Set(draft.mentionedUserIds ?? [])].slice(0, POST_MENTION_CAP),
     ...(draft.organizationId && draft.kind !== "repost"
       ? { organizationId: draft.organizationId }
       : {}),
   }
   return { action: "submit", input }
+}
+
+export function toPostOrganizationRef(org: OrganizationDTO): OrganizationRefDTO {
+  return {
+    id: org.id,
+    slug: org.slug,
+    name: org.name,
+    logoUrl: org.logoUrl ?? null,
+    verified: org.verifiedStatus === "verified",
+    ...(org.verifiedKind ? { verifiedKind: org.verifiedKind } : {}),
+  }
+}
+
+export interface OptimisticPostArgs {
+  author: PersonDTO
+  kind: PostKind
+  body: string | null
+  now: Date
+  /** Left off the DTO when undefined: only the surfaces that can post as an organization set the key. */
+  organization?: OrganizationRefDTO | null
+  /** Only items with a finalized `uploadId` render; the rest are still uploading. */
+  media?: readonly PostComposerMedia[]
+  mentions?: UserMentionDTO[]
+  event?: LinkedEventRef | null
+  report?: LinkedReportRef | null
+  replyToId?: string | null
+  threadRootId?: string | null
+}
+
+/** The zero-count placeholder a composer writes into the feed and thread caches until the server's post lands. */
+export function buildOptimisticPost(args: OptimisticPostArgs): PostDTO {
+  return {
+    id: optimisticPostId(args.now.getTime()),
+    author: args.author,
+    ...(args.organization !== undefined ? { organization: args.organization } : {}),
+    kind: args.kind,
+    body: args.body,
+    createdAt: args.now.toISOString(),
+    editedAt: null,
+    counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
+    viewer: { liked: false, reposted: false, saved: false },
+    media: (args.media ?? []).flatMap((item) =>
+      item.uploadId
+        ? [{ id: item.uploadId, kind: item.kind, url: item.uri, thumbUrl: item.posterUri, status: "ready" as const }]
+        : [],
+    ),
+    mentions: args.mentions ?? [],
+    event: args.event ?? null,
+    report: args.report ?? null,
+    repostOf: null,
+    replyToId: args.replyToId ?? null,
+    threadRootId: args.threadRootId ?? null,
+  }
 }

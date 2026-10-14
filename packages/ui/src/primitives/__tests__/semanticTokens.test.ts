@@ -64,6 +64,12 @@ describe("destructive affordances read as danger, not as the brand accent", () =
     expect(menu).not.toContain('th.colors.bloom["600"]')
   })
 
+  it("colours a destructive message context-menu action with the same danger ink", () => {
+    const menu = strip(read("../MessageContextMenu.tsx"))
+    expect(menu).toContain("action.destructive ? th.colors.dangerInk : th.colors.text")
+    expect(menu).not.toContain('th.colors.bloom["600"]')
+  })
+
   it("keeps a network error neutral instead of coral", () => {
     const notice = strip(read("../../bodies/FeedNotice.tsx"))
     expect(notice).toContain("color={t.colors.textMuted}")
@@ -100,14 +106,21 @@ describe("selection is neutral", () => {
   })
 
   it("keeps the pickers that became segmented gated on their in-flight request", () => {
-    const sites: [string, string][] = [
-      ["../../bodies/host/HostTeamInviteSheet.tsx", "disabled={invite.isPending}"],
-      ["../../bodies/host/dashboard/OrgInviteSheet.tsx", "disabled={invite.isPending}"],
+    const fields = strip(read("../../bodies/host/InviteIdentifierFields.tsx"))
+    const control = fields.slice(fields.indexOf("<SegmentedControl"))
+    expect(control.slice(0, control.indexOf("/>")), "the identifier picker lost its busy gate").toContain(
+      "disabled={disabled}",
+    )
+    const sites = [
+      "../../bodies/host/HostTeamInviteSheet.tsx",
+      "../../bodies/host/dashboard/OrgInviteSheet.tsx",
     ]
-    for (const [rel, gate] of sites) {
+    for (const rel of sites) {
       const src = strip(read(rel))
-      const control = src.slice(src.indexOf("<SegmentedControl"))
-      expect(control.slice(0, control.indexOf("/>")), `${rel} lost its busy gate`).toContain(gate)
+      const fieldsUse = src.slice(src.indexOf("<InviteIdentifierFields"))
+      expect(fieldsUse.slice(0, fieldsUse.indexOf("/>")), `${rel} lost its busy gate`).toContain(
+        "disabled={invite.isPending}",
+      )
     }
   })
 })

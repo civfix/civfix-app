@@ -1,36 +1,24 @@
 /**
- * PortraitMapPickStep.shared - the platform-NEUTRAL half of the compact/portrait big-map location picker.
- *
- * The two seams (PortraitMapPickStep.native.tsx = a full-screen RN Modal with its own moveable map;
- * PortraitMapPickStep.web.tsx = a pointer-events-through portal over the persistent home map) genuinely
- * differ only in their HOST CHROME and their middle content. Everything else was copy-pasted twice and had
- * already started to drift, so it lives here once:
- *
- *   - `usePickStepSheetSnap(visible)` - capture + collapse the sheet detent on open, restore it on close.
- *   - `usePickStepAddressQuery(visible)` - the AddressSearch query state, reset on each open.
- *   - `PickStepBottomBar` - the floating coord-echo + Cancel / Confirm bar.
- *   - `pickStepStyles` - the bar's card + button styles (each seam adds only its own positioning).
- *
- * Pure RN primitives + the shared theme/i18n, so it renders unchanged on native and (via react-native-web)
- * on web. `webCursorPointer` is an empty style on native, so the seams no longer diverge on it either.
+ * The seams differ only in host chrome and middle content; everything else lives here once because the
+ * copies had already started to drift.
  */
+import { coordsLabel } from "@civfix/shared"
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { useNavStore } from "../nav"
+import { useNavStore, type Snap } from "../nav"
 import type { LatLng } from "./LocationPicker.types"
 
+const ACTION_BUTTON_HEIGHT = 48
+
 /**
- * Collapse the host sheet to peek while the pick step is open (so nothing peeks under the full-screen
- * picker) and restore the previous detent when it closes / unmounts. Mirrors CleanupForm's PickOnMapButton.
- *
- * Keyed ONLY on `visible` - a seam that also reacts to some other flip (the web seam's `mapRegistered`)
- * must keep that in its own effect, or the sheet gets restored-then-recollapsed mid-pick.
+ * Keyed only on `visible`: a seam that also reacts to another flip (the web seam's `mapRegistered`) must
+ * keep that in its own effect, or the sheet is restored then re-collapsed mid-pick.
  */
 export function usePickStepSheetSnap(visible: boolean): void {
-  const restoreSnapRef = useRef<number | null>(null)
+  const restoreSnapRef = useRef<Snap | null>(null)
   useEffect(() => {
     if (!visible) return
     const nav = useNavStore.getState()
@@ -39,12 +27,11 @@ export function usePickStepSheetSnap(visible: boolean): void {
     return () => {
       const snap = restoreSnapRef.current
       restoreSnapRef.current = null
-      if (snap != null) useNavStore.getState().setSnap(snap as 0 | 1 | 2)
+      if (snap != null) useNavStore.getState().setSnap(snap)
     }
   }, [visible])
 }
 
-/** The floating AddressSearch's query state, cleared each time the step opens. */
 export function usePickStepAddressQuery(visible: boolean): [string, (next: string) => void] {
   const [addrQuery, setAddrQuery] = useState("")
   useEffect(() => {
@@ -54,17 +41,13 @@ export function usePickStepAddressQuery(visible: boolean): [string, (next: strin
 }
 
 export interface PickStepBottomBarProps {
-  /** The currently placed point, or null - drives the echo text and gates Confirm. */
   point: LatLng | null
-  /** Commit the placed point. Only reachable while `point` is set. */
   onConfirm: () => void
-  /** Discard the pick. */
   onCancel: () => void
-  /** Seam-owned POSITIONING only (native: absolute + insets; web: margins). The card look lives here. */
+  /** Positioning only; the card look lives here. */
   style?: StyleProp<ViewStyle>
 }
 
-/** The floating "coordinate echo + Cancel / Confirm" bar shared by both pick-step seams. */
 export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickStepBottomBarProps) {
   const pickStepStyles = usePickStepStyles()
   const th = useTheme()
@@ -74,7 +57,7 @@ export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickSte
   return (
     <View style={[pickStepStyles.bar, style]}>
       <Text style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]} numberOfLines={1}>
-        {hasPoint ? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}` : t("pickStep.needPin")}
+        {hasPoint ? coordsLabel(point) : t("pickStep.needPin")}
       </Text>
       <View style={pickStepStyles.actions}>
         <Pressable
@@ -124,7 +107,6 @@ export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickSte
 }
 
 const usePickStepStyles = makeThemedStyles((t) => ({
-  // The bar's CARD look. Positioning is the seam's job (passed in via `style`).
   bar: {
     padding: t.space["3"],
     gap: t.space["3"],
@@ -134,7 +116,6 @@ const usePickStepStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     ...t.shadows.s2,
   },
-  // Prose (the "tap the map" hint) reads in the body font; the lat/lng echo swaps to mono via echoCoords.
   echo: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: t.fontSize["12"],
@@ -150,7 +131,7 @@ const usePickStepStyles = makeThemedStyles((t) => ({
   },
   cancelBtn: {
     flex: 1,
-    height: 48,
+    height: ACTION_BUTTON_HEIGHT,
     borderRadius: t.radius.md,
     alignItems: "center",
     justifyContent: "center",
@@ -165,7 +146,7 @@ const usePickStepStyles = makeThemedStyles((t) => ({
   },
   confirmBtn: {
     flex: 2,
-    height: 48,
+    height: ACTION_BUTTON_HEIGHT,
     borderRadius: t.radius.md,
     flexDirection: "row",
     alignItems: "center",

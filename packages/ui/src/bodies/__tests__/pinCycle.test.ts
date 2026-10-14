@@ -1,8 +1,3 @@
-/**
- * Unit tests for `nextPinIndex` (P3 Task 3.6) - the PinnedBar's cyclic advance: after jumping to
- * the pin at `current`, move to the next OLDER pin (index + 1 in the pinnedAt-DESC list), wrapping
- * back to the newest (0) after the oldest.
- */
 import { describe, expect, it } from "vitest"
 import { nextPinIndex } from "../pinCycle"
 

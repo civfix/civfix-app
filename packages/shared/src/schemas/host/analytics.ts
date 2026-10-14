@@ -1,9 +1,9 @@
 import { z } from "zod"
 import { BroadcastChannelSchema, IdSchema, ISODateSchema } from "../common.js"
 import { LeaderboardEntryDTOSchema } from "../entities.js"
+import { ANALYTICS_SUPPRESSION_K } from "./suppression.js"
 
-
-export const ANALYTICS_SUPPRESSION_K = 5
+export { ANALYTICS_SUPPRESSION_K } from "./suppression.js"
 export const MAX_PORTFOLIO_TOP_VOLUNTEERS = 5
 
 export const AnalyticsRangeSchema = z.enum(["7d", "30d", "90d", "all"])
@@ -267,7 +267,7 @@ export type EventAnalyticsComparison = z.infer<typeof EventAnalyticsComparisonSc
 
 const GetEventAnalyticsObjectSchema = z.object({
   generatedAt: ISODateSchema,
-  k: z.number().int().positive().default(ANALYTICS_SUPPRESSION_K),
+  k: AnalyticsEnvelopeFields.k,
   scope: EventAnalyticsScopeSchema,
   phase: EventAnalyticsPhaseSchema,
   lifecycle: EventAnalyticsLifecycleSchema,
@@ -307,7 +307,7 @@ export type BestDayTime = z.infer<typeof BestDayTimeSchema>
 const HostedEventsAnalyticsObjectSchema = z.object({
   generatedAt: ISODateSchema,
   range: PortfolioAnalyticsRangeSchema,
-  k: z.number().int().positive().default(ANALYTICS_SUPPRESSION_K),
+  k: AnalyticsEnvelopeFields.k,
   totals: z.object({
     events: z.number().int().nonnegative().nullable(),
     registrations: z.number().int().nonnegative().nullable(),
@@ -376,7 +376,7 @@ const HostSummaryEventPanelSchema = PanelSchema.extend({
 const HostAnalyticsSummaryObjectSchema = z.object({
   generatedAt: ISODateSchema,
   range: AnalyticsRangeSchema.default("30d"),
-  k: z.number().int().positive().default(ANALYTICS_SUPPRESSION_K),
+  k: AnalyticsEnvelopeFields.k,
   window: HostAnalyticsSummaryWindowSchema,
   activity: HostAnalyticsSummaryActivitySchema,
   eventsHeld: HostAnalyticsSummaryEventsHeldSchema,

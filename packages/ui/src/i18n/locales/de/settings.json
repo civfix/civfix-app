@@ -34,5 +34,6 @@
   "terms": "Nutzungsbedingungen",
   "privacy_policy": "Datenschutzerklärung",
   "source_code": "Quellcode",
-  "sign_out": "Abmelden"
+  "sign_out": "Abmelden",
+  "open_error": "Dieser Link konnte nicht geöffnet werden. Versuche es erneut."
 }

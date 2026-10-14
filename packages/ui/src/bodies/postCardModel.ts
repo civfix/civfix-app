@@ -1,20 +1,20 @@
 import type { TFunction } from "i18next"
 import type {
+  LinkedEventRef,
+  LinkedReportRef,
   OrganizationRefDTO,
   PersonDTO,
   PostDTO,
   PostRefDTO,
   UserMentionDTO,
 } from "@civfix/shared"
+import { escapeRegExp, normalizeHandle } from "./mentionText"
 import { listTimeAgo } from "./relativeTime"
 
 export type PostCardVariant = "post" | "event" | "repost" | "quote" | "reply" | "fix-confirmed"
 export type PostFixLayout = "before-after" | "cleared" | null
 
 export interface PostCardModelOptions {
-  neighborhood?: string | null
-  reportedBy?: string | null
-  resolutionLabel?: string | null
   timeAgo?: (iso: string) => string
 }
 
@@ -40,7 +40,7 @@ export function buildPostIdentity(
   fallbackName: string,
 ): PostIdentity {
   const org = organization ?? null
-  const handle = author?.handle?.replace(/^@/, "").trim() || null
+  const handle = (author?.handle ? normalizeHandle(author.handle).trim() : "") || null
   const personName = author?.name ?? fallbackName
   return {
     organization: org,
@@ -67,16 +67,13 @@ export function identityA11yLabel(identity: PostIdentity, t: TFunction): string 
 export interface PostCardModel {
   variant: PostCardVariant
   identity: PostIdentity
-  metaLabel: string
   repostAttribution: string | null
   embeddedPost: PostRefDTO | null
   fixLayout: PostFixLayout
   categoryLabel: string | null
-  reportedByLabel: string | null
   resolutionLabel: string | null
   handleLabel: string | null
   timeLabel: string
-  contextLabel: string | null
   bodyExpandable: boolean
   showFixShowcase: boolean
   replyingToLabel: string | null
@@ -90,10 +87,6 @@ export type PostBodySegment =
   | { kind: "text"; text: string }
   | { kind: "mention"; text: string; userId: string; handle: string }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
 export function splitPostBodyMentions(
   body: string,
   mentions: readonly UserMentionDTO[] | undefined,
@@ -101,24 +94,27 @@ export function splitPostBodyMentions(
   if (!body) return []
   const byHandle = new Map<string, UserMentionDTO>()
   for (const mention of mentions ?? []) {
-    const handle = mention.handle.replace(/^@/, "").trim()
+    const handle = normalizeHandle(mention.handle).trim()
     if (handle) byHandle.set(handle.toLocaleLowerCase(), mention)
   }
   if (byHandle.size === 0) return [{ kind: "text", text: body }]
   const alternatives = [...byHandle.values()]
-    .map((mention) => mention.handle.replace(/^@/, "").trim()).filter(Boolean)
+    .map((mention) => normalizeHandle(mention.handle).trim()).filter(Boolean)
     .sort((a, b) => b.length - a.length).map(escapeRegExp)
-  const pattern = new RegExp(`@(${alternatives.join("|")})(?![\\w])`, "gi")
+  // Same left boundary as chat's mentionMatch: `bob@maria.com` must not tint (or send) a mention.
+  const pattern = new RegExp(`(^|[^\\w@])@(${alternatives.join("|")})(?![\\w])`, "gi")
   const segments: PostBodySegment[] = []
   let cursor = 0
   let match: RegExpExecArray | null
   while ((match = pattern.exec(body)) !== null) {
-    if (match.index > cursor) segments.push({ kind: "text", text: body.slice(cursor, match.index) })
-    const matchedHandle = match[1] ?? ""
+    const start = match.index + (match[1] ?? "").length
+    if (start > cursor) segments.push({ kind: "text", text: body.slice(cursor, start) })
+    const matchedHandle = match[2] ?? ""
+    const token = body.slice(start, pattern.lastIndex)
     const mention = byHandle.get(matchedHandle.toLocaleLowerCase())
     segments.push(mention
-      ? { kind: "mention", text: match[0], userId: mention.id, handle: mention.handle.replace(/^@/, "") }
-      : { kind: "text", text: match[0] })
+      ? { kind: "mention", text: token, userId: mention.id, handle: normalizeHandle(mention.handle) }
+      : { kind: "text", text: token })
     cursor = pattern.lastIndex
   }
   if (cursor < body.length) segments.push({ kind: "text", text: body.slice(cursor) })
@@ -172,8 +168,6 @@ export function buildPostCardModel(
     : post.kind === "reply" ? "reply"
     : post.event ? "event" : "post"
   const timeLabel = (options.timeAgo ?? listTimeAgo)(post.createdAt)
-  const contextLabel = options.neighborhood?.trim() || null
-  const metaLabel = [timeLabel, contextLabel].filter(Boolean).join(" · ")
   const identity = buildPostIdentity(
     post.author,
     post.organization,
@@ -193,23 +187,15 @@ export function buildPostCardModel(
   return {
     variant,
     identity,
-    metaLabel,
     repostAttribution: post.kind === "repost"
       ? t("post_card.repost_attribution", { name: post.author.name })
       : null,
     embeddedPost: post.repostOf ?? null,
     fixLayout,
     categoryLabel,
-    reportedByLabel: options.reportedBy?.trim()
-      ? t("post_card.reported_by", { name: options.reportedBy.trim().replace(/[.]+$/, "") })
-      : null,
-    resolutionLabel: isFix
-      ? options.resolutionLabel?.trim()
-        || (post.event ? t("post_card.cleared_at", { title: post.event.title }) : null)
-      : null,
+    resolutionLabel: isFix && post.event ? t("post_card.cleared_at", { title: post.event.title }) : null,
     handleLabel: identity.handleLabel,
     timeLabel,
-    contextLabel,
     bodyExpandable: body.length > BODY_CLAMP_CHARS
       || (body.match(/\n/g)?.length ?? 0) >= POST_BODY_CLAMP_LINES,
     showFixShowcase: isFix && fixLayout !== null,
@@ -217,12 +203,61 @@ export function buildPostCardModel(
   }
 }
 
+const EMPTY_MEDIA: PostDTO["media"] = []
+
+export interface PostCardView {
+  isRepost: boolean
+  embedded: PostRefDTO | null
+  /** What the row tap opens: a repost opens the original it shows. */
+  rowPostId: string
+  /**
+   * A repost's comment and quote belong to the original, like the row tap and the menu. A deleted original
+   * cannot be opened, so those fall back to the wrapper (the server resolves its actions to the original).
+   */
+  actionTargetId: string
+  /** The original a repost can still jump to; null for an ordinary post or a deleted original. */
+  openableOriginalId: string | null
+  media: PostDTO["media"]
+  displayEvent: LinkedEventRef | null
+  displayReport: LinkedReportRef | null
+}
+
+export function buildPostCardView(post: PostDTO, model: PostCardModel): PostCardView {
+  const embedded = model.embeddedPost
+  const isRepost = model.variant === "repost" && embedded != null
+  const liveOriginal = isRepost && embedded && !embedded.deleted ? embedded : null
+  return {
+    isRepost,
+    embedded,
+    rowPostId: isRepost && embedded ? embedded.id : post.id,
+    actionTargetId: liveOriginal ? liveOriginal.id : post.id,
+    openableOriginalId: liveOriginal ? liveOriginal.id : null,
+    media: isRepost && embedded ? embedded.media ?? EMPTY_MEDIA : post.media ?? EMPTY_MEDIA,
+    displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),
+    displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),
+  }
+}
+
 function replyingToLabel(post: PostDTO, t: TFunction): string | null {
   if (post.kind !== "reply") return null
   const parentAuthor = post.replyTo?.author
   if (!parentAuthor) return null
-  const handle = parentAuthor.handle?.replace(/^@/, "").trim()
+  const handle = parentAuthor.handle ? normalizeHandle(parentAuthor.handle).trim() : ""
   return handle
     ? t("post_card.replying_to", { handle: `@${handle}` })
     : t("post_card.replying_to", { handle: parentAuthor.name })
+}
+
+/** One label per grid cell: four identical "Post attachment" alts give a screen reader nothing to tell apart. */
+export function postMediaA11yLabel(
+  t: TFunction,
+  kind: PostDTO["media"][number]["kind"],
+  index: number,
+  count: number,
+): string {
+  if (count <= 1) return t("post_card.media_a11y")
+  const position = { index: index + 1, count }
+  return kind === "video"
+    ? t("post_card.media_video_position_a11y", position)
+    : t("post_card.media_photo_position_a11y", position)
 }

@@ -9,13 +9,13 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { LeaderboardQuerySchema } from "@civfix/shared"
+import { sliceBetween, sliceFrom } from "../../../__tests__/sourceGuards"
+import { LeaderboardQuerySchema, MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
 import { leaderboardNextOffset } from "../volunteer"
 
 /**
- * Comments stripped: every guard below is about the CODE. The doc comments in these modules deliberately
- * NAME the mistakes they prevent ("never `res.cleanup`", "the `as unknown as` cast is gone"), so grepping
- * the raw file would fail on the very prose that documents the rule.
+ * Comments are stripped because every guard below is about the CODE, and a comment may legitimately name
+ * the very mistake a guard forbids (for example "never `res.cleanup`").
  */
 function code(path: string): string {
   return readFileSync(new URL(path, import.meta.url), "utf8")
@@ -29,9 +29,8 @@ const postsSource = code("../posts.ts")
 
 describe("hooks/volunteer.ts", () => {
   it("has no `as unknown as` cast left - geoid is a real field on LeaderboardQuerySchema now", () => {
-    // The cast existed only because `geoid` was missing from the request schema, so the typed client
-    // rejected it. With the field in the contract the call site is plainly typed, and a future rename is
-    // a compile error here instead of a runtime 422 from the route.
+    // With `geoid` in the request schema the call site is plainly typed; a cast would turn a future
+    // rename of the field from a compile error into a runtime 422 from the route.
     expect(volunteerSource).not.toContain("as unknown as")
   })
 
@@ -47,10 +46,7 @@ describe("hooks/volunteer.ts", () => {
 
   it("leaves the PUBLIC hours query auth-optional (gated on the id alone)", () => {
     // A signed-out visitor must see a public profile's hours; the server decides what is publishable.
-    const fn = volunteerSource.slice(
-      volunteerSource.indexOf("export function usePublicHoursEntries"),
-      volunteerSource.indexOf("export function useEventHours"),
-    )
+    const fn = sliceBetween(volunteerSource, "export function usePublicHoursEntries", "export function useEventHours")
     expect(fn).toContain("enabled: !!userId")
     expect(fn).not.toContain("isAuthenticated")
   })
@@ -65,9 +61,9 @@ describe("hooks/volunteer.ts", () => {
 
   it("clamps deep paging at the offset the endpoint accepts instead of asking for a 422", () => {
     // The response advertises `nextOffset` with no ceiling, but the request schema caps `offset`. At the
-    // 50-row page size the 11th page comes back saying "next: 550", which the route rejects outright -
-    // so a jurisdiction with >550 ranked volunteers ended its list on a failed request rather than on a
-    // clean end-of-list. `undefined` is what stops the infinite query (and clears `hasNextPage`).
+    // 50-row page size the 11th page comes back saying "next: 550", which the route rejects outright,
+    // so a jurisdiction with >550 ranked volunteers would end its list on a failed request rather than on
+    // a clean end-of-list. `undefined` is what stops the infinite query (and clears `hasNextPage`).
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: 500 })).toBe(500)
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: 550 })).toBeUndefined()
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: null })).toBeUndefined()
@@ -75,10 +71,9 @@ describe("hooks/volunteer.ts", () => {
   })
 
   it("pins that clamp to the request schema's own bound, so the two cannot drift", () => {
-    // The bound is duplicated in the hook because the schema does not export it. These two assertions
-    // are the tripwire: move `.max(500)` in either direction and this reds instead of the field.
-    const bound = Number(/const LEADERBOARD_MAX_OFFSET = (\d+)/.exec(volunteerSource)?.[1])
-    expect(Number.isInteger(bound)).toBe(true)
+    const bound = MAX_LEADERBOARD_OFFSET
+    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound })).toBe(bound)
+    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound + 1 })).toBeUndefined()
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound }).success).toBe(true)
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound + 1 }).success).toBe(
       false,
@@ -86,7 +81,7 @@ describe("hooks/volunteer.ts", () => {
   })
 
   it("invalidates the event read-back and the itemised ledger after logging hours", () => {
-    const fn = volunteerSource.slice(volunteerSource.indexOf("export function useLogEventHours"))
+    const fn = sliceFrom(volunteerSource, "export function useLogEventHours")
     expect(fn).toContain("queryKeys.eventHours(id)")
     expect(fn).toContain("queryKeys.volunteerEntries")
     expect(fn).toContain("queryKeys.volunteerLeaderboardAll")
@@ -97,7 +92,7 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
   it("writes the response ITSELF into the detail cache, never `res.cleanup`", () => {
     // GetCleanupResponseSchema is an alias of CleanupDTOSchema, not an envelope. `res.cleanup` is
     // `undefined`, so reading it would blank the event detail body on every claim and every completion.
-    // The write goes through the alias-aware reconcile (every key the detail renders under - the page
+    // The write goes through the alias-aware reconcile (every key the detail renders under, since the page
     // may be cached by refcode), never an exact-key setQueryData that can seed a phantom UUID entry.
     expect(cleanupsSource).not.toMatch(/\bres\.cleanup\b/)
     expect(cleanupsSource).toContain("reconcileCleanupDetails(qc, cleanupId, res)")
@@ -113,13 +108,9 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
   it("claiming a slot patches the LIST rows too - a claim auto-RSVPs, so `joined`/`going` move", () => {
     // The server joins a non-member in the same transaction as the claim (holding a slot IS what
     // "going" means on the board), so every list card for this event is stale the moment the PUT
-    // returns. Writing only the detail left the card BEHIND the sheet reading "RSVP" and the old count
-    // until that list happened to refetch. This is the same pair `useJoinCleanup` applies.
-    // The claim wiring lives in the exported options builder (the hook just injects the api client).
-    const fn = cleanupsSource.slice(
-      cleanupsSource.indexOf("export function claimEventSlotMutationOptions"),
-      cleanupsSource.indexOf("export interface SetMemberRoleVars"),
-    )
+    // returns. Writing only the detail would leave the card BEHIND the sheet reading "RSVP" with the old
+    // count until that list refetched. This is the same pair `useJoinCleanup` applies.
+    const fn = sliceBetween(cleanupsSource, "export function claimEventSlotMutationOptions", "export interface SetMemberRoleVars")
     expect(fn).toContain(
       "patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })",
     )
@@ -129,12 +120,9 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
 
   it("the shared list invalidation reaches the ORG page's event sections, not just the map lists", () => {
     // An org-hosted event is listed twice: under ["cleanups"] and under the org page's own
-    // ["org-events"] key. Invalidating only the first left an org's Upcoming/Past sections showing an
-    // event that had since been edited, cancelled or duplicated.
-    const helper = cleanupsSource.slice(
-      cleanupsSource.indexOf("function invalidateCleanupLists"),
-      cleanupsSource.indexOf("export function useCleanups"),
-    )
+    // ["org-events"] key. Invalidating only the first would leave an org's Upcoming/Past sections showing
+    // an event that had since been edited, cancelled or duplicated.
+    const helper = sliceBetween(cleanupsSource, "function invalidateCleanupLists", "export function useCleanups")
     expect(helper).toContain("queryKey: CLEANUPS_LIST_PREFIX")
     expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
@@ -143,10 +131,13 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
 
 describe("hooks/posts.ts", () => {
   it("no longer gates a person's timeline on auth - a signed-out profile must show posts", () => {
-    const fn = postsSource.slice(
-      postsSource.indexOf("export function useUserPosts"),
-      postsSource.indexOf("export function useSaves"),
-    )
+    const fn = sliceBetween(postsSource, "export function useUserPosts", "export function useSaves")
+    expect(fn).toContain("enabled: !!id")
+    expect(fn).not.toContain("isAuthenticated")
+  })
+
+  it("serves a single post to guests - getPost is auth-optional, so a signed-out detail must load", () => {
+    const fn = sliceBetween(postsSource, "export function usePost(", "const coerceReplyPages")
     expect(fn).toContain("enabled: !!id")
     expect(fn).not.toContain("isAuthenticated")
   })

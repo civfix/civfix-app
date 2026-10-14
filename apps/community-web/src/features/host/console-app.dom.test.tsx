@@ -12,8 +12,9 @@ import { renderConsole } from "@/components/console/__testing__/harness"
 import { useUiStore } from "@/store/ui-store"
 import { ConsoleApp } from "./console-app"
 import { ORG_INVITE_TOKEN_STASH_KEY } from "./org/org-invites"
-// OrgScreen is the heaviest React.lazy screen; loading it cold inside a findBy window can outrun the
-// 1 s default on a busy CI runner. Loading it here keeps each test independent of which ran first.
+// ConsoleApp loads the org overview with React.lazy. Importing it here transforms it at collection
+// time, so the lazy import resolves from the module cache instead of cold-transforming inside a
+// findBy window, which a loaded machine outlasts.
 import "./org/org-screen"
 
 const ORG_ID = "11111111-1111-4111-8111-111111111111"

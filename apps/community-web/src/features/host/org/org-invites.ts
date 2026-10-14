@@ -1,11 +1,23 @@
-import type { OrganizationInviteDTO } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, MS_PER_DAY, type OrganizationInviteDTO } from "@civfix/shared"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
+import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+import { replaceUrlInPlace } from "@/lib/replace-url"
+
+/**
+ * Handles are stored without the "@" people type in front of them, and the backend looks them up
+ * verbatim, so a pasted "@rosa" would find nobody.
+ */
+export function normalizeInviteIdentifier(kind: "handle" | "email", raw: string): string {
+  const trimmed = raw.trim()
+  return kind === "handle" ? trimmed.replace(/^@/, "") : trimmed
+}
+
+/** The contract's `identifier` max on both the org and the event-team invite requests. */
+export const INVITE_IDENTIFIER_MAX = EMAIL_MAX_LENGTH
 
 /** The backend's `ORG_INVITE_TTL_MS` (14 days) - the copy says it before an invite exists. */
 export const ORG_INVITE_TTL_DAYS = 14
-
-const DAY_MS = 24 * 60 * 60 * 1000
 
 /**
  * Whole days until `iso`, rounded up so "expires in 1 day" reads until the moment it expires and
@@ -14,7 +26,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 export function daysUntil(iso: string, now: number = Date.now()): number {
   const at = new Date(iso).getTime()
   if (Number.isNaN(at)) return 0
-  return Math.ceil((at - now) / DAY_MS)
+  return Math.ceil((at - now) / MS_PER_DAY)
 }
 
 /**
@@ -43,28 +55,16 @@ export function inviteIsExpired(invite: OrganizationInviteDTO, now: number = Dat
 export const ORG_INVITE_TOKEN_STASH_KEY = "civfix-console:org-invite-token"
 
 export function stashInviteToken(token: string): void {
-  try {
-    window.sessionStorage.setItem(ORG_INVITE_TOKEN_STASH_KEY, token)
-  } catch {
-    // Storage can be unavailable (private mode, blocked); the URL still carries the token.
-  }
+  safeSet("session", ORG_INVITE_TOKEN_STASH_KEY, token)
 }
 
 export function readStashedInviteToken(): string | null {
-  try {
-    const value = window.sessionStorage.getItem(ORG_INVITE_TOKEN_STASH_KEY)
-    return value === null || value.trim() === "" ? null : value
-  } catch {
-    return null
-  }
+  const value = safeGet("session", ORG_INVITE_TOKEN_STASH_KEY)
+  return value === null || value.trim() === "" ? null : value
 }
 
 export function clearStashedInviteToken(): void {
-  try {
-    window.sessionStorage.removeItem(ORG_INVITE_TOKEN_STASH_KEY)
-  } catch {
-    // Nothing to clear.
-  }
+  safeRemove("session", ORG_INVITE_TOKEN_STASH_KEY)
 }
 
 /**
@@ -77,6 +77,6 @@ export function stripInviteTokenFromUrl(): void {
   if (typeof window === "undefined") return
   const { pathname, search, hash } = window.location
   if (search === "" && hash === "") return
-  window.history.replaceState(window.history.state, "", pathname)
+  replaceUrlInPlace(pathname)
   notifyConsoleUrlChanged()
 }

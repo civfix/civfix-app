@@ -117,7 +117,7 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     expect(entryFromPath("/messages/report/x")).toEqual({ kind: "thread", id: "x", roomKind: "report" })
   })
 
-  it("distinguishes the group discriminator in the URL (P4)", () => {
+  it("distinguishes the group discriminator in the URL", () => {
     expect(pathForEntry({ kind: "thread", id: "x", roomKind: "group" })).toBe("/messages/group/x")
     expect(entryFromPath("/messages/group/x")).toEqual({ kind: "thread", id: "x", roomKind: "group" })
     expect(pathForEntry({ kind: "thread", id: "x", roomKind: "group", title: "Crew" })).toBe("/messages/group/x")
@@ -130,14 +130,14 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     expect(entryFromPath("/groups/abc123")).toBeNull()
   })
 
-  it("new-channel maps to /channels/new; other /channels children resolve to nothing (P5 Task 5.3)", () => {
+  it("new-channel maps to /channels/new; other /channels children resolve to nothing", () => {
     expect(pathForEntry({ kind: "new-channel" })).toBe("/channels/new")
     expect(entryFromPath("/channels/new")).toEqual({ kind: "new-channel" })
     expect(entryFromPath("/channels")).toBeNull()
     expect(entryFromPath("/channels/abc123")).toBeNull()
   })
 
-  it("group-info uses /groups/<id>/info without colliding with /groups/new (P4 Task 4.8)", () => {
+  it("group-info uses /groups/<id>/info without colliding with /groups/new", () => {
     expect(pathForEntry({ kind: "group-info", id: "g1" })).toBe("/groups/g1/info")
     expect(entryFromPath("/groups/g1/info")).toEqual({ kind: "group-info", id: "g1" })
     expect(entryFromPath("/groups/new")).toEqual({ kind: "new-group" })

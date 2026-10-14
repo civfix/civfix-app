@@ -1,11 +1,10 @@
 name: publish @civfix/shared
 
 # Publishes @civfix/shared to the private registry (repo.civfix.org) when its version is ahead of the
-# registry, on push to main. `main` is the STAGING lane (issue civfix/issue-tracker#108), which is the
-# right place for this: publishing is not a production action — the registry consumers (civfix-backend,
-# civfix-admin, civfix-govt-web) adopt a new version deliberately, by moving their own caret range, and
-# a backend release is built from a lockfile that already pins an exact version. @civfix/ui and both apps are private and are never published; the backend,
-# admin and gov consumers install @civfix/shared from the registry, which is why this flow survives.
+# registry, on push to main. Publishing is not a production action, so it belongs on main (the staging
+# lane): the registry consumers (civfix-backend, civfix-admin, civfix-govt-web) adopt a new version
+# deliberately by moving their own caret range, and a backend release is built from a lockfile that
+# already pins an exact version. @civfix/ui and both apps are private and are never published.
 #
 # Flow: `pnpm changeset` while developing -> `pnpm changeset version` before merging -> this workflow
 # runs `changeset publish`, which is a no-op when nothing is ahead of the registry (so it runs on every
@@ -15,9 +14,9 @@ name: publish @civfix/shared
 # Only main publishes real versions: a manual run on any other branch is skipped. A branch that needs
 # its contract on the registry uses publish-shared-snapshot.yml, which publishes a prerelease no caret
 # range can match. scripts/check-shared-version.mjs refuses a version the registry already holds from
-# a commit main never released (0.54.0 and 0.55.0 were published from a branch that way), and pushes
-# the @civfix/shared@X.Y.Z tag BEFORE the publish, so a failed publish is retried by the next main push
-# and a failed tag push stops before anything reaches the registry.
+# a commit main never released, and pushes the @civfix/shared@X.Y.Z tag BEFORE the publish, so a
+# failed publish is retried by the next main push and a failed tag push stops before anything reaches
+# the registry.
 #
 # Required repository secret: NPM_TOKEN (the Verdaccio ci-publisher token).
 

@@ -34,6 +34,10 @@ describe("csvString", () => {
     )
   })
 
+  it("leaves numbers and booleans unguarded because they cannot carry a formula", () => {
+    expect(csvString([[-2, -0.5, true]])).toBe("-2,-0.5,true")
+  })
+
   it("leaves an ordinary value untouched", () => {
     expect(csvString([["Ann Rivera", 3]])).toBe("Ann Rivera,3")
   })
@@ -60,7 +64,7 @@ describe("csvFilename", () => {
 describe("provenanceRows", () => {
   it("carries source, reference, generation time and the filters in force", () => {
     const rows = provenanceRows({
-      title: "Creek Sweep — Registration",
+      title: "Creek Sweep · Registration",
       reference: "CF-123",
       generatedAt: "2026-03-04T12:00:00.000Z",
       generatedAtLabel: "4 Mar 2026, 12:00",

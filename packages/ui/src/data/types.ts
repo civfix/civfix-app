@@ -9,6 +9,11 @@ import type {
 } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 
+/** A list envelope's array as a real array of non-null entries; the client does not validate responses. */
+export function listItems<T>(list: ReadonlyArray<T | null | undefined> | null | undefined): T[] {
+  return Array.isArray(list) ? list.filter((item): item is T => item != null) : []
+}
+
 export interface ReportSubmission {
   idempotencyKey: string
   category: ReportCategory

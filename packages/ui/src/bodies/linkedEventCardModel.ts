@@ -1,6 +1,8 @@
 import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
-import { sameOffsetAt, zoneShortName } from "@civfix/shared/datetime"
+import { eventZoneSuffix, safeDateFormat } from "@civfix/shared/datetime"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
+import { FACE_CAP } from "./slotPeopleVisibility"
 
 export interface LinkedEventCardModel {
   title: string
@@ -25,43 +27,28 @@ export interface LinkedEventCardContext {
   showAttendance?: boolean
 }
 
+const REMOVE_VISUAL_SIZE = 24
+
+const LINKED_EVENT_CARD_TARGETS = {
+  removeTarget: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET },
+  removeVisual: { width: REMOVE_VISUAL_SIZE, height: REMOVE_VISUAL_SIZE },
+} as const
+
 export function buildLinkedEventCardTargetPlan() {
-  return {
-    removeTarget: { width: 44, height: 44 },
-    removeVisual: { width: 24, height: 24 },
-  } as const
+  return LINKED_EVENT_CARD_TARGETS
 }
 
-// `new Intl.DateTimeFormat(...)` is one of the more expensive JS built-ins on Hermes, and this model is
-// built for every attached-event card in the feed (three formatters per call). Cache the instances per
-// (locale, timeZone, options) so a feed re-render reuses them instead of re-constructing.
-const formatterCache = new Map<string, Intl.DateTimeFormat>()
-
-function formatter(locale: string, timeZone: string | undefined, options: Intl.DateTimeFormatOptions) {
-  const key = `${locale}|${timeZone ?? ""}|${JSON.stringify(options)}`
-  const cached = formatterCache.get(key)
-  if (cached) return cached
-  let made: Intl.DateTimeFormat
-  try {
-    made = new Intl.DateTimeFormat(locale, { ...options, ...(timeZone ? { timeZone } : {}) })
-  } catch {
-    made = new Intl.DateTimeFormat("en-US", options)
-  }
-  formatterCache.set(key, made)
-  return made
+/**
+ * How many face cells the stack draws: every preview face, padded with placeholders up to the going count,
+ * never past the cap.
+ */
+export function visibleAttendeeSlots(previewCount: number, going: number): number {
+  return Math.min(FACE_CAP, Math.max(previewCount, Math.min(FACE_CAP, going)))
 }
 
-function zoneSuffix(
-  instantMs: number,
-  eventZone: string | undefined,
-  viewerZone: string | undefined,
-  locale: string,
-): string | null {
-  if (eventZone === undefined || viewerZone === undefined) return null
-  if (sameOffsetAt(instantMs, eventZone, viewerZone)) return null
-  const short = zoneShortName(instantMs, eventZone, locale)
-  return short === "" ? null : short
-}
+const MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
+const DAY_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric" }
+const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" }
 
 /**
  * The attached-event card's presentation. `t` is bound to the `event-card` namespace (this card's own
@@ -79,12 +66,12 @@ export function buildLinkedEventCardModel(
   const valid = !Number.isNaN(date.getTime())
   const going = context.going ?? event.going
   const joined = context.joined ?? false
-  const attendees = context.attendees?.slice(0, 3) ?? []
-  const month = valid ? formatter(locale, timeZone, { month: "short" }).format(date).toUpperCase() : "--"
-  const day = valid ? formatter(locale, timeZone, { day: "numeric" }).format(date) : "--"
-  const zone = valid ? zoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null
+  const attendees = context.attendees?.slice(0, FACE_CAP) ?? []
+  const month = valid ? safeDateFormat(event.scheduledAt, locale, MONTH_OPTIONS, timeZone).toUpperCase() : "--"
+  const day = valid ? safeDateFormat(event.scheduledAt, locale, DAY_OPTIONS, timeZone) : "--"
+  const zone = valid ? eventZoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null
   const clock = valid
-    ? formatter(locale, timeZone, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(date)
+    ? safeDateFormat(event.scheduledAt, locale, CLOCK_OPTIONS, timeZone)
     : t("linked.schedule_unavailable")
   const scheduleLabel = zone === null ? clock : `${clock} ${zone}`
   const locationLabel = context.address?.trim() || t("linked.location_fallback")

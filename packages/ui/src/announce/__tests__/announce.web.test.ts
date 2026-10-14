@@ -1,8 +1,6 @@
-/**
- * announce (web seam) regression tests. The package's vitest setup is plain node (no jsdom), so this
- * installs a MINIMAL fake `document` - only the handful of members the seam touches - on globalThis.
- */
+// The package's vitest runs in plain node (no jsdom), so this installs a minimal fake `document`.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type * as AnnounceModule from "../announce.web"
 
 interface FakeElement {
   id: string
@@ -40,7 +38,7 @@ function makeFakeDocument() {
 type FakeDocument = ReturnType<typeof makeFakeDocument>
 
 let doc: FakeDocument
-let announce: typeof import("../announce.web").announce
+let announce: typeof AnnounceModule.announce
 
 beforeEach(async () => {
   vi.useFakeTimers()
@@ -63,7 +61,6 @@ describe("announce (web)", () => {
     const el = region("civfix-aria-live-polite")
     expect(el).not.toBeNull()
     expect(el?.attrs["aria-live"]).toBe("polite")
-    // Cleared synchronously; the text lands only after the deferred task.
     expect(el?.textContent).toBe("")
     vi.runAllTimers()
     expect(el?.textContent).toBe("Report filed")
@@ -89,7 +86,6 @@ describe("announce (web)", () => {
     expect(region("civfix-aria-live-polite")?.textContent).toBe("polite one")
     expect(region("civfix-aria-live-assertive")?.textContent).toBe("urgent one")
     expect(region("civfix-aria-live-assertive")?.attrs["aria-live"]).toBe("assertive")
-    // aria-live is set once at creation and never mutated afterwards.
     expect(region("civfix-aria-live-polite")?.attrs["aria-live"]).toBe("polite")
   })
 
@@ -98,7 +94,7 @@ describe("announce (web)", () => {
     vi.runAllTimers()
     announce("second")
     vi.runAllTimers()
-    expect(doc.children).toHaveLength(1)
+    expect(doc.children).toHaveLength(2)
     expect(region("civfix-aria-live-polite")?.textContent).toBe("second")
   })
 
@@ -112,6 +108,12 @@ describe("announce (web)", () => {
   it("ignores an empty message", () => {
     announce("")
     vi.runAllTimers()
-    expect(doc.children).toHaveLength(0)
+    expect(doc.children.map((c) => c.textContent)).toEqual(["", ""])
+  })
+
+  it("mounts both regions when the module loads, before anything is announced", () => {
+    expect(doc.children.map((c) => c.id)).toEqual(["civfix-aria-live-polite", "civfix-aria-live-assertive"])
+    expect(doc.children.map((c) => c.attrs["aria-live"])).toEqual(["polite", "assertive"])
+    expect(doc.children.map((c) => c.textContent)).toEqual(["", ""])
   })
 })

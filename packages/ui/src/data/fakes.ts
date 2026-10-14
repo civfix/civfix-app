@@ -19,8 +19,9 @@ import type {
   GetApproximateLocationResponse,
 } from "@civfix/shared"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
+import { applyToggle } from "./hooks/posts"
 
-export const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
+const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
   lat: 34.0522,
   lng: -118.2437,
   radiusKm: 25,
@@ -60,10 +61,6 @@ export function makeFakeApiClient(): ApiClient {
     },
   ) as ApiClient
 }
-
-// ---------------------------------------------------------------------------
-// Fake social-feed data (seed posts + the post client methods)
-// ---------------------------------------------------------------------------
 
 /** ISO timestamp `days` from now (negative = the past). */
 function fakeIso(days: number): string {
@@ -145,7 +142,6 @@ function fakeRef(post: PostDTO): PostRefDTO {
   }
 }
 
-// 1. Plain text post.
 const POST_TEXT: PostDTO = {
   id: "post_text",
   author: FAKE_LUIS,
@@ -163,7 +159,6 @@ const POST_TEXT: PostDTO = {
   threadRootId: null,
 }
 
-// 2. Post with an attached event (LinkedEventRef).
 const POST_EVENT: PostDTO = {
   id: "post_event",
   author: FAKE_MAYA,
@@ -181,7 +176,6 @@ const POST_EVENT: PostDTO = {
   threadRootId: null,
 }
 
-// 3. A repost (kind:"repost" + repostOf preview) of the plain text post.
 const POST_REPOST: PostDTO = {
   id: "post_repost",
   author: FAKE_DANA,
@@ -199,7 +193,6 @@ const POST_REPOST: PostDTO = {
   threadRootId: null,
 }
 
-// 4. A reply to the plain text post.
 const POST_REPLY: PostDTO = {
   id: "post_reply",
   author: FAKE_DANA,
@@ -217,7 +210,6 @@ const POST_REPLY: PostDTO = {
   threadRootId: POST_TEXT.id,
 }
 
-// 5. A "fix confirmed" post with an attached report (LinkedReportRef).
 const POST_FIX: PostDTO = {
   id: "post_fix",
   author: FAKE_MAYA,
@@ -235,7 +227,7 @@ const POST_FIX: PostDTO = {
   threadRootId: null,
 }
 
-/** All seed posts. Timeline order (newest first) for the home feed. */
+/** Newest first, the timeline order of the home feed. */
 const SEED_POSTS: PostDTO[] = [POST_REPOST, POST_EVENT, POST_TEXT, POST_REPLY, POST_FIX]
 
 function findSeed(id: string): PostDTO | undefined {
@@ -252,15 +244,7 @@ function toggledSeed(
   field: "liked" | "reposted" | "saved",
   next: boolean,
 ): PostDTO {
-  const base = findSeed(id) ?? POST_TEXT
-  const countKey = field === "liked" ? "likes" : field === "reposted" ? "reposts" : "saves"
-  const delta = next ? 1 : -1
-  return {
-    ...base,
-    id,
-    viewer: { ...base.viewer, [field]: next },
-    counts: { ...base.counts, [countKey]: Math.max(0, base.counts[countKey] + delta) },
-  }
+  return applyToggle({ ...(findSeed(id) ?? POST_TEXT), id }, field, next)
 }
 
 let fakePostSeq = 0
@@ -295,7 +279,7 @@ export interface FakePostApi {
  * into `makeFakeApiClient`'s Proxy so `makeFakeDataContext()` serves the feed / thread / saves / profile
  * bodies believable data with no backend. Each list method returns a single page with `nextCursor: null`.
  */
-export function makeFakePostApi(): FakePostApi {
+function makeFakePostApi(): FakePostApi {
   return {
     homeFeed: async (query) => {
       const filter = query?.filter ?? "all"

@@ -16,6 +16,7 @@ import {
   ListMyHostedEventsResponseSchema,
 } from "../src/schemas/host/portfolio.js"
 import { eventPhase } from "../src/host/phase.js"
+import { hostCapabilities } from "../src/host/capabilities.js"
 
 
 const NOW = Date.parse("2026-09-11T17:00:00.000Z")
@@ -187,6 +188,15 @@ describe("fakeHostedEvents", () => {
     expect(uncredited.length).toBeGreaterThan(0)
     for (const item of fakeHostedEvents("upcoming", { now: NOW }).items) {
       expect(item.hoursCredited).toBeUndefined()
+    }
+  })
+
+  it("grants each row exactly the capabilities the server derives from its event role", () => {
+    for (const when of ["upcoming", "past"] as const) {
+      for (const item of fakeHostedEvents(when, { now: NOW }).items) {
+        const expected = [...hostCapabilities({ eventRole: item.myRole ?? null, orgRole: null })]
+        expect(item.myCapabilities, `${when} ${item.myRole}`).toEqual(expected)
+      }
     }
   })
 

@@ -9,7 +9,9 @@
     "title": "Inscripción",
     "visibility": "Quién puede encontrar este evento",
     "opens": "La inscripción abre",
-    "closes": "La inscripción cierra"
+    "closes": "La inscripción cierra",
+    "zone_hint": "Las horas están en la zona horaria del evento ({{zone}}).",
+    "time_not_in_zone": "Esa hora no existe en {{zone}} por el cambio de horario. Elige otra hora."
   },
   "messaging": {
     "title": "Mensajes",
@@ -22,7 +24,9 @@
     "offset_10080": "1 semana antes",
     "reply_to": "Dirección de respuesta",
     "reply_to_placeholder": "tu@ejemplo.org",
-    "reply_to_unverified": "Las respuestas todavía no llegan a una dirección del anfitrión; esto se guarda para cuando esa función esté lista."
+    "reply_to_unverified": "Las respuestas todavía no llegan a una dirección del anfitrión; esto se guarda para cuando esa función esté lista.",
+    "reminders_max_one": "Elige hasta {{count}}.",
+    "reminders_max_other": "Elige hasta {{count}}."
   },
   "donations": {
     "title": "Donaciones",

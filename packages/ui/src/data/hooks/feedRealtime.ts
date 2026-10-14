@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { FEED_COUNTS_MAX_IDS } from "@civfix/shared"
 import { useApi, useAuthState, useChatSocket } from "../context"
-import { useFeedLiveStore } from "../../bodies/feed/feedLiveStore"
+import { useFeedLiveStore } from "../feedLiveStore"
 import { patchPostCountsInCaches } from "./posts"
 
 export const FEED_COUNTS_DEBOUNCE_MS = 2000

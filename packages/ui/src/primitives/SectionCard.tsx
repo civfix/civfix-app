@@ -59,7 +59,7 @@ export function SectionCard({
               </>
             ) : null}
             {rows.map((row, index) => (
-              <React.Fragment key={index}>
+              <React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>
                 {index > 0 ? <View style={rowDivider} /> : null}
                 {row}
               </React.Fragment>

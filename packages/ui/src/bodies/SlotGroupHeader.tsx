@@ -4,6 +4,7 @@ import { timeRangeLabel } from "@civfix/shared/datetime"
 import { headingLevel, makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { useLocale, useT } from "../i18n"
+import { slotGroupHeaderA11yLabel } from "./rosterSlotGroups"
 
 export interface SlotGroupHeaderProps {
   title: string
@@ -26,12 +27,13 @@ export function SlotGroupHeader({
   const { t } = useT("event-slots")
   const { locale } = useLocale()
   const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale, timeZone) : null
+  const a11yLabel = slotGroupHeaderA11yLabel(t, { title, range, claimed, capacity })
   return (
     <View
       style={styles.slotHeaderBlock}
       accessibilityRole="header"
       {...headingLevel(2)}
-      {...(range ? { accessibilityLabel: t("roster.window_a11y", { title, range }) } : {})}
+      {...(a11yLabel ? { accessibilityLabel: a11yLabel } : {})}
     >
       <View style={styles.slotHeader}>
         <Text style={styles.slotHeaderTitle} numberOfLines={1}>

@@ -3,9 +3,9 @@ import { WsServerMessageSchema, MESSAGE_BODY_MAX, EDIT_WINDOW_HOURS } from "../s
 import { EditMessageRequestSchema } from "../src/schemas/chat.js"
 
 /**
- * Chat P0 contract: the message_update server frame (full refreshed DTO, upsert-by-id), the unified
- * roomKind-scoped edit request, and the raised body limit + edit window constants shared by the
- * gateway, REST layer, and both clients.
+ * Chat edit contract: the message_update server frame (full refreshed DTO, upsert-by-id), the unified
+ * roomKind-scoped edit request, and the body limit + edit window constants shared by the gateway, REST
+ * layer, and both clients.
  */
 
 const ROOM = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"

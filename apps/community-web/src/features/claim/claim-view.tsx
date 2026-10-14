@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ShieldCheck, CheckCircle2, MapPin, Loader2, ArrowRight } from "lucide-react"
-import type { ReportDTO } from "@civfix/shared"
+import { ErrorCode, type ReportDTO, toAppError } from "@civfix/shared"
 
 import { useT } from "@civfix/ui/i18n"
 
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { api } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import { useIsAuthenticated } from "@/hooks/use-auth"
 import { useUiStore } from "@/store/ui-store"
 import { readClaimHandoff, clearClaimHandoff, saveClaimHandoff } from "@/store/claim-handoff"
@@ -21,29 +22,18 @@ import { createClaimGate, runGuardedClaim, type ClaimGate } from "@/features/cla
 
 type Phase = "intro" | "claiming" | "done" | "error"
 
-/**
- * /claim - link an anonymously-submitted report to the signed-in account.
- *
- * Source of the claim code, in order: the `code` query param (from the PostDrop nudge link), then the
- * localStorage handoff saved at submit time, then GET /claim/nudge (the server's pending claim when
- * the code is implicit / cookie-bound). If still missing, we show a "nothing to claim" state.
- *
- * Flow:
- *   - Signed out: show the value prop and open the auth modal (Google / Apple / email OTP). We watch
- *     auth state and proceed automatically once the user signs in.
- *   - Signed in: POST /claim/report { claimCode }, then show the now-linked ReportDTO with links to
- *     its pin and to the home "Your reports".
- *
- * Invalid / expired codes surface a clear error with a retry path. All network steps are best-effort
- * and degrade gracefully offline.
- */
-/** One claim gate per mounted page, created lazily (a ref, so it survives every re-render). */
+/** A ref, so the one gate per mounted page survives every re-render. */
 function useClaimGate(): ClaimGate {
   const ref = React.useRef<ClaimGate | null>(null)
   if (ref.current === null) ref.current = createClaimGate()
   return ref.current
 }
 
+/**
+ * Links an anonymously submitted report to the signed-in account. The claim code comes from the `code`
+ * query param, then the localStorage handoff saved at submit time, then POST /claim/nudge (the server's
+ * pending claim when the code is cookie-bound).
+ */
 export function ClaimView() {
   const { t } = useT("web-claims")
   const router = useRouter()
@@ -58,17 +48,14 @@ export function ClaimView() {
   const [phase, setPhase] = React.useState<Phase>("intro")
   const [report, setReport] = React.useState<ReportDTO | null>(null)
   const [error, setError] = React.useState<string | null>(null)
-  // Guard so the auto-claim effect runs the POST at most once.
+  const [nudgeFailed, setNudgeFailed] = React.useState(false)
+  const [nudgeAttempt, setNudgeAttempt] = React.useState(0)
   const claimAttempted = React.useRef(false)
-  // Sequences the claim POSTs so only the LATEST attempt may write the page state (see claim-run.ts).
   const claimGate = useClaimGate()
 
-  // Track a LATER change to ?code= (an in-app navigation from a notification carrying a different
-  // code): the state above only seeds the first value, so without this the page would keep claiming the
-  // previous report. Re-arm the auto-claim guard so the new code is actually attempted - and ABANDON any
-  // claim still in flight for the old code, otherwise it resolves into this reset and forces phase
-  // "done" (announcing the OLD report as linked, wiping the handoff, and leaving the new code, whose
-  // auto-claim needs phase "intro", never attempted).
+  // The state above only seeds the first ?code=, and a notification can navigate in with a different
+  // one. Re-arm the auto-claim and abandon the old code's in-flight claim, which would otherwise resolve
+  // into this reset, force phase "done" and keep the new code from ever being attempted.
   React.useEffect(() => {
     if (queryCode && queryCode !== claimCode) {
       claimGate.abandon()
@@ -78,11 +65,15 @@ export function ClaimView() {
     }
   }, [queryCode, claimCode, claimGate])
 
-  // Resolve the claim code from the handoff / nudge when not provided in the URL.
   React.useEffect(() => {
     if (claimCode) {
-      // If we also have a report id from the URL or handoff, keep the handoff fresh for retries.
-      if (queryReport) saveClaimHandoff({ reportId: queryReport, claimCode })
+      // A code from the URL is about to be scrubbed from the address bar, so the handoff is the only copy
+      // a reload or a sign-in round trip can read back.
+      if (claimCode === queryCode) {
+        const saved = readClaimHandoff()
+        const reportId = queryReport ?? (saved?.claimCode === claimCode ? saved.reportId : null)
+        saveClaimHandoff({ reportId, claimCode })
+      }
       return
     }
     const handoff = readClaimHandoff()
@@ -90,7 +81,6 @@ export function ClaimView() {
       setClaimCode(handoff.claimCode)
       return
     }
-    // Implicit: ask the server for a pending claim bound to this session/cookie.
     let cancelled = false
     api
       .claimNudge({})
@@ -99,13 +89,22 @@ export function ClaimView() {
         setClaimCode(res.claimCode)
         saveClaimHandoff({ reportId: res.reportId, claimCode: res.claimCode })
       })
-      .catch(() => {
-        // No pending claim (or backend down): stay on the intro with a "nothing to claim" message.
+      .catch((err: unknown) => {
+        if (cancelled) return
+        // NOT_FOUND is the server's "no pending claim" answer and leaves the "nothing to claim" state;
+        // anything else (offline, 5xx, rate limit) is unknown, so offer a retry instead.
+        if (toAppError(err).code !== ErrorCode.NOT_FOUND) setNudgeFailed(true)
       })
     return () => {
       cancelled = true
     }
-  }, [claimCode, queryReport])
+  }, [claimCode, queryCode, queryReport, nudgeAttempt])
+
+  // Runs after the effects above have taken the code into state and the handoff, which is what a reload
+  // of the cleaned-up address reads.
+  React.useEffect(() => {
+    if (queryCode || queryReport) scrubClaimParamsFromUrl()
+  }, [queryCode, queryReport])
 
   const runClaim = React.useCallback(async () => {
     if (!claimCode) return
@@ -133,7 +132,6 @@ export function ClaimView() {
     })
   }, [claimCode, claimGate, t])
 
-  // Auto-run the claim once the user is authenticated and we have a code.
   React.useEffect(() => {
     if (isAuthenticated && claimCode && !claimAttempted.current && phase === "intro") {
       claimAttempted.current = true
@@ -161,6 +159,15 @@ export function ClaimView() {
             }
           }}
         />
+      ) : nudgeFailed && !claimCode ? (
+        <ErrorState
+          title={t("lookup_failed.title")}
+          message={t("lookup_failed.body")}
+          onRetry={() => {
+            setNudgeFailed(false)
+            setNudgeAttempt((n) => n + 1)
+          }}
+        />
       ) : (
         <Intro
           hasCode={Boolean(claimCode)}
@@ -171,6 +178,20 @@ export function ClaimView() {
       )}
     </DetailShell>
   )
+}
+
+/**
+ * The claim code is a bearer capability: whoever holds it can link the report into their account. Keep
+ * it out of the address bar (screenshots, shared links, session history) once the page has captured it.
+ */
+function scrubClaimParamsFromUrl(): void {
+  if (typeof window === "undefined") return
+  const params = new URLSearchParams(window.location.search)
+  params.delete("code")
+  params.delete("report")
+  const search = params.toString()
+  const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`
+  replaceUrlInPlace(url)
 }
 
 function Intro({
@@ -190,6 +211,7 @@ function Intro({
       <EmptyState
         icon={<ShieldCheck className="h-6 w-6" aria-hidden="true" />}
         title={t("empty.title")}
+        titleAs="h1"
         body={t("empty.body")}
         action={
           <Button variant="outline" onClick={onBrowse}>
@@ -255,7 +277,6 @@ function ClaimedReport({ report }: { report: ReportDTO }) {
         <p className="mt-1.5 text-token-15 text-ink-3">{t("linked.body")}</p>
       </div>
 
-      {/* Linked report card */}
       <div className="mt-6 rounded-lg border border-ink-5 bg-cardflat p-4 shadow-s1">
         <div className="flex items-center justify-between gap-3">
           <span className="truncate font-display text-token-18 font-bold text-ink">{title}</span>
@@ -293,11 +314,20 @@ function ClaimingState() {
   )
 }
 
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+function ErrorState({
+  title,
+  message,
+  onRetry,
+}: {
+  title?: string
+  message: string
+  onRetry: () => void
+}) {
   const { t } = useT("web-claims")
   return (
     <EmptyState
-      title={t("error.title")}
+      title={title ?? t("error.title")}
+      titleAs="h1"
       body={message}
       action={
         <Button variant="outline" onClick={onRetry}>
@@ -308,12 +338,7 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
   )
 }
 
-/**
- * Friendly copy for claim errors a user can act on.
- *
- * Maps server error CODES → localized client strings (per i18n spec §6) while keeping
- * `errorMessage`'s public API intact. The caller (a component) supplies the bound `t`.
- */
+/** Maps server error codes, never raw server message text, to localized copy. */
 function claimErrorMessage(err: unknown, t: (key: string) => string): string {
   return errorMessage(
     err,

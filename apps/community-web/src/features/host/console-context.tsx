@@ -61,7 +61,7 @@ export function useConsoleNavigation(): ConsoleNavigation {
 
 export interface ConsoleEventContext {
   eventId: string
-  event: CleanupDTO | null
+  event: CleanupDTO
   can: (capability: HostCapability) => boolean
 }
 
@@ -73,7 +73,7 @@ export function ConsoleEventProvider({
   children,
 }: {
   eventId: string
-  event: CleanupDTO | null
+  event: CleanupDTO
   children: ReactNode
 }) {
   const viewerId = useAuthState().user?.id ?? null
@@ -98,20 +98,24 @@ export interface ConsoleOrgContext {
   orgId: string
   org: OrganizationDTO
   myRole: OrganizationMemberRole | null
-  /** The single owner: role changes, removals, payments. */
   isOwner: boolean
   /** Admin OR owner: profile, verification, invites. */
-  isAdmin: boolean
-  /** Shorthand for isOwner || isAdmin - what the manage-only sections gate on. */
   canManage: boolean
   /**
-   * Operator-suspended (0.41.0 `OrganizationDTO.suspended`): members keep reading, but the backend
-   * refuses every org-scoped write with FORBIDDEN, so the console disables its submit buttons.
+   * Operator-suspended: members keep reading, but the backend refuses every org-scoped write with
+   * FORBIDDEN, so the console disables its submit buttons.
    */
   isSuspended: boolean
 }
 
 const OrgContext = createContext<ConsoleOrgContext | null>(null)
+
+export function orgRoleFlags(
+  myRole: OrganizationMemberRole | null | undefined,
+): Pick<ConsoleOrgContext, "isOwner" | "canManage"> {
+  const isOwner = myRole === "owner"
+  return { isOwner, canManage: isOwner || myRole === "admin" }
+}
 
 export function ConsoleOrgProvider({
   org,
@@ -122,15 +126,11 @@ export function ConsoleOrgProvider({
 }) {
   const value = useMemo<ConsoleOrgContext>(() => {
     const myRole = org.myRole ?? null
-    const isOwner = myRole === "owner"
-    const isAdmin = isOwner || myRole === "admin"
     return {
       orgId: org.id,
       org,
       myRole,
-      isOwner,
-      isAdmin,
-      canManage: isAdmin,
+      ...orgRoleFlags(myRole),
       isSuspended: org.suspended === true,
     }
   }, [org])

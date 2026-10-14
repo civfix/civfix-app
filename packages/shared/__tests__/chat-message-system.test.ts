@@ -3,9 +3,8 @@ import { ChatMessageDTOSchema, ChatMessageKindSchema } from "../src/schemas/enti
 import type { PersonDTO } from "../src/schemas/entities.js"
 
 /**
- * Task D-S1: widen the shared chat DTOs so sender-less system messages (report status timeline
- * events pushed into report chat) are representable. Nothing consumes `system` yet — this only
- * asserts the contract parses.
+ * Sender-less system messages (report status timeline events pushed into report chat) must be
+ * representable in the shared chat DTOs; this only asserts the contract parses.
  */
 
 const AUTHOR: PersonDTO = {

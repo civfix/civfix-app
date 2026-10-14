@@ -12,7 +12,11 @@ function visibleFocusables(container: HTMLElement): HTMLElement[] {
   )
 }
 
-export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean) {
+export function useFocusTrap(
+  ref: RefObject<HTMLElement | null>,
+  active: boolean,
+  trap: boolean = true,
+) {
   useEffect(() => {
     if (!active) return
     const container = ref.current
@@ -25,6 +29,18 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
       container.tabIndex = -1
       container.focus()
     }
+
+    return () => {
+      previous?.focus?.()
+    }
+  }, [ref, active])
+
+  // Kept apart from the focus move so a viewport resize that toggles trapping does not yank
+  // focus back to the first control.
+  useEffect(() => {
+    if (!active || !trap) return
+    const container = ref.current
+    if (!container) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return
@@ -45,11 +61,8 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
     }
 
     container.addEventListener("keydown", handleKeyDown)
-    return () => {
-      container.removeEventListener("keydown", handleKeyDown)
-      previous?.focus?.()
-    }
-  }, [ref, active])
+    return () => container.removeEventListener("keydown", handleKeyDown)
+  }, [ref, active, trap])
 }
 
 type EscapeHandler = () => void

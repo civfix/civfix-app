@@ -13,7 +13,7 @@ export const ALLOWED_LINK_PREFIXES = [
   "/settings",
 ] as const
 
-export const ROOT_LINK = "/"
+const ROOT_LINK = "/"
 
 export function isInternalLink(link: string): boolean {
   if (!link.startsWith("/")) return false

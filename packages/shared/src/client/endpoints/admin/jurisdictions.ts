@@ -1,0 +1,103 @@
+import { def } from "../def.js"
+import {
+  DiscoveryListQuerySchema,
+  DiscoveryListResponseSchema,
+  GetDiscoveryTaskResponseSchema,
+  AddNoteRequestSchema,
+  FlagDiscoveryRequestSchema,
+  SaveDraftRequestSchema,
+} from "../../../schemas/admin/discovery.js"
+import {
+  SaveContactsRequestSchema,
+  JurisdictionListQuerySchema,
+  JurisdictionDirectoryResponseSchema,
+  JurisdictionGeometryRequestSchema,
+  JurisdictionGeometryResponseSchema,
+  PatchJurisdictionRequestSchema,
+} from "../../../schemas/admin/jurisdictions.js"
+import { AdminOkResponseSchema } from "../../../schemas/admin/common.js"
+
+export const adminJurisdictionEndpoints = {
+  listDiscovery: def({
+    method: "GET",
+    path: "/admin/discovery",
+    request: DiscoveryListQuerySchema,
+    response: DiscoveryListResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  getDiscoveryTask: def({
+    method: "GET",
+    path: "/admin/discovery/:id",
+    request: null,
+    response: GetDiscoveryTaskResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  addDiscoveryNote: def({
+    method: "POST",
+    path: "/admin/discovery/:id/notes",
+    request: AddNoteRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  flagDiscovery: def({
+    method: "POST",
+    path: "/admin/discovery/:id/flag",
+    request: FlagDiscoveryRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  saveDiscoveryDraft: def({
+    method: "POST",
+    path: "/admin/discovery/:id/draft",
+    request: SaveDraftRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+
+  saveJurisdictionContacts: def({
+    method: "POST",
+    path: "/admin/jurisdictions/:geoid/contacts",
+    request: SaveContactsRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  listJurisdictions: def({
+    method: "GET",
+    path: "/admin/jurisdictions",
+    request: JurisdictionListQuerySchema,
+    response: JurisdictionDirectoryResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  getJurisdictionGeometry: def({
+    method: "GET",
+    path: "/admin/jurisdictions/:geoid/geometry",
+    request: JurisdictionGeometryRequestSchema,
+    response: JurisdictionGeometryResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  patchJurisdiction: def({
+    method: "PATCH",
+    path: "/admin/jurisdictions/:geoid",
+    request: PatchJurisdictionRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const

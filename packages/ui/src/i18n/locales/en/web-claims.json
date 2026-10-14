@@ -33,5 +33,9 @@
       "unauthorized": "Please sign in again to link this report.",
       "fallback": "Something went wrong linking the report. Please try again."
     }
+  },
+  "lookup_failed": {
+    "title": "Couldn't check for your report",
+    "body": "We couldn't reach civfix to look for a report to claim. Check your connection and try again."
   }
 }

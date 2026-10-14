@@ -36,7 +36,6 @@
     "processing_title": "Las fotos aún se están procesando...",
     "processing_body_one": "Aparecerá aquí cuando termine de procesarse.",
     "processing_body_other": "{{count}} fotos aparecerán aquí cuando terminen de procesarse.",
-    "processing_a11y": "Las fotos aún se están procesando",
     "tile_processing": "Procesando...",
     "tile_rejected": "No se pudo publicar",
     "tile_held": "En revisión",

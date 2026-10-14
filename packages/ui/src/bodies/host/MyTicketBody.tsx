@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, ScrollView as RNScrollView } from "react-native"
+import {
+  Platform,
+  View,
+  ScrollView as RNScrollView,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native"
 import type { MyEventTicketSeat } from "@civfix/shared"
+import { formatTicketCode } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { PrimaryButton, SecondaryButton, QrTicket, useToast } from "../../primitives"
@@ -13,10 +20,10 @@ import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
-import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../errorCode"
+import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
+import { HostBodyState } from "./HostBodyState"
+import { ErrorCode, appErrorCode } from "@civfix/shared"
 import {
-  formatTicketCode,
   ticketPageIndex,
   ticketPageWidth,
   ticketQrSize,
@@ -25,6 +32,8 @@ import {
   ticketSeatOffset,
   ticketWhen,
 } from "./ticketModel"
+
+const WEB_PAGE_SCROLL_THROTTLE_MS = 100
 
 export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const styles = useStyles()
@@ -42,6 +51,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const [page, setPage] = useState(0)
   const [pagerWidth, setPagerWidth] = useState(0)
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
   const seededSeat = useRef(false)
   const pageRef = useRef(0)
 
@@ -72,6 +82,25 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
     pagerRef.current?.scrollTo({ x: ticketSeatOffset(pageRef.current, pageWidth), animated: false })
   }, [pageWidth, seatId, seats])
 
+  const seatCount = seats.length
+  const onPagerSettled = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+      goToPage(
+        ticketPageIndex(
+          event.nativeEvent.contentOffset.x,
+          ticketPageWidth(event.nativeEvent.layoutMeasurement.width),
+          seatCount,
+        ),
+      ),
+    [goToPage, seatCount],
+  )
+  // react-native-web never emits momentum events; its onScroll fires on a throttle and once more
+  // when the scroll settles.
+  const pagerSettleProps =
+    Platform.OS === "web"
+      ? { onScroll: onPagerSettled, scrollEventThrottle: WEB_PAGE_SCROLL_THROTTLE_MS }
+      : { onMomentumScrollEnd: onPagerSettled }
+
   const onAddToCalendar = useCallback(async () => {
     if (!ticket) return
     const served = await icsDocument.refetch()
@@ -94,29 +123,24 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
       { registrationId: ticket.registrationId },
       {
         onSuccess: () => {
+          setConfirmingCancel(false)
           toast.show(t("toast.cancelled"), { variant: "success" })
           useNavStore.getState().back()
         },
-        onError: (err) =>
-          setErrorText(appErrorCode(err) === "CONFLICT" ? t("outcome.closed") : t("error.generic")),
+        onError: (err) => {
+          setConfirmingCancel(false)
+          setErrorText(appErrorCode(err) === ErrorCode.CONFLICT ? t("outcome.closed") : t("error.generic"))
+        },
       },
     )
   }, [cancel, t, ticket, toast])
 
   if (query.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (query.isError || !ticket) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   const waitlisted = ticket.waitlistPosition != null
@@ -170,15 +194,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
             pagingEnabled={seats.length > 1}
             showsHorizontalScrollIndicator={false}
             onLayout={(event) => setPagerWidth(event.nativeEvent.layout.width)}
-            onMomentumScrollEnd={(event) =>
-              goToPage(
-                ticketPageIndex(
-                  event.nativeEvent.contentOffset.x,
-                  ticketPageWidth(event.nativeEvent.layoutMeasurement.width),
-                  seats.length,
-                ),
-              )
-            }
+            {...pagerSettleProps}
             style={styles.pager}
           >
             {seats.map((seat, index) => (
@@ -224,21 +240,26 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
         {ticket.canCancel ? (
           <SecondaryButton
             label={t("mine.cancel")}
-            onPress={onCancel}
+            onPress={() => setConfirmingCancel(true)}
             size="sm"
             disabled={cancel.isPending}
           />
         ) : null}
       </View>
+
+      <CancelRegistrationSheet
+        visible={confirmingCancel}
+        waitlisted={waitlisted}
+        pending={cancel.isPending}
+        onConfirm={onCancel}
+        onClose={() => setConfirmingCancel(false)}
+      />
     </ScrollView>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
-    flex: 1,
-  },
-  fill: {
     flex: 1,
   },
   content: {

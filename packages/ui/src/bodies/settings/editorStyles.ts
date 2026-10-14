@@ -3,12 +3,12 @@ import { makeThemedStyles } from "../../theme"
 export const useEditorStyles = makeThemedStyles((t) => ({
   note: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   hint: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   hintError: {

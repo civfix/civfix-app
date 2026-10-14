@@ -2,6 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from "react"
 
+import { CONSOLE_ROOT } from "./route"
+
 export const CONSOLE_REPLACE_PARAM_KEYS = [
   "tab",
   "q",
@@ -32,7 +34,6 @@ export const CONSOLE_PARAM_KEYS = [
   ...CONSOLE_PUSH_PARAM_KEYS,
 ] as const
 
-export type ConsoleReplaceParamKey = (typeof CONSOLE_REPLACE_PARAM_KEYS)[number]
 export type ConsolePushParamKey = (typeof CONSOLE_PUSH_PARAM_KEYS)[number]
 export type ConsoleParamKey = (typeof CONSOLE_PARAM_KEYS)[number]
 
@@ -41,13 +42,10 @@ export type ConsoleParamPatch = Partial<Record<ConsoleParamKey, string | null>>
 export type UrlWriteMode = "push" | "replace"
 
 const URL_STATE_EVENT = "civfix-console:urlstate"
+const CONSOLE_HOME = `${CONSOLE_ROOT}/`
 
 const KNOWN_KEYS = new Set<string>(CONSOLE_PARAM_KEYS)
 const PUSH_KEYS = new Set<string>(CONSOLE_PUSH_PARAM_KEYS)
-
-export function isConsoleParamKey(key: string): key is ConsoleParamKey {
-  return KNOWN_KEYS.has(key)
-}
 
 export function isDrawerParamKey(key: string): key is ConsolePushParamKey {
   return PUSH_KEYS.has(key)
@@ -150,10 +148,6 @@ function subscribe(onChange: () => void): () => void {
   }
 }
 
-export function getConsoleParams(): ConsoleParams {
-  return paramsSnapshot()
-}
-
 export function setConsoleParams(patch: ConsoleParamPatch, mode?: UrlWriteMode): void {
   if (typeof window === "undefined") return
   const next = applyConsolePatch(paramsSnapshot(), patch)
@@ -174,12 +168,25 @@ export function drawerClosePlan(state: unknown): DrawerClosePlan {
 
 export function closeConsoleDrawer(keys: readonly ConsoleParamKey[]): void {
   if (typeof window === "undefined") return
+  const patch: ConsoleParamPatch = {}
+  for (const key of keys) patch[key] = null
   if (drawerClosePlan(window.history.state) === "back") {
+    const { pathname, hash } = window.location
+    const expected = serializeConsoleParams(applyConsolePatch(paramsSnapshot(), patch))
+    // A non-modal drawer leaves the page filters usable, and their replace writes land on the
+    // drawer's own entry. Carry them onto the entry Back returns to instead of reverting them.
+    window.addEventListener(
+      "popstate",
+      () => {
+        if (window.location.pathname !== pathname) return
+        if (serializeConsoleParams(parseConsoleSearch(window.location.search)) === expected) return
+        window.history.replaceState(window.history.state, "", `${pathname}${expected}${hash}`)
+      },
+      { once: true },
+    )
     window.history.back()
     return
   }
-  const patch: ConsoleParamPatch = {}
-  for (const key of keys) patch[key] = null
   setConsoleParams(patch, "replace")
 }
 
@@ -212,8 +219,8 @@ export function useConsoleUrlState(): ConsoleUrlState {
 export function useConsolePathname(): string {
   return useSyncExternalStore(
     subscribe,
-    () => (typeof window === "undefined" ? "/manage/" : window.location.pathname),
-    () => "/manage/",
+    () => (typeof window === "undefined" ? CONSOLE_HOME : window.location.pathname),
+    () => CONSOLE_HOME,
   )
 }
 

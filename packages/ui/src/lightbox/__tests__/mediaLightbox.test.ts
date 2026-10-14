@@ -34,9 +34,11 @@ describe("the lightbox controls sit in the safe area", () => {
   })
 
   it("positions the close button and both chevrons from those offsets", () => {
-    expect(base).toContain("styles.controlBase, offsets.close,")
-    expect(base).toContain("styles.controlBase, offsets.prev,")
-    expect(base).toContain("styles.controlBase, offsets.next,")
+    expect(base).toContain("style={(state) => [styles.controlBase, offset, webCursor(false),")
+    expect(base.match(/styles\.controlBase,/g)).toHaveLength(1)
+    for (const control of ["close", "prev", "next"]) {
+      expect(base).toContain(`offset={offsets.${control}}`)
+    }
     expect(base).not.toMatch(/closeButton: \{/)
     expect(base).not.toMatch(/top: t\.space/)
   })
@@ -141,7 +143,7 @@ describe("the native gesture set", () => {
   })
 
   it("hoists the reanimated timing config out of every worklet", () => {
-    expect(native).toMatch(/^const SETTLE_CFG = timingConfig\(motion\.pageSwipeSettle\)$/m)
+    expect(native).toMatch(/^const SETTLE_CFG = timingConfig\(motion\.zoomSettle\)$/m)
     expect(native).not.toMatch(/withTiming\([^,]+, timingConfig\(/)
   })
 
@@ -218,6 +220,21 @@ describe("the web pointer surface", () => {
   it("holds the full-screen surface until the zoom-out transition ends", () => {
     expect(web).toMatch(/unzoomTimer\.current = window\.setTimeout\(/)
     expect(web).toContain("useEffect(() => clearUnzoomTimer, [clearUnzoomTimer])")
+  })
+
+  it("snaps without a transition when the viewer asks for reduced motion", () => {
+    expect(web).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(web).toContain("const animate = animated && !reduceMotionRef.current")
+    expect(web).toContain('node.style.transitionProperty = animate ? "transform" : "none"')
+    expect(web).toContain("node.style.transitionDuration = `${animate ? SETTLE_MS : 0}ms`")
+    expect(web).toContain('if (!animate || typeof window === "undefined") {')
+  })
+
+  it("zooms from the keyboard about the centre, and removes the listener with the others", () => {
+    expect(web).toContain("const action = zoomKeyAction(event)")
+    expect(web).toMatch(/focalX: rect\.width \/ 2,\s*focalY: rect\.height \/ 2,/)
+    expect(web).toContain('window.addEventListener("keydown", onKeyDown)')
+    expect(web).toContain('window.removeEventListener("keydown", onKeyDown)')
   })
 
   it("reads the pointer-worded zoom hint, not the touch one", () => {

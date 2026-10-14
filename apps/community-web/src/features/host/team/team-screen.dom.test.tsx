@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import type { EventTeamMemberDTO, PersonDTO } from "@civfix/shared"
+import type { CleanupDTO, EventTeamMemberDTO, PersonDTO } from "@civfix/shared"
 import { EventTeamRoleSchema, SetMemberRoleRequestSchema } from "@civfix/shared"
 
 vi.mock("@civfix/ui/i18n", async () => {
@@ -16,6 +16,7 @@ import { TeamScreen } from "./team-screen"
 
 const EVENT_ID = "33333333-3333-4333-8333-333333333333"
 const MEMBER_ID = "44444444-4444-4444-8444-444444444444"
+const EVENT = { id: EVENT_ID, title: "River day", myCapabilities: [] } as unknown as CleanupDTO
 
 function person(over: Partial<PersonDTO> = {}): PersonDTO {
   return {
@@ -49,7 +50,7 @@ function renderTeam(members: EventTeamMemberDTO[]) {
     revokeEventTeamInvite: vi.fn(),
   }
   const view = renderConsole(
-    <ConsoleEventProvider eventId={EVENT_ID} event={null}>
+    <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <TeamScreen />
     </ConsoleEventProvider>,
     { api: client as never },
@@ -115,7 +116,7 @@ describe("TeamScreen role cell", () => {
     )
   })
 
-  it("lets a STAFF member be moved, which the old two-value cell could not do", async () => {
+  it("offers the role cell for a STAFF member", async () => {
     renderTeam([member({ role: "staff" })])
     expect(await screen.findByLabelText("role.change_a11y(name=Rosa)")).toBeTruthy()
   })
@@ -190,5 +191,19 @@ describe("TeamScreen invite drawer", () => {
         role: "coordinator",
       }),
     )
+  })
+
+  it("drops a pasted leading @ from a handle, as the organization invite does", async () => {
+    const user = userEvent.setup()
+    const { client } = renderTeam([member()])
+    await user.click(await screen.findByRole("button", { name: /invite.action/ }))
+    await user.type(screen.getByLabelText("invite.handle"), " @rosa ")
+    await user.click(screen.getByRole("button", { name: "invite.send" }))
+
+    await waitFor(() => expect(client.inviteEventTeamMember).toHaveBeenCalledTimes(1))
+    expect(client.inviteEventTeamMember.mock.calls[0]![0]).toMatchObject({
+      identifierKind: "handle",
+      identifier: "rosa",
+    })
   })
 })

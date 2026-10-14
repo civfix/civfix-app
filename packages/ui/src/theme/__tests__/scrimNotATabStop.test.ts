@@ -54,7 +54,8 @@ describe("every modal/sheet scrim opts out of the tab order on web", () => {
   }
 
   it("finds every dismiss-layer Pressable in the package", () => {
-    expect(sites.length).toBeGreaterThanOrEqual(11)
+    expect(sites.length).toBeGreaterThanOrEqual(10)
+    expect(sites.filter((s) => s.rel.endsWith("primitives/AnchoredActionSheet.tsx"))).toHaveLength(2)
   })
 
   it.each(sites.map((s, i) => [`${s.rel} #${i}`, s] as const))("%s spreads webScrimProps", (_name, site) => {

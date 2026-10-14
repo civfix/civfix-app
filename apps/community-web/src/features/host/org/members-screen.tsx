@@ -24,7 +24,7 @@ import { invalidateOrg } from "../console-invalidate"
 import { InviteMemberDrawer } from "./invite-member-drawer"
 import type { InvitableRole } from "./invite-member-drawer"
 import { PendingInvites } from "./pending-invites"
-import { suspendedForbiddenCopy } from "./suspended-banner"
+import { suspendedForbiddenCopy } from "./org-copy"
 
 export const SETTABLE_ORG_ROLES = ["admin", "member"] as const satisfies readonly InvitableRole[]
 
@@ -39,7 +39,7 @@ interface PendingRemoval {
   name: string
 }
 
-export function useOrgMembers(orgId: string) {
+function useOrgMembers(orgId: string) {
   const api = useApi()
   return useInfiniteQuery<ListOrganizationMembersResponse>({
     queryKey: consoleKeys.orgMembers(orgId),
@@ -127,7 +127,7 @@ export function MembersScreen() {
             <p className="text-token-12 text-console-ink-3">
               {t("members.subtitle", {
                 defaultValue:
-                  "Owners manage roles and billing; admins run the profile and events; members see the roster.",
+                  "Owners manage roles; admins run the profile and events; members see the roster.",
               })}
             </p>
           </div>

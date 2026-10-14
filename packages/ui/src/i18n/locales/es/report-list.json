@@ -7,7 +7,9 @@
   "search": {
     "placeholder": "Buscar tus reportes",
     "a11y": "Buscar tus reportes",
-    "clear_a11y": "Borrar búsqueda"
+    "clear_a11y": "Borrar búsqueda",
+    "partial_one": "Mostrando coincidencias de tu reporte más reciente.",
+    "partial_other": "Mostrando coincidencias de tus {{count}} reportes más recientes."
   },
   "empty": {
     "no_match": {

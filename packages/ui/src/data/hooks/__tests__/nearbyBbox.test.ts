@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest"
-import {
-  KM_PER_LAT_DEGREE,
-  NEARBY_KEY_PRECISION,
-  NEARBY_RADIUS_KM,
-  PIN_SPAN_MAX_DEG,
-  bboxAround,
-  clampLat,
-  clampLng,
-  roundNearbyCoord,
-} from "../nearbyBbox"
+import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../geoBounds"
+import { KM_PER_LAT_DEGREE, NEARBY_KEY_PRECISION, NEARBY_RADIUS_KM, bboxAround, roundNearbyCoord } from "../nearbyBbox"
 
 const at5 = (n: number) => Number(n.toFixed(5))
 

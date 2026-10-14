@@ -9,7 +9,9 @@
     "title": "Registration",
     "visibility": "Who can find this event",
     "opens": "Registration opens",
-    "closes": "Registration closes"
+    "closes": "Registration closes",
+    "zone_hint": "Times are in the event's time zone ({{zone}}).",
+    "time_not_in_zone": "That time does not exist in {{zone}} because the clocks change. Pick another time."
   },
   "messaging": {
     "title": "Messaging",
@@ -22,7 +24,9 @@
     "offset_10080": "1 week before",
     "reply_to": "Reply-to address",
     "reply_to_placeholder": "you@example.org",
-    "reply_to_unverified": "Replies are not yet delivered to a host address; this is stored for when that ships."
+    "reply_to_unverified": "Replies are not yet delivered to a host address; this is stored for when that ships.",
+    "reminders_max_one": "Pick up to {{count}}.",
+    "reminders_max_other": "Pick up to {{count}}."
   },
   "donations": {
     "title": "Donations",

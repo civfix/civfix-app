@@ -1,15 +1,6 @@
 /**
- * BlurSurface (platform-agnostic default).
- *
- * The barrel imports `./BlurSurface`. At BUNDLE time the platform resolvers pick a sibling seam by
- * extension before this file is ever consulted:
- *   - Metro (native) resolves `./BlurSurface` -> BlurSurface.native.tsx (expo-blur).
- *   - webpack / Next (web) resolves `./BlurSurface` -> BlurSurface.web.tsx (CSS backdrop-filter),
- *     because next.config prepends `.web.tsx` to resolve.extensions.
- *
- * This extension-less file is only consulted by tooling that has NO platform awareness - chiefly
- * `tsc` (typecheck + the .d.ts build) and any plain Node resolver. It re-exports the web seam so that
- * tooling gets a concrete, correct implementation + types. Importing the explicit `./BlurSurface.web`
- * specifier (not the bare `./BlurSurface`) avoids resolving back into this same module.
+ * Seam selector: Metro resolves `./BlurSurface` to the .native file and web bundlers to the .web file, so
+ * only platform-unaware tooling (tsc, plain Node) reads this one. It imports the explicit `.web` specifier
+ * because the bare one would resolve back into this module.
  */
 export { BlurSurface } from "./BlurSurface.web"

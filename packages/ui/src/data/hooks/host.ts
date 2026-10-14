@@ -1,12 +1,8 @@
-import { useRef, useState } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AcceptEventTeamInviteResponse,
   AcceptMyEventInviteResponse,
-  BroadcastDTO,
-  BroadcastSegment,
-  BroadcastStatus,
   CheckinResultDTO,
   CleanupMemberRole,
   CreateWalkupRegistrationRequest,
@@ -19,7 +15,6 @@ import type {
   EventTeamRole,
   EventQuestionDTO,
   EventWaitlistEntryDTO,
-  HostBroadcastChannel,
   HostCapability,
   HostedEventDTO,
   InviteEventTeamMemberResponse,
@@ -37,16 +32,16 @@ import type {
   TicketTypeDTO,
 } from "@civfix/shared"
 import { hostCapabilities } from "@civfix/shared/host"
-import { appErrorCode } from "../../bodies/errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
-import { cleanupDetailFilters } from "./cleanups"
+import { listItems } from "../types"
+import { cleanupDetailFilters, invalidateCleanupLists } from "./cleanups"
 
-export const HOST_COUNTERS_POLL_MS = 20_000
+const HOST_COUNTERS_POLL_MS = 20_000
 
-export const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS
+const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS
 
-export const INSIGHTS_IDLE_POLL_MS = 5 * 60_000
+const INSIGHTS_IDLE_POLL_MS = 5 * 60_000
 
 export const HOST_ROSTER_PAGE_SIZE = 50
 
@@ -60,7 +55,7 @@ const NO_LEGACY_CAPABILITIES: ReadonlySet<HostCapability> = hostCapabilities({
   orgRole: null,
 })
 
-export function legacyRoleCapabilities(cleanup: HostStandingView): ReadonlySet<HostCapability> {
+function legacyRoleCapabilities(cleanup: HostStandingView): ReadonlySet<HostCapability> {
   if (cleanup.myCapabilities.length > 0) return NO_LEGACY_CAPABILITIES
   return hostCapabilities({ eventRole: cleanup.myRole ?? null, orgRole: null })
 }
@@ -187,7 +182,7 @@ export function useEventTicketTypes(id: string | undefined, opts: { enabled?: bo
   return useQuery<TicketTypeDTO[]>({
     queryKey: queryKeys.hostTicketTypes(id ?? "unknown"),
     enabled: !!id && (opts.enabled ?? true),
-    queryFn: async () => (await api.listEventTicketTypes({ id: id as string })).items,
+    queryFn: async () => listItems((await api.listEventTicketTypes({ id: id as string }))?.items),
     retry: false,
   })
 }
@@ -197,7 +192,7 @@ export function useEventQuestions(id: string | undefined, opts: { enabled?: bool
   return useQuery<EventQuestionDTO[]>({
     queryKey: queryKeys.hostQuestions(id ?? "unknown"),
     enabled: !!id && (opts.enabled ?? true),
-    queryFn: async () => (await api.listEventQuestions({ id: id as string })).items,
+    queryFn: async () => listItems((await api.listEventQuestions({ id: id as string }))?.items),
     retry: false,
   })
 }
@@ -256,23 +251,6 @@ export function useAcceptEventTeamInvite(id: string) {
   })
 }
 
-export function useHostWaitlist(id: string | undefined, opts: { enabled?: boolean } = {}) {
-  const api = useApi()
-  const { isAuthenticated } = useAuthState()
-  return useInfiniteQuery({
-    queryKey: queryKeys.hostWaitlist(id ?? "unknown"),
-    enabled: !!id && isAuthenticated && (opts.enabled ?? true),
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      api.listEventWaitlist({
-        id: id as string,
-        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
-      }),
-    getNextPageParam: (lastPage: { nextCursor?: string | null }) => lastPage.nextCursor ?? undefined,
-    retry: false,
-  })
-}
-
 export function useMyEventTicket(id: string | undefined, opts: { enabled?: boolean } = {}) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
@@ -296,7 +274,7 @@ export function useRegisterForEvent(id: string) {
       }
       invalidateHostEvent(qc, id)
       void qc.invalidateQueries({ queryKey: queryKeys.myTickets(id) })
-      void qc.invalidateQueries({ queryKey: ["cleanups"] })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -315,7 +293,7 @@ export function useCancelEventRegistration(id: string) {
     onSuccess: () => {
       invalidateHostEvent(qc, id)
       void qc.invalidateQueries({ queryKey: queryKeys.myTickets(id) })
-      void qc.invalidateQueries({ queryKey: ["cleanups"] })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -370,166 +348,6 @@ export function useJoinEventWaitlist(id: string) {
   })
 }
 
-export function useLeaveEventWaitlist(id: string) {
-  const api = useApi()
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ ticketTypeId }: { ticketTypeId?: string } = {}) =>
-      api.leaveEventWaitlist({ id, ...(ticketTypeId ? { ticketTypeId } : {}) }),
-    onSuccess: () => invalidateHostEvent(qc, id),
-  })
-}
-
-export interface QuickBroadcastVars {
-  subject: string
-  bodyMd: string
-  segment: BroadcastSegment
-}
-
-export interface RetainedQuickDraft {
-  id: string
-  vars: QuickBroadcastVars
-}
-
-function sameSegment(a: BroadcastSegment, b: BroadcastSegment): boolean {
-  if (a.kind !== b.kind) return false
-  const aIds = "ids" in a ? a.ids : null
-  const bIds = "ids" in b ? b.ids : null
-  if (aIds === null || bIds === null) return aIds === bIds
-  return aIds.length === bIds.length && aIds.every((id, index) => id === bIds[index])
-}
-
-export function sameQuickBroadcastVars(a: QuickBroadcastVars, b: QuickBroadcastVars): boolean {
-  return a.subject === b.subject && a.bodyMd === b.bodyMd && sameSegment(a.segment, b.segment)
-}
-
-export function broadcastFanoutStarted(status: BroadcastStatus): boolean {
-  return status === "sending" || status === "sent"
-}
-
-export type QuickBroadcastResult =
-  | { kind: "sent"; broadcast: BroadcastDTO }
-  | { kind: "edits_lost"; broadcast: BroadcastDTO }
-
-export type QuickBroadcastDiscard = { kind: "discarded" } | { kind: "already_sending" }
-
-export interface QuickBroadcastPorts {
-  createDraft(vars: QuickBroadcastVars): Promise<{ id: string }>
-  update(broadcastId: string, vars: QuickBroadcastVars): Promise<BroadcastDTO>
-  send(broadcastId: string): Promise<BroadcastDTO>
-  read(broadcastId: string): Promise<BroadcastDTO>
-  discard(broadcastId: string): Promise<void>
-  retainDraft(draft: RetainedQuickDraft): void
-}
-
-async function applyDraftEdits(
-  ports: QuickBroadcastPorts,
-  broadcastId: string,
-  vars: QuickBroadcastVars,
-): Promise<BroadcastDTO | null> {
-  try {
-    await ports.update(broadcastId, vars)
-    return null
-  } catch (err) {
-    if (appErrorCode(err) !== "CONFLICT") throw err
-    const current = await ports.read(broadcastId)
-    if (!broadcastFanoutStarted(current.status)) throw err
-    return current
-  }
-}
-
-export async function sendQuickBroadcast(
-  ports: QuickBroadcastPorts,
-  vars: QuickBroadcastVars,
-  retained: RetainedQuickDraft | null,
-): Promise<QuickBroadcastResult> {
-  let draft = retained
-  if (draft === null) {
-    const created = await ports.createDraft(vars)
-    draft = { id: created.id, vars }
-    ports.retainDraft(draft)
-  } else if (!sameQuickBroadcastVars(draft.vars, vars)) {
-    const started = await applyDraftEdits(ports, draft.id, vars)
-    if (started !== null) return { kind: "edits_lost", broadcast: started }
-    draft = { id: draft.id, vars }
-    ports.retainDraft(draft)
-  }
-  try {
-    return { kind: "sent", broadcast: await ports.send(draft.id) }
-  } catch (err) {
-    if (appErrorCode(err) !== "CONFLICT") throw err
-    const current = await ports.read(draft.id)
-    if (!broadcastFanoutStarted(current.status)) throw err
-    return { kind: "sent", broadcast: current }
-  }
-}
-
-export async function discardQuickBroadcast(
-  ports: QuickBroadcastPorts,
-  broadcastId: string,
-): Promise<QuickBroadcastDiscard> {
-  try {
-    await ports.discard(broadcastId)
-    return { kind: "discarded" }
-  } catch (err) {
-    const code = appErrorCode(err)
-    if (code === "NOT_FOUND") return { kind: "discarded" }
-    if (code !== "CONFLICT") throw err
-    return { kind: "already_sending" }
-  }
-}
-
-export const DEFAULT_QUICK_CHANNELS: readonly HostBroadcastChannel[] = ["inapp", "push"]
-
-export function useQuickBroadcast(
-  id: string,
-  opts: { channels?: readonly HostBroadcastChannel[] } = {},
-) {
-  const api = useApi()
-  const qc = useQueryClient()
-  const channels = opts.channels ?? DEFAULT_QUICK_CHANNELS
-  const draftRef = useRef<RetainedQuickDraft | null>(null)
-  const [retainedDraft, setRetainedDraft] = useState<RetainedQuickDraft | null>(null)
-  const ports: QuickBroadcastPorts = {
-    createDraft: ({ subject, bodyMd, segment }) =>
-      api.createEventBroadcast({ id, subject, bodyMd, segment, channels: [...channels] }),
-    update: (broadcastId, { subject, bodyMd, segment }) =>
-      api.updateEventBroadcast({ id, broadcastId, subject, bodyMd, segment }),
-    send: (broadcastId) => api.sendEventBroadcast({ id, broadcastId }),
-    read: (broadcastId) => api.getEventBroadcast({ id, broadcastId }),
-    discard: async (broadcastId) => {
-      await api.deleteEventBroadcast({ id, broadcastId })
-    },
-    retainDraft: (draft) => {
-      draftRef.current = draft
-      setRetainedDraft(draft)
-    },
-  }
-  const release = () => {
-    draftRef.current = null
-    setRetainedDraft(null)
-  }
-  const mutation = useMutation<QuickBroadcastResult, unknown, QuickBroadcastVars>({
-    mutationFn: (vars) => sendQuickBroadcast(ports, vars, draftRef.current),
-    onSuccess: () => {
-      release()
-      invalidateHostEvent(qc, id)
-    },
-  })
-  const discard = useMutation<QuickBroadcastDiscard, unknown, void>({
-    mutationFn: async () => {
-      const draft = draftRef.current
-      if (draft === null) return { kind: "discarded" }
-      return discardQuickBroadcast(ports, draft.id)
-    },
-    onSuccess: () => {
-      release()
-      invalidateHostEvent(qc, id)
-    },
-  })
-  return { ...mutation, retainedDraft, discard }
-}
-
 export type HostedEventsWindow = "upcoming" | "past" | "all"
 
 export function useMyHostedEvents(when: HostedEventsWindow = "upcoming", orgId: string | null = null) {
@@ -556,13 +374,13 @@ export function hostedEventRows(
   return (pages ?? []).flatMap((page) => page.items)
 }
 
-export function invalidateMyEventInvites(qc: QueryClient): void {
+function invalidateMyEventInvites(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: queryKeys.myEventInvites })
   void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
   void qc.invalidateQueries({ queryKey: queryKeys.notificationsRoot })
 }
 
-export const MY_EVENT_INVITES_PAGE_SIZE = 50
+const MY_EVENT_INVITES_PAGE_SIZE = 50
 
 export function useMyEventInvites(opts: { enabled?: boolean } = {}) {
   const api = useApi()

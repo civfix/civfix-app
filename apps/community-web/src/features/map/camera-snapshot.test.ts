@@ -9,19 +9,14 @@ import {
 } from "@/features/map/camera-snapshot"
 
 /**
- * The persisted last-settled camera is what lets a returning visitor's map boot AT their metro (the
- * shared Map's `initialCenter` seed) so the load-time region fetch is the ONLY one - the fix for the
- * "map loads twice" cold-boot double fetch. These tests run in the node env (no jsdom), so we stub
- * `window` with a Map-backed fake storage - the auth-snapshot.test.ts pattern - and pin the contract:
- * write derives the bbox midpoint, the read path is self-healing (any corrupt/drifted value returns
- * null AND clears the key, so a poisoned snapshot cannot strand the boot camera off-globe), and every
- * function is an inert no-op with no window (the static-export build).
+ * Runs in the node env (no jsdom), so `window` is stubbed with a Map-backed fake storage. A corrupt or
+ * drifted value must return null AND clear the key, so a poisoned snapshot cannot strand the boot camera
+ * off-globe.
  */
 
 /** A downtown-LA-ish settled viewport; midpoint (34.05, -118.25). */
 const VIEWPORT: BBox = { west: -118.35, south: 33.95, east: -118.15, north: 34.15 }
 
-/** Minimal Storage stand-in backed by a Map (the subset camera-snapshot touches). */
 function makeStorage() {
   const map = new Map<string, string>()
   return {
@@ -117,7 +112,6 @@ describe("camera-snapshot read is self-healing", () => {
 
 describe("camera-snapshot is SSR-safe (no window)", () => {
   beforeEach(() => {
-    // Override the suite-wide window stub: with no window, every function must be an inert no-op.
     vi.stubGlobal("window", undefined)
   })
 

@@ -24,7 +24,6 @@ const CR = 0xfb, CG = 0xf7, CB = 0xf0 // cream as bytes
 const ICON = 1024
 const ICON_PAD = 0.82 // wordmark occupies ~82% of the square (cream margin all around)
 const SAFE = 0.66 // Android adaptive safe-zone fraction
-const FAVICON = 64 // Expo web favicon
 
 // Repaint the near-neutral light background (and any transparency) to cream; flatten semi-transparent
 // edges over cream. Returns an opaque RGBA PNG buffer the emitters fit/center on a cream canvas.
@@ -74,21 +73,7 @@ async function genAdaptive(srcBuf) {
   console.log("wrote adaptive-icon.png (1024, cream safe-zone)")
 }
 
-// (3) Web favicon.
-async function genFavicon(srcBuf) {
-  const inner = Math.round(FAVICON * ICON_PAD)
-  const fitted = await sharp(srcBuf).resize(inner, inner, { fit: "contain", background: CREAM }).toBuffer()
-  await sharp({ create: { width: FAVICON, height: FAVICON, channels: 3, background: CREAM } })
-    .composite([{ input: fitted, gravity: "center" }])
-    .flatten({ background: CREAM })
-    .removeAlpha()
-    .png()
-    .toFile(join(assetsDir, "favicon.png"))
-  console.log("wrote favicon.png (64)")
-}
-
 const cleaned = await normalizeToCream(SRC)
 await genIcon(cleaned)
 await genAdaptive(cleaned)
-await genFavicon(cleaned)
 console.log("done")

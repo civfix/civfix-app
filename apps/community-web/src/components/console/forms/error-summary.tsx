@@ -38,7 +38,8 @@ export function ErrorSummary({ errors, title, submitCount, className }: ErrorSum
     const field = document.getElementById(id)
     if (field) {
       field.focus()
-      field.scrollIntoView({ block: "center", behavior: "smooth" })
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      field.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" })
     }
   }
 

@@ -22,18 +22,16 @@ import { SegmentedControl } from "@/components/console/forms/segmented-control"
 
 import { useConsoleErrors } from "../error-copy"
 import { invalidateOrg } from "../console-invalidate"
-import { ORG_INVITE_TTL_DAYS, daysUntil } from "./org-invites"
-import { suspendedForbiddenCopy } from "./suspended-banner"
+import {
+  INVITE_IDENTIFIER_MAX,
+  ORG_INVITE_TTL_DAYS,
+  daysUntil,
+  normalizeInviteIdentifier,
+} from "./org-invites"
+import { suspendedForbiddenCopy } from "./org-copy"
 
 export type InvitableRole = "admin" | "member"
 
-/**
- * The invite form. A handle that resolves to an existing member-to-be is added on the spot and the
- * drawer closes; an email (or a handle the server chose to invite rather than add) becomes a
- * pending `OrganizationInviteDTO` (0.41.0), which the drawer shows in place so the host sees where
- * it went and when it lapses before closing. The pending-invite list under the roster refreshes
- * through `invalidateOrg` either way.
- */
 export interface InviteMemberDrawerProps {
   orgId: string
   open: boolean
@@ -42,6 +40,12 @@ export interface InviteMemberDrawerProps {
   disabled?: boolean
 }
 
+/**
+ * A handle that resolves to an existing member-to-be is added on the spot and the drawer closes; an
+ * email (or a handle the server chose to invite rather than add) becomes a pending invite, which the
+ * drawer shows in place so the host sees where it went and when it lapses before closing. The
+ * pending-invite list under the roster refreshes through `invalidateOrg` either way.
+ */
 export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: InviteMemberDrawerProps) {
   const { t } = useT("host-org")
   const { t: tc } = useT("host-common")
@@ -67,7 +71,7 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
       api.inviteOrganizationMember({
         id: orgId,
         identifierKind,
-        identifier: identifier.trim().replace(/^@/, ""),
+        identifier: normalizeInviteIdentifier(identifierKind, identifier),
         role,
       }),
     onSuccess: (result: InviteOrganizationMemberResponse) => {
@@ -192,7 +196,7 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
             <TextInput
               id="org-invite-identifier"
               value={identifier}
-              maxLength={254}
+              maxLength={INVITE_IDENTIFIER_MAX}
               autoComplete="off"
               autoCapitalize="none"
               type={identifierKind === "email" ? "email" : "text"}
@@ -238,7 +242,6 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
   )
 }
 
-/** The post-send panel: who the invite went to, as what, and when it lapses. */
 function SentInvite({ invite }: { invite: OrganizationInviteDTO }) {
   const { t } = useT("host-org")
   const days = Math.max(1, daysUntil(invite.expiresAt))

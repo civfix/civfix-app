@@ -1,15 +1,23 @@
-import { makeThemedStyles } from "../../theme"
+import type { TextStyle } from "react-native"
+import { makeThemedStyles, type Theme } from "../../theme"
 
-export const useSectionStyles = makeThemedStyles((t) => ({
-  eyebrow: {
+function eyebrowType(t: Theme): TextStyle {
+  return {
     fontFamily: t.fontFamily.bodyExtraBold,
     fontSize: 11,
     letterSpacing: 0.6,
     color: t.colors.textSubtle,
     textTransform: "uppercase",
+  }
+}
+
+export const useSectionStyles = makeThemedStyles((t) => ({
+  eyebrow: {
+    ...eyebrowType(t),
     marginTop: t.space["5"],
     marginBottom: t.space["2"],
   },
+  eyebrowText: eyebrowType(t),
   subhead: {
     flexDirection: "row",
     alignItems: "center",
@@ -24,7 +32,7 @@ export const useSectionStyles = makeThemedStyles((t) => ({
     color: t.colors.textMuted,
   },
   subheadCt: {
-    paddingHorizontal: 8,
+    paddingHorizontal: t.space["2"],
     paddingVertical: 1,
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.bgAlt,
@@ -54,12 +62,12 @@ export const useSectionStyles = makeThemedStyles((t) => ({
   },
   loadMoreText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   loadMoreAccentText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   loadMoreError: {

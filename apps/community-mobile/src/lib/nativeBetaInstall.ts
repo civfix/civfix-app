@@ -1,3 +1,4 @@
+import type * as ExpoFileSystem from "expo-file-system"
 import { Platform } from "react-native"
 import {
   APP_STORE_RECEIPT,
@@ -25,7 +26,7 @@ function statReceipt(file: { exists: boolean; modificationTime: number | null })
 function probeStoreKit(): StoreKitProbe {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- loaded inside the guard so a resolution failure cannot break boot
-    const { File, Paths } = require("expo-file-system") as typeof import("expo-file-system")
+    const { File, Paths } = require("expo-file-system") as typeof ExpoFileSystem
     const container = Paths.document.parentDirectory
     return {
       dir: container.uri,

@@ -10,6 +10,8 @@ import {
   channelsComplete,
   composerReadiness,
   composerReady,
+  deliveryStatusFrom,
+  DELIVERY_STATUS_FILTERS,
   segmentFrom,
 } from "./audience"
 
@@ -92,7 +94,6 @@ describe("broadcast audience", () => {
       send: true,
       schedule: true,
       cancel: false,
-      delete: true,
     })
     expect(broadcastCan("scheduled").edit).toBe(false)
     expect(broadcastCan("scheduled").cancel).toBe(true)
@@ -104,8 +105,16 @@ describe("broadcast audience", () => {
         send: false,
         schedule: false,
         cancel: false,
-        delete: false,
       })
     }
+  })
+})
+
+describe("deliveryStatusFrom", () => {
+  it("accepts only a status the filter control offers, so one option is always selected", () => {
+    for (const status of DELIVERY_STATUS_FILTERS) expect(deliveryStatusFrom(status)).toBe(status)
+    expect(deliveryStatusFrom("in_flight")).toBe("all")
+    expect(deliveryStatusFrom("skipped")).toBe("all")
+    expect(deliveryStatusFrom(undefined)).toBe("all")
   })
 })

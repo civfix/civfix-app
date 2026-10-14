@@ -2,7 +2,7 @@ import type { EventAddressSource, ResolveAddressResponse } from "@civfix/shared"
 import { MAX_EVENT_ADDRESS_LENGTH, geocodePointKey, isLocatedPrecision } from "@civfix/shared"
 import { applyNearPrefix, stripNearPrefix } from "./addressRowModel"
 
-export const MIN_EVENT_ADDRESS_LENGTH = 3
+const MIN_EVENT_ADDRESS_LENGTH = 3
 
 export type EventAddressStatus = "idle" | "resolving" | "resolved" | "manual"
 

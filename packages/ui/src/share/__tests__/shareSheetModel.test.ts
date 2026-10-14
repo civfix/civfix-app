@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
+import type { UserSearchResultDTO } from "@civfix/shared"
 import {
   SHARE_RECIPIENTS_MAX_HEIGHT,
   isShareRecipient,
@@ -8,6 +8,7 @@ import {
   shareRecipientsSizing,
   shareSheetFooter,
 } from "../shareSheetModel"
+import { person } from "./fixtures"
 
 const result = (id: string): UserSearchResultDTO => ({
   id,
@@ -16,9 +17,6 @@ const result = (id: string): UserSearchResultDTO => ({
   avatar: ["#000000", "#111111"],
   avatarUrl: null,
 })
-
-const person = (id: string): PersonDTO =>
-  ({ id, name: id, handle: id, avatar: ["#000000", "#111111"], avatarUrl: null }) as unknown as PersonDTO
 
 describe("sharePeopleView", () => {
   it("shows the recents row while nothing is typed", () => {

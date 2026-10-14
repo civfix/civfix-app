@@ -8,12 +8,17 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { loadCatalog } from "../../i18n/bundledCatalogs"
 import { createI18n } from "../../i18n/config"
+import { makeLocaleSwitcher } from "../../i18n/localeSwitcher"
 
-const body = readFileSync(new URL("../ReportDetailBody.tsx", import.meta.url), "utf8")
+const body = readFileSync(new URL("../reportDetail/ViewChatRow.tsx", import.meta.url), "utf8")
 
-function meta(lng: "en" | "es" | "de" | "ko", members: number, messages: number): string {
-  const t = createI18n(lng).getFixedT(lng, "report-detail")
+// Only English is bundled, so the instance is switched the way I18nProvider switches it.
+async function meta(lng: "en" | "es" | "de" | "ko", members: number, messages: number): Promise<string> {
+  const i18n = createI18n(lng)
+  expect(await makeLocaleSwitcher(i18n, loadCatalog)(lng)).toBe(true)
+  const t = i18n.getFixedT(lng, "report-detail")
   return [
     t("chat.view_chat_members", { count: members }),
     t("chat.view_chat_messages", { count: messages }),
@@ -39,7 +44,7 @@ describe("report chat row counts", () => {
     ["de", 2, 1, "2 Mitglieder · 1 Nachricht"],
     ["ko", 1, 0, "멤버 1명 · 메시지 0개"],
     ["ko", 2, 1, "멤버 2명 · 메시지 1개"],
-  ] as const)("%s: (%i, %i) reads %s", (lng, members, messages, expected) => {
-    expect(meta(lng, members, messages)).toBe(expected)
+  ] as const)("%s: (%i, %i) reads %s", async (lng, members, messages, expected) => {
+    expect(await meta(lng, members, messages)).toBe(expected)
   })
 })

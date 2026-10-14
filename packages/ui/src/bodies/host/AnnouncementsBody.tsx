@@ -1,18 +1,17 @@
 import React, { useMemo } from "react"
 import { View } from "react-native"
-import { makeThemedStyles } from "../../theme"
+import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, TextLink } from "../../typography"
 import { SkeletonGroup, SkeletonList } from "../../primitives"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { announcementRows, useEventAnnouncements } from "../../data/hooks/announcements"
-import { hasHostCapability } from "../../data/hooks/host"
+import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
+import { useAuthState } from "../../data"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { AnnouncementCard } from "./AnnouncementCard"
-
-const MORE_ROW_HEIGHT = 44
 
 export function AnnouncementsBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -22,7 +21,8 @@ export function AnnouncementsBody({ id }: { id: string }) {
   const cleanup = useCleanup(id)
   const query = useEventAnnouncements(id)
   const rows = useMemo(() => announcementRows(query.data?.pages), [query.data?.pages])
-  const showDelivery = hasHostCapability(cleanup.data, "broadcast")
+  const viewerId = useAuthState().user?.id ?? null
+  const showDelivery = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "broadcast")
 
   if (query.isPending) {
     return (
@@ -82,8 +82,9 @@ export function AnnouncementsBody({ id }: { id: string }) {
             variant="label"
             standalone
             accessibilityLabel={t("announce.show_more")}
+            disabled={query.isFetchingNextPage}
             onPress={() => {
-              void query.fetchNextPage()
+              if (!query.isFetchingNextPage) void query.fetchNextPage()
             }}
           >
             {query.isFetchingNextPage ? t("announce.loading_more") : t("announce.show_more")}
@@ -113,6 +114,6 @@ const useStyles = makeThemedStyles((t) => ({
   moreRow: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: MORE_ROW_HEIGHT,
+    minHeight: MIN_TOUCH_TARGET,
   },
 }))

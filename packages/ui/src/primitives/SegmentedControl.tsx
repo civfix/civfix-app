@@ -2,6 +2,7 @@ import React from "react"
 import { Pressable, View } from "react-native"
 import {
   focusRingProps,
+  hitSlopToTarget,
   makeThemedStyles,
   useTheme,
   webCursor,
@@ -10,10 +11,9 @@ import {
 } from "../theme"
 import { Text } from "../typography"
 
-export const SEGMENTED_MIN_TOUCH_TARGET = 44
 const SEGMENT_HEIGHT_MD = 44
 const SEGMENT_HEIGHT_SM = 32
-const SEGMENT_SM_HIT_SLOP = (SEGMENTED_MIN_TOUCH_TARGET - SEGMENT_HEIGHT_SM) / 2
+const SEGMENT_SM_HIT_SLOP = hitSlopToTarget(SEGMENT_HEIGHT_SM)
 
 export type SegmentedControlSize = "sm" | "md"
 

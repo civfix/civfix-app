@@ -2,11 +2,6 @@ import { describe, it, expect } from "vitest"
 
 import { isSafeInternalPath } from "@/lib/safe-path"
 
-/**
- * isSafeInternalPath gates server-provided navigation targets (NotificationDTO.link). It must accept
- * only same-origin absolute in-app paths and reject schemes, external/protocol-relative URLs, and
- * whitespace-padded values that could smuggle a dangerous target past naive checks.
- */
 describe("isSafeInternalPath", () => {
   it("accepts absolute in-app paths", () => {
     expect(isSafeInternalPath("/")).toBe(true)

@@ -1,7 +1,7 @@
 import type { ReportStatus } from "@civfix/shared"
 import { hasEventEnded, type EventWindowLike } from "@civfix/shared/host"
 
-export const ATTACHABLE_REPORT_STATUSES = [
+const ATTACHABLE_REPORT_STATUSES = [
   "submitted",
   "published",
   "acknowledged",

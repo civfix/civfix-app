@@ -1,10 +1,11 @@
 import {
   ALL_DETAIL_KINDS,
   ALL_VIEWS,
-  entryFromPath,
+  entryFromPlatformPath,
   entryIdentity,
   pathForEntry,
   pathForView,
+  platformPathForEntry,
   type DetailEntry,
   type DetailKind,
   type NavReturn,
@@ -116,9 +117,17 @@ export type ReconcilePlan =
   | { type: "push"; count: number }
   | { type: "replace" }
 
+function samePlacePlan(
+  a: NavSnapshot,
+  b: NavSnapshot,
+): { type: "none" } | { type: "restamp" } | null {
+  if (!snapshotEquals(a, b)) return null
+  return a.query === b.query ? { type: "none" } : { type: "restamp" }
+}
+
 export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): ReconcilePlan {
-  if (snapshotEquals(landed, live))
-    return landed.query === live.query ? { type: "none" } : { type: "restamp" }
+  const samePlace = samePlacePlan(landed, live)
+  if (samePlace) return samePlace
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)
@@ -159,8 +168,8 @@ export function writePlan(
   current: NavHistoryEntry | null,
   live: NavSnapshot,
 ): WritePlan {
-  if (current && snapshotEquals(current.snapshot, live))
-    return current.snapshot.query === live.query ? { type: "none" } : { type: "restamp" }
+  const samePlace = current ? samePlacePlan(current.snapshot, live) : null
+  if (samePlace) return samePlace
   if (transition.type === "pop") {
     const steps = traversalFor(transition, current)
     return steps === 0 ? { type: "replace" } : { type: "traverse", steps }
@@ -176,17 +185,12 @@ function exportPath(path: string): string {
 }
 
 export function entryFromWebPath(path: string | null | undefined): DetailEntry | null {
-  const entry = entryFromPath(path)
-  return entry?.kind === "post" && entry.id ? { kind: "post-thread", id: entry.id } : entry
-}
-
-export function webPathForEntry(entry: DetailEntry): string {
-  return entry.kind === "post-thread" && entry.id ? `/post/${entry.id}` : pathForEntry(entry)
+  return entryFromPlatformPath(path, "web")
 }
 
 export function pathForSnapshot(snapshot: NavSnapshot): string {
   const active = snapshot.stack[snapshot.stack.length - 1]
-  if (active && active.kind !== "drop-pin") return exportPath(webPathForEntry(active))
+  if (active && active.kind !== "drop-pin") return exportPath(platformPathForEntry(active, "web"))
   const viewPath = pathForView(snapshot.view)
   if (viewPath) return exportPath(viewPath)
   const listKind = LIST_KIND_FOR_VIEW[snapshot.view]

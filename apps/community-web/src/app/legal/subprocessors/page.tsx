@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { LegalPage } from "@/components/legal/legal-page"
+import { LegalContactLink } from "../legal-contact-link"
 
 export const metadata: Metadata = {
   title: "Sub-processors · civfix",
@@ -93,7 +94,7 @@ export default function SubprocessorsPage() {
             <tbody>
               {ROWS.map((r) => (
                 <tr key={r.name}>
-                  <th scope="row" style={{ textAlign: "left", fontWeight: 700 }}>
+                  <th scope="row">
                     {r.name}
                   </th>
                   <td>{r.purpose}</td>
@@ -135,7 +136,7 @@ export default function SubprocessorsPage() {
         <p>
           We may add or replace sub-processors as civfix evolves. When we do, we will update this page
           and the &ldquo;Last updated&rdquo; date. For questions, email{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.
+          <LegalContactLink />.
         </p>
       </section>
     </LegalPage>

@@ -1,22 +1,17 @@
 import assert from "node:assert/strict"
-import { createRequire } from "node:module"
 import { test } from "node:test"
+import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
-const require = createRequire(import.meta.url)
-const appConfigFactory = require("../app.config.js") as (input: {
-  config: Record<string, unknown>
-}) => Record<string, any>
-
-function notificationsPlugin(profile?: string): Record<string, any> {
-  const previous = process.env.EAS_BUILD_PROFILE
+function notificationsPlugin(profile?: string): Record<string, unknown> {
+  const previous = process.env.EAS_BUILD_PROFILE as string | undefined
   if (profile === undefined) delete process.env.EAS_BUILD_PROFILE
   else process.env.EAS_BUILD_PROFILE = profile
   try {
-    const entry = appConfigFactory({ config: {} }).plugins.find(
-      (plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-notifications",
+    return pluginOptions(
+      appConfigFactory({ config: {} }),
+      "expo-notifications",
+      "app.config.js declares no expo-notifications plugin tuple",
     )
-    assert.ok(Array.isArray(entry), "app.config.js declares no expo-notifications plugin tuple")
-    return entry[1]
   } finally {
     if (previous === undefined) delete process.env.EAS_BUILD_PROFILE
     else process.env.EAS_BUILD_PROFILE = previous

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import { authorAsSelection } from "../authorAsModel"
 
 describe("authorAsSelection guards a stored organization against a stale membership", () => {
@@ -24,7 +25,7 @@ describe("authorAsSelection guards a stored organization against a stale members
 })
 
 describe("the author pickers are wired to the stored selection", () => {
-  const composer = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+  const composer = surfaceSource("postComposer")
   const form = readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8")
 
   it("the post composer sends the guarded selection, not the raw draft field", () => {

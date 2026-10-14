@@ -1,14 +1,11 @@
 /**
- * announce (web seam) - screen-reader live-region announcements (WCAG 4.1.3 status messages).
+ * One region per politeness, both created when the module loads (or on first use if there is no body
+ * yet): some AT/browser pairs ignore the first mutation of a just-inserted region, and several ignore a
+ * region whose aria-live changed in the same task it mutated.
  *
- * TWO permanent regions are mounted (one aria-live="polite", one aria-live="assertive") and we write
- * into the matching one, rather than flipping aria-live on a single shared region at announcement time
- * (several AT/browser combos ignore a live-region whose politeness changed in the same task it mutated).
- *
- * Each announcement CLEARS its region synchronously and sets the text in a DEFERRED task, so assistive
- * tech observes two distinct mutations. Without the deferral the clear+set coalesce into one mutation and
- * re-announcing the SAME message (e.g. re-submitting a form and getting the identical error) is silently
- * dropped, as are all-but-the-last of several announcements fired in one tick.
+ * Each announcement clears its region synchronously and writes the text in a deferred task. Without the
+ * deferral the two coalesce into one mutation, so a repeat of the same message is silently dropped, as
+ * are all but the last of several announcements fired in one tick.
  */
 import type { AnnounceFn, AnnounceOptions } from "./announce.types"
 
@@ -19,10 +16,10 @@ const REGION_ID: Record<Priority, string> = {
   assertive: "civfix-aria-live-assertive",
 }
 
-/** Delay between clearing a region and writing the new text (one task, long enough for AT to see both). */
+/** One task, long enough for AT to see the clear and the write as separate mutations. */
 const ANNOUNCE_DELAY_MS = 50
 
-/** The pending "write the text" timer per region, so a rapid re-announce replaces its own stale write. */
+/** Per region, so a rapid re-announce replaces its own stale write. */
 const pending: Partial<Record<Priority, ReturnType<typeof setTimeout>>> = {}
 
 function getOrCreate(priority: Priority): HTMLElement {
@@ -42,12 +39,16 @@ function getOrCreate(priority: Priority): HTMLElement {
   return region
 }
 
+if (typeof document !== "undefined" && document.body) {
+  getOrCreate("polite")
+  getOrCreate("assertive")
+}
+
 export const announce: AnnounceFn = (message, opts) => {
   if (typeof document === "undefined" || !message) return
   const priority: Priority = opts?.priority ?? "polite"
   const region = getOrCreate(priority)
 
-  // Clear NOW, write in a later task: two separate mutations, so a repeat of the same text still fires.
   const prior = pending[priority]
   if (prior !== undefined) clearTimeout(prior)
   region.textContent = ""

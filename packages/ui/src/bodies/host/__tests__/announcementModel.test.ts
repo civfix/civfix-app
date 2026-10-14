@@ -5,6 +5,7 @@ import {
   ANNOUNCEMENT_PREVIEW_CHARS,
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,
+  announcementByline,
   announcementCounts,
   announcementErrorKey,
   announcementHeading,
@@ -124,5 +125,46 @@ describe("error copy", () => {
     expect(announcementErrorKey("ABUSE_HELD")).toBe("announce.error_held")
     expect(announcementErrorKey(undefined)).toBe("announce.error_generic")
     expect(announcementErrorKey("TEAPOT")).toBe("announce.error_generic")
+  })
+})
+
+describe("who an announcement is signed by", () => {
+  const person = {
+    id: "u1",
+    name: "Dana",
+    avatarUrl: "https://example.test/dana.png",
+    avatar: ["#111111", "#222222"],
+  } as unknown as NonNullable<AnnouncementDTO["author"]>
+  const org = {
+    id: "o1",
+    name: "Tidy Streets",
+    logoUrl: "https://example.test/org.png",
+  } as unknown as NonNullable<AnnouncementDTO["authorOrg"]>
+
+  it("signs as the organization, with its logo and no personal gradient", () => {
+    expect(announcementByline(announcement({ author: person, authorOrg: org }), "Host")).toEqual({
+      name: "Tidy Streets",
+      seed: "o1",
+      photoUrl: "https://example.test/org.png",
+      gradient: null,
+    })
+  })
+
+  it("signs as the person when no organization posted it", () => {
+    expect(announcementByline(announcement({ author: person }), "Host")).toEqual({
+      name: "Dana",
+      seed: "u1",
+      photoUrl: "https://example.test/dana.png",
+      gradient: ["#111111", "#222222"],
+    })
+  })
+
+  it("falls back to the host label, seeded by the announcement itself", () => {
+    expect(announcementByline(announcement(), "Host")).toEqual({
+      name: "Host",
+      seed: "a1",
+      photoUrl: null,
+      gradient: null,
+    })
   })
 })

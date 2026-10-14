@@ -13,13 +13,12 @@
  * geolocation API (browser navigator.geolocation / expo-location) with the civfix API's approximate
  * location as the fallback. Everything degrades gracefully - offline you still get pasted coordinates.
  */
-import type { LatLngLike } from "./geo.js"
+import { coordsLabel, type LatLngLike } from "./geo.js"
 
 export type LatLng = LatLngLike
 
 /**
- * NOTE: "curated" no longer has a producer here (the LA-Eastside HOST_PLACES list had no consumers and
- * was removed), but it stays in the union to match the wire enum in schemas/map.ts GeoSuggestionSchema,
+ * Nothing here produces "curated"; it stays in the union to match the wire enum in `GeoSuggestionSchema`,
  * which a deployed server may still emit.
  */
 export type SuggestionSource = "coordinate" | "curated" | "photon" | "mapbox"
@@ -70,6 +69,12 @@ export interface SuggestOptions {
    * results. Ignored by Photon (which has no equivalent filter).
    */
   country?: string | null
+  /**
+   * Told about a provider failure that suggestAddresses degrades past (Mapbox falling back to Photon,
+   * Photon resolving []), so a server caller can log an outage the result alone cannot show. Never
+   * called for the caller's own abort.
+   */
+  onError?: (error: unknown, provider: "mapbox" | "photon") => void
 }
 
 /** Languages Photon actually serves; anything else is requested as English. */
@@ -105,12 +110,15 @@ export function parseLatLng(input: string): LatLng | null {
   return { lat, lng }
 }
 
-/** Build the single offline "exact coordinates" suggestion for a parsed lat/lng. */
+// English fallbacks: the wire suggestion has no locale-free field for these, so the UI cannot translate them.
+const EXACT_COORDINATES_LABEL = "Exact coordinates"
+const UNKNOWN_PLACE_LABEL = "Unknown place"
+
 function coordSuggestion(coord: LatLng): GeoSuggestion {
   return {
     id: `coordinate:${coord.lat},${coord.lng}`,
-    label: `${coord.lat.toFixed(5)}, ${coord.lng.toFixed(5)}`,
-    secondary: "Exact coordinates",
+    label: coordsLabel(coord),
+    secondary: EXACT_COORDINATES_LABEL,
     lat: coord.lat,
     lng: coord.lng,
     source: "coordinate",
@@ -135,21 +143,19 @@ interface PhotonFeature {
   properties?: PhotonProperties
 }
 
-/** The display name for a Photon feature: its name, else a "<number> <street>" line. */
 function photonLabel(p: PhotonProperties): string {
   if (p.name) return p.name
   const street = [p.housenumber, p.street].filter(Boolean).join(" ")
-  return street || p.city || p.state || "Unknown place"
+  return street || p.city || p.state || UNKNOWN_PLACE_LABEL
 }
-/** The secondary line (city/region/country), skipping anything already shown as the label. */
 function photonSecondary(p: PhotonProperties, label: string): string | undefined {
   const parts = [p.city, p.state, p.country].filter((v): v is string => !!v && v !== label)
   return parts.length ? parts.join(", ") : undefined
 }
 
 /**
- * Live address/place autocomplete via Photon. Throws on network/HTTP failure so the orchestrator can
- * fall back to curated-only. Pass `proximity` to bias results toward a point.
+ * Live address/place autocomplete via Photon. Throws on network/HTTP failure so `suggestAddresses` can
+ * degrade. Pass `proximity` to bias results toward a point.
  */
 export async function photonSuggest(query: string, opts: SuggestOptions = {}): Promise<GeoSuggestion[]> {
   const q = query.trim()
@@ -214,11 +220,9 @@ interface MapboxV6Feature {
   properties?: MapboxV6Properties
 }
 
-/** Primary line for a Mapbox feature. */
 function mapboxLabel(p: MapboxV6Properties): string {
-  return p.name || p.full_address || p.place_formatted || "Unknown place"
+  return p.name || p.full_address || p.place_formatted || UNKNOWN_PLACE_LABEL
 }
-/** Secondary line (city/region), skipping anything already in the label. */
 function mapboxSecondary(p: MapboxV6Properties, label: string): string | undefined {
   if (p.place_formatted && p.place_formatted !== label) return p.place_formatted
   const ctx = p.context ?? {}
@@ -284,9 +288,9 @@ function isAbort(err: unknown, signal?: AbortSignal): boolean {
 }
 
 /**
- * Provider-dispatched address autocomplete (no curated list): coordinate paste short-circuits; then
- * Mapbox when opts.mapboxToken is set (falling back to Photon on Mapbox throw OR empty); else Photon.
- * This is what the app AddressSearch uses. Errors degrade to [].
+ * Address autocomplete: a pasted coordinate short-circuits; then Mapbox when `opts.mapboxToken` is set
+ * (falling back to Photon when Mapbox throws OR returns nothing); else Photon. Provider errors degrade
+ * to [] and are reported through `opts.onError`, but an abort rejects.
  */
 export async function suggestAddresses(query: string, opts: SuggestOptions = {}): Promise<GeoSuggestion[]> {
   const q = query.trim()
@@ -300,42 +304,17 @@ export async function suggestAddresses(query: string, opts: SuggestOptions = {})
       const hits = await mapboxSuggest(q, opts)
       if (hits.length > 0) return hits
     } catch (err) {
-      // An ABORT is the caller cancelling a stale keystroke: reject so the caller drops this result
-      // instead of letting the old request resolve [] over the newer one's suggestions. (And do not
-      // fire a fresh Photon request for a query nobody is waiting on any more.)
+      // An abort is the caller cancelling a stale keystroke: reject so the old request cannot resolve []
+      // over the newer one's suggestions, and skip a Photon request nobody is waiting on.
       if (isAbort(err, opts.signal)) throw err
-      // Mapbox unavailable → fall through to Photon.
+      opts.onError?.(err, "mapbox")
     }
   }
   try {
     return await photonSuggest(q, opts)
   } catch (err) {
     if (isAbort(err, opts.signal)) throw err
+    opts.onError?.(err, "photon")
     return []
-  }
-}
-
-const GEOJS_URL = "https://get.geojs.io/v1/ip/geo.json"
-
-/**
- * Best-effort IP geolocation (no permission prompt) via GeoJS - a free, CORS-enabled, key-less HTTPS
- * endpoint. Returns null on any failure so callers can fall back to a map center. Used as the proximity
- * source when device location sharing is denied or unavailable.
- *
- * @deprecated since 0.47.0 - a third-party data flow with no consumer-plane callers left. Use
- * `GET /geo/approximate` (`getApproximateLocation`, DECISIONS #45). Slated for removal in the next minor.
- */
-export async function ipLocate(signal?: AbortSignal): Promise<LatLng | null> {
-  try {
-    const res = await fetch(GEOJS_URL, { signal, headers: { Accept: "application/json" } })
-    if (!res.ok) return null
-    const data = (await res.json()) as { latitude?: string | number; longitude?: string | number }
-    const lat = Number(data.latitude)
-    const lng = Number(data.longitude)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
-    return { lat, lng }
-  } catch {
-    return null
   }
 }

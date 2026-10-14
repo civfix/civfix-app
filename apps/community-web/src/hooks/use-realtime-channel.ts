@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { invalidationKeysForTopic } from "@civfix/ui/data"
+import { invalidationKeysForTopic, queryKeys } from "@civfix/ui/data"
 
 import { chatSocket } from "@/lib/ws"
 import { useIsAuthenticated } from "@/hooks/use-auth"
 
-const HOST_SIGNAL_EXTRA_KEYS = { host: [["hosted-events"] as const] } as const
+const HOST_SIGNAL_EXTRA_KEYS = { host: [queryKeys.hostedEventsRoot] } as const
 
 export function useRealtimeChannel(): void {
   const isAuthenticated = useIsAuthenticated()

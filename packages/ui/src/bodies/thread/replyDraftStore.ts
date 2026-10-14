@@ -1,15 +1,15 @@
 /**
- * replyDraftStore - the reply composer's draft, KEYED BY THE POST BEING REPLIED TO.
+ * The reply composer's draft, KEYED BY THE POST BEING REPLIED TO.
  *
  * WHY A SECOND STORE INSTEAD OF `postComposerStore`: that store holds exactly ONE module-level draft
  * (`postComposerStore.ts`), shared by the feed composer, the quote composer and every reply bar, and the
  * composer re-stamps `mode`/`replyToPostId` on every mount. Opening a reply bar while a half-written
- * top-level post was staged therefore silently re-aimed that body at the reply target - a documented,
- * already-hit failure class. Keying by target id makes it structurally impossible: two threads cannot see
- * each other's text, and `/compose` keeps `postComposerStore` entirely to itself.
+ * top-level post was staged would therefore silently re-aim that body at the reply target. Keying by
+ * target id makes it structurally impossible: two threads cannot see each other's text, and `/compose`
+ * keeps `postComposerStore` entirely to itself.
  *
- * It also buys the property the old docked composer never had: leaving a thread mid-reply and coming back
- * RESTORES what you wrote, instead of discarding it.
+ * It also means leaving a thread mid-reply and coming back RESTORES what you wrote, instead of discarding
+ * it.
  *
  * EVICTION: unbounded growth would be a leak (every thread you open and type into forever). On every
  * write, if the map exceeds MAX_REPLY_DRAFTS the oldest EMPTY draft is dropped first - a draft nobody
@@ -22,6 +22,7 @@
 import { create } from "zustand"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import type { PostComposerMedia } from "../postComposerStore"
+import { registerViewerScopedDrafts } from "../../viewerScope"
 
 /** One thread's in-progress reply. Deliberately JSON-safe: no upload closures, no React state. */
 export interface ReplyDraft {
@@ -165,24 +166,6 @@ export const useReplyDraftStore = create<ReplyDraftState>((set, get) => ({
     }),
 }))
 
-/**
- * Selector factory: does this thread's draft hold media that has not finished uploading?
- *
- * Writes filter to `ready`, so in practice this is a SAFETY NET rather than a live signal - the composer
- * derives its "still uploading" hold from the live `useComposerAttachments` list, which is the only place
- * a pending item exists. Mirrors `selectPostComposerHasPendingMedia`'s shape.
- */
-export function selectReplyHasPendingMedia(targetId: string) {
-  return (state: ReplyDraftState): boolean =>
-    (state.drafts[targetId]?.media ?? []).some(
-      (media) => media.status === "pending" || media.status === "uploading",
-    )
-}
-
-/** Selector factory: the finalized upload ids this thread's draft would submit. */
-export function selectReplyMediaUploadIds(targetId: string) {
-  return (state: ReplyDraftState): string[] =>
-    (state.drafts[targetId]?.media ?? []).flatMap((media) =>
-      media.status === "ready" && media.uploadId ? [media.uploadId] : [],
-    )
-}
+registerViewerScopedDrafts(useReplyDraftStore, {
+  discard: () => useReplyDraftStore.setState({ drafts: {} }),
+})

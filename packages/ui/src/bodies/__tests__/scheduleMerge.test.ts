@@ -8,11 +8,9 @@ import {
   endOffsetMs,
   endTimeAfter,
   eventDurationMs,
-  isScheduleInFuture,
+  isScheduleInFutureInZone,
   isScheduleUntouched,
-  isTimeSlotSelectable,
   mergeDateTime,
-  wallClockExistsOn,
 } from "../calendarModel"
 
 const SPRING_FORWARD_DAY = () => new Date(2026, 2, 8)
@@ -112,76 +110,23 @@ describe("isScheduleUntouched (the edit body's no-op-save guard)", () => {
   })
 })
 
-describe("wallClockExistsOn", () => {
-  it("rejects the nonexistent 2:00/2:30 AM hour on the spring-forward day", () => {
-    expect(wallClockExistsOn(SPRING_FORWARD_DAY(), 2, 0)).toBe(false)
-    expect(wallClockExistsOn(SPRING_FORWARD_DAY(), 2, 30)).toBe(false)
-  })
-
-  it("accepts the hours around the spring-forward gap", () => {
-    expect(wallClockExistsOn(SPRING_FORWARD_DAY(), 1, 30)).toBe(true)
-    expect(wallClockExistsOn(SPRING_FORWARD_DAY(), 3, 0)).toBe(true)
-  })
-
-  it("accepts the ambiguous (repeated) fall-back hour", () => {
-    expect(wallClockExistsOn(FALL_BACK_DAY(), 1, 30)).toBe(true)
-  })
-
-  it("accepts every slot on a normal day", () => {
-    expect(wallClockExistsOn(NORMAL_DAY(), 2, 0)).toBe(true)
-    expect(wallClockExistsOn(NORMAL_DAY(), 0, 0)).toBe(true)
-  })
-})
-
-describe("isTimeSlotSelectable (chip gating)", () => {
-  const NOON = timeOn(NORMAL_DAY(), 12, 0)
-
-  it("keeps every chip selectable while no date is picked", () => {
-    expect(isTimeSlotSelectable(null, 2, 0, NOON)).toBe(true)
-  })
-
-  it("disables the nonexistent spring-forward chips on Mar 8 2026", () => {
-    const now = timeOn(new Date(2026, 2, 1), 12, 0)
-    expect(isTimeSlotSelectable(SPRING_FORWARD_DAY(), 2, 0, now)).toBe(false)
-    expect(isTimeSlotSelectable(SPRING_FORWARD_DAY(), 2, 30, now)).toBe(false)
-    expect(isTimeSlotSelectable(SPRING_FORWARD_DAY(), 3, 0, now)).toBe(true)
-  })
-
-  it("disables elapsed chips when the picked date is today", () => {
-    expect(isTimeSlotSelectable(NORMAL_DAY(), 10, 0, NOON)).toBe(false)
-    expect(isTimeSlotSelectable(NORMAL_DAY(), 14, 0, NOON)).toBe(true)
-  })
-
-  it("keeps the just-elapsed chip selectable within the grace window", () => {
-    const justPast = new Date(timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS - 1_000)
-    expect(isTimeSlotSelectable(NORMAL_DAY(), 12, 0, justPast)).toBe(true)
-    const beyondGrace = new Date(timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS + 1_000)
-    expect(isTimeSlotSelectable(NORMAL_DAY(), 12, 0, beyondGrace)).toBe(false)
-  })
-
-  it("disables every chip on a fully past day", () => {
-    const now = timeOn(new Date(2026, 6, 25), 9, 0)
-    expect(isTimeSlotSelectable(NORMAL_DAY(), 23, 30, now)).toBe(false)
-  })
-})
-
-describe("isScheduleInFuture (publish gate)", () => {
+describe("isScheduleInFutureInZone (publish gate)", () => {
   const NOW = timeOn(NORMAL_DAY(), 12, 0)
+  const ZONE = "America/Los_Angeles"
 
   it("rejects a past instant", () => {
-    expect(isScheduleInFuture(NORMAL_DAY(), timeOn(NORMAL_DAY(), 9, 0), NOW)).toBe(false)
+    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 9, 0), ZONE, NOW.getTime())).toBe(false)
   })
 
   it("accepts a future instant", () => {
-    expect(isScheduleInFuture(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 30), NOW)).toBe(true)
+    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 30), ZONE, NOW.getTime())).toBe(true)
   })
 
   it("accepts an instant inside the grace window so a pick seconds before the minute rolls does not flap", () => {
-    const now = new Date(timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS - 1_000)
-    expect(isScheduleInFuture(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 0), now)).toBe(true)
+    const now = timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS - 1_000
+    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 0), ZONE, now)).toBe(true)
   })
 })
-
 
 describe("durationChipFor across the spring-forward gap", () => {
   const CHIP_MS = 3_600_000

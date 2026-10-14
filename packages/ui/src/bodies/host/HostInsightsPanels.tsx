@@ -197,7 +197,11 @@ function ByTicketTypePanel({ insights }: { insights: EventInsights }) {
               <Meter
                 value={type.registered}
                 max={type.capacity}
-                accessibilityLabel={`${type.name}: ${type.registered}/${type.capacity}`}
+                accessibilityLabel={t("by_type.meter_a11y", {
+                  name: type.name,
+                  registered: formatStatValue(type.registered, locale) ?? type.registered,
+                  capacity: formatStatValue(type.capacity, locale) ?? type.capacity,
+                })}
               />
             )}
             {type.waitlisted > 0 ? (

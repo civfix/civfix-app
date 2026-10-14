@@ -6,6 +6,8 @@ import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
+import { TIGHT_ROW_PAD_Y } from "./row-density"
+
 export interface QRowProps {
   leading?: ReactNode
   title: ReactNode
@@ -89,7 +91,7 @@ export function QRow({
     <div
       className={cn(
         "group relative flex w-full min-w-0 items-center gap-token-3 text-left",
-        density === "tight" ? "px-token-4 py-[13px]" : "px-token-4 py-token-4",
+        density === "tight" ? `px-token-4 ${TIGHT_ROW_PAD_Y}` : "px-token-4 py-token-4",
         as === "card"
           ? "rounded-sm border border-console-line bg-console-surface shadow-console-1"
           : "border-b border-console-line last:border-b-0",

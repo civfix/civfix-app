@@ -1,25 +1,7 @@
 /**
- * Unit tests for the drop-pin nav seam (`map/dropPinFlow`). Pure zustand + plain functions, so vitest
- * drives it with no React Native renderer.
- *
- * THE CONTRACT UNDER TEST is `openDropPinMenu`'s BOOLEAN RETURN. Both hosts fly a camera after calling it,
- * and before the return value existed they flew that camera UNCONDITIONALLY - so a long press it declined
- * still zoomed to z17 and offset the centre for a pin and a menu that were never created. These tests pin
- * both branches: false + nothing mutated on a declined press, true + pin dropped + sheet opened otherwise.
- *
- * AND THE SETTLED DETENT, which is geometry, not taste: a FULL sheet leaves exactly `sheetTopReserve` px of
- * map above it (`sheetSnapPoints` clamps `full` to `windowHeight - topReserve`), of which the first
- * `insets.top` are the notch - 32 usable px on every notched phone, against a 52pt DropPin teardrop. No
- * camera offset can show a pin there, so this module brings the sheet down to MID and `dropPinCamera` centres
- * in the 328px strip that leaves. `dropPinCamera.test.ts` holds the matching screen-y assertions.
- *
- * WHY THE DECLINE CASE SEEDS `create-cleanup` AND NOT SOME OTHER KIND: the guard reads
- * `nav/flowKinds.FLOW_KINDS`, whose membership is deliberately volatile (kinds have joined and left it as
- * their bodies gained or lost a draft to protect). `create-cleanup` is the
- * ORIGINAL, load-bearing member: it is the host-an-event form whose meet-location step collapses the sheet
- * to peek precisely so the map underneath is long-pressable, which is the whole reason the guard exists. A
- * test seeded with a kind that later leaves the set would fail for a reason that has nothing to do with
- * this module.
+ * The decline case seeds `create-cleanup` because it is the original, load-bearing flow kind (its
+ * meet-location step peeks the sheet to expose a long-pressable map); FLOW_KINDS membership is otherwise
+ * volatile, and a kind that later left the set would fail this test for an unrelated reason.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { useNavStore } from "../../nav"
@@ -37,8 +19,8 @@ import {
 } from "../dropPinFlow"
 
 /**
- * Reset the singletons. This is a RAW setState (no reducer runs), so `active` and `originView` are written
- * by hand to preserve the store's invariants - see nav/__tests__/nav.test.ts for the same helper.
+ * A raw setState runs no reducer, so `active` and `originView` are written by hand to preserve the store's
+ * invariants.
  */
 function seedNav(stack: DetailEntry[], mode: "compact" | "expanded" = "compact", snap: 0 | 1 | 2 = 0): void {
   useNavStore.setState({
@@ -54,8 +36,7 @@ function seedNav(stack: DetailEntry[], mode: "compact" | "expanded" = "compact",
 }
 
 beforeEach(() => {
-  // The cleanup subscription is a MODULE-level singleton; leaving one armed would let a later test's nav
-  // mutation clear the pin mid-assertion. `disarmDropPinCleanup` also drops the armed camera snapshot.
+  // A module-level subscription left armed would let a later test's nav mutation clear the pin.
   disarmDropPinCleanup()
   setDropPinCameraRestorer(null)
   seedNav([])
@@ -74,7 +55,6 @@ describe("openDropPinMenu: the accepted press", () => {
     expect(useDroppedPin.getState().pin).toEqual({ lat: 34.05, lng: -118.25 })
     const nav = useNavStore.getState()
     expect(nav.active).toMatchObject({ kind: "drop-pin", lat: 34.05, lng: -118.25 })
-    // MID - the one detent the camera math offsets for, and the only one a dropped pin is viewable at.
     expect(nav.snap).toBe(1)
   })
 
@@ -89,7 +69,6 @@ describe("openDropPinMenu: the accepted press", () => {
       seedNav([], "compact", from)
       expect(openDropPinMenu(34.05, -118.25)).toBe(true)
       expect(useNavStore.getState().snap).toBe(1)
-      // Animated, so a full sheet visibly travels down rather than snapping.
       expect(useNavStore.getState().snapAnimated).toBe(true)
     }
   })
@@ -154,21 +133,14 @@ describe("armDropPinCleanup", () => {
   })
 })
 
-// --- THE CAMERA RESTORE ---------------------------------------------------------------------------
-//
-// `armDropPinCleanup` is the ONE subscription that already fires exactly once when the drop-pin entry
-// leaves the stack, covering every dismissal route including the ones that never enter DropPinBody (sheet
-// drag, map tap, Android back). The restore rides it. THE HOST OWNS THE CAMERA (dropPinCamera.ts:64-68),
-// so the module calls a host-registered callback and never touches maplibre - which is also what makes
-// this testable with no renderer.
+// The host owns the camera, so the module calls a host-registered callback and never touches maplibre.
 
-/** The sim device's geometry - the same numbers `dropPinCamera.test.ts` measures against. */
+/** The same geometry `dropPinCamera.test.ts` measures against. */
 const SIM = { windowHeight: 874, sheetTopReserve: 91, topInset: 59 } as const
 
-/** Where the map was before any of this: a wide view of a different part of LA. */
+/** A wide view of a different part of LA. */
 const ORIGIN: DropPinCameraTarget = { lat: 34.1, lng: -118.3, zoom: 12 }
 
-/** Publish a settled map camera exactly as both Map seams do via `useMapViewport.setRegion`. */
 function publishViewport(camera: DropPinCameraTarget): void {
   useMapViewport.setState({
     viewport: {
@@ -184,11 +156,7 @@ function publishViewport(camera: DropPinCameraTarget): void {
   })
 }
 
-/**
- * Replay the mobile host's `onLongPressMap`: read the pre-press camera and the already-open guard BEFORE
- * `openDropPinMenu`, compute the target from the detent the sheet SETTLED at, arm the snapshot, then fly
- * (publishing the new camera the way a settle would). Returns the camera it flew to.
- */
+/** Replays the mobile host's `onLongPressMap` ordering. */
 function longPress(lat: number, lng: number, from: DropPinCameraTarget): DropPinCameraTarget {
   const nav = useNavStore.getState()
   const menuAlreadyOpen = nav.stack.some((entry) => entry.kind === "drop-pin")
@@ -208,7 +176,6 @@ function longPress(lat: number, lng: number, from: DropPinCameraTarget): DropPin
   return flownTo
 }
 
-/** Collect every camera the flow asks the host to fly. */
 function recordRestores(): DropPinCameraTarget[] {
   const restored: DropPinCameraTarget[] = []
   setDropPinCameraRestorer((target) => restored.push(target))
@@ -219,7 +186,7 @@ describe("armDropPinCleanup: the camera restore", () => {
   it("flies the host back to the PRE-PRESS camera on Cancel", () => {
     const restored = recordRestores()
     longPress(34.05, -118.25, ORIGIN)
-    // DropPinBody.onCancel (DropPinBody.tsx:132): nav.back().
+    // DropPinBody's Cancel.
     useNavStore.getState().back()
     expect(restored).toEqual([ORIGIN])
   })
@@ -262,8 +229,7 @@ describe("armDropPinCleanup: the camera restore", () => {
     // "Host an event here": a drill-down ON TOP of the menu, so the pin and the snapshot stay armed.
     useNavStore.getState().push({ kind: "create-cleanup", lat: 34.05, lng: -118.25 })
     expect(useDroppedPin.getState().pin).not.toBeNull()
-    // Publish: stackAfterFlowPublished replaces the FLOW entry with the created event and leaves the
-    // drop-pin entry underneath - which is why CreateCleanupBody clears the marker by hand there.
+    // stackAfterFlowPublished replaces the flow entry with the event and leaves the drop-pin entry beneath.
     const published = stackAfterFlowPublished(useNavStore.getState().stack, {
       kind: "cleanup",
       id: "c1",
@@ -288,9 +254,8 @@ describe("armDropPinCleanup: the camera restore", () => {
   })
 
   it("a SECOND long press keeps the FIRST pre-press camera and re-points the pan check", () => {
-    // "drop-pin" is not a FLOW_KIND, so a second long press is ACCEPTED and openDetail replaces the entry.
-    // The pre-press camera must not be overwritten with the first fly's - but `flownTo` MUST be, or the
-    // pan check compares the live viewport against a camera the app has already left.
+    // "drop-pin" is not a flow kind, so a second long press is accepted and replaces the entry; `flownTo`
+    // must be re-pointed or the pan check compares against a camera the app has already left.
     const restored = recordRestores()
     const first = longPress(34.05, -118.25, ORIGIN)
     const second = longPress(34.07, -118.27, first)

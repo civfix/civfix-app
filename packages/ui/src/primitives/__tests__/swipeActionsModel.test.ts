@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { BACK_SWIPE_EDGE_PX } from "../backSwipeEdge"
+import { BACK_SWIPE_EDGE_PX, SWIPE_CAPTURE_SLOP_PX } from "../backSwipeEdge"
 import {
-  SWIPE_ACTIONS_CAPTURE_SLOP_PX,
   SWIPE_ACTIONS_FLING_VX,
   SWIPE_ACTION_WIDTH_PX,
   actionsProgress,
@@ -24,7 +23,7 @@ describe("actionsWidth", () => {
 describe("shouldCaptureActionsSwipe", () => {
   it("captures a LEFT, horizontally-dominant drag past slop on a closed row", () => {
     expect(shouldCaptureActionsSwipe(-40, 5, false)).toBe(true)
-    expect(shouldCaptureActionsSwipe(-(SWIPE_ACTIONS_CAPTURE_SLOP_PX + 1), -8, false)).toBe(true)
+    expect(shouldCaptureActionsSwipe(-(SWIPE_CAPTURE_SLOP_PX + 1), -8, false)).toBe(true)
   })
 
   it("never captures a right drag on a closed row - there is no affordance that way", () => {
@@ -43,7 +42,7 @@ describe("shouldCaptureActionsSwipe", () => {
   })
 
   it("declines a drag within slop", () => {
-    expect(shouldCaptureActionsSwipe(-SWIPE_ACTIONS_CAPTURE_SLOP_PX, 0, false)).toBe(false)
+    expect(shouldCaptureActionsSwipe(-SWIPE_CAPTURE_SLOP_PX, 0, false)).toBe(false)
     expect(shouldCaptureActionsSwipe(4, 1, true)).toBe(false)
   })
 })

@@ -20,7 +20,9 @@
     "rule_invalid": "Usa entre 3 y 20 letras, números o guiones bajos.",
     "checking": "Comprobando...",
     "available": "@{{handle}} está disponible",
-    "taken": "@{{handle}} no está disponible"
+    "taken": "@{{handle}} no está disponible",
+    "check_failed": "No pudimos comprobar ese nombre de usuario.",
+    "retry": "Intentar de nuevo"
   },
   "continue": "Continuar",
   "signout": {

@@ -6,8 +6,7 @@
     "by_prefix": "주최:"
   },
   "a11y": {
-    "card_one": "{{title}}, {{count}}명 참여",
-    "card_other": "{{title}}, {{count}}명 참여"
+    "card_detail": "{{title}}. {{when}}. {{location}}. {{going}}. {{organizer}}."
   },
   "linked": {
     "schedule_unavailable": "일정 정보 없음",

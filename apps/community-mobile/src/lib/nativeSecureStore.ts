@@ -2,7 +2,7 @@ import { MMKV } from "react-native-mmkv"
 import * as SecureStore from "expo-secure-store"
 import * as Crypto from "expo-crypto"
 import type { SecureStoreCapability } from "@civfix/ui/capabilities"
-import type { KeyValueStore } from "@/lib/mmkv"
+import { memoryKeyValueStore, type ClearableKeyValueStore } from "@/lib/memoryKeyValueStore"
 import { mintSecureBlobKey, normalizeSecureBlobKey } from "@/lib/secureBlobKey"
 import { scopeStorageId } from "@/lib/storageScope"
 import { API_URL } from "@/config"
@@ -14,24 +14,6 @@ const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
 }
 
-interface SecureBlobStore extends KeyValueStore {
-  clearAll(): void
-}
-
-function memoryStore(): SecureBlobStore {
-  const map = new Map<string, string>()
-  return {
-    getString: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value)
-    },
-    delete: (key) => {
-      map.delete(key)
-    },
-    clearAll: () => map.clear(),
-  }
-}
-
 async function encryptionKey(): Promise<string | null> {
   const existing = normalizeSecureBlobKey(await SecureStore.getItemAsync(ENCRYPTION_KEY_ITEM, OPTIONS))
   if (existing) return existing
@@ -41,9 +23,9 @@ async function encryptionKey(): Promise<string | null> {
   return minted
 }
 
-let opening: Promise<SecureBlobStore> | null = null
+let opening: Promise<ClearableKeyValueStore> | null = null
 
-function openStore(): Promise<SecureBlobStore> {
+function openStore(): Promise<ClearableKeyValueStore> {
   opening ??= (async () => {
     try {
       const key = await encryptionKey()
@@ -54,7 +36,7 @@ function openStore(): Promise<SecureBlobStore> {
         err,
       )
     }
-    return memoryStore()
+    return memoryKeyValueStore()
   })()
   return opening
 }

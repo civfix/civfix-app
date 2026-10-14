@@ -1,33 +1,33 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
 import { PostCountsSchema, PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
+import { MAX_MENTIONED_USERS, OkResponseSchema } from "./internal-fields.js"
 
-/**
- * Social-feed post request/response contracts. The PostDTO + PostKind primitives live in
- * ./entities.js (S1) so the recursive repost/reply preview cycle stays contained there; this file
- * builds the compose input (with cross-field refinements) and the per-endpoint envelopes on top,
- * plus the single cursor-paged FeedPageDTO reused by every list surface (home feed, replies, a
- * person's posts, saved posts).
+/*
+ * PostDTO and PostKind live in ./entities.js so the recursive repost/reply preview cycle stays
+ * contained there.
  */
 
+export const POST_BODY_MAX = 2000
+
 /**
- * Body of POST /posts. Also carries a QUOTE (kind:"quote" + repostOfId + body) and a REPLY
- * (kind:"reply" + replyToId). A PURE repost is NOT this route - it is the toggle POST
- * /posts/:id/repost. superRefine enforces the cross-field rules: a quote requires repostOfId; a
- * reply requires replyToId; and every post must carry SOMETHING - a body, an attachment (event or
- * report), or media - so an empty post is rejected, and organizationId is refused on a repost.
+ * Body of POST /posts, which also carries quotes and replies. A pure repost is not this route: it is
+ * the toggle POST /posts/:id/repost. `kind: "repost"` still parses here because narrowing PostKindSchema
+ * would change the published input type, but the server refuses it with a VALIDATION error; the
+ * organizationId refine below therefore only fires on a request the server would reject anyway. A quote
+ * requires repostOfId, a reply requires replyToId, and every post needs a body, an attachment or media.
  */
 export const PostComposeInputSchema = z
   .object({
-    kind: PostKindSchema.default("post"), // "post" | "quote" | "reply" (repost uses its own route)
-    body: z.string().trim().max(2000).optional(), // required unless an attachment/media carries the post
-    replyToId: IdSchema.optional(), // set for kind:"reply"
-    repostOfId: IdSchema.optional(), // set for kind:"quote"
-    eventId: IdSchema.optional(), // attach an event the author is attending/hosting
-    reportId: IdSchema.optional(), // attach a report
-    mediaUploadIds: z.array(IdSchema).max(4).default([]), // finalized upload ids to claim as post media
-    mentionedUserIds: z.array(IdSchema).max(20).default([]),
-    organizationId: IdSchema.optional(), // post AS this organization (DECISIONS §34); not valid on a repost
+    kind: PostKindSchema.default("post"),
+    body: z.string().trim().max(POST_BODY_MAX).optional(),
+    replyToId: IdSchema.optional(),
+    repostOfId: IdSchema.optional(),
+    eventId: IdSchema.optional(), // the server refuses an event the author neither hosts nor attends
+    reportId: IdSchema.optional(),
+    mediaUploadIds: z.array(IdSchema).max(4).default([]),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).default([]),
+    organizationId: IdSchema.optional(), // post as this organization (DECISIONS §34)
   })
   .strict()
   .superRefine((v, ctx) => {
@@ -71,7 +71,7 @@ export type CreatePostResponse = z.infer<typeof CreatePostResponseSchema>
 export const GetPostResponseSchema = PostDTOSchema
 export type GetPostResponse = z.infer<typeof GetPostResponseSchema>
 
-export const DeletePostResponseSchema = z.object({ ok: z.literal(true) })
+export const DeletePostResponseSchema = OkResponseSchema
 export type DeletePostResponse = z.infer<typeof DeletePostResponseSchema>
 
 /** Like/unlike returns the full patched post (viewer flags + counts). */
@@ -82,11 +82,11 @@ export type LikePostResponse = z.infer<typeof LikePostResponseSchema>
 export const SavePostResponseSchema = PostDTOSchema
 export type SavePostResponse = z.infer<typeof SavePostResponseSchema>
 
-/** Repost/unrepost returns the created/removed repost's TARGET post, patched. */
+/** Repost/unrepost returns the repost's target post, patched. */
 export const RepostResponseSchema = PostDTOSchema
 export type RepostResponse = z.infer<typeof RepostResponseSchema>
 
-/** { items: PostDTO[], nextCursor: string | null } - the shared shape for every post list. */
+/** The shared page shape for every post list. */
 export const FeedPageDTOSchema = pageResponse(PostDTOSchema)
 export type FeedPageDTO = z.infer<typeof FeedPageDTOSchema>
 
@@ -131,9 +131,11 @@ export function parseFeedScoreCursor(cursor: string | null | undefined): FeedSco
   if (typeof cursor !== "string") return null
   const match = FEED_SCORE_CURSOR_RE.exec(cursor.trim())
   if (!match) return null
+  // Post ids are stored lowercase and isAfterFeedScoreCursor compares them as strings, so an uppercase
+  // id from a hand-edited or foreign cursor would order against the wrong rows.
   const parsed = FeedScoreCursorSchema.safeParse({
     score: Number(match[1]),
-    postId: match[2],
+    postId: match[2]?.toLowerCase(),
   })
   return parsed.success ? parsed.data : null
 }
@@ -200,10 +202,9 @@ export const FeedCountsResponseSchema = z
 export type FeedCountsResponse = z.infer<typeof FeedCountsResponseSchema>
 
 /**
- * A thread's direct replies, plus `authorReplies`: for each listed reply that the FOCAL POST'S AUTHOR has
- * answered, their single most recent answer to it. The thread screen renders one of those under its parent
- * as a connected row - the only nesting the conversation shows. Everything deeper lives on that reply's own
- * thread. Empty on an older server, so the field is defaulted, never required.
+ * A thread's direct replies, plus `authorReplies`: for each listed reply the focal post's author has
+ * answered, their most recent answer to it. That is the only nesting a thread shows; everything deeper
+ * lives on the reply's own thread. Defaulted, never required, because an older server omits it.
  */
 export interface ListRepliesResponse extends FeedPageDTO {
   authorReplies: PostDTO[]

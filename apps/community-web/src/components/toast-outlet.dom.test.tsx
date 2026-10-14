@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("react-native", async () => {
   // @ts-expect-error react-native-web ships no type declarations; webpack aliases it for the real build
-  const rnw = await import("react-native-web")
-  return rnw as unknown as Record<string, unknown>
+  const rnw: unknown = await import("react-native-web")
+  return rnw as Record<string, unknown>
 })
 
 // Both ship untranspiled sources the jsdom project cannot load; the toast reads neither for what is tested.

@@ -39,7 +39,6 @@ import {
   DEFAULT_FORWARD_BODY_TEMPLATE,
   DEFAULT_FORWARD_SUBJECT_TEMPLATE,
   FORWARD_TEMPLATE_SAMPLE_VALUES,
-  FORWARD_TEMPLATE_VARIABLE_NAMES,
   FORWARD_TEMPLATE_VARIABLES,
   PreviewForwardTemplateRequestSchema,
   SetForwardTemplateDefaultRequestSchema,
@@ -114,10 +113,8 @@ describe("admin enums + label maps", () => {
     for (const s of AdminReportStatusSchema.options) {
       expect(typeof ADMIN_REPORT_STATUS_LABELS[s]).toBe("string")
     }
-    // The design's hyphenated form is not a member.
     expect(AdminReportStatusSchema.safeParse("in-progress").success).toBe(false)
     expect(AdminReportStatusSchema.safeParse("in_progress").success).toBe(true)
-    // "removed" is the label for the rejected status (Remove report -> rejected).
     expect(ADMIN_REPORT_STATUS_LABELS.rejected).toBe("Removed")
   })
 
@@ -178,7 +175,6 @@ describe("admin list query", () => {
     const parsed = AdminListQuerySchema.parse({ q: "wayne", filter: "attention", limit: "20" })
     expect(parsed.limit).toBe(20)
     expect(parsed.q).toBe("wayne")
-    // Non-strict: a per-domain extra (e.g. geoid) does not throw at the base.
     expect(AdminListQuerySchema.safeParse({ geoid: "0644000" }).success).toBe(true)
   })
   it("rejects a limit over the 100 cap", () => {
@@ -219,7 +215,6 @@ describe("home aggregates", () => {
       livePins24h: 18,
     }
     expect(HomeSummaryResponseSchema.safeParse(summary).success).toBe(true)
-    // strict: a stray top-level key is rejected.
     expect(HomeSummaryResponseSchema.safeParse({ ...summary, bogus: 1 }).success).toBe(false)
   })
 
@@ -304,6 +299,8 @@ describe("discovery schemas", () => {
 })
 
 describe("jurisdictions schemas", () => {
+  const paletteNames = FORWARD_TEMPLATE_VARIABLES.map((v) => v.token.slice(1, -1))
+
   it("SaveContactsRequest takes a per-category email map + form url and rejects a bad category", () => {
     expect(
       SaveContactsRequestSchema.safeParse({
@@ -319,7 +316,6 @@ describe("jurisdictions schemas", () => {
       SaveContactsRequestSchema.safeParse({ geoid: "0644000", contacts: { cleanup: "x@city.gov" } })
         .success,
     ).toBe(false)
-    // strict: unknown top-level key rejected.
     expect(SaveContactsRequestSchema.safeParse({ geoid: "0644000", bogus: 1 }).success).toBe(false)
   })
 
@@ -347,22 +343,16 @@ describe("jurisdictions schemas", () => {
     }
     expect(JurisdictionDirectoryDTOSchema.safeParse(row).success).toBe(true)
     expect(JurisdictionDirectoryDTOSchema.safeParse({ ...row, method: "fax" }).success).toBe(false)
-    // handle is part of the contract (nullable) - a null handle is valid; a missing one is not (strict).
     expect(JurisdictionDirectoryDTOSchema.safeParse({ ...row, handle: null }).success).toBe(true)
   })
 
   it("PatchJurisdictionRequest normalizes + validates the @handle", () => {
-    // Strips a leading "@", trims, lowercases -> a bare slug.
     expect(PatchJurisdictionRequestSchema.parse({ geoid: "1", handle: "  @SF_Bay " }).handle).toBe(
       "sf_bay",
     )
-    // Empty string clears the handle (-> null).
     expect(PatchJurisdictionRequestSchema.parse({ geoid: "1", handle: "" }).handle).toBeNull()
-    // An explicit null also clears it.
     expect(PatchJurisdictionRequestSchema.parse({ geoid: "1", handle: null }).handle).toBeNull()
-    // Omitted -> undefined (leave unchanged).
     expect(PatchJurisdictionRequestSchema.parse({ geoid: "1" }).handle).toBeUndefined()
-    // Illegal characters (spaces, punctuation) + too-short are rejected.
     expect(
       PatchJurisdictionRequestSchema.safeParse({ geoid: "1", handle: "san francisco" }).success,
     ).toBe(false)
@@ -372,12 +362,10 @@ describe("jurisdictions schemas", () => {
   it("accepts the new oldest sort + needs_mapping filter and the template overrides", () => {
     expect(JurisdictionListQuerySchema.safeParse({ sort: "oldest" }).success).toBe(true)
     expect(JurisdictionListQuerySchema.safeParse({ filter: "needs_mapping" }).success).toBe(true)
-    // existing values still parse
     expect(JurisdictionListQuerySchema.safeParse({ sort: "population", filter: "none" }).success).toBe(
       true,
     )
     expect(JurisdictionListQuerySchema.safeParse({ sort: "bogus" }).success).toBe(false)
-    // template overrides accept a string or explicit null (clear); over-long is rejected.
     expect(
       PatchJurisdictionRequestSchema.safeParse({
         geoid: "1",
@@ -393,14 +381,11 @@ describe("jurisdictions schemas", () => {
 
   it("interpolateForwardTemplate fills known tokens, leaves unknown ones, and HTML is caller's job", () => {
     const out = interpolateForwardTemplate(
-      "Ref {referenceCode} at {address} — {unknownToken} {operatorNote}",
+      "Ref {referenceCode} at {address}: {unknownToken} {operatorNote}",
       { referenceCode: "CVX-2K4P", address: "100 Main St", operatorNote: "" },
     )
-    // known tokens replaced (missing/empty value -> ""), unknown token left verbatim
-    expect(out).toBe("Ref CVX-2K4P at 100 Main St — {unknownToken} ")
-    // no HTML escaping is performed by the helper (caller must escape)
+    expect(out).toBe("Ref CVX-2K4P at 100 Main St: {unknownToken} ")
     expect(interpolateForwardTemplate("{title}", { title: "<b>hi</b>" })).toBe("<b>hi</b>")
-    // every palette token is a {curly} string and interpolates to its value
     for (const v of FORWARD_TEMPLATE_VARIABLES) {
       expect(v.token.startsWith("{") && v.token.endsWith("}")).toBe(true)
       const bare = v.token.slice(1, -1)
@@ -409,14 +394,12 @@ describe("jurisdictions schemas", () => {
   })
 
   it("the palette never exposes the reporter's identity or an unmodelled department", () => {
-    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("reporterName")
-    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("dept")
+    expect(paletteNames).not.toContain("reporterName")
+    expect(paletteNames).not.toContain("dept")
   })
 
   it("sample values and the built-in defaults cover exactly the palette", () => {
-    expect(Object.keys(FORWARD_TEMPLATE_SAMPLE_VALUES).sort()).toEqual(
-      [...FORWARD_TEMPLATE_VARIABLE_NAMES].sort(),
-    )
+    expect(Object.keys(FORWARD_TEMPLATE_SAMPLE_VALUES).sort()).toEqual([...paletteNames].sort())
     expect(forwardTemplateIssues(DEFAULT_FORWARD_SUBJECT_TEMPLATE)).toEqual([])
     expect(forwardTemplateIssues(DEFAULT_FORWARD_BODY_TEMPLATE)).toEqual([])
     expect(interpolateForwardTemplate(DEFAULT_FORWARD_SUBJECT_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).toBe(
@@ -574,7 +557,7 @@ describe("admin org management", () => {
     owner: actor,
   }
 
-  it("parses a 0.40.0 AdminOrgDTO and the 0.41.0 suspension fields", () => {
+  it("parses an AdminOrgDTO with and without the suspension fields", () => {
     const base = AdminOrgDTOSchema.safeParse(org)
     expect(base.success).toBe(true)
     if (base.success) {
@@ -889,9 +872,8 @@ describe("moderation schemas", () => {
       media: [{ id: "m1", kind: "image", url: "https://r2/held.jpg" }],
     }
     expect(ModerationItemDTOSchema.safeParse(item).success).toBe(true)
-    // category may be null (appeals).
+    // Appeals carry no category.
     expect(ModerationItemDTOSchema.safeParse({ ...item, category: null }).success).toBe(true)
-    // a bad signal tone is rejected.
     expect(
       ModerationItemDTOSchema.safeParse({
         ...item,
@@ -983,7 +965,7 @@ describe("mail schemas", () => {
 })
 
 describe("analytics + activity + audit + system schemas", () => {
-  it("by-category uses the 6 real categories (cleanup is not one)", () => {
+  it("by-category uses the report categories (cleanup is not one)", () => {
     expect(
       AnalyticsByCategoryResponseSchema.safeParse({
         rows: [{ cat: "trash", count: 10, pct: 40 }],

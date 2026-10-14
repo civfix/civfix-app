@@ -3,13 +3,16 @@
 import { dehydrate, hydrate, type QueryClient, type Query } from "@tanstack/react-query"
 
 import { readAuthSnapshot } from "@/lib/auth-snapshot"
+import { safeGet, safeRemove, safeSet, storageAvailable } from "@/lib/browser-storage"
 import { useAuthStore } from "@/store/auth-store"
 
 
 const STORAGE_KEY = "civfix.query.cache.v2"
 const LEGACY_STORAGE_KEY = "civfix.query.cache.v1"
 
-const BUSTER: string = process.env.NEXT_PUBLIC_APP_VERSION ?? "v1"
+// A deploy can change DTO shapes, so the persisted cache must not outlive the build that wrote it.
+// next.config.mjs inlines the commit sha; `||` because it resolves to "" when git is unavailable.
+const BUSTER: string = process.env.NEXT_PUBLIC_COMMIT_SHA || "v1"
 
 const MAX_AGE_MS = 24 * 60 * 60 * 1000
 
@@ -43,19 +46,10 @@ function shouldDehydrateMutation(): boolean {
   return false
 }
 
-function hasStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined"
-}
-
 function restore(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
 
-  let raw: string | null
-  try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
-  } catch {
-    return
-  }
+  const raw = safeGet("local", STORAGE_KEY)
   if (raw === null) return
 
   let envelope: CacheEnvelope
@@ -98,8 +92,41 @@ function restore(queryClient: QueryClient): void {
   }
 }
 
+function persistedViewerId(): string | null | undefined {
+  const raw = safeGet("local", STORAGE_KEY)
+  if (raw === null) return undefined
+  try {
+    const userId = (JSON.parse(raw) as { userId?: unknown }).userId
+    return typeof userId === "string" ? userId : null
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * The viewer the in-memory cache may be stamped for: the confirmed user, null for a confirmed signed-out
+ * visitor, or undefined when nothing is confirmed (an optimistic guess, a session check in flight or one
+ * that got no answer, which keeps its auth snapshot) and the stored envelope must be left as it is.
+ */
+function confirmedViewerId(): string | null | undefined {
+  const { status, optimistic, user } = useAuthStore.getState()
+  if (optimistic) return undefined
+  if (status === "authenticated") return user ? user.id : undefined
+  if (status === "anonymous" && readAuthSnapshot() === null) return null
+  return undefined
+}
+
 function persist(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
+  const userId = confirmedViewerId()
+  if (userId === undefined) return
+  // The viewer just changed: the in-memory cache may still hold the previous viewer's notifications,
+  // threads and reports, and stamping it for the new one would restore it for them on the next load.
+  const storedViewerId = persistedViewerId()
+  if (storedViewerId !== undefined && storedViewerId !== userId) {
+    clearPersistedCache()
+    return
+  }
   try {
     const clientState = dehydrate(queryClient, {
       shouldDehydrateQuery,
@@ -112,26 +139,21 @@ function persist(queryClient: QueryClient): void {
     const envelope: CacheEnvelope = {
       buster: BUSTER,
       timestamp: Date.now(),
-      userId: useAuthStore.getState().user?.id ?? null,
+      userId,
       clientState,
     }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+    safeSet("local", STORAGE_KEY, JSON.stringify(envelope))
   } catch {
   }
 }
 
 export function restorePersistedCache(queryClient: QueryClient): void {
-  if (hasStorage()) {
-    try {
-      window.localStorage.removeItem(LEGACY_STORAGE_KEY)
-    } catch {
-    }
-  }
+  if (storageAvailable("local")) safeRemove("local", LEGACY_STORAGE_KEY)
   restore(queryClient)
 }
 
 export function installCachePersistenceWriter(queryClient: QueryClient): () => void {
-  if (!hasStorage()) {
+  if (!storageAvailable("local")) {
     return () => {}
   }
 
@@ -157,18 +179,11 @@ export function installCachePersistenceWriter(queryClient: QueryClient): () => v
 }
 
 export function clearPersistedCache(): void {
-  if (!hasStorage()) return
-  try {
-    window.localStorage.removeItem(STORAGE_KEY)
-  } catch {
-  }
+  if (!storageAvailable("local")) return
+  safeRemove("local", STORAGE_KEY)
 }
 
 export function hasPersistedCache(): boolean {
-  if (!hasStorage()) return false
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) !== null
-  } catch {
-    return false
-  }
+  if (!storageAvailable("local")) return false
+  return safeGet("local", STORAGE_KEY) !== null
 }

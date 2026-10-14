@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Upload a store-signed ipa straight to App Store Connect with `fastlane pilot upload` — not
+# Upload a store-signed ipa straight to App Store Connect with `fastlane pilot upload`, not
 # `eas submit`, whose free-tier queue can hold a submission for hours. It appears in TestFlight
 # once App Store Connect finishes processing.
 #
@@ -11,7 +11,7 @@
 #
 # Authenticates with an App Store Connect API key (App Store Connect -> Users and Access ->
 # Integrations -> App Store Connect API; Developer role is enough) read from three environment
-# variables — GitHub Actions secrets in CI, exported by hand on a laptop:
+# variables (GitHub Actions secrets in CI, exported by hand on a laptop):
 #   ASC_KEY_ID        the key's Key ID
 #   ASC_ISSUER_ID     the Issuer ID shown on that page
 #   ASC_PRIVATE_KEY   the full contents of the downloaded AuthKey_<KEY_ID>.p8, BEGIN/END lines included

@@ -18,5 +18,6 @@
   "blocked": {
     "label": "Blocked accounts",
     "sub": "People you've blocked"
-  }
+  },
+  "save_error": "Couldn't save that change. Try again."
 }

@@ -1,5 +1,5 @@
 /**
- * Source guards for the two new own/public service-hours surfaces.
+ * Source guards for the own/public service-hours surfaces.
  *
  * These are the rules typecheck cannot see and that a well-meaning refactor breaks first:
  *
@@ -13,16 +13,14 @@
  *      popup blocker kills: `window.open` in a promise continuation has lost its user-activation token.
  *
  * Plus the two `typeMeta` cases in NotificationsBody, which are trivially droppable in a merge and whose
- * absence is invisible (both new bells silently fall through to the generic grey `Bell`).
+ * absence is invisible (both bells silently fall through to the generic grey `Bell`).
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const section = readFileSync(new URL("../profile/ServiceHoursSection.tsx", import.meta.url), "utf8")
-const certificate = readFileSync(
-  new URL("../profile/ServiceHoursCertificateCard.tsx", import.meta.url),
-  "utf8",
-)
+const certificate = surfaceSource("certificateCard")
 const notifications = readFileSync(new URL("../NotificationsBody.tsx", import.meta.url), "utf8")
 const privacy = readFileSync(new URL("../SettingsPrivacyBody.tsx", import.meta.url), "utf8")
 const prefs = readFileSync(new URL("../NotificationPrefsBody.tsx", import.meta.url), "utf8")
@@ -84,13 +82,25 @@ describe("service-hours profile surfaces", () => {
     expect(body).toContain('t("total.org_chip"')
   })
 
+  it("sends the visibility indicator to the privacy settings that own the switch", () => {
+    const body = code(section)
+    expect(body).toContain('push({ kind: "settings-privacy" })')
+    expect(body).not.toContain('push({ kind: "notification-prefs" })')
+  })
+
+  it("exposes the ledger load-more's in-flight state to assistive tech", () => {
+    expect(code(section)).toContain(
+      "accessibilityState={{ disabled: isFetchingNextPage, busy: isFetchingNextPage }}",
+    )
+  })
+
   it("renders the service-record privacy switch OFF for a never-chosen account", () => {
     // `?? true` here would opt every existing account into the itemised per-event list on deploy day.
     expect(code(privacy)).toContain("user?.showVolunteerHours === true")
     expect(privacy).not.toContain("user?.showVolunteerHours ?? true")
-    expect(privacy).toContain("updatePrivacy.mutate({ showVolunteerHours: next })")
-    // The switch moved OUT of the notification prefs body with the PRIVACY section - it must not
-    // survive in both places, or two surfaces write the same tri-state from two different reads.
+    expect(privacy).toContain("savePrivacy({ showVolunteerHours: next })")
+    // The switch lives only in the PRIVACY section: in both places, two surfaces would write the same
+    // tri-state from two different reads.
     expect(code(prefs)).not.toContain("showVolunteerHours")
   })
 })

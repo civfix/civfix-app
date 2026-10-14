@@ -1,5 +1,8 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
+import { existsSync, readdirSync, statSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath, URL } from "node:url"
 import { resolveIncomingPath } from "./universalLinks.ts"
 
 const internal = (path: string) => ({ type: "internal", path }) as const
@@ -132,10 +135,10 @@ test("a browser-only bare path is rebuilt against the web origin", () => {
   )
 })
 
-test("the dev harness routes stay in the browser", () => {
-  assert.deepEqual(resolveIncomingPath("/landscape"), external("https://civfix.org/landscape"))
-  assert.deepEqual(resolveIncomingPath("/skeleton"), external("https://civfix.org/skeleton"))
-  assert.deepEqual(resolveIncomingPath("/bodies"), external("https://civfix.org/bodies"))
+test("the dev galleries are not browser-only roots: production never serves them", () => {
+  assert.deepEqual(resolveIncomingPath("/landscape"), home)
+  assert.deepEqual(resolveIncomingPath("/skeleton"), home)
+  assert.deepEqual(resolveIncomingPath("/bodies"), home)
 })
 
 test("a scheme link gets the SAME alias table as a web link", () => {
@@ -162,26 +165,24 @@ test("a scheme link to the app root is the map-home", () => {
 })
 
 test("a browser-only root reached over a scheme goes home, never to a browser", () => {
-  for (const root of ["guest", "claim", "legal/terms", "service-record/ABC123", "landscape"]) {
+  for (const root of ["guest", "claim", "legal/terms", "service-record/ABC123", "unsubscribe"]) {
     assert.deepEqual(resolveIncomingPath(`civfix://${root}`), home)
   }
 })
 
-test("the dev-client launcher URL is never rewritten", () => {
+test("the dev-client launcher URL is never rewritten in a dev build", () => {
   const launcher = "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
-  assert.deepEqual(resolveIncomingPath(launcher), internal(launcher))
+  assert.deepEqual(resolveIncomingPath(launcher, { isDev: true }), internal(launcher))
   assert.deepEqual(
-    resolveIncomingPath("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"),
+    resolveIncomingPath("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081", { isDev: true }),
     internal("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"),
   )
 })
 
-test("an unrecognized scheme path stays verbatim so auth and dev URLs keep working", () => {
-  assert.deepEqual(resolveIncomingPath("exp://127.0.0.1:8081"), internal("exp://127.0.0.1:8081"))
-  assert.deepEqual(
-    resolveIncomingPath("org.civfix.community://oauth?code=abc"),
-    internal("org.civfix.community://oauth?code=abc"),
-  )
+test("an unrecognized scheme path goes home; only a dev build keeps a Metro URL verbatim", () => {
+  assert.deepEqual(resolveIncomingPath("exp://127.0.0.1:8081", { isDev: true }), internal("exp://127.0.0.1:8081"))
+  assert.deepEqual(resolveIncomingPath("exp://127.0.0.1:8081"), home)
+  assert.deepEqual(resolveIncomingPath("org.civfix.community://oauth?code=abc"), home)
 })
 
 test("the scheme allowlist is exact, not a prefix match", () => {
@@ -287,20 +288,216 @@ test("an emailed team-invite link opens the event and never carries the token in
 
 test("an unrecognized app-scheme root never carries an invite token into the route", () => {
   const token = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+  assert.deepEqual(resolveIncomingPath(`org.civfix.community://oauth?code=abc&teamInvite=${token}`), home)
+  assert.deepEqual(resolveIncomingPath(`civfix://oauth?teamInvite=${token}`), home)
+  assert.deepEqual(resolveIncomingPath(`civfix://oauth?teamInvite=${token}#top`), home)
+  assert.deepEqual(resolveIncomingPath("org.civfix.community://oauth?code=abc"), home)
+})
+
+const LEGITIMATE_LINKS: readonly (readonly [string, string])[] = [
+  ["/map", "/map"],
+  ["/search", "/search"],
+  ["/about", "/about"],
+  ["/profile", "/profile"],
+  ["/dashboard", "/dashboard"],
+  ["/discover", "/discover"],
+  ["/saves", "/saves"],
+  ["/report", "/report"],
+  ["/compose", "/compose"],
+  ["/compose/quote/p1", "/compose"],
+  ["/host", "/host-event"],
+  ["/host-event", "/host-event"],
+  ["/events", "/cleanups"],
+  ["/events/c1", "/cleanups/c1"],
+  ["/e/beach-day", "/cleanups/beach-day"],
+  ["/orgs/acme", "/orgs/acme"],
+  ["/cleanups", "/cleanups"],
+  ["/cleanups/c1", "/cleanups/c1"],
+  ["/cleanups/c1/edit", "/cleanups/c1/edit"],
+  ["/cleanups/c1/host", "/cleanups/c1/host"],
+  ["/cleanups/c1/checkin", "/cleanups/c1/checkin"],
+  ["/cleanups/c1/team", "/cleanups/c1/team"],
+  ["/cleanups/c1/hours", "/cleanups/c1/hours"],
+  ["/cleanups/c1/ticket", "/cleanups/c1/ticket"],
+  ["/cleanups/c1/ticket/s2", "/cleanups/c1/ticket/s2"],
+  ["/cleanups/c1/analytics", "/cleanups/c1/analytics"],
+  ["/cleanups/c1/announcements", "/cleanups/c1/announcements"],
+  ["/cleanups/c1/announcements/a1", "/cleanups/c1/announcements/a1"],
+  ["/cleanups/c1/announce", "/cleanups/c1"],
+  ["/cleanups/c1/nope", "/cleanups/c1"],
+  ["/orgs/acme/manage", "/orgs/acme/manage"],
+  ["/host/analytics", "/host/analytics"],
+  ["/reports", "/reports"],
+  ["/reports/r1", "/pin/r1"],
+  ["/pin/r1", "/pin/r1"],
+  ["/people", "/people"],
+  ["/people/jane", "/people/jane"],
+  ["/people/jane/followers", "/people/jane"],
+  ["/leaderboard/0644000", "/leaderboard/0644000"],
+  ["/post/p1", "/post/p1"],
+  ["/post/p1/thread", "/post/p1"],
+  ["/notifications", "/notifications"],
+  ["/notifications/prefs", "/notifications/prefs"],
+  ["/settings", "/settings"],
+  ["/settings/account", "/settings/account"],
+  ["/settings/privacy", "/settings/privacy"],
+  ["/settings/blocked", "/settings/blocked"],
+  ["/settings/language", "/settings/language"],
+  ["/settings/appearance", "/settings/appearance"],
+  ["/groups/new", "/messages"],
+  ["/groups/g1/info", "/groups/g1/info"],
+  ["/channels/new", "/messages"],
+  ["/messages", "/messages"],
+  ["/messages/m1", "/messages/m1"],
+  ["/messages/dm/m1", "/messages/dm/m1"],
+  ["/messages/report/m1", "/messages/report/m1"],
+  ["/messages/group/m1", "/messages/group/m1"],
+  ["/messages/members/dm/m1", "/messages/members/dm/m1"],
+  ["/messages/members/cleanup/m1", "/messages/members/cleanup/m1"],
+  ["/messages/pins/cleanup/m1", "/messages/m1"],
+  ["/messages/pins/dm/m1", "/messages/dm/m1"],
+  ["/reports?tab=mine", "/reports?tab=mine"],
+  ["/pin/r1?from=share", "/pin/r1?from=share"],
+  ["/cleanups/c1?from=email", "/cleanups/c1?from=email"],
+  ["/cleanups/c1/ticket/s2?from=email", "/cleanups/c1/ticket/s2?from=email"],
+  ["/messages/m1?roomKind=dm", "/messages/m1?roomKind=dm"],
+]
+
+test("every recognised in-app link resolves the same over https, a bare path and every app scheme", () => {
+  const shapes = [
+    (p: string) => `https://civfix.org${p}`,
+    (p: string) => `https://www.civfix.org${p}`,
+    (p: string) => p,
+    (p: string) => `civfix:/${p}`,
+    (p: string) => `civfix://${p}`,
+    (p: string) => `org.civfix.community:/${p}`,
+    (p: string) => `exp+civfix-community:/${p}`,
+  ]
+  for (const [link, path] of LEGITIMATE_LINKS) {
+    for (const shape of shapes) {
+      assert.deepEqual(resolveIncomingPath(shape(link)), internal(path), shape(link))
+    }
+  }
+})
+
+test("an app-scheme path the route table does not know goes home, never to the router verbatim", () => {
+  for (const link of [
+    "civfix://auth/otp?email=a@b.c&next=/pin/x",
+    "civfix://auth/sign-in",
+    "civfix://scan?session=s",
+    "civfix://report/camera?captureId=c",
+    "civfix://settings/nope",
+    "civfix://dashboard/x",
+    "civfix://oauth?code=abc",
+    "org.civfix.community://oauth?code=abc",
+    "exp+civfix-community://auth/otp?email=a@b.c",
+    "exp://127.0.0.1:8081",
+  ]) {
+    assert.deepEqual(resolveIncomingPath(link), home, link)
+  }
+})
+
+test("an Object.prototype name as the root misses the route table like any unknown root", () => {
+  for (const prefix of ["https://civfix.org", "civfix://", "civfix:/"]) {
+    const unknownRoot = `${prefix}/definitely-not-a-route`
+    for (const path of ["/constructor/x", "/__proto__"]) {
+      const link = `${prefix}${path}`
+      assert.deepEqual(resolveIncomingPath(link), home, link)
+      assert.deepEqual(resolveIncomingPath(link), resolveIncomingPath(unknownRoot), link)
+      assert.deepEqual(
+        resolveIncomingPath(link, { isDev: true }),
+        resolveIncomingPath(unknownRoot, { isDev: true }),
+        link,
+      )
+    }
+  }
+})
+
+test("dev-client launcher and Metro URLs pass through only in a dev build", () => {
+  const launcher = "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+  const lanLauncher = "civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"
+  const metro = "exp://127.0.0.1:8081"
+  for (const link of [launcher, lanLauncher, metro]) {
+    assert.deepEqual(resolveIncomingPath(link, { isDev: true }), internal(link), link)
+    assert.deepEqual(resolveIncomingPath(link, { isDev: false }), home, link)
+    assert.deepEqual(resolveIncomingPath(link), home, link)
+  }
+  assert.deepEqual(resolveIncomingPath("civfix://auth/otp?email=a@b.c", { isDev: true }), home)
+  assert.deepEqual(resolveIncomingPath("civfix://pin/r1", { isDev: true }), internal("/pin/r1"))
+})
+
+test("an outside link can never name the peer of a conversation", () => {
+  const spoof = "roomKind=dm&peerId=attacker&peerName=Support&peerHandle=support"
+  for (const link of [
+    `https://civfix.org/messages/m1?${spoof}`,
+    `civfix://messages/m1?${spoof}`,
+    `/messages/m1?${spoof}`,
+    `/messages/m1?peer%4Eame=Support&roomKind=dm&peer%49d=attacker`,
+  ]) {
+    assert.deepEqual(resolveIncomingPath(link), internal("/messages/m1?roomKind=dm"), link)
+  }
+  assert.deepEqual(resolveIncomingPath(`/messages/dm/m1?${spoof}`), internal("/messages/dm/m1"))
+})
+
+test("each route keeps only the query parameters it allows", () => {
+  assert.deepEqual(resolveIncomingPath("/pin/r1?from=share&peerName=x&next=/y"), internal("/pin/r1?from=share"))
+  assert.deepEqual(resolveIncomingPath("/pin/r1?roomKind=dm"), internal("/pin/r1"))
+  assert.deepEqual(resolveIncomingPath("/cleanups/c1?next=/pin/x&session=s"), internal("/cleanups/c1"))
+  assert.deepEqual(resolveIncomingPath("/cleanups/c1?tab=mine"), internal("/cleanups/c1"))
+  assert.deepEqual(resolveIncomingPath("/reports?tab=mine&email=a@b.c"), internal("/reports?tab=mine"))
+  assert.deepEqual(resolveIncomingPath("civfix://settings?email=a@b.c"), internal("/settings"))
+})
+
+test("an outside link never opens the composer as a reply or quote", () => {
+  for (const link of [
+    "/compose?mode=reply&targetPostId=p1",
+    "https://civfix.org/compose?mode=quote&targetPostId=p1",
+    "civfix://compose?mode=reply&targetPostId=p1",
+    "civfix://compose?targetPostId=p1",
+  ]) {
+    assert.deepEqual(resolveIncomingPath(link), internal("/compose"), link)
+  }
+})
+
+test("an event's announcements and analytics and an org's manage page open their own screens", () => {
   assert.deepEqual(
-    resolveIncomingPath(`org.civfix.community://oauth?code=abc&teamInvite=${token}`),
-    internal("org.civfix.community://oauth?code=abc"),
+    resolveIncomingPath("https://civfix.org/cleanups/c1/announcements/a1"),
+    internal("/cleanups/c1/announcements/a1"),
   )
   assert.deepEqual(
-    resolveIncomingPath(`civfix://oauth?teamInvite=${token}`),
-    internal("civfix://oauth"),
+    resolveIncomingPath("https://civfix.org/cleanups/c1/announcements/"),
+    internal("/cleanups/c1/announcements"),
   )
-  assert.deepEqual(
-    resolveIncomingPath(`civfix://oauth?teamInvite=${token}#top`),
-    internal("civfix://oauth#top"),
-  )
-  assert.deepEqual(
-    resolveIncomingPath("org.civfix.community://oauth?code=abc"),
-    internal("org.civfix.community://oauth?code=abc"),
-  )
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/analytics"), internal("/cleanups/c1/analytics"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/manage"), internal("/orgs/acme/manage"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/host/analytics"), internal("/host/analytics"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/nope"), internal("/orgs/acme"))
+})
+
+test("the web-only announce composer falls back to the event, since mobile has no route for it", () => {
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/announce"), internal("/cleanups/c1"))
+})
+
+const APP_DIR = fileURLToPath(new URL("../../app/", import.meta.url))
+
+function routeFileExists(dir: string, segments: readonly string[]): boolean {
+  const entries = readdirSync(dir)
+  if (segments.length === 0) return entries.includes("index.tsx")
+  const [head, ...rest] = segments
+  const dynamic = entries.filter((entry) => /^\[[^\]]+\](\.tsx)?$/.test(entry)).map((entry) => entry.replace(/\.tsx$/, ""))
+  return [head!, ...dynamic].some((name) => {
+    if (rest.length === 0 && entries.includes(`${name}.tsx`)) return true
+    const child = join(dir, name)
+    return existsSync(child) && statSync(child).isDirectory() && routeFileExists(child, rest)
+  })
+}
+
+test("every in-app link lands on a route file that exists", () => {
+  for (const [link] of LEGITIMATE_LINKS) {
+    const resolved = resolveIncomingPath(link)
+    assert.equal(resolved.type, "internal", link)
+    if (resolved.type !== "internal") continue
+    const pathname = resolved.path.split("?")[0]!
+    assert.ok(routeFileExists(APP_DIR, pathname.split("/").filter(Boolean)), `${link} -> ${pathname}`)
+  }
 })

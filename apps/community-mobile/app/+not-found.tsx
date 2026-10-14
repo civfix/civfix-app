@@ -11,7 +11,7 @@ import { ScrollView } from "react-native-gesture-handler"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { PrimaryButton, Text, useNavStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { lineHeight, makeThemedStyles, useReducedMotion, useTheme } from "@/theme"
+import { makeThemedStyles, useReducedMotion, useTheme } from "@/theme"
 import { Wordmark } from "@/components/Wordmark"
 import { PotholeStage } from "@/components/notFound/PotholeStage"
 import { SignStage } from "@/components/notFound/SignStage"
@@ -125,12 +125,12 @@ const useStyles = makeThemedStyles((t) => ({
     textAlign: "center",
   },
   headline: {
-    lineHeight: t.fontSize["30"] * lineHeight.snug,
+    lineHeight: t.fontSize["30"] * t.lineHeight.snug,
     textAlign: "center",
   },
   supporting: {
     fontSize: t.fontSize["16"],
-    lineHeight: t.fontSize["16"] * lineHeight.base,
+    lineHeight: t.fontSize["16"] * t.lineHeight.base,
     textAlign: "center",
   },
   cta: {

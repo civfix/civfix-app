@@ -115,7 +115,7 @@ function worldPt(zoom: number): number {
   return TILE_PT * 2 ** zoom
 }
 
-export function projectPoint(point: GeoPoint, zoom: number): MapFraction {
+function projectPoint(point: GeoPoint, zoom: number): MapFraction {
   const world = worldPt(zoom)
   const sinLat = Math.sin((point.lat * Math.PI) / 180)
   return {

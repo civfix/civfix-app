@@ -9,7 +9,7 @@ import { useNavStore, entryFromPath, isRootLink } from "../nav"
 import { useOpenInternalHref } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { useListTimeAgo } from "./useListTimeAgo"
 
 function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: string; tint: string } {
@@ -58,11 +58,14 @@ const NotificationRow = memo(function NotificationRow({
   const { t } = useT("notifications")
   const meta = typeMeta(item.type, th)
   const press = useCallback(() => onPress(item), [onPress, item])
+  const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)
   return (
     <Pressable
       onPress={press}
       accessibilityRole="button"
-      accessibilityLabel={item.read ? item.title : t("row.unreadSuffix", { title: item.title })}
+      accessibilityLabel={item.read
+        ? [item.title, ...a11yDetails].join(", ")
+        : [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")}
       {...focusRingProps}
       style={(state) => [
         styles.row,
@@ -180,7 +183,7 @@ export function NotificationsBody() {
         />
       </View>
     )
-  }, [isAuthenticated, isPending, query.isLoading, query.isError, requireAuth, t])
+  }, [isAuthenticated, isPending, query.isLoading, query.isError, requireAuth, t, styles, th])
 
   return (
     <FlatList

@@ -78,7 +78,8 @@
     "title": "By ticket type",
     "of": "{{registered}} of {{capacity}}",
     "waiting_one": "{{count}} waiting",
-    "waiting_other": "{{count}} waiting"
+    "waiting_other": "{{count}} waiting",
+    "meter_a11y": "{{name}}: {{registered}} of {{capacity}} registered"
   },
   "arrivals": {
     "title": "Arrivals",

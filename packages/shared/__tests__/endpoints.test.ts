@@ -157,7 +157,7 @@ describe("service-hours endpoint registry", () => {
       ).toBe(false)
   })
 
-  it("fills :code from the request body — the *Id fallback cannot rescue it", () => {
+  it("fills :code from the request body; the *Id fallback cannot rescue it", () => {
     const revoke = endpoints.revokeServiceHoursCertificate
     const input = { code: "A1B2C3D4E5F6" }
     const { params, consumedKeys } = extractParams(revoke.path, input)

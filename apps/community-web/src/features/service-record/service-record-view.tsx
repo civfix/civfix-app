@@ -13,42 +13,40 @@ import {
 import {
   ErrorCode,
   formatCertificateCode,
+  formatCertificateHours,
+  formatCount,
   normalizeCertificateCode,
   type VerifyCertificateResponse,
+  toAppError,
 } from "@civfix/shared"
-import { useT } from "@civfix/ui/i18n"
+import { safeDateFormat } from "@civfix/shared/datetime"
+import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
 
 import { DetailShell } from "@/components/detail-shell"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
-import { api, toAppError } from "@/lib/api"
+import { api } from "@/lib/api"
+import { replaceUrlInPlace } from "@/lib/replace-url"
 import {
+  SERVICE_RECORD_SEGMENT,
   serviceRecordCodeFromPath,
   serviceRecordPath,
 } from "@/features/service-record/service-record-code"
 
+const COPIED_FLASH_MS = 2000
+
+// The printed "CFX-XXXX-XXXX-XXXX" form is 18 characters, so this leaves one to spare; normalization
+// strips the separators anyway.
+const CODE_INPUT_MAX_LENGTH = 19
+
 /**
- * /service-record/<code> - the PUBLIC service-hours certificate verification page.
- *
- * The audience is a school registrar or a court clerk holding a printed civfix transcript, on a desktop
- * browser, with no civfix account. Three consequences shape this file:
- *
- *  1. It is plain DOM inside the existing DetailShell (the /claim precedent), NOT a @civfix/ui body.
- *     react-native-web bodies print badly (absolutely-positioned flex scaffolding, no page breaks), and
- *     printing is a first-class use of this page - see service-record.css's `@media print` block.
- *  2. It calls the shared client with NO auth. `verifyServiceHoursCertificate` is declared
- *     `auth: "public"`, so the client attaches no bearer at all: the page works signed-out and cold.
- *  3. The code comes from `window.location.pathname`, never `usePathname()`. Under output:"export" the
- *     Cloudflare rule `/service-record/* -> /service-record/_/ 200` rewrites the request server-side, so
- *     Next's router sees the placeholder document while the address bar still holds the real deep link.
- *     The parsing (and the `/_/` placeholder guard) lives in the pure service-record-code.ts, mirroring
- *     `seedPathname()` in components/home/use-web-nav-adapter.ts.
- *
- * The response is deliberately thin (no user id, no PDF url, no per-activity rows) - everything shown
- * here is already printed on the document the verifier is holding, which is why the disclaimer says so.
+ * The public certificate verification page, for a registrar or court clerk holding a printed transcript
+ * with no civfix account. It is plain DOM rather than a @civfix/ui body because react-native-web bodies
+ * print badly (absolutely positioned flex scaffolding, no page breaks), and printing is a first-class use
+ * here. The response is deliberately thin: everything shown is already printed on the document.
  */
 
-/** What the page is currently showing. `record` covers both verdicts; `status` distinguishes them. */
+/** `record` covers both verdicts; `status` distinguishes them. */
 type Phase =
   | { readonly kind: "idle" }
   | { readonly kind: "checking" }
@@ -62,10 +60,10 @@ export function ServiceRecordView() {
   const [phase, setPhase] = React.useState<Phase>({ kind: "idle" })
   const [input, setInput] = React.useState("")
 
-  // Sequences the verify GETs: only the LATEST request may write state, so a fast second submit cannot
-  // be overwritten by the first response landing late.
+  // Only the latest request may write state, so a fast second submit is never overwritten by the first
+  // response landing late.
   const requestSeq = React.useRef(0)
-  // The mount seed runs at most once (React 19 StrictMode double-invokes effects; refs survive that).
+  // StrictMode double-invokes effects; a ref survives that, so the mount seed runs once.
   const seeded = React.useRef(false)
 
   const verify = React.useCallback(async (code: string) => {
@@ -92,8 +90,6 @@ export function ServiceRecordView() {
     }
   }, [])
 
-  // Seed from the live URL on mount. A cold deep link verifies immediately; a bare /service-record/ (or
-  // the /_/ placeholder document itself) falls through to the "enter a code" form.
   React.useEffect(() => {
     if (seeded.current) return
     seeded.current = true
@@ -112,18 +108,16 @@ export function ServiceRecordView() {
   const onSubmit = React.useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      // The same loose-in/canonical-out normalization the URL path goes through, so a code typed with or
-      // without the printed "CFX-" prefix and dashes behaves identically to one that arrived as a link.
+      // The same normalization as the URL path, so a typed code behaves exactly like one from a link.
       const code = normalizeCertificateCode(input)
       if (code === null) {
         requestSeq.current += 1 // abandon anything in flight so it cannot overwrite this verdict
         setPhase({ kind: "error", reason: "badCode" })
         return
       }
-      // Make the address bar a shareable permalink for the code just checked. REPLACE (not push) so the
-      // browser Back button still leaves the page rather than walking back through typed codes.
+      // Replace, not push, so Back leaves the page rather than walking back through typed codes.
       if (typeof window !== "undefined") {
-        window.history.replaceState(window.history.state, "", serviceRecordPath(code))
+        replaceUrlInPlace(serviceRecordPath(code))
       }
       void verify(code)
     },
@@ -135,7 +129,7 @@ export function ServiceRecordView() {
     setInput("")
     setPhase({ kind: "idle" })
     if (typeof window !== "undefined") {
-      window.history.replaceState(window.history.state, "", "/service-record/")
+      replaceUrlInPlace(`/${SERVICE_RECORD_SEGMENT}/`)
     }
   }, [])
 
@@ -156,7 +150,6 @@ export function ServiceRecordView() {
   )
 }
 
-/** The "no code yet" state: the value prop plus a single input a verifier types the printed code into. */
 function CodeForm({
   value,
   onChange,
@@ -190,8 +183,7 @@ function CodeForm({
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
-          // 19 = the printed "CFX-XXXX-XXXX-XXXX" form; normalization strips the separators anyway.
-          maxLength={19}
+          maxLength={CODE_INPUT_MAX_LENGTH}
         />
         <Button type="submit" size="lg" disabled={value.trim().length === 0}>
           {t("verify")}
@@ -203,7 +195,6 @@ function CodeForm({
   )
 }
 
-/** The in-flight state. Deliberately quiet: the round trip is a single small GET. */
 function CheckingState({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center" aria-live="polite">
@@ -214,9 +205,8 @@ function CheckingState({ label }: { label: string }) {
 }
 
 /**
- * The verdict card for a code the server recognized: warm moss when the record stands, muted ink when
- * the holder withdrew it. Both print (see service-record.css); both carry the disclaimer, because both
- * confirm only the existence and totals of a record, never its individual activities.
+ * Both verdicts carry the disclaimer, because both confirm only the existence and totals of a record,
+ * never its individual activities.
  */
 function RecordVerdict({
   record,
@@ -278,7 +268,7 @@ function RecordVerdict({
 
       <dl className="sr-card mt-4 grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-ink-5 bg-cardflat p-5 sm:grid-cols-2">
         <Field label={t("issued")} value={formatDate(record.issuedAt, locale)} />
-        <Field label={t("hours")} value={formatHours(record.totalHours, locale)} />
+        <Field label={t("hours")} value={formatCertificateHours(record.totalHours, locale)} />
         <Field label={t("activities")} value={formatCount(record.entryCount, locale)} />
         {record.periodStart && record.periodEnd && (
           <Field
@@ -311,7 +301,6 @@ function RecordVerdict({
   )
 }
 
-/** One label/value pair in the summary grid. */
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -322,18 +311,16 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * The document hash, so a verifier can confirm the PDF in front of them is byte-identical to the one
- * civfix issued. Copy is best-effort: the Clipboard API is unavailable on insecure origins and in some
- * embedded browsers, and the value stays selectable either way.
+ * Copy is best-effort: the Clipboard API is unavailable on insecure origins and in some embedded
+ * browsers, and the value stays selectable either way.
  */
 function Fingerprint({ sha256 }: { sha256: string }) {
   const { t } = useT("web-service-record")
   const [copied, setCopied] = React.useState(false)
 
-  // Clear the "Copied" flash, and cancel the timer if the page navigates away first.
   React.useEffect(() => {
     if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 2000)
+    const timer = setTimeout(() => setCopied(false), COPIED_FLASH_MS)
     return () => clearTimeout(timer)
   }, [copied])
 
@@ -361,14 +348,17 @@ function Fingerprint({ sha256 }: { sha256: string }) {
           className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-          {copied && <span>{t("copied")}</span>}
         </button>
+        {/* Outside the button: its accessible name is fixed by aria-label, so text inside it is never
+            announced. The region stays mounted so screen readers pick up the change. */}
+        <span role="status" className="sr-no-print shrink-0 py-1 text-token-13 font-semibold text-ink-2">
+          {copied ? t("copied") : ""}
+        </span>
       </div>
     </div>
   )
 }
 
-/** The three failure verdicts. All three offer the same way out: check another code. */
 function ErrorVerdict({
   reason,
   onReset,
@@ -382,8 +372,8 @@ function ErrorVerdict({
 
   return (
     <div>
-      {/* The page keeps a real <h1> in every state; EmptyState's own title is an <h4>, which would
-          leave this (publicly linkable) document headingless. */}
+      {/* The page keeps a real <h1> in every state, so this publicly linkable document is never
+          headingless whatever the failure reason. */}
       <h1 className="mb-4 text-center font-display text-token-30 font-extrabold text-ink">
         {t("title")}
       </h1>
@@ -408,10 +398,7 @@ function ErrorVerdict({
   )
 }
 
-/**
- * The one sentence that defines what this page is: it confirms the RECORD, not its contents. Rendered on
- * every state (including the empty form) so it is never something a verifier only sees after a match.
- */
+/** Rendered in every state, including the empty form, so a verifier never sees it only after a match. */
 function Disclaimer() {
   const { t } = useT("web-service-record")
   return (
@@ -421,33 +408,9 @@ function Disclaimer() {
   )
 }
 
-/** Locale-aware medium date; an absent/unparseable timestamp renders as an em dash, never "Invalid Date". */
+const ISSUED_DATE_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: "medium" }
+
+/** An absent or unparseable timestamp renders as a placeholder, never "Invalid Date". */
 function formatDate(iso: string | null | undefined, locale: string): string {
-  if (!iso) return "—"
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return "—"
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(date)
-  } catch {
-    // An unsupported locale tag must not blank the verdict.
-    return date.toISOString().slice(0, 10)
-  }
-}
-
-/** Hours carry a fractional part (0.25h granularity in the ledger), so keep up to two decimals. */
-function formatHours(hours: number, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(hours)
-  } catch {
-    return String(hours)
-  }
-}
-
-/** Whole-number count (activities on the document). */
-function formatCount(count: number, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale).format(count)
-  } catch {
-    return String(count)
-  }
+  return safeDateFormat(iso, locale, ISSUED_DATE_OPTIONS) || EMPTY_VALUE
 }

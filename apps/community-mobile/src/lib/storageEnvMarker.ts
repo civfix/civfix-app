@@ -2,13 +2,6 @@ export const STORAGE_ENV_MARKER_KEY = "civfix.storage.env"
 
 export const PROD_STORAGE_ENV = "prod"
 
-export const LEGACY_STORAGE_IDS = [
-  "civfix.session.token",
-  "civfix.app",
-  "civfix.secure",
-  "civfix.secure-blobs.key",
-] as const
-
 export function storageEnvFor(namespace: string): string {
   return namespace === "" ? PROD_STORAGE_ENV : namespace
 }

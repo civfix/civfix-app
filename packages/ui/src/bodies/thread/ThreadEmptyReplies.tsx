@@ -27,7 +27,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   title: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 20,
     color: t.colors.text,
   },

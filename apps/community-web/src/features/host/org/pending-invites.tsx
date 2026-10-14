@@ -16,14 +16,14 @@ import { useConsoleToast } from "@/components/console/overlay/toast"
 import { useConsoleOrg } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { consoleKeys } from "../console-keys"
-import { daysUntil, inviteIsExpired, visibleInvites } from "./org-invites"
-import { suspendedForbiddenCopy } from "./suspended-banner"
+import { ORG_INVITE_TTL_DAYS, daysUntil, inviteIsExpired, visibleInvites } from "./org-invites"
+import { suspendedForbiddenCopy } from "./org-copy"
 
 /**
  * Invites carry the typed email, so the server lists them for owner|admin only; a plain member
  * would get FORBIDDEN, hence `enabled`.
  */
-export function useOrgInvites(orgId: string, enabled: boolean) {
+function useOrgInvites(orgId: string, enabled: boolean) {
   const api = useApi()
   return useQuery<ListOrganizationInvitesResponse>({
     queryKey: consoleKeys.orgInvites(orgId),
@@ -33,7 +33,7 @@ export function useOrgInvites(orgId: string, enabled: boolean) {
   })
 }
 
-export function inviteDisplayName(invite: OrganizationInviteDTO, unknown: string): string {
+function inviteDisplayName(invite: OrganizationInviteDTO, unknown: string): string {
   return invite.user?.name ?? invite.email ?? unknown
 }
 
@@ -113,7 +113,8 @@ export function PendingInvites() {
         </h2>
         <p className="text-token-12 text-console-ink-3">
           {t("invites.subtitle", {
-            defaultValue: "Invites expire after 14 days. Revoke one to stop the link working.",
+            days: ORG_INVITE_TTL_DAYS,
+            defaultValue: `Invites expire after ${ORG_INVITE_TTL_DAYS} days. Revoke one to stop the link working.`,
           })}
         </p>
       </div>

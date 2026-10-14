@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { reportDetailSource } from "../../bodies/reportDetail/__tests__/reportDetailSource"
 import { makeOverlayActionGate, overlayActionsDeferUntilClosed } from "../overlayActionGate"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -15,8 +16,11 @@ const SLIDE_UP = code(read("../SlideUpSheet.tsx"))
 const CONTEXT_MENU = code(read("../MessageContextMenu.tsx"))
 const MENU_MOTION = code(read("../menuMotion.ts"))
 const OVERFLOW = code(read("../../bodies/PostOverflowMenu.tsx"))
-const REPORT_DETAIL = code(read("../../bodies/ReportDetailBody.tsx"))
+const REPORT_DETAIL = code(reportDetailSource())
 const SHARE_PROVIDER = code(read("../../share/SharePostProvider.tsx"))
+const ACTION_SHEET = code(read("../AnchoredActionSheet.tsx"))
+const COMPOSER_ATTACH = code(read("../ComposerAttachSheet.tsx"))
+const REPLY_ATTACH = code(read("../../bodies/thread/ReplyAttachSheet.tsx"))
 
 describe("the overlay action gate", () => {
   it("defers only on iOS, where UIKit drops a presentation requested during another modal's teardown", () => {
@@ -72,7 +76,7 @@ describe("the overlay action gate", () => {
 
 describe("every house overlay reports the moment it has fully left the screen", () => {
   it("useModalClosed rides Modal.onDismiss where the platform emits it and an effect on Android", () => {
-    expect(MODAL_CLOSED).toContain('export const MODAL_EMITS_DISMISS = Platform.OS !== "android"')
+    expect(MODAL_CLOSED).toContain('const MODAL_EMITS_DISMISS = Platform.OS !== "android"')
     expect(MODAL_CLOSED).toMatch(/if \(left && !MODAL_EMITS_DISMISS\) onClosedRef\.current\?\.\(\)/)
     expect(MODAL_CLOSED).toMatch(/return MODAL_EMITS_DISMISS \? onDismiss : undefined/)
   })
@@ -100,7 +104,9 @@ describe("every house overlay reports the moment it has fully left the screen", 
   it("PopoverMenu runs every row action through the gate and settles off its own Modal", () => {
     expect(POPOVER).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
     expect(POPOVER).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
-    expect(POPOVER).toMatch(/const handlePress = useCallback\(\(item: PopoverMenuItem\) => run\(item\.onPress\), \[run\]\)/)
+    expect(POPOVER).toMatch(
+      /const handlePress = useCallback\(\(item: PopoverMenuItem\) => pressPopoverMenuItem\(item, run\), \[run\]\)/,
+    )
     expect(POPOVER).toContain("onDismiss={onModalDismiss}")
     expect(POPOVER).not.toMatch(/onClose\(\)\s*item\.onPress\(\)/)
   })
@@ -142,7 +148,7 @@ describe("the post overflow menu stays mounted until the surface it opened has a
     expect(OVERFLOW).toMatch(/<ReportContentSheet[\s\S]*?onClosed=\{onSurfaceClosed\}/)
   })
 
-  it("opens the report sheet from the row action, which the menu now defers until it has closed", () => {
+  it("opens the report sheet from the row action, which the menu defers until it has closed", () => {
     expect(OVERFLOW).toMatch(/const startReport = useCallback\(\s*\(\) => requireAuth\(\(\) => onReportOpenChange\(true\)/)
     expect(OVERFLOW).toMatch(/key: "report",[\s\S]*?onPress: startReport/)
   })
@@ -153,6 +159,32 @@ describe("callers no longer hand-roll the after-dismiss dance", () => {
     expect(REPORT_DETAIL).not.toContain("pendingMenuActionRef")
     expect(REPORT_DETAIL).not.toContain("onTitleMenuDismiss")
     expect(REPORT_DETAIL).toMatch(/const onShare = useCallback\(\(\) => \{\s*void shareLink\(\{/)
+  })
+
+  it("both attach sheets run Photo and Camera through the gate, so an iOS action parked while the sheet dismisses is flushed on unmount and dropped on reopen", () => {
+    expect(ACTION_SHEET).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)")
+    expect(ACTION_SHEET).toContain("const onModalDismiss = useModalClosed(visible, settled)")
+    expect(ACTION_SHEET.match(/onDismiss=\{onModalDismiss\}/g)).toHaveLength(2)
+    expect(ACTION_SHEET).toContain("const content = children(run)")
+    for (const [name, sheet] of [
+      ["AnchoredActionSheet", ACTION_SHEET],
+      ["ComposerAttachSheet", COMPOSER_ATTACH],
+      ["ReplyAttachSheet", REPLY_ATTACH],
+    ] as const) {
+      expect(sheet, name).not.toContain("pendingActionRef")
+      expect(sheet, name).not.toContain('Platform.OS === "ios"')
+    }
+    expect(COMPOSER_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
+    expect(COMPOSER_ATTACH).toContain("onPress={() => runAfterDismiss(handlers[key])}")
+    expect(REPLY_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
+    expect(REPLY_ATTACH).toContain('runAfterDismiss(key === "photo" ? onPhoto : onCamera)')
+    for (const [name, sheet] of [
+      ["ComposerAttachSheet", COMPOSER_ATTACH],
+      ["ReplyAttachSheet", REPLY_ATTACH],
+    ] as const) {
+      expect(sheet, name).not.toContain("<Modal")
+      expect(sheet, name).not.toContain("useDeferredOverlayAction(")
+    }
   })
 
   it("the share provider releases its target when the sheet reports it closed, not after 400ms", () => {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import type { QueryClient, InfiniteData } from "@tanstack/react-query"
+import type { InfiniteData, QueryClient, UseMutationOptions, UseQueryResult } from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   PersonDTO,
@@ -15,11 +15,10 @@ import type {
   HandleAvailableResponse,
 } from "@civfix/shared"
 import { isValidHandle } from "@civfix/shared"
-import { useApi } from "../context"
-import { useAuthState } from "../context"
-import { useOnUserUpdated } from "../context"
+import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
-import { optimisticListPatch } from "../optimistic"
+import { coercePages } from "../infinitePages"
+import { listItems } from "../types"
 import { useDebouncedValue } from "./useDebouncedValue"
 import {
   profilePastEventsAction,
@@ -30,6 +29,12 @@ import {
 const MENTION_DEBOUNCE_MS = 200
 
 const HANDLE_AVAILABILITY_DEBOUNCE_MS = 300
+
+const HANDLE_AVAILABILITY_STALE_MS = 30_000
+
+const MENTION_SEARCH_STALE_MS = 30_000
+
+const FOLLOW_SUGGESTIONS_STALE_MS = 60_000
 
 const PEOPLE_LIST_KEY = ["people"] as const
 
@@ -108,10 +113,10 @@ export function useFollowSuggestions() {
     enabled: isAuthenticated,
     queryFn: async () => {
       const res = await api.followSuggestions({ limit: FOLLOW_SUGGESTIONS_LIMIT })
-      return res.results
+      return listItems(res?.results)
     },
     retry: false,
-    staleTime: 60_000,
+    staleTime: FOLLOW_SUGGESTIONS_STALE_MS,
   })
 }
 
@@ -145,62 +150,55 @@ export function buildFollowMutation(
   qc: QueryClient,
   id: string,
   mutationFn: (currentlyFollowing: boolean) => Promise<FollowPersonResponse>,
-) {
-  return optimisticListPatch<PersonDTO, boolean, FollowPersonResponse, FollowAlsoCtx>(qc, {
-    key: PEOPLE_LIST_KEY,
+): UseMutationOptions<FollowPersonResponse, unknown, boolean, FollowAlsoCtx> {
+  return {
     mutationFn,
-    matches: (p) => p.id === id,
-    patchItem: (p, currentlyFollowing) => applyFollow(p, !currentlyFollowing),
-    reconcileItem: (p, res) => ({ ...p, isFollowing: res.isFollowing, followers: res.followers }),
-    also: {
-      cancel: (client) =>
-        Promise.all([
-          client.cancelQueries({ queryKey: PROFILE_KEY }),
-          client.cancelQueries({ queryKey: queryKeys.myProfile }),
-          client.cancelQueries({ queryKey: PEOPLE_LIST_KEY }),
-          client.cancelQueries({ queryKey: CONNECTIONS_KEY }),
-        ]).then(() => undefined),
-      onMutate: (client, currentlyFollowing): FollowAlsoCtx => {
-        const nextFollowing = !currentlyFollowing
+    onMutate: async (currentlyFollowing): Promise<FollowAlsoCtx> => {
+      await Promise.all([
+        qc.cancelQueries({ queryKey: PROFILE_KEY }),
+        qc.cancelQueries({ queryKey: queryKeys.myProfile }),
+        qc.cancelQueries({ queryKey: PEOPLE_LIST_KEY }),
+        qc.cancelQueries({ queryKey: CONNECTIONS_KEY }),
+      ])
+      const nextFollowing = !currentlyFollowing
 
-        const prevFollow = readFollowSnapshot(client, id)
-        const baseFollowers = prevFollow?.followers ?? 0
-        const nextFollowers = nextFollowing ? baseFollowers + 1 : Math.max(0, baseFollowers - 1)
+      const prevFollow = readFollowSnapshot(qc, id)
+      const baseFollowers = prevFollow?.followers ?? 0
+      const nextFollowers = nextFollowing ? baseFollowers + 1 : Math.max(0, baseFollowers - 1)
 
-        patchProfileCaches(client, id, { isFollowing: nextFollowing, followers: nextFollowers })
+      patchProfileCaches(qc, id, { isFollowing: nextFollowing, followers: nextFollowers })
 
-        patchPersonInFlatLists(client, id, {
-          isFollowing: nextFollowing,
-          followers: nextFollowers,
-        })
+      patchPersonInFlatLists(qc, id, {
+        isFollowing: nextFollowing,
+        followers: nextFollowers,
+      })
 
-        patchPersonInConnectionLists(client, id, {
-          isFollowing: nextFollowing,
-          followers: nextFollowers,
-        })
+      patchPersonInConnectionLists(qc, id, {
+        isFollowing: nextFollowing,
+        followers: nextFollowers,
+      })
 
-        const didNudgeMyFollowing = nudgeMyFollowing(client, nextFollowing ? 1 : -1)
+      const didNudgeMyFollowing = nudgeMyFollowing(qc, nextFollowing ? 1 : -1)
 
-        return { prevFollow, didNudgeMyFollowing }
-      },
-      onError: (client, currentlyFollowing, ctx) => {
-        if (ctx?.didNudgeMyFollowing) nudgeMyFollowing(client, currentlyFollowing ? 1 : -1)
-        const prev = ctx?.prevFollow
-        if (!prev) return
-        patchProfileCaches(client, id, prev)
-        patchPersonInFlatLists(client, id, prev)
-        patchPersonInConnectionLists(client, id, prev)
-      },
-      onSuccess: (client, res) => {
-        patchProfileCaches(client, id, { isFollowing: res.isFollowing, followers: res.followers })
-        patchPersonInFlatLists(client, id, { isFollowing: res.isFollowing, followers: res.followers })
-        patchPersonInConnectionLists(client, id, {
-          isFollowing: res.isFollowing,
-          followers: res.followers,
-        })
-      },
+      return { prevFollow, didNudgeMyFollowing }
     },
-  })
+    onError: (_err, currentlyFollowing, ctx) => {
+      if (ctx?.didNudgeMyFollowing) nudgeMyFollowing(qc, currentlyFollowing ? 1 : -1)
+      const prev = ctx?.prevFollow
+      if (!prev) return
+      patchProfileCaches(qc, id, prev)
+      patchPersonInFlatLists(qc, id, prev)
+      patchPersonInConnectionLists(qc, id, prev)
+    },
+    onSuccess: (res) => {
+      patchProfileCaches(qc, id, { isFollowing: res.isFollowing, followers: res.followers })
+      patchPersonInFlatLists(qc, id, { isFollowing: res.isFollowing, followers: res.followers })
+      patchPersonInConnectionLists(qc, id, {
+        isFollowing: res.isFollowing,
+        followers: res.followers,
+      })
+    },
+  }
 }
 
 export function useFollowPerson(id: string) {
@@ -236,27 +234,7 @@ export function readFollowSnapshot(
   return null
 }
 
-function applyFollow<T extends { isFollowing: boolean; followers: number }>(
-  person: T,
-  nextFollowing: boolean,
-): T {
-  const delta = nextFollowing ? 1 : -1
-  return {
-    ...person,
-    isFollowing: nextFollowing,
-    followers: Math.max(0, person.followers + delta),
-  }
-}
-
-function coercePeoplePages(data: InfiniteData<ListPeopleResponse>): InfiniteData<ListPeopleResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
-    })),
-  }
-}
+const coercePeoplePages = coercePages<ListPeopleResponse>("items")
 
 export function useFollowers(id: string | undefined) {
   const api = useApi()
@@ -347,10 +325,8 @@ export interface ProfilePastEvents {
  * as the ANCHOR it was armed for rather than a boolean, so a different profile, or the same profile whose
  * cursor moved, resets to unarmed with no effect to clean up.
  *
- * Every derivation lives in `profilePastEventsModel` and is unit-tested there - in particular the reason
- * this hook must NOT read `hasNextPage` as "there is more history": it is false before any page exists,
- * which hid the control through the whole first fetch and, since the query is `retry: false`, forever
- * after a failed one.
+ * Every derivation lives in `profilePastEventsModel` and is unit-tested there, including why this hook
+ * must NOT read `hasNextPage` as "there is more history".
  */
 export function useProfilePastEvents(profile: UserProfileDTO | undefined): ProfilePastEvents {
   const anchor = profile?.pastEventsCursor ?? null
@@ -392,27 +368,41 @@ export function useUpdateProfile() {
     mutationFn: (body) => api.updateProfile(body),
     onSuccess: (res) => {
       onUserUpdated?.(res.user)
-      void qc.invalidateQueries({ queryKey: queryKeys.myProfile })
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
       void qc.invalidateQueries({ queryKey: PEOPLE_LIST_KEY })
+      // Settings builds its next save from this profile, so mutateAsync must not resolve before it is fresh.
+      return qc.invalidateQueries({ queryKey: queryKeys.myProfile })
     },
   })
 }
 
-export function useHandleAvailability(handle: string, currentHandle: string | null | undefined) {
+export interface HandleAvailabilityCheck {
+  availability: UseQueryResult<HandleAvailableResponse>
+  checkedHandle: string
+}
+
+export function useHandleAvailabilityCheck(
+  handle: string,
+  currentHandle: string | null | undefined,
+): HandleAvailabilityCheck {
   const api = useApi()
   const candidate = useDebouncedValue(handle.trim(), HANDLE_AVAILABILITY_DEBOUNCE_MS)
   const enabled =
     candidate.length > 0 &&
     isValidHandle(candidate) &&
     candidate.toLowerCase() !== (currentHandle ?? "").trim().toLowerCase()
-  return useQuery<HandleAvailableResponse>({
-    queryKey: ["handle-available", candidate],
+  const availability = useQuery<HandleAvailableResponse>({
+    queryKey: queryKeys.handleAvailable(candidate),
     enabled,
-    queryFn: () => api.checkHandle({ handle: candidate }),
+    queryFn: ({ signal }) => api.checkHandle({ handle: candidate }, { signal }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: HANDLE_AVAILABILITY_STALE_MS,
   })
+  return { availability, checkedHandle: candidate }
+}
+
+export function useHandleAvailability(handle: string, currentHandle: string | null | undefined) {
+  return useHandleAvailabilityCheck(handle, currentHandle).availability
 }
 
 export function useMentionSearch(rawPrefix: string) {
@@ -423,8 +413,8 @@ export function useMentionSearch(rawPrefix: string) {
   return useQuery<SearchUsersResponse, unknown, SearchUsersResponse>({
     queryKey: queryKeys.mentionSearch(trimmed),
     enabled: isAuthenticated && trimmed.length >= 1,
-    queryFn: () => api.mentionSearch({ q: trimmed }),
+    queryFn: ({ signal }) => api.mentionSearch({ q: trimmed }, { signal }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: MENTION_SEARCH_STALE_MS,
   })
 }

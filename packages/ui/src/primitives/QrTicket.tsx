@@ -1,11 +1,11 @@
 import React, { useMemo } from "react"
 import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import Svg, { Path, Rect } from "react-native-svg"
-import qrcode from "qrcode-generator"
 import { qrInk, qrPaper } from "@civfix/shared/tokens"
+import { useT } from "../i18n"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
-import { QR_ERROR_CORRECTION, QR_QUIET_ZONE, qrPath } from "./qrMatrix"
+import { qrTicketPath } from "./qrMatrix"
 
 export interface QrTicketProps {
   value: string
@@ -16,32 +16,11 @@ export interface QrTicketProps {
   style?: StyleProp<ViewStyle>
 }
 
-function qrModules(value: string): boolean[][] {
-  const qr = qrcode(0, QR_ERROR_CORRECTION)
-  qr.addData(value)
-  qr.make()
-  const count = qr.getModuleCount()
-  const rows: boolean[][] = []
-  for (let row = 0; row < count; row++) {
-    const cells: boolean[] = []
-    for (let col = 0; col < count; col++) cells.push(qr.isDark(row, col))
-    rows.push(cells)
-  }
-  return rows
-}
-
 export function QrTicket({ value, size = 220, label, caption, code, style }: QrTicketProps) {
   const styles = useStyles()
+  const { t } = useT("common")
 
-  const rendered = useMemo(() => {
-    if (value.length === 0) return null
-    try {
-      const modules = qrModules(value)
-      return qrPath(modules, 1, QR_QUIET_ZONE)
-    } catch {
-      return null
-    }
-  }, [value])
+  const rendered = useMemo(() => qrTicketPath(value), [value])
 
   return (
     <View style={[styles.wrap, style]}>
@@ -50,13 +29,15 @@ export function QrTicket({ value, size = 220, label, caption, code, style }: QrT
         accessibilityRole="image"
         accessibilityLabel={label}
       >
-        {rendered && rendered.path.length > 0 ? (
+        {rendered ? (
           <Svg width={size} height={size} viewBox={`0 0 ${rendered.size} ${rendered.size}`}>
             <Rect x={0} y={0} width={rendered.size} height={rendered.size} fill={qrPaper} />
             <Path d={rendered.path} fill={qrInk} />
           </Svg>
         ) : (
-          <View style={styles.fallback} />
+          <View style={styles.fallback}>
+            <Text style={styles.fallbackText}>{t("qr_ticket.unavailable")}</Text>
+          </View>
         )}
       </View>
       {code ? (
@@ -92,6 +73,15 @@ const useStyles = makeThemedStyles((t) => ({
     width: "100%",
     height: "100%",
     backgroundColor: qrPaper,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: t.space["4"],
+  },
+  fallbackText: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["13"],
+    color: qrInk,
+    textAlign: "center",
   },
   code: {
     fontSize: t.fontSize["13"],

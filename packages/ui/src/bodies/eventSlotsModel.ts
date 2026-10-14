@@ -8,14 +8,14 @@
  * Ownership is read off `slot.mine` - the server-computed flag - never re-derived from a roster.
  */
 import type { EventSlotDTO } from "@civfix/shared"
-import { isEventEndedRefusal } from "./errorCode"
+import { ErrorCode } from "@civfix/shared"
+import { timeRangeLabel } from "@civfix/shared/datetime"
+import { isEventEndedRefusal } from "../data/errorCode"
 
 export type SlotRowState =
-  /** Claimable: has room (or is unlimited) and the viewer holds nothing. */
   | "open"
   /** The viewer's own slot; the trailing pill releases it. */
   | "mine"
-  /** No room left and the viewer does not hold it. */
   | "full"
   /** Claimable, but the viewer already holds a DIFFERENT slot - one tap switches. */
   | "switch"
@@ -63,7 +63,7 @@ export function slotRowState(
  * The block's one-line summary. `capacity` is null when ANY slot is unlimited - summing a mix and
  * printing "6/8" would understate an event that can actually take everyone.
  */
-export function slotsFilledSummary(slots: readonly EventSlotDTO[]): {
+function slotsFilledSummary(slots: readonly EventSlotDTO[]): {
   claimed: number
   capacity: number | null
 } {
@@ -101,8 +101,8 @@ export const GENERAL_SLOT_ID = "general"
 /**
  * The one-row board a LIVE event with no slots falls back to, so the page keeps a working join path.
  *
- * Reachable in two windows: before migration 0169's default-slot backfill lands, and off a cached
- * `getCleanup` written before it. The row mirrors membership rather than a claim - `claimed` is the
+ * Reachable only for an event the default-slot backfill has not reached, or off a cached `getCleanup`
+ * written before it. The row mirrors membership rather than a claim - `claimed` is the
  * event's member count and `mine` is the viewer's own membership - and `EventSlotsBlock`'s `general`
  * mode commits it through the join/leave mutation, so nothing here ever addresses `PUT /slot`.
  */
@@ -127,13 +127,10 @@ export function generalSlotBoard(input: {
 }
 
 export type SlotViewerState =
-  /** The viewer holds one of these slots (a host who claimed one lands here too). */
   | "holds"
   /** Joined, but holding no slot - the one state the board actively nudges. */
   | "going_no_slot"
-  /** Signed in, not joined. */
   | "not_going"
-  /** Auth has RESOLVED to signed-out. */
   | "signed_out"
   /** Acting host holding no slot: they organise the board, they are never nagged to fill it. */
   | "host"
@@ -169,7 +166,7 @@ export function claimSlotErrorKey(
   fields?: Record<string, string> | undefined,
 ): string {
   if (isEventEndedRefusal(fields)) return "error.ended"
-  if (code === "CONFLICT") return "error.full"
+  if (code === ErrorCode.CONFLICT) return "error.full"
   return "error.generic"
 }
 
@@ -184,6 +181,18 @@ export function slotWindow(slot: EventSlotDTO): SlotWindow | null {
   const end = new Date(slot.endsAt)
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null
   return { start, end }
+}
+
+/** A timed slot's window, printed in the EVENT's zone (absent on a legacy row: the viewer's). */
+export function slotWindowRangeLabel(
+  slot: EventSlotDTO | null,
+  locale: string,
+  timeZone: string | undefined,
+): string | null {
+  if (slot === null) return null
+  const window = slotWindow(slot)
+  if (window === null) return null
+  return timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale, timeZone)
 }
 
 export function boardHasTimedSlots(slots: readonly EventSlotDTO[]): boolean {
@@ -213,8 +222,4 @@ export function currentShifts(slots: readonly EventSlotDTO[], now: Date): EventS
     const window = slotWindow(slot)
     return window !== null && window.start.getTime() <= at && at < window.end.getTime()
   })
-}
-
-export function sortSlots(slots: readonly EventSlotDTO[]): EventSlotDTO[] {
-  return [...slots].sort(byOrderThenTitle)
 }

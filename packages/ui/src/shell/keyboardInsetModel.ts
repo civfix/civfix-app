@@ -1,20 +1,17 @@
 /**
- * PURE keyboard geometry, curves and ownership reducer. RN-free, vitest-able.
- * NO import may be added to this file — it is the leaf both platform seams consume.
+ * Pure keyboard geometry, curves and ownership reducer. It must import nothing: it is the RN-free leaf
+ * both platform seams consume.
  */
 
-/** Visual gap (pt) kept between a bottom-anchored surface's VISIBLE bottom edge and the keyboard top.
- *  8 == DOCK_BOTTOM_MARGIN, so a bar sitting on the keyboard reads with the same rhythm it has at rest. */
+/** Equal to DOCK_BOTTOM_MARGIN, so a bar sitting on the keyboard keeps the rhythm it has at rest. */
 export const KEYBOARD_SURFACE_GAP = 8
 
-/** THE formula. `overlap` = pt the keyboard covers of the window bottom. `restOffset` = pt already
- *  between the surface's VISIBLE bottom edge and the window bottom at rest. Returns translateY magnitude.
+/** `overlap` is how much of the window bottom the keyboard covers; `restOffset` is the distance between
+ *  the surface's visible bottom edge and the window bottom at rest.
  *
- *  NOTE the literal `8` default: reanimated does NOT capture a module const referenced in a worklet's
- *  DEFAULT PARAMETER list (the __closure destructure lands in the body, after defaults evaluate) — it
- *  would throw "Property 'KEYBOARD_SURFACE_GAP' doesn't exist" on the UI thread. Same trap documented at
- *  surface/liquidGlass/liquidGlassModel.ts:117-120. This literal MUST equal KEYBOARD_SURFACE_GAP; the
- *  unit test asserts it. */
+ *  The default is the literal 8 because reanimated does not capture a module const referenced in a
+ *  worklet's default-parameter list (the closure destructure runs after defaults evaluate), so it would
+ *  throw on the UI thread. It must equal KEYBOARD_SURFACE_GAP; the unit test asserts it. */
 export function keyboardLift(overlap: number, restOffset: number, gap: number = 8): number {
   "worklet"
   if (overlap <= 0) return 0
@@ -32,11 +29,11 @@ export function keyboardAnimationDuration(
 }
 
 /**
- * iOS keyboard OPEN/CLOSE progress curves — reanimated 4's OWN fitted curves, lifted verbatim from
+ * iOS keyboard open/close progress curves: reanimated 4's own fitted curves from
  * REAKeyboardEventObserver.mm's `estimateProgressForDuration:a1:a2:b1:b2:c1:c2`
- * (1 - a1*(1-x)^a2 - b1*x*(1-x)^b2 - c1*x^2*(1-x)^c2, a1 == 1 in both call sites), but RE-PARAMETERISED
- * onto the duration the OS actually reports instead of reanimated's hard-coded 0.48s / 0.496s. The SHAPE
- * is a measured fit of real keyboard motion; only the timebase was wrong, and that is the trail-then-snap.
+ * (1 - a1*(1-x)^a2 - b1*x*(1-x)^b2 - c1*x^2*(1-x)^c2, a1 == 1), re-parameterised onto the duration the OS
+ * reports instead of reanimated's hard-coded 0.48s / 0.496s, whose wrong timebase made the bar trail and
+ * then snap.
  */
 function curve(x: number, a2: number, b1: number, b2: number, c1: number, c2: number): number {
   "worklet"
@@ -54,11 +51,9 @@ export function iosKeyboardCloseEasing(x: number): number {
 }
 
 /**
- * Overlap from a KeyboardEvent. iOS ONLY takes the screenY branch: RCTKeyboardObserver.mm converts
- * endCoordinates to WINDOW space, so window-bottom minus screenY is the true overlap even for
- * split/floating keyboards. On ANDROID the window already EXCLUDES the keyboard under adjustResize —
- * `winH - screenY` would double-count (the same trap documented at KeyboardAwareScroll.native.tsx:94-97) —
- * so Android takes the `height` branch.
+ * Only iOS takes the screenY branch: RCTKeyboardObserver.mm converts endCoordinates to window space, so
+ * window bottom minus screenY is the true overlap even for split or floating keyboards. On Android the
+ * window already excludes the keyboard under adjustResize, so `winH - screenY` would double-count.
  */
 export function keyboardOverlapFrom(
   endCoordinates: { screenY?: number; height?: number } | undefined,
@@ -132,27 +127,19 @@ export function shouldRecaptureRestingHeight({
   return !keyboardOpen || prevWidth !== nextWidth
 }
 
-// ----- Ownership state machine (pure). -----
 export type KeyboardPhase = "idle" | "engaged"
 export type KeyboardSignal =
   | { type: "will-show"; overlap: number; duration: number; enabled: boolean }
-  /** `reserveHint` is the OVERLAP currently reserved — the same units as every other `overlap`/
-   *  `reserveOverlap` in this module, NOT the derived lift (the caller runs `keyboardLift` over
-   *  `reserveOverlap` itself, so handing it a lift would shrink the reservation by `restOffset - gap`
-   *  on every close). It is HELD through the close animation and released at `did-settle`, so content
-   *  does not re-expand under a still-travelling bar. */
+  /** `reserveHint` is the overlap currently reserved, not the derived lift: the caller runs
+   *  `keyboardLift` over `reserveOverlap` itself, so a lift would shrink the reservation by
+   *  `restOffset - gap` on every close. It is held until `did-settle` so content does not re-expand under
+   *  a still-travelling bar. */
   | { type: "will-hide"; duration: number; reserveHint?: number }
   | { type: "did-settle"; overlap: number; enabled: boolean }
   /**
-   * Ownership changed while a keyboard may be up.
-   *
-   * `closing` says a close THIS surface owns is ALREADY travelling — `keyboardWillHide` has fired and
-   * `did-settle` has not. On iOS a dock exit posts willHide FIRST and the field's blur lands one tick
-   * later, so this signal routinely arrives mid-descent; the caller derives the flag from the same
-   * in-flight record it uses to skip the redundant animation (`isRedundantClose`).
-   *
-   * `reserveHint` is the OVERLAP currently reserved — the same units as every other `overlap` /
-   * `reserveOverlap` in this module, NOT the derived lift (see the note on `will-hide`).
+   * `closing` says a close this surface owns is already travelling (willHide fired, did-settle has not).
+   * On iOS a dock exit posts willHide first and the field's blur lands one tick later, so this routinely
+   * arrives mid-descent. `reserveHint` is an overlap, not a lift (see `will-hide`).
    */
   | {
       type: "ownership"
@@ -175,8 +162,8 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
       return { phase: "engaged", target: s.overlap, duration: s.duration, reserveOverlap: s.overlap }
     case "will-hide":
       if (phase !== "engaged") return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
-      // reserveOverlap is HELD until did-settle: dropping it here would collapse the content box a
-      // frame after blur, while the bar and keyboard are still travelling down.
+      // Dropping reserveOverlap here would collapse the content box a frame after blur, while the bar
+      // and keyboard are still travelling down.
       return { phase: "engaged", target: 0, duration: s.duration, reserveOverlap: s.reserveHint ?? 0 }
     case "did-settle":
       if (s.overlap <= 0 || !s.enabled) return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
@@ -199,12 +186,10 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
         }
       }
       if (phase !== "engaged") return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
-      // A close WE own is already travelling: this is the blur that follows keyboardWillHide by one tick.
-      // Returning reserveOverlap: 0 here is what collapsed the reservation in ONE un-animated frame while
-      // the keyboard was still descending (SearchBodyReveal.native folds it into the search list's scroll
-      // padding, so it re-lays-out that content box: 411 -> 94 on an iPhone 17 Pro). CARRY it, exactly as the
-      // will-hide branch does, and stay "engaged" so a duplicate will-hide or re-focus ownership event
-      // chooses the instant-snap branch (duration: 0) instead of the animated handoff.
+      // The blur that follows our own keyboardWillHide by one tick. Releasing the reservation here would
+      // collapse the search list's scroll padding in one un-animated frame while the keyboard is still
+      // descending, so carry it as will-hide does, and stay "engaged" so a duplicate will-hide or re-focus
+      // takes the instant-snap branch instead of the animated handoff.
       if (s.closing) {
         return { phase: "engaged", target: 0, duration: s.handoffMs, reserveOverlap: s.reserveHint ?? 0 }
       }
@@ -213,15 +198,10 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
 }
 
 /**
- * Would `cmd` RESTART a close that is already travelling to the same target?
- *
- * `inFlightTarget` is the target of the close currently animating, or null when nothing is. Reanimated
- * does not "continue" a running timing: assigning a second `withTiming` starts a NEW ease-out from the
- * current value, so re-issuing the will-hide's close on the blur that follows it one tick later
- * re-accelerates the dock while the real keyboard keeps decelerating on the OS curve.
- *
- * A duration<=0 command is NEVER redundant: that is the LANDING (`did-settle`), and it is what clears the
- * in-flight record and releases the reservation Task 4.1 carries.
+ * Reanimated does not continue a running timing: a second `withTiming` starts a new ease-out from the
+ * current value, so re-issuing the close on the blur that follows willHide re-accelerates the dock while
+ * the real keyboard keeps decelerating. A duration<=0 command is never redundant: it is the landing
+ * (`did-settle`), which clears the in-flight record and releases the carried reservation.
  */
 export function isRedundantClose(cmd: KeyboardCommand, inFlightTarget: number | null): boolean {
   return inFlightTarget !== null && cmd.duration > 0 && cmd.target === inFlightTarget

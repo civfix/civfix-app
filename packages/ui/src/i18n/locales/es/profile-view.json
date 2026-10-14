@@ -1,8 +1,4 @@
 {
-  "hero": {
-    "share_a11y": "Compartir perfil",
-    "close_a11y": "Cerrar perfil"
-  },
   "stats": {
     "following": "Siguiendo",
     "followers_one": "Seguidor",
@@ -40,7 +36,8 @@
     "a11y": "Secciones del perfil"
   },
   "social": {
-    "link_a11y": "Abrir {{platform}}"
+    "link_a11y": "Abrir {{platform}}",
+    "link_failed": "No se pudo abrir ese enlace"
   },
   "reports": {
     "section": "Tus reportes",

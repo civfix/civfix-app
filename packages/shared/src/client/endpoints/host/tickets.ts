@@ -1,0 +1,86 @@
+import { def } from "../def.js"
+import {
+  CreateEventTicketTypeRequestSchema,
+  CreateEventTicketTypeResponseSchema,
+  DeleteEventTicketTypeRequestSchema,
+  DeleteEventTicketTypeResponseSchema,
+  ListEventTicketTypesRequestSchema,
+  ListEventTicketTypesResponseSchema,
+  ReorderEventTicketTypesRequestSchema,
+  ReorderEventTicketTypesResponseSchema,
+  UpdateEventTicketTypeRequestSchema,
+  UpdateEventTicketTypeResponseSchema,
+} from "../../../schemas/host/tickets.js"
+import {
+  ListEventQuestionsRequestSchema,
+  ListEventQuestionsResponseSchema,
+  SaveEventQuestionsRequestSchema,
+  SaveEventQuestionsResponseSchema,
+} from "../../../schemas/host/questions.js"
+
+export const hostTicketEndpoints = {
+  listEventTicketTypes: def({
+    method: "GET",
+    path: "/cleanups/:id/ticket-types",
+    request: ListEventTicketTypesRequestSchema,
+    response: ListEventTicketTypesResponseSchema,
+    auth: "optional",
+    csrf: false,
+    version: "v1",
+  }),
+  createEventTicketType: def({
+    method: "POST",
+    path: "/cleanups/:id/ticket-types",
+    request: CreateEventTicketTypeRequestSchema,
+    response: CreateEventTicketTypeResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  reorderEventTicketTypes: def({
+    method: "PUT",
+    path: "/cleanups/:id/ticket-types/order",
+    request: ReorderEventTicketTypesRequestSchema,
+    response: ReorderEventTicketTypesResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  updateEventTicketType: def({
+    method: "PATCH",
+    path: "/cleanups/:id/ticket-types/:ticketTypeId",
+    request: UpdateEventTicketTypeRequestSchema,
+    response: UpdateEventTicketTypeResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  deleteEventTicketType: def({
+    method: "DELETE",
+    path: "/cleanups/:id/ticket-types/:ticketTypeId",
+    request: DeleteEventTicketTypeRequestSchema,
+    response: DeleteEventTicketTypeResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+
+  listEventQuestions: def({
+    method: "GET",
+    path: "/cleanups/:id/questions",
+    request: ListEventQuestionsRequestSchema,
+    response: ListEventQuestionsResponseSchema,
+    auth: "optional",
+    csrf: false,
+    version: "v1",
+  }),
+  saveEventQuestions: def({
+    method: "PUT",
+    path: "/cleanups/:id/questions",
+    request: SaveEventQuestionsRequestSchema,
+    response: SaveEventQuestionsResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const

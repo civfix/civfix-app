@@ -6,12 +6,13 @@ import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton } from "../primitives"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
-import { useCreateGroup, useAuthState } from "../data"
+import { useAuthState } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
 import { GroupIdentityFields } from "./GroupIdentityFields"
+import { GroupWizardHeader, useGroupWizardHeaderStyles } from "./GroupWizardHeader"
 import { normalizeGroupDraft } from "./groupWizard"
 import { shouldOfferChannelSkip } from "./channelSkip"
 import {
@@ -21,6 +22,7 @@ import {
   type ChannelWizardStep,
   type ChannelVisibility,
 } from "./channelWizard"
+import { useCreateGroupAndOpen } from "./useCreateGroupAndOpen"
 
 const VISIBILITY_OPTIONS: ReadonlyArray<{ value: ChannelVisibility; icon: IconName }> = [
   { value: "private", icon: "Lock" },
@@ -29,6 +31,7 @@ const VISIBILITY_OPTIONS: ReadonlyArray<{ value: ChannelVisibility; icon: IconNa
 
 export function NewChannelBody() {
   const styles = useStyles()
+  const headerStyles = useGroupWizardHeaderStyles()
   const th = useTheme()
   const { ScrollView } = useScrollHost()
   const { t } = useT("channel-create")
@@ -40,12 +43,11 @@ export function NewChannelBody() {
   const [description, setDescription] = useState("")
   const [visibility, setVisibility] = useState<ChannelVisibility>(CHANNEL_DEFAULT_VISIBILITY)
   const [selected, setSelected] = useState<PersonDTO[]>([])
-  const [submitError, setSubmitError] = useState(false)
 
   const avatar = useComposerAttachments(1)
   const picked = avatar.attachments[0] ?? null
 
-  const createGroup = useCreateGroup()
+  const { submit, pending, submitError } = useCreateGroupAndOpen()
 
   const excludeIds = useMemo(() => (viewerId ? [viewerId] : []), [viewerId])
 
@@ -60,31 +62,17 @@ export function NewChannelBody() {
   }, [name, description, avatar.uploading])
 
   const onCreate = useCallback(() => {
-    if (!canCreateChannel(name, description) || avatar.uploading || createGroup.isPending) return
-    setSubmitError(false)
-    createGroup.mutate(
-      {
-        kind: "channel",
-        visibility,
-        ...normalizeGroupDraft(name, description),
-        memberIds: selected.map((p) => p.id),
-        ...(picked?.uploadId ? { avatarUploadId: picked.uploadId } : {}),
-      },
-      {
-        onSuccess: (group) => {
-          const nav = useNavStore.getState()
-          nav.setStack([
-            ...nav.stack.slice(0, -1),
-            { kind: "thread", id: group.id, roomKind: "group", title: group.name },
-          ])
-        },
-        onError: () => setSubmitError(true),
-      },
-    )
-  }, [name, description, visibility, avatar.uploading, createGroup, selected, picked])
+    submit(canCreateChannel(name, description) && !avatar.uploading, {
+      kind: "channel",
+      visibility,
+      ...normalizeGroupDraft(name, description),
+      memberIds: selected.map((p) => p.id),
+      ...(picked?.uploadId ? { avatarUploadId: picked.uploadId } : {}),
+    })
+  }, [submit, name, description, visibility, avatar.uploading, selected, picked])
 
   const identityNextDisabled = !canProceedFromChannelIdentity(name, description) || avatar.uploading
-  const createDisabled = !canCreateChannel(name, description) || avatar.uploading || createGroup.isPending
+  const createDisabled = !canCreateChannel(name, description) || avatar.uploading || pending
 
   const headerTitle =
     step === "identity"
@@ -95,34 +83,26 @@ export function NewChannelBody() {
 
   return (
     <KeyboardPinnedSurface style={styles.root}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel={t("back_a11y")}
-          hitSlop={8}
-          {...focusRingProps}
-          style={({ pressed }) => [styles.backBtn, pressed ? styles.backPressed : null]}
-        >
-          <Icon icon={iconMap.ArrowLeft} size={20} color={th.colors.text} />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1} accessibilityRole="header">
-          {headerTitle}
-        </Text>
-        {shouldOfferChannelSkip(step, selected.length) ? (
-          <Pressable
-            onPress={onCreate}
-            disabled={createDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={t("skip")}
-            hitSlop={8}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.skipBtn, pressed ? styles.backPressed : null]}
-          >
-            <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>{t("skip")}</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      <GroupWizardHeader
+        title={headerTitle}
+        backLabel={t("back_a11y")}
+        onBack={onBack}
+        trailing={
+          shouldOfferChannelSkip(step, selected.length) ? (
+            <Pressable
+              onPress={onCreate}
+              disabled={createDisabled}
+              accessibilityRole="button"
+              accessibilityLabel={t("skip")}
+              hitSlop={8}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.skipBtn, pressed ? headerStyles.backPressed : null]}
+            >
+              <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>{t("skip")}</Text>
+            </Pressable>
+          ) : null
+        }
+      />
 
       {step === "identity" ? (
         <>
@@ -160,37 +140,39 @@ export function NewChannelBody() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {VISIBILITY_OPTIONS.map((opt) => {
-              const active = visibility === opt.value
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setVisibility(opt.value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                  accessibilityLabel={t(`${opt.value}_label`)}
-                  {...focusRingProps}
-                  style={({ pressed }) => [
-                    styles.radioRow,
-                    active ? styles.radioRowActive : null,
-                    pressed ? styles.radioPressed : null,
-                  ]}
-                >
-                  <Icon
-                    icon={iconMap[opt.icon]}
-                    size={20}
-                    color={active ? th.colors.brand.moss : th.colors.textMuted}
-                  />
-                  <View style={styles.radioText}>
-                    <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
-                    <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
-                  </View>
-                  <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
-                    {active ? <View style={styles.radioDotInner} /> : null}
-                  </View>
-                </Pressable>
-              )
-            })}
+            <View accessibilityRole="radiogroup" accessibilityLabel={t("visibility_title")}>
+              {VISIBILITY_OPTIONS.map((opt) => {
+                const active = visibility === opt.value
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setVisibility(opt.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active }}
+                    accessibilityLabel={t(`${opt.value}_label`)}
+                    {...focusRingProps}
+                    style={({ pressed }) => [
+                      styles.radioRow,
+                      active ? styles.radioRowActive : null,
+                      pressed ? styles.radioPressed : null,
+                    ]}
+                  >
+                    <Icon
+                      icon={iconMap[opt.icon]}
+                      size={20}
+                      color={active ? th.colors.brand.moss : th.colors.textMuted}
+                    />
+                    <View style={styles.radioText}>
+                      <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
+                      <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
+                    </View>
+                    <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
+                      {active ? <View style={styles.radioDotInner} /> : null}
+                    </View>
+                  </Pressable>
+                )
+              })}
+            </View>
           </ScrollView>
           <KeyboardPinnedFooter style={styles.footer}>
             <PrimaryButton label={t("next")} onPress={() => setStep("members")} />
@@ -206,13 +188,17 @@ export function NewChannelBody() {
               emptyPromptBody={t("subscriber_prompt")}
             />
           </View>
-          {submitError ? <Text style={[styles.errorText, styles.submitError]}>{t("create_error")}</Text> : null}
+          {submitError ? (
+            <Text style={[styles.errorText, styles.submitError]} accessibilityRole="alert">
+              {t("create_error")}
+            </Text>
+          ) : null}
           <KeyboardPinnedFooter style={styles.footer}>
             <PrimaryButton
               label={t("create")}
               onPress={onCreate}
               disabled={createDisabled}
-              loading={createGroup.isPending}
+              loading={pending}
             />
           </KeyboardPinnedFooter>
         </>
@@ -224,33 +210,6 @@ export function NewChannelBody() {
 const useStyles = makeThemedStyles((t) => ({
   root: {
     flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["2"],
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -t.space["2"],
-  },
-  backPressed: {
-    opacity: 0.6,
-    backgroundColor: t.colors.bgAlt,
-  },
-  headerTitle: {
-    flex: 1,
-    minWidth: 0,
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 16,
-    color: t.colors.text,
   },
   skipBtn: {
     paddingHorizontal: t.space["2"],
@@ -297,7 +256,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   radioLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   radioHint: {

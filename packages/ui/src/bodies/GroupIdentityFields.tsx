@@ -4,7 +4,7 @@ import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import type { ComposerAttachments } from "../primitives/useComposerAttachments"
-import { GROUP_NAME_MAX, GROUP_DESCRIPTION_MAX } from "./groupWizard"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/shared"
 
 export interface GroupIdentityLabels {
   avatarA11y: string
@@ -37,7 +37,7 @@ export function GroupIdentityFields({
   variant = "wizard",
 }: GroupIdentityFieldsProps) {
   const styles = useStyles()
-  const t = useTheme()
+  const th = useTheme()
   const picked = avatar.attachments[0] ?? null
   const isSheet = variant === "sheet"
   const showClear = !!picked && !!labels.avatarClearA11y
@@ -63,7 +63,7 @@ export function GroupIdentityFields({
           ) : fallbackAvatarUrl ? (
             <Image source={{ uri: fallbackAvatarUrl }} style={styles.avatarImage} resizeMode="cover" />
           ) : (
-            <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={t.colors.onAccent} />
+            <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={th.colors.onAccent} />
           )}
         </Pressable>
         {showClear ? (
@@ -75,18 +75,22 @@ export function GroupIdentityFields({
             {...focusRingProps}
             style={({ pressed }) => [styles.avatarClear, pressed ? styles.clearPressed : null]}
           >
-            <Icon icon={iconMap.Close} size={14} color={t.colors.textMuted} />
+            <Icon icon={iconMap.Close} size={14} color={th.colors.textMuted} />
           </Pressable>
         ) : null}
       </View>
-      {avatar.attachError ? <Text style={styles.errorText}>{avatar.attachError}</Text> : null}
+      {avatar.attachError ? (
+        <Text style={styles.errorText} accessibilityRole="alert">
+          {avatar.attachError}
+        </Text>
+      ) : null}
 
       <TextField
         label={labels.nameLabel}
         placeholder={labels.namePlaceholder}
         value={name}
         onChangeText={onChangeName}
-        maxLength={GROUP_NAME_MAX}
+        maxLength={CHAT_GROUP_NAME_MAX}
         containerStyle={isSheet ? styles.fieldSheet : styles.field}
       />
       <TextField
@@ -94,7 +98,7 @@ export function GroupIdentityFields({
         placeholder={labels.descriptionPlaceholder}
         value={description}
         onChangeText={onChangeDescription}
-        maxLength={GROUP_DESCRIPTION_MAX}
+        maxLength={CHAT_GROUP_DESCRIPTION_MAX}
         multiline
         containerStyle={isSheet ? styles.fieldSheet : styles.field}
       />

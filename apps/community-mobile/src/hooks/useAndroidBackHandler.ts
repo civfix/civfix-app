@@ -1,48 +1,7 @@
 /**
- * useAndroidBackHandler (issue #73a) - make the Android hardware back button / back-gesture "go back" the
- * way the in-app DetailBar back chip does, instead of always collapsing to the home menu.
- *
- * THE PROBLEM: the community app's primary surfaces are not expo-router routes - they are in-sheet details
- * and lists living in the SHARED nav store (@civfix/ui `useNavStore`), rendered by the always-mounted
- * map-home. The router sits at "/" the whole time, so the OS back press is handled by expo-router (nothing
- * to pop -> it falls through to the default, which on the map-home reads as "exit"/home) and the open
- * detail in the nav store is never popped. The DetailBar's own back chip calls `useNavStore.back()` and
- * works; the hardware back didn't go through it.
- *
- * THE FIX: register a focus-scoped `BackHandler` listener on the map-home screen that mirrors the nav
- * store's Back. We scope it with `useFocusEffect` so it is active ONLY while the index (map) screen is
- * focused - the full-screen routes (/report, /messages/[id], /host, /about, /activity, ...) keep their own
- * default router back behavior when THEY are focused. The cleanup returned from the focus effect removes
- * the listener on blur.
- *
- * Handler precedence lives in the pure `androidBackPlan` (src/lib/androidBackPlan.ts), first match wins,
- * each consuming the event by returning true:
- *   1. The LayersPopover is open (`layersOpen`) -> dismiss it (`setLayersOpen(false)`). It is a transient
- *      map overlay outside the nav store / sheet, so back should close it first (the Android convention,
- *      and the same dismissal an empty-map tap does via onMapPress).
- *   2. A detail is open (`active !== null`) -> `back()` pops it (KEEPS the current list view, so a detail
- *      returns to the list it was opened from, or home for a map-pin detail). It covers BOTH presentations:
- *      a full-page detail and the one surviving pull-up (`drop-pin`) alike.
- *   3. The report wizard is the view (`view === "report"`) -> `leaveReportFlow()` returns to the surface it
- *      was launched from. Without this rung the wizard is a bare tab root and hardware back EXITS THE APP.
- *   4. Otherwise return false: let the OS default fire (at a bare tab root that means exit the app).
- *
- * THE BRANCH THAT USED TO SIT BETWEEN 2 AND 3, and why it is gone rather than fixed in place. It read
- * "no detail, but the sheet is expanded above peek (`snap > 0`) -> collapse it to peek", which was written
- * when every list view lived INSIDE the compact sheet. It stopped describing anything on screen:
- *   - a pull-up is only ever mounted FOR a detail (`portraitFramePlan`'s `sheet.visible` is
- *     `detailPresentation === "sheet"`), so reaching that branch - i.e. `active === null` - already
- *     guaranteed there was no sheet to collapse; and
- *   - since the sheet -> page conversion (`@civfix/ui` `shell/detailPresentationPlatform`) the only sheet
- *     left on mobile at all is `drop-pin`, which branch 2 consumes first anyway.
- * Meanwhile `snap` is a plain store value that outlives whatever last used it, and it defaults to 2 and
- * stays there for every non-map tab (`snapForView`: home / messaging / search / report all land on FULL).
- * So the branch fired on essentially EVERY hardware back at a bare tab, called `setSnap(0)` on nothing,
- * and returned true - swallowing the press with no visible effect whatsoever. Back now falls through to
- * the OS default there, which is what the Map tab (snap 0) already did.
- *
- * iOS has no hardware back, so the listener simply never fires there - the `useFocusEffect` pattern is
- * harmless on both platforms, so there is no Platform gate.
+ * The primary surfaces live in the shared nav store under a router that stays at "/", so without this
+ * the OS back press falls through expo-router and exits instead of popping the open detail. Scoped with
+ * `useFocusEffect` so full-screen routes keep the router's default back; precedence is `androidBackPlan`.
  */
 import { useCallback } from "react"
 import { BackHandler } from "react-native"
@@ -50,10 +9,6 @@ import { useFocusEffect } from "expo-router"
 import { useNavStore, useReportFilterStore } from "@civfix/ui"
 import { androidBackPlan } from "@/lib/androidBackPlan"
 
-/**
- * Mount once in app/index.tsx (the map-home screen). Registers/removes the Android hardware-back listener
- * on focus/blur via `useFocusEffect`. Renders nothing.
- */
 export function useAndroidBackHandler(): void {
   useFocusEffect(
     useCallback(() => {

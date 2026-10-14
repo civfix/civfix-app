@@ -2,16 +2,24 @@ import { z } from "zod"
 import { ReportCategorySchema } from "../common.js"
 
 /**
- * Analytics aggregates: one response schema per analytics endpoint (enumeration 3 #56-#66). All
- * derived from reports / cleanups / jurisdictions / users / mail over the relevant window. by-category
- * and resolution-by-category use the 6 real report categories (the design's "cleanup" category is the
- * Events domain, not a report category). Heatmap + retention are the spec-required Phase 2 additions
- * not present in the prototype.
+ * Analytics aggregates, one response schema per analytics endpoint, derived from reports / cleanups /
+ * jurisdictions / users / mail over the relevant window. Cleanups are the Events domain, not a report
+ * category.
  */
 
-// ---------------------------------------------------------------------------
-// #56 KPIs
-// ---------------------------------------------------------------------------
+export const AnalyticsKpiUnitSchema = z.enum(["count", "percent", "hours"])
+export type AnalyticsKpiUnit = z.infer<typeof AnalyticsKpiUnitSchema>
+
+/** The `key` values for the KPIs the backend's buildKpis produces, so a client matches a KPI without reading its label. */
+export const AnalyticsKpiKey = {
+  pinsThisMonth: "pins_this_month",
+  resolved: "resolved",
+  cleanupsPlanned: "cleanups_planned",
+  avgRouteTime: "avg_route_time",
+  eventsThisMonth: "events_this_month",
+  newUsers: "new_users",
+} as const
+export type AnalyticsKpiKey = (typeof AnalyticsKpiKey)[keyof typeof AnalyticsKpiKey]
 
 /** One KPI cell: a label, a value, a delta, and the delta direction (for the up/down arrow). */
 export const AnalyticsKpiSchema = z
@@ -20,6 +28,9 @@ export const AnalyticsKpiSchema = z
     num: z.number(),
     delta: z.string(),
     dir: z.enum(["up", "down", "flat"]),
+    // An open string, not the AnalyticsKpiKey union, so a KPI added later still parses on older clients.
+    key: z.string().min(1).optional(),
+    unit: AnalyticsKpiUnitSchema.optional(),
   })
   .strict()
 export type AnalyticsKpi = z.infer<typeof AnalyticsKpiSchema>
@@ -31,10 +42,6 @@ export const AnalyticsKpisResponseSchema = z
   .strict()
 export type AnalyticsKpisResponse = z.infer<typeof AnalyticsKpisResponseSchema>
 
-// ---------------------------------------------------------------------------
-// #57 pins-by-week
-// ---------------------------------------------------------------------------
-
 export const AnalyticsPinsByWeekResponseSchema = z
   .object({
     weeks: z.array(z.number()),
@@ -43,11 +50,7 @@ export const AnalyticsPinsByWeekResponseSchema = z
   .strict()
 export type AnalyticsPinsByWeekResponse = z.infer<typeof AnalyticsPinsByWeekResponseSchema>
 
-// ---------------------------------------------------------------------------
-// #58 by-category
-// ---------------------------------------------------------------------------
-
-/** Per-category report count + share of total (the 6 canonical categories). */
+/** Per-category report count + share of total. */
 export const AnalyticsCategoryRowSchema = z
   .object({
     cat: ReportCategorySchema,
@@ -63,10 +66,6 @@ export const AnalyticsByCategoryResponseSchema = z
   })
   .strict()
 export type AnalyticsByCategoryResponse = z.infer<typeof AnalyticsByCategoryResponseSchema>
-
-// ---------------------------------------------------------------------------
-// #59 funnel
-// ---------------------------------------------------------------------------
 
 /** One funnel stage (pin dropped -> routed to gov -> acknowledged -> resolved). */
 export const AnalyticsFunnelStageSchema = z
@@ -85,10 +84,6 @@ export const AnalyticsFunnelResponseSchema = z
   .strict()
 export type AnalyticsFunnelResponse = z.infer<typeof AnalyticsFunnelResponseSchema>
 
-// ---------------------------------------------------------------------------
-// #60 coverage
-// ---------------------------------------------------------------------------
-
 export const AnalyticsCoverageResponseSchema = z
   .object({
     pct: z.number(),
@@ -97,10 +92,6 @@ export const AnalyticsCoverageResponseSchema = z
   })
   .strict()
 export type AnalyticsCoverageResponse = z.infer<typeof AnalyticsCoverageResponseSchema>
-
-// ---------------------------------------------------------------------------
-// #61 resolution-by-category
-// ---------------------------------------------------------------------------
 
 /** Median resolution hours per category. */
 export const AnalyticsResolutionRowSchema = z
@@ -120,10 +111,6 @@ export type AnalyticsResolutionByCategoryResponse = z.infer<
   typeof AnalyticsResolutionByCategoryResponseSchema
 >
 
-// ---------------------------------------------------------------------------
-// #62 events
-// ---------------------------------------------------------------------------
-
 export const AnalyticsEventsResponseSchema = z
   .object({
     thisMonth: z.number().int().nonnegative(),
@@ -134,10 +121,6 @@ export const AnalyticsEventsResponseSchema = z
   })
   .strict()
 export type AnalyticsEventsResponse = z.infer<typeof AnalyticsEventsResponseSchema>
-
-// ---------------------------------------------------------------------------
-// #63 top-jurisdictions
-// ---------------------------------------------------------------------------
 
 /** A top-jurisdiction row (org + pin volume + resolved %). */
 export const AnalyticsTopJurisdictionRowSchema = z
@@ -157,10 +140,6 @@ export const AnalyticsTopJurisdictionsResponseSchema = z
 export type AnalyticsTopJurisdictionsResponse = z.infer<
   typeof AnalyticsTopJurisdictionsResponseSchema
 >
-
-// ---------------------------------------------------------------------------
-// #64 top-contributors
-// ---------------------------------------------------------------------------
 
 /** A top-contributor row (neighbor + reports + cleanups). */
 export const AnalyticsTopContributorRowSchema = z
@@ -182,10 +161,6 @@ export type AnalyticsTopContributorsResponse = z.infer<
   typeof AnalyticsTopContributorsResponseSchema
 >
 
-// ---------------------------------------------------------------------------
-// #65 heatmap (Phase 2 addition)
-// ---------------------------------------------------------------------------
-
 /** Per-jurisdiction pin density (geoid + name + pin count, for the heatmap). */
 export const AnalyticsHeatmapCellSchema = z
   .object({
@@ -204,10 +179,6 @@ export const AnalyticsHeatmapResponseSchema = z
   })
   .strict()
 export type AnalyticsHeatmapResponse = z.infer<typeof AnalyticsHeatmapResponseSchema>
-
-// ---------------------------------------------------------------------------
-// #66 retention (Phase 2 addition)
-// ---------------------------------------------------------------------------
 
 /** One cohort row: the cohort label + per-period retention values (period 0..N). */
 export const AnalyticsRetentionCohortSchema = z

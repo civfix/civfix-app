@@ -38,9 +38,6 @@ export const DEMO_ATTENDEES: readonly PersonDTO[] = [
   },
 ]
 
-export const DEMO_EVENT_AT = "2026-09-12T16:00:00.000Z"
-export const DEMO_CHAT_AT = ["2026-09-05T18:41:00.000Z", "2026-09-05T18:44:00.000Z"] as const
-
 export const DEMO_HOURS_CREDITED = 2.5
 export const DEMO_GOING_BEFORE = 2
 export const DEMO_GOING_AFTER = 3
@@ -62,7 +59,12 @@ export const DEMO_REPORT_LNG = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lng
 
 export const TRACK_STATUS_CYCLE: readonly ReportStatus[] = ["published", "in_progress", "resolved"]
 
-export function demoCleanup(title: string, address: string, going: number): CleanupDTO {
+export function demoCleanup(
+  title: string,
+  address: string,
+  going: number,
+  scheduledAt: string,
+): CleanupDTO {
   return {
     id: "onboarding-cleanup",
     title,
@@ -70,7 +72,7 @@ export function demoCleanup(title: string, address: string, going: number): Clea
     eventKind: "cleanup",
     lat: DEMO_EVENT_LAT,
     lng: DEMO_EVENT_LNG,
-    scheduledAt: DEMO_EVENT_AT,
+    scheduledAt,
     status: "upcoming",
     organizer: DEMO_ORGANIZER,
     going,
@@ -86,7 +88,11 @@ export function demoCleanup(title: string, address: string, going: number): Clea
   }
 }
 
-export function demoChatItems(askBody: string, replyBody: string): ChatItem[] {
+export function demoChatItems(
+  askBody: string,
+  replyBody: string,
+  sentAt: readonly [string, string],
+): ChatItem[] {
   return [
     {
       message: {
@@ -96,7 +102,7 @@ export function demoChatItems(askBody: string, replyBody: string): ChatItem[] {
         from: null,
         body: askBody,
         kind: "text",
-        createdAt: DEMO_CHAT_AT[0],
+        createdAt: sentAt[0],
         reactions: [],
         mentions: [],
         mine: true,
@@ -113,7 +119,7 @@ export function demoChatItems(askBody: string, replyBody: string): ChatItem[] {
         from: DEMO_NEIGHBOR,
         body: replyBody,
         kind: "text",
-        createdAt: DEMO_CHAT_AT[1],
+        createdAt: sentAt[1],
         reactions: [],
         mentions: [],
         mine: false,

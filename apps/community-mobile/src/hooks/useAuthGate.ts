@@ -1,17 +1,9 @@
 import { useCallback } from "react"
 import { useRouter } from "expo-router"
-import { useAuthStore, type AuthStatus } from "@/store/authStore"
-
-function isSettlingStatus(status: AuthStatus): boolean {
-  return status === "idle" || status === "loading"
-}
+import { useAuthStore } from "@/store/authStore"
 
 export interface AuthGate {
-  status: AuthStatus
-  isAuthed: boolean
-  isSettling: boolean
-  isSignedOut: boolean
-  requireAuth: (next: string, action?: () => void, opts?: { replace?: boolean }) => boolean
+  requireAuth: (next: string, action?: () => void) => void
 }
 
 export function useAuthGate(): AuthGate {
@@ -19,24 +11,15 @@ export function useAuthGate(): AuthGate {
   const status = useAuthStore((s) => s.status)
 
   const requireAuth = useCallback(
-    (next: string, action?: () => void, opts?: { replace?: boolean }): boolean => {
+    (next: string, action?: () => void): void => {
       if (status === "authed") {
         action?.()
-        return true
+        return
       }
-      const target = { pathname: "/auth" as const, params: { next } }
-      if (opts?.replace) router.replace(target)
-      else router.navigate(target)
-      return false
+      router.navigate({ pathname: "/auth" as const, params: { next } })
     },
     [status, router],
   )
 
-  return {
-    status,
-    isAuthed: status === "authed",
-    isSettling: isSettlingStatus(status),
-    isSignedOut: status !== "authed" && !isSettlingStatus(status),
-    requireAuth,
-  }
+  return { requireAuth }
 }

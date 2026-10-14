@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { AppState, View, Pressable, StyleSheet, ActivityIndicator, Linking } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
+import Ionicons from "@expo/vector-icons/Ionicons"
 import {
   Camera,
   useCameraDevice,
@@ -11,38 +11,62 @@ import {
 } from "react-native-vision-camera"
 import * as ImagePicker from "expo-image-picker"
 import * as Location from "expo-location"
-import { fontFamily, fontSize, makeThemedStyles, radius, themeFor, useTheme } from "@/theme"
-import { Text, PrimaryButton } from "@civfix/ui"
-import type { CameraViewfinderProps, CapturedMedia } from "@civfix/ui/capabilities"
+import { CAMERA_CHROME_THEME, fontFamily, fontSize, makeThemedStyles, radius, space, useTheme } from "@/theme"
+import { Text, PrimaryButton, useToast } from "@civfix/ui"
+import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
+import { withTimeout } from "@civfix/shared"
 import {
   BACKGROUNDED_PARK_GRACE_MS,
   MAX_VIDEO_SECONDS,
-  OUTPUT_DETACH_DEFER_MS,
-  SESSION_RESUME_GRACE_MS,
-  armsResumeGrace,
-  cameraSessionRunning,
-  cameraSessionVeto,
-  cancelsResumeGrace,
   dropsParkedRecording,
   micDeferralAction,
   parkIsStale,
   startsDeferredRecording,
-  viewfinderPreviewEnabled,
-  viewfinderVideoOutputEnabled,
-  type AppLifecycleState,
+  type ViewfinderCaptureMode,
 } from "@/lib/cameraSession"
-import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
+import { locateCapture, type CaptureOrigin } from "@/lib/captureLocation"
+import { capturedMediaFromPickerAsset, fileUri } from "@/lib/capturedMedia"
+import { CameraPermissionGate } from "@/components/camera/CameraPermissionGate"
+import { CaptureModeToggle } from "./CaptureModeToggle"
+import { useViewfinderSession } from "./useViewfinderSession"
 
-type CaptureMode = "photo" | "video"
+type CaptureFailure = "error.photo" | "error.recording" | "error.library"
 
 export type ReportViewfinderProps = Omit<CameraViewfinderProps, "onCancel"> & {
   resumeGrace?: boolean
 }
 
-const stage = themeFor("light")
+const stage = CAMERA_CHROME_THEME
 
 const RECORDING_RED = "#FF3B30"
+
+const ELAPSED_TICK_MS = 100
+
+// A stop that races the recording's own end rejects harmlessly; a real failure reaches onRecordingError.
+function stopRecordingQuietly(camera: Camera | null): void {
+  camera?.stopRecording().catch(() => undefined)
+}
+
+// The badge owns its clock, so the 10 Hz tick re-renders this badge alone rather than the whole
+// viewfinder and its <Camera>. It mounts as recording starts, which restarts the count at zero.
+function RecordingBadge() {
+  const { t } = useT("mobile-report-camera")
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setElapsed((e) => Math.min(MAX_VIDEO_SECONDS, Math.round((e + 0.1) * 10) / 10))
+    }, ELAPSED_TICK_MS)
+    return () => clearInterval(tick)
+  }, [])
+  return (
+    <View style={cameraStyles.recBadge}>
+      <View style={cameraStyles.recDot} />
+      <Text style={cameraStyles.recText}>{t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}</Text>
+    </View>
+  )
+}
 
 async function readShutterLocation(): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -54,7 +78,7 @@ async function readShutterLocation(): Promise<{ lat: number; lng: number } | nul
         Location.PermissionStatus.GRANTED
     }
     if (!granted) return null
-    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })
+    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(() => null)
     const pos =
       last ??
       (await withTimeout(
@@ -77,100 +101,33 @@ export function ReportViewfinder({
   const { t } = useT("mobile-report-camera")
   const th = useTheme()
   const styles = useStyles()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const cameraPermission = useCameraPermission()
   const mic = useMicrophonePermission()
   const device = useCameraDevice("back")
 
   const cameraRef = useRef<Camera>(null)
-  const [mode, setMode] = useState<CaptureMode>(initialMode)
+  const [mode, setMode] = useState<ViewfinderCaptureMode>(initialMode)
   const [recording, setRecording] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [elapsed, setElapsed] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(mic.hasPermission)
   const pendingRecordRef = useRef(false)
   const parkedAtRef = useRef<number | null>(null)
   const recordingRef = useRef(false)
   const mountedRef = useRef(true)
   const hardStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const [appState, setAppState] = useState<AppLifecycleState>(
-    AppState.currentState as AppLifecycleState,
-  )
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) =>
-      setAppState(next as AppLifecycleState),
-    )
-    return () => sub.remove()
-  }, [])
-
-  const [graceHeld, setGraceHeld] = useState(false)
-  const [outputsLinger, setOutputsLinger] = useState(false)
-  const [everRan, setEverRan] = useState(false)
-
-  const [seenActive, setSeenActive] = useState(active)
-  if (seenActive !== active) {
-    setSeenActive(active)
-    if (
-      armsResumeGrace({
-        hostActive: active,
-        graceEligible: resumeGrace,
-        everRan,
-        appState,
-        recordingBusy: recordingRef.current || pendingRecordRef.current,
-      })
-    ) {
-      setGraceHeld(true)
-      setOutputsLinger(true)
-    }
-  }
-
-  const sessionInputs = {
-    hostActive: active || graceHeld,
-    appState,
-    hasPermission: cameraPermission.hasPermission,
-    hasDevice: device != null,
-  }
-  const sessionRunning = cameraSessionRunning(sessionInputs)
-
-  useEffect(() => {
-    if (sessionRunning) setEverRan(true)
-  }, [sessionRunning])
-
-  useEffect(() => {
-    if (cancelsResumeGrace(active, appState)) {
-      setGraceHeld(false)
-      setOutputsLinger(false)
-    }
-  }, [active, appState])
-
-  useEffect(() => {
-    if (!graceHeld) return
-    const timer = setTimeout(() => setGraceHeld(false), SESSION_RESUME_GRACE_MS)
-    return () => clearTimeout(timer)
-  }, [graceHeld])
-
-  useEffect(() => {
-    if (!outputsLinger) return
-    const timer = setTimeout(() => setOutputsLinger(false), OUTPUT_DETACH_DEFER_MS)
-    return () => clearTimeout(timer)
-  }, [outputsLinger])
-  const surfaceInputs = { ...sessionInputs, hostActive: active }
-  const sessionRunningOnSurface = cameraSessionRunning(surfaceInputs)
-  const veto = cameraSessionVeto(surfaceInputs)
-
-  const recordingBusy = recordingRef.current || pendingRecordRef.current
-  const previewEnabled = viewfinderPreviewEnabled({
-    hostActive: active || graceHeld,
-    mode,
-    recordingBusy,
-  })
-  const videoOutputEnabled = viewfinderVideoOutputEnabled({
-    hostActive: active || (graceHeld && outputsLinger),
-    mode,
-    recordingBusy,
-  })
+  const { sessionRunning, sessionRunningOnSurface, veto, previewEnabled, videoOutputEnabled } =
+    useViewfinderSession({
+      active,
+      resumeGrace,
+      mode,
+      recordingBusy: recordingRef.current || pendingRecordRef.current,
+      hasPermission: cameraPermission.hasPermission,
+      hasDevice: device != null,
+    })
 
   const clearHardStop = useCallback(() => {
     if (hardStopRef.current) {
@@ -178,28 +135,17 @@ export function ReportViewfinder({
       hardStopRef.current = null
     }
   }, [])
-  const clearTick = useCallback(() => {
-    if (tickRef.current) {
-      clearInterval(tickRef.current)
-      tickRef.current = null
-    }
-  }, [])
   const setRecordingState = useCallback(
     (next: boolean) => {
       recordingRef.current = next
       setRecording(next)
-      if (!next) {
-        clearHardStop()
-        clearTick()
-      }
+      if (!next) clearHardStop()
     },
-    [clearHardStop, clearTick],
+    [clearHardStop],
   )
 
   const stopIfRecording = useCallback(() => {
-    if (recordingRef.current) {
-      cameraRef.current?.stopRecording().catch(() => {})
-    }
+    if (recordingRef.current) stopRecordingQuietly(cameraRef.current)
   }, [])
 
   useLayoutEffect(() => {
@@ -215,19 +161,26 @@ export function ReportViewfinder({
       pendingRecordRef.current = false
       parkedAtRef.current = null
       clearHardStop()
-      clearTick()
     }
-  }, [clearHardStop, clearTick])
+  }, [clearHardStop])
+
+  const reportCaptureFailure = useCallback(
+    (failure: CaptureFailure) => {
+      if (!mountedRef.current) return
+      setBusy(false)
+      haptics.error()
+      toast.show(t(failure), { variant: "error" })
+    },
+    [haptics, t, toast],
+  )
 
   const emitCapture = useCallback(
-    (media: CapturedMedia) => {
+    (media: CapturedMedia, origin: CaptureOrigin) => {
       void (async () => {
-        const fix = await readShutterLocation()
+        const located = await locateCapture(media, origin, readShutterLocation)
         try {
           if (!mountedRef.current) return
-          onCaptured(
-            fix ? { ...media, location: { lat: fix.lat, lng: fix.lng, source: "device" } } : media,
-          )
+          onCaptured(located)
         } finally {
           if (mountedRef.current) setBusy(false)
         }
@@ -245,25 +198,20 @@ export function ReportViewfinder({
         enableShutterSound: false,
       })
       emitCapture({
-        uri: photo.path.startsWith("file://") ? photo.path : `file://${photo.path}`,
+        uri: fileUri(photo.path),
         kind: "image",
         mime: "image/jpeg",
         width: photo.width,
         height: photo.height,
-      })
+      }, "camera")
     } catch {
-      setBusy(false)
+      reportCaptureFailure("error.photo")
     }
-  }, [busy, emitCapture])
+  }, [busy, emitCapture, reportCaptureFailure])
 
   const beginRecording = useCallback(() => {
     if (!cameraRef.current) return
-    setElapsed(0)
     setRecordingState(true)
-    clearTick()
-    tickRef.current = setInterval(() => {
-      setElapsed((e) => Math.min(MAX_VIDEO_SECONDS, Math.round((e + 0.1) * 10) / 10))
-    }, 100)
     cameraRef.current.startRecording({
       fileType: "mp4",
       videoCodec: "h264",
@@ -271,29 +219,27 @@ export function ReportViewfinder({
         if (!mountedRef.current) return
         setRecordingState(false)
         emitCapture({
-          uri: video.path.startsWith("file://") ? video.path : `file://${video.path}`,
+          uri: fileUri(video.path),
           kind: "video",
           mime: "video/mp4",
           width: video.width,
           height: video.height,
           durationSec: video.duration,
-        })
+        }, "camera")
       },
       onRecordingError: () => {
         if (!mountedRef.current) return
         setRecordingState(false)
-        setBusy(false)
+        reportCaptureFailure("error.recording")
       },
     })
 
     clearHardStop()
     hardStopRef.current = setTimeout(() => {
       hardStopRef.current = null
-      if (cameraRef.current && recordingRef.current) {
-        cameraRef.current.stopRecording().catch(() => {})
-      }
+      if (recordingRef.current) stopRecordingQuietly(cameraRef.current)
     }, MAX_VIDEO_SECONDS * 1000)
-  }, [clearHardStop, clearTick, emitCapture, setRecordingState])
+  }, [clearHardStop, emitCapture, reportCaptureFailure, setRecordingState])
 
   useEffect(() => {
     if (!pendingRecordRef.current) return
@@ -333,7 +279,7 @@ export function ReportViewfinder({
   useEffect(() => {
     if (sessionRunning || !recordingRef.current) return
     clearHardStop()
-    cameraRef.current?.stopRecording().catch(() => {})
+    stopRecordingQuietly(cameraRef.current)
   }, [sessionRunning, clearHardStop])
 
   const onToggleRecord = useCallback(async () => {
@@ -342,12 +288,7 @@ export function ReportViewfinder({
     if (recordingRef.current) {
       clearHardStop()
       setBusy(true)
-      try {
-        await cameraRef.current.stopRecording()
-      } catch {
-        setRecordingState(false)
-        setBusy(false)
-      }
+      stopRecordingQuietly(cameraRef.current)
       return
     }
 
@@ -359,7 +300,7 @@ export function ReportViewfinder({
       return
     }
     beginRecording()
-  }, [audioEnabled, beginRecording, busy, clearHardStop, mic, setRecordingState])
+  }, [audioEnabled, beginRecording, busy, clearHardStop, mic])
 
   const onPickFromLibrary = useCallback(async () => {
     if (busy) return
@@ -374,64 +315,35 @@ export function ReportViewfinder({
         setBusy(false)
         return
       }
-      const asset = result.assets[0]!
-      const isVideo = asset.type === "video"
-      emitCapture({
-        uri: asset.uri,
-        kind: isVideo ? "video" : "image",
-        mime: asset.mimeType ?? (isVideo ? "video/mp4" : "image/jpeg"),
-        ...(asset.width ? { width: asset.width } : {}),
-        ...(asset.height ? { height: asset.height } : {}),
-        ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
-      })
+      emitCapture(capturedMediaFromPickerAsset(result.assets[0]!), "library")
     } catch {
-      setBusy(false)
+      reportCaptureFailure("error.library")
     }
-  }, [busy, emitCapture])
+  }, [busy, emitCapture, reportCaptureFailure])
 
   if (!cameraPermission.hasPermission || device == null) {
     const denied = !cameraPermission.hasPermission
     return (
-      <View style={styles.inlineGate}>
-        <View style={styles.gateIcon}>
-          <Ionicons
-            name={denied ? "camera-outline" : "alert-circle-outline"}
-            size={30}
-            color={th.colors.brand.bloom}
-          />
-        </View>
-        <Text variant="title" style={styles.gateTitle}>
-          {denied ? t("gate.camera.title") : t("gate.no_camera.title")}
-        </Text>
-        <Text variant="body" color={th.colors.textMuted} style={styles.gateBody}>
-          {denied ? t("gate.camera.body") : t("gate.no_camera.body")}
-        </Text>
-        {denied ? (
+      <CameraPermissionGate
+        denied={denied}
+        copy={{
+          title: denied ? t("gate.camera.title") : t("gate.no_camera.title"),
+          body: denied ? t("gate.camera.body") : t("gate.no_camera.body"),
+          continueLabel: t("gate.camera.continue"),
+          openSettingsLabel: t("gate.camera.open_settings"),
+        }}
+        onRequestPermission={() => {
+          void cameraPermission.requestPermission()
+        }}
+        secondaryAction={
           <PrimaryButton
-            label={t("gate.camera.continue")}
-            onPress={() => {
-              void cameraPermission.requestPermission()
-            }}
-            style={styles.gateBtn}
+            label={t("gate.choose_library")}
+            variant="outline"
+            onPress={() => void onPickFromLibrary()}
+            style={styles.gateBtnSecondary}
           />
-        ) : null}
-        <PrimaryButton
-          label={t("gate.choose_library")}
-          variant="outline"
-          onPress={onPickFromLibrary}
-          style={styles.gateBtnSecondary}
-        />
-        {denied ? (
-          <Pressable
-            onPress={() => void Linking.openSettings()}
-            accessibilityRole="button"
-            hitSlop={8}
-            style={({ pressed }) => [styles.settingsLink, pressed ? styles.pressed : null]}
-          >
-            <Text style={styles.settingsLinkText}>{t("gate.camera.open_settings")}</Text>
-          </Pressable>
-        ) : null}
-      </View>
+        }
+      />
     )
   }
 
@@ -454,47 +366,15 @@ export function ReportViewfinder({
 
         <View style={cameraStyles.frame} pointerEvents="none" />
 
-        {recording ? (
-          <View style={cameraStyles.recBadge}>
-            <View style={cameraStyles.recDot} />
-            <Text style={cameraStyles.recText}>{t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}</Text>
-          </View>
-        ) : null}
+        {recording ? <RecordingBadge /> : null}
       </View>
 
       <View style={styles.controls}>
-        <View style={styles.modes}>
-          <Pressable
-            onPress={() => setMode("photo")}
-            disabled={recording}
-            accessibilityRole="button"
-            accessibilityLabel={t("mode.photo")}
-            accessibilityState={{ selected: mode === "photo", disabled: recording }}
-            hitSlop={8}
-            style={({ pressed }) => (pressed && !recording ? styles.pressed : null)}
-          >
-            <Text style={[styles.modeText, mode === "photo" ? styles.modeOn : null]}>
-              {t("mode.photo")}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setMode("video")}
-            disabled={recording}
-            accessibilityRole="button"
-            accessibilityLabel={t("mode.video")}
-            accessibilityState={{ selected: mode === "video", disabled: recording }}
-            hitSlop={8}
-            style={({ pressed }) => (pressed && !recording ? styles.pressed : null)}
-          >
-            <Text style={[styles.modeText, mode === "video" ? styles.modeOn : null]}>
-              {t("mode.video")}
-            </Text>
-          </Pressable>
-        </View>
+        <CaptureModeToggle mode={mode} onChange={setMode} disabled={recording} />
 
         <View style={styles.shutterRow}>
           <Pressable
-            onPress={onPickFromLibrary}
+            onPress={() => void onPickFromLibrary()}
             disabled={busy || recording}
             accessibilityRole="button"
             accessibilityLabel={t("gate.choose_library")}
@@ -505,9 +385,10 @@ export function ReportViewfinder({
           </Pressable>
 
           <Pressable
-            onPress={mode === "photo" ? onTakePhoto : onToggleRecord}
+            onPress={() => void (mode === "photo" ? onTakePhoto() : onToggleRecord())}
             disabled={busy && !recording}
             accessibilityRole="button"
+            accessibilityState={{ disabled: busy && !recording, busy }}
             accessibilityLabel={
               mode === "photo"
                 ? t("shutter.take_photo")
@@ -538,32 +419,7 @@ export function ReportViewfinder({
 const useStyles = makeThemedStyles((t) => ({
   pressed: { opacity: 0.6 },
 
-  inlineGate: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: t.space["6"],
-    backgroundColor: t.colors.bg,
-  },
-  gateIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: t.colors.bloom["50"],
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: t.space["4"],
-  },
-  gateTitle: { marginBottom: t.space["2"], textAlign: "center" },
-  gateBody: { textAlign: "center", lineHeight: 20, marginBottom: t.space["5"] },
-  gateBtn: { width: "100%" },
   gateBtnSecondary: { width: "100%", marginTop: t.space["3"] },
-  settingsLink: { marginTop: t.space["4"], paddingVertical: t.space["2"] },
-  settingsLinkText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
 
   cameraRoot: { flex: 1, backgroundColor: t.colors.bg },
   viewfinder: {
@@ -577,14 +433,6 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     backgroundColor: t.colors.bg,
   },
-  modes: { flexDirection: "row", justifyContent: "center", gap: 30, marginBottom: 18 },
-  modeText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["12"],
-    letterSpacing: 1,
-    color: t.colors.textMuted,
-  },
-  modeOn: { color: t.colors.accentText },
   shutterRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -616,7 +464,7 @@ const cameraStyles = StyleSheet.create({
     gap: 6,
     backgroundColor: stage.colors.scrimStrong,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: space["1"],
     borderRadius: radius.pill,
   },
   recDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: RECORDING_RED },

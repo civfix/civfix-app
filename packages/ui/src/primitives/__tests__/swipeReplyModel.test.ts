@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { BACK_SWIPE_EDGE_PX } from "../backSwipeEdge"
+import { BACK_SWIPE_EDGE_PX, SWIPE_CAPTURE_SLOP_PX } from "../backSwipeEdge"
 import {
-  SWIPE_CAPTURE_SLOP_PX,
   SWIPE_MAX_TRANSLATE_PX,
   SWIPE_TRIGGER_PX,
   shouldCaptureSwipe,

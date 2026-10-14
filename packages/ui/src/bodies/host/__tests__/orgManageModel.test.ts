@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME } from "@civfix/shared"
+import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SOCIAL_HANDLE_PREFIX, SocialLinksSchema } from "@civfix/shared"
 import {
-  SOCIAL_PREFIX,
   canOpenOrgManage,
   counterVisible,
   lastAdminSeat,
@@ -16,6 +15,7 @@ import {
   profileDraftFrom,
   profileErrors,
   profilePayload,
+  socialHandleMax,
   socialLinksFromDraft,
 } from "../orgManageModel"
 
@@ -95,7 +95,7 @@ describe("each section PATCHes only its own fields", () => {
   })
 
   it("names a prefix for every platform, so no field asks for a whole URL", () => {
-    expect(Object.keys(SOCIAL_PREFIX).sort()).toEqual(
+    expect(Object.keys(SOCIAL_HANDLE_PREFIX).sort()).toEqual(
       ["facebook", "instagram", "tiktok", "whatsapp", "x"],
     )
   })
@@ -165,9 +165,15 @@ describe("gating", () => {
 })
 
 describe("error copy", () => {
-  it("names the last-admin refusal however the server spells it", () => {
-    expect(orgManageErrorKey("ORG_LAST_ADMIN")).toBe("manage.error_last_admin")
-    expect(orgManageErrorKey("CONFLICT")).toBe("manage.error_last_admin")
+  it("names the last-admin refusal the way the server sends it: VALIDATION on userId", () => {
+    expect(orgManageErrorKey("VALIDATION", { userId: "ORG_LAST_ADMIN" })).toBe(
+      "manage.error_last_admin",
+    )
+  })
+
+  it("does not read an unrelated CONFLICT, such as a taken handle, as the last-admin refusal", () => {
+    expect(orgManageErrorKey("CONFLICT")).toBe("manage.error_generic")
+    expect(orgManageErrorKey("VALIDATION", { name: "too long" })).toBe("manage.error_validation")
   })
 
   it("falls back once for everything else", () => {
@@ -180,5 +186,18 @@ describe("error copy", () => {
   it("tells a rejected image from a failed upload", () => {
     expect(orgLogoErrorKey("MEDIA_REJECTED")).toBe("manage.logo_rejected")
     expect(orgLogoErrorKey(undefined)).toBe("manage.logo_error")
+  })
+})
+
+describe("social field lengths", () => {
+  it("cap each input at the longest value the contract accepts", () => {
+    expect(socialHandleMax("instagram")).toBe(30)
+    expect(socialHandleMax("whatsapp")).toBe(15)
+    const handle = "a".repeat(socialHandleMax("instagram"))
+    expect(SocialLinksSchema.safeParse({ instagram: handle }).success).toBe(true)
+    expect(SocialLinksSchema.safeParse({ instagram: `${handle}a` }).success).toBe(false)
+    const number = `1${"2".repeat(socialHandleMax("whatsapp") - 1)}`
+    expect(SocialLinksSchema.safeParse({ whatsapp: number }).success).toBe(true)
+    expect(SocialLinksSchema.safeParse({ whatsapp: `${number}2` }).success).toBe(false)
   })
 })

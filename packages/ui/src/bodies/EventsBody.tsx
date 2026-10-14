@@ -1,27 +1,42 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, Platform } from "react-native"
-import { TextInput } from "../primitives/TextInput"
 import type { ViewStyle } from "react-native"
 import { haversineMeters } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
 import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
+import { eventEndsAtMs } from "@civfix/shared/host"
 import {
   focusRingProps,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   space,
   useLayoutMode,
   useTheme,
-  webInputReset,
   webTransition,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { MetaDot, RsvpPill, EmptyState, OrgAffiliationBadge } from "../primitives"
-import { useCleanups, useJoinCleanup, useAttendingCleanups, useUserLocation, useAuthState } from "../data"
+import {
+  MetaDot,
+  RsvpPill,
+  EmptyState,
+  ListSearchField,
+  OrgAffiliationBadge,
+  useListBodyStyles,
+} from "../primitives"
+import { DateTile } from "../primitives/DateBadge"
+import {
+  useCleanups,
+  useJoinCleanup,
+  useAttendingCleanups,
+  useUserLocation,
+  useAuthState,
+  useNow,
+} from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { useEventWhen, useLocale, useT } from "../i18n"
-import { pushCleanup } from "./navHelpers"
+import { pushCleanup } from "../nav/verbs"
 import { useRowHover } from "./rowHover"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
@@ -36,6 +51,9 @@ const CARD_GAP = space["3"] + 2
 const SECTION_GAP = space["4"]
 
 const IS_WEB = Platform.OS === "web"
+
+/** Room the card's foot row leaves free for the RSVP pill absolutely placed in its corner. */
+const RSVP_PILL_RESERVE = 88
 
 const CARD_RING_INSET = space["4"] + StyleSheet.hairlineWidth
 const WEB_CARD_RING: ViewStyle = IS_WEB
@@ -56,10 +74,11 @@ const SheetEventCard = React.memo(function SheetEventCard({
   const when = useEventWhen(cleanup)
   const { day, month } = eventChip(cleanup.scheduledAt, locale, when.timeZone)
   const join = useJoinCleanup(cleanup.id)
-  const dist = eventDistanceLabel(cleanup.dist)
+  const dist = eventDistanceLabel(cleanup.dist, locale)
   const where = cleanup.address?.trim()
   const blurb = cleanup.description?.trim()
   const { hovered, hoverProps } = useRowHover()
+  const now = useNow(0, { boundaryAt: eventEndsAtMs(cleanup) })
 
   return (
     <View {...hoverProps} style={[styles.card, webTransition, hovered ? styles.cardHovered : null]}>
@@ -74,12 +93,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           pressed ? styles.cardPressed : null,
         ]}
       >
-        <View style={styles.date}>
-          <Text style={styles.dateDay}>{day}</Text>
-          <Text color={th.colors.bloom["600"]} style={styles.dateMonth}>
-            {month}
-          </Text>
-        </View>
+        <DateTile variant="eventCard" day={day} month={month} />
 
         <View style={styles.meta}>
           <View style={styles.titleRow}>
@@ -141,7 +155,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           going={cleanup.joined}
           onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
           busy={join.isPending}
-          ended={hasEventEnded(cleanup, Date.now())}
+          ended={hasEventEnded(cleanup, now)}
           nextPath={`/cleanups/${cleanup.id}`}
           size="sm"
         />
@@ -168,11 +182,12 @@ function CardSkeleton() {
 
 export function EventsBody() {
   const styles = useStyles()
+  const listStyles = useListBodyStyles()
   const th = useTheme()
   const { t } = useT("event-list")
   const { FlatList } = useScrollHost()
   const query = useCleanups("upcoming")
-  const all = query.data ?? []
+  const all = useMemo(() => query.data ?? [], [query.data])
   const { isAuthenticated } = useAuthState()
   const attendingQuery = useAttendingCleanups()
   const location = useUserLocation().data ?? null
@@ -238,15 +253,15 @@ export function EventsBody() {
           <SheetEventCard cleanup={item.cleanup} onPress={onOpenEvent} />
         </View>
       ),
-    [onOpenEvent],
+    [onOpenEvent, styles],
   )
 
   return (
     <FlatList
       data={rows}
       keyExtractor={(row: Row) => row.key}
-      style={styles.list}
-      contentContainerStyle={rows.length === 0 ? styles.listEmpty : styles.listContent}
+      style={listStyles.list}
+      contentContainerStyle={rows.length === 0 ? listStyles.listEmpty : listStyles.listContent}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
@@ -303,10 +318,8 @@ function EventsHeader({
   showTitle: boolean
 }) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("event-list")
   const { t: tNav } = useT("nav")
-  const [focused, setFocused] = useState(false)
   return (
     <View>
       {showTitle ? (
@@ -317,72 +330,31 @@ function EventsHeader({
         </View>
       ) : null}
       {showSearch ? (
-        <View style={[styles.searchField, focused ? styles.searchFieldFocused : null]}>
-          <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
-          <TextInput
-            style={[styles.searchInput, webInputReset]}
-            placeholder={t("search.placeholder")}
-            placeholderTextColor={th.colors.textSubtle}
-            value={query}
-            onChangeText={onChangeQuery}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            autoCorrect={false}
-            returnKeyType="search"
-            accessibilityLabel={t("search.a11y")}
-          />
-          {query ? (
-            <Pressable
-              onPress={() => onChangeQuery("")}
-              accessibilityRole="button"
-              accessibilityLabel={t("search.clear_a11y")}
-              hitSlop={6}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
-            >
-              <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
-            </Pressable>
-          ) : null}
-        </View>
+        <ListSearchField
+          value={query}
+          onChangeText={onChangeQuery}
+          placeholder={t("search.placeholder")}
+          a11yLabel={t("search.a11y")}
+          clearA11yLabel={t("search.clear_a11y")}
+        />
       ) : null}
     </View>
   )
 }
 
-const MIN_TOUCH_TARGET = 44
-
 const useStyles = makeThemedStyles((t) => ({
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: 0,
-    paddingBottom: t.space["8"],
-  },
-  listEmpty: {
-    flexGrow: 1,
-    paddingHorizontal: t.space["4"],
-  },
-
   rootTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  rootTitle: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  rootTitle: tabRootTitleStyle(t),
 
   sectionHeader: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
   },
 
@@ -405,27 +377,6 @@ const useStyles = makeThemedStyles((t) => ({
   cardPressed: {
     opacity: 0.92,
   },
-  date: {
-    width: 50,
-    flexShrink: 0,
-    alignSelf: "flex-start",
-    paddingVertical: 9,
-    borderRadius: 12,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 23,
-    lineHeight: 23,
-    color: t.colors.text,
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9,
-    letterSpacing: 0.55,
-    marginTop: 3,
-  },
   meta: {
     flex: 1,
     minWidth: 0,
@@ -439,7 +390,7 @@ const useStyles = makeThemedStyles((t) => ({
   title: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 19,
     color: t.colors.text,
   },
@@ -447,60 +398,23 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginTop: 4,
+    marginTop: t.space["1"],
   },
   subText: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
   },
   subWhere: {
     flexShrink: 1,
   },
   blurb: {
-    marginTop: 4,
+    marginTop: t.space["1"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     lineHeight: 16,
     color: t.colors.textMuted,
-  },
-  searchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    minHeight: MIN_TOUCH_TARGET,
-    marginTop: t.space["2"],
-    marginBottom: t.space["2"],
-    paddingHorizontal: 12,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    borderRadius: t.radius.md,
-  },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
-    color: t.colors.text,
-  },
-  clearBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: t.colors.bgAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  clearBtnPressed: {
-    backgroundColor: t.colors.border,
   },
   metaDot: {
     marginHorizontal: 0,
@@ -509,7 +423,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 14,
-    paddingRight: 88,
+    paddingRight: RSVP_PILL_RESERVE,
   },
   cnt: {
     flexDirection: "row",
@@ -523,7 +437,7 @@ const useStyles = makeThemedStyles((t) => ({
   cntText: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
   cntTextSep: {
@@ -544,7 +458,7 @@ const useStyles = makeThemedStyles((t) => ({
   cntDist: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
   },
   rsvpSlot: {
@@ -556,7 +470,7 @@ const useStyles = makeThemedStyles((t) => ({
 
   skelList: {
     alignSelf: "stretch",
-    gap: t.space["3"] + 2,
+    gap: CARD_GAP,
   },
   skelDate: {
     width: 50,

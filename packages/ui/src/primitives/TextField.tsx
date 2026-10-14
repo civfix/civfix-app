@@ -48,6 +48,8 @@ export function TextField({
           {...rest}
           multiline={multiline}
           accessibilityLabelledBy={label ? labelId : undefined}
+          accessibilityLabel={rest.accessibilityLabel ?? label}
+          accessibilityHint={rest.accessibilityHint ?? helper}
           placeholderTextColor={t.colors.textSubtle}
           selectionColor={t.colors.brand.bloom}
           onFocus={(e) => {

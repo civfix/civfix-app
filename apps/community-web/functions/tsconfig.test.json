@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "**/*.ts",
+    "../src/lib/link-preview.ts",
+    "../src/lib/site-meta.ts",
+    "../src/lib/edge-headers.ts"
+  ],
+  "exclude": []
+}

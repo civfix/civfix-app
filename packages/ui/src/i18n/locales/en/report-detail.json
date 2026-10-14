@@ -36,7 +36,6 @@
     "processing_title": "Photos are still processing...",
     "processing_body_one": "It will appear here once it finishes processing.",
     "processing_body_other": "{{count}} photos will appear here once they finish processing.",
-    "processing_a11y": "Photos are still processing",
     "tile_processing": "Processing...",
     "tile_rejected": "Couldn't be posted",
     "tile_held": "Under review",

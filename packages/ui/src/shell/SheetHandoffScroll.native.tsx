@@ -1,34 +1,26 @@
 /**
- * SheetHandoffScroll (native seam) — hand a DOWNWARD drag at the top of a sheet body's content over to
- * the compact sheet, so pulling down on content collapses the pull-up sheet (iOS-modal behaviour).
+ * SheetHandoffScroll (native seam): hands a downward drag at the top of a sheet body's content to the
+ * compact sheet, so pulling down on content collapses it the way an iOS modal does.
  *
- * WHY NOT gorhom's OWN integration: its handoff is inseparable from its scroll LOCK — useScrollable
- * returns SCROLLABLE_STATUS.LOCKED at every detent except the exact-equality EXTENDED one, and while
- * LOCKED it force-scrollTo's the content back every frame AND pins decelerationRate to 0. Details open
- * at MID, so adopting it reproduces the round-5 regression this shell already paid to fix. So:
- * `enableContentPanningGesture` STAYS false (which pins gorhom's status UNLOCKED unconditionally), the
- * scrollables stay PLAIN RN, and the handoff is done here.
+ * gorhom's own integration is not used because its handoff is inseparable from its scroll lock (see
+ * CompactShell.native), so `enableContentPanningGesture` stays false, the scrollables stay plain RN, and
+ * the handoff is done here with gorhom's own topology (createBottomSheetScrollableComponent): a
+ * `Gesture.Native().simultaneousWithExternalGesture(pan)` on the scrollable and the Pan on an ancestor.
  *
- * TOPOLOGY: gorhom's own, verified at createBottomSheetScrollableComponent.tsx:88-97 —
- * `Gesture.Native().simultaneousWithExternalGesture(pan)` on the scrollable, Pan on an ANCESTOR view.
+ * The settle is explicit: gorhom's animateToPosition early-returns on `position ===
+ * animatedPosition.get()` before emitting onAnimate/onChange, and both are also gated on
+ * `animatedCurrentIndex`, which is stale for any animation we interrupt. So the drag never lands exactly
+ * on a detent (FLOOR_EPSILON) and an idempotent settle runs alongside animateToPosition.
  *
- * SETTLE: explicit. gorhom's animateToPosition early-returns on `position === animatedPosition.get()`
- * BEFORE emitting onAnimate/onChange, and both handleOnAnimate and handleOnChange are additionally
- * gated on `animatedCurrentIndex`, which is stale for the whole duration of any animation we interrupt.
- * So we (a) never land the DRAG exactly on a detent (FLOOR_EPSILON) and (b) runOnJS an explicit settle
- * alongside animateToPosition. Both settle paths are idempotent, so a genuine onChange double-firing is
- * harmless.
- *
- * HORIZONTAL scrollables pass through untouched. NESTED VERTICAL scrollables inside a sheet body must be
- * given their own <ScrollHostProvider value={PLAIN_SCROLL_HOST}> (the GroupInfoBody.tsx:528 pattern).
+ * Horizontal scrollables pass through untouched.
  */
 import React, { forwardRef, useMemo } from "react"
 import { View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, { runOnJS, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated"
-import { useBottomSheetInternal, ANIMATION_SOURCE } from "@gorhom/bottom-sheet"
+import { useBottomSheetInternal, ANIMATION_SOURCE, ANIMATION_STATUS } from "@gorhom/bottom-sheet"
 import { useNavStore, type Snap } from "../nav"
-import type { ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
 import {
   HANDOFF_SLOP,
   handoffDestinationIndex,
@@ -36,7 +28,10 @@ import {
   shouldEngageHandoff,
 } from "./sheetHandoffLogic"
 
-/** JS-thread settle. Idempotent; safe to double-fire with gorhom's own onChange. */
+const RELEASE_VELOCITY_DIVISOR = 2
+const FILL = { flex: 1 } as const
+
+/** Idempotent, so double-firing with gorhom's own onChange is harmless. */
 function settleToSnap(index: number) {
   const nav = useNavStore.getState()
   if (index === 0 && nav.active !== null) nav.collapseToParent()
@@ -47,7 +42,7 @@ function makeSheetHandoffScroll(
   Base: React.ComponentType<any>,
   AnimatedBase: React.ComponentType<any>,
 ): React.ComponentType<any> {
-  const SheetHandoffScroll = forwardRef<any, any>(function SheetHandoffScroll(
+  const SheetHandoffScroll = forwardRef<unknown, DecoratedScrollProps>(function SheetHandoffScroll(
     { onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
   ) {
@@ -67,9 +62,8 @@ function makeSheetHandoffScroll(
     const basePosition = useSharedValue(0)
     const baseTranslation = useSharedValue(0)
     const wasAnimating = useSharedValue(false)
-    /** The position the sheet held when the pan ENGAGED. Unlike `basePosition` (which onUpdate rolls
-     *  forward every frame the list is still consuming the drag) this is written ONCE, in onStart, so it
-     *  is the only value onEnd can safely ask "did the sheet actually leave its detent?" against. */
+    /** Written once in onStart, unlike `basePosition`, which onUpdate re-baselines every frame the list
+     *  consumes the drag, so it is the only safe reference for "did the sheet leave its detent?". */
     const engagedFrom = useSharedValue(0)
 
     const scrollHandler = useAnimatedScrollHandler(
@@ -121,7 +115,7 @@ function makeSheetHandoffScroll(
           "worklet"
           // Capture BEFORE cancelling: an interrupted animation MUST still be settled on release, or
           // the sheet is parked off-detent with no recovery path.
-          wasAnimating.value = animatedAnimationState.get().status === 1 /* RUNNING */
+          wasAnimating.value = animatedAnimationState.get().status === ANIMATION_STATUS.RUNNING
           stopAnimation()
           engaged.value = true
           basePosition.value = animatedPosition.value
@@ -151,12 +145,9 @@ function makeSheetHandoffScroll(
         })
         .onEnd((e) => {
           "worklet"
-          // Compared against `engagedFrom`, NOT `basePosition`. basePosition is REBASELINED to the live
-          // `animatedPosition` on every frame the list is consuming the drag (see onUpdate), so a gesture
-          // that drags the sheet down, reverses far enough to scroll the content, and is then released
-          // would read `moved === false` while the sheet sits OFF its detent — no settle animation, a
-          // fractional animatedIndex (body fade / header float frozen mid-way), and `useNavStore.snap`
-          // stuck on the old index, which CompactShell's re-sync effect cannot correct either.
+          // Against `basePosition`, a drag down that reverses into a content scroll before release would
+          // read unmoved while the sheet sits off its detent: no settle, a fractional animatedIndex and
+          // a stale store snap that CompactShell's re-sync cannot correct.
           const moved = animatedPosition.value > engagedFrom.value
           if (!moved && !wasAnimating.value) return
           const detents = animatedDetentsState.get().detents
@@ -164,7 +155,7 @@ function makeSheetHandoffScroll(
           const i = handoffDestinationIndex(animatedPosition.value, e.velocityY, detents)
           const dest = i >= 0 ? detents[i] : undefined
           if (dest === undefined) return
-          animateToPosition(dest, ANIMATION_SOURCE.GESTURE, e.velocityY / 2)
+          animateToPosition(dest, ANIMATION_SOURCE.GESTURE, e.velocityY / RELEASE_VELOCITY_DIVISOR)
           runOnJS(settleToSnap)(i)
         })
         .onFinalize(() => {
@@ -206,13 +197,13 @@ function makeSheetHandoffScroll(
 
     return (
       <GestureDetector gesture={pan}>
-        <View style={{ flex: 1 }}>
+        <View style={FILL}>
           <GestureDetector gesture={native}>
             <AnimatedBase
               ref={ref}
               onScroll={scrollHandler}
-              // 16, NOT 32: the reanimated worklet must have a current UI-thread offset for the
-              // engage gate. The JS-thread cost Area 1 worried about is addressed in MinimizeAwareScroll.
+              // 16, not 32: the engage gate needs a current UI-thread offset. The JS-thread cost is
+              // handled in MinimizeAwareScroll.
               scrollEventThrottle={scrollEventThrottle ?? 16}
               bounces={false}
               alwaysBounceVertical={false}
@@ -228,13 +219,11 @@ function makeSheetHandoffScroll(
   return SheetHandoffScroll as unknown as React.ComponentType<any>
 }
 
-/** Wrap a ScrollHost so BOTH its ScrollView and FlatList hand a top-of-content pull-down to the sheet.
- *  Uses Animated.ScrollView / Animated.FlatList rather than createAnimatedComponent — the latter carries
- *  an explicit @deprecated for FlatList in reanimated 4, and Animated.FlatList also defaults
- *  scrollEventThrottle sensibly and supplies a CellRendererComponent. */
+/** Uses Animated.ScrollView / Animated.FlatList rather than createAnimatedComponent, which is deprecated
+ *  for FlatList in reanimated 4; Animated.FlatList also supplies a CellRendererComponent. */
 export function makeSheetHandoffScrollHost(base: ScrollHostValue): ScrollHostValue {
   return {
-    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView as any),
-    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList as any),
+    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView as React.ComponentType<any>),
+    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList as React.ComponentType<any>),
   }
 }

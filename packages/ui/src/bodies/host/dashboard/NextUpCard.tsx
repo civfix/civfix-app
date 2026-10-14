@@ -7,29 +7,33 @@ import {
   makeThemedStyles,
   useTheme,
   webCursorPointer,
-  webHover,
   webTransition,
 } from "../../../theme"
-import { Icon, Text, TextLink, iconMap } from "../../../typography"
-import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
-import { LIST_TILE } from "../../../primitives"
+import { Text, TextLink, iconMap } from "../../../typography"
+import {
+  DateBadge,
+  ICON_ACTION_SIZE,
+  IconActionButton,
+  LIST_TILE,
+  MetaDot,
+  Meter,
+  PrimaryButton,
+  SectionCard,
+} from "../../../primitives"
+import { joinParts } from "../../../primitives/joinParts"
 import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
+import { relativeLineFor } from "../hostSurfaceModel"
+import { relativeUntil } from "../hostTime"
 import { hostedEventWhen, hostedEventWindow } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
 
 const MIN_STRIP_SHIFTS = 2
 
-const SHARE_SIZE = 32
-
-const MIN_TOUCH_TARGET = 44
-
-const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2
-
-const SHARE_ICON = 18
+const A11Y_SENTENCE_SEPARATOR = ". "
 
 export interface NextUpCardProps {
   event: HostedEventDTO
@@ -70,22 +74,21 @@ export function NextUpCard({
       ? t("next_up.signed_up_of", { registered: event.registeredCount, capacity })
       : t("next_up.signed_up", { registered: event.registeredCount })
   const whenLine = underway
-    ? t("next_up.started", { ago: relative(event.startsAt, now) })
-    : t("next_up.starts_in", {
-        dow: when.dow,
-        time: when.timeWithZone,
-        relative: relative(now, Date.parse(event.startsAt)),
-      })
+    ? relativeLineFor(relative(event.startsAt, now), (ago) => t("next_up.started", { ago }))
+    : relativeLineFor(relativeUntil(relative, Date.parse(event.startsAt), now), (rel) =>
+        t("next_up.starts_in", { dow: when.dow, time: when.timeWithZone, relative: rel }),
+      )
 
-  const cardLabel = [
-    t("events.open_a11y", { title: event.title }),
-    whenLine,
-    seats,
-    event.waitlistCount > 0 ? t("next_up.waiting", { count: event.waitlistCount }) : null,
-    live && liveCheckedIn !== null ? t("next_up.checked_in", { count: liveCheckedIn }) : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(". ")
+  const cardLabel = joinParts(
+    [
+      t("events.open_a11y", { title: event.title }),
+      whenLine,
+      seats,
+      event.waitlistCount > 0 ? t("next_up.waiting", { count: event.waitlistCount }) : null,
+      live && liveCheckedIn !== null ? t("next_up.checked_in", { count: liveCheckedIn }) : null,
+    ],
+    A11Y_SENTENCE_SEPARATOR,
+  )
 
   const timed = boardHasTimedSlots(slots)
     ? slotDisplayOrder(slots).filter((slot) => !!slot.startsAt && !!slot.endsAt)
@@ -116,9 +119,11 @@ export function NextUpCard({
               </Text>
               <View style={styles.whenLine}>
                 {live ? <PhaseDot phase={phase} /> : null}
-                <Text variant="label" numberOfLines={1} style={styles.when}>
-                  {whenLine}
-                </Text>
+                {whenLine !== null ? (
+                  <Text variant="label" numberOfLines={1} style={styles.when}>
+                    {whenLine}
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>
@@ -186,22 +191,13 @@ export function NextUpCard({
           onPress={hostTools}
         />
 
-        <Pressable
+        <IconActionButton
+          icon={iconMap.Share}
+          iconColor={th.colors.textMuted}
           onPress={share}
-          accessibilityRole="button"
           accessibilityLabel={t("next_up.share_a11y", { title: event.title })}
-          hitSlop={SHARE_HIT_SLOP}
-          {...focusRingProps}
-          style={(state) => [
-            styles.share,
-            webTransition,
-            webCursorPointer,
-            webHover(state) ? styles.shareHovered : null,
-            state.pressed ? styles.sharePressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Share} size={SHARE_ICON} color={th.colors.textMuted} />
-        </Pressable>
+          style={styles.share}
+        />
       </View>
     </SectionCard>
   )
@@ -218,7 +214,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingRight: SHARE_SIZE + t.space["2"],
+    paddingRight: ICON_ACTION_SIZE + t.space["2"],
   },
   pressed: {
     opacity: 0.92,
@@ -228,17 +224,6 @@ const useStyles = makeThemedStyles((t) => ({
     top: 0,
     right: 0,
     zIndex: 1,
-    width: SHARE_SIZE,
-    height: SHARE_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-  },
-  shareHovered: {
-    backgroundColor: t.colors.bgAlt,
-  },
-  sharePressed: {
-    opacity: 0.92,
   },
   meta: {
     flex: 1,

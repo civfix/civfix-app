@@ -18,8 +18,6 @@ export const CIVFIX_LINK_HOSTS: readonly string[] = [
   "www.civfix.dev",
 ]
 
-export const CIVFIX_APP_SCHEME = "civfix"
-
 export const MAX_EMBEDS_PER_MESSAGE = 2
 
 const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/
@@ -66,7 +64,7 @@ export function civfixEntityRef(kind: "report" | "event", id: string): CivfixLin
   return ref(kind, id, path, `${webOrigin()}${path}`)
 }
 
-export function isCivfixLinkHost(origin: string): boolean {
+function isCivfixLinkHost(origin: string): boolean {
   const host = origin.replace(/^https:\/\//i, "").toLowerCase()
   return CIVFIX_LINK_HOSTS.includes(host)
 }

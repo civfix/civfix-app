@@ -1,9 +1,11 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { LinkedEventRef } from "@civfix/shared"
-import { clampGallerySelection, linkedEventToCleanup, refusedGalleryTiles } from "../reportDetailModel"
+import { linkedEventToCleanup } from "../reportDetailModel"
+import { clampGallerySelection, refusedGalleryTiles } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
+import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"
+import { pathForEntry } from "../../nav"
 
 describe("report gallery selection", () => {
   it("keeps the hero, the active thumb and the lightbox index on one item after the list shrinks", () => {
@@ -20,10 +22,7 @@ describe("report gallery selection", () => {
 })
 
 describe("report gallery: the reporter's refused items", () => {
-  const SRC = readFileSync(new URL("../ReportDetailBody.tsx", import.meta.url), "utf8").replace(
-    /\/\*[\s\S]*?\*\//g,
-    "",
-  )
+  const SRC = reportDetailSource().replace(/\/\*[\s\S]*?\*\//g, "")
 
   it("puts the refused tile in the hero, alone, when one item was refused and nothing is ready or processing", () => {
     expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 1 })).toEqual({ hero: true, strip: 0 })
@@ -58,7 +57,7 @@ describe("report gallery: the reporter's refused items", () => {
   })
 
   it("counts the strip tiles toward showing the strip and renders them after the other tiles", () => {
-    expect(SRC).toContain("+ pending + refused.strip")
+    expect(SRC).toContain("{tileCount + refused.strip > 1 ? (")
     expect(SRC).toMatch(/<StatusTile key=\{`pending-\$\{i\}`\} kind="processing" variant="thumb" \/>\s*\)\)\}\s*\{refusedTiles\}/)
   })
 
@@ -143,14 +142,11 @@ describe("your-reports search", () => {
 })
 
 describe("report detail: share and host-an-event live in the overflow menu", () => {
-  const SRC = readFileSync(new URL("../ReportDetailBody.tsx", import.meta.url), "utf8").replace(
-    /\/\*[\s\S]*?\*\//g,
-    "",
-  )
+  const SRC = reportDetailSource().replace(/\/\*[\s\S]*?\*\//g, "")
 
   it("carries both as PopoverMenu items with the house icons, ahead of the report-content item", () => {
     expect(SRC).toContain("const titleMenuItems: PopoverMenuItem[] = [")
-    expect(SRC).toContain('items={titleMenuItems}')
+    expect(SRC).toContain('items={titleMenu.titleMenuItems}')
     expect(SRC).toMatch(/key: "share",[\s\S]*?icon: "Share",[\s\S]*?onPress: onShare,/)
     expect(SRC).toMatch(/key: "host-event",[\s\S]*?icon: "Megaphone",[\s\S]*?onPress: onHostEvent,/)
     expect(SRC.indexOf('key: "share"')).toBeLessThan(SRC.indexOf('key: "host-event"'))
@@ -167,7 +163,8 @@ describe("report detail: share and host-an-event live in the overflow menu", () 
   })
 
   it("keeps each action's behaviour: the same share target, and requireAuth on hosting", () => {
-    expect(SRC).toContain("const sharePath = `/pin/${report.referenceCode ?? report.id}`")
+    expect(SRC).toContain('const sharePath = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })')
+    expect(pathForEntry({ kind: "pin", id: "CFX-12" })).toBe("/pin/CFX-12")
     expect(SRC).toMatch(/shareLink\(\{\s*title,\s*path: sharePath,/)
     expect(SRC).toMatch(
       /const onHostEvent = useCallback\(\(\) => \{\s*requireAuth\([\s\S]*?kind: "create-cleanup", reportId: report\.id[\s\S]*?next: "\/host"/,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { Animated, Easing, Platform, StyleSheet, View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
 import { motion, useReducedMotion, useTheme } from "../theme"
@@ -11,6 +11,10 @@ const CHECK_LENGTH = 45
 const DRAW_DELAY_MS = 120
 const DRAW_DURATION_MS = 360
 
+// The draw drives the path's dash offset as an animated prop, so the stroke updates each frame without
+// re-rendering the SVG through React state.
+const AnimatedPath = Animated.createAnimatedComponent(Path)
+
 export interface SuccessCheckProps {
   size?: number
   announce?: string
@@ -21,16 +25,14 @@ export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps
   const reducedMotion = useReducedMotion()
   const scale = useRef(new Animated.Value(motion.pop.from)).current
   const draw = useRef(new Animated.Value(0)).current
-  const [dashOffset, setDashOffset] = useState(CHECK_LENGTH)
+  const dashOffset = useMemo(
+    () => draw.interpolate({ inputRange: [0, 1], outputRange: [CHECK_LENGTH, 0] }),
+    [draw],
+  )
 
   useEffect(() => {
     if (message) announceToScreenReader(message)
   }, [message])
-
-  useEffect(() => {
-    const id = draw.addListener(({ value }) => setDashOffset(CHECK_LENGTH * (1 - value)))
-    return () => draw.removeListener(id)
-  }, [draw])
 
   useEffect(() => {
     if (reducedMotion === null) return
@@ -79,7 +81,7 @@ export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps
             stroke={th.colors.moss["500"]}
             strokeWidth={2}
           />
-          <Path
+          <AnimatedPath
             d={CHECK_PATH}
             fill="none"
             stroke={th.colors.moss["700"]}

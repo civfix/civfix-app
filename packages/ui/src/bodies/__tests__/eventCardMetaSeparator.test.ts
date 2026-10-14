@@ -1,14 +1,12 @@
 /**
- * The event card's foot row - "{N} going . {dist}" - and its separator dot (landscape finding
- * R2-details-secondary-6, reopened twice).
+ * The event card's foot row - "{N} going . {dist}" - and its separator dot.
  *
  * The row is allowed to WRAP: the foot reserves 88px for the absolutely-positioned RSVP pill, and in
  * es/de/ko the attendee-count label ("21 asistentes", "21 Teilnehmer") needs the full remaining width, so
  * the distance drops to a line of its own rather than ellipsis-clipping the word. A separator, though,
- * only means anything BETWEEN two segments on ONE line:
- *   - round 1 kept the dot in flow before the distance -> "8 going *" ended line 1, dangling;
- *   - round 2 moved the dot into the distance's wrap group -> "* 0.4 mi" opened line 2, still dangling.
- * The fix is the HANGING separator: the count reserves the dot's width as trailing margin and the dot is
+ * only means anything BETWEEN two segments on ONE line: in flow before the distance it dangles at the end
+ * of line 1 ("8 going *"), and inside the distance's wrap group it opens line 2 ("* 0.4 mi").
+ * So the separator HANGS: the count reserves the dot's width as trailing margin and the dot is
  * absolutely positioned back into that margin, 8px left of the distance group. On one line it lands on
  * exactly the pixel the in-flow dot did; on a wrapped line the group starts at x=0 so the dot lands at
  * x=-8, outside `cnt`, whose `overflow: hidden` clips it away. The separator is painted iff both of its
@@ -17,11 +15,6 @@
  * Pinned by source grep: EventsBody imports react-native, which this package's node-environment vitest
  * cannot load, so the component invariants are read off the source - the house pattern (see
  * `wizardDetailAffordances.test.ts`, `searchInboxAffordances.test.ts`).
- *
- * Browser evidence for the pixels these rules produce is in verify/round3-fixed (r3t1-meta.mjs /
- * r3t1-ink.mjs): at a 300px card the dot band is a single colour (the card surface, zero dot ink) while
- * the count/distance rects are unchanged; at 340 and 440 every rect - dot included - is identical to the
- * pre-fix render to the subpixel.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

@@ -16,7 +16,7 @@ beforeEach(() => {
 })
 
 describe("filterStore: defaults", () => {
-  it("starts with ALL report categories shown (#73b 'All shown' on first run)", () => {
+  it("starts with ALL report categories shown on first run", () => {
     const initial = useReportFilterStore.getInitialState()
     expect(initial.enabled.size).toBe(FILTER_CATEGORIES.length)
     expect([...initial.enabled].sort()).toEqual([...FILTER_CATEGORIES].sort())

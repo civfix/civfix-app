@@ -1,36 +1,38 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, stopPress, wash, webCursor, webTransition } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  ROW_A11Y_PROPS,
+  stopPress,
+  wash,
+  WEB_ROW_FOCUS_INSET,
+  webCursor,
+  webTransition,
+} from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
-import {
-  PostActionBar,
-  postActionGlyphInset,
-  postActionLayout,
-} from "../../primitives/PostActionBar"
-import { useNavStore } from "../../nav/useNavStore"
+import { PostActionBar } from "../../primitives/PostActionBar"
+import { postActionGlyphInset, postActionLayout } from "../../primitives/postActionModel"
 import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
-import { ROW_ROLE, WEB_ROW_FOCUS_INSET, linkKeyProps } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../../primitives/PostOverflowButton"
 import { PostOverflowMenu } from "../PostOverflowMenu"
+import { usePostRowActions } from "../postCardActions"
 import {
   buildPostIdentity,
   identityA11yLabel,
-  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
-import { POST_CARD_RHYTHM } from "../postCardRhythm"
-import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
-import { useLightbox } from "../../lightbox"
+import { POST_CARD_RHYTHM } from "../../primitives/postCardRhythm"
 import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
@@ -41,7 +43,6 @@ import {
 } from "./threadModel"
 
 const RHYTHM = POST_CARD_RHYTHM
-const EMPTY_MEDIA: PostDTO["media"] = []
 
 export interface ThreadReplyRowProps {
   post: PostDTO
@@ -63,76 +64,32 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   const styles = useStyles()
   const { hovered, hoverProps } = useRowHover()
   const { t } = useT("home-feed")
-  const push = useNavStore((state) => state.push)
-  const openEntry = onOpenEntry ?? push
   const segments = React.useMemo(
     () => splitPostBodyMentions(post.body ?? "", post.mentions),
     [post.body, post.mentions],
-  )
-  const openPerson = React.useCallback(
-    (personId: string) => openEntry({ kind: "person", id: personId }),
-    [openEntry],
-  )
-  const openThread = React.useCallback(
-    () => openEntry({ kind: "post-thread", id: post.id }),
-    [openEntry, post.id],
-  )
-  const onQuote = React.useCallback(
-    () => openEntry({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
-    [openEntry, post.id],
   )
   const timeAgo = useListTimeAgo()
   const identity = React.useMemo(
     () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
     [post.author, post.organization, t],
   )
-  const openIdentity = React.useCallback(() => {
-    if (identity.organization) {
-      openEntry({ kind: "org", slug: identity.organization.slug })
-      return
-    }
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openEntry, openPerson])
-  const openActingPerson = React.useCallback(() => {
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openPerson])
-  const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
-  const onMenuDeleted = React.useCallback(() => onDeleted?.(post.id), [onDeleted, post.id])
-  const lightbox = useLightbox()
-  const media = post.media ?? EMPTY_MEDIA
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
+  const { openEntry, openPerson, onQuote, openIdentity, openActingPerson, menu, media, openMedia } =
+    usePostRowActions({ post, identity, onOpenEntry })
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
+  const openThread = React.useCallback(
+    () => openEntry({ kind: "post-thread", id: post.id }),
+    [openEntry, post.id],
   )
+  const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
+  const onMenuDeleted = React.useCallback(() => onDeleted?.(post.id), [onDeleted, post.id])
 
   return (
     <>
       <Pressable
         onPress={openThread}
         disabled={isOptimistic}
-        accessibilityRole={ROW_ROLE}
-        accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
-        {...focusRingProps}
+        {...ROW_A11Y_PROPS}
         {...hoverProps}
-        {...(isOptimistic ? null : linkKeyProps(openThread))}
         style={(state) => [
           styles.outer,
           hairline ? styles.outerRule : null,
@@ -209,6 +166,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                   label={t("post_card.more_a11y")}
                   onPress={openMenu}
                   buttonRef={menuTrigger.ref}
+                  expanded={menuOpen}
                 />
               )}
             </View>
@@ -220,6 +178,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                     <Text
                       key={`${segment.userId}-${index}`}
                       style={styles.bodyMention}
+                      accessibilityRole="link"
                       onPress={(event) => {
                         stopPress(event)
                         openPerson(segment.userId)
@@ -375,13 +334,13 @@ const useStyles = makeThemedStyles((t) => ({
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
   },
   bodyMention: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.accentText,
   },

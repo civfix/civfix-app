@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 import { useIsNarrow } from "../use-media-query"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export interface OverlayProps {
@@ -17,7 +18,9 @@ export interface OverlayProps {
   align?: "start" | "end"
   side?: "bottom" | "top"
   width?: number
-  label?: string
+  label: string
+  /** Panel id, so the trigger can point `aria-controls` at it. */
+  id?: string
   className?: string
 }
 
@@ -30,6 +33,7 @@ export function Overlay({
   side = "bottom",
   width = 280,
   label,
+  id,
   className,
 }: OverlayProps) {
   const narrow = useIsNarrow()
@@ -37,7 +41,7 @@ export function Overlay({
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEscape(open, onClose)
-  useFocusTrap(panelRef, open && narrow)
+  useFocusTrap(panelRef, open, narrow)
 
   useEffect(() => {
     if (!open || narrow) return
@@ -55,16 +59,11 @@ export function Overlay({
         {trigger}
         {open && typeof document !== "undefined"
           ? createPortal(
-              <div className="fixed inset-0 z-50">
-                <button
-                  type="button"
-                  aria-hidden
-                  tabIndex={-1}
-                  onClick={onClose}
-                  className="absolute inset-0 bg-console-scrim animate-in fade-in duration-d2"
-                />
+              <div className="fixed inset-0 z-console-sheet">
+                <Scrim onDismiss={onClose} />
                 <div
                   ref={panelRef}
+                  id={id}
                   role="dialog"
                   aria-modal="true"
                   aria-label={label}
@@ -94,12 +93,15 @@ export function Overlay({
       {open ? (
         <div
           ref={panelRef}
+          id={id}
           role="dialog"
           aria-label={label}
           style={{ width }}
           className={cn(
-            "absolute z-40 max-h-[min(420px,60vh)] overflow-y-auto rounded-sm border border-console-line bg-console-surface p-token-3 shadow-console-3",
-            side === "bottom" ? "top-[calc(100%+4px)]" : "bottom-[calc(100%+4px)]",
+            "absolute z-console-popover max-h-[min(420px,60vh)] overflow-y-auto rounded-sm border border-console-line bg-console-surface p-token-3 shadow-console-3",
+            side === "bottom"
+              ? "top-[calc(100%+theme(spacing.token-1))]"
+              : "bottom-[calc(100%+theme(spacing.token-1))]",
             align === "start" ? "left-0" : "right-0",
             "animate-in fade-in zoom-in-95 duration-d1 ease-out",
             className,

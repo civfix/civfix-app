@@ -7,11 +7,18 @@ import { useT } from "@civfix/ui/i18n"
 
 import { Wordmark } from "@/components/brand"
 
+function cameFromThisSite(): boolean {
+  if (!document.referrer) return false
+  try {
+    return new URL(document.referrer).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
+
 /**
- * Shared chrome for the standalone (non-shell) views - today only /claim.
- *
- * A warm paper page with a slim top bar (Back + civfix wordmark) and a centered column. Every other
- * surface now renders inside the shared @civfix/ui AppShell, which supplies its own panel chrome.
+ * Chrome for the standalone pages that render outside the shared AppShell (claim, service record, guest
+ * cancel), which supplies its own panel chrome everywhere else.
  */
 export function DetailShell({
   children,
@@ -20,11 +27,8 @@ export function DetailShell({
   maxWidth = "max-w-xl",
 }: {
   children: React.ReactNode
-  /** Override the default localized "Back" label. */
   backLabel?: string
-  /** Override the default behavior (router.back with a home fallback). */
   onBack?: () => void
-  /** Tailwind max-width class for the content column. */
   maxWidth?: string
 }) {
   const router = useRouter()
@@ -32,8 +36,9 @@ export function DetailShell({
 
   const handleBack = React.useCallback(() => {
     if (onBack) return onBack()
-    // Prefer going back; fall back to the home map if there is no history (deep link / fresh tab).
-    if (typeof window !== "undefined" && window.history.length > 1) {
+    // Go back only to a civfix page. history.length also counts the external page (an email, a search
+    // result) the visitor came from, and Back must not send them off the site; those land on the map.
+    if (typeof window !== "undefined" && window.history.length > 1 && cameFromThisSite()) {
       router.back()
     } else {
       router.push("/")
@@ -42,7 +47,7 @@ export function DetailShell({
 
   return (
     <div className="min-h-[100dvh] bg-paper">
-      <header className="sticky top-0 z-20 border-b border-ink-5 bg-paper/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-detail-header border-b border-ink-5 bg-paper/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
           <button
             type="button"

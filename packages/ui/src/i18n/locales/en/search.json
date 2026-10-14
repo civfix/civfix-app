@@ -33,6 +33,10 @@
     "no_results": {
       "title": "No one found",
       "body": "No accounts match \"@{{handle}}\". Check the spelling or try a different handle."
+    },
+    "signed_out": {
+      "title": "Sign in to search people",
+      "body": "Searching for people by name or @handle needs an account."
     }
   }
 }

@@ -2,14 +2,16 @@
   "search": {
     "placeholder": "이름 또는 @handle로 검색",
     "a11y": "이름 또는 핸들로 사람 검색",
-    "clear_a11y": "검색 지우기"
+    "clear_a11y": "검색 지우기",
+    "more": "더 많은 사람 검색"
   },
   "row": {
     "open_a11y": "{{name}}, 프로필 보기"
   },
   "no_matches": {
     "title": "결과 없음",
-    "body": "\"{{query}}\"와 일치하는 사람이 없어요."
+    "body": "\"{{query}}\"와 일치하는 사람이 없어요.",
+    "body_partial": "지금까지 불러온 사람 중 \"{{query}}\"와 일치하는 사람이 없어요."
   },
   "error": {
     "title": "불러올 수 없음",

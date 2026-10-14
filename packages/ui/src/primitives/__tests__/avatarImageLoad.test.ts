@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 const AVATAR = readFileSync(new URL("../Avatar.tsx", import.meta.url), "utf8")
 
-describe("Avatar photo loading (issue #94)", () => {
+describe("Avatar photo loading", () => {
   it("passes a STABLE onError, because the RNW Image loader effect lists it in its deps", () => {
     expect(AVATAR).toContain(
       "const onPhotoError = useCallback(() => setFailedUrl(photoUrl ?? null), [photoUrl])",

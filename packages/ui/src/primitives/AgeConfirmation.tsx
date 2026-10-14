@@ -1,8 +1,9 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { makeThemedStyles, webCursor, webHover, focusRingProps, PRESSED_OPACITY } from "../theme"
+import { Text } from "../typography"
 import { useT } from "../i18n"
+import { CheckboxBox } from "./CheckboxBox"
 
 export interface AgeConfirmationProps {
   confirmed: boolean
@@ -11,7 +12,6 @@ export interface AgeConfirmationProps {
 
 export function AgeConfirmation({ confirmed, onConfirmedChange }: AgeConfirmationProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("onboarding-age")
   const affirmation = t("affirmation")
   const [under13, setUnder13] = React.useState(false)
@@ -41,9 +41,7 @@ export function AgeConfirmation({ confirmed, onConfirmedChange }: AgeConfirmatio
           state.pressed ? styles.rowPressed : null,
         ]}
       >
-        <View style={[styles.box, confirmed ? styles.boxChecked : null]}>
-          {confirmed ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
-        </View>
+        <CheckboxBox checked={confirmed} />
         <Text variant="body" style={styles.label}>
           {affirmation}
         </Text>
@@ -95,20 +93,6 @@ const useStyles = makeThemedStyles((t) => ({
   rowPressed: {
     opacity: 0.92,
   },
-  box: {
-    width: 22,
-    height: 22,
-    borderRadius: t.radius.xs,
-    borderWidth: 1.5,
-    borderColor: t.colors.borderStrong,
-    backgroundColor: t.colors.bg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  boxChecked: {
-    backgroundColor: t.colors.brand.bloom,
-    borderColor: t.colors.brand.bloom,
-  },
   label: {
     flex: 1,
   },
@@ -117,7 +101,7 @@ const useStyles = makeThemedStyles((t) => ({
     textDecorationLine: "underline",
   },
   underPressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   notice: {
     backgroundColor: t.colors.bgAlt,

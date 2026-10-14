@@ -1,41 +1,27 @@
 /**
- * Unit test for the ExpandedShell body-transition derivation (issue #60): the `transitionKey` + the
- * push/pop/replace `direction` the shell feeds into <BodyTransition>.
+ * The expanded shell's `transitionKey` and push/pop/replace `direction`, driven through real store
+ * transitions (push appends, back pops, selectView clears, openDetail replaces). The key derivation is
+ * replicated from ExpandedShell.tsx; the direction predicate is the real shared `directionForStackLengths`.
  *
- * Like backAffordance.test.ts, these are PURE predicates over the live nav store - no React Native
- * renderer (the package has no react-test-renderer / testing-library). The derivation in
- * ExpandedShell.tsx is:
- *   transitionKey = active ? `${kind}:${id ?? ""}` : isHome ? "home" : `view:${view}`
- *   direction     = stack longer than last render => "push"; shorter => "pop"; equal => "replace".
- * The direction predicate is now the REAL shared `directionForStackLengths` (useStackDirection.ts, used
- * by all three shells); the key derivation is still replicated. We drive both through real store
- * transitions (push appends, back pops, selectView clears, openDetail replaces), asserting each step.
- *
- * The second describe block below pins the .web seam's MOUNT invariant by source text (issue #94): the
- * wrapper used to swap between an UNKEYED settled child and two template-keyed animation layers, and
- * React reconciles unkeyed <-> keyed as delete+create in both directions - so one away-and-back trip
- * mounted the destination body twice and re-parented (therefore remounted) the body that was leaving.
- * Every mount re-ran the feed's refetch-if-stale, replayed the entrance animation and reset every
- * react-native-web <Image> to its blank IDLE state: the double reload + flicker the issue reports.
- * The seam now ping-pongs between two layers with CONSTANT keys, so each body keeps ONE React identity
- * across the animating <-> settled boundary. The RENDERED proof of that (mount/unmount counts driven
- * through A -> B -> A with fake timers) lives where a real React renderer exists:
- * apps/community-web/src/components/home/body-transition-mounts.dom.test.tsx. These assertions guard the
- * structure that proof depends on, in the package that owns the file.
+ * The second block pins the web seam's mount invariant by source text: swapping between an unkeyed settled
+ * child and keyed animation layers makes React delete and re-create the body on every away-and-back trip,
+ * re-running the feed's refetch, replaying the entrance and blanking every react-native-web <Image>. The
+ * seam ping-pongs between two constant-key layers so each body keeps one React identity. The rendered
+ * proof lives in apps/community-web/src/components/home/body-transition-mounts.dom.test.tsx.
  */
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
 import { useNavStore } from "../../nav"
 import type { DetailEntry, View as NavView } from "../../nav"
 import { directionForStackLengths as directionFor } from "../useStackDirection"
+import { surfaceKey } from "../bodyLayout"
+import { entryDiscriminator } from "../../nav/routes"
 
-/** Mirror of ExpandedShell.tsx's transitionKey derivation. */
+/** ExpandedShell.tsx's transitionKey derivation. */
 function transitionKey(active: DetailEntry | null, view: NavView): string {
-  const isHome = !active && view === "home"
-  return active ? `${active.kind}:${active.id ?? ""}` : isHome ? "home" : `view:${view}`
+  return surfaceKey(view, active)
 }
 
-/** Reset the singleton store to a clean home state in the EXPANDED layout (so push appends). */
 function resetExpanded(): void {
   useNavStore.setState({
     view: "home",
@@ -44,7 +30,7 @@ function resetExpanded(): void {
     snap: 0,
     query: "",
     mode: "expanded",
-    // See the nav store's origin invariant: a raw setState runs no reducer, so clear it explicitly.
+    // A raw setState runs no reducer, so the origin must be cleared explicitly.
     originView: null,
   })
 }
@@ -52,9 +38,9 @@ function resetExpanded(): void {
 beforeEach(resetExpanded)
 
 describe("ExpandedShell BodyTransition - transitionKey", () => {
-  it("keys home as 'home' (no active, home view)", () => {
+  it("keys home as 'view:home' (no active, home view)", () => {
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("home")
+    expect(transitionKey(s.active, s.view)).toBe("view:home")
   })
 
   it("keys a list view as 'view:<view>'", () => {
@@ -64,16 +50,16 @@ describe("ExpandedShell BodyTransition - transitionKey", () => {
     expect(transitionKey(s.active, s.view)).toBe("view:events")
   })
 
-  it("keys an open detail as '<kind>:<id>'", () => {
+  it("keys an open detail by the entry's full identity", () => {
     useNavStore.getState().push({ kind: "pin", id: "abc" })
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("pin:abc")
+    expect(transitionKey(s.active, s.view)).toBe(entryDiscriminator({ kind: "pin", id: "abc" }))
   })
 
-  it("keys an id-less detail as '<kind>:'", () => {
+  it("keys an id-less detail by its kind", () => {
     useNavStore.getState().push({ kind: "profile" })
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("profile:")
+    expect(transitionKey(s.active, s.view)).toBe(entryDiscriminator({ kind: "profile" }))
   })
 
   it("changes key when the active detail changes (drives an animation)", () => {
@@ -81,9 +67,21 @@ describe("ExpandedShell BodyTransition - transitionKey", () => {
     const first = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
     useNavStore.getState().push({ kind: "person", id: "b" })
     const second = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
-    expect(first).toBe("pin:a")
-    expect(second).toBe("person:b")
     expect(first).not.toBe(second)
+  })
+
+  it("changes key between two entities that share a kind and have no id (org slug, leaderboard geoid)", () => {
+    useNavStore.getState().push({ kind: "org", slug: "a" })
+    const first = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
+    useNavStore.getState().push({ kind: "org", slug: "b" })
+    const second = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
+    expect(first).not.toBe(second)
+    expect(transitionKey({ kind: "leaderboard", geoid: "06" }, "home")).not.toBe(
+      transitionKey({ kind: "leaderboard", geoid: "36" }, "home"),
+    )
+    expect(transitionKey({ kind: "announcement", id: "c", announcementId: "1" }, "home")).not.toBe(
+      transitionKey({ kind: "announcement", id: "c", announcementId: "2" }, "home"),
+    )
   })
 })
 
@@ -160,7 +158,7 @@ describe("ExpandedShell BodyTransition - direction (stack length delta)", () => 
 
 const WEB_SEAM = readFileSync(new URL("../BodyTransition.web.tsx", import.meta.url), "utf8")
 
-describe("BodyTransition.web - one stable React identity per body (issue #94)", () => {
+describe("BodyTransition.web - one stable React identity per body", () => {
   it("renders TWO layers with constant slot keys and nothing else", () => {
     expect(WEB_SEAM).toContain('const OTHER_SLOT: Record<SlotId, SlotId> = { a: "b", b: "a" }')
     expect(WEB_SEAM).toMatch(/\{renderLayer\("a"\)\}\s*\{renderLayer\("b"\)\}/)
@@ -213,15 +211,18 @@ describe("BodyTransition.web - one stable React identity per body (issue #94)", 
     expect(WEB_SEAM).toContain("const outgoingTransition = phase && flipped ? phase.outgoingTransition")
     expect(WEB_SEAM).toContain("const instant = prefersReducedMotion()")
     expect(WEB_SEAM).toContain("const SETTLE_FALLBACK_MS = IN_DURATION + 60")
-    expect(WEB_SEAM).toMatch(/fallbackRef\.current = setTimeout\([\s\S]*?SETTLE_FALLBACK_MS\)/)
-    expect(WEB_SEAM).toMatch(/outDropRef\.current = setTimeout\([\s\S]*?OUT_DURATION\)/)
+    expect(WEB_SEAM).toContain("fallbackMs: SETTLE_FALLBACK_MS,")
+    expect(WEB_SEAM).toMatch(/const outDrop = setTimeout\([\s\S]*?OUT_DURATION\)/)
+    expect(WEB_SEAM).toContain("return () => clearTimeout(outDrop)")
     expect(WEB_SEAM).toContain("onTransitionEnd")
   })
 
   it("creates an Animation ONLY in the render-phase update that increments nav, which its effect keys on", () => {
     expect(WEB_SEAM.match(/flipped: false,\s*\n?\s*outDropped: false/g)).toHaveLength(1)
     expect(WEB_SEAM).toContain("nav: state.nav + 1")
-    expect(WEB_SEAM).toContain("}, [state.nav])")
+    expect(WEB_SEAM).toContain("pendingNav: anim && !anim.flipped ? state.nav : null,")
+    expect(WEB_SEAM).toContain("const phaseNav = anim ? state.nav : null")
+    expect(WEB_SEAM).toContain("}, [phaseNav])")
   })
 
   it("leaves the inactive layer inert instead of letting it intercept the pointer", () => {

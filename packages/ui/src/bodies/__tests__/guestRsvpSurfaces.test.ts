@@ -6,7 +6,7 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 
 const detail = strip(read("../EventDetailBody.tsx"))
 const pill = strip(read("../../primitives/RsvpPill.tsx"))
-const sheet = strip(read("../../primitives/GuestRsvpSheet.tsx"))
+const sheet = strip(read("../host/registration/GuestRsvpSheet.tsx"))
 const modal = strip(read("../../primitives/ModalCardSheet.tsx"))
 
 describe("RsvpPill signed-out seam", () => {

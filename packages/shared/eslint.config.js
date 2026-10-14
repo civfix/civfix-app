@@ -1,11 +1,9 @@
 import eslint from "@eslint/js"
 import tseslint from "typescript-eslint"
 
-// Stage 0.7 (UI-unification): the @civfix/shared contract must stay framework-free. It must NEVER
-// import or re-export react / react-dom / react-native (or any react-native-* lib) or @civfix/ui
-// (or its subpaths). Those live only in @civfix/ui, which depends ON this package, never the reverse;
-// the backend pins @civfix/shared and must not be able to pull React/RN in through it. The
-// no-restricted-imports rule below (scoped to src) is the lint-time guard for that invariant.
+// The @civfix/shared contract must stay framework-free: never import or re-export react / react-dom /
+// react-native (or any react-native-* lib) or @civfix/ui. @civfix/ui depends ON this package, never the
+// reverse, and the backend pins @civfix/shared and must not be able to pull React/RN in through it.
 const FRAMEWORK_FREE_IMPORTS = {
   "no-restricted-imports": [
     "error",
@@ -30,6 +28,20 @@ const FRAMEWORK_FREE_IMPORTS = {
   ],
 }
 
+const TYPED_RULES = {
+  "@typescript-eslint/no-floating-promises": "error",
+  "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: true } }],
+  // A `default` branch is a deliberate catch-all; the rule only has to catch a switch that silently
+  // falls through to undefined when a union grows.
+  "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
+  "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "separate-type-imports" }],
+  "@typescript-eslint/no-unsafe-argument": "error",
+  "@typescript-eslint/no-unsafe-assignment": "error",
+  "@typescript-eslint/no-unsafe-call": "error",
+  "@typescript-eslint/no-unsafe-member-access": "error",
+  "@typescript-eslint/no-unsafe-return": "error",
+}
+
 export default tseslint.config(
   {
     ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.ts"],
@@ -42,8 +54,6 @@ export default tseslint.config(
       sourceType: "module",
     },
     rules: {
-      // No async work happens in this pure contract package, so this is off.
-      "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -56,7 +66,16 @@ export default tseslint.config(
     },
   },
   {
-    // Backend-isolation guard: ban UI/framework imports across the contract source tree.
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: TYPED_RULES,
+  },
+  {
     files: ["src/**/*.ts", "src/**/*.tsx"],
     rules: FRAMEWORK_FREE_IMPORTS,
   },

@@ -6,6 +6,7 @@ import {
   WaitlistStatusSchema,
   pageResponse,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import { PersonDTOSchema } from "../entities.js"
 import { AccessCodeSchema, MAX_PARTY_SIZE } from "./tickets.js"
 
@@ -53,10 +54,9 @@ export const LeaveEventWaitlistRequestSchema = z
   .strict()
 export type LeaveEventWaitlistRequest = z.infer<typeof LeaveEventWaitlistRequestSchema>
 
-const LeaveEventWaitlistResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type LeaveEventWaitlistResponse = z.infer<typeof LeaveEventWaitlistResponseObjectSchema>
+export type LeaveEventWaitlistResponse = z.infer<typeof OkResponseSchema>
 export const LeaveEventWaitlistResponseSchema: z.ZodType<LeaveEventWaitlistResponse, z.ZodTypeDef, unknown> =
-  LeaveEventWaitlistResponseObjectSchema
+  OkResponseSchema
 
 export const ListEventWaitlistRequestSchema = PaginationQuerySchema.extend({
   id: IdSchema,

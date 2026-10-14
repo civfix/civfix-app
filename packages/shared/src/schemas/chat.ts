@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { IdSchema, pageResponse } from "./common.js"
+import { IdSchema, MESSAGE_BODY_MAX, pageResponse, RoomKindSchema } from "./common.js"
 import { ChatMessageDTOSchema, PersonDTOSchema, ReactionEmojiSchema } from "./entities.js"
-import { MESSAGE_BODY_MAX, RoomKindSchema } from "../types/ws.js"
+import { MAX_MENTIONED_USERS, OkResponseSchema, PageLimitSchema } from "./internal-fields.js"
 
 
 export { ChatMessageDTOSchema, ChatMessageKindSchema } from "./entities.js"
@@ -23,7 +23,7 @@ export const rejectAroundWithBefore = (
 export const ChatHistoryQueryShape = z.object({
   before: IdSchema.optional(),
   around: IdSchema.optional(),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: PageLimitSchema,
 })
 export const ChatHistoryQuerySchema = ChatHistoryQueryShape.superRefine(rejectAroundWithBefore)
 export type ChatHistoryQuery = z.infer<typeof ChatHistoryQuerySchema>
@@ -69,7 +69,7 @@ export const MarkThreadReadRequestSchema = z
   .strict()
 export type MarkThreadReadRequest = z.infer<typeof MarkThreadReadRequestSchema>
 
-export const MarkThreadReadResponseSchema = z.object({ ok: z.literal(true) })
+export const MarkThreadReadResponseSchema = OkResponseSchema
 export type MarkThreadReadResponse = z.infer<typeof MarkThreadReadResponseSchema>
 
 
@@ -97,7 +97,7 @@ export const EditChatMessageRequestSchema = z
     threadId: IdSchema,
     messageId: IdSchema,
     body: z.string().min(1).max(MESSAGE_BODY_MAX),
-    mentionedUserIds: z.array(IdSchema).max(20).optional(),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).optional(),
   })
   .strict()
 export type EditChatMessageRequest = z.infer<typeof EditChatMessageRequestSchema>
@@ -108,7 +108,7 @@ export const EditMessageRequestSchema = z
     roomId: IdSchema,
     messageId: IdSchema,
     body: z.string().min(1).max(MESSAGE_BODY_MAX),
-    mentionedUserIds: z.array(IdSchema).max(20).optional(),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).optional(),
   })
   .strict()
 export type EditMessageRequest = z.infer<typeof EditMessageRequestSchema>
@@ -199,12 +199,17 @@ export type ToggleReportMessageReactionRequest = z.infer<
 export const PollRoomKindSchema = z.enum(["cleanup", "report", "group"])
 export type PollRoomKind = z.infer<typeof PollRoomKindSchema>
 
+export const POLL_QUESTION_MAX = 300
+export const POLL_OPTION_MAX = 100
+export const POLL_MIN_OPTIONS = 2
+export const POLL_MAX_OPTIONS = 10
+
 export const CreatePollRequestSchema = z
   .object({
     roomKind: PollRoomKindSchema,
     roomId: IdSchema,
-    question: z.string().min(1).max(300),
-    options: z.array(z.string().min(1).max(100)).min(2).max(10),
+    question: z.string().min(1).max(POLL_QUESTION_MAX),
+    options: z.array(z.string().min(1).max(POLL_OPTION_MAX)).min(POLL_MIN_OPTIONS).max(POLL_MAX_OPTIONS),
     allowMultiple: z.boolean().default(false),
     anonymous: z.boolean().default(true),
   })
@@ -214,7 +219,7 @@ export type CreatePollRequest = z.infer<typeof CreatePollRequestSchema>
 export const VotePollRequestSchema = z
   .object({
     messageId: IdSchema,
-    optionIdxs: z.array(z.number().int().min(0).max(9)).max(10),
+    optionIdxs: z.array(z.number().int().min(0).max(POLL_MAX_OPTIONS - 1)).max(POLL_MAX_OPTIONS),
   })
   .strict()
 export type VotePollRequest = z.infer<typeof VotePollRequestSchema>

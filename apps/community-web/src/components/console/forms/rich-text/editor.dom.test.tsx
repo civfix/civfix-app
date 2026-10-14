@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
@@ -39,6 +39,14 @@ function editor(): HTMLTextAreaElement {
 function currentValue(): string {
   return screen.getByTestId("value").textContent ?? ""
 }
+
+function onPlatform(platform: string) {
+  vi.spyOn(navigator, "platform", "get").mockReturnValue(platform)
+}
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe("RichTextEditor", () => {
   it("bolds the selection with the keyboard shortcut", async () => {
@@ -129,6 +137,50 @@ describe("RichTextEditor", () => {
     await user.click(area)
     await user.paste("[x](javascript:alert(1))")
     expect(document.querySelector("a[href^='javascript']")).toBeNull()
+  })
+
+  it("does not move the caret on the next keystroke after a command that changed nothing", async () => {
+    const user = userEvent.setup()
+    renderConsole(<Harness initial={"ab\n\ncd"} />, { withToasts: false })
+    const area = editor()
+    area.focus()
+    area.setSelectionRange(3, 3)
+    await user.click(screen.getByRole("button", { name: "editor.bullet_list" }))
+    expect(currentValue()).toBe("ab\n\ncd")
+    area.setSelectionRange(7, 7)
+    await user.keyboard("xy")
+    expect(currentValue()).toBe("ab\n\ncdxy")
+  })
+
+  it("names the formatting buttons without a baked-in shortcut and exposes both modifiers", () => {
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("aria-keyshortcuts")).toBe("Meta+B Control+B")
+  })
+
+  it("hints the Command shortcut in the button tooltip on Apple platforms", () => {
+    onPlatform("MacIntel")
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("title")).toBe("editor.bold (⌘B)")
+  })
+
+  it("hints the Ctrl shortcut in the button tooltip on other platforms", () => {
+    onPlatform("Win32")
+    renderConsole(<Harness />, { withToasts: false })
+    const bold = screen.getByRole("button", { name: "editor.bold" })
+    expect(bold.getAttribute("title")).toBe("editor.bold (editor.shortcut_ctrl(key=B))")
+    expect(screen.getByRole("button", { name: "editor.bullet_list" }).getAttribute("title")).toBe(
+      "editor.bullet_list",
+    )
+  })
+
+  it("describes the textarea with the remaining character count", () => {
+    renderConsole(<Harness initial="hi" />, { withToasts: false })
+    const area = editor()
+    const ids = (area.getAttribute("aria-describedby") ?? "").split(" ")
+    const text = ids.map((id) => document.getElementById(id)?.textContent ?? "").join(" ")
+    expect(text).toMatch(/editor\.remaining\(count=\d+\)/)
   })
 
   it("does not inject markup from an angle-bracket payload", async () => {

@@ -1,45 +1,40 @@
 /**
- * `createI18n()` — builds a configured i18next instance for the civfix app.
+ * `returnEmptyString: true`: an empty value is a deliberate empty sentence fragment (Korean word order
+ * moves the text of a `*_pre`/`*_lead` half into the other half), so it must render as "" rather than
+ * fall back to the English fragment. `i18n:check` rejects any empty value outside its allowlist, so an
+ * unauthored stub cannot hide behind this.
  *
- * Pure JS + React-free here (the React glue is in I18nProvider/useT), so the SAME instance config runs
- * under react-native-web (web) and React Native (mobile). Key choices:
- *   - `ns` = every catalog namespace (from the generated resources.ts), `defaultNS: "common"`.
- *   - `fallbackLng: "en"` — the source of truth; any missing key/locale falls back to English.
- *   - `returnNull: false` + `returnEmptyString: false` — so an empty stub value ("") is treated as
- *     "missing" and falls back to en (or the key), which is exactly what the 60 empty namespace stubs
- *     need until they are authored.
- *   - `interpolation.escapeValue: false` — React/RN already escape; i18next must not HTML-escape.
- *   - `supportedLngs` clamps to the four app locales (the host pre-clamps via resolveLocale anyway).
- *
- * The instance is created once per provider mount; the host drives the active language with
- * `instance.changeLanguage(locale)` (I18nProvider does this on mount + on locale prop change).
+ * `escapeValue: false`: React and RN already escape, so i18next must not HTML-escape.
  */
 import i18next, { type i18n as I18nInstance } from "i18next"
 import { initReactI18next } from "react-i18next"
-import { LocaleEnum, type SupportedLocale } from "@civfix/shared"
-import { namespaces, resources } from "./resources"
+import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/shared"
+import { initialResources } from "./bundledCatalogs"
+import { namespaces } from "./catalogs/namespaces"
 import { FALLBACK_LOCALE } from "./resolveLocale"
 
-/** The default namespace (the genuinely-shared strings: Continue/Back/Cancel/…). */
-export const defaultNS = "common"
+const defaultNS = "common"
 
 /**
- * Build a fresh, initialized i18next instance seeded at `locale`. The host passes a pre-clamped
- * `SupportedLocale`; `changeLanguage` is later called by the provider when the locale prop changes.
+ * Starts in `locale` only when its catalogs are bundled; otherwise in the fallback, because a language
+ * without catalogs would render English while claiming to be `locale`. I18nProvider loads the rest.
  */
 export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInstance {
   const instance = i18next.createInstance()
   void instance.use(initReactI18next).init({
-    lng: locale,
+    lng: locale in initialResources ? locale : FALLBACK_LOCALE,
     fallbackLng: FALLBACK_LOCALE,
-    supportedLngs: LocaleEnum.options,
+    supportedLngs: SupportedLocaleSchema.options,
     ns: namespaces as unknown as string[],
     defaultNS,
-    resources,
+    // A copy, because i18next adds loaded catalogs into the object it is given, and that object is a
+    // module singleton shared by every instance.
+    resources: { ...initialResources },
     returnNull: false,
-    returnEmptyString: false,
+    returnEmptyString: true,
     interpolation: { escapeValue: false },
-    // RN/web have no <Suspense> wiring here; resources are bundled (no async backend), so disable it.
+    // A catalog is added before its language is activated, so there is nothing to suspend on, and no
+    // <Suspense> boundary exists.
     react: { useSuspense: false },
   })
   return instance

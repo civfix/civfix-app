@@ -3,6 +3,7 @@ import { TextInput as RNTextInput } from "react-native"
 import { keyboardFocusStore, type KeyboardFocusNode } from "../shell/keyboardFocusStore"
 import { useKeyboardRevealGroup } from "../shell/keyboardRevealGroup"
 import { useKeyboardScrollScope } from "../shell/keyboardScrollScope"
+import { useMergedRef } from "../shell/useMergedRef"
 import type { TextInputProps } from "./TextInput.types"
 
 type FocusHandler = NonNullable<TextInputProps["onFocus"]>
@@ -20,14 +21,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
   const focusedRef = useRef(false)
   const contentHeightRef = useRef(0)
 
-  const setRefs = useCallback(
-    (node: RNTextInput | null) => {
-      nodeRef.current = node as KeyboardFocusNode | null
-      if (typeof ref === "function") ref(node)
-      else if (ref) (ref as React.MutableRefObject<RNTextInput | null>).current = node
-    },
-    [ref],
-  )
+  const setRefs = useMergedRef(nodeRef, ref)
 
   useEffect(
     () => () => {

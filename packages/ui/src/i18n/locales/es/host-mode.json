@@ -78,7 +78,8 @@
     "title": "Por tipo de entrada",
     "of": "{{registered}} de {{capacity}}",
     "waiting_one": "{{count}} en espera",
-    "waiting_other": "{{count}} en espera"
+    "waiting_other": "{{count}} en espera",
+    "meter_a11y": "{{name}}: {{registered}} de {{capacity}} inscritos"
   },
   "arrivals": {
     "title": "Llegadas",

@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query"
 import { isRetryableError } from "@/lib/errors"
-import { PERSISTED_QUERY_KEYS } from "@/query/cache-policy"
+import { PERSISTED_QUERY_KEYS } from "@/query/cachePolicy"
 
 export const queryClient = new QueryClient({
   defaultOptions: {

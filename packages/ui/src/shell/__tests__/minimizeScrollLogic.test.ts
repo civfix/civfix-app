@@ -1,9 +1,4 @@
-/**
- * TDD spec for minimizeScrollLogic - the pure hysteresis behind the Apple-Music tab-bar scroll-minimize.
- *
- * The reducer folds raw scroll offsets into a minimized boolean with directional-travel hysteresis so
- * momentum flings + rubber-band settle never chatter the bar. Pure number-in/number-out, no reanimated.
- */
+/** Momentum flings and the rubber-band settle must never chatter the bar. */
 import { describe, it, expect } from "vitest"
 import {
   initialMinimizeState,

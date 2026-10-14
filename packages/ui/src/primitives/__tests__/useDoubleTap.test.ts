@@ -1,8 +1,3 @@
-/**
- * Unit tests for the double-tap timing core behind `useDoubleTap` (P1 Task 1.2). The hook is a thin
- * React wrapper over `createTapController`, so the tap/timer contract is tested here without a renderer
- * (package convention: pure-logic vitest). Fake timers drive the 280ms window.
- */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { createTapController, DOUBLE_TAP_WINDOW_MS, type DoubleTapOptions } from "../useDoubleTap"
 

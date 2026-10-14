@@ -1,11 +1,5 @@
 import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import {
-  AccessibilityInfo,
-  Platform,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native"
+import { Platform, StyleSheet, useWindowDimensions, View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
   runOnJS,
@@ -24,8 +18,9 @@ import {
   pagePushConfig,
   pageSwipeCancelConfig,
   pageSwipeSettleConfig,
-  timingConfig,
 } from "./motionConfigs.native"
+import { timingConfig } from "../theme/motionTiming.native"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import { useNestedShellHost } from "./nestedShellHost"
 import { PageActiveProvider } from "./pageActive"
@@ -39,10 +34,9 @@ import {
   swipeBackDecision,
   type PageLayerPointerEvents,
   type PageLayerTokens,
-  type PageMotionTokens,
-  type PageTransitionTiming,
   type SwipeBackTokens,
 } from "./pageStackModel"
+import { PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING } from "./pageStackMotion"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { useKeyboardReserve } from "./useKeyboardReserve"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
@@ -53,21 +47,11 @@ const SETTLE_CFG = pageSwipeSettleConfig()
 const CANCEL_CFG = pageSwipeCancelConfig()
 const FADE_CFG = timingConfig(motion.bodyReplace)
 
-const TIMING: PageTransitionTiming = {
-  pushDuration: motion.pagePush.duration,
-  popDuration: motion.pagePop.duration,
-  fadeDuration: motion.bodyReplace.duration,
-}
 const SWIPE_TOKENS: SwipeBackTokens = {
   completeFraction: motion.pageCompleteFraction,
   completeVelocity: motion.pageCompleteVelocity,
 }
 const EDGE_WIDTH = motion.pageEdgeWidth
-const PAGE_MOTION: PageMotionTokens = {
-  travelRatio: motion.pageTravelRatio,
-  parallaxRatio: motion.pageParallaxRatio,
-  scrimOpacity: motion.pageScrimOpacity,
-}
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
 const DRAG_TOKENS = pageLayerTokens(PAGE_MOTION, false, true)
 const REDUCED_TOKENS = pageLayerTokens(PAGE_MOTION, true, false)
@@ -76,8 +60,6 @@ const ACTIVATE_X = 12
 const FAIL_Y = 14
 
 type LayerDriver = "front" | "exit" | "zero" | "one"
-
-let reduceMotionCache = false
 
 interface LeavingLayer {
   key: string
@@ -104,30 +86,12 @@ export function PageStack({
   const dragging = useSharedValue(0)
   const [leaving, setLeaving] = useState<LeavingLayer | null>(null)
 
-  const [reduceMotion, setReduceMotion] = useState(reduceMotionCache)
-  useLayoutEffect(() => {
-    let mounted = true
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => {
-        reduceMotionCache = !!enabled
-        if (mounted) setReduceMotion(!!enabled)
-      })
-      .catch(() => {})
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
-      reduceMotionCache = !!enabled
-      setReduceMotion(!!enabled)
-    })
-    return () => {
-      mounted = false
-      sub?.remove()
-    }
-  }, [])
+  const reduceMotion = useReducedMotion() === true
 
   const dropLeaving = useCallback((key: string) => {
     setLeaving((current) => (current && current.key === key ? null : current))
   }, [])
 
-  const signature = layerKeys.join("|")
   const prevKeysRef = useRef<readonly string[]>(layerKeys)
   const prevEntriesRef = useRef<readonly DetailEntry[]>(entries)
   const prevStackRef = useRef<readonly DetailEntry[]>(stack)
@@ -135,13 +99,14 @@ export function PageStack({
 
   useLayoutEffect(() => {
     const prevKeys = prevKeysRef.current
+    // The snapshot moves only with the layer keys: a re-render that keeps them must neither animate
+    // nor replace the entries the retained leaving layer will render.
+    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return
     const prevEntries = prevEntriesRef.current
     const prevStack = prevStackRef.current
     prevKeysRef.current = layerKeys
     prevEntriesRef.current = entries
     prevStackRef.current = stack
-
-    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return
 
     const direction =
       layerKeys.length > prevKeys.length
@@ -168,7 +133,7 @@ export function PageStack({
       return
     }
 
-    const plan = pageTransitionPlan(direction, reduceMotion, TIMING)
+    const plan = pageTransitionPlan(direction, reduceMotion, PAGE_TIMING)
     dragging.value = 0
 
     if (plan.retainLeaving && goneKey && goneEntry) {
@@ -192,7 +157,7 @@ export function PageStack({
       fade.value = 0
       fade.value = withTiming(1, FADE_CFG)
     }
-  }, [signature])
+  }, [dragging, dropLeaving, entries, exit, fade, front, layerKeys, reduceMotion, stack])
 
   const nestedInNativeStack = useNestedShellHost()
   const leading = detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false })
@@ -415,11 +380,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
-  header: {
-    flexShrink: 0,
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
+  header: PAGE_HEADER_STYLE,
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: t.colors.shadowColor,

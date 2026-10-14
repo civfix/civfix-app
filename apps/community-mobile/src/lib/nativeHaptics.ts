@@ -1,17 +1,23 @@
 import * as Haptics from "expo-haptics"
 import type { HapticsCapability } from "@civfix/ui/capabilities"
 
+// Haptics are optional feedback: a device without a haptic engine, or with haptics off, rejects, and
+// that must never reach the action that asked for the tap.
+function ignoreRejection(feedback: Promise<void>): void {
+  feedback.catch(() => undefined)
+}
+
 export const nativeHaptics: HapticsCapability = {
   selection(): void {
-    void Haptics.selectionAsync().catch(() => {})
+    ignoreRejection(Haptics.selectionAsync())
   },
   impactLight(): void {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+    ignoreRejection(Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light))
   },
   success(): void {
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
+    ignoreRejection(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success))
   },
   error(): void {
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {})
+    ignoreRejection(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error))
   },
 }

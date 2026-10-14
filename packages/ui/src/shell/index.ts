@@ -29,7 +29,6 @@ export type {
   SwipeBackDecision,
   SwipeBackTokens,
 } from "./pageStackModel"
-export { SearchHeader } from "./SearchHeader"
 export type { SearchHeaderProps } from "./SearchHeader.types"
 export { DetailBar } from "./DetailBar"
 export type { DetailBarProps } from "./DetailBar"
@@ -69,6 +68,7 @@ export {
   EXPANDED_MIN_WIDTH,
 } from "./expandedFramePlan"
 export type { ExpandedFrame, ExpandedFrameInput } from "./expandedFramePlan"
+export { shellOcclusionLeft } from "./shellOcclusion"
 export { writeOcclusionLeft, clearOcclusionLeft } from "./occlusionVar"
 export { useSearchBarStore } from "./searchBarStore"
 export type { SearchBarState } from "./searchBarStore"
