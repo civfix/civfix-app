@@ -99,6 +99,23 @@ export const ReportStatusSchema = z.enum([
 ])
 export type ReportStatus = z.infer<typeof ReportStatusSchema>
 
+/**
+ * The statuses in which a report with public visibility is visible to non-owners; `submitted`, `held`
+ * and `rejected` never are.
+ */
+export const PUBLIC_REPORT_STATUSES: readonly ReportStatus[] = [
+  "published",
+  "acknowledged",
+  "in_progress",
+  "resolved",
+]
+
+/**
+ * The public statuses in which a report still takes Me too confirmations; a `resolved` report keeps
+ * its count but takes no new ones.
+ */
+export const OPEN_REPORT_STATUSES: readonly ReportStatus[] = ["published", "acknowledged", "in_progress"]
+
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
   submitted: "Submitted",
   held: "Under review",

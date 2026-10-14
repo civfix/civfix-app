@@ -22,6 +22,7 @@ function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
     status: "published",
     lat: LA.lat,
     lng: LA.lng,
+    confirmCount: 0,
     ...over,
   }
 }
