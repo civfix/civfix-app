@@ -46,10 +46,13 @@ export function CaptureStep({ mode }: { mode: LayoutMode }) {
       setHint(null)
       try {
         const captured = await produce()
-        if (captured) {
-          if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)
-          else addCapture(captured)
+        if (!captured) return
+        if (await camera.exceedsVideoLimits?.(captured)) {
+          setHint(t("common:media.video_limits"))
+          return
         }
+        if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)
+        else addCapture(captured)
       } catch {
         setHint(t("capture.camera_error"))
       } finally {
@@ -57,7 +60,7 @@ export function CaptureStep({ mode }: { mode: LayoutMode }) {
         setBusy(false)
       }
     },
-    [startFromCapture, addCapture, t],
+    [camera, startFromCapture, addCapture, t],
   )
 
   const run = useCallback(

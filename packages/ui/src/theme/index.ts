@@ -139,6 +139,7 @@ export {
   webCursorPointer,
   webCursorColResize,
   webSelectableText,
+  webBreakAnywhere,
   webNoSelect,
   webInputReset,
   webTransition,

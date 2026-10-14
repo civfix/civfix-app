@@ -74,6 +74,15 @@ export const webCursorColResize: ViewStyle = isWeb
 /** RNW defaults Text to `user-select: none`, so body content opts back in to be copyable. */
 export const webSelectableText: TextStyle = isWeb ? ({ userSelect: "text" } as TextStyle) : {}
 
+/**
+ * Browsers never break inside a word, so a long unbreakable run (a name, a handle, a URL) sets the text's
+ * min-content width and pushes a content-sized container past the viewport. `anywhere` (unlike
+ * `break-word`) also lowers that min-content width; RN Text on native already breaks an overlong word.
+ */
+export const webBreakAnywhere: TextStyle = isWeb
+  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)
+  : {}
+
 /** Button label Text inside a Pressable can inherit selection in some browsers despite RNW's default. */
 export const webNoSelect: TextStyle = isWeb ? ({ userSelect: "none" } as TextStyle) : {}
 

@@ -20,7 +20,8 @@
     "video_unavailable": "Video unavailable",
     "remove_attachment_n_one": "Remove attachment {{index}} of {{count}}",
     "remove_attachment_n_other": "Remove attachment {{index}} of {{count}}",
-    "uploading": "Uploading"
+    "uploading": "Uploading",
+    "video_limits": "Videos can be up to 10 seconds and 1080p. Trim it, or record it in the civfix app."
   },
   "verification_code": {
     "label": "Verification code",

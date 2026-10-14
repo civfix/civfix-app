@@ -7,7 +7,7 @@ import { MediaPreview } from "../../primitives"
 import { useLightbox } from "../../lightbox"
 import { toLightboxItems } from "../../lightbox/lightboxItems"
 import { useT } from "../../i18n"
-import { clampGallerySelection, partitionGalleryMedia } from "./galleryModel"
+import { clampGallerySelection, partitionGalleryMedia, refusedGalleryTiles } from "./galleryModel"
 import { GALLERY_ASPECT_RATIO, useGalleryStyles } from "./galleryStyles"
 import { StatusTile } from "./StatusTile"
 import { useReportDetailSharedStyles } from "./sharedStyles"
@@ -25,6 +25,25 @@ export function ReportGallery({
   const { t } = useT("report-detail")
   const pending = report.mediaPending ?? 0
   const { ready, ownerPending, ownerFailed, tileCount } = partitionGalleryMedia(report.media, pending)
+  const refused = refusedGalleryTiles({
+    ready: ready.length,
+    processing: ownerPending.length + pending,
+    refused: report.mediaRejected ?? 0,
+  })
+  const refusedTiles = Array.from({ length: refused.strip }, (_, i) => (
+    <StatusTile key={`refused-${i}`} kind="rejected" variant="thumb" />
+  ))
+  const refusedStrip =
+    refusedTiles.length > 0 ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.strip}
+        style={styles.stripScroll}
+      >
+        {refusedTiles}
+      </ScrollView>
+    ) : null
 
   const { open } = useLightbox()
   const [selected, setSelected] = useState(0)
@@ -42,6 +61,7 @@ export function ReportGallery({
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
             <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
           </View>
+          {refusedStrip}
         </View>
       )
     }
@@ -50,6 +70,14 @@ export function ReportGallery({
       return (
         <View style={styles.gallery}>
           <StatusTile kind={first.status === "rejected" ? "rejected" : "held"} variant="hero" />
+        </View>
+      )
+    }
+    if (refused.hero) {
+      return (
+        <View style={styles.gallery}>
+          <StatusTile kind="rejected" variant="hero" />
+          {refusedStrip}
         </View>
       )
     }
@@ -89,7 +117,7 @@ export function ReportGallery({
         ) : null}
       </View>
 
-      {tileCount > 1 ? (
+      {tileCount + refused.strip > 1 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -139,6 +167,7 @@ export function ReportGallery({
           {Array.from({ length: pending }, (_, i) => (
             <StatusTile key={`pending-${i}`} kind="processing" variant="thumb" />
           ))}
+          {refusedTiles}
         </ScrollView>
       ) : null}
     </View>

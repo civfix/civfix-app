@@ -20,7 +20,8 @@
     "video_unavailable": "Video nicht verfügbar",
     "remove_attachment_n_one": "Anhang {{index}} von {{count}} entfernen",
     "remove_attachment_n_other": "Anhang {{index}} von {{count}} entfernen",
-    "uploading": "Wird hochgeladen"
+    "uploading": "Wird hochgeladen",
+    "video_limits": "Videos dürfen bis zu 10 Sekunden lang sein und höchstens 1080p haben. Kürze das Video oder nimm es in der civfix-App auf."
   },
   "verification_code": {
     "label": "Bestätigungscode",

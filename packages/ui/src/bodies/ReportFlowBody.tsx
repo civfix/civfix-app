@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, motion, useTheme, useLayoutMode, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { KeyboardPinnedFooter, KeyboardPinnedSurface } from "../primitives"
+import { KeyboardPinnedFooter, KeyboardPinnedSurface, useToast } from "../primitives"
 import { PortraitMapPickStep } from "../map"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -60,7 +60,9 @@ export function ReportFlowBody() {
   const fromComposer = usePostComposerStore((s) => s.claimedCreate) === "report"
   const mode = useLayoutMode()
   const haptics = useHaptics()
-  const Viewfinder = useCamera().Viewfinder ?? null
+  const camera = useCamera()
+  const Viewfinder = camera.Viewfinder ?? null
+  const toast = useToast()
   const stackNonEmpty = useNavStore((s) => s.stack.length > 0)
   const runActive = useNavStore((s) => s.view === "report")
 
@@ -174,11 +176,22 @@ export function ReportFlowBody() {
     })
   }, [stepOrder])
 
-  const onViewfinderCaptured = useCallback((media: CapturedMedia) => {
-    const store = useDraftReportStore.getState()
-    if (captureSeedsNewReport(store.draft)) store.startFromCapture(media)
-    else store.addCapture(media)
-  }, [])
+  const landViewfinderCapture = useCallback(
+    async (media: CapturedMedia) => {
+      if (await camera.exceedsVideoLimits?.(media)) {
+        toast.show(t("common:media.video_limits"), { variant: "error" })
+        return
+      }
+      const store = useDraftReportStore.getState()
+      if (captureSeedsNewReport(store.draft)) store.startFromCapture(media)
+      else store.addCapture(media)
+    },
+    [camera, toast, t],
+  )
+  const onViewfinderCaptured = useCallback(
+    (media: CapturedMedia) => void landViewfinderCapture(media),
+    [landViewfinderCapture],
+  )
 
   const { pickPoint, pickPin, pickCenter, openPicker, onPickConfirm, onPickCancel, pickLayerOpen, pickLayerMounted } =
     usePickLayer({

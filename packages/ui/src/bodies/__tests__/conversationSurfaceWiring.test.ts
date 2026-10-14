@@ -9,6 +9,8 @@ const code = (source: string): string =>
 const CONVERSATION = code(read("../ConversationBody.tsx"))
 const MESSAGE_ACTIONS = code(read("../conversation/useChatMessageActions.ts"))
 const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
+const COMPOSER = code(read("../conversation/ConversationComposer.tsx"))
+const STYLES = code(read("../conversation/composerStyles.ts"))
 const COMPOSER_ATTACHMENTS = code(read("../../primitives/useComposerAttachments.ts"))
 const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"].map((file) => code(read(file))).join("\n")
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
@@ -75,6 +77,14 @@ describe("failures are surfaced, not swallowed", () => {
     )
     expect(COMPOSER_ATTACHMENTS).toMatch(/if \(uploading\) \{\s*setAttachError\(/)
     expect(COMPOSER_ATTACHMENTS).toMatch(/if \(attachments\.length >= maxAttachments\) \{\s*setAttachError\(/)
+  })
+
+  it("an attachment error is shown in full, never clamped", () => {
+    const caption = COMPOSER.match(/<Text[^>]*>\s*\{att\.attachError\}/)
+    expect(caption, "the attach-error caption").not.toBeNull()
+    expect(caption![0]).not.toMatch(/numberOfLines/)
+    expect(caption![0], "native measures a row child at the full row width").toMatch(/style=\{styles\.composerAttachErrorText\}/)
+    expect(STYLES).toMatch(/composerAttachErrorText: \{ flexShrink: 1 \}/)
   })
 })
 

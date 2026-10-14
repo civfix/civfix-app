@@ -16,6 +16,13 @@ export function toastDurationMs(
   return variant === "error" ? TOAST_ERROR_MS : TOAST_QUIET_MS
 }
 
+export type ToastPlacement = "root" | "sheet"
+
+// An open sheet covers the tab bar, so a toast inside it clears only the safe area and the keyboard.
+export function toastDockFootprint(placement: ToastPlacement, tabBarHeight: number): number {
+  return placement === "sheet" ? 0 : tabBarHeight
+}
+
 export function toastBottomOffset(
   dockFootprint: number,
   safeAreaBottom: number,

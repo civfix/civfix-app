@@ -79,6 +79,7 @@ export const useComposerStyles = makeThemedStyles((t) => {
       marginBottom: t.space["2"],
     },
     composerAttachError: inlineRow,
+    composerAttachErrorText: { flexShrink: 1 },
     composerNotice: inlineRow,
     iconBtn: roundControl,
     iconBtnDisabled: {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { LinkedEventRef } from "@civfix/shared"
 import { linkedEventToCleanup } from "../reportDetailModel"
-import { clampGallerySelection } from "../reportDetail/galleryModel"
+import { clampGallerySelection, refusedGalleryTiles } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
 import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"
@@ -18,6 +18,54 @@ describe("report gallery selection", () => {
 
   it("falls back to 0 when nothing is ready", () => {
     expect(clampGallerySelection(3, 0)).toBe(0)
+  })
+})
+
+describe("report gallery: the reporter's refused items", () => {
+  const SRC = reportDetailSource().replace(/\/\*[\s\S]*?\*\//g, "")
+
+  it("puts the refused tile in the hero, alone, when one item was refused and nothing is ready or processing", () => {
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 1 })).toEqual({ hero: true, strip: 0 })
+  })
+
+  it("adds a strip tile per refused item under the hero when several were refused and nothing else", () => {
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 3 })).toEqual({ hero: true, strip: 3 })
+  })
+
+  it("gives each refused item a strip tile when something is ready", () => {
+    expect(refusedGalleryTiles({ ready: 2, processing: 0, refused: 2 })).toEqual({ hero: false, strip: 2 })
+  })
+
+  it("gives each refused item a strip tile when something is still processing", () => {
+    expect(refusedGalleryTiles({ ready: 0, processing: 1, refused: 1 })).toEqual({ hero: false, strip: 1 })
+    expect(refusedGalleryTiles({ ready: 1, processing: 1, refused: 2 })).toEqual({ hero: false, strip: 2 })
+  })
+
+  it("adds nothing for everyone else, whose count is 0", () => {
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 0 })).toEqual({ hero: false, strip: 0 })
+    expect(refusedGalleryTiles({ ready: 3, processing: 1, refused: 0 })).toEqual({ hero: false, strip: 0 })
+  })
+
+  it("builds the tiles from the report's count with the existing rejected StatusTile", () => {
+    expect(SRC).toMatch(/refusedGalleryTiles\(\{[\s\S]*?refused: report\.mediaRejected \?\? 0,/)
+    expect(SRC).toMatch(
+      /Array\.from\(\{ length: refused\.strip \}, \(_, i\) => \(\s*<StatusTile key=\{`refused-\$\{i\}`\} kind="rejected" variant="thumb" \/>/,
+    )
+    expect(SRC).toMatch(
+      /if \(refused\.hero\) \{\s*return \(\s*<View style=\{styles\.gallery\}>\s*<StatusTile kind="rejected" variant="hero" \/>\s*\{refusedStrip\}\s*<\/View>/,
+    )
+  })
+
+  it("counts the strip tiles toward showing the strip and renders them after the other tiles", () => {
+    expect(SRC).toContain("{tileCount + refused.strip > 1 ? (")
+    expect(SRC).toMatch(/<StatusTile key=\{`pending-\$\{i\}`\} kind="processing" variant="thumb" \/>\s*\)\)\}\s*\{refusedTiles\}/)
+  })
+
+  it("shows the refused strip under the processing block when nothing is ready yet", () => {
+    expect(SRC).toMatch(
+      /const refusedStrip =\s*refusedTiles\.length > 0 \? \([\s\S]*?style=\{styles\.stripScroll\}[\s\S]*?\{refusedTiles\}\s*<\/ScrollView>\s*\) : null/,
+    )
+    expect(SRC).toMatch(/styles\.processingBody[\s\S]*?<\/View>\s*\{refusedStrip\}\s*<\/View>/)
   })
 })
 

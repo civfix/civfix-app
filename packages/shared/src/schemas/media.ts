@@ -8,6 +8,10 @@ export type { MediaDTO } from "./entities.js"
 export const MAX_IMAGE_BYTES = 15 * 1024 * 1024
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024
 
+// The video input the media worker accepts; clients check against these before uploading.
+export const MAX_VIDEO_SECONDS = 10
+export const MAX_VIDEO_LONG_EDGE = 1920
+
 export const CreateMediaUploadRequestSchema = z
   .object({
     kind: MediaKindSchema,

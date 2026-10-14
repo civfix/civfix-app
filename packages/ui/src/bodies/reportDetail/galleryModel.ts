@@ -31,3 +31,18 @@ export function clampGallerySelection(selected: number, readyCount: number): num
   if (!Number.isFinite(selected) || selected < 0) return 0
   return Math.min(Math.trunc(selected), readyCount - 1)
 }
+
+/**
+ * Where the reporter's refused items go. The server only counts them for the reporter (and never counts held
+ * media), so this is 0 for everyone else and the gallery renders as before. The refused tile takes the hero only
+ * when nothing ready or processing can. Each refused item gets one strip tile whenever the strip shows.
+ */
+export function refusedGalleryTiles(counts: { ready: number; processing: number; refused: number }): {
+  hero: boolean
+  strip: number
+} {
+  if (counts.refused === 0) return { hero: false, strip: 0 }
+  // Like the ready case, the strip lists the hero's item too and shows only when there is more than one tile.
+  if (counts.ready === 0 && counts.processing === 0) return { hero: true, strip: counts.refused > 1 ? counts.refused : 0 }
+  return { hero: false, strip: counts.refused }
+}

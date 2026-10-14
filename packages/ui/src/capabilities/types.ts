@@ -38,6 +38,10 @@ export interface CameraCapability {
   capture(opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null>
   pickFromLibrary(): Promise<CapturedMedia | null>
   acceptFile?(item: unknown): Promise<CapturedMedia | null>
+  // Screens a picked video against the worker's limits before it is compressed or uploaded, resolving false
+  // when its metadata cannot be read. Web checks length and frame size, since the browser uploads the
+  // original file; mobile checks only length, since it compresses every video to a 1280 long edge first.
+  exceedsVideoLimits?(media: CapturedMedia): Promise<boolean>
   prepareUpload(media: CapturedMedia): Promise<PreparedUpload>
 }
 

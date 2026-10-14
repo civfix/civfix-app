@@ -4,7 +4,7 @@ import { useApi } from "../data"
 import { uploadMediaId } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
 import type { CapturedMedia } from "../capabilities"
-import { useT } from "../i18n"
+import { useT, type Translate } from "../i18n"
 import { nextAttachmentId, uploadAttachErrorKey, type AttachErrorKey } from "./composerAttachmentId"
 
 export interface PendingAttachment {
@@ -27,10 +27,8 @@ export interface ComposerAttachments {
   reset: () => void
 }
 
-interface AttachErrorState {
-  key: AttachErrorKey
-  params?: Record<string, number>
-}
+// The video-limits copy is shared with the report wizard, so it lives under `media`, not `attach_error`.
+type AttachErrorState = { key: AttachErrorKey; params?: Record<string, number> } | { key: "video_limits" }
 
 export function useComposerAttachments(maxAttachments = 5): ComposerAttachments {
   const { t } = useT()
@@ -66,6 +64,10 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
         return
       }
       if (!picked) return
+      if (await camera.exceedsVideoLimits?.(picked)) {
+        setAttachError({ key: "video_limits" })
+        return
+      }
       const local: PendingAttachment = { id: nextAttachmentId(), uri: picked.uri, kind: picked.kind, posterUri: null }
       setAttachments((prev) => [...prev, local].slice(0, maxAttachments))
       setUploading(true)
@@ -106,10 +108,16 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
     canAttach,
     uploading,
     allUploaded,
-    attachError: attachError ? t(`attach_error.${attachError.key}`, attachError.params) : null,
+    attachError: attachErrorText(attachError, t),
     onAttach,
     onCapture,
     removeAttachment,
     reset,
   }
+}
+
+function attachErrorText(attachError: AttachErrorState | null, t: Translate): string | null {
+  if (!attachError) return null
+  if (attachError.key === "video_limits") return t("media.video_limits")
+  return t(`attach_error.${attachError.key}`, attachError.params)
 }

@@ -290,6 +290,9 @@ export const ReportDTOSchema = z.object({
   following: z.boolean(),
   media: z.array(MediaDTOSchema),
   mediaPending: z.number().int().nonnegative().default(0),
+  // Only the reporter is told how many of their items were refused; every other viewer gets 0,
+  // and media held for moderation is never counted, so automated flagging is not revealed.
+  mediaRejected: z.number().int().nonnegative().default(0),
   timeline: z.array(ReportTimelineEntryDTOSchema),
   linkedEvents: z.array(LinkedEventRefSchema).default([]),
   discussionCount: z.number().int().nonnegative().optional(),
