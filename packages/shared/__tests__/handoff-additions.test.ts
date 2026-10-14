@@ -92,7 +92,7 @@ describe("UserMessageItemDTOSchema removedBy", () => {
   })
 })
 
-// issue-tracker#154 dropped `flagged` before 0.59.0 published: the backend toggles and ignored it.
+// issue-tracker#154 dropped `flagged` before 0.60.0 published: the backend toggles and ignored it.
 describe("flag requests", () => {
   const schemas = [FlagEventRequestSchema, FlagReportRequestSchema, FlagUserRequestSchema]
 
@@ -223,7 +223,7 @@ describe("HomeSummaryResponseSchema degraded", () => {
   })
 })
 
-// issue-tracker#154 dropped the client idempotencyKey before 0.59.0 published: the backend dedupes
+// issue-tracker#154 dropped the client idempotencyKey before 0.60.0 published: the backend dedupes
 // walk-ups on a server time bucket and ignored it.
 describe("CreateWalkupRegistrationRequestSchema", () => {
   const walkup = { id: UUID, name: "Rosa" }

@@ -51,9 +51,9 @@ corrected in 0.52.0 to match the code; it previously described `infrastructure -
 and "Overgrown vegetation" to its RECYCLING contact is an open product decision - changing it is a
 contract change with a category backfill, like 0.20.0's `encampment` split.
 
-A record carries no routing. Until 0.59.0 each entry also held a `gov` name and email (placeholder Los
+A record carries no routing. Until 0.60.0 each entry also held a `gov` name and email (placeholder Los
 Angeles fallback routing from Phase 1), with a `WEB_REPORT_TYPE_BY_ID` lookup and a
-`webReportTypeToCategory` helper beside the array; nothing read any of them, and 0.59.0 removed all
+`webReportTypeToCategory` helper beside the array; nothing read any of them, and 0.60.0 removed all
 three together with the `GovTarget` type (§59). Routing comes only from the `jurisdictions` table
 resolved from a pin's PostGIS-derived GEOID; when a jurisdiction has no saved contact, a discovery
 task is queued. `WEB_REPORT_TYPES` is the single source of truth, exposed as the array and its
@@ -815,7 +815,7 @@ is no analytics SDK, no cookie, no identifier, and no per-person series anywhere
   all gated on the SAME `totalPublishable`, because they are all the same cut at the end of the same
   chain; a KPI gated only by `suppressCount` would hand back what the series just withheld. The same
   interval rule gates the total of `arrivalsCurve`. (`cumulativeSeries`, a wrapper over the closure,
-  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.59.0, §59; the
+  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.60.0, §59; the
   cumulative invariant tests now run against `seriesClosure().cumulative`, and the hourly tests went
   with the removed code.)
 - **A breakdown yields to the number it partitions; the KPI never yields to the breakdown.**
@@ -1437,7 +1437,7 @@ This retires the "geographic centre of the contiguous US" (39.8283, -98.5795) fr
 
 Registry count 344 → 345.
 
-**`ipLocate()` (and its internal `GEOJS_URL` endpoint, `src/geocode.ts`) was deprecated in 0.47.0 and removed in 0.59.0 (§59).** It called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint gives first-party. The consumer plane had no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). Nothing in civfix-backend, civfix-admin or the gov plane ever imported it. The web and mobile guard tests that fail the build on a reintroduced `ipLocate` import stay.
+**`ipLocate()` (and its internal `GEOJS_URL` endpoint, `src/geocode.ts`) was deprecated in 0.47.0 and removed in 0.60.0 (§59).** It called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint gives first-party. The consumer plane had no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). Nothing in civfix-backend, civfix-admin or the gov plane ever imported it. The web and mobile guard tests that fail the build on a reintroduced `ipLocate` import stay.
 
 ## 46. Platform-processed donations removed; a donation link is an external URL (0.48.0)
 
@@ -1811,7 +1811,7 @@ not computed it yet and a client that never reads it both still parse.
 `hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
 (TS7056), so at the time a new group (not a new key on `coreEndpoints`) was how the registry grew. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
-`test/unit/route-coverage.test.ts` moves to 324. **Superseded in 0.59.0 (§59):** the registry is split
+`test/unit/route-coverage.test.ts` moves to 324. **Superseded in 0.60.0 (§59):** the registry is split
 into one file per domain under `src/client/endpoints/`, and each group is typed as the intersection of
 those files' `typeof`s, so the declaration never inlines one huge object type. A new endpoint goes into
 its domain's file; the "new group because of TS7056" rule no longer applies.
@@ -2042,7 +2042,7 @@ an already published reply is a no-op that writes no second audit row; a thread 
 is refused with CONFLICT because there is nowhere public to publish to.
 
 **Registry.** The two endpoints are a fifth group, `adminInboxEndpoints`, spread into `endpoints` beside
-`adminReportChatEndpoints` for the TS7056 reason §52 gave (since 0.59.0 both live in per-domain files,
+`adminReportChatEndpoints` for the TS7056 reason §52 gave (since 0.60.0 both live in per-domain files,
 §59). The registry moves 331 to 333, 106 of them under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
 0.57.0 for the endpoints and the new fields, and civfix-admin adopts it for the unified Inbox and the
 review action; `services/media-worker` bumps alongside the api and civfix-govt-web with the routine
@@ -2102,7 +2102,7 @@ civfix-admin adopts it for the Hours tab. civfix-app's web and mobile read `cred
 adoption step. civfix-govt-web reads nothing new and stays on its tokens-only `^0.24.2` pin; closing that gap is a
 separate, still-open decision. No seam or fake changes.
 
-## 59. Campaign contract cleanup: unused exports removed, limits and shared helpers exported (0.59.0)
+## 59. Campaign contract cleanup: unused exports removed, limits and shared helpers exported (0.60.0)
 
 The civfix-app cleanup campaign touched `packages/shared` in 36 commits across its PRs 3 to 14. They
 ship as one minor so every registry consumer adopts once. No endpoint is added or removed and no
@@ -2209,7 +2209,7 @@ key order of `Object.keys(endpoints)` moved. §58's `adminUserHoursEndpoints` li
 (`endpoints/admin/users.ts`) and stays its own exported group spread into `endpoints`.
 
 **Delivery set (§4.2, no consumer left behind).** civfix-backend `services/api` and
-`services/media-worker` and civfix-admin `apps/admin` move to `^0.59.0` (range edit and lockfile;
+`services/media-worker` and civfix-admin `apps/admin` move to `^0.60.0` (range edit and lockfile;
 no code change is required, since none imports a removed name). civfix-govt-web stays on `^0.24.2`
 for tokens only, the open decision CLAUDE.md §4.2 records; nothing it uses was removed. civfix-app's
 web and mobile are workspace consumers and already run this contract.
@@ -2225,7 +2225,7 @@ this release does not attempt them; each needs its own coordinated PR:
   H-004): a request tightening, not additive.
 - `flagged` on `FlagEventRequest` / `FlagReportRequest` / `FlagUserRequest` (set the marker instead
   of toggling it) and a client `idempotencyKey` on `CreateWalkupRegistrationRequest`: dropped before
-  0.59.0 published (issue-tracker#154). The backend accepted both and ignored them, so a client that
+  0.60.0 published (issue-tracker#154). The backend accepted both and ignored them, so a client that
   sent `flagged: true` would still have toggled an already-flagged item off. A new field on a strict
   request ships with the backend change that implements it; an older backend answers VALIDATION.
 - Enum growth: a `DeliveryFailureKind` value, a terminal conflict code, `RegisterOutcome`
