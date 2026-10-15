@@ -12,7 +12,9 @@
     "mark_resolved": "Als gelöst markieren",
     "reopen": "Meldung wieder öffnen",
     "mark_resolved_a11y": "Diese Meldung als gelöst markieren",
-    "reopen_a11y": "Diese Meldung wieder öffnen"
+    "reopen_a11y": "Diese Meldung wieder öffnen",
+    "repost": "Reposten",
+    "repost_a11y": "Diese Meldung reposten"
   },
   "title_menu": {
     "options_a11y": "Meldungsoptionen",
