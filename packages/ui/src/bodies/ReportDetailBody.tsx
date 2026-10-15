@@ -13,6 +13,7 @@ import {
   SkeletonText,
   ReportContentSheet,
   PopoverMenu,
+  SecondaryButton,
 } from "../primitives"
 import { useReport } from "../data"
 import { AddressRow } from "./AddressRow"
@@ -32,6 +33,7 @@ import { GALLERY_ASPECT_RATIO } from "./reportDetail/galleryStyles"
 import { useReportDetailSharedStyles } from "./reportDetail/sharedStyles"
 import { useReportContentSheet } from "./reportDetail/useReportContentSheet"
 import { useReportTitleMenu } from "./reportDetail/useReportTitleMenu"
+import { useReportRepost } from "./reportDetail/useReportRepost"
 
 function ReportDetailContent({ report }: { report: ReportDTO }) {
   const styles = useStyles()
@@ -58,6 +60,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
 
   const contentSheet = useReportContentSheet(report.id)
   const titleMenu = useReportTitleMenu(report, title, contentSheet.open)
+  const repost = useReportRepost(report)
 
   return (
     <View style={styles.detailRoot}>
@@ -117,6 +120,15 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
 
       <View style={styles.statusRow}>
         <StatusBadge status={report.status} large />
+        {repost.visible ? (
+          <SecondaryButton
+            size="sm"
+            icon={iconMap.RefreshCw}
+            label={t("actions.repost")}
+            accessibilityLabel={t("actions.repost_a11y")}
+            onPress={repost.onRepost}
+          />
+        ) : null}
       </View>
 
       {report.mine && report.visibility === "hidden" ? (
@@ -276,7 +288,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   statusRow: {
-    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: t.space["2"],
     marginTop: t.space["3"],
   },
   hiddenBanner: {
