@@ -2,7 +2,8 @@ import { OPEN_REPORT_STATUSES, type ReportPinDTO } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import { nearbyReportRows, type NearbyReportRow } from "../linkReportsModel"
 
-export const DUPLICATE_RADIUS_KM = 0.025
+// The founders are choosing between 20 and 25 m (GH#159); the build sets the final value here.
+export const DUPLICATE_RADIUS_M = 25
 export const DUPLICATE_MAX_ROWS = 5
 export const DUPLICATE_WAIT_MS = 3000
 
@@ -13,7 +14,7 @@ export function duplicateMatches(pins: readonly ReportPinDTO[], center: LatLng):
     pins.filter((p) => OPEN.has(p.status)),
     center,
     [],
-    DUPLICATE_RADIUS_KM,
+    DUPLICATE_RADIUS_M / 1000,
   ).slice(0, DUPLICATE_MAX_ROWS)
 }
 

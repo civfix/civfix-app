@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { Image, Pressable, StyleSheet, View } from "react-native"
 import {
   categoryColor,
@@ -15,7 +15,6 @@ import { CATEGORY_ICONS, KeyboardPinnedFooter, MetaDot } from "../../primitives"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { useT } from "../../i18n"
-import { ReportRowView } from "../ReportRow"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { duplicateDistance } from "./duplicateModel"
 import { useFlowStyles } from "./flowStyles"
@@ -41,13 +40,14 @@ function useRowText() {
   )
 }
 
-// A banner, not a gallery frame: the hero has to leave the other matches above the fold on a phone.
-const HERO_MEDIA_ASPECT = 2.4
+// A banner, not a gallery frame: a second card has to start above the fold on a phone.
+const CARD_MEDIA_ASPECT = 2.4
+// Below this a list row is too narrow for two cards side by side (two phone-width cards plus the gap).
+const TWO_COLUMNS_FROM = 640
 
-function ClosestMatch({ row }: { row: NearbyReportRow }) {
+function MatchCard({ row, width }: { row: NearbyReportRow; width: number | undefined }) {
   const styles = useStyles()
   const th = useTheme()
-  const { t } = useT("report-wizard")
   const text = useRowText()(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
@@ -59,31 +59,30 @@ function ClosestMatch({ row }: { row: NearbyReportRow }) {
       accessibilityLabel={text.title}
       {...focusRingProps}
       style={(state) => [
-        styles.hero,
+        styles.card,
+        width !== undefined ? { width } : null,
         th.shadows.s1,
         webTransition,
-        webHover(state) ? styles.heroHovered : null,
-        state.pressed ? styles.heroPressed : null,
+        webHover(state) ? styles.cardHovered : null,
+        state.pressed ? styles.cardPressed : null,
       ]}
     >
-      <View
-        style={[styles.heroMedia, { backgroundColor: wash(cat, 0.84, th) }]}
-      >
+      <View style={[styles.cardMedia, { backgroundColor: wash(cat, 0.84, th) }]}>
         {pin.thumbUrl ? (
           <Image source={{ uri: pin.thumbUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
           <Icon icon={CATEGORY_ICONS[pin.category]} size={40} color={cat} />
         )}
       </View>
-      <View style={styles.heroBody}>
-        <Text style={styles.eyebrow}>{t("wizard.duplicate.nearest")}</Text>
-        <Text style={styles.heroTitle} numberOfLines={2}>
+      {/* Me too (#162) goes at the right of this body, beside the text column. */}
+      <View style={styles.cardBody}>
+        <Text style={styles.cardTitle} numberOfLines={2}>
           {text.title}
         </Text>
         <View style={styles.metaRow}>
-          <Text style={styles.heroMeta}>{text.category}</Text>
+          <Text style={styles.cardMeta}>{text.category}</Text>
           <MetaDot color={th.colors.textSubtle} />
-          <Text style={styles.heroMeta} numberOfLines={1}>
+          <Text style={styles.cardMeta} numberOfLines={1}>
             {text.distance}
           </Text>
         </View>
@@ -114,8 +113,9 @@ export function DuplicateGate({
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
-  const rowText = useRowText()
-  const [closest, ...rest] = rows
+  const [listWidth, setListWidth] = useState(0)
+  const cardWidth =
+    listWidth >= TWO_COLUMNS_FROM ? (listWidth - th.space["3"]) / 2 : undefined
 
   return (
     <>
@@ -126,34 +126,11 @@ export function DuplicateGate({
           </Text>
           <Text style={styles.help}>{t("wizard.duplicate.help", { count: rows.length })}</Text>
         </View>
-        {closest ? <ClosestMatch row={closest} /> : null}
-        {rest.length > 0 ? (
-          <View>
-            <Text style={styles.section} accessibilityRole="header">
-              {t("wizard.duplicate.also_nearby")}
-            </Text>
-            {rest.map((row, i) => {
-              const text = rowText(row)
-              return (
-                <ReportRowView
-                  key={row.pin.id}
-                  id={row.pin.id}
-                  category={row.pin.category}
-                  status={row.pin.status}
-                  title={text.title}
-                  lat={row.pin.lat}
-                  lng={row.pin.lng}
-                  thumbUrl={row.pin.thumbUrl}
-                  subtitle={text.category}
-                  when={text.distance}
-                  note={text.count}
-                  divider={i < rest.length - 1}
-                  showStatus={false}
-                />
-              )
-            })}
-          </View>
-        ) : null}
+        <View style={styles.list} onLayout={(e) => setListWidth(e.nativeEvent.layout.width)}>
+          {rows.map((row) => (
+            <MatchCard key={row.pin.id} row={row} width={cardWidth} />
+          ))}
+        </View>
       </ScrollView>
       <KeyboardPinnedFooter style={footerStyles.footer}>
         <Pressable
@@ -190,47 +167,39 @@ const useStyles = makeThemedStyles((t) => ({
     lineHeight: 18,
     color: t.colors.textMuted,
   },
-  hero: {
+  list: { flexDirection: "row", flexWrap: "wrap", gap: t.space["3"] },
+  card: {
+    width: "100%",
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
     overflow: "hidden",
   },
-  heroHovered: { borderColor: t.colors.borderStrong },
-  heroPressed: { opacity: 0.85 },
-  heroMedia: {
-    aspectRatio: HERO_MEDIA_ASPECT,
+  cardHovered: { borderColor: t.colors.borderStrong },
+  cardPressed: { opacity: 0.85 },
+  cardMedia: {
+    aspectRatio: CARD_MEDIA_ASPECT,
     alignItems: "center",
     justifyContent: "center",
   },
-  heroBody: {
+  cardBody: {
     padding: t.space["3"],
     gap: t.space["1"],
   },
-  eyebrow: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.accentText,
-  },
-  heroTitle: {
+  cardTitle: {
     fontFamily: t.fontFamily.bodyBold,
     fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
   metaRow: { flexDirection: "row", alignItems: "center", gap: t.space["1"] },
-  heroMeta: {
+  cardMeta: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   countRow: { flexDirection: "row", alignItems: "center", gap: t.space["1"], marginTop: 2 },
   count: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  section: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
