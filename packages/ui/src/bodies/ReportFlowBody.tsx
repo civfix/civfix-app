@@ -342,12 +342,15 @@ export function ReportFlowBody() {
         </ScrollView>
       )}
 
+      {/* Report a new problem takes over Continue's native view, and RN Android keeps a view's accessibility state
+          when the new props pass none, so it states its own or TalkBack reads Continue's busy on it. */}
       {gateOpen ? (
         <KeyboardPinnedFooter style={styles.footer}>
           <Pressable
             onPress={reportNew}
             accessibilityRole="button"
             accessibilityLabel={t("wizard.duplicate.new")}
+            accessibilityState={{ disabled: false, busy: false }}
             {...focusRingProps}
             style={({ pressed }) => [styles.nextBtn, styles.newBtn, pressed ? flowStyles.pressed : null]}
           >
