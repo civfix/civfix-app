@@ -95,7 +95,7 @@ export type ReportMedia = z.infer<typeof ReportMediaSchema>
 
 /**
  * A report list row. `status` is the civfix report status; `flagged` is the orthogonal abuse marker.
- * `confirmations` is the count of report_follows. `submitted` carries both the relative and absolute
+ * `confirmations` is the report's Me too count. `submitted` carries both the relative and absolute
  * timestamp. `hasPhoto` drives the "photo attached" affordance without sending media on the list;
  * `thumbnailUrl` is a presigned preview of the report's first ready image (the pipeline thumbnail when
  * one exists, else the served image), so a row can show the photo in place of the category pin. It is

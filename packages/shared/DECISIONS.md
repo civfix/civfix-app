@@ -2246,3 +2246,23 @@ this release does not attempt them; each needs its own coordinated PR:
   request): new endpoints, backend first.
 - `nextCursor` pagination for `listMyOrganizations` and the event team list (backend H-012): an
   additive request and response change the backend must implement first.
+
+## 60. "Me too" is a confirmation in the contract, and the report status lists are shared (0.61.0)
+
+**Naming.** Residents see a **Me too** button on a report and a "N neighbors saw this too" count.
+Everything under the UI is named *confirmation*: `ReportDTO.confirmCount` / `confirmedByMe`,
+`ReportPinDTO.confirmCount`, `confirmReport` / `unconfirmReport` (`POST` / `DELETE
+/reports/:id/confirm`) and `ReportConfirmResponse`. That is the word admin's `confirmations` field and
+the forward template's `{confirmations}` token already use, and admin's `confirmations` is now
+documented as this same count. The UI does not say "Confirm" because the app already uses it for "Use
+this location" and "Fix confirmed". `pressingReports` (`GET /reports/pressing`, at most 20 pins) lists
+the most confirmed open reports in a bbox.
+
+**Two status lists, one copy.** `PUBLIC_REPORT_STATUSES` (published, acknowledged, in_progress,
+resolved) are the statuses a non-owner can see a public report in. `OPEN_REPORT_STATUSES` drops
+`resolved` and is the set that takes a new Me too: a resolved report keeps its count, but nobody can
+add to it. The backend and the UI read these lists instead of keeping their own copies.
+
+The change is additive. The new DTO fields are defaulted (0 / false), so an older server still parses,
+and none of the carrying schemas is strict. The registry moves from 336 to 339 entries, none of them
+under `/admin`.

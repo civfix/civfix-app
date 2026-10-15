@@ -52,7 +52,7 @@ const LA = { lat: 34.0522, lng: -118.2437 }
 const VIEW: BBox = { west: -118.26, east: -118.23, south: 34.04, north: 34.065 }
 
 function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
-  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, ...over }
+  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, confirmCount: 0, ...over }
 }
 
 function north(meters: number): number {
@@ -155,6 +155,7 @@ describe("pins", () => {
       lat: 1,
       lng: 2,
       title: "Nails",
+      confirmCount: 0,
       addr: "1 Main",
     })
     const card: LinkedReportCardEntry = {
@@ -171,6 +172,7 @@ describe("pins", () => {
       status: "published",
       lat: 3,
       lng: 4,
+      confirmCount: 0,
       referenceCode: "WA-1",
     })
   })

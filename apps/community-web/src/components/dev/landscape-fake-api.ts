@@ -150,6 +150,8 @@ function report(
     mediaRejected: 0,
     linkedEvents: [],
     timeline: [{ status: "submitted", at: createdAt, note: null }],
+    confirmCount: 0,
+    confirmedByMe: false,
   }
 }
 
@@ -181,6 +183,7 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
     status: p.status,
     lat: south + (north - south) * p.at[1],
     lng: west + (east - west) * p.at[0],
+    confirmCount: 0,
   }))
 }
 

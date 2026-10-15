@@ -22,7 +22,7 @@ function jsonResponse(
 describe("endpoint registry", () => {
   it("covers every registered endpoint with a unique path per method", () => {
     const names = Object.keys(endpoints)
-    expect(names.length).toBe(336)
+    expect(names.length).toBe(339)
     const seen = new Set<string>()
     for (const name of names) {
       const e = endpoints[name as keyof typeof endpoints]
@@ -109,6 +109,26 @@ describe("endpoint registry", () => {
     expect(e.path).toBe("/reports/:id/unlist")
     expect(e.auth).toBe("required")
     expect(e.csrf).toBe(true)
+  })
+
+  it("registers POST and DELETE /reports/:id/confirm as auth-required, csrf-guarded actions", () => {
+    for (const [e, method] of [
+      [endpoints.confirmReport, "POST"],
+      [endpoints.unconfirmReport, "DELETE"],
+    ] as const) {
+      expect(e.method).toBe(method)
+      expect(e.path).toBe("/reports/:id/confirm")
+      expect(e.auth).toBe("required")
+      expect(e.csrf).toBe(true)
+    }
+  })
+
+  it("registers GET /reports/pressing as an optional, csrf-free endpoint", () => {
+    const e = endpoints.pressingReports
+    expect(e.method).toBe("GET")
+    expect(e.path).toBe("/reports/pressing")
+    expect(e.auth).toBe("optional")
+    expect(e.csrf).toBe(false)
   })
 
   it("registers POST /cleanups/:id/cancel as an auth-required, csrf-guarded host action", () => {
@@ -236,6 +256,35 @@ describe("createApiClient", () => {
     expect(headers["Authorization"]).toBe("Bearer T")
     expect(headers["x-csrf-token"]).toBe("csrf-123")
     expect(call.init.method).toBe("POST")
+  })
+
+  it("exposes confirmReport, unconfirmReport and pressingReports on the typed client", async () => {
+    const calls: Array<{ url: string; method: string | undefined }> = []
+    const fetchImpl = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+      calls.push({ url: String(url), method: init?.method })
+      return String(url).includes("/pressing")
+        ? jsonResponse({ items: [] })
+        : jsonResponse({ confirmCount: 1, confirmedByMe: init?.method === "POST" })
+    }) as unknown as typeof fetch
+    const client = createApiClient({
+      baseURL: "https://api.civfix.test",
+      fetchImpl,
+      getCsrfToken: () => "csrf-1",
+    })
+
+    expect(await client.confirmReport({ id: UUID })).toEqual({ confirmCount: 1, confirmedByMe: true })
+    expect(await client.unconfirmReport({ id: UUID })).toEqual({ confirmCount: 1, confirmedByMe: false })
+    expect(
+      await client.pressingReports({ bbox: { west: -118.5, south: 34, east: -118.2, north: 34.2 } }),
+    ).toEqual({ items: [] })
+
+    expect(calls[0]).toEqual({ url: `https://api.civfix.test/v1/reports/${UUID}/confirm`, method: "POST" })
+    expect(calls[1]).toEqual({
+      url: `https://api.civfix.test/v1/reports/${UUID}/confirm`,
+      method: "DELETE",
+    })
+    expect(calls[2]!.method).toBe("GET")
+    expect(calls[2]!.url).toContain("https://api.civfix.test/v1/reports/pressing?bbox=")
   })
 
   it("serializes a typed body for POST and sets content-type", async () => {
