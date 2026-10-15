@@ -60,5 +60,9 @@ export function useDuplicateGate() {
     if (pending.current) clearTimeout(pending.current.timer)
   }, [])
 
-  return { busy, matches: gate?.rows ?? null, run, dismiss, reportNew }
+  const openMatch = useCallback((_row: NearbyReportRow): void => {
+    throw new Error("not implemented")
+  }, [])
+
+  return { busy, matches: gate?.rows ?? null, run, dismiss, reportNew, openMatch }
 }
