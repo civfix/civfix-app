@@ -1,5 +1,7 @@
 {
   "a11y": {
     "row": "{{title}}, {{status}}"
-  }
+  },
+  "confirm_count_one": "{{count}} neighbor saw this too",
+  "confirm_count_other": "{{count}} neighbors saw this too"
 }

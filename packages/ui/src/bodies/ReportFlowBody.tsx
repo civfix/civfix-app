@@ -48,12 +48,16 @@ import { useFlowStyles } from "./reportFlow/flowStyles"
 import { usePickLayer } from "./reportFlow/usePickLayer"
 import { useReportRunClaim } from "./reportFlow/useReportRunClaim"
 import { useReportSubmitFlow } from "./reportFlow/useReportSubmitFlow"
+import { useDuplicateGate } from "./reportFlow/useDuplicateGate"
+import { DuplicateGate } from "./reportFlow/DuplicateGate"
+import { FooterButtonContent, useWizardFooterStyles } from "./reportFlow/FooterButtonContent"
 
 const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
 export function ReportFlowBody() {
   const styles = useStyles()
   const flowStyles = useFlowStyles()
+  const footerStyles = useWizardFooterStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
@@ -127,8 +131,11 @@ export function ReportFlowBody() {
     )
   }, [stepIndex, stepOrder.length, stepTitle, t])
   const isLast = activeStep === "review"
-  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))
-  const atViewRoot = stepIndex === 0 && !stackNonEmpty
+  const stackBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))
+  const dup = useDuplicateGate()
+  const gateOpen = dup.matches !== null
+  const showBack = stackBack || gateOpen
+  const atViewRoot = stepIndex === 0 && !stackNonEmpty && !gateOpen
   const sessionActive = viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)
   const sessionResumeGrace = viewfinderResumeGraceEligible(
     activeStep,
@@ -137,38 +144,49 @@ export function ReportFlowBody() {
     runActive,
   )
 
+
   const onBack = useCallback(() => {
+    if (gateOpen) {
+      dup.dismiss()
+      return
+    }
     if (stepIndex <= 0) {
       useNavStore.getState().leaveReportFlow()
       return
     }
     setStep(stepOrder[stepIndex - 1] as Step)
-  }, [stepIndex, stepOrder])
+  }, [dup, gateOpen, stepIndex, stepOrder])
 
   const advanceFromCapture = useCallback(() => {
     setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))
   }, [mode, stepOrder])
 
   const onNext = useCallback(() => {
-    if (!canAdvance) return
+    if (!canAdvance || dup.busy) return
     if (isLast) {
-      runSubmit()
+      if (mode === "expanded") dup.run(runSubmit)
+      else runSubmit()
       return
     }
     haptics.selection()
     if (activeStep === "capture") {
-      advanceFromCapture()
+      if (mode === "compact" && hasLocation) dup.run(advanceFromCapture)
+      else advanceFromCapture()
       return
     }
-    setStep(stepOrder[stepIndex + 1] as Step)
-  }, [activeStep, advanceFromCapture, canAdvance, haptics, isLast, runSubmit, stepIndex, stepOrder])
+    const next = () => setStep(stepOrder[stepIndex + 1] as Step)
+    if (activeStep === "location") dup.run(next)
+    else next()
+  }, [activeStep, advanceFromCapture, canAdvance, dup, hasLocation, haptics, isLast, mode, runSubmit, stepIndex, stepOrder])
 
   const advanceFromLocation = useCallback(() => {
-    setStep((s) => {
-      const i = stepOrder.indexOf(s)
-      return (stepOrder[i + 1] as Step) ?? s
-    })
-  }, [stepOrder])
+    dup.run(() =>
+      setStep((s) => {
+        const i = stepOrder.indexOf(s)
+        return (stepOrder[i + 1] as Step) ?? s
+      }),
+    )
+  }, [dup, stepOrder])
   const cancelLocation = useCallback(() => {
     setStep((s) => {
       const i = stepOrder.indexOf(s)
@@ -257,6 +275,10 @@ export function ReportFlowBody() {
         </View>
       )}
 
+      {gateOpen ? (
+        <DuplicateGate rows={dup.matches ?? []} mode={mode} onNew={dup.reportNew} />
+      ) : (
+      <>
       <View style={styles.wizardHead}>
         <WizardStepHeader
           step={stepIndex + 1}
@@ -310,32 +332,32 @@ export function ReportFlowBody() {
           </StepTransition>
         </ScrollView>
       )}
+      </>
+      )}
 
-      {showsWizardFooter(activeStep, hasMedia) ? (
-        <KeyboardPinnedFooter style={styles.footer}>
+      {!gateOpen && showsWizardFooter(activeStep, hasMedia) ? (
+        <KeyboardPinnedFooter style={footerStyles.footer}>
           <Pressable
             onPress={onNext}
             disabled={!canAdvance}
             accessibilityRole="button"
-            accessibilityLabel={isLast ? t("footer.drop_pin") : t("footer.continue")}
-            accessibilityState={{ disabled: !canAdvance }}
+            accessibilityLabel={
+              dup.busy ? t("footer.checking_a11y") : isLast ? t("footer.drop_pin") : t("footer.continue")
+            }
+            accessibilityState={{ disabled: !canAdvance, busy: dup.busy }}
             {...focusRingProps}
             style={({ pressed }) => [
-              styles.nextBtn,
-              !canAdvance ? styles.nextDisabled : [styles.nextActive, th.shadows.pin],
+              footerStyles.nextBtn,
+              !canAdvance ? footerStyles.nextDisabled : [footerStyles.nextActive, th.shadows.pin],
               pressed && canAdvance ? flowStyles.pressed : null,
             ]}
           >
-            <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
-              {isLast ? t("footer.drop_pin") : t("footer.continue")}
-            </Text>
-            <View style={styles.nextIcon}>
-              <Icon
-                icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
-                size={16}
-                color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
-              />
-            </View>
+            <FooterButtonContent
+              label={isLast ? t("footer.drop_pin") : t("footer.continue")}
+              icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
+              enabled={canAdvance}
+              busy={dup.busy}
+            />
           </Pressable>
         </KeyboardPinnedFooter>
       ) : null}
@@ -431,29 +453,4 @@ const useStyles = makeThemedStyles((t) => ({
   },
   contentFill: { flexGrow: 1 },
   stepHostFill: { flexGrow: 1 },
-  footer: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["3"],
-    paddingBottom: t.space["4"],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: t.colors.border,
-    backgroundColor: t.colors.bg,
-  },
-  nextBtn: {
-    flex: 1,
-    height: 50,
-    borderRadius: t.radius.md,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  nextActive: { backgroundColor: t.colors.brand.bloom },
-  nextDisabled: { backgroundColor: t.colors.neutral.ink5 },
-  nextText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["15"],
-  },
-  nextIcon: { marginLeft: 6 },
 }))
