@@ -21,6 +21,7 @@ export interface ReportRowViewProps {
   note?: string | null
   divider?: boolean
   card?: boolean
+  showStatus?: boolean
   onPress?: () => void
 }
 
@@ -47,6 +48,7 @@ export const ReportRowView = React.memo(function ReportRowView({
   note,
   divider = true,
   card = false,
+  showStatus = true,
   onPress,
 }: ReportRowViewProps) {
   const styles = useStyles()
@@ -85,7 +87,7 @@ export const ReportRowView = React.memo(function ReportRowView({
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
-          <StatusBadge status={status} />
+          {showStatus ? <StatusBadge status={status} /> : null}
         </View>
         {subtitle ? (
           <Text style={styles.addr} numberOfLines={1}>
