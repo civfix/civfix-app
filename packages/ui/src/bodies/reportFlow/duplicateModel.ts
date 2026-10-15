@@ -4,8 +4,8 @@ import type { LayoutMode } from "../../theme"
 import type { Step } from "../../report/wizardSteps"
 import { nearbyReportRows, type NearbyReportRow } from "../linkReportsModel"
 
-export const DUPLICATE_RADIUS_M = 20
-export const DUPLICATE_MAX_ROWS = 5
+const DUPLICATE_RADIUS_M = 20
+const DUPLICATE_MAX_ROWS = 5
 export const DUPLICATE_WAIT_MS = 3000
 
 const METERS_PER_KM = 1000
