@@ -41,7 +41,10 @@ function useRowText() {
   )
 }
 
-function ClosestMatch({ row, mode }: { row: NearbyReportRow; mode: LayoutMode }) {
+// A banner, not a gallery frame: the hero has to leave the other matches above the fold on a phone.
+const HERO_MEDIA_ASPECT = 2.4
+
+function ClosestMatch({ row }: { row: NearbyReportRow }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")
@@ -64,11 +67,7 @@ function ClosestMatch({ row, mode }: { row: NearbyReportRow; mode: LayoutMode })
       ]}
     >
       <View
-        style={[
-          styles.heroMedia,
-          mode === "expanded" ? styles.heroMediaExpanded : null,
-          { backgroundColor: wash(cat, 0.84, th) },
-        ]}
+        style={[styles.heroMedia, { backgroundColor: wash(cat, 0.84, th) }]}
       >
         {pin.thumbUrl ? (
           <Image source={{ uri: pin.thumbUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -103,7 +102,6 @@ function ClosestMatch({ row, mode }: { row: NearbyReportRow; mode: LayoutMode })
 
 export function DuplicateGate({
   rows,
-  mode,
   onNew,
 }: {
   rows: NearbyReportRow[]
@@ -128,7 +126,7 @@ export function DuplicateGate({
           </Text>
           <Text style={styles.help}>{t("wizard.duplicate.help", { count: rows.length })}</Text>
         </View>
-        {closest ? <ClosestMatch row={closest} mode={mode} /> : null}
+        {closest ? <ClosestMatch row={closest} /> : null}
         {rest.length > 0 ? (
           <View>
             <Text style={styles.section} accessibilityRole="header">
@@ -202,11 +200,10 @@ const useStyles = makeThemedStyles((t) => ({
   heroHovered: { borderColor: t.colors.borderStrong },
   heroPressed: { opacity: 0.85 },
   heroMedia: {
-    aspectRatio: 16 / 9,
+    aspectRatio: HERO_MEDIA_ASPECT,
     alignItems: "center",
     justifyContent: "center",
   },
-  heroMediaExpanded: { aspectRatio: 2 },
   heroBody: {
     padding: t.space["3"],
     gap: t.space["1"],
