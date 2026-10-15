@@ -123,3 +123,41 @@ export const UnlistReportRequestSchema = z
   })
   .strict()
 export type UnlistReportRequest = z.infer<typeof UnlistReportRequestSchema>
+
+/**
+ * POST /reports/:id/confirm (confirmReport) and DELETE /reports/:id/confirm (unconfirmReport): a
+ * signed-in resident's Me too on someone else's report (DECISIONS §60). `id` consumes the `:id` path
+ * param. Both are idempotent: confirming twice, or removing a confirmation that does not exist, returns
+ * the same body. Errors, in this order:
+ * 1. NOT_FOUND unless a non-owner can see the report (unknown, hidden, held, deleted, submitted or
+ *    rejected), with the body an unknown id gets, for everyone including its reporter;
+ * 2. FORBIDDEN when the caller filed it;
+ * 3. confirm only: CONFLICT when it is `resolved` (a removal works on any visible report).
+ * No session is UNAUTHORIZED, which the auth guard answers before any of these.
+ */
+export const ReportConfirmRequestSchema = z
+  .object({
+    id: IdSchema,
+  })
+  .strict()
+export type ReportConfirmRequest = z.infer<typeof ReportConfirmRequestSchema>
+
+export const ReportConfirmResponseSchema = z.object({
+  confirmCount: z.number().int().nonnegative(),
+  confirmedByMe: z.boolean(),
+})
+export type ReportConfirmResponse = z.infer<typeof ReportConfirmResponseSchema>
+
+/** GET /reports/pressing: the bbox only, under the same rules as mapReports; no zoom or category filters. */
+export const PressingReportsRequestSchema = z
+  .object({
+    bbox: BBoxSchema,
+  })
+  .strict()
+export type PressingReportsRequest = z.infer<typeof PressingReportsRequestSchema>
+
+/** Open public reports in the bbox with at least one confirmation, most confirmed first, then newest. */
+export const PressingReportsResponseSchema = z.object({
+  items: z.array(ReportPinDTOSchema).max(20),
+})
+export type PressingReportsResponse = z.infer<typeof PressingReportsResponseSchema>

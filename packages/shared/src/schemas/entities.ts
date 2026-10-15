@@ -303,6 +303,11 @@ export const ReportDTOSchema = z.object({
   chatMemberCount: z.number().int().nonnegative().optional(),
   chatMessageCount: z.number().int().nonnegative().optional(),
   chatUnread: z.number().int().nonnegative().optional(),
+  // Me too in the UI, confirmations in the contract (DECISIONS §60). Both are defaulted so an older
+  // server's response still parses.
+  confirmCount: z.number().int().nonnegative().default(0),
+  // Only getReport computes it, for the signed-in caller; every other response sends false.
+  confirmedByMe: z.boolean().default(false),
 })
 export type ReportDTO = z.infer<typeof ReportDTOSchema>
 
@@ -317,6 +322,7 @@ export const ReportPinDTOSchema = z.object({
   thumbUrl: z.string().nullable().optional(),
   addr: z.string().nullable().optional(),
   referenceCode: z.string().optional(),
+  confirmCount: z.number().int().nonnegative().default(0),
 })
 export type ReportPinDTO = z.infer<typeof ReportPinDTOSchema>
 
