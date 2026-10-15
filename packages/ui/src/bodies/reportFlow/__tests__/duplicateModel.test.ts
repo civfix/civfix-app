@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { haversineMeters } from "@civfix/shared"
 import { createI18n } from "../../../i18n/config"
-import { duplicateDistance, duplicateMatches } from "../duplicateModel"
+import { duplicateDistance, duplicateMatches, stepChecksDuplicates } from "../duplicateModel"
 import { exactlyNorthOf, northOf, pinAt } from "./duplicateTestPoints"
 
 const CENTER = { lat: 34.1, lng: -118.3 }
@@ -87,5 +87,13 @@ describe("report-row:confirm_count", () => {
     const { t } = createI18n("en")
     expect(t("report-row:confirm_count", { count: 1 })).toBe("1 neighbor saw this too")
     expect(t("report-row:confirm_count", { count: 12 })).toBe("12 neighbors saw this too")
+  })
+})
+
+describe("stepChecksDuplicates", () => {
+  it("checks when leaving capture, location or review on compact, and only on review on expanded", () => {
+    const steps = ["capture", "location", "category", "details", "review"] as const
+    expect(steps.filter((step) => stepChecksDuplicates(step, "compact"))).toEqual(["capture", "location", "review"])
+    expect(steps.filter((step) => stepChecksDuplicates(step, "expanded"))).toEqual(["review"])
   })
 })

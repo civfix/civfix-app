@@ -163,8 +163,12 @@ export function captureSeedsNewReport(
   )
 }
 
-export function needsDuplicateCheck(_draft: Pick<DraftReport, "lat" | "lng" | "duplicateCheckedPoint">): boolean {
-  throw new Error("not implemented")
+// Compared by value and only against the last checked point, so moving the pin away and back after a
+// check in between checks again (GH#159).
+export function needsDuplicateCheck(draft: Pick<DraftReport, "lat" | "lng" | "duplicateCheckedPoint">): boolean {
+  if (draft.lat == null || draft.lng == null) return false
+  const checked = draft.duplicateCheckedPoint
+  return checked === null || checked.lat !== draft.lat || checked.lng !== draft.lng
 }
 
 export const useDraftReportStore = create<DraftReportState>((set, get) => ({
@@ -306,9 +310,8 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   setShareToFeed: (shareToFeed) => set((s) => ({ draft: { ...s.draft, shareToFeed } })),
   setFeedCaption: (feedCaption) => set((s) => ({ draft: { ...s.draft, feedCaption } })),
   setFeedPostId: (feedPostId) => set((s) => ({ draft: { ...s.draft, feedPostId } })),
-  setDuplicateCheckedPoint: () => {
-    throw new Error("not implemented")
-  },
+  setDuplicateCheckedPoint: (point) =>
+    set((s) => ({ draft: { ...s.draft, duplicateCheckedPoint: { lat: point.lat, lng: point.lng } } })),
   reset: () =>
     set((s) => ({
       draft: { ...EMPTY, flags: { ...EMPTY_FLAGS }, media: [] },

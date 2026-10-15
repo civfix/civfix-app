@@ -87,6 +87,8 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
   "bodies/linkedReportCards.ts:useLinkedReportCards":
     "public report card data, cleared when the event form closes; the linked ids live in the registered cleanup draft",
   "bodies/reportPicker/reportPickerFilterStore.ts:useReportPickerFilters": "report picker category filters",
+  "bodies/reportFlow/useDuplicateGate.ts:useDuplicateScreen":
+    "public report pins on the Possible duplicate screen, shown only while the registered report draft's checked point is theirs",
   "bodies/host/dashboard/dashboardStore.ts:useDashboardStore":
     "dashboard org choice, re-validated against the current viewer's organizations on every render",
   "map/filterStore.ts:useReportFilterStore": "map layer toggles and public pin counts",

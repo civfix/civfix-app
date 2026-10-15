@@ -1,5 +1,7 @@
 {
   "a11y": {
     "row": "{{title}}, {{status}}"
-  }
+  },
+  "confirm_count_one": "{{count}} vecino también lo vio",
+  "confirm_count_other": "{{count}} vecinos también lo vieron"
 }

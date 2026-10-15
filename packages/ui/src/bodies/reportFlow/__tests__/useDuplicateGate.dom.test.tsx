@@ -34,7 +34,7 @@ function heldMapReports() {
   return { mapReports, calls }
 }
 
-function renderGate(mapReports: (...args: unknown[]) => Promise<unknown>) {
+function renderGate(mapReports: (...args: unknown[]) => Promise<unknown>, resume?: () => void) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const context = makeFakeDataContext({ api: { mapReports } as unknown as ApiClient })
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -42,7 +42,7 @@ function renderGate(mapReports: (...args: unknown[]) => Promise<unknown>) {
       <ApiProvider value={context}>{children}</ApiProvider>
     </QueryClientProvider>
   )
-  return renderHook(() => useDuplicateGate(), { wrapper })
+  return renderHook(() => useDuplicateGate(resume), { wrapper })
 }
 
 const draft = () => useDraftReportStore.getState().draft
@@ -199,6 +199,26 @@ describe("useDuplicateGate", () => {
     expect(gate.result.current.matches).toBeNull()
   })
 
+  it("checks the new point when a press lands in the same tick as the picker's confirm", async () => {
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    await act(async () => api.calls[0]?.resolve([]))
+    await waitFor(() => expect(gate.result.current.busy).toBe(false))
+    const onClear = vi.fn()
+
+    act(() => {
+      placeDraft(B)
+      gate.result.current.run(onClear)
+    })
+    expect(onClear).not.toHaveBeenCalled()
+    expect(gate.result.current.busy).toBe(true)
+    await waitFor(() => expect(api.mapReports).toHaveBeenCalledTimes(2))
+    await act(async () => api.calls[1]?.resolve([pinAt("near-b", northOf(B, 10))]))
+    await waitFor(() => expect(gate.result.current.matches).toHaveLength(1))
+    expect(onClear).not.toHaveBeenCalled()
+    expect(draft().duplicateCheckedPoint).toEqual(B)
+  })
+
   it("T22: carries on at once for a point already checked", () => {
     useDraftReportStore.getState().setDuplicateCheckedPoint(A)
     const api = heldMapReports()
@@ -280,5 +300,44 @@ describe("useDuplicateGate", () => {
     const nav = useNavStore.getState()
     expect(nav.active).toEqual({ kind: "composer" })
     expect(nav.stack.some((entry) => entry.kind === "pin")).toBe(false)
+  })
+
+  it("Back while a check is still waiting drops it, so its answer never moves the flow", async () => {
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    const onClear = vi.fn()
+
+    act(() => gate.result.current.run(onClear))
+    expect(gate.result.current.busy).toBe(true)
+    act(() => gate.result.current.dismiss())
+    expect(gate.result.current.busy).toBe(false)
+    await act(async () => api.calls[0]?.resolve([pinAt("near", northOf(A, 10))]))
+    expect(onClear).not.toHaveBeenCalled()
+    expect(gate.result.current.matches).toBeNull()
+    expect(draft().duplicateCheckedPoint).toBeNull()
+  })
+
+  it("keeps the screen for a body that mounts again, and carries on with that body's resume", async () => {
+    const onClear = vi.fn()
+    const { gate } = await openScreen(onClear)
+    const rows = gate.result.current.matches
+    gate.unmount()
+
+    const resume = vi.fn()
+    const remounted = renderGate(heldMapReports().mapReports, resume)
+    expect(remounted.result.current.matches).toEqual(rows)
+    act(() => remounted.result.current.reportNew())
+    expect(resume).toHaveBeenCalledTimes(1)
+    expect(onClear).not.toHaveBeenCalled()
+    expect(remounted.result.current.matches).toBeNull()
+  })
+
+  it("never shows a screen that belongs to a reset draft", async () => {
+    const { gate } = await openScreen(vi.fn())
+    act(() => {
+      useDraftReportStore.getState().reset()
+      seedDraft(A)
+    })
+    expect(gate.result.current.matches).toBeNull()
   })
 })

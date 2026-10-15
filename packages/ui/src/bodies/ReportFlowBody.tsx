@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, motion, useTheme, useLayoutMode, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { KeyboardPinnedFooter, KeyboardPinnedSurface, useToast } from "../primitives"
@@ -49,15 +49,14 @@ import { usePickLayer } from "./reportFlow/usePickLayer"
 import { useReportRunClaim } from "./reportFlow/useReportRunClaim"
 import { useReportSubmitFlow } from "./reportFlow/useReportSubmitFlow"
 import { useDuplicateGate } from "./reportFlow/useDuplicateGate"
+import { stepChecksDuplicates } from "./reportFlow/duplicateModel"
 import { DuplicateGate } from "./reportFlow/DuplicateGate"
-import { FooterButtonContent, useWizardFooterStyles } from "./reportFlow/FooterButtonContent"
 
 const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
 export function ReportFlowBody() {
   const styles = useStyles()
   const flowStyles = useFlowStyles()
-  const footerStyles = useWizardFooterStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
@@ -131,11 +130,6 @@ export function ReportFlowBody() {
     )
   }, [stepIndex, stepOrder.length, stepTitle, t])
   const isLast = activeStep === "review"
-  const stackBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))
-  const dup = useDuplicateGate()
-  const gateOpen = dup.matches !== null
-  const showBack = stackBack || gateOpen
-  const atViewRoot = stepIndex === 0 && !stackNonEmpty && !gateOpen
   const sessionActive = viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)
   const sessionResumeGrace = viewfinderResumeGraceEligible(
     activeStep,
@@ -144,49 +138,64 @@ export function ReportFlowBody() {
     runActive,
   )
 
-
-  const onBack = useCallback(() => {
-    if (gateOpen) {
-      dup.dismiss()
-      return
-    }
-    if (stepIndex <= 0) {
-      useNavStore.getState().leaveReportFlow()
-      return
-    }
-    setStep(stepOrder[stepIndex - 1] as Step)
-  }, [dup, gateOpen, stepIndex, stepOrder])
-
   const advanceFromCapture = useCallback(() => {
     setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))
   }, [mode, stepOrder])
 
   const onNext = useCallback(() => {
-    if (!canAdvance || dup.busy) return
+    if (!canAdvance) return
     if (isLast) {
-      if (mode === "expanded") dup.run(runSubmit)
-      else runSubmit()
+      runSubmit()
       return
     }
     haptics.selection()
     if (activeStep === "capture") {
-      if (mode === "compact" && hasLocation) dup.run(advanceFromCapture)
-      else advanceFromCapture()
+      advanceFromCapture()
       return
     }
-    const next = () => setStep(stepOrder[stepIndex + 1] as Step)
-    if (activeStep === "location") dup.run(next)
-    else next()
-  }, [activeStep, advanceFromCapture, canAdvance, dup, hasLocation, haptics, isLast, mode, runSubmit, stepIndex, stepOrder])
+    setStep(stepOrder[stepIndex + 1] as Step)
+  }, [activeStep, advanceFromCapture, canAdvance, haptics, isLast, runSubmit, stepIndex, stepOrder])
+
+  const {
+    busy: checkingDuplicates,
+    matches: duplicateMatches,
+    run: checkDuplicates,
+    dismiss: dismissDuplicates,
+    reportNew,
+    openMatch,
+  } = useDuplicateGate(onNext)
+  const gateOpen = duplicateMatches !== null
+  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex })) || gateOpen
+  const atViewRoot = stepIndex === 0 && !stackNonEmpty && !gateOpen
+
+  const onBack = useCallback(() => {
+    if (gateOpen) {
+      dismissDuplicates()
+      return
+    }
+    // A check still waiting would otherwise carry the flow forward after the reporter went back.
+    if (checkingDuplicates) dismissDuplicates()
+    if (stepIndex <= 0) {
+      useNavStore.getState().leaveReportFlow()
+      return
+    }
+    setStep(stepOrder[stepIndex - 1] as Step)
+  }, [checkingDuplicates, dismissDuplicates, gateOpen, stepIndex, stepOrder])
+
+  const onContinue = useCallback(() => {
+    if (checkingDuplicates) return
+    if (canAdvance && stepChecksDuplicates(activeStep, mode)) checkDuplicates(onNext)
+    else onNext()
+  }, [activeStep, canAdvance, checkDuplicates, checkingDuplicates, mode, onNext])
 
   const advanceFromLocation = useCallback(() => {
-    dup.run(() =>
+    checkDuplicates(() =>
       setStep((s) => {
         const i = stepOrder.indexOf(s)
         return (stepOrder[i + 1] as Step) ?? s
       }),
     )
-  }, [dup, stepOrder])
+  }, [checkDuplicates, stepOrder])
   const cancelLocation = useCallback(() => {
     setStep((s) => {
       const i = stepOrder.indexOf(s)
@@ -275,18 +284,16 @@ export function ReportFlowBody() {
         </View>
       )}
 
-      {gateOpen ? (
-        <DuplicateGate rows={dup.matches ?? []} mode={mode} onNew={dup.reportNew} />
-      ) : (
-      <>
-      <View style={styles.wizardHead}>
-        <WizardStepHeader
-          step={stepIndex + 1}
-          total={stepOrder.length}
-          title={stepTitle}
-          help={t(`wizard.${activeStep}.help`)}
-        />
-      </View>
+      {gateOpen ? null : (
+        <View style={styles.wizardHead}>
+          <WizardStepHeader
+            step={stepIndex + 1}
+            total={stepOrder.length}
+            title={stepTitle}
+            help={t(`wizard.${activeStep}.help`)}
+          />
+        </View>
+      )}
 
       {viewfinderVisible ? (
         <View style={styles.viewfinderLayer}>
@@ -298,6 +305,8 @@ export function ReportFlowBody() {
             />
           ) : null}
         </View>
+      ) : gateOpen ? (
+        <DuplicateGate rows={duplicateMatches} onOpen={openMatch} onBack={onBack} />
       ) : (
         <ScrollView
           ref={scrollRef}
@@ -332,32 +341,51 @@ export function ReportFlowBody() {
           </StepTransition>
         </ScrollView>
       )}
-      </>
-      )}
 
-      {!gateOpen && showsWizardFooter(activeStep, hasMedia) ? (
-        <KeyboardPinnedFooter style={footerStyles.footer}>
+      {gateOpen ? (
+        <KeyboardPinnedFooter style={styles.footer}>
           <Pressable
-            onPress={onNext}
+            onPress={reportNew}
+            accessibilityRole="button"
+            accessibilityLabel={t("wizard.duplicate.new")}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.nextBtn, styles.newBtn, pressed ? flowStyles.pressed : null]}
+          >
+            <Icon icon={iconMap.Plus} size={16} color={th.colors.text} />
+            <Text style={[styles.nextText, { color: th.colors.text }]}>{t("wizard.duplicate.new")}</Text>
+          </Pressable>
+        </KeyboardPinnedFooter>
+      ) : showsWizardFooter(activeStep, hasMedia) ? (
+        <KeyboardPinnedFooter style={styles.footer}>
+          <Pressable
+            onPress={onContinue}
             disabled={!canAdvance}
             accessibilityRole="button"
             accessibilityLabel={
-              dup.busy ? t("footer.checking_a11y") : isLast ? t("footer.drop_pin") : t("footer.continue")
+              checkingDuplicates ? t("footer.checking_a11y") : isLast ? t("footer.drop_pin") : t("footer.continue")
             }
-            accessibilityState={{ disabled: !canAdvance, busy: dup.busy }}
+            accessibilityState={{ disabled: !canAdvance, busy: checkingDuplicates }}
             {...focusRingProps}
             style={({ pressed }) => [
-              footerStyles.nextBtn,
-              !canAdvance ? footerStyles.nextDisabled : [footerStyles.nextActive, th.shadows.pin],
+              styles.nextBtn,
+              !canAdvance ? styles.nextDisabled : [styles.nextActive, th.shadows.pin],
               pressed && canAdvance ? flowStyles.pressed : null,
             ]}
           >
-            <FooterButtonContent
-              label={isLast ? t("footer.drop_pin") : t("footer.continue")}
-              icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
-              enabled={canAdvance}
-              busy={dup.busy}
-            />
+            <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
+              {isLast ? t("footer.drop_pin") : t("footer.continue")}
+            </Text>
+            <View style={styles.nextIcon}>
+              {checkingDuplicates ? (
+                <ActivityIndicator size="small" color={th.colors.onAccent} />
+              ) : (
+                <Icon
+                  icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
+                  size={16}
+                  color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
+                />
+              )}
+            </View>
           </Pressable>
         </KeyboardPinnedFooter>
       ) : null}
@@ -453,4 +481,35 @@ const useStyles = makeThemedStyles((t) => ({
   },
   contentFill: { flexGrow: 1 },
   stepHostFill: { flexGrow: 1 },
+  footer: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: t.space["4"],
+    paddingTop: t.space["3"],
+    paddingBottom: t.space["4"],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: t.colors.border,
+    backgroundColor: t.colors.bg,
+  },
+  nextBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: t.radius.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  nextActive: { backgroundColor: t.colors.brand.bloom },
+  nextDisabled: { backgroundColor: t.colors.neutral.ink5 },
+  nextText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["15"],
+  },
+  nextIcon: { marginLeft: 6 },
+  newBtn: {
+    gap: t.space["2"],
+    backgroundColor: t.colors.surface,
+    borderWidth: 1.5,
+    borderColor: t.colors.borderStrong,
+  },
 }))

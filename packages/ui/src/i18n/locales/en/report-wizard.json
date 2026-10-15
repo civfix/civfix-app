@@ -37,7 +37,6 @@
   "footer": {
     "continue": "Continue",
     "drop_pin": "Drop pin",
-    "checking": "Checking nearby…",
     "checking_a11y": "Checking for reports nearby"
   },
   "capture": {
