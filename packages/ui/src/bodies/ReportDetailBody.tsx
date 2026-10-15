@@ -291,6 +291,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: t.space["2"],
     marginTop: t.space["3"],
   },
