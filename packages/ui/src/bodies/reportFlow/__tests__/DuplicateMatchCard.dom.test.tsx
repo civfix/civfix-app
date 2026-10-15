@@ -48,7 +48,15 @@ describe("DuplicateMatchCard", () => {
   it("opens its own match when pressed", () => {
     const match = row({ title: "Overflowing bin" }, 8)
     const onOpen = renderCard(match)
-    fireEvent.click(screen.getByRole("button", { name: "Overflowing bin" }))
+    fireEvent.click(screen.getByRole("button", { name: /^Overflowing bin/ }))
     expect(onOpen).toHaveBeenCalledWith(match)
+  })
+
+  it("gives a screen reader the distance and the neighbor count, not only the title", () => {
+    renderCard(row({ title: "Overflowing bin", confirmCount: 3 }, 11.2))
+    const card = screen.getByRole("button")
+    expect(card.getAttribute("aria-label")).toBeNull()
+    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors saw this too")
+    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors saw this too/ })).toBe(card)
   })
 })

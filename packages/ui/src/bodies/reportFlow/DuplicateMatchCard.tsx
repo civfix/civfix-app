@@ -44,7 +44,6 @@ export function DuplicateMatchCard({
     <Pressable
       onPress={() => onOpen(row)}
       accessibilityRole="button"
-      accessibilityLabel={text.title}
       {...focusRingProps}
       style={(state) => [
         styles.card,
@@ -76,9 +75,7 @@ export function DuplicateMatchCard({
         {text.count ? (
           <View style={styles.countRow}>
             <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
-            <Text style={styles.count} numberOfLines={1}>
-              {text.count}
-            </Text>
+            <Text style={styles.count}>{text.count}</Text>
           </View>
         ) : null}
       </View>
@@ -117,8 +114,9 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
-  countRow: { flexDirection: "row", alignItems: "center", gap: t.space["1"] },
+  countRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["1"] },
   count: {
+    flexShrink: 1,
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
