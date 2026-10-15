@@ -68,6 +68,14 @@ export function useDuplicateGate(resume?: () => void): DuplicateGate {
   const pending = useRef<PendingCheck | null>(null)
   const continuation = useRef<(() => void) | null>(null)
 
+  const cancelPending = useCallback(() => {
+    const p = pending.current
+    if (!p) return
+    clearTimeout(p.timer)
+    pending.current = null
+    setBusy(false)
+  }, [])
+
   const settle = useCallback((rows: NearbyReportRow[]) => {
     const p = pending.current
     if (!p) return
@@ -95,12 +103,25 @@ export function useDuplicateGate(resume?: () => void): DuplicateGate {
     [center, pins, failed],
   )
 
+  // A waiting check follows the draft's point, read from the store because this render's `center` can lag
+  // behind it: a point moved while the button spins is the one the press would carry on with, so it is the
+  // one to check, within the press's own deadline.
   useEffect(() => {
     const p = pending.current
     if (!p) return
+    const draft = useDraftReportStore.getState().draft
+    if (draft.lat == null || draft.lng == null) {
+      cancelPending()
+      return
+    }
+    p.point = { lat: draft.lat, lng: draft.lng }
+    if (!needsDuplicateCheck(draft)) {
+      settle([])
+      return
+    }
     const rows = answer(p.point)
     if (rows) settle(rows)
-  }, [answer, settle])
+  }, [answer, settle, cancelPending])
 
   const run = useCallback(
     (onClear: () => void) => {
@@ -120,15 +141,10 @@ export function useDuplicateGate(resume?: () => void): DuplicateGate {
   )
 
   const dismiss = useCallback(() => {
-    const p = pending.current
-    if (p) {
-      clearTimeout(p.timer)
-      pending.current = null
-      setBusy(false)
-    }
+    cancelPending()
     continuation.current = null
     useDuplicateScreen.setState({ open: null })
-  }, [])
+  }, [cancelPending])
 
   const reportNew = useCallback(() => {
     const next = continuation.current ?? resume

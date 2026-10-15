@@ -332,6 +332,83 @@ describe("useDuplicateGate", () => {
     expect(remounted.result.current.matches).toBeNull()
   })
 
+  it("checks the point it was moved to while a check waited, and opens the screen for it", async () => {
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    const onClear = vi.fn()
+
+    act(() => gate.result.current.run(onClear))
+    act(() => placeDraft(B))
+    await waitFor(() => expect(api.mapReports).toHaveBeenCalledTimes(2))
+    expect(gate.result.current.busy).toBe(true)
+    await act(async () => api.calls[1]?.resolve([pinAt("near-b", northOf(B, 10))]))
+    await waitFor(() => expect(gate.result.current.matches).toHaveLength(1))
+    expect(gate.result.current.matches?.[0]?.pin.id).toBe("near-b")
+    expect(gate.result.current.busy).toBe(false)
+    expect(onClear).not.toHaveBeenCalled()
+    expect(draft().duplicateCheckedPoint).toEqual(B)
+
+    await act(async () => api.calls[0]?.resolve([]))
+    expect(gate.result.current.matches).toHaveLength(1)
+    expect(onClear).not.toHaveBeenCalled()
+  })
+
+  it("keeps the press's 3 seconds when the point moves, and stores the point it moved to", async () => {
+    vi.useFakeTimers()
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    const onClear = vi.fn()
+
+    act(() => gate.result.current.run(onClear))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000)
+    })
+    act(() => placeDraft(B))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(999)
+    })
+    expect(gate.result.current.busy).toBe(true)
+    expect(onClear).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(onClear).toHaveBeenCalledTimes(1)
+    expect(gate.result.current.busy).toBe(false)
+    expect(draft().duplicateCheckedPoint).toEqual(B)
+  })
+
+  it("carries on at once when a waiting check's point moves to one already checked", async () => {
+    useDraftReportStore.getState().setDuplicateCheckedPoint(B)
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    const onClear = vi.fn()
+
+    act(() => gate.result.current.run(onClear))
+    expect(gate.result.current.busy).toBe(true)
+    act(() => placeDraft(B))
+    await waitFor(() => expect(onClear).toHaveBeenCalledTimes(1))
+    expect(gate.result.current.busy).toBe(false)
+    expect(gate.result.current.matches).toBeNull()
+    expect(api.mapReports).toHaveBeenCalledTimes(1)
+  })
+
+  it("drops a waiting check when the draft is reset, so the press never carries on", async () => {
+    vi.useFakeTimers()
+    const api = heldMapReports()
+    const gate = renderGate(api.mapReports)
+    const onClear = vi.fn()
+
+    act(() => gate.result.current.run(onClear))
+    act(() => useDraftReportStore.getState().reset())
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
+    expect(onClear).not.toHaveBeenCalled()
+    expect(gate.result.current.busy).toBe(false)
+    expect(draft().duplicateCheckedPoint).toBeNull()
+  })
+
   it("never shows a screen that belongs to a reset draft", async () => {
     const { gate } = await openScreen(vi.fn())
     act(() => {

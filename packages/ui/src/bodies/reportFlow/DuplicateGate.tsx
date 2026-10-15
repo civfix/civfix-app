@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { BackHandler, View } from "react-native"
+import React, { useState } from "react"
+import { View } from "react-native"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
 import { useNavStore } from "../../nav"
@@ -7,6 +7,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { useT } from "../../i18n"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { DuplicateMatchCard } from "./DuplicateMatchCard"
+import { useHardwareBack } from "./useHardwareBack"
 
 // Below this a list row is too narrow for two cards side by side (two phone-width cards plus the gap).
 const TWO_COLUMNS_FROM = 640
@@ -34,14 +35,7 @@ export function DuplicateGate({
   // Android's back otherwise leaves the whole flow. The body stays mounted under a match's page and in the
   // kept-alive report tab, so it answers only while the screen is what the reporter sees.
   const onScreen = useNavStore((s) => s.view === "report" && s.stack.length === 0)
-  useEffect(() => {
-    if (!onScreen) return
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      onBack()
-      return true
-    })
-    return () => sub.remove()
-  }, [onScreen, onBack])
+  useHardwareBack(onScreen, onBack)
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
