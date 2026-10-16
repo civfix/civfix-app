@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { Image, Pressable, StyleSheet, View } from "react-native"
-import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webHover, webTransition } from "../../theme"
+import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webTransition } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
 import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useT } from "../../i18n"
@@ -49,59 +49,68 @@ export function DuplicateMatchCard({
   const text = useMatchText(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
+  // Me too is a sibling of the open target, never inside it: react-native-web renders Pressable as a
+  // `<button>`, and a nested button is invalid DOM. The card chrome lives on the wrapper so hover still
+  // outlines the whole card.
+  const [hovered, setHovered] = useState(false)
   return (
-    <Pressable
-      onPress={() => onOpen(row)}
-      accessibilityRole="button"
-      {...focusRingProps}
-      style={(state) => [
+    <View
+      style={[
         styles.card,
         width !== undefined ? { width } : null,
         th.shadows.s1,
         webTransition,
-        webHover(state) ? styles.cardHovered : null,
-        state.pressed ? styles.cardPressed : null,
+        hovered ? styles.cardHovered : null,
       ]}
     >
-      <View style={[styles.cardMedia, { backgroundColor: wash(cat, 0.84, th) }]}>
-        {pin.thumbUrl ? (
-          <Image source={{ uri: pin.thumbUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : (
-          <Icon icon={CATEGORY_ICONS[pin.category]} size={40} color={cat} />
-        )}
-      </View>
-      <View style={styles.cardBody}>
-        <Text style={styles.cardTitle} numberOfLines={2}>
-          {text.title}
-        </Text>
-        <View style={styles.metaRow}>
-          <Text style={styles.cardMeta}>{text.category}</Text>
-          <MetaDot color={th.colors.textSubtle} />
-          <Text style={styles.cardMeta} numberOfLines={1}>
-            {text.distance}
-          </Text>
+      <Pressable
+        onPress={() => onOpen(row)}
+        onHoverIn={() => setHovered(true)}
+        onHoverOut={() => setHovered(false)}
+        accessibilityRole="button"
+        {...focusRingProps}
+        style={(state) => [styles.open, state.pressed ? styles.cardPressed : null]}
+      >
+        <View style={[styles.cardMedia, { backgroundColor: wash(cat, 0.84, th) }]}>
+          {pin.thumbUrl ? (
+            <Image source={{ uri: pin.thumbUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ) : (
+            <Icon icon={CATEGORY_ICONS[pin.category]} size={40} color={cat} />
+          )}
         </View>
-        {text.count ? (
-          <View style={styles.countRow}>
-            <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
-            <Text style={styles.count}>{text.count}</Text>
+        <View style={styles.cardBody}>
+          <Text style={styles.cardTitle} numberOfLines={2}>
+            {text.title}
+          </Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.cardMeta}>{text.category}</Text>
+            <MetaDot color={th.colors.textSubtle} />
+            <Text style={styles.cardMeta} numberOfLines={1}>
+              {text.distance}
+            </Text>
           </View>
-        ) : null}
-        {onMeToo ? (
-          <View style={styles.meToo}>
-            <MeTooButton
-              size="sm"
-              label={t("wizard.duplicate.me_too")}
-              accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
-              pressed={false}
-              busy={meTooBusy}
-              disabled={meTooDisabled}
-              onPress={() => onMeToo(row)}
-            />
-          </View>
-        ) : null}
-      </View>
-    </Pressable>
+          {text.count ? (
+            <View style={styles.countRow}>
+              <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
+              <Text style={styles.count}>{text.count}</Text>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+      {onMeToo ? (
+        <View style={styles.meToo}>
+          <MeTooButton
+            size="sm"
+            label={t("wizard.duplicate.me_too")}
+            accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
+            pressed={false}
+            busy={meTooBusy}
+            disabled={meTooDisabled}
+            onPress={() => onMeToo(row)}
+          />
+        </View>
+      ) : null}
+    </View>
   )
 }
 
@@ -112,12 +121,15 @@ const useStyles = makeThemedStyles((t) => ({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
-    overflow: "hidden",
   },
+  open: { borderRadius: t.radius.lg },
   cardHovered: { borderColor: t.colors.borderStrong },
   cardPressed: { opacity: 0.85 },
   cardMedia: {
     aspectRatio: CARD_MEDIA_ASPECT,
+    borderTopLeftRadius: t.radius.lg,
+    borderTopRightRadius: t.radius.lg,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -130,7 +142,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
-  meToo: { marginTop: t.space["2"] },
+  meToo: { paddingHorizontal: t.space["3"], paddingBottom: t.space["3"] },
   metaRow: { flexDirection: "row", alignItems: "center", gap: t.space["1"] },
   cardMeta: {
     fontFamily: t.fontFamily.bodyRegular,
