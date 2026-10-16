@@ -1,7 +1,7 @@
 import * as React from "react"
 import { afterEach, describe, expect, it } from "vitest"
 import { cleanup, render } from "@testing-library/react"
-import { parseMarkdownSubset } from "@civfix/shared/markdown"
+import { parseMarkdownSubset } from "@civfix/contract/markdown"
 
 import { Markdown, renderMarkdownNodes } from "./markdown-dom"
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { existsSync } from "node:fs"
 import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
 const appConfig = appConfigFactory({ config: {} })

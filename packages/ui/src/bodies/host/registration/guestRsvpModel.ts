@@ -11,9 +11,9 @@ import {
   type EventQuestionDTO,
   type GuestContactChannel,
   type TicketTypeDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { isEventEndedRefusal } from "../../../data/errorCode"
-import { defaultTicketTypeId, type AnswerMap } from "@civfix/shared/host"
+import { defaultTicketTypeId, type AnswerMap } from "@civfix/contract/host"
 import { initialAnswers } from "./questionModel"
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"

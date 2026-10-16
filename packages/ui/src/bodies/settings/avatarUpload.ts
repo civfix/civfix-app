@@ -1,7 +1,7 @@
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type { CameraCapability, CapturedMedia } from "../../capabilities"
 import { uploadMediaId } from "../../data/uploadMedia"
-import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react"
 import { Platform } from "react-native"
-import type { EventKind, ReportCategory } from "@civfix/shared"
+import type { EventKind, ReportCategory } from "@civfix/contract"
 import { useLayoutMode } from "../theme"
 import { useClipboard, useHaptics, useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"

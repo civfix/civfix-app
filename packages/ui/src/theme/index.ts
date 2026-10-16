@@ -1,5 +1,5 @@
 import { Platform, type ViewStyle } from "react-native"
-import { tokens, categoryColor, type CategoryColorKey } from "@civfix/shared/tokens"
+import { tokens, categoryColor, type CategoryColorKey } from "@civfix/tokens"
 import { useColorSchemeName } from "./ThemeProvider"
 import { themes, type Theme } from "./themes"
 import { hexWithAlpha } from "./color"

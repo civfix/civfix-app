@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { MAX_HOST_SUMMARY_EVENT_ROWS, type HostedEventDTO } from "@civfix/shared"
+import { MAX_HOST_SUMMARY_EVENT_ROWS, type HostedEventDTO } from "@civfix/contract"
 import { pickerOptions } from "../analyticsModel"
 import { surfaceSource } from "../../../__tests__/sourceGuards"
 

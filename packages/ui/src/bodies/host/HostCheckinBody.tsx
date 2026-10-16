@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventSlotDTO } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { Text, iconMap } from "../../typography"
 import { PrimaryButton } from "../../primitives"

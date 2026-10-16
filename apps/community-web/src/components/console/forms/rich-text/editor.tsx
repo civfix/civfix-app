@@ -2,7 +2,7 @@
 
 import { useCallback, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent } from "react"
-import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/shared/markdown"
+import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/contract/markdown"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"

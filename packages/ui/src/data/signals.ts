@@ -1,4 +1,4 @@
-import type { SignalTopic } from "@civfix/shared"
+import type { SignalTopic } from "@civfix/contract"
 
 import { queryKeys } from "./keys"
 

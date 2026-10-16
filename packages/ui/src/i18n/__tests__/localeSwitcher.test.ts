@@ -1,5 +1,5 @@
 import type { ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 import { createI18n } from "../config"
 import { hasCatalog, makeLocaleSwitcher, type CatalogLoader } from "../localeSwitcher"

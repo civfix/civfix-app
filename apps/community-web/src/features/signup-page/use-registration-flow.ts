@@ -6,14 +6,14 @@ import {
   type EventAnswerValue,
   type PublicEventPageDTO,
   toAppError,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   answerPayload,
   clampPartySize,
   defaultTicketTypeId,
   missingRequired,
   visibleQuestions as shownQuestions,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 
 import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"

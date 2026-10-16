@@ -13,8 +13,8 @@ import type {
   UserProfileDTO,
   SearchUsersResponse,
   HandleAvailableResponse,
-} from "@civfix/shared"
-import { isValidHandle } from "@civfix/shared"
+} from "@civfix/contract"
+import { isValidHandle } from "@civfix/contract"
 import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
 import { coercePages } from "../infinitePages"

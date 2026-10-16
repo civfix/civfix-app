@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO, MyEventRegistrationRef, TicketTypeDTO } from "@civfix/shared"
+import type { CleanupDTO, MyEventRegistrationRef, TicketTypeDTO } from "@civfix/contract"
 import { registerErrorKey, registrationSurface } from "../registration/registrationModel"
 
 const type = (over: Partial<TicketTypeDTO> = {}): TicketTypeDTO => ({

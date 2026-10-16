@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
 import { aroundWindowState } from "../conversation/aroundWindowState"
 
 const item = { message: { id: "m1" }, mine: false, pending: false, failed: false } as unknown as ChatItem

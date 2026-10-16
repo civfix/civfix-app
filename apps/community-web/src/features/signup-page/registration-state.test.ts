@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { PublicEventPageDTO } from "@civfix/shared"
-import { defaultTicketTypeId } from "@civfix/shared/host"
+import type { PublicEventPageDTO } from "@civfix/contract"
+import { defaultTicketTypeId } from "@civfix/contract/host"
 
 import {
   isSuccessOutcome,

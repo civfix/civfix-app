@@ -6,7 +6,7 @@ import { SettingsRow, SettingsSection } from "../../primitives"
 import type { useRequestMyData } from "../../data"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"
-import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 

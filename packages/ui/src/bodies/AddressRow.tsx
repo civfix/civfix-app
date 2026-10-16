@@ -1,7 +1,7 @@
 import React, { useCallback } from "react"
 import { Modal, Platform, Pressable, StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import type { AddressPrecision } from "@civfix/shared"
+import type { AddressPrecision } from "@civfix/contract"
 import {
   PRESSED_OPACITY,
   focusRingProps,

@@ -1,4 +1,4 @@
-import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
 import type { LayoutMode } from "../theme"
 import type { DraftReport } from "./draftStore"
 

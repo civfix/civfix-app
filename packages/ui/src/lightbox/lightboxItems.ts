@@ -1,4 +1,4 @@
-import type { MediaDTO } from "@civfix/shared"
+import type { MediaDTO } from "@civfix/contract"
 import type { LightboxItem } from "./MediaLightbox.types"
 
 export type LightboxSourceMedia = Pick<MediaDTO, "url" | "kind" | "thumbUrl" | "width" | "height">

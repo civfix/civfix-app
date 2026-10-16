@@ -1,4 +1,4 @@
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type {
   ChatHistoryResponse,
   ChatMessageDTO,
@@ -10,8 +10,8 @@ import type {
   SearchUsersResponse,
   UserDTO,
   UserProfileDTO,
-} from "@civfix/shared"
-import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
+} from "@civfix/contract"
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
 export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)

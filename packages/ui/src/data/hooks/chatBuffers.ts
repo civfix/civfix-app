@@ -7,7 +7,8 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from "react"
-import type { ChatItem, ChatMessageDTO, OutboxEntry } from "@civfix/shared"
+import type { ChatItem, OutboxEntry } from "../../helpers"
+import type { ChatMessageDTO } from "@civfix/contract"
 
 export interface ChatBuffers {
   liveMessages: ChatMessageDTO[]

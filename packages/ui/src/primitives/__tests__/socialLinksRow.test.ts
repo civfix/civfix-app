@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { SOCIAL_PLATFORMS, socialLinkUrl } from "@civfix/shared"
+import { SOCIAL_PLATFORMS, socialLinkUrl } from "@civfix/contract"
 import { presentSocialPlatforms } from "../socialLinksModel"
 
 const GLYPHS = readFileSync(new URL("../socialLinksModel.ts", import.meta.url), "utf8")

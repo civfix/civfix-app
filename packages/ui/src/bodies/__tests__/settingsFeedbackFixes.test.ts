@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 import {
   PROFILE_SAVE_RATE_LIMITED_KEY,

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
-import type { MediaDTO, PostDTO } from "@civfix/shared"
+import type { MediaDTO, PostDTO } from "@civfix/contract"
 import {
   buildPostCardModel,
   buildPostIdentity,

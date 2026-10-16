@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import type * as ReactNative from "react-native"
-import { CheckinOutcomeSchema, type CheckinOutcome, type CheckinResultDTO } from "@civfix/shared"
+import { CheckinOutcomeSchema, type CheckinOutcome, type CheckinResultDTO } from "@civfix/contract"
 import { I18nProvider } from "../../../i18n"
 import { CheckinResultCard } from "../checkin/CheckinDeskCards"
 

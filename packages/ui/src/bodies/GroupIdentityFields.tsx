@@ -4,7 +4,7 @@ import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import type { ComposerAttachments } from "../primitives/useComposerAttachments"
-import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/shared"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/contract"
 
 export interface GroupIdentityLabels {
   avatarA11y: string

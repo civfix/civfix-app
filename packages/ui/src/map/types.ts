@@ -1,4 +1,4 @@
-import type { ReportPinDTO, ReportClusterDTO, CleanupDTO, BBox } from "@civfix/shared"
+import type { ReportPinDTO, ReportClusterDTO, CleanupDTO, BBox } from "@civfix/contract"
 
 export interface MapLatLng {
   lat: number

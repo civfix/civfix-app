@@ -1,12 +1,12 @@
 import {
   haversineMeters,
-  isUuid,
   type BBox,
   type LinkedReportRef,
   type ReportCategory,
   type ReportPinDTO,
-} from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+} from "@civfix/contract"
+import { isUuid } from "../../helpers"
+import type { LatLng } from "@civfix/contract/geocode"
 import { PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../../data/geoBounds"
 import type { LinkedReportCardEntry } from "../linkedReportCards"
 

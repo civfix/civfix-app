@@ -1,6 +1,6 @@
 import React from "react"
 import { View, StyleSheet, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
-import { isValidTimeZone, safeDateFormat, wallClockInZone } from "@civfix/shared/datetime"
+import { isValidTimeZone, safeDateFormat, wallClockInZone } from "@civfix/contract/datetime"
 import { makeThemedStyles, radius, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useLocale } from "../i18n"

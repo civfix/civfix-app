@@ -3,8 +3,8 @@
 import * as React from "react"
 import { HandHeart } from "lucide-react"
 import { useT } from "@civfix/ui/i18n"
-import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
-import { isSafeHttpsUrl } from "@civfix/shared/markdown"
+import type { EventPageBlock, PublicEventPageDTO } from "@civfix/contract"
+import { isSafeHttpsUrl } from "@civfix/contract/markdown"
 
 type DonateBlockData = Extract<EventPageBlock, { kind: "donate" }>
 

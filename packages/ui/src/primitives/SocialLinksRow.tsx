@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
-import { SOCIAL_PLATFORM_LABELS, socialLinkUrl, type SocialLinks } from "@civfix/shared"
+import { SOCIAL_PLATFORM_LABELS, socialLinkUrl, type SocialLinks } from "@civfix/contract"
 import {
   focusRingProps,
   hitSlopToTarget,

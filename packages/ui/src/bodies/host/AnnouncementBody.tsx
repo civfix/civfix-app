@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { View } from "react-native"
-import { eventWhenLabel } from "@civfix/shared/datetime"
+import { eventWhenLabel } from "@civfix/contract/datetime"
 import { headingLevel, makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { Avatar, Markdown, SecondaryButton, SkeletonDetail, SkeletonGroup } from "../../primitives"

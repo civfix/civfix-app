@@ -1,9 +1,5 @@
 import * as React from "react"
-import {
-  parseMarkdownSubset,
-  type MarkdownInline,
-  type MarkdownNode,
-} from "@civfix/shared/markdown"
+import { parseMarkdownSubset, type MarkdownInline, type MarkdownNode } from "@civfix/contract/markdown"
 
 // Plain DOM on purpose: the host console renders its preview through this module, and its lint boundary
 // forbids anything that reaches React Native.

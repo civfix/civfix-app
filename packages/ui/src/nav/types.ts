@@ -1,4 +1,4 @@
-import type { CleanupDTO, PersonDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, PersonDTO, ReportPinDTO } from "@civfix/contract"
 
 export type LayoutMode = "compact" | "expanded"
 

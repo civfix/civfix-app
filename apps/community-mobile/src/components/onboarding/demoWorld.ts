@@ -1,4 +1,5 @@
-import type { ChatItem, CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/shared"
+import type { ChatItem } from "@civfix/ui/helpers"
+import type { CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/contract"
 import { TOGETHER_EVENT_SPOT, TRACK_PINS } from "./onboardingMapScenes"
 
 export const DEMO_ORGANIZER: PersonDTO = {

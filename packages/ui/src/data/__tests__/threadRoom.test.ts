@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { MessageThreadDTO } from "@civfix/shared"
+import type { MessageThreadDTO } from "@civfix/contract"
 import { threadMatchesRoom, threadRoomId } from "../threadRoom"
 
 const thread = (overrides: Partial<MessageThreadDTO>): MessageThreadDTO =>

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
-import type { PostCounts, PostViewer } from "@civfix/shared"
+import type { PostCounts, PostViewer } from "@civfix/contract"
 import {
   buildPostActionMenuModel,
   buildPostActionModel,

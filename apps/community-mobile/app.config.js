@@ -1,5 +1,5 @@
 // @ts-check
-const { tokens } = require("@civfix/shared/tokens")
+const { tokens } = require("@civfix/tokens")
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? null
 

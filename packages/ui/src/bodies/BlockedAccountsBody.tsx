@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
-import type { PersonDTO } from "@civfix/shared"
+import type { PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, hitSlopToTarget } from "../theme"
 import { Text, iconMap } from "../typography"
 import { Avatar, ListBodyEmpty, useListBodyStyles, useListEndReached, useToast } from "../primitives"

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { formatCertificateCode } from "@civfix/shared"
+import { formatCertificateCode } from "@civfix/contract"
 import { webSelectableText, focusRingProps } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"

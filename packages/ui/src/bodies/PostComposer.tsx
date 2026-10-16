@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { Animated, Platform, View } from "react-native"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import type { MentionCandidate } from "../primitives"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { Text } from "../typography"

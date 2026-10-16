@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { View } from "react-native"
-import type { LinkedEventRef } from "@civfix/shared"
+import type { LinkedEventRef } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { EventCard } from "../../primitives"

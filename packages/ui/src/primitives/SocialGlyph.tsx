@@ -1,6 +1,6 @@
 import React from "react"
 import Svg, { Path } from "react-native-svg"
-import type { SocialPlatform } from "@civfix/shared"
+import type { SocialPlatform } from "@civfix/contract"
 import { SOCIAL_GLYPH_PATHS, SOCIAL_GLYPH_VIEWBOX } from "./socialLinksModel"
 
 export interface SocialGlyphProps {

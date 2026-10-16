@@ -9,7 +9,7 @@ import {
   type CheckinResultDTO,
   type EventCheckinCountersDTO,
   type EventRegistrationDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   attendeeDisplayName,
   checkableSeatIds,
@@ -17,7 +17,7 @@ import {
   formatTicketCode,
   normalizeTicketCode,
   ticketCodeReady,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

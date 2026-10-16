@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { Eye, Send, Clock, TestTube } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { BroadcastDTO, BroadcastPreviewDTO, BroadcastSegment } from "@civfix/shared"
+import type { BroadcastDTO, BroadcastPreviewDTO, BroadcastSegment } from "@civfix/contract"
 import {
   HTTPS_URL_MAX_LENGTH,
   MAX_BROADCAST_BODY,
   MAX_BROADCAST_CTA_LABEL,
   MAX_BROADCAST_SUBJECT,
-} from "@civfix/shared"
-import { datetimeLocalFromIso, isoFromDatetimeLocal } from "@civfix/shared/datetime"
+} from "@civfix/contract"
+import { datetimeLocalFromIso, isoFromDatetimeLocal } from "@civfix/contract/datetime"
 import { useApi, useAuthState, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"

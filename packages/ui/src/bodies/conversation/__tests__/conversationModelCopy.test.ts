@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
-import { colorSchemes } from "@civfix/shared/tokens"
-import { contrastRatio } from "@civfix/shared/chip-contrast"
+import { AppError, ErrorCode } from "@civfix/contract"
+import { colorSchemes } from "@civfix/tokens"
+import { contrastRatio } from "@civfix/tokens/chip-contrast"
 import { editErrorCopyKey, senderColor, senderNameColor } from "../conversationModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")

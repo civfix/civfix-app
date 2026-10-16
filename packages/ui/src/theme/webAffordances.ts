@@ -8,7 +8,7 @@
  * flag, which is true for mouse focus too and would flash the ring on every click.
  */
 import { Platform, type ViewStyle, type TextStyle, type PressableStateCallbackType } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { EASE_STANDARD_CSS } from "./motion"
 import { ACCENT_TEXT } from "./schemes"
 import type { Theme } from "./themes"

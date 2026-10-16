@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
+import type { EventPageBlock, PublicEventPageDTO } from "@civfix/contract"
 
 import { RegistrationWidget } from "../registration-widget"
 

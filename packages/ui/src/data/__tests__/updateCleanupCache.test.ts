@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
+import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/contract"
 import { queryKeys } from "../keys"
 
 const CLEANUPS_LIST_PREFIX = ["cleanups"] as const

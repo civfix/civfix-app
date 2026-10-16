@@ -1,6 +1,6 @@
 import type { AppLifecycleState } from "@/lib/lifecycleTypes"
 
-export { MAX_VIDEO_SECONDS } from "@civfix/shared"
+export { MAX_VIDEO_SECONDS } from "@civfix/contract"
 
 export interface CameraSessionInputs {
   hostActive: boolean

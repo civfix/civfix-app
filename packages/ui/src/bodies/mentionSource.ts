@@ -24,7 +24,7 @@
  *              a LOADED roster always yields a scoped array - in a solo group that array is []
  *              (the only member is the viewer, so nobody is taggable). No extra candidates.
  */
-import type { RoomKind, UserSearchResultDTO } from "@civfix/shared"
+import type { RoomKind, UserSearchResultDTO } from "@civfix/contract"
 import type { JurisdictionMentionCandidate } from "../primitives/MentionAutocomplete"
 import { normalizeHandle } from "./mentionText"
 

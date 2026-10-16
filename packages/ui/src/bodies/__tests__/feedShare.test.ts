@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { AppError, ErrorCode, type PersonDTO, type PostDTO } from "@civfix/shared"
+import { AppError, ErrorCode, type PersonDTO, type PostDTO } from "@civfix/contract"
 import {
   FEED_CAPTION_COUNTER_AT,
   FEED_CAPTION_MAX,

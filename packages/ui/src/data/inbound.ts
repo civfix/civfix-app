@@ -1,14 +1,11 @@
 import {
   ErrorCode,
   WsErrorCode,
-  effectiveClientId,
-  preserveViewerFields,
-  reconcileInbound,
   type ChatHistoryResponse,
   type ChatMessageDTO,
-  type OutboxEntry,
   type RoomKind,
-} from "@civfix/shared"
+} from "@civfix/contract"
+import { effectiveClientId, preserveViewerFields, reconcileInbound, type OutboxEntry } from "../helpers"
 
 export interface InboundFrame {
   message: ChatMessageDTO

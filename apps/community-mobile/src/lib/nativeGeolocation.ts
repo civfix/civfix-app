@@ -1,6 +1,6 @@
 import * as Location from "expo-location"
 import type { GeolocationCapability, GeoPosition } from "@civfix/ui/capabilities"
-import { withTimeout } from "@civfix/shared"
+import { withTimeout } from "@civfix/ui/helpers/async"
 import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 
 async function foregroundPermissionGranted(): Promise<boolean> {

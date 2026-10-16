@@ -3,7 +3,7 @@
  * re-exports. Both take an INJECTED `now`, so these tests never touch timers.
  */
 import { describe, expect, it } from "vitest"
-import { DEFAULT_EVENT_DURATION_MS } from "@civfix/shared/host"
+import { DEFAULT_EVENT_DURATION_MS } from "@civfix/contract/host"
 import { hasEventEnded, hoursReceiptState } from "../eventLifecycle"
 
 const NOW = Date.parse("2026-07-27T12:00:00.000Z")

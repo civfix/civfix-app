@@ -6,7 +6,7 @@
  * per-attendee hours editor), and every draft carries a stable local `key` so React keys and the
  * reorder chevrons survive a re-render. `id` is present only for slots that already exist server-side.
  *
- * The caps are IMPORTED from `@civfix/shared` rather than re-declared: the editor's client-side limits
+ * The caps are IMPORTED from `@civfix/contract` rather than re-declared: the editor's client-side limits
  * and `EventSlotInputSchema`'s server-side limits must be EQUAL, not merely compatible, or the editor
  * either blocks a legal payload or submits an illegal one.
  *
@@ -23,7 +23,7 @@ import {
   MIN_SLOT_DURATION_MINUTES,
   type EventSlotDTO,
   type EventSlotInput,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 export const MIN_SLOT_DURATION_MS = MIN_SLOT_DURATION_MINUTES * 60_000
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ChatMessageDTO } from "@civfix/shared"
+import type { ChatMessageDTO } from "@civfix/contract"
 import { pinnedRenderRows } from "../conversationModel"
 
 function pin(id: string, fromId: string | null, kind: ChatMessageDTO["kind"] = "text"): ChatMessageDTO {

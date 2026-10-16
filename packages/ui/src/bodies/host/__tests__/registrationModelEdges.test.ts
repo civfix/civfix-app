@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { RegisterOutcomeSchema, type MyEventRegistrationRef, type TicketTypeDTO } from "@civfix/shared"
-import { defaultTicketTypeId, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import { RegisterOutcomeSchema, type MyEventRegistrationRef, type TicketTypeDTO } from "@civfix/contract"
+import { defaultTicketTypeId, registerOutcomeKey, sortedTicketTypes } from "@civfix/contract/host"
 import { registerErrorKey, registrationSurface } from "../registration/registrationModel"
 
 const type = (over: Partial<TicketTypeDTO> = {}): TicketTypeDTO => ({

@@ -5,7 +5,7 @@
       "entry": ["scripts/*.mjs"],
       "project": ["scripts/*.mjs"]
     },
-    "packages/shared": {
+    "packages/tokens": {
       "entry": ["src/**/*.test.ts", "__tests__/**/*.test.ts"],
       "project": ["src/**/*.ts", "__tests__/**/*.ts"]
     },
@@ -67,9 +67,6 @@
     // Metro (native) and the web bundler (.web first) pick a platform twin by file extension, which
     // knip cannot model: the twin's exports are consumed through the extension-less selector.
     "packages/ui/src/**/*.{native,web}.{ts,tsx}": ["exports", "types"],
-    // Published contract: the DTO schema and its endpoint response alias are both public names that
-    // registry consumers import.
-    "packages/shared/src/**": ["duplicates"],
     // Deliberate aliases that name one value for two call sites (step-1 and step-3 gate; back and
     // trailing header button); tests pin the relation.
     "packages/ui/src/bodies/channelWizard.ts": ["duplicates"],

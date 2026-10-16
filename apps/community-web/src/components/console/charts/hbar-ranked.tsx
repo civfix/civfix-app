@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { formatCount } from "@civfix/shared"
+import { formatCount } from "@civfix/ui/helpers"
 import { useLocale } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"

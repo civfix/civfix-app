@@ -9,7 +9,7 @@ import type {
   EventQuestionDTO,
   EventQuestionKind,
   EventQuestionOption,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   MAX_CONSENT_TEXT,
   MAX_EVENT_QUESTIONS,
@@ -17,7 +17,7 @@ import {
   MAX_QUESTION_OPTION_LABEL,
   MAX_QUESTION_OPTION_VALUE,
   MAX_QUESTION_PROMPT,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useEventQuestions } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

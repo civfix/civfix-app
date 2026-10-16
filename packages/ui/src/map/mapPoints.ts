@@ -1,4 +1,4 @@
-import type { CleanupDTO, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, ReportClusterDTO, ReportPinDTO } from "@civfix/contract"
 import { computeMapBlends } from "./blend"
 import { positionKey, type MapPoint } from "./clusterer"
 

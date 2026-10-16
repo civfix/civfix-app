@@ -4,7 +4,7 @@
  * against a half-loaded locale, and the instance stays on its current language until they arrive.
  */
 import type { i18n as I18nInstance, ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 export type CatalogLoader = (lng: SupportedLocale) => Promise<ResourceLanguage>
 

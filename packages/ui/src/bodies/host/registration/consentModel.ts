@@ -1,5 +1,5 @@
-import type { EventConsentInput } from "@civfix/shared"
-import { currentVersion } from "@civfix/shared/legal"
+import type { EventConsentInput } from "@civfix/contract"
+import { currentVersion } from "@civfix/contract/legal"
 import { REGISTRATION_CONSENT_SURFACE } from "./consentSurface"
 
 export interface ConsentState {

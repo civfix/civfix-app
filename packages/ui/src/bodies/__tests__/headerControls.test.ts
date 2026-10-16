@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 import {
   HEADER_AVATAR_SIZE,
   HEADER_CONTROL_RADIUS,

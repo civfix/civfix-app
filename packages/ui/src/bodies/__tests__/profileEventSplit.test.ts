@@ -4,7 +4,7 @@
  * and a future-dated row the server put in `pastEvents` still renders.
  */
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import { splitProfileEvents } from "../profile/profileEventSplit"
 
 function event(id: string, scheduledAt: string, organizerId: string): CleanupDTO {

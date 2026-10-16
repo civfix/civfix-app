@@ -1,4 +1,4 @@
-import { PageSlugSchema } from "@civfix/shared"
+import { PageSlugSchema } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 
 import { accessCodeFromSearch, signupPath, signupSlugFromPath } from "./signup-slug"

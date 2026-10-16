@@ -5,7 +5,7 @@ vi.mock("@civfix/ui/i18n", () => ({
   useViewerTimeZone: () => "UTC",
 }))
 
-import { datetimeLocalFromIso } from "@civfix/shared/datetime"
+import { datetimeLocalFromIso } from "@civfix/contract/datetime"
 
 import {
   consoleInputZone,

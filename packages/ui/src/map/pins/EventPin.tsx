@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { EventKind } from "@civfix/shared"
+import type { EventKind } from "@civfix/contract"
 import { pinGlow, useTheme } from "../../theme"
 import { PinSvg, PinBadge, type PinBadge as PinBadgeValue } from "./PinSvg"
 import { eventPinTarget, pinAppearanceFor } from "./appearance"

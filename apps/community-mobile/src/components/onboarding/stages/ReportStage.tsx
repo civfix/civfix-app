@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   type SharedValue,
 } from "react-native-reanimated"
-import { REPORT_TYPE_TO_CATEGORY } from "@civfix/shared"
+import { REPORT_TYPE_TO_CATEGORY } from "@civfix/contract"
 import { CategoryChip, Icon, TeardropPin, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { categoryColor, makeThemedStyles, motion, useTheme, wash } from "@/theme"

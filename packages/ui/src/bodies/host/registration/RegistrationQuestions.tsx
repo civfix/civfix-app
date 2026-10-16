@@ -1,8 +1,8 @@
 import React, { useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
-import type { EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import { MAX_LONG_TEXT_ANSWER, MAX_SHORT_TEXT_ANSWER } from "@civfix/shared"
+import type { EventAnswerValue, EventQuestionDTO } from "@civfix/contract"
+import { MAX_LONG_TEXT_ANSWER, MAX_SHORT_TEXT_ANSWER } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -15,7 +15,7 @@ import {
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import type { AnswerMap } from "@civfix/shared/host"
+import type { AnswerMap } from "@civfix/contract/host"
 import { toggleMultiSelect } from "./questionModel"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 

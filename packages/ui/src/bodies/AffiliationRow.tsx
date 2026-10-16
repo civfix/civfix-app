@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import type { OrganizationRefDTO } from "@civfix/shared"
+import type { OrganizationRefDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react"
 import { View } from "react-native"
-import type { PendingEventTeamInviteDTO, PendingOrganizationInviteDTO } from "@civfix/shared"
+import type { PendingEventTeamInviteDTO, PendingOrganizationInviteDTO } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { TextLink, iconMap } from "../../typography"
 import { IconTile, ListRow, SecondaryButton } from "../../primitives"

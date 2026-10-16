@@ -1,5 +1,5 @@
-import { MAX_BROADCAST_BODY, MAX_BROADCAST_SUBJECT } from "@civfix/shared"
-import type { BroadcastSegment, DeliveryStatus } from "@civfix/shared"
+import { MAX_BROADCAST_BODY, MAX_BROADCAST_SUBJECT } from "@civfix/contract"
+import type { BroadcastSegment, DeliveryStatus } from "@civfix/contract"
 
 export type AudienceKind = BroadcastSegment["kind"]
 

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { UserProfileDTO } from "@civfix/shared"
+import type { UserProfileDTO } from "@civfix/contract"
 import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { FollowButton } from "../../primitives"

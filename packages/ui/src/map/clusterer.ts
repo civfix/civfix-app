@@ -1,5 +1,5 @@
 import Supercluster from "supercluster"
-import type { BBox, CleanupDTO, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, ReportPinDTO } from "@civfix/contract"
 
 export type MapPoint =
   | { kind: "report"; id: string; lat: number; lng: number; pin: ReportPinDTO }

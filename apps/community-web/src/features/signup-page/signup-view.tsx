@@ -3,8 +3,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { CalendarPlus } from "lucide-react"
-import { ErrorCode, type PublicEventPageDTO, toAppError } from "@civfix/shared"
-import { buildIcs, eventIcsUid } from "@civfix/shared/ics"
+import { ErrorCode, type PublicEventPageDTO, toAppError } from "@civfix/contract"
+import { buildIcs, eventIcsUid } from "@civfix/contract/ics"
 import { Trans, useT } from "@civfix/ui/i18n"
 
 import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"

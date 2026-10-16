@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, LinkedReportRef } from "@civfix/shared"
+import type { CleanupDTO, LinkedReportRef } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { updateCleanupMutationOptions, type UpdateCleanupVars } from "../hooks/cleanups"
 

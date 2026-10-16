@@ -8,7 +8,9 @@ import {
   type EventQuestionDTO,
   type GuestContactChannel,
   type TicketTypeDTO,
-} from "@civfix/shared"
+  appErrorCode,
+  appErrorFields,
+} from "@civfix/contract"
 import {
   answerPayload,
   clampPartySize,
@@ -16,7 +18,7 @@ import {
   sortedTicketTypes,
   visibleQuestions,
   type AnswerMap,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
@@ -27,7 +29,6 @@ import {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
 } from "../../../data"
-import { appErrorCode, appErrorFields } from "@civfix/shared"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { View } from "react-native"
-import type { AnalyticsRange } from "@civfix/shared"
+import type { AnalyticsRange } from "@civfix/contract"
 import { headingLevel, makeThemedStyles } from "../../theme"
 import { Text, iconMap } from "../../typography"
 import type { AnchorRect } from "../../primitives"

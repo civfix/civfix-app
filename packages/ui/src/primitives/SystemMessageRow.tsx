@@ -1,6 +1,6 @@
 import React from "react"
 import { View, StyleSheet } from "react-native"
-import type { ChatMessageDTO, ReportStatus } from "@civfix/shared"
+import type { ChatMessageDTO, ReportStatus } from "@civfix/contract"
 import type { TFunction } from "i18next"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

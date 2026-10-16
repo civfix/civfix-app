@@ -1,5 +1,5 @@
-import { toAppError } from "@civfix/shared"
-import type { MediaKind } from "@civfix/shared"
+import { toAppError } from "@civfix/contract"
+import type { MediaKind } from "@civfix/contract"
 
 
 export async function sha256Hex(file: Blob): Promise<string> {

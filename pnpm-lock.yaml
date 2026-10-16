@@ -46,9 +46,12 @@ importers:
 
   apps/community-mobile:
     dependencies:
-      '@civfix/shared':
+      '@civfix/contract':
+        specifier: ^0.62.0
+        version: 0.62.0
+      '@civfix/tokens':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../packages/tokens
       '@civfix/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -233,9 +236,12 @@ importers:
 
   apps/community-web:
     dependencies:
-      '@civfix/shared':
+      '@civfix/contract':
+        specifier: ^0.62.0
+        version: 0.62.0
+      '@civfix/tokens':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../packages/tokens
       '@civfix/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -364,12 +370,11 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.20.1)(jiti@1.21.7)(jsdom@30.0.1)(lightningcss@1.33.0)(terser@5.51.2)(yaml@2.9.0)
 
-  packages/shared:
-    dependencies:
-      zod:
-        specifier: ^3.23
-        version: 3.25.76
+  packages/tokens:
     devDependencies:
+      '@civfix/contract':
+        specifier: ^0.62.0
+        version: 0.62.0
       '@eslint/js':
         specifier: ^9.16.0
         version: 9.39.5
@@ -397,9 +402,12 @@ importers:
 
   packages/ui:
     dependencies:
-      '@civfix/shared':
+      '@civfix/contract':
+        specifier: ^0.62.0
+        version: 0.62.0
+      '@civfix/tokens':
         specifier: workspace:*
-        version: link:../shared
+        version: link:../tokens
       '@gorhom/bottom-sheet':
         specifier: '*'
         version: 5.2.14(@types/react@19.1.17)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -1105,6 +1113,10 @@ packages:
 
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
+
+  '@civfix/contract@0.62.0':
+    resolution: {integrity: sha512-GiToTBdd1L7/Lktq9rNW0Qm5NzVptB0cBzsP4XgaSs8ccwlDkNX3lNhoYuUo+azW02vvli7RwuvCu9IcVNAkUg==}
+    engines: {node: '>=20'}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -7836,6 +7848,10 @@ snapshots:
       fs-extra: 7.0.1
       human-id: 4.2.1
       prettier: 2.8.8
+
+  '@civfix/contract@0.62.0':
+    dependencies:
+      zod: 3.25.76
 
   '@colors/colors@1.5.0':
     optional: true

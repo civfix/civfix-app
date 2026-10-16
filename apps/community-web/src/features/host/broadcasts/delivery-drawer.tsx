@@ -1,7 +1,7 @@
 "use client"
 
 import { useInfiniteQuery } from "@tanstack/react-query"
-import type { DeliveryStatus, ListBroadcastDeliveriesResponse } from "@civfix/shared"
+import type { DeliveryStatus, ListBroadcastDeliveriesResponse } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

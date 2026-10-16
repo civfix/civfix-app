@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 
 import {
   CAMERA_SNAPSHOT_KEY,

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { MAX_EVENT_CANCEL_REASON } from "@civfix/shared"
+import { MAX_EVENT_CANCEL_REASON } from "@civfix/contract"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"

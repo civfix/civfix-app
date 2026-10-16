@@ -28,7 +28,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
-import { formatCertificateCode } from "@civfix/shared"
+import { formatCertificateCode } from "@civfix/contract"
 import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { shareLink, useToast } from "../../primitives"

@@ -4,7 +4,7 @@
  * `useAuthState` returning exactly the configured AuthState.
  */
 import { describe, expect, it } from "vitest"
-import type { UserDTO } from "@civfix/shared"
+import type { UserDTO } from "@civfix/contract"
 import { normalizeAuthState } from "../types"
 import { makeFakeDataContext } from "../fakes"
 

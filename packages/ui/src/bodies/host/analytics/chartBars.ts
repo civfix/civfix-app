@@ -1,5 +1,5 @@
-import type { BreakdownRow, SeriesPoint } from "@civfix/shared"
-import { visibleValue } from "@civfix/shared/host"
+import type { BreakdownRow, SeriesPoint } from "@civfix/contract"
+import { visibleValue } from "@civfix/contract/host"
 import type { ChartBar } from "../../../charts"
 import { EMPTY_VALUE } from "../../../i18n/emptyValue"
 

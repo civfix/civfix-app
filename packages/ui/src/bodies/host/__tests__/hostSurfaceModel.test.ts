@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO, EventInsights } from "@civfix/shared"
-import { hostStage, type EventWindowLike, type HostStage } from "@civfix/shared/host"
+import type { CleanupDTO, EventInsights } from "@civfix/contract"
+import { hostStage, type EventWindowLike, type HostStage } from "@civfix/contract/host"
 import {
   ARRIVAL_BUCKET_MINUTES,
   HOST_ROW_ICONS,

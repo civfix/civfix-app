@@ -1,4 +1,4 @@
-import type { CleanupAttendeesResponse } from "@civfix/shared"
+import type { CleanupAttendeesResponse } from "@civfix/contract"
 
 export type ChatInfoRosterAccess = "full" | "followed-only"
 

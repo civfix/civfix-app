@@ -1,7 +1,7 @@
 "use client"
 
-import { colorSchemes } from "@civfix/shared/tokens"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import { colorSchemes } from "@civfix/tokens"
+import type { ColorSchemeName } from "@civfix/tokens"
 
 import { useColorScheme } from "@/lib/color-scheme"
 

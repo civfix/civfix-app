@@ -1,11 +1,11 @@
 import {
   WsClientMessageSchema,
   WsServerMessageSchema,
-  nextBackoffMs,
   type RoomKind,
   type WsClientMessage,
   type WsServerMessage,
-} from "@civfix/shared"
+} from "@civfix/contract"
+import { nextBackoffMs } from "../helpers"
 
 import type { ChatConnState, ChatSendOutcome, ChatSocketLike } from "../data/types"
 import type { ChatSocketCoreOptions, WsConnection, WsTransport } from "./types"

@@ -1,5 +1,5 @@
 import React from "react"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import { usePopoverAnchor, type AnchorRect } from "../primitives/PopoverMenu"
 import { usePostMediaLightbox } from "../lightbox/usePostMediaLightbox"
 import { useNavStore } from "../nav/useNavStore"

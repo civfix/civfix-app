@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, ActivityIndicator, RefreshControl, StyleSheet } from "react-native"
-import type { MessageThreadDTO } from "@civfix/shared"
+import type { MessageThreadDTO } from "@civfix/contract"
 import { makeThemedStyles, wash, useLayoutMode, useTheme } from "../theme"
 import { Text, type IconName } from "../typography"
 import {

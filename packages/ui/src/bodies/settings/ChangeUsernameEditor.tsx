@@ -1,5 +1,11 @@
 import React from "react"
-import { HANDLE_MAX_LENGTH, ErrorCode, errorCopyKey, isValidHandle, type ErrorCodeTable } from "@civfix/shared"
+import {
+  HANDLE_MAX_LENGTH,
+  ErrorCode,
+  errorCopyKey,
+  isValidHandle,
+  type ErrorCodeTable,
+} from "@civfix/contract"
 import { Text } from "../../typography"
 import { SettingsRow, TextField } from "../../primitives"
 import { useHandleAvailability } from "../../data"

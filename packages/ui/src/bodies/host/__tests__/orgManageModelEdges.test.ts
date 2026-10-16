@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { OrganizationMemberDTO } from "@civfix/shared"
+import type { OrganizationMemberDTO } from "@civfix/contract"
 import {
   counterVisible,
   lastAdminSeat,

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import type { CleanupStatus } from "@civfix/shared"
-import { deriveCleanupStatus, type EventWindowLike } from "@civfix/shared/host"
+import type { CleanupStatus } from "@civfix/contract"
+import { deriveCleanupStatus, type EventWindowLike } from "@civfix/contract/host"
 import { queryKeys } from "./keys"
 import { cleanupDetailFilters, invalidateCleanupLists } from "./hooks/cleanups"
 

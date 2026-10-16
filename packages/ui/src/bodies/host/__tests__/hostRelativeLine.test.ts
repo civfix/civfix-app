@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { HostStage } from "@civfix/shared/host"
+import type { HostStage } from "@civfix/contract/host"
 import { hostRelativeLine } from "../hostModeCopy"
 import { relativeLineFor } from "../hostSurfaceModel"
 

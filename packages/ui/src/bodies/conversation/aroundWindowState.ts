@@ -1,4 +1,4 @@
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
 
 export type AroundWindowState = "inactive" | "dead" | "active"
 

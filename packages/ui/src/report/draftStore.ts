@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { MAX_REPORT_MEDIA } from "@civfix/contract"
 import type { CapturedMedia } from "../capabilities"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { randomId } from "../data/randomId"

@@ -1,4 +1,4 @@
-import type { ReportCategory } from "@civfix/shared"
+import type { ReportCategory } from "@civfix/contract"
 import { iconMap } from "../typography"
 import type { LucideIcon } from "../typography"
 

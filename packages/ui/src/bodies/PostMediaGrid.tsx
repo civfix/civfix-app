@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { focusRingProps, stopPress, webCursor } from "../theme"
 import { useT } from "../i18n"

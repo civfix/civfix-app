@@ -8,7 +8,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import type { ColorSchemeName } from "@civfix/tokens"
 import { DEFAULT_ATTRIBUTION, Text, basemapPaper } from "@civfix/ui"
 import { makeThemedStyles, space, useTheme } from "@/theme"
 import {

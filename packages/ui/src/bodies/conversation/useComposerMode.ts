@@ -7,7 +7,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform } from "react-native"
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native"
-import { MESSAGE_BODY_MAX, type ChatMessageDTO, type UserSearchResultDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, type ChatMessageDTO, type UserSearchResultDTO } from "@civfix/contract"
 import type { ComposerMedia } from "../../data"
 import type { MentionCandidate } from "../../primitives"
 import { useToast } from "../../primitives"

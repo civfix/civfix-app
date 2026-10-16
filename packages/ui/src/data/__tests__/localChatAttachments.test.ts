@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import type { ChatItem, ChatMessageDTO, MediaDTO } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
+import type { ChatMessageDTO, MediaDTO } from "@civfix/contract"
 import {
   clearLocalChatAttachments,
   linkLocalChatAttachments,

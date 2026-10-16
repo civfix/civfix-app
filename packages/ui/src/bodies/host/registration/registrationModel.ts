@@ -1,6 +1,6 @@
-import type { CleanupDTO, ErrorCodeTable, RegistrationState, TicketTypeDTO } from "@civfix/shared"
-import { ErrorCode, byErrorCode } from "@civfix/shared"
-import { defaultTicketTypeId, ticketTypeSelectable } from "@civfix/shared/host"
+import type { CleanupDTO, ErrorCodeTable, RegistrationState, TicketTypeDTO } from "@civfix/contract"
+import { ErrorCode, byErrorCode } from "@civfix/contract"
+import { defaultTicketTypeId, ticketTypeSelectable } from "@civfix/contract/host"
 
 export type RegistrationSurface =
   | "hidden"

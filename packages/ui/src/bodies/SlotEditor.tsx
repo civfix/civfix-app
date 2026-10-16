@@ -8,8 +8,8 @@ import {
   MAX_SLOT_TITLE,
   MIN_SLOT_DURATION_MINUTES,
   type EventSlotDTO,
-} from "@civfix/shared"
-import { timeLabel, timeRangeLabel } from "@civfix/shared/datetime"
+} from "@civfix/contract"
+import { timeLabel, timeRangeLabel } from "@civfix/contract/datetime"
 import {
   makeThemedStyles,
   radius,

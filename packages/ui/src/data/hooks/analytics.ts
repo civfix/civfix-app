@@ -4,7 +4,7 @@ import type {
   EventAnalyticsScope,
   GetEventAnalyticsResponse,
   HostAnalyticsSummaryResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 

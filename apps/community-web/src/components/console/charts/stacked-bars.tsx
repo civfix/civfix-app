@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { formatCount } from "@civfix/shared"
+import { formatCount } from "@civfix/ui/helpers"
 import { EMPTY_VALUE, useLocale } from "@civfix/ui/i18n"
 
 import { ChartFrame, integerYAxis, PLOT_PAD, XLabels, YGrid } from "./chart-frame"

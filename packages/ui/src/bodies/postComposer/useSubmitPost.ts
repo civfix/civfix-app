@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import type { PostComposeInput, PostDTO } from "@civfix/shared"
+import type { PostComposeInput, PostDTO } from "@civfix/contract"
 import { useHaptics } from "../../capabilities"
 import { useCreatePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"

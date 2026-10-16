@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { avatarColor } from "@civfix/shared"
+import { avatarColor } from "@civfix/contract"
 import { resolveThreadAvatar, type ThreadAvatarInput } from "../threadAvatarResolve"
 
 const PEER = { id: "peer-1", name: "maria lopez", avatarUrl: null, avatar: null as never }

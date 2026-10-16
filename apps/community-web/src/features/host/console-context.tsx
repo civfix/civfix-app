@@ -2,12 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo } from "react"
 import type { ReactNode } from "react"
-import type {
-  CleanupDTO,
-  HostCapability,
-  OrganizationDTO,
-  OrganizationMemberRole,
-} from "@civfix/shared"
+import type { CleanupDTO, HostCapability, OrganizationDTO, OrganizationMemberRole } from "@civfix/contract"
 import { cleanupHostStanding, hasHostCapability, useAuthState } from "@civfix/ui/data"
 
 import {

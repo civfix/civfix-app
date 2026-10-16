@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { SOCIAL_PLATFORMS } from "@civfix/shared"
+import { SOCIAL_PLATFORMS } from "@civfix/contract"
 import { SOCIAL_GLYPH_PATHS } from "@civfix/ui/social"
 
 const VIEW = readFileSync(new URL("./org-page-view.tsx", import.meta.url), "utf8")

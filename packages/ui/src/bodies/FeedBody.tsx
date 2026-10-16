@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native"
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"

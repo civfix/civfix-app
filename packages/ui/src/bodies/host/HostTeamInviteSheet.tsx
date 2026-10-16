@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { EventTeamRole } from "@civfix/shared"
+import type { EventTeamRole } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,

@@ -6,8 +6,8 @@ import type {
   BroadcastPreviewDTO,
   CreateEventAnnouncementResponse,
   ListEventAnnouncementsResponse,
-} from "@civfix/shared"
-import { ANNOUNCEMENT_CHANNELS } from "@civfix/shared"
+} from "@civfix/contract"
+import { ANNOUNCEMENT_CHANNELS } from "@civfix/contract"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 

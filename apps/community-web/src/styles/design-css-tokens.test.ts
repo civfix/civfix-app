@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
-import { colorSchemes, tokens } from "@civfix/shared/tokens"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import { colorSchemes, tokens } from "@civfix/tokens"
+import type { ColorSchemeName } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
 import config from "../../tailwind.config"
 import type { SchemeColor } from "../../tailwind.config"
@@ -33,7 +33,7 @@ const NEUTRALS = [
   ["ink-5", "ink5"],
 ] as const
 
-describe("design.css neutrals mirror @civfix/shared tokens", () => {
+describe("design.css neutrals mirror @civfix/tokens", () => {
   for (const scheme of ["light", "dark"] as const) {
     it(`${scheme} surfaces and ink ramp match colorSchemes`, () => {
       const block = blockFor(scheme)
@@ -80,7 +80,7 @@ function tokenValue(source: Record<string, string>, key: string): string {
   return (value ?? "").toUpperCase()
 }
 
-describe("design.css hue ramps mirror @civfix/shared tokens", () => {
+describe("design.css hue ramps mirror @civfix/tokens", () => {
   for (const scheme of ["light", "dark"] as const) {
     it(`${scheme} hue ramps match colorSchemes`, () => {
       const block = blockFor(scheme)
@@ -255,7 +255,7 @@ function readTriplet(block: string, name: string): string {
   return (match?.[1] ?? "").trim()
 }
 
-describe("globals.css shadcn surfaces mirror @civfix/shared tokens in BOTH schemes", () => {
+describe("globals.css shadcn surfaces mirror @civfix/tokens in BOTH schemes", () => {
   for (const scheme of ["light", "dark"] as const) {
     it(`${scheme} fills match colorSchemes`, () => {
       const block = shadcnBlock(scheme)

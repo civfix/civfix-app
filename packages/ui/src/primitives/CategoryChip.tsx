@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { ReportCategory } from "@civfix/shared"
+import type { ReportCategory } from "@civfix/contract"
 import { useT } from "../i18n"
 import { makeThemedStyles, useTheme, categoryColor, wash } from "../theme"
 import { Text } from "../typography"

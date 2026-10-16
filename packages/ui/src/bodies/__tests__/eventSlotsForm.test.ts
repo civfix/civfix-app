@@ -5,7 +5,7 @@
  * `sortOrder` is renumbered over the SURVIVING rows.
  */
 import { describe, expect, it } from "vitest"
-import { MAX_EVENT_SLOTS, MAX_SLOT_TITLE, type EventSlotDTO } from "@civfix/shared"
+import { MAX_EVENT_SLOTS, MAX_SLOT_TITLE, type EventSlotDTO } from "@civfix/contract"
 import {
   addSlotDraft,
   buildSlotInputs,

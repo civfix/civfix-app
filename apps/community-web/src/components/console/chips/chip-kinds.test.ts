@@ -1,6 +1,6 @@
-import { CHIP_HUE_NAMES, chipHuePairs, contrastRatio, MIN_CHIP_RATIO } from "@civfix/shared/chip-contrast"
-import { colorSchemes } from "@civfix/shared/tokens"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import { CHIP_HUE_NAMES, chipHuePairs, contrastRatio, MIN_CHIP_RATIO } from "@civfix/tokens/chip-contrast"
+import { colorSchemes } from "@civfix/tokens"
+import type { ColorSchemeName } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
 
 import {

@@ -4,7 +4,7 @@ import { clockTime, dayLabel, distanceLabel, focalTimestamp, listTimeAgo, todayK
 import { eventDistanceLabel } from "../eventDistance"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { buildRenderItems } from "../conversation/conversationModel"
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
 
 function localIso(year: number, monthIndex: number, day: number, hour = 12): string {
   return new Date(year, monthIndex, day, hour).toISOString()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 import { firstReportPhoto, latestNote, reportThumbUrl } from "../reportsListModel"
 
 type Media = ReportDTO["media"][number]

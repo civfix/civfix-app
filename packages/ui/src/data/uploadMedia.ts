@@ -1,5 +1,5 @@
-import { AppError, ErrorCode } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import { AppError, ErrorCode } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import type { CameraCapability, CapturedMedia } from "../capabilities"
 
 export const UPLOAD_PUT_BASE_TIMEOUT_MS = 120_000

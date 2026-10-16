@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { surfaceSource } from "../../__tests__/sourceGuards"
 import { pageBottomReserve } from "../../shell/bodyLayout"
 import type { TFunction } from "i18next"
-import type { CleanupDTO, PostDTO } from "@civfix/shared"
+import type { CleanupDTO, PostDTO } from "@civfix/contract"
 import {
   POST_COMPOSER_ATTACH_CANDIDATE_CAP,
   activePostMentions,

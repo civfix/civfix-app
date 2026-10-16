@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { LEGAL_DOCUMENTS } from "@civfix/shared/legal"
+import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
 
 import { isPlaceholderLegalHash, renderedLegalDocuments } from "./postbuild-gates.mjs"
 
@@ -62,7 +62,7 @@ if (outPath) {
     `${JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
-        note: "sha256 over the canonical plain text of each rendered <article class=\"legal-prose\">; version + effectiveAt + sha256 must be updated as ONE edit in packages/shared/src/legal/documents.ts",
+        note: "sha256 over the canonical plain text of each rendered <article class=\"legal-prose\">; version + effectiveAt + sha256 must be updated as ONE edit in src/legal/documents.ts in civfix-contract, published, and adopted by civfix-app and civfix-backend",
         documents: rows,
         unrendered,
       },

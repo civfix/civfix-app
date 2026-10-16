@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react"
-import { MAX_LINKED_REPORTS } from "@civfix/shared"
+import { MAX_LINKED_REPORTS } from "@civfix/contract"
 import { useHaptics } from "../../capabilities"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"

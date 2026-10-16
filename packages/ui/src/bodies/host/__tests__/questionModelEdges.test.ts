@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { EventQuestionDTO } from "@civfix/shared"
-import { answerPayload, missingRequired, questionVisible, visibleQuestions } from "@civfix/shared/host"
+import type { EventQuestionDTO } from "@civfix/contract"
+import { answerPayload, missingRequired, questionVisible, visibleQuestions } from "@civfix/contract/host"
 import { seedAnswers, toggleMultiSelect } from "../registration/questionModel"
 
 const q = (over: Partial<EventQuestionDTO> & { id: string }): EventQuestionDTO => ({

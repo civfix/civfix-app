@@ -14,7 +14,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, CleanupAttendeesResponse, JoinCleanupResponse } from "@civfix/shared"
+import type { CleanupDTO, CleanupAttendeesResponse, JoinCleanupResponse } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import {
   cleanupDetailFilters,

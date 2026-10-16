@@ -7,7 +7,7 @@ import type {
   PostRefDTO,
   ReportDTO,
   UserMentionDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import type { MentionCandidate } from "../primitives/MentionAutocomplete"
 import { splitPostBodyMentions } from "./postCardModel"
 import type { PostComposerMedia, PostComposerMode } from "./postComposerStore"

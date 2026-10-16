@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { ExternalLink } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { OrganizationDTO, SocialLinks, SocialPlatform } from "@civfix/shared"
+import type { OrganizationDTO, SocialLinks, SocialPlatform } from "@civfix/contract"
 import {
   CreateOrganizationRequestSchema,
   ErrorCode,
@@ -21,7 +21,7 @@ import {
   UpdateOrganizationRequestSchema,
   WHATSAPP_NUMBER_MAX_LENGTH,
   toAppError,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

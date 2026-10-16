@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
-import type { OrganizationDTO } from "@civfix/shared"
+import type { OrganizationDTO } from "@civfix/contract"
 import { useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

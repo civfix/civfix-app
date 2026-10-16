@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { MAX_EVENT_DURATION_MINUTES } from "@civfix/shared"
+import { MAX_EVENT_DURATION_MINUTES } from "@civfix/contract"
 import {
   addWallClockDays,
   draftWhenLabel,

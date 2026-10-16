@@ -1,11 +1,6 @@
-import type { EventKind } from "@civfix/shared"
-import {
-  categoryColor,
-  cleanupColorFor,
-  colorSchemes,
-  type ColorSchemeName,
-} from "@civfix/shared/tokens"
-import { contrastRatio } from "@civfix/shared/chip-contrast"
+import type { EventKind } from "@civfix/contract"
+import { categoryColor, cleanupColorFor, colorSchemes, type ColorSchemeName } from "@civfix/tokens"
+import { contrastRatio } from "@civfix/tokens/chip-contrast"
 import { basemapPaper } from "../mapStyle"
 import { DROP_PIN_GLYPH, PIN_GLYPHS, glyphForCategory } from "./glyphs"
 

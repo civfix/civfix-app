@@ -1,4 +1,4 @@
-import type { SeriesPoint } from "@civfix/shared"
+import type { SeriesPoint } from "@civfix/contract"
 
 export const SPARK_BAR_MAX_WIDTH = 24
 export const SPARK_BAR_GAP = 2

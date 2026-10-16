@@ -1,6 +1,6 @@
 import { useCallback } from "react"
-import { AppError, ErrorCode, type ChatMessageDTO, type ReactionEmoji, type RoomKind } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import { AppError, ErrorCode, type ChatMessageDTO, type ReactionEmoji, type RoomKind } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import { applyVoteLocally } from "../pollVote"
 import { toggleReactionBucket } from "../reactions"
 import { roomEndpoints } from "./chatRoom"

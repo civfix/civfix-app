@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
-import { EMAIL_MAX_LENGTH, type EventPageBlock } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, type EventPageBlock } from "@civfix/contract"
 
 type ContactBlockData = Extract<EventPageBlock, { kind: "contact" }>
 

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { RegistrationSourceSchema } from "@civfix/shared"
+import { RegistrationSourceSchema } from "@civfix/contract"
 import { surfaceSource } from "../../../__tests__/sourceGuards"
 
 const LOCALES = ["en", "es", "de", "ko"] as const

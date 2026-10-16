@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import type { ContentReportReason } from "@civfix/shared"
+import type { ContentReportReason } from "@civfix/contract"
 import { usePopoverAnchor, useToast } from "../../primitives"
 import type { AnchorRect } from "../../primitives"
 import { useBlockUser, useUnblockUser, useReportContent, useRequireAuth } from "../../data"

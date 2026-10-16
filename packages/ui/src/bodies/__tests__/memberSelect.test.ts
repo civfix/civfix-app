@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
+import type { PersonDTO, UserSearchResultDTO } from "@civfix/contract"
 import { toggleMember, removeMember, filterExcluded, searchResultToPerson } from "../memberSelect"
 
 function person(id: string, name = `Person ${id}`): PersonDTO {

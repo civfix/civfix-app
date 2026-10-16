@@ -5,11 +5,11 @@ primitives (`View` / `Text` / `Pressable`), rendered on native via Metro and on 
 react-native-web. The layout adapts to ORIENTATION (landscape -> expanded sidebar shell; portrait ->
 compact bottom-sheet shell), not to platform, so every screen is written once instead of twice.
 
-Its domain types and design tokens come from `@civfix/shared`. It sits beside the contract in the
-`civfix-app` monorepo, but is a SEPARATE package so the React/RN peer deps stay isolated and the
-publishable contract never re-releases on UI churn. It is `"private": true` and is NEVER published;
-`apps/community-web` and `apps/community-mobile` take it as `workspace:*`, and no repo outside this
-one may depend on it - least of all the backend.
+Its domain types come from the API contract `@civfix/contract` (published from
+`civfix/civfix-contract` and installed from `https://repo.civfix.org`) and its design tokens from
+`@civfix/tokens` (`packages/tokens`, a workspace package). It is `"private": true` and is NEVER
+published; `apps/community-web` and `apps/community-mobile` take it as `workspace:*`, and no repo
+outside this one may depend on it - least of all the backend.
 
 This README is the orientation and the authoring reference: the five seams, the theming recipe, the
 loading-state and haptics vocabularies, and the dist-types rule below are the contracts a body author
@@ -17,8 +17,8 @@ works against.
 
 ## How it ships: SOURCE, not a bundle
 
-Unlike `@civfix/shared` (a pre-bundled `dist`), `@civfix/ui` ships untranspiled `.tsx` SOURCE and emits
-only type declarations (`dist-types/`). Pre-bundling would collapse the `.web.tsx` / `.native.tsx`
+Unlike `@civfix/tokens` (a pre-bundled `dist`), `@civfix/ui` ships untranspiled `.tsx` SOURCE and
+emits only type declarations (`dist-types/`). Pre-bundling would collapse the `.web.tsx` / `.native.tsx`
 platform seam files and bake `from "react-native"` into the output before react-native-web or Metro
 could resolve it per platform.
 
@@ -47,7 +47,8 @@ singletons it owns). The platform-bound ones are optional (`peerDependenciesMeta
 (web satisfies it through the react-native-web alias), `react-dom`, `maplibre-gl` (web only), the
 native map, expo-blur, react-native-video, skia and the date picker (native only).
 
-The hard `dependencies` are `@civfix/shared` (`workspace:*`), `i18next` + `react-i18next` (the
+The hard `dependencies` are `@civfix/contract` (a registry caret range), `@civfix/tokens`
+(`workspace:*`), `i18next` + `react-i18next` (the
 string catalogs in `src/i18n`), `supercluster` (map pin clustering), `qrcode-generator` (QR tickets)
 and `react-native-is-edge-to-edge`.
 
@@ -72,6 +73,7 @@ and `react-native-is-edge-to-edge`.
 | `lightbox/` | the full-screen `MediaLightbox` and `ZoomableMedia` (`.web` / `.native` seams) |
 | `promo/` | `AppPromoCard` (the app-store badges) and its dismissal store |
 | `charts/` | the RN-svg `BarChart`, `AreaLineChart` and `ProgressRing` |
+| `helpers/` | app-only pure helpers: `withTimeout` (async), the chat message merge, the `ws` reconnect backoff, number formatting, `stripTrailingSlashes` (url), `isUuid`, and the AGPL source link (`SOURCE_REPO_URL` / `sourceLink`); exported as `@civfix/ui/helpers` and per file as `@civfix/ui/helpers/<file>` |
 | `announce/` | the screen-reader `announce()` seam (`.web` live region / `.native` AccessibilityInfo) |
 
 
@@ -79,7 +81,7 @@ and `react-native-is-edge-to-edge`.
 
 `@civfix/ui/theme` ships TWO themes built from the shared tokens: `themes.light` (= the historical static
 `theme` export, still exported and still the light theme) and `themes.dark` (built from
-`darkColor`/`darkShadow` in `@civfix/shared/tokens`). Both have the identical shape (`Theme`): the same
+`darkColor`/`darkShadow` in `@civfix/tokens`). Both have the identical shape (`Theme`): the same
 `colors.*` aliases, `glass.*` fills, `shadows.*`, `imageFrame`, plus a `scheme` field.
 
 - **Resolution.** The host mounts `<ThemeProvider>` near the root. It resolves `scheme` from the
@@ -295,5 +297,5 @@ consumers make. A change here reaches `community-web` on the next deploy of that
 through `.github/workflows/deploy-mobile.yml`, which builds the iOS app for TestFlight on a `main` push
 that touches the mobile app or `packages/**` (Android ships by hand). `.changeset/config.json` has
 `privatePackages: { "version": false, "tag": false }`, so changesets never versions, changelogs or
-tags this package; `@civfix/shared` is the only publishable package, see
+tags this package; `@civfix/tokens` is the only package this repo publishes, see
 [RELEASING.md](../../RELEASING.md).

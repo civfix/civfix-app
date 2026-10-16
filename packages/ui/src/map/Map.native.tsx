@@ -14,7 +14,7 @@ import {
   type PressEventWithFeatures,
 } from "@maplibre/maplibre-react-native"
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import { space, useTheme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"

@@ -1,4 +1,4 @@
-import { isSafeMarkdownHref } from "@civfix/shared/markdown"
+import { isSafeMarkdownHref } from "@civfix/contract/markdown"
 
 export interface TextSelection {
   value: string

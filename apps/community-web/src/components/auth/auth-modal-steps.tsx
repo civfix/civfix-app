@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Mail, Loader2 } from "lucide-react"
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 
 import { Trans, type Translate } from "@civfix/ui/i18n"
 

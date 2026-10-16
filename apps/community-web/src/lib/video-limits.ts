@@ -1,4 +1,4 @@
-import { MAX_VIDEO_LONG_EDGE, MAX_VIDEO_SECONDS } from "@civfix/shared"
+import { MAX_VIDEO_LONG_EDGE, MAX_VIDEO_SECONDS } from "@civfix/contract"
 
 export interface VideoMetadata {
   durationSec: number

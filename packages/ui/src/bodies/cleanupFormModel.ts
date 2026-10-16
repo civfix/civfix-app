@@ -2,7 +2,7 @@
  * The host-event form's value and the pure rules around it, kept out of the RN component file so the draft
  * store, the exit model and their tests read them without loading react-native.
  */
-import type { EventAddressSource, EventKind, EventSlotDTO } from "@civfix/shared"
+import type { EventAddressSource, EventKind, EventSlotDTO } from "@civfix/contract"
 import { viewerTimeZone } from "../i18n/useViewerTimeZone"
 import { endOffsetMs, endTimeAfter, formInstantMs, timeCarrier } from "./calendarModel"
 import { isEventAddressComplete } from "./eventAddressField"

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { avatarGradient, type ReplyToDTO } from "@civfix/shared"
+import { avatarGradient, type ReplyToDTO } from "@civfix/contract"
 import { alpha } from "../theme/alpha"
 import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps, PRESSED_OPACITY, type Theme } from "../theme"
 import { Text } from "../typography"

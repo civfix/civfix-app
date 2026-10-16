@@ -4,7 +4,7 @@
  * Re-run `pnpm --filter @civfix/ui i18n:gen` after adding or removing a namespace or locale.
  */
 import type { ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 /** One loader per locale the web does not bundle statically; webpack emits each as its own chunk. */
 export const lazyCatalogs: Record<

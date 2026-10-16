@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react"
 import { Animated, StyleSheet } from "react-native"
-import type { LatLng } from "@civfix/shared/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { useTheme } from "../theme"
 import { SkeletonBlock, POP_ENABLED, usePopScale } from "../primitives"
 import { useReport } from "../data"

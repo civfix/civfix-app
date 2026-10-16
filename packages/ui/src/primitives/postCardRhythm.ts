@@ -6,7 +6,7 @@
  * floor is spent on its width, and its halo is absolute decoration that may overhang. Kept free of
  * react-native imports so it unit-tests under vitest.
  */
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 import { postActionGlyphInset, postActionLayout } from "./postActionModel"
 import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 

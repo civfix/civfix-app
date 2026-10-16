@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import type { UserDTO } from "@civfix/shared"
+import type { UserDTO } from "@civfix/contract"
 
 import { runGatedAction } from "@/hooks/use-auth-gate"
 import { useAuthStore, deriveInitialState, SESSION_SETTLE_TIMEOUT_MS } from "@/store/auth-store"

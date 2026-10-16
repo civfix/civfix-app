@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { clampPartySize } from "@civfix/shared/host"
+import { clampPartySize } from "@civfix/contract/host"
 import {
   focusRingProps,
   makeThemedStyles,

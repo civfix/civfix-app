@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Pressable, useWindowDimensions, View } from "react-native"
 import type { TFunction } from "i18next"
-import { POST_BODY_MAX } from "@civfix/shared"
+import { POST_BODY_MAX } from "@civfix/contract"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, useLayoutMode, useTheme, webInputReset } from "../../theme"
 import { MentionAutocomplete } from "../../primitives"

@@ -1,6 +1,6 @@
 "use client"
 
-import { stripTrailingSlashes } from "@civfix/shared"
+import { stripTrailingSlashes } from "@civfix/ui/helpers"
 import { ChatSocketCore, type WsConnection } from "@civfix/ui/realtime"
 
 import { API_BASE_URL } from "@/lib/api"

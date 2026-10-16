@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH, MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
-import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/shared"
-import { datetimeLocalFromIso } from "@civfix/shared/datetime"
+import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH, MAX_EVENT_REMINDER_OFFSETS } from "@civfix/contract"
+import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/contract"
+import { datetimeLocalFromIso } from "@civfix/contract/datetime"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

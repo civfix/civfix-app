@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { CalendarDays } from "lucide-react"
-import type { HostedEventsWhen } from "@civfix/shared"
+import type { HostedEventsWhen } from "@civfix/contract"
 import { useMyHostedEvents, hostedEventRows } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
