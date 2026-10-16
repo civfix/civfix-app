@@ -12,7 +12,9 @@
     "mark_resolved": "해결됨으로 표시",
     "reopen": "신고 다시 열기",
     "mark_resolved_a11y": "이 신고를 해결됨으로 표시",
-    "reopen_a11y": "이 신고 다시 열기"
+    "reopen_a11y": "이 신고 다시 열기",
+    "repost": "리포스트",
+    "repost_a11y": "이 신고 리포스트"
   },
   "title_menu": {
     "options_a11y": "신고 옵션",

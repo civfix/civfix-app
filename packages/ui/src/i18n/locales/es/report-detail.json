@@ -12,7 +12,9 @@
     "mark_resolved": "Marcar como resuelto",
     "reopen": "Reabrir reporte",
     "mark_resolved_a11y": "Marcar este reporte como resuelto",
-    "reopen_a11y": "Reabrir este reporte"
+    "reopen_a11y": "Reabrir este reporte",
+    "repost": "Republicar",
+    "repost_a11y": "Republicar este reporte"
   },
   "title_menu": {
     "options_a11y": "Opciones del reporte",

@@ -12,7 +12,9 @@
     "mark_resolved": "Mark as resolved",
     "reopen": "Reopen report",
     "mark_resolved_a11y": "Mark this report as resolved",
-    "reopen_a11y": "Reopen this report"
+    "reopen_a11y": "Reopen this report",
+    "repost": "Repost",
+    "repost_a11y": "Repost this report"
   },
   "title_menu": {
     "options_a11y": "Report options",
