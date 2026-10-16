@@ -10,7 +10,9 @@ import {
   useJurisdictionLeaderboard,
   useMyHours,
   useNearbyCleanups,
+  nearbyPinsBbox,
   useNearbyReportPins,
+  usePressingReports,
   useResolveJurisdiction,
   useUserLocation,
 } from "../../data"
@@ -25,6 +27,7 @@ import { useRowHover } from "../rowHover"
 import { useListTimeTick } from "../useListTimeAgo"
 import { DiscoveryLeaderboard } from "./DiscoveryLeaderboard"
 import { LinkAction } from "./LinkAction"
+import { PressingList } from "./PressingList"
 import { useSearchStyles } from "./searchStyles"
 
 function SuggestedPersonCard({ person, expanded }: { person: PersonDTO; expanded: boolean }) {
@@ -81,6 +84,8 @@ export function Discovery({ expanded }: { expanded: boolean }) {
   const location = useUserLocation().data ?? null
   const cleanupsQuery = useNearbyCleanups(SEARCH_EVENT_POOL_LIMIT, location)
   const pinsQuery = useNearbyReportPins(location)
+  const pressingBbox = useMemo(() => nearbyPinsBbox(location), [location])
+  const pressing = usePressingReports(pressingBbox).data ?? []
   const suggestionsQuery = useFollowSuggestions()
   const jurisdictionQuery = useResolveJurisdiction(location)
   const myHours = useMyHours()
@@ -201,6 +206,27 @@ export function Discovery({ expanded }: { expanded: boolean }) {
               <ReportHitRow key={report.id} report={report} viewer={location} />
             ))}
           </View>
+        </>
+      ) : null}
+
+      {location && pressing.length > 0 ? (
+        <>
+          <Text
+            accessibilityRole="header"
+            {...headingLevel(2)}
+            style={[
+              styles.sectionTitle,
+              sections.people.length > 0 ||
+              sections.events.length > 0 ||
+              showLeaderboard ||
+              sections.reports.length > 0
+                ? styles.laterTitle
+                : styles.railTitle,
+            ]}
+          >
+            {t("search_page.pressing")}
+          </Text>
+          <PressingList reports={pressing} />
         </>
       ) : null}
     </>
