@@ -1,5 +1,5 @@
-import { EventPageBlockSchema } from "@civfix/shared"
-import type { EventPageBlock, EventPageBlockKind, ThemeAccent } from "@civfix/shared"
+import { EventPageBlockSchema } from "@civfix/contract"
+import type { EventPageBlock, EventPageBlockKind, ThemeAccent } from "@civfix/contract"
 
 export const BLOCK_KINDS: readonly EventPageBlockKind[] = [
   "hero",

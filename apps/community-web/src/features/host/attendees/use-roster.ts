@@ -5,7 +5,7 @@ import type {
   ListEventRegistrationsResponse,
   RegistrationRosterFilter,
   RegistrationRosterSort,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useDebouncedValue, HOST_ROSTER_PAGE_SIZE } from "@civfix/ui/data"
 
 import { consoleKeys } from "../console-keys"

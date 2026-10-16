@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import type { EventRegistrationDTO, GetEventRegistrationAnswersResponse } from "@civfix/shared"
+import type { EventRegistrationDTO, GetEventRegistrationAnswersResponse } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -14,7 +14,7 @@ import { Chip } from "@/components/console/chips/chip"
 import { useConsoleEvent } from "../console-context"
 import { consoleKeys } from "../console-keys"
 import { useConsoleFormat } from "../format"
-import { attendeeDisplayName, checkableSeatIds } from "@civfix/shared/host"
+import { attendeeDisplayName, checkableSeatIds } from "@civfix/contract/host"
 import { attendanceOf } from "./roster-filters"
 import { useAttendeeDrawerActions } from "./use-attendee-drawer-actions"
 import {

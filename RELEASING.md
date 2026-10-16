@@ -1,25 +1,25 @@
-# Releasing `@civfix/shared`
+# Releasing `@civfix/tokens`
 
-`@civfix/shared` (`packages/shared`) is the only publishable package in this repo. It is the contract: Zod
-schemas, inferred types, the vendor-neutral interface seams + in-memory fakes, the design tokens, the
-typed API client. It is published to the private Verdaccio registry at `https://repo.civfix.org`
-(scope `@civfix`, anonymous read, authenticated publish).
+`@civfix/tokens` (`packages/tokens`) is the only package this repo publishes. It holds the design
+tokens (colour scales for both schemes, the category and cleanup pin colours, type, spacing, radius
+and shadow scales) and the chip-contrast helpers. It is published to the private Verdaccio registry at
+`https://repo.civfix.org` (scope `@civfix`, anonymous read, authenticated publish).
 
-`@civfix/ui` and both apps are `"private": true` and are NEVER published. Inside this repo, web and
-mobile take both packages as `workspace:*`, so a `packages/shared` or `packages/ui` edit reaches them
-immediately: no publish, no range bump, no lockfile dance.
+`@civfix/ui` and both apps are `"private": true` and are NEVER published. Inside this repo,
+`@civfix/ui` and both apps take the tokens as `workspace:*`, so a `packages/tokens` or `packages/ui` edit reaches
+them immediately: no publish, no range bump, no lockfile dance.
 
-The publish flow survives for the consumers that live OUTSIDE this repo and install the contract from
-the registry:
+The API contract is NOT released from here. It is `@civfix/contract`, published from
+`civfix/civfix-contract` (its `RELEASING.md`, `DECISIONS.md` and `CHANGELOG.md` live there); this repo
+is one of its registry consumers
+([Adopting a new `@civfix/contract`](#adopting-a-new-civfixcontract)).
+Until 0.61.0 the contract and the tokens shipped together as `@civfix/shared` from this repo.
 
-| Repo | Manifest(s) that declare `@civfix/shared` |
-| --- | --- |
-| `civfix-backend` | `services/api/package.json`, `services/media-worker/package.json` |
-| `civfix-admin` | `apps/admin/package.json` |
-| gov plane (`civfix-govt-web`) | its app manifest (tokens-only dependency) |
+The tokens publish flow exists for the consumers that live OUTSIDE this repo and install them from
+the registry: `civfix-admin` and `civfix-backend` (the email layout).
 
 None of them may ever depend on `@civfix/ui`: the backend isolation is CI-guarded, and
-`packages/shared` bans importing `react` / `react-native` / `@civfix/ui` via ESLint.
+`packages/tokens` bans importing `react` / `react-native` / `@civfix/ui` via ESLint.
 
 ## TL;DR
 
@@ -27,22 +27,21 @@ None of them may ever depend on `@civfix/ui`: the backend isolation is CI-guarde
                     ->  bump + reinstall each external consumer
 
 A push to `main` with no applied version bump publishes nothing (a safe no-op). External consumers pin
-a version range, not `main`, so an unpublished or un-bumped contract change is invisible to them.
+a version range, not `main`, so an unpublished or un-bumped tokens change is invisible to them.
 
 ## When to bump which number
 
 The package version is its public API:
 
-- PATCH (`0.41.0 -> 0.41.1`): backward-compatible fix, such as a new optional DTO field, a new exported
-  helper, an internal or doc change. Existing consumers keep compiling.
-- MINOR (`0.41.0 -> 0.42.0`): additive but notable, such as a new endpoint, schema or module. Still backward
+- PATCH (`0.1.0 -> 0.1.1`): backward-compatible fix, such as a corrected colour value, a new exported
+  token or helper, an internal or doc change. Existing consumers keep compiling.
+- MINOR (`0.1.0 -> 0.2.0`): additive but notable, such as a new scale or scheme. Still backward
   compatible, but consumers will want it.
-- MAJOR: a breaking change, such as a removed or renamed export, a newly required field, a changed response
-  shape. Consumers must update code, not just the version. Breaking changes need an explicit decision
-  first; read `packages/shared/DECISIONS.md`.
+- MAJOR: a breaking change, such as a removed or renamed token or export. Consumers must update code,
+  not just the version.
 
-While the major is `0`, a consumer's caret range pins the MINOR: `^0.41.0` accepts `0.41.x` but NOT
-`0.42.0`. So any minor bump must be adopted with a range edit in each external consumer (step 4).
+While the major is `0`, a consumer's caret range pins the MINOR: `^0.1.0` accepts `0.1.x` but NOT
+`0.2.0`. So any minor bump must be adopted with a range edit in each external consumer (step 4).
 
 ## 1. Add a changeset (while developing)
 
@@ -52,21 +51,21 @@ After the change itself is committed:
 pnpm changeset
 ```
 
-Pick `@civfix/shared` and the bump level; it writes a `.changeset/<name>.md`. Commit it with (or right
+Pick `@civfix/tokens` and the bump level; it writes a `.changeset/<name>.md`. Commit it with (or right
 after) the change. One changeset per logical change; several can accumulate before a release and
 `changeset version` folds them all in.
 
 ```md
 ---
-"@civfix/shared": minor
+"@civfix/tokens": minor
 ---
 
-Add the org-signup endpoints to the client registry.
+Add the hazard pin colour for the dark scheme.
 ```
 
 A change that touches only `@civfix/ui`, the apps, docs or tooling needs no changeset: nothing is
 published for it. (`.changeset/config.json` has `privatePackages: { version: false, tag: false }`, so
-`changeset version` leaves the private packages alone; only `@civfix/shared` is ever published or
+`changeset version` leaves the private packages alone; only `@civfix/tokens` is ever published or
 tagged.)
 
 ## 2. Pre-flight
@@ -75,9 +74,10 @@ tagged.)
 - Green across the workspace: `pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test`.
 - The change(s) and their changeset file(s) are committed.
 - Sanity-check the published SHAPE when you touched `files`, `exports` or the tsup entries; a
-  workspace link resolves paths a registry tarball would not. `pnpm --filter @civfix/shared pack`
-  and inspect the tarball, or install it into a scratch consumer, and confirm every subpath
-  (`@civfix/shared/tokens`, `/client`, `/interfaces`, `/fakes`, ...) resolves from `dist`.
+  workspace link resolves paths a registry tarball would not. `pnpm --filter @civfix/tokens pack`
+  and inspect the tarball, or install it into a scratch consumer, and confirm both entry points
+  (`@civfix/tokens` and `@civfix/tokens/chip-contrast`) resolve from `dist` for `import` and
+  `require`.
 
 ## 3. Version, then merge to main
 
@@ -85,27 +85,27 @@ tagged.)
 pnpm changeset version
 ```
 
-This bumps `packages/shared/package.json`'s `"version"`, writes/extends its `CHANGELOG.md`, and
+This bumps `packages/tokens/package.json`'s `"version"`, writes/extends its `CHANGELOG.md`, and
 DELETES the consumed `.changeset/*.md` files. Review the diff, then commit it
 (`config.json` has `"commit": false`, so changesets does not commit for you) and merge to `main`.
 
 Do NOT hand-edit the version; let `changeset version` own it. The one exception is a version the
-registry already holds from a commit main never released. `scripts/check-shared-version.mjs` (run by
+registry already holds from a commit main never released. `scripts/check-tokens-version.mjs` (run by
 CI on every PR and by the publish workflow) fails on such a version and names the next free number;
 set `"version"` and the new `CHANGELOG.md` heading to it by hand.
 
-`.github/workflows/publish-shared.yml` then runs on the `main` push:
+`.github/workflows/publish-tokens.yml` then runs on the `main` push:
 
+- `pnpm install --frozen-lockfile`,
+- `pnpm --filter @civfix/tokens build` (tsup -> `dist`),
 - appends the registry auth line for `repo.civfix.org` to `.npmrc` using the `NPM_TOKEN` repo secret
   (the Verdaccio `ci-publisher` token; never echoed) and restores `.npmrc` at the end,
-- `pnpm install --frozen-lockfile`,
-- `pnpm --filter @civfix/shared build` (tsup -> `dist`),
-- `node scripts/check-shared-version.mjs --release`: the check above, then it creates and pushes the
-  `@civfix/shared@X.Y.Z` tag on the main commit BEFORE anything is published, so a failed tag push
+- `node scripts/check-tokens-version.mjs --release`: the check above, then it creates and pushes the
+  `@civfix/tokens@X.Y.Z` tag on the main commit BEFORE anything is published, so a failed tag push
   stops the run and a failed publish is simply retried by the next main push,
 - `pnpm changeset publish --no-git-tag`: publishes only when the version is ahead of the registry.
 
-The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` tag is
+The tokens' versions and tags are package-scoped (`@civfix/tokens@X.Y.Z`). A `vX.Y.Z` tag is
 something else entirely: a published `vX.Y.Z` GitHub release is the PRODUCTION deploy of this repo's
 web app, and it publishes nothing to the registry.
 
@@ -115,61 +115,86 @@ publishes a real version; it uses a snapshot (next section).
 Verify:
 
 ```sh
-gh run watch     # wait for "publish @civfix/shared" to go green
-npm view @civfix/shared version --registry https://repo.civfix.org/
+gh run watch     # wait for "publish @civfix/tokens" to go green
+npm view @civfix/tokens version --registry https://repo.civfix.org/
 ```
 
 ## Snapshot of an unmerged branch
 
-When a civfix-backend or civfix-admin branch needs contract changes that have not merged yet:
+When a civfix-admin or civfix-backend branch needs tokens that have not merged yet:
 
 ```sh
-gh workflow run publish-shared-snapshot.yml --ref <your-civfix-app-branch>
+gh workflow run publish-tokens-snapshot.yml --ref <your-civfix-app-branch>
 gh run watch    # the run summary prints the version
 ```
 
 It publishes `<package.json version>-b-<branch slug>.g<short sha>` (e.g.
-`0.53.0-b-feat-feed-and-polish-batch.gc8c8f7e`) under the `snapshot` dist-tag. Nothing is committed and
-no tag is pushed. A caret range never matches a prerelease, so the consumer branch pins the exact
-version:
+`0.1.0-b-feat-hazard-colour.gc8c8f7e`) under the `snapshot` dist-tag. Nothing is committed and no tag
+is pushed. A caret range never matches a prerelease, so the consumer branch pins the exact version:
 
 ```sh
-#   "@civfix/shared": "0.53.0-b-feat-feed-and-polish-batch.gc8c8f7e"
+#   "@civfix/tokens": "0.1.0-b-feat-hazard-colour.gc8c8f7e"
 pnpm install
 ```
 
 The branch must contain this workflow (a manual run uses the branch's own copy of the file), so a
 branch cut before it existed needs `git merge origin/main` first. Re-run it after each push to the
-civfix-app branch that the consumer needs (a re-run on an unchanged
-commit fails: that version already exists). Before the consumer
-branch merges, the civfix-app PR merges, main publishes the real version, and the consumer moves back
-to a caret range (step 4). A consumer PR must never merge while it pins a snapshot.
+civfix-app branch that the consumer needs (a re-run on an unchanged commit fails: that version
+already exists). Before the consumer branch merges, the civfix-app PR merges, main publishes the real
+version, and the consumer moves back to a caret range (step 4). A consumer PR must never merge while
+it pins a snapshot.
 
 ## 4. Adopt the new version in each external consumer
 
-The release is not done until every out-of-repo consumer that needs the change is moved onto it. Web
-and mobile need nothing; they are in this workspace.
+The release is not done until every out-of-repo consumer that needs the change is moved onto it.
+`@civfix/ui`, web and mobile need nothing; they are in this workspace.
 
 ```sh
-# in civfix-backend / civfix-admin / the gov plane, from the repo root, on a branch:
+# in civfix-admin or civfix-backend, from the repo root, on a branch:
 
 # caret crossed (minor/major bump): edit the range, then install
-#   "@civfix/shared": "^0.42.0"
+#   "@civfix/tokens": "^0.2.0"
 pnpm install
 
-# in-range patch (0.41.0 -> 0.41.1): a plain `pnpm install` is a NO-OP; force the update
-pnpm --filter <app> update @civfix/shared
+# in-range patch (0.1.0 -> 0.1.1): a plain `pnpm install` is a NO-OP; force the update
+pnpm --filter <app> update @civfix/tokens
 ```
 
 Then run that repo's checks (backend: `pnpm typecheck` + `pnpm test`; admin: typecheck + lint +
 build) and commit the manifest and `pnpm-lock.yaml` **together**: a range bump without a refreshed
-lockfile leaves CI on the old version.
-
-`civfix-backend` declares the contract in TWO manifests (`services/api` and `services/media-worker`);
-both move together. The registry read is anonymous, so consumers need no token to install.
+lockfile leaves CI on the old version. The registry read is anonymous, so consumers need no token to
+install.
 
 If you deliberately skip a consumer, say so in the release notes so the others are not assumed to be
 up to date.
+
+## Adopting a new `@civfix/contract`
+
+Here this repo is the consumer. `packages/ui`, `apps/community-web` and `apps/community-mobile` each
+declare `@civfix/contract` as a caret range (`^0.62.0`), installed from `repo.civfix.org`. A contract
+change is a PR in `civfix-contract`, which publishes on merge to its `main`
+(`civfix-contract/RELEASING.md`, including its snapshot flow for an unmerged branch); it reaches web
+and mobile only through an adoption PR here:
+
+```sh
+# from the civfix-app root, on a branch, once the version is on the registry:
+npm view @civfix/contract version --registry https://repo.civfix.org/
+
+# caret crossed (new minor on 0.x): edit the range in all three manifests, then install
+#   "@civfix/contract": "^0.63.0"
+pnpm install
+
+# in-range patch (0.62.0 -> 0.62.1): a plain `pnpm install` is a NO-OP; force the update
+pnpm update -r @civfix/contract
+```
+
+Then `pnpm build && pnpm typecheck && pnpm lint && pnpm test` (plus `pnpm i18n:check` when locale keys
+moved) and commit the three manifests and `pnpm-lock.yaml` **together**. Keep the three ranges
+identical.
+
+The legal documents (`legal/documents.ts`: version, effective date, sha256) are part of the contract.
+An edit to their text is a contract publish plus an adoption PR here and in civfix-backend; web's
+postbuild still checks the hashes.
 
 ## Rolling civfix.org back
 
@@ -195,14 +220,14 @@ back on the box with `ops/rollback.sh` or `CIVFIX_REF=<tag|sha> ops/deploy.sh`
 
 ## Checklist
 
-- [ ] Change committed; a `.changeset/*.md` names `@civfix/shared` and the bump level.
+- [ ] Change committed; a `.changeset/*.md` names `@civfix/tokens` and the bump level.
 - [ ] Tree clean; `pnpm build && pnpm typecheck && pnpm lint && pnpm test` green across the workspace.
 - [ ] Packaged shape sanity-checked if `files` / `exports` / tsup entries changed.
 - [ ] `pnpm changeset version` run; the version bump + CHANGELOG entry reviewed and committed.
 - [ ] No consumer branch still pins a snapshot version.
-- [ ] Merged to `main`; `publish-shared.yml` green; `npm view @civfix/shared version --registry
-      https://repo.civfix.org/` shows the new version and the `@civfix/shared@X.Y.Z` tag exists.
-- [ ] Every external consumer bumped (civfix-backend x2 manifests, civfix-admin, the gov plane),
-      lockfile refreshed, checks green, committed and pushed, or the skip is stated.
+- [ ] Merged to `main`; `publish-tokens.yml` green; `npm view @civfix/tokens version --registry
+      https://repo.civfix.org/` shows the new version and the `@civfix/tokens@X.Y.Z` tag exists.
+- [ ] Every external consumer bumped (civfix-admin, civfix-backend), lockfile
+      refreshed, checks green, committed and pushed, or the skip is stated.
 - [ ] Backend isolation still green (`pnpm why react react-native react-native-web` -> not found;
       `@civfix/ui` absent from its lockfile).

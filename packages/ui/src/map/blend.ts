@@ -4,7 +4,7 @@
  * proximity. Absorbed reports are dropped from `standaloneReports` so they never also draw as their own
  * pin or cluster.
  */
-import type { CleanupDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, ReportPinDTO } from "@civfix/contract"
 
 export interface MapBlend {
   event: CleanupDTO

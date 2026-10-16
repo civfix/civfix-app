@@ -13,7 +13,7 @@
  * No grouping separator is added ("1234.5" becomes "1234,5", never "1.234,5") so the digits match what
  * the leaderboard and the certificate print.
  */
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 const DECIMAL_COMMA_LOCALES: readonly string[] = ["es", "de"]
 

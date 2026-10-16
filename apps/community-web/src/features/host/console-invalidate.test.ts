@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query"
-import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/contract"
 import { queryKeys } from "@civfix/ui/data"
 import { describe, expect, it } from "vitest"
 

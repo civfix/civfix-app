@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { PollDTO } from "@civfix/shared"
+import type { PollDTO } from "@civfix/contract"
 import { applyVoteLocally } from "../pollVote"
 
 /** A 3-option poll the viewer voted option 0 on (10 total voters). */

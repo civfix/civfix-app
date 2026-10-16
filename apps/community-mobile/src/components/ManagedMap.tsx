@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from "react"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import { Map as SharedMap, type MapHandle, type MapProps } from "@civfix/ui"
 
 let nextMapMountGeneration = 0

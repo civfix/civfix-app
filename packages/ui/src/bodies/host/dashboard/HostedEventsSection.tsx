@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react"
 import { View } from "react-native"
-import type { CleanupMemberRole } from "@civfix/shared"
+import type { CleanupMemberRole } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, makeThemedStyles } from "../../../theme"
 import { Text, TextLink } from "../../../typography"
 import {

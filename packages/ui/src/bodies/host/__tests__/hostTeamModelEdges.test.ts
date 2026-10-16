@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/shared"
+import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/contract"
 import { pinDeviceTimeZone } from "../../__tests__/deviceTimeZone"
 import {
   inviteDisplayName,

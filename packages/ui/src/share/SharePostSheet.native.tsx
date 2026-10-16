@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
-import type { UserSearchResultDTO } from "@civfix/shared"
+import type { UserSearchResultDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"

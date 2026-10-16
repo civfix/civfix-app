@@ -1,5 +1,16 @@
 import { useMemo } from "react"
-import { AVATAR_PALETTE, ErrorCode, WsErrorCode, appErrorCode, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
+import {
+  AVATAR_PALETTE,
+  ErrorCode,
+  WsErrorCode,
+  appErrorCode,
+  avatarGradient,
+  type ChatMessageDTO,
+  type MessageThreadDTO,
+  type PersonDTO,
+  type RoomKind,
+} from "@civfix/contract"
+import { type ChatItem } from "../../helpers"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
 import { useThreadForRoom } from "../../data/hooks/chat"

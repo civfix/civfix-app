@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { View } from "react-native"
-import type { UserProfileDTO, CleanupDTO } from "@civfix/shared"
+import type { UserProfileDTO, CleanupDTO } from "@civfix/contract"
 import { makeThemedStyles, space, radius, headingLevel } from "../theme"
 import { Text } from "../typography"
 import {

@@ -10,7 +10,7 @@ const hook = read("../useWeekLabel.ts")
 
 describe("both analytics surfaces share the one formatter", () => {
   it("builds the weekly axis labels from weekDayLabel, not a local Intl formatter", () => {
-    expect(hook).toContain('import { weekDayLabel } from "@civfix/shared/host"')
+    expect(hook).toContain('import { weekDayLabel } from "@civfix/contract/host"')
     expect(hook).toContain("weekDayLabel(locale)")
     expect(hook).not.toContain("new Intl.DateTimeFormat")
     for (const src of [card, page]) {

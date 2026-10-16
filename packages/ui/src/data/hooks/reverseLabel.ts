@@ -20,8 +20,8 @@
  * maplibre import.
  */
 import { useQuery } from "@tanstack/react-query"
-import { coordsLabel, roundGeocodeCoord } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import { coordsLabel, roundGeocodeCoord } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 import { GEOCODE_STALE_MS, isAddressNotFound } from "./resolveAddress"

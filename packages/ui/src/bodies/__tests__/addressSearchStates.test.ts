@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
 import * as suggest from "../addressSuggestRequest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -21,7 +21,8 @@ const helpers = suggest as unknown as Helpers
 describe("address search proximity bias never waits on an unanswered permission prompt", () => {
   it("caps the device fix inside AddressSearch at 4 s through the shared never-rejecting cap", () => {
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
-    expect(addressSearch).toMatch(/import \{[^}]*\bDEVICE_FIX_TIMEOUT_MS\b[^}]*\bwithTimeout\b[^}]*\} from "@civfix\/shared"/)
+    expect(addressSearch).toMatch(/import \{[^}]*\bDEVICE_FIX_TIMEOUT_MS\b[^}]*\} from "@civfix\/contract"/)
+    expect(addressSearch).toMatch(/import \{[^}]*\bwithTimeout\b[^}]*\} from "\.\.\/helpers"/)
     expect(addressSearch).toContain("withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
   })
 })

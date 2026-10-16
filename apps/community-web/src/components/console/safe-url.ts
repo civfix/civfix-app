@@ -1,4 +1,4 @@
-import { isSafeHttpsUrl } from "@civfix/shared/markdown"
+import { isSafeHttpsUrl } from "@civfix/contract/markdown"
 
 export function safeExternalHref(value: string | null | undefined): string | null {
   if (!value) return null

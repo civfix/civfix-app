@@ -4,7 +4,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 import { GLASS_CONTROL_SIZE } from "../../map/mapControlMetrics"
 import {
   EXPANDED_CLUSTER_BREATHING,

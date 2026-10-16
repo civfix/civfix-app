@@ -7,7 +7,7 @@
  */
 import React, { memo, useCallback } from "react"
 import { View, Pressable, StyleSheet, Animated } from "react-native"
-import type { AttendeeDTO, CleanupAttendeesResponse, EventSlotDTO } from "@civfix/shared"
+import type { AttendeeDTO, CleanupAttendeesResponse, EventSlotDTO } from "@civfix/contract"
 import {
   makeThemedStyles,
   useTheme,

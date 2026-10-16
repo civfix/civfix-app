@@ -4,7 +4,7 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type * as WebAffordancesModule from "../webAffordances"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import type { Theme } from "../themes"
 
 type Affordances = typeof WebAffordancesModule

@@ -1,5 +1,5 @@
 /*
- * The shadcn/ui semantic theme. Every value is the HSL form of a hex in @civfix/shared tokens; the
+ * The shadcn/ui semantic theme. Every value is the HSL form of a hex in @civfix/tokens; the
  * trailing comment names the source token so the mapping stays auditable.
  *
  * styles/design.css is imported AFTER this file and unlayered, so a :root name shared with it would win
@@ -60,7 +60,7 @@
      * are light-only literals, and the console is the one screen set that needs scheme-correct hue
      * surfaces without a per-component branch, so it reads these through the `console.*` Tailwind group.
      *
-     * Every value is a `colorSchemes[scheme]` entry from @civfix/shared/tokens; the hue pairs are
+     * Every value is a `colorSchemes[scheme]` entry from @civfix/tokens; the hue pairs are
      * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
      * both schemes. console-tokens.test.ts asserts every value against the contract.
      */

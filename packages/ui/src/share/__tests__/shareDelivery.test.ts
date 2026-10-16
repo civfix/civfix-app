@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import type { WsClientMessage, WsServerMessage } from "@civfix/shared"
+import type { WsClientMessage, WsServerMessage } from "@civfix/contract"
 import type { ChatConnState, ChatSendResult, ChatSocketLike } from "../../data/types"
 import { makeShareRuns, runShareToDm } from "../shareDelivery"
 import { buildSharePlan, type SharePlanEntry } from "../shareToDm"

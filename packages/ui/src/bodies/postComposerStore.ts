@@ -4,7 +4,7 @@
  * It deliberately stores only JSON-safe values; camera/upload hooks own the non-serializable transport work.
  */
 import { create } from "zustand"
-import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/contract"
 import { registerViewerScopedDrafts } from "../viewerScope"
 
 export type PostComposerMode = "post" | "quote" | "reply"

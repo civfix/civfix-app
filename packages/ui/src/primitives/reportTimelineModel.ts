@@ -1,4 +1,4 @@
-import type { ReportStatus, ReportTimelineEntryDTO } from "@civfix/shared"
+import type { ReportStatus, ReportTimelineEntryDTO } from "@civfix/contract"
 
 export const TIMELINE_VISIBILITY_KINDS = {
   hidden: "hidden",

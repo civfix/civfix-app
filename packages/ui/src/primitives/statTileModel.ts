@@ -1,4 +1,4 @@
-import { formatCount } from "@civfix/shared"
+import { formatCount } from "../helpers"
 import { EMPTY_VALUE } from "../i18n/emptyValue"
 import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 

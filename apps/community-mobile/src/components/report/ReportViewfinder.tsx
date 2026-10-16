@@ -15,7 +15,7 @@ import { CAMERA_CHROME_THEME, fontFamily, fontSize, makeThemedStyles, radius, sp
 import { Text, PrimaryButton, useToast } from "@civfix/ui"
 import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
-import { withTimeout } from "@civfix/shared"
+import { withTimeout } from "@civfix/ui/helpers/async"
 import {
   BACKGROUNDED_PARK_GRACE_MS,
   MAX_VIDEO_SECONDS,

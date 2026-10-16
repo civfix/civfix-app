@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, View } from "react-native"
-import type { EventPhase } from "@civfix/shared"
+import type { EventPhase } from "@civfix/contract"
 import { makeThemedStyles, useReducedMotion, useTheme, type Theme } from "../../theme"
 import { useT } from "../../i18n"
 import { MetaDot } from "../../primitives/MetaDot"

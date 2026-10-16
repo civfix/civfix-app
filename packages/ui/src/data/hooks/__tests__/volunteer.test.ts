@@ -10,7 +10,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween, sliceFrom } from "../../../__tests__/sourceGuards"
-import { LeaderboardQuerySchema, MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
+import { LeaderboardQuerySchema, MAX_LEADERBOARD_OFFSET } from "@civfix/contract"
 import { leaderboardNextOffset } from "../volunteer"
 
 /**

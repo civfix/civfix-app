@@ -1,4 +1,8 @@
-import { REPORT_TYPE_TO_CATEGORY, type ReportCategory, type ReportType as ReportTypeId } from "@civfix/shared"
+import {
+  REPORT_TYPE_TO_CATEGORY,
+  type ReportCategory,
+  type ReportType as ReportTypeId,
+} from "@civfix/contract"
 
 export interface ReportTypeOption {
   id: ReportTypeId

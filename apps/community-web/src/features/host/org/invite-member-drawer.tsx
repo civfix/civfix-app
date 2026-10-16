@@ -7,7 +7,7 @@ import type {
   InviteOrganizationMemberResponse,
   OrgInviteIdentifierKind,
   OrganizationInviteDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

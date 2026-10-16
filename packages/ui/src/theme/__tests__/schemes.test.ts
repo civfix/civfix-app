@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { tokens, darkColor } from "@civfix/shared/tokens"
+import { tokens, darkColor } from "@civfix/tokens"
 import {
   APPEARANCE_PREFERENCES,
   isAppearancePreference,

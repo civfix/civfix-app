@@ -1,5 +1,5 @@
 import React from "react"
-import type { CleanupDTO, EventInsights } from "@civfix/shared"
+import type { CleanupDTO, EventInsights } from "@civfix/contract"
 import { useTheme } from "../../theme"
 import { Text } from "../../typography"
 import {
@@ -9,7 +9,7 @@ import {
   SecondaryButton,
 } from "../../primitives"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 import { useT } from "../../i18n"
 import type { LinkSheetMode } from "../linkReportsModel"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"

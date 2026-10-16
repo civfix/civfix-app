@@ -1,5 +1,5 @@
-import type { CleanupDTO } from "@civfix/shared"
-import type { HostStage } from "@civfix/shared/host"
+import type { CleanupDTO } from "@civfix/contract"
+import type { HostStage } from "@civfix/contract/host"
 import type { UseRelativeTime } from "../../i18n"
 import { relativeLineFor, type HostRowKey } from "./hostSurfaceModel"
 import { relativeUntil } from "./hostTime"

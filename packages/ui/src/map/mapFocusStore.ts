@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { EventKind, ReportCategory } from "@civfix/shared"
+import type { EventKind, ReportCategory } from "@civfix/contract"
 
 export interface FocusedReport {
   kind: "report"

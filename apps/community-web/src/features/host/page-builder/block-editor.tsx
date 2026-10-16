@@ -2,9 +2,9 @@
 
 import type { ComponentType, ReactNode } from "react"
 import { Plus, Trash2 } from "lucide-react"
-import type { EventPageBlock, EventPageBlockKind } from "@civfix/shared"
-import { EMAIL_MAX_LENGTH, EVENT_PAGE_BLOCK_LIMITS, SAFE_HTTPS_LINK_MAX } from "@civfix/shared"
-import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/shared/markdown"
+import type { EventPageBlock, EventPageBlockKind } from "@civfix/contract"
+import { EMAIL_MAX_LENGTH, EVENT_PAGE_BLOCK_LIMITS, SAFE_HTTPS_LINK_MAX } from "@civfix/contract"
+import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/contract/markdown"
 import { useT } from "@civfix/ui/i18n"
 
 import { Field } from "@/components/console/forms/field"

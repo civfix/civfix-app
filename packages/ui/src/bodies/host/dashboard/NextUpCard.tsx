@@ -1,7 +1,7 @@
 import React, { useCallback } from "react"
 import { Pressable, View } from "react-native"
-import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/shared"
-import { deriveCleanupStatus } from "@civfix/shared/host"
+import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/contract"
+import { deriveCleanupStatus } from "@civfix/contract/host"
 import {
   focusRingProps,
   makeThemedStyles,

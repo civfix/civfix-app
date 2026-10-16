@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { AppError, ErrorCode, isAppErrorLike } from "@civfix/shared"
-import { parseError } from "@civfix/shared/client"
+import { AppError, ErrorCode, isAppErrorLike } from "@civfix/contract"
+import { parseError } from "@civfix/contract/client"
 import { codeRejectionReason, friendlyError, isConflict, isRetryableError } from "./errors.ts"
 
 function crossRealmAppError(code: string, message = "cross-realm"): Error & { code: string } {

@@ -14,7 +14,7 @@
  * Tagging the watermark with the room it was queued for lets the cleanup flush ONLY its own room's
  * watermark - the id and the room it is sent to always come from the same place.
  */
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 
 /** A debounced read watermark, tagged with the room whose message ids it is expressed in. */
 export interface PendingReadAck {

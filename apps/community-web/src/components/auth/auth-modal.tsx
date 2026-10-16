@@ -4,7 +4,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 
-import { EMAIL_OTP_CODE_LENGTH } from "@civfix/shared"
+import { EMAIL_OTP_CODE_LENGTH } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"

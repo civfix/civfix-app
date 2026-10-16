@@ -14,7 +14,7 @@ const hooks = strip(read("../../data/hooks/host.ts"))
 
 describe("one legacy-role predicate, shared by every host gate", () => {
   it("derives the fallback from the shared capability matrix instead of naming roles", () => {
-    expect(hooks).toContain('import { hostCapabilities } from "@civfix/shared/host"')
+    expect(hooks).toContain('import { hostCapabilities } from "@civfix/contract/host"')
     expect(hooks).toContain(
       "return hostCapabilities({ eventRole: cleanup.myRole ?? null, orgRole: null })",
     )

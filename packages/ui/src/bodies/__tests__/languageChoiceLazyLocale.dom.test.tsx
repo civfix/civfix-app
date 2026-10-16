@@ -6,7 +6,7 @@ import * as React from "react"
 import { describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 import { I18nProvider, useLocale, useT } from "../../i18n"
 import { LanguageSettingsBody } from "../LanguageSettingsBody"
 

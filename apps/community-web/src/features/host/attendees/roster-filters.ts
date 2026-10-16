@@ -3,8 +3,8 @@ import type {
   ListEventRegistrationsResponse,
   RegistrationRosterFilter,
   RegistrationRosterSort,
-} from "@civfix/shared"
-import { RegistrationRosterSortSchema } from "@civfix/shared"
+} from "@civfix/contract"
+import { RegistrationRosterSortSchema } from "@civfix/contract"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "all",

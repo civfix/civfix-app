@@ -3,7 +3,7 @@ import { View, StyleSheet, useWindowDimensions } from "react-native"
 import { useFocusEffect } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useQueryClient } from "@tanstack/react-query"
-import type { BBox, CleanupDTO, LatLng, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, LatLng, ReportClusterDTO, ReportPinDTO } from "@civfix/contract"
 import {
   AppShell,
   space,

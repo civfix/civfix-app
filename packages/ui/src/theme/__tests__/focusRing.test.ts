@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { tokens, darkColor } from "@civfix/shared/tokens"
+import { tokens, darkColor } from "@civfix/tokens"
 import { ACCENT_TEXT, makeThemeColors } from "../schemes"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")

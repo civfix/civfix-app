@@ -1,7 +1,7 @@
 "use client"
 
 import type { MouseEvent, ReactNode, RefObject } from "react"
-import { formatCount } from "@civfix/shared"
+import { formatCount } from "@civfix/ui/helpers"
 import { useLocale } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"

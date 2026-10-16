@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { ANON_REPORT_TURNSTILE_ACTION, HOME_TURF_TURNSTILE_ACTION } from "@civfix/shared/host"
+import { ANON_REPORT_TURNSTILE_ACTION, HOME_TURF_TURNSTILE_ACTION } from "@civfix/contract/host"
 
 import type * as TurnstileModule from "@/lib/turnstile"
 

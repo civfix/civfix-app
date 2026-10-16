@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import { URL } from "node:url"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 
 const appConfigSource = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
@@ -39,7 +39,7 @@ test("the android adaptive icon sits on the same light paper", () => {
 })
 
 test("the splash colours are derived from the contract, never retyped as literals", () => {
-  assert.match(appConfigSource, /require\("@civfix\/shared\/tokens"\)/)
+  assert.match(appConfigSource, /require\("@civfix\/tokens"\)/)
   assert.match(appConfigSource, /const SPLASH_BG_LIGHT = tokens\.color\.neutral\.paper/)
   for (const [, value] of appConfigSource.matchAll(/backgroundColor: ([^,\n]+)/g)) {
     assert.equal(value, "SPLASH_BG_LIGHT")

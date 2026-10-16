@@ -1,4 +1,4 @@
-import { HttpsUrlSchema } from "@civfix/shared"
+import { HttpsUrlSchema } from "@civfix/contract"
 import { safeDonationUrl } from "../../primitives/donationUrl"
 
 export type DonationLinkFieldError = "invalid" | null

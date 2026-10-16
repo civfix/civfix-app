@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import {
   APPROXIMATE_LOCATION_RETRY_LIMIT,
   approximateLocationShouldRetry,

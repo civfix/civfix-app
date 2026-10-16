@@ -1,5 +1,5 @@
-import type { BBox } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import type { BBox } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 import { MIN_LNG_COSINE, PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../geoBounds"
 
 export const NEARBY_KEY_PRECISION = 3

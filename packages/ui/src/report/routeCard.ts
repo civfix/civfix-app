@@ -1,4 +1,4 @@
-import type { JurisdictionDTO } from "@civfix/shared"
+import type { JurisdictionDTO } from "@civfix/contract"
 
 export type RouteCardState =
   | { kind: "no_point" }

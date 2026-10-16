@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
+import type { ContentReportReason, ContentReportSubject } from "@civfix/contract"
 import { useToast } from "../primitives"
 import { useReportContent } from "../data"
 

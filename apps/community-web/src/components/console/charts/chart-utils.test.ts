@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatCount } from "@civfix/shared"
+import { formatCount } from "@civfix/ui/helpers"
 
 import { niceTicks } from "./chart-utils"
 

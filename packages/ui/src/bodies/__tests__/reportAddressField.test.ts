@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ResolveAddressResponse } from "@civfix/shared"
+import type { ResolveAddressResponse } from "@civfix/contract"
 import { reportAddressPrefill } from "../reportAddressField"
 
 const near = (line: string) => `Near ${line}`

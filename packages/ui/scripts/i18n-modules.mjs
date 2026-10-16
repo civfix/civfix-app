@@ -14,15 +14,15 @@
 import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { LocaleEnum } from "@civfix/shared"
+import { LocaleEnum } from "@civfix/contract"
 
 export const i18nDir = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "i18n")
 export const CATALOGS_DIR = "catalogs"
 const localesDir = join(i18nDir, "locales")
 
 // The contract enum, not the folder list: config.ts hands the same list to i18next as supportedLngs, so
-// the bundle carries exactly the locales the app can select. It reads the built package, so build
-// @civfix/shared first after adding a locale.
+// the bundle carries exactly the locales the app can select. A new locale arrives with a new
+// @civfix/contract version, so adopt it before adding the locale's catalogs.
 const LOCALES = LocaleEnum.options
 
 // Must equal FALLBACK_LOCALE in src/i18n/resolveLocale.ts: the web bundles it statically so a key never
@@ -90,7 +90,7 @@ export default catalog
     `${CATALOGS_DIR}/lazy.ts`,
     `${banner}
 import type { ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 /** One loader per locale the web does not bundle statically; webpack emits each as its own chunk. */
 export const lazyCatalogs: Record<

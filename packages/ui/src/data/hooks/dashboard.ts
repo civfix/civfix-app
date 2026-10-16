@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { HostedEventsAnalyticsResponse, PortfolioAnalyticsRange } from "@civfix/shared"
+import type { HostedEventsAnalyticsResponse, PortfolioAnalyticsRange } from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 

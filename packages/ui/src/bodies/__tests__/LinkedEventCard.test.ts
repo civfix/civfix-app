@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
-import type { LinkedEventRef } from "@civfix/shared"
+import type { LinkedEventRef } from "@civfix/contract"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { MS_PER_MINUTE, type ServiceHoursCertificateDTO } from "@civfix/shared"
+import { MS_PER_MINUTE, type ServiceHoursCertificateDTO } from "@civfix/contract"
 import { useTheme, webSelectableText, focusRingProps } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { MetaDot } from "../../../primitives"

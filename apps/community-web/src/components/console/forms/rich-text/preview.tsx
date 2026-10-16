@@ -1,6 +1,6 @@
 "use client"
 
-import { parseMarkdownSubset } from "@civfix/shared/markdown"
+import { parseMarkdownSubset } from "@civfix/contract/markdown"
 
 import { renderMarkdownNodes, type MarkdownClasses } from "@/components/markdown/markdown-dom"
 import { cn } from "@/lib/utils"

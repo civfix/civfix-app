@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { AppError, ErrorCode, CreateReportRequestSchema, MAX_REPORT_DESCRIPTION_LENGTH } from "@civfix/shared"
+import {
+  AppError,
+  ErrorCode,
+  CreateReportRequestSchema,
+  MAX_REPORT_DESCRIPTION_LENGTH,
+} from "@civfix/contract"
 import { STEP_ORDER_COMPACT, STEP_ORDER_EXPANDED, stepOrderFor, submitErrorRecovery } from "../wizardSteps"
 import {
   composeDescription,

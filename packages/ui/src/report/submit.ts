@@ -1,6 +1,12 @@
-import { AppError, ErrorCode, MAX_REPORT_DESCRIPTION_LENGTH, appErrorCode, appErrorFields } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
-import type { CreateReportRequest, ReportCategory, ReportType } from "@civfix/shared"
+import {
+  AppError,
+  ErrorCode,
+  MAX_REPORT_DESCRIPTION_LENGTH,
+  appErrorCode,
+  appErrorFields,
+} from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
+import type { CreateReportRequest, ReportCategory, ReportType } from "@civfix/contract"
 import { useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useApi, useAuthState, useMyProfile, useSubmitReport, queryKeys } from "../data"

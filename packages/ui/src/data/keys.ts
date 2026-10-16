@@ -1,4 +1,4 @@
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 
 export const queryKeys = {
   session: ["session"] as const,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { MAX_LINKED_REPORTS, type ReportPinDTO, type ReportStatus } from "@civfix/shared"
-import type { HostStage } from "@civfix/shared/host"
+import { MAX_LINKED_REPORTS, type ReportPinDTO, type ReportStatus } from "@civfix/contract"
+import type { HostStage } from "@civfix/contract/host"
 import {
   LINKED_REPORTS_COUNT_AT,
   NEARBY_PREVIEW,

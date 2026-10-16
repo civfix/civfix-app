@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
+import type { EventPageBlock, PublicEventPageDTO } from "@civfix/contract"
 
 import { AboutBlock } from "./blocks/about-block"
 import { AgendaBlock } from "./blocks/agenda-block"

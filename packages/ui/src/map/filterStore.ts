@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { ReportCategorySchema, type ReportCategory } from "@civfix/shared"
+import { ReportCategorySchema, type ReportCategory } from "@civfix/contract"
 import { persistentStorage } from "../storage/persistentStorage"
 import { MAP_FILTERS_STORAGE_ID } from "../storage/storageIds"
 

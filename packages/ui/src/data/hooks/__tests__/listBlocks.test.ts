@@ -5,8 +5,8 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { ListBlocksResponse, PersonDTO } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ListBlocksResponse, PersonDTO } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import { blockedAccountsOf, listBlocksQueryOptions } from "../direct"
 import { queryKeys } from "../../keys"
 

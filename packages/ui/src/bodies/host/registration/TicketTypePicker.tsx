@@ -1,10 +1,10 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { TicketTypeDTO } from "@civfix/shared"
+import type { TicketTypeDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import { ticketTypeSelectable } from "@civfix/shared/host"
+import { ticketTypeSelectable } from "@civfix/contract/host"
 
 export interface TicketTypePickerProps {
   ticketTypes: readonly TicketTypeDTO[]

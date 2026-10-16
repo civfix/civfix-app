@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
-import type { CleanupDTO, PostDTO } from "@civfix/shared"
+import type { CleanupDTO, PostDTO } from "@civfix/contract"
 import { useTheme } from "../theme"
 import { Text, iconMap } from "../typography"
 import { EmptyState } from "../primitives"

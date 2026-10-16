@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostDTO, PostRefDTO } from "@civfix/shared"
+import type { PostDTO, PostRefDTO } from "@civfix/contract"
 import {
   POST_SURFACE,
   ROW_A11Y_PROPS,

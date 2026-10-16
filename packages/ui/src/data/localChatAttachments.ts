@@ -1,4 +1,5 @@
-import type { ChatItem, ChatMessageDTO, MediaDTO } from "@civfix/shared"
+import type { ChatItem } from "../helpers"
+import type { ChatMessageDTO, MediaDTO } from "@civfix/contract"
 
 const MAX_LOCAL_MESSAGES = 30
 

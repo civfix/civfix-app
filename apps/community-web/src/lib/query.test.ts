@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 
 import { makeQueryClient } from "./query"
 
@@ -38,7 +38,7 @@ describe("the web query client retries only transient failures", () => {
     }
   })
 
-  it("never retries a foreign-realm 4xx error (a second @civfix/shared copy)", () => {
+  it("never retries a foreign-realm 4xx error (a second @civfix/contract copy)", () => {
     const foreign = { name: "AppError", code: ErrorCode.NOT_FOUND, message: "gone", httpStatus: 404 }
     expect(retry(0, foreign)).toBe(false)
   })

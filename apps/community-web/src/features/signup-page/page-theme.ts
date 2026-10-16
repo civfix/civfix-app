@@ -1,4 +1,4 @@
-import type { ThemeAccent } from "@civfix/shared"
+import type { ThemeAccent } from "@civfix/contract"
 
 const ACCENT_VAR_PREFIX = "--signup-accent"
 

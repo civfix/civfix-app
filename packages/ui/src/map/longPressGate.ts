@@ -29,7 +29,7 @@ export interface LongPressMarker {
   anchor?: MarkerAnchor
 }
 
-/** Structurally `@civfix/shared`'s BBox, restated so this module imports nothing. */
+/** Structurally `@civfix/contract`'s BBox, restated so this module imports nothing. */
 export interface LongPressBounds {
   west: number
   south: number

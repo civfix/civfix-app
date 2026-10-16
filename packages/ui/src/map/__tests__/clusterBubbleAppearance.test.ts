@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { colorSchemes, type ColorSchemeName } from "@civfix/shared/tokens"
+import { colorSchemes, type ColorSchemeName } from "@civfix/tokens"
 import { makeThemeColors } from "../../theme/schemes"
 import { clusterBubbleAppearance, clusterToneFor } from "../pins/appearance"
 

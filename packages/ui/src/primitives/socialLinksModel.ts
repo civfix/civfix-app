@@ -1,4 +1,4 @@
-import { SOCIAL_PLATFORMS, type SocialLinks, type SocialPlatform } from "@civfix/shared"
+import { SOCIAL_PLATFORMS, type SocialLinks, type SocialPlatform } from "@civfix/contract"
 
 export const SOCIAL_GLYPH_VIEWBOX = 24
 

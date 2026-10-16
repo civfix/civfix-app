@@ -1,4 +1,4 @@
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import { safeDonationUrl } from "../primitives/donationUrl"
 
 export interface DonationLink {

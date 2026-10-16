@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { BBox, LinkedReportRef, ReportPinDTO } from "@civfix/shared"
+import type { BBox, LinkedReportRef, ReportPinDTO } from "@civfix/contract"
 import type { LinkedReportCardEntry } from "../../linkedReportCards"
 import { toggleLinkedReportId } from "../../linkReportsModel"
 import {

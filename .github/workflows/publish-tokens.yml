@@ -1,0 +1,77 @@
+name: publish @civfix/tokens
+
+# Publishes @civfix/tokens to the private registry (repo.civfix.org) when its version is ahead of the
+# registry, on push to main. Publishing is not a production action, so it belongs on main (the staging
+# lane): the registry consumers (civfix-backend, civfix-admin) adopt a new version
+# deliberately by moving their own caret range, and a backend release is built from a lockfile that
+# already pins an exact version. @civfix/ui and both apps are private and are never published; the API
+# contract publishes from civfix/civfix-contract.
+#
+# Flow: `pnpm changeset` while developing -> `pnpm changeset version` before merging -> this workflow
+# runs `changeset publish`, which is a no-op when nothing is ahead of the registry (so it runs on every
+# main push and a failed publish is retried by the next one). Each release is findable by its annotated
+# @civfix/tokens@X.Y.Z tag, hence the git identity step.
+#
+# Only main publishes real versions: a manual run on any other branch is skipped. A branch that needs
+# its tokens on the registry uses publish-tokens-snapshot.yml, which publishes a prerelease no caret
+# range can match. scripts/check-tokens-version.mjs refuses a version the registry already holds from
+# a commit main never released, and pushes the @civfix/tokens@X.Y.Z tag BEFORE the publish, so a
+# failed publish is retried by the next main push and a failed tag push stops before anything reaches
+# the registry.
+#
+# Required repository secret: NPM_TOKEN (the Verdaccio ci-publisher token).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-tokens
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    # Publishing `latest` is a main-only act; the environment's ref policy enforces that at admission.
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Configure git identity for release tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @civfix/tokens build
+
+      - name: Append registry auth to .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          {
+            echo "//repo.civfix.org/:_authToken=${NPM_TOKEN}"
+            echo "git-checks=false"
+          } >> .npmrc
+      - name: Tag the release on main
+        run: node scripts/check-tokens-version.mjs --release
+      - name: Publish
+        run: pnpm changeset publish --no-git-tag
+
+      - name: Restore .npmrc
+        if: always()
+        run: git checkout -- .npmrc

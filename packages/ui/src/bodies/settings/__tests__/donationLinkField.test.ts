@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { HTTPS_URL_MAX_LENGTH, HttpsUrlSchema } from "@civfix/shared"
+import { HTTPS_URL_MAX_LENGTH, HttpsUrlSchema } from "@civfix/contract"
 import {
   donationLinkDirty,
   donationLinkFieldError,

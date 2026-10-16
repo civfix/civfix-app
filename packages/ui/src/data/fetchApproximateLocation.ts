@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
-import type { GetApproximateLocationResponse, LatLng } from "@civfix/shared"
+import type { ApiClient } from "@civfix/contract/client"
+import type { GetApproximateLocationResponse, LatLng } from "@civfix/contract"
 import { queryKeys } from "./keys"
 import {
   APPROXIMATE_LOCATION_STALE_MS,

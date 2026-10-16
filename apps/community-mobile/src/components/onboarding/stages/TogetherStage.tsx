@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated"
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "@civfix/ui/helpers"
 import {
   Avatar,
   Bubble,

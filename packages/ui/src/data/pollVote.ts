@@ -16,7 +16,7 @@
  *
  * Counts/voters are floored at 0 (defensive against a stale snapshot); myVote becomes the new idx list.
  */
-import type { PollDTO } from "@civfix/shared"
+import type { PollDTO } from "@civfix/contract"
 
 /**
  * Return a new PollDTO reflecting the viewer voting for exactly `newIdxs` (an empty array = retract).

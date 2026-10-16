@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
-import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/contract"
 import { ROSTER_FILTERS, visibleRosterFilters } from "../rosterFiltersModel"
 import { requestNextRosterPage, rosterCheckinItems } from "../rosterListModel"
 import { SEARCH_DEBOUNCE_MS } from "../../../data/hooks/useDebouncedValue"
@@ -64,7 +64,7 @@ describe("there is ONE check-in row in the package", () => {
 
   it("takes the seat to check in and the seat to undo from the shared pure helpers", () => {
     expect(list).toContain(
-      'import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"',
+      'import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/contract/host"',
     )
     expect(list).toContain("nextCheckinSeat(row)")
     expect(list).toContain("lastCheckedInSeat(row)")

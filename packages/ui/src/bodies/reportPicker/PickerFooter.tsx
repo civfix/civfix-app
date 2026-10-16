@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { MAX_LINKED_REPORTS } from "@civfix/shared"
+import { MAX_LINKED_REPORTS } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, TextLink } from "../../typography"
 import { PrimaryButton } from "../../primitives"

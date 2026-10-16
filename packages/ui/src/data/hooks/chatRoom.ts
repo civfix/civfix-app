@@ -4,8 +4,8 @@ import type {
   MediaKind,
   ReactionEmoji,
   RoomKind,
-} from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+} from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import type { InfiniteData } from "@tanstack/react-query"
 
 const CHAT_PAGE_SIZE = 30

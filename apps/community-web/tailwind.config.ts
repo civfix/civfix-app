@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss"
 import animate from "tailwindcss-animate"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { Z_LAYERS } from "./src/styles/z-layers"
 
 const { color, fontSize, radius, shadow, space } = tokens

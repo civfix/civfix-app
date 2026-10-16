@@ -2,7 +2,7 @@
  * `haversineMeters` returns metres and `distanceLabel` formats miles, so the conversion happens here, once: a
  * metres value passed straight through renders "645 mi" for a walk that should read "0.4 mi".
  */
-import { haversineMeters, type LatLng } from "@civfix/shared"
+import { haversineMeters, type LatLng } from "@civfix/contract"
 import { distanceLabel } from "./relativeTime"
 
 /** Metres in one statute mile - the bridge between haversineMeters (m) and distanceLabel (mi). */

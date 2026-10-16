@@ -2,9 +2,9 @@
  * The attendee-facing state machine of the event detail's lifecycle region. "Is it over" belongs to the
  * shared clock; this module only re-exports it so the detail surfaces keep one import site.
  */
-import type { CleanupStatus } from "@civfix/shared"
+import type { CleanupStatus } from "@civfix/contract"
 
-export { hasEventEnded } from "@civfix/shared/host"
+export { hasEventEnded } from "@civfix/contract/host"
 
 export type HoursReceiptState =
   /** Event not done, the viewer is an acting host, or the viewer never joined - render nothing. */

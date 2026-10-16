@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react"
 import { CircleAlert, MailOpen } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { AcceptOrganizationInviteRequestSchema, ErrorCode, toAppError } from "@civfix/shared"
-import type { AcceptOrganizationInviteResponse } from "@civfix/shared"
+import { AcceptOrganizationInviteRequestSchema, ErrorCode, toAppError } from "@civfix/contract"
+import type { AcceptOrganizationInviteResponse } from "@civfix/contract"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

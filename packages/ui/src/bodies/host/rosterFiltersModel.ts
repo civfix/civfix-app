@@ -1,5 +1,5 @@
-import type { RegistrationRosterFilter } from "@civfix/shared"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+import type { RegistrationRosterFilter } from "@civfix/contract"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "all",

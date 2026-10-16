@@ -1,4 +1,4 @@
-import type { LatLng } from "@civfix/shared/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { MIN_LNG_COSINE, clampLat } from "../data/geoBounds"
 
 export const RADIUS_CIRCLE_STEPS = 48

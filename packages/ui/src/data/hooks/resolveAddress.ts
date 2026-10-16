@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query"
-import type { ResolveAddressResponse } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
-import { ErrorCode, appErrorCode, geocodePointKey } from "@civfix/shared"
+import type { ResolveAddressResponse } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
+import { ErrorCode, appErrorCode, geocodePointKey } from "@civfix/contract"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 

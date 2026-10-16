@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
-import type { SocialPlatform } from "@civfix/shared"
+import type { SocialPlatform } from "@civfix/contract"
 import {
   MAX_ORG_DESCRIPTION,
   MAX_ORG_NAME,
@@ -8,7 +8,9 @@ import {
   SOCIAL_HANDLE_PREFIX,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
-} from "@civfix/shared"
+  appErrorCode,
+  appErrorFields,
+} from "@civfix/contract"
 import {
   focusRingProps,
   headingLevel,
@@ -32,7 +34,6 @@ import { useOrganization, useUpdateOrganization } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode, appErrorFields } from "@civfix/shared"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { OrgField } from "./OrgField"

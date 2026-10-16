@@ -1,4 +1,4 @@
-import type { ServiceHoursCertificateDTO } from "@civfix/shared"
+import type { ServiceHoursCertificateDTO } from "@civfix/contract"
 
 /**
  * The newest document still worth showing. `listFor` orders newest-first and INCLUDES revoked rows, so

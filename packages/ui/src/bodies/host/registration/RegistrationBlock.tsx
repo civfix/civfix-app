@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
-import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import { ACCESS_CODE_MAX, appErrorCode } from "@civfix/shared"
+import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/contract"
+import { ACCESS_CODE_MAX, appErrorCode } from "@civfix/contract"
 import {
   answerPayload,
   clampPartySize,
@@ -12,7 +12,7 @@ import {
   sortedTicketTypes,
   visibleQuestions,
   type AnswerMap,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"

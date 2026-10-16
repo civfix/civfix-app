@@ -6,7 +6,7 @@ import {
   MAX_HOST_NOTE,
   type EventRegistrationDTO,
   type GetEventRegistrationAnswersResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { ConsoleButton } from "@/components/console/button"

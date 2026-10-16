@@ -1,6 +1,6 @@
 "use client"
 
-import type { EventCheckinCountersDTO } from "@civfix/shared"
+import type { EventCheckinCountersDTO } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { KpiCell, StatStrip } from "@/components/console/charts"

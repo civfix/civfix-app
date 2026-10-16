@@ -1,4 +1,4 @@
-import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/contract"
 import { threadRoomId } from "../data/threadRoom"
 
 export const SHARE_DM_MAX_RECIPIENTS = 10

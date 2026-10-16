@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import type { PersonDTO, RoomKind } from "@civfix/shared"
+import type { PersonDTO, RoomKind } from "@civfix/contract"
 import { space, useLayoutMode, useTheme, focusRingProps, type LayoutMode } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { ReportContentSheet, PinnedBar, SystemMessageRow, useToast, usePopoverAnchor } from "../primitives"

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 import { INLINE_EMPTY_LAYOUT, inlineEmptyHeight } from "../stateViewModel"
 
 const source = readFileSync(new URL("../StateView.tsx", import.meta.url), "utf8")

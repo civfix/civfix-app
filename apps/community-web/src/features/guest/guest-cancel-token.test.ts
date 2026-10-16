@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { GUEST_MANAGE_TOKEN_MAX_LENGTH, GUEST_MANAGE_TOKEN_MIN_LENGTH } from "@civfix/shared"
+import { GUEST_MANAGE_TOKEN_MAX_LENGTH, GUEST_MANAGE_TOKEN_MIN_LENGTH } from "@civfix/contract"
 
 import { readGuestManageToken } from "@/features/guest/guest-cancel-token"
 

@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { isAppErrorLike, type SessionCheckResponse, type UserDTO } from "@civfix/shared"
+import { isAppErrorLike, type SessionCheckResponse, type UserDTO } from "@civfix/contract"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"

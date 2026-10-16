@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
-import { eventIcsUid } from "@civfix/shared/ics"
+import { eventIcsUid } from "@civfix/contract/ics"
 import * as web from "../../primitives/calendarFile.web"
 import * as native from "../../primitives/calendarFile.native"
 import { makeFakeCapabilities } from "../../capabilities/fakes"

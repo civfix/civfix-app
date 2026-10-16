@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { EDIT_WINDOW_HOURS } from "@civfix/shared"
+import { EDIT_WINDOW_HOURS } from "@civfix/contract"
 import { withinEditWindow } from "../relativeTime"
 
 const NOW = new Date("2026-07-18T12:00:00.000Z")

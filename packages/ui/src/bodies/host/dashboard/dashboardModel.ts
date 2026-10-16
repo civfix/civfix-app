@@ -11,11 +11,17 @@ import type {
   OrganizationMemberDTO,
   OrganizationMemberRole,
   OrgInviteIdentifierKind,
-} from "@civfix/shared"
-import { ErrorCode, MAX_ORG_INVITES_PER_ORG, MS_PER_DAY, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
-import type { EventWhenInput } from "@civfix/shared/datetime"
-import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/shared/datetime"
-import { can, deriveCleanupStatus, eventPhase, type EventWindowLike } from "@civfix/shared/host"
+} from "@civfix/contract"
+import {
+  ErrorCode,
+  MAX_ORG_INVITES_PER_ORG,
+  MS_PER_DAY,
+  byErrorCode,
+  type ErrorCodeTable,
+} from "@civfix/contract"
+import type { EventWhenInput } from "@civfix/contract/datetime"
+import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/contract/datetime"
+import { can, deriveCleanupStatus, eventPhase, type EventWindowLike } from "@civfix/contract/host"
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
 import { hasHostCapability } from "../../../data/hooks/host"

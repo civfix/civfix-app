@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
-import { LEGAL_DOCUMENTS } from "@civfix/shared/legal"
+import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
 
 import {
   aasaExcludeOrder,

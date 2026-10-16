@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import {
   buildComposerEventRef,
   resolveComposerEvent,

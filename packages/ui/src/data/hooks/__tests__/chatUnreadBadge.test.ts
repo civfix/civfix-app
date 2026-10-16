@@ -9,7 +9,7 @@
  *     that prefix so one ack or realtime signal refreshes badge and list together.
  */
 import { describe, expect, it } from "vitest"
-import type { ListThreadsResponse, MessageThreadDTO } from "@civfix/shared"
+import type { ListThreadsResponse, MessageThreadDTO } from "@civfix/contract"
 import { queryKeys } from "../../keys"
 import { invalidationKeysForTopic } from "../../signals"
 import { UNREAD_BADGE_PAGE_SIZE, sumThreadUnread } from "../chat"

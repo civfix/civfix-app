@@ -1,4 +1,4 @@
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 
 export const LIGHTBOX_FALLBACK_ASPECT_RATIO = 16 / 9
 

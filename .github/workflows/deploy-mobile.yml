@@ -148,8 +148,8 @@ jobs:
           node-version: 22
           cache: pnpm
       # eas-cli evaluates app.config.js in THIS checkout before it makes its own copy, and that file
-      # requires @civfix/shared/tokens from the workspace: no install, no build. The mobile app's
-      # postinstall also builds packages/shared's dist, which that require resolves to.
+      # requires @civfix/tokens from the workspace. The mobile app's postinstall builds
+      # packages/tokens' dist, which that require resolves to.
       - run: pnpm install --frozen-lockfile
 
       - name: Resolve the build target and assert the profile agrees with it

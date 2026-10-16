@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { createApiClient } from "@civfix/shared/client"
-import type { UserDTO } from "@civfix/shared"
+import { createApiClient } from "@civfix/contract/client"
+import type { UserDTO } from "@civfix/contract"
 
 import {
   useAuthStore,

@@ -1,10 +1,10 @@
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import {
   fakeEventInsights,
   fakeHostedEvents,
   fakeHostedEventsAnalytics,
-} from "@civfix/shared/fakes"
-import { MAX_PORTFOLIO_TOP_VOLUNTEERS, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
+} from "@/components/dev/host-dashboard.fake"
+import { MAX_PORTFOLIO_TOP_VOLUNTEERS, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
 import type {
   CleanupDTO,
   EventCheckinCountersDTO,
@@ -24,7 +24,7 @@ import type {
   OrganizationDTO,
   PersonDTO,
   PortfolioAnalyticsRange,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 import { makeCannedApi, type FakeEndpoint } from "./fixtures"
 

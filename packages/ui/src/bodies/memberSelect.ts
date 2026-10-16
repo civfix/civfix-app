@@ -1,5 +1,5 @@
 /** The selection logic behind MemberPicker, kept RN-free so it unit-tests directly under vitest. */
-import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
+import type { PersonDTO, UserSearchResultDTO } from "@civfix/contract"
 
 /**
  * Toggle `person` in `selected`:

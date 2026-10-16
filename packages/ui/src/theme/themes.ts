@@ -1,5 +1,5 @@
 import { Platform, type ViewStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { fontFamily } from "./fontFamily"
 import { MOTION, EASE_STANDARD as EASE_STANDARD_TOKEN } from "./motion"
 import {

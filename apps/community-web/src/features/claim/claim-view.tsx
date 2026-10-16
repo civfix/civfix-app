@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ShieldCheck, CheckCircle2, MapPin, Loader2, ArrowRight } from "lucide-react"
-import { ErrorCode, type ReportDTO, toAppError } from "@civfix/shared"
+import { ErrorCode, type ReportDTO, toAppError } from "@civfix/contract"
 
 import { useT } from "@civfix/ui/i18n"
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
-import { type LatLng } from "@civfix/shared/geocode"
+import { type LatLng } from "@civfix/contract/geocode"
 import { useApi, queryKeys } from "../../data"
 import { resolveUserLocation } from "../../data/hooks/location"
 import { useGeolocation } from "../../capabilities"

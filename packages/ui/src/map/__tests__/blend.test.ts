@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import type { CleanupDTO, LinkedReportRef, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, LinkedReportRef, ReportPinDTO } from "@civfix/contract"
 import { computeMapBlends } from "../blend"
 
 function pin(id: string, category: ReportPinDTO["category"] = "trash"): ReportPinDTO {

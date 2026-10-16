@@ -1,6 +1,6 @@
 import { beforeEach, test } from "node:test"
 import assert from "node:assert/strict"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
 import type * as AuthModule from "./authStore.ts"
 

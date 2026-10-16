@@ -1,4 +1,4 @@
-import { EMAIL_MAX_LENGTH, MS_PER_DAY, type OrganizationInviteDTO } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, MS_PER_DAY, type OrganizationInviteDTO } from "@civfix/contract"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
 import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"

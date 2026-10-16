@@ -1,6 +1,6 @@
 "use client"
 
-import type { HostedEventDTO, HostedEventsWhen } from "@civfix/shared"
+import type { HostedEventDTO, HostedEventsWhen } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { Chip } from "@/components/console/chips/chip"

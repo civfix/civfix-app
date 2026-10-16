@@ -2,7 +2,7 @@
   "name": "civfix-app",
   "version": "0.0.0",
   "private": true,
-  "description": "civfix consumer plane: the @civfix/shared contract, the @civfix/ui component set, the community web app and the community mobile app.",
+  "description": "civfix consumer plane: the @civfix/tokens design tokens, the @civfix/ui component set, the community web app and the community mobile app.",
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@9.12.0",
   "engines": {

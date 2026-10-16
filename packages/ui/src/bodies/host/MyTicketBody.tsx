@@ -6,8 +6,8 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native"
-import type { MyEventTicketSeat } from "@civfix/shared"
-import { formatTicketCode } from "@civfix/shared/host"
+import type { MyEventTicketSeat } from "@civfix/contract"
+import { formatTicketCode } from "@civfix/contract/host"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { PrimaryButton, SecondaryButton, QrTicket, useToast } from "../../primitives"
@@ -22,7 +22,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
 import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
 import { HostBodyState } from "./HostBodyState"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 import {
   ticketPageIndex,
   ticketPageWidth,

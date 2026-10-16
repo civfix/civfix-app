@@ -18,7 +18,7 @@ import type {
   SeatStatus,
   TicketTypeVisibility,
   WaitlistStatus,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import type { LucideIcon } from "lucide-react"
 import {
   Ban,

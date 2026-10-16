@@ -1,4 +1,4 @@
-import type { MessageThreadDTO, RoomKind } from "@civfix/shared"
+import type { MessageThreadDTO, RoomKind } from "@civfix/contract"
 
 /** A thread row is keyed by the room it fronts (the report, event or group id); only a DM has no ref. */
 export function threadRoomId(thread: Pick<MessageThreadDTO, "id" | "refId">): string {

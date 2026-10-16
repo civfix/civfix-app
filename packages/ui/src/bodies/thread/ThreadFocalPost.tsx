@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostDTO, PostRefDTO } from "@civfix/shared"
+import type { PostDTO, PostRefDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { useLocale, useT } from "../../i18n"

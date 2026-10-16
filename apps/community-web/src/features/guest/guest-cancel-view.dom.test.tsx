@@ -2,7 +2,7 @@ import * as React from "react"
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type * as ApiModule from "@/lib/api"
-import { AppError, ErrorCode, GUEST_MANAGE_TOKEN_MIN_LENGTH } from "@civfix/shared"
+import { AppError, ErrorCode, GUEST_MANAGE_TOKEN_MIN_LENGTH } from "@civfix/contract"
 
 const guestRsvpCancel = vi.fn<(...args: unknown[]) => unknown>()
 

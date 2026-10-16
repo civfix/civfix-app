@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
-import { AppError } from "@civfix/shared"
-import { colorSchemes } from "@civfix/shared/tokens"
+import { AppError } from "@civfix/contract"
+import { colorSchemes } from "@civfix/tokens"
 import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
 import {

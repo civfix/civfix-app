@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
-import type { SocialLinks, UpdateProfileRequest } from "@civfix/shared"
+import type { SocialLinks, UpdateProfileRequest } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
 import { iconMap } from "../typography"
 import {

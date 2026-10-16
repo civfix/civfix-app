@@ -1,5 +1,5 @@
-import type { EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
-import type { AnswerMap } from "@civfix/shared/host"
+import type { EventAnswerValue, EventQuestionDTO } from "@civfix/contract"
+import type { AnswerMap } from "@civfix/contract/host"
 
 export function initialAnswer(question: EventQuestionDTO): EventAnswerValue {
   switch (question.kind) {

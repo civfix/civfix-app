@@ -18,7 +18,8 @@
     "legal-hashes": "node scripts/legal-hashes.mjs"
   },
   "dependencies": {
-    "@civfix/shared": "workspace:*",
+    "@civfix/contract": "^0.62.0",
+    "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@tanstack/react-query": "^5.62.7",

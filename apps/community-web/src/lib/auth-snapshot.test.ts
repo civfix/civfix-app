@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import type { UserDTO } from "@civfix/shared"
+import type { UserDTO } from "@civfix/contract"
 
 import {
   SNAPSHOT_KEY,

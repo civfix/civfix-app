@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { ReactionEmoji, ReactionSummaryDTO } from "@civfix/shared"
+import type { ReactionEmoji, ReactionSummaryDTO } from "@civfix/contract"
 import {
   makeThemedStyles,
   webCursorPointer,

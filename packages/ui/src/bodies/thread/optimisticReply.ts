@@ -1,4 +1,4 @@
-import type { LinkedEventRef, PersonDTO, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, PersonDTO, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/contract"
 import type { PostComposerMedia } from "../postComposerStore"
 import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "../postComposerSubmit"
 

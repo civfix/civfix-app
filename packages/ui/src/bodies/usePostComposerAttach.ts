@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { LayoutAnimation, Platform } from "react-native"
-import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
 import { useAttendingCleanups, useMyReports } from "../data"
 import { attachableEvents, attachableReports } from "../data/composerAttachable"
 import {

@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { HostedEventsAnalyticsResponse } from "@civfix/shared"
+import type { HostedEventsAnalyticsResponse } from "@civfix/contract"
 import { makeThemedStyles } from "../../../theme"
 import { Text } from "../../../typography"
 import { formatRate, formatStatValue, HeroFigure, SectionCard } from "../../../primitives"

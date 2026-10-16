@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import { resolveAvatarGradient, type UserProfileDTO } from "@civfix/shared"
+import { resolveAvatarGradient, type UserProfileDTO } from "@civfix/contract"
 import { Text } from "../../typography"
 import { Avatar, DonateBlock, SocialLinksRow, VerifiedBadge } from "../../primitives"
 import { AffiliationRow } from "../AffiliationRow"

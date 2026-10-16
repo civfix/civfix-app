@@ -1,11 +1,11 @@
-import { MIN_EVENT_DURATION_MINUTES, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
+import { MIN_EVENT_DURATION_MINUTES, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
 import {
   wallClockExistsInZone,
   wallClockInZone,
   wallClockToInstantMs,
   zoneShortName,
   type WallClock,
-} from "@civfix/shared/datetime"
+} from "@civfix/contract/datetime"
 
 export function startOfDay(d: Date): Date {
   const x = new Date(d)

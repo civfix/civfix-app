@@ -6,7 +6,7 @@ import type {
   ReportChatParticipantsResponse,
   RoomKind,
   ToggleHiddenResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { threadMatchesRoom } from "../threadRoom"

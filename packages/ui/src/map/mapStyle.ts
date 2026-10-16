@@ -1,4 +1,4 @@
-import { colorSchemes, type ColorSchemeName } from "@civfix/shared/tokens"
+import { colorSchemes, type ColorSchemeName } from "@civfix/tokens"
 import type { MapStyleInput } from "./types"
 
 const CARTO_SHARDS = ["a", "b", "c"]

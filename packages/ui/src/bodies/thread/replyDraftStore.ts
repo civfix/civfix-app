@@ -20,7 +20,7 @@
  * carrying one forward would leave a thumbnail spinning forever over a permanently disabled Reply button.
  */
 import { create } from "zustand"
-import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, UserMentionDTO } from "@civfix/contract"
 import type { PostComposerMedia } from "../postComposerStore"
 import { registerViewerScopedDrafts } from "../../viewerScope"
 

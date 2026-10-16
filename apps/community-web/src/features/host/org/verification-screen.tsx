@@ -8,12 +8,12 @@ import type {
   OrgVerificationKind,
   OrgVerificationStatus,
   OrganizationVerificationDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   ApplyOrganizationVerificationRequestSchema,
   MAX_ORG_VERIFICATION_DOCUMENTS,
   MAX_ORG_VERIFICATION_NOTE,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

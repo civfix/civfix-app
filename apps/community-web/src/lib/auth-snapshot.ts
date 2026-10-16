@@ -1,4 +1,4 @@
-import { UserDTOSchema, type UserDTO } from "@civfix/shared"
+import { UserDTOSchema, type UserDTO } from "@civfix/contract"
 
 import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
 

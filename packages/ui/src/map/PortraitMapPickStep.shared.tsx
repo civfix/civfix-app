@@ -2,7 +2,7 @@
  * The seams differ only in host chrome and middle content; everything else lives here once because the
  * copies had already started to drift.
  */
-import { coordsLabel } from "@civfix/shared"
+import { coordsLabel } from "@civfix/contract"
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"

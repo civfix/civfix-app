@@ -1,5 +1,5 @@
-import type { EventAddressSource, ResolveAddressResponse } from "@civfix/shared"
-import { MAX_EVENT_ADDRESS_LENGTH, geocodePointKey, isLocatedPrecision } from "@civfix/shared"
+import type { EventAddressSource, ResolveAddressResponse } from "@civfix/contract"
+import { MAX_EVENT_ADDRESS_LENGTH, geocodePointKey, isLocatedPrecision } from "@civfix/contract"
 import { applyNearPrefix, stripNearPrefix } from "./addressRowModel"
 
 const MIN_EVENT_ADDRESS_LENGTH = 3

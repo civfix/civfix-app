@@ -4,7 +4,7 @@ import {
   type ColorPalette,
   type ColorSchemeName,
   type ShadowTokens,
-} from "@civfix/shared/tokens"
+} from "@civfix/tokens"
 
 export { colorSchemes }
 export type { ColorSchemeName, ColorPalette, ShadowTokens }

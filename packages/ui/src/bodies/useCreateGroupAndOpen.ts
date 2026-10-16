@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react"
-import type { CreateChatGroupRequest } from "@civfix/shared"
+import type { CreateChatGroupRequest } from "@civfix/contract"
 import { useCreateGroup } from "../data"
 import { useNavStore } from "../nav"
 import { stackOpeningGroup } from "./groupWizard"

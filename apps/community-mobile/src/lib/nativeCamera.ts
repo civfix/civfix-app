@@ -3,7 +3,7 @@ import * as Crypto from "expo-crypto"
 import * as ImagePicker from "expo-image-picker"
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { Image as ImageCompressor, Video as VideoCompressor } from "react-native-compressor"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { motion } from "@civfix/ui/theme"
 import type {
   CameraCapability,

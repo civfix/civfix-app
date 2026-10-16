@@ -1,4 +1,4 @@
-import { MAX_VIDEO_SECONDS } from "@civfix/shared"
+import { MAX_VIDEO_SECONDS } from "@civfix/contract"
 import type { CapturedMedia } from "@civfix/ui/capabilities"
 
 /**

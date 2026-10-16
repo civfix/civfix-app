@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { AnnouncementDTO } from "@civfix/shared"
-import { MAX_ANNOUNCEMENT_BODY } from "@civfix/shared"
+import type { AnnouncementDTO } from "@civfix/contract"
+import { MAX_ANNOUNCEMENT_BODY } from "@civfix/contract"
 import {
   ANNOUNCEMENT_PREVIEW_CHARS,
   AUDIENCE_ICONS,

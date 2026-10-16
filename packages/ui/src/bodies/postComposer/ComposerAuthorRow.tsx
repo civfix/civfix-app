@@ -1,7 +1,7 @@
 import React from "react"
 import { View } from "react-native"
 import type { TFunction } from "i18next"
-import type { OrganizationDTO, PersonDTO } from "@civfix/shared"
+import type { OrganizationDTO, PersonDTO } from "@civfix/contract"
 import { Avatar } from "../../primitives"
 import { Text } from "../../typography"
 import { usePostComposerStyles } from "./postComposerStyles"

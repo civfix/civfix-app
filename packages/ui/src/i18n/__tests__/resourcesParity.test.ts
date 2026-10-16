@@ -1,5 +1,5 @@
 import { readdirSync } from "node:fs"
-import { SupportedLocaleSchema } from "@civfix/shared"
+import { SupportedLocaleSchema } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 import { initialResources, loadCatalog } from "../bundledCatalogs"
 import * as nativeSeam from "../bundledCatalogs.native"

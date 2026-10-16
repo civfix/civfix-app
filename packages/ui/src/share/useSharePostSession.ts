@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import type { PersonDTO } from "@civfix/shared"
+import type { PersonDTO } from "@civfix/contract"
 import { useT } from "../i18n"
 import { useToast } from "../primitives/toastContext"
 import { absoluteUrl, shareLink } from "../primitives/share"

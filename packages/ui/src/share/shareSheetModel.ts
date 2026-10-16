@@ -1,4 +1,4 @@
-import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
+import type { PersonDTO, UserSearchResultDTO } from "@civfix/contract"
 import { filterExcluded } from "../bodies/memberSelect"
 import type { IconName } from "../typography"
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { QueryClient } from "@tanstack/react-query"
-import { toAppError } from "@civfix/shared"
+import { toAppError } from "@civfix/contract"
 
 /**
  * Retries are conservative so the UI fails fast into an error state when the backend is down instead
@@ -20,7 +20,7 @@ export function makeQueryClient(): QueryClient {
         // volatile, non-persisted queries (map, chat history, search) override it with a short gcTime.
         gcTime: 24 * 60 * 60_000,
         refetchOnWindowFocus: false,
-        // Structural, not instanceof: a second @civfix/shared copy (vitest, a mis-deduped bundle)
+        // Structural, not instanceof: a second @civfix/contract copy (vitest, a mis-deduped bundle)
         // throws a foreign-realm AppError. toAppError maps a network failure to INTERNAL (500), so
         // only transport and server faults retry; every 4xx (including 429) fails fast.
         retry: (failureCount, error) => toAppError(error).httpStatus >= 500 && failureCount < 2,
