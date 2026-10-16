@@ -14,6 +14,8 @@ import { Icon, Text, iconMap } from "../../typography"
 
 const ME_TOO_HEIGHT = 32
 const ME_TOO_HIT_SLOP = hitSlopToTarget(ME_TOO_HEIGHT)
+// RN's small spinner is 20 pt on every platform; scaled into the glyph's box, busy never widens the pill.
+const SPINNER_SMALL = 20
 
 /** Me too as a soft chip, the way a reaction sits under a post: quiet until pressed, then tinted moss. */
 export function MeTooChip({
@@ -35,6 +37,7 @@ export function MeTooChip({
   const th = useTheme()
   const fg = pressed ? th.colors.moss["700"] : th.colors.text
   const inert = busy || disabled
+  const glyph = 15
   return (
     <Pressable
       onPress={onPress}
@@ -55,9 +58,11 @@ export function MeTooChip({
     >
       {/* The label stays while busy so the chip keeps its width; the spinner takes the glyph's place. */}
       {busy ? (
-        <ActivityIndicator size="small" color={fg} />
+        <View style={{ width: glyph, height: glyph, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="small" color={fg} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
+        </View>
       ) : (
-        <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={15} color={fg} />
+        <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={glyph} color={fg} />
       )}
       <Text color={fg} style={[styles.label, webNoSelect]}>
         {label}
