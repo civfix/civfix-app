@@ -31,16 +31,16 @@ export function DuplicateMatchCard({
   width,
   onOpen,
   onMeToo,
-  meTooBusy,
-  meTooDisabled,
+  meTooBusy = false,
+  meTooDisabled = false,
 }: {
   row: NearbyReportRow
   width: number | undefined
   onOpen: (row: NearbyReportRow) => void
   /** Absent for a guest, who gets no Me too. */
   onMeToo?: (row: NearbyReportRow) => void
-  meTooBusy: boolean
-  meTooDisabled: boolean
+  meTooBusy?: boolean
+  meTooDisabled?: boolean
 }) {
   const styles = useStyles()
   const th = useTheme()
