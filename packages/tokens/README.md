@@ -6,7 +6,7 @@ cleanup pin colours, and the type, spacing, radius and shadow scales, plus the c
 dependencies.
 
 It is the single styling source: civfix-app (`@civfix/ui`, web, mobile) consumes it as a workspace
-package; civfix-admin, civfix-backend (email layout) and civfix-govt-web install it from
+package; civfix-admin and civfix-backend (email layout) install it from
 `https://repo.civfix.org`. It must stay framework-free (lint bans React, React Native and
 `@civfix/ui`), because the backend installs it.
 

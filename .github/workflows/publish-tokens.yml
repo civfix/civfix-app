@@ -2,7 +2,7 @@ name: publish @civfix/tokens
 
 # Publishes @civfix/tokens to the private registry (repo.civfix.org) when its version is ahead of the
 # registry, on push to main. Publishing is not a production action, so it belongs on main (the staging
-# lane): the registry consumers (civfix-backend, civfix-admin, civfix-govt-web) adopt a new version
+# lane): the registry consumers (civfix-backend, civfix-admin) adopt a new version
 # deliberately by moving their own caret range, and a backend release is built from a lockfile that
 # already pins an exact version. @civfix/ui and both apps are private and are never published; the API
 # contract publishes from civfix/civfix-contract.

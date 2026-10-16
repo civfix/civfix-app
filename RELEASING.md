@@ -16,8 +16,7 @@ is one of its registry consumers
 Until 0.61.0 the contract and the tokens shipped together as `@civfix/shared` from this repo.
 
 The tokens publish flow exists for the consumers that live OUTSIDE this repo and install them from
-the registry: `civfix-admin`, `civfix-backend` (the email layout) and the gov plane
-(`civfix-govt-web`).
+the registry: `civfix-admin` and `civfix-backend` (the email layout).
 
 None of them may ever depend on `@civfix/ui`: the backend isolation is CI-guarded, and
 `packages/tokens` bans importing `react` / `react-native` / `@civfix/ui` via ESLint.
@@ -122,7 +121,7 @@ npm view @civfix/tokens version --registry https://repo.civfix.org/
 
 ## Snapshot of an unmerged branch
 
-When a civfix-admin, civfix-backend or civfix-govt-web branch needs tokens that have not merged yet:
+When a civfix-admin or civfix-backend branch needs tokens that have not merged yet:
 
 ```sh
 gh workflow run publish-tokens-snapshot.yml --ref <your-civfix-app-branch>
@@ -151,7 +150,7 @@ The release is not done until every out-of-repo consumer that needs the change i
 `@civfix/ui`, web and mobile need nothing; they are in this workspace.
 
 ```sh
-# in civfix-admin / civfix-backend / civfix-govt-web, from the repo root, on a branch:
+# in civfix-admin or civfix-backend, from the repo root, on a branch:
 
 # caret crossed (minor/major bump): edit the range, then install
 #   "@civfix/tokens": "^0.2.0"
@@ -228,7 +227,7 @@ back on the box with `ops/rollback.sh` or `CIVFIX_REF=<tag|sha> ops/deploy.sh`
 - [ ] No consumer branch still pins a snapshot version.
 - [ ] Merged to `main`; `publish-tokens.yml` green; `npm view @civfix/tokens version --registry
       https://repo.civfix.org/` shows the new version and the `@civfix/tokens@X.Y.Z` tag exists.
-- [ ] Every external consumer bumped (civfix-admin, civfix-backend, civfix-govt-web), lockfile
+- [ ] Every external consumer bumped (civfix-admin, civfix-backend), lockfile
       refreshed, checks green, committed and pushed, or the skip is stated.
 - [ ] Backend isolation still green (`pnpm why react react-native react-native-web` -> not found;
       `@civfix/ui` absent from its lockfile).

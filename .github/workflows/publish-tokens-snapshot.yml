@@ -1,6 +1,6 @@
 name: publish @civfix/tokens snapshot
 
-# Publishes the branch's @civfix/tokens as a prerelease so a civfix-backend / civfix-admin / civfix-govt-web
+# Publishes the branch's @civfix/tokens as a prerelease so a civfix-backend or civfix-admin
 # branch can install unmerged tokens. Run it by hand on any branch except main:
 #
 #   gh workflow run publish-tokens-snapshot.yml --ref <branch>

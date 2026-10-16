@@ -17,7 +17,7 @@ stay separate and install `@civfix/contract` and `@civfix/tokens` from the priva
 
 | Path | Package | What it is |
 | --- | --- | --- |
-| `packages/tokens` | `@civfix/tokens` | The design tokens (colour scales for both schemes, category and cleanup pin colours, type, spacing, radius and shadow scales) and the chip-contrast helpers. Framework-free, no runtime deps. **Published** to the private registry for civfix-admin, civfix-backend and civfix-govt-web. [README](packages/tokens/README.md) |
+| `packages/tokens` | `@civfix/tokens` | The design tokens (colour scales for both schemes, category and cleanup pin colours, type, spacing, radius and shadow scales) and the chip-contrast helpers. Framework-free, no runtime deps. **Published** to the private registry for civfix-admin and civfix-backend. [README](packages/tokens/README.md) |
 | `packages/ui` | `@civfix/ui` (private) | The shared React Native UI (theme, primitives, shells, nav store, feature bodies, the Map seam, the app-only `helpers`) rendered on web via react-native-web. Never published. [README](packages/ui/README.md) |
 | `apps/community-web` | `community-web` | Next.js 15 static-export SPA (React 19 + RN-web + shadcn) plus its Cloudflare Pages config and Functions. [README](apps/community-web/README.md) |
 | `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 54 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
@@ -128,8 +128,7 @@ Android still ships only by hand.
 ## Publishing `@civfix/tokens`
 
 `@civfix/ui` and both apps are private and are never published. `@civfix/tokens` is, because
-`civfix-admin`, `civfix-backend` (the email layout) and `civfix-govt-web` install it from
-`repo.civfix.org`.
+`civfix-admin` and `civfix-backend` (the email layout) install it from `repo.civfix.org`.
 
 Record a changeset while developing (`pnpm changeset`), apply it before merging
 (`pnpm changeset version`), and merging to `main` publishes it. Full runbook, including how each
