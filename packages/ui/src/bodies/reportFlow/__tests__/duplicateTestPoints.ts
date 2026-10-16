@@ -1,5 +1,5 @@
-import { haversineMeters, type ReportPinDTO, type ReportStatus } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import { haversineMeters, type ReportPinDTO, type ReportStatus } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 
 const METERS_PER_LAT_DEGREE = (6_371_000 * Math.PI) / 180
 

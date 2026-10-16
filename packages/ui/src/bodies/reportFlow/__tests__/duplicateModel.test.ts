@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { haversineMeters } from "@civfix/shared"
+import { haversineMeters } from "@civfix/contract"
 import { createI18n } from "../../../i18n/config"
 import { duplicateDistance, duplicateMatches, stepChecksDuplicates } from "../duplicateModel"
 import { exactlyNorthOf, northOf, pinAt } from "./duplicateTestPoints"

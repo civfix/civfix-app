@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { create } from "zustand"
-import type { LatLng } from "@civfix/shared/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { useNearbyReports } from "../../data/hooks/reports"
 import { useNavStore } from "../../nav"
 import { needsDuplicateCheck, useDraftReportStore } from "../../report/draftStore"

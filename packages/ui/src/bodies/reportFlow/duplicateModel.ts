@@ -1,5 +1,5 @@
-import { OPEN_REPORT_STATUSES, type ReportPinDTO } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import { OPEN_REPORT_STATUSES, type ReportPinDTO } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 import type { LayoutMode } from "../../theme"
 import type { Step } from "../../report/wizardSteps"
 import { nearbyReportRows, type NearbyReportRow } from "../linkReportsModel"
