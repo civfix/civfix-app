@@ -6,6 +6,7 @@ import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useT } from "../../i18n"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { duplicateDistance } from "./duplicateModel"
+import { MeTooButton } from "../reportDetail/MeTooButton"
 
 // A banner, not a gallery frame: a second card has to start above the fold on a phone.
 const CARD_MEDIA_ASPECT = 2.4
@@ -25,7 +26,7 @@ function useMatchText({ pin, distanceM }: NearbyReportRow) {
   }
 }
 
-/** One match on the Possible duplicate screen. Me too (#162) goes at the right of the body, beside the text. */
+/** One match on the Possible duplicate screen, with Me too as a full-width button closing the card. */
 export function DuplicateMatchCard({
   row,
   width,
@@ -44,6 +45,7 @@ export function DuplicateMatchCard({
 }) {
   const styles = useStyles()
   const th = useTheme()
+  const { t } = useT("report-wizard")
   const text = useMatchText(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
@@ -85,6 +87,19 @@ export function DuplicateMatchCard({
             <Text style={styles.count}>{text.count}</Text>
           </View>
         ) : null}
+        {onMeToo ? (
+          <View style={styles.meToo}>
+            <MeTooButton
+              size="sm"
+              label={t("wizard.duplicate.me_too")}
+              accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
+              pressed={false}
+              busy={meTooBusy}
+              disabled={meTooDisabled}
+              onPress={() => onMeToo(row)}
+            />
+          </View>
+        ) : null}
       </View>
     </Pressable>
   )
@@ -115,6 +130,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
+  meToo: { marginTop: t.space["2"] },
   metaRow: { flexDirection: "row", alignItems: "center", gap: t.space["1"] },
   cardMeta: {
     fontFamily: t.fontFamily.bodyRegular,
