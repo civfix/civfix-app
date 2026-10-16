@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { REACTION_EMOJIS, type ReactionSummaryDTO } from "@civfix/shared"
+import { REACTION_EMOJIS, type ReactionSummaryDTO } from "@civfix/contract"
 import { buildReactionChipModel, REACTION_GLYPH } from "../reactionChipModel"
 
 function summary(emoji: string, count: number, mine = false): ReactionSummaryDTO {

@@ -6,7 +6,7 @@ import type {
   ReportPinDTO,
   ReportStatus,
   ReportType,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { reportThumbUrl } from "./reportsListModel"
 
 export interface LinkedReportCardData {

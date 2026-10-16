@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
-import type { CleanupDTO } from "@civfix/shared"
-import { isVerifiedEventAddress } from "@civfix/shared"
-import { eventWhenLabel } from "@civfix/shared/datetime"
-import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
+import type { CleanupDTO } from "@civfix/contract"
+import { isVerifiedEventAddress } from "@civfix/contract"
+import { eventWhenLabel } from "@civfix/contract/datetime"
+import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/contract/host"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react"
 import { View, StyleSheet, ActivityIndicator } from "react-native"
-import type { LeaderboardEntryDTO } from "@civfix/shared"
+import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState } from "../primitives"

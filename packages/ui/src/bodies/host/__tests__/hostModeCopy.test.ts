@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import { hostRelativeLine, hostRowSub, hostRowValue, type HostRowCounts } from "../hostModeCopy"
 import { hostSurfaceCapabilities } from "../hostSurfaceModel"
 import { relativeUntil } from "../hostTime"

@@ -2,7 +2,7 @@
 
 The PUBLIC civfix user web app: a Next.js 15 (App Router) + React 19 + TypeScript + Tailwind +
 shadcn/ui application, built as a STATIC-EXPORTED SPA (`output: "export"`). All dynamic data is
-fetched at runtime from the civfix API via the typed `@civfix/shared` client. There is no web server
+fetched at runtime from the civfix API via the typed `@civfix/contract` client. There is no web server
 at runtime; the export emits a static shell + JS to `out/`. The only server-side code is the
 Cloudflare Pages Functions in `functions/` (see "Rich link previews").
 
@@ -18,17 +18,21 @@ From the monorepo root (`civfix-app/`):
 
 ```
 pnpm install
-pnpm build        # turbo: builds @civfix/shared (tsup dist) + @civfix/ui (dist-types) first,
+pnpm build        # turbo: builds @civfix/tokens (tsup dist) + @civfix/ui (dist-types) first,
                   # then this app's static export
 pnpm typecheck
 pnpm lint
 pnpm test
 ```
 
-`@civfix/shared` and `@civfix/ui` are `workspace:*` dependencies in this repo, so an edit to either
-lands here directly: no registry install, no version range to bump. `@civfix/shared` is consumed
+`@civfix/tokens` and `@civfix/ui` are `workspace:*` dependencies in this repo, so an edit to either
+lands here directly: no registry install, no version range to bump. `@civfix/tokens` is consumed
 from its built `dist` and `@civfix/ui` from its `.tsx` source (with `dist-types` for `tsc`); turbo's
 `^build` ordering means every root `build` / `typecheck` / `lint` / `test` / `dev` builds them first.
+
+The API contract, `@civfix/contract`, is a registry dependency (caret range, published from
+`civfix-contract`). A contract change reaches this app only through an adoption PR in this repo; see
+"Adopting a new `@civfix/contract`" in the root `RELEASING.md`.
 
 Per-app (from `apps/community-web/`):
 
@@ -91,7 +95,7 @@ dev convenience.
 
 ## How tokens map into Tailwind
 
-`@civfix/shared/tokens` is the single source of truth for color, type, spacing, radius, shadow, and
+`@civfix/tokens` is the single source of truth for color, type, spacing, radius, shadow, and
 motion. `tailwind.config.ts` imports the `tokens` object and maps the scales into the theme, so app
 code uses semantic utilities and never hardcodes a hex that exists in tokens:
 
@@ -112,7 +116,7 @@ code uses semantic utilities and never hardcodes a hex that exists in tokens:
   `ease-out`/`ease-spring`/`ease-in-out`.
 
 Map pin colors come from the shared `categoryColor()` / `cleanupColorFor()` helpers in
-`@civfix/shared/tokens`, which `@civfix/ui`'s Map seam uses, so they always match the tokens.
+`@civfix/tokens`, which `@civfix/ui`'s Map seam uses, so they always match the tokens.
 
 ### Fonts
 
@@ -126,7 +130,7 @@ emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css`
 
 ## API client wiring (cookie + CSRF + X-Client)
 
-`src/lib/api.ts` builds the typed client with `createApiClient` from `@civfix/shared/client`:
+`src/lib/api.ts` builds the typed client with `createApiClient` from `@civfix/contract/client`:
 
 - `baseURL` from `NEXT_PUBLIC_API_URL`.
 - `fetchImpl` bound to `window.fetch` in the browser (falls back to `globalThis.fetch` on the server

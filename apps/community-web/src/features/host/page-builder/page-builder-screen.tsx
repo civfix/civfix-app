@@ -9,8 +9,8 @@ import type {
   EventPageBlockKind,
   EventPageDTO,
   ThemeAccent,
-} from "@civfix/shared"
-import { MAX_EVENT_PAGE_BLOCKS, PAGE_SLUG_MAX, PageSlugSchema } from "@civfix/shared"
+} from "@civfix/contract"
+import { MAX_EVENT_PAGE_BLOCKS, PAGE_SLUG_MAX, PageSlugSchema } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

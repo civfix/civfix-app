@@ -11,7 +11,7 @@
  * string for attachment-only messages; the renderer substitutes a media descriptor), and `deleted` is
  * always false because you can only reply to a message that exists right now.
  */
-import type { ChatMessageDTO, ReplyToDTO } from "@civfix/shared"
+import type { ChatMessageDTO, ReplyToDTO } from "@civfix/contract"
 
 /** Excerpt cap, matching the backend's denormalized reply preview. */
 export const REPLY_EXCERPT_MAX = 120

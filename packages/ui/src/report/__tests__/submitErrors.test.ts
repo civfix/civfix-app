@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { submitErrorMessage } from "../submitErrors"
 
 const t = ((key: string) => key) as unknown as TFunction

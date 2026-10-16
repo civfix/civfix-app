@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { categoryColor, cleanupColorFor, colorSchemes, type ColorSchemeName } from "@civfix/shared/tokens"
+import { categoryColor, cleanupColorFor, colorSchemes, type ColorSchemeName } from "@civfix/tokens"
 import type { MapStyleInput } from "../types"
 import {
   rasterMapStyle,

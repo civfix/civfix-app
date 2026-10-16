@@ -1,4 +1,4 @@
-import type { EventKind } from "@civfix/shared"
+import type { EventKind } from "@civfix/contract"
 import type { ClusterNode } from "./clusterer"
 import type { FocusedEntity } from "./mapFocusStore"
 import type { MapFlyToHighlight } from "./mapFlyToStore"

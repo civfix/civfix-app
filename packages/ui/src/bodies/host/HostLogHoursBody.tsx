@@ -1,5 +1,5 @@
 import React, { useCallback } from "react"
-import { nextEventBoundaryMs, hasEventEnded } from "@civfix/shared/host"
+import { nextEventBoundaryMs, hasEventEnded } from "@civfix/contract/host"
 import {
   cleanupHostStanding,
   managesEvent,

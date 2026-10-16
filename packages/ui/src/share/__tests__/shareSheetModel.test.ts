@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { UserSearchResultDTO } from "@civfix/shared"
+import type { UserSearchResultDTO } from "@civfix/contract"
 import {
   SHARE_RECIPIENTS_MAX_HEIGHT,
   isShareRecipient,

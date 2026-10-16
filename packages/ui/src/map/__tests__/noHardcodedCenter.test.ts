@@ -7,7 +7,7 @@ const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "../../..
 
 const SCAN_ROOTS = [
   "packages/ui/src",
-  "packages/shared/src",
+  "packages/tokens/src",
   "apps/community-web/src",
   "apps/community-web/functions",
   "apps/community-mobile/src",

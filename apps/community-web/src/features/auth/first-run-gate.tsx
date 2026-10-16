@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { Loader2, Check, X } from "lucide-react"
-import { HANDLE_MAX_LENGTH } from "@civfix/shared"
-import { space } from "@civfix/shared/tokens"
+import { HANDLE_MAX_LENGTH } from "@civfix/contract"
+import { space } from "@civfix/tokens"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
 import {

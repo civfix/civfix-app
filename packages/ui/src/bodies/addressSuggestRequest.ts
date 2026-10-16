@@ -3,7 +3,7 @@
  * contract answers 422 and AddressSearch shows an empty dropdown. Send the locale only once every deployed
  * backend accepts and forwards the field.
  */
-import type { SuggestPlacesRequest } from "@civfix/shared"
+import type { SuggestPlacesRequest } from "@civfix/contract"
 
 /** The Photon location-bias options AddressSearch derives from the map view (or the device/IP fix). */
 export interface AddressSuggestBias {

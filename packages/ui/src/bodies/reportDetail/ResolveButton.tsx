@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { Pressable, ActivityIndicator } from "react-native"
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { useResolveReport } from "../../data"

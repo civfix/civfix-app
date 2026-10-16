@@ -7,7 +7,7 @@ import {
   type AccessibilityActionEvent,
   type PressableStateCallbackType,
 } from "react-native"
-import type { MessageThreadDTO } from "@civfix/shared"
+import type { MessageThreadDTO } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,

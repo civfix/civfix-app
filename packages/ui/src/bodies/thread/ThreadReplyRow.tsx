@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,

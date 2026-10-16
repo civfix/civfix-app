@@ -4,7 +4,7 @@
  * (nextPinIndex). The index clamps rather than resets when an unpin shrinks the list mid-cycle.
  */
 import { useCallback, useState } from "react"
-import type { ChatMessageDTO, RoomKind } from "@civfix/shared"
+import type { ChatMessageDTO, RoomKind } from "@civfix/contract"
 import { nextPinIndex } from "../pinCycle"
 
 export function usePinCycle({

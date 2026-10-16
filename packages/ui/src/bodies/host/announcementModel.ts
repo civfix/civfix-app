@@ -1,11 +1,11 @@
-import type { AnnouncementAudience, AnnouncementDTO } from "@civfix/shared"
+import type { AnnouncementAudience, AnnouncementDTO } from "@civfix/contract"
 import {
   ANNOUNCEMENT_AUDIENCE_KINDS,
   ErrorCode,
   MAX_ANNOUNCEMENT_BODY,
   byErrorCode,
   type ErrorCodeTable,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import type { IconName } from "../../typography/iconMap"
 
 export const ANNOUNCEMENT_PREVIEW_LINES = 2

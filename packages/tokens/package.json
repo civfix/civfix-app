@@ -1,0 +1,70 @@
+{
+  "name": "@civfix/tokens",
+  "version": "0.1.0",
+  "description": "civfix design tokens: colour scales for both schemes, the category and cleanup pin colours, type, spacing, radius and shadow scales, and the chip-contrast helpers. Consumed by civfix-app, civfix-admin and civfix-backend (email layout).",
+  "license": "AGPL-3.0-only",
+  "private": false,
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/civfix/civfix-app.git",
+    "directory": "packages/tokens"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./chip-contrast": {
+      "import": {
+        "types": "./dist/chip-contrast.d.ts",
+        "default": "./dist/chip-contrast.js"
+      },
+      "require": {
+        "types": "./dist/chip-contrast.d.cts",
+        "default": "./dist/chip-contrast.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint . --max-warnings=0",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.16.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^3.2.7",
+    "@civfix/contract": "^0.62.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "registry": "https://repo.civfix.org",
+    "access": "public"
+  }
+}

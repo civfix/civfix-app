@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { LinkedEventRef, PersonDTO, ReportDTO } from "@civfix/shared"
+import type { LinkedEventRef, PersonDTO, ReportDTO } from "@civfix/contract"
 import type { PostComposerMedia } from "../../postComposerStore"
 import { buildOptimisticReply, type OptimisticReplyInput } from "../optimisticReply"
 import { REPORT_TITLE_FALLBACK } from "../../postComposerSubmit"

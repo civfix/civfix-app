@@ -1,4 +1,4 @@
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import type { CameraTarget } from "@civfix/ui"
 
 import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"

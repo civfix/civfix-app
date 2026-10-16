@@ -18,7 +18,7 @@ describe("theme/schemes is the RN-free scheme surface", () => {
   })
 
   it("reads its palettes straight from the framework-free token package", () => {
-    expect(importSpecifiers).toContain("@civfix/shared/tokens")
+    expect(importSpecifiers).toContain("@civfix/tokens")
     expect(new Set(importSpecifiers).size).toBe(1)
   })
 

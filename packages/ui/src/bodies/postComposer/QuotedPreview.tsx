@@ -1,7 +1,7 @@
 import React from "react"
 import { View } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostRefDTO } from "@civfix/shared"
+import type { PostRefDTO } from "@civfix/contract"
 import { Text } from "../../typography"
 import { EmbeddedPost } from "../EmbeddedPost"
 import { usePostComposerStyles } from "./postComposerStyles"

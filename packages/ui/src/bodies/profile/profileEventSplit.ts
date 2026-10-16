@@ -10,7 +10,7 @@
  * `upcomingEvents` stays optional in the contract, but every server since 0.38 sends it, so a missing list
  * only happens before the profile loads and reads as nothing upcoming.
  */
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 
 export type ProfileEventTab = "upcoming" | "past"
 

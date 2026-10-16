@@ -1,4 +1,4 @@
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type {
   ChatHistoryResponse,
   CleanupAttendeesResponse,
@@ -14,8 +14,8 @@ import type {
   ReportClusterResponse,
   ReportDTO,
   UserProfileDTO,
-} from "@civfix/shared"
-import { MS_PER_DAY } from "@civfix/shared"
+} from "@civfix/contract"
+import { MS_PER_DAY } from "@civfix/contract"
 import { makeFakeApiClient } from "@civfix/ui/data"
 
 import {

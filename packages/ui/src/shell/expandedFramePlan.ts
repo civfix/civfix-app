@@ -7,7 +7,7 @@
  *
  * Pure: RN-free and theme-free (the theme pulls `Platform`), so it unit-tests under vitest.
  */
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 import { parentViewForEntry, type DetailEntry, type LayoutMode, type View } from "../nav"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { DOCK_GAP, DOCK_H } from "../surface/liquidGlass/liquidGlassModel"

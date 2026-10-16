@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Megaphone, Plus } from "lucide-react"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { BroadcastDTO, ListEventBroadcastsResponse } from "@civfix/shared"
+import type { BroadcastDTO, ListEventBroadcastsResponse } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

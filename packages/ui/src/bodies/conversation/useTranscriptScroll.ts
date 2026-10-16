@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform } from "react-native"
 import type { FlatList as RNFlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native"
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
 import { space } from "../../theme"
 import { getScrollableNode, type RenderItem } from "./conversationModel"
 

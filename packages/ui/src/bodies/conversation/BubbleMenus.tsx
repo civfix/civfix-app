@@ -1,5 +1,5 @@
 import React from "react"
-import type { ChatMessageDTO, ReactionEmoji, ReactionSummaryDTO } from "@civfix/shared"
+import type { ChatMessageDTO, ReactionEmoji, ReactionSummaryDTO } from "@civfix/contract"
 import { iconMap } from "../../typography"
 import type { LucideIcon } from "../../typography"
 import { MessageContextMenu, PopoverMenu, useToast } from "../../primitives"

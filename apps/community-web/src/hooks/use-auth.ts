@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ErrorCode, isAppErrorLike } from "@civfix/shared"
+import { ErrorCode, isAppErrorLike } from "@civfix/contract"
 
 import { api } from "@/lib/api"
 import { queryKeys } from "@/lib/query"

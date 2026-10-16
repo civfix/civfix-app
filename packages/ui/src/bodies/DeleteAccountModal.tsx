@@ -6,7 +6,7 @@ import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
+import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string

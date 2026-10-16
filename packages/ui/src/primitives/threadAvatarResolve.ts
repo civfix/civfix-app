@@ -1,4 +1,4 @@
-import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/contract"
 import { threadRoomId } from "../data/threadRoom"
 
 export type ThreadAvatarPeer = Pick<PersonDTO, "id" | "name" | "avatarUrl" | "avatar">

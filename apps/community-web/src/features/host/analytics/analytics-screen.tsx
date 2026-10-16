@@ -3,7 +3,7 @@
 import type { ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import type { UseQueryResult } from "@tanstack/react-query"
-import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/contract"
 import type {
   AnalyticsRange,
   EventAnalyticsBroadcastsResponse,
@@ -12,14 +12,14 @@ import type {
   EventAnalyticsRegistrationsResponse,
   EventAnalyticsSourcesResponse,
   Panel,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   panelIsBlank,
   seriesHasSuppressedPoints,
   seriesValuesForChart as seriesValues,
   visibleRows,
   weekDayLabel,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"

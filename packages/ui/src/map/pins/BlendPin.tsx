@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { EventKind } from "@civfix/shared"
+import type { EventKind } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
 import { EventPin } from "./EventPin"

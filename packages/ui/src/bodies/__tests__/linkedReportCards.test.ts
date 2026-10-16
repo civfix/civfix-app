@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import type { LinkedReportRef, ReportPinDTO } from "@civfix/shared"
+import type { LinkedReportRef, ReportPinDTO } from "@civfix/contract"
 import {
   linkedRefToCardData,
   mergeCardEntry,

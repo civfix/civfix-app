@@ -2,7 +2,7 @@
 
 import React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type {
   GetProfileResponse,
   SearchUsersResponse,
@@ -19,10 +19,7 @@ import type {
   JurisdictionDTO,
   ReportClusterResponse,
   PostDTO,
-} from "@civfix/shared"
-import type { CleanupAttendeesResponse } from "@civfix/shared"
-import { MS_PER_DAY, MS_PER_MINUTE } from "@civfix/shared"
-import type {
+  CleanupAttendeesResponse,
   EventHoursResponse,
   EventSlotDTO,
   GetMyHoursResponse,
@@ -35,7 +32,8 @@ import type {
   RevokeCertificateResponse,
   ServiceHoursCertificateDTO,
   VolunteerHoursEntryDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
+import { MS_PER_DAY, MS_PER_MINUTE } from "@civfix/contract"
 import {
   ApiProvider,
   makeFakeDataContext,

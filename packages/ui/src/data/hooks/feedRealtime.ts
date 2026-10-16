@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { FEED_COUNTS_MAX_IDS } from "@civfix/shared"
+import { FEED_COUNTS_MAX_IDS } from "@civfix/contract"
 import { useApi, useAuthState, useChatSocket } from "../context"
 import { useFeedLiveStore } from "../feedLiveStore"
 import { patchPostCountsInCaches } from "./posts"

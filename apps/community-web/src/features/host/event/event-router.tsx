@@ -12,7 +12,7 @@ import {
   Users,
   UserCog,
 } from "lucide-react"
-import type { HostCapability } from "@civfix/shared"
+import type { HostCapability } from "@civfix/contract"
 import { cleanupHostStanding, useAuthState, useCleanup, hasHostCapability } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

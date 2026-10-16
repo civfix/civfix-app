@@ -1,4 +1,4 @@
-import { ErrorCode, errorCopyKey } from "@civfix/shared"
+import { ErrorCode, errorCopyKey } from "@civfix/contract"
 
 export const EVENT_ENDED_FIELD = "event"
 

@@ -3,14 +3,13 @@ import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-quer
 import {
   ErrorCode,
   appErrorCode,
-  mergeChatItems,
-  type ChatItem,
   type ChatMessageDTO,
   type ListThreadsResponse,
   type MessageThreadDTO,
   type ReactionEmoji,
   type RoomKind,
-} from "@civfix/shared"
+} from "@civfix/contract"
+import { mergeChatItems, type ChatItem } from "../../helpers"
 import { useApi, useAuthState, useChatSocket } from "../context"
 import { coercePages } from "../infinitePages"
 import { restoreLocalChatAttachments } from "../localChatAttachments"

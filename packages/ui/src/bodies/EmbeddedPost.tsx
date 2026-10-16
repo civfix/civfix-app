@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostRefDTO } from "@civfix/shared"
+import type { PostRefDTO } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,

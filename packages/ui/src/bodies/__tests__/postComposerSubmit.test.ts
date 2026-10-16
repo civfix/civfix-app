@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { OrganizationDTO, PersonDTO } from "@civfix/shared"
+import type { OrganizationDTO, PersonDTO } from "@civfix/contract"
 import {
   POST_MENTION_CAP,
   buildOptimisticPost,

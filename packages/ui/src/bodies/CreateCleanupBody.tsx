@@ -11,9 +11,9 @@ import {
   webHover,
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
-import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
-import { type LatLng } from "@civfix/shared/geocode"
-import { timeRangeLabel } from "@civfix/shared/datetime"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
+import { type LatLng } from "@civfix/contract/geocode"
+import { timeRangeLabel } from "@civfix/contract/datetime"
 import { SignInPrompt, useToast } from "../primitives"
 import {
   useCreateCleanup,

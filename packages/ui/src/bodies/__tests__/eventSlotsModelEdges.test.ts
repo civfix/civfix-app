@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventSlotDTO } from "@civfix/contract"
 import {
   currentShifts,
   mySlotId,

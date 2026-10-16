@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
-import type { UserProfileDTO } from "@civfix/shared"
+import type { UserProfileDTO } from "@civfix/contract"
 import { makeThemedStyles, space, useTheme, focusRingProps, webCursor } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, LIST_TILE, SETTINGS_ROW_MIN_HEIGHT } from "../../primitives"

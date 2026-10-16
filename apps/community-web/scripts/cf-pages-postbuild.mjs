@@ -10,7 +10,7 @@ import {
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { LEGAL_DOCUMENTS } from "@civfix/shared/legal"
+import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
 
 import {
   NOINDEX_RULE,
@@ -387,18 +387,18 @@ if (legalDrift.length > 0) {
   console.error(
     `[cf-pages] ERROR: legal document drift:\n  ${legalDrift.join("\n  ")}\n` +
       `  consent_records.document_sha256 is the evidence that a donor accepted THAT EXACT TEXT ` +
-      `and the backend validates consent payloads against @civfix/shared/legal. A page ` +
+      `and the backend validates consent payloads against @civfix/contract/legal. A page ` +
       `whose text moved without its version and hash moving with it makes every consent record ` +
       `written since unverifiable. Run \`node scripts/legal-hashes.mjs\` and update ` +
-      `packages/shared/src/legal/documents.ts (version, effectiveAt and sha256 change ` +
-      `as ONE edit).`,
+      `src/legal/documents.ts in civfix-contract (version, effectiveAt and sha256 change ` +
+      `as ONE edit), publish it, and adopt that version here and in civfix-backend.`,
   )
   process.exit(1)
 }
 
 if (unrenderedTypes.length > 0) {
   console.error(
-    `[cf-pages] ERROR: these legal document types are declared in @civfix/shared/legal but no ` +
+    `[cf-pages] ERROR: these legal document types are declared in @civfix/contract/legal but no ` +
       `/legal/<slug>/ page renders them: ${unrenderedTypes.join(", ")}. Every versioned document ` +
       `must be rendered somewhere this gate can hash it, or the sha256 a consent record cites is ` +
       `a number that verifies no text. Add the page (components/legal/legal-page.tsx) and its ` +
@@ -410,10 +410,10 @@ if (unrenderedTypes.length > 0) {
 if (legalPlaceholders.length > 0) {
   console.error(
     `[cf-pages] ERROR: these legal documents still carry the sha256("<type>@<version>") ` +
-      `PLACEHOLDER hash in @civfix/shared/legal:\n  ${legalPlaceholders.join("\n  ")}\n` +
+      `PLACEHOLDER hash in @civfix/contract/legal:\n  ${legalPlaceholders.join("\n  ")}\n` +
       `  A placeholder hashes no document, so a consent record citing it is unverifiable evidence. ` +
       `Paste the real hashes (printed above, and by \`node scripts/legal-hashes.mjs\`) into ` +
-      `packages/shared/src/legal/documents.ts - version, effectiveAt and sha256 move ` +
+      `src/legal/documents.ts in civfix-contract - version, effectiveAt and sha256 move ` +
       `as ONE edit - and mirror them into the backend legal seed ` +
       `migration.`,
   )
@@ -449,7 +449,7 @@ const appErrorSites = scriptFilesUnder(chunksDir)
 const appErrorCopies = appErrorSites.reduce((total, site) => total + site.count, 0)
 
 const WHY_ONE_COPY =
-  `@civfix/shared builds with \`splitting: true\` (packages/shared/tsup.config.ts), so its entries ` +
+  `@civfix/contract builds with \`splitting: true\` (tsup.config.ts in civfix-contract), so its entries ` +
   `share ONE chunk holding src/types/errors.ts. A bundle that still carries two copies of it (an unsplit ` +
   `build, or the root and client entries resolved as separate modules) has two DISTINCT AppError classes: ` +
   `\`err instanceof AppError\` is then ALWAYS false across the boundary, the typed client's ` +
@@ -459,7 +459,7 @@ const WHY_ONE_COPY =
   `bytes can see it. That is why this is asserted here.`
 
 const HOW_IT_IS_HELD =
-  `The invariant is held by the \`"@civfix/shared/client$": sharedContractDir\` entry in ` +
+  `The invariant is held by the \`"@civfix/contract/client$": contractDir\` entry in ` +
   `resolve.alias in apps/community-web/next.config.mjs, which collapses the client subpath onto the ` +
   `package root so both import paths resolve to ONE module. If you removed, reordered or rewrote that ` +
   `alias, restore it. It MUST keep the \`$\` (exact-match) suffix: webpack's AliasPlugin skips any ` +
@@ -471,7 +471,7 @@ if (appErrorCopies > 1) {
       `(expected exactly 1): ${appErrorSites.map((site) => `${site.file} x${site.count}`).join(", ")}.\n` +
       `  ${WHY_ONE_COPY}\n` +
       `  ${HOW_IT_IS_HELD}\n` +
-      `  If the alias is intact, look for a NEW deep import of some other @civfix/shared subpath: any ` +
+      `  If the alias is intact, look for a NEW deep import of some other @civfix/contract subpath: any ` +
       `subpath entry that re-inlines errors.ts needs its own exact-match alias alongside it.`,
   )
   process.exit(1)
@@ -481,9 +481,9 @@ if (appErrorCopies === 0) {
   console.error(
     `[cf-pages] ERROR: no AppError class definition found under ${relative(appDir, chunksDir)} ` +
       `(expected exactly 1). This check asserts that the app bundles exactly ONE copy of ` +
-      `@civfix/shared's AppError. ${WHY_ONE_COPY}\n` +
+      `@civfix/contract's AppError. ${WHY_ONE_COPY}\n` +
       `  Zero matches means the check has gone BLIND, not that the app is healthy: either ` +
-      `@civfix/shared is no longer bundled at all, or the constructor's \`this.name = "AppError"\` ` +
+      `@civfix/contract is no longer bundled at all, or the constructor's \`this.name = "AppError"\` ` +
       `identity stamp - the minification-proof marker this check counts, one per physical copy of the ` +
       `class - changed shape upstream.\n` +
       `  Do not delete this check. Confirm what the built class looks like now with ` +

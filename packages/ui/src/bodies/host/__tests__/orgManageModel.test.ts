@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SOCIAL_HANDLE_PREFIX, SocialLinksSchema } from "@civfix/shared"
+import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/contract"
+import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SOCIAL_HANDLE_PREFIX, SocialLinksSchema } from "@civfix/contract"
 import {
   canOpenOrgManage,
   counterVisible,

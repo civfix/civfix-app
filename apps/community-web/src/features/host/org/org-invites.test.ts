@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { OrganizationInviteDTO } from "@civfix/shared"
+import type { OrganizationInviteDTO } from "@civfix/contract"
 
 import { daysUntil, inviteIsExpired, normalizeInviteIdentifier, visibleInvites } from "./org-invites"
 

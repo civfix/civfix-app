@@ -17,7 +17,7 @@
  *     - group:   the group's owner or an admin (same lane as pin - group moderation is role-driven,
  *                platform operators get no implicit group power client-side).
  */
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 
 export interface ChatPowerSignals {
   roomKind: RoomKind

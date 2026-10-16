@@ -22,7 +22,7 @@ import type {
   ReportContentRequest,
   ReportContentResponse,
   RequestDataExportResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useLogout } from "../context"
 
 /**

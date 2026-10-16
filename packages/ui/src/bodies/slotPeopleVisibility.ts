@@ -11,7 +11,7 @@
  * is momentarily behind the detail. A stale `claimed` below `shown` clamps to 0 rather than printing a
  * negative overflow.
  */
-import type { CleanupAttendeesResponse } from "@civfix/shared"
+import type { CleanupAttendeesResponse } from "@civfix/contract"
 
 export type SlotPeopleAccess = "full" | "followed-only"
 

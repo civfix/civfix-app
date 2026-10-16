@@ -1,5 +1,5 @@
-import type { ReportStatus } from "@civfix/shared"
-import { hasEventEnded, type EventWindowLike } from "@civfix/shared/host"
+import type { ReportStatus } from "@civfix/contract"
+import { hasEventEnded, type EventWindowLike } from "@civfix/contract/host"
 
 const ATTACHABLE_REPORT_STATUSES = [
   "submitted",

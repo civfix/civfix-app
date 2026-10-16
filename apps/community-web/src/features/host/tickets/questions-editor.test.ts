@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { EventQuestionDTO } from "@civfix/shared"
-import { EventQuestionDefSchema } from "@civfix/shared"
+import type { EventQuestionDTO } from "@civfix/contract"
+import { EventQuestionDefSchema } from "@civfix/contract"
 
 import { optionList, questionDraftsDiffer, toDef, toDefs, toDraft } from "./questions-editor"
 

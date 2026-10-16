@@ -1,5 +1,5 @@
-import type { AddressPrecision } from "@civfix/shared"
-import { needsNearPrefix } from "@civfix/shared"
+import type { AddressPrecision } from "@civfix/contract"
+import { needsNearPrefix } from "@civfix/contract"
 
 export interface AddressPoint {
   lat: number

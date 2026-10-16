@@ -1,4 +1,4 @@
-import type { HostStage } from "@civfix/shared/host"
+import type { HostStage } from "@civfix/contract/host"
 import type {
   ArrivalOffsetBucket,
   CleanupDTO,
@@ -7,7 +7,7 @@ import type {
   HostedEventDTO,
   InsightsSourceCount,
   SeatPoint,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { hasHostCapability, type HostStandingView } from "../../data/hooks/host"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
 import type { IconName } from "../../typography/iconMap"

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 
 const SRC = readFileSync(new URL("../AppPromoCard.tsx", import.meta.url), "utf8")

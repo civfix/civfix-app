@@ -8,7 +8,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { I18nextProvider } from "react-i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 import { loadCatalog } from "./bundledCatalogs"
 import { createI18n } from "./config"
 import { LocaleProvider, type LocaleContextValue } from "./LocaleContext"

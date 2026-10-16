@@ -3,7 +3,7 @@
  * locales were most of the root layout chunk, downloaded by every page for every visitor.
  */
 import type { Resource, ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 import en from "./catalogs/en"
 import { lazyCatalogs } from "./catalogs/lazy"
 

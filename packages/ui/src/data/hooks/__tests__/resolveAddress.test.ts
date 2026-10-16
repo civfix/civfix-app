@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { geocodePointKey } from "@civfix/shared"
-import type { ResolveAddressResponse } from "@civfix/shared"
+import { geocodePointKey } from "@civfix/contract"
+import type { ResolveAddressResponse } from "@civfix/contract"
 import { queryKeys } from "../../keys"
 import { fetchResolvedAddress, resolvedAddressValue } from "../resolveAddress"
 

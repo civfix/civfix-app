@@ -1,4 +1,4 @@
-import { MAX_EVENT_HOURS, MIN_EVENT_HOURS, type CleanupDTO, type EventHoursEntry } from "@civfix/shared"
+import { MAX_EVENT_HOURS, MIN_EVENT_HOURS, type CleanupDTO, type EventHoursEntry } from "@civfix/contract"
 import { formatHours } from "./formatHours"
 
 export type HoursCleanup = Pick<CleanupDTO, "scheduledAt" | "endsAt" | "slots" | "timezone">

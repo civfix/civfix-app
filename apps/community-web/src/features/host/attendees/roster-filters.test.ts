@@ -1,5 +1,5 @@
-import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
-import { RegistrationRosterFilterSchema, RegistrationRosterSortSchema } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/contract"
+import { RegistrationRosterFilterSchema, RegistrationRosterSortSchema } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 
 import {

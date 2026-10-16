@@ -23,7 +23,7 @@ import {
   eventWindowInZone,
   wallClockToFormDate,
 } from "../calendarModel"
-import { wallClockInZone } from "@civfix/shared/datetime"
+import { wallClockInZone } from "@civfix/contract/datetime"
 
 const NOW = new Date("2026-06-01T12:00:00.000Z")
 const FUTURE_DAY = new Date("2026-06-08T00:00:00.000Z")

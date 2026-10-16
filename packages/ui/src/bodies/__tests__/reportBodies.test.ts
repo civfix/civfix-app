@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { LinkedEventRef } from "@civfix/shared"
+import type { LinkedEventRef } from "@civfix/contract"
 import { linkedEventToCleanup } from "../reportDetailModel"
 import { clampGallerySelection, refusedGalleryTiles } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"

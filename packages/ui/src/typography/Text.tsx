@@ -1,6 +1,6 @@
 import React from "react"
 import { Text as RNText, type TextProps, type TextStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import {
   themes,
   useColorSchemeName,

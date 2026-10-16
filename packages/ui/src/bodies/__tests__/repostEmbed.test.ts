@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
-import type { PersonDTO, PostDTO, PostRefDTO } from "@civfix/shared"
+import type { PersonDTO, PostDTO, PostRefDTO } from "@civfix/contract"
 import {
   buildPostCardModel,
   buildPostCardView,

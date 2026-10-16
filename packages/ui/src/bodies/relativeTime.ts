@@ -1,4 +1,4 @@
-import { relativeAgo, EDIT_WINDOW_HOURS, MS_PER_HOUR, type RelativeUnitLabels } from "@civfix/shared"
+import { relativeAgo, EDIT_WINDOW_HOURS, MS_PER_HOUR, type RelativeUnitLabels } from "@civfix/contract"
 
 export interface ListTimeAgoOptions {
   justNow?: string

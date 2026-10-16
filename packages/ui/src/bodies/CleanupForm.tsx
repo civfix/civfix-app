@@ -10,8 +10,9 @@ import {
   type EventSlotDTO,
   type OrganizationRefDTO,
   type PersonDTO,
-} from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+  appErrorCode,
+} from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 import {
   makeThemedStyles,
   useTheme,
@@ -43,7 +44,6 @@ import {
 import { useApi } from "../data/context"
 import { uploadMedia } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
-import { appErrorCode } from "@civfix/shared"
 import { eventCoverErrorKey } from "./eventCoverModel"
 import { LocationPicker, PortraitMapPickStep, eventPinTarget } from "../map"
 import { useLocale, useT } from "../i18n"

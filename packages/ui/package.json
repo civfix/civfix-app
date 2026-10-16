@@ -76,7 +76,17 @@
       "react-native": "./src/i18n/index.ts",
       "default": "./src/i18n/index.ts"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./helpers": {
+      "types": "./dist-types/helpers/index.d.ts",
+      "react-native": "./src/helpers/index.ts",
+      "default": "./src/helpers/index.ts"
+    },
+    "./helpers/*": {
+      "types": "./dist-types/helpers/*.d.ts",
+      "react-native": "./src/helpers/*.ts",
+      "default": "./src/helpers/*.ts"
+    }
   },
   "files": [
     "src",
@@ -139,7 +149,8 @@
     }
   },
   "dependencies": {
-    "@civfix/shared": "workspace:*",
+    "@civfix/contract": "^0.62.0",
+    "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",
     "react-i18next": "^16.6.6",

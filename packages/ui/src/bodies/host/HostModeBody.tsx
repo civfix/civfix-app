@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
-import type { CleanupDTO, EventInsights, EventPhase, EventSlotDTO } from "@civfix/shared"
-import { eventWhenLabel } from "@civfix/shared/datetime"
-import { eventPhase, eventEndsAtMs, hostStage, nextEventBoundaryMs } from "@civfix/shared/host"
+import type { CleanupDTO, EventInsights, EventPhase, EventSlotDTO } from "@civfix/contract"
+import { eventWhenLabel } from "@civfix/contract/datetime"
+import { eventPhase, eventEndsAtMs, hostStage, nextEventBoundaryMs } from "@civfix/contract/host"
 import { makeThemedStyles } from "../../theme"
 import { iconMap, type LucideIcon } from "../../typography"
 import {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/contract"
 import {
   selectPostComposerDraft,
   selectPostComposerHasPendingMedia,

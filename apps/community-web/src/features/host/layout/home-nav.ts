@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { Building2, CalendarDays, Plus } from "lucide-react"
-import type { OrganizationDTO } from "@civfix/shared"
+import type { OrganizationDTO } from "@civfix/contract"
 
 import { hrefForRoute } from "@/components/console/route"
 

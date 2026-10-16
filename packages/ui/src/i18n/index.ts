@@ -22,4 +22,4 @@ export type { LocaleSources } from "./resolveActiveLocale"
 export { createI18n } from "./config"
 export { EMPTY_VALUE } from "./emptyValue"
 
-export type { SupportedLocale } from "@civfix/shared"
+export type { SupportedLocale } from "@civfix/contract"

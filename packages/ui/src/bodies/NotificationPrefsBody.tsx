@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { View } from "react-native"
-import type { NotificationPrefsDTO } from "@civfix/shared"
+import type { NotificationPrefsDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
 import { iconMap } from "../typography"
 import {

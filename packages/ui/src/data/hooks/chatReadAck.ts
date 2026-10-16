@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
 import type { QueryClient } from "@tanstack/react-query"
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { readAckToFlush, type PendingReadAck } from "../readAck"
 import type { ChatConnState, ChatSocketLike } from "../types"

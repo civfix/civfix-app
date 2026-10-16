@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next"
-import type { PostCounts, PostDTO } from "@civfix/shared"
+import type { PostCounts, PostDTO } from "@civfix/contract"
 import { clamp } from "../../math/clamp"
 
 

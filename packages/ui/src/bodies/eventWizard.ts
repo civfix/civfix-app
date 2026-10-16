@@ -6,7 +6,7 @@ import {
   isScheduleUntouched,
   wallClockToFormTime,
 } from "./calendarModel"
-import { wallClockInZone } from "@civfix/shared/datetime"
+import { wallClockInZone } from "@civfix/contract/datetime"
 import { isEventAddressComplete } from "./eventAddressField"
 import {
   hasNamedSlot,

@@ -5,8 +5,8 @@
  */
 import type * as TanstackQuery from "@tanstack/react-query"
 import type * as React from "react"
-import type { CreateReportRequest } from "@civfix/shared"
-import { AppError, ErrorCode } from "@civfix/shared"
+import type { CreateReportRequest } from "@civfix/contract"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type * as Capabilities from "../../capabilities"
 import type { CapturedMedia } from "../../capabilities"

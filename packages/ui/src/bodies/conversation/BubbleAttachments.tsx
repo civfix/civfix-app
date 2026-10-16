@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { MediaDTO } from "@civfix/shared"
+import type { MediaDTO } from "@civfix/contract"
 import { useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../../theme"
 import { Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { EventTeamRoleSchema, SetMemberRoleRequestSchema } from "@civfix/shared"
+import { EventTeamRoleSchema, SetMemberRoleRequestSchema } from "@civfix/contract"
 import {
   INVITABLE_EVENT_TEAM_ROLES,
   SETTABLE_EVENT_MEMBER_ROLES,

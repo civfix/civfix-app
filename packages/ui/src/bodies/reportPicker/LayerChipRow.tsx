@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable, ScrollView, View } from "react-native"
-import type { ReportCategory } from "@civfix/shared"
+import type { ReportCategory } from "@civfix/contract"
 import {
   PRESSED_OPACITY_SUBTLE,
   categoryColor,

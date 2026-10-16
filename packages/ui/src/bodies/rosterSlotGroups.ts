@@ -17,7 +17,7 @@
  * `RosterPerson` (a `PersonDTO` plus an optional cleanup role) and the host roster's
  * `EventRegistrationDTO` alike; all this module needs is an `id` and the optional `slot` ref.
  */
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventSlotDTO } from "@civfix/contract"
 import { slotDisplayOrder } from "./eventSlotsModel"
 
 /** The minimum this module needs off a roster row. `AttendeeDTO` satisfies it. */

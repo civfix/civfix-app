@@ -1,4 +1,4 @@
-import type { CleanupDTO, MessageThreadDTO, RoomKind } from "@civfix/shared"
+import type { CleanupDTO, MessageThreadDTO, RoomKind } from "@civfix/contract"
 import { useNavStore } from "./useNavStore"
 import { threadRoomId } from "../data/threadRoom"
 

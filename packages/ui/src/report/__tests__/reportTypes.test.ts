@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { REPORT_TYPE_TO_CATEGORY, REPORT_TYPE_VALUES } from "@civfix/shared"
+import { REPORT_TYPE_TO_CATEGORY, REPORT_TYPE_VALUES } from "@civfix/contract"
 import { REPORT_TYPES } from "../reportTypes"
 import enums from "../../i18n/locales/en/enums.json"
 import wizard from "../../i18n/locales/en/report-wizard.json"

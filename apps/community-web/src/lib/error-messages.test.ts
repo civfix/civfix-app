@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 
 import { errorMessage } from "@/lib/error-messages"
 

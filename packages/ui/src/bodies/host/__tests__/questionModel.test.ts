@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { EventQuestionDTO } from "@civfix/shared"
-import { visibleQuestions } from "@civfix/shared/host"
+import type { EventQuestionDTO } from "@civfix/contract"
+import { visibleQuestions } from "@civfix/contract/host"
 import {
   initialAnswer,
   initialAnswers,

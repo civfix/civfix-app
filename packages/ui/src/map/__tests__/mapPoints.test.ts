@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import type { CleanupDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, ReportPinDTO } from "@civfix/contract"
 import { mapPointsFor } from "../mapPoints"
 
 function pin(id: string, lat = 34.05, lng = -118.25): ReportPinDTO {

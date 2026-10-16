@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/shared"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/contract"
 import type { DetailEntry } from "../../nav/types"
 import {
   canProceedToIdentity,

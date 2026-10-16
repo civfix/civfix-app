@@ -7,7 +7,7 @@ import {
   type BlurEvent,
   type TextInput as RNTextInput,
 } from "react-native"
-import { POST_BODY_MAX } from "@civfix/shared"
+import { POST_BODY_MAX } from "@civfix/contract"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"

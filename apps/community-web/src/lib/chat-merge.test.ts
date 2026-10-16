@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest"
-import type { ChatMessageDTO, PersonDTO, OutboxEntry } from "@civfix/shared"
-import { mergeChatItems, isMine, effectiveClientId, reconcileInbound } from "@civfix/shared"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
+import type { OutboxEntry } from "@civfix/ui/helpers"
+import { mergeChatItems, isMine, effectiveClientId, reconcileInbound } from "@civfix/ui/helpers"
 
 /**
- * The primitives are tested fully in @civfix/shared; this pins the contract this app depends on, driven
+ * The primitives are tested fully in @civfix/ui; this pins the contract this app depends on, driven
  * the way useChat drives them. The WS `ack` frame carries the canonical clientId at the frame's top
  * level while `message` may omit it, and reconciling with that id must leave exactly one non-pending row.
  */

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import * as Location from "expo-location"
-import { withTimeout } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import { withTimeout } from "@civfix/ui/helpers/async"
+import type { LatLng } from "@civfix/contract/geocode"
 import type { LocationPermission } from "@/lib/locationPrimerPlan"
 import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS } from "@/lib/locationTimeouts"
 

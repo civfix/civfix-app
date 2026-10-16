@@ -11,8 +11,8 @@ import {
   MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text } from "../typography"
-import type { LegalDocumentType } from "@civfix/shared"
-import { currentVersion } from "@civfix/shared/legal"
+import type { LegalDocumentType } from "@civfix/contract"
+import { currentVersion } from "@civfix/contract/legal"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { CheckboxBox } from "./CheckboxBox"

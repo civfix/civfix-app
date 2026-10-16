@@ -8,7 +8,7 @@ import {
   type LayoutChangeEvent,
   type ListRenderItemInfo,
 } from "react-native"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles } from "../theme"
 import { Text, iconMap } from "../typography"
 import { usePost, usePostReplies } from "../data/hooks/posts"

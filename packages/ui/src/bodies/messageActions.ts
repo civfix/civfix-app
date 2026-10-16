@@ -38,7 +38,7 @@
  *   Copy/edit never appear on a poll; delete still follows the normal own/moderator delete gate.
  */
 
-import type { PersonDTO } from "@civfix/shared"
+import type { PersonDTO } from "@civfix/contract"
 
 export type MessageActionKey =
   | "reply"

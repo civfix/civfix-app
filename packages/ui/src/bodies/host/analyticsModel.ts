@@ -6,9 +6,10 @@ import type {
   HostedEventDTO,
   SeriesPoint,
   SuppressedRate,
-} from "@civfix/shared"
-import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS, MS_PER_DAY, isUuid } from "@civfix/shared"
-import { visibleValue } from "@civfix/shared/host"
+} from "@civfix/contract"
+import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS, MS_PER_DAY } from "@civfix/contract"
+import { isUuid } from "../../helpers"
+import { visibleValue } from "@civfix/contract/host"
 import { hasHostCapability } from "../../data/hooks/host"
 import { dedupeById } from "../../primitives/listKeys"
 

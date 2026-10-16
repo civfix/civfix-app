@@ -1,7 +1,8 @@
 import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
 import { useInfiniteQuery, type QueryClient } from "@tanstack/react-query"
-import type { ChatHistoryResponse, ChatItem, ChatMessageDTO, RoomKind } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ChatHistoryResponse, ChatMessageDTO, RoomKind } from "@civfix/contract"
+import type { ChatItem } from "../../helpers"
+import type { ApiClient } from "@civfix/contract/client"
 import {
   applyHistoryCacheOps,
   journalFrames,

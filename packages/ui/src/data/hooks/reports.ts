@@ -11,8 +11,8 @@ import type {
   ListMyReportsResponse,
   ListReportsSearchResponse,
   JurisdictionDTO,
-} from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+} from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import { useApi, useAuthState } from "../context"
 import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"

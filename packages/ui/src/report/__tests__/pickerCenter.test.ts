@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
-import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const picker = read("../../map/LocationPicker.native.tsx")
@@ -157,7 +157,8 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
     const locationHook = read("../../data/hooks/location.ts")
     expect(wizard).toContain('import { resolveUserLocation } from "../../data/hooks/location"')
-    expect(locationHook).toContain('import { DEVICE_FIX_TIMEOUT_MS, withTimeout, type LatLng } from "@civfix/shared"')
+    expect(locationHook).toContain('import { DEVICE_FIX_TIMEOUT_MS, type LatLng } from "@civfix/contract"')
+    expect(locationHook).toContain('import { withTimeout } from "../../helpers"')
     expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     // ...and the query must not retry: a denial that re-runs would re-prompt.
     expect(wizard).toContain("retry: false")

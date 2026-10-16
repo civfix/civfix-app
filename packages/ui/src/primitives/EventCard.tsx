@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT, useEventWhen } from "../i18n"

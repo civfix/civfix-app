@@ -1,4 +1,4 @@
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 
 type ReportMedia = ReportDTO["media"][number]
 

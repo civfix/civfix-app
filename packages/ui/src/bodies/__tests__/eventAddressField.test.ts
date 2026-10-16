@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ResolveAddressResponse } from "@civfix/shared"
+import type { ResolveAddressResponse } from "@civfix/contract"
 import {
   composeEventAddress,
   eventAddressEdit,

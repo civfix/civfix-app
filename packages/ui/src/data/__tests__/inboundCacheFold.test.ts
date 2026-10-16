@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest"
 import {
   ErrorCode,
-  mergeChatItems,
   type ChatHistoryResponse,
   type ChatMessageDTO,
-  type OutboxEntry,
   type PersonDTO,
   type PollDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
+import { mergeChatItems, type OutboxEntry } from "../../helpers"
 import {
   foldHistoryIntoPages,
   foldInboundIntoPages,

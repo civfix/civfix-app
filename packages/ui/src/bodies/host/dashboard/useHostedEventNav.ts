@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import type { HostedEventDTO } from "@civfix/shared"
+import type { HostedEventDTO } from "@civfix/contract"
 import { shareLink, useToast } from "../../../primitives"
 import { cleanupSharePath } from "../../../primitives/cleanupSharePath"
 import { useRequireAuth } from "../../../data"

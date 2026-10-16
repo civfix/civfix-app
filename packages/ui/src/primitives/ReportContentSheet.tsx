@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
-import { CONTENT_REPORT_DETAILS_MAX, type ContentReportReason } from "@civfix/shared"
+import { CONTENT_REPORT_DETAILS_MAX, type ContentReportReason } from "@civfix/contract"
 import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"

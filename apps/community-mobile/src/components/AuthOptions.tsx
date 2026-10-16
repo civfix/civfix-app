@@ -10,7 +10,7 @@ import {
   isErrorWithCode,
   statusCodes,
 } from "@react-native-google-signin/google-signin"
-import type { OAuthProvider } from "@civfix/shared"
+import type { OAuthProvider } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "@/theme"
 import { KeyboardRevealGroup, Text, PrimaryButton, TextField, announce } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"

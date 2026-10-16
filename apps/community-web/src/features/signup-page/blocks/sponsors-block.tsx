@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
-import type { EventPageBlock } from "@civfix/shared"
-import { isSafeHttpsUrl } from "@civfix/shared/markdown"
+import type { EventPageBlock } from "@civfix/contract"
+import { isSafeHttpsUrl } from "@civfix/contract/markdown"
 
 type SponsorsBlockData = Extract<EventPageBlock, { kind: "sponsors" }>
 

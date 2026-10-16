@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react"
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
-import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
 import {
   MIN_TOUCH_TARGET,
   makeThemedStyles,

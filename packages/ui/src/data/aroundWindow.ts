@@ -13,7 +13,8 @@
  *   - When nothing matched, the SAME array reference comes back so a functional setState skips the
  *     re-render.
  */
-import type { ChatItem, ChatMessageDTO } from "@civfix/shared"
+import type { ChatItem } from "../helpers"
+import type { ChatMessageDTO } from "@civfix/contract"
 
 export function applyUpdatesToWindow(
   window: ChatItem[],

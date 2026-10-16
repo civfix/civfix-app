@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CreateReportRequestSchema } from "@civfix/shared"
+import { CreateReportRequestSchema } from "@civfix/contract"
 import type { ReportSubmission } from "../../data"
 import { toCreateReportRequest } from "../submit"
 

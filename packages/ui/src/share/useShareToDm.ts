@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import { useApi, useChatSocket } from "../data/context"
 import { queryKeys } from "../data/keys"
 import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"

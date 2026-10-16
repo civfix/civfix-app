@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type BBox, type LinkedReportRef, type ReportPinDTO } from "@civfix/shared"
+import { type BBox, type LinkedReportRef, type ReportPinDTO } from "@civfix/contract"
 import type { LinkedReportCardEntry } from "../../linkedReportCards"
 import {
   PICKER_MAX_FETCH_SPAN_DEG,

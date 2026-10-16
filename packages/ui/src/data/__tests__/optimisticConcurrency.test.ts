@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"
-import type { PersonDTO, FollowPersonResponse, GetProfileResponse } from "@civfix/shared"
+import type { PersonDTO, FollowPersonResponse, GetProfileResponse } from "@civfix/contract"
 import { optimisticListPatch } from "../optimistic"
 import { queryKeys } from "../keys"
 import { buildFollowMutation } from "../hooks/social"

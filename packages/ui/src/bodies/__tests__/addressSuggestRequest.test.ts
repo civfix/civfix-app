@@ -4,7 +4,7 @@
  * address autocomplete silently goes dead (AddressSearch swallows the error into an empty dropdown).
  */
 import { describe, expect, it } from "vitest"
-import { SuggestPlacesRequestSchema } from "@civfix/shared"
+import { SuggestPlacesRequestSchema } from "@civfix/contract"
 import { ADDRESS_SUGGEST_LIMIT, buildSuggestRequest } from "../addressSuggestRequest"
 
 describe("address suggest request", () => {

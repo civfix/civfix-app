@@ -1,4 +1,4 @@
-import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/contract"
 import { groupRosterBySlot, type RosterListItem } from "../rosterSlotGroups"
 
 export type RosterCheckinItem = RosterListItem<EventRegistrationDTO>

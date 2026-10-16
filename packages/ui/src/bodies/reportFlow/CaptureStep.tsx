@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from "react"
 import { View, Pressable, ScrollView, ActivityIndicator } from "react-native"
-import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { MAX_REPORT_MEDIA } from "@civfix/contract"
 import {
   makeThemedStyles,
   useTheme,

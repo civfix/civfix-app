@@ -1,7 +1,7 @@
 "use client"
 
 import type { QueryClient } from "@tanstack/react-query"
-import type { EventRegistrationDTO, OrganizationDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, OrganizationDTO } from "@civfix/contract"
 import { queryKeys } from "@civfix/ui/data"
 
 import { checkInSeatsInRow, rowStillPendingCheckIn } from "./attendees/roster-filters"

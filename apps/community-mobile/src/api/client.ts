@@ -1,4 +1,4 @@
-import { createApiClient, type ApiClient } from "@civfix/shared/client"
+import { createApiClient, type ApiClient } from "@civfix/contract/client"
 import { API_URL } from "@/config"
 import { readToken, clearToken } from "@/auth/storage"
 import { carriedBearerToken, makeSessionTeardown, makeSingleFlight } from "@/api/unauthorized"

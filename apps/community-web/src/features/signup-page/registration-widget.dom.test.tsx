@@ -2,8 +2,8 @@ import * as React from "react"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/shared"
-import type { PublicEventPageDTO } from "@civfix/shared"
+import { GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
+import type { PublicEventPageDTO } from "@civfix/contract"
 
 import type { api } from "@/lib/api"
 

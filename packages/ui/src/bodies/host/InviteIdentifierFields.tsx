@@ -1,5 +1,5 @@
 import React from "react"
-import type { EventTeamInviteIdentifierKind, OrgInviteIdentifierKind } from "@civfix/shared"
+import type { EventTeamInviteIdentifierKind, OrgInviteIdentifierKind } from "@civfix/contract"
 import { TextInput } from "../../primitives/TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"

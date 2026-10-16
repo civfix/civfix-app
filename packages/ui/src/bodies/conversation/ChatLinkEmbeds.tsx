@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
-import type { CleanupDTO, LinkedEventRef, OrganizationDTO, PostDTO, UserProfileDTO } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef, OrganizationDTO, PostDTO, UserProfileDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../../theme"
 import { Text } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"

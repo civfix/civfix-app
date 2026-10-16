@@ -1,4 +1,4 @@
-import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
 
 // The uri is not an identity: the same asset picked twice has the same uri.
 let counter = 0

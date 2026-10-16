@@ -37,8 +37,9 @@
  * capability seam; feed.ts stays framework-light and just accepts the resolved `near` as a plain argument.
  */
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
-import { DEVICE_FIX_TIMEOUT_MS, withTimeout, type LatLng } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import { DEVICE_FIX_TIMEOUT_MS, type LatLng } from "@civfix/contract"
+import { withTimeout } from "../../helpers"
+import type { ApiClient } from "@civfix/contract/client"
 import { useGeolocation, type GeolocationCapability } from "../../capabilities"
 import { useApi } from "../context"
 import { fetchApproximateLocation } from "../fetchApproximateLocation"

@@ -3,7 +3,7 @@ import { createHash } from "node:crypto"
 import { readFileSync, readdirSync } from "node:fs"
 import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
-import { space } from "../../../packages/shared/src/tokens/design-tokens.ts"
+import { space } from "../../../packages/tokens/src/design-tokens.ts"
 import { DEFAULT_ATTRIBUTION } from "../../../packages/ui/src/map/mapStyle.ts"
 import { readPngHeader } from "./helpers/png.ts"
 import {

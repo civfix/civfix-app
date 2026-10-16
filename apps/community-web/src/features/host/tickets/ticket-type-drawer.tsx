@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { TicketTypeDTO, TicketTypeVisibility } from "@civfix/shared"
+import type { TicketTypeDTO, TicketTypeVisibility } from "@civfix/contract"
 import {
   CreateEventTicketTypeRequestSchema,
   MAX_PARTY_SIZE,
   MAX_TICKET_TYPE_DESCRIPTION,
   MAX_TICKET_TYPE_NAME,
-} from "@civfix/shared"
-import { datetimeLocalFromIso } from "@civfix/shared/datetime"
+} from "@civfix/contract"
+import { datetimeLocalFromIso } from "@civfix/contract/datetime"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

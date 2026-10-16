@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import type { EventPageBlock, ThemeAccent } from "@civfix/shared"
+import type { EventPageBlock, ThemeAccent } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"

@@ -7,7 +7,7 @@ import type {
   PostDTO,
   PostRefDTO,
   UserMentionDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { escapeRegExp, normalizeHandle } from "./mentionText"
 import { listTimeAgo } from "./relativeTime"
 

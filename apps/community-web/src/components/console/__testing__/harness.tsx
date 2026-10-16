@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider } from "@civfix/ui/data"
 import type { DataContextValue } from "@civfix/ui/data"
 import { I18nProvider } from "@civfix/ui/i18n"

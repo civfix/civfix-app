@@ -1,6 +1,6 @@
 import * as React from "react"
 import maplibregl, { type Map as MlMap } from "maplibre-gl"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import { useLayoutMode, useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"

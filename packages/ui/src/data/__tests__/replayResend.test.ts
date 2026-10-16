@@ -6,7 +6,8 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
-import type { ChatMessageDTO, OutboxEntry } from "@civfix/shared"
+import type { ChatMessageDTO } from "@civfix/contract"
+import type { OutboxEntry } from "../../helpers"
 import { markResending } from "../hooks/chat"
 
 const entry = (clientId: string, status: OutboxEntry["status"]): OutboxEntry =>

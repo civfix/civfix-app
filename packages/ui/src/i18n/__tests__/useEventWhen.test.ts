@@ -5,7 +5,7 @@
  */
 import type * as React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { eventWhenParts } from "@civfix/shared/datetime"
+import { eventWhenParts } from "@civfix/contract/datetime"
 
 const ctx = vi.hoisted(() => ({
   locale: "en-US",

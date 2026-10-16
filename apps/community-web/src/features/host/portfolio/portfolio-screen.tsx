@@ -2,18 +2,18 @@
 
 import { Building2, CalendarDays } from "lucide-react"
 import type { UseQueryResult } from "@tanstack/react-query"
-import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/contract"
 import type {
   HostedEventsAnalyticsResponse,
   HostedEventsWhen,
   ListMyHostedEventsResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   seriesHasSuppressedPoints,
   seriesIsChartable,
   seriesValuesForChart,
   weekDayLabel,
-} from "@civfix/shared/host"
+} from "@civfix/contract/host"
 import {
   hostedEventRows,
   useHostedEventsAnalytics,

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
-import type { EventSlotDTO, RegistrationRosterFilter } from "@civfix/shared"
+import type { EventSlotDTO, RegistrationRosterFilter } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { FilterChip, useToast } from "../../primitives"

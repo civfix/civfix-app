@@ -7,7 +7,7 @@
  * Defaults to SIGNED OUT (isAuthenticated:false, user:null, isPending:false). Override via options to
  * render a body in its signed-in or still-resolving state.
  */
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type {
   PostDTO,
   PostRefDTO,
@@ -17,7 +17,7 @@ import type {
   PostComposeInput,
   FeedPageDTO,
   GetApproximateLocationResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
 import { applyToggle } from "./hooks/posts"
 

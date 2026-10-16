@@ -5,7 +5,7 @@ import {
   errorCopyKey,
   isAppErrorLike,
   type ErrorCodeTable,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 

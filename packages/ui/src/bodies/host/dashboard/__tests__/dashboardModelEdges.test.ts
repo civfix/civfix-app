@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { HostedEventDTO, OrganizationMemberDTO } from "@civfix/shared"
+import type { HostedEventDTO, OrganizationMemberDTO } from "@civfix/contract"
 import { hasHostCapability } from "../../../../data/hooks/host"
 import {
   type HostedEventActions,

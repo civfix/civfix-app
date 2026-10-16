@@ -5,8 +5,8 @@ import {
   type ReportCategory,
   type ReportStatus,
   type ReportType,
-} from "@civfix/shared"
-import { formatEventInstant } from "@civfix/shared/datetime"
+} from "@civfix/contract"
+import { formatEventInstant } from "@civfix/contract/datetime"
 
 import {
   APPLE_TOUCH_ICON_PATH,

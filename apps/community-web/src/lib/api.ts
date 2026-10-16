@@ -1,7 +1,7 @@
 "use client"
 
-import { stripTrailingSlashes } from "@civfix/shared"
-import { createApiClient, type ApiClient } from "@civfix/shared/client"
+import { stripTrailingSlashes } from "@civfix/ui/helpers"
+import { createApiClient, type ApiClient } from "@civfix/contract/client"
 
 import { getCsrfToken, useAuthStore, waitForSessionSettled } from "@/store/auth-store"
 

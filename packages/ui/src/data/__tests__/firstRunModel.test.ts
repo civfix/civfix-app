@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { DISPLAY_NAME_MAX_LENGTH, UpdateProfileRequestSchema } from "@civfix/shared"
+import { DISPLAY_NAME_MAX_LENGTH, UpdateProfileRequestSchema } from "@civfix/contract"
 import {
   FIRST_NAME_MAX,
   LAST_NAME_MAX,

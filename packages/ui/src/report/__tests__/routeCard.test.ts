@@ -4,7 +4,7 @@
  * pinned by source.
  */
 import { readFileSync } from "node:fs"
-import type { JurisdictionDTO } from "@civfix/shared"
+import type { JurisdictionDTO } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import { routeCardState } from "../routeCard"

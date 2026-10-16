@@ -11,7 +11,7 @@
  *     owner-only: SetGroupMemberRole is server-gated to the owner).
  *   - A plain member (or a non-member viewer, role null) manages nobody.
  */
-import type { GroupRole } from "@civfix/shared"
+import type { GroupRole } from "@civfix/contract"
 
 /** An action the roster row's kebab may offer, in render order. */
 export type GroupMemberActionKey = "make-admin" | "remove-admin" | "remove"

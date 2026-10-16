@@ -548,7 +548,7 @@ textarea.input {
 }
 
 /* Every color-bearing custom property above, re-stated for the dark scheme with the SAME hexes the
-   shared dark theme uses (@civfix/shared tokens `darkColor` / `darkShadow`, plus the scheme extras in
+   shared dark theme uses (@civfix/tokens `darkColor` / `darkShadow`, plus the scheme extras in
    @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components inside it cannot
    disagree. The tint ramps INVERT in dark (a *-700 is the LIGHTEST step), so rules that fill with
    --ink or a *-700 read their foreground from --fg-on-inverse, which flips to near-black here.

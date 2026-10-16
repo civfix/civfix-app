@@ -1,4 +1,4 @@
-import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/shared"
+import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/contract"
 
 export const supportedLocales: ReadonlyArray<{ code: SupportedLocale; nativeName: string }> = [
   { code: "en", nativeName: "English" },

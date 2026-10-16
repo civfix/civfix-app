@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { EventRegistrationDTO } from "@civfix/shared"
+import type { EventRegistrationDTO } from "@civfix/contract"
 import { headingLevel, makeThemedStyles } from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"

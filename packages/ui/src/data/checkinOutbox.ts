@@ -1,5 +1,5 @@
-import type { CheckinOutcome } from "@civfix/shared"
-import { ErrorCode } from "@civfix/shared"
+import type { CheckinOutcome } from "@civfix/contract"
+import { ErrorCode } from "@civfix/contract"
 import type { PersistenceCapability, SecureStoreCapability } from "../capabilities"
 
 export type OutboxStore = PersistenceCapability | SecureStoreCapability

@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { GetEventAnalyticsResponse, SeriesPoint } from "@civfix/shared"
+import type { GetEventAnalyticsResponse, SeriesPoint } from "@civfix/contract"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"
 import { Meter } from "../../../primitives"

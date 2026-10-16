@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { GetEventAnalyticsResponse } from "@civfix/shared"
+import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { Text } from "../../../typography"
 import { SectionCard } from "../../../primitives"
 import { EMPTY_VALUE, useT } from "../../../i18n"

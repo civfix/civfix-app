@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import { QueryClient } from "@tanstack/react-query"
-import type { NotificationDTO, NotificationPrefsDTO } from "@civfix/shared"
+import type { NotificationDTO, NotificationPrefsDTO } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { notificationListFilters } from "../hooks/notifications"
 

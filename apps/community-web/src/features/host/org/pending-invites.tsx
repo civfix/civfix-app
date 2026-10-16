@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { ListOrganizationInvitesResponse, OrganizationInviteDTO } from "@civfix/shared"
+import type { ListOrganizationInvitesResponse, OrganizationInviteDTO } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

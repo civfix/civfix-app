@@ -1,7 +1,7 @@
 "use client"
 
 import { create } from "zustand"
-import type { UserDTO, OAuthProvider } from "@civfix/shared"
+import type { UserDTO, OAuthProvider } from "@civfix/contract"
 
 import { readAuthSnapshot, writeAuthSnapshot, clearAuthSnapshot } from "@/lib/auth-snapshot"
 

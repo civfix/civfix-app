@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import type { ServiceHoursCertificateDTO } from "@civfix/shared"
+import type { ServiceHoursCertificateDTO } from "@civfix/contract"
 import { useMyServiceHoursCertificates } from "../../../data"
 import { latestLiveCertificate } from "./certificateSeed"
 

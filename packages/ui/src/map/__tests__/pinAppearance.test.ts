@@ -6,8 +6,8 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
-import { ReportCategorySchema } from "@civfix/shared"
-import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/shared/tokens"
+import { ReportCategorySchema } from "@civfix/contract"
+import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/tokens"
 import {
   pinAppearanceFor,
   eventPinTarget,

@@ -5,7 +5,7 @@ import {
   PAGE_SLUG_MAX,
   PAGE_SLUG_MIN,
   REPORT_TYPE_CODE,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
 import {

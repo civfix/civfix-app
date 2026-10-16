@@ -1,5 +1,5 @@
 import React from "react"
-import type { GetEventAnalyticsResponse } from "@civfix/shared"
+import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { Text } from "../../../typography"
 import { SectionCard, StatTile, StatTileRow, statTileColumns } from "../../../primitives"
 import { useT } from "../../../i18n"

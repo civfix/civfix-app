@@ -2,11 +2,7 @@
 
 import { useEffect, useMemo } from "react"
 import { Megaphone } from "lucide-react"
-import type {
-  EventRegistrationDTO,
-  RegistrationRosterFilter,
-  RegistrationRosterSort,
-} from "@civfix/shared"
+import type { EventRegistrationDTO, RegistrationRosterFilter, RegistrationRosterSort } from "@civfix/contract"
 import { useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -27,7 +23,7 @@ import { EMPTY_VALUE, useConsoleFormat } from "../format"
 import { ExportMenu } from "../exports/export-menu"
 import { useConsoleRoster } from "./use-roster"
 import { AttendeeDrawer } from "./attendee-drawer"
-import { attendeeDisplayName } from "@civfix/shared/host"
+import { attendeeDisplayName } from "@civfix/contract/host"
 import { AttendeeBulkActions } from "./attendee-bulk-actions"
 import { AttendanceChip, attendeeColumns, rosterSortFor, rosterSortState } from "./attendee-columns"
 import {

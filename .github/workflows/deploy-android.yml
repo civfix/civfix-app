@@ -140,7 +140,7 @@ jobs:
           java-version: "17"
       # Caches ~/.gradle without keying on build files: android/ does not exist until the prebuild.
       - uses: gradle/actions/setup-gradle@v4
-      # app.config.js requires @civfix/shared/tokens from the workspace; the mobile app's postinstall
+      # app.config.js requires @civfix/tokens from the workspace; the mobile app's postinstall
       # builds that package's dist.
       - run: pnpm install --frozen-lockfile
 

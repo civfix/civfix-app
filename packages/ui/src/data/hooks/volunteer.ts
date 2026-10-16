@@ -25,7 +25,7 @@
  * list.
  */
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
+import { MAX_LEADERBOARD_OFFSET } from "@civfix/contract"
 import type {
   EventHoursEntry,
   EventHoursResponse,
@@ -39,7 +39,7 @@ import type {
   PublicVolunteerHoursResponse,
   RevokeCertificateRequest,
   RevokeCertificateResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"

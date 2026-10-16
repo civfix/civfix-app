@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import type { AnnouncementDTO } from "@civfix/shared"
+import type { AnnouncementDTO } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { Text, TextLink } from "../../typography"
 import { useT } from "../../i18n"

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
 
 /**
  * The module caches at module level, so each test re-imports a fresh module via `vi.resetModules()`

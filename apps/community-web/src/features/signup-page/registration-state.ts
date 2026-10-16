@@ -1,5 +1,5 @@
-import type { PublicEventPageDTO, PublicPageTicketType, RegisterOutcome } from "@civfix/shared"
-import { hasEventEnded, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import type { PublicEventPageDTO, PublicPageTicketType, RegisterOutcome } from "@civfix/contract"
+import { hasEventEnded, registerOutcomeKey, sortedTicketTypes } from "@civfix/contract/host"
 
 export type WidgetState =
   | "cancelled"

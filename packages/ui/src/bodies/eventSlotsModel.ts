@@ -7,9 +7,9 @@
  *
  * Ownership is read off `slot.mine` - the server-computed flag - never re-derived from a roster.
  */
-import type { EventSlotDTO } from "@civfix/shared"
-import { ErrorCode } from "@civfix/shared"
-import { timeRangeLabel } from "@civfix/shared/datetime"
+import type { EventSlotDTO } from "@civfix/contract"
+import { ErrorCode } from "@civfix/contract"
+import { timeRangeLabel } from "@civfix/contract/datetime"
 import { isEventEndedRefusal } from "../data/errorCode"
 
 export type SlotRowState =

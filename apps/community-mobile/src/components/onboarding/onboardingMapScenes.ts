@@ -1,5 +1,5 @@
-import type { ReportCategory } from "@civfix/shared"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import type { ReportCategory } from "@civfix/contract"
+import type { ColorSchemeName } from "@civfix/tokens"
 
 export type OnboardingMapStage = "report" | "track" | "together"
 

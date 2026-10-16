@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable, View } from "react-native"
-import type { UserProfileDTO } from "@civfix/shared"
+import type { UserProfileDTO } from "@civfix/contract"
 import { makeThemedStyles, focusRingProps, webCursor, webNoSelect, webTransition, MIN_TOUCH_TARGET } from "../theme"
 import { Text, TextLink } from "../typography"
 import { useT } from "../i18n"

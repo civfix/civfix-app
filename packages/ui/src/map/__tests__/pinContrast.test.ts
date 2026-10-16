@@ -1,12 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import {
-  categoryColor,
-  cleanupColorFor,
-  colorSchemes,
-  type ColorSchemeName,
-} from "@civfix/shared/tokens"
-import { contrastRatio } from "@civfix/shared/chip-contrast"
+import { categoryColor, cleanupColorFor, colorSchemes, type ColorSchemeName } from "@civfix/tokens"
+import { contrastRatio } from "@civfix/tokens/chip-contrast"
 import { makeThemeColors } from "../../theme/schemes"
 import { basemapPaper } from "../mapStyle"
 import { PIN_NON_TEXT_CONTRAST, inkOnFill, pinOutlineFor } from "../pins/appearance"

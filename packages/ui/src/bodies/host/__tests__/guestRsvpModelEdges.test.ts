@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { EMAIL_MAX_LENGTH, MAX_GUEST_NAME } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, MAX_GUEST_NAME } from "@civfix/contract"
 import {
   GUEST_RSVP_CODE_LENGTH,
   canSubmitGuestForm,

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
+import type { EventAnswerValue, EventQuestionDTO } from "@civfix/contract"
 
 interface QuestionFieldProps {
   question: EventQuestionDTO

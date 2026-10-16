@@ -4,7 +4,7 @@
  * truthy pinnedAt and sorted pinnedAt DESC.
  */
 import { describe, expect, it } from "vitest"
-import type { ChatMessageDTO, PersonDTO } from "@civfix/shared"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { mergePins } from "../pins"
 
 const ROOM = "room-1"

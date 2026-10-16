@@ -1,4 +1,4 @@
-import type { ReportCategory } from "@civfix/shared"
+import type { ReportCategory } from "@civfix/contract"
 import type { DraftReport } from "../../report/draftStore"
 import type { ReportSubmitOutcome } from "../../report/submit"
 

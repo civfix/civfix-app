@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import {
   APPLE_TOUCH_ICON_PATH,
   APPLE_TOUCH_ICON_SIZES,

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react"
 import { View, Pressable } from "react-native"
-import { currentVersion } from "@civfix/shared/legal"
+import { currentVersion } from "@civfix/contract/legal"
 import {
   focusRingProps,
   makeThemedStyles,

@@ -8,7 +8,7 @@ import {
   REVIEWER_OTP_CODE_MAX_LENGTH,
   REVIEWER_OTP_CODE_MIN_LENGTH,
   REVIEWER_OTP_EMAIL,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "@/theme"
 import {
   IosKeyboardAvoidingView,

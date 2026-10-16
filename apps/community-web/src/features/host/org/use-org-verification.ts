@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import type { OrganizationVerificationDTO } from "@civfix/shared"
+import type { OrganizationVerificationDTO } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 
 import { consoleKeys } from "../console-keys"

@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { eventWhenParts, type EventWhenInput, type EventWhenParts } from "@civfix/shared/datetime"
+import { eventWhenParts, type EventWhenInput, type EventWhenParts } from "@civfix/contract/datetime"
 import { useLocale } from "./LocaleContext"
 import { useRelativeTime } from "./useRelativeTime"
 import { useViewerTimeZone } from "./useViewerTimeZone"

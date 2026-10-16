@@ -1,6 +1,6 @@
 import React, { useMemo } from "react"
 import { Pressable, ScrollView as RNScrollView, View } from "react-native"
-import type { CleanupDTO, LeaderboardEntryDTO, PersonDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, LeaderboardEntryDTO, PersonDTO, ReportPinDTO } from "@civfix/contract"
 import { focusRingProps, headingLevel, webTransition } from "../../theme"
 import { Text } from "../../typography"
 import { Avatar, FollowButton } from "../../primitives"

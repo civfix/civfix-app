@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { ChatGroupDTO, GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
+import type { ChatGroupDTO, GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"

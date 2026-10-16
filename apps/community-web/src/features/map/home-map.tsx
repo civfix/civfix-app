@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { BBox, CleanupDTO, ReportCategory, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, ReportCategory, ReportClusterDTO, ReportPinDTO } from "@civfix/contract"
 import {
   Map as SharedMap,
   space,
@@ -79,7 +79,7 @@ export function HomeMap() {
   }, [reports.data, setCounts])
 
   // There is no fallback coordinate: with no precise, approximate or remembered centre the map is not
-  // mounted at all (@civfix/shared DECISIONS §45). The initial fly is skipped when a detail focus or
+  // mounted at all (@civfix/contract DECISIONS §45). The initial fly is skipped when a detail focus or
   // fly-to has already published, because the centre resolves asynchronously and a late flyTo would drag
   // a cold deep link's focused marker off-screen; focus publishes only once. Reading the stores at adopt
   // time, not at mount, is what makes that guard hold.

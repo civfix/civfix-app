@@ -13,13 +13,12 @@ import {
 import {
   ErrorCode,
   formatCertificateCode,
-  formatCertificateHours,
-  formatCount,
   normalizeCertificateCode,
   type VerifyCertificateResponse,
   toAppError,
-} from "@civfix/shared"
-import { safeDateFormat } from "@civfix/shared/datetime"
+} from "@civfix/contract"
+import { formatCertificateHours, formatCount } from "@civfix/ui/helpers"
+import { safeDateFormat } from "@civfix/contract/datetime"
 import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
 
 import { DetailShell } from "@/components/detail-shell"

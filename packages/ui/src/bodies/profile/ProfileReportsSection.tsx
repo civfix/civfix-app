@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 import { categoryColor, makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { hexWithAlpha } from "../../theme/color"
 import { Text, Icon, iconMap } from "../../typography"

@@ -1,5 +1,5 @@
 import React from "react"
-import { MAX_BIO_LENGTH } from "@civfix/shared"
+import { MAX_BIO_LENGTH } from "@civfix/contract"
 import { Text } from "../../typography"
 import { TextField } from "../../primitives"
 import { useT } from "../../i18n"

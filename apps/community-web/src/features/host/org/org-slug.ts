@@ -1,4 +1,4 @@
-import { ORG_SLUG_MAX, ORG_SLUG_MIN, OrgSlugSchema } from "@civfix/shared"
+import { ORG_SLUG_MAX, ORG_SLUG_MIN, OrgSlugSchema } from "@civfix/contract"
 
 import { PRODUCTION_SITE_URL } from "@/lib/site-meta"
 
