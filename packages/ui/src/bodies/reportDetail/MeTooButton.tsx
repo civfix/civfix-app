@@ -14,6 +14,8 @@ import { Icon, Text, iconMap } from "../../typography"
 
 const ME_TOO_HEIGHT = 32
 const ME_TOO_HIT_SLOP = hitSlopToTarget(ME_TOO_HEIGHT)
+// RN's small spinner is 20 pt on every platform; scaled into the glyph's box, busy never widens the pill.
+const SPINNER_SMALL = 20
 
 /** Me too as a pill in FollowButton's two states: a filled call to action, then a quiet "done" tint. */
 export function MeTooButton({
@@ -35,6 +37,7 @@ export function MeTooButton({
   const th = useTheme()
   const fg = pressed ? th.colors.moss["700"] : th.colors.onAccent
   const inert = busy || disabled
+  const glyph = 14
   return (
     <Pressable
       onPress={onPress}
@@ -55,9 +58,11 @@ export function MeTooButton({
     >
       {/* The label stays while busy so the pill keeps its width; the spinner takes the glyph's place. */}
       {busy ? (
-        <ActivityIndicator size="small" color={fg} />
+        <View style={{ width: glyph, height: glyph, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="small" color={fg} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
+        </View>
       ) : (
-        <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={14} color={fg} />
+        <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={glyph} color={fg} />
       )}
       <Text color={fg} style={[styles.label, webNoSelect]}>
         {label}
