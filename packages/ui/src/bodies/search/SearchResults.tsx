@@ -121,12 +121,23 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
   )
 }
 
-export function ReportHitRow({ report, viewer }: { report: ReportPinDTO; viewer: LatLng | null }) {
+export function ReportHitRow({
+  report,
+  viewer,
+  withCount = false,
+}: {
+  report: ReportPinDTO
+  viewer: LatLng | null
+  /** Lead the subtitle with the category and add the Me too count line (the "Most pressing nearby" rows). */
+  withCount?: boolean
+}) {
   const { t } = useT("home-sidebar")
+  const categoryLabel = t(`enums:category.${report.category}`)
   const { title, subtitle, thumbUrl } = reportHitRowModel({
     report,
-    categoryLabel: t(`enums:category.${report.category}`),
+    categoryLabel,
     viewer,
+    leadingTag: withCount ? categoryLabel : null,
   })
   return (
     <ReportRowView
@@ -138,6 +149,7 @@ export function ReportHitRow({ report, viewer }: { report: ReportPinDTO; viewer:
       lng={report.lng}
       thumbUrl={thumbUrl}
       subtitle={subtitle}
+      count={withCount ? t("report-row:confirm_count", { count: report.confirmCount }) : null}
       divider={false}
       card
     />

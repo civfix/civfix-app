@@ -116,8 +116,8 @@ export function useMapReports({ bbox, categories, enabled }: MapReportsArgs) {
   })
 }
 
-const PICKER_BBOX_PAD_DEG = 0.0225
-function roundPickerCoord(n: number): number {
+export const PICKER_BBOX_PAD_DEG = 0.0225
+export function roundPickerCoord(n: number): number {
   return Math.round(n * 1000) / 1000
 }
 

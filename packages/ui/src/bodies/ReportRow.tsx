@@ -19,6 +19,8 @@ export interface ReportRowViewProps {
   subtitle?: string | null
   when?: string | null
   note?: string | null
+  /** The localized Me too count ("3 neighbors saw this too"), on its own line under the subtitle. */
+  count?: string | null
   divider?: boolean
   card?: boolean
   onPress?: () => void
@@ -45,6 +47,7 @@ export const ReportRowView = React.memo(function ReportRowView({
   subtitle,
   when,
   note,
+  count,
   divider = true,
   card = false,
   onPress,
@@ -91,6 +94,14 @@ export const ReportRowView = React.memo(function ReportRowView({
           <Text style={styles.addr} numberOfLines={1}>
             {subtitle}
           </Text>
+        ) : null}
+        {count ? (
+          <View style={styles.countRow}>
+            <Icon icon={iconMap.Users} size={13} color={th.colors.textMuted} />
+            <Text style={styles.count} numberOfLines={1}>
+              {count}
+            </Text>
+          </View>
         ) : null}
         {when ? (
           <View style={styles.foot}>
@@ -191,6 +202,18 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyBold,
     fontSize: 11.5,
     color: t.colors.textSubtle,
+  },
+  countRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["1"],
+    marginTop: 4,
+  },
+  count: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textMuted,
   },
   sepDot: {
     marginHorizontal: 0,
