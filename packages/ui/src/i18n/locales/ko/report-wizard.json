@@ -24,11 +24,20 @@
     "review": {
       "title": "보낼 준비가 됐나요?",
       "help": "확인한 뒤 핀을 놓으세요."
+    },
+    "duplicate": {
+      "title": "중복일 수 있어요",
+      "help_one": "바로 이 위치의 신고가 이미 이 문제를 다루고 있을 수 있어요. 열어서 진행 상황을 확인하거나 새 문제를 신고하세요.",
+      "help_other": "바로 이 위치의 신고 {{count}}건이 이미 이 문제를 다루고 있을 수 있어요. 하나를 열어서 진행 상황을 확인하거나 새 문제를 신고하세요.",
+      "distance_close": "5m 이내",
+      "distance_about": "약 {{meters}}m 거리",
+      "new": "새 문제 신고"
     }
   },
   "footer": {
     "continue": "계속",
-    "drop_pin": "핀 꽂기"
+    "drop_pin": "핀 꽂기",
+    "checking_a11y": "근처 신고 확인 중"
   },
   "capture": {
     "label_filled": "첨부한 파일",

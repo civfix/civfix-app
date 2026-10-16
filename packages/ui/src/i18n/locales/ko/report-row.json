@@ -1,5 +1,7 @@
 {
   "a11y": {
     "row": "{{title}}, {{status}}"
-  }
+  },
+  "confirm_count_one": "이웃 {{count}}명도 봤어요",
+  "confirm_count_other": "이웃 {{count}}명도 봤어요"
 }
