@@ -6,6 +6,7 @@ import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useT } from "../../i18n"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { duplicateDistance } from "./duplicateModel"
+import { MeTooButton } from "../reportDetail/MeTooButton"
 
 // A banner, not a gallery frame: a second card has to start above the fold on a phone.
 const CARD_MEDIA_ASPECT = 2.4
@@ -25,7 +26,7 @@ function useMatchText({ pin, distanceM }: NearbyReportRow) {
   }
 }
 
-/** One match on the Possible duplicate screen. Me too (#162) goes at the right of the body, beside the text. */
+/** One match on the Possible duplicate screen, with Me too at the right of the body, beside the text. */
 export function DuplicateMatchCard({
   row,
   width,
@@ -44,6 +45,7 @@ export function DuplicateMatchCard({
 }) {
   const styles = useStyles()
   const th = useTheme()
+  const { t } = useT("report-wizard")
   const text = useMatchText(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
@@ -69,21 +71,33 @@ export function DuplicateMatchCard({
         )}
       </View>
       <View style={styles.cardBody}>
-        <Text style={styles.cardTitle} numberOfLines={2}>
-          {text.title}
-        </Text>
-        <View style={styles.metaRow}>
-          <Text style={styles.cardMeta}>{text.category}</Text>
-          <MetaDot color={th.colors.textSubtle} />
-          <Text style={styles.cardMeta} numberOfLines={1}>
-            {text.distance}
+        <View style={styles.cardText}>
+          <Text style={styles.cardTitle} numberOfLines={2}>
+            {text.title}
           </Text>
-        </View>
-        {text.count ? (
-          <View style={styles.countRow}>
-            <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
-            <Text style={styles.count}>{text.count}</Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.cardMeta}>{text.category}</Text>
+            <MetaDot color={th.colors.textSubtle} />
+            <Text style={styles.cardMeta} numberOfLines={1}>
+              {text.distance}
+            </Text>
           </View>
+          {text.count ? (
+            <View style={styles.countRow}>
+              <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
+              <Text style={styles.count}>{text.count}</Text>
+            </View>
+          ) : null}
+        </View>
+        {onMeToo ? (
+          <MeTooButton
+            label={t("wizard.duplicate.me_too")}
+            accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
+            pressed={false}
+            busy={meTooBusy}
+            disabled={meTooDisabled}
+            onPress={() => onMeToo(row)}
+          />
         ) : null}
       </View>
     </Pressable>
@@ -107,9 +121,12 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
   },
   cardBody: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
     padding: t.space["3"],
-    gap: t.space["1"],
   },
+  cardText: { flex: 1, gap: t.space["1"] },
   cardTitle: {
     fontFamily: t.fontFamily.bodyBold,
     fontSize: t.fontSize["16"],
