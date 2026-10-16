@@ -43,8 +43,8 @@ export function MeTooButton({
   const th = useTheme()
   const fg = pressed ? th.colors.moss["700"] : th.colors.text
   const inert = busy || disabled
-  const glyph = sm ? 16 : 18
   const sm = size === "sm"
+  const glyph = sm ? 16 : 18
   return (
     <Pressable
       onPress={onPress}
