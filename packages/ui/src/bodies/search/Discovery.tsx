@@ -10,7 +10,9 @@ import {
   useJurisdictionLeaderboard,
   useMyHours,
   useNearbyCleanups,
+  nearbyPinsBbox,
   useNearbyReportPins,
+  usePressingReports,
   useResolveJurisdiction,
   useUserLocation,
 } from "../../data"
@@ -81,6 +83,8 @@ export function Discovery({ expanded }: { expanded: boolean }) {
   const location = useUserLocation().data ?? null
   const cleanupsQuery = useNearbyCleanups(SEARCH_EVENT_POOL_LIMIT, location)
   const pinsQuery = useNearbyReportPins(location)
+  const pressingBbox = useMemo(() => nearbyPinsBbox(location), [location])
+  const pressing = usePressingReports(pressingBbox).data ?? []
   const suggestionsQuery = useFollowSuggestions()
   const jurisdictionQuery = useResolveJurisdiction(location)
   const myHours = useMyHours()
@@ -182,7 +186,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
         />
       ) : null}
 
-      {sections.reports.length > 0 ? (
+      {location && pressing.length > 0 ? (
         <>
           <Text
             accessibilityRole="header"
@@ -190,6 +194,31 @@ export function Discovery({ expanded }: { expanded: boolean }) {
             style={[
               styles.sectionTitle,
               sections.people.length > 0 || sections.events.length > 0 || showLeaderboard
+                ? styles.laterTitle
+                : null,
+            ]}
+          >
+            {t("search_page.pressing")}
+          </Text>
+          <View style={styles.suggestGroup}>
+            {pressing.map((report) => (
+              <ReportHitRow key={report.id} report={report} viewer={location} withCount />
+            ))}
+          </View>
+        </>
+      ) : null}
+
+      {sections.reports.length > 0 ? (
+        <>
+          <Text
+            accessibilityRole="header"
+            {...headingLevel(2)}
+            style={[
+              styles.sectionTitle,
+              sections.people.length > 0 ||
+              sections.events.length > 0 ||
+              showLeaderboard ||
+              (location && pressing.length > 0)
                 ? styles.laterTitle
                 : null,
             ]}
