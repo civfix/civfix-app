@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { EventPageBlock } from "@civfix/shared"
-import { SaveEventPageRequestSchema } from "@civfix/shared"
+import type { EventPageBlock } from "@civfix/contract"
+import { SaveEventPageRequestSchema } from "@civfix/contract"
 
 import {
   blockSaveErrors,

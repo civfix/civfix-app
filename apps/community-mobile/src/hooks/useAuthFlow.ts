@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { OAuthProvider } from "@civfix/shared"
+import type { OAuthProvider } from "@civfix/contract"
 import { sessionCheck } from "@/api/sessionCheck"
 
 // The welcome screen waits on this before showing its buttons, so a silent backend must not hold it for

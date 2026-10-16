@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { UserDTO } from "@civfix/shared"
+import type { UserDTO } from "@civfix/contract"
 
 const adoptViewer = vi.fn<(...args: unknown[]) => unknown>()
 const discardViewerDrafts = vi.fn<(...args: unknown[]) => unknown>()

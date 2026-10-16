@@ -1,4 +1,4 @@
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 import type { ChannelComposerMode, GroupInfoGate } from "../channelComposerMode"
 
 export type ComposerPlaceholder = "unavailable" | "group" | "dm"

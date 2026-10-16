@@ -9,7 +9,7 @@
  * requireAuth gate, or logout) rather than the whole bundle.
  */
 import React, { createContext, useContext } from "react"
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
 
 const DataContext = createContext<DataContextValue | null>(null)

@@ -7,7 +7,7 @@ import {
   type LocaleSources,
   type SupportedLocale,
 } from "@civfix/ui/i18n"
-import type { UserDTO } from "@civfix/shared"
+import type { UserDTO } from "@civfix/contract"
 import { storage } from "@/lib/mmkv"
 import { LOCALE_KEY } from "@/lib/mmkvKeys"
 

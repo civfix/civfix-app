@@ -1,4 +1,4 @@
-import { normalizeCertificateCode } from "@civfix/shared"
+import { normalizeCertificateCode } from "@civfix/contract"
 
 import { routeSegment } from "@/lib/route-segment"
 

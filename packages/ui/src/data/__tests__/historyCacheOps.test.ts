@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { ChatHistoryResponse, ChatMessageDTO, PersonDTO } from "@civfix/shared"
+import type { ChatHistoryResponse, ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import {
   MAX_JOURNALED_FRAMES,
   applyHistoryCacheOps,

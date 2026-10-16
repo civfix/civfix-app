@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/contract"
 import {
   claimantsBySlot,
   groupRosterBySlot,

@@ -1,5 +1,5 @@
 /** The wire keeps the ASCII reaction names; only the on-screen display uses the emoji glyph. */
-import { REACTION_EMOJIS, type ReactionEmoji, type ReactionSummaryDTO } from "@civfix/shared"
+import { REACTION_EMOJIS, type ReactionEmoji, type ReactionSummaryDTO } from "@civfix/contract"
 
 export const REACTION_GLYPH: Record<ReactionEmoji, string> = {
   like: "\u{1F44D}",

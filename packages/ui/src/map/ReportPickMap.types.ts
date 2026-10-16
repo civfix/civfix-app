@@ -1,5 +1,5 @@
-import type { BBox, ReportPinDTO } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import type { BBox, ReportPinDTO } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 
 export type ReportPickPinState = "idle" | "selected" | "linked" | "unlinking"
 

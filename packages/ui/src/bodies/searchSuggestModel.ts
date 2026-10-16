@@ -20,7 +20,7 @@
  *     ranking of nowhere. Resolution itself lives in `bodies/leaderboardGeoid.ts`; this file only
  *     enforces the gate.
  */
-import { haversineMeters, type LatLng } from "@civfix/shared"
+import { haversineMeters, type LatLng } from "@civfix/contract"
 import { eventBlendScore } from "./eventBlendScore"
 
 export const SUGGESTED_PEOPLE_LIMIT = 8

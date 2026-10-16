@@ -4,8 +4,8 @@ import type {
   GoogleSignInRequest,
   EmailOtpRequestRequest,
   EmailOtpVerifyRequest,
-} from "@civfix/shared"
-import { AppError, ErrorCode } from "@civfix/shared"
+} from "@civfix/contract"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
 

@@ -1,4 +1,4 @@
-import { stripTrailingSlashes } from "@civfix/shared"
+import { stripTrailingSlashes } from "@civfix/ui/helpers/url"
 
 const ROOT_ROUTE = "/"
 

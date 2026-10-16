@@ -2,7 +2,7 @@
  * The two-phase certificate card's pure state model. `now` is injected, so no fake timers here.
  */
 import { describe, expect, it } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import {
   CERTIFICATE_EXPIRY_SOON_MS,
   certificateCardState,

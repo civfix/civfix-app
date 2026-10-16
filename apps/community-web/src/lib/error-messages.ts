@@ -1,4 +1,4 @@
-import { errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
+import { errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 
 /**
  * Errors map by code, never by message: raw server text never surfaces. This is a plain (non-hook)

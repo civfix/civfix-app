@@ -1,7 +1,7 @@
 // The shared `relativeAgo` keeps English defaults so the contract package stays i18next-free; this hook
 // supplies the localized labels.
 import { useCallback, useMemo } from "react"
-import { relativeAgo, WEEKDAYS, type RelativeUnitLabels } from "@civfix/shared"
+import { relativeAgo, WEEKDAYS, type RelativeUnitLabels } from "@civfix/contract"
 import { useTranslation } from "react-i18next"
 
 export interface UseRelativeTime {

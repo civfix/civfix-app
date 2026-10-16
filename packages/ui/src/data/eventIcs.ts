@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import type { ApiClient } from "@civfix/shared/client"
-import type { GetEventIcsResponse } from "@civfix/shared"
+import type { ApiClient } from "@civfix/contract/client"
+import type { GetEventIcsResponse } from "@civfix/contract"
 import { useApi } from "./context"
 import { queryKeys } from "./keys"
 

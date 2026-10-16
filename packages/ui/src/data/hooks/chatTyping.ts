@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react"
-import type { RoomKind } from "@civfix/shared"
+import type { RoomKind } from "@civfix/contract"
 import type { ChatSocketLike } from "../types"
 
 const TYPING_THROTTLE_MS = 2_000

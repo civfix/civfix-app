@@ -6,8 +6,8 @@ import type {
   UserDTO,
   WsClientMessage,
   WsServerMessage,
-} from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+} from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 
 /** A list envelope's array as a real array of non-null entries; the client does not validate responses. */
 export function listItems<T>(list: ReadonlyArray<T | null | undefined> | null | undefined): T[] {

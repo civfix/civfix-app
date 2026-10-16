@@ -22,7 +22,7 @@ import type {
   RemoveOrganizationMemberResponse,
   RevokeOrganizationInviteResponse,
   SetOrganizationMemberRoleResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"

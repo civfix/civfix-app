@@ -9,7 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native"
-import { REACTION_EMOJIS, type ReactionEmoji } from "@civfix/shared"
+import { REACTION_EMOJIS, type ReactionEmoji } from "@civfix/contract"
 import {
   makeThemedStyles,
   space,

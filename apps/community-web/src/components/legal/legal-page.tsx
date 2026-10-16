@@ -1,7 +1,7 @@
 import * as React from "react"
 import Link from "next/link"
-import { legalDocument, type LegalDocumentVersion } from "@civfix/shared/legal"
-import type { LegalDocumentType } from "@civfix/shared"
+import { legalDocument, type LegalDocumentVersion } from "@civfix/contract/legal"
+import type { LegalDocumentType } from "@civfix/contract"
 
 import { Wordmark } from "@/components/brand"
 

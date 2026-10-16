@@ -1,6 +1,6 @@
 import React from "react"
 import { Platform, View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import type { OrganizationRefDTO } from "@civfix/shared"
+import type { OrganizationRefDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, stopPress, webCursor } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"

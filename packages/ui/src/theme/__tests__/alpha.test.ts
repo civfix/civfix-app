@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { alpha } from "../alpha"
 
 describe("alpha()", () => {

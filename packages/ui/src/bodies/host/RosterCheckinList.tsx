@@ -1,8 +1,8 @@
 import React, { useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
-import { DELETED_USER_LABEL } from "@civfix/shared"
-import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/contract"
+import { DELETED_USER_LABEL } from "@civfix/contract"
+import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/contract/host"
 import {
   hitSlopToTarget,
   focusRingProps,

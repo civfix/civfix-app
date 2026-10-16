@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { AttendeeDTO, CleanupAttendeesResponse } from "@civfix/shared"
+import type { AttendeeDTO, CleanupAttendeesResponse } from "@civfix/contract"
 import { rosterWithoutMember } from "../hooks/cleanups"
 import { queryKeys } from "../keys"
 

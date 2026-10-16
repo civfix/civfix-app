@@ -5,7 +5,7 @@ import type {
   OrganizationMemberRole,
   PendingEventTeamInviteDTO,
   PendingOrganizationInviteDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { SectionCard, LIST_DIVIDER_INSET } from "../../primitives"
 import { useT } from "../../i18n"
 import { makeThemedStyles } from "../../theme"

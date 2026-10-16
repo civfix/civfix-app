@@ -5,8 +5,8 @@
  */
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import type { CleanupDTO, LatLng } from "@civfix/shared"
-import { haversineMeters } from "@civfix/shared"
+import type { CleanupDTO, LatLng } from "@civfix/contract"
+import { haversineMeters } from "@civfix/contract"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 

@@ -1,4 +1,4 @@
-import type { SessionCheckResponse } from "@civfix/shared"
+import type { SessionCheckResponse } from "@civfix/contract"
 import { api } from "@/api/client"
 import { sharedDeadlineRequest } from "@/api/deadline"
 import { tokenGeneration } from "@/auth/storage"

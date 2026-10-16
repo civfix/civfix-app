@@ -1,5 +1,5 @@
-import type { ResolveAddressResponse } from "@civfix/shared"
-import { MAX_REPORT_ADDR_LENGTH, isLocatedPrecision } from "@civfix/shared"
+import type { ResolveAddressResponse } from "@civfix/contract"
+import { MAX_REPORT_ADDR_LENGTH, isLocatedPrecision } from "@civfix/contract"
 import { applyNearPrefix } from "./addressRowModel"
 
 export function reportAddressPrefill(input: {

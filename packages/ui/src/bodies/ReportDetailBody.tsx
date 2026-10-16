@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react"
 import { View, Pressable } from "react-native"
-import type { ReportDTO } from "@civfix/shared"
-import { isVerifiedReportAddress } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
+import { isVerifiedReportAddress } from "@civfix/contract"
 import { makeThemedStyles, radius, useTheme, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {

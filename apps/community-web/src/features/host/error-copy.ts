@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo } from "react"
-import { ErrorCode } from "@civfix/shared"
+import { ErrorCode } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { errorMessage } from "@/lib/error-messages"

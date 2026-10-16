@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs"
-import { SupportedLocaleSchema } from "@civfix/shared"
+import { SupportedLocaleSchema } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 
 const EM_DASH = "—"

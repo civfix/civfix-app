@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { TicketTypeDTO } from "@civfix/shared"
+import type { TicketTypeDTO } from "@civfix/contract"
 import { resolveTicketTypeId } from "../registration/registrationModel"
 
 const code = (src: string): string =>

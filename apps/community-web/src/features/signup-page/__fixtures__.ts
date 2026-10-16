@@ -1,4 +1,4 @@
-import type { PublicEventPageDTO, PublicPageTicketType } from "@civfix/shared"
+import type { PublicEventPageDTO, PublicPageTicketType } from "@civfix/contract"
 
 export function ticket(overrides: Partial<PublicPageTicketType> = {}): PublicPageTicketType {
   return {

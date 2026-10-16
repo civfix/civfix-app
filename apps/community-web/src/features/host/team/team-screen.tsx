@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { UserPlus } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
-import type { EventTeamRole } from "@civfix/shared"
+import type { EventTeamRole } from "@civfix/contract"
 import {
   INVITABLE_EVENT_TEAM_ROLES,
   SETTABLE_EVENT_MEMBER_ROLES,

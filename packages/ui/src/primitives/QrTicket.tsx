@@ -1,7 +1,7 @@
 import React, { useMemo } from "react"
 import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import Svg, { Path, Rect } from "react-native-svg"
-import { qrInk, qrPaper } from "@civfix/shared/tokens"
+import { qrInk, qrPaper } from "@civfix/tokens"
 import { useT } from "../i18n"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"

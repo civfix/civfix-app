@@ -1,4 +1,4 @@
-import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
 
 const EVENT_COVER_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.MEDIA_REJECTED]: "cover.error_rejected",

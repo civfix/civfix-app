@@ -1,5 +1,5 @@
-import type { CleanupMemberRole, EventTeamRole, HostCapability, SetMemberRoleRequest } from "@civfix/shared"
-import { hostCapabilities } from "@civfix/shared/host"
+import type { CleanupMemberRole, EventTeamRole, HostCapability, SetMemberRoleRequest } from "@civfix/contract"
+import { hostCapabilities } from "@civfix/contract/host"
 
 export interface EventTeamTier {
   role: EventTeamRole

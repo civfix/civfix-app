@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import type { CleanupDTO, ReportPinDTO } from "@civfix/shared"
+import type { CleanupDTO, ReportPinDTO } from "@civfix/contract"
 import {
   buildIndex,
   queryClusters,

@@ -12,8 +12,8 @@ import {
   type UserDTO,
   type WsClientMessage,
   type WsServerMessage,
-} from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+} from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider } from "../context"
 import { makeFakeDataContext } from "../fakes"
 import { queryKeys } from "../keys"

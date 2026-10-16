@@ -9,7 +9,7 @@ import type {
   UpdateSettingsRequest,
   UpdateSettingsResponse,
   UserDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"

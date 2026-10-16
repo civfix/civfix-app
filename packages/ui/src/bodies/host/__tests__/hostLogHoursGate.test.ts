@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { hasEventEnded, type EventWindowLike } from "@civfix/shared/host"
+import { hasEventEnded, type EventWindowLike } from "@civfix/contract/host"
 import { hostLogHoursGate } from "../hostLogHoursGate"
 
 const NOW = Date.parse("2026-09-13T18:00:00.000Z")

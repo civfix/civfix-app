@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
 import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../../data/uploadMedia"
 
 function okFetch(status = 200): typeof fetch {

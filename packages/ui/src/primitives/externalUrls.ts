@@ -1,5 +1,4 @@
-import { stripTrailingSlashes } from "@civfix/shared"
-import { SOURCE_REPO_URL, sourceLink } from "@civfix/shared/legal"
+import { stripTrailingSlashes, SOURCE_REPO_URL, sourceLink } from "../helpers"
 
 export const WEB_ORIGIN = "https://civfix.org"
 

@@ -7,7 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
-import type { UserSearchResultDTO } from "@civfix/shared"
+import type { UserSearchResultDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, webCursorPointer, webTransition, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useMentionSearch } from "../data"

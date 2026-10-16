@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { UNSUBSCRIBE_TOKEN_MAX, UNSUBSCRIBE_TOKEN_MIN } from "@civfix/shared"
+import { UNSUBSCRIBE_TOKEN_MAX, UNSUBSCRIBE_TOKEN_MIN } from "@civfix/contract"
 import { Trans, useT } from "@civfix/ui/i18n"
 
 import { api } from "@/lib/api"

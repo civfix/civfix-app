@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { tokens, darkColor } from "@civfix/shared/tokens"
+import { tokens, darkColor } from "@civfix/tokens"
 
 import { Providers } from "@/components/providers"
 import {

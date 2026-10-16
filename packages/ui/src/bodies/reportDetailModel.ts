@@ -1,4 +1,4 @@
-import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
 
 export function linkedEventToCleanup(event: LinkedEventRef): CleanupDTO {
   return {

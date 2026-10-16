@@ -1,7 +1,7 @@
 import * as React from "react"
 import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import { useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { alpha } from "../theme/alpha"
 import { useCartoApiKey } from "../data"

@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
-import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
-import { safeDateFormat } from "@civfix/shared/datetime"
+import type { EventPageBlock, PublicEventPageDTO } from "@civfix/contract"
+import { safeDateFormat } from "@civfix/contract/datetime"
 
 type HeroBlockData = Extract<EventPageBlock, { kind: "hero" }>
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import { AppError } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import { AppError } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 import type { CameraCapability, CapturedMedia, PreparedUpload } from "../../capabilities"
 import {
   UPLOAD_MIN_BYTES_PER_SEC,

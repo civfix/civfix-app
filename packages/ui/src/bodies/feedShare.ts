@@ -7,8 +7,8 @@ import type {
   PostDTO,
   ReportCategory,
   ReportType,
-} from "@civfix/shared"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+} from "@civfix/contract"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 import { formInstantMs } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
 import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "./postComposerSubmit"

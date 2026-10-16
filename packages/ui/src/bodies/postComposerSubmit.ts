@@ -13,7 +13,7 @@ import type {
   PostDTO,
   PostKind,
   UserMentionDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import type { PostComposerMedia } from "./postComposerStore"
 import { optimisticPostId } from "./thread/threadModel"
 

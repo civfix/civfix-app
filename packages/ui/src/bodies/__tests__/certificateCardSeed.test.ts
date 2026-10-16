@@ -15,7 +15,7 @@
  * assertion that a url-less listed row lands in `expired` rather than a lying `ready`.
  */
 import { describe, expect, it } from "vitest"
-import type { ServiceHoursCertificateDTO } from "@civfix/shared"
+import type { ServiceHoursCertificateDTO } from "@civfix/contract"
 import { certificateCardState } from "../serviceCertificate"
 import { latestLiveCertificate } from "../profile/certificate/certificateSeed"
 import { surfaceSource } from "../../__tests__/sourceGuards"

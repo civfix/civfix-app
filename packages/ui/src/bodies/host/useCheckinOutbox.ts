@@ -18,7 +18,7 @@ import {
   type CheckinReplayReport,
   type ReplayAttempt,
 } from "../../data/checkinOutbox"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 
 export interface CheckinOutbox {
   pending: number

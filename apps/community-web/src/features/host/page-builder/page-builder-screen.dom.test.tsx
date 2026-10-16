@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import type { CleanupDTO, EventPageBlock, EventPageDTO } from "@civfix/shared"
+import type { CleanupDTO, EventPageBlock, EventPageDTO } from "@civfix/contract"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")

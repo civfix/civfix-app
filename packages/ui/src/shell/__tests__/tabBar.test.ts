@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import {
   DOCK_OCCLUSION_SINK,
   DOCK_SHEET_CLEAR,

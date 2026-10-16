@@ -4,7 +4,7 @@ import type {
   SocialLinks,
   SocialPlatform,
   UpdateOrganizationRequest,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   ErrorCode,
   SOCIAL_HANDLE_MAX_LENGTH,
@@ -15,7 +15,7 @@ import {
   WHATSAPP_NUMBER_MAX_LENGTH,
   byErrorCode,
   type ErrorCodeTable,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 const ORG_COUNTER_AT = 0.9
 

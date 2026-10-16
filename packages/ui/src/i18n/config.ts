@@ -8,7 +8,7 @@
  */
 import i18next, { type i18n as I18nInstance } from "i18next"
 import { initReactI18next } from "react-i18next"
-import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/shared"
+import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/contract"
 import { initialResources } from "./bundledCatalogs"
 import { namespaces } from "./catalogs/namespaces"
 import { FALLBACK_LOCALE } from "./resolveLocale"

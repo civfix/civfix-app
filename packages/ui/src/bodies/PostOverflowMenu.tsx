@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import type { ContentReportReason } from "@civfix/shared"
+import type { ContentReportReason } from "@civfix/contract"
 import { PopoverMenu, type AnchorRect, type PopoverMenuItem } from "../primitives/PopoverMenu"
 import { ReportContentSheet } from "../primitives/ReportContentSheet"
 import { useToast } from "../primitives/Toast"

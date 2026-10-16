@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type * as ApiModule from "@/lib/api"
 import { act, cleanup, render, screen } from "@testing-library/react"
-import { AppError, ErrorCode } from "@civfix/shared"
-import type { PublicEventPageDTO } from "@civfix/shared"
+import { AppError, ErrorCode } from "@civfix/contract"
+import type { PublicEventPageDTO } from "@civfix/contract"
 
 const getPublicEventPage = vi.fn<(...args: unknown[]) => unknown>()
 

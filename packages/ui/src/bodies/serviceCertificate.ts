@@ -10,7 +10,7 @@
  * `now` is INJECTED. Nothing here reads the clock, so the card can drive the expiry countdown off its
  * own interval and these rules stay testable without fake timers.
  */
-import { ErrorCode, appErrorCode } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 
 export type CertificateCardState =
   /** No hours to certify - the action is visible but inert. */

@@ -1,4 +1,4 @@
-import { parseMarkdownSubset } from "@civfix/shared/markdown"
+import { parseMarkdownSubset } from "@civfix/contract/markdown"
 import { describe, expect, it } from "vitest"
 
 import {

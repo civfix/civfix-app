@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { ViewStyle } from "react-native"
-import { shadowSchemes } from "@civfix/shared/tokens"
+import { shadowSchemes } from "@civfix/tokens"
 import type { Theme } from "../theme"
 import { EASE_STANDARD_CSS } from "../theme/motion"
 import { isDroppableType, type CaptureDropTarget, type DroppedItem } from "./captureDropTarget.shared"

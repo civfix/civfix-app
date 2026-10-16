@@ -1,5 +1,5 @@
-import { PushPlatformSchema } from "@civfix/shared"
-import type { PushPlatform } from "@civfix/shared"
+import { PushPlatformSchema } from "@civfix/contract"
+import type { PushPlatform } from "@civfix/contract"
 import type { KeyValueStore } from "./mmkv"
 
 export const PUSH_REGISTRATION_KEY = "civfix.push.registration"

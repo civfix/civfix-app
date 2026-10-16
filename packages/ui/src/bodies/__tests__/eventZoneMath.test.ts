@@ -2,7 +2,7 @@ process.env.TZ = "UTC"
 
 import { readFileSync } from "node:fs"
 import type { TFunction } from "i18next"
-import type { LinkedEventRef } from "@civfix/shared"
+import type { LinkedEventRef } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 import { durationChipFor, eventDurationMs } from "../calendarModel"
 import { slotsAfterZoneChange } from "../eventWizard"

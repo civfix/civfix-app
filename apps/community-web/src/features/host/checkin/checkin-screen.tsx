@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { CheckinResultDTO } from "@civfix/shared"
+import type { CheckinResultDTO } from "@civfix/contract"
 import { useHostCounters, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

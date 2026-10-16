@@ -5,7 +5,7 @@
  * to the viewer. Map hosts opt out with `radiusM: null`, which must pass the raw list through unchanged.
  */
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO } from "@civfix/contract"
 import { NEARBY_RADIUS_M, filterCleanupsWithinRadius } from "../feed"
 
 const VIEWER = { lat: 37.7749, lng: -122.4194 }

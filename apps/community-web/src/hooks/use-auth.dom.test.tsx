@@ -2,7 +2,7 @@ import * as React from "react"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { AppError, ErrorCode, type UserDTO } from "@civfix/shared"
+import { AppError, ErrorCode, type UserDTO } from "@civfix/contract"
 
 import type * as ApiModule from "@/lib/api"
 import { queryKeys } from "@/lib/query"

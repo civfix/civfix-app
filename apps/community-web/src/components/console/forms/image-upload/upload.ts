@@ -1,6 +1,6 @@
 "use client"
 
-import type { ApiClient } from "@civfix/shared/client"
+import type { ApiClient } from "@civfix/contract/client"
 import { uploadMedia } from "@civfix/ui/data"
 import type { UploadProgress } from "@civfix/ui/data"
 import type { CapturedMedia } from "@civfix/ui/capabilities"

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { eventIcsUid } from "@civfix/shared/ics"
+import { eventIcsUid } from "@civfix/contract/ics"
 
 const source = readFileSync(new URL("./signup-view.tsx", import.meta.url), "utf8")
 

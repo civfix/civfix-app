@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventSlotDTO } from "@civfix/contract"
 import {
   parseHoursDraft,
   hoursDraftValid,

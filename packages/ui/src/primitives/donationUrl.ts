@@ -1,4 +1,4 @@
-import { SafeHttpsLinkSchema } from "@civfix/shared"
+import { SafeHttpsLinkSchema } from "@civfix/contract"
 
 export function safeDonationUrl(value: string | null | undefined): string | null {
   if (typeof value !== "string") return null

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { currentVersion } from "@civfix/shared/legal"
-import { ConsentSurfaceSchema, EventConsentInputSchema } from "@civfix/shared"
+import { currentVersion } from "@civfix/contract/legal"
+import { ConsentSurfaceSchema, EventConsentInputSchema } from "@civfix/contract"
 import { EMPTY_CONSENT, consentAccepted, consentPayload } from "../registration/consentModel"
 import { REGISTRATION_CONSENT_SURFACE } from "../registration/consentSurface"
 

@@ -7,8 +7,8 @@
  * `useUserLocation` caps its read with, so a cold load issues one browser request and settles once
  * instead of kicking off two staggered refetch waves.
  */
-import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 
 /** Low accuracy with a 10min cache: good enough for centering without the battery and latency of GPS. */
 export const GEO_POSITION_OPTIONS: PositionOptions = {

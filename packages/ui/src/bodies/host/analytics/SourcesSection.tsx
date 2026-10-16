@@ -1,5 +1,5 @@
 import React from "react"
-import type { Panel, SuppressedRate } from "@civfix/shared"
+import type { Panel, SuppressedRate } from "@civfix/contract"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"
 import { SectionCard } from "../../../primitives"

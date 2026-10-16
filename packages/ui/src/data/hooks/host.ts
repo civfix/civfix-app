@@ -30,8 +30,8 @@ import type {
   RegistrationRosterFilter,
   RevokeEventTeamInviteResponse,
   TicketTypeDTO,
-} from "@civfix/shared"
-import { hostCapabilities } from "@civfix/shared/host"
+} from "@civfix/contract"
+import { hostCapabilities } from "@civfix/contract/host"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"

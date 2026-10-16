@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { ReportCategorySchema } from "@civfix/shared"
+import { ReportCategorySchema } from "@civfix/contract"
 import {
   PICKER_CATEGORIES,
   allPickerCategories,

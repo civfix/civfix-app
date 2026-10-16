@@ -1,4 +1,4 @@
-import type { MediaDTO, ReportDTO } from "@civfix/shared"
+import type { MediaDTO, ReportDTO } from "@civfix/contract"
 
 /**
  * `categoryLabel` arrives already localized (the string the row renders) rather than from the English

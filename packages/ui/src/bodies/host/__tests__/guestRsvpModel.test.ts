@@ -23,7 +23,7 @@ import {
   appErrorCode,
   appErrorFields,
   type GuestOtpErrorReason as GuestOtpErrorReasonValue,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../../data/errorCode"
 
 function verifyError(reason: GuestOtpErrorReasonValue): unknown {

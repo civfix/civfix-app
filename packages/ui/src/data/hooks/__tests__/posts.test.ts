@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"
-import type { PersonDTO, PostDTO, FeedPageDTO, PostComposeInput } from "@civfix/shared"
+import type { PersonDTO, PostDTO, FeedPageDTO, PostComposeInput } from "@civfix/contract"
 import { queryKeys } from "../../keys"
 import {
   buildToggleMutation,

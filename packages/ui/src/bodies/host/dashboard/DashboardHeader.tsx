@@ -1,6 +1,6 @@
 import React, { useMemo } from "react"
 import { View } from "react-native"
-import type { HostPortfolioKpis, OrganizationDTO } from "@civfix/shared"
+import type { HostPortfolioKpis, OrganizationDTO } from "@civfix/contract"
 import { headingLevel, makeThemedStyles } from "../../../theme"
 import { Text, iconMap, type LucideIcon } from "../../../typography"
 import { Avatar, MetaDot, PopoverMenu, SecondaryButton } from "../../../primitives"

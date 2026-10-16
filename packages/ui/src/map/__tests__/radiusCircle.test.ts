@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { haversineMeters } from "@civfix/shared"
+import { haversineMeters } from "@civfix/contract"
 import { RADIUS_CIRCLE_STEPS, radiusCircleFeature } from "../radiusCircle"
 
 const LA = { lat: 34.0522, lng: -118.2437 }

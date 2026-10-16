@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Download, Trash2, UserCheck, UserX } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { EventRegistrationDTO } from "@civfix/shared"
+import type { EventRegistrationDTO } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -15,7 +15,7 @@ import type { ConsoleEventContext } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateRoster } from "../console-invalidate"
 import { checkInSeats } from "./check-in-seats"
-import { checkableSeatIds } from "@civfix/shared/host"
+import { checkableSeatIds } from "@civfix/contract/host"
 
 interface RemoveInput {
   ids: readonly string[]

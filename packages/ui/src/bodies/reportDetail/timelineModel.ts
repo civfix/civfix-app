@@ -1,4 +1,4 @@
-import type { ReportDTO, ReportStatus } from "@civfix/shared"
+import type { ReportDTO, ReportStatus } from "@civfix/contract"
 import type { TFunction } from "i18next"
 import { type NodeKind, kindForStatus, citizenStatusLabel } from "../../primitives/reportTimelineLabels"
 import { timelineEntryRender } from "../../primitives/reportTimelineModel"

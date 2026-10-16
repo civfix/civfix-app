@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { ArrowDown, ArrowUp, Plus, Ticket, Trash2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { TicketTypeDTO } from "@civfix/shared"
-import { MAX_TICKET_TYPES_PER_EVENT } from "@civfix/shared"
+import type { TicketTypeDTO } from "@civfix/contract"
+import { MAX_TICKET_TYPES_PER_EVENT } from "@civfix/contract"
 import { useApi, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

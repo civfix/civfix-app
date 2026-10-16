@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventSlotDTO } from "@civfix/contract"
 import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../data/errorCode"
 import {
   boardHasTimedSlots,
@@ -22,7 +22,7 @@ import {
   slotWindow,
   slotWindowRangeLabel,
 } from "../eventSlotsModel"
-import { timeRangeLabel } from "@civfix/shared/datetime"
+import { timeRangeLabel } from "@civfix/contract/datetime"
 
 function slot(id: string, over: Partial<EventSlotDTO> = {}): EventSlotDTO {
   return { id, title: `Slot ${id}`, claimed: 0, sortOrder: 0, ...over }

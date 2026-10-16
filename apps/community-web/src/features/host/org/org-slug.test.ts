@@ -1,4 +1,4 @@
-import { OrgSlugSchema } from "@civfix/shared"
+import { OrgSlugSchema } from "@civfix/contract"
 import { describe, expect, it } from "vitest"
 
 import { orgSlugProblem, publicOrgPath, slugFromOrgName } from "./org-slug"

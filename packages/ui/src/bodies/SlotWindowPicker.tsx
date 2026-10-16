@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { View } from "react-native"
-import { timeLabel, wallClockInZone, wallClockToInstantMs } from "@civfix/shared/datetime"
+import { timeLabel, wallClockInZone, wallClockToInstantMs } from "@civfix/contract/datetime"
 import { makeThemedStyles } from "../theme"
 import { useLocale, useT } from "../i18n"
 import { addWallClockDays, wallClockToFormTime } from "./calendarModel"

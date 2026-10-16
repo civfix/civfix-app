@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
-import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
-import { ErrorCode, errorCopyKey, geocodePointKey, type ErrorCodeTable } from "@civfix/shared"
+import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/contract"
+import { ErrorCode, errorCopyKey, geocodePointKey, type ErrorCodeTable } from "@civfix/contract"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { EmptyState, SignInPrompt } from "../primitives"
@@ -18,7 +18,7 @@ import {
   wallClockToFormDate,
   wallClockToFormTime,
 } from "./calendarModel"
-import { wallClockInZone } from "@civfix/shared/datetime"
+import { wallClockInZone } from "@civfix/contract/datetime"
 import { CleanupForm } from "./CleanupForm"
 import { isCleanupFormComplete, type CleanupFormValue } from "./cleanupFormModel"
 import { composeEventAddress } from "./eventAddressField"

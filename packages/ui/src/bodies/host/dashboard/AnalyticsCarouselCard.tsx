@@ -8,8 +8,8 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native"
-import type { HostAnalyticsSummaryResponse } from "@civfix/shared"
-import { visibleValue } from "@civfix/shared/host"
+import type { HostAnalyticsSummaryResponse } from "@civfix/contract"
+import { visibleValue } from "@civfix/contract/host"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, hitSlopToTarget } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"

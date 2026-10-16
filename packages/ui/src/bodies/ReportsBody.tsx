@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { View, ActivityIndicator } from "react-native"
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, useLayoutMode, headingLevel, MIN_TOUCH_TARGET } from "../theme"
 import { Text, iconMap } from "../typography"
 import {

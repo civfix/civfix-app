@@ -1,7 +1,8 @@
 # community-mobile
 
 The civfix community user app: React Native + Expo (custom dev client) + expo-router + TypeScript. It
-lives in the `civfix-app` monorepo alongside the web app and the two shared packages it consumes.
+lives in the `civfix-app` monorepo alongside the web app and the two workspace packages it consumes,
+and installs the API contract (`@civfix/contract`) from the private registry.
 
 ## Layout
 
@@ -9,14 +10,16 @@ lives in the `civfix-app` monorepo alongside the web app and the two shared pack
 civfix-app/
   apps/community-mobile/    this app (Expo, expo-router)
   apps/community-web/       the public web app (shares @civfix/ui with this app)
-  packages/shared/          @civfix/shared - the contract (schemas, types, API client, tokens)
-  packages/ui/              @civfix/ui - the shared React Native UI
+  packages/tokens/          @civfix/tokens - the design tokens + chip-contrast helpers
+  packages/ui/              @civfix/ui - the shared React Native UI (+ the app-only helpers)
   pnpm-workspace.yaml       packages: ["apps/*", "packages/*"]
   .npmrc                    node-linker=hoisted (Metro-friendly) + @civfix:registry (for the contract)
 ```
 
-`@civfix/shared` and `@civfix/ui` are workspace packages (`"workspace:*"` in this app's
-`package.json`), not registry installs. See "pnpm + Expo + the shared packages" below.
+`@civfix/tokens` and `@civfix/ui` are workspace packages (`"workspace:*"` in this app's
+`package.json`). `@civfix/contract` (schemas, types, the API client, `AppError`) is a registry
+install by caret range, published from `civfix-contract`. See "pnpm + Expo + the shared packages"
+below.
 
 `apps/community-mobile/.npmrc` mirrors the workspace root's: EAS Build and `expo install` read npm
 config from this app directory, and `node-linker=hoisted` is the layout Metro, the config plugins and
@@ -55,7 +58,7 @@ gesture-handler, vision-camera, MMKV, video, Google sign-in, Apple authenticatio
 custom dev client on a machine with the native toolchains (macOS for iOS; Android SDK for Android):
 
 ```sh
-pnpm install                            # postinstall builds @civfix/shared's dist
+pnpm install                            # postinstall builds @civfix/tokens' dist
 pnpm --filter community-mobile exec expo prebuild
 pnpm --filter community-mobile exec expo run:ios      # or run:android
 # or: eas build --profile development
@@ -168,7 +171,7 @@ apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 
 It runs `pnpm install --frozen-lockfile`, writes `.env`, re-runs `expo prebuild` + `pod install`,
 clears the Metro cache, then prints the config it actually produced (API URL, build number, update
-channel, signing team, and the `@civfix/ui` / `@civfix/shared` versions on disk) and fails rather than leave you with a mis-baked project.
+channel, signing team) and fails rather than leave you with a mis-baked project.
 
 The lockfile sync matters because an Xcode archive bundles JS straight out of `node_modules` and
 nothing else in the pipeline notices when a third-party dependency there is stale. Then: open
@@ -240,7 +243,7 @@ After changing any of these, re-run the prebuild before you archive:
 
 - `assets/splash.png` (or any other native asset: icon, adaptive icon)
 - the `splash` / `expo-splash-screen` blocks in `app.config.js`
-- the paper token in `@civfix/shared` that `SPLASH_BG_LIGHT` derives from
+- the paper token in `@civfix/tokens` that `SPLASH_BG_LIGHT` derives from
 
 ```sh
 cd apps/community-mobile
@@ -408,22 +411,29 @@ Two manual generators produce the committed images (run from `apps/community-mob
 
 - `.npmrc` (root and this app's mirror) sets `node-linker=hoisted` so the store is a flat
   `node_modules` layout - Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still
-  scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`) for the repos outside
-  this monorepo; here both packages resolve from the workspace.
-- `@civfix/shared` and `@civfix/ui` are `"workspace:*"` dependencies. `@civfix/shared` is consumed
-  from its BUILT `dist` (gitignored), so it must be built before Metro or `tsc` can resolve it: this
-  app's `postinstall` runs `pnpm --filter @civfix/shared build`, which also covers EAS builders, and
-  turbo's `^build` covers it for every root task. Metro resolves the subpath imports
-  (`@civfix/shared/tokens`, `/client`) through that package's `exports` map.
+  scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`), which is where
+  `@civfix/contract` comes from; `@civfix/tokens` and `@civfix/ui` resolve from the workspace.
+- `@civfix/contract` is a registry dependency (caret range) shipped as a built `dist`. Metro resolves
+  its subpath imports (`@civfix/contract/client`, `/geocode`, ...) through its `exports`
+  map.
+- `@civfix/tokens` and `@civfix/ui` are `"workspace:*"` dependencies. `@civfix/tokens` is consumed
+  from its BUILT `dist` (gitignored), so it must be built before Metro, `tsc` or `app.config.js`
+  (which `require`s it) can resolve it: this app's `postinstall` runs
+  `pnpm --filter @civfix/tokens build`, which also covers EAS builders, and turbo's `^build` covers
+  it for every root task.
+- App-only helpers come from `@civfix/ui/helpers`. Any module a test loads imports them per file
+  (`@civfix/ui/helpers/async`, not the barrel), because this app's tests run on plain Node, which
+  cannot resolve the UI package's extensionless relative imports.
 - `metro.config.js` is plain `getDefaultConfig(__dirname)` from `expo/metro-config`. Expo's default
   config already discovers the pnpm workspace root (watch folders + `nodeModulesPaths`) and enables
   package exports, so no custom monorepo wiring is needed.
 - `eas.json` pins `"pnpm": "9.12.0"` on the build profiles so EAS installs with the same package
   manager as `packageManager` at the workspace root.
 
-Contract changes are made in `packages/shared` and picked up here directly. A contract change still
-needs a changeset + `pnpm changeset version` so the OUT-OF-REPO consumers (civfix-backend,
-civfix-admin, the gov plane) can adopt the published version - see the repo-root `RELEASING.md`.
+Contract changes are made in `civfix-contract` and published there; this app picks one up only
+through an adoption PR in this repo (range edit on a new minor + `pnpm install`, or
+`pnpm update @civfix/contract` for an in-range patch) - see "Adopting a new `@civfix/contract`" in the
+repo-root `RELEASING.md`. Token changes are made in `packages/tokens` and picked up here directly.
 
 ## Shared UI (`@civfix/ui`)
 
@@ -456,7 +466,7 @@ rebuilt first - turbo does that automatically (`typecheck` dependsOn `^build`), 
 
 ## Design tokens -> RN theme
 
-The RN theme lives in `@civfix/ui/theme`, which adapts the shared tokens (`@civfix/shared/tokens`)
+The RN theme lives in `@civfix/ui/theme`, which adapts the shared tokens (`@civfix/tokens`)
 into RN values. `src/theme/index.ts` re-exports it (so `@/theme` imports keep working) and adds only
 the wordmark letters. Do not hardcode hex/size values in components; import from the theme.
 
@@ -495,7 +505,7 @@ copies with the pin spots marked for checking the framing after moving a scene.
 ## Verify
 
 ```sh
-pnpm install                                    # postinstall builds @civfix/shared's dist
+pnpm install                                    # postinstall builds @civfix/tokens' dist
 pnpm turbo run typecheck lint test --filter=community-mobile   # what CI runs (builds the packages first)
 pnpm --filter community-mobile exec expo-doctor
 pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no native compile)

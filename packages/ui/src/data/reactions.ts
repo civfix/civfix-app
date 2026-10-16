@@ -7,7 +7,7 @@
  *
  * INTERNAL to the data seam (imported by relative path; NOT exported from the data barrel).
  */
-import type { ReactionSummaryDTO } from "@civfix/shared"
+import type { ReactionSummaryDTO } from "@civfix/contract"
 
 export function toggleReactionBucket(reactions: ReactionSummaryDTO[], emoji: string): ReactionSummaryDTO[] {
   const existing = reactions.find((r) => r.emoji === emoji)

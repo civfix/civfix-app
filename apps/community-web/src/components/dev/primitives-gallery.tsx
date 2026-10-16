@@ -46,7 +46,7 @@ import {
   type SparkPoint,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
-import type { ReportStatus, ReportCategory } from "@civfix/shared"
+import type { ReportStatus, ReportCategory } from "@civfix/contract"
 
 const noop = () => {}
 

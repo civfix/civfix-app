@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { avatarColor, monogram, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { avatarColor, monogram, type MessageThreadDTO, type PersonDTO } from "@civfix/contract"
 import { resolveThreadAvatar } from "../threadAvatarResolve"
 
 function person(over: Partial<PersonDTO> = {}): PersonDTO {

@@ -1,6 +1,6 @@
 "use client"
 
-import type { EventRegistrationDTO, RegistrationRosterSort } from "@civfix/shared"
+import type { EventRegistrationDTO, RegistrationRosterSort } from "@civfix/contract"
 import type { Translate } from "@civfix/ui/i18n"
 
 import { Chip } from "@/components/console/chips/chip"

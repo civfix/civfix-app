@@ -3,7 +3,7 @@ import { readdirSync, existsSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
-import { LEGAL_DOCUMENTS, currentVersion, isCurrent } from "@civfix/shared/legal"
+import { LEGAL_DOCUMENTS, currentVersion, isCurrent } from "@civfix/contract/legal"
 
 import { LEGAL_DOC_IDS, legalVersionFor } from "./legal-page"
 

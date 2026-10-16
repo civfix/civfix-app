@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { ErrorCode, appErrorCode } from "@civfix/shared"
-import type { GetApproximateLocationResponse } from "@civfix/shared"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
+import type { GetApproximateLocationResponse } from "@civfix/contract"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 

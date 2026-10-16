@@ -1,4 +1,4 @@
-import type { ReportStatus } from "@civfix/shared"
+import type { ReportStatus } from "@civfix/contract"
 import { themeFor, type ColorSchemeName } from "../theme"
 import type { IconName } from "../typography"
 import type { TFunction } from "i18next"

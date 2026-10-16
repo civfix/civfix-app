@@ -9,7 +9,7 @@ import {
   type View as NativeView,
   type ViewStyle,
 } from "react-native"
-import type { PostCounts, PostViewer } from "@civfix/shared"
+import type { PostCounts, PostViewer } from "@civfix/contract"
 import { Bookmark, Heart, MessageCircle, Repeat2, Share2 } from "lucide-react-native/icons"
 import {
   EASE_STANDARD_CSS,

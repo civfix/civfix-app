@@ -1,4 +1,4 @@
-import type { ChatMessageDTO } from "@civfix/shared"
+import type { ChatMessageDTO } from "@civfix/contract"
 
 /**
  * mergePins: the PURE merge behind `useChat`'s derived `pins` list.

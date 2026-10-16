@@ -1,10 +1,10 @@
-import { safeDateFormat } from "@civfix/shared/datetime"
+import { safeDateFormat } from "@civfix/contract/datetime"
 import type {
   CleanupMemberRole,
   EventTeamInviteDTO,
   EventTeamInviteIdentifierKind,
   EventTeamMemberDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   EMAIL_MAX_LENGTH,
   ErrorCode,
@@ -12,7 +12,7 @@ import {
   byErrorCode,
   isValidHandle,
   type ErrorCodeTable,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { guestEmailValue } from "./registration/guestRsvpModel"
 import { settableRolesOtherThan, type SettableEventMemberRole } from "../../data/eventTeamTiers"
 import {

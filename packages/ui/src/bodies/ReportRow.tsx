@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { ReportCategory, ReportStatus } from "@civfix/shared"
+import type { ReportCategory, ReportStatus } from "@civfix/contract"
 import { makeThemedStyles, useTheme, categoryColor, focusRingProps, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { StatusBadge, MetaDot, FramedImage } from "../primitives"

@@ -1,7 +1,11 @@
 import React from "react"
 import { Pressable, View } from "react-native"
-import { MAX_HOST_SUMMARY_EVENT_ROWS, type BreakdownRow, type HostAnalyticsSummaryResponse } from "@civfix/shared"
-import { visibleValue } from "@civfix/shared/host"
+import {
+  MAX_HOST_SUMMARY_EVENT_ROWS,
+  type BreakdownRow,
+  type HostAnalyticsSummaryResponse,
+} from "@civfix/contract"
+import { visibleValue } from "@civfix/contract/host"
 import { focusRingProps, useTheme, webCursor, webHover } from "../../../theme"
 import { Text } from "../../../typography"
 import { SectionCard, StatTile, StatTileRow, statTileColumns } from "../../../primitives"

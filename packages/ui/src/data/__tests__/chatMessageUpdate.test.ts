@@ -5,7 +5,8 @@
  * package has no React renderer.
  */
 import { describe, expect, it } from "vitest"
-import { mergeChatItems, type ChatMessageDTO, type OutboxEntry, type PersonDTO } from "@civfix/shared"
+import { mergeChatItems, type OutboxEntry } from "../../helpers"
+import { type ChatMessageDTO, type PersonDTO } from "@civfix/contract"
 import { foldInboundBatch } from "../inbound"
 
 const ROOM = "room-1"

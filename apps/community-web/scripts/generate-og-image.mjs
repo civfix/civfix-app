@@ -32,7 +32,7 @@ if (!chrome) {
   process.exit(1)
 }
 
-const { tokens } = await import("@civfix/shared/tokens")
+const { tokens } = await import("@civfix/tokens")
 
 const WORDMARK = [
   { char: "c", color: tokens.color.brand.bloom },

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import type { HostedEventDTO } from "@civfix/shared"
+import type { HostedEventDTO } from "@civfix/contract"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton, useToast } from "../../../primitives"
@@ -9,7 +9,7 @@ import { useDuplicateCleanup } from "../../../data/hooks/cleanups"
 import { InlineDateTimePicker } from "../../InlineDateTimePicker"
 import { TimezoneField } from "../../TimezoneField"
 import { formInstantMs, timeCarrier, wallClockToFormDate, wallClockToFormTime } from "../../calendarModel"
-import { appErrorCode } from "@civfix/shared"
+import { appErrorCode } from "@civfix/contract"
 import { duplicateErrorKey, duplicateReady, nextDuplicateStart } from "./dashboardModel"
 
 export interface DuplicateEventSheetProps {

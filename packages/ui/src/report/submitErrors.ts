@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next"
-import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
 
 const TEXT_FIELDS: ReadonlySet<string> = new Set(["title", "description", "addr"])
 

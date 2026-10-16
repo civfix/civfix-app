@@ -1,6 +1,6 @@
-import type { EventAddressSource } from "@civfix/shared"
-import { isVerifiedEventAddress } from "@civfix/shared"
-import { safeDateFormat } from "@civfix/shared/datetime"
+import type { EventAddressSource } from "@civfix/contract"
+import { isVerifiedEventAddress } from "@civfix/contract"
+import { safeDateFormat } from "@civfix/contract/datetime"
 import type { AddressPoint } from "../addressRowModel"
 
 interface TicketWhen {

@@ -1,6 +1,6 @@
 import React from "react"
 import { View } from "react-native"
-import { timeRangeLabel } from "@civfix/shared/datetime"
+import { timeRangeLabel } from "@civfix/contract/datetime"
 import { headingLevel, makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { useLocale, useT } from "../i18n"

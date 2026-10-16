@@ -7,9 +7,9 @@ import type {
   OrganizationDTO,
   OrganizationInviteDTO,
   OrganizationMemberDTO,
-} from "@civfix/shared"
-import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
-import { can } from "@civfix/shared/host"
+} from "@civfix/contract"
+import { MAX_ORG_INVITES_PER_ORG } from "@civfix/contract"
+import { can } from "@civfix/contract/host"
 import {
   canManageOrgTeam,
   canSetOrgMemberRole,

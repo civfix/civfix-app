@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
-import type { TicketTypeDTO } from "@civfix/shared"
-import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/shared"
-import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import type { TicketTypeDTO } from "@civfix/contract"
+import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/contract"
+import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/contract/host"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
 import {

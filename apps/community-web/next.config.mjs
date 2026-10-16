@@ -66,7 +66,7 @@ const reactQueryDir = dirname(require.resolve("@tanstack/react-query/package.jso
  */
 const maplibreGlDir = dirname(require.resolve("maplibre-gl/package.json"))
 
-const sharedContractDir = dirname(require.resolve("@civfix/shared/package.json"))
+const contractDir = dirname(require.resolve("@civfix/contract/package.json"))
 
 function resolveCommitSha() {
   const fromCi = process.env.GITHUB_SHA
@@ -114,7 +114,7 @@ const nextConfig = (phase) => ({
   // @civfix/ui ships untranspiled .tsx source and the React Native stack ships untranspiled too, so
   // Next must transpile them.
   transpilePackages: [
-    "@civfix/shared",
+    "@civfix/contract",
     "@civfix/ui",
     "lucide-react-native",
     "react-native",
@@ -138,8 +138,8 @@ const nextConfig = (phase) => ({
       "react-native": reactNativeWebDir,
       "@tanstack/react-query$": reactQueryDir,
       "maplibre-gl$": maplibreGlDir,
-      "@civfix/shared$": sharedContractDir,
-      "@civfix/shared/client$": sharedContractDir,
+      "@civfix/contract$": contractDir,
+      "@civfix/contract/client$": contractDir,
     }
     // @civfix/ui's .web/.native platform seams resolve to the .web file.
     config.resolve.extensions = [

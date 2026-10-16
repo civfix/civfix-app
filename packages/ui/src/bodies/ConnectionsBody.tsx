@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
-import type { PersonDTO } from "@civfix/shared"
+import type { PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, iconMap } from "../typography"
 import {

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { AcceptOrganizationInviteRequestSchema, AppError, ErrorCode } from "@civfix/shared"
-import type { OrganizationDTO } from "@civfix/shared"
+import { AcceptOrganizationInviteRequestSchema, AppError, ErrorCode } from "@civfix/contract"
+import type { OrganizationDTO } from "@civfix/contract"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")

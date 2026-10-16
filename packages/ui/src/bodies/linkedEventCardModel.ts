@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next"
-import type { LinkedEventRef } from "@civfix/shared"
-import { eventZoneSuffix, safeDateFormat } from "@civfix/shared/datetime"
+import type { LinkedEventRef } from "@civfix/contract"
+import { eventZoneSuffix, safeDateFormat } from "@civfix/contract/datetime"
 import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 import { FACE_CAP } from "./slotPeopleVisibility"
 

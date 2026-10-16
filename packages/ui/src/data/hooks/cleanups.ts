@@ -16,8 +16,8 @@ import type {
   GuestRsvpVerifyRequest,
   GuestRsvpVerifyResponse,
   LinkedReportRef,
-} from "@civfix/shared"
-import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/shared"
+} from "@civfix/contract"
+import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
 import { isEventEndedRefusal } from "../errorCode"

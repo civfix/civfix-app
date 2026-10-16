@@ -1,6 +1,6 @@
 /** Metro bundles every catalog regardless, so native starts with all of them and never loads one. */
 import type { Resource, ResourceLanguage } from "i18next"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 import { resources } from "./resources"
 
 export const initialResources: Resource = resources

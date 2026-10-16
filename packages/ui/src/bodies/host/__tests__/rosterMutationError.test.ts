@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { AppError } from "@civfix/shared"
+import { AppError } from "@civfix/contract"
 import { rosterMutationErrorKey } from "../rosterFiltersModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")

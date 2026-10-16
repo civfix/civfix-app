@@ -7,7 +7,7 @@
  * and pitch gestures.
  */
 import { create } from "zustand"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 
 export interface MapViewport {
   center: { lat: number; lng: number }

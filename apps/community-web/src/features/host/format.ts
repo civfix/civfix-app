@@ -7,7 +7,7 @@ import {
   safeDateFormat,
   sameOffsetAt,
   zoneShortName,
-} from "@civfix/shared/datetime"
+} from "@civfix/contract/datetime"
 import { useLocale, useViewerTimeZone } from "@civfix/ui/i18n"
 
 export interface ConsoleFormatters {

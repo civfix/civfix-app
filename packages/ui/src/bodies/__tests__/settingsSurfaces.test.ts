@@ -98,7 +98,7 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
 
   it("caps the bio at the contract's own maximum rather than a re-typed 500", () => {
     const src = read("../settings/BioEditor.tsx")
-    expect(src).toContain('import { MAX_BIO_LENGTH } from "@civfix/shared"')
+    expect(src).toContain('import { MAX_BIO_LENGTH } from "@civfix/contract"')
     expect(src).toContain("maxLength={MAX_BIO_LENGTH}")
     expect(src).toContain('t("bio.count", { current: draft.length, max: MAX_BIO_LENGTH })')
     expect(src).toContain("bio: string")

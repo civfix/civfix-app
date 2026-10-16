@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { existsSync, readFileSync } from "node:fs"
 import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
 import { decodeRgbaPng, pixelAt, transparentShare } from "./helpers/png.ts"
 

@@ -1,4 +1,4 @@
-import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
+import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/contract"
 
 /**
  * Rows carry an id because keying or focusing by position would hand a removed row's focus and native

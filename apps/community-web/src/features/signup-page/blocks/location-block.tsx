@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
-import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
+import type { EventPageBlock, PublicEventPageDTO } from "@civfix/contract"
 
 type LocationBlockData = Extract<EventPageBlock, { kind: "location" }>
 

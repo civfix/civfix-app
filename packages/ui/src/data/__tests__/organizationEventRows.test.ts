@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { CleanupDTO, ListOrganizationEventsResponse } from "@civfix/shared"
+import type { CleanupDTO, ListOrganizationEventsResponse } from "@civfix/contract"
 import { organizationEventRows, resetOrganizationEventRowWarnings } from "../hooks/orgs"
 
 const organizer = {

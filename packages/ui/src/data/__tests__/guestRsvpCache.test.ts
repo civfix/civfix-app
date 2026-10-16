@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, CleanupAttendeesResponse, GuestRsvpVerifyResponse } from "@civfix/shared"
+import type { CleanupDTO, CleanupAttendeesResponse, GuestRsvpVerifyResponse } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { applyGuestRsvpToCaches, guestRsvpVerifyMutationOptions } from "../hooks/cleanups"
 

@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, Platform } from "react-native"
 import type { ViewStyle } from "react-native"
-import { haversineMeters } from "@civfix/shared"
-import type { CleanupDTO } from "@civfix/shared"
-import { eventChip } from "@civfix/shared/datetime"
-import { eventEndsAtMs } from "@civfix/shared/host"
+import { haversineMeters } from "@civfix/contract"
+import type { CleanupDTO } from "@civfix/contract"
+import { eventChip } from "@civfix/contract/datetime"
+import { eventEndsAtMs } from "@civfix/contract/host"
 import {
   focusRingProps,
   makeThemedStyles,

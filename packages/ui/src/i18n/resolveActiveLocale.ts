@@ -7,7 +7,7 @@
  *   4. `"en"`.
  */
 import { resolveLocale } from "./resolveLocale"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 /** Both reads must be total: return null or undefined instead of throwing. */
 export interface LocaleSources {

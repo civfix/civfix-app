@@ -1,5 +1,6 @@
 import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
-import type { ChatMessageDTO, MediaDTO, OutboxEntry, ReplyToDTO, RoomKind, UserDTO } from "@civfix/shared"
+import type { ChatMessageDTO, MediaDTO, ReplyToDTO, RoomKind, UserDTO } from "@civfix/contract"
+import type { OutboxEntry } from "../../helpers"
 import { replayableEntries } from "../inbound"
 import { randomId } from "../randomId"
 import { rememberLocalChatAttachments } from "../localChatAttachments"

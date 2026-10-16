@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { colorSchemes, shadowSchemes } from "@civfix/shared/tokens"
-import type { ColorSchemeName } from "@civfix/shared/tokens"
+import { colorSchemes, shadowSchemes } from "@civfix/tokens"
+import type { ColorSchemeName } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
 
 const CSS = readFileSync(
@@ -24,7 +24,7 @@ function readVar(block: string, name: string): string {
 
 const HUES = ["bloom", "moss", "sun", "sky", "lilac"] as const
 
-describe("--console-* variables track @civfix/shared tokens", () => {
+describe("--console-* variables track @civfix/tokens", () => {
   for (const scheme of ["light", "dark"] as const) {
     it(`${scheme} surfaces, ink ramp and hue pairs match colorSchemes`, () => {
       const block = blockFor(scheme)

@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { ReportCategorySchema, type ReportCategory } from "@civfix/shared"
+import { ReportCategorySchema, type ReportCategory } from "@civfix/contract"
 
 export const PICKER_CATEGORIES: readonly ReportCategory[] = ReportCategorySchema.options
 

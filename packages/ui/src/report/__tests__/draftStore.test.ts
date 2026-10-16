@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { MAX_REPORT_MEDIA } from "@civfix/contract"
 import { useDraftReportStore, captureSeedsNewReport } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 

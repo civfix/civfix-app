@@ -1,4 +1,4 @@
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 
 import { AGGREGATE_EXPAND_ZOOM } from "./clusterer"
 

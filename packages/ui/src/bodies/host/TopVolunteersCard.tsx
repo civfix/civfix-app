@@ -1,5 +1,5 @@
 import React from "react"
-import type { LeaderboardEntryDTO } from "@civfix/shared"
+import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { SectionCard } from "../../primitives/SectionCard"

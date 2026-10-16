@@ -4,7 +4,8 @@
  * tombstones) and drops anything else, so a detached window never grows.
  */
 import { describe, expect, it } from "vitest"
-import type { ChatItem, ChatMessageDTO, PersonDTO } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { applyUpdatesToWindow } from "../aroundWindow"
 
 function person(id: string): PersonDTO {

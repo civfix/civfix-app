@@ -1,4 +1,4 @@
-import { tokens } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
 import { APPLE_TOUCH_ICON_PATH, ICON_PATH, SITE_NAME } from "@/lib/site-meta"
 import manifest from "./manifest"

@@ -1,4 +1,4 @@
-import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/contract"
 
 import type { CsvRow } from "./csv"
 

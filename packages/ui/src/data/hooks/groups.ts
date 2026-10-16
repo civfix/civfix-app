@@ -22,7 +22,7 @@ import type {
   RemoveGroupMemberRequest,
   SetGroupMemberRoleRequest,
   UpdateChatGroupRequest,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 

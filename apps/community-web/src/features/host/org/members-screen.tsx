@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { UserPlus } from "lucide-react"
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { ListOrganizationMembersResponse, OrganizationMemberDTO } from "@civfix/shared"
+import type { ListOrganizationMembersResponse, OrganizationMemberDTO } from "@civfix/contract"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

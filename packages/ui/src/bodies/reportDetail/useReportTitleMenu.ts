@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import type { ReportDTO } from "@civfix/shared"
+import type { ReportDTO } from "@civfix/contract"
 import { usePopoverAnchor, useToast } from "../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../primitives"
 import { shareLink, absoluteUrl } from "../../primitives/share"

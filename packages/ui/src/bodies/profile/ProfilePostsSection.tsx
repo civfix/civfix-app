@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import type { PostDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/contract"
 import { makeThemedStyles, focusRingProps, webCursorPointer, webTransition, MIN_TOUCH_TARGET } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"

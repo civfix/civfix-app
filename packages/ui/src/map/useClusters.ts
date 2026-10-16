@@ -1,5 +1,5 @@
 import * as React from "react"
-import type { BBox } from "@civfix/shared"
+import type { BBox } from "@civfix/contract"
 import { buildIndex, queryClusters, type ClusterNode, type MapPoint } from "./clusterer"
 
 export function useClusters(points: MapPoint[]) {

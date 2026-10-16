@@ -43,7 +43,7 @@ import type {
   FeedPostCountsDTO,
   ListRepliesResponse,
   DeletePostResponse,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import { useApi, useAuthState } from "../context"
 import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"

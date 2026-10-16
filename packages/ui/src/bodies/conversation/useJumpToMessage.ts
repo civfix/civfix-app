@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { FlatList as RNFlatList } from "react-native"
-import type { ChatItem } from "@civfix/shared"
+import type { ChatItem } from "../../helpers"
 import { useToast } from "../../primitives"
 import { useT } from "../../i18n"
 import { resolveJump } from "../jumpToMessage"

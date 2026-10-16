@@ -1,6 +1,6 @@
 import React from "react"
 import { Platform, Pressable, ScrollView, View, useWindowDimensions } from "react-native"
-import type { CleanupDTO, LinkedEventRef, ReportDTO } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef, ReportDTO } from "@civfix/contract"
 import {
   focusRingProps,
   makeThemedStyles,

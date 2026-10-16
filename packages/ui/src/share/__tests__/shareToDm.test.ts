@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO } from "@civfix/contract"
 import {
   SHARE_DM_MAX_RECIPIENTS,
   applyRecipientChange,

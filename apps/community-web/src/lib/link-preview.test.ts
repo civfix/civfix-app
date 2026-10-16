@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO, OrganizationDTO, PostDTO, ReportDTO, UserProfileDTO } from "@civfix/shared"
+import type { CleanupDTO, OrganizationDTO, PostDTO, ReportDTO, UserProfileDTO } from "@civfix/contract"
 
 import {
   defaultPreview,

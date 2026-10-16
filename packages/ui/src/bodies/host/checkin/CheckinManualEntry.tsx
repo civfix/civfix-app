@@ -5,8 +5,8 @@ import { SecondaryButton } from "../../../primitives"
 import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"
-import { TICKET_TOKEN_MAX } from "@civfix/shared"
-import { ticketCodeReady } from "@civfix/shared/host"
+import { TICKET_TOKEN_MAX } from "@civfix/contract"
+import { ticketCodeReady } from "@civfix/contract/host"
 
 export interface ManualCodeEntryProps {
   code: string

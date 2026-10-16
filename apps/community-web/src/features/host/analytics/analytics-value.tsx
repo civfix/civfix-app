@@ -1,6 +1,6 @@
 "use client"
 
-import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
 import { EMPTY_VALUE, useConsoleFormat } from "../format"

@@ -1,4 +1,4 @@
-import { PageSlugSchema } from "@civfix/shared"
+import { PageSlugSchema } from "@civfix/contract"
 
 import { routeSegment } from "@/lib/route-segment"
 

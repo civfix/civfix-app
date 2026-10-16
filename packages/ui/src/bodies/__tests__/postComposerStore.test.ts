@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, UserMentionDTO } from "@civfix/contract"
 import {
   restoreFailedPostSubmit,
   selectPostComposerDraft,

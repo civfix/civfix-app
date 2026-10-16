@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { CheckinOutcomeSchema } from "@civfix/shared"
-import { checkinResultRender, normalizeTicketCode } from "@civfix/shared/host"
+import { CheckinOutcomeSchema } from "@civfix/contract"
+import { checkinResultRender, normalizeTicketCode } from "@civfix/contract/host"
 
 const TABLE = {
   checked_in: ["success", "result.checked_in_title", "result.checked_in_body", true],

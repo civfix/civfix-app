@@ -7,12 +7,12 @@ import type {
   OrganizationInviteDTO,
   OrganizationMemberDTO,
   PersonDTO,
-} from "@civfix/shared"
+} from "@civfix/contract"
 import {
   InviteOrganizationMemberRequestSchema,
   RevokeOrganizationInviteRequestSchema,
   SetOrganizationMemberRoleRequestSchema,
-} from "@civfix/shared"
+} from "@civfix/contract"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")

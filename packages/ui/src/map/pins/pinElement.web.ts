@@ -1,4 +1,4 @@
-import { tokens, shadowSchemes } from "@civfix/shared/tokens"
+import { tokens, shadowSchemes } from "@civfix/tokens"
 import type { Theme } from "../../theme"
 
 export function applyPinElementTheme(el: HTMLElement, t: Theme, fill: string): void {

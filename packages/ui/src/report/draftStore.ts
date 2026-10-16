@@ -1,6 +1,6 @@
 import { create } from "zustand"
-import { MAX_REPORT_MEDIA } from "@civfix/shared"
-import type { LatLng } from "@civfix/shared/geocode"
+import { MAX_REPORT_MEDIA } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 import type { CapturedMedia } from "../capabilities"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { randomId } from "../data/randomId"

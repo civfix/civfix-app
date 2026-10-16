@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Download } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { HostExportDTO, HostExportKind } from "@civfix/shared"
+import type { HostExportDTO, HostExportKind } from "@civfix/contract"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 

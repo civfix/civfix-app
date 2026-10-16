@@ -1,5 +1,5 @@
-import type { CheckinResultDTO } from "@civfix/shared"
-import type { ApiClient } from "@civfix/shared/client"
+import type { CheckinResultDTO } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
 
 export interface SeatCheckInOutcome {
   done: string[]

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
-import type { PostCounts } from "@civfix/shared"
+import type { PostCounts } from "@civfix/contract"
 import {
   buildFocalPostStats,
   buildReplyComposerHeightPlan,

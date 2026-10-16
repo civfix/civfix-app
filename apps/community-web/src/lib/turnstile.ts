@@ -1,6 +1,6 @@
 "use client"
 
-import { ANON_REPORT_TURNSTILE_ACTION } from "@civfix/shared/host"
+import { ANON_REPORT_TURNSTILE_ACTION } from "@civfix/contract/host"
 
 import { Z_TURNSTILE_CHALLENGE } from "@/styles/z-layers"
 

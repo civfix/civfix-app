@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Modal, StyleSheet } from "react-native"
-import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
+import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"

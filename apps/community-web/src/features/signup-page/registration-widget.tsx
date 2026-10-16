@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { CircleAlert, Loader2 } from "lucide-react"
-import type { PublicEventPageDTO } from "@civfix/shared"
+import type { PublicEventPageDTO } from "@civfix/contract"
 
 import { Trans, useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"

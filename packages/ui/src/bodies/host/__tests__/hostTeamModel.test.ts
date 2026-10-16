@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/shared"
-import { MAX_TEAM_INVITES_PER_EVENT } from "@civfix/shared"
+import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/contract"
+import { MAX_TEAM_INVITES_PER_EVENT } from "@civfix/contract"
 import {
   INVITE_IDENTIFIER_MAX,
   TEAM_MEMBER_ROLE_ORDER,

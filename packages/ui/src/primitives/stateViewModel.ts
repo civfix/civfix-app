@@ -1,4 +1,4 @@
-import { space } from "@civfix/shared/tokens"
+import { space } from "@civfix/tokens"
 
 export const INLINE_EMPTY_LAYOUT = {
   paddingVertical: space["3"],

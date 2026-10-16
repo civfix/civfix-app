@@ -3,7 +3,7 @@
  * strip paints before the server echo lands.
  */
 import { describe, expect, it } from "vitest"
-import type { ChatMessageDTO, PersonDTO } from "@civfix/shared"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { buildLocalReplyTo, REPLY_EXCERPT_MAX } from "../replyPreview"
 
 function person(id: string, name: string): PersonDTO {

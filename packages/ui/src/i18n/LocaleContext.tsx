@@ -3,7 +3,7 @@
  * MMKV, both PUT /me/settings). The i18next instance itself lives in I18nProvider.
  */
 import { createContext, useContext } from "react"
-import type { SupportedLocale } from "@civfix/shared"
+import type { SupportedLocale } from "@civfix/contract"
 
 export interface LocaleContextValue {
   locale: SupportedLocale

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type {
-  GetEventAnalyticsResponse,
-  HostAnalyticsSummaryActivity,
-  SeriesPoint,
-} from "@civfix/shared"
+import type { GetEventAnalyticsResponse, HostAnalyticsSummaryActivity, SeriesPoint } from "@civfix/contract"
 import {
   ALL_EVENTS_RANGE_PRESETS,
   ANALYTICS_RANGE_PRESETS,
@@ -27,7 +23,7 @@ import {
   wholeEventCheckedIn,
   wholeEventSignups,
 } from "../analyticsModel"
-import { MS_PER_DAY } from "@civfix/shared"
+import { MS_PER_DAY } from "@civfix/contract"
 import { breakdownBars, seriesBars } from "../analytics/chartBars"
 import { EMPTY_VALUE } from "../../../i18n/emptyValue"
 
