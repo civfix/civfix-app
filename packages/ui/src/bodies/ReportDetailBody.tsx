@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react"
-import { View, Pressable } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { isVerifiedReportAddress } from "@civfix/contract"
 import { makeThemedStyles, radius, useTheme, focusRingProps, headingLevel } from "../theme"
@@ -34,6 +34,8 @@ import { useReportDetailSharedStyles } from "./reportDetail/sharedStyles"
 import { useReportContentSheet } from "./reportDetail/useReportContentSheet"
 import { useReportTitleMenu } from "./reportDetail/useReportTitleMenu"
 import { useReportRepost } from "./reportDetail/useReportRepost"
+import { useReportMeToo } from "./reportDetail/useReportMeToo"
+import { MeTooChip, MeTooRow } from "./reportDetail/MeTooButton"
 
 function ReportDetailContent({ report }: { report: ReportDTO }) {
   const styles = useStyles()
@@ -61,6 +63,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
   const contentSheet = useReportContentSheet(report.id)
   const titleMenu = useReportTitleMenu(report, title, contentSheet.open)
   const repost = useReportRepost(report)
+  const meToo = useReportMeToo(report)
 
   return (
     <View style={styles.detailRoot}>
@@ -145,6 +148,24 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       <ReportGallery report={report} onReportPhoto={contentSheet.onReportGalleryPhoto} />
 
       {report.description ? <Text style={styles.description}>{report.description}</Text> : null}
+
+      {meToo.visible || meToo.count > 0 ? (
+        <View style={styles.meToo}>
+          <MeTooRow
+            chip={
+              meToo.visible ? (
+                <MeTooChip
+                  label={t("confirm.me_too")}
+                  accessibilityLabel={t("confirm.me_too_a11y")}
+                  pressed={meToo.pressed}
+                  onPress={meToo.onPress}
+                />
+              ) : null
+            }
+            count={meToo.count > 0 ? t("report-row:confirm_count", { count: meToo.count }) : null}
+          />
+        </View>
+      ) : null}
 
       <ReportLinkedEvents events={report.linkedEvents} />
 
@@ -294,6 +315,13 @@ const useStyles = makeThemedStyles((t) => ({
     flexWrap: "wrap",
     gap: t.space["2"],
     marginTop: t.space["3"],
+  },
+  meToo: {
+    marginTop: t.space["4"],
+    paddingVertical: t.space["3"],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
   },
   hiddenBanner: {
     flexDirection: "row",

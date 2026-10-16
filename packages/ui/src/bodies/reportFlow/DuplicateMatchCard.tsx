@@ -1,11 +1,12 @@
 import React from "react"
 import { Image, Pressable, StyleSheet, View } from "react-native"
 import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webHover, webTransition } from "../../theme"
-import { Icon, Text, iconMap } from "../../typography"
+import { Icon, Text } from "../../typography"
 import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useT } from "../../i18n"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { duplicateDistance } from "./duplicateModel"
+import { MeTooChip, MeTooRow } from "../reportDetail/MeTooButton"
 
 // A banner, not a gallery frame: a second card has to start above the fold on a phone.
 const CARD_MEDIA_ASPECT = 2.4
@@ -25,7 +26,7 @@ function useMatchText({ pin, distanceM }: NearbyReportRow) {
   }
 }
 
-/** One match on the Possible duplicate screen. Me too (#162) goes at the right of the body, beside the text. */
+/** One match on the Possible duplicate screen; Me too and the count share a footer under the text. */
 export function DuplicateMatchCard({
   row,
   width,
@@ -44,6 +45,7 @@ export function DuplicateMatchCard({
 }) {
   const styles = useStyles()
   const th = useTheme()
+  const { t } = useT("report-wizard")
   const text = useMatchText(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
@@ -79,13 +81,26 @@ export function DuplicateMatchCard({
             {text.distance}
           </Text>
         </View>
-        {text.count ? (
-          <View style={styles.countRow}>
-            <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
-            <Text style={styles.count}>{text.count}</Text>
-          </View>
-        ) : null}
       </View>
+      {onMeToo || text.count ? (
+        <View style={styles.footer}>
+          <MeTooRow
+            chip={
+              onMeToo ? (
+                <MeTooChip
+                  label={t("wizard.duplicate.me_too")}
+                  accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
+                  pressed={false}
+                  busy={meTooBusy}
+                  disabled={meTooDisabled}
+                  onPress={() => onMeToo(row)}
+                />
+              ) : null
+            }
+            count={text.count}
+          />
+        </View>
+      ) : null}
     </Pressable>
   )
 }
@@ -121,11 +136,10 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
-  countRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["1"] },
-  count: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
+  footer: {
+    paddingHorizontal: t.space["3"],
+    paddingVertical: t.space["2"],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: t.colors.border,
   },
 }))
