@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { PUBLIC_REPORT_STATUSES, type ReportDTO } from "@civfix/shared"
+import { PUBLIC_REPORT_STATUSES, type ReportDTO } from "@civfix/contract"
 import { useRequireAuth } from "../../data"
 import { pathForEntry, useNavStore } from "../../nav"
 import { usePostComposerStore } from "../postComposerStore"

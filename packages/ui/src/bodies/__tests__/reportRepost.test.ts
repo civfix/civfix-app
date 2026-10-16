@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { ReportStatusSchema, type LinkedEventRef, type ReportDTO, type ReportStatus } from "@civfix/shared"
+import { ReportStatusSchema, type LinkedEventRef, type ReportDTO, type ReportStatus } from "@civfix/contract"
 import { canRepostReport } from "../reportDetail/useReportRepost"
 import { usePostComposerStore } from "../postComposerStore"
 import { buildComposerReportRef, shouldClearStaleAttachedReport } from "../postComposerModel"
