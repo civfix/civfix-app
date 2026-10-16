@@ -1,10 +1,13 @@
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
+import { ErrorCode, appErrorCode } from "@civfix/contract"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { useT } from "../../i18n"
+import { useAuthState, useConfirmMatch } from "../../data"
+import { useToast } from "../../primitives"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { DuplicateMatchCard } from "./DuplicateMatchCard"
 import { useHardwareBack } from "./useHardwareBack"
@@ -37,6 +40,25 @@ export function DuplicateGate({
   const onScreen = useNavStore((s) => s.view === "report" && s.stack.length === 0)
   useHardwareBack(onScreen, onBack)
 
+  // Guests start the flow too; Me too is only offered once the reporter is signed in (#156 D8).
+  const { isAuthenticated } = useAuthState()
+  const toast = useToast()
+  const confirm = useConfirmMatch()
+  const { mutate: confirmMatch } = confirm
+  const busyId = confirm.isPending ? confirm.variables : null
+  const onMeToo = useCallback(
+    (row: NearbyReportRow) =>
+      confirmMatch(row.pin.id, {
+        onSuccess: () => onOpen(row),
+        onError: (err) => {
+          // Their own earlier report: Me too cannot apply, so it opens like the card does.
+          if (appErrorCode(err) === ErrorCode.FORBIDDEN) onOpen(row)
+          else toast.show(t("wizard.duplicate.me_too_error"), { variant: "error" })
+        },
+      }),
+    [confirmMatch, onOpen, toast, t],
+  )
+
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       <View style={styles.head}>
@@ -47,7 +69,15 @@ export function DuplicateGate({
       </View>
       <View style={styles.list} onLayout={(e) => setListWidth(e.nativeEvent.layout.width)}>
         {rows.map((row) => (
-          <DuplicateMatchCard key={row.pin.id} row={row} width={cardWidth} onOpen={onOpen} />
+          <DuplicateMatchCard
+            key={row.pin.id}
+            row={row}
+            width={cardWidth}
+            onOpen={onOpen}
+            onMeToo={isAuthenticated ? onMeToo : undefined}
+            meTooBusy={busyId === row.pin.id}
+            meTooDisabled={busyId !== null}
+          />
         ))}
       </View>
     </ScrollView>
