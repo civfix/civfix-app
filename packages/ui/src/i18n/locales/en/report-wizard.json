@@ -31,7 +31,10 @@
       "help_other": "{{count}} reports right here may already cover this. Open one to follow along, or report a new problem.",
       "distance_close": "Less than 5 m away",
       "distance_about": "About {{meters}} m away",
-      "new": "Report a new problem"
+      "new": "Report a new problem",
+      "me_too": "Me too",
+      "me_too_a11y": "Me too, I saw this problem too",
+      "me_too_error": "Couldn't save your Me too. Try again."
     }
   },
   "footer": {

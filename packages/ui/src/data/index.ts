@@ -50,6 +50,8 @@ export {
   useMyReports,
   useReport,
   useResolveReport,
+  useConfirmReport,
+  useConfirmMatch,
   useUnlistReport,
   useResolveJurisdiction,
   useNearbyReportPins,

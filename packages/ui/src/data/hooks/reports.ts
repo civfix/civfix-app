@@ -11,6 +11,7 @@ import type {
   ListMyReportsResponse,
   ListReportsSearchResponse,
   JurisdictionDTO,
+  ReportConfirmResponse,
 } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { useApi, useAuthState } from "../context"
@@ -316,4 +317,36 @@ export function useUnlistReport(id: string) {
       },
     }),
   )
+}
+
+/** Me too on a report's page: the pressed state and the count move at once and roll back on failure. */
+export function useConfirmReport(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(
+    optimisticPatch<ReportDTO, boolean, ReportConfirmResponse>(qc, {
+      key: queryKeys.report(id),
+      mutationFn: (confirm) => (confirm ? api.confirmReport({ id }) : api.unconfirmReport({ id })),
+      patch: (prev, confirm) => ({
+        ...prev,
+        confirmedByMe: confirm,
+        confirmCount: Math.max(0, prev.confirmCount + (confirm ? 1 : -1)),
+      }),
+      reconcile: (prev, res) => ({ ...prev, ...res }),
+      invalidate: [queryKeys.mapReportsRoot],
+    }),
+  )
+}
+
+/** Me too from a match on the Possible duplicate screen: it waits for the API, then the report opens pressed. */
+export function useConfirmMatch() {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.confirmReport({ id }),
+    onSuccess: (res, id) => {
+      qc.setQueryData<ReportDTO>(queryKeys.report(id), (prev) => (prev ? { ...prev, ...res } : prev))
+      void qc.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
+    },
+  })
 }
