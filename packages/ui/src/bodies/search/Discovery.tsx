@@ -107,6 +107,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
       assembleSearchSuggestions<CleanupDTO, PersonDTO, ReportPinDTO, LeaderboardEntryDTO>({
         cleanups: cleanupsQuery.data ?? [],
         pins: pinsQuery.data ?? [],
+        pressing,
         people: suggestionsQuery.data ?? [],
         leaderboard: leaderboardPage?.entries ?? [],
         leaderboardGeoid: geo?.geoid ?? null,
@@ -117,6 +118,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
     [
       cleanupsQuery.data,
       pinsQuery.data,
+      pressing,
       suggestionsQuery.data,
       leaderboardPage,
       geo,

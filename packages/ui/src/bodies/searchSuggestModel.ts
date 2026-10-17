@@ -26,6 +26,7 @@ import { eventBlendScore } from "./eventBlendScore"
 export const SUGGESTED_PEOPLE_LIMIT = 8
 export const SUGGESTED_EVENTS_LIMIT = 4
 export const NEARBY_REPORTS_LIMIT = 4
+export const PRESSING_NEARBY_LIMIT = 10
 /**
  * Ranks 1-3 only. This is a PREVIEW of the full board, not a second copy of it. It is a RENDER limit,
  * not the request's `limit` (see {@link LEADERBOARD_REQUEST_LIMIT} for why those had to come apart).
@@ -59,6 +60,7 @@ export interface SearchSuggestions<C, P, R, L> {
   people: P[]
   events: C[]
   reports: R[]
+  pressing: R[]
   leaderboard: L[]
 }
 
@@ -79,6 +81,7 @@ export function assembleSearchSuggestions<
 }: {
   cleanups: readonly C[]
   pins: readonly R[]
+  pressing: readonly R[]
   people: readonly P[]
   /** Already rank-ordered by the server; this only caps it. */
   leaderboard: readonly L[]
@@ -101,6 +104,7 @@ export function assembleSearchSuggestions<
     people: signedIn ? people.slice(0, SUGGESTED_PEOPLE_LIMIT) : [],
     events,
     reports: location ? pins.slice(0, NEARBY_REPORTS_LIMIT) : [],
+    pressing: [],
     leaderboard: leaderboardGeoid ? leaderboard.slice(0, LEADERBOARD_PREVIEW_LIMIT) : [],
   }
 }
