@@ -350,3 +350,7 @@ export function useConfirmMatch() {
     },
   })
 }
+
+export function useUnconfirmReport(_id: string): ReturnType<typeof useConfirmReport> {
+  throw new Error("not implemented")
+}

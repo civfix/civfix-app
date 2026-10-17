@@ -2,7 +2,7 @@ import { useCallback } from "react"
 import { OPEN_REPORT_STATUSES, type ReportDTO } from "@civfix/contract"
 import { useConfirmReport, useRequireAuth } from "../../data"
 import { pathForEntry } from "../../nav"
-import { useToast } from "../../primitives"
+import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n"
 
 // Me too is a signal that someone else's problem is real and still open (#156 D2): never on your own
