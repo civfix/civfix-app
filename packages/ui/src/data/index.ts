@@ -52,13 +52,14 @@ export {
   useResolveReport,
   useUnlistReport,
   useResolveJurisdiction,
+  nearbyPinsBbox,
   useNearbyReportPins,
   useNearbyReports,
   useReportSearch,
   useMapReports,
 } from "./hooks/reports"
 export { NEARBY_RADIUS_KM } from "./hooks/nearbyBbox"
-export { nearbyPinsBbox, usePressingReports } from "./hooks/pressingReports"
+export { usePressingReports } from "./hooks/pressingReports"
 export {
   useJoinReportChat,
   useLeaveReportChat,

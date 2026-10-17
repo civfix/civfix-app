@@ -85,7 +85,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
   const cleanupsQuery = useNearbyCleanups(SEARCH_EVENT_POOL_LIMIT, location)
   const pinsQuery = useNearbyReportPins(location)
   const pressingBbox = useMemo(() => nearbyPinsBbox(location), [location])
-  const pressing = usePressingReports(pressingBbox).data ?? []
+  const pressingQuery = usePressingReports(pressingBbox)
   const suggestionsQuery = useFollowSuggestions()
   const jurisdictionQuery = useResolveJurisdiction(location)
   const myHours = useMyHours()
@@ -107,7 +107,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
       assembleSearchSuggestions<CleanupDTO, PersonDTO, ReportPinDTO, LeaderboardEntryDTO>({
         cleanups: cleanupsQuery.data ?? [],
         pins: pinsQuery.data ?? [],
-        pressing,
+        pressing: pressingQuery.data ?? [],
         people: suggestionsQuery.data ?? [],
         leaderboard: leaderboardPage?.entries ?? [],
         leaderboardGeoid: geo?.geoid ?? null,
@@ -118,7 +118,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
     [
       cleanupsQuery.data,
       pinsQuery.data,
-      pressing,
+      pressingQuery.data,
       suggestionsQuery.data,
       leaderboardPage,
       geo,
@@ -189,7 +189,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
         />
       ) : null}
 
-      {location && pressing.length > 0 ? (
+      {sections.pressing.length > 0 ? (
         <>
           <Text
             accessibilityRole="header"
@@ -204,7 +204,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
           >
             {t("search_page.pressing")}
           </Text>
-          <PressingRail reports={pressing} viewer={location} />
+          <PressingRail reports={sections.pressing} viewer={location} />
         </>
       ) : null}
 
@@ -218,7 +218,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
               sections.people.length > 0 ||
               sections.events.length > 0 ||
               showLeaderboard ||
-              (location && pressing.length > 0)
+              sections.pressing.length > 0
                 ? styles.laterTitle
                 : null,
             ]}

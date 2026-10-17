@@ -30,7 +30,7 @@ function renderWithApi<T>(useHook: () => T, api: Record<string, unknown>) {
 
 describe("usePressingReports", () => {
   it("T1: asks for the bbox once, under the pressing key, and returns the items", async () => {
-    const pressingReports = vi.fn(async () => ({ items: [p1, p2] }))
+    const pressingReports = vi.fn(async (_req: { bbox: BBox }, _opts?: unknown) => ({ items: [p1, p2] }))
     const { result, queryClient } = renderWithApi(() => usePressingReports(B), { pressingReports })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(pressingReports).toHaveBeenCalledTimes(1)

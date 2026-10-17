@@ -116,9 +116,22 @@ export function useMapReports({ bbox, categories, enabled }: MapReportsArgs) {
   })
 }
 
-export const PICKER_BBOX_PAD_DEG = 0.0225
-export function roundPickerCoord(n: number): number {
+const PICKER_BBOX_PAD_DEG = 0.0225
+function roundPickerCoord(n: number): number {
   return Math.round(n * 1000) / 1000
+}
+
+/** The "Reports nearby" area around a point; Most pressing nearby asks for the same one. */
+export function nearbyPinsBbox(point: { lat: number; lng: number } | null): BBox | null {
+  if (!point) return null
+  const lat = roundPickerCoord(point.lat)
+  const lng = roundPickerCoord(point.lng)
+  return {
+    west: lng - PICKER_BBOX_PAD_DEG,
+    east: lng + PICKER_BBOX_PAD_DEG,
+    south: lat - PICKER_BBOX_PAD_DEG,
+    north: lat + PICKER_BBOX_PAD_DEG,
+  }
 }
 
 export function useNearbyReportPins(point: { lat: number; lng: number } | null) {
@@ -130,12 +143,7 @@ export function useNearbyReportPins(point: { lat: number; lng: number } | null) 
     enabled: point !== null,
     queryFn: async () => {
       const res = await api.mapReports({
-        bbox: {
-          west: lng - PICKER_BBOX_PAD_DEG,
-          east: lng + PICKER_BBOX_PAD_DEG,
-          south: lat - PICKER_BBOX_PAD_DEG,
-          north: lat + PICKER_BBOX_PAD_DEG,
-        },
+        bbox: nearbyPinsBbox({ lat, lng }) as BBox,
         zoom: POINTS_FETCH_ZOOM,
       })
       return Array.isArray(res?.pins) ? res.pins.filter((p) => p != null) : []

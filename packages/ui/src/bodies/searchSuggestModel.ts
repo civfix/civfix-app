@@ -1,6 +1,6 @@
 /**
- * Section order on the resting search page: Suggested people, then Events in your area, then Reports
- * nearby.
+ * Section order on the resting search page: Suggested people, then Events in your area, then Most
+ * pressing nearby, then Reports nearby.
  *
  * Deterministic: the caller passes `now` (never read the clock here) and the resolved viewer
  * location, so the assembly is unit-testable and stable across a render pass. Ranking reuses
@@ -12,6 +12,9 @@
  *   - Reports nearby is LOCATION-GATED: proximity is meaningless without a viewer point, so no
  *     location means an empty section (the pins hook returns [] without a point anyway; this makes the
  *     invariant explicit and testable).
+ *   - Most pressing nearby is LOCATION-GATED for the same reason, and covers the same area as Reports
+ *     nearby. It is not auth-gated: guests see it too. Loading and a failed call both reach here as `[]`,
+ *     which empties only this section.
  *   - Events render with or without a location (the upcoming list is global; the blend degrades).
  *   - The volunteer leaderboard is NEITHER auth- nor location-gated; it is GEOID-GATED. A signed-OUT
  *     viewer with a device location sees it (`resolveJurisdiction` is auth-optional); a signed-IN
@@ -72,6 +75,7 @@ export function assembleSearchSuggestions<
 >({
   cleanups,
   pins,
+  pressing,
   people,
   leaderboard,
   leaderboardGeoid,
@@ -81,6 +85,7 @@ export function assembleSearchSuggestions<
 }: {
   cleanups: readonly C[]
   pins: readonly R[]
+  /** Already ranked by the server (most confirmed first); this only caps it. */
   pressing: readonly R[]
   people: readonly P[]
   /** Already rank-ordered by the server; this only caps it. */
@@ -104,7 +109,7 @@ export function assembleSearchSuggestions<
     people: signedIn ? people.slice(0, SUGGESTED_PEOPLE_LIMIT) : [],
     events,
     reports: location ? pins.slice(0, NEARBY_REPORTS_LIMIT) : [],
-    pressing: [],
+    pressing: location ? pressing.slice(0, PRESSING_NEARBY_LIMIT) : [],
     leaderboard: leaderboardGeoid ? leaderboard.slice(0, LEADERBOARD_PREVIEW_LIMIT) : [],
   }
 }

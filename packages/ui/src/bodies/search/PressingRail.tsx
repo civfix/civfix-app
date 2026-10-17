@@ -87,15 +87,14 @@ export function PressingRail({ reports, viewer }: { reports: readonly ReportPinD
   const styles = useStyles()
   const th = useTheme()
   const [railWidth, setRailWidth] = useState(0)
-  const gap = th.space["3"]
-  const width = railCardWidth(railWidth, gap, th.space["4"] * 2, reports.length)
+  const width = railCardWidth(railWidth, th.space["3"], th.space["4"] * 2, reports.length)
   return (
     <RNScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       onLayout={(e) => setRailWidth(e.nativeEvent.layout.width)}
       style={search.personRail}
-      contentContainerStyle={[search.personRailContent, styles.railContent]}
+      contentContainerStyle={styles.railContent}
     >
       {railWidth > 0
         ? reports.map((report) => <PressingCard key={report.id} report={report} viewer={viewer} width={width} />)
@@ -105,7 +104,13 @@ export function PressingRail({ reports, viewer }: { reports: readonly ReportPinD
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  railContent: { alignItems: "stretch", paddingBottom: t.space["1"] },
+  // The gap and the inset are the ones railCardWidth sizes the cards with.
+  railContent: {
+    alignItems: "stretch",
+    gap: t.space["3"],
+    paddingHorizontal: t.space["4"],
+    paddingBottom: t.space["1"],
+  },
   card: {
     borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius,
     borderWidth: StyleSheet.hairlineWidth,
