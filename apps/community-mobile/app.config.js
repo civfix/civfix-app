@@ -17,6 +17,20 @@ const GOOGLE_IOS_URL_SCHEME =
   process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME ??
   "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
 
+// CIVFIX_APP_VARIANT=development builds the local dev client as its own app, beside the App Store or
+// TestFlight build instead of over it. Its keychain group differs too, so it can never read the store
+// app's stored production session, and it owns its launch scheme: expo-dev-client's generated
+// exp+<slug> scheme is shared with every store build, and iOS picks an arbitrary app for a shared one.
+const APP_VARIANT = process.env.CIVFIX_APP_VARIANT || "store"
+if (!["store", "development"].includes(APP_VARIANT)) {
+  throw new Error(`CIVFIX_APP_VARIANT must be 'development' or unset, got '${APP_VARIANT}'`)
+}
+const DEV_VARIANT = APP_VARIANT === "development"
+const IOS_BUNDLE_ID = DEV_VARIANT ? "org.civfix.community.dev" : "org.civfix.community"
+const ANDROID_PACKAGE = DEV_VARIANT ? "org.civfix.community.dev" : "org.civfix.community"
+/** @type {NonNullable<import("expo/config").ExpoConfig["plugins"]>} */
+const VARIANT_PLUGINS = DEV_VARIANT ? [["expo-dev-client", { addGeneratedScheme: false }]] : []
+
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
 
 // The lowest version code nobody has claimed: the hand-built 1.3.0 upload took 7. Release builds pass
@@ -104,11 +118,11 @@ module.exports = ({ config }) => ({
   ...config,
   name: "civfix",
   slug: "civfix-community",
-  scheme: "civfix",
+  scheme: DEV_VARIANT ? "civfix-dev" : "civfix",
   version: "1.4.0",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
-  icon: "./assets/icon.png",
+  icon: DEV_VARIANT ? "./assets/icon-dev.png" : "./assets/icon.png",
   newArchEnabled: true,
   splash: {
     image: "./assets/splash.png",
@@ -117,7 +131,7 @@ module.exports = ({ config }) => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "org.civfix.community",
+    bundleIdentifier: IOS_BUNDLE_ID,
     buildNumber: "23",
     appleTeamId: APPLE_TEAM_ID,
     supportsTablet: true,
@@ -127,9 +141,11 @@ module.exports = ({ config }) => ({
       usesNonExemptEncryption: false,
     },
     entitlements: {
-      "keychain-access-groups": ["$(AppIdentifierPrefix)org.civfix.community"],
+      "keychain-access-groups": [`$(AppIdentifierPrefix)${IOS_BUNDLE_ID}`],
     },
     infoPlist: {
+      // Only the home-screen label: `name` also names the Xcode project the store scripts build.
+      ...(DEV_VARIANT ? { CFBundleDisplayName: "civfix dev" } : {}),
       NSCameraUsageDescription: CAMERA_USAGE,
       NSMicrophoneUsageDescription: MIC_USAGE,
       NSLocationWhenInUseUsageDescription: LOCATION_WHEN_IN_USE,
@@ -199,7 +215,7 @@ module.exports = ({ config }) => ({
     },
   },
   android: {
-    package: "org.civfix.community",
+    package: ANDROID_PACKAGE,
     versionCode: androidVersionCode(),
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
@@ -222,6 +238,7 @@ module.exports = ({ config }) => ({
     ],
   },
   plugins: [
+    ...VARIANT_PLUGINS,
     "expo-router",
     "expo-localization",
     [
