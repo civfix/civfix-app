@@ -151,6 +151,17 @@ test("a scheme link gets the SAME alias table as a web link", () => {
   assert.deepEqual(resolveIncomingPath("civfix://compose/quote/abc"), internal("/compose"))
 })
 
+test("the dev variant's schemes route like the store app's", () => {
+  assert.deepEqual(resolveIncomingPath("civfix-dev://pin/abc"), internal("/pin/abc"))
+  assert.deepEqual(resolveIncomingPath("org.civfix.community.dev://pin/p1"), internal("/pin/p1"))
+})
+
+test("the dev variant's launcher link reaches the dev client only in a dev build", () => {
+  const launcher = "civfix-dev://expo-development-client/?url=https%3A%2F%2Fa-b.trycloudflare.com"
+  assert.deepEqual(resolveIncomingPath(launcher, { isDev: true }), internal(launcher))
+  assert.deepEqual(resolveIncomingPath(launcher), home)
+})
+
 test("both scheme URL shapes yield the same path", () => {
   assert.deepEqual(resolveIncomingPath("civfix://cleanups/abc"), internal("/cleanups/abc"))
   assert.deepEqual(resolveIncomingPath("civfix:///cleanups/abc"), internal("/cleanups/abc"))
