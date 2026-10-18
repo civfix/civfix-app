@@ -6,6 +6,7 @@ import type { ReportPinDTO } from "@civfix/contract"
 import { I18nProvider } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { PressingRail } from "../PressingRail"
+import { FOCUS_RING_FOOTPRINT } from "../../../theme/webAffordances"
 
 // The icon set pulls in native-only modules; the cards are read by their text.
 vi.mock("../../../typography", async () => {
@@ -84,5 +85,20 @@ describe("PressingRail", () => {
     fireEvent.click(card)
     const { stack } = useNavStore.getState()
     expect(stack[stack.length - 1]).toEqual({ kind: "pin", id: "r2", lat: 34.06, lng: -118.25 })
+  })
+
+  // The rail scrolls sideways, so its scroller clips on every side; QA found the top of a focused card's ring cut off.
+  it("leaves a focused card's whole ring inside the scroller, without moving the cards", async () => {
+    renderRail()
+    const card = await screen.findByRole("button", { name: "Overflowing bin, 3 neighbors saw this too" })
+    const content = card.parentElement!
+    const scroller = content.parentElement!
+    expect(getComputedStyle(scroller).overflowX).not.toBe("visible")
+    const px = (v: string) => Number.parseFloat(v || "0")
+    const pad = getComputedStyle(content)
+    for (const side of [pad.paddingTop, pad.paddingBottom, pad.paddingLeft, pad.paddingRight]) {
+      expect(px(side)).toBeGreaterThanOrEqual(FOCUS_RING_FOOTPRINT)
+    }
+    expect(px(getComputedStyle(scroller).marginTop)).toBe(-px(pad.paddingTop))
   })
 })

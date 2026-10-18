@@ -93,7 +93,7 @@ export function PressingRail({ reports, viewer }: { reports: readonly ReportPinD
       horizontal
       showsHorizontalScrollIndicator={false}
       onLayout={(e) => setRailWidth(e.nativeEvent.layout.width)}
-      style={search.personRail}
+      style={[search.personRail, styles.rail]}
       contentContainerStyle={styles.railContent}
     >
       {railWidth > 0
@@ -104,12 +104,15 @@ export function PressingRail({ reports, viewer }: { reports: readonly ReportPinD
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  // The scroller clips on every side, so the cards keep at least a focus ring's footprint inside it; the
+  // negative margin cancels the top padding so the rail sits where it would without it.
+  rail: { marginTop: -t.space["1"] },
   // The gap and the inset are the ones railCardWidth sizes the cards with.
   railContent: {
     alignItems: "stretch",
     gap: t.space["3"],
     paddingHorizontal: t.space["4"],
-    paddingBottom: t.space["1"],
+    paddingVertical: t.space["1"],
   },
   card: {
     borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius,
