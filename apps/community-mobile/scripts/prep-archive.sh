@@ -27,6 +27,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# The development variant has its own bundle ID, scheme and keychain group; a store build must never
+# carry it, whether from the shell or from an .env file Expo loads at build time.
+if [ -n "${CIVFIX_APP_VARIANT:-}" ] || grep -qs '^[[:space:]]*CIVFIX_APP_VARIANT=' .env .env.local .env.production .env.production.local; then
+  echo "ERROR: CIVFIX_APP_VARIANT is set; unset it (and remove it from any .env file) for a store build." >&2
+  exit 1
+fi
+
 usage() {
   echo "usage: scripts/prep-archive.sh testflight|appstore [--platform ios|android]" >&2
   exit 1

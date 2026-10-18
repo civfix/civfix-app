@@ -7,7 +7,14 @@ const WEB_ORIGIN = "https://civfix.org"
 
 const WEB_HOSTS = new Set(["civfix.org", "www.civfix.org"])
 
-const APP_SCHEMES = new Set(["civfix", "exp", "exp+civfix-community", "org.civfix.community"])
+const APP_SCHEMES = new Set([
+  "civfix",
+  "exp",
+  "exp+civfix-community",
+  "org.civfix.community",
+  "civfix-dev",
+  "org.civfix.community.dev",
+])
 
 const DEV_CLIENT_SEGMENT = "expo-development-client"
 

@@ -66,6 +66,31 @@ pnpm --filter community-mobile exec expo run:ios      # or run:android
 
 Then start the bundler with `pnpm --filter community-mobile start` (runs `expo start --dev-client`).
 
+### The development variant (iOS): beside the store app, not over it
+
+`CIVFIX_APP_VARIANT=development` builds **civfix dev**: bundle ID and Android package
+`org.civfix.community.dev`, scheme `civfix-dev` (and no `exp+civfix-community`, which every store build
+also registers), its own keychain group and the badged `assets/icon-dev.png`. It installs next to the
+App Store or TestFlight build instead of replacing it, and can never read their stored session. The
+umbrella's `dev/run.sh mobile-build` and `dev/run.sh mobile` set it; `store-build.sh` and
+`prep-archive.sh` refuse to run with it. Switching variants regenerates the native project, and Metro
+must open the dev client by its own scheme:
+
+```sh
+CIVFIX_APP_VARIANT=development npx expo prebuild --platform ios --clean --no-install
+CIVFIX_APP_VARIANT=development pnpm exec expo run:ios --no-bundler   # --device for a cabled iPhone
+CIVFIX_APP_VARIANT=development pnpm start --scheme civfix-dev
+```
+
+Google and Apple sign-in, civfix.org universal links and push are not supported in it (their
+credentials and the site's app association are tied to `org.civfix.community`); sign in with email. A
+store iOS prebuild after a dev one rewrites the bundle ID, name, schemes, keychain group and icon, so
+nothing of the variant reaches an archive. Android adds URL schemes without removing old ones, so
+prebuild with `--clean` before a Play build if you ever prebuilt the dev variant for Android.
+
+App Store and TestFlight builds share `org.civfix.community`, so those two still replace each other:
+Apple installs a TestFlight build over the store app by design.
+
 ## Store-distribution profiles: `testflight` vs `production`
 
 Two store-distribution profiles exist in `apps/community-mobile/eas.json`, differing only in the
@@ -397,13 +422,15 @@ to `http://localhost:8080` and release builds to whichever API the install sourc
 
 ## Brand assets
 
-Two manual generators produce the committed images (run from `apps/community-mobile`; `sharp` and
+Three manual generators produce the committed images (run from `apps/community-mobile`; `sharp` and
 `opentype.js` are dev-only tools, installed at the repo root with `--no-save`):
 
 - `node scripts/gen-icon-from-source.mjs [path/to.png]` writes `assets/icon.png` (1024, no alpha, for
   iOS) and `assets/adaptive-icon.png` (Android foreground) from `assets/icon-source.png`, the source
   of truth for the icon art.
 - `node scripts/gen-splash.mjs` writes `assets/splash.png`, the transparent "civfix" wordmark.
+- `node scripts/gen-dev-icon.mjs` writes `assets/icon-dev.png`, the development variant's icon
+  (`assets/icon.png` with a "DEV" band); re-run it after the icon changes.
 
 `expo prebuild` regenerates the native launcher and splash resources from these PNGs.
 
