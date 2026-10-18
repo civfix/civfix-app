@@ -6,6 +6,7 @@ export const queryKeys = {
   mapReports: (bbox: unknown, categories: readonly string[]) =>
     ["map", "reports", bbox, categories] as const,
   nearbyReportPins: (lat: number, lng: number) => ["map", "reports", "picker", lat, lng] as const,
+  pressingReports: (bbox: unknown) => ["map", "reports", "pressing", bbox] as const,
   nearbyReports: (lat: number, lng: number, radiusKm: number) =>
     ["map", "reports", "near", lat, lng, radiusKm] as const,
   jurisdiction: (lat: number, lng: number) => ["jurisdiction", lat, lng] as const,
