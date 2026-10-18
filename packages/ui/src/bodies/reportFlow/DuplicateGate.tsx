@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { ErrorCode, appErrorCode } from "@civfix/contract"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme } from "../../theme"
@@ -46,16 +46,24 @@ export function DuplicateGate({
   const confirm = useConfirmMatch()
   const { mutate: confirmMatch } = confirm
   const busyId = confirm.isPending ? confirm.variables : null
+  // A second tap can land before the busy state renders; the ref drops it so one tap sends one Me too.
+  const sending = useRef(false)
   const onMeToo = useCallback(
-    (row: NearbyReportRow) =>
+    (row: NearbyReportRow) => {
+      if (sending.current) return
+      sending.current = true
       confirmMatch(row.pin.id, {
+        onSettled: () => {
+          sending.current = false
+        },
         onSuccess: () => onOpen(row),
         onError: (err) => {
           // Their own earlier report: Me too cannot apply, so it opens like the card does.
           if (appErrorCode(err) === ErrorCode.FORBIDDEN) onOpen(row)
           else toast.show(t("wizard.duplicate.me_too_error"), { variant: "error" })
         },
-      }),
+      })
+    },
     [confirmMatch, onOpen, toast, t],
   )
 

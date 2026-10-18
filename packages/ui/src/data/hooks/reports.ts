@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import type { QueryClient, InfiniteData } from "@tanstack/react-query"
+import type { InfiniteData, Query, QueryClient, QueryFilters, QueryKey } from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   BBox,
@@ -319,23 +319,64 @@ export function useUnlistReport(id: string) {
   )
 }
 
-/** Me too on a report's page: the pressed state and the count move at once and roll back on failure. */
+// A report opened from a link is cached under its reference code (`["report", code]`), not under its id.
+function reportAliasFilters(id: string): QueryFilters {
+  return {
+    predicate: (query: Query) => {
+      const key = query.queryKey
+      if (key[0] !== "report" || key.length !== 2 || key[1] === id) return false
+      const data = query.state.data as { id?: unknown } | undefined
+      return typeof data === "object" && data !== null && data.id === id
+    },
+  }
+}
+
+type ReportAliasCtx = [QueryKey, ReportDTO | undefined][]
+
+function mergeConfirm(prev: ReportDTO, res: ReportConfirmResponse): ReportDTO {
+  return { ...prev, confirmCount: res.confirmCount, confirmedByMe: res.confirmedByMe }
+}
+
+/** Me too (or its undo) on a report's page: the pressed state and the count move at once and roll back on failure. */
+function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boolean) {
+  const press = (prev: ReportDTO): ReportDTO => ({
+    ...prev,
+    confirmedByMe: confirm,
+    confirmCount: Math.max(0, prev.confirmCount + (confirm ? 1 : -1)),
+  })
+  return optimisticPatch<ReportDTO, void, ReportConfirmResponse, ReportAliasCtx>(qc, {
+    key: queryKeys.report(id),
+    mutationFn: () => (confirm ? api.confirmReport({ id }) : api.unconfirmReport({ id })),
+    patch: press,
+    reconcile: mergeConfirm,
+    invalidate: [queryKeys.mapReportsRoot],
+    also: {
+      cancel: (client) => client.cancelQueries(reportAliasFilters(id)),
+      onMutate: (client) => {
+        const snapshot = client.getQueriesData<ReportDTO>(reportAliasFilters(id))
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? press(prev) : prev))
+        return snapshot
+      },
+      onError: (client, _vars, snapshot) => {
+        for (const [key, data] of snapshot ?? []) client.setQueryData(key, data)
+      },
+      onSuccess: (client, res) => {
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? mergeConfirm(prev, res) : prev))
+      },
+    },
+  })
+}
+
 export function useConfirmReport(id: string) {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation(
-    optimisticPatch<ReportDTO, boolean, ReportConfirmResponse>(qc, {
-      key: queryKeys.report(id),
-      mutationFn: (confirm) => (confirm ? api.confirmReport({ id }) : api.unconfirmReport({ id })),
-      patch: (prev, confirm) => ({
-        ...prev,
-        confirmedByMe: confirm,
-        confirmCount: Math.max(0, prev.confirmCount + (confirm ? 1 : -1)),
-      }),
-      reconcile: (prev, res) => ({ ...prev, ...res }),
-      invalidate: [queryKeys.mapReportsRoot],
-    }),
-  )
+  return useMutation(confirmToggle(qc, api, id, true))
+}
+
+export function useUnconfirmReport(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(confirmToggle(qc, api, id, false))
 }
 
 /** Me too from a match on the Possible duplicate screen: it waits for the API, then the report opens pressed. */
@@ -345,12 +386,10 @@ export function useConfirmMatch() {
   return useMutation({
     mutationFn: (id: string) => api.confirmReport({ id }),
     onSuccess: (res, id) => {
-      qc.setQueryData<ReportDTO>(queryKeys.report(id), (prev) => (prev ? { ...prev, ...res } : prev))
+      const merge = (prev: ReportDTO | undefined) => (prev ? mergeConfirm(prev, res) : prev)
+      qc.setQueryData<ReportDTO>(queryKeys.report(id), merge)
+      qc.setQueriesData<ReportDTO>(reportAliasFilters(id), merge)
       void qc.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
     },
   })
-}
-
-export function useUnconfirmReport(_id: string): ReturnType<typeof useConfirmReport> {
-  throw new Error("not implemented")
 }

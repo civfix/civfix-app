@@ -114,5 +114,10 @@
     "view_chat_messages_one": "{{count}} Nachricht",
     "view_chat_messages_other": "{{count}} Nachrichten",
     "view_chat_a11y": "Chat zu dieser Meldung ansehen"
+  },
+  "confirm": {
+    "me_too": "Ich auch",
+    "me_too_a11y": "Ich auch, ich habe dieses Problem auch gesehen",
+    "error": "Dein „Ich auch“ konnte nicht gespeichert werden. Bitte erneut versuchen."
   }
 }

@@ -157,3 +157,41 @@ describe("useConfirmReport and useUnconfirmReport", () => {
     expect(queryClient.getQueryState(post)?.isInvalidated).toBe(false)
   })
 })
+
+describe("Me too on a report opened by its reference code", () => {
+  const CODE = ["report", "LA-7Q2K"] as const
+
+  it("presses the page cached under the code, and takes the server's count", async () => {
+    const call = held<ReportConfirmResponse>()
+    const api = { confirmReport: vi.fn(() => call.promise) }
+    const { result, queryClient } = renderWithApi(
+      () => useConfirmReport("r1"),
+      api,
+      report({ confirmCount: 4, confirmedByMe: false }),
+    )
+    queryClient.setQueryData(CODE, report({ confirmCount: 4, confirmedByMe: false }))
+    queryClient.setQueryData(["report", "LA-OTHER"], report({ id: "r2", confirmCount: 4 }))
+    act(() => result.current.mutate())
+    await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(5))
+    expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(true)
+    await act(async () => call.resolve({ confirmCount: 9, confirmedByMe: true }))
+    await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(9))
+    expect(queryClient.getQueryData<ReportDTO>(["report", "LA-OTHER"])?.confirmCount).toBe(4)
+  })
+
+  it("rolls the page cached under the code back when the API fails", async () => {
+    const call = held<ReportConfirmResponse>()
+    const api = { unconfirmReport: vi.fn(() => call.promise) }
+    const { result, queryClient } = renderWithApi(
+      () => useUnconfirmReport("r1"),
+      api,
+      report({ confirmCount: 5, confirmedByMe: true }),
+    )
+    queryClient.setQueryData(CODE, report({ confirmCount: 5, confirmedByMe: true }))
+    act(() => result.current.mutate())
+    await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(false))
+    await act(async () => call.reject(new AppError(ErrorCode.INTERNAL, "boom")))
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(queryClient.getQueryData<ReportDTO>(CODE)).toMatchObject({ confirmCount: 5, confirmedByMe: true })
+  })
+})

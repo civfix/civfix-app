@@ -11,6 +11,7 @@ import { queryKeys } from "../../../data/keys"
 import { I18nProvider } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { ToastContext } from "../../../primitives/toastContext"
+import type * as ToastContextModule from "../../../primitives/toastContext"
 import { useDraftReportStore } from "../../../report/draftStore"
 import type { NearbyReportRow } from "../../linkReportsModel"
 import { DuplicateGate } from "../DuplicateGate"
@@ -21,9 +22,7 @@ vi.mock("../../../typography", async () => {
   return { Text, Icon: () => null, iconMap: {} }
 })
 vi.mock("../../../primitives", async () => {
-  const { useToast } = await vi.importActual<typeof import("../../../primitives/toastContext")>(
-    "../../../primitives/toastContext",
-  )
+  const { useToast } = await vi.importActual<typeof ToastContextModule>("../../../primitives/toastContext")
   return { CATEGORY_ICONS: {}, MetaDot: () => null, useToast }
 })
 

@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { OPEN_REPORT_STATUSES, type ReportDTO } from "@civfix/contract"
-import { useConfirmReport, useRequireAuth } from "../../data"
+import { useConfirmReport, useRequireAuth, useUnconfirmReport } from "../../data"
 import { pathForEntry } from "../../nav"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n"
@@ -15,18 +15,19 @@ export function useReportMeToo(report: ReportDTO) {
   const { t } = useT("report-detail")
   const requireAuth = useRequireAuth()
   const toast = useToast()
-  const confirm = useConfirmReport(report.id)
-  const { mutate } = confirm
+  const { mutate: confirm } = useConfirmReport(report.id)
+  const { mutate: unconfirm } = useUnconfirmReport(report.id)
   const pressed = report.confirmedByMe
   const onPress = useCallback(() => {
     requireAuth(
-      () =>
-        mutate(!pressed, {
-          onError: () => toast.show(t("confirm.error"), { variant: "error" }),
-        }),
+      () => {
+        const onError = () => toast.show(t("confirm.error"), { variant: "error" })
+        if (pressed) unconfirm(undefined, { onError })
+        else confirm(undefined, { onError })
+      },
       { next: pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id }) },
     )
-  }, [requireAuth, mutate, pressed, toast, t, report.referenceCode, report.id])
+  }, [requireAuth, confirm, unconfirm, pressed, toast, t, report.referenceCode, report.id])
   return {
     visible: canMeToo(report),
     pressed,

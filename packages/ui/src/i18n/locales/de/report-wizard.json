@@ -31,7 +31,10 @@
       "help_other": "{{count}} Meldungen genau hier könnten das schon abdecken. Öffne eine, um auf dem Laufenden zu bleiben, oder melde ein neues Problem.",
       "distance_close": "Weniger als 5 m entfernt",
       "distance_about": "Etwa {{meters}} m entfernt",
-      "new": "Neues Problem melden"
+      "new": "Neues Problem melden",
+      "me_too": "Ich auch",
+      "me_too_a11y": "Ich auch, ich habe dieses Problem auch gesehen",
+      "me_too_error": "Dein „Ich auch“ konnte nicht gespeichert werden. Bitte erneut versuchen."
     }
   },
   "footer": {
