@@ -79,7 +79,13 @@ import {
   useMarkThreadRead,
   useToggleMute,
 } from "../hooks/reportChat"
-import { useResolveReport, useUnlistReport } from "../hooks/reports"
+import {
+  useConfirmMatch,
+  useConfirmReport,
+  useResolveReport,
+  useUnconfirmReport,
+  useUnlistReport,
+} from "../hooks/reports"
 import { useReverseLabel } from "../hooks/reverseLabel"
 import { useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
 import {
@@ -193,6 +199,20 @@ describe("reports.ts mutation invalidations", () => {
   it("useUnlistReport invalidates the map report pins", async () => {
     const api = { unlistReport: resolves({ id: REPORT, visibility: "hidden" }) }
     expect(await invalidationsOf(() => useUnlistReport(REPORT), true, api)).toEqual([key("map", "reports")])
+  })
+
+  it("useConfirmReport and useUnconfirmReport invalidate the map report pins once settled", async () => {
+    const api = {
+      confirmReport: resolves({ confirmCount: 1, confirmedByMe: true }),
+      unconfirmReport: resolves({ confirmCount: 0, confirmedByMe: false }),
+    }
+    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+  })
+
+  it("useConfirmMatch invalidates the map report pins", async () => {
+    const api = { confirmReport: resolves({ confirmCount: 1, confirmedByMe: true }) }
+    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([key("map", "reports")])
   })
 })
 

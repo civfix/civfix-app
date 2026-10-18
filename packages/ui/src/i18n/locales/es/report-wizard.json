@@ -31,7 +31,10 @@
       "help_other": "{{count}} reportes justo aquí pueden cubrir ya esto. Abre uno para seguirlo o reporta un problema nuevo.",
       "distance_close": "A menos de 5 m",
       "distance_about": "A unos {{meters}} m",
-      "new": "Reportar un problema nuevo"
+      "new": "Reportar un problema nuevo",
+      "me_too": "Yo también",
+      "me_too_a11y": "Yo también, yo también vi este problema",
+      "me_too_error": "No se pudo guardar tu «Yo también». Inténtalo de nuevo."
     }
   },
   "footer": {

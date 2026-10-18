@@ -114,5 +114,10 @@
     "view_chat_messages_one": "메시지 {{count}}개",
     "view_chat_messages_other": "메시지 {{count}}개",
     "view_chat_a11y": "이 신고의 채팅 보기"
+  },
+  "confirm": {
+    "me_too": "저도요",
+    "me_too_a11y": "저도요, 저도 이 문제를 봤어요",
+    "error": "'저도요'를 저장하지 못했어요. 다시 시도해 주세요."
   }
 }
