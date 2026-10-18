@@ -248,3 +248,39 @@ describe("a fast double tap on one report", () => {
     for (const state of seen) expect(state).toEqual({ confirmCount: 4, confirmedByMe: false })
   })
 })
+
+describe("Me too taps queued behind a failing call", () => {
+  it("keeps the last tap on screen when an earlier call fails or answers", async () => {
+    const firstPost = held<ReportConfirmResponse>()
+    const secondPost = held<ReportConfirmResponse>()
+    const del = held<ReportConfirmResponse>()
+    const api = {
+      confirmReport: vi.fn().mockReturnValueOnce(firstPost.promise).mockReturnValueOnce(secondPost.promise),
+      unconfirmReport: vi.fn(() => del.promise),
+    }
+    const { result, queryClient } = renderWithApi(
+      () => ({ confirm: useConfirmReport("r1"), unconfirm: useUnconfirmReport("r1") }),
+      api,
+      report({ confirmCount: 4, confirmedByMe: false }),
+    )
+    act(() => {
+      result.current.confirm.mutate()
+      result.current.unconfirm.mutate()
+      result.current.confirm.mutate()
+    })
+    await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true }))
+
+    await act(async () => firstPost.reject(new AppError(ErrorCode.INTERNAL, "boom")))
+    await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
+
+    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false }))
+    await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(2))
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
+
+    await act(async () => secondPost.resolve({ confirmCount: 6, confirmedByMe: true }))
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 6, confirmedByMe: true })
+  })
+})

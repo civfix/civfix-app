@@ -52,6 +52,9 @@ export function MeTooButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ selected: pressed, busy, disabled }}
+      // react-native-web maps no accessibilityState to ARIA, and RN's props have no aria-pressed.
+      {...({ "aria-pressed": pressed } as object)}
+      aria-busy={busy}
       hitSlop={sm ? ME_TOO_SM_HIT_SLOP : undefined}
       {...focusRingProps}
       style={(state) => [

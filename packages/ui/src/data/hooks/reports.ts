@@ -337,6 +337,8 @@ function mergeConfirm(prev: ReportDTO, res: ReportConfirmResponse): ReportDTO {
   return { ...prev, confirmCount: res.confirmCount, confirmedByMe: res.confirmedByMe }
 }
 
+const meTooMutationKey = (id: string) => ["report-me-too", id] as const
+
 /** Me too (or its undo) on a report's page: the pressed state and the count move at once and roll back on failure. */
 function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boolean) {
   const press = (prev: ReportDTO): ReportDTO => ({
@@ -344,7 +346,7 @@ function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boo
     confirmedByMe: confirm,
     confirmCount: Math.max(0, prev.confirmCount + (confirm ? 1 : -1)),
   })
-  return optimisticPatch<ReportDTO, void, ReportConfirmResponse, ReportAliasCtx>(qc, {
+  const base = optimisticPatch<ReportDTO, void, ReportConfirmResponse, ReportAliasCtx>(qc, {
     key: queryKeys.report(id),
     mutationFn: () => (confirm ? api.confirmReport({ id }) : api.unconfirmReport({ id })),
     patch: press,
@@ -365,6 +367,20 @@ function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boo
       },
     },
   })
+  // A double tap sends one report's calls in tap order, each pressing at once. An answer (or a failure) that
+  // lands while a later tap is still pending would undo that tap on screen, so only the last call reconciles.
+  const laterTapPending = () => qc.isMutating({ mutationKey: meTooMutationKey(id) }) > 1
+  return {
+    ...base,
+    mutationKey: meTooMutationKey(id),
+    scope: { id: `report-me-too:${id}` },
+    onSuccess: (...args: Parameters<NonNullable<typeof base.onSuccess>>) => {
+      if (!laterTapPending()) return base.onSuccess?.(...args)
+    },
+    onError: (...args: Parameters<NonNullable<typeof base.onError>>) => {
+      if (!laterTapPending()) return base.onError?.(...args)
+    },
+  } satisfies typeof base
 }
 
 export function useConfirmReport(id: string) {
