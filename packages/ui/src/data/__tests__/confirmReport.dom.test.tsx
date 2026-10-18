@@ -195,3 +195,56 @@ describe("Me too on a report opened by its reference code", () => {
     expect(queryClient.getQueryData<ReportDTO>(CODE)).toMatchObject({ confirmCount: 5, confirmedByMe: true })
   })
 })
+
+describe("a fast double tap on one report", () => {
+  // Press, then release before the POST answers: what the report page does on a double tap.
+  async function doubleTap() {
+    const post = held<ReportConfirmResponse>()
+    const del = held<ReportConfirmResponse>()
+    const api = {
+      confirmReport: vi.fn(() => post.promise),
+      unconfirmReport: vi.fn(() => del.promise),
+    }
+    const { result, queryClient } = renderWithApi(
+      () => ({ confirm: useConfirmReport("r1"), unconfirm: useUnconfirmReport("r1") }),
+      api,
+      report({ confirmCount: 4, confirmedByMe: false }),
+    )
+    act(() => {
+      result.current.confirm.mutate()
+      result.current.unconfirm.mutate()
+    })
+    await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+    return { api, post, del, queryClient }
+  }
+
+  it("T18: shows the second tap at once and holds its DELETE until the POST settles", async () => {
+    const { api, queryClient } = await doubleTap()
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
+    expect(api.unconfirmReport).not.toHaveBeenCalled()
+  })
+
+  it("T19: sends the DELETE once after the POST settles, and the POST's answer never shows", async () => {
+    const { api, post, del, queryClient } = await doubleTap()
+    const seen: ReturnType<typeof confirmState>[] = []
+    const unsubscribe = queryClient.getQueryCache().subscribe(() => seen.push(confirmState(queryClient)))
+
+    expect(api.unconfirmReport).not.toHaveBeenCalled()
+    await act(async () => post.resolve({ confirmCount: 5, confirmedByMe: true }))
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
+    await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
+
+    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false }))
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
+    unsubscribe()
+
+    expect(api.unconfirmReport).toHaveBeenCalledTimes(1)
+    expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
+    expect(seen.length).toBeGreaterThan(0)
+    for (const state of seen) expect(state).toEqual({ confirmCount: 4, confirmedByMe: false })
+  })
+})
