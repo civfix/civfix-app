@@ -23,6 +23,7 @@ const IDENTITY = code(read("../GroupIdentityFields.tsx"))
 const ROLE_CHIP = code(read("../RoleChip.tsx"))
 const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
 const BUBBLE_MENUS = code(read("../conversation/BubbleMenus.tsx"))
+const BUBBLE_STYLES = code(read("../conversation/bubbleStyles.ts"))
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
 const CONVO_BAR = code(read("../conversation/ConvoBar.tsx"))
 const CONVO_COMPOSER = code(read("../conversation/ConversationComposer.tsx"))
@@ -199,6 +200,34 @@ describe("the native bubble offers its long-press menu to screen readers", () =>
   it("declares a labelled longpress action that opens the context menu", () => {
     expect(BUBBLE).toContain('menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined')
     expect(BUBBLE).toMatch(/if \(e\.nativeEvent\.actionName === "longpress"\) openContextMenu\(\)/)
+  })
+})
+
+describe("a long message wraps inside its bubble", () => {
+  const style = (name: string): string => {
+    const found = new RegExp(`\\n    ${name}: \\{([\\s\\S]*?)\\n    \\},`).exec(BUBBLE_STYLES)
+    if (!found || found[1] === undefined) throw new Error(`style "${name}" not found`)
+    return found[1]
+  }
+  const row = sliceBetween(BUBBLE, "<View style={styles.bubbleRow}>", "<BubbleAttachments")
+
+  it("keeps the bubble row inside the 80% column, so a URL or a reply quote cannot widen it", () => {
+    expect(style("bubbleWrap")).toContain('maxWidth: "80%"')
+    expect(style("bubbleRow")).toContain('maxWidth: "100%"')
+  })
+
+  it("lets the text bubble shrink to the row on web and native instead of sizing to one line", () => {
+    expect(style("bubbleInRow")).toContain("flexShrink: 1")
+    const placed = row.match(/style=\{\[styles\.bubble, styles\.bubbleInRow, bubbleChrome, bubbleTint\]\}/g)
+    expect(placed).toHaveLength(2)
+    expect(row).toMatch(/<View ref=\{menuAnchorRef\} style=\{\[styles\.bubble, styles\.bubbleInRow,/)
+    expect(row).toMatch(/\{\.\.\.focusRingProps\}\s*style=\{\[styles\.bubble, styles\.bubbleInRow,/)
+  })
+
+  it("keeps the web hover actions at full size beside a wrapped bubble", () => {
+    const button = style("hoverActionBtn")
+    expect(button).toContain("width: 22")
+    expect(button).not.toMatch(/flexShrink|flex:/)
   })
 })
 

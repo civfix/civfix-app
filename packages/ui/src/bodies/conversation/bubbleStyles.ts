@@ -113,6 +113,11 @@ export const useBubbleStyles = makeThemedStyles((t) => {
       paddingVertical: 0,
       borderRadius: t.radius.lg,
     },
+    // Row children do not shrink by default (RN and RN-web): without this the bubble keeps its text's
+    // one-line width and runs past the row instead of wrapping.
+    bubbleInRow: {
+      flexShrink: 1,
+    },
     bubbleFailed: {
       backgroundColor: t.colors.bloom["600"],
     },
@@ -196,6 +201,7 @@ export const useBubbleStyles = makeThemedStyles((t) => {
       flexDirection: "row",
       alignItems: "flex-end",
       gap: t.space["1"],
+      maxWidth: "100%",
     },
     hoverActionBtn: {
       width: 22,

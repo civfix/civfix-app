@@ -539,7 +539,7 @@ export const Bubble = React.memo(function Bubble({
         {emptyRow ? (
           <ProcessingPill />
         ) : !hasBody ? null : isWeb ? (
-          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
+          <View ref={menuAnchorRef} style={[styles.bubble, styles.bubbleInRow, bubbleChrome, bubbleTint]}>
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </View>
@@ -560,7 +560,7 @@ export const Bubble = React.memo(function Bubble({
                 : undefined
             }
             {...focusRingProps}
-            style={[styles.bubble, bubbleChrome, bubbleTint]}
+            style={[styles.bubble, styles.bubbleInRow, bubbleChrome, bubbleTint]}
           >
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
