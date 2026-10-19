@@ -216,18 +216,30 @@ describe("a long message wraps inside its bubble", () => {
     expect(style("bubbleRowFit")).toContain('maxWidth: "100%"')
   })
 
-  it("lets the text bubble shrink to the row on web and native instead of sizing to one line", () => {
-    expect(style("bubbleInRow")).toContain("flexShrink: 1")
+  it("caps the text bubble at the row on web and native instead of sizing it to one line", () => {
+    expect(style("bubbleInRow")).toContain('maxWidth: "100%"')
     const placed = row().match(/style=\{\[styles\.bubble, bubbleFit, bubbleChrome, bubbleTint\]\}/g)
     expect(placed).toHaveLength(2)
     expect(row()).toMatch(/<View ref=\{menuAnchorRef\} style=\{\[styles\.bubble, bubbleFit,/)
     expect(row()).toMatch(/\{\.\.\.focusRingProps\}\s*style=\{\[styles\.bubble, bubbleFit,/)
   })
 
+  it("keeps a text bubble with a link card at main's width: the bubble never shrinks to make room for the web hover actions", () => {
+    expect(style("bubbleInRow")).not.toMatch(/flexShrink|flex:/)
+    expect(style("bubble")).not.toMatch(/flexShrink|flex:/)
+    expect(style("bubbleRowFit")).not.toMatch(/flexShrink|flex:/)
+  })
+
+  it("lets the hover actions of a full-width mine bubble overflow inward, toward the column, instead of off the screen edge", () => {
+    expect(style("bubbleRowFitMine")).toContain('maxWidth: "100%"')
+    expect(style("bubbleRowFitMine")).toContain('justifyContent: "flex-end"')
+    expect(style("bubbleRowFit")).not.toContain("justifyContent")
+    expect(BUBBLE).toContain("const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit")
+  })
+
   it("leaves the link-only card and its row as they were, so the card keeps its fixed width beside the hover actions", () => {
-    expect(BUBBLE).toContain("const rowFit = bare ? null : styles.bubbleRowFit")
     expect(BUBBLE).toContain("const bubbleFit = bare ? null : styles.bubbleInRow")
-    expect(style("bubbleRow")).not.toMatch(/maxWidth|flexShrink/)
+    expect(style("bubbleRow")).not.toMatch(/maxWidth|flexShrink|justifyContent/)
     expect(style("bubbleBare")).not.toMatch(/maxWidth|flexShrink/)
   })
 

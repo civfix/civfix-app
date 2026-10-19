@@ -113,11 +113,12 @@ export const useBubbleStyles = makeThemedStyles((t) => {
       paddingVertical: 0,
       borderRadius: t.radius.lg,
     },
-    // Row children do not shrink by default (RN and RN-web): without this the bubble keeps its text's
-    // one-line width and runs past the row instead of wrapping. Text bubbles only: the link-only card
-    // has a fixed width, and shrinking it would trade card width for the web hover actions' space.
+    // Row children do not shrink by default (RN and RN-web): without a cap the bubble keeps its text's
+    // one-line width and runs past the row instead of wrapping. A cap, not flexShrink: shrinking would
+    // trade the bubble's (and a link card's) width for the web hover actions, which instead overflow
+    // beside it as they always have. Text bubbles only: the link-only card has a fixed width.
     bubbleInRow: {
-      flexShrink: 1,
+      maxWidth: "100%",
     },
     bubbleFailed: {
       backgroundColor: t.colors.bloom["600"],
@@ -207,6 +208,11 @@ export const useBubbleStyles = makeThemedStyles((t) => {
     // otherwise widen it past the 80% column.
     bubbleRowFit: {
       maxWidth: "100%",
+    },
+    // A mine column hugs the screen edge: a full-width bubble's hover actions overflow inward instead.
+    bubbleRowFitMine: {
+      maxWidth: "100%",
+      justifyContent: "flex-end",
     },
     hoverActionBtn: {
       width: 22,

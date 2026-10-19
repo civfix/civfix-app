@@ -453,7 +453,7 @@ export const Bubble = React.memo(function Bubble({
   const tinted = mine && !bare
   const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken
   const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs
-  const rowFit = bare ? null : styles.bubbleRowFit
+  const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit
   const bubbleFit = bare ? null : styles.bubbleInRow
   const bodyContent = renderChatTokens(bodyTokens, {
     body,
