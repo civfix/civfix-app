@@ -199,7 +199,7 @@ describe("a link-only message is drawn as its card, never as a tinted bubble fra
   it("drops the bubble chrome when the body is nothing but the link and there is no quote above it", () => {
     expect(BUBBLE).toContain("const bare = embedPlan.linkOnly && !message.replyTo")
     expect(BUBBLE).toContain("const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs")
-    expect(BUBBLE.match(/\[styles\.bubble, (?:styles\.bubbleInRow, )?bubbleChrome, bubbleTint\]/g)?.length).toBe(3)
+    expect(BUBBLE.match(/\[styles\.bubble, (?:bubbleFit, )?bubbleChrome, bubbleTint\]/g)?.length).toBe(3)
     expect(BUBBLE).not.toMatch(/styles\.bubble, mine \? styles\.bubbleMine/)
     expect(STYLES).toMatch(/bubbleBare: \{\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*borderRadius: t\.radius\.lg,\s*\}/)
   })

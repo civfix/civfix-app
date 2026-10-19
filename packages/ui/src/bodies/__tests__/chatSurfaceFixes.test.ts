@@ -209,19 +209,26 @@ describe("a long message wraps inside its bubble", () => {
     if (!found || found[1] === undefined) throw new Error(`style "${name}" not found`)
     return found[1]
   }
-  const row = sliceBetween(BUBBLE, "<View style={styles.bubbleRow}>", "<BubbleAttachments")
+  const row = (): string => sliceBetween(BUBBLE, "<View style={[styles.bubbleRow, rowFit]}>", "<BubbleAttachments")
 
   it("keeps the bubble row inside the 80% column, so a URL or a reply quote cannot widen it", () => {
     expect(style("bubbleWrap")).toContain('maxWidth: "80%"')
-    expect(style("bubbleRow")).toContain('maxWidth: "100%"')
+    expect(style("bubbleRowFit")).toContain('maxWidth: "100%"')
   })
 
   it("lets the text bubble shrink to the row on web and native instead of sizing to one line", () => {
     expect(style("bubbleInRow")).toContain("flexShrink: 1")
-    const placed = row.match(/style=\{\[styles\.bubble, styles\.bubbleInRow, bubbleChrome, bubbleTint\]\}/g)
+    const placed = row().match(/style=\{\[styles\.bubble, bubbleFit, bubbleChrome, bubbleTint\]\}/g)
     expect(placed).toHaveLength(2)
-    expect(row).toMatch(/<View ref=\{menuAnchorRef\} style=\{\[styles\.bubble, styles\.bubbleInRow,/)
-    expect(row).toMatch(/\{\.\.\.focusRingProps\}\s*style=\{\[styles\.bubble, styles\.bubbleInRow,/)
+    expect(row()).toMatch(/<View ref=\{menuAnchorRef\} style=\{\[styles\.bubble, bubbleFit,/)
+    expect(row()).toMatch(/\{\.\.\.focusRingProps\}\s*style=\{\[styles\.bubble, bubbleFit,/)
+  })
+
+  it("leaves the link-only card and its row as they were, so the card keeps its fixed width beside the hover actions", () => {
+    expect(BUBBLE).toContain("const rowFit = bare ? null : styles.bubbleRowFit")
+    expect(BUBBLE).toContain("const bubbleFit = bare ? null : styles.bubbleInRow")
+    expect(style("bubbleRow")).not.toMatch(/maxWidth|flexShrink/)
+    expect(style("bubbleBare")).not.toMatch(/maxWidth|flexShrink/)
   })
 
   it("keeps the web hover actions at full size beside a wrapped bubble", () => {

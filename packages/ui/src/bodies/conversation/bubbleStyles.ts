@@ -114,7 +114,8 @@ export const useBubbleStyles = makeThemedStyles((t) => {
       borderRadius: t.radius.lg,
     },
     // Row children do not shrink by default (RN and RN-web): without this the bubble keeps its text's
-    // one-line width and runs past the row instead of wrapping.
+    // one-line width and runs past the row instead of wrapping. Text bubbles only: the link-only card
+    // has a fixed width, and shrinking it would trade card width for the web hover actions' space.
     bubbleInRow: {
       flexShrink: 1,
     },
@@ -201,6 +202,10 @@ export const useBubbleStyles = makeThemedStyles((t) => {
       flexDirection: "row",
       alignItems: "flex-end",
       gap: t.space["1"],
+    },
+    // A row's min-content is its widest unbreakable piece (a URL, a one-line reply quote), which would
+    // otherwise widen it past the 80% column.
+    bubbleRowFit: {
       maxWidth: "100%",
     },
     hoverActionBtn: {
