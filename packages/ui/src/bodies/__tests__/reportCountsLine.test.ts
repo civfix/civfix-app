@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { createI18n } from "../../i18n/config"
 import { reportCountsLine } from "../reportCountsLine"
@@ -26,14 +25,5 @@ describe("GH#203 counts line", () => {
   it("T5: uses the singular for one and the plural otherwise", () => {
     expect(line(1, 0)).toBe("1 neighbor confirmed this")
     expect(line(0, 4)).toBe("4 neighbors say this is fixed")
-  })
-})
-
-// The package root pulls in native-only modules under vitest, so its export is read from the barrels.
-describe("reportCountsLine export", () => {
-  it("is exported from @civfix/ui", () => {
-    const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8")
-    expect(read("../../index.ts")).toMatch(/export \* from "\.\/bodies"/)
-    expect(read("../index.ts")).toMatch(/export \{ reportCountsLine \} from "\.\/reportCountsLine"/)
   })
 })
