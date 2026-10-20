@@ -46,13 +46,12 @@ export default function TermsPage() {
           process.
         </p>
         <p>
-          You can use much of civfix without an account, including submitting reports anonymously (see
-          Section 5). To follow your reports over time, host or join cleanups, use chat, or follow
-          other people, you create an account by signing in with a third-party identity provider (for
-          example Google or Apple). We do not store passwords. You are responsible for keeping access to
-          your sign-in provider secure and for all activity under your account. Sessions remain valid
-          for a limited period and we may revoke them at any time (for example for security reasons or
-          for a breach of these Terms).
+          You can browse much of civfix without an account. To submit a report (see Section 5), follow
+          your reports over time, host or join cleanups, use chat, or follow other people, you create an
+          account by signing in with a third-party identity provider (for example Google or Apple). We
+          do not store passwords. You are responsible for keeping access to your sign-in provider secure
+          and for all activity under your account. Sessions remain valid for a limited period and we may
+          revoke them at any time (for example for security reasons or for a breach of these Terms).
         </p>
       </section>
 
@@ -113,26 +112,26 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>5. Anonymous reports</h2>
+        <h2>5. Reports need an account</h2>
         <p>
-          You can submit a report without an account. We call this an &ldquo;anonymous&rdquo; report
-          because it is not tied to a civfix profile. You should understand what that does and does not
-          mean:
+          You need a civfix account to submit a report, and each report you submit is linked to your
+          account. Earlier versions of civfix let people submit reports without an account. We call
+          those &ldquo;anonymous&rdquo; reports because they are not tied to a civfix profile. If you
+          submitted one, you should understand what that does and does not mean:
         </p>
         <ul>
           <li>
-            An anonymous report is not linked to a civfix account, and we do not attach your name or
+            An anonymous report is not linked to a civfix account, and we did not attach your name or
             email to it.
           </li>
           <li>
-            To submit anonymously and to let you check the status of your report later, we issue a
-            short-lived token and a per-report <strong>claim code</strong>. If you later create an
-            account and enter that claim code, the report becomes linked to your account. In that sense
-            an anonymous report can be made <strong>retroactively linkable</strong> to you.
+            When you submitted it, we issued a per-report <strong>claim code</strong>. If you sign in to
+            an account and enter that claim code, the report becomes linked to your account. In that
+            sense an anonymous report can be made <strong>retroactively linkable</strong> to you.
           </li>
           <li>
-            As with any online submission, we process technical information such as your IP address to
-            prevent abuse and to perform basic location sanity checks, as described in the{" "}
+            As with any online submission, we processed technical information such as your IP address
+            to prevent abuse and to perform basic location sanity checks, as described in the{" "}
             <a href="/legal/privacy">Privacy Policy</a>.
           </li>
           <li>

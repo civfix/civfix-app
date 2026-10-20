@@ -202,9 +202,10 @@ export default function PrivacyPage() {
             do not use it to pinpoint you.
           </li>
           <li>
-            <strong>Anonymous-submission tokens and claim codes.</strong> If you submit without an
-            account, we issue a short-lived token and a per-report claim code so you can check the
-            report&rsquo;s status and optionally link it to an account later (see Section 6).
+            <strong>Claim codes for earlier anonymous reports.</strong> Submitting a report now needs an
+            account. For a report submitted without an account before that, we issued a short-lived
+            token and a per-report claim code so you can check the report&rsquo;s status and optionally
+            link it to an account later (see Section 6).
           </li>
           <li>
             <strong>Device and log data.</strong> Standard information such as request metadata, app and
@@ -349,26 +350,27 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2>6. Anonymous reports and what &ldquo;anonymous&rdquo; means</h2>
+        <h2>6. Reports need an account, and what &ldquo;anonymous&rdquo; meant</h2>
         <p>
-          You can report without an account. An anonymous report is not tied to a civfix profile and we
-          do not attach your name or email to it. However:
+          You need a civfix account to submit a report, and each report you submit is linked to your
+          account. Earlier versions of civfix let people report without an account. Such an anonymous
+          report is not tied to a civfix profile and we did not attach your name or email to it.
+          However:
         </p>
         <ul>
           <li>
-            we issue a short-lived token and a per-report <strong>claim code</strong> so you can check
-            its status and, if you choose, link the report to an account later, which makes the report{" "}
+            we issued a per-report <strong>claim code</strong> with it, so you can still check its status
+            and, if you choose, sign in and link the report to your account, which makes the report{" "}
             <strong>retroactively linkable</strong> to you;
           </li>
           <li>
-            we still process technical information such as your IP address for security and the
-            location sanity check described above; and
+            we processed technical information such as your IP address for security and the location
+            sanity check described above when it was submitted; and
           </li>
           <li>anonymous reports remain subject to valid legal process.</li>
         </ul>
         <p>
-          If you want a report to stay unlinked, do not enter its claim code into an account and do not
-          include identifying details in the description or media.
+          If you want such a report to stay unlinked, do not enter its claim code into an account.
         </p>
       </section>
 
