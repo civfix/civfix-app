@@ -82,9 +82,11 @@ import {
 import {
   useConfirmMatch,
   useConfirmReport,
+  useMarkReportFixed,
   useResolveReport,
   useUnconfirmReport,
   useUnlistReport,
+  useUnmarkReportFixed,
 } from "../hooks/reports"
 import { useReverseLabel } from "../hooks/reverseLabel"
 import { useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
@@ -208,6 +210,21 @@ describe("reports.ts mutation invalidations", () => {
     }
     expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
     expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+  })
+
+  it("T16: useConfirmReport, useUnconfirmReport, useMarkReportFixed, useUnmarkReportFixed and useConfirmMatch invalidate exactly the map report pins", async () => {
+    const answer = { confirmCount: 1, confirmedByMe: false, fixedCount: 1, fixedByMe: true }
+    const api = {
+      confirmReport: resolves(answer),
+      unconfirmReport: resolves(answer),
+      markReportFixed: resolves(answer),
+      unmarkReportFixed: resolves(answer),
+    }
+    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useMarkReportFixed(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useUnmarkReportFixed(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([key("map", "reports")])
   })
 
   it("useConfirmMatch invalidates the map report pins", async () => {

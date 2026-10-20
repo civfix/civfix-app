@@ -33,5 +33,14 @@ export function useReportMeToo(report: ReportDTO) {
     pressed,
     count: report.confirmCount,
     onPress,
+    confirmCount: report.confirmCount,
+    fixedCount: report.fixedCount,
+    seen: { pressed, onPress },
+    fixed: {
+      pressed: report.fixedByMe,
+      onPress: (): void => {
+        throw new Error("not implemented")
+      },
+    },
   }
 }

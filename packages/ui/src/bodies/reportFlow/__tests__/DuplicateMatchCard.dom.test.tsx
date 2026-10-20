@@ -60,3 +60,22 @@ describe("DuplicateMatchCard", () => {
     expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors saw this too/ })).toBe(card)
   })
 })
+
+describe("GH#203 DuplicateMatchCard", () => {
+  it("T26: shows the counts line, and none when both counts are 0", () => {
+    const { unmount } = render(
+      <I18nProvider locale="en">
+        <DuplicateMatchCard
+          row={row({ title: "Overflowing bin", confirmCount: 0, fixedCount: 2 }, 8)}
+          width={undefined}
+          onOpen={vi.fn()}
+        />
+      </I18nProvider>,
+    )
+    expect(screen.getByText("2 neighbors say this is fixed")).toBeTruthy()
+    unmount()
+
+    renderCard(row({ title: "Overflowing bin", confirmCount: 0, fixedCount: 0 }, 8))
+    expect(screen.getByRole("button").textContent).toBe("Overflowing binTrashAbout 10 m away")
+  })
+})

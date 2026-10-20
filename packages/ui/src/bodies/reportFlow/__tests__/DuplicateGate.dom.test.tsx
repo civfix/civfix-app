@@ -196,3 +196,18 @@ describe("DuplicateGate", () => {
     expect(onOpen).not.toHaveBeenCalled()
   })
 })
+
+describe("GH#203 DuplicateGate", () => {
+  it("T25: a failed I see this too shows the vote error once, keeps the draft and stays on the screen", async () => {
+    const api = { confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))) }
+    const { onOpen, toast } = renderGate({ api })
+    const draftBefore = draft()
+    fireEvent.click(screen.getAllByRole("button", { name: "I see this problem too" })[0]!)
+    await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
+    await act(async () => {})
+    expect(toast.show).toHaveBeenCalledTimes(1)
+    expect(draft()).toBe(draftBefore)
+    expect(onOpen).not.toHaveBeenCalled()
+  })
+})

@@ -417,3 +417,11 @@ export function useConfirmMatch() {
     },
   })
 }
+
+export function useMarkReportFixed(_id: string): ReturnType<typeof useConfirmReport> {
+  throw new Error("not implemented")
+}
+
+export function useUnmarkReportFixed(_id: string): ReturnType<typeof useConfirmReport> {
+  throw new Error("not implemented")
+}

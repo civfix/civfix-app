@@ -103,3 +103,24 @@ describe("PressingRail", () => {
     expect(px(getComputedStyle(scroller).marginTop)).toBe(-px(pad.paddingTop))
   })
 })
+
+describe("GH#203 PressingRail", () => {
+  it("T27: keeps the API's order and shows each card's counts line, in its label too", async () => {
+    const b: ReportPinDTO = { id: "b", category: "graffiti", status: "published", lat: 34.06, lng: -118.25, confirmCount: 2, fixedCount: 0, title: "Tagged wall" }
+    const a: ReportPinDTO = { id: "a", category: "trash", status: "published", lat: 34.05, lng: -118.24, confirmCount: 3, fixedCount: 1, title: "Overflowing bin" }
+    const { container } = render(
+      <I18nProvider locale="en">
+        <PressingRail reports={[b, a]} viewer={null} />
+      </I18nProvider>,
+    )
+    const cardA = await screen.findByRole("button", {
+      name: "Overflowing bin, 3 neighbors confirmed this, 1 neighbor says this is fixed",
+    })
+    const cards = Array.from(container.querySelectorAll('[role="button"]'))
+    expect(cards.map((c) => c.getAttribute("aria-label"))).toEqual([
+      "Tagged wall, 2 neighbors confirmed this",
+      "Overflowing bin, 3 neighbors confirmed this, 1 neighbor says this is fixed",
+    ])
+    expect(cardA.textContent).toContain("3 neighbors confirmed this, 1 neighbor says this is fixed")
+  })
+})
