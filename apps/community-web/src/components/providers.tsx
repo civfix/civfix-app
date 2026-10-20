@@ -84,7 +84,7 @@ function useWebAuthState(): AuthState {
   })
 }
 
-function WebDataProvider({ children }: { children: React.ReactNode }) {
+export function WebDataProvider({ children }: { children: React.ReactNode }) {
   const runAuthed = useAuthGate()
   const logout = useLogout()
   const isAuthenticated = useAuthStore((s) => s.status === "authenticated")
