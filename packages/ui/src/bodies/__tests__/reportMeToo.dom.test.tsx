@@ -59,6 +59,8 @@ function renderMeToo(
 const answer = (confirmCount: number, confirmedByMe: boolean): ReportConfirmResponse => ({
   confirmCount,
   confirmedByMe,
+  fixedCount: 0,
+  fixedByMe: false,
 })
 
 describe("useReportMeToo", () => {

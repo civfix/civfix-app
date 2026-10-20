@@ -15,7 +15,7 @@ vi.mock("../../../primitives", () => ({ CATEGORY_ICONS: {}, MetaDot: () => null 
 
 function row(over: Partial<NearbyReportRow["pin"]>, distanceM: number): NearbyReportRow {
   return {
-    pin: { id: "r1", category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, ...over },
+    pin: { id: "r1", category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, ...over },
     distanceM,
   }
 }

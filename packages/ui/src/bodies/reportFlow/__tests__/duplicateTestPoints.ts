@@ -31,5 +31,5 @@ export function exactlyNorthOf(center: LatLng, meters: number): LatLng {
 }
 
 export function pinAt(id: string, at: LatLng, status: ReportStatus = "published"): ReportPinDTO {
-  return { id, category: "trash", status, lat: at.lat, lng: at.lng, title: `Report ${id}`, confirmCount: 0 }
+  return { id, category: "trash", status, lat: at.lat, lng: at.lng, title: `Report ${id}`, confirmCount: 0, fixedCount: 0 }
 }

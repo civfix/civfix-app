@@ -27,8 +27,9 @@ function linkedReportToPin(r: CleanupDTO["linkedReports"][number]): ReportPinDTO
     lng: r.lng,
     status: r.status,
     title: r.title,
-    // A linked ref carries no count; 0 is what the contract gives a pin that omits it.
+    // A linked ref carries no counts; 0 is what the contract gives a pin that omits it.
     confirmCount: 0,
+    fixedCount: 0,
     ...(r.thumbUrl !== undefined && r.thumbUrl !== null ? { thumbUrl: r.thumbUrl } : {}),
   }
 }

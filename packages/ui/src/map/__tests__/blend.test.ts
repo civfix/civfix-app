@@ -3,7 +3,7 @@ import type { CleanupDTO, LinkedReportRef, ReportPinDTO } from "@civfix/contract
 import { computeMapBlends } from "../blend"
 
 function pin(id: string, category: ReportPinDTO["category"] = "trash"): ReportPinDTO {
-  return { id, category, lat: 34.05, lng: -118.25, status: "published", confirmCount: 0 }
+  return { id, category, lat: 34.05, lng: -118.25, status: "published", confirmCount: 0, fixedCount: 0 }
 }
 
 function linkedRef(id: string): LinkedReportRef {

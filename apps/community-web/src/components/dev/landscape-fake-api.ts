@@ -152,6 +152,8 @@ function report(
     timeline: [{ status: "submitted", at: createdAt, note: null }],
     confirmCount: 0,
     confirmedByMe: false,
+    fixedCount: 0,
+    fixedByMe: false,
   }
 }
 
@@ -184,6 +186,7 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
     lat: south + (north - south) * p.at[1],
     lng: west + (east - west) * p.at[0],
     confirmCount: 0,
+    fixedCount: 0,
   }))
 }
 

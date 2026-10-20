@@ -30,10 +30,11 @@ const reports: ReportPinDTO[] = [
     lat: 34.05,
     lng: -118.24,
     confirmCount: 3,
+    fixedCount: 0,
     title: "Overflowing bin",
     thumbUrl: THUMB,
   },
-  { id: "r2", category: "graffiti", status: "published", lat: 34.06, lng: -118.25, confirmCount: 1, title: "Tagged wall" },
+  { id: "r2", category: "graffiti", status: "published", lat: 34.06, lng: -118.25, confirmCount: 1, fixedCount: 0, title: "Tagged wall" },
 ]
 
 // The rail sizes its cards from its measured width, which jsdom never lays out: report a phone-wide rail.

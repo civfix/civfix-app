@@ -3,7 +3,7 @@ import type { CleanupDTO, ReportPinDTO } from "@civfix/contract"
 import { mapPointsFor } from "../mapPoints"
 
 function pin(id: string, lat = 34.05, lng = -118.25): ReportPinDTO {
-  return { id, category: "trash", lat, lng, status: "published", confirmCount: 0 }
+  return { id, category: "trash", lat, lng, status: "published", confirmCount: 0, fixedCount: 0 }
 }
 
 function event(id: string, linkedReports: CleanupDTO["linkedReports"] = []): CleanupDTO {

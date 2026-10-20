@@ -24,7 +24,7 @@ import {
 const LA = { lat: 34.0522, lng: -118.2437 }
 
 function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
-  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, confirmCount: 0, ...over }
+  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, confirmCount: 0, fixedCount: 0, ...over }
 }
 
 describe("pickerFetchRegion edges", () => {

@@ -72,7 +72,7 @@ describe("useConfirmReport", () => {
     const { result, queryClient } = renderWithApi(() => useConfirmReport("r1"), api, before)
     act(() => result.current.mutate())
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await act(async () => call.resolve({ confirmCount: 7, confirmedByMe: true }))
+    await act(async () => call.resolve({ confirmCount: 7, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual({
       ...before,
@@ -137,7 +137,7 @@ describe("useConfirmReport and useUnconfirmReport", () => {
     ["useConfirmReport", () => useConfirmReport("r1"), false],
     ["useUnconfirmReport", () => useUnconfirmReport("r1"), true],
   ] as const)("T6: %s invalidates the cached map and nearby queries once settled, and no post", async (_name, useHook, confirmedByMe) => {
-    const answer: ReportConfirmResponse = { confirmCount: confirmedByMe ? 4 : 5, confirmedByMe: !confirmedByMe }
+    const answer: ReportConfirmResponse = { confirmCount: confirmedByMe ? 4 : 5, confirmedByMe: !confirmedByMe, fixedCount: 0, fixedByMe: false }
     const api = {
       confirmReport: vi.fn(async () => answer),
       unconfirmReport: vi.fn(async () => answer),
@@ -174,7 +174,7 @@ describe("Me too on a report opened by its reference code", () => {
     act(() => result.current.mutate())
     await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(5))
     expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(true)
-    await act(async () => call.resolve({ confirmCount: 9, confirmedByMe: true }))
+    await act(async () => call.resolve({ confirmCount: 9, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
     await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(9))
     expect(queryClient.getQueryData<ReportDTO>(["report", "LA-OTHER"])?.confirmCount).toBe(4)
   })
@@ -233,12 +233,12 @@ describe("a fast double tap on one report", () => {
     const unsubscribe = queryClient.getQueryCache().subscribe(() => seen.push(confirmState(queryClient)))
 
     expect(api.unconfirmReport).not.toHaveBeenCalled()
-    await act(async () => post.resolve({ confirmCount: 5, confirmedByMe: true }))
+    await act(async () => post.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
     await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
 
-    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false }))
+    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }))
     await waitFor(() => expect(queryClient.isMutating()).toBe(0))
     unsubscribe()
 
@@ -275,11 +275,11 @@ describe("Me too taps queued behind a failing call", () => {
     await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
 
-    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false }))
+    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }))
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(2))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
 
-    await act(async () => secondPost.resolve({ confirmCount: 6, confirmedByMe: true }))
+    await act(async () => secondPost.resolve({ confirmCount: 6, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
     await waitFor(() => expect(queryClient.isMutating()).toBe(0))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 6, confirmedByMe: true })
   })

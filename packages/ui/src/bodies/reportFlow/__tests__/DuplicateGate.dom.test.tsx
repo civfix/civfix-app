@@ -32,7 +32,7 @@ const ME_TOO_ERROR = "Couldn't save your Me too. Try again."
 
 function match(id: string, title: string): NearbyReportRow {
   return {
-    pin: { id, category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, title },
+    pin: { id, category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, title },
     distanceM: 8,
   }
 }
@@ -146,7 +146,7 @@ describe("DuplicateGate", () => {
     fireEvent.click(meTooButtons()[0]!)
     fireEvent.click(meTooButtons()[0]!)
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await act(async () => call.resolve({ confirmCount: 5, confirmedByMe: true }))
+    await act(async () => call.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
 
     await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1))
     expect(onOpen).toHaveBeenCalledWith(r1)
