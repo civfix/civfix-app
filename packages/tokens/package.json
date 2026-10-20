@@ -58,7 +58,7 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.18.0",
     "vitest": "^3.2.7",
-    "@civfix/contract": "^0.62.0"
+    "@civfix/contract": "0.62.1-b-chore-legal-terms-privacy-2026-10-20.g1dc2dd5"
   },
   "engines": {
     "node": ">=20"
