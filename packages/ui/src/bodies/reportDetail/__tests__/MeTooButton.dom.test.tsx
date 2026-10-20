@@ -36,4 +36,12 @@ describe("MeTooButton on web", () => {
     rerender(button({ busy: false }))
     expect(screen.getByRole("button").getAttribute("aria-busy")).not.toBe("true")
   })
+
+  it("grows the md button to fill its half of the row, so a pair stays one height when one label wraps", () => {
+    const { unmount } = render(button({}))
+    expect(getComputedStyle(screen.getByRole("button")).flexGrow).toBe("1")
+    unmount()
+    render(<MeTooButton size="sm" label="I see this too" accessibilityLabel="I see this problem too" pressed={false} onPress={() => {}} />)
+    expect(getComputedStyle(screen.getByRole("button")).flexGrow).not.toBe("1")
+  })
 })

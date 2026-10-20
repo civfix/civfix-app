@@ -106,8 +106,9 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.borderStrong,
     backgroundColor: t.colors.surface,
   },
-  // Two md buttons share a row on the report page, so a long translation wraps instead of overflowing the pill.
-  md: { minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
+  // Two md buttons share a row on the report page, so a long translation wraps instead of overflowing the pill,
+  // and each grows to fill its half so a one-line label's pill matches the height of a wrapped one beside it.
+  md: { flexGrow: 1, minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
   sm: { height: ME_TOO_HEIGHT_SM, paddingHorizontal: t.space["3"] },
   label: { flexShrink: 1, textAlign: "center" },
   hovered: { backgroundColor: t.colors.surfaceTint },
