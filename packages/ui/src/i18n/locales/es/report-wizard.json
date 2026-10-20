@@ -3,6 +3,10 @@
     "title": "Reportar un problema",
     "back": "Atrás"
   },
+  "signin": {
+    "title": "Inicia sesión para reportar un problema",
+    "body": "Inicia sesión o crea una cuenta para reportar problemas en tu vecindario."
+  },
   "wizard": {
     "announceStep": "Paso {{current}} de {{total}}. {{title}}",
     "capture": {

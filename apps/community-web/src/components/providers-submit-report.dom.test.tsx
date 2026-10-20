@@ -1,7 +1,7 @@
 /**
- * The web's report create, at the boundary the shared wizard calls: DataContextValue.submitReport as
- * WebDataProvider provides it. Filing a report needs an account, so a signed-out submit goes through the
- * authed create and fails there, never through the anonymous endpoint.
+ * What WebDataProvider gives the shared UI. The report create is DataContextValue.submitReport, the
+ * boundary the shared wizard calls. Filing a report needs an account, so a signed-out submit goes
+ * through the authed create and fails there, never through the anonymous endpoint.
  */
 import * as React from "react"
 import { act, render } from "@testing-library/react"
@@ -88,6 +88,7 @@ vi.mock("@/components/home/web-internal-href", () => ({ webOpenInternalHref: () 
 
 const { WebDataProvider } = await import("./providers")
 const { useAuthStore } = await import("@/store/auth-store")
+const { useUiStore } = await import("@/store/ui-store")
 
 const USER: UserDTO = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -100,13 +101,13 @@ const USER: UserDTO = {
 const SUBMISSION: ReportSubmission = {
   idempotencyKey: "22222222-2222-4222-8222-222222222222",
   category: "hazard",
-  type: "pothole",
+  type: "pavement",
   lat: 34.09,
   lng: -118.28,
-  geomSource: "gps",
+  geomSource: "device",
   mediaUploadIds: ["33333333-3333-4333-8333-333333333333"],
   title: "Pothole on Sunset",
-} as ReportSubmission
+}
 
 function provided(): DataContextValue {
   render(
@@ -129,6 +130,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => useAuthStore.setState({ status: "idle", user: null, csrfToken: null, optimistic: false }))
+  act(() => useUiStore.setState({ authModalOpen: false, authModalReturnPath: null }))
 })
 
 describe("WebDataProvider submitReport", () => {
@@ -172,5 +174,29 @@ describe("WebDataProvider submitReport", () => {
     expect(calls.api).toEqual(["createReport"])
     expect(runTurnstile).not.toHaveBeenCalled()
     expect(saveClaimHandoff).not.toHaveBeenCalled()
+  })
+})
+
+describe("WebDataProvider requireAuth", () => {
+  it("opens the auth modal with the gated action's return path for a signed-out viewer", () => {
+    useAuthStore.setState({ status: "anonymous", user: null, csrfToken: null, optimistic: false })
+    const action = vi.fn()
+
+    const { requireAuth } = provided()
+    act(() => requireAuth(action, { next: "/report" }))
+
+    expect(action).not.toHaveBeenCalled()
+    expect(useUiStore.getState()).toMatchObject({ authModalOpen: true, authModalReturnPath: "/report" })
+  })
+
+  it("runs the action for a signed-in viewer without opening the modal", () => {
+    useAuthStore.setState({ status: "authenticated", user: USER, csrfToken: "csrf", optimistic: false })
+    const action = vi.fn()
+
+    const { requireAuth } = provided()
+    act(() => requireAuth(action, { next: "/report" }))
+
+    expect(action).toHaveBeenCalledTimes(1)
+    expect(useUiStore.getState().authModalOpen).toBe(false)
   })
 })

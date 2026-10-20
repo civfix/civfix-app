@@ -150,11 +150,13 @@ emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css`
 - `src/store/auth-store.ts` (zustand): `status`, `user`, `csrfToken`, `roles`, `enabledProviders`, `guestSmsEnabled` and `optimistic` (the
   signed-in state restored from a local snapshot before the session check lands). Revalidated from
   `GET /auth/session` by `src/components/auth/auth-hydrator.tsx`.
-- `src/store/ui-store.ts`: the auth modal's open state (the bottom sheet belongs to `AppShell`).
+- `src/store/ui-store.ts`: the auth modal's open state and the OAuth return path of the gated action that
+  opened it (the bottom sheet belongs to `AppShell`).
 - `src/store/appearance-store.ts`: the light / dark / system preference (localStorage), registered as
   `@civfix/ui`'s appearance store.
-- `src/store/claim-handoff.ts`: the `reportId` + `claimCode` of the last anonymous submit, kept in
-  localStorage for the `/claim` flow. The report draft itself lives in `@civfix/ui`'s report wizard.
+- `src/store/claim-handoff.ts`: the `reportId` + `claimCode` of a report filed anonymously, kept in
+  localStorage so the `/claim` flow survives a reload or the sign-in round trip. The report draft
+  itself lives in `@civfix/ui`'s report wizard.
 - `src/lib/query.ts`: `makeQueryClient()` (conservative retries; never retries 4xx);
   `src/lib/query-persist.ts` persists a safelisted slice of the cache across reloads.
 - Data hooks come from `@civfix/ui/data`, keyed by its `queryKeys`; `src/hooks/` holds only the

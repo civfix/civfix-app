@@ -3,6 +3,10 @@
     "title": "Report an issue",
     "back": "Back"
   },
+  "signin": {
+    "title": "Sign in to report a problem",
+    "body": "Sign in or create an account to report problems in your neighborhood."
+  },
   "wizard": {
     "announceStep": "Step {{current}} of {{total}}. {{title}}",
     "capture": {

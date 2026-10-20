@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
-import { AppError } from "@civfix/contract"
 import { colorSchemes } from "@civfix/tokens"
 import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
@@ -35,7 +34,6 @@ import { webCamera } from "@/lib/web-camera"
 import { webGeolocation } from "@/lib/web-geolocation"
 import { runTurnstile, TURNSTILE_SITEKEY } from "@/lib/turnstile"
 import { CARTO_API_KEY } from "@/lib/carto"
-import { saveClaimHandoff } from "@/store/claim-handoff"
 import { useAuthStore, selectAuthPending } from "@/store/auth-store"
 import { useAppearanceStore } from "@/store/appearance-store"
 import { useResolvedLocale } from "@/lib/locale"
@@ -87,47 +85,24 @@ function useWebAuthState(): AuthState {
 export function WebDataProvider({ children }: { children: React.ReactNode }) {
   const runAuthed = useAuthGate()
   const logout = useLogout()
-  const isAuthenticated = useAuthStore((s) => s.status === "authenticated")
 
   const requireAuth = React.useCallback(
-    (action: () => void, _opts?: { next?: string }) => {
-      runAuthed(action)
+    (action: () => void, opts?: { next?: string }) => {
+      runAuthed(action, opts?.next)
     },
     [runAuthed],
   )
 
-  const submitReport = React.useCallback(
-    async (submission: ReportSubmission): Promise<ReportSubmitResult> => {
-      const base = toCreateReportRequest(submission)
-
-      if (isAuthenticated) {
-        const dto = await api.createReport({ ...base, honeypot: "" })
-        return {
-          reportId: dto.id,
-          lat: dto.lat,
-          lng: dto.lng,
-          category: dto.category,
-          status: dto.status === "held" ? "held" : "published",
-        }
-      }
-
-      const turnstileToken = await runTurnstile()
-      if (turnstileToken.length === 0) {
-        throw AppError.turnstileFailed("Turnstile token could not be minted")
-      }
-      const res = await api.anonCreateReport({ ...base, turnstileToken, honeypot: "" })
-      saveClaimHandoff({ reportId: res.reportId, claimCode: res.claimCode })
-      return {
-        reportId: res.reportId,
-        lat: submission.lat,
-        lng: submission.lng,
-        category: submission.category,
-        status: res.status,
-        claimCode: res.claimCode,
-      }
-    },
-    [isAuthenticated],
-  )
+  const submitReport = React.useCallback(async (submission: ReportSubmission): Promise<ReportSubmitResult> => {
+    const dto = await api.createReport({ ...toCreateReportRequest(submission), honeypot: "" })
+    return {
+      reportId: dto.id,
+      lat: dto.lat,
+      lng: dto.lng,
+      category: dto.category,
+      status: dto.status === "held" ? "held" : "published",
+    }
+  }, [])
 
   const value = React.useMemo<DataContextValue>(
     () => ({
