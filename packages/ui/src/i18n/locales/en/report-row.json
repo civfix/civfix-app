@@ -2,6 +2,8 @@
   "a11y": {
     "row": "{{title}}, {{status}}"
   },
-  "confirm_count_one": "{{count}} neighbor saw this too",
-  "confirm_count_other": "{{count}} neighbors saw this too"
+  "confirm_count_one": "{{count}} neighbor confirmed this",
+  "confirm_count_other": "{{count}} neighbors confirmed this",
+  "fixed_count_one": "{{count}} neighbor says this is fixed",
+  "fixed_count_other": "{{count}} neighbors say this is fixed"
 }

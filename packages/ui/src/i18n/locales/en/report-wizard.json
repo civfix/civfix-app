@@ -32,9 +32,9 @@
       "distance_close": "Less than 5 m away",
       "distance_about": "About {{meters}} m away",
       "new": "Report a new problem",
-      "me_too": "Me too",
-      "me_too_a11y": "Me too, I saw this problem too",
-      "me_too_error": "Couldn't save your Me too. Try again."
+      "see_too": "I see this too",
+      "see_too_a11y": "I see this problem too",
+      "vote_error": "Couldn't save your vote. Try again."
     }
   },
   "footer": {

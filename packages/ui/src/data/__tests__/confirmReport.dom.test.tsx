@@ -78,6 +78,8 @@ describe("useConfirmReport", () => {
       ...before,
       confirmCount: 7,
       confirmedByMe: true,
+      fixedCount: 0,
+      fixedByMe: false,
     })
   })
 

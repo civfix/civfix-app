@@ -32,9 +32,9 @@
       "distance_close": "A menos de 5 m",
       "distance_about": "A unos {{meters}} m",
       "new": "Reportar un problema nuevo",
-      "me_too": "Yo también",
-      "me_too_a11y": "Yo también, yo también vi este problema",
-      "me_too_error": "No se pudo guardar tu «Yo también». Inténtalo de nuevo."
+      "see_too": "También lo veo",
+      "see_too_a11y": "También veo este problema",
+      "vote_error": "No se pudo guardar tu voto. Inténtalo de nuevo."
     }
   },
   "footer": {

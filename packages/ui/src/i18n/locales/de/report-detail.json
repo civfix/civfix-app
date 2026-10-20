@@ -116,8 +116,10 @@
     "view_chat_a11y": "Chat zu dieser Meldung ansehen"
   },
   "confirm": {
-    "me_too": "Ich auch",
-    "me_too_a11y": "Ich auch, ich habe dieses Problem auch gesehen",
-    "error": "Dein „Ich auch“ konnte nicht gespeichert werden. Bitte erneut versuchen."
+    "see_too": "Ich sehe das auch",
+    "see_too_a11y": "Ich sehe dieses Problem auch",
+    "fixed": "Ist behoben",
+    "fixed_a11y": "Dieses Problem ist behoben",
+    "error": "Deine Stimme konnte nicht gespeichert werden. Bitte erneut versuchen."
   }
 }

@@ -341,24 +341,59 @@ function reportAliasFilters(id: string): QueryFilters {
 
 type ReportAliasCtx = [QueryKey, ReportDTO | undefined][]
 
-function mergeConfirm(prev: ReportDTO, res: ReportConfirmResponse): ReportDTO {
-  return { ...prev, confirmCount: res.confirmCount, confirmedByMe: res.confirmedByMe }
+function mergeVotes(prev: ReportDTO, res: ReportConfirmResponse): ReportDTO {
+  return {
+    ...prev,
+    confirmCount: res.confirmCount,
+    confirmedByMe: res.confirmedByMe,
+    fixedCount: res.fixedCount,
+    fixedByMe: res.fixedByMe,
+  }
+}
+
+type ReportVote = "confirm" | "fixed" | null
+
+/**
+ * The caller's vote after a call, as the API applies it: an account holds one vote per report, so adding one
+ * moves the other, and removing a kind it does not hold changes nothing.
+ */
+function voteAfter(call: "confirm" | "unconfirm" | "fixed" | "unfixed", current: ReportVote): ReportVote {
+  if (call === "confirm" || call === "fixed") return call
+  return current === (call === "unconfirm" ? "confirm" : "fixed") ? null : current
+}
+
+function castVote(prev: ReportDTO, call: Parameters<typeof voteAfter>[0]): ReportDTO {
+  const current: ReportVote = prev.confirmedByMe ? "confirm" : prev.fixedByMe ? "fixed" : null
+  const next = voteAfter(call, current)
+  const delta = (kind: Exclude<ReportVote, null>) => (next === kind ? 1 : 0) - (current === kind ? 1 : 0)
+  return {
+    ...prev,
+    confirmedByMe: next === "confirm",
+    confirmCount: Math.max(0, prev.confirmCount + delta("confirm")),
+    fixedByMe: next === "fixed",
+    fixedCount: Math.max(0, prev.fixedCount + delta("fixed")),
+  }
 }
 
 const meTooMutationKey = (id: string) => ["report-me-too", id] as const
 
-/** Me too (or its undo) on a report's page: the pressed state and the count move at once and roll back on failure. */
-function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boolean) {
-  const press = (prev: ReportDTO): ReportDTO => ({
-    ...prev,
-    confirmedByMe: confirm,
-    confirmCount: Math.max(0, prev.confirmCount + (confirm ? 1 : -1)),
-  })
+/**
+ * A vote (or its removal) on a report's page: the buttons and the counts move at once and roll back on failure.
+ * Every kind of call on one report shares a scope, so a move from one vote to the other goes out in tap order.
+ */
+function voteToggle(qc: QueryClient, api: ApiClient, id: string, call: Parameters<typeof voteAfter>[0]) {
+  const press = (prev: ReportDTO): ReportDTO => castVote(prev, call)
+  const send = {
+    confirm: () => api.confirmReport({ id }),
+    unconfirm: () => api.unconfirmReport({ id }),
+    fixed: () => api.markReportFixed({ id }),
+    unfixed: () => api.unmarkReportFixed({ id }),
+  }[call]
   const base = optimisticPatch<ReportDTO, void, ReportConfirmResponse, ReportAliasCtx>(qc, {
     key: queryKeys.report(id),
-    mutationFn: () => (confirm ? api.confirmReport({ id }) : api.unconfirmReport({ id })),
+    mutationFn: send,
     patch: press,
-    reconcile: mergeConfirm,
+    reconcile: mergeVotes,
     invalidate: [queryKeys.mapReportsRoot],
     also: {
       cancel: (client) => client.cancelQueries(reportAliasFilters(id)),
@@ -371,7 +406,7 @@ function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boo
         for (const [key, data] of snapshot ?? []) client.setQueryData(key, data)
       },
       onSuccess: (client, res) => {
-        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? mergeConfirm(prev, res) : prev))
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? mergeVotes(prev, res) : prev))
       },
     },
   })
@@ -394,34 +429,38 @@ function confirmToggle(qc: QueryClient, api: ApiClient, id: string, confirm: boo
 export function useConfirmReport(id: string) {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation(confirmToggle(qc, api, id, true))
+  return useMutation(voteToggle(qc, api, id, "confirm"))
 }
 
 export function useUnconfirmReport(id: string) {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation(confirmToggle(qc, api, id, false))
+  return useMutation(voteToggle(qc, api, id, "unconfirm"))
 }
 
-/** Me too from a match on the Possible duplicate screen: it waits for the API, then the report opens pressed. */
+export function useMarkReportFixed(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "fixed"))
+}
+
+export function useUnmarkReportFixed(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "unfixed"))
+}
+
+/** I see this too from a match on the Possible duplicate screen: it waits for the API, then the report opens pressed. */
 export function useConfirmMatch() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => api.confirmReport({ id }),
     onSuccess: (res, id) => {
-      const merge = (prev: ReportDTO | undefined) => (prev ? mergeConfirm(prev, res) : prev)
+      const merge = (prev: ReportDTO | undefined) => (prev ? mergeVotes(prev, res) : prev)
       qc.setQueryData<ReportDTO>(queryKeys.report(id), merge)
       qc.setQueriesData<ReportDTO>(reportAliasFilters(id), merge)
       void qc.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
     },
   })
-}
-
-export function useMarkReportFixed(_id: string): ReturnType<typeof useConfirmReport> {
-  throw new Error("not implemented")
-}
-
-export function useUnmarkReportFixed(_id: string): ReturnType<typeof useConfirmReport> {
-  throw new Error("not implemented")
 }

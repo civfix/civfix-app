@@ -35,14 +35,14 @@ describe("DuplicateMatchCard", () => {
     expect(screen.getByText("Overflowing bin")).toBeTruthy()
     expect(screen.getByText("Trash")).toBeTruthy()
     expect(screen.getByText("About 10 m away")).toBeTruthy()
-    expect(screen.getByText("3 neighbors saw this too")).toBeTruthy()
+    expect(screen.getByText("3 neighbors confirmed this")).toBeTruthy()
   })
 
   it("reads less than 5 m when close, falls back to the category for a missing title, and hides a zero count", () => {
     renderCard(row({ title: null, confirmCount: 0 }, 3))
     expect(screen.getAllByText("Trash")).toHaveLength(2)
     expect(screen.getByText("Less than 5 m away")).toBeTruthy()
-    expect(screen.queryByText(/saw this too/)).toBeNull()
+    expect(screen.queryByText(/confirmed this/)).toBeNull()
   })
 
   it("opens its own match when pressed", () => {
@@ -56,8 +56,8 @@ describe("DuplicateMatchCard", () => {
     renderCard(row({ title: "Overflowing bin", confirmCount: 3 }, 11.2))
     const card = screen.getByRole("button")
     expect(card.getAttribute("aria-label")).toBeNull()
-    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors saw this too")
-    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors saw this too/ })).toBe(card)
+    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors confirmed this")
+    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors confirmed this/ })).toBe(card)
   })
 })
 

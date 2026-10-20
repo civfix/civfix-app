@@ -68,13 +68,13 @@ function renderRail() {
 }
 
 describe("PressingRail", () => {
-  it("shows each report's title, category, thumbnail and Me too count, in the order given", async () => {
+  it("shows each report's title, category, thumbnail and counts line, in the order given", async () => {
     const { container } = renderRail()
     await waitFor(() => expect(screen.getByText("Overflowing bin")).toBeTruthy())
     const text = container.textContent ?? ""
     expect(text.indexOf("Overflowing bin")).toBeLessThan(text.indexOf("Tagged wall"))
-    expect(screen.getByText("3 neighbors saw this too")).toBeTruthy()
-    expect(screen.getByText("1 neighbor saw this too")).toBeTruthy()
+    expect(screen.getByText("3 neighbors confirmed this")).toBeTruthy()
+    expect(screen.getByText("1 neighbor confirmed this")).toBeTruthy()
     expect(screen.getByText("Trash")).toBeTruthy()
     expect(screen.getByText("Graffiti")).toBeTruthy()
     expect(Array.from(container.querySelectorAll("img"), (img) => img.getAttribute("src"))).toEqual([THUMB])
@@ -82,7 +82,7 @@ describe("PressingRail", () => {
 
   it("opens the tapped report's page", async () => {
     renderRail()
-    const card = await screen.findByRole("button", { name: "Tagged wall, 1 neighbor saw this too" })
+    const card = await screen.findByRole("button", { name: "Tagged wall, 1 neighbor confirmed this" })
     fireEvent.click(card)
     const { stack } = useNavStore.getState()
     expect(stack[stack.length - 1]).toEqual({ kind: "pin", id: "r2", lat: 34.06, lng: -118.25 })
@@ -91,7 +91,7 @@ describe("PressingRail", () => {
   // The rail scrolls sideways, so its scroller clips on every side; QA found the top of a focused card's ring cut off.
   it("leaves a focused card's whole ring inside the scroller, without moving the cards", async () => {
     renderRail()
-    const card = await screen.findByRole("button", { name: "Overflowing bin, 3 neighbors saw this too" })
+    const card = await screen.findByRole("button", { name: "Overflowing bin, 3 neighbors confirmed this" })
     const content = card.parentElement!
     const scroller = content.parentElement!
     expect(getComputedStyle(scroller).overflowX).not.toBe("visible")

@@ -13,8 +13,8 @@ vi.mock("../../../typography", async () => {
 function button({ pressed = false, busy = false }: { pressed?: boolean; busy?: boolean }) {
   return (
     <MeTooButton
-      label="Me too"
-      accessibilityLabel="Me too, I saw this problem too"
+      label="I see this too"
+      accessibilityLabel="I see this problem too"
       pressed={pressed}
       busy={busy}
       onPress={() => {}}

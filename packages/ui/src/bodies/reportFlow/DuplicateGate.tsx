@@ -40,13 +40,13 @@ export function DuplicateGate({
   const onScreen = useNavStore((s) => s.view === "report" && s.stack.length === 0)
   useHardwareBack(onScreen, onBack)
 
-  // Guests start the flow too; Me too is only offered once the reporter is signed in (#156 D8).
+  // Guests start the flow too; "I see this too" is only offered once the reporter is signed in (#156 D8).
   const { isAuthenticated } = useAuthState()
   const toast = useToast()
   const confirm = useConfirmMatch()
   const { mutate: confirmMatch } = confirm
   const busyId = confirm.isPending ? confirm.variables : null
-  // A second tap can land before the busy state renders; the ref drops it so one tap sends one Me too.
+  // A second tap can land before the busy state renders; the ref drops it so one tap sends one vote.
   const sending = useRef(false)
   const onMeToo = useCallback(
     (row: NearbyReportRow) => {
@@ -58,9 +58,9 @@ export function DuplicateGate({
         },
         onSuccess: () => onOpen(row),
         onError: (err) => {
-          // Their own earlier report: Me too cannot apply, so it opens like the card does.
+          // Their own earlier report: a vote cannot apply, so it opens like the card does.
           if (appErrorCode(err) === ErrorCode.FORBIDDEN) onOpen(row)
-          else toast.show(t("wizard.duplicate.me_too_error"), { variant: "error" })
+          else toast.show(t("wizard.duplicate.vote_error"), { variant: "error" })
         },
       })
     },

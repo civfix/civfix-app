@@ -64,20 +64,20 @@ const answer = (confirmCount: number, confirmedByMe: boolean): ReportConfirmResp
 })
 
 describe("useReportMeToo", () => {
-  it("presses Me too and adds one at once, then undoes both on a second tap", async () => {
+  it("presses I see this too and adds one at once, then undoes both on a second tap", async () => {
     const api = {
       confirmReport: vi.fn(async () => answer(5, true)),
       unconfirmReport: vi.fn(async () => answer(4, false)),
     }
     const { result } = renderMeToo(report({}), api)
-    expect(result.current).toMatchObject({ visible: true, pressed: false, count: 4 })
+    expect(result.current).toMatchObject({ visible: true, seen: { pressed: false }, confirmCount: 4 })
 
-    act(() => result.current.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ pressed: true, count: 5 }))
+    act(() => result.current.seen.onPress())
+    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }))
     expect(api.confirmReport).toHaveBeenCalledWith({ id: "r1" })
 
-    act(() => result.current.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ pressed: false, count: 4 }))
+    act(() => result.current.seen.onPress())
+    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }))
     expect(api.unconfirmReport).toHaveBeenCalledWith({ id: "r1" })
   })
 
@@ -87,28 +87,28 @@ describe("useReportMeToo", () => {
       confirmReport: vi.fn(() => new Promise<ReportConfirmResponse>((_resolve, reject) => (fail = reject))),
     }
     const { result, toast } = renderMeToo(report({}), api)
-    act(() => result.current.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ pressed: true, count: 5 }))
+    act(() => result.current.seen.onPress())
+    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }))
     await act(async () => fail(new AppError(ErrorCode.INTERNAL, "boom")))
-    await waitFor(() => expect(result.current).toMatchObject({ pressed: false, count: 4 }))
-    expect(toast.show).toHaveBeenCalledWith("Couldn't save your Me too. Try again.", { variant: "error" })
+    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }))
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
   })
 
   it("asks a guest to sign in and brings them back to the report, without calling the API", () => {
     const api = { confirmReport: vi.fn() }
     const requireAuth = vi.fn()
     const { result } = renderMeToo(report({}), api, requireAuth)
-    act(() => result.current.onPress())
+    act(() => result.current.seen.onPress())
     expect(requireAuth).toHaveBeenCalledWith(expect.any(Function), {
       next: pathForEntry({ kind: "pin", id: "LA-7Q2K" }),
     })
     expect(api.confirmReport).not.toHaveBeenCalled()
   })
 
-  it("gives the reporter and a resolved report the count but no button", () => {
-    expect(renderMeToo(report({ mine: true }), {}).result.current).toMatchObject({ visible: false, count: 4 })
+  it("gives the reporter and a resolved report the counts but no buttons", () => {
+    expect(renderMeToo(report({ mine: true }), {}).result.current).toMatchObject({ visible: false, confirmCount: 4 })
     expect(
       renderMeToo(report({ status: "resolved", confirmedByMe: true }), {}).result.current,
-    ).toMatchObject({ visible: false, count: 4 })
+    ).toMatchObject({ visible: false, confirmCount: 4 })
   })
 })

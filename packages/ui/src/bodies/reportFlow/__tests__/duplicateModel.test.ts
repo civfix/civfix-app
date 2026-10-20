@@ -85,8 +85,8 @@ describe("duplicateDistance", () => {
 describe("report-row:confirm_count", () => {
   it("T9: counts neighbors in the en catalog, singular and plural", () => {
     const { t } = createI18n("en")
-    expect(t("report-row:confirm_count", { count: 1 })).toBe("1 neighbor saw this too")
-    expect(t("report-row:confirm_count", { count: 12 })).toBe("12 neighbors saw this too")
+    expect(t("report-row:confirm_count", { count: 1 })).toBe("1 neighbor confirmed this")
+    expect(t("report-row:confirm_count", { count: 12 })).toBe("12 neighbors confirmed this")
   })
 })
 

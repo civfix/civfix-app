@@ -19,8 +19,8 @@ const ME_TOO_SM_HIT_SLOP = hitSlopToTarget(ME_TOO_HEIGHT_SM)
 const SPINNER_SMALL = 20
 
 /**
- * Me too as a full-width outline button (SecondaryButton's look) that fills with moss once pressed, so the
- * pressed state reads as done rather than as a second call to action.
+ * A vote ("I see this too", "This is fixed") as a full-width outline button (SecondaryButton's look) that
+ * fills with moss once pressed, so the pressed state reads as done rather than as a second call to action.
  */
 export function MeTooButton({
   label,
@@ -75,14 +75,14 @@ export function MeTooButton({
       ) : (
         <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={glyph} color={fg} />
       )}
-      <Text variant={sm ? "label" : "bodyStrong"} color={fg} style={webNoSelect}>
+      <Text variant={sm ? "label" : "bodyStrong"} color={fg} style={[styles.label, webNoSelect]}>
         {label}
       </Text>
     </Pressable>
   )
 }
 
-/** "N neighbors saw this too", the count every surface shows above 0. */
+/** The counts line under the report page's vote buttons (reportCountsLine). */
 export function MeTooCount({ text, centered = false }: { text: string; centered?: boolean }) {
   const styles = useStyles()
   const th = useTheme()
@@ -106,8 +106,10 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.borderStrong,
     backgroundColor: t.colors.surface,
   },
-  md: { height: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"] },
+  // Two md buttons share a row on the report page, so a long translation wraps instead of overflowing the pill.
+  md: { minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
   sm: { height: ME_TOO_HEIGHT_SM, paddingHorizontal: t.space["3"] },
+  label: { flexShrink: 1, textAlign: "center" },
   hovered: { backgroundColor: t.colors.surfaceTint },
   pressedOn: { backgroundColor: t.colors.moss["50"], borderColor: t.colors.moss["300"] },
   pressedHovered: { backgroundColor: t.colors.moss["100"] },

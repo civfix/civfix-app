@@ -7,6 +7,7 @@ import { useT } from "../../i18n"
 import type { NearbyReportRow } from "../linkReportsModel"
 import { duplicateDistance } from "./duplicateModel"
 import { MeTooButton } from "../reportDetail/MeTooButton"
+import { reportCountsLine } from "../reportCountsLine"
 
 // A banner, not a gallery frame: a second card has to start above the fold on a phone.
 const CARD_MEDIA_ASPECT = 2.4
@@ -22,11 +23,11 @@ function useMatchText({ pin, distanceM }: NearbyReportRow) {
       d.key === "close"
         ? t("wizard.duplicate.distance_close")
         : t("wizard.duplicate.distance_about", { meters: d.meters }),
-    count: pin.confirmCount > 0 ? t("report-row:confirm_count", { count: pin.confirmCount }) : null,
+    count: reportCountsLine(t, pin),
   }
 }
 
-/** One match on the Possible duplicate screen, with Me too as a full-width button closing the card. */
+/** One match on the Possible duplicate screen, with "I see this too" as a full-width button closing the card. */
 export function DuplicateMatchCard({
   row,
   width,
@@ -38,7 +39,7 @@ export function DuplicateMatchCard({
   row: NearbyReportRow
   width: number | undefined
   onOpen: (row: NearbyReportRow) => void
-  /** Absent for a guest, who gets no Me too. */
+  /** Absent for a guest, who gets no "I see this too". */
   onMeToo?: (row: NearbyReportRow) => void
   meTooBusy?: boolean
   meTooDisabled?: boolean
@@ -49,7 +50,7 @@ export function DuplicateMatchCard({
   const text = useMatchText(row)
   const { pin } = row
   const cat = categoryColor(pin.category, th.scheme)
-  // Me too is a sibling of the open target, never inside it: react-native-web renders Pressable as a
+  // The vote button is a sibling of the open target, never inside it: react-native-web renders Pressable as a
   // `<button>`, and a nested button is invalid DOM. The card chrome lives on the wrapper so hover still
   // outlines the whole card.
   const [hovered, setHovered] = useState(false)
@@ -101,8 +102,8 @@ export function DuplicateMatchCard({
         <View style={styles.meToo}>
           <MeTooButton
             size="sm"
-            label={t("wizard.duplicate.me_too")}
-            accessibilityLabel={t("wizard.duplicate.me_too_a11y")}
+            label={t("wizard.duplicate.see_too")}
+            accessibilityLabel={t("wizard.duplicate.see_too_a11y")}
             pressed={false}
             busy={meTooBusy}
             disabled={meTooDisabled}
