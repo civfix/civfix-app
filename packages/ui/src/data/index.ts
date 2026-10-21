@@ -52,6 +52,8 @@ export {
   useResolveReport,
   useConfirmReport,
   useUnconfirmReport,
+  useMarkReportFixed,
+  useUnmarkReportFixed,
   useConfirmMatch,
   useUnlistReport,
   useResolveJurisdiction,

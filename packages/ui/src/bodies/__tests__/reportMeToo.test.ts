@@ -34,11 +34,11 @@ describe("canMeToo", () => {
   })
 })
 
-describe("Me too copy", () => {
-  it("T17: reads Me too on the report page and the duplicate screen, and counts neighbors", () => {
+describe("vote copy", () => {
+  it("T17: reads I see this too on the report page and the duplicate screen, and counts neighbors", () => {
     const { t } = createI18n("en")
-    expect(t("report-detail:confirm.me_too")).toBe("Me too")
-    expect(t("report-wizard:wizard.duplicate.me_too")).toBe("Me too")
-    expect(t("report-row:confirm_count", { count: 1 })).toBe("1 neighbor saw this too")
+    expect(t("report-detail:confirm.see_too")).toBe("I see this too")
+    expect(t("report-wizard:wizard.duplicate.see_too")).toBe("I see this too")
+    expect(t("report-row:confirm_count", { count: 1 })).toBe("1 neighbor confirmed this")
   })
 })

@@ -32,9 +32,9 @@
       "distance_close": "5m 이내",
       "distance_about": "약 {{meters}}m 거리",
       "new": "새 문제 신고",
-      "me_too": "저도요",
-      "me_too_a11y": "저도요, 저도 이 문제를 봤어요",
-      "me_too_error": "'저도요'를 저장하지 못했어요. 다시 시도해 주세요."
+      "see_too": "저도 봤어요",
+      "see_too_a11y": "저도 이 문제를 봤어요",
+      "vote_error": "투표를 저장하지 못했어요. 다시 시도해 주세요."
     }
   },
   "footer": {

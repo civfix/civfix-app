@@ -16,6 +16,7 @@ const PIN: ReportPinDTO = {
   lat: 34.05,
   lng: -118.24,
   confirmCount: 0,
+  fixedCount: 0,
 }
 
 const REF: LinkedReportRef = {

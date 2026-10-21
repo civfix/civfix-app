@@ -27,12 +27,12 @@ vi.mock("../../../primitives", async () => {
 })
 
 const ME = { id: "u-me", displayName: "Mia Me" } as unknown as UserDTO
-const ME_TOO = "Me too, I saw this problem too"
-const ME_TOO_ERROR = "Couldn't save your Me too. Try again."
+const ME_TOO = "I see this problem too"
+const ME_TOO_ERROR = "Couldn't save your vote. Try again."
 
 function match(id: string, title: string): NearbyReportRow {
   return {
-    pin: { id, category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, title },
+    pin: { id, category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, title },
     distanceM: 8,
   }
 }
@@ -146,7 +146,7 @@ describe("DuplicateGate", () => {
     fireEvent.click(meTooButtons()[0]!)
     fireEvent.click(meTooButtons()[0]!)
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await act(async () => call.resolve({ confirmCount: 5, confirmedByMe: true }))
+    await act(async () => call.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
 
     await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1))
     expect(onOpen).toHaveBeenCalledWith(r1)
@@ -193,6 +193,21 @@ describe("DuplicateGate", () => {
     fireEvent.click(meTooButtons()[0]!)
     await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
     expect(toast.show).toHaveBeenCalledWith(ME_TOO_ERROR, { variant: "error" })
+    expect(onOpen).not.toHaveBeenCalled()
+  })
+})
+
+describe("GH#203 DuplicateGate", () => {
+  it("T25: a failed I see this too shows the vote error once, keeps the draft and stays on the screen", async () => {
+    const api = { confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))) }
+    const { onOpen, toast } = renderGate({ api })
+    const draftBefore = draft()
+    fireEvent.click(screen.getAllByRole("button", { name: "I see this problem too" })[0]!)
+    await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
+    await act(async () => {})
+    expect(toast.show).toHaveBeenCalledTimes(1)
+    expect(draft()).toBe(draftBefore)
     expect(onOpen).not.toHaveBeenCalled()
   })
 })

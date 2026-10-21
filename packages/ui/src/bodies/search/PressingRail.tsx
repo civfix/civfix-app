@@ -7,6 +7,7 @@ import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useNavStore } from "../../nav"
 import { useT } from "../../i18n"
 import { reportHitRowModel } from "../reportHitRowModel"
+import { reportCountsLine } from "../reportCountsLine"
 import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
 import { useSearchStyles } from "./searchStyles"
 
@@ -30,12 +31,12 @@ function PressingCard({ report, viewer, width }: { report: ReportPinDTO; viewer:
   const category = t(`enums:category.${report.category}`)
   const { title, distance, thumbUrl } = reportHitRowModel({ report, categoryLabel: category, viewer })
   const cat = categoryColor(report.category, th.scheme)
-  const count = t("report-row:confirm_count", { count: report.confirmCount })
+  const counts = reportCountsLine(t, report)
   return (
     <Pressable
       onPress={() => useNavStore.getState().push({ kind: "pin", id: report.id, lat: report.lat, lng: report.lng })}
       accessibilityRole="button"
-      accessibilityLabel={`${title}, ${count}`}
+      accessibilityLabel={counts ? `${title}, ${counts}` : title}
       {...focusRingProps}
       style={(state) => [
         styles.card,
@@ -70,12 +71,14 @@ function PressingCard({ report, viewer, width }: { report: ReportPinDTO; viewer:
             </>
           ) : null}
         </View>
-        <View style={styles.countRow}>
-          <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
-          <Text style={styles.count} numberOfLines={2}>
-            {count}
-          </Text>
-        </View>
+        {counts ? (
+          <View style={styles.countRow}>
+            <Icon icon={iconMap.Users} size={14} color={th.colors.textMuted} />
+            <Text style={styles.count} numberOfLines={2}>
+              {counts}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </Pressable>
   )

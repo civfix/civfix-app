@@ -116,8 +116,10 @@
     "view_chat_a11y": "View the chat for this report"
   },
   "confirm": {
-    "me_too": "Me too",
-    "me_too_a11y": "Me too, I saw this problem too",
-    "error": "Couldn't save your Me too. Try again."
+    "see_too": "I see this too",
+    "see_too_a11y": "I see this problem too",
+    "fixed": "This is fixed",
+    "fixed_a11y": "This problem is fixed",
+    "error": "Couldn't save your vote. Try again."
   }
 }

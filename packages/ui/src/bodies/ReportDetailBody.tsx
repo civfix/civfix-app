@@ -36,6 +36,7 @@ import { useReportTitleMenu } from "./reportDetail/useReportTitleMenu"
 import { useReportRepost } from "./reportDetail/useReportRepost"
 import { useReportMeToo } from "./reportDetail/useReportMeToo"
 import { MeTooButton, MeTooCount } from "./reportDetail/MeTooButton"
+import { reportCountsLine } from "./reportCountsLine"
 
 function ReportDetailContent({ report }: { report: ReportDTO }) {
   const styles = useStyles()
@@ -64,6 +65,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
   const titleMenu = useReportTitleMenu(report, title, contentSheet.open)
   const repost = useReportRepost(report)
   const meToo = useReportMeToo(report)
+  const countsLine = reportCountsLine(t, meToo)
 
   return (
     <View style={styles.detailRoot}>
@@ -134,19 +136,29 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
         ) : null}
       </View>
 
-      {meToo.visible || meToo.count > 0 ? (
+      {meToo.visible || countsLine ? (
         <View style={styles.meToo}>
           {meToo.visible ? (
-            <MeTooButton
-              label={t("confirm.me_too")}
-              accessibilityLabel={t("confirm.me_too_a11y")}
-              pressed={meToo.pressed}
-              onPress={meToo.onPress}
-            />
+            <View style={styles.meTooButtons}>
+              <View style={styles.meTooButton}>
+                <MeTooButton
+                  label={t("confirm.see_too")}
+                  accessibilityLabel={t("confirm.see_too_a11y")}
+                  pressed={meToo.seen.pressed}
+                  onPress={meToo.seen.onPress}
+                />
+              </View>
+              <View style={styles.meTooButton}>
+                <MeTooButton
+                  label={t("confirm.fixed")}
+                  accessibilityLabel={t("confirm.fixed_a11y")}
+                  pressed={meToo.fixed.pressed}
+                  onPress={meToo.fixed.onPress}
+                />
+              </View>
+            </View>
           ) : null}
-          {meToo.count > 0 ? (
-            <MeTooCount text={t("report-row:confirm_count", { count: meToo.count })} centered={meToo.visible} />
-          ) : null}
+          {countsLine ? <MeTooCount text={countsLine} centered={meToo.visible} /> : null}
         </View>
       ) : null}
 
@@ -317,6 +329,14 @@ const useStyles = makeThemedStyles((t) => ({
   meToo: {
     gap: t.space["2"],
     marginTop: t.space["4"],
+  },
+  meTooButtons: {
+    flexDirection: "row",
+    gap: t.space["2"],
+  },
+  meTooButton: {
+    flex: 1,
+    minWidth: 0,
   },
   hiddenBanner: {
     flexDirection: "row",

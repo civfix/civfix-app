@@ -13,8 +13,8 @@ vi.mock("../../../typography", async () => {
 function button({ pressed = false, busy = false }: { pressed?: boolean; busy?: boolean }) {
   return (
     <MeTooButton
-      label="Me too"
-      accessibilityLabel="Me too, I saw this problem too"
+      label="I see this too"
+      accessibilityLabel="I see this problem too"
       pressed={pressed}
       busy={busy}
       onPress={() => {}}
@@ -35,5 +35,13 @@ describe("MeTooButton on web", () => {
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
     rerender(button({ busy: false }))
     expect(screen.getByRole("button").getAttribute("aria-busy")).not.toBe("true")
+  })
+
+  it("grows the md button to fill its half of the row, so a pair stays one height when one label wraps", () => {
+    const { unmount } = render(button({}))
+    expect(getComputedStyle(screen.getByRole("button")).flexGrow).toBe("1")
+    unmount()
+    render(<MeTooButton size="sm" label="I see this too" accessibilityLabel="I see this problem too" pressed={false} onPress={() => {}} />)
+    expect(getComputedStyle(screen.getByRole("button")).flexGrow).not.toBe("1")
   })
 })

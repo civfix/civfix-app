@@ -15,7 +15,7 @@ vi.mock("../../../primitives", () => ({ CATEGORY_ICONS: {}, MetaDot: () => null 
 
 function row(over: Partial<NearbyReportRow["pin"]>, distanceM: number): NearbyReportRow {
   return {
-    pin: { id: "r1", category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, ...over },
+    pin: { id: "r1", category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, ...over },
     distanceM,
   }
 }
@@ -35,14 +35,14 @@ describe("DuplicateMatchCard", () => {
     expect(screen.getByText("Overflowing bin")).toBeTruthy()
     expect(screen.getByText("Trash")).toBeTruthy()
     expect(screen.getByText("About 10 m away")).toBeTruthy()
-    expect(screen.getByText("3 neighbors saw this too")).toBeTruthy()
+    expect(screen.getByText("3 neighbors confirmed this")).toBeTruthy()
   })
 
   it("reads less than 5 m when close, falls back to the category for a missing title, and hides a zero count", () => {
     renderCard(row({ title: null, confirmCount: 0 }, 3))
     expect(screen.getAllByText("Trash")).toHaveLength(2)
     expect(screen.getByText("Less than 5 m away")).toBeTruthy()
-    expect(screen.queryByText(/saw this too/)).toBeNull()
+    expect(screen.queryByText(/confirmed this/)).toBeNull()
   })
 
   it("opens its own match when pressed", () => {
@@ -56,7 +56,26 @@ describe("DuplicateMatchCard", () => {
     renderCard(row({ title: "Overflowing bin", confirmCount: 3 }, 11.2))
     const card = screen.getByRole("button")
     expect(card.getAttribute("aria-label")).toBeNull()
-    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors saw this too")
-    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors saw this too/ })).toBe(card)
+    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors confirmed this")
+    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors confirmed this/ })).toBe(card)
+  })
+})
+
+describe("GH#203 DuplicateMatchCard", () => {
+  it("T26: shows the counts line, and none when both counts are 0", () => {
+    const { unmount } = render(
+      <I18nProvider locale="en">
+        <DuplicateMatchCard
+          row={row({ title: "Overflowing bin", confirmCount: 0, fixedCount: 2 }, 8)}
+          width={undefined}
+          onOpen={vi.fn()}
+        />
+      </I18nProvider>,
+    )
+    expect(screen.getByText("2 neighbors say this is fixed")).toBeTruthy()
+    unmount()
+
+    renderCard(row({ title: "Overflowing bin", confirmCount: 0, fixedCount: 0 }, 8))
+    expect(screen.getByRole("button").textContent).toBe("Overflowing binTrashAbout 10 m away")
   })
 })

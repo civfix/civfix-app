@@ -116,8 +116,10 @@
     "view_chat_a11y": "Ver el chat de este informe"
   },
   "confirm": {
-    "me_too": "Yo también",
-    "me_too_a11y": "Yo también, yo también vi este problema",
-    "error": "No se pudo guardar tu «Yo también». Inténtalo de nuevo."
+    "see_too": "También lo veo",
+    "see_too_a11y": "También veo este problema",
+    "fixed": "Ya está arreglado",
+    "fixed_a11y": "Este problema ya está arreglado",
+    "error": "No se pudo guardar tu voto. Inténtalo de nuevo."
   }
 }
