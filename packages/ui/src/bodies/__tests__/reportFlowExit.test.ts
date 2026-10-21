@@ -16,8 +16,8 @@ describe("every exit from the report wizard returns to the surface it was launch
     expect(body).toContain("if (stepIndex <= 0) {\n      useNavStore.getState().leaveReportFlow()")
   })
 
-  it("routes the three success hand-offs through finishReportFlow", () => {
-    expect(body.match(/finishReportFlow\(/g)).toHaveLength(3)
+  it("routes the three success hand-offs and a duplicate attached to the composer through finishReportFlow", () => {
+    expect(body.match(/finishReportFlow\(/g)).toHaveLength(4)
     expect(body).toContain('finishReportFlow({ kind: "post-thread", id: postId })')
     expect(body).toContain('finishReportFlow({ kind: "composer" })')
     expect(body).toContain('finishReportFlow({\n                kind: "pin",')

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { getSearchBodyMode } from "../search/searchRecentStore"
 import { inlineEmptyHeight } from "../../primitives/stateViewModel"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectInSourceOrder, surfacePart, surfaceSource } from "../../__tests__/sourceGuards"
 
 describe("SearchBody state", () => {
   it("keeps the resting search page for a blank navigation query", () => {
@@ -219,5 +219,33 @@ describe("the Discovery leaderboard draws the shared row", () => {
     expect(source).not.toMatch(/LeaderboardHitRow/)
     expect(source).toContain("<LeaderboardRow key={entry.userId} entry={entry} />")
     expect(source).toContain("<LeaderboardRow key={youEntry.userId} entry={youEntry} you />")
+  })
+})
+
+/**
+ * Most pressing nearby covers the same ground as Reports nearby, and whether it shows is the model's call
+ * (`sections.pressing`), so loading, a failed call and an empty ranking all hide it the same way.
+ */
+describe("Discovery Most pressing nearby", () => {
+  const source = surfacePart("search", "Discovery.tsx")
+
+  it("asks for the Reports nearby area", () => {
+    expect(source).toContain("useMemo(() => nearbyPinsBbox(location), [location])")
+    expect(source).toContain("usePressingReports(pressingBbox)")
+  })
+
+  it("gates and renders the section from the model, never from the raw query", () => {
+    expect(source).toContain("pressing: pressingQuery.data ?? [],")
+    expect(source).not.toMatch(/pressingQuery\.(isSuccess|isLoading|isError|isPending)/)
+    expect(source).toContain("<PressingRail reports={sections.pressing} viewer={location} />")
+  })
+
+  it("sits above Reports nearby", () => {
+    expectInSourceOrder(source, [
+      "{sections.pressing.length > 0 ? (",
+      'search_page.pressing")}',
+      "{sections.reports.length > 0 ? (",
+      'search_page.reports_near")}',
+    ])
   })
 })

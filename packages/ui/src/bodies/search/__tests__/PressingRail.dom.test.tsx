@@ -1,0 +1,126 @@
+import * as React from "react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import type * as ReactNative from "react-native"
+import type { ReportPinDTO } from "@civfix/contract"
+import { I18nProvider } from "../../../i18n"
+import { useNavStore } from "../../../nav"
+import { PressingRail } from "../PressingRail"
+import { FOCUS_RING_FOOTPRINT } from "../../../theme/webAffordances"
+
+// The icon set pulls in native-only modules; the cards are read by their text.
+vi.mock("../../../typography", async () => {
+  const { Text } = await vi.importActual<typeof ReactNative>("react-native")
+  return { Text, Icon: () => null, iconMap: {} }
+})
+vi.mock("../../../primitives", () => ({ CATEGORY_ICONS: {}, MetaDot: () => null }))
+// RN-web's Image paints its source only once the bytes load, which jsdom never does.
+vi.mock("react-native", async () => {
+  const actual = await vi.importActual<typeof ReactNative>("react-native")
+  return { ...actual, Image: ({ source }: { source: { uri: string } }) => <img src={source.uri} alt="" /> }
+})
+
+const THUMB = "https://media.example/thumb-r1.webp"
+
+const reports: ReportPinDTO[] = [
+  {
+    id: "r1",
+    category: "trash",
+    status: "published",
+    lat: 34.05,
+    lng: -118.24,
+    confirmCount: 3,
+    fixedCount: 0,
+    title: "Overflowing bin",
+    thumbUrl: THUMB,
+  },
+  { id: "r2", category: "graffiti", status: "published", lat: 34.06, lng: -118.25, confirmCount: 1, fixedCount: 0, title: "Tagged wall" },
+]
+
+// The rail sizes its cards from its measured width, which jsdom never lays out: report a phone-wide rail.
+class LaidOutResizeObserver {
+  constructor(private readonly callback: ResizeObserverCallback) {}
+  observe(target: Element) {
+    queueMicrotask(() => this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver))
+  }
+  unobserve() {}
+  disconnect() {}
+}
+
+beforeEach(() => {
+  vi.stubGlobal("ResizeObserver", LaidOutResizeObserver)
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(390)
+  useNavStore.getState().reset()
+  useNavStore.getState().selectView("search")
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+function renderRail() {
+  return render(
+    <I18nProvider locale="en">
+      <PressingRail reports={reports} viewer={null} />
+    </I18nProvider>,
+  )
+}
+
+describe("PressingRail", () => {
+  it("shows each report's title, category, thumbnail and counts line, in the order given", async () => {
+    const { container } = renderRail()
+    await waitFor(() => expect(screen.getByText("Overflowing bin")).toBeTruthy())
+    const text = container.textContent ?? ""
+    expect(text.indexOf("Overflowing bin")).toBeLessThan(text.indexOf("Tagged wall"))
+    expect(screen.getByText("3 neighbors confirmed this")).toBeTruthy()
+    expect(screen.getByText("1 neighbor confirmed this")).toBeTruthy()
+    expect(screen.getByText("Trash")).toBeTruthy()
+    expect(screen.getByText("Graffiti")).toBeTruthy()
+    expect(Array.from(container.querySelectorAll("img"), (img) => img.getAttribute("src"))).toEqual([THUMB])
+  })
+
+  it("opens the tapped report's page", async () => {
+    renderRail()
+    const card = await screen.findByRole("button", { name: "Tagged wall, 1 neighbor confirmed this" })
+    fireEvent.click(card)
+    const { stack } = useNavStore.getState()
+    expect(stack[stack.length - 1]).toEqual({ kind: "pin", id: "r2", lat: 34.06, lng: -118.25 })
+  })
+
+  // The rail scrolls sideways, so its scroller clips on every side; QA found the top of a focused card's ring cut off.
+  it("leaves a focused card's whole ring inside the scroller, without moving the cards", async () => {
+    renderRail()
+    const card = await screen.findByRole("button", { name: "Overflowing bin, 3 neighbors confirmed this" })
+    const content = card.parentElement!
+    const scroller = content.parentElement!
+    expect(getComputedStyle(scroller).overflowX).not.toBe("visible")
+    const px = (v: string) => Number.parseFloat(v || "0")
+    const pad = getComputedStyle(content)
+    for (const side of [pad.paddingTop, pad.paddingBottom, pad.paddingLeft, pad.paddingRight]) {
+      expect(px(side)).toBeGreaterThanOrEqual(FOCUS_RING_FOOTPRINT)
+    }
+    expect(px(getComputedStyle(scroller).marginTop)).toBe(-px(pad.paddingTop))
+  })
+})
+
+describe("GH#203 PressingRail", () => {
+  it("T27: keeps the API's order and shows each card's counts line, in its label too", async () => {
+    const b: ReportPinDTO = { id: "b", category: "graffiti", status: "published", lat: 34.06, lng: -118.25, confirmCount: 2, fixedCount: 0, title: "Tagged wall" }
+    const a: ReportPinDTO = { id: "a", category: "trash", status: "published", lat: 34.05, lng: -118.24, confirmCount: 3, fixedCount: 1, title: "Overflowing bin" }
+    const { container } = render(
+      <I18nProvider locale="en">
+        <PressingRail reports={[b, a]} viewer={null} />
+      </I18nProvider>,
+    )
+    const cardA = await screen.findByRole("button", {
+      name: "Overflowing bin, 3 neighbors confirmed this, 1 neighbor says this is fixed",
+    })
+    const cards = Array.from(container.querySelectorAll('[role="button"]'))
+    expect(cards.map((c) => c.getAttribute("aria-label"))).toEqual([
+      "Tagged wall, 2 neighbors confirmed this",
+      "Overflowing bin, 3 neighbors confirmed this, 1 neighbor says this is fixed",
+    ])
+    expect(cardA.textContent).toContain("3 neighbors confirmed this, 1 neighbor says this is fixed")
+  })
+})

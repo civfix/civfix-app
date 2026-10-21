@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { MAX_REPORT_MEDIA } from "@civfix/contract"
+import type { LatLng } from "@civfix/contract/geocode"
 import type { CapturedMedia } from "../capabilities"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { randomId } from "../data/randomId"
@@ -44,6 +45,7 @@ export interface DraftReport {
   shareToFeed: boolean
   feedCaption: string
   feedPostId: string | null
+  duplicateCheckedPoint: LatLng | null
 }
 
 interface DraftReportState {
@@ -69,6 +71,7 @@ interface DraftReportState {
   setShareToFeed: (value: boolean) => void
   setFeedCaption: (caption: string) => void
   setFeedPostId: (postId: string | null) => void
+  setDuplicateCheckedPoint: (point: LatLng) => void
   reset: () => void
 }
 
@@ -97,6 +100,7 @@ const EMPTY: DraftReport = {
   shareToFeed: false,
   feedCaption: "",
   feedPostId: null,
+  duplicateCheckedPoint: null,
 }
 
 export type DraftMediaInput = Omit<DraftMedia, "id">
@@ -157,6 +161,14 @@ export function captureSeedsNewReport(
     !manualPoint &&
     (!draft.addrEdited || draft.locationPrefilled)
   )
+}
+
+// Compared by value and only against the last checked point, so moving the pin away and back after a
+// check in between checks again (GH#159).
+export function needsDuplicateCheck(draft: Pick<DraftReport, "lat" | "lng" | "duplicateCheckedPoint">): boolean {
+  if (draft.lat == null || draft.lng == null) return false
+  const checked = draft.duplicateCheckedPoint
+  return checked === null || checked.lat !== draft.lat || checked.lng !== draft.lng
 }
 
 export const useDraftReportStore = create<DraftReportState>((set, get) => ({
@@ -298,6 +310,8 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   setShareToFeed: (shareToFeed) => set((s) => ({ draft: { ...s.draft, shareToFeed } })),
   setFeedCaption: (feedCaption) => set((s) => ({ draft: { ...s.draft, feedCaption } })),
   setFeedPostId: (feedPostId) => set((s) => ({ draft: { ...s.draft, feedPostId } })),
+  setDuplicateCheckedPoint: (point) =>
+    set((s) => ({ draft: { ...s.draft, duplicateCheckedPoint: { lat: point.lat, lng: point.lng } } })),
   reset: () =>
     set((s) => ({
       draft: { ...EMPTY, flags: { ...EMPTY_FLAGS }, media: [] },

@@ -47,8 +47,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.62.0
-        version: 0.62.0
+        specifier: ^0.63.0
+        version: 0.63.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -237,8 +237,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.62.0
-        version: 0.62.0
+        specifier: ^0.63.0
+        version: 0.63.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -373,8 +373,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: ^0.62.0
-        version: 0.62.0
+        specifier: ^0.63.0
+        version: 0.63.0
       '@eslint/js':
         specifier: ^9.16.0
         version: 9.39.5
@@ -403,8 +403,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.62.0
-        version: 0.62.0
+        specifier: ^0.63.0
+        version: 0.63.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1114,8 +1114,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.62.0':
-    resolution: {integrity: sha512-GiToTBdd1L7/Lktq9rNW0Qm5NzVptB0cBzsP4XgaSs8ccwlDkNX3lNhoYuUo+azW02vvli7RwuvCu9IcVNAkUg==}
+  '@civfix/contract@0.63.0':
+    resolution: {integrity: sha512-6cyQPVeLPI7gH3hsF/wDtaFdvhZgnLb6U3bL+xNAAOuhZ/LddC7wMSWuGfmTNoUQb03Q2c9D0VmCVsqc1Rjt6A==}
     engines: {node: '>=20'}
 
   '@colors/colors@1.5.0':
@@ -7849,7 +7849,7 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.62.0':
+  '@civfix/contract@0.63.0':
     dependencies:
       zod: 3.25.76
 

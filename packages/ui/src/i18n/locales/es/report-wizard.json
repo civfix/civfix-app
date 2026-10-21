@@ -28,11 +28,23 @@
     "review": {
       "title": "¿Listo para enviar?",
       "help": "Revísalo y suelta el pin."
+    },
+    "duplicate": {
+      "title": "Posible duplicado",
+      "help_one": "Puede que un reporte justo aquí ya cubra esto. Ábrelo para seguirlo o reporta un problema nuevo.",
+      "help_other": "{{count}} reportes justo aquí pueden cubrir ya esto. Abre uno para seguirlo o reporta un problema nuevo.",
+      "distance_close": "A menos de 5 m",
+      "distance_about": "A unos {{meters}} m",
+      "new": "Reportar un problema nuevo",
+      "see_too": "También lo veo",
+      "see_too_a11y": "También veo este problema",
+      "vote_error": "No se pudo guardar tu voto. Inténtalo de nuevo."
     }
   },
   "footer": {
     "continue": "Continuar",
-    "drop_pin": "Colocar pin"
+    "drop_pin": "Colocar pin",
+    "checking_a11y": "Buscando reportes cercanos"
   },
   "capture": {
     "label_filled": "Tus capturas",
