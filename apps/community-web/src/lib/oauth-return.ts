@@ -1,6 +1,7 @@
 import { isSafeInternalPath } from "@/lib/safe-path"
 
 const OAUTH_RETURN_PREFIX = "/manage/"
+const OAUTH_RETURN_REPORT = "/report"
 
 function hasControlChar(value: string): boolean {
   for (let i = 0; i < value.length; i += 1) {
@@ -11,9 +12,9 @@ function hasControlChar(value: string): boolean {
 }
 
 /**
- * Only a same-origin console path is accepted, including after normalization (`/manage/../x` is
- * rejected), so a `returnPath` can never turn the OAuth start endpoint into an open redirect, whatever
- * the backend's own allowlist does with it.
+ * Only a same-origin console path, or exactly the report flow's `/report`, is accepted, and only in
+ * normalized form (`/manage/../x` and `/report/../manage/x` are rejected), so a `returnPath` can never
+ * turn the OAuth start endpoint into an open redirect, whatever the backend's own allowlist does with it.
  */
 export function oauthReturnPath(path: string | null | undefined): string | null {
   if (typeof path !== "string" || !isSafeInternalPath(path)) return null
@@ -25,8 +26,9 @@ export function oauthReturnPath(path: string | null | undefined): string | null 
     return null
   }
   if (resolved.origin !== "https://civfix.invalid") return null
-  if (!resolved.pathname.startsWith(OAUTH_RETURN_PREFIX)) return null
-  return path
+  if (`${resolved.pathname}${resolved.search}${resolved.hash}` !== path) return null
+  if (path === OAUTH_RETURN_REPORT || resolved.pathname.startsWith(OAUTH_RETURN_PREFIX)) return path
+  return null
 }
 
 export function oauthRedirectTarget(origin: string, returnPath?: string | null): string {

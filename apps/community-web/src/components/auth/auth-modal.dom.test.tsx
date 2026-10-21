@@ -100,3 +100,48 @@ describe("AuthModal focus management", () => {
     expect(document.activeElement).toBe(opener)
   })
 })
+
+describe("AuthModal OAuth return", () => {
+  const assign = vi.fn<(url: string) => void>()
+
+  beforeEach(() => {
+    assign.mockReset()
+    vi.stubGlobal("location", { origin: "https://civfix.test", assign })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function startGoogle(): string {
+    fireEvent.click(screen.getByText("choices.continue_google"))
+    expect(assign).toHaveBeenCalledTimes(1)
+    return new URL(assign.mock.calls[0]![0]).searchParams.get("redirect") ?? ""
+  }
+
+  it("comes back to the return path of the gated action that opened it", () => {
+    render(<AuthModal />)
+    act(() => useUiStore.getState().openAuthModalReturningTo("/report"))
+    expect(startGoogle()).toBe("https://civfix.test/report")
+  })
+
+  it("comes back to the site root when a plain open follows one with a return path", () => {
+    render(<AuthModal />)
+    act(() => useUiStore.getState().openAuthModalReturningTo("/report"))
+    act(() => useUiStore.getState().setAuthModalOpen(false))
+    act(() => useUiStore.getState().openAuthModal())
+    expect(startGoogle()).toBe("https://civfix.test")
+  })
+
+  it("ignores a requested return path the allowlist does not accept", () => {
+    render(<AuthModal />)
+    act(() => useUiStore.getState().openAuthModalReturningTo("/notifications"))
+    expect(startGoogle()).toBe("https://civfix.test")
+  })
+
+  it("keeps the surface's own return path over the gated action's", () => {
+    render(<AuthModal oauthReturnPath="/manage/org-invites/accept/" />)
+    act(() => useUiStore.getState().openAuthModalReturningTo("/report"))
+    expect(startGoogle()).toBe("https://civfix.test/manage/org-invites/accept/")
+  })
+})
