@@ -58,6 +58,12 @@
 /manifest.webmanifest
   Content-Type: application/manifest+json
 
+# The investor deck at civfix.org/pitch-deck.pdf. Browsers render a PDF in a built-in viewer that the
+# site-wide CSP (`default-src 'self'; object-src 'none'`) can block, so the PDF drops it.
+/pitch-deck.pdf
+  ! Content-Security-Policy
+  Content-Type: application/pdf
+
 # scripts/cf-pages-postbuild.mjs copies each browse page to /__spa/<route>/ so the _redirects
 # protective rules have a non-looping target. They duplicate the canonical /<route>/ page, so tell
 # crawlers not to index them (nothing links here; this is belt-and-suspenders against duplicates).
