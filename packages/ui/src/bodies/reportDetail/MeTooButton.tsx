@@ -10,6 +10,7 @@ import {
   webHover,
   webNoSelect,
   webTransition,
+  type Theme,
 } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
 
@@ -18,9 +19,21 @@ const ME_TOO_SM_HIT_SLOP = hitSlopToTarget(ME_TOO_HEIGHT_SM)
 // RN's small spinner is 20 pt on every platform; scaled into the glyph's box, busy never widens the pill.
 const SPINNER_SMALL = 20
 
+export type MeTooTone = "seen" | "fixed"
+
+// Each vote wears the colour of what it says: coral (the brand's "report a problem" colour) for a problem still
+// there, moss (the Resolved badge's colour) for fixed.
+function toneColors(tone: MeTooTone, th: Theme) {
+  const c = th.colors
+  return tone === "fixed"
+    ? { solid: c.brand.moss, wash: c.moss["50"], washHover: c.moss["100"], edge: c.moss["300"], ink: c.chipInk.moss }
+    : { solid: c.brand.bloom, wash: c.bloom["50"], washHover: c.bloom["100"], edge: c.bloom["300"], ink: c.chipInk.bloom }
+}
+
 /**
- * A vote ("I see this too", "This is fixed") as a full-width outline button (SecondaryButton's look) that
- * fills with moss once pressed, so the pressed state reads as done rather than as a second call to action.
+ * A vote ("I see it too", "Looks fixed") as a solid button in its tone that turns into a quiet wash with a
+ * check once pressed, so the unpressed state invites and the pressed one reads as done, not as a second call
+ * to action.
  */
 export function MeTooButton({
   label,
@@ -29,6 +42,7 @@ export function MeTooButton({
   busy = false,
   disabled = false,
   size = "md",
+  tone = "seen",
   onPress,
 }: {
   label: string
@@ -37,11 +51,13 @@ export function MeTooButton({
   busy?: boolean
   disabled?: boolean
   size?: "sm" | "md"
+  tone?: MeTooTone
   onPress: () => void
 }) {
   const styles = useStyles()
   const th = useTheme()
-  const fg = pressed ? th.colors.moss["700"] : th.colors.text
+  const tc = toneColors(tone, th)
+  const fg = pressed ? tc.ink : th.colors.onCta
   const inert = busy || disabled
   const sm = size === "sm"
   const glyph = sm ? 16 : 18
@@ -62,8 +78,10 @@ export function MeTooButton({
         sm ? styles.sm : styles.md,
         webTransition,
         webCursor(inert),
-        pressed ? styles.pressedOn : null,
-        webHover(state) && !inert ? (pressed ? styles.pressedHovered : styles.hovered) : null,
+        pressed
+          ? { backgroundColor: tc.wash, borderColor: tc.edge }
+          : { backgroundColor: tc.solid, borderColor: tc.solid },
+        webHover(state) && !inert ? (pressed ? { backgroundColor: tc.washHover } : styles.hovered) : null,
         state.pressed ? styles.down : null,
       ]}
     >
@@ -73,7 +91,11 @@ export function MeTooButton({
           <ActivityIndicator size="small" color={fg} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
         </View>
       ) : (
-        <Icon icon={pressed ? iconMap.Check : iconMap.Plus} size={glyph} color={fg} />
+        <Icon
+          icon={pressed ? iconMap.Check : tone === "fixed" ? iconMap.CheckCircle2 : iconMap.Users}
+          size={glyph}
+          color={fg}
+        />
       )}
       <Text variant={sm ? "label" : "bodyStrong"} color={fg} style={[styles.label, webNoSelect]}>
         {label}
@@ -103,17 +125,13 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
     borderRadius: t.radius.pill,
     borderWidth: 1.5,
-    borderColor: t.colors.borderStrong,
-    backgroundColor: t.colors.surface,
   },
   // Two md buttons share a row on the report page, so a long translation wraps instead of overflowing the pill,
   // and each grows to fill its half so a one-line label's pill matches the height of a wrapped one beside it.
   md: { flexGrow: 1, minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
   sm: { height: ME_TOO_HEIGHT_SM, paddingHorizontal: t.space["3"] },
   label: { flexShrink: 1, textAlign: "center" },
-  hovered: { backgroundColor: t.colors.surfaceTint },
-  pressedOn: { backgroundColor: t.colors.moss["50"], borderColor: t.colors.moss["300"] },
-  pressedHovered: { backgroundColor: t.colors.moss["100"] },
+  hovered: { opacity: 0.94 },
   down: { opacity: 0.85 },
   countRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["1"] },
   countCentered: { justifyContent: "center" },
