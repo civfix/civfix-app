@@ -94,15 +94,14 @@ Apple installs a TestFlight build over the store app by design.
 ## Store-distribution profiles: `testflight` vs `production`
 
 Two store-distribution profiles exist in `apps/community-mobile/eas.json`, differing only in the
-baked API base URL and their EAS Update channel:
+baked API base URL:
 
 - `testflight` - dev/testing builds for TestFlight. Bakes
-  `EXPO_PUBLIC_API_URL=https://api.civfix.dev`, so testers hit the staging API. Update channel
-  `testflight`.
+  `EXPO_PUBLIC_API_URL=https://api.civfix.dev`, so testers hit the staging API.
 - `production` - official App Store releases. Sets no `EXPO_PUBLIC_API_URL`, so the base URL is
   chosen at RUNTIME by install source: `https://api.civfix.dev` while that build is handed out
   through TestFlight, `https://api.civfix.org` once the same build is downloaded from the App Store
-  (`src/lib/apiUrl.ts`, `src/lib/nativeBetaInstall.ts`). Update channel `production`.
+  (`src/lib/apiUrl.ts`, `src/lib/nativeBetaInstall.ts`).
 
 ### How the runtime split is decided (iOS only)
 
@@ -195,8 +194,8 @@ apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 ```
 
 It runs `pnpm install --frozen-lockfile`, writes `.env`, re-runs `expo prebuild` + `pod install`,
-clears the Metro cache, then prints the config it actually produced (API URL, build number, update
-channel, signing team) and fails rather than leave you with a mis-baked project.
+clears the Metro cache, then prints the config it actually produced (API URL, build number, signing
+team) and fails rather than leave you with a mis-baked project.
 
 The lockfile sync matters because an Xcode archive bundles JS straight out of `node_modules` and
 nothing else in the pipeline notices when a third-party dependency there is stale. Then: open
@@ -221,11 +220,8 @@ session (operation in progress?)")`. The project on disk is fine; only Xcode's s
 Recover with `pkill -x SWBBuildService` (`XCBBuildService` on older Xcode; Xcode respawns it), then
 a full Xcode quit + reopen, then `rm -rf ~/Library/Developer/Xcode/DerivedData/civfix-*`.
 
-Unlike an EAS build, a local archive has no update channel of its own - EAS injects that from
-eas.json. `CIVFIX_UPDATE_CHANNEL` (also set by the script) fills that gap via
-`updates.requestHeaders`, so a hand-built TestFlight binary can't be pulled onto the prod API by an
-OTA update. The local build number comes from `ios.buildNumber` in `app.config.js` (EAS's remote
-`autoIncrement` counter does not apply) and must exceed every build already in App Store Connect.
+The local build number comes from `ios.buildNumber` in `app.config.js` (EAS's remote `autoIncrement`
+counter does not apply) and must exceed every build already in App Store Connect.
 
 ### Android release build (gradle)
 
@@ -388,8 +384,7 @@ app"). So **the first PR after an App Store release bumps `version`**: `npm vers
 lookup API (no credential) and refuses a version that is not strictly above it, so a missed bump
 fails in seconds instead of after a half-hour build. The lookup can lag a few hours behind an
 approval, and when Apple's endpoint is unreachable the gate warns and lets the build proceed, so in
-either case the upload still has the final say. The version is also the
-OTA runtime version (`runtimeVersion.policy: appVersion`), so a bump starts a fresh update lineage.
+either case the upload still has the final say.
 
 `app.config.js` pins `ios.appleTeamId` to the civfix Apple team (`WMDUV888LH`), so `expo prebuild`
 writes that `DEVELOPMENT_TEAM` into the Xcode project. EAS-managed signing overrides it for store
@@ -399,15 +394,11 @@ builds and simulator builds ignore it; a developer outside that team who wants a
 An `appstore` upload still lands in TestFlight first; the actual App Store release is the manual
 App Store Connect step (attach the build to a version, submit for review).
 
-The API URL is baked into the JS bundle at build (or `eas update` publish) time - the separate
-update channels are what keep an OTA update from ever moving a build onto the other plane's API.
-Both profiles share the remote `autoIncrement` build-number counter, so TestFlight and App Store
-submissions stay monotonic. Both also upload to the same App Store Connect app, and App Store
-Connect lets you pick ANY uploaded build for review - never select a `testflight`-profile build
-number for an App Store release; it has the staging API baked in. If OTA updates are ever enabled
-for TestFlight testers, publish the `testflight` channel with
-`EXPO_PUBLIC_API_URL=https://api.civfix.dev` set at `eas update` time (profile `env` applies only
-to `eas build`), and never map the `testflight` channel onto a prod-published branch.
+The API URL is baked into the JS bundle at build time. Both profiles share the remote
+`autoIncrement` build-number counter, so TestFlight and App Store submissions stay monotonic. Both
+also upload to the same App Store Connect app, and App Store Connect lets you pick ANY uploaded
+build for review - never select a `testflight`-profile build number for an App Store release; it
+has the staging API baked in.
 
 Config plugins are declared in `apps/community-mobile/app.config.js`: expo-router,
 expo-localization, expo-build-properties, MapLibre, expo-secure-store, Apple authentication,
