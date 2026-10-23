@@ -150,6 +150,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
               </View>
               <View style={styles.meTooButton}>
                 <MeTooButton
+                  tone="fixed"
                   label={t("confirm.fixed")}
                   accessibilityLabel={t("confirm.fixed_a11y")}
                   pressed={meToo.fixed.pressed}

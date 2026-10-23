@@ -3,8 +3,6 @@ const { tokens } = require("@civfix/tokens")
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? null
 
-const UPDATE_CHANNEL = process.env.CIVFIX_UPDATE_CHANNEL ?? null
-
 const APPLE_TEAM_ID = process.env.CIVFIX_APPLE_TEAM_ID ?? "WMDUV888LH"
 
 const GOOGLE_WEB_CLIENT_ID =
@@ -311,13 +309,6 @@ module.exports = ({ config }) => ({
     eas: {
       projectId: "dea5514a-661e-4148-b099-ffe65443f806",
     },
-  },
-  updates: {
-    url: "https://u.expo.dev/dea5514a-661e-4148-b099-ffe65443f806",
-    ...(UPDATE_CHANNEL ? { requestHeaders: { "expo-channel-name": UPDATE_CHANNEL } } : {}),
-  },
-  runtimeVersion: {
-    policy: "appVersion",
   },
   owner: "civfix-app",
 })
