@@ -31,9 +31,9 @@ function toneColors(tone: MeTooTone, th: Theme) {
 }
 
 /**
- * A vote ("I see it too", "Looks fixed") as a solid button in its tone that turns into a quiet wash with a
- * check once pressed, so the unpressed state invites and the pressed one reads as done, not as a second call
- * to action.
+ * A vote ("I see it too", "Looks fixed") as a pill outlined in its tone that fills with the tone's wash and a
+ * check once pressed. Small (the Possible duplicate screen) is always the tone's wash, so it reads as the same
+ * vote inside its card.
  */
 export function MeTooButton({
   label,
@@ -57,9 +57,9 @@ export function MeTooButton({
   const styles = useStyles()
   const th = useTheme()
   const tc = toneColors(tone, th)
-  const fg = pressed ? tc.ink : th.colors.onCta
   const inert = busy || disabled
   const sm = size === "sm"
+  const washed = sm || pressed
   const glyph = sm ? 16 : 18
   return (
     <Pressable
@@ -78,26 +78,26 @@ export function MeTooButton({
         sm ? styles.sm : styles.md,
         webTransition,
         webCursor(inert),
-        pressed
-          ? { backgroundColor: tc.wash, borderColor: tc.edge }
-          : { backgroundColor: tc.solid, borderColor: tc.solid },
-        webHover(state) && !inert ? (pressed ? { backgroundColor: tc.washHover } : styles.hovered) : null,
+        washed
+          ? { backgroundColor: tc.wash, borderColor: sm ? tc.edge : tc.solid }
+          : { backgroundColor: th.colors.surface, borderColor: tc.edge },
+        webHover(state) && !inert ? { backgroundColor: washed ? tc.washHover : tc.wash } : null,
         state.pressed ? styles.down : null,
       ]}
     >
       {/* The label stays while busy so the button keeps its size; the spinner takes the glyph's place. */}
       {busy ? (
         <View style={{ width: glyph, height: glyph, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="small" color={fg} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
+          <ActivityIndicator size="small" color={tc.ink} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
         </View>
       ) : (
         <Icon
           icon={pressed ? iconMap.Check : tone === "fixed" ? iconMap.CheckCircle2 : iconMap.Users}
           size={glyph}
-          color={fg}
+          color={tc.ink}
         />
       )}
-      <Text variant={sm ? "label" : "bodyStrong"} color={fg} style={[styles.label, webNoSelect]}>
+      <Text variant={sm ? "label" : "bodyStrong"} color={sm ? tc.ink : th.colors.text} style={[styles.label, webNoSelect]}>
         {label}
       </Text>
     </Pressable>
@@ -131,7 +131,6 @@ const useStyles = makeThemedStyles((t) => ({
   md: { flexGrow: 1, minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
   sm: { height: ME_TOO_HEIGHT_SM, paddingHorizontal: t.space["3"] },
   label: { flexShrink: 1, textAlign: "center" },
-  hovered: { opacity: 0.94 },
   down: { opacity: 0.85 },
   countRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["1"] },
   countCentered: { justifyContent: "center" },
