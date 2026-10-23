@@ -2,6 +2,8 @@ import * as React from "react"
 import { beforeAll, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
+import type * as ListRow from "../../../primitives/ListRow"
+import type * as SettingsRow from "../../../primitives/SettingsRow"
 import type { SupportedLocale, UserProfileDTO } from "@civfix/contract"
 import { I18nProvider } from "../../../i18n"
 import { lazyCatalogs } from "../../../i18n/catalogs/lazy"
@@ -18,11 +20,9 @@ vi.mock("../../../typography", async () => {
 })
 vi.mock("../../../primitives", async () => ({
   Avatar: () => null,
-  LIST_TILE: (await vi.importActual<typeof import("../../../primitives/ListRow")>("../../../primitives/ListRow"))
-    .LIST_TILE,
-  SETTINGS_ROW_MIN_HEIGHT: (
-    await vi.importActual<typeof import("../../../primitives/SettingsRow")>("../../../primitives/SettingsRow")
-  ).SETTINGS_ROW_MIN_HEIGHT,
+  LIST_TILE: (await vi.importActual<typeof ListRow>("../../../primitives/ListRow")).LIST_TILE,
+  SETTINGS_ROW_MIN_HEIGHT: (await vi.importActual<typeof SettingsRow>("../../../primitives/SettingsRow"))
+    .SETTINGS_ROW_MIN_HEIGHT,
 }))
 
 const profile = { id: "u1", name: "Ada", avatarUrl: null, avatar: null } as unknown as UserProfileDTO
