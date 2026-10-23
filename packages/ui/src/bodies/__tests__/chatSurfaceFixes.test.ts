@@ -23,6 +23,7 @@ const IDENTITY = code(read("../GroupIdentityFields.tsx"))
 const ROLE_CHIP = code(read("../RoleChip.tsx"))
 const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
 const BUBBLE_MENUS = code(read("../conversation/BubbleMenus.tsx"))
+const BUBBLE_STYLES = code(read("../conversation/bubbleStyles.ts"))
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
 const CONVO_BAR = code(read("../conversation/ConvoBar.tsx"))
 const CONVO_COMPOSER = code(read("../conversation/ConversationComposer.tsx"))
@@ -199,6 +200,53 @@ describe("the native bubble offers its long-press menu to screen readers", () =>
   it("declares a labelled longpress action that opens the context menu", () => {
     expect(BUBBLE).toContain('menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined')
     expect(BUBBLE).toMatch(/if \(e\.nativeEvent\.actionName === "longpress"\) openContextMenu\(\)/)
+  })
+})
+
+describe("a long message wraps inside its bubble", () => {
+  const style = (name: string): string => {
+    const found = new RegExp(`\\n    ${name}: \\{([\\s\\S]*?)\\n    \\},`).exec(BUBBLE_STYLES)
+    if (!found || found[1] === undefined) throw new Error(`style "${name}" not found`)
+    return found[1]
+  }
+  const row = (): string => sliceBetween(BUBBLE, "<View style={[styles.bubbleRow, rowFit]}>", "<BubbleAttachments")
+
+  it("keeps the bubble row inside the 80% column, so a URL or a reply quote cannot widen it", () => {
+    expect(style("bubbleWrap")).toContain('maxWidth: "80%"')
+    expect(style("bubbleRowFit")).toContain('maxWidth: "100%"')
+  })
+
+  it("caps the text bubble at the row on web and native instead of sizing it to one line", () => {
+    expect(style("bubbleInRow")).toContain('maxWidth: "100%"')
+    const placed = row().match(/style=\{\[styles\.bubble, bubbleFit, bubbleChrome, bubbleTint\]\}/g)
+    expect(placed).toHaveLength(2)
+    expect(row()).toMatch(/<View ref=\{menuAnchorRef\} style=\{\[styles\.bubble, bubbleFit,/)
+    expect(row()).toMatch(/\{\.\.\.focusRingProps\}\s*style=\{\[styles\.bubble, bubbleFit,/)
+  })
+
+  it("keeps a text bubble with a link card at main's width: the bubble never shrinks to make room for the web hover actions", () => {
+    expect(style("bubbleInRow")).not.toMatch(/flexShrink|flex:/)
+    expect(style("bubble")).not.toMatch(/flexShrink|flex:/)
+    expect(style("bubbleRowFit")).not.toMatch(/flexShrink|flex:/)
+  })
+
+  it("lets the hover actions of a full-width mine bubble overflow inward, toward the column, instead of off the screen edge", () => {
+    expect(style("bubbleRowFitMine")).toContain('maxWidth: "100%"')
+    expect(style("bubbleRowFitMine")).toContain('justifyContent: "flex-end"')
+    expect(style("bubbleRowFit")).not.toContain("justifyContent")
+    expect(BUBBLE).toContain("const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit")
+  })
+
+  it("leaves the link-only card and its row as they were, so the card keeps its fixed width beside the hover actions", () => {
+    expect(BUBBLE).toContain("const bubbleFit = bare ? null : styles.bubbleInRow")
+    expect(style("bubbleRow")).not.toMatch(/maxWidth|flexShrink|justifyContent/)
+    expect(style("bubbleBare")).not.toMatch(/maxWidth|flexShrink/)
+  })
+
+  it("keeps the web hover actions at full size beside a wrapped bubble", () => {
+    const button = style("hoverActionBtn")
+    expect(button).toContain("width: 22")
+    expect(button).not.toMatch(/flexShrink|flex:/)
   })
 })
 

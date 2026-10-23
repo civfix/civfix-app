@@ -8,7 +8,6 @@
       "pnpm": "9.12.0",
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
       "env": {
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",
@@ -19,7 +18,6 @@
     "preview": {
       "pnpm": "9.12.0",
       "distribution": "internal",
-      "channel": "preview",
       "ios": {
         "simulator": false
       },
@@ -32,11 +30,10 @@
     },
     "testflight": {
       "extends": "production",
-      "channel": "testflight",
       "autoIncrement": true,
       "env": {
         "//api": "Dev/TestFlight testing builds bake the staging API base URL, pinning this profile to https://api.civfix.dev however it is installed. The production profile below bakes nothing, so src/lib/apiUrl.ts picks its API at RUNTIME from the active StoreKit receipt: https://api.civfix.dev while that build is handed out through TestFlight, https://api.civfix.org once it is downloaded from the App Store.",
-        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
+        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. If App Review ever objects to the in-app browser, switch to system in a new build (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
         "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
@@ -47,7 +44,6 @@
     },
     "staging": {
       "extends": "preview",
-      "channel": "staging",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf"
@@ -55,12 +51,11 @@
     },
     "production": {
       "pnpm": "9.12.0",
-      "channel": "production",
       "autoIncrement": true,
       "env": {
         "//api": "Deliberately sets no EXPO_PUBLIC_API_URL. On iOS ONLY, src/lib/apiUrl.ts resolves the base URL at runtime from the active StoreKit receipt, so one binary talks to https://api.civfix.dev while it is under test in TestFlight and to https://api.civfix.org once the same build is downloaded from the App Store. Every other platform resolves to https://api.civfix.org; Android's Play internal builds bake the staging API through the testflight profile instead (scripts/android-build.sh). Baking a URL here would freeze iOS to one of the two.",
         "//dsym": "iOS links React Native's prebuilt core frameworks (buildReactNativeFromSource: false in app.config.js), so App Store Connect's 'Upload Symbols Failed' warning for React.framework / ReactNativeDependencies.framework (alongside hermes and MapLibre) is expected and non-blocking.",
-        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
+        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. If App Review ever objects to the in-app browser, switch to system in a new build (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",

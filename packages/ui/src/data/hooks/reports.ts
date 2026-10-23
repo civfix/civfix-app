@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import type { QueryClient, InfiniteData } from "@tanstack/react-query"
+import type { InfiniteData, Query, QueryClient, QueryFilters, QueryKey } from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   BBox,
@@ -11,6 +11,7 @@ import type {
   ListMyReportsResponse,
   ListReportsSearchResponse,
   JurisdictionDTO,
+  ReportConfirmResponse,
 } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { useApi, useAuthState } from "../context"
@@ -121,6 +122,19 @@ function roundPickerCoord(n: number): number {
   return Math.round(n * 1000) / 1000
 }
 
+/** The "Reports nearby" area around a point; Most pressing nearby asks for the same one. */
+export function nearbyPinsBbox(point: { lat: number; lng: number } | null): BBox | null {
+  if (!point) return null
+  const lat = roundPickerCoord(point.lat)
+  const lng = roundPickerCoord(point.lng)
+  return {
+    west: lng - PICKER_BBOX_PAD_DEG,
+    east: lng + PICKER_BBOX_PAD_DEG,
+    south: lat - PICKER_BBOX_PAD_DEG,
+    north: lat + PICKER_BBOX_PAD_DEG,
+  }
+}
+
 export function useNearbyReportPins(point: { lat: number; lng: number } | null) {
   const api = useApi()
   const lat = point ? roundPickerCoord(point.lat) : 0
@@ -130,12 +144,7 @@ export function useNearbyReportPins(point: { lat: number; lng: number } | null) 
     enabled: point !== null,
     queryFn: async () => {
       const res = await api.mapReports({
-        bbox: {
-          west: lng - PICKER_BBOX_PAD_DEG,
-          east: lng + PICKER_BBOX_PAD_DEG,
-          south: lat - PICKER_BBOX_PAD_DEG,
-          north: lat + PICKER_BBOX_PAD_DEG,
-        },
+        bbox: nearbyPinsBbox({ lat, lng }) as BBox,
         zoom: POINTS_FETCH_ZOOM,
       })
       return Array.isArray(res?.pins) ? res.pins.filter((p) => p != null) : []
@@ -316,4 +325,142 @@ export function useUnlistReport(id: string) {
       },
     }),
   )
+}
+
+// A report opened from a link is cached under its reference code (`["report", code]`), not under its id.
+function reportAliasFilters(id: string): QueryFilters {
+  return {
+    predicate: (query: Query) => {
+      const key = query.queryKey
+      if (key[0] !== "report" || key.length !== 2 || key[1] === id) return false
+      const data = query.state.data as { id?: unknown } | undefined
+      return typeof data === "object" && data !== null && data.id === id
+    },
+  }
+}
+
+type ReportAliasCtx = [QueryKey, ReportDTO | undefined][]
+
+function mergeVotes(prev: ReportDTO, res: ReportConfirmResponse): ReportDTO {
+  return {
+    ...prev,
+    confirmCount: res.confirmCount,
+    confirmedByMe: res.confirmedByMe,
+    fixedCount: res.fixedCount,
+    fixedByMe: res.fixedByMe,
+  }
+}
+
+type ReportVote = "confirm" | "fixed" | null
+
+/**
+ * The caller's vote after a call, as the API applies it: an account holds one vote per report, so adding one
+ * moves the other, and removing a kind it does not hold changes nothing.
+ */
+function voteAfter(call: "confirm" | "unconfirm" | "fixed" | "unfixed", current: ReportVote): ReportVote {
+  if (call === "confirm" || call === "fixed") return call
+  return current === (call === "unconfirm" ? "confirm" : "fixed") ? null : current
+}
+
+function castVote(prev: ReportDTO, call: Parameters<typeof voteAfter>[0]): ReportDTO {
+  const current: ReportVote = prev.confirmedByMe ? "confirm" : prev.fixedByMe ? "fixed" : null
+  const next = voteAfter(call, current)
+  const delta = (kind: Exclude<ReportVote, null>) => (next === kind ? 1 : 0) - (current === kind ? 1 : 0)
+  return {
+    ...prev,
+    confirmedByMe: next === "confirm",
+    confirmCount: Math.max(0, prev.confirmCount + delta("confirm")),
+    fixedByMe: next === "fixed",
+    fixedCount: Math.max(0, prev.fixedCount + delta("fixed")),
+  }
+}
+
+const meTooMutationKey = (id: string) => ["report-me-too", id] as const
+
+/**
+ * A vote (or its removal) on a report's page: the buttons and the counts move at once and roll back on failure.
+ * Every kind of call on one report shares a scope, so a move from one vote to the other goes out in tap order.
+ */
+function voteToggle(qc: QueryClient, api: ApiClient, id: string, call: Parameters<typeof voteAfter>[0]) {
+  const press = (prev: ReportDTO): ReportDTO => castVote(prev, call)
+  const send = {
+    confirm: () => api.confirmReport({ id }),
+    unconfirm: () => api.unconfirmReport({ id }),
+    fixed: () => api.markReportFixed({ id }),
+    unfixed: () => api.unmarkReportFixed({ id }),
+  }[call]
+  const base = optimisticPatch<ReportDTO, void, ReportConfirmResponse, ReportAliasCtx>(qc, {
+    key: queryKeys.report(id),
+    mutationFn: send,
+    patch: press,
+    reconcile: mergeVotes,
+    invalidate: [queryKeys.mapReportsRoot],
+    also: {
+      cancel: (client) => client.cancelQueries(reportAliasFilters(id)),
+      onMutate: (client) => {
+        const snapshot = client.getQueriesData<ReportDTO>(reportAliasFilters(id))
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? press(prev) : prev))
+        return snapshot
+      },
+      onError: (client, _vars, snapshot) => {
+        for (const [key, data] of snapshot ?? []) client.setQueryData(key, data)
+      },
+      onSuccess: (client, res) => {
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? mergeVotes(prev, res) : prev))
+      },
+    },
+  })
+  // A double tap sends one report's calls in tap order, each pressing at once. An answer (or a failure) that
+  // lands while a later tap is still pending would undo that tap on screen, so only the last call reconciles.
+  const laterTapPending = () => qc.isMutating({ mutationKey: meTooMutationKey(id) }) > 1
+  return {
+    ...base,
+    mutationKey: meTooMutationKey(id),
+    scope: { id: `report-me-too:${id}` },
+    onSuccess: (...args: Parameters<NonNullable<typeof base.onSuccess>>) => {
+      if (!laterTapPending()) return base.onSuccess?.(...args)
+    },
+    onError: (...args: Parameters<NonNullable<typeof base.onError>>) => {
+      if (!laterTapPending()) return base.onError?.(...args)
+    },
+  } satisfies typeof base
+}
+
+export function useConfirmReport(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "confirm"))
+}
+
+export function useUnconfirmReport(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "unconfirm"))
+}
+
+export function useMarkReportFixed(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "fixed"))
+}
+
+export function useUnmarkReportFixed(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation(voteToggle(qc, api, id, "unfixed"))
+}
+
+/** I see this too from a match on the Possible duplicate screen: it waits for the API, then the report opens pressed. */
+export function useConfirmMatch() {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.confirmReport({ id }),
+    onSuccess: (res, id) => {
+      const merge = (prev: ReportDTO | undefined) => (prev ? mergeVotes(prev, res) : prev)
+      qc.setQueryData<ReportDTO>(queryKeys.report(id), merge)
+      qc.setQueriesData<ReportDTO>(reportAliasFilters(id), merge)
+      void qc.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
+    },
+  })
 }

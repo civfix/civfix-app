@@ -453,6 +453,8 @@ export const Bubble = React.memo(function Bubble({
   const tinted = mine && !bare
   const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken
   const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs
+  const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit
+  const bubbleFit = bare ? null : styles.bubbleInRow
   const bodyContent = renderChatTokens(bodyTokens, {
     body,
     mentions: message.mentions,
@@ -535,11 +537,11 @@ export const Bubble = React.memo(function Bubble({
           </Text>
         </View>
       ) : null}
-      <View style={styles.bubbleRow}>
+      <View style={[styles.bubbleRow, rowFit]}>
         {emptyRow ? (
           <ProcessingPill />
         ) : !hasBody ? null : isWeb ? (
-          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
+          <View ref={menuAnchorRef} style={[styles.bubble, bubbleFit, bubbleChrome, bubbleTint]}>
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </View>
@@ -560,7 +562,7 @@ export const Bubble = React.memo(function Bubble({
                 : undefined
             }
             {...focusRingProps}
-            style={[styles.bubble, bubbleChrome, bubbleTint]}
+            style={[styles.bubble, bubbleFit, bubbleChrome, bubbleTint]}
           >
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}

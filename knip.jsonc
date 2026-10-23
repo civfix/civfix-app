@@ -52,7 +52,10 @@
         // The one-off asset generators in scripts/ ask for these to be installed with --no-save; they
         // are never runtime or CI dependencies.
         "sharp",
-        "opentype.js"
+        "opentype.js",
+        // knip's Expo plugin assumes expo-updates unless `updates.enabled` is false; the app has no
+        // `updates` block on purpose, since it ships no OTA updates (GH#207).
+        "expo-updates"
       ],
       // Shell scripts run by package.json scripts, not package binaries.
       "ignoreBinaries": ["scripts/store-build.sh", "scripts/prep-archive.sh"]

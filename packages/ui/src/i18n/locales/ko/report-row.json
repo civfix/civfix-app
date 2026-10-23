@@ -1,5 +1,9 @@
 {
   "a11y": {
     "row": "{{title}}, {{status}}"
-  }
+  },
+  "confirm_count_one": "이웃 {{count}}명이 확인했어요",
+  "confirm_count_other": "이웃 {{count}}명이 확인했어요",
+  "fixed_count_one": "이웃 {{count}}명이 해결됐다고 해요",
+  "fixed_count_other": "이웃 {{count}}명이 해결됐다고 해요"
 }

@@ -9,7 +9,7 @@ name: Android dev client
 # serves every branch whose native side matches, and a run whose fingerprint already has a live
 # artifact stops before building. Debug-signed, no secrets, nothing leaves this repo's artifacts.
 #
-#   push to main / pull request (to main or an integration/<name> lane) touching the app or its
+#   push to main / pull request (any base, so stacked slices too) touching the app or its
 #   dependencies                                                     -> build when the fingerprint is new
 #   manual run                                                       -> same, for any branch
 
@@ -25,7 +25,6 @@ on:
       - "patches/**"
       - ".github/workflows/android-dev-client.yml"
   pull_request:
-    branches: [main, "integration/**"]
     paths: *app_paths
   workflow_dispatch:
 

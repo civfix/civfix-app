@@ -149,7 +149,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "0.62.1-b-chore-legal-terms-privacy-2026-10-20.g1dc2dd5",
+    "@civfix/contract": "^0.63.1",
     "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",

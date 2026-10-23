@@ -109,8 +109,9 @@ export function refToPin(ref: LinkedReportRef): ReportPinDTO {
     lat: ref.lat,
     lng: ref.lng,
     title: ref.title,
-    // A linked ref carries no count; 0 is what the contract gives a pin that omits it.
+    // A linked ref carries no counts; 0 is what the contract gives a pin that omits it.
     confirmCount: 0,
+    fixedCount: 0,
     ...(ref.type !== undefined ? { type: ref.type } : {}),
     ...(ref.addr !== undefined ? { addr: ref.addr } : {}),
     ...(ref.thumbUrl !== undefined ? { thumbUrl: ref.thumbUrl } : {}),
@@ -125,6 +126,7 @@ export function cardToPin(card: LinkedReportCardEntry): ReportPinDTO {
     lat: card.lat,
     lng: card.lng,
     confirmCount: 0,
+    fixedCount: 0,
     ...(card.type != null ? { type: card.type } : {}),
     ...(card.title !== undefined ? { title: card.title } : {}),
     ...(card.description !== undefined ? { description: card.description } : {}),

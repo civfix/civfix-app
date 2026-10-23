@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, motion, useTheme, useLayoutMode, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { KeyboardPinnedFooter, KeyboardPinnedSurface, useToast } from "../primitives"
+import { KeyboardPinnedFooter, KeyboardPinnedSurface, LoadingState, SignInPrompt, useToast } from "../primitives"
 import { PortraitMapPickStep } from "../map"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -21,6 +21,7 @@ import { announce } from "../announce"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { useCamera, useHaptics } from "../capabilities"
+import { useAuthState, useRequireAuth } from "../data"
 import type { CapturedMedia } from "../capabilities"
 import { useDraftReportStore, captureSeedsNewReport } from "../report/draftStore"
 import { usePostComposerStore } from "./postComposerStore"
@@ -48,10 +49,109 @@ import { useFlowStyles } from "./reportFlow/flowStyles"
 import { usePickLayer } from "./reportFlow/usePickLayer"
 import { useReportRunClaim } from "./reportFlow/useReportRunClaim"
 import { useReportSubmitFlow } from "./reportFlow/useReportSubmitFlow"
+import { useDuplicateGate } from "./reportFlow/useDuplicateGate"
+import { stepChecksDuplicates } from "./reportFlow/duplicateModel"
+import { DuplicateGate } from "./reportFlow/DuplicateGate"
 
 const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
+/**
+ * Filing a report needs an account. Every way into the flow lands on this body, so a signed-out viewer
+ * gets the sign-in prompt in place of the wizard and its camera, and the same view mounts the wizard on
+ * its first step once they are signed in.
+ */
 export function ReportFlowBody() {
+  const { isAuthenticated, isPending } = useAuthState()
+  if (isAuthenticated) return <ReportWizard />
+  return <ReportSignedOut pending={isPending} />
+}
+
+function ReportSignedOut({ pending }: { pending: boolean }) {
+  const styles = useStyles()
+  const { t } = useT("report-wizard")
+  const { ScrollView } = useScrollHost()
+  const mode = useLayoutMode()
+  const requireAuth = useRequireAuth()
+  const stackNonEmpty = useNavStore((s) => s.stack.length > 0)
+  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex: 0 }))
+  const onBack = useCallback(() => useNavStore.getState().leaveReportFlow(), [])
+
+  return (
+    <View style={styles.root}>
+      <ReportFlowHeader showBack={showBack} atViewRoot={!stackNonEmpty} onBack={onBack} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.contentFill}
+        showsVerticalScrollIndicator={false}
+      >
+        {pending ? (
+          <LoadingState variant="detail" />
+        ) : (
+          <SignInPrompt
+            icon={iconMap.Camera}
+            variant="detail"
+            title={t("signin.title")}
+            body={t("signin.body")}
+            onSignIn={() => requireAuth(() => {}, { next: "/report" })}
+          />
+        )}
+      </ScrollView>
+    </View>
+  )
+}
+
+function ReportFlowHeader({
+  showBack,
+  atViewRoot,
+  onBack,
+}: {
+  showBack: boolean
+  atViewRoot: boolean
+  onBack: () => void
+}) {
+  const styles = useStyles()
+  const flowStyles = useFlowStyles()
+  const th = useTheme()
+  const { t } = useT("report-wizard")
+  const mode = useLayoutMode()
+
+  return wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
+    <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
+      <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
+        {t("header.title")}
+      </Text>
+      <HeaderProfileButton />
+    </View>
+  ) : (
+    <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
+      {showBack ? (
+        <Pressable
+          onPress={onBack}
+          accessibilityRole="button"
+          accessibilityLabel={t("header.back")}
+          hitSlop={8}
+          {...focusRingProps}
+          style={({ pressed }) => [
+            styles.backBase,
+            mode === "expanded" ? styles.backExpanded : styles.backCompact,
+            pressed ? flowStyles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
+        </Pressable>
+      ) : null}
+      <Text
+        style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
+        numberOfLines={1}
+        accessibilityRole="header"
+      >
+        {t("header.title")}
+      </Text>
+    </View>
+  )
+}
+
+function ReportWizard() {
   const styles = useStyles()
   const flowStyles = useFlowStyles()
   const th = useTheme()
@@ -127,8 +227,6 @@ export function ReportFlowBody() {
     )
   }, [stepIndex, stepOrder.length, stepTitle, t])
   const isLast = activeStep === "review"
-  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))
-  const atViewRoot = stepIndex === 0 && !stackNonEmpty
   const sessionActive = viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)
   const sessionResumeGrace = viewfinderResumeGraceEligible(
     activeStep,
@@ -136,14 +234,6 @@ export function ReportFlowBody() {
     stackNonEmpty,
     runActive,
   )
-
-  const onBack = useCallback(() => {
-    if (stepIndex <= 0) {
-      useNavStore.getState().leaveReportFlow()
-      return
-    }
-    setStep(stepOrder[stepIndex - 1] as Step)
-  }, [stepIndex, stepOrder])
 
   const advanceFromCapture = useCallback(() => {
     setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))
@@ -163,12 +253,46 @@ export function ReportFlowBody() {
     setStep(stepOrder[stepIndex + 1] as Step)
   }, [activeStep, advanceFromCapture, canAdvance, haptics, isLast, runSubmit, stepIndex, stepOrder])
 
+  const {
+    busy: checkingDuplicates,
+    matches: duplicateMatches,
+    run: checkDuplicates,
+    dismiss: dismissDuplicates,
+    reportNew,
+    openMatch,
+  } = useDuplicateGate(onNext)
+  const gateOpen = duplicateMatches !== null
+  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex })) || gateOpen
+  const atViewRoot = stepIndex === 0 && !stackNonEmpty && !gateOpen
+
+  const onBack = useCallback(() => {
+    if (gateOpen) {
+      dismissDuplicates()
+      return
+    }
+    // A check still waiting would otherwise carry the flow forward after the reporter went back.
+    if (checkingDuplicates) dismissDuplicates()
+    if (stepIndex <= 0) {
+      useNavStore.getState().leaveReportFlow()
+      return
+    }
+    setStep(stepOrder[stepIndex - 1] as Step)
+  }, [checkingDuplicates, dismissDuplicates, gateOpen, stepIndex, stepOrder])
+
+  const onContinue = useCallback(() => {
+    if (checkingDuplicates) return
+    if (canAdvance && stepChecksDuplicates(activeStep, mode)) checkDuplicates(onNext)
+    else onNext()
+  }, [activeStep, canAdvance, checkDuplicates, checkingDuplicates, mode, onNext])
+
   const advanceFromLocation = useCallback(() => {
-    setStep((s) => {
-      const i = stepOrder.indexOf(s)
-      return (stepOrder[i + 1] as Step) ?? s
-    })
-  }, [stepOrder])
+    checkDuplicates(() =>
+      setStep((s) => {
+        const i = stepOrder.indexOf(s)
+        return (stepOrder[i + 1] as Step) ?? s
+      }),
+    )
+  }, [checkDuplicates, stepOrder])
   const cancelLocation = useCallback(() => {
     setStep((s) => {
       const i = stepOrder.indexOf(s)
@@ -222,49 +346,18 @@ export function ReportFlowBody() {
 
   return (
     <KeyboardPinnedSurface style={styles.root}>
-      {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
-        <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
-          <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
-            {t("header.title")}
-          </Text>
-          <HeaderProfileButton />
-        </View>
-      ) : (
-        <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
-          {showBack ? (
-            <Pressable
-              onPress={onBack}
-              accessibilityRole="button"
-              accessibilityLabel={t("header.back")}
-              hitSlop={8}
-              {...focusRingProps}
-              style={({ pressed }) => [
-                styles.backBase,
-                mode === "expanded" ? styles.backExpanded : styles.backCompact,
-                pressed ? flowStyles.pressed : null,
-              ]}
-            >
-              <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-            </Pressable>
-          ) : null}
-          <Text
-            style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
-            numberOfLines={1}
-            accessibilityRole="header"
-          >
-            {t("header.title")}
-          </Text>
+      <ReportFlowHeader showBack={showBack} atViewRoot={atViewRoot} onBack={onBack} />
+
+      {gateOpen ? null : (
+        <View style={styles.wizardHead}>
+          <WizardStepHeader
+            step={stepIndex + 1}
+            total={stepOrder.length}
+            title={stepTitle}
+            help={t(`wizard.${activeStep}.help`)}
+          />
         </View>
       )}
-
-      <View style={styles.wizardHead}>
-        <WizardStepHeader
-          step={stepIndex + 1}
-          total={stepOrder.length}
-          title={stepTitle}
-          help={t(`wizard.${activeStep}.help`)}
-        />
-      </View>
 
       {viewfinderVisible ? (
         <View style={styles.viewfinderLayer}>
@@ -276,6 +369,8 @@ export function ReportFlowBody() {
             />
           ) : null}
         </View>
+      ) : gateOpen ? (
+        <DuplicateGate rows={duplicateMatches} onOpen={openMatch} onBack={onBack} />
       ) : (
         <ScrollView
           ref={scrollRef}
@@ -311,14 +406,32 @@ export function ReportFlowBody() {
         </ScrollView>
       )}
 
-      {showsWizardFooter(activeStep, hasMedia) ? (
+      {/* Report a new problem takes over Continue's native view, and RN Android keeps a view's accessibility state
+          when the new props pass none, so it states its own or TalkBack reads Continue's busy on it. */}
+      {gateOpen ? (
         <KeyboardPinnedFooter style={styles.footer}>
           <Pressable
-            onPress={onNext}
+            onPress={reportNew}
+            accessibilityRole="button"
+            accessibilityLabel={t("wizard.duplicate.new")}
+            accessibilityState={{ disabled: false, busy: false }}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.nextBtn, styles.newBtn, pressed ? flowStyles.pressed : null]}
+          >
+            <Icon icon={iconMap.Plus} size={16} color={th.colors.text} />
+            <Text style={[styles.nextText, { color: th.colors.text }]}>{t("wizard.duplicate.new")}</Text>
+          </Pressable>
+        </KeyboardPinnedFooter>
+      ) : showsWizardFooter(activeStep, hasMedia) ? (
+        <KeyboardPinnedFooter style={styles.footer}>
+          <Pressable
+            onPress={onContinue}
             disabled={!canAdvance}
             accessibilityRole="button"
-            accessibilityLabel={isLast ? t("footer.drop_pin") : t("footer.continue")}
-            accessibilityState={{ disabled: !canAdvance }}
+            accessibilityLabel={
+              checkingDuplicates ? t("footer.checking_a11y") : isLast ? t("footer.drop_pin") : t("footer.continue")
+            }
+            accessibilityState={{ disabled: !canAdvance, busy: checkingDuplicates }}
             {...focusRingProps}
             style={({ pressed }) => [
               styles.nextBtn,
@@ -330,11 +443,15 @@ export function ReportFlowBody() {
               {isLast ? t("footer.drop_pin") : t("footer.continue")}
             </Text>
             <View style={styles.nextIcon}>
-              <Icon
-                icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
-                size={16}
-                color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
-              />
+              {checkingDuplicates ? (
+                <ActivityIndicator size="small" color={th.colors.onAccent} />
+              ) : (
+                <Icon
+                  icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
+                  size={16}
+                  color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
+                />
+              )}
             </View>
           </Pressable>
         </KeyboardPinnedFooter>
@@ -456,4 +573,10 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["15"],
   },
   nextIcon: { marginLeft: 6 },
+  newBtn: {
+    gap: t.space["2"],
+    backgroundColor: t.colors.surface,
+    borderWidth: 1.5,
+    borderColor: t.colors.borderStrong,
+  },
 }))

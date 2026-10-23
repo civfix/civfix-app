@@ -3,6 +3,10 @@
     "title": "Report an issue",
     "back": "Back"
   },
+  "signin": {
+    "title": "Sign in to report a problem",
+    "body": "Sign in or create an account to report problems in your neighborhood."
+  },
   "wizard": {
     "announceStep": "Step {{current}} of {{total}}. {{title}}",
     "capture": {
@@ -24,11 +28,23 @@
     "review": {
       "title": "Ready to send?",
       "help": "Check it over, then drop the pin."
+    },
+    "duplicate": {
+      "title": "Possible duplicate",
+      "help_one": "A report right here may already cover this. Open it to follow along, or report a new problem.",
+      "help_other": "{{count}} reports right here may already cover this. Open one to follow along, or report a new problem.",
+      "distance_close": "Less than 5 m away",
+      "distance_about": "About {{meters}} m away",
+      "new": "Report a new problem",
+      "see_too": "I see it too",
+      "see_too_a11y": "I see this problem too",
+      "vote_error": "Couldn't save your vote. Try again."
     }
   },
   "footer": {
     "continue": "Continue",
-    "drop_pin": "Drop pin"
+    "drop_pin": "Drop pin",
+    "checking_a11y": "Checking for reports nearby"
   },
   "capture": {
     "label_filled": "Your captures",

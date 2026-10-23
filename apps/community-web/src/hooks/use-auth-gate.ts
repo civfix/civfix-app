@@ -50,12 +50,15 @@ export function runGatedAction(
 /**
  * Runs the action for a confirmed session and opens the auth modal otherwise. During the optimistic
  * boot window the tap defers until the session check settles (bounded by SESSION_SETTLE_TIMEOUT_MS).
+ * `returnPath` is where OAuth sign-in from that modal should come back to, if oauthReturnPath allows it.
  */
-export function useAuthGate(): (action: () => void) => void {
+export function useAuthGate(): (action: () => void, returnPath?: string) => void {
   const openAuthModal = useUiStore((s) => s.openAuthModal)
+  const openAuthModalReturningTo = useUiStore((s) => s.openAuthModalReturningTo)
 
   return React.useCallback(
-    (action: () => void) => runGatedAction(action, openAuthModal),
-    [openAuthModal],
+    (action: () => void, returnPath?: string) =>
+      runGatedAction(action, returnPath ? () => openAuthModalReturningTo(returnPath) : openAuthModal),
+    [openAuthModal, openAuthModalReturningTo],
   )
 }
