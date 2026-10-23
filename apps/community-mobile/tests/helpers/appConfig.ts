@@ -14,6 +14,8 @@ export interface AppConfig {
     adaptiveIcon: { backgroundColor: string; dark?: unknown }
   }
   plugins: unknown[]
+  extra: { eas: { projectId: string } }
+  owner: string
 }
 
 export type AppConfigFactory = (context: { config: Record<string, unknown> }) => AppConfig

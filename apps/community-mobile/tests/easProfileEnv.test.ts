@@ -7,7 +7,6 @@ import { profileEnv, resolveProfile } from "../scripts/eas-profile-env.mjs"
 
 interface BuildProfile {
   extends?: string
-  channel?: string
   env?: Record<string, string>
 }
 
@@ -15,16 +14,27 @@ const eas = JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "ut
   build: Record<string, BuildProfile>
 }
 
-test("the Android internal build (testflight profile) bakes the staging API and the testflight channel", () => {
+test("T1: the Android internal build (testflight profile) bakes the staging API and no update channel", () => {
   const env = profileEnv(eas, "testflight")
   assert.equal(env.EXPO_PUBLIC_API_URL, "https://api.civfix.dev")
-  assert.equal(env.CIVFIX_UPDATE_CHANNEL, "testflight")
+  assert.equal("CIVFIX_UPDATE_CHANNEL" in env, false)
 })
 
-test("the production profile bakes no API URL, so the app resolves production at runtime", () => {
+test("T2: the production profile bakes no API URL, so the app resolves production at runtime, and no update channel", () => {
   const env = profileEnv(eas, "production")
   assert.equal("EXPO_PUBLIC_API_URL" in env, false)
-  assert.equal(env.CIVFIX_UPDATE_CHANNEL, "production")
+  assert.equal("CIVFIX_UPDATE_CHANNEL" in env, false)
+})
+
+test("T3: a profile's channel is never exported", () => {
+  const fixture = { build: { a: { channel: "x", env: { X: "1" } } } }
+  assert.deepEqual(profileEnv(fixture, "a"), { X: "1" })
+})
+
+test("T4: no build profile in eas.json names an update channel", () => {
+  for (const name of ["development", "preview", "testflight", "staging", "production"]) {
+    assert.equal("channel" in resolveProfile(eas, name), false, `profile '${name}' still has a channel`)
+  }
 })
 
 test("note keys never become environment variables", () => {
