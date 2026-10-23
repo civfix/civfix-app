@@ -78,19 +78,36 @@ export type FakePushPermission = PushPermissionCapability & {
   settingsOpened: number
 }
 
+// Unsupported until a test says otherwise, like the other fakes that never claim a device feature.
 function makeFakePushPermission(): FakePushPermission {
-  const notImplemented = (): never => {
-    throw new Error("not implemented")
-  }
-  return {
+  let current: PushPermissionStatus = "unsupported"
+  let requestResult: PushPermissionStatus | null = null
+  const fake: FakePushPermission = {
     requested: 0,
     settingsOpened: 0,
-    status: notImplemented,
-    request: notImplemented,
-    openSettings: notImplemented,
-    setStatus: notImplemented,
-    setRequestResult: notImplemented,
+    status(): Promise<PushPermissionStatus> {
+      return Promise.resolve(current)
+    },
+    request(): Promise<PushPermissionStatus> {
+      fake.requested += 1
+      if (requestResult !== null) {
+        current = requestResult
+        requestResult = null
+      }
+      return Promise.resolve(current)
+    },
+    openSettings(): Promise<void> {
+      fake.settingsOpened += 1
+      return Promise.resolve()
+    },
+    setStatus(status: PushPermissionStatus): void {
+      current = status
+    },
+    setRequestResult(status: PushPermissionStatus): void {
+      requestResult = status
+    },
   }
+  return fake
 }
 
 class MapKeyValueStore implements SecureStoreCapability {
