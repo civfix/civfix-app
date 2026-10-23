@@ -58,4 +58,9 @@ describe("a settings row shows its whole description", () => {
     )
     expectUnclamped(screen.getByText(de.showHours.helper))
   })
+
+  it("clamps a value preview that asks for it", () => {
+    render(<SettingsRow label="Label" sub={en.showHours.helper} subNumberOfLines={2} onPress={() => {}} />)
+    expect(getComputedStyle(screen.getByText(en.showHours.helper)).textOverflow).toBe("ellipsis")
+  })
 })

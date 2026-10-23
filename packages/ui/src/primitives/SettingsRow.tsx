@@ -18,6 +18,7 @@ export interface SettingsRowProps {
   label: string
   icon?: IconName
   sub?: string
+  subNumberOfLines?: number
   value?: string
   onPress?: () => void
   toggle?: SettingsToggleBinding
@@ -59,11 +60,13 @@ function RowContent({
   label,
   icon,
   sub,
+  subNumberOfLines,
   destructive,
 }: {
   label: string
   icon?: IconName
   sub?: string
+  subNumberOfLines?: number
   destructive: boolean
 }) {
   const styles = useStyles()
@@ -75,7 +78,9 @@ function RowContent({
           {label}
         </Text>
         {sub ? (
-          <Text style={styles.sub}>{sub}</Text>
+          <Text style={styles.sub} numberOfLines={subNumberOfLines}>
+            {sub}
+          </Text>
         ) : null}
       </View>
     </>
@@ -86,6 +91,7 @@ export function SettingsRow({
   label,
   icon,
   sub,
+  subNumberOfLines,
   value,
   onPress,
   toggle,
@@ -109,7 +115,7 @@ export function SettingsRow({
           onValueChange={toggle.onValueChange}
           columnStyle={styles.toggleTextCol}
         >
-          <RowContent label={label} icon={icon} sub={sub} destructive={false} />
+          <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={false} />
         </ToggleRowContent>
       </View>
     )
@@ -118,7 +124,7 @@ export function SettingsRow({
   if (!onPress) {
     return (
       <View style={[styles.row, disabled ? styles.rowDisabled : null]}>
-        <RowContent label={label} icon={icon} sub={sub} destructive={destructive} />
+        <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={destructive} />
         {value ? (
           <Text style={styles.value} numberOfLines={1}>
             {value}
@@ -144,7 +150,7 @@ export function SettingsRow({
         state.pressed && !disabled ? styles.rowPressed : null,
       ]}
     >
-      <RowContent label={label} icon={icon} sub={sub} destructive={destructive} />
+      <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={destructive} />
       {value ? (
         <Text style={styles.value} numberOfLines={1}>
           {value}
