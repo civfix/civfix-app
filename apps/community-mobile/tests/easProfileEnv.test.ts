@@ -14,16 +14,16 @@ const eas = JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "ut
   build: Record<string, BuildProfile>
 }
 
-test("T1: the Android internal build (testflight profile) bakes the staging API and no update channel", () => {
+test("T1: the Android internal build (testflight profile) bakes the staging API and only EXPO_PUBLIC_ values", () => {
   const env = profileEnv(eas, "testflight")
   assert.equal(env.EXPO_PUBLIC_API_URL, "https://api.civfix.dev")
-  assert.equal("CIVFIX_UPDATE_CHANNEL" in env, false)
+  assert.deepEqual(Object.keys(env).filter((key) => !key.startsWith("EXPO_PUBLIC_")), [])
 })
 
-test("T2: the production profile bakes no API URL, so the app resolves production at runtime, and no update channel", () => {
+test("T2: the production profile bakes no API URL, so the app resolves production at runtime, and only EXPO_PUBLIC_ values", () => {
   const env = profileEnv(eas, "production")
   assert.equal("EXPO_PUBLIC_API_URL" in env, false)
-  assert.equal("CIVFIX_UPDATE_CHANNEL" in env, false)
+  assert.deepEqual(Object.keys(env).filter((key) => !key.startsWith("EXPO_PUBLIC_")), [])
 })
 
 test("T3: a profile's channel is never exported", () => {
