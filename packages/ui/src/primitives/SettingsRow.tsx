@@ -75,9 +75,7 @@ function RowContent({
           {label}
         </Text>
         {sub ? (
-          <Text style={styles.sub} numberOfLines={2}>
-            {sub}
-          </Text>
+          <Text style={styles.sub}>{sub}</Text>
         ) : null}
       </View>
     </>
