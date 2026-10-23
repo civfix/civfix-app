@@ -18,7 +18,7 @@
     "legal-hashes": "node scripts/legal-hashes.mjs"
   },
   "dependencies": {
-    "@civfix/contract": "^0.63.0",
+    "@civfix/contract": "0.64.0-b-feat-notification-center-contract.gc3da707",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
