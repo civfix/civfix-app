@@ -4,6 +4,7 @@ import type {
   CameraCapability,
   GeolocationCapability,
   PushCapability,
+  PushPermissionStatus,
   SecureStoreCapability,
   HapticsCapability,
   OpenExternalCapability,
@@ -22,6 +23,16 @@ export function useGeolocation(): GeolocationCapability {
 
 export function usePush(): PushCapability {
   return useCapabilities().push
+}
+
+export interface PushPermissionState {
+  status: PushPermissionStatus | null
+  request(): Promise<PushPermissionStatus>
+  openSettings?: () => Promise<void>
+}
+
+export function usePushPermission(): PushPermissionState {
+  throw new Error("not implemented")
 }
 
 export function useSecureStore(): SecureStoreCapability {

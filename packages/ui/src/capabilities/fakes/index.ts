@@ -5,6 +5,8 @@ import type {
   PreparedUpload,
   GeolocationCapability,
   PushCapability,
+  PushPermissionCapability,
+  PushPermissionStatus,
   SecureStoreCapability,
   BlurSurfaceCapability,
   OpenExternalCapability,
@@ -65,6 +67,29 @@ class FakePush implements PushCapability {
   }
   registerForToken(): Promise<null> {
     return Promise.resolve(null)
+  }
+}
+
+export type FakePushPermission = PushPermissionCapability & {
+  openSettings(): Promise<void>
+  setStatus(status: PushPermissionStatus): void
+  setRequestResult(status: PushPermissionStatus): void
+  requested: number
+  settingsOpened: number
+}
+
+function makeFakePushPermission(): FakePushPermission {
+  const notImplemented = (): never => {
+    throw new Error("not implemented")
+  }
+  return {
+    requested: 0,
+    settingsOpened: 0,
+    status: notImplemented,
+    request: notImplemented,
+    openSettings: notImplemented,
+    setStatus: notImplemented,
+    setRequestResult: notImplemented,
   }
 }
 
@@ -136,6 +161,7 @@ export function makeFakeCapabilities(): PlatformCapabilities {
     camera: new FakeCamera(),
     geolocation: new FakeGeolocation(),
     push: new FakePush(),
+    pushPermission: makeFakePushPermission(),
     secureStore: new MapKeyValueStore(),
     persistence: new MapKeyValueStore(),
     blurSurface: fakeBlurSurface,
