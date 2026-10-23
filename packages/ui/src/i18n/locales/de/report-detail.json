@@ -118,8 +118,8 @@
   "confirm": {
     "see_too": "Ich sehe das auch",
     "see_too_a11y": "Ich sehe dieses Problem auch",
-    "fixed": "Ist behoben",
-    "fixed_a11y": "Dieses Problem ist behoben",
+    "fixed": "Sieht behoben aus",
+    "fixed_a11y": "Dieses Problem sieht behoben aus",
     "error": "Deine Stimme konnte nicht gespeichert werden. Bitte erneut versuchen."
   }
 }

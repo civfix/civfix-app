@@ -116,10 +116,10 @@
     "view_chat_a11y": "View the chat for this report"
   },
   "confirm": {
-    "see_too": "I see this too",
+    "see_too": "I see it too",
     "see_too_a11y": "I see this problem too",
-    "fixed": "This is fixed",
-    "fixed_a11y": "This problem is fixed",
+    "fixed": "Looks fixed",
+    "fixed_a11y": "This problem looks fixed",
     "error": "Couldn't save your vote. Try again."
   }
 }
