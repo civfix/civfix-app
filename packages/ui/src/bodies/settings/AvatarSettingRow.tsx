@@ -51,9 +51,7 @@ export function AvatarSettingRow({ profile, uploading, onPress }: AvatarSettingR
         <Text style={styles.label} numberOfLines={1}>
           {t("avatar.change")}
         </Text>
-        <Text style={styles.sub} numberOfLines={1}>
-          {uploading ? t("avatar.uploading") : t("avatar.sub")}
-        </Text>
+        <Text style={styles.sub}>{uploading ? t("avatar.uploading") : t("avatar.sub")}</Text>
       </View>
       <Icon icon={iconMap.ChevronRight} size={18} color={th.colors.textSubtle} />
     </Pressable>
