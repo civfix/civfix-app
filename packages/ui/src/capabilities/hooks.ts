@@ -5,7 +5,6 @@ import { NOOP_HAPTICS } from "./noopHaptics"
 import type {
   CameraCapability,
   GeolocationCapability,
-  PushCapability,
   PushPermissionStatus,
   SecureStoreCapability,
   HapticsCapability,
@@ -21,10 +20,6 @@ export function useCamera(): CameraCapability {
 
 export function useGeolocation(): GeolocationCapability {
   return useCapabilities().geolocation
-}
-
-export function usePush(): PushCapability {
-  return useCapabilities().push
 }
 
 export interface PushPermissionState {

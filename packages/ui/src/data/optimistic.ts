@@ -65,7 +65,7 @@ export interface OptimisticPatchOptions<TData, TVars, TRes, TAlsoCtx = unknown> 
 /**
  * Single-entity optimistic toggle. Snapshots one query key, applies `patch`, rolls back on error, and
  * (optionally) reconciles with the server response and/or invalidates. Used by useResolveReport,
- * useUnlistReport, useUpdateNotificationPrefs and the post toggles. useJoinCleanup cannot use it: its
+ * useUnlistReport and the post toggles. useJoinCleanup cannot use it: its
  * detail can render under a refcode ALIAS key as well as the UUID, so it runs the same dance over
  * `cleanupDetailFilters` (see data/hooks/cleanups.ts).
  */

@@ -48,9 +48,9 @@ describe("queryKeys.notifications", () => {
     expect(isPrefixOf(queryKeys.notificationsRoot, queryKeys.notifications(50))).toBe(true)
   })
 
-  it("a numeric-limit notifications key never collides with the prefs key", () => {
-    expect(queryKeys.notifications(50)).not.toEqual(queryKeys.notificationPrefs)
-    expect(typeof queryKeys.notificationPrefs[1]).toBe("string")
+  it("a numeric-limit notifications key never collides with the settings key", () => {
+    expect(queryKeys.notifications(50)).not.toEqual(queryKeys.notificationSettings)
+    expect(typeof queryKeys.notificationSettings[1]).toBe("string")
   })
 })
 
