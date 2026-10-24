@@ -1,8 +1,9 @@
 import * as React from "react"
 import { describe, expect, it, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import { MeTooButton } from "../MeTooButton"
+import { ThemeProvider, themes, type ColorSchemeName } from "../../../theme"
+import { MeTooButton, type MeTooTone } from "../MeTooButton"
 
 // The icon set pulls in native-only modules; the button is read by its role and attributes.
 vi.mock("../../../typography", async () => {
@@ -43,5 +44,62 @@ describe("MeTooButton on web", () => {
     unmount()
     render(<MeTooButton size="sm" label="I see this too" accessibilityLabel="I see this problem too" pressed={false} onPress={() => {}} />)
     expect(getComputedStyle(screen.getByRole("button")).flexGrow).not.toBe("1")
+  })
+})
+
+// jsdom reports computed colours as rgb(); the theme holds hex.
+function rgb(hex: string) {
+  const n = parseInt(hex.slice(1, 7), 16)
+  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`
+}
+
+function shading(el: HTMLElement) {
+  const cs = getComputedStyle(el)
+  return { fill: cs.backgroundColor, border: cs.borderTopColor }
+}
+
+describe.each<ColorSchemeName>(["light", "dark"])("MeTooButton shading (%s)", (scheme) => {
+  const c = themes[scheme].colors
+  const toned = {
+    seen: { solid: c.brand.bloom, ramp: c.bloom, ink: c.chipInk.bloom },
+    fixed: { solid: c.brand.moss, ramp: c.moss, ink: c.chipInk.moss },
+  }
+
+  function renderVote(tone: MeTooTone, { pressed = false, size = "md" }: { pressed?: boolean; size?: "sm" | "md" }) {
+    render(
+      <ThemeProvider preference={scheme}>
+        <MeTooButton tone={tone} size={size} label="Vote" accessibilityLabel="Vote" pressed={pressed} onPress={() => {}} />
+      </ThemeProvider>,
+    )
+    return screen.getByRole("button")
+  }
+
+  it.each<MeTooTone>(["seen", "fixed"])("%s, not voted: the surface fill with the tone's 300 border", (tone) => {
+    expect(shading(renderVote(tone, {}))).toEqual({ fill: rgb(c.surface), border: rgb(toned[tone].ramp["300"]) })
+  })
+
+  it.each<MeTooTone>(["seen", "fixed"])("%s, voted: the tone's 50 wash with its solid border", (tone) => {
+    expect(shading(renderVote(tone, { pressed: true }))).toEqual({
+      fill: rgb(toned[tone].ramp["50"]),
+      border: rgb(toned[tone].solid),
+    })
+  })
+
+  it.each<MeTooTone>(["seen", "fixed"])("%s, small: the tone's 50 wash with its 300 border", (tone) => {
+    expect(shading(renderVote(tone, { size: "sm" }))).toEqual({
+      fill: rgb(toned[tone].ramp["50"]),
+      border: rgb(toned[tone].ramp["300"]),
+    })
+  })
+
+  it.each([
+    { state: "not voted", pressed: false, size: "md" as const, hover: "50" as const },
+    { state: "voted", pressed: true, size: "md" as const, hover: "100" as const },
+    { state: "small", pressed: false, size: "sm" as const, hover: "100" as const },
+  ])("on hover, $state takes the tone's $hover", ({ pressed, size, hover }) => {
+    const el = renderVote("seen", { pressed, size })
+    // react-native-web tracks hover from pointerenter, and ignores touch pointers.
+    fireEvent.pointerEnter(el, { pointerType: "mouse" })
+    expect(shading(el).fill).toBe(rgb(toned.seen.ramp[hover]))
   })
 })

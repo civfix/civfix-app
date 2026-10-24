@@ -54,9 +54,7 @@ export const RadioOptionRow = React.memo(function RadioOptionRow({
           {label}
         </Text>
         {sub ? (
-          <Text style={styles.rowSub} numberOfLines={2}>
-            {sub}
-          </Text>
+          <Text style={styles.rowSub}>{sub}</Text>
         ) : null}
       </View>
       <View style={styles.trailing}>
