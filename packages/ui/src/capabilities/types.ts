@@ -63,6 +63,15 @@ export interface PushCapability {
   registerForToken(): Promise<string | null>
 }
 
+export type PushPermissionStatus = "granted" | "denied" | "undetermined" | "unsupported"
+
+// The web has no openSettings: a page cannot open the browser's site settings.
+export interface PushPermissionCapability {
+  status(): Promise<PushPermissionStatus>
+  request(): Promise<PushPermissionStatus>
+  openSettings?(): Promise<void>
+}
+
 export interface SecureStoreCapability {
   get(key: string): Promise<string | null>
   set(key: string, value: string): Promise<void>
@@ -108,6 +117,7 @@ export interface PlatformCapabilities {
   camera: CameraCapability
   geolocation: GeolocationCapability
   push: PushCapability
+  pushPermission: PushPermissionCapability
   secureStore: SecureStoreCapability
   persistence: PersistenceCapability
   blurSurface: BlurSurfaceCapability

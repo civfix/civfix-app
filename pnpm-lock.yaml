@@ -47,8 +47,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -234,8 +234,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -400,8 +400,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1113,6 +1113,10 @@ packages:
 
   '@civfix/contract@0.64.0':
     resolution: {integrity: sha512-I1dmMMhXqGaRhPUjIgwfxc9MApWAZBEWRiNUqWIxSRrgbeRYoO4IFPuXShphGPyL4g0Vo4qoHcgxPj/sx+nyEg==}
+    engines: {node: '>=20'}
+
+  '@civfix/contract@0.65.0-b-feat-notification-center-contract.g58d238e':
+    resolution: {integrity: sha512-L/FkJgCrIaj2YvL3BopeqMb056ovX3usmuGaDTw04Ogj/Ii14z8BxMeLFKt3gvbbPxEd1o1hRHV93bISWgg+ew==}
     engines: {node: '>=20'}
 
   '@colors/colors@1.5.0':
@@ -7830,6 +7834,10 @@ snapshots:
       prettier: 2.8.8
 
   '@civfix/contract@0.64.0':
+    dependencies:
+      zod: 4.6.7
+
+  '@civfix/contract@0.65.0-b-feat-notification-center-contract.g58d238e':
     dependencies:
       zod: 4.6.7
 
