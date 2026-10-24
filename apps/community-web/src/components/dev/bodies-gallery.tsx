@@ -11,7 +11,7 @@ import type {
   ReportDTO,
   ListMyReportsResponse,
   ListNotificationsResponse,
-  NotificationPrefsDTO,
+  NotificationSettingsDTO,
   MarkReadResponse,
   UpdateSettingsResponse,
   ListThreadsResponse,
@@ -50,7 +50,7 @@ import {
   CreateCleanupBody,
   EditCleanupBody,
   NotificationsBody,
-  NotificationPrefsBody,
+  NotificationSettingsBody,
   MessagingListBody,
   ConversationBody,
   ReportFlowBody,
@@ -81,7 +81,7 @@ import {
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
-  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_NOTIFICATION_SETTINGS,
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
@@ -803,8 +803,8 @@ const fakeApi: ApiClient = makeCannedApi(
     getReport: async (): Promise<ReportDTO> => REPORT_DETAIL,
     listNotifications: async (): Promise<ListNotificationsResponse> => NOTIFICATIONS,
     markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
-    getNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
-    updateNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
+    getNotificationSettings: async (): Promise<NotificationSettingsDTO> => GALLERY_NOTIFICATION_SETTINGS,
+    updateNotificationSettings: async (): Promise<NotificationSettingsDTO> => GALLERY_NOTIFICATION_SETTINGS,
     updateSettings: async (): Promise<UpdateSettingsResponse> => ({ user: GALLERY_VIEWER }),
     homeFeed: async (args?: { filter?: string }) => ({
       items: FEED_POSTS.filter((post) => {
@@ -1170,8 +1170,8 @@ export default function BodiesGallery() {
               <NotificationsBody />
             </BodyFrame>
 
-            <BodyFrame title="NotificationPrefsBody (notification + privacy prefs)" height={720}>
-              <NotificationPrefsBody />
+            <BodyFrame title="NotificationSettingsBody (per-category Push and Email)" height={720}>
+              <NotificationSettingsBody />
             </BodyFrame>
 
             <BodyFrame title="MessagingListBody (message inbox)">

@@ -59,7 +59,7 @@ import {
 import { useDeleteAccount, useReportContent, useRequestEmailCode, useRequestMyData } from "../hooks/moderation"
 import {
   useMarkNotificationsRead,
-  useUpdateNotificationPrefs,
+  useUpdateNotificationSettings,
   useUpdatePrivacySettings,
 } from "../hooks/notifications"
 import {
@@ -708,11 +708,13 @@ describe("notifications.ts mutation invalidations", () => {
     expect(api.markNotificationsRead).not.toHaveBeenCalled()
   })
 
-  it("useUpdateNotificationPrefs reconciles in place and invalidates nothing", async () => {
+  it("useUpdateNotificationSettings reconciles in place and invalidates nothing", async () => {
     expect(
-      await invalidationsOf(() => useUpdateNotificationPrefs(), { chat: false } as never, {
-        updateNotificationPrefs: resolves({ chat: false }),
-      }),
+      await invalidationsOf(
+        () => useUpdateNotificationSettings(),
+        { category: "groupChats", change: { enabled: false } },
+        { updateNotificationSettings: resolves({ categories: {}, emailAvailable: true }) },
+      ),
     ).toEqual([])
   })
 

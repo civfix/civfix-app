@@ -29,7 +29,6 @@ import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
 import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
-import { nativePush } from "@/lib/nativePush"
 import { makeNativePushPermission } from "@/lib/pushPermission"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
 import { launchTheme } from "@/boot/launchTheme"
@@ -79,7 +78,6 @@ const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: { ...nativeCamera, Viewfinder: ReportViewfinder },
   geolocation: nativeGeolocation,
-  push: nativePush,
   pushPermission: makeNativePushPermission({
     appId: APP_ID,
     getPermissionsAsync: Notifications.getPermissionsAsync,

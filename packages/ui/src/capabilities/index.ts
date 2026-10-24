@@ -3,7 +3,6 @@ export type { CapabilitiesProviderProps } from "./context"
 export {
   useCamera,
   useGeolocation,
-  usePush,
   usePushPermission,
   useSecureStore,
   useHaptics,
@@ -17,7 +16,6 @@ export type {
   CameraCapability,
   CameraViewfinderProps,
   GeolocationCapability,
-  PushCapability,
   PushPermissionCapability,
   PushPermissionStatus,
   SecureStoreCapability,

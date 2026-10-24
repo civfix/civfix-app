@@ -166,7 +166,7 @@ describe("the profile is display-only - the bio is edited in Settings > Account"
 })
 
 describe("the page-level reassurance footers are gone", () => {
-  it.each(["../SettingsPrivacyBody.tsx", "../NotificationPrefsBody.tsx"])(
+  it.each(["../SettingsPrivacyBody.tsx", "../NotificationSettingsBody.tsx"])(
     "%s renders no trailing note",
     (rel) => {
       const src = read(rel)

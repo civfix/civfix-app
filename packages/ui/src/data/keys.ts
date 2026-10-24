@@ -36,7 +36,7 @@ export const queryKeys = {
   mentionSearch: (q: string) => ["users", "mention-search", q] as const,
   notificationsRoot: ["notifications"] as const,
   notifications: (limit: number) => ["notifications", limit] as const,
-  notificationPrefs: ["notifications", "prefs"] as const,
+  notificationSettings: ["notifications", "settings"] as const,
   followSuggestions: ["people", "suggestions"] as const,
   profileRoot: ["profile"] as const,
   profile: (id: string) => ["profile", id] as const,

@@ -4,7 +4,6 @@ import type {
   CapturedMedia,
   PreparedUpload,
   GeolocationCapability,
-  PushCapability,
   PushPermissionCapability,
   PushPermissionStatus,
   SecureStoreCapability,
@@ -58,15 +57,6 @@ class FakeGeolocation implements GeolocationCapability {
   }
   watchPosition(_onChange: (pos: { latitude: number; longitude: number }) => void): () => void {
     return () => {}
-  }
-}
-
-class FakePush implements PushCapability {
-  isAvailable(): boolean {
-    return false
-  }
-  registerForToken(): Promise<null> {
-    return Promise.resolve(null)
   }
 }
 
@@ -177,7 +167,6 @@ export function makeFakeCapabilities(): PlatformCapabilities {
   return {
     camera: new FakeCamera(),
     geolocation: new FakeGeolocation(),
-    push: new FakePush(),
     pushPermission: makeFakePushPermission(),
     secureStore: new MapKeyValueStore(),
     persistence: new MapKeyValueStore(),

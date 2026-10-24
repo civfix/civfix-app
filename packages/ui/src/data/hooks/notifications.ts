@@ -3,9 +3,10 @@ import type { Query, QueryClient } from "@tanstack/react-query"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   GetProfileResponse,
+  NotificationCategory,
+  NotificationCategorySetting,
   NotificationDTO,
-  NotificationPrefsDTO,
-  UpdateNotificationPrefsRequest,
+  NotificationSettingsDTO,
   UpdateSettingsRequest,
   UpdateSettingsResponse,
   UserDTO,
@@ -13,9 +14,8 @@ import type {
 import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"
-import { optimisticPatch } from "../optimistic"
 
-// `notificationPrefs` shares the `notifications` root, so a bare prefix would also cancel and refetch it.
+// `notificationSettings` shares the `notifications` root, so a bare prefix would also cancel and refetch it.
 export const notificationListFilters = {
   queryKey: queryKeys.notificationsRoot,
   predicate: (query: Query) => typeof query.queryKey[1] === "number",
@@ -77,29 +77,69 @@ function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
   )
 }
 
-export function useNotificationPrefs() {
+export function useNotificationSettings() {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
-  return useQuery<NotificationPrefsDTO>({
-    queryKey: queryKeys.notificationPrefs,
+  return useQuery<NotificationSettingsDTO>({
+    queryKey: queryKeys.notificationSettings,
     enabled: isAuthenticated,
-    queryFn: () => api.getNotificationPrefs(),
+    queryFn: () => api.getNotificationSettings(),
     retry: false,
   })
 }
 
-export function useUpdateNotificationPrefs() {
+export interface NotificationSettingChange {
+  category: NotificationCategory
+  change: Partial<NotificationCategorySetting>
+}
+
+interface NotificationSettingRollback {
+  previous?: Partial<NotificationCategorySetting>
+}
+
+function withCategoryChange(
+  settings: NotificationSettingsDTO,
+  { category, change }: NotificationSettingChange,
+): NotificationSettingsDTO {
+  return {
+    ...settings,
+    categories: { ...settings.categories, [category]: { ...settings.categories[category], ...change } },
+  }
+}
+
+// Each press saves at once, so several saves can overlap. A failed one restores only the fields it changed,
+// keeping a newer press's optimistic value, and the server's answer replaces the cache only once no other
+// save is in flight: an earlier answer predates the newer presses.
+export function useUpdateNotificationSettings() {
   const api = useApi()
   const qc = useQueryClient()
+  const key = queryKeys.notificationSettings
 
-  return useMutation(
-    optimisticPatch<NotificationPrefsDTO, UpdateNotificationPrefsRequest, NotificationPrefsDTO>(qc, {
-      key: queryKeys.notificationPrefs,
-      mutationFn: (patch) => api.updateNotificationPrefs(patch),
-      patch: (prev, patch) => ({ ...prev, ...patch }),
-      reconcile: (_prev, server) => server,
-    }),
-  )
+  return useMutation<NotificationSettingsDTO, unknown, NotificationSettingChange, NotificationSettingRollback>({
+    mutationKey: key,
+    mutationFn: ({ category, change }) => api.updateNotificationSettings({ categories: { [category]: change } }),
+    onMutate: async (vars) => {
+      await qc.cancelQueries({ queryKey: key })
+      const current = qc.getQueryData<NotificationSettingsDTO>(key)
+      if (!current) return {}
+      const before = current.categories[vars.category]
+      const previous = Object.fromEntries(
+        Object.keys(vars.change).map((field) => [field, before[field as keyof NotificationCategorySetting]]),
+      ) as Partial<NotificationCategorySetting>
+      qc.setQueryData<NotificationSettingsDTO>(key, withCategoryChange(current, vars))
+      return { previous }
+    },
+    onError: (_err, { category }, ctx) => {
+      const previous = ctx?.previous
+      if (!previous) return
+      qc.setQueryData<NotificationSettingsDTO>(key, (current) =>
+        current ? withCategoryChange(current, { category, change: previous }) : current,
+      )
+    },
+    onSuccess: (server) => {
+      if (qc.isMutating({ mutationKey: key }) === 1) qc.setQueryData<NotificationSettingsDTO>(key, server)
+    },
+  })
 }
 
 export type PrivacySettingsVars =

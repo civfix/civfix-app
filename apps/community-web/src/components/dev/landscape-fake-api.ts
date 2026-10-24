@@ -22,7 +22,7 @@ import {
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
-  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_NOTIFICATION_SETTINGS,
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
@@ -272,8 +272,8 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
 
   listNotifications: async () => NOTIFICATIONS,
   markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
-  getNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
-  updateNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
+  getNotificationSettings: async () => GALLERY_NOTIFICATION_SETTINGS,
+  updateNotificationSettings: async () => GALLERY_NOTIFICATION_SETTINGS,
 
   getMyHours: async () => MY_HOURS,
   getMyHoursEntries: async () => ({ items: [], nextCursor: null }),
