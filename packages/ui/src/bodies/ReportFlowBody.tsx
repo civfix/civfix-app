@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, motion, useTheme, useLayoutMode, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { KeyboardPinnedFooter, KeyboardPinnedSurface, LoadingState, SignInPrompt, useToast } from "../primitives"
+import { KeyboardPinnedFooter, KeyboardPinnedSurface, useToast } from "../primitives"
 import { PortraitMapPickStep } from "../map"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -21,7 +21,6 @@ import { announce } from "../announce"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { useCamera, useHaptics } from "../capabilities"
-import { useAuthState, useRequireAuth } from "../data"
 import type { CapturedMedia } from "../capabilities"
 import { useDraftReportStore, captureSeedsNewReport } from "../report/draftStore"
 import { usePostComposerStore } from "./postComposerStore"
@@ -55,103 +54,7 @@ import { DuplicateGate } from "./reportFlow/DuplicateGate"
 
 const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
-/**
- * Filing a report needs an account. Every way into the flow lands on this body, so a signed-out viewer
- * gets the sign-in prompt in place of the wizard and its camera, and the same view mounts the wizard on
- * its first step once they are signed in.
- */
 export function ReportFlowBody() {
-  const { isAuthenticated, isPending } = useAuthState()
-  if (isAuthenticated) return <ReportWizard />
-  return <ReportSignedOut pending={isPending} />
-}
-
-function ReportSignedOut({ pending }: { pending: boolean }) {
-  const styles = useStyles()
-  const { t } = useT("report-wizard")
-  const { ScrollView } = useScrollHost()
-  const mode = useLayoutMode()
-  const requireAuth = useRequireAuth()
-  const stackNonEmpty = useNavStore((s) => s.stack.length > 0)
-  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex: 0 }))
-  const onBack = useCallback(() => useNavStore.getState().leaveReportFlow(), [])
-
-  return (
-    <View style={styles.root}>
-      <ReportFlowHeader showBack={showBack} atViewRoot={!stackNonEmpty} onBack={onBack} />
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.contentFill}
-        showsVerticalScrollIndicator={false}
-      >
-        {pending ? (
-          <LoadingState variant="detail" />
-        ) : (
-          <SignInPrompt
-            icon={iconMap.Camera}
-            variant="detail"
-            title={t("signin.title")}
-            body={t("signin.body")}
-            onSignIn={() => requireAuth(() => {}, { next: "/report" })}
-          />
-        )}
-      </ScrollView>
-    </View>
-  )
-}
-
-function ReportFlowHeader({
-  showBack,
-  atViewRoot,
-  onBack,
-}: {
-  showBack: boolean
-  atViewRoot: boolean
-  onBack: () => void
-}) {
-  const styles = useStyles()
-  const flowStyles = useFlowStyles()
-  const th = useTheme()
-  const { t } = useT("report-wizard")
-  const mode = useLayoutMode()
-
-  return wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
-    <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
-      <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
-        {t("header.title")}
-      </Text>
-      <HeaderProfileButton />
-    </View>
-  ) : (
-    <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
-      {showBack ? (
-        <Pressable
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel={t("header.back")}
-          hitSlop={8}
-          {...focusRingProps}
-          style={({ pressed }) => [
-            styles.backBase,
-            mode === "expanded" ? styles.backExpanded : styles.backCompact,
-            pressed ? flowStyles.pressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-        </Pressable>
-      ) : null}
-      <Text
-        style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
-        numberOfLines={1}
-        accessibilityRole="header"
-      >
-        {t("header.title")}
-      </Text>
-    </View>
-  )
-}
-
-function ReportWizard() {
   const styles = useStyles()
   const flowStyles = useFlowStyles()
   const th = useTheme()
@@ -346,7 +249,40 @@ function ReportWizard() {
 
   return (
     <KeyboardPinnedSurface style={styles.root}>
-      <ReportFlowHeader showBack={showBack} atViewRoot={atViewRoot} onBack={onBack} />
+      {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
+        <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
+          <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
+            {t("header.title")}
+          </Text>
+          <HeaderProfileButton />
+        </View>
+      ) : (
+        <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
+          {showBack ? (
+            <Pressable
+              onPress={onBack}
+              accessibilityRole="button"
+              accessibilityLabel={t("header.back")}
+              hitSlop={8}
+              {...focusRingProps}
+              style={({ pressed }) => [
+                styles.backBase,
+                mode === "expanded" ? styles.backExpanded : styles.backCompact,
+                pressed ? flowStyles.pressed : null,
+              ]}
+            >
+              <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
+            </Pressable>
+          ) : null}
+          <Text
+            style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
+            numberOfLines={1}
+            accessibilityRole="header"
+          >
+            {t("header.title")}
+          </Text>
+        </View>
+      )}
 
       {gateOpen ? null : (
         <View style={styles.wizardHead}>

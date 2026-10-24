@@ -20,9 +20,9 @@ import { AuthStepHeading, ChoicesStep, CodeStep, EmailStep, type AuthStep } from
 import { useOtpEntry } from "./use-otp-entry"
 
 /**
- * The return target is the current origin, or a same-origin path allowlisted by oauthReturnPath (such as
- * an org invite waiting to be accepted, or the report flow). Apple is offered only when the server has a
- * Sign in with Apple web Services ID configured.
+ * The return target is the current origin, or a same-origin console path allowlisted by oauthReturnPath
+ * (such as an org invite waiting to be accepted). Apple is offered only when the server has a Sign in
+ * with Apple web Services ID configured.
  */
 function startOAuth(provider: "google" | "apple", returnPath?: string | null) {
   const origin = typeof window !== "undefined" ? window.location.origin : ""
@@ -33,9 +33,9 @@ function startOAuth(provider: "google" | "apple", returnPath?: string | null) {
 
 export interface AuthModalProps {
   /**
-   * Same-origin path the OAuth providers should land on instead of the site root; without one, the
-   * return path of the gated action that opened the modal. Anything outside `/manage/` and `/report`
-   * is ignored (see oauthReturnPath). Email OTP never leaves the page, so it needs no such hint.
+   * Same-origin console path the OAuth providers should land on instead of the site root. Anything
+   * outside `/manage/` is ignored (see oauthReturnPath). Email OTP never leaves the page, so it needs
+   * no such hint.
    */
   oauthReturnPath?: string | null
 }
@@ -43,7 +43,6 @@ export interface AuthModalProps {
 export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   const { t } = useT("web-auth")
   const open = useUiStore((s) => s.authModalOpen)
-  const requestedReturnPath = useUiStore((s) => s.authModalReturnPath)
   const setOpen = useUiStore((s) => s.setAuthModalOpen)
   const refreshSession = useRefreshSession()
   const setSession = useAuthStore((s) => s.setSession)
@@ -202,7 +201,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
               t={t}
               showApple={showApple}
               showGoogle={showGoogle}
-              onOAuth={(provider) => startOAuth(provider, oauthReturnPath ?? requestedReturnPath)}
+              onOAuth={(provider) => startOAuth(provider, oauthReturnPath)}
               onEmail={() => setStep("email")}
             />
           )}

@@ -3,10 +3,6 @@
     "title": "문제 신고",
     "back": "뒤로"
   },
-  "signin": {
-    "title": "로그인하여 문제 신고하기",
-    "body": "로그인하거나 계정을 만들어 동네의 문제를 신고하세요."
-  },
   "wizard": {
     "announceStep": "{{total}}단계 중 {{current}}단계. {{title}}",
     "capture": {
