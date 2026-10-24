@@ -21,7 +21,7 @@
     "prep:appstore": "scripts/prep-archive.sh appstore"
   },
   "dependencies": {
-    "@civfix/contract": "^0.63.0",
+    "@civfix/contract": "^0.63.2",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@expo-google-fonts/baloo-2": "^0.4.2",
