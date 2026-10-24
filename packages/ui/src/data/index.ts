@@ -109,6 +109,7 @@ export {
 export {
   useNotifications,
   useMarkNotificationsRead,
+  useHasUnreadNotifications,
   useNotificationSettings,
   useUpdateNotificationSettings,
   useUpdatePrivacySettings,

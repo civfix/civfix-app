@@ -77,6 +77,10 @@ function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
   )
 }
 
+export function useHasUnreadNotifications(): boolean {
+  throw new Error("not implemented")
+}
+
 export function useNotificationSettings() {
   const api = useApi()
   const { isAuthenticated } = useAuthState()

@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest"
 import { queryKeys } from "../keys"
 import { roundJurisdictionCoord } from "../hooks/reports"
+import { invalidationKeysForTopic } from "../signals"
 
 /** True when `prefix` is a leading sub-array of `key` (how React Query matches a partial queryKey). */
 function isPrefixOf(prefix: readonly unknown[], key: readonly unknown[]): boolean {
@@ -51,6 +52,15 @@ describe("queryKeys.notifications", () => {
   it("a numeric-limit notifications key never collides with the settings key", () => {
     expect(queryKeys.notifications(50)).not.toEqual(queryKeys.notificationSettings)
     expect(typeof queryKeys.notificationSettings[1]).toBe("string")
+  })
+})
+
+describe("queryKeys.notificationsUnread", () => {
+  it("T3: is ['notifications', 'unread'], so the notifications signal's root key refreshes it", () => {
+    expect(queryKeys.notificationsUnread).toEqual(["notifications", "unread"])
+    const keys = invalidationKeysForTopic("notifications")
+    expect(keys).toContainEqual(["notifications"])
+    expect(keys.some((key) => isPrefixOf(key, queryKeys.notificationsUnread))).toBe(true)
   })
 })
 
