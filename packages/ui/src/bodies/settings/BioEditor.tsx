@@ -41,6 +41,7 @@ export function BioEditor({ currentBio, saving, onSave }: BioEditorProps) {
       icon="FileText"
       label={t("bio.label")}
       sub={current.length > 0 ? current : t("bio.add")}
+      subNumberOfLines={2}
       dismissLabel={t("bio.dismiss")}
       cancelLabel={t("bio.cancel")}
       saveLabel={t("bio.save")}

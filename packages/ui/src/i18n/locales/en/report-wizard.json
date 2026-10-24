@@ -3,10 +3,6 @@
     "title": "Report an issue",
     "back": "Back"
   },
-  "signin": {
-    "title": "Sign in to report a problem",
-    "body": "Sign in or create an account to report problems in your neighborhood."
-  },
   "wizard": {
     "announceStep": "Step {{current}} of {{total}}. {{title}}",
     "capture": {
@@ -36,7 +32,7 @@
       "distance_close": "Less than 5 m away",
       "distance_about": "About {{meters}} m away",
       "new": "Report a new problem",
-      "see_too": "I see this too",
+      "see_too": "I see it too",
       "see_too_a11y": "I see this problem too",
       "vote_error": "Couldn't save your vote. Try again."
     }

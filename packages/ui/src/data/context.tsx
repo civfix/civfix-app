@@ -80,9 +80,8 @@ export function useOnUserUpdated(): DataContextValue["onUserUpdated"] {
 
 /**
  * The host's OPTIONAL report-create override, or `undefined` when the host does not inject one.
- * The shared report wizard uses it to delegate the host-specific create (web's honeypot field) and falls
- * back to its built-in authed `api.createReport` when this is absent (mobile). Either way the create is
- * authed: filing a report needs an account.
+ * The shared report wizard uses it to delegate the IDENTITY-specific create (web's anon/Turnstile/claim
+ * path) and falls back to its built-in authed `api.createReport` when this is absent (mobile).
  */
 export function useSubmitReport(): DataContextValue["submitReport"] {
   return useDataContext().submitReport

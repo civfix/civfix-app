@@ -8,9 +8,9 @@
 #
 #   --output <path>   write the .aab there instead of build/civfix-<target>-<timestamp>.aab
 #
-# The EXPO_PUBLIC_* values and the update channel come from eas.json (internal = the testflight profile,
-# production = the production profile) through scripts/eas-profile-env.mjs, so an Android build and the
-# iOS build of the same lane bake the same configuration. `.env` is ignored (EXPO_NO_DOTENV): a file
+# The EXPO_PUBLIC_* values come from eas.json (internal = the testflight profile, production = the
+# production profile) through scripts/eas-profile-env.mjs, so an Android build and the iOS build of the
+# same lane bake the same configuration. `.env` is ignored (EXPO_NO_DOTENV): a file
 # left behind by scripts/prep-archive.sh testflight must not leak the staging URL into a production
 # build. After the build the script reads the config back OUT OF THE AAB and refuses one whose baked
 # API URL is not the target's, and refuses one signed with the debug key.
@@ -64,7 +64,7 @@ if [ -z "$aab" ]; then
   aab="$PWD/build/civfix-${target}-$(date +%Y%m%d-%H%M%S).aab"
 fi
 
-unset EXPO_PUBLIC_API_URL CIVFIX_UPDATE_CHANNEL
+unset EXPO_PUBLIC_API_URL
 export EXPO_NO_DOTENV=1
 profile_env="$(node scripts/eas-profile-env.mjs "$profile")"
 while IFS= read -r line; do

@@ -118,8 +118,8 @@
   "confirm": {
     "see_too": "También lo veo",
     "see_too_a11y": "También veo este problema",
-    "fixed": "Ya está arreglado",
-    "fixed_a11y": "Este problema ya está arreglado",
+    "fixed": "Parece arreglado",
+    "fixed_a11y": "Este problema parece arreglado",
     "error": "No se pudo guardar tu voto. Inténtalo de nuevo."
   }
 }

@@ -76,12 +76,9 @@ chose, and it opens in the browser.**
    showing the third-party hostname.
 3. Dismiss the Safari view with **Close** to return to the app. No state in the app changes.
 
-**If a reviewer objects to the SFSafariViewController**, flip the app to hand donation links to the
-system browser instead, with no binary change and no resubmission:
-
-```sh
-EXPO_PUBLIC_DONATE_BROWSER_MODE=system eas update --branch production
-```
+**If a reviewer objects to the SFSafariViewController**, set `EXPO_PUBLIC_DONATE_BROWSER_MODE` to
+`system` in the `testflight` and `production` profiles of `eas.json` and ship a new build: the mode is
+baked in at build time, so changing it takes a new binary and a resubmission.
 
 (`src/config.ts` `DONATE_BROWSER_MODE`; `in-app` is the default, `system` calls `Linking.openURL`.)
 
