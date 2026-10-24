@@ -8,6 +8,8 @@ export interface TimelineNode {
   when: string
   text: string
   detail?: string
+  caseId?: string
+  caseUrl?: string
   pending?: boolean
   note?: string
   body?: string
