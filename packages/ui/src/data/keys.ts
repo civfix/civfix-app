@@ -37,6 +37,7 @@ export const queryKeys = {
   notificationsRoot: ["notifications"] as const,
   notifications: (limit: number) => ["notifications", limit] as const,
   notificationSettings: ["notifications", "settings"] as const,
+  notificationsUnread: ["notifications", "unread"] as const,
   followSuggestions: ["people", "suggestions"] as const,
   profileRoot: ["profile"] as const,
   profile: (id: string) => ["profile", id] as const,

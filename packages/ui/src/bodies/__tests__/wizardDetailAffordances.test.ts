@@ -101,12 +101,12 @@ describe("NotificationsBody rows answer the pointer like every other list root",
   it("branches on webHover with the 120ms webTransition and is ring-tagged", () => {
     expect(notifications).toContain("webHover(state)")
     expect(notifications).toContain("webTransition")
-    const row = notifications.match(/accessibilityLabel=\{item\.read[\s\S]*?\]\}/)?.[0] ?? ""
+    const row = notifications.match(/accessibilityLabel=\{unread[\s\S]*?\]\}/)?.[0] ?? ""
     expect(row).toContain("focusRingProps")
   })
 
   it("an unread row keeps its coral wash on hover rather than being repainted tan", () => {
-    expect(notifications).toMatch(/item\.read \? styles\.rowHovered : styles\.rowUnreadHovered/)
+    expect(notifications).toMatch(/unread \? styles\.rowUnreadHovered : styles\.rowHovered/)
     const unreadHover = notifications.match(/\n {2}rowUnreadHovered: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(unreadHover).toContain('t.colors.bloom["100"]')
   })

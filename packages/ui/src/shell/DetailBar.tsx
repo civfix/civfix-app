@@ -4,7 +4,7 @@ import { focusRingProps, makeThemedStyles, motion, useTheme, webCursor, webHover
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
-import { DetailTrailingButton } from "./DetailTrailingButton"
+import { DetailTrailingButtons } from "./DetailTrailingButton"
 import type { DetailTrailingAction } from "./detailTrailingAction"
 import { backPressDecision } from "./pageStackModel"
 
@@ -15,15 +15,17 @@ export interface DetailBarProps {
   onBack: () => void
   showBack?: boolean
   leading?: "back" | "close"
-  trailingAction?: DetailTrailingAction | null
+  trailingActions?: readonly DetailTrailingAction[]
 }
+
+const NO_TRAILING_ACTIONS: readonly DetailTrailingAction[] = []
 
 export function DetailBar({
   title,
   onBack,
   showBack = true,
   leading = "back",
-  trailingAction = null,
+  trailingActions = NO_TRAILING_ACTIONS,
 }: DetailBarProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -68,7 +70,7 @@ export function DetailBar({
       >
         {title}
       </Text>
-      <DetailTrailingButton action={trailingAction} />
+      <DetailTrailingButtons actions={trailingActions} />
     </View>
   )
 }
