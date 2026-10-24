@@ -1,8 +1,10 @@
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
+import { makeThemedStyles, useTheme, focusRingProps, linkKeyProps, webCursor } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { NODE_GLYPH, nodeColor } from "../../primitives/reportTimelineLabels"
+import { useToast } from "../../primitives/toastContext"
+import { useOpenExternal } from "../../capabilities"
 import { useT } from "../../i18n"
 import type { TimelineNode } from "./timelineModel"
 
@@ -11,7 +13,23 @@ export function TimelineRow({ node, last }: { node: TimelineNode; last: boolean 
   const th = useTheme()
   const { t } = useT("report-detail")
   const [open, setOpen] = useState(false)
+  const openExternal = useOpenExternal()
+  const toast = useToast()
   const color = nodeColor(node.kind, th.scheme)
+  const { caseUrl } = node
+
+  const openUrl = useCallback(
+    (url: string) => {
+      const showOpenError = () => toast.show(t("timeline.open_error"), { variant: "error" })
+      if (!openExternal) {
+        showOpenError()
+        return
+      }
+      openExternal.open(url).catch(showOpenError)
+    },
+    [openExternal, toast, t],
+  )
+
   return (
     <View style={styles.tlRow}>
       <View style={styles.tlRail}>
@@ -39,6 +57,22 @@ export function TimelineRow({ node, last }: { node: TimelineNode; last: boolean 
           ) : null}
         </View>
         {node.detail ? <Text style={styles.tlDetail}>{node.detail}</Text> : null}
+        {node.caseId ? (
+          <Text style={styles.tlDetail}>{t("timeline.request_number", { caseId: node.caseId })}</Text>
+        ) : null}
+        {caseUrl ? (
+          <Pressable
+            onPress={() => openUrl(caseUrl)}
+            accessibilityRole="link"
+            accessibilityLabel={t("timeline.check_status_a11y")}
+            {...linkKeyProps(() => openUrl(caseUrl))}
+            hitSlop={6}
+            {...focusRingProps}
+            style={[styles.tlCaseLink, webCursor()]}
+          >
+            <Text style={styles.tlCaseLinkText}>{t("timeline.check_status")}</Text>
+          </Pressable>
+        ) : null}
         {node.pending && open ? (
           <Text style={styles.tlNote}>{node.note ?? t("timeline.pending_note")}</Text>
         ) : null}
@@ -132,6 +166,17 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.sm,
     padding: t.space["3"],
     marginTop: 6,
+  },
+  tlCaseLink: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    borderRadius: t.radius.sm,
+  },
+  tlCaseLinkText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.accentText,
+    textDecorationLine: "underline",
   },
   tlInfoBtn: {
     borderRadius: t.radius.pill,

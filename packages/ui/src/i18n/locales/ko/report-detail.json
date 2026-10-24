@@ -65,6 +65,13 @@
     "hide_full_message_a11y": "전체 메시지 숨기기",
     "linked_to_cleanup": "'{{title}}' 청소 활동과 연결됨",
     "linked_to_cleanup_detail": "{{organizer}}님이 청소 활동을 준비하고 있어요.",
+    "filed_with": "{{jurisdiction}}에 접수됐어요",
+    "filed_with_city": "시청에 접수됐어요",
+    "linked_existing": "기존 시청 민원과 연결됐어요",
+    "request_number": "민원 번호 {{caseId}}",
+    "check_status": "시청 사이트에서 상태 확인",
+    "check_status_a11y": "시청 사이트에서 이 민원 열기",
+    "open_error": "시청 사이트를 열지 못했어요. 다시 시도해 주세요.",
     "status": {
       "not_forwarded": "아직 전달되지 않음",
       "in_progress": "처리 중",
