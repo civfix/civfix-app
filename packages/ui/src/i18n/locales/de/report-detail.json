@@ -65,6 +65,13 @@
     "hide_full_message_a11y": "Vollständige Nachricht ausblenden",
     "linked_to_cleanup": "Verknüpft mit Aktion '{{title}}'",
     "linked_to_cleanup_detail": "{{organizer}} organisiert dafür eine Aufräumaktion.",
+    "filed_with": "Eingereicht bei {{jurisdiction}}",
+    "filed_with_city": "Bei der Stadt eingereicht",
+    "linked_existing": "Mit einer bestehenden Anfrage der Stadt verknüpft",
+    "request_number": "Anfrage {{caseId}}",
+    "check_status": "Status auf der Website der Stadt prüfen",
+    "check_status_a11y": "Diese Anfrage auf der Website der Stadt öffnen",
+    "open_error": "Die Website der Stadt konnte nicht geöffnet werden. Versuche es erneut.",
     "status": {
       "not_forwarded": "Noch nicht weitergeleitet",
       "in_progress": "In Bearbeitung",
