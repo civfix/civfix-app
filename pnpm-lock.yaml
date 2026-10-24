@@ -47,8 +47,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-zod-4.geb5566a
-        version: 0.64.0-b-feat-zod-4.geb5566a
+        specifier: ^0.64.0
+        version: 0.64.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -234,8 +234,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-zod-4.geb5566a
-        version: 0.64.0-b-feat-zod-4.geb5566a
+        specifier: ^0.64.0
+        version: 0.64.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -370,8 +370,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-zod-4.geb5566a
-        version: 0.64.0-b-feat-zod-4.geb5566a
+        specifier: ^0.64.0
+        version: 0.64.0
       '@eslint/js':
         specifier: ^9.16.0
         version: 9.39.5
@@ -400,8 +400,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-zod-4.geb5566a
-        version: 0.64.0-b-feat-zod-4.geb5566a
+        specifier: ^0.64.0
+        version: 0.64.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1111,8 +1111,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.64.0-b-feat-zod-4.geb5566a':
-    resolution: {integrity: sha512-RBCgycI4QG67tF/e6mwrWxi3e/lQjyUNGfV1WqI8ekAJaqva5yqFA7KNGGBD9u/jXfTLNn/hG6KgQrPZtmaZTQ==}
+  '@civfix/contract@0.64.0':
+    resolution: {integrity: sha512-I1dmMMhXqGaRhPUjIgwfxc9MApWAZBEWRiNUqWIxSRrgbeRYoO4IFPuXShphGPyL4g0Vo4qoHcgxPj/sx+nyEg==}
     engines: {node: '>=20'}
 
   '@colors/colors@1.5.0':
@@ -7829,7 +7829,7 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.64.0-b-feat-zod-4.geb5566a':
+  '@civfix/contract@0.64.0':
     dependencies:
       zod: 4.6.7
 
