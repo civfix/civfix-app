@@ -315,7 +315,7 @@ describe("GH#226 NotificationsBody rows", () => {
     await flush()
     expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
 
-    useNavStore.setState({ view: "messages" })
+    useNavStore.setState({ view: "messaging" })
     const selectView = vi.spyOn(useNavStore.getState(), "selectView")
     fireEvent.click(row("N3"))
     expect(selectView).toHaveBeenCalledWith("home")
