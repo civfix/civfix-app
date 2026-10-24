@@ -3,10 +3,6 @@
     "title": "Problem melden",
     "back": "Zurück"
   },
-  "signin": {
-    "title": "Anmelden, um ein Problem zu melden",
-    "body": "Melde dich an oder erstelle ein Konto, um Probleme in deiner Nachbarschaft zu melden."
-  },
   "wizard": {
     "announceStep": "Schritt {{current}} von {{total}}. {{title}}",
     "capture": {
