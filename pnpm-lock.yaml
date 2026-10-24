@@ -47,8 +47,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-notification-center-contract.g1a68e0e
-        version: 0.64.0-b-feat-notification-center-contract.g1a68e0e
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -234,8 +234,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-notification-center-contract.g1a68e0e
-        version: 0.64.0-b-feat-notification-center-contract.g1a68e0e
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -370,8 +370,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: ^0.63.0
-        version: 0.63.0
+        specifier: ^0.64.0
+        version: 0.64.0
       '@eslint/js':
         specifier: ^9.16.0
         version: 9.39.5
@@ -400,8 +400,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: 0.64.0-b-feat-notification-center-contract.g1a68e0e
-        version: 0.64.0-b-feat-notification-center-contract.g1a68e0e
+        specifier: 0.65.0-b-feat-notification-center-contract.g58d238e
+        version: 0.65.0-b-feat-notification-center-contract.g58d238e
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1111,12 +1111,12 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.63.0':
-    resolution: {integrity: sha512-6cyQPVeLPI7gH3hsF/wDtaFdvhZgnLb6U3bL+xNAAOuhZ/LddC7wMSWuGfmTNoUQb03Q2c9D0VmCVsqc1Rjt6A==}
+  '@civfix/contract@0.64.0':
+    resolution: {integrity: sha512-I1dmMMhXqGaRhPUjIgwfxc9MApWAZBEWRiNUqWIxSRrgbeRYoO4IFPuXShphGPyL4g0Vo4qoHcgxPj/sx+nyEg==}
     engines: {node: '>=20'}
 
-  '@civfix/contract@0.64.0-b-feat-notification-center-contract.g1a68e0e':
-    resolution: {integrity: sha512-NliyuqaDwZR+5iaXHXYgVKrCInuaF3GMnQddH1ZmoBQp3P/DLG5DhycNHv2z9YnnYgq/BogETAMYc55myAg9eA==}
+  '@civfix/contract@0.65.0-b-feat-notification-center-contract.g58d238e':
+    resolution: {integrity: sha512-L/FkJgCrIaj2YvL3BopeqMb056ovX3usmuGaDTw04Ogj/Ii14z8BxMeLFKt3gvbbPxEd1o1hRHV93bISWgg+ew==}
     engines: {node: '>=20'}
 
   '@colors/colors@1.5.0':
@@ -7031,11 +7031,11 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.6.5:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
   zustand@5.0.15:
     resolution: {integrity: sha512-MpSEjRiBkA9crSYeOUH32rJC7SVqAbm0Fqcqge/bUi2PPoLcBWKOsG+C8mevmpr8TwXHBVkChbbJiyvkE+i/3A==}
@@ -7833,13 +7833,13 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.63.0':
+  '@civfix/contract@0.64.0':
     dependencies:
-      zod: 3.25.76
+      zod: 4.6.7
 
-  '@civfix/contract@0.64.0-b-feat-notification-center-contract.g1a68e0e':
+  '@civfix/contract@0.65.0-b-feat-notification-center-contract.g58d238e':
     dependencies:
-      zod: 3.25.76
+      zod: 4.6.7
 
   '@colors/colors@1.5.0':
     optional: true
@@ -14865,9 +14865,9 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.25.76: {}
-
   zod@4.6.5: {}
+
+  zod@4.6.7: {}
 
   zustand@5.0.15(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0)):
     optionalDependencies:

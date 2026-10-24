@@ -96,7 +96,7 @@
     "build": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist-types",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.vitest.json",
     "test": "vitest run",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "NODE_OPTIONS=--max-old-space-size=4096 eslint . --max-warnings=0",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
     "i18n:check:resources": "node scripts/check-i18n-resources.mjs",
     "i18n:gen": "node scripts/gen-i18n-resources.mjs",
@@ -149,7 +149,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "0.64.0-b-feat-notification-center-contract.g1a68e0e",
+    "@civfix/contract": "0.65.0-b-feat-notification-center-contract.g58d238e",
     "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",
