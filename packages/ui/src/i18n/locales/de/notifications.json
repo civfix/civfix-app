@@ -2,8 +2,9 @@
   "row": {
     "unreadSuffix": "{{title}}, ungelesen"
   },
-  "actions": {
-    "markAllRead": "Alle als gelesen markieren"
+  "markReadError": {
+    "generic": "Deine Benachrichtigungen konnten nicht als gelesen markiert werden. Versuche es erneut.",
+    "rate_limited": "Zu viele Anfragen. Warte kurz und versuche es erneut."
   },
   "signedOut": {
     "title": "Anmelden für Benachrichtigungen",

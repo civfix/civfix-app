@@ -1,9 +1,9 @@
 import React, { useCallback } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme } from "../theme"
-import { Avatar } from "../primitives"
+import { Avatar, UnreadDot } from "../primitives"
 import { Icon, iconMap } from "../typography"
-import { useAuthState, useRequireAuth } from "../data"
+import { useAuthState, useHasUnreadNotifications, useRequireAuth } from "../data"
 import { useNavStore } from "../nav"
 import { headerAuthAffordance } from "../shell/headerAuthAffordance"
 import { useT } from "../i18n"
@@ -27,6 +27,8 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
   const { user, isAuthenticated, isPending } = useAuthState()
   const requireAuth = useRequireAuth()
   const layout = useLayoutMode()
+  const unread = useHasUnreadNotifications()
+  const { t: tn } = useT("notifications")
 
   const openProfile = useCallback(() => useNavStore.getState().push({ kind: "profile" }), [])
   const signIn = useCallback(
@@ -63,19 +65,22 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
   )
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={t("a11y.open_profile")}
-      onPress={openProfile}
-      {...focusRingProps}
-      style={({ pressed }) => [styles.target, styles.avatarButton, pressed ? styles.pressed : null]}
-    >
-      {surface === "solid" ? (
-        <View style={[styles.signInBadge, styles.solid]}>{avatar}</View>
-      ) : (
-        avatar
-      )}
-    </Pressable>
+    <View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={unread ? tn("row.unreadSuffix", { title: t("a11y.open_profile") }) : t("a11y.open_profile")}
+        onPress={openProfile}
+        {...focusRingProps}
+        style={({ pressed }) => [styles.target, styles.avatarButton, pressed ? styles.pressed : null]}
+      >
+        {surface === "solid" ? (
+          <View style={[styles.signInBadge, styles.solid]}>{avatar}</View>
+        ) : (
+          avatar
+        )}
+      </Pressable>
+      {unread ? <UnreadDot /> : null}
+    </View>
   )
 }
 

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import * as ReactNative from "react-native"
 import { AppError, type NotificationDTO, type NotificationType, type UserDTO } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
+import { CapabilitiesProvider, makeFakeCapabilities } from "../../capabilities"
 import { ApiProvider } from "../../data/context"
 import { makeFakeDataContext } from "../../data/fakes"
 import { useHasUnreadNotifications } from "../../data/hooks/notifications"
@@ -112,16 +113,19 @@ function renderBody(api: Api, { signedIn = true, queryClient }: { signedIn?: boo
     api: api as unknown as ApiClient,
     auth: signedIn ? { isAuthenticated: true, user: ME, isPending: false } : {},
   })
+  const capabilities = makeFakeCapabilities()
   const toast = { show: vi.fn() }
   const tree = (show: boolean) => (
     <QueryClientProvider client={client}>
       <ApiProvider value={context}>
-        <I18nProvider locale="en">
-          <ToastContext.Provider value={toast}>
-            <UnreadProbe />
-            {show ? <NotificationsBody /> : null}
-          </ToastContext.Provider>
-        </I18nProvider>
+        <CapabilitiesProvider value={capabilities}>
+          <I18nProvider locale="en">
+            <ToastContext.Provider value={toast}>
+              <UnreadProbe />
+              {show ? <NotificationsBody /> : null}
+            </ToastContext.Provider>
+          </I18nProvider>
+        </CapabilitiesProvider>
       </ApiProvider>
     </QueryClientProvider>
   )
@@ -300,19 +304,22 @@ describe("GH#226 NotificationsBody rows", () => {
     await waitFor(() => expect(listCache(queryClient)?.find((n) => n.id === "n1")?.read).toBe(false))
 
     fireEvent.click(row("N1"))
-    expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
-    expect(api.markNotificationsRead).toHaveBeenCalledWith({ ids: ["n1"] })
     expect(useNavStore.getState().active).toEqual({ kind: "pin", id: "r1" })
+    await waitFor(() => expect(api.markNotificationsRead).toHaveBeenCalledTimes(1))
+    expect(api.markNotificationsRead).toHaveBeenCalledWith({ ids: ["n1"] })
+    await flush()
 
     resetNav()
     fireEvent.click(row("N2"))
-    expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
     expect(useNavStore.getState().active).toEqual({ kind: "pin", id: "r2" })
+    await flush()
+    expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
 
     useNavStore.setState({ view: "messages" })
     const selectView = vi.spyOn(useNavStore.getState(), "selectView")
     fireEvent.click(row("N3"))
     expect(selectView).toHaveBeenCalledWith("home")
+    await flush()
     expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
   })
 

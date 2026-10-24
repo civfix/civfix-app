@@ -31,7 +31,8 @@ vi.mock("../../primitives/UnreadDot", async () => {
 })
 vi.mock("../../primitives", async () => {
   const { View } = await vi.importActual<typeof ReactNative>("react-native")
-  const { UnreadDot } = await vi.importActual<{ UnreadDot: React.ComponentType }>("../../primitives/UnreadDot")
+  // The mocked dot above, so a dot drawn through the barrel and one drawn by GlassButton look alike.
+  const { UnreadDot } = await import("../../primitives/UnreadDot")
   const { GlassButton } = await vi.importActual<{ GlassButton: React.ComponentType }>("../../primitives/GlassButton")
   return {
     Avatar: () => <View testID="avatar" />,
