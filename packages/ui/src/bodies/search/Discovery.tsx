@@ -10,7 +10,9 @@ import {
   useJurisdictionLeaderboard,
   useMyHours,
   useNearbyCleanups,
+  nearbyPinsBbox,
   useNearbyReportPins,
+  usePressingReports,
   useResolveJurisdiction,
   useUserLocation,
 } from "../../data"
@@ -25,6 +27,7 @@ import { useRowHover } from "../rowHover"
 import { useListTimeTick } from "../useListTimeAgo"
 import { DiscoveryLeaderboard } from "./DiscoveryLeaderboard"
 import { LinkAction } from "./LinkAction"
+import { PressingRail } from "./PressingRail"
 import { useSearchStyles } from "./searchStyles"
 
 function SuggestedPersonCard({ person, expanded }: { person: PersonDTO; expanded: boolean }) {
@@ -81,6 +84,8 @@ export function Discovery({ expanded }: { expanded: boolean }) {
   const location = useUserLocation().data ?? null
   const cleanupsQuery = useNearbyCleanups(SEARCH_EVENT_POOL_LIMIT, location)
   const pinsQuery = useNearbyReportPins(location)
+  const pressingBbox = useMemo(() => nearbyPinsBbox(location), [location])
+  const pressingQuery = usePressingReports(pressingBbox)
   const suggestionsQuery = useFollowSuggestions()
   const jurisdictionQuery = useResolveJurisdiction(location)
   const myHours = useMyHours()
@@ -102,6 +107,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
       assembleSearchSuggestions<CleanupDTO, PersonDTO, ReportPinDTO, LeaderboardEntryDTO>({
         cleanups: cleanupsQuery.data ?? [],
         pins: pinsQuery.data ?? [],
+        pressing: pressingQuery.data ?? [],
         people: suggestionsQuery.data ?? [],
         leaderboard: leaderboardPage?.entries ?? [],
         leaderboardGeoid: geo?.geoid ?? null,
@@ -112,6 +118,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
     [
       cleanupsQuery.data,
       pinsQuery.data,
+      pressingQuery.data,
       suggestionsQuery.data,
       leaderboardPage,
       geo,
@@ -182,6 +189,25 @@ export function Discovery({ expanded }: { expanded: boolean }) {
         />
       ) : null}
 
+      {sections.pressing.length > 0 ? (
+        <>
+          <Text
+            accessibilityRole="header"
+            {...headingLevel(2)}
+            style={[
+              styles.sectionTitle,
+              styles.railTitle,
+              sections.people.length > 0 || sections.events.length > 0 || showLeaderboard
+                ? styles.laterTitle
+                : null,
+            ]}
+          >
+            {t("search_page.pressing")}
+          </Text>
+          <PressingRail reports={sections.pressing} viewer={location} />
+        </>
+      ) : null}
+
       {sections.reports.length > 0 ? (
         <>
           <Text
@@ -189,7 +215,10 @@ export function Discovery({ expanded }: { expanded: boolean }) {
             {...headingLevel(2)}
             style={[
               styles.sectionTitle,
-              sections.people.length > 0 || sections.events.length > 0 || showLeaderboard
+              sections.people.length > 0 ||
+              sections.events.length > 0 ||
+              showLeaderboard ||
+              sections.pressing.length > 0
                 ? styles.laterTitle
                 : null,
             ]}

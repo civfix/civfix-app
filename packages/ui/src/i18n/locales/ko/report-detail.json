@@ -12,7 +12,9 @@
     "mark_resolved": "해결됨으로 표시",
     "reopen": "신고 다시 열기",
     "mark_resolved_a11y": "이 신고를 해결됨으로 표시",
-    "reopen_a11y": "이 신고 다시 열기"
+    "reopen_a11y": "이 신고 다시 열기",
+    "repost": "리포스트",
+    "repost_a11y": "이 신고 리포스트"
   },
   "title_menu": {
     "options_a11y": "신고 옵션",
@@ -112,5 +114,12 @@
     "view_chat_messages_one": "메시지 {{count}}개",
     "view_chat_messages_other": "메시지 {{count}}개",
     "view_chat_a11y": "이 신고의 채팅 보기"
+  },
+  "confirm": {
+    "see_too": "저도 봤어요",
+    "see_too_a11y": "저도 이 문제를 봤어요",
+    "fixed": "해결된 것 같아요",
+    "fixed_a11y": "이 문제는 해결된 것 같아요",
+    "error": "투표를 저장하지 못했어요. 다시 시도해 주세요."
   }
 }

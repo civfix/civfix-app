@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Print an eas.json build profile's environment as KEY=value lines (extends resolved, the "//" note
-// keys dropped), plus CIVFIX_UPDATE_CHANNEL from the profile's channel. eas.json stays the one place
-// the EXPO_PUBLIC_* values live even for builds that never touch EAS, so the Android gradle build and
-// the iOS EAS build of the same profile bake the same configuration.
+// keys dropped). eas.json stays the one place the EXPO_PUBLIC_* values live even for builds that never
+// touch EAS, so the Android gradle build and the iOS EAS build of the same profile bake the same
+// configuration.
 //
 //   node scripts/eas-profile-env.mjs <profile>
 import { readFileSync, realpathSync } from "node:fs"
@@ -24,7 +24,6 @@ export function profileEnv(eas, name) {
   for (const [key, value] of Object.entries(env)) {
     if (/[\r\n]/.test(String(value))) throw new Error(`eas.json profile '${name}' ${key} spans lines`)
   }
-  if (profile.channel) env.CIVFIX_UPDATE_CHANNEL = profile.channel
   return env
 }
 

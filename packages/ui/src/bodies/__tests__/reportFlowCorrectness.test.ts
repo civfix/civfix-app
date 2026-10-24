@@ -216,3 +216,14 @@ describe("target sizes and radio semantics", () => {
     expect(body).toContain("accessibilityState={{ checked: selected }}")
   })
 })
+
+describe("the duplicate screen's footer button", () => {
+  it("states it is idle, so it never keeps the busy state of the Continue view it takes over on Android", () => {
+    expect(flat(slice("onPress={reportNew}", "</Pressable>"))).toContain(
+      "accessibilityState={{ disabled: false, busy: false }}",
+    )
+    expect(flat(slice("onPress={onContinue}", "</Pressable>"))).toContain(
+      "accessibilityState={{ disabled: !canAdvance, busy: checkingDuplicates }}",
+    )
+  })
+})

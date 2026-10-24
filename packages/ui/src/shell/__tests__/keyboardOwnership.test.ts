@@ -96,7 +96,8 @@ describe("I1 the Android reserve has exactly four owners", () => {
       )?.length ?? 0
     expect(footers("../../bodies/NewGroupBody.tsx")).toBe(2)
     expect(footers("../../bodies/NewChannelBody.tsx")).toBe(3)
-    expect(footers("../../bodies/ReportFlowBody.tsx")).toBe(1)
+    // The steps' Continue, and the Possible duplicate screen's "Report a new problem".
+    expect(footers("../../bodies/ReportFlowBody.tsx")).toBe(2)
   })
 
   it("lets a lifted footer tell the scroll seams of ITS OWN scope the space is already reserved", () => {

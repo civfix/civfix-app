@@ -21,7 +21,7 @@
     "prep:appstore": "scripts/prep-archive.sh appstore"
   },
   "dependencies": {
-    "@civfix/contract": "^0.62.0",
+    "@civfix/contract": "^0.64.0",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@expo-google-fonts/baloo-2": "^0.4.2",
@@ -58,7 +58,6 @@
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-system-ui": "~6.0.9",
-    "expo-updates": "~29.0.19",
     "expo-web-browser": "~15.0.11",
     "lucide-react-native": "1.17.0",
     "maplibre-gl": "^4.7.1",

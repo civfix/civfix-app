@@ -8,6 +8,7 @@ export interface SettingsEditorSheetProps<D, V> {
   icon: IconName
   label: string
   sub: string
+  subNumberOfLines?: number
   dismissLabel: string
   cancelLabel: string
   saveLabel: string
@@ -22,6 +23,7 @@ export function SettingsEditorSheet<D, V>({
   icon,
   label,
   sub,
+  subNumberOfLines,
   dismissLabel,
   cancelLabel,
   saveLabel,
@@ -32,7 +34,7 @@ export function SettingsEditorSheet<D, V>({
 }: SettingsEditorSheetProps<D, V>) {
   return (
     <>
-      <SettingsRow icon={icon} label={label} sub={sub} onPress={editor.begin} />
+      <SettingsRow icon={icon} label={label} sub={sub} subNumberOfLines={subNumberOfLines} onPress={editor.begin} />
       <ModalCardSheet
         visible={editor.editing}
         onClose={editor.cancel}

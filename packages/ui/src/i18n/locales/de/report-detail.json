@@ -12,7 +12,9 @@
     "mark_resolved": "Als gelöst markieren",
     "reopen": "Meldung wieder öffnen",
     "mark_resolved_a11y": "Diese Meldung als gelöst markieren",
-    "reopen_a11y": "Diese Meldung wieder öffnen"
+    "reopen_a11y": "Diese Meldung wieder öffnen",
+    "repost": "Reposten",
+    "repost_a11y": "Diese Meldung reposten"
   },
   "title_menu": {
     "options_a11y": "Meldungsoptionen",
@@ -112,5 +114,12 @@
     "view_chat_messages_one": "{{count}} Nachricht",
     "view_chat_messages_other": "{{count}} Nachrichten",
     "view_chat_a11y": "Chat zu dieser Meldung ansehen"
+  },
+  "confirm": {
+    "see_too": "Ich sehe das auch",
+    "see_too_a11y": "Ich sehe dieses Problem auch",
+    "fixed": "Sieht behoben aus",
+    "fixed_a11y": "Dieses Problem sieht behoben aus",
+    "error": "Deine Stimme konnte nicht gespeichert werden. Bitte erneut versuchen."
   }
 }

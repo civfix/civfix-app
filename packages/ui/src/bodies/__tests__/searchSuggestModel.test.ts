@@ -3,6 +3,7 @@ import {
   LEADERBOARD_PREVIEW_LIMIT,
   LEADERBOARD_REQUEST_LIMIT,
   NEARBY_REPORTS_LIMIT,
+  PRESSING_NEARBY_LIMIT,
   SUGGESTED_EVENTS_LIMIT,
   SUGGESTED_PEOPLE_LIMIT,
   assembleSearchSuggestions,
@@ -40,6 +41,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -47,13 +49,14 @@ describe("assembleSearchSuggestions", () => {
       signedIn: true,
       now: NOW,
     })
-    expect(out).toEqual({ people: [], events: [], reports: [], leaderboard: [] })
+    expect(out).toEqual({ people: [], events: [], reports: [], pressing: [], leaderboard: [] })
   })
 
   it("caps suggested people at the section limit", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: people(12),
       leaderboard: [],
       leaderboardGeoid: null,
@@ -69,6 +72,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: people(3),
       leaderboard: [],
       leaderboardGeoid: null,
@@ -87,6 +91,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [far, near],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -104,6 +109,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [a, b],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -118,6 +124,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [event("later", 72, 34.77, -118.24), event("sooner", 6)],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -133,6 +140,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups,
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -149,6 +157,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: pins(7),
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -164,6 +173,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: pins(3),
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: null,
@@ -184,6 +194,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: ranked(3),
       leaderboardGeoid: "0644000",
@@ -201,6 +212,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: ranked(3),
       leaderboardGeoid: null,
@@ -222,6 +234,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: [],
       leaderboardGeoid: "0670000",
@@ -236,6 +249,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: ranked(50),
       leaderboardGeoid: "0644000",
@@ -254,6 +268,7 @@ describe("assembleSearchSuggestions", () => {
     const out = assembleSearchSuggestions({
       cleanups: [],
       pins: [],
+      pressing: [],
       people: [],
       leaderboard: ranked(LEADERBOARD_REQUEST_LIMIT),
       leaderboardGeoid: "0644000",
@@ -263,5 +278,68 @@ describe("assembleSearchSuggestions", () => {
     })
     expect(LEADERBOARD_REQUEST_LIMIT).toBeGreaterThanOrEqual(25)
     expect(out.leaderboard).toHaveLength(LEADERBOARD_PREVIEW_LIMIT)
+  })
+})
+
+describe("assembleSearchSuggestions: Most pressing nearby", () => {
+  /** Pins as the pressing endpoint returns them: ranked server-side, carrying their Me too counts. */
+  function pressingPins(counts: readonly number[]) {
+    return counts.map((confirmCount, i) => ({ id: `p${i + 1}`, confirmCount }))
+  }
+
+  function assemble({
+    pressing,
+    location = HERE,
+    signedIn = true,
+  }: {
+    pressing: readonly { id: string; confirmCount: number }[]
+    location?: { lat: number; lng: number } | null
+    signedIn?: boolean
+  }) {
+    return assembleSearchSuggestions({
+      cleanups: [event("e1", 24), event("e2", 48)],
+      pins: [
+        { id: "r1", confirmCount: 0 },
+        { id: "r2", confirmCount: 5 },
+      ],
+      pressing,
+      people: people(2),
+      leaderboard: ranked(4),
+      leaderboardGeoid: "0644000",
+      location,
+      signedIn,
+      now: NOW,
+    })
+  }
+
+  it("T7: shows no pressing reports without a location", () => {
+    expect(assemble({ pressing: pressingPins([3, 2, 1]), location: null }).pressing).toEqual([])
+  })
+
+  it("T8: caps the section at ten, in the order the API returned", () => {
+    const twelve = pressingPins([12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1])
+    const out = assemble({ pressing: twelve })
+    expect(PRESSING_NEARBY_LIMIT).toBe(10)
+    expect(out.pressing.map((p) => p.id)).toEqual(["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"])
+  })
+
+  it("T9: never re-sorts by count", () => {
+    const out = assemble({ pressing: pressingPins([1, 3]) })
+    expect(out.pressing.map((p) => p.confirmCount)).toEqual([1, 3])
+  })
+
+  it("T10: an empty ranking (loading, error, none) empties only this section", () => {
+    const empty = assemble({ pressing: [] })
+    const full = assemble({ pressing: pressingPins([3, 2, 1]) })
+    expect(empty.pressing).toEqual([])
+    expect(empty.events).toEqual(full.events)
+    expect(empty.people).toEqual(full.people)
+    expect(empty.reports).toEqual(full.reports)
+    expect(empty.leaderboard).toEqual(full.leaderboard)
+  })
+
+  it("T11: guests see it too", () => {
+    const two = pressingPins([2, 1])
+    expect(assemble({ pressing: two, signedIn: false }).pressing).toEqual(two)
   })
 })

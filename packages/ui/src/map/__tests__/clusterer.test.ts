@@ -30,7 +30,7 @@ function pin(
   lng: number,
   category: ReportPinDTO["category"] = "trash",
 ): ReportPinDTO {
-  return { id, category, lat, lng, status: "published", confirmCount: 0 }
+  return { id, category, lat, lng, status: "published", confirmCount: 0, fixedCount: 0 }
 }
 
 function reportPoint(id: string, lat: number, lng: number): MapPoint {

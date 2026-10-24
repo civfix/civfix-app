@@ -50,14 +50,21 @@ export {
   useMyReports,
   useReport,
   useResolveReport,
+  useConfirmReport,
+  useUnconfirmReport,
+  useMarkReportFixed,
+  useUnmarkReportFixed,
+  useConfirmMatch,
   useUnlistReport,
   useResolveJurisdiction,
+  nearbyPinsBbox,
   useNearbyReportPins,
   useNearbyReports,
   useReportSearch,
   useMapReports,
 } from "./hooks/reports"
 export { NEARBY_RADIUS_KM } from "./hooks/nearbyBbox"
+export { usePressingReports } from "./hooks/pressingReports"
 export {
   useJoinReportChat,
   useLeaveReportChat,

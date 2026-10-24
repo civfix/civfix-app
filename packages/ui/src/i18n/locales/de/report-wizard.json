@@ -24,11 +24,23 @@
     "review": {
       "title": "Bereit zum Senden?",
       "help": "Prüfe alles und setze den Pin."
+    },
+    "duplicate": {
+      "title": "Mögliches Duplikat",
+      "help_one": "Eine Meldung genau hier könnte das schon abdecken. Öffne sie, um auf dem Laufenden zu bleiben, oder melde ein neues Problem.",
+      "help_other": "{{count}} Meldungen genau hier könnten das schon abdecken. Öffne eine, um auf dem Laufenden zu bleiben, oder melde ein neues Problem.",
+      "distance_close": "Weniger als 5 m entfernt",
+      "distance_about": "Etwa {{meters}} m entfernt",
+      "new": "Neues Problem melden",
+      "see_too": "Ich sehe das auch",
+      "see_too_a11y": "Ich sehe dieses Problem auch",
+      "vote_error": "Deine Stimme konnte nicht gespeichert werden. Bitte erneut versuchen."
     }
   },
   "footer": {
     "continue": "Weiter",
-    "drop_pin": "Pin setzen"
+    "drop_pin": "Pin setzen",
+    "checking_a11y": "Suche nach Meldungen in der Nähe"
   },
   "capture": {
     "label_filled": "Deine Aufnahmen",
