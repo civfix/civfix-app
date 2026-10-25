@@ -81,9 +81,12 @@ export function DeveloperScreen() {
       return
     }
     setRunning(true)
-    await clearAllLocalDataAndSignOut()
-    setRunning(false)
-    setOpen(false)
+    try {
+      await clearAllLocalDataAndSignOut()
+    } finally {
+      setRunning(false)
+      setOpen(false)
+    }
     // The sign-out reset leaves a signed-in user on the feed and never fires for a guest, whose status does
     // not change; the signed-out start is the map.
     useNavStore.getState().reset()

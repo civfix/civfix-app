@@ -1,12 +1,21 @@
 import { before, test } from "node:test"
 import assert from "node:assert/strict"
+import { createRequire } from "node:module"
+import { dirname, join } from "node:path"
+import { pathToFileURL } from "node:url"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
 
+const require = createRequire(import.meta.url)
+const UI_SCHEMES = pathToFileURL(
+  join(dirname(require.resolve("@civfix/ui/package.json")), "src", "theme", "schemes.ts"),
+)
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 const STORAGE_IDS = new URL("../../../../packages/ui/src/storage/storageIds.ts", import.meta.url)
 installModuleStubs({
   "@civfix/ui": new URL("../../tests/helpers/uiStorageStubs.ts", import.meta.url),
   "@civfix/ui/data": STUBS,
+  "@civfix/ui/theme": UI_SCHEMES,
+  "@/lib/locale": STUBS,
   "@/api/client": STUBS,
   "@/auth/storage": STUBS,
   "@/lib/mmkv": STUBS,
