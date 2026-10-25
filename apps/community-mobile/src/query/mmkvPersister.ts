@@ -124,6 +124,11 @@ export function purgeQueryCache(client: QueryClient): void {
   resumeCachePersistence()
 }
 
-export function clearQueryCache(_client: QueryClient): Promise<void> {
-  throw new Error("not implemented")
+// Resetting drops every query's data, so the debounced flush cannot write the old cache back, and refetches
+// the observed ones; persistence resumes before those land, so their fresh data is stored again.
+export function clearQueryCache(client: QueryClient): Promise<void> {
+  clearPersistedCache()
+  const refetched = client.resetQueries()
+  resumeCachePersistence()
+  return refetched
 }

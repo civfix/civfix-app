@@ -1,7 +1,17 @@
+import { create } from "zustand"
+
 export type DeveloperScreenPresenter = () => void
 
-export function setDeveloperScreenPresenter(_present: DeveloperScreenPresenter | null): void {}
+interface DeveloperScreenState {
+  presenter: DeveloperScreenPresenter | null
+}
+
+const useDeveloperScreenStore = create<DeveloperScreenState>(() => ({ presenter: null }))
+
+export function setDeveloperScreenPresenter(present: DeveloperScreenPresenter | null): void {
+  useDeveloperScreenStore.setState({ presenter: present })
+}
 
 export function useDeveloperScreenPresenter(): DeveloperScreenPresenter | null {
-  return null
+  return useDeveloperScreenStore((state) => state.presenter)
 }

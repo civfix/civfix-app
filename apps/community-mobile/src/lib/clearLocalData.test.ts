@@ -1,4 +1,4 @@
-import { beforeEach, test } from "node:test"
+import { before, test } from "node:test"
 import assert from "node:assert/strict"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
 
@@ -44,11 +44,19 @@ function keysIn(id: string): string[] {
 
 const realSignOut = useAuthStore.getState().signOut
 
-beforeEach(() => {
-  resetStubs()
-  mmkvFiles.clear()
-  keychain.clear()
+// One clear in this module session, so the app-promo store is never opened before it runs. The store's own
+// signOut runs behind a spy that records what it starts on and holds it open until the clear is checked.
+const flow = {
+  runs: 0,
+  pushStoredAtStart: false,
+  callsBeforeRelease: [] as string[],
+  appStorageBeforeRelease: [] as string[],
+  filtersBeforeRelease: [] as string[],
+  runsAfter: 0,
+}
 
+before(async () => {
+  resetStubs()
   control.token = { ok: true, token: "tok" }
   memory.set(CACHED_USER_KEY, JSON.stringify(USER))
   memory.set(PUSH_REGISTRATION_KEY, JSON.stringify({ platform: "android", token: "t" }))
@@ -59,52 +67,44 @@ beforeEach(() => {
   persistentStorage(storageIds.SIDEBAR_STORAGE_ID).setItem("civfix.sidebar-width", "{}")
   mmkvFile(storageIds.APP_PROMO_STORAGE_ID).set("civfix.app-promo-dismissed", "1")
   keychain.set(DEVICE_ID_KEY, "dev-1")
-  useAuthStore.setState({ status: "authed", user: USER as never, signOut: realSignOut })
-})
+  useAuthStore.setState({ status: "authed", user: USER as never })
 
-// Signs out through a spy on the store's own signOut that holds it open until the test releases it.
-function holdSignOut() {
-  const seen = { runs: 0, pushStoredAtStart: false }
   let release: () => void = () => {}
   const released = new Promise<void>((resolve) => {
     release = resolve
   })
   useAuthStore.setState({
     signOut: async () => {
-      seen.runs += 1
-      seen.pushStoredAtStart = memory.has(PUSH_REGISTRATION_KEY)
+      flow.runs += 1
+      flow.pushStoredAtStart = memory.has(PUSH_REGISTRATION_KEY)
       await realSignOut()
       await released
     },
   })
-  return { seen, release }
-}
 
-test("T14: the normal sign-out runs once, with push still registered, and finishes before anything is cleared", async () => {
-  const signOut = holdSignOut()
   const cleared = clearAllLocalDataAndSignOut()
   await settle()
-
-  assert.equal(signOut.seen.runs, 1)
-  assert.equal(signOut.seen.pushStoredAtStart, true)
-  assert.ok(calls.includes("api.pushUnregister:t:Bearer tok"), calls.join("\n"))
-  assert.ok(calls.includes("api.logout:Bearer tok"), calls.join("\n"))
-  assert.ok(memory.has(ONBOARDING_KEY), "the app storage waits for the sign-out")
-  assert.deepEqual(keysIn(storageIds.MAP_FILTERS_STORAGE_ID), ["civfix.map-filters"])
-
-  signOut.release()
+  flow.callsBeforeRelease = [...calls]
+  flow.appStorageBeforeRelease = [...memory.keys()]
+  flow.filtersBeforeRelease = keysIn(storageIds.MAP_FILTERS_STORAGE_ID)
+  release()
   await cleared
-  assert.equal(signOut.seen.runs, 1)
+  flow.runsAfter = flow.runs
 })
 
-test("T15: then every local store is empty except the device id, and the app is signed out", async () => {
-  const signOut = holdSignOut()
-  const cleared = clearAllLocalDataAndSignOut()
-  signOut.release()
-  await cleared
+test("T14: the normal sign-out runs once, with push still registered, and finishes before anything is cleared", () => {
+  assert.equal(flow.runs, 1)
+  assert.equal(flow.runsAfter, 1)
+  assert.equal(flow.pushStoredAtStart, true)
+  assert.ok(flow.callsBeforeRelease.includes("api.pushUnregister:t:Bearer tok"), flow.callsBeforeRelease.join("\n"))
+  assert.ok(flow.callsBeforeRelease.includes("api.logout:Bearer tok"), flow.callsBeforeRelease.join("\n"))
+  assert.ok(flow.appStorageBeforeRelease.includes(ONBOARDING_KEY), "the app storage waits for the sign-out")
+  assert.deepEqual(flow.filtersBeforeRelease, ["civfix.map-filters"])
+})
 
+test("T15: then every local store is empty except the device id, and the app is signed out", () => {
   assert.deepEqual([...memory.keys()], [])
-  assert.deepEqual(UI_STORAGE_IDS.sort(), [
+  assert.deepEqual([...UI_STORAGE_IDS].sort(), [
     "civfix.ui.app-promo",
     "civfix.ui.filters",
     "civfix.ui.sidebar",

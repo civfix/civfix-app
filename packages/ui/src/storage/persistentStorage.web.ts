@@ -40,3 +40,8 @@ const localStorageState: StateStorage = {
 export function persistentStorage(_id: string): StateStorage {
   return localStorageState
 }
+
+/** Only the phone app's Developer screen clears these stores; web has no such screen. */
+export function clearPersistentStorage(): void {
+  throw new Error("clearPersistentStorage is native-only")
+}

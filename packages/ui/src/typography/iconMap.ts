@@ -103,6 +103,7 @@ import {
   TrendingUp,
   CalendarCheck,
   Repeat2,
+  Wrench,
 } from "lucide-react-native/icons"
 import type { LucideIcon } from "./Icon"
 
@@ -212,6 +213,7 @@ export type IconName =
   | "TrendingUp"
   | "CalendarCheck"
   | "Repeat2"
+  | "Wrench"
 
 export const iconMap: Record<IconName, LucideIcon> = {
   Check,
@@ -319,4 +321,5 @@ export const iconMap: Record<IconName, LucideIcon> = {
   TrendingUp,
   CalendarCheck,
   Repeat2,
+  Wrench,
 }

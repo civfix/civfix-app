@@ -43,7 +43,7 @@ test("the persisted completion flag is versioned and keyed by the shared storage
   assert.match(keys, /export const ONBOARDING_KEY = "civfix\.onboarding"/)
   assert.match(store, /export const ONBOARDING_VERSION = 1/)
   assert.match(store, /name: ONBOARDING_KEY/)
-  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/)
+  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.resetPending \? 0 : state\.completedVersion \}\)/)
 })
 
 test("the location primer's storage key is single-sourced with the other MMKV keys", () => {
@@ -182,7 +182,7 @@ test("skip disappears on the last page, and firing it there is a no-op", () => {
 test("the tour reports that it is on screen, exit animation included", () => {
   assert.match(store, /presenting: boolean/)
   assert.match(store, /setPresenting: \(value\) => set\(\{ presenting: value \}\)/)
-  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/)
+  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.resetPending \? 0 : state\.completedVersion \}\)/)
   assert.match(gate, /setPresenting\(mounted\)\n\s+return \(\) => setPresenting\(false\)/)
 })
 
@@ -289,7 +289,7 @@ test("a replay is a session request, not an unwritten completion flag", () => {
   assert.match(store, /replay: \(\) => set\(\{ replayRequested: true \}\)/)
   assert.match(
     store,
-    /complete: \(\) => set\(\{ completedVersion: ONBOARDING_VERSION, replayRequested: false \}\)/,
+    /complete: \(\) =>\n\s+set\(\{ completedVersion: ONBOARDING_VERSION, replayRequested: false, resetPending: false \}\)/,
   )
   assert.doesNotMatch(store, /set\(\{ completedVersion: 0 \}\)/)
   assert.doesNotMatch(store, /replayRequested: state\.replayRequested/)

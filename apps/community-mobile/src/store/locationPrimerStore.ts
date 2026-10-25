@@ -20,9 +20,7 @@ export const useLocationPrimerStore = create<LocationPrimerState>()(
       choice: null,
       markShown: () => set({ shown: true }),
       setChoice: (choice) => set({ choice, shown: true }),
-      reset: () => {
-        throw new Error("not implemented")
-      },
+      reset: () => set({ shown: false, choice: null }),
     }),
     {
       name: LOCATION_PRIMER_KEY,

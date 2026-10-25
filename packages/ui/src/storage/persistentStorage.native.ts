@@ -4,11 +4,13 @@
  */
 import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"
+import { PERSISTENT_STORAGE_IDS } from "./storageIds"
 
 interface KV {
   getString(key: string): string | undefined
   set(key: string, value: string): void
   delete(key: string): void
+  clearAll(): void
 }
 
 function memoryStore(): KV {
@@ -20,6 +22,9 @@ function memoryStore(): KV {
     },
     delete: (key) => {
       map.delete(key)
+    },
+    clearAll: () => {
+      map.clear()
     },
   }
 }
@@ -33,12 +38,21 @@ function openStore(id: string): KV {
 }
 
 // Stores that share an id share one instance, so a memory fallback is one map rather than one per caller.
+const stores = new Map<string, KV>()
 const storages = new Map<string, StateStorage>()
+
+function storeFor(id: string): KV {
+  const existing = stores.get(id)
+  if (existing) return existing
+  const store = openStore(id)
+  stores.set(id, store)
+  return store
+}
 
 export function persistentStorage(id: string): StateStorage {
   const existing = storages.get(id)
   if (existing) return existing
-  const store = openStore(id)
+  const store = storeFor(id)
   const storage: StateStorage = {
     getItem: (name) => store.getString(name) ?? null,
     setItem: (name, value) => store.set(name, value),
@@ -48,6 +62,7 @@ export function persistentStorage(id: string): StateStorage {
   return storage
 }
 
+// Every id, not only the ones opened this session: a store opens its instance lazily, on first use.
 export function clearPersistentStorage(): void {
-  throw new Error("not implemented")
+  for (const id of PERSISTENT_STORAGE_IDS) storeFor(id).clearAll()
 }
