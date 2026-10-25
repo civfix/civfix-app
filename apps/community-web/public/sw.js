@@ -82,9 +82,7 @@ async function openNotification(data) {
   if (open === undefined) {
     // A new tab cannot be told by message before its page listens, so the id rides in the URL instead.
     if (link !== null) return self.clients.openWindow(readUrl(link, notificationId))
-    const opened = await self.clients.openWindow("/")
-    if (opened && notificationId !== null) opened.postMessage(message)
-    return
+    return self.clients.openWindow(notificationId !== null ? readUrl("/", notificationId) : "/")
   }
 
   const focused = await open.focus()
