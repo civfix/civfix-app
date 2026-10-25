@@ -77,7 +77,7 @@ describe("public/sw.js", () => {
         notificationId: "n1",
         category: "reportUpdates",
         link: "/reports/r1",
-      }),
+      }) as unknown,
     })
     expect(waitUntil).toHaveBeenCalledTimes(1)
     expect(waitUntil.mock.calls[0]![0]).toBe(worker.showNotification.mock.results[0]!.value)

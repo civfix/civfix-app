@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { runInNewContext } from "node:vm"
-import { vi } from "vitest"
+import { vi, type Mock } from "vitest"
 
 // A path join rather than `new URL(…, import.meta.url)`: under jsdom that URL is jsdom's, which
 // fileURLToPath rejects.
@@ -16,7 +16,7 @@ export interface FakeWindowClient {
   focused: boolean
   focus: ReturnType<typeof vi.fn>
   navigate: ReturnType<typeof vi.fn>
-  postMessage: ReturnType<typeof vi.fn>
+  postMessage: Mock<(message: unknown) => void>
 }
 
 export function fakeWindowClient(url: string): FakeWindowClient {
@@ -28,7 +28,7 @@ export function fakeWindowClient(url: string): FakeWindowClient {
       client.url = to
       return client
     }),
-    postMessage: vi.fn(),
+    postMessage: vi.fn<(message: unknown) => void>(),
   }
   return client
 }
