@@ -32,7 +32,7 @@ const { useAuthStore } = await import("../store/authStore.ts")
 const { clearAllLocalDataAndSignOut } = await import("./clearLocalData.ts")
 
 const USER = { id: "u-1", name: "Ada" }
-const UI_STORAGE_IDS = Object.values(storageIds).filter((value): value is string => typeof value === "string")
+const UI_STORAGE_IDS = Object.values(storageIds).flatMap((value) => (typeof value === "string" ? [value] : []))
 
 async function settle(): Promise<void> {
   for (let i = 0; i < 10; i += 1) await new Promise((resolve) => setImmediate(resolve))
