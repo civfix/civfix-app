@@ -19,6 +19,7 @@ import { useNavStore, type DetailKind } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useLocale, useT, supportedLocales } from "../i18n"
 import { useOnboardingTourPresenter } from "./onboardingTour"
+import { useDeveloperScreenPresenter } from "./developerScreen"
 
 const SHORT_COMMIT_LENGTH = 7
 
@@ -34,6 +35,7 @@ export function SettingsBody() {
   const appearance = useAppearancePreference()
   const { t: tAppearance } = useT("appearance-settings")
   const presentTour = useOnboardingTourPresenter()
+  const presentDeveloper = useDeveloperScreenPresenter()
 
   const pushKind = useCallback((kind: DetailKind) => {
     useNavStore.getState().push({ kind })
@@ -131,6 +133,9 @@ export function SettingsBody() {
           value={sourceCommit().slice(0, SHORT_COMMIT_LENGTH) || undefined}
           onPress={() => openUrl(sourceUrl())}
         />
+        {presentDeveloper ? (
+          <SettingsRow icon="Wrench" label={t("developer.label")} onPress={presentDeveloper} />
+        ) : null}
       </SettingsSection>
 
       {signedOut ? null : (
