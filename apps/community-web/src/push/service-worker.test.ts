@@ -137,7 +137,10 @@ describe("public/sw.js", () => {
       const withoutTab = loadServiceWorker(ORIGIN)
       await withoutTab.click(clickData(link))
       expect(withoutTab.openWindow).toHaveBeenCalledTimes(1)
-      expect(withoutTab.openWindow).toHaveBeenCalledWith("/")
+      const opened = new URL(withoutTab.openWindow.mock.calls[0]![0] as string, ORIGIN)
+      expect(opened.origin).toBe(ORIGIN)
+      expect(opened.pathname).toBe("/")
+      expect(opened.search).toBe("?readNotification=n1")
 
       if (link !== null) {
         const targets = [...tab.navigate.mock.calls, ...withTab.openWindow.mock.calls, ...withoutTab.openWindow.mock.calls]
@@ -150,5 +153,5 @@ describe("public/sw.js", () => {
     it(`T8: a click never opens the unsafe link ${link}`, expectNoNavigation(link))
   }
 
-  it("T9: a click on a notification with no link focuses a tab without navigating, or opens /", expectNoNavigation(null))
+  it("T9: a click on a notification with no link focuses a tab without navigating, or opens / carrying its id", expectNoNavigation(null))
 })
