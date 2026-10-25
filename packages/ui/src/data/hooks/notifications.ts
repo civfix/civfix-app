@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 import type { Query, QueryClient } from "@tanstack/react-query"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
@@ -7,6 +7,7 @@ import type {
   NotificationCategorySetting,
   NotificationDTO,
   NotificationSettingsDTO,
+  NotificationUnreadResponse,
   UpdateSettingsRequest,
   UpdateSettingsResponse,
   UserDTO,
@@ -15,7 +16,8 @@ import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
 import { listItems } from "../types"
 
-// `notificationSettings` shares the `notifications` root, so a bare prefix would also cancel and refetch it.
+// `notificationSettings` and `notificationsUnread` share the `notifications` root, so a bare prefix would also
+// cancel and refetch them.
 export const notificationListFilters = {
   queryKey: queryKeys.notificationsRoot,
   predicate: (query: Query) => typeof query.queryKey[1] === "number",
@@ -31,11 +33,10 @@ export function useNotifications(limit = INBOX_LIMIT) {
     enabled: isAuthenticated,
     queryFn: async () => listItems((await api.listNotifications({ limit }))?.items),
   })
-  const { data, isLoading, isError } = query
-  const unreadCount = useMemo(() => (data ?? []).filter((n) => !n.read).length, [data])
-  // Picking fields keeps TanStack's tracked-property subscription; a spread reads every getter, so the
-  // always-mounted map controls re-rendered on each background fetch start and settle.
-  return { data, isLoading, isError, unreadCount }
+  const { data, isLoading, isError, isFetching } = query
+  // Picking fields keeps TanStack's tracked-property subscription; a spread reads every getter, so a
+  // consumer would re-render on every query state change it never reads.
+  return { data, isLoading, isError, isFetching }
 }
 
 export function useMarkNotificationsRead() {
@@ -49,12 +50,9 @@ export function useMarkNotificationsRead() {
     },
     onMutate: async (ids) => {
       await qc.cancelQueries(notificationListFilters)
-      const previous = qc
-        .getQueriesData<NotificationDTO[]>(notificationListFilters)
-        .filter(([, data]) => Array.isArray(data)) as Array<
-        readonly [readonly unknown[], NotificationDTO[] | undefined]
-      >
-      patchReadInFlatLists(qc, ids)
+      const previous = snapshotFlatLists(qc)
+      const idSet = new Set(ids)
+      patchReadInFlatLists(qc, (n) => idSet.has(n.id))
       return { previous }
     },
     onError: (_err, _ids, ctx) => {
@@ -62,6 +60,7 @@ export function useMarkNotificationsRead() {
     },
     onSettled: () => {
       void qc.invalidateQueries(notificationListFilters)
+      void qc.invalidateQueries({ queryKey: queryKeys.notificationsUnread })
     },
   })
 }
@@ -70,11 +69,61 @@ interface MarkReadCtx {
   previous?: Array<readonly [readonly unknown[], NotificationDTO[] | undefined]>
 }
 
-function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
-  const idSet = new Set(ids)
+interface MarkAllReadCtx extends MarkReadCtx {
+  unread?: NotificationUnreadResponse
+}
+
+function snapshotFlatLists(qc: QueryClient): NonNullable<MarkReadCtx["previous"]> {
+  return qc
+    .getQueriesData<NotificationDTO[]>(notificationListFilters)
+    .filter(([, data]) => Array.isArray(data)) as Array<readonly [readonly unknown[], NotificationDTO[] | undefined]>
+}
+
+function patchReadInFlatLists(qc: QueryClient, marked: (n: NotificationDTO) => boolean): void {
   qc.setQueriesData<NotificationDTO[]>(notificationListFilters, (prev) =>
-    Array.isArray(prev) ? prev.map((n) => (idSet.has(n.id) ? { ...n, read: true } : n)) : prev,
+    Array.isArray(prev) ? prev.map((n) => (marked(n) ? { ...n, read: true } : n)) : prev,
   )
+}
+
+// The dots read the server's answer, not the first page of the list: an unread row past it still counts.
+export function useHasUnreadNotifications(): boolean {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  const query = useQuery<NotificationUnreadResponse>({
+    queryKey: queryKeys.notificationsUnread,
+    enabled: isAuthenticated,
+    queryFn: () => api.getNotificationUnread(),
+  })
+  return isAuthenticated && query.data?.hasUnread === true
+}
+
+// The server marks every notification the page lists, past the first page too, so the dot clears with it.
+export function useMarkAllNotificationsRead() {
+  const api = useApi()
+  const qc = useQueryClient()
+
+  return useMutation<{ ok: true }, unknown, void, MarkAllReadCtx>({
+    mutationFn: () => api.markAllNotificationsRead(),
+    onMutate: async () => {
+      await Promise.all([
+        qc.cancelQueries(notificationListFilters),
+        qc.cancelQueries({ queryKey: queryKeys.notificationsUnread }),
+      ])
+      const previous = snapshotFlatLists(qc)
+      const unread = qc.getQueryData<NotificationUnreadResponse>(queryKeys.notificationsUnread)
+      patchReadInFlatLists(qc, () => true)
+      qc.setQueryData<NotificationUnreadResponse>(queryKeys.notificationsUnread, { hasUnread: false })
+      return { previous, unread }
+    },
+    onError: (_err, _vars, ctx) => {
+      for (const [key, data] of ctx?.previous ?? []) qc.setQueryData(key as unknown[], data)
+      if (ctx?.unread) qc.setQueryData(queryKeys.notificationsUnread, ctx.unread)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries(notificationListFilters)
+      void qc.invalidateQueries({ queryKey: queryKeys.notificationsUnread })
+    },
+  })
 }
 
 export function useNotificationSettings() {

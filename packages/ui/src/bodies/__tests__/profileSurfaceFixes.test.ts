@@ -46,7 +46,7 @@ describe("notifications list", () => {
   it("announces the body and the time, not only the title", () => {
     expect(src).toContain("const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)")
     expect(src).toMatch(
-      /accessibilityLabel=\{item\.read\s*\? \[item\.title, \.\.\.a11yDetails\]\.join\(", "\)\s*: \[t\("row\.unreadSuffix", \{ title: item\.title \}\), \.\.\.a11yDetails\]\.join\(", "\)\}/,
+      /accessibilityLabel=\{unread\s*\? \[t\("row\.unreadSuffix", \{ title: item\.title \}\), \.\.\.a11yDetails\]\.join\(", "\)\s*: \[item\.title, \.\.\.a11yDetails\]\.join\(", "\)\}/,
     )
   })
 })

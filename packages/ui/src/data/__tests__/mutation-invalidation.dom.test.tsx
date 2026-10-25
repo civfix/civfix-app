@@ -59,6 +59,7 @@ import {
 import { useDeleteAccount, useReportContent, useRequestEmailCode, useRequestMyData } from "../hooks/moderation"
 import {
   useMarkNotificationsRead,
+  useMarkAllNotificationsRead,
   useUpdateNotificationSettings,
   useUpdatePrivacySettings,
 } from "../hooks/notifications"
@@ -120,6 +121,7 @@ const HOST_EVENT: Invalidation[] = [key("host", EVENT), key("host", EVENT, "insi
 const CLEANUP_LISTS: Invalidation[] = [key("cleanups"), key("org-events")]
 const HOSTED_EVENT_LISTS: Invalidation[] = [key("hosted-events"), key("profile")]
 const NOTIFICATION_LISTS: Invalidation[] = [{ predicateMatches: [["notifications", 20]] }]
+const NOTIFICATION_LISTS_AND_DOT: Invalidation[] = [...NOTIFICATION_LISTS, key("notifications", "unread")]
 const MY_EVENT_INVITES: Invalidation[] = [key("event-invites", "mine"), key("hosted-events"), key("notifications")]
 
 function seededClient(): QueryClient {
@@ -696,16 +698,24 @@ describe("direct.ts mutation invalidations", () => {
 })
 
 describe("notifications.ts mutation invalidations", () => {
-  it("useMarkNotificationsRead invalidates the notification lists but not the prefs", async () => {
+  it("useMarkNotificationsRead invalidates the notification lists and the unread dot but not the prefs", async () => {
     expect(
       await invalidationsOf(() => useMarkNotificationsRead(), ["n-1"], { markNotificationsRead: resolves({ ok: true }) }),
-    ).toEqual(NOTIFICATION_LISTS)
+    ).toEqual(NOTIFICATION_LISTS_AND_DOT)
   })
 
-  it("currently invalidates the notification lists even when no id was marked", async () => {
+  it("currently invalidates the notification lists and the dot even when no id was marked", async () => {
     const api = { markNotificationsRead: vi.fn() }
-    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual(NOTIFICATION_LISTS)
+    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual(NOTIFICATION_LISTS_AND_DOT)
     expect(api.markNotificationsRead).not.toHaveBeenCalled()
+  })
+
+  it("useMarkAllNotificationsRead invalidates the notification lists and the unread dot but not the prefs", async () => {
+    expect(
+      await invalidationsOf(() => useMarkAllNotificationsRead(), undefined, {
+        markAllNotificationsRead: resolves({ ok: true }),
+      }),
+    ).toEqual(NOTIFICATION_LISTS_AND_DOT)
   })
 
   it("useUpdateNotificationSettings reconciles in place and invalidates nothing", async () => {

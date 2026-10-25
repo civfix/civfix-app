@@ -39,7 +39,7 @@ export function DetailHeader({ active, stack, dismissGesture }: DetailHeaderProp
       onBack={back}
       showBack={leading !== "none"}
       leading={leading === "close" ? "close" : "back"}
-      trailingAction={detailTrailingActionFor(active)}
+      trailingActions={detailTrailingActionFor(active)}
     />
   ) : null
 }

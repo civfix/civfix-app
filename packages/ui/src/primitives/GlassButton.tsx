@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme, webCursor, webTransition, webHover, focusRingProps } from "../theme"
 import { BlurSurface } from "../surface"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
+import { UnreadDot } from "./UnreadDot"
 
 const SIZE = HEADER_CONTROL_SIZE
 
@@ -56,7 +57,7 @@ export function GlassButton({
         <View style={styles.inner}>{children}</View>
       </Pressable>
 
-      {dot ? <View style={[styles.dot, styles.noPointer]} /> : null}
+      {dot ? <UnreadDot /> : null}
     </View>
   )
 }
@@ -89,16 +90,5 @@ const useStyles = makeThemedStyles((t) => ({
   pressed: {
     opacity: 0.9,
     transform: [{ scale: 0.94 }],
-  },
-  dot: {
-    position: "absolute",
-    top: -1,
-    right: -1,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: t.colors.brand.bloom,
-    borderWidth: 2,
-    borderColor: t.colors.neutral.card,
   },
 }))
