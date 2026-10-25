@@ -1,5 +1,6 @@
 import { createApiClient, type ApiClient } from "@civfix/contract/client"
-import { API_URL } from "@/config"
+import { API_URL, APP_PLATFORM, APP_VERSION } from "@/config"
+import { mobileDefaultHeaders } from "@/api/clientHeaders"
 import { readToken, clearToken } from "@/auth/storage"
 import { carriedBearerToken, makeSessionTeardown, makeSingleFlight } from "@/api/unauthorized"
 
@@ -31,9 +32,7 @@ const fetchWithSessionGuard: typeof fetch = async (input, init) => {
 export const api: ApiClient = createApiClient({
   baseURL: API_URL,
   fetchImpl: fetchWithSessionGuard,
-  defaultHeaders: {
-    "X-Client": "mobile",
-  },
+  defaultHeaders: mobileDefaultHeaders(APP_PLATFORM, APP_VERSION),
   getAuthHeader: async () => {
     const read = await readToken()
     if (!read.ok) {

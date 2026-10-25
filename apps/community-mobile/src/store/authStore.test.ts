@@ -55,6 +55,7 @@ const VIEWER_REFETCH = [
   "cleanupRoot",
   "chatRoot",
   "volunteer",
+  "appConfig",
 ].map((key) => `queryClient.invalidate:${JSON.stringify([key])}`)
 
 function signedInSession(user: object) {

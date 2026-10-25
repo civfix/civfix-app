@@ -74,6 +74,15 @@ describe("useAppConfig", () => {
     await waitFor(() => expect(getAppConfig).toHaveBeenCalledTimes(2))
   })
 
+  it("refetches a stale config on focus even where the host turns focus refetch off, as the phone does", async () => {
+    const getAppConfig = vi.fn(async () => CONFIG)
+    const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } })
+    const { result } = renderWithApi(getAppConfig, queryClient)
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    regainFocusAt(5 * 60_000 + 1_000)
+    await waitFor(() => expect(getAppConfig).toHaveBeenCalledTimes(2))
+  })
+
   it("T21: a failed request leaves the hook errored with no data", async () => {
     const getAppConfig = vi.fn(async (): Promise<AppConfigResponse> => {
       throw new TypeError("Network request failed")
