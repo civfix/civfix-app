@@ -58,7 +58,7 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.18.0",
     "vitest": "^3.2.7",
-    "@civfix/contract": "^0.64.0"
+    "@civfix/contract": "0.67.0-b-feat-dev-console-contract.gee137fa"
   },
   "engines": {
     "node": ">=20"
