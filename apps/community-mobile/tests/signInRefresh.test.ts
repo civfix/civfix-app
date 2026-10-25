@@ -39,3 +39,8 @@ test("mobile refreshes at least every family the web refreshes on sign-in", () =
   const mobile = new Set(keyEntries(listBody(store, "VIEWER_DEPENDENT_KEYS")))
   for (const key of web) assert.ok(mobile.has(key), key)
 })
+
+test("T24: signing in refetches the app config on mobile and web", () => {
+  assert.ok(keyEntries(listBody(store, "VIEWER_DEPENDENT_KEYS")).includes("queryKeys.appConfig"))
+  assert.ok(keyEntries(listBody(webAuth, "AUTH_DEPENDENT_KEYS")).includes("queryKeys.appConfig"))
+})

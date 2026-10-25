@@ -73,6 +73,7 @@ import de_mobile_errors from "../locales/de/mobile-errors.json"
 import de_mobile_onboarding from "../locales/de/mobile-onboarding.json"
 import de_mobile_report_camera from "../locales/de/mobile-report-camera.json"
 import de_mobile_system from "../locales/de/mobile-system.json"
+import de_mobile_update from "../locales/de/mobile-update.json"
 import de_nav from "../locales/de/nav.json"
 import de_not_found from "../locales/de/not-found.json"
 import de_notifications from "../locales/de/notifications.json"
@@ -177,6 +178,7 @@ const catalog: ResourceLanguage = {
   "mobile-onboarding": de_mobile_onboarding,
   "mobile-report-camera": de_mobile_report_camera,
   "mobile-system": de_mobile_system,
+  "mobile-update": de_mobile_update,
   "nav": de_nav,
   "not-found": de_not_found,
   "notifications": de_notifications,

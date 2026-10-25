@@ -74,6 +74,7 @@ export const namespaces = [
   "mobile-onboarding",
   "mobile-report-camera",
   "mobile-system",
+  "mobile-update",
   "nav",
   "not-found",
   "notifications",

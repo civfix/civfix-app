@@ -49,6 +49,7 @@ import { useSignOutReset } from "@/hooks/useSignOutReset"
 import { AuthGate } from "@/components/AuthGate"
 import { BootOfflineGate } from "@/components/BootConnectivity"
 import { FirstRunGate } from "@/components/FirstRunGate"
+import { ForceUpdateGate } from "@/components/ForceUpdateGate"
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate"
 import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 import { useAppearanceStore } from "@/store/appearanceStore"
@@ -172,6 +173,7 @@ export default function RootLayout() {
                       </SharePostProvider>
                     </MediaLightboxProvider>
                   </ToastProvider>
+                  <ForceUpdateGate />
                 </MobileI18nProvider>
               </CapabilitiesProvider>
             </MobileDataProvider>
