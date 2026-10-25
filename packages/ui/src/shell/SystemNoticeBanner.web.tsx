@@ -23,7 +23,7 @@ const FIXED_TOP = {
  * through the height it publishes: the download banner, the map controls, the portrait sheet and the wide
  * layout's rail and panel. The height is measured rather than fixed because the text wraps.
  */
-export function SystemNoticeBanner({ style }: SystemNoticeBannerProps) {
+export function SystemNoticeBanner({ style, onLayout }: SystemNoticeBannerProps) {
   const notice = useVisibleSystemNotice()
   const setHeight = useSystemNoticeStore((s) => s.setHeight)
   const ref = useRef<View>(null)
@@ -48,5 +48,5 @@ export function SystemNoticeBanner({ style }: SystemNoticeBannerProps) {
   }, [visible, setHeight])
 
   if (!notice) return null
-  return <SystemNoticeBar ref={ref} notice={notice} style={[FIXED_TOP, style]} />
+  return <SystemNoticeBar ref={ref} notice={notice} style={[FIXED_TOP, style]} onLayout={onLayout} />
 }

@@ -1,5 +1,5 @@
 import React, { forwardRef, useMemo } from "react"
-import { Pressable, View, type StyleProp, type ViewStyle } from "react-native"
+import { Pressable, View, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
 import { useAppConfig } from "../data/hooks/appConfig"
 import { useT } from "../i18n"
 import {
@@ -35,11 +35,12 @@ export interface SystemNoticeBarProps {
   /** The platform's placement and its safe-area top. */
   style?: StyleProp<ViewStyle>
   contentStyle?: StyleProp<ViewStyle>
+  onLayout?: ViewProps["onLayout"]
 }
 
 /** The text renders as a plain string: the notice carries no links or formatting (D8). */
 export const SystemNoticeBar = forwardRef<View, SystemNoticeBarProps>(function SystemNoticeBar(
-  { notice, style, contentStyle },
+  { notice, style, contentStyle, onLayout },
   ref,
 ) {
   const styles = useStyles()
@@ -51,7 +52,12 @@ export const SystemNoticeBar = forwardRef<View, SystemNoticeBarProps>(function S
   const ink = th.colors.chipInk[hue]
 
   return (
-    <View ref={ref} testID="system-notice" style={[{ backgroundColor: th.colors[hue]["50"] }, style]}>
+    <View
+      ref={ref}
+      testID="system-notice"
+      onLayout={onLayout}
+      style={[{ backgroundColor: th.colors[hue]["50"] }, style]}
+    >
       <View style={[styles.row, contentStyle]}>
         <Text variant="label" style={[styles.text, { color: ink }]}>
           {notice.text}

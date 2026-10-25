@@ -1,5 +1,7 @@
 import React, { useCallback, useContext } from "react"
-import { Modal, View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
+import { View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
+import { FullWindowModal } from "../primitives/FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import type { ModalProps, ViewProps } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
@@ -57,7 +59,7 @@ export function MediaLightboxBase({
   const th = useTheme()
   const { t } = useT("lightbox")
   const { width: windowWidth, height: windowHeight } = useWindowDimensions()
-  const insets = useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const offsets = lightboxControlOffsets(insets)
   const count = items.length
   const current = count > 0 ? items[Math.min(Math.max(index, 0), count - 1)] : null
@@ -88,7 +90,7 @@ export function MediaLightboxBase({
   ) : null
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} {...modalProps}>
+    <FullWindowModal visible={visible} transparent animationType="fade" onRequestClose={onClose} {...modalProps}>
       <View style={styles.root} accessibilityViewIsModal {...rootProps}>
         <Pressable
           style={styles.scrim}
@@ -146,7 +148,7 @@ export function MediaLightboxBase({
           </>
         ) : null}
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

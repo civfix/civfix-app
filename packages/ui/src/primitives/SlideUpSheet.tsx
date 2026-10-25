@@ -3,7 +3,6 @@ import {
   Animated,
   Easing,
   Keyboard,
-  Modal,
   PanResponder,
   Pressable,
   ScrollView,
@@ -14,6 +13,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { makeThemedStyles, motion, useTheme, webScrimProps } from "../theme"
 import { KeyboardAnchorView } from "../shell/KeyboardAnchorView"
@@ -57,7 +58,7 @@ export function SlideUpSheet({
   const styles = useStyles()
   const th = useTheme()
   const { height: winH } = useWindowDimensions()
-  const insets = useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const homeIndicatorPad = insets?.bottom ?? 0
   const [sheetHeight, setSheetHeight] = useState<number | null>(null)
   const sheetMotion = useMenuMotion({ visible, ready: sheetHeight !== null, recipes: SHEET_RECIPES })
@@ -116,7 +117,7 @@ export function SlideUpSheet({
   )
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -191,7 +192,7 @@ export function SlideUpSheet({
         </View>
         {visible ? <ToastOutlet /> : null}
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

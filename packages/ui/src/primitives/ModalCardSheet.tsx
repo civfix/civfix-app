@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react"
 import {
   Animated,
-  Modal,
   View,
   ScrollView,
   Pressable,
@@ -10,6 +9,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
   focusRingProps,
@@ -108,7 +109,7 @@ export function ModalCardSheet({
 }: ModalCardSheetProps) {
   const styles = useStyles()
   const t = useTheme()
-  const insets = useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
   const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })
@@ -121,7 +122,7 @@ export function ModalCardSheet({
   }, [visible, error])
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -228,7 +229,7 @@ export function ModalCardSheet({
         </IosKeyboardAvoidingView>
       </Animated.View>
       {visible ? <ToastOutlet /> : null}
-    </Modal>
+    </FullWindowModal>
   )
 }
 

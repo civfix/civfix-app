@@ -3,7 +3,6 @@ import {
   AccessibilityInfo,
   Animated,
   findNodeHandle,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
   type View as NativeView,
   type ViewStyle,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
 import { makeThemedStyles, webScrimProps } from "../theme"
 import { menuCardStyle, menuScrimStyle, type MenuMotion } from "./menuMotion"
 import type { MenuOrigin } from "./menuMotionModel"
@@ -111,7 +111,7 @@ export function AnchoredPopover({
   }, [rendered, returnFocus])
 
   return (
-    <Modal
+    <FullWindowModal
       visible={motion.rendered}
       transparent
       animationType="none"
@@ -143,7 +143,7 @@ export function AnchoredPopover({
           {children}
         </Animated.View>
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 
