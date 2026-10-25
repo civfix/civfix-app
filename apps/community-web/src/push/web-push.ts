@@ -1,7 +1,7 @@
 import { webPushPermission, onPushPermissionGranted } from "@/lib/push-permission"
 import { isConfirmedSignedOut, useAuthStore, type AuthState } from "@/store/auth-store"
 import { warnPush } from "@/push/log"
-import { listenForClicks, takeClickFromUrl } from "@/push/notification-clicks"
+import { startMarkingClicks } from "@/push/notification-clicks"
 import { closeReadNotifications } from "@/push/reconcile"
 import { serviceWorkerContainer, syncSubscription, unsubscribeBrowser } from "@/push/subscription"
 
@@ -15,7 +15,8 @@ function startSession(): () => void {
   let active = true
   let started = false
   let starting: Promise<void> | null = null
-  const stops: (() => void)[] = []
+  // A click needs only a session to mark it read, not the key or the worker's registration.
+  const stops: (() => void)[] = [startMarkingClicks()]
   const stillWanted = () => active
 
   async function start(): Promise<void> {
@@ -24,8 +25,6 @@ function startSession(): () => void {
     const registration = await container.register("/sw.js", { scope: "/" })
     if (!active) return
     started = true
-    stops.push(listenForClicks(container))
-    takeClickFromUrl()
 
     const sync = () => {
       syncSubscription(registration, stillWanted).catch((err: unknown) => warnPush("subscribing", err))

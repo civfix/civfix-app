@@ -1,4 +1,5 @@
 import type { NotificationCategory } from "@civfix/contract"
+import { INBOX_LIMIT } from "@civfix/ui/data"
 
 import { api } from "@/lib/api"
 
@@ -8,9 +9,6 @@ const CHAT_CATEGORIES: ReadonlySet<NotificationCategory> = new Set<NotificationC
   "groupChats",
   "reportDiscussions",
 ])
-
-// The notifications page's first page, so a notification it shows is never taken for a missing one.
-const FIRST_PAGE_LIMIT = 50
 
 interface DeliveredData {
   notificationId?: unknown
@@ -27,7 +25,7 @@ export async function closeReadNotifications(registration: ServiceWorkerRegistra
     return !CHAT_CATEGORIES.has(category as NotificationCategory)
   })
   if (delivered.length === 0) return
-  const { items } = await api.listNotifications({ limit: FIRST_PAGE_LIMIT })
+  const { items } = await api.listNotifications({ limit: INBOX_LIMIT })
   const unread = new Set(items.filter((item) => !item.read).map((item) => item.id))
   for (const notification of delivered) {
     const { notificationId } = (notification.data ?? {}) as DeliveredData

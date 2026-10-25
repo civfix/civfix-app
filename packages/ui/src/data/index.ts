@@ -107,6 +107,7 @@ export {
   cleanupDetailFilters,
 } from "./hooks/cleanups"
 export {
+  INBOX_LIMIT,
   useNotifications,
   useMarkNotificationsRead,
   useHasUnreadNotifications,

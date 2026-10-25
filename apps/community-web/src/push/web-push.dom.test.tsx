@@ -1,3 +1,4 @@
+import { cleanup, render } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { AppError, ErrorCode, type NotificationDTO, type UserDTO } from "@civfix/contract"
 
@@ -13,6 +14,12 @@ const api = {
 }
 
 vi.mock("@/lib/api", () => ({ api }))
+
+// The shell's nav adapter, as in use-web-nav-adapter.dom.test.tsx: only the nav store and a layout mode.
+vi.mock("@civfix/ui", async () => {
+  const nav = await import("@civfix/ui/nav")
+  return { ...nav, layoutModeFor: () => "compact" }
+})
 
 const VAPID_KEY = "BKeyQ2l2Zml4VGVzdEtleQ"
 const VAPID_KEY_BYTES = Uint8Array.from(atob("BKeyQ2l2Zml4VGVzdEtleQ=="), (c) => c.charCodeAt(0))
@@ -127,6 +134,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  cleanup()
   uninstall?.()
   uninstall = null
   authStore?.getState().clear()
@@ -174,6 +182,55 @@ describe("the page side of a notification click", () => {
     uninstall = await startSignedIn()
 
     await vi.waitFor(() => expect(api.markNotificationsRead).toHaveBeenCalled())
+    expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
+    expect(api.markNotificationsRead).toHaveBeenCalledWith({ ids: ["n1"] })
+  })
+})
+
+describe("a clicked notification's page, with the real shell mounted", () => {
+  // As in the app: the providers import the push module, the shell mounts and writes its own URL (dropping
+  // the query), and only then does the providers' effect start web push.
+  async function loadThroughShell(url: URL) {
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash)
+    vi.resetModules()
+    authStore = (await import("@/store/auth-store")).useAuthStore
+    const { installWebPush } = await import("./web-push")
+    const { useWebNavAdapter } = await import("@/components/home/use-web-nav-adapter")
+    function Shell() {
+      useWebNavAdapter()
+      return null
+    }
+    render(<Shell />)
+    expect(window.location.search).not.toContain("readNotification")
+    authStore.getState().setSession({ user: USER, csrfToken: "csrf-a" })
+    uninstall = installWebPush()
+  }
+
+  it("marks n1 read on the page the worker opened (T7's URL)", async () => {
+    stubBrowser("default")
+    const worker = loadServiceWorker(window.location.origin)
+    await worker.click({ notificationId: "n1", category: "reportUpdates", link: "/reports/r1" })
+
+    await loadThroughShell(new URL(worker.openWindow.mock.calls[0]![0] as string, window.location.origin))
+
+    await vi.waitFor(() => expect(api.markNotificationsRead).toHaveBeenCalled())
+    expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
+    expect(api.markNotificationsRead).toHaveBeenCalledWith({ ids: ["n1"] })
+  })
+
+  it("marks n1 read once on the page the worker navigated a tab to (T6's path), message included", async () => {
+    stubBrowser("default")
+    const tab = fakeWindowClient(`${window.location.origin}/`)
+    const worker = loadServiceWorker(window.location.origin, [tab])
+    await worker.click({ notificationId: "n1", category: "reportUpdates", link: "/reports/r1" })
+
+    await loadThroughShell(new URL(tab.navigate.mock.calls[0]![0] as string, window.location.origin))
+    for (const [message] of tab.postMessage.mock.calls) {
+      container.dispatchEvent(new MessageEvent("message", { data: message }))
+    }
+
+    await vi.waitFor(() => expect(api.markNotificationsRead).toHaveBeenCalled())
+    await new Promise((resolve) => setTimeout(resolve, 20))
     expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)
     expect(api.markNotificationsRead).toHaveBeenCalledWith({ ids: ["n1"] })
   })

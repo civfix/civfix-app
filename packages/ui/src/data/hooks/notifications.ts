@@ -23,7 +23,8 @@ export const notificationListFilters = {
   predicate: (query: Query) => typeof query.queryKey[1] === "number",
 }
 
-const INBOX_LIMIT = 50
+/** The notifications page's first page; web push's focus reconcile reads the same page. */
+export const INBOX_LIMIT = 50
 
 export function useNotifications(limit = INBOX_LIMIT) {
   const api = useApi()
