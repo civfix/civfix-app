@@ -64,3 +64,58 @@ test("a replay request, presenting and the gate are session-only", async () => {
     gateActive: true,
   })
 })
+
+const { shouldShowOnboarding } = await import("../lib/onboardingPlan.ts")
+
+const COMPLETED = JSON.stringify({ state: { completedVersion: 1 }, version: 1 })
+const NOT_COMPLETED = JSON.stringify({ state: { completedVersion: 0 }, version: 1 })
+
+function eligibleToShow(store: Awaited<ReturnType<typeof freshModule>>["useOnboardingStore"]): boolean {
+  const { completedVersion, replayRequested } = store.getState()
+  return shouldShowOnboarding({
+    completedVersion,
+    currentVersion: 1,
+    replayRequested,
+    gateActive: false,
+    authStatus: "unauthed",
+    profileIncomplete: false,
+  })
+}
+
+test("T7: a reset stores the tour as not completed while this session stays completed", async () => {
+  memory.set(ONBOARDING_KEY, COMPLETED)
+  const { useOnboardingStore } = await freshModule()
+  useOnboardingStore.getState().resetForNextLaunch()
+  assert.equal(useOnboardingStore.getState().completedVersion, 1)
+  assert.equal(useOnboardingStore.getState().replayRequested, false)
+  assert.equal(eligibleToShow(useOnboardingStore), false)
+  assert.equal(memory.get(ONBOARDING_KEY), NOT_COMPLETED)
+})
+
+test("T8: the next launch after a reset shows the tour", async () => {
+  memory.set(ONBOARDING_KEY, COMPLETED)
+  const { useOnboardingStore } = await freshModule()
+  useOnboardingStore.getState().resetForNextLaunch()
+  const { useOnboardingStore: relaunched } = await freshModule()
+  assert.equal(relaunched.getState().completedVersion, 0)
+  assert.equal(eligibleToShow(relaunched), true)
+})
+
+test("T9: later session writes keep the reset stored", async () => {
+  memory.set(ONBOARDING_KEY, COMPLETED)
+  const { useOnboardingStore } = await freshModule()
+  useOnboardingStore.getState().resetForNextLaunch()
+  useOnboardingStore.getState().setPresenting(true)
+  useOnboardingStore.getState().setPresenting(false)
+  useOnboardingStore.getState().setGateActive(false)
+  assert.equal(memory.get(ONBOARDING_KEY), NOT_COMPLETED)
+})
+
+test("T10: a tour finished after the reset counts as done", async () => {
+  memory.set(ONBOARDING_KEY, COMPLETED)
+  const { useOnboardingStore } = await freshModule()
+  useOnboardingStore.getState().resetForNextLaunch()
+  useOnboardingStore.getState().replay()
+  useOnboardingStore.getState().complete()
+  assert.equal(memory.get(ONBOARDING_KEY), COMPLETED)
+})

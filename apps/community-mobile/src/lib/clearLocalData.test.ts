@@ -1,0 +1,115 @@
+import { beforeEach, test } from "node:test"
+import assert from "node:assert/strict"
+import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
+
+const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
+const STORAGE_IDS = new URL("../../../../packages/ui/src/storage/storageIds.ts", import.meta.url)
+installModuleStubs({
+  "@civfix/ui": new URL("../../tests/helpers/uiStorageStubs.ts", import.meta.url),
+  "@civfix/ui/data": STUBS,
+  "@/api/client": STUBS,
+  "@/auth/storage": STUBS,
+  "@/lib/mmkv": STUBS,
+  "@/lib/nativeSecureStore": STUBS,
+  "@/lib/ws": STUBS,
+  "@/query/client": STUBS,
+  "@/query/mmkvPersister": STUBS,
+  "expo-secure-store": new URL("../../tests/helpers/secureSessionStubs.ts", import.meta.url),
+  "react-native-mmkv": new URL("../../tests/helpers/mmkvStub.ts", import.meta.url),
+  // @civfix/ui imports without extensions, which Node does not resolve.
+  "./storageIds": STORAGE_IDS,
+})
+
+const { calls, control, memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
+const { keychain } = await import("../../tests/helpers/secureSessionStubs.ts")
+const { mmkvFile, mmkvFiles } = await import("../../tests/helpers/mmkvStub.ts")
+const { persistentStorage } = await import("../../tests/helpers/uiStorageStubs.ts")
+const storageIds = await import("../../../../packages/ui/src/storage/storageIds.ts")
+const { APPEARANCE_KEY, CACHED_USER_KEY, LOCALE_KEY, ONBOARDING_KEY } = await import("./mmkvKeys.ts")
+const { PUSH_REGISTRATION_KEY } = await import("./pushRegistration.ts")
+const { DEVICE_ID_KEY } = await import("./deviceId.ts")
+const { useAuthStore } = await import("../store/authStore.ts")
+const { clearAllLocalDataAndSignOut } = await import("./clearLocalData.ts")
+
+const USER = { id: "u-1", name: "Ada" }
+const UI_STORAGE_IDS = Object.values(storageIds).filter((value): value is string => typeof value === "string")
+
+async function settle(): Promise<void> {
+  for (let i = 0; i < 10; i += 1) await new Promise((resolve) => setImmediate(resolve))
+}
+
+function keysIn(id: string): string[] {
+  return [...(mmkvFiles.get(id)?.keys() ?? [])]
+}
+
+const realSignOut = useAuthStore.getState().signOut
+
+beforeEach(() => {
+  resetStubs()
+  mmkvFiles.clear()
+  keychain.clear()
+
+  control.token = { ok: true, token: "tok" }
+  memory.set(CACHED_USER_KEY, JSON.stringify(USER))
+  memory.set(PUSH_REGISTRATION_KEY, JSON.stringify({ platform: "android", token: "t" }))
+  memory.set(ONBOARDING_KEY, JSON.stringify({ state: { completedVersion: 1 }, version: 1 }))
+  memory.set(LOCALE_KEY, "de")
+  memory.set(APPEARANCE_KEY, JSON.stringify({ state: { preference: "dark" }, version: 0 }))
+  persistentStorage(storageIds.MAP_FILTERS_STORAGE_ID).setItem("civfix.map-filters", "{}")
+  persistentStorage(storageIds.SIDEBAR_STORAGE_ID).setItem("civfix.sidebar-width", "{}")
+  mmkvFile(storageIds.APP_PROMO_STORAGE_ID).set("civfix.app-promo-dismissed", "1")
+  keychain.set(DEVICE_ID_KEY, "dev-1")
+  useAuthStore.setState({ status: "authed", user: USER as never, signOut: realSignOut })
+})
+
+// Signs out through a spy on the store's own signOut that holds it open until the test releases it.
+function holdSignOut() {
+  const seen = { runs: 0, pushStoredAtStart: false }
+  let release: () => void = () => {}
+  const released = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  useAuthStore.setState({
+    signOut: async () => {
+      seen.runs += 1
+      seen.pushStoredAtStart = memory.has(PUSH_REGISTRATION_KEY)
+      await realSignOut()
+      await released
+    },
+  })
+  return { seen, release }
+}
+
+test("T14: the normal sign-out runs once, with push still registered, and finishes before anything is cleared", async () => {
+  const signOut = holdSignOut()
+  const cleared = clearAllLocalDataAndSignOut()
+  await settle()
+
+  assert.equal(signOut.seen.runs, 1)
+  assert.equal(signOut.seen.pushStoredAtStart, true)
+  assert.ok(calls.includes("api.pushUnregister:t:Bearer tok"), calls.join("\n"))
+  assert.ok(calls.includes("api.logout:Bearer tok"), calls.join("\n"))
+  assert.ok(memory.has(ONBOARDING_KEY), "the app storage waits for the sign-out")
+  assert.deepEqual(keysIn(storageIds.MAP_FILTERS_STORAGE_ID), ["civfix.map-filters"])
+
+  signOut.release()
+  await cleared
+  assert.equal(signOut.seen.runs, 1)
+})
+
+test("T15: then every local store is empty except the device id, and the app is signed out", async () => {
+  const signOut = holdSignOut()
+  const cleared = clearAllLocalDataAndSignOut()
+  signOut.release()
+  await cleared
+
+  assert.deepEqual([...memory.keys()], [])
+  assert.deepEqual(UI_STORAGE_IDS.sort(), [
+    "civfix.ui.app-promo",
+    "civfix.ui.filters",
+    "civfix.ui.sidebar",
+  ])
+  for (const id of UI_STORAGE_IDS) assert.deepEqual(keysIn(id), [], id)
+  assert.equal(keychain.get(DEVICE_ID_KEY), "dev-1")
+  assert.equal(useAuthStore.getState().status, "unauthed")
+})

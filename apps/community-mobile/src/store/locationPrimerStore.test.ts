@@ -70,3 +70,12 @@ test("marking the primer shown leaves the choice unset", async () => {
   assert.deepEqual(primer(store), { shown: true, choice: null })
   assert.equal(memory.get(LOCATION_PRIMER_KEY), persisted({ shown: true, choice: null }, 2))
 })
+
+test("T11: a reset forgets the primer and its choice, in memory and on the next launch", async () => {
+  memory.set(LOCATION_PRIMER_KEY, persisted({ shown: true, choice: "precise" }, 2))
+  const store = await freshStore()
+  store.getState().reset()
+  assert.deepEqual(primer(store), { shown: false, choice: null })
+  assert.equal(memory.get(LOCATION_PRIMER_KEY), persisted({ shown: false, choice: null }, 2))
+  assert.deepEqual(primer(await freshStore()), { shown: false, choice: null })
+})

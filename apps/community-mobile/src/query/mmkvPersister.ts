@@ -123,3 +123,7 @@ export function purgeQueryCache(client: QueryClient): void {
   client.clear()
   resumeCachePersistence()
 }
+
+export function clearQueryCache(_client: QueryClient): Promise<void> {
+  throw new Error("not implemented")
+}

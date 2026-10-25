@@ -14,6 +14,7 @@ export interface OnboardingState {
   replay: () => void
   setPresenting: (value: boolean) => void
   setGateActive: (value: boolean) => void
+  resetForNextLaunch: () => void
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -27,6 +28,9 @@ export const useOnboardingStore = create<OnboardingState>()(
       replay: () => set({ replayRequested: true }),
       setPresenting: (value) => set({ presenting: value }),
       setGateActive: (value) => set({ gateActive: value }),
+      resetForNextLaunch: () => {
+        throw new Error("not implemented")
+      },
     }),
     {
       name: ONBOARDING_KEY,

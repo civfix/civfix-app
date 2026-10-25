@@ -47,3 +47,7 @@ export function persistentStorage(id: string): StateStorage {
   storages.set(id, storage)
   return storage
 }
+
+export function clearPersistentStorage(): void {
+  throw new Error("not implemented")
+}
