@@ -111,6 +111,7 @@ export interface ExpandedTopOffsets {
   cardTop: number
 }
 
-export function expandedTopOffsets(_topInset: number): ExpandedTopOffsets {
-  throw new Error("not implemented")
+/** The rail and the card (with its resize handle) move down together under a fixed top bar of `topInset`. */
+export function expandedTopOffsets(topInset: number): ExpandedTopOffsets {
+  return { railTop: NAV_TOP + topInset, cardTop: NAV_FOOTPRINT + topInset }
 }

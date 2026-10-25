@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { MapControls, useAppPromoStore } from "@civfix/ui"
+import { MapControls, useTopBarsHeight } from "@civfix/ui"
 import { useTotalUnread } from "@civfix/ui/data"
 
 import { useMapRecenterStore } from "@/features/map/map-recenter"
@@ -23,13 +23,13 @@ export function WebMapControls() {
     recenter?.()
   }, [recenter])
 
-  // The app-download banner is a fixed strip in a different slot, so its measured height arrives through
-  // the promo store. It is 0 whenever no banner shows, leaving the design offset untouched.
-  const bannerHeight = useAppPromoStore((s) => s.bannerHeight)
+  // The system notice and the app-download banner are fixed strips in a different slot, so their measured
+  // heights arrive through their stores. Both are 0 whenever nothing shows, leaving the design offset untouched.
+  const topBarsHeight = useTopBarsHeight()
 
   return (
     <MapControls
-      topInset={MAP_CONTROLS_TOP_INSET + bannerHeight}
+      topInset={MAP_CONTROLS_TOP_INSET + topBarsHeight}
       unreadCount={unreadCount}
       onLocate={onLocate}
     />

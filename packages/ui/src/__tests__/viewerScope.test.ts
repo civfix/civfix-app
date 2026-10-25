@@ -79,6 +79,7 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
   "shell/searchBarStore.ts:useSearchBarStore": "search bar layout and focus requests",
   "shell/tabBarStore.ts:useTabBarStore": "tab bar height and last tab",
   "promo/appPromoStore.ts:useAppPromoStore": "app promo dismissal and layout heights",
+  "shell/systemNoticeStore.ts:useSystemNoticeStore": "system notice dismissal and bar height",
   "primitives/brandAboutStore.ts:useBrandAboutStore": "About modal open flag",
   "bodies/onboardingTour.ts:useOnboardingTourStore": "host-injected tour presenter",
   "bodies/developerScreen.ts:useDeveloperScreenStore": "host-injected Developer screen presenter",

@@ -26,7 +26,7 @@ import { showBackAffordance } from "./backAffordance"
 import { hasDetailHeader } from "./SheetHeader.shared"
 import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrailingAction"
 import { DetailTrailingButton } from "./DetailTrailingButton"
-import { expandedFramePlan, NAV_FOOTPRINT, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
+import { expandedFramePlan, expandedTopOffsets, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
 import { cssTransition } from "./motionCss"
 import { surfaceKey } from "./bodyLayout"
 import { clearOcclusionLeft, writeOcclusionLeft } from "./occlusionVar"
@@ -38,6 +38,7 @@ import {
   SIDEBAR_MIN_WIDTH,
   SIDEBAR_MAX_WIDTH,
 } from "./sidebarStore"
+import { useSystemNoticeStore } from "./systemNoticeStore"
 import type { AppShellProps } from "./types"
 
 type RenderBody = NonNullable<AppShellProps["renderBody"]>
@@ -95,6 +96,10 @@ export function ExpandedShell({
   const view = useNavStore((s) => s.view)
   const storedWidth = useSidebarStore((s) => s.width)
   const setWidth = useSidebarStore((s) => s.setWidth)
+  // The web's system notice is fixed above the whole app; in this layout it is the only top bar (the
+  // download banner is portrait-only). Native never publishes a height, so tablets keep today's offsets.
+  const noticeHeight = useSystemNoticeStore((s) => s.height)
+  const { cardTop } = expandedTopOffsets(noticeHeight)
 
   useShellKeys()
 
@@ -205,7 +210,7 @@ export function ExpandedShell({
 
   return (
     <>
-      <Rail />
+      <Rail topInset={noticeHeight} />
 
       <Animated.View
         pointerEvents={cardVisible ? "auto" : "none"}
@@ -214,7 +219,7 @@ export function ExpandedShell({
         style={[
           styles.card,
           th.shadows.s4,
-          { width: animatedWidth },
+          { top: cardTop, width: animatedWidth },
           cardVisibilityStyle(cardVisible, reduceMotion),
         ]}
       >
@@ -262,7 +267,7 @@ export function ExpandedShell({
         {...focusRingProps}
         style={[
           styles.resizeHandle,
-          { transform: [{ translateX: animatedWidth }] },
+          { top: cardTop, transform: [{ translateX: animatedWidth }] },
           handleVisibilityStyle(cardVisible),
         ]}
       >
@@ -328,7 +333,6 @@ function Body({
 const useStyles = makeThemedStyles((t) => ({
   card: {
     position: "absolute",
-    top: NAV_FOOTPRINT,
     left: NAV_LEFT,
     bottom: NAV_TOP,
     borderRadius: 24,
@@ -367,7 +371,6 @@ const useStyles = makeThemedStyles((t) => ({
 
   resizeHandle: {
     position: "absolute",
-    top: NAV_FOOTPRINT,
     bottom: NAV_TOP,
     left: NAV_LEFT - RESIZE_HANDLE_W / 2,
     width: RESIZE_HANDLE_W,

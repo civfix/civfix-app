@@ -40,7 +40,6 @@ import {
   NAV_GAP,
   NAV_H,
   NAV_LEFT,
-  NAV_TOP,
   RAIL_BRAND_PAD_H,
   RAIL_BRAND_SIZE,
   RAIL_CAPSULE_H,
@@ -50,6 +49,7 @@ import {
   RAIL_ITEM_GAP,
   DOCK_ORB,
   RAIL_PAD_H,
+  expandedTopOffsets,
   railActiveView,
   railItemLeft,
 } from "./expandedFramePlan"
@@ -71,7 +71,7 @@ const MOUNT_TRANSITION = cssTransition(["opacity", "transform"], motion.glassIn)
 const MOUNT_SCALE_FROM = motion.glassIn.scaleFrom
 const isWeb = Platform.OS === "web"
 
-export function Rail() {
+export function Rail({ topInset }: { topInset: number }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("nav")
@@ -106,7 +106,7 @@ export function Rail() {
 
   return (
     <View
-      style={styles.rail}
+      style={[styles.rail, { top: expandedTopOffsets(topInset).railTop }]}
       {...({ dataSet: { civfixRail: "" } } as object)}
     >
       <View
@@ -232,7 +232,6 @@ const useStyles = makeThemedStyles((t) => ({
   rail: {
     position: "absolute",
     left: NAV_LEFT,
-    top: NAV_TOP,
     right: 0,
     height: NAV_H,
     flexDirection: "row",

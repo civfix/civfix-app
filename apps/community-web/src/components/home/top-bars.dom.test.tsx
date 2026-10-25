@@ -16,7 +16,8 @@ vi.mock("react-native", async () => {
 })
 
 vi.mock("../../../../../packages/ui/src/typography", async () => {
-  const { Text } = (await import("react-native")) as unknown as { Text: React.ComponentType }
+  // @ts-expect-error react-native-web ships no type declarations
+  const { Text } = (await import("react-native-web")) as { Text: React.ComponentType }
   return { Text, Icon: () => null, iconMap: {} }
 })
 
@@ -91,7 +92,9 @@ afterEach(() => {
 
 describe("AppDownloadBanner under the system notice", () => {
   it("T17: sits below a 36px notice, which owns the safe-area inset; alone it is at the top as before", () => {
-    act(() => useSystemNoticeStore.setState({ height: 36 }))
+    act(() => {
+      useSystemNoticeStore.setState({ height: 36 })
+    })
     const { unmount } = render(
       <I18nProvider locale="en" setLocale={() => {}}>
         <AppDownloadBanner />
@@ -101,7 +104,9 @@ describe("AppDownloadBanner under the system notice", () => {
     expect(style.top).toBe("36px")
     expect(style.paddingTop).toBe("8px")
 
-    act(() => useSystemNoticeStore.setState({ height: 0 }))
+    act(() => {
+      useSystemNoticeStore.setState({ height: 0 })
+    })
     style = getComputedStyle(downloadBanner())
     expect(style.top).toBe("0px")
     expect(style.paddingTop).toBe("calc(8px + env(safe-area-inset-top, 0px))")

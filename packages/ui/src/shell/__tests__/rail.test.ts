@@ -22,7 +22,7 @@ describe("the rail's material and geometry", () => {
   it("takes every dimension from the tested frame plan instead of re-typing the numbers", () => {
     for (const c of [
       "NAV_LEFT",
-      "NAV_TOP",
+      "expandedTopOffsets",
       "NAV_H",
       "NAV_GAP",
       "RAIL_ITEM",
