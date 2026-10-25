@@ -85,6 +85,7 @@ import ko_profile_connections from "../locales/ko/profile-connections.json"
 import ko_profile_follow from "../locales/ko/profile-follow.json"
 import ko_profile_person from "../locales/ko/profile-person.json"
 import ko_profile_view from "../locales/ko/profile-view.json"
+import ko_push_prompt from "../locales/ko/push-prompt.json"
 import ko_report_cluster from "../locales/ko/report-cluster.json"
 import ko_report_content from "../locales/ko/report-content.json"
 import ko_report_detail from "../locales/ko/report-detail.json"
@@ -189,6 +190,7 @@ const catalog: ResourceLanguage = {
   "profile-follow": ko_profile_follow,
   "profile-person": ko_profile_person,
   "profile-view": ko_profile_view,
+  "push-prompt": ko_push_prompt,
   "report-cluster": ko_report_cluster,
   "report-content": ko_report_content,
   "report-detail": ko_report_detail,

@@ -48,12 +48,16 @@ function mount(pushPermission: PushPermissionCapability) {
   )
 }
 
-/** Lets the capability's first status() read settle, so an absent card is absent for its real reason. */
-async function settle(capability: PushPermissionCapability) {
-  await waitFor(() => expect(capability.status).toHaveBeenCalled())
+async function flush() {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
+}
+
+/** Lets the capability's first status() read settle, so an absent card is absent for its real reason. */
+async function settle(capability: PushPermissionCapability) {
+  await waitFor(() => expect(capability.status).toHaveBeenCalled())
+  await flush()
 }
 
 beforeEach(() => {
@@ -86,9 +90,8 @@ describe("WebPushPrompt", () => {
       expect(window.localStorage.getItem(SEEN_KEY)).toBe("1")
 
       view.unmount()
-      const again = permission("undetermined")
-      mount(again)
-      await settle(again)
+      mount(permission("undetermined"))
+      await flush()
       expect(screen.queryByText(TITLE)).toBeNull()
     })
   }
@@ -105,9 +108,8 @@ describe("WebPushPrompt", () => {
       expect(window.localStorage.getItem(SEEN_KEY)).toBe("1")
 
       view.unmount()
-      const again = permission("undetermined")
-      mount(again)
-      await settle(again)
+      mount(permission("undetermined"))
+      await flush()
       expect(screen.queryByText(TITLE)).toBeNull()
     })
   }
@@ -125,9 +127,7 @@ describe("WebPushPrompt", () => {
     authState.isAuthenticated = false
     const capability = permission("undetermined")
     mount(capability)
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    })
+    await flush()
     expect(screen.queryByText(TITLE)).toBeNull()
   })
 
@@ -135,9 +135,7 @@ describe("WebPushPrompt", () => {
     window.localStorage.setItem(SEEN_KEY, "1")
     const capability = permission("undetermined")
     mount(capability)
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    })
+    await flush()
     expect(screen.queryByText(TITLE)).toBeNull()
   })
 })
