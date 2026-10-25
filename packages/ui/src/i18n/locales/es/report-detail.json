@@ -65,6 +65,13 @@
     "hide_full_message_a11y": "Ocultar mensaje completo",
     "linked_to_cleanup": "Vinculado a la limpieza '{{title}}'",
     "linked_to_cleanup_detail": "{{organizer}} está organizando una limpieza para esto.",
+    "filed_with": "Presentado ante {{jurisdiction}}",
+    "filed_with_city": "Presentado ante la ciudad",
+    "linked_existing": "Vinculado a una solicitud existente de la ciudad",
+    "request_number": "Solicitud {{caseId}}",
+    "check_status": "Ver el estado en el sitio de la ciudad",
+    "check_status_a11y": "Abrir esta solicitud en el sitio de la ciudad",
+    "open_error": "No se pudo abrir el sitio de la ciudad. Inténtalo de nuevo.",
     "status": {
       "not_forwarded": "Aún no enviado",
       "in_progress": "En proceso",
