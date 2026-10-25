@@ -58,9 +58,13 @@ export interface GeolocationCapability {
   watchPosition(onChange: (pos: GeoPosition) => void): () => void
 }
 
-export interface PushCapability {
-  isAvailable(): boolean
-  registerForToken(): Promise<string | null>
+export type PushPermissionStatus = "granted" | "denied" | "undetermined" | "unsupported"
+
+// The web has no openSettings: a page cannot open the browser's site settings.
+export interface PushPermissionCapability {
+  status(): Promise<PushPermissionStatus>
+  request(): Promise<PushPermissionStatus>
+  openSettings?(): Promise<void>
 }
 
 export interface SecureStoreCapability {
@@ -107,7 +111,7 @@ export interface CalendarFileCapability {
 export interface PlatformCapabilities {
   camera: CameraCapability
   geolocation: GeolocationCapability
-  push: PushCapability
+  pushPermission: PushPermissionCapability
   secureStore: SecureStoreCapability
   persistence: PersistenceCapability
   blurSurface: BlurSurfaceCapability

@@ -5,13 +5,13 @@ import type {
   LeaderboardEntryDTO,
   ListNotificationsResponse,
   ListThreadsResponse,
-  NotificationPrefsDTO,
+  NotificationSettingsDTO,
   PersonDTO,
   SearchUsersResponse,
   UserDTO,
   UserProfileDTO,
 } from "@civfix/contract"
-import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, NOTIFICATION_CATEGORY_DEFAULTS } from "@civfix/contract"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
 export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)
@@ -72,15 +72,12 @@ export const GALLERY_NOTIFICATIONS: ListNotificationsResponse["items"] = [
   },
 ]
 
-export const GALLERY_NOTIFICATION_PREFS: NotificationPrefsDTO = {
-  push: true,
-  mentions: true,
-  cleanupChat: true,
-  reportUpdates: true,
-  follows: false,
-  postInteractions: true,
-  hostBroadcasts: true,
-  quietHours: { start: "22:00", end: "07:00" },
+export const GALLERY_NOTIFICATION_SETTINGS: NotificationSettingsDTO = {
+  categories: {
+    ...NOTIFICATION_CATEGORY_DEFAULTS,
+    followers: { enabled: false, push: false, email: false },
+  },
+  emailAvailable: true,
 }
 
 export function galleryThreads(dmPeer: PersonDTO): ListThreadsResponse {

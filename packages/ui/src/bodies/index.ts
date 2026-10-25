@@ -126,7 +126,7 @@ export type {
 } from "./feedShare"
 
 export { NotificationsBody } from "./NotificationsBody"
-export { NotificationPrefsBody } from "./NotificationPrefsBody"
+export { NotificationSettingsBody } from "./NotificationSettingsBody"
 
 export { MessagingListBody } from "./MessagingListBody"
 export { ConversationBody } from "./ConversationBody"

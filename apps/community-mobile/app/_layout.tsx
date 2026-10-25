@@ -4,6 +4,7 @@ import { useRouter } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import * as SystemUI from "expo-system-ui"
 import * as Linking from "expo-linking"
+import * as Notifications from "expo-notifications"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
@@ -22,13 +23,13 @@ import {
   setSourceCommit,
   setWebOrigin,
 } from "@civfix/ui"
-import { API_URL, SOURCE_COMMIT, WEB_ORIGIN } from "@/config"
+import { API_URL, APP_ID, SOURCE_COMMIT, WEB_ORIGIN } from "@/config"
 import { nativeCamera } from "@/lib/nativeCamera"
 import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
 import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
-import { nativePush } from "@/lib/nativePush"
+import { makeNativePushPermission } from "@/lib/pushPermission"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
 import { launchTheme } from "@/boot/launchTheme"
 import { AppBridges } from "@/boot/AppBridges"
@@ -77,7 +78,12 @@ const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: { ...nativeCamera, Viewfinder: ReportViewfinder },
   geolocation: nativeGeolocation,
-  push: nativePush,
+  pushPermission: makeNativePushPermission({
+    appId: APP_ID,
+    getPermissionsAsync: Notifications.getPermissionsAsync,
+    requestPermissionsAsync: () => Notifications.requestPermissionsAsync(),
+    openSettings: Linking.openSettings,
+  }),
   secureStore: nativeSecureStore,
   blurSurface: { supported: supportsBlur },
   haptics: nativeHaptics,

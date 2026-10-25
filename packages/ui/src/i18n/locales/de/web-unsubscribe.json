@@ -11,5 +11,11 @@
     "title": "Dieser Link ließ sich nicht verwenden",
     "body": "Dieser Abmeldelink konnte nicht verarbeitet werden, daher können wir dir nicht bestätigen, dass es geklappt hat. Manche Mail-Apps kürzen lange Links oder brechen sie um. Öffne den Link noch einmal aus der ursprünglichen E-Mail oder nutze den Link zu den Einstellungen unten."
   },
-  "settings_prompt": "Um allgemein festzulegen, was civfix dir schickt, öffne die <0>Benachrichtigungseinstellungen</0>."
+  "settings_prompt": "Um allgemein festzulegen, was civfix dir schickt, öffne die <0>Benachrichtigungseinstellungen</0>.",
+  "notifications": {
+    "done": "Du bekommst keine E-Mails mehr zu <strong>{{category}}</strong>.",
+    "unusable": "Dieser Link hat nicht funktioniert. Du kannst E-Mails in den Benachrichtigungseinstellungen ändern.",
+    "manage": "Benachrichtigungseinstellungen verwalten",
+    "checking": "Dein Link wird geprüft"
+  }
 }

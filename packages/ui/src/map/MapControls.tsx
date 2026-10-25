@@ -11,11 +11,11 @@ import {
   webTransition,
   HOVERED_OPACITY,
 } from "../theme"
-import { Brand, GlassButton, Avatar, openBrandAbout } from "../primitives"
+import { Brand, GlassButton, Avatar, UnreadDot, openBrandAbout } from "../primitives"
 import { Text, Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
 import { useNavStore } from "../nav"
-import { useAuthState, useNotifications, useRequireAuth } from "../data"
+import { useAuthState, useHasUnreadNotifications, useRequireAuth } from "../data"
 import { LayersPopover, useLayersPopoverPresence } from "./LayersPopover"
 import { MapHeaderActions } from "./MapHeaderActions"
 import { MapThemeToggle } from "./MapThemeToggle"
@@ -44,8 +44,6 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
   const popover = useLayersPopoverPresence(layersOpen)
 
   const onBrand = () => openBrandAbout()
-
-  const onActivity = () => useNavStore.getState().push({ kind: "activity" })
 
   const brandPill = (
     <Pressable
@@ -91,7 +89,6 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
             <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
           </GlassButton>
           {layersButton}
-          <ActivityBell onPress={onActivity} />
           <MapThemeToggle variant="glass" />
           <ProfileEntry />
         </View>
@@ -130,24 +127,6 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
   )
 }
 
-function ActivityBell({ onPress }: { onPress: () => void }) {
-  const th = useTheme()
-  const { t } = useT("map-ui")
-  const { t: tn } = useT("notifications")
-  const { unreadCount } = useNotifications()
-  const unread = unreadCount > 0
-  const label = t("actions.notifications")
-  return (
-    <GlassButton
-      accessibilityLabel={unread ? tn("row.unreadSuffix", { title: label }) : label}
-      onPress={onPress}
-      dot={unread}
-    >
-      <Icon icon={iconMap.Bell} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
-    </GlassButton>
-  )
-}
-
 function ProfileEntry() {
   const styles = useStyles()
   const th = useTheme()
@@ -155,6 +134,8 @@ function ProfileEntry() {
   const requireAuth = useRequireAuth()
   const { t } = useT("map-ui")
   const { t: tNav } = useT("nav")
+  const { t: tn } = useT("notifications")
+  const unread = useHasUnreadNotifications()
 
   if (isPending) return null
 
@@ -182,28 +163,31 @@ function ProfileEntry() {
   }
 
   return (
-    <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "profile" })}
-      accessibilityRole="button"
-      accessibilityLabel={t("profile.open")}
-      hitSlop={6}
-      {...focusRingProps}
-      style={(state) => [
-        styles.profileWrap,
-        th.shadows.s2,
-        webCursor(),
-        webTransition,
-        webHover(state) ? styles.hovered : null,
-        state.pressed ? styles.pressed : null,
-      ]}
-    >
-      <Avatar
-        name={user?.displayName ?? tNav("fallback_you")}
-        photoUrl={user?.avatarUrl ?? null}
-        seed={user?.id}
-        size={HEADER_AVATAR_SIZE}
-      />
-    </Pressable>
+    <View>
+      <Pressable
+        onPress={() => useNavStore.getState().push({ kind: "profile" })}
+        accessibilityRole="button"
+        accessibilityLabel={unread ? tn("row.unreadSuffix", { title: t("profile.open") }) : t("profile.open")}
+        hitSlop={6}
+        {...focusRingProps}
+        style={(state) => [
+          styles.profileWrap,
+          th.shadows.s2,
+          webCursor(),
+          webTransition,
+          webHover(state) ? styles.hovered : null,
+          state.pressed ? styles.pressed : null,
+        ]}
+      >
+        <Avatar
+          name={user?.displayName ?? tNav("fallback_you")}
+          photoUrl={user?.avatarUrl ?? null}
+          seed={user?.id}
+          size={HEADER_AVATAR_SIZE}
+        />
+      </Pressable>
+      {unread ? <UnreadDot /> : null}
+    </View>
   )
 }
 

@@ -109,11 +109,13 @@ export {
 export {
   useNotifications,
   useMarkNotificationsRead,
-  useNotificationPrefs,
-  useUpdateNotificationPrefs,
+  useHasUnreadNotifications,
+  useMarkAllNotificationsRead,
+  useNotificationSettings,
+  useUpdateNotificationSettings,
   useUpdatePrivacySettings,
 } from "./hooks/notifications"
-export type { PrivacySettingsVars } from "./hooks/notifications"
+export type { PrivacySettingsVars, NotificationSettingChange } from "./hooks/notifications"
 export { useThreads, useTotalUnread, useChat } from "./hooks/chat"
 export type { UseChatResult, ChatRoomError, ComposerMedia } from "./hooks/chat"
 export {
