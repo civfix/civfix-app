@@ -66,12 +66,19 @@ export {
   NAV_FOOTPRINT,
   MAP_MIN_CLEAR,
   EXPANDED_MIN_WIDTH,
+  expandedTopOffsets,
 } from "./expandedFramePlan"
-export type { ExpandedFrame, ExpandedFrameInput } from "./expandedFramePlan"
+export type { ExpandedFrame, ExpandedFrameInput, ExpandedTopOffsets } from "./expandedFramePlan"
 export { shellOcclusionLeft } from "./shellOcclusion"
 export { writeOcclusionLeft, clearOcclusionLeft } from "./occlusionVar"
 export { useSearchBarStore } from "./searchBarStore"
 export type { SearchBarState } from "./searchBarStore"
+export { SystemNoticeBanner } from "./SystemNoticeBanner"
+export type { SystemNoticeBannerProps } from "./SystemNoticeBanner"
+export { SystemNoticeFrame } from "./SystemNoticeFrame"
+export { useSystemNoticeStore } from "./systemNoticeStore"
+export type { SystemNoticeState } from "./systemNoticeStore"
+export { topBarsHeight, useTopBarsHeight } from "./topBars"
 export type { AppShellProps } from "./types"
 
 export { useKeyboardAnchor } from "./useKeyboardAnchor"

@@ -105,3 +105,12 @@ export function expandedFramePlan({ view, stackLength, sidebarWidth }: ExpandedF
 export function railActiveView(view: View, active: DetailEntry | null): View | null {
   return active ? parentViewForEntry(active) : view
 }
+
+export interface ExpandedTopOffsets {
+  railTop: number
+  cardTop: number
+}
+
+export function expandedTopOffsets(_topInset: number): ExpandedTopOffsets {
+  throw new Error("not implemented")
+}
