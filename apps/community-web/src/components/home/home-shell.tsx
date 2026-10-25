@@ -48,6 +48,12 @@ const WebBrandAbout = dynamic(
   { ssr: false },
 )
 
+/** Client-only: it reads the browser's notification permission and its own once-per-browser flag. */
+const WebPushPrompt = dynamic(
+  () => import("@/components/home/web-push-prompt").then((m) => m.WebPushPrompt),
+  { ssr: false },
+)
+
 /**
  * Client-only because it decides what to show from the live user agent, which the static export cannot
  * know at build time. It renders outside <AppShell/> as a fixed strip at z-index 100 (above the shell's
@@ -184,6 +190,7 @@ export function AppShellFrame() {
               <>
                 <AuthModal />
                 <WebBrandAbout />
+                <WebPushPrompt />
               </>
             }
           />

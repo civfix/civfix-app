@@ -1,5 +1,14 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
-import { webPushPermission } from "./push-permission"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+const getPushWebConfig = vi.fn<() => Promise<{ vapidPublicKey: string | null }>>()
+
+vi.mock("@/lib/api", () => ({
+  api: { getPushWebConfig: () => getPushWebConfig() },
+}))
+
+const { webPushPermission } = await import("./push-permission")
+
+const VAPID_KEY = "BKeyQ2l2Zml4VGVzdEtleQ"
 
 type BrowserPermission = "default" | "granted" | "denied"
 
@@ -15,6 +24,11 @@ function stubNotification(permission: BrowserPermission, answers: BrowserPermiss
 }
 
 const stubPushManager = () => vi.stubGlobal("PushManager", function PushManager() {})
+
+beforeEach(() => {
+  getPushWebConfig.mockReset()
+  getPushWebConfig.mockResolvedValue({ vapidPublicKey: VAPID_KEY })
+})
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -72,5 +86,37 @@ describe("webPushPermission", () => {
     const notification = stubNotification("default")
     stubPushManager()
     expect(notification.requestPermission).toHaveBeenCalledTimes(0)
+  })
+})
+
+describe("webPushPermission with the server's VAPID key", () => {
+  // The key is read once per page, so each case loads the module afresh.
+  async function freshPermission() {
+    vi.resetModules()
+    return (await import("./push-permission")).webPushPermission
+  }
+
+  it("T11: a null key reports unsupported, and request() never prompts", async () => {
+    stubPushManager()
+    const notification = stubNotification("default", ["granted"])
+    getPushWebConfig.mockResolvedValue({ vapidPublicKey: null })
+    const permission = await freshPermission()
+
+    await expect(permission.status()).resolves.toBe("unsupported")
+    await expect(permission.request()).resolves.toBe("unsupported")
+    expect(notification.requestPermission).not.toHaveBeenCalled()
+  })
+
+  it("T12: with a key, status() maps the browser's permission", async () => {
+    stubPushManager()
+    getPushWebConfig.mockResolvedValue({ vapidPublicKey: VAPID_KEY })
+    const permission = await freshPermission()
+
+    stubNotification("granted")
+    await expect(permission.status()).resolves.toBe("granted")
+    stubNotification("denied")
+    await expect(permission.status()).resolves.toBe("denied")
+    stubNotification("default")
+    await expect(permission.status()).resolves.toBe("undetermined")
   })
 })

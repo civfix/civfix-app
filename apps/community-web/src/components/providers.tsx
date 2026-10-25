@@ -34,6 +34,7 @@ import { chatSocket } from "@/lib/ws"
 import { webCamera } from "@/lib/web-camera"
 import { webGeolocation } from "@/lib/web-geolocation"
 import { webPushPermission } from "@/lib/push-permission"
+import { installWebPush } from "@/push/web-push"
 import { runTurnstile, TURNSTILE_SITEKEY } from "@/lib/turnstile"
 import { CARTO_API_KEY } from "@/lib/carto"
 import { saveClaimHandoff } from "@/store/claim-handoff"
@@ -218,6 +219,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     return installViewerScope(clientRef.current!)
   }, [])
+
+  React.useEffect(() => installWebPush(), [])
 
   return (
     <QueryClientProvider client={clientRef.current}>
