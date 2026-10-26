@@ -139,6 +139,7 @@ const VIEWER_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   queryKeys.cleanupRoot,
   queryKeys.chatRoot,
   ["volunteer"],
+  queryKeys.appConfig,
 ]
 
 function invalidateViewerDependentQueries(): void {

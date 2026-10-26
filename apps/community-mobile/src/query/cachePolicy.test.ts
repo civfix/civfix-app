@@ -97,6 +97,10 @@ test("only the safelisted families are persisted; reports is narrowed to the min
   assert.equal(isPersistedQueryKey([]), false)
 })
 
+test("T25: the app config is never kept in the offline cache", () => {
+  assert.equal(isPersistedQueryKey(["app-config"]), false)
+})
+
 function fakeTimers() {
   const queued = new Map<number, () => void>()
   let next = 1

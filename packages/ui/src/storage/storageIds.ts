@@ -5,3 +5,9 @@
 export const MAP_FILTERS_STORAGE_ID = "civfix.ui.filters"
 export const SIDEBAR_STORAGE_ID = "civfix.ui.sidebar"
 export const APP_PROMO_STORAGE_ID = "civfix.ui.app-promo"
+
+export const PERSISTENT_STORAGE_IDS: readonly string[] = [
+  MAP_FILTERS_STORAGE_ID,
+  SIDEBAR_STORAGE_ID,
+  APP_PROMO_STORAGE_ID,
+]

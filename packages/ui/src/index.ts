@@ -13,6 +13,8 @@ export * from "./bodies"
 export * from "./map"
 
 export { adoptViewer, discardViewerDrafts } from "./viewerScope"
+export { clearPersistentStorage } from "./storage/persistentStorage"
+export { resetPersistedStores } from "./storage/resetPersistedStores"
 
 export * from "./charts"
 

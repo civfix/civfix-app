@@ -1,7 +1,14 @@
 import React, { useEffect } from "react"
 import { Platform } from "react-native"
 import { useRouter } from "expo-router"
-import { setBrandAboutPresenter, setOnboardingTourPresenter, setScanPresenter } from "@civfix/ui"
+import {
+  setBrandAboutPresenter,
+  setDeveloperScreenPresenter,
+  setOnboardingTourPresenter,
+  setScanPresenter,
+} from "@civfix/ui"
+import { API_URL } from "@/config"
+import { developerScreenEnabled } from "@/lib/developerScreen"
 import { setCameraNavigator } from "@/lib/nativeCamera"
 import { codeScannerSupported } from "@/lib/scannerSupport"
 import { useOnboardingStore } from "@/store/onboardingStore"
@@ -48,6 +55,16 @@ function OnboardingTourBridge(): null {
   return null
 }
 
+function DeveloperScreenBridge(): null {
+  const router = useRouter()
+  useEffect(() => {
+    if (!developerScreenEnabled(API_URL, __DEV__)) return
+    setDeveloperScreenPresenter(() => router.push("/settings/developer"))
+    return () => setDeveloperScreenPresenter(null)
+  }, [router])
+  return null
+}
+
 export function AppBridges() {
   return (
     <>
@@ -56,6 +73,7 @@ export function AppBridges() {
       <ScanPresenterBridge />
       <BrandAboutBridge />
       <OnboardingTourBridge />
+      <DeveloperScreenBridge />
     </>
   )
 }

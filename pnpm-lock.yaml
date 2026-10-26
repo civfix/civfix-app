@@ -52,8 +52,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.67.0-b-feat-dev-console-contract.gee137fa
+        version: 0.67.0-b-feat-dev-console-contract.gee137fa
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -242,8 +242,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.67.0-b-feat-dev-console-contract.gee137fa
+        version: 0.67.0-b-feat-dev-console-contract.gee137fa
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -381,8 +381,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.67.0-b-feat-dev-console-contract.gee137fa
+        version: 0.67.0-b-feat-dev-console-contract.gee137fa
       '@eslint/js':
         specifier: ^9.16.0
         version: 9.39.5
@@ -411,8 +411,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.64.0
-        version: 0.64.0
+        specifier: 0.67.0-b-feat-dev-console-contract.gee137fa
+        version: 0.67.0-b-feat-dev-console-contract.gee137fa
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1125,8 +1125,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.64.0':
-    resolution: {integrity: sha512-I1dmMMhXqGaRhPUjIgwfxc9MApWAZBEWRiNUqWIxSRrgbeRYoO4IFPuXShphGPyL4g0Vo4qoHcgxPj/sx+nyEg==}
+  '@civfix/contract@0.67.0-b-feat-dev-console-contract.gee137fa':
+    resolution: {integrity: sha512-dPjJBMz+I3dTGIjPGswYOH9ouL0m9fT19VhnulMjFrNaebnn9mgNrYmQPBrfLYTrHsVjGN9fbaaPVA75AXZgTw==}
     engines: {node: '>=20'}
 
   '@cloudflare/kv-asset-handler@0.5.0':
@@ -7970,7 +7970,7 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.64.0':
+  '@civfix/contract@0.67.0-b-feat-dev-console-contract.gee137fa':
     dependencies:
       zod: 4.6.7
 

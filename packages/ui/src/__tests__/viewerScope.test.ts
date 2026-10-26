@@ -81,6 +81,7 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
   "promo/appPromoStore.ts:useAppPromoStore": "app promo dismissal and layout heights",
   "primitives/brandAboutStore.ts:useBrandAboutStore": "About modal open flag",
   "bodies/onboardingTour.ts:useOnboardingTourStore": "host-injected tour presenter",
+  "bodies/developerScreen.ts:useDeveloperScreenStore": "host-injected Developer screen presenter",
   "bodies/feed/feedScrollStore.ts:useFeedScrollTopStore": "scroll-to-top request counter",
   "data/feedLiveStore.ts:useFeedLiveStore":
     "new-post ids, scoped by its own adoptViewer from the feed realtime hook",
