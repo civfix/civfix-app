@@ -12,7 +12,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
 import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { timeRangeLabel } from "@civfix/contract/datetime"
 import { SignInPrompt, useToast } from "../primitives"
 import {

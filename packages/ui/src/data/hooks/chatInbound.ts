@@ -1,7 +1,7 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import { effectiveClientId, type OutboxEntry } from "../../helpers"
-import { type ChatMessageDTO, type RoomKind } from "@civfix/contract"
+import type { ChatMessageDTO, RoomKind } from "@civfix/contract"
 import { foldInboundBatch, foldInboundIntoPages, prunableFrameIds, type InboundFrame } from "../inbound"
 import { queryKeys } from "../keys"
 import { linkLocalChatAttachments } from "../localChatAttachments"

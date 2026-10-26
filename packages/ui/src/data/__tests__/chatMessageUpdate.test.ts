@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { mergeChatItems, type OutboxEntry } from "../../helpers"
-import { type ChatMessageDTO, type PersonDTO } from "@civfix/contract"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { foldInboundBatch } from "../inbound"
 
 const ROOM = "room-1"
