@@ -350,7 +350,7 @@ function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
   }
 }
 
-function phaseCounters(id: string, phase: EventPhase): EventCheckinCountersDTO {
+function phaseCounters(phase: EventPhase): EventCheckinCountersDTO {
   const insights = insightsFor(phase)
   const startsAt = Date.parse(insights.clock.startsAt)
   return {
@@ -479,7 +479,7 @@ const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
     const id = argId(args)
     if (id === DASHBOARD_EVENT_PENDING_ID) return pendingForever()()
     if (id === DASHBOARD_EVENT_ERROR_ID) return failing("getEventCheckinCounters")()
-    return Promise.resolve(phaseCounters(id, phaseOf(id)))
+    return Promise.resolve(phaseCounters(phaseOf(id)))
   },
   listEventRegistrations: async (args) => {
     const id = argId(args)
