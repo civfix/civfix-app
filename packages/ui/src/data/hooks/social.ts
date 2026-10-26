@@ -376,6 +376,11 @@ export function useUpdateProfile() {
   })
 }
 
+/** First run's Continue: the profile update, then the sign-up acceptance of the current legal documents. */
+export function useCompleteFirstRun(): ReturnType<typeof useUpdateProfile> {
+  throw new Error("not implemented")
+}
+
 export interface HandleAvailabilityCheck {
   availability: UseQueryResult<HandleAvailableResponse>
   checkedHandle: string

@@ -27,6 +27,7 @@ export {
   useFollowers,
   useFollowing,
   useUpdateProfile,
+  useCompleteFirstRun,
   useHandleAvailability,
   useHandleAvailabilityCheck,
   useMentionSearch,
