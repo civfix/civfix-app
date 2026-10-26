@@ -44,6 +44,7 @@ import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
 import { localReportThumb } from "./localReportThumbs"
 import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
+import { withTextOffsets } from "../primitives/listKeys"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { PostOverflowMenu } from "./PostOverflowMenu"
 import { usePostOverflowMenuState } from "./postCardActions"
@@ -99,7 +100,7 @@ function PostBody({
 }) {
   const styles = useStyles()
   const th = useTheme()
-  const segments = splitPostBodyMentions(post.body ?? "", post.mentions)
+  const segments = withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions))
   if (segments.length === 0) return null
 
   return (
@@ -108,10 +109,10 @@ function PostBody({
       style={styles.bodyText}
       numberOfLines={clamped ? POST_BODY_CLAMP_LINES : undefined}
     >
-      {segments.map((segment, index) =>
+      {segments.map((segment) =>
         segment.kind === "mention" ? (
           <Text
-            key={`${segment.userId}-${index}`}
+            key={segment.offset}
             variant="bodyStrong"
             color={th.colors.accent}
             accessibilityRole="link"

@@ -185,7 +185,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       <Text style={[shared.eyebrow, styles.updatesGap]}>{t("updates_label")}</Text>
       <View>
         {timeline.map((node, i) => (
-          <TimelineRow key={i} node={node} last={i === timeline.length - 1} />
+          <TimelineRow key={node.key} node={node} last={i === timeline.length - 1} />
         ))}
       </View>
 

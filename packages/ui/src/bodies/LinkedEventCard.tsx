@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react"
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
+import { eventEndsAtMs } from "@civfix/contract/host"
 import {
   MIN_TOUCH_TARGET,
   makeThemedStyles,
@@ -14,12 +15,13 @@ import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
 import { DateTile } from "../primitives/DateBadge"
-import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
+import { useCleanup, useCleanupAttendees, useJoinCleanup, useNow } from "../data"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,
   visibleAttendeeSlots,
+  ATTENDEE_SEATS,
   type LinkedEventCardModel,
 } from "./linkedEventCardModel"
 import { hasEventEnded } from "./eventLifecycle"
@@ -55,7 +57,7 @@ function AttendeeStack({
     <View style={styles.attendeeGroup} accessible={false}>
       {showAvatars ? (
         <View style={styles.avatarStack}>
-          {Array.from({ length: visibleCount }).map((_, index) => {
+          {ATTENDEE_SEATS.slice(0, visibleCount).map((seat, index) => {
             const attendee = model.attendeePreview[index]
             return attendee ? (
               <View key={attendee.id} style={[styles.avatarShell, index > 0 ? styles.avatarOverlap : null]}>
@@ -70,7 +72,7 @@ function AttendeeStack({
               </View>
             ) : (
               <View
-                key={`attendee-${index}`}
+                key={seat}
                 style={[
                   styles.attendeePlaceholder,
                   index > 0 ? styles.avatarOverlap : null,
@@ -157,6 +159,8 @@ export function LinkedEventCard({
   const liveGoing = liveCleanup?.going ?? attendeeQuery.data?.going
   const joined = liveCleanup?.joined
   const attendees = attendeeQuery.data?.attendees
+  const eventWindow = liveCleanup ?? event
+  const now = useNow(0, { boundaryAt: showControls ? eventEndsAtMs(eventWindow) : null })
   const model = useMemo(
     () =>
       buildLinkedEventCardModel(event, t, locale, timeZone, {
@@ -229,7 +233,7 @@ export function LinkedEventCard({
           eventId={event.id}
           model={model}
           loading={!cleanup && detail.isLoading}
-          ended={hasEventEnded(liveCleanup ?? event, Date.now())}
+          ended={hasEventEnded(eventWindow, now)}
         />
       ) : null}
     </View>

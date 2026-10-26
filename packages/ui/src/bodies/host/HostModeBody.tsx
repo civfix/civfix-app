@@ -146,8 +146,10 @@ export function HostModeBody({ id }: { id: string }) {
   const clock = event
     ? { status: event.status, scheduledAt: event.scheduledAt, endsAt: event.endsAt ?? null }
     : null
-  const boundaryAt = clock === null ? null : nextEventBoundaryMs(clock, Date.now())
-  const now = useNow(boundaryAt === null ? 0 : PHASE_TICK_MS, { boundaryAt })
+  const now = useNow(PHASE_TICK_MS, {
+    boundaryAt: (at) => (clock === null ? null : nextEventBoundaryMs(clock, at)),
+    idleAfterLastBoundary: true,
+  })
   const clockPhase: EventPhase = clock === null ? "upcoming" : eventPhase(clock, now)
   const stage = clock === null ? "upcoming" : hostStage(clock, now)
   useEventBoundaryRefresh(clock, now, id)

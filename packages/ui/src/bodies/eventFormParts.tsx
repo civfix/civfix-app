@@ -7,7 +7,13 @@ import { useScrollHost } from "../shell/ScrollHost"
 /** The host form's control height: its field rows and its footer buttons share one size. */
 export const FORM_CONTROL_HEIGHT = 52
 
-const SKELETON_FIELDS = [44, 88, 44, 44, 44] as const
+const SKELETON_FIELDS = [
+  { field: "title", height: 44 },
+  { field: "description", height: 88 },
+  { field: "when", height: 44 },
+  { field: "where", height: 44 },
+  { field: "details", height: 44 },
+] as const
 
 export function EventFormSkeleton() {
   const { ScrollView } = useScrollHost()
@@ -19,8 +25,8 @@ export function EventFormSkeleton() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {SKELETON_FIELDS.map((height, index) => (
-        <SkeletonGroup key={index} style={styles.skeletonField}>
+      {SKELETON_FIELDS.map(({ field, height }) => (
+        <SkeletonGroup key={field} style={styles.skeletonField}>
           <SkeletonText width="34%" height={11} />
           <SkeletonBlock width="100%" height={height} radius={th.radius.lg} />
         </SkeletonGroup>

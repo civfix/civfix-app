@@ -8,22 +8,23 @@ import { useBubbleStyles } from "./bubbleStyles"
 
 const TYPING_DOT_STAGGER_MS = 160
 const TYPING_DOT_MS = 320
+const TYPING_DOT_IDS = ["lead", "middle", "trail"] as const
 const TYPING_CYCLE_REST_MS = 640
 
 function TypingDots() {
   const styles = useBubbleStyles()
-  const dots = useRef([new Animated.Value(0), new Animated.Value(0), new Animated.Value(0)]).current
+  const dots = useRef(TYPING_DOT_IDS.map((id) => ({ id, value: new Animated.Value(0) }))).current
   // A typing indicator is the one animation in the conversation that never stops on its own, so it is the
   // one most worth silencing under reduced motion. `null` means "not answered yet", which animates: the
   // setting is off for almost everyone.
   const reduceMotion = useReducedMotion() === true
   useEffect(() => {
     if (reduceMotion) {
-      for (const value of dots) value.setValue(1)
+      for (const dot of dots) dot.value.setValue(1)
       return
     }
     const useNative = Platform.OS !== "web"
-    const anims = dots.map((v, i) =>
+    const anims = dots.map(({ value: v }, i) =>
       Animated.loop(
         Animated.sequence([
           Animated.delay(i * TYPING_DOT_STAGGER_MS),
@@ -38,9 +39,9 @@ function TypingDots() {
   }, [dots, reduceMotion])
   return (
     <View style={styles.typingDots}>
-      {dots.map((v, i) => (
+      {dots.map(({ id, value: v }) => (
         <Animated.View
-          key={i}
+          key={id}
           style={[
             styles.typingDot,
             {
