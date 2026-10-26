@@ -31,7 +31,7 @@ function unfilter(raw: Buffer, width: number, height: number): Buffer {
   const out = Buffer.alloc(stride * height)
   let offset = 0
   for (let row = 0; row < height; row += 1) {
-    const filter = raw[offset]
+    const filter = raw.readUInt8(offset)
     offset += 1
     const line = raw.subarray(offset, offset + stride)
     offset += stride
@@ -70,11 +70,11 @@ export function decodeRgbaPng(bytes: Buffer): DecodedPng {
     if (type === "IHDR") {
       width = body.readUInt32BE(0)
       height = body.readUInt32BE(4)
-      const bitDepth = body[8]
-      const colourType = body[9]
-      const compression = body[10]
-      const filterMethod = body[11]
-      const interlace = body[12]
+      const bitDepth = body.readUInt8(8)
+      const colourType = body.readUInt8(9)
+      const compression = body.readUInt8(10)
+      const filterMethod = body.readUInt8(11)
+      const interlace = body.readUInt8(12)
       if (colourType !== 6) throw new Error(`expected RGBA colour type 6, got ${colourType}`)
       if (bitDepth !== 8) throw new Error(`expected bit depth 8, got ${bitDepth}`)
       if (compression !== 0) throw new Error(`unsupported compression method ${compression}`)
