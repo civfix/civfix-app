@@ -1,9 +1,12 @@
 import * as React from "react"
-import { act, cleanup, render, screen } from "@testing-library/react"
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
-import type { PublicEventPageDTO } from "@civfix/contract"
+import { AppError, ErrorCode, GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
+import type { LegalDocumentDTO, LegalDocumentType, PublicEventPageDTO } from "@civfix/contract"
+import type { ApiClient } from "@civfix/contract/client"
+import { ApiProvider, queryKeys, type DataContextValue } from "@civfix/ui/data"
 
 import type { api } from "@/lib/api"
 
@@ -53,8 +56,58 @@ function page(overrides: Partial<PublicEventPageDTO> = {}): PublicEventPageDTO {
   return signupPage("2099-05-10T17:00:00.000Z", { ticketTypes: [ticket()], ...overrides })
 }
 
-function renderWidget(dto: PublicEventPageDTO) {
-  render(<RegistrationWidget page={dto} initialAccessCode={null} />)
+function legalDocument(type: LegalDocumentType, version: string, sha256: string): LegalDocumentDTO {
+  return {
+    type,
+    version,
+    effectiveAt: `${version}T00:00:00.000Z`,
+    url: `https://civfix.org/legal/${type}`,
+    title: null,
+    summary: null,
+    material: null,
+    sha256,
+    blocks: null,
+  }
+}
+
+const DOCUMENTS = [
+  legalDocument("terms", "2026-09-21", "52fe3908a8d7aa4427239a7555a2d7b2346d7a2b9730dfb539ecd157f6195772"),
+  legalDocument("privacy", "2026-09-21", "e7bb3df8d1bae0ebf3dac45021beb1f260c3035f2bf3cabd0201e2586eb2f127"),
+  legalDocument("cookies", "2026-09-16", "4a05415bba1ef0301058815ce6d01f98eb593bd18378e7ce52555074da3064c0"),
+  legalDocument("subprocessors", "2026-09-16", "5ab722bb37cc2972ada7521b6dc239bfd85f82691d0e3e2489f5dcac9983a198"),
+]
+
+function outdatedConflict(): AppError {
+  return new AppError(ErrorCode.CONFLICT, "outdated", {
+    details: {
+      reason: "legal_version_outdated",
+      current: [
+        { type: "terms", version: "2026-10-30", sha256: "a".repeat(64) },
+        { type: "privacy", version: "2026-10-30", sha256: "b".repeat(64) },
+      ],
+    },
+  })
+}
+
+const getLegalDocuments = vi.fn<() => Promise<unknown>>()
+
+// The documents are already cached unless a test fetches them, so the form is ready on its first render.
+function renderWidget(dto: PublicEventPageDTO, { fetchDocuments = false }: { fetchDocuments?: boolean } = {}) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  if (!fetchDocuments) queryClient.setQueryData(queryKeys.legalDocuments, { documents: DOCUMENTS })
+  const context = {
+    api: { getLegalDocuments: () => getLegalDocuments() } as unknown as ApiClient,
+    useAuthState: () => ({ isAuthenticated: authenticated, isPending: false, user: null }),
+    requireAuth: (action: () => void) => action(),
+    logout: async () => {},
+  } as unknown as DataContextValue
+  render(
+    <QueryClientProvider client={queryClient}>
+      <ApiProvider value={context}>
+        <RegistrationWidget page={dto} initialAccessCode={null} />
+      </ApiProvider>
+    </QueryClientProvider>,
+  )
 }
 
 beforeEach(() => {
@@ -64,6 +117,7 @@ beforeEach(() => {
   guestRsvpVerify.mockReset().mockResolvedValue({ joined: true, going: 1, manageToken: "x" })
   joinEventWaitlist.mockReset().mockResolvedValue({ entry: {} })
   runTurnstile.mockReset().mockResolvedValue("turnstile-token")
+  getLegalDocuments.mockReset().mockResolvedValue({ documents: DOCUMENTS })
 })
 
 afterEach(() => {
@@ -101,7 +155,7 @@ describe("member one-tap registration", () => {
     expect(screen.getByRole("alert").textContent).toContain("errors.terms")
   })
 
-  it("registers with the contract's current consent versions", async () => {
+  it("registers with the consent the form collected", async () => {
     const user = userEvent.setup()
     renderWidget(page())
     await user.click(screen.getByLabelText("form.terms"))
@@ -109,7 +163,6 @@ describe("member one-tap registration", () => {
     await screen.findByText("web-signup:outcome.registered")
     const body = registerForEvent.mock.calls[0]?.[0]
     expect(body?.consent).toMatchObject({
-      disclosureVersion: "2026-09-06",
       hostContactOptIn: false,
       surface: "web_register",
     })
@@ -522,5 +575,133 @@ describe("question accessibility", () => {
     expect(diet.getAttribute("aria-describedby")).toContain(alert.id)
     expect(shirt.getAttribute("aria-invalid")).toBe("true")
     expect(shirt.getAttribute("aria-describedby")).toContain(alert.id)
+  })
+})
+
+describe("legal versions from the API", () => {
+  const OUTDATED = "host-ticket:consent.outdated"
+  const isChecked = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).checked
+  const memberSubmit = () => screen.getByRole("button", { name: /form\.count_me_in/ })
+  const guestSubmit = () => screen.getByRole("button", { name: /form\.register$/ })
+
+  async function fillGuest(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(screen.getByLabelText("form.name_label"), "Ada")
+    await user.type(screen.getByLabelText("form.email_label"), "ada@example.org")
+  }
+
+  it("T26: waits for the documents before it lets anyone register", async () => {
+    const user = userEvent.setup()
+    getLegalDocuments.mockReturnValue(new Promise(() => {}))
+    renderWidget(page(), { fetchDocuments: true })
+    await user.click(screen.getByLabelText("form.terms"))
+    expect((memberSubmit() as HTMLButtonElement).disabled).toBe(true)
+    await user.click(memberSubmit())
+    expect(registerForEvent).not.toHaveBeenCalled()
+  })
+
+  it("T27: shows the generic error and a retry when the documents fail", async () => {
+    const user = userEvent.setup()
+    getLegalDocuments.mockRejectedValueOnce(new AppError(ErrorCode.INTERNAL, "boom"))
+    renderWidget(page(), { fetchDocuments: true })
+    expect((await screen.findByRole("alert")).textContent).toContain("errors.generic")
+    await user.click(screen.getByRole("button", { name: "state.retry" }))
+    await waitFor(() => expect(getLegalDocuments).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect((memberSubmit() as HTMLButtonElement).disabled).toBe(false))
+  })
+
+  it("T28: sends the fetched versions, not the page's", async () => {
+    const user = userEvent.setup()
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((memberSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(memberSubmit())
+    await screen.findByText("web-signup:outcome.registered")
+    const versions = { termsVersion: "2026-09-21", disclosureVersion: "2026-09-21" }
+    expect(registerForEvent.mock.calls[0]?.[0]?.consent).toMatchObject(versions)
+
+    cleanup()
+    authenticated = false
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((guestSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await fillGuest(user)
+    await user.click(guestSubmit())
+    await screen.findByText("code.title")
+    expect((guestRsvpRequest.mock.calls[0]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject(versions)
+  })
+
+  it("T29: a member's outdated answer unticks both boxes and switches to the versions it names", async () => {
+    const user = userEvent.setup()
+    registerForEvent.mockRejectedValueOnce(outdatedConflict())
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((memberSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(screen.getByLabelText("form.host_contact"))
+    await user.click(memberSubmit())
+
+    expect((await screen.findByRole("alert")).textContent).toContain(OUTDATED)
+    expect(screen.getByRole("alert").textContent).not.toContain("errors.conflict")
+    expect(isChecked("form.terms")).toBe(false)
+    expect(isChecked("form.host_contact")).toBe(false)
+
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(memberSubmit())
+    await screen.findByText("web-signup:outcome.registered")
+    expect(registerForEvent.mock.calls[1]?.[0]?.consent).toMatchObject({
+      termsVersion: "2026-10-30",
+      disclosureVersion: "2026-10-30",
+    })
+    expect(getLegalDocuments).toHaveBeenCalledTimes(1)
+  })
+
+  it("T29: a guest's outdated code request does the same", async () => {
+    const user = userEvent.setup()
+    authenticated = false
+    guestRsvpRequest.mockRejectedValueOnce(outdatedConflict())
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((guestSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(screen.getByLabelText("form.host_contact"))
+    await fillGuest(user)
+    await user.click(guestSubmit())
+
+    expect((await screen.findByRole("alert")).textContent).toContain(OUTDATED)
+    expect(isChecked("form.terms")).toBe(false)
+    expect(isChecked("form.host_contact")).toBe(false)
+
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(guestSubmit())
+    await screen.findByText("code.title")
+    expect((guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject({
+      termsVersion: "2026-10-30",
+      disclosureVersion: "2026-10-30",
+    })
+    expect(getLegalDocuments).toHaveBeenCalledTimes(1)
+  })
+
+  it("T29: a guest's outdated verification goes back to the form with the boxes unticked", async () => {
+    const user = userEvent.setup()
+    authenticated = false
+    guestRsvpVerify.mockRejectedValueOnce(outdatedConflict())
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((guestSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await fillGuest(user)
+    await user.click(guestSubmit())
+    await screen.findByText("code.title")
+    await user.type(screen.getByLabelText("code.label"), "123456")
+    await user.click(screen.getByRole("button", { name: /code\.submit/ }))
+
+    expect((await screen.findByRole("alert")).textContent).toContain(OUTDATED)
+    expect(screen.queryByText("code.title")).toBe(null)
+    expect(isChecked("form.terms")).toBe(false)
+
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(guestSubmit())
+    await waitFor(() => expect(guestRsvpRequest).toHaveBeenCalledTimes(2))
+    expect((guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject({
+      termsVersion: "2026-10-30",
+      disclosureVersion: "2026-10-30",
+    })
   })
 })

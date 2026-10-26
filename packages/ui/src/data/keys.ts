@@ -1,4 +1,4 @@
-import type { RoomKind } from "@civfix/contract"
+import type { LegalDocumentType, RoomKind } from "@civfix/contract"
 
 export const queryKeys = {
   session: ["session"] as const,
@@ -102,4 +102,16 @@ export const queryKeys = {
   orgMembers: (orgId: string) => ["org-admin", orgId, "members"] as const,
   orgInvites: (orgId: string) => ["org-admin", orgId, "invites"] as const,
   myOrgInvites: ["org-invites", "mine"] as const,
+  get legalRoot(): readonly ["legal"] {
+    throw new Error("not implemented")
+  },
+  get legalDocuments(): readonly ["legal", "documents"] {
+    throw new Error("not implemented")
+  },
+  legalDocument: (_type: LegalDocumentType, _version: string): readonly ["legal", "documents", LegalDocumentType, string] => {
+    throw new Error("not implemented")
+  },
+  get myLegalStatus(): readonly ["legal", "me"] {
+    throw new Error("not implemented")
+  },
 }

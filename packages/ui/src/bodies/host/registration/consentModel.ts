@@ -1,5 +1,4 @@
-import type { EventConsentInput } from "@civfix/contract"
-import { currentVersion } from "@civfix/contract/legal"
+import type { EventConsentInput, LegalDocumentType } from "@civfix/contract"
 import { REGISTRATION_CONSENT_SURFACE } from "./consentSurface"
 
 export interface ConsentState {
@@ -14,17 +13,30 @@ export const EMPTY_CONSENT: ConsentState = {
   smsOptIn: false,
 }
 
+export interface ConsentVersions {
+  terms: string
+  privacy: string
+}
+
+export interface LegalVersionRef {
+  type: LegalDocumentType
+  version: string
+}
+
+export function consentVersions(
+  _documents: readonly LegalVersionRef[] | undefined,
+  _current?: readonly LegalVersionRef[] | null,
+): ConsentVersions | null {
+  throw new Error("not implemented")
+}
+
 export function consentPayload(
-  state: ConsentState,
-  options: { surface?: EventConsentInput["surface"] } = {},
+  _state: ConsentState,
+  _versions: ConsentVersions,
+  _options: { surface?: EventConsentInput["surface"] } = {},
 ): EventConsentInput {
-  return {
-    termsVersion: currentVersion("terms"),
-    disclosureVersion: currentVersion("privacy"),
-    hostContactOptIn: state.hostContactOptIn,
-    smsOptIn: state.smsOptIn,
-    surface: options.surface ?? REGISTRATION_CONSENT_SURFACE,
-  }
+  void REGISTRATION_CONSENT_SURFACE
+  throw new Error("not implemented")
 }
 
 export function consentAccepted(state: ConsentState): boolean {
