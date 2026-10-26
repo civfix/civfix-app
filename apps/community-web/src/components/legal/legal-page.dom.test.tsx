@@ -185,6 +185,25 @@ describe("/legal/privacy?version=", () => {
     expect(screen.queryByText(/This is an earlier version/)).toBeNull()
   })
 
+  it("T32: the current version named explicitly, with the documents list failing, is the error state until Retry", async () => {
+    at(`/legal/privacy/?version=${CURRENT_VERSION}`)
+    const getLegalDocuments = vi
+      .fn<() => Promise<unknown>>()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValue({ documents: CURRENT_DOCUMENTS })
+    const getLegalDocument = vi.fn(async () => ({ document: legalDoc("privacy", CURRENT_VERSION) }))
+    mount(PrivacyPage, { getLegalDocuments, getLegalDocument })
+    expect(await screen.findByText("Couldn't load this document")).toBeTruthy()
+    expect(getLegalDocument).toHaveBeenCalledWith({ type: "privacy", version: CURRENT_VERSION })
+    expect(screen.queryByText("1. About the Privacy Policy")).toBeNull()
+    expect(screen.queryByText(/This is an earlier version/)).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+    expect(await screen.findByRole("heading", { name: "Privacy Policy" })).toBeTruthy()
+    expect(screen.getByText("Version 2026-10-30 · effective October 30, 2026")).toBeTruthy()
+    expect(screen.queryByText(/This is an earlier version/)).toBeNull()
+    expect(getLegalDocuments).toHaveBeenCalledTimes(2)
+  })
+
   it.each([
     ["1999-01-01", true],
     ["abc", false],
