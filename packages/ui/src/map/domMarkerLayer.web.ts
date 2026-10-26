@@ -96,7 +96,6 @@ export function syncMarkers(
     const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
       .setLngLat(want.lngLat)
       .addTo(map)
-    // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
     el.setAttribute("aria-label", want.label)
     current.set(key, { marker, root, signature: want.signature, anchor: want.anchor, onClick })
   }
