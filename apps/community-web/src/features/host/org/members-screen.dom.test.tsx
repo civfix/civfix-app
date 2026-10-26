@@ -112,7 +112,7 @@ function renderMembers(
     <ConsoleOrgProvider org={viewer}>
       <MembersScreen />
     </ConsoleOrgProvider>,
-    { api: client as never },
+    { api: client },
   )
   return { ...view, client }
 }
@@ -342,17 +342,17 @@ describe("MembersScreen suspended org", () => {
   it("keeps the roster readable but disables inviting, role changes, removal and revoking", async () => {
     renderMembers([OWNER_ROW, member()], org({ suspended: true }), { invites: [invite()] })
     await screen.findByText("Rosa")
-    const inviteButton = screen.getByRole("button", { name: /invite\.action/ }) as HTMLButtonElement
+    const inviteButton = screen.getByRole<HTMLButtonElement>("button", { name: /invite\.action/ })
     expect(inviteButton.disabled).toBe(true)
-    const roleSelect = screen.getByLabelText("role.change_a11y(name=Rosa)") as HTMLSelectElement
+    const roleSelect = screen.getByLabelText<HTMLSelectElement>("role.change_a11y(name=Rosa)")
     expect(roleSelect.disabled).toBe(true)
     expect(roleSelect.title).toBe("suspended.error_forbidden")
-    const removeButton = screen.getByRole("button", { name: "remove.a11y(name=Rosa)" }) as HTMLButtonElement
+    const removeButton = screen.getByRole<HTMLButtonElement>("button", { name: "remove.a11y(name=Rosa)" })
     expect(removeButton.disabled).toBe(true)
     const section = await screen.findByRole("region", { name: "invites.title" })
-    const revoke = within(section).getByRole("button", {
+    const revoke = within(section).getByRole<HTMLButtonElement>("button", {
       name: "invites.revoke_a11y(name=rosa@example.org)",
-    }) as HTMLButtonElement
+    })
     expect(revoke.disabled).toBe(true)
   })
 })

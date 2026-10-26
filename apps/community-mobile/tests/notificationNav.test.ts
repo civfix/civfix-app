@@ -66,7 +66,7 @@ test("an entity link tapped on a full-screen route is pushed on top of it, never
   assert.ok(pushed > -1 && dismissed > pushed)
   assert.match(body, /pushDetailRoute\(detailRoute\)/)
   assert.ok(
-    adapter.includes("router.push({ pathname: route.pathname as never, params: route.params })"),
+    adapter.includes("router.push({ pathname: route.pathname, params: route.params })"),
   )
   assert.match(adapter, /pushDetailRoute = null/)
 })

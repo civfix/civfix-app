@@ -56,7 +56,7 @@ function renderTickets(types: TicketTypeDTO[], questions: EventQuestionDTO[] = [
     <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <TicketsScreen />
     </ConsoleEventProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }

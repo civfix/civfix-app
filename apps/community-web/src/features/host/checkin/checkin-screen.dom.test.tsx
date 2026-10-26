@@ -39,7 +39,7 @@ describe("CheckinScreen walk-up", () => {
       <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
         <CheckinScreen />
       </ConsoleEventProvider>,
-      { api: client as never },
+      { api: client },
     )
 
     await user.click(await screen.findByRole("button", { name: /walkup\.open/ }))

@@ -55,7 +55,7 @@ export function getSharedBrowserFix(): Promise<BrowserFix> {
           longitude: pos.coords.longitude,
           accuracy: pos.coords.accuracy ?? undefined,
         }),
-      (err) => reject(err),
+      (err) => reject(new Error(err.message, { cause: err })),
       { ...GEO_POSITION_OPTIONS, timeout: DEVICE_FIX_TIMEOUT_MS },
     )
   })
@@ -72,8 +72,7 @@ let preciseCenterPromise: Promise<LatLng | null> | null = null
 
 /** Resolved at most once per session so remounts and multiple maps never re-prompt. Never rejects. */
 export function resolvePreciseCenter(): Promise<LatLng | null> {
-  if (!preciseCenterPromise) preciseCenterPromise = getBrowserPosition()
-  return preciseCenterPromise
+  return (preciseCenterPromise ??= getBrowserPosition())
 }
 
 export function getBrowserPosition(): Promise<LatLng | null> {

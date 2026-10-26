@@ -27,7 +27,7 @@ export interface RichTextToolbarProps {
 const subscribeToNothing = () => () => {}
 
 function usesCommandKey(): boolean {
-  return /Mac|iPhone|iPad/.test(navigator.platform)
+  return /Mac|iPhone|iPad/.test(navigator.userAgent)
 }
 
 export function RichTextToolbar({ onCommand, disabled, className }: RichTextToolbarProps) {

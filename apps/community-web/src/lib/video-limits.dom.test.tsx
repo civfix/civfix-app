@@ -2,16 +2,16 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { readVideoMetadata } from "./video-limits"
 
-const created: HTMLVideoElement[] = []
-
-function captureVideos() {
-  const realCreate = document.createElement.bind(document)
-  vi.spyOn(document, "createElement").mockImplementation((tag: string, options?: ElementCreationOptions) => {
-    const el = realCreate(tag, options)
-    if (el instanceof HTMLVideoElement) created.push(el)
-    return el
-  })
+function captureVideos(): () => HTMLVideoElement {
+  const create = vi.spyOn(document, "createElement")
   vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {})
+  return () => {
+    const video = create.mock.results
+      .map((result) => result.value)
+      .find((value): value is HTMLVideoElement => value instanceof HTMLVideoElement)
+    if (!video) throw new Error("readVideoMetadata created no <video>")
+    return video
+  }
 }
 
 function stub(video: HTMLVideoElement, props: Record<string, number>) {
@@ -19,16 +19,15 @@ function stub(video: HTMLVideoElement, props: Record<string, number>) {
 }
 
 afterEach(() => {
-  created.length = 0
   vi.restoreAllMocks()
   vi.useRealTimers()
 })
 
 describe("readVideoMetadata", () => {
   it("reads the duration and frame size once the header loads, then lets go of the source", async () => {
-    captureVideos()
+    const createdVideo = captureVideos()
     const pending = readVideoMetadata("blob:clip")
-    const video = created[0]!
+    const video = createdVideo()
     expect(video.getAttribute("src")).toBe("blob:clip")
     stub(video, { duration: 11.2, videoWidth: 3840, videoHeight: 2160 })
     video.dispatchEvent(new Event("loadedmetadata"))
@@ -38,9 +37,9 @@ describe("readVideoMetadata", () => {
   })
 
   it("resolves null when the browser cannot decode the file", async () => {
-    captureVideos()
+    const createdVideo = captureVideos()
     const pending = readVideoMetadata("blob:hevc")
-    created[0]!.dispatchEvent(new Event("error"))
+    createdVideo().dispatchEvent(new Event("error"))
 
     await expect(pending).resolves.toBeNull()
   })
