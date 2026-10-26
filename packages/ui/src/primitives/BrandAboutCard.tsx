@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme, useReducedMotion, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

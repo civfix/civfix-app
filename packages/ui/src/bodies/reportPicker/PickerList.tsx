@@ -1,4 +1,4 @@
-import React, { useCallback, type RefObject } from "react"
+import { useCallback, type RefObject } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"

@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet, Platform } from "react-native"
 import { useBottomSheetInternal, type BottomSheetBackgroundProps } from "@gorhom/bottom-sheet"
 import Animated, { useAnimatedStyle, interpolate, Extrapolation, type SharedValue } from "react-native-reanimated"

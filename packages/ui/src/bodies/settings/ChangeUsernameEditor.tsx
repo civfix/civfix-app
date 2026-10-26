@@ -1,4 +1,3 @@
-import React from "react"
 import {
   HANDLE_MAX_LENGTH,
   ErrorCode,

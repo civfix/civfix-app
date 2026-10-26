@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable, ScrollView, Image } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { useTheme, focusRingProps } from "../../theme"

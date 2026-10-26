@@ -41,7 +41,7 @@
  * the map's own markers use, so what the user drags around IS the marker the thing will get (Ionicons are
  * banned in @civfix/ui).
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, StyleSheet, type NativeSyntheticEvent } from "react-native"
 import {
   Map,

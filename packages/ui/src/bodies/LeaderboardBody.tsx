@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react"
+import { memo, useCallback } from "react"
 import { View, StyleSheet, ActivityIndicator } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"

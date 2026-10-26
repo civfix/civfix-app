@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, Image, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"

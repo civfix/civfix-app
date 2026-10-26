@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/contract"
 import { ErrorCode, errorCopyKey, geocodePointKey, type ErrorCodeTable } from "@civfix/contract"

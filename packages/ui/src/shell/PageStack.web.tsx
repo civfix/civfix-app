@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { makeThemedStyles } from "../theme"

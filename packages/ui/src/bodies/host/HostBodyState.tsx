@@ -1,4 +1,3 @@
-import React from "react"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import type { Translate } from "../../i18n"

@@ -11,7 +11,6 @@
  * react-native-web drops `accessibilityState` for the `tab` role, so the explicit `aria-selected` is
  * what lets a web screen reader announce which tab is selected.
  */
-import React from "react"
 import { View, Pressable } from "react-native"
 import { makeThemedStyles, webCursorPointer, webTransition, focusRingProps } from "../../theme"
 import { Text } from "../../typography"

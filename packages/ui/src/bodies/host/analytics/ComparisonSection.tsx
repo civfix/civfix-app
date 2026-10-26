@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { Text } from "../../../typography"

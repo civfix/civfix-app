@@ -26,7 +26,7 @@
  *
  * Coral as ink is always `th.colors.accentText`; `th.colors.accent` is a FILL token (WCAG).
  */
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import { formatCertificateCode } from "@civfix/contract"
 import { useTheme, focusRingProps } from "../../theme"

@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View, type ViewStyle } from "react-native"
 import { makeThemedStyles, motion, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
 import { alpha } from "../theme/alpha"

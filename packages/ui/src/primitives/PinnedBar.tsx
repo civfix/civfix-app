@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ChatMessageDTO } from "@civfix/contract"
 import {

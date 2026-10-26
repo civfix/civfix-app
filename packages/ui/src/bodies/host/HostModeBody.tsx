@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, EventInsights, EventPhase, EventSlotDTO } from "@civfix/contract"
 import { eventWhenLabel } from "@civfix/contract/datetime"

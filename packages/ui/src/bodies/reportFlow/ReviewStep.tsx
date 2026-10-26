@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import type { ReportCategory } from "@civfix/contract"
 import { MAX_REPORT_ADDR_LENGTH } from "@civfix/contract"

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset, hitSlopToTarget, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
 import { Icon, iconMap } from "../typography"
