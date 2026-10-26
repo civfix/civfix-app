@@ -1,11 +1,13 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap, Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
 import type { BBox } from "@civfix/contract"
 import { useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { alpha } from "../theme/alpha"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, carryStyleOverlay, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import { TeardropPin, EventPin, ClusterBubble } from "./pins"
 import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
@@ -184,6 +186,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       if (mapRef.current || !containerRef.current) return
       const markers = markersRef.current
       const seed = seedRef.current
+      bindBundledWorker()
       styleSchemeRef.current = themeRef.current.scheme
       const map = new maplibregl.Map({
         container: containerRef.current,
@@ -240,7 +243,8 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       const apply = () => {
         const existing = map.getSource(RADIUS_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
         if (existing) {
-          existing.setData(radiusFeature)
+          // Never rejects: a worker failure is reported on the map's "error" event instead.
+          void existing.setData(radiusFeature)
         } else {
           map.addSource(RADIUS_SOURCE_ID, { type: "geojson", data: radiusFeature })
         }

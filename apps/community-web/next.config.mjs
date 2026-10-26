@@ -112,7 +112,9 @@ const nextConfig = (phase) => ({
     NEXT_PUBLIC_COMMIT_SHA: resolveCommitSha(),
   },
   // @civfix/ui ships untranspiled .tsx source and the React Native stack ships untranspiled too, so
-  // Next must transpile them.
+  // Next must transpile them. maplibre-gl 6 ships ES2022 (class static blocks) that Safari before 16.4
+  // cannot parse; its chunk is a hard dependency of the AppShell import, so untranspiled it would stop the
+  // whole app from starting there. The worker it emits as an asset goes through the same transpile.
   transpilePackages: [
     "@civfix/contract",
     "@civfix/ui",
@@ -124,6 +126,7 @@ const nextConfig = (phase) => ({
     "react-native-gesture-handler",
     "react-native-safe-area-context",
     "@gorhom/bottom-sheet",
+    "maplibre-gl",
   ],
   webpack: (config) => {
     // @civfix/ui is authored in RN primitives; on web they resolve to react-native-web.

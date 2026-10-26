@@ -67,7 +67,7 @@ vi.mock("maplibre-gl", () => {
       return this.el
     }
   }
-  return { default: { Marker }, Marker }
+  return { Marker }
 })
 
 function fakeElement(): FakeEl {
