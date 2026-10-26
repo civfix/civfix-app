@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { tokens } from "@civfix/tokens"
 import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
+import { defined } from "./helpers/defined.ts"
 import { decodeRgbaPng, pixelAt, transparentShare } from "./helpers/png.ts"
 
 const appConfig = appConfigFactory({ config: {} })
@@ -124,7 +125,7 @@ test(
       "SplashScreenBackground must hold a single appearance; a second one reopens dark mode",
     )
     assert.equal(colors.filter(isDarkEntry).length, 0)
-    assertComponents(colors[0].color.components, LIGHT, "SplashScreenBackground light")
+    assertComponents(defined(colors[0], "the light appearance").color.components, LIGHT, "SplashScreenBackground light")
   },
 )
 
