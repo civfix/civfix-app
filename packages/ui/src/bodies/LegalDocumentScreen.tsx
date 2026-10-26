@@ -9,19 +9,28 @@ import { LegalDocumentBody, type LegalDocumentBodyProps } from "./LegalDocumentB
 
 const BACK_ICON_SIZE = 21
 const BACK_HIT_SLOP = 6
+// The web's /legal pages' column (legal.css), so a desktop reads the same line length in the update prompt.
+const READABLE_MAX_WIDTH = 760
 
 export interface LegalDocumentScreenProps {
   type: LegalDocumentType
   onBack: () => void
   version?: LegalDocumentBodyProps["version"]
   onOpenLegalDocument?: LegalDocumentBodyProps["onOpenLegalDocument"]
+  onOpenCurrentVersion?: LegalDocumentBodyProps["onOpenCurrentVersion"]
 }
 
 /**
  * The full-screen reader for one legal document: the phone app's, opened from any legal link in the app,
  * and the update prompt's on both platforms.
  */
-export function LegalDocumentScreen({ type, onBack, version, onOpenLegalDocument }: LegalDocumentScreenProps) {
+export function LegalDocumentScreen({
+  type,
+  onBack,
+  version,
+  onOpenLegalDocument,
+  onOpenCurrentVersion,
+}: LegalDocumentScreenProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("legal")
@@ -45,7 +54,14 @@ export function LegalDocumentScreen({ type, onBack, version, onOpenLegalDocument
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + th.space["8"] }]}
       >
-        <LegalDocumentBody type={type} version={version} onOpenLegalDocument={onOpenLegalDocument} />
+        <View style={styles.column}>
+          <LegalDocumentBody
+            type={type}
+            version={version}
+            onOpenLegalDocument={onOpenLegalDocument}
+            onOpenCurrentVersion={onOpenCurrentVersion}
+          />
+        </View>
       </ScrollView>
     </View>
   )
@@ -78,5 +94,11 @@ const useStyles = makeThemedStyles((t) => ({
     flexGrow: 1,
     paddingTop: t.space["5"],
     paddingHorizontal: t.space["5"],
+  },
+  column: {
+    flexGrow: 1,
+    width: "100%",
+    maxWidth: READABLE_MAX_WIDTH,
+    alignSelf: "center",
   },
 }))

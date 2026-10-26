@@ -15,22 +15,31 @@ export interface LegalDocumentBodyProps {
   /** An exact version to show instead of the current one (the web's `?version=`). */
   version?: string | undefined
   onOpenLegalDocument?: LegalDocumentViewProps["onOpenLegalDocument"]
+  /** Shows the current version in place of a missing earlier one; without it, the document's own page opens. */
+  onOpenCurrentVersion?: ((type: LegalDocumentType) => void) | undefined
 }
 
-export function LegalDocumentBody({ type, version, onOpenLegalDocument }: LegalDocumentBodyProps) {
+export function LegalDocumentBody({
+  type,
+  version,
+  onOpenLegalDocument,
+  onOpenCurrentVersion,
+}: LegalDocumentBodyProps) {
   const requested = version !== undefined && LegalVersionSchema.safeParse(version).success ? version : undefined
   const current = useLegalDocument(type)
   const pinned = useLegalDocument(type, requested)
 
   // A version that can't exist, the server doesn't have, or has no text for is a missing earlier
   // version, not an outage, so it never offers a retry.
-  if (version !== undefined && requested === undefined) return <EarlierVersionUnavailable type={type} />
+  if (version !== undefined && requested === undefined) {
+    return <EarlierVersionUnavailable type={type} onOpenCurrent={onOpenCurrentVersion} />
+  }
 
   const query = requested === undefined ? current : pinned
   if (query.isPending || (requested !== undefined && current.isPending)) return <LoadingState variant="detail" />
   if (query.isError) {
     if (requested !== undefined && toAppError(query.error).code === ErrorCode.NOT_FOUND) {
-      return <EarlierVersionUnavailable type={type} />
+      return <EarlierVersionUnavailable type={type} onOpenCurrent={onOpenCurrentVersion} />
     }
     return <LoadFailed onRetry={() => void query.refetch()} />
   }
@@ -40,7 +49,7 @@ export function LegalDocumentBody({ type, version, onOpenLegalDocument }: LegalD
     return requested === undefined ? (
       <LoadFailed onRetry={() => void query.refetch()} />
     ) : (
-      <EarlierVersionUnavailable type={type} />
+      <EarlierVersionUnavailable type={type} onOpenCurrent={onOpenCurrentVersion} />
     )
   }
   // Without the current version the pinned one can't be labelled current or earlier truthfully.
@@ -70,13 +79,23 @@ function LoadFailed({ onRetry }: { onRetry: () => void }) {
   )
 }
 
-function EarlierVersionUnavailable({ type }: { type: LegalDocumentType }) {
+function EarlierVersionUnavailable({
+  type,
+  onOpenCurrent,
+}: {
+  type: LegalDocumentType
+  onOpenCurrent: LegalDocumentBodyProps["onOpenCurrentVersion"]
+}) {
   const styles = useStyles()
   const { t } = useT("legal")
+  const openCurrent = () => {
+    if (onOpenCurrent) onOpenCurrent(type)
+    else openLegalDocumentInPlace(type)
+  }
   return (
     <View style={styles.unavailable}>
       <Text variant="bodyStrong">{t("unavailable")}</Text>
-      <TextLink standalone onPress={() => openLegalDocumentInPlace(type)}>
+      <TextLink standalone onPress={openCurrent}>
         {t("current_link")}
       </TextLink>
     </View>
