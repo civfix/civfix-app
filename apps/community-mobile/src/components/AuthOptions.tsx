@@ -158,7 +158,7 @@ export function AuthOptions({
       onHandoff?.()
       router.push({
         pathname: "/auth/otp",
-        params: { email: trimmed, next: String(next), resendAfterSec: String(resendAfterSec) },
+        params: { email: trimmed, next, resendAfterSec: String(resendAfterSec) },
       })
     } catch (err) {
       setError(friendlyError(t, err))

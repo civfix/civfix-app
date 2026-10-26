@@ -212,11 +212,11 @@ test("a host child opened from the event dashboard stacks in the shell and pushe
 test("no host surface is ever stripped out of the shell stack the way a thread is", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push({ kind: "host-mode", id: "c1" } as DetailEntry)
-  sim.push({ kind: "host-team", id: "c1" } as DetailEntry)
-  sim.push({ kind: "my-ticket", id: "c1" } as DetailEntry)
-  sim.push({ kind: "org", slug: "acme" } as DetailEntry)
-  sim.push({ kind: "host-log-hours", id: "c1" } as DetailEntry)
+  sim.push({ kind: "host-mode", id: "c1" })
+  sim.push({ kind: "host-team", id: "c1" })
+  sim.push({ kind: "my-ticket", id: "c1" })
+  sim.push({ kind: "org", slug: "acme" })
+  sim.push({ kind: "host-log-hours", id: "c1" })
 
   assert.equal(sim.stack.length, 6)
   assert.deepEqual(sim.pushes, [])

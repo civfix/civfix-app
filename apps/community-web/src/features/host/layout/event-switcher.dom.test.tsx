@@ -18,7 +18,7 @@ describe("EventSwitcher", () => {
   it("announces the dialog it opens, not a menu it does not have", async () => {
     const user = userEvent.setup()
     renderConsole(<EventSwitcher eventId="evt_1" section="overview" />, {
-      api: { listMyHostedEvents: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) } as never,
+      api: { listMyHostedEvents: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) },
     })
     const trigger = screen.getByRole("button", { name: /switcher\.label/ })
     expect(trigger.getAttribute("aria-haspopup")).toBe("dialog")

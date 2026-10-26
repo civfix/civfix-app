@@ -405,7 +405,7 @@ describe("upstream timeout", () => {
       upstream: (request) => {
         seen = request
         return new Promise<Response>((_, reject) => {
-          request.signal.addEventListener("abort", () => reject(request.signal.reason))
+          request.signal.addEventListener("abort", () => reject(new DOMException("The operation timed out.", "TimeoutError")))
         })
       },
     })
@@ -600,7 +600,7 @@ describe("origin, canonical, noindex and API per hostname", () => {
   ]
 
   for (const { host, origin, noindex, api } of table) {
-    it(`serves ${host} with origin ${origin}, noindex ${noindex} and the ${api} API`, async () => {
+    it(`serves ${host} with origin ${origin}, noindex ${String(noindex)} and the ${api} API`, async () => {
       expect(await servedFor(`https://${host}/pin/${UUID}`)).toEqual({
         canonical: `${origin}/pin/${UUID}`,
         origin,

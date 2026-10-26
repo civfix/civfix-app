@@ -242,7 +242,7 @@ test("each caller keeps its own deadline, and the request outlives the shorter o
   const short = check(10)
   const err = await short.catch((e: unknown) => e)
   assert.ok(err instanceof RequestDeadlineError)
-  assert.equal((err as RequestDeadlineError).deadlineMs, 10)
+  assert.equal(err.deadlineMs, 10)
   assert.equal((signal as AbortSignal | null)?.aborted, false)
   answer.resolve("session")
   assert.equal(await long, "session")

@@ -15,7 +15,7 @@ function startsWith(bytes: Uint8Array, signature: readonly number[], offset = 0)
 function ascii(bytes: Uint8Array, offset: number, length: number): string {
   if (bytes.length < offset + length) return ""
   let out = ""
-  for (let i = 0; i < length; i++) out += String.fromCharCode(bytes[offset + i]!)
+  for (const byte of bytes.subarray(offset, offset + length)) out += String.fromCharCode(byte)
   return out
 }
 
@@ -32,6 +32,7 @@ function isStrippableMarker(marker: number): boolean {
 export function stripJpegMetadata(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
   if (!isJpeg(bytes)) return bytes
   const keep: [number, number][] = []
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   let keepFrom = 0
   let offset = 2
   let stripped = false
@@ -40,13 +41,13 @@ export function stripJpegMetadata(bytes: Uint8Array<ArrayBuffer>): Uint8Array<Ar
     if (bytes[offset] !== 0xff) return bytes
     while (bytes[offset + 1] === 0xff) offset += 1
     if (offset + 4 > bytes.length) return bytes
-    const marker = bytes[offset + 1]!
+    const marker = view.getUint8(offset + 1)
     if (marker === 0xd9) break
     if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) {
       offset += 2
       continue
     }
-    const length = (bytes[offset + 2]! << 8) | bytes[offset + 3]!
+    const length = view.getUint16(offset + 2)
     if (length < 2) return bytes
     const end = offset + 2 + length
     if (end > bytes.length) return bytes

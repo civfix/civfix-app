@@ -2,7 +2,7 @@ import type { ChatItem } from "@civfix/ui/helpers"
 import type { CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/contract"
 import { TOGETHER_EVENT_SPOT, TRACK_PINS } from "./onboardingMapScenes"
 
-export const DEMO_ORGANIZER: PersonDTO = {
+export const DEMO_ORGANIZER = {
   id: "onboarding-organizer",
   name: "Maya Alvarez",
   handle: "demo_maya",
@@ -11,7 +11,7 @@ export const DEMO_ORGANIZER: PersonDTO = {
   followers: 0,
   following: 0,
   isFollowing: false,
-}
+} satisfies PersonDTO
 
 export const DEMO_NEIGHBOR: PersonDTO = {
   id: "onboarding-neighbor",

@@ -3,6 +3,13 @@ import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
 import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
+import {
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  escalateWarnings,
+} from "../../eslint.typed.cjs"
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
@@ -23,47 +30,45 @@ export default tseslint.config(
   {
     ignores: [".next/**", "out/**", "public/**", "next-env.d.ts"],
   },
-  ...tseslint.configs.recommended,
-  {
-    name: "community-web/next-core-web-vitals",
-    plugins: {
-      react: reactPlugin,
-      "react-hooks": reactHooks,
-      "jsx-a11y": jsxA11yPlugin,
-      import: importPlugin,
-      "@next/next": nextPlugin,
+  { linterOptions: LINTER_OPTIONS },
+  ...escalateWarnings([
+    ...tseslint.configs.recommended,
+    {
+      name: "community-web/next-core-web-vitals",
+      plugins: {
+        react: reactPlugin,
+        "react-hooks": reactHooks,
+        "jsx-a11y": jsxA11yPlugin,
+        import: importPlugin,
+        "@next/next": nextPlugin,
+      },
+      languageOptions: {
+        parserOptions: { ecmaFeatures: { jsx: true } },
+      },
+      settings: {
+        react: { version: "detect" },
+      },
+      rules: {
+        ...reactPlugin.configs.flat.recommended.rules,
+        ...reactHooks.configs.recommended.rules,
+        ...nextPlugin.flatConfig.recommended.rules,
+        ...nextPlugin.flatConfig.coreWebVitals.rules,
+        "import/no-anonymous-default-export": "error",
+        "react/no-unknown-property": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/prop-types": "off",
+        "jsx-a11y/alt-text": ["error", { elements: ["img"], img: ["Image"] }],
+        "jsx-a11y/aria-props": "error",
+        "jsx-a11y/aria-proptypes": "error",
+        "jsx-a11y/aria-unsupported-elements": "error",
+        "jsx-a11y/role-has-required-aria-props": "error",
+        "jsx-a11y/role-supports-aria-props": "error",
+        "react/jsx-no-target-blank": "off",
+        "@typescript-eslint/no-unused-expressions": "error",
+        "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      },
     },
-    languageOptions: {
-      parserOptions: { ecmaFeatures: { jsx: true } },
-    },
-    settings: {
-      react: { version: "detect" },
-    },
-    rules: {
-      ...reactPlugin.configs.flat.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      ...nextPlugin.flatConfig.recommended.rules,
-      ...nextPlugin.flatConfig.coreWebVitals.rules,
-      "import/no-anonymous-default-export": "warn",
-      "react/no-unknown-property": "off",
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-      "jsx-a11y/alt-text": ["warn", { elements: ["img"], img: ["Image"] }],
-      "jsx-a11y/aria-props": "warn",
-      "jsx-a11y/aria-proptypes": "warn",
-      "jsx-a11y/aria-unsupported-elements": "warn",
-      "jsx-a11y/role-has-required-aria-props": "warn",
-      "jsx-a11y/role-supports-aria-props": "warn",
-      "react/jsx-no-target-blank": "off",
-      "@typescript-eslint/no-unused-expressions": "warn",
-      "@typescript-eslint/consistent-type-imports": [
-        "warn",
-        { prefer: "type-imports", fixStyle: "separate-type-imports" },
-      ],
-      "@typescript-eslint/no-import-type-side-effects": "error",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-    },
-  },
+  ]),
   {
     name: "community-web/typed",
     files: TYPED_FILES,
@@ -75,18 +80,14 @@ export default tseslint.config(
     },
     plugins: { "@tanstack/query": pluginQuery },
     rules: {
-      ...Object.assign({}, ...pluginQuery.configs["flat/recommended"].map((config) => config.rules ?? {})),
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: true } }],
-      "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
-      "@typescript-eslint/no-unsafe-argument": "error",
-      "@typescript-eslint/no-unsafe-assignment": "error",
-      "@typescript-eslint/no-unsafe-call": "error",
-      "@typescript-eslint/no-unsafe-enum-comparison": "error",
-      "@typescript-eslint/no-unsafe-member-access": "error",
-      "@typescript-eslint/no-unsafe-return": "error",
-      "@typescript-eslint/no-unsafe-unary-minus": "error",
+      ...Object.assign({}, ...escalateWarnings(pluginQuery.configs["flat/recommended"]).map((config) => config.rules ?? {})),
+      ...TYPED_RULES,
     },
+  },
+  {
+    name: "community-web/tests",
+    files: TEST_FILES,
+    rules: TEST_RELAXED_RULES,
   },
   {
     // Pages Functions tests import node:fs and vitest, which the Workers-only functions/tsconfig.json
@@ -112,6 +113,22 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowNumber: true,
+          allowAny: true,
+          allowArray: false,
+          allowBoolean: false,
+          allowNever: false,
+          allowNullish: false,
+          allowRegExp: false,
+        },
+      ],
+      "@typescript-eslint/restrict-plus-operands": [
+        "error",
+        { allowAny: true, allowBoolean: false, allowNullish: false, allowNumberAndString: false, allowRegExp: false },
+      ],
     },
   },
   {

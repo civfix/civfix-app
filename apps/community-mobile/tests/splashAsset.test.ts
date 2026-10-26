@@ -55,7 +55,7 @@ function assertComponents(components: Record<string, string>, hex: string, label
   for (const [channel, expected] of channels) {
     assert.ok(
       Math.abs(Number(components[channel]) - expected) < 1e-6,
-      `${label}: ${channel} is ${components[channel]}, expected ${expected} (${hex})`,
+      `${label}: ${channel} is ${String(components[channel])}, expected ${expected} (${hex})`,
     )
   }
   assert.equal(Number(components.alpha), 1, `${label}: alpha must be opaque`)
@@ -138,7 +138,7 @@ test(
     for (const entry of images) {
       assert.ok(
         typeof entry.filename !== "string" || !entry.filename.startsWith("dark_image"),
-        `SplashScreenLogo still lists ${entry.filename}`,
+        `SplashScreenLogo still lists ${String(entry.filename)}`,
       )
     }
     for (const name of ["dark_image.png", "dark_image@2x.png", "dark_image@3x.png"]) {

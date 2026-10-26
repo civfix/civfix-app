@@ -12,8 +12,8 @@ export function mintSecureBlobKey(randomBytes: (count: number) => Uint8Array): s
   const bytes = randomBytes(SECURE_BLOB_KEY_CHARS)
   if (!bytes || bytes.length < SECURE_BLOB_KEY_CHARS) return null
   let key = ""
-  for (let i = 0; i < SECURE_BLOB_KEY_CHARS; i += 1) {
-    key += KEY_ALPHABET[bytes[i]! & 63]
+  for (const byte of bytes.subarray(0, SECURE_BLOB_KEY_CHARS)) {
+    key += KEY_ALPHABET.charAt(byte & 63)
   }
   return normalizeSecureBlobKey(key)
 }

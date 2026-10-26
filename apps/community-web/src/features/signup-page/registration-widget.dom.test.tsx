@@ -205,7 +205,7 @@ describe("sold out and waitlist", () => {
     renderWidget(page({ ticketTypes: [ticket({ soldOut: true, waitlistEnabled: false })] }))
     expect(screen.getByText("form.full_none")).toBeTruthy()
     expect(screen.queryByRole("button", { name: /join_waitlist/ })).toBe(null)
-    expect((screen.getByRole("button", { name: /form\.sold_out/ }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /form\.sold_out/ }).disabled).toBe(
       true,
     )
   })
@@ -215,7 +215,7 @@ describe("sold out and waitlist", () => {
     renderWidget(page({ ticketTypes: [ticket({ soldOut: true, waitlistEnabled: true })] }))
     expect(screen.getByText("form.full_guest")).toBeTruthy()
     expect(screen.queryByRole("button", { name: /form\.join_waitlist/ })).toBe(null)
-    expect((screen.getByRole("button", { name: /form\.sold_out/ }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /form\.sold_out/ }).disabled).toBe(
       true,
     )
     expect(guestRsvpRequest).not.toHaveBeenCalled()
@@ -309,7 +309,7 @@ describe("custom registration questions", () => {
 
   it("hides a conditional question and does not require an answer to it", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     expect(screen.queryByLabelText(/Which tools/i)).toBe(null)
     await user.click(screen.getByLabelText(/^No$/i))
     await user.click(screen.getByLabelText("form.terms"))
@@ -322,7 +322,7 @@ describe("custom registration questions", () => {
 
   it("reveals and then requires the conditional question", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     await user.click(screen.getByLabelText(/^Yes$/i))
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -357,7 +357,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("does not block ticket A on a required question that belongs to ticket B", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     expect(screen.queryByLabelText(/What shift can you work/i)).toBe(null)
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -368,7 +368,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("requires ticket B's own question once ticket B is selected", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     await user.click(screen.getByLabelText(/Volunteer/i))
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -383,7 +383,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("never submits an answer left over from a ticket the donor switched away from", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     await user.click(screen.getByLabelText(/Volunteer/i))
     await user.type(screen.getByLabelText(/What shift can you work/i), "Morning")
     await user.click(screen.getByLabelText(/General/i))
@@ -398,7 +398,7 @@ describe("party size entry", () => {
   it("lets a visitor clear the field and type a new number instead of snapping to 1", async () => {
     const user = userEvent.setup()
     renderWidget(page({ ticketTypes: [ticket({ maxPartySize: 4 })] }))
-    const party = screen.getByLabelText("form.party_label") as HTMLInputElement
+    const party = screen.getByLabelText<HTMLInputElement>("form.party_label")
     await user.clear(party)
     await user.type(party, "3")
     expect(party.value).toBe("3")
@@ -432,7 +432,7 @@ describe("guest code step", () => {
     await user.click(screen.getByRole("button", { name: /code\.submit/ }))
     expect(screen.getByText("code.title")).toBeTruthy()
     expect(screen.queryByLabelText("form.name_label")).toBe(null)
-    expect((screen.getByRole("button", { name: /code\.submit/ }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /code\.submit/ }).disabled).toBe(true)
 
     await act(async () => {
       fail({ code: "VALIDATION", message: "bad code" })
@@ -455,10 +455,10 @@ describe("guest code step", () => {
     const user = userEvent.setup()
     await reachCodeStep(user)
     await user.click(screen.getByRole("button", { name: /code\.change_email/ }))
-    expect((screen.getByLabelText("form.email_label") as HTMLInputElement).value).toBe(
+    expect(screen.getByLabelText<HTMLInputElement>("form.email_label").value).toBe(
       "ada@example.org",
     )
-    expect((screen.getByLabelText("form.name_label") as HTMLInputElement).value).toBe("Ada")
+    expect(screen.getByLabelText<HTMLInputElement>("form.name_label").value).toBe("Ada")
   })
 })
 
@@ -501,7 +501,7 @@ describe("question accessibility", () => {
   ]
 
   it("shows and links the help text of a multi-select question", () => {
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     const help = screen.getByText("Pick all that apply.")
     const group = screen.getByRole("group", { name: /What can you help with/ })
     expect(group.getAttribute("aria-describedby")).toContain(help.id)
@@ -509,7 +509,7 @@ describe("question accessibility", () => {
 
   it("marks required questions for assistive tech and links the error to the invalid ones", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     const diet = screen.getByLabelText(/Dietary needs/)
     const shirt = screen.getByRole("radiogroup", { name: /Shirt size/ })
     expect(diet.getAttribute("aria-required")).toBe("true")

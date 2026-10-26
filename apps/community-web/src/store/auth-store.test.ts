@@ -94,7 +94,7 @@ describe("shared client x-csrf-token wiring", () => {
     )
     const client = createApiClient({
       baseURL: "http://localhost:8080",
-      fetchImpl: fetchSpy as unknown as typeof fetch,
+      fetchImpl: fetchSpy,
       getCsrfToken: () => getCsrfToken(),
     })
     return { client, fetchSpy }
@@ -259,7 +259,7 @@ describe("resolveCsrfToken boot-race wiring (async token getter)", () => {
     )
     const client = createApiClient({
       baseURL: "http://localhost:8080",
-      fetchImpl: fetchSpy as unknown as typeof fetch,
+      fetchImpl: fetchSpy,
       // The REAL wiring from lib/api.ts (the shared client awaits the getter for csrf endpoints).
       getCsrfToken: resolveCsrfToken,
     })

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { Pressable, View, StyleSheet, useWindowDimensions, type TextStyle } from "react-native"
+import { Pressable, View, StyleSheet, useWindowDimensions } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -43,7 +43,7 @@ function Letter({
   reduceMotion,
 }: {
   char: string
-  color: string
+  color: string | undefined
   index: number
   fontSize: number
   dropDistance: number
@@ -184,7 +184,7 @@ export function LoadingSplash() {
           <Letter
             key={`${char}-${i}`}
             char={char}
-            color={wordmarkColors[i]!}
+            color={wordmarkColors[i]}
             index={i}
             fontSize={fontSize}
             dropDistance={dropDistance}
@@ -213,7 +213,7 @@ const styles = makeThemedStyles((t) => ({
   letter: {
     fontFamily: t.fontFamily.brand,
     includeFontPadding: false,
-  } as TextStyle,
+  },
   tag: {
     marginTop: t.space["6"],
     fontFamily: t.fontFamily.bodyExtraBold,

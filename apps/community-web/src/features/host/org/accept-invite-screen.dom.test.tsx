@@ -41,7 +41,7 @@ function renderAccept(
     <ConsoleNavigationProvider>
       <AcceptInviteScreen token={token} />
     </ConsoleNavigationProvider>,
-    { api: client as never },
+    { api: client },
   )
   return { ...view, client }
 }

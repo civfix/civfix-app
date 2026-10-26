@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import {
   Easing,
   cancelAnimation,
-  runOnJS,
   useAnimatedReaction,
   useSharedValue,
   withDelay,
@@ -12,6 +11,7 @@ import {
   type SharedValue,
   type WithTimingConfig,
 } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { motion } from "@/theme"
 
 const STAGE_HOLD_MS = 2000
@@ -101,7 +101,7 @@ export function useStageStep(progress: SharedValue<number>, stops: readonly numb
     (next) => {
       if (next === settled.value) return
       settled.value = next
-      runOnJS(setStep)(next)
+      scheduleOnRN(setStep, next)
     },
     [stops],
   )
