@@ -1,8 +1,8 @@
 import * as React from "react"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
 import type { LegalBlock } from "@civfix/contract"
 import { CapabilitiesProvider, makeFakeCapabilities } from "../../capabilities"
@@ -46,10 +46,35 @@ function show(
 
 const paragraph = (text: string): LegalBlock => ({ kind: "paragraph", text })
 
+// react-native-web reports onLayout through one ResizeObserver it creates on first use, measuring the
+// node's offsetWidth; the table tests lay the scroll view out at a width of their choosing.
+const layout = { notify: null as ((entries: { target: Element }[]) => void) | null, widths: new Map<Element, number>() }
+
+class FakeResizeObserver {
+  constructor(callback: (entries: { target: Element }[]) => void) {
+    layout.notify = callback
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+beforeAll(() => {
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+    return layout.widths.get(this) ?? 0
+  })
+})
+
+afterAll(() => {
+  vi.restoreAllMocks()
+})
+
 beforeEach(() => {
   open.mockClear()
   assign.mockClear()
+  layout.widths.clear()
   vi.stubGlobal("location", { origin: "https://civfix.test", assign })
+  vi.stubGlobal("ResizeObserver", FakeResizeObserver)
 })
 
 afterEach(() => {
@@ -180,4 +205,80 @@ describe("LegalDocumentView", () => {
       expect(assign).not.toHaveBeenCalled()
     },
   )
+
+  describe("table widths", () => {
+    const FOUR_COLUMNS: LegalBlock = {
+      kind: "table",
+      columns: ["Sub-processor", "Purpose", "Data", "Location"],
+      rows: [["Cloudflare", "CDN and edge security for every request", "IP address, request metadata", "Global"]],
+    }
+
+    function tableParts() {
+      const table = screen.getByRole("table")
+      let scroller: HTMLElement | null = table.parentElement
+      while (scroller !== null && !["auto", "scroll"].includes(getComputedStyle(scroller).overflowX)) {
+        scroller = scroller.parentElement
+      }
+      if (scroller === null) throw new Error("the table has no horizontal scroll view")
+      const cells = Array.from(table.querySelectorAll<HTMLElement>('[role="columnheader"], [role="cell"]'))
+      return { table, scroller, cells }
+    }
+
+    async function layOut(node: HTMLElement, width: number) {
+      layout.widths.set(node, width)
+      await act(async () => {
+        layout.notify?.([{ target: node }])
+        // rnw measures on a timer before it calls onLayout.
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+    }
+
+    const widthOf = (element: HTMLElement) => getComputedStyle(element).width
+
+    it("T37: two columns in a 718 wide scroll view fill its 716 inner width, 358 each, without shrinking", async () => {
+      show(terms([{ kind: "table", columns: ["Name", "Purpose"], rows: [["Cloudflare", "CDN"]] }]))
+      const { table, scroller, cells } = tableParts()
+      await layOut(scroller, 718)
+      expect(widthOf(table)).toBe("716px")
+      expect(cells).toHaveLength(4)
+      for (const cell of cells) {
+        expect(widthOf(cell)).toBe("358px")
+        expect(getComputedStyle(cell).flexShrink).toBe("0")
+      }
+    })
+
+    it("T38: four columns in a 718 wide scroll view all fit, 179 each", async () => {
+      show(terms([FOUR_COLUMNS]))
+      const { table, scroller, cells } = tableParts()
+      await layOut(scroller, 718)
+      expect(widthOf(table)).toBe("716px")
+      expect(cells).toHaveLength(8)
+      for (const cell of cells) expect(widthOf(cell)).toBe("179px")
+    })
+
+    it("T39: four columns in a 348 wide scroll view keep their 176 minimum and scroll sideways", async () => {
+      show(terms([FOUR_COLUMNS]))
+      const { table, scroller, cells } = tableParts()
+      await layOut(scroller, 348)
+      expect(widthOf(table)).toBe("704px")
+      for (const cell of cells) expect(widthOf(cell)).toBe("176px")
+    })
+
+    it("T40: before the scroll view lays out, four columns are 176 each", () => {
+      show(terms([FOUR_COLUMNS]))
+      const { table, cells } = tableParts()
+      expect(widthOf(table)).toBe("704px")
+      for (const cell of cells) expect(widthOf(cell)).toBe("176px")
+    })
+
+    it("T41: no header or body cell clamps its lines or keeps its text on one line", () => {
+      show(terms([FOUR_COLUMNS]))
+      const { cells } = tableParts()
+      for (const cell of cells) {
+        const style = getComputedStyle(cell)
+        expect(style.whiteSpace).not.toBe("nowrap")
+        expect(style.getPropertyValue("-webkit-line-clamp")).toBe("")
+      }
+    })
+  })
 })

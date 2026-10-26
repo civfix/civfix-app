@@ -9,11 +9,11 @@ import {
   SignInPrompt,
   DONATE_URL,
   legalDocumentUrl,
-  presentLegalDocument,
   sourceCommit,
   sourceUrl,
   useToast,
 } from "../primitives"
+import { openLegalDocumentInPlace } from "../primitives/legalDocumentNav"
 import { useAuthState, useLogout, useRequireAuth } from "../data"
 import { useOpenExternal } from "../capabilities"
 import { useNavStore, type DetailKind } from "../nav"
@@ -54,7 +54,7 @@ export function SettingsBody() {
 
   const openLegal = useCallback(
     (type: LegalDocumentType) => {
-      if (!presentLegalDocument(type)) openUrl(legalDocumentUrl(type))
+      if (!openLegalDocumentInPlace(type)) openUrl(legalDocumentUrl(type))
     },
     [openUrl],
   )

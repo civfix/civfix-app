@@ -48,7 +48,7 @@ describe("the configurable web origin", () => {
     try {
       setWebOrigin("https://civfix.dev/")
       expect(webOrigin()).toBe("https://civfix.dev")
-      expect(legalDocumentUrl("terms")).toBe(`${WEB_ORIGIN}/legal/terms`)
+      expect(legalDocumentUrl("terms")).toBe("https://civfix.dev/legal/terms")
     } finally {
       setWebOrigin(WEB_ORIGIN)
     }
@@ -60,6 +60,17 @@ describe("legal URLs", () => {
   it("derives every civfix-hosted legal URL from the one origin", () => {
     expect(legalDocumentUrl("terms")).toBe(`${WEB_ORIGIN}/legal/terms`)
     expect(legalDocumentUrl("privacy")).toBe(`${WEB_ORIGIN}/legal/privacy`)
+  })
+
+  it("T35: points at the configured site", () => {
+    try {
+      setWebOrigin("https://civfix.dev/")
+      expect(legalDocumentUrl("cookies")).toBe("https://civfix.dev/legal/cookies")
+      setWebOrigin(WEB_ORIGIN)
+      expect(legalDocumentUrl("terms")).toBe("https://civfix.org/legal/terms")
+    } finally {
+      setWebOrigin(WEB_ORIGIN)
+    }
   })
 })
 

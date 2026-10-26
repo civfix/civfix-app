@@ -9,6 +9,7 @@ import { ApiProvider } from "../../data/context"
 import { makeFakeDataContext } from "../../data/fakes"
 import { I18nProvider } from "../../i18n"
 import { setLegalDocumentPresenter } from "../../primitives/legalDocument"
+import { setWebOrigin, WEB_ORIGIN } from "../../primitives/externalUrls"
 import { BrandAboutCard } from "../../primitives/BrandAboutCard"
 import { TermsConfirmation } from "../../primitives/TermsConfirmation"
 import { ConsentChecks } from "../host/registration/ConsentChecks"
@@ -106,4 +107,25 @@ describe("legal links on the web", () => {
     expect(present).not.toHaveBeenCalled()
   })
 
+  describe("on a site other than civfix.org", () => {
+    const assign = vi.fn()
+
+    beforeEach(() => {
+      assign.mockClear()
+      vi.stubGlobal("location", { origin: "http://localhost:3101", assign })
+      setWebOrigin("http://localhost:3101")
+    })
+
+    afterEach(() => {
+      setWebOrigin(WEB_ORIGIN)
+      vi.unstubAllGlobals()
+    })
+
+    it.each(SURFACES)("T36: $name opens that site's Terms page in a new tab", ({ element, terms }) => {
+      mount(element())
+      fireEvent.click(screen.getByRole("link", { name: terms }))
+      expect(open).toHaveBeenCalledWith("http://localhost:3101/legal/terms")
+      expect(assign).not.toHaveBeenCalled()
+    })
+  })
 })
