@@ -12,6 +12,7 @@ const base: LocationPrimerInput = {
   tourPresenting: false,
   profileIncomplete: false,
   routeFocused: true,
+  legalUpdatePending: false,
 }
 
 test("waits until the stored permission has settled, whatever else is true", () => {
@@ -131,4 +132,23 @@ test("a settled permission keeps its answer whatever is on screen", () => {
   const blocked = { tourPresenting: true, profileIncomplete: true, routeFocused: false }
   assert.equal(locationPrimerDecision({ ...base, ...blocked, permission: "granted" }), "resolve")
   assert.equal(locationPrimerDecision({ ...base, ...blocked, permission: "denied" }), "ip-only")
+})
+
+test("T8: the location prompt waits while the legal update screen is pending", () => {
+  const prompting = { ...base, authStatus: "authed" } as const
+  assert.equal(locationPrimerDecision(prompting), "prompt")
+  assert.equal(locationPrimerDecision({ ...prompting, legalUpdatePending: true }), "wait")
+  assert.equal(locationPrimerDecision({ ...prompting, legalUpdatePending: false }), "prompt")
+})
+
+test("T9: only the prompt waits for the legal update screen", () => {
+  const cases = [
+    [{ ...base, authStatus: "authed", permission: "granted" }, "resolve"],
+    [{ ...base, authStatus: "authed", permission: "denied" }, "ip-only"],
+    [{ ...base, authStatus: "authed", onboardingDone: false }, "wait"],
+  ] as const satisfies readonly (readonly [LocationPrimerInput, string])[]
+  for (const [input, today] of cases) {
+    assert.equal(locationPrimerDecision({ ...input, legalUpdatePending: false }), today)
+    assert.equal(locationPrimerDecision({ ...input, legalUpdatePending: true }), today)
+  }
 })

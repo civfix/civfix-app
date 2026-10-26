@@ -154,6 +154,7 @@ export {
   useAcceptLegal,
   useLegalDocument,
   useLegalDocuments,
+  useLegalUpdatePending,
   useMyLegalStatus,
 } from "./hooks/legal"
 export { uploadMedia } from "./uploadMedia"

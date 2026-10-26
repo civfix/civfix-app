@@ -14,6 +14,7 @@ export interface LocationPrimerInput {
   tourPresenting: boolean
   profileIncomplete: boolean
   routeFocused: boolean
+  legalUpdatePending?: boolean
 }
 
 export function locationPrimerDecision({

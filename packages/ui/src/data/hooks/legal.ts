@@ -78,6 +78,10 @@ export function useMyLegalStatus() {
   })
 }
 
+export function useLegalUpdatePending(): boolean {
+  throw new Error("not implemented")
+}
+
 /**
  * The server answers an acceptance with the person's new status. Showing it at once closes the prompt or
  * the banner without waiting for the refetch.
