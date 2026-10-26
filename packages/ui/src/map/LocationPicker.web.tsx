@@ -1,11 +1,12 @@
 import { coordsLabel } from "@civfix/contract"
 import * as React from "react"
-import maplibregl from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
 import { shadowSchemes } from "@civfix/tokens"
 import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import {
   PICKER_EASE_MS,
   PICKER_ZOOM,
@@ -83,6 +84,7 @@ function InlineLocationPicker({
     if (mapRef.current || !containerRef.current || !cameraSeed) return
     const start: [number, number] = [cameraSeed.lng, cameraSeed.lat]
 
+    bindBundledWorker()
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,

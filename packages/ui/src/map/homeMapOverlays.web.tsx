@@ -1,5 +1,6 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap, Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
 import { ThemeProvider, type ColorSchemeName, type LayoutMode, type Theme } from "../theme"
 import { DropPin, pinAppearanceFor } from "./pins"

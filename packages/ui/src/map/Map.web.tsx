@@ -1,10 +1,12 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap } from "maplibre-gl"
 import type { BBox } from "@civfix/contract"
 import { useLayoutMode, useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import { TeardropPin, EventPin, BlendPin, ClusterBubble, clusterToneFor } from "./pins"
 import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
@@ -282,6 +284,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     const markers = markersRef.current
     const seed = initialCenterRef.current
 
+    bindBundledWorker()
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
