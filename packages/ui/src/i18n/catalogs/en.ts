@@ -85,6 +85,7 @@ import en_profile_connections from "../locales/en/profile-connections.json"
 import en_profile_follow from "../locales/en/profile-follow.json"
 import en_profile_person from "../locales/en/profile-person.json"
 import en_profile_view from "../locales/en/profile-view.json"
+import en_push_prompt from "../locales/en/push-prompt.json"
 import en_report_cluster from "../locales/en/report-cluster.json"
 import en_report_content from "../locales/en/report-content.json"
 import en_report_detail from "../locales/en/report-detail.json"
@@ -189,6 +190,7 @@ const catalog: ResourceLanguage = {
   "profile-follow": en_profile_follow,
   "profile-person": en_profile_person,
   "profile-view": en_profile_view,
+  "push-prompt": en_push_prompt,
   "report-cluster": en_report_cluster,
   "report-content": en_report_content,
   "report-detail": en_report_detail,

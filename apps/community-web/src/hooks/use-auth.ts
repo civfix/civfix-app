@@ -7,6 +7,8 @@ import { ErrorCode, isAppErrorLike } from "@civfix/contract"
 import { api } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
+import { warnPush } from "@/push/log"
+import { serviceWorkerContainer, unregisterSubscription } from "@/push/subscription"
 import {
   isConfirmedSignedOut,
   useAuthStore,
@@ -137,6 +139,10 @@ export function useLogout() {
   return React.useCallback(async () => {
     const signOut = useSignOutRetryStore.getState()
     if (!signOut.begin()) return
+    // Unregistered while the session still authorizes it; only browsers with a service worker can hold a
+    // push subscription.
+    const container = serviceWorkerContainer()
+    const subscription = container ? await unregisterSubscription(container) : null
     const revoked = await revokeServerSession()
     // A 401 elsewhere may have signed the user out while this request hung: nothing is left to retry.
     signOut.finish(revoked || isConfirmedSignedOut(useAuthStore.getState()))
@@ -145,5 +151,6 @@ export function useLogout() {
     // Shared-device safety: the previous user's lists must never paint for the next person here.
     clearPersistedCache()
     queryClient.clear()
+    subscription?.unsubscribe().catch((err: unknown) => warnPush("unsubscribing", err))
   }, [clear, queryClient])
 }

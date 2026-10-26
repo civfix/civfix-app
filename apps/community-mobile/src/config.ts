@@ -1,4 +1,5 @@
 import Constants from "expo-constants"
+import { Platform } from "react-native"
 import { resolveApiUrl } from "./lib/apiUrl"
 import { isBetaInstall } from "./lib/nativeBetaInstall"
 import { resolveDonateBrowserMode, type DonateBrowserMode } from "./lib/donateBrowser"
@@ -23,6 +24,9 @@ export const WEB_ORIGIN: string = resolveWebOrigin(API_URL)
 export const CARTO_API_KEY: string = extra.cartoApiKey ?? ""
 
 export const SOURCE_COMMIT: string = extra.sourceCommit ?? ""
+
+export const APP_ID: string | undefined =
+  Platform.OS === "ios" ? Constants.expoConfig?.ios?.bundleIdentifier : Constants.expoConfig?.android?.package
 
 export const DONATE_BROWSER_MODE: DonateBrowserMode = resolveDonateBrowserMode(
   process.env.EXPO_PUBLIC_DONATE_BROWSER_MODE,

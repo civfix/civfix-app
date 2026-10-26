@@ -7,29 +7,69 @@
     "title": "Einstellungen konnten nicht geladen werden",
     "body": "Verbindung zu civfix fehlgeschlagen. Überprüfe deine Verbindung und versuche es erneut."
   },
-  "push": {
-    "section": "Push",
-    "label": "Push-Benachrichtigungen",
-    "helper": "Erlaube civfix, Benachrichtigungen an dieses Gerät zu senden."
+  "sections": {
+    "reports": "Deine Meldungen",
+    "messages": "Nachrichten",
+    "events": "Veranstaltungen",
+    "social": "Soziales",
+    "organizations": "Organisationen"
   },
-  "categories": {
-    "section": "Worüber du informiert wirst",
+  "category": {
     "reportUpdates": {
-      "label": "Meldungs-Updates",
-      "helper": "Statusänderungen bei Meldungen, die du erstellt oder abonniert hast."
+      "label": "Updates zu deinen Meldungen",
+      "helper": "Statusänderungen, Antworten der Stadt und Nachrichten vom civfix-Team"
     },
-    "eventChat": {
-      "label": "Gruppenchats",
-      "helper": "Neue Nachrichten in deinen Veranstaltungs- und Gruppenchats."
+    "reportDiscussions": {
+      "label": "Diskussionen zu Meldungen",
+      "helper": "Neue Nachrichten in Meldungschats, an denen du teilnimmst"
+    },
+    "directMessages": {
+      "label": "Direktnachrichten",
+      "helper": "Nachrichten, die nur an dich gehen"
     },
     "mentions": {
-      "label": "Erwähnungen",
-      "helper": "Wenn jemand dich in einem Kommentar oder Chat @-erwähnt."
+      "label": "Erwähnungen und Antworten",
+      "helper": "Wenn dich jemand @erwähnt, dir antwortet oder deinen Beitrag zitiert"
     },
-    "follows": {
-      "label": "Neue Follower",
-      "helper": "Wenn jemand dir auf civfix folgt."
+    "groupChats": {
+      "label": "Gruppenchats",
+      "helper": "Neue Nachrichten in deinen Gruppenchats"
+    },
+    "events": {
+      "label": "Veranstaltungen, zu denen du gehst",
+      "helper": "Erinnerungen, Änderungen, Absagen und dein Platz auf der Liste"
+    },
+    "hostAnnouncements": {
+      "label": "Ankündigungen der Veranstalter",
+      "helper": "Updates und Dankesnachrichten von den Leuten, die deine Veranstaltungen organisieren"
+    },
+    "eventTeam": {
+      "label": "Veranstaltungsteam und Stunden",
+      "helper": "Team-Einladungen, Rollenänderungen und ehrenamtliche Stunden"
+    },
+    "followers": {
+      "label": "Neue Follower"
+    },
+    "likesAndReposts": {
+      "label": "Likes und Reposts"
+    },
+    "organizations": {
+      "label": "Organisationen",
+      "helper": "Einladungen und Entscheidungen zur Verifizierung"
     }
   },
+  "channel": {
+    "push": "Push",
+    "email": "E-Mail",
+    "a11y": "{{channel}}, {{category}}"
+  },
+  "events_off_warning": "Du erfährst nicht, wenn eine Veranstaltung, zu der du dich angemeldet hast, abgesagt oder verschoben wird.",
+  "push_off": {
+    "title": "Push-Benachrichtigungen sind auf diesem Gerät aus",
+    "turn_on": "Einschalten",
+    "site_settings": "Erlaube Benachrichtigungen für civfix in den Website-Einstellungen deines Browsers.",
+    "unsupported": "Dieser Browser kann keine Benachrichtigungen anzeigen"
+  },
+  "email_unavailable": "Füge eine bestätigte E-Mail-Adresse hinzu, um E-Mails zu bekommen.",
   "save_error": "Diese Änderung konnte nicht gespeichert werden. Versuche es erneut."
 }

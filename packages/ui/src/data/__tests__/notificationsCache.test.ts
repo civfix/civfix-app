@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import { QueryClient } from "@tanstack/react-query"
-import type { NotificationDTO, NotificationPrefsDTO } from "@civfix/contract"
+import { NOTIFICATION_CATEGORY_DEFAULTS, type NotificationDTO, type NotificationSettingsDTO } from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { notificationListFilters } from "../hooks/notifications"
 
@@ -21,16 +21,7 @@ function note(id: string, read: boolean): NotificationDTO {
   }
 }
 
-const PREFS: NotificationPrefsDTO = {
-  push: true,
-  cleanupChat: true,
-  reportUpdates: true,
-  follows: true,
-  mentions: true,
-  postInteractions: true,
-  hostBroadcasts: true,
-  quietHours: null,
-}
+const SETTINGS: NotificationSettingsDTO = { categories: NOTIFICATION_CATEGORY_DEFAULTS, emailAvailable: true }
 
 function snapshotLists(
   qc: QueryClient,
@@ -50,11 +41,11 @@ function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
 }
 
 describe("mark-notifications-read cache reconciliation", () => {
-  it("flips read across every flat list (inbox + bell preview) and leaves the prefs object untouched", () => {
+  it("flips read across every flat list (inbox + bell preview) and leaves the settings object untouched", () => {
     const qc = new QueryClient()
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [note("n1", false), note("n2", false)])
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(20), [note("n1", false)])
-    qc.setQueryData<NotificationPrefsDTO>(queryKeys.notificationPrefs, PREFS)
+    qc.setQueryData<NotificationSettingsDTO>(queryKeys.notificationSettings, SETTINGS)
 
     patchReadInFlatLists(qc, ["n1"])
 
@@ -63,7 +54,7 @@ describe("mark-notifications-read cache reconciliation", () => {
     expect(inbox.find((n) => n.id === "n2")).toMatchObject({ read: false })
     const preview = qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(20))!
     expect(preview.find((n) => n.id === "n1")).toMatchObject({ read: true })
-    expect(qc.getQueryData<NotificationPrefsDTO>(queryKeys.notificationPrefs)).toEqual(PREFS)
+    expect(qc.getQueryData<NotificationSettingsDTO>(queryKeys.notificationSettings)).toEqual(SETTINGS)
   })
 
   it("rolls every patched list back to its snapshot on error", () => {
@@ -88,17 +79,17 @@ describe("mark-notifications-read cache reconciliation", () => {
 })
 
 describe("mark-read scope", () => {
-  it("invalidates the notification lists but never the prefs entry that shares the root", async () => {
+  it("invalidates the notification lists but never the settings entry that shares the root", async () => {
     const qc = new QueryClient()
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [note("n1", false)])
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(20), [note("n1", false)])
-    qc.setQueryData<NotificationPrefsDTO>(queryKeys.notificationPrefs, PREFS)
+    qc.setQueryData<NotificationSettingsDTO>(queryKeys.notificationSettings, SETTINGS)
 
     await qc.invalidateQueries(notificationListFilters)
 
     expect(qc.getQueryState(queryKeys.notifications(50))?.isInvalidated).toBe(true)
     expect(qc.getQueryState(queryKeys.notifications(20))?.isInvalidated).toBe(true)
-    expect(qc.getQueryState(queryKeys.notificationPrefs)?.isInvalidated).toBe(false)
+    expect(qc.getQueryState(queryKeys.notificationSettings)?.isInvalidated).toBe(false)
   })
 })
 

@@ -1,16 +1,27 @@
-import React, { memo, useCallback, useMemo } from "react"
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { NotificationDTO, NotificationType } from "@civfix/contract"
+import { ErrorCode, errorCopyKey, type ErrorCodeTable, type NotificationDTO, type NotificationType } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webHover, webTransition, type Theme } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
-import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
-import { useNotifications, useMarkNotificationsRead, useAuthState, useRequireAuth } from "../data"
+import { EmptyState, LoadingState, SignInPrompt, useToast } from "../primitives"
+import {
+  useNotifications,
+  useMarkNotificationsRead,
+  useMarkAllNotificationsRead,
+  useHasUnreadNotifications,
+  useAuthState,
+  useRequireAuth,
+} from "../data"
 import { useNavStore, entryFromPath, isRootLink } from "../nav"
 import { useOpenInternalHref } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { useListTimeAgo } from "./useListTimeAgo"
+
+const MARK_READ_ERROR_KEYS: ErrorCodeTable<string> = {
+  [ErrorCode.RATE_LIMITED]: "markReadError.rate_limited",
+}
 
 function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: string; tint: string } {
   switch (type) {
@@ -38,6 +49,8 @@ function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: s
         color: t.colors.brand.moss,
         tint: t.colors.moss["50"],
       }
+    case "chat_mention":
+      return { glyph: "AtSign", color: t.colors.brand.lilac, tint: t.colors.lilac["50"] }
     case "system":
     default:
       return { glyph: "Bell", color: t.colors.textMuted, tint: t.colors.neutral.paper2 }
@@ -46,10 +59,12 @@ function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: s
 
 const NotificationRow = memo(function NotificationRow({
   item,
+  unread,
   timeAgo,
   onPress,
 }: {
   item: NotificationDTO
+  unread: boolean
   timeAgo: (iso: string) => string
   onPress: (item: NotificationDTO) => void
 }) {
@@ -63,15 +78,15 @@ const NotificationRow = memo(function NotificationRow({
     <Pressable
       onPress={press}
       accessibilityRole="button"
-      accessibilityLabel={item.read
-        ? [item.title, ...a11yDetails].join(", ")
-        : [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")}
+      accessibilityLabel={unread
+        ? [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")
+        : [item.title, ...a11yDetails].join(", ")}
       {...focusRingProps}
       style={(state) => [
         styles.row,
         webTransition,
-        item.read ? null : styles.rowUnread,
-        webHover(state) ? (item.read ? styles.rowHovered : styles.rowUnreadHovered) : null,
+        unread ? styles.rowUnread : null,
+        webHover(state) ? (unread ? styles.rowUnreadHovered : styles.rowHovered) : null,
         state.pressed ? styles.rowPressed : null,
       ]}
     >
@@ -80,7 +95,7 @@ const NotificationRow = memo(function NotificationRow({
       </View>
       <View style={styles.rowBody}>
         <View style={styles.rowTitleRow}>
-          {item.read ? null : <View style={styles.unreadDot} />}
+          {unread ? <View style={styles.unreadDot} /> : null}
           <Text style={styles.rowTitle} numberOfLines={2}>
             {item.title}
           </Text>
@@ -106,8 +121,10 @@ export function NotificationsBody() {
   const requireAuth = useRequireAuth()
   const query = useNotifications()
   const markRead = useMarkNotificationsRead()
+  const markAllRead = useMarkAllNotificationsRead()
+  const hasUnread = useHasUnreadNotifications()
+  const toast = useToast()
   const notifications = query.data ?? NO_NOTIFICATIONS
-  const unreadCount = query.unreadCount
   const timeAgo = useListTimeAgo()
 
   const showPrefsGear = useLayoutMode() === "expanded"
@@ -115,11 +132,28 @@ export function NotificationsBody() {
     useNavStore.getState().push({ kind: "notification-prefs" })
   }, [])
 
+  // Viewing marks everything read, yet a row keeps its unread look for the rest of the visit, so the reader
+  // still sees what was new when the page opened.
+  const [shownUnread, setShownUnread] = useState<ReadonlySet<string>>(NO_IDS)
+  useEffect(() => {
+    const fresh = notifications.filter((n) => !n.read && !shownUnread.has(n.id)).map((n) => n.id)
+    if (fresh.length > 0) setShownUnread((prev) => new Set([...prev, ...fresh]))
+  }, [notifications, shownUnread])
+
+  // Marking waits for a settled list, so a row that arrives with the refetch is seen unread before it is
+  // marked. A failure is not retried this visit: the rollback brings hasUnread back, which would loop.
+  const listShown = query.data !== undefined && !query.isFetching
+  const mutateMarkAll = markAllRead.mutate
+  const markAllBlocked = markAllRead.isPending || markAllRead.isError
+  useEffect(() => {
+    if (!listShown || !hasUnread || markAllBlocked) return
+    mutateMarkAll(undefined, {
+      onError: (err) =>
+        toast.show(t(errorCopyKey(err, MARK_READ_ERROR_KEYS, "markReadError.generic")), { variant: "error" }),
+    })
+  }, [listShown, hasUnread, markAllBlocked, mutateMarkAll, toast, t])
+
   const mutateRead = markRead.mutate
-  const markAll = useCallback(() => {
-    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id)
-    if (unreadIds.length > 0) mutateRead(unreadIds)
-  }, [notifications, mutateRead])
 
   const entryForHref = useOpenInternalHref()?.entryFor ?? entryFromPath
   const onPressItem = useCallback(
@@ -134,9 +168,14 @@ export function NotificationsBody() {
 
   const renderItem = useCallback(
     ({ item }: { item: NotificationDTO }) => (
-      <NotificationRow item={item} timeAgo={timeAgo} onPress={onPressItem} />
+      <NotificationRow
+        item={item}
+        unread={!item.read || shownUnread.has(item.id)}
+        timeAgo={timeAgo}
+        onPress={onPressItem}
+      />
     ),
-    [timeAgo, onPressItem],
+    [timeAgo, onPressItem, shownUnread],
   )
 
   const emptyContent = useMemo(() => {
@@ -193,39 +232,18 @@ export function NotificationsBody() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
-        unreadCount > 0 || showPrefsGear ? (
+        showPrefsGear ? (
           <View style={styles.head}>
-            {unreadCount > 0 ? (
-              <Pressable
-                onPress={markAll}
-                disabled={markRead.isPending}
-                accessibilityRole="button"
-                accessibilityLabel={t("actions.markAllRead")}
-                accessibilityState={{ disabled: markRead.isPending, busy: markRead.isPending }}
-                hitSlop={8}
-                {...focusRingProps}
-                style={({ pressed }) => [
-                  styles.markAll,
-                  markRead.isPending ? styles.disabled : null,
-                  pressed ? styles.pressed : null,
-                ]}
-              >
-                <Icon icon={iconMap.CheckCheck} size={14} color={th.colors.brand.bloom} />
-                <Text style={styles.markAllText}>{t("actions.markAllRead")}</Text>
-              </Pressable>
-            ) : null}
-            {showPrefsGear ? (
-              <Pressable
-                onPress={openPrefs}
-                accessibilityRole="button"
-                accessibilityLabel={tNav("title.notification_prefs")}
-                hitSlop={8}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.prefsGear, pressed ? styles.pressed : null]}
-              >
-                <Icon icon={iconMap.Settings} size={16} color={th.colors.textMuted} />
-              </Pressable>
-            ) : null}
+            <Pressable
+              onPress={openPrefs}
+              accessibilityRole="button"
+              accessibilityLabel={tNav("title.notification_prefs")}
+              hitSlop={8}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.prefsGear, pressed ? styles.pressed : null]}
+            >
+              <Icon icon={iconMap.Settings} size={16} color={th.colors.textMuted} />
+            </Pressable>
           </View>
         ) : null
       }
@@ -236,6 +254,7 @@ export function NotificationsBody() {
 }
 
 const NO_NOTIFICATIONS: readonly NotificationDTO[] = []
+const NO_IDS: ReadonlySet<string> = new Set()
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
@@ -258,18 +277,6 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "flex-end",
     paddingTop: t.space["2"],
     paddingBottom: t.space["2"],
-  },
-  markAll: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 6,
-  },
-  markAllText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.accentText,
   },
   prefsGear: {
     width: 32,
@@ -348,5 +355,4 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 0,
   },
   pressed: { opacity: 0.6 },
-  disabled: { opacity: 0.5 },
 }))

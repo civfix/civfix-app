@@ -7,29 +7,69 @@
     "title": "No se pudieron cargar las preferencias",
     "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
   },
-  "push": {
-    "section": "Push",
-    "label": "Notificaciones push",
-    "helper": "Permite que civfix envíe notificaciones a este dispositivo."
+  "sections": {
+    "reports": "Tus denuncias",
+    "messages": "Mensajes",
+    "events": "Eventos",
+    "social": "Social",
+    "organizations": "Organizaciones"
   },
-  "categories": {
-    "section": "De qué te informamos",
+  "category": {
     "reportUpdates": {
-      "label": "Actualizaciones de reportes",
-      "helper": "Cambios de estado en los problemas que reportaste o sigues."
+      "label": "Novedades de tus denuncias",
+      "helper": "Cambios de estado, respuestas de la ciudad y mensajes del equipo de civfix"
     },
-    "eventChat": {
-      "label": "Chats de grupo",
-      "helper": "Nuevos mensajes en tus chats de eventos y grupos."
+    "reportDiscussions": {
+      "label": "Conversaciones de denuncias",
+      "helper": "Mensajes nuevos en los chats de denuncias en los que participas"
+    },
+    "directMessages": {
+      "label": "Mensajes directos",
+      "helper": "Mensajes enviados solo a ti"
     },
     "mentions": {
-      "label": "Menciones",
-      "helper": "Cuando alguien te menciona con @ en un comentario o chat."
+      "label": "Menciones y respuestas",
+      "helper": "Cuando alguien te menciona con @, te responde o cita tu publicación"
     },
-    "follows": {
-      "label": "Nuevos seguidores",
-      "helper": "Cuando alguien te sigue en civfix."
+    "groupChats": {
+      "label": "Chats de grupo",
+      "helper": "Mensajes nuevos en los chats de grupo en los que estás"
+    },
+    "events": {
+      "label": "Eventos a los que vas",
+      "helper": "Recordatorios, cambios, cancelaciones y tu lugar en la lista"
+    },
+    "hostAnnouncements": {
+      "label": "Anuncios de organizadores",
+      "helper": "Novedades y agradecimientos de quienes organizan los eventos a los que te uniste"
+    },
+    "eventTeam": {
+      "label": "Equipo del evento y horas",
+      "helper": "Invitaciones al equipo, cambios de rol y horas de voluntariado"
+    },
+    "followers": {
+      "label": "Nuevos seguidores"
+    },
+    "likesAndReposts": {
+      "label": "Me gusta y republicaciones"
+    },
+    "organizations": {
+      "label": "Organizaciones",
+      "helper": "Invitaciones y decisiones de verificación"
     }
   },
+  "channel": {
+    "push": "Push",
+    "email": "Correo",
+    "a11y": "{{channel}}, {{category}}"
+  },
+  "events_off_warning": "No te enterarás si un evento al que te uniste se cancela o cambia de hora.",
+  "push_off": {
+    "title": "Las notificaciones push están desactivadas en este dispositivo",
+    "turn_on": "Activar",
+    "site_settings": "Permite las notificaciones de civfix en la configuración del sitio de tu navegador.",
+    "unsupported": "Este navegador no puede mostrar notificaciones"
+  },
+  "email_unavailable": "Añade un correo verificado para recibir correos.",
   "save_error": "No se pudo guardar el cambio. Inténtalo de nuevo."
 }

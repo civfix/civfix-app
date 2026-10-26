@@ -4,7 +4,8 @@ import type {
   CapturedMedia,
   PreparedUpload,
   GeolocationCapability,
-  PushCapability,
+  PushPermissionCapability,
+  PushPermissionStatus,
   SecureStoreCapability,
   BlurSurfaceCapability,
   OpenExternalCapability,
@@ -59,13 +60,44 @@ class FakeGeolocation implements GeolocationCapability {
   }
 }
 
-class FakePush implements PushCapability {
-  isAvailable(): boolean {
-    return false
+export type FakePushPermission = PushPermissionCapability & {
+  openSettings(): Promise<void>
+  setStatus(status: PushPermissionStatus): void
+  setRequestResult(status: PushPermissionStatus): void
+  requested: number
+  settingsOpened: number
+}
+
+// Unsupported until a test says otherwise, like the other fakes that never claim a device feature.
+function makeFakePushPermission(): FakePushPermission {
+  let current: PushPermissionStatus = "unsupported"
+  let requestResult: PushPermissionStatus | null = null
+  const fake: FakePushPermission = {
+    requested: 0,
+    settingsOpened: 0,
+    status(): Promise<PushPermissionStatus> {
+      return Promise.resolve(current)
+    },
+    request(): Promise<PushPermissionStatus> {
+      fake.requested += 1
+      if (requestResult !== null) {
+        current = requestResult
+        requestResult = null
+      }
+      return Promise.resolve(current)
+    },
+    openSettings(): Promise<void> {
+      fake.settingsOpened += 1
+      return Promise.resolve()
+    },
+    setStatus(status: PushPermissionStatus): void {
+      current = status
+    },
+    setRequestResult(status: PushPermissionStatus): void {
+      requestResult = status
+    },
   }
-  registerForToken(): Promise<null> {
-    return Promise.resolve(null)
-  }
+  return fake
 }
 
 class MapKeyValueStore implements SecureStoreCapability {
@@ -135,7 +167,7 @@ export function makeFakeCapabilities(): PlatformCapabilities {
   return {
     camera: new FakeCamera(),
     geolocation: new FakeGeolocation(),
-    push: new FakePush(),
+    pushPermission: makeFakePushPermission(),
     secureStore: new MapKeyValueStore(),
     persistence: new MapKeyValueStore(),
     blurSurface: fakeBlurSurface,
