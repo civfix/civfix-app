@@ -48,10 +48,10 @@ export const SUBPROCESSORS_DOC = legalDoc("subprocessors", CURRENT_VERSION, {
   summary: "Adds a mail provider",
   material: false,
 })
-export const CURRENT_DOCS: LegalDocumentDTO[] = [TERMS_DOC, PRIVACY_DOC, COOKIES_DOC, SUBPROCESSORS_DOC]
+const CURRENT_DOCS: LegalDocumentDTO[] = [TERMS_DOC, PRIVACY_DOC, COOKIES_DOC, SUBPROCESSORS_DOC]
 
 /** A status item: the document without its text, as GET /me/legal sends it. */
-export function meta(document: LegalDocumentDTO): LegalDocumentMetaDTO {
+function meta(document: LegalDocumentDTO): LegalDocumentMetaDTO {
   const { blocks: _blocks, ...rest } = document
   return rest
 }
@@ -88,12 +88,12 @@ export const USER: UserDTO = {
   createdAt: "2026-01-01T00:00:00.000Z",
 }
 
-export const SIGNED_IN: AuthState = { isAuthenticated: true, user: USER, isPending: false }
+const SIGNED_IN: AuthState = { isAuthenticated: true, user: USER, isPending: false }
 export const FIRST_RUN: AuthState = { isAuthenticated: true, user: { ...USER, profileComplete: false }, isPending: false }
 export const GUEST: AuthState = { isAuthenticated: false, user: null, isPending: false }
 
 /** A reactive auth state, so a test can sign the person out or finish first run mid-render. */
-export function authStore(initial: AuthState) {
+function authStore(initial: AuthState) {
   let state = initial
   const listeners = new Set<() => void>()
   const subscribe = (listener: () => void) => {

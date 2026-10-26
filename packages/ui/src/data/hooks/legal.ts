@@ -1,5 +1,6 @@
 import { useCallback } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
+import type { ApiClient } from "@civfix/contract/client"
 import {
   ErrorCode,
   LegalVersionOutdatedDetailsSchema,
@@ -8,7 +9,9 @@ import {
   type AcceptLegalResponse,
   type GetLegalDocumentResponse,
   type GetLegalDocumentsResponse,
+  type LegalAcceptAction,
   type LegalDocumentDTO,
+  type LegalDocumentMetaDTO,
   type LegalDocumentType,
   type LegalVersionOutdatedDetails,
   type MyLegalStatusResponse,
@@ -75,16 +78,81 @@ export function useMyLegalStatus() {
   })
 }
 
+/**
+ * The server answers an acceptance with the person's new status. Showing it at once closes the prompt or
+ * the banner without waiting for the refetch.
+ */
+function storeLegalStatus(qc: QueryClient, status: AcceptLegalResponse): void {
+  qc.setQueryData(queryKeys.myLegalStatus, status)
+  void qc.invalidateQueries({ queryKey: queryKeys.myLegalStatus })
+}
+
 /** POST /me/legal/accept. A refusal changes nothing on the server, so only a success refetches the status. */
 export function useAcceptLegal() {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation<AcceptLegalResponse, unknown, AcceptLegalRequest>({
     mutationFn: (body) => api.acceptLegal(body),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.myLegalStatus })
-    },
+    onSuccess: (status) => storeLegalStatus(qc, status),
   })
+}
+
+type LegalVersionRef = Pick<LegalDocumentMetaDTO, "type" | "version" | "sha256">
+
+type AcceptLegalItem = AcceptLegalRequest["items"][number]
+
+function legalItem({ type, version, sha256 }: LegalVersionRef, action: LegalAcceptAction): AcceptLegalItem {
+  return { type, version, sha256, action }
+}
+
+/** Accept and continue: every owed version accepted, and every notice acknowledged with it, so no banner follows. */
+export function promptAcceptance({
+  required,
+  notices,
+}: Pick<MyLegalStatusResponse, "required" | "notices">): AcceptLegalRequest {
+  return {
+    items: [
+      ...required.map((item) => legalItem(item, "accepted")),
+      ...notices.map((item) => legalItem(item, "acknowledged")),
+    ],
+    surface: "prompt",
+  }
+}
+
+/** The banner's Got it. */
+export function noticeAcknowledgement(notice: LegalVersionRef): AcceptLegalRequest {
+  return { items: [legalItem(notice, "acknowledged")], surface: "notice" }
+}
+
+// Signing up agrees to the Terms and the Privacy notice; the Cookies notice and the Subprocessors list
+// are only shown (D4).
+const SIGN_UP_ACTION: Record<LegalDocumentType, LegalAcceptAction> = {
+  terms: "accepted",
+  privacy: "accepted",
+  cookies: "acknowledged",
+  subprocessors: "acknowledged",
+}
+
+/**
+ * First run's record of the documents in effect when its Continue was pressed. A recording that fails,
+ * or documents that never loaded, must not keep anyone out of the app they just signed up for: the
+ * update prompt asks for what is still owed once first run closes, so the failure ends here.
+ */
+export async function recordSignUpAcceptance(
+  api: ApiClient,
+  qc: QueryClient,
+  documents: readonly LegalVersionRef[],
+): Promise<void> {
+  if (documents.length === 0) return
+  try {
+    const status = await api.acceptLegal({
+      items: documents.map((document) => legalItem(document, SIGN_UP_ACTION[document.type])),
+      surface: "signup",
+    })
+    storeLegalStatus(qc, status)
+  } catch {
+    return
+  }
 }
 
 /**

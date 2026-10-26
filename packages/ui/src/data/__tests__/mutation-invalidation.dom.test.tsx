@@ -90,7 +90,7 @@ import {
   useUnmarkReportFixed,
 } from "../hooks/reports"
 import { useReverseLabel } from "../hooks/reverseLabel"
-import { useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
+import { useCompleteFirstRun, useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
 import {
   useIssueServiceHoursCertificate,
   useLogEventHours,
@@ -257,6 +257,21 @@ describe("social.ts mutation invalidations", () => {
       key("people"),
       key("profile", "me"),
     ])
+  })
+
+  it("useCompleteFirstRun invalidates my legal status once it is recorded, then what useUpdateProfile does", async () => {
+    const terms = { type: "terms", version: "2026-09-21", sha256: "a".repeat(64) }
+    const api = {
+      getLegalDocuments: resolves({ documents: [terms] }),
+      updateProfile: resolves({ user: { id: ME.id } }),
+      acceptLegal: resolves({ required: [], notices: [], accepted: {} }),
+    }
+    const { result, queryClient, invalidations } = renderWithData(() => useCompleteFirstRun(), api)
+    await waitFor(() => expect(queryClient.getQueryData(["legal", "documents"])).toBeDefined())
+    await act(async () => {
+      await result.current.mutateAsync({ handle: "mia", displayName: "Mia Me" })
+    })
+    expect(invalidations).toEqual([key("legal", "me"), key("profile", ME.id), key("people"), key("profile", "me")])
   })
 })
 

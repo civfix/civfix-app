@@ -7,6 +7,7 @@ import { PortraitShell } from "./PortraitShell"
 import { defaultRenderBody } from "./BodyRouter"
 import { MediaLightboxProvider } from "../lightbox"
 import { SharePostProvider } from "../share/SharePostProvider"
+import { LegalNoticeBanner } from "../bodies/LegalNoticeBanner"
 import { effectiveBaseView, portraitShellPlan } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
 import { MAP_IS_RETAINED } from "./mapRetentionPlatform"
@@ -73,6 +74,7 @@ export function AppShell({
             stack={stack}
           />
         )}
+        <LegalNoticeBanner />
         {authOverlay ? (
           <View style={styles.overlay}>
             {authOverlay}

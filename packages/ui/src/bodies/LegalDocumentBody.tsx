@@ -6,7 +6,7 @@ import { Text, TextLink, iconMap } from "../typography"
 import { useLegalDocument } from "../data"
 import { useT } from "../i18n"
 import { EmptyState, LoadingState } from "../primitives/StateView"
-import { LegalDocumentView } from "../primitives/LegalDocumentView"
+import { LegalDocumentView, type LegalDocumentViewProps } from "../primitives/LegalDocumentView"
 import { readableLegalDocument } from "../primitives/legalDocument"
 import { openLegalDocumentInPlace } from "../primitives/legalDocumentNav"
 
@@ -14,9 +14,10 @@ export interface LegalDocumentBodyProps {
   type: LegalDocumentType
   /** An exact version to show instead of the current one (the web's `?version=`). */
   version?: string | undefined
+  onOpenLegalDocument?: LegalDocumentViewProps["onOpenLegalDocument"]
 }
 
-export function LegalDocumentBody({ type, version }: LegalDocumentBodyProps) {
+export function LegalDocumentBody({ type, version, onOpenLegalDocument }: LegalDocumentBodyProps) {
   const requested = version !== undefined && LegalVersionSchema.safeParse(version).success ? version : undefined
   const current = useLegalDocument(type)
   const pinned = useLegalDocument(type, requested)
@@ -44,7 +45,13 @@ export function LegalDocumentBody({ type, version }: LegalDocumentBodyProps) {
   }
   // Without the current version the pinned one can't be labelled current or earlier truthfully.
   if (current.isError) return <LoadFailed onRetry={() => void current.refetch()} />
-  return <LegalDocumentView document={document} current={current.data?.version === document.version} />
+  return (
+    <LegalDocumentView
+      document={document}
+      current={current.data?.version === document.version}
+      onOpenLegalDocument={onOpenLegalDocument}
+    />
+  )
 }
 
 function LoadFailed({ onRetry }: { onRetry: () => void }) {

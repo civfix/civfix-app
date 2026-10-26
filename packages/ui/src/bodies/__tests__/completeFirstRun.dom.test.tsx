@@ -122,7 +122,7 @@ describe("the sign-up acceptance step", () => {
     await settle()
 
     fireEvent.click(screen.getByRole("button", { name: "Continue" }))
-    expect(updateProfile).toHaveBeenCalledWith(PROFILE)
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith(PROFILE))
     await settle()
     expect(api.acceptLegal).not.toHaveBeenCalled()
 
@@ -225,7 +225,7 @@ describe("the sign-up acceptance step", () => {
     await settle()
 
     fireEvent.click(screen.getByRole("button", { name: "Continue" }))
-    expect(updateProfile).toHaveBeenCalledWith(PROFILE)
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith(PROFILE))
     await waitFor(() => expect(firstRunClosed(store)).toBe(true))
     await settle()
     expect(api.acceptLegal).not.toHaveBeenCalled()

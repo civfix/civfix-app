@@ -15,6 +15,7 @@ import {
 } from "@civfix/ui/capabilities"
 import { ThemeProvider, setAppearancePreferenceStore, supportsBlur } from "@civfix/ui/theme"
 import {
+  LegalUpdateGate,
   MediaLightboxProvider,
   SharePostProvider,
   ToastProvider,
@@ -160,6 +161,7 @@ export default function RootLayout() {
                           <RootStack launchGate={gateMounted} />
                           <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
                           <FirstRunGate />
+                          <LegalUpdateGate />
                           {gateMounted ? (
                             <Animated.View
                               pointerEvents={gateActive ? "auto" : "none"}

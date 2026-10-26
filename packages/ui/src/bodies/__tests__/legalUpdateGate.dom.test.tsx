@@ -173,7 +173,7 @@ describe("LegalUpdateGate", () => {
     await screen.findByRole("dialog")
     fireEvent.click(accept())
     fireEvent.click(accept())
-    expect(api.acceptLegal).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(api.acceptLegal).toHaveBeenCalledTimes(1))
     expect(accept().getAttribute("aria-disabled")).toBe("true")
     fireEvent.click(accept())
     expect(api.acceptLegal).toHaveBeenCalledTimes(1)
