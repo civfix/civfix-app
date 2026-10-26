@@ -1,7 +1,7 @@
-import React, { useMemo } from "react"
+import React from "react"
 import { View, Pressable } from "react-native"
-import { currentVersion } from "@civfix/contract/legal"
 import {
+  a11yState,
   focusRingProps,
   makeThemedStyles,
   MIN_TOUCH_TARGET,
@@ -21,6 +21,8 @@ const CHECKBOX_SIZE = 20
 export interface ConsentChecksProps {
   value: ConsentState
   onChange: (next: ConsentState) => void
+  /** The Terms version the consent sends; null hides the line until it is known. */
+  termsVersion: string | null
   showHostContact?: boolean
   showSms?: boolean
   disabled?: boolean
@@ -46,7 +48,7 @@ function Row({
       onPress={disabled ? undefined : onToggle}
       disabled={disabled}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked, disabled }}
+      {...a11yState({ checked, disabled })}
       accessibilityLabel={a11yLabel}
       {...focusRingProps}
       style={(state) => [
@@ -67,6 +69,7 @@ function Row({
 export function ConsentChecks({
   value,
   onChange,
+  termsVersion,
   showHostContact = true,
   showSms = false,
   disabled = false,
@@ -81,8 +84,6 @@ export function ConsentChecks({
     },
     [openExternal],
   )
-
-  const termsVersion = useMemo(() => currentVersion("terms"), [])
 
   return (
     <View style={styles.list}>
@@ -131,7 +132,9 @@ export function ConsentChecks({
         </Row>
       ) : null}
 
-      <Text style={styles.version}>{t("consent.version", { version: termsVersion })}</Text>
+      {termsVersion === null ? null : (
+        <Text style={styles.version}>{t("consent.version", { version: termsVersion })}</Text>
+      )}
     </View>
   )
 }

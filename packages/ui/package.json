@@ -149,7 +149,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "^0.64.0",
+    "@civfix/contract": "0.68.0-b-feat-legal-contract-api.gda06526",
     "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",

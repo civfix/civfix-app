@@ -56,6 +56,7 @@ import {
   useUndoEventCheckIn,
   useWalkupRegistration,
 } from "../hooks/host"
+import { useAcceptLegal } from "../hooks/legal"
 import { useDeleteAccount, useReportContent, useRequestEmailCode, useRequestMyData } from "../hooks/moderation"
 import {
   useMarkNotificationsRead,
@@ -230,6 +231,16 @@ describe("reports.ts mutation invalidations", () => {
   it("useConfirmMatch invalidates the map report pins", async () => {
     const api = { confirmReport: resolves({ confirmCount: 1, confirmedByMe: true }) }
     expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([key("map", "reports")])
+  })
+})
+
+describe("legal.ts mutation invalidations", () => {
+  it("useAcceptLegal invalidates the signed-in person's legal status", async () => {
+    const api = { acceptLegal: resolves({ required: [], notices: [], accepted: {} }) }
+    const body = {
+      items: [{ type: "terms" as const, version: "2026-09-21", sha256: "a".repeat(64), action: "accepted" as const }],
+    }
+    expect(await invalidationsOf(() => useAcceptLegal(), body, api)).toEqual([key("legal", "me")])
   })
 })
 

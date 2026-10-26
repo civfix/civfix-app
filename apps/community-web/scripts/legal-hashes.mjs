@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
+import { LEGAL_DOCUMENTS, legalDocument } from "@civfix/contract/legal"
 
 import { isPlaceholderLegalHash, renderedLegalDocuments } from "./postbuild-gates.mjs"
 
@@ -34,7 +34,8 @@ const renderedTypes = new Set(rows.map((row) => row.type))
 const unrendered = [...declaredTypes].filter((type) => !renderedTypes.has(type)).sort()
 
 for (const row of rows) {
-  const declared = LEGAL_DOCUMENTS.find((document) => document.type === row.type)
+  // `legalDocument` throws on a type the contract doesn't declare, which is reported as such below.
+  const declared = declaredTypes.has(row.type) ? legalDocument(row.type) : undefined
   const state =
     declared === undefined
       ? "NOT IN LEGAL_DOCUMENTS"
