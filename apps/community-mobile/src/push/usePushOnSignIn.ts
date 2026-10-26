@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import { AppState } from "react-native"
+import { useLegalUpdatePending } from "@civfix/ui/data"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
 import {
@@ -13,6 +14,7 @@ import { registerForPushNotifications } from "@/push/register"
 
 export function usePushOnSignIn() {
   const status = useAuthStore((s) => s.status)
+  const legalUpdatePending = useLegalUpdatePending()
   const attemptRef = useRef<PushAttemptState>(freshPushAttemptState())
 
   useEffect(() => {
@@ -20,6 +22,8 @@ export function usePushOnSignIn() {
       if (status === "unauthed") attemptRef.current = freshPushAttemptState()
       return
     }
+    // The system's notifications dialog would open over the legal update screen; it asks once that closes.
+    if (legalUpdatePending) return
 
     const attempt = (): void => {
       const state = attemptRef.current
@@ -56,5 +60,5 @@ export function usePushOnSignIn() {
       if (isForegroundEdge(attemptRef.current, next)) attempt()
     })
     return () => subscription.remove()
-  }, [status])
+  }, [status, legalUpdatePending])
 }

@@ -14,6 +14,8 @@ export interface LocationPrimerInput {
   tourPresenting: boolean
   profileIncomplete: boolean
   routeFocused: boolean
+  /** The legal update screen is up or about to open; the primer's sheet would land on top of it. */
+  legalUpdatePending: boolean
 }
 
 export function locationPrimerDecision({
@@ -26,6 +28,7 @@ export function locationPrimerDecision({
   tourPresenting,
   profileIncomplete,
   routeFocused,
+  legalUpdatePending,
 }: LocationPrimerInput): LocationPrimerDecision {
   if (gateActive) return "wait"
   if (authStatus !== "authed" && authStatus !== "unauthed") return "wait"
@@ -36,5 +39,7 @@ export function locationPrimerDecision({
   if (tourPresenting) return "wait"
   if (profileIncomplete) return "wait"
   if (!routeFocused) return "wait"
-  return primerShown ? "ip-only" : "prompt"
+  if (primerShown) return "ip-only"
+  if (legalUpdatePending) return "wait"
+  return "prompt"
 }

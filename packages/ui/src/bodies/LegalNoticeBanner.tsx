@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { LegalDocumentMetaDTO, LegalDocumentType } from "@civfix/contract"
-import { MIN_TOUCH_TARGET, focusRingProps, makeThemedStyles, useTheme, webCursor } from "../theme"
+import { MIN_TOUCH_TARGET, focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webCursor } from "../theme"
 import { Text } from "../typography"
 import {
   noticeAcknowledgement,
@@ -13,9 +13,13 @@ import {
 } from "../data"
 import { useT } from "../i18n"
 import { openLegalDocumentInPlace } from "../primitives/legalDocumentNav"
+import { NAV_FOOTPRINT } from "../shell/expandedFramePlan"
 
 // Over the shell and its map controls (50), under the sign-in overlay (70).
 const BANNER_Z_INDEX = 60
+// The wide layout's top bar (the rail, 65) draws over the top of the window, so there the banner sits below
+// that row, over the panel card (60) and its resize handle (61), and still under the sign-in overlay.
+const BELOW_TOP_BAR_Z_INDEX = 66
 
 // As wide as a phone, so on a desktop it reads as a notice rather than a page header.
 const BANNER_MAX_WIDTH = 560
@@ -49,6 +53,7 @@ interface NoticeBannerProps {
 
 function NoticeBanner({ notice, onOutdated }: NoticeBannerProps) {
   const styles = useStyles()
+  const belowTopBar = useLayoutMode() === "expanded"
   const th = useTheme()
   const { t } = useT("legal")
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 }
@@ -76,6 +81,7 @@ function NoticeBanner({ notice, onOutdated }: NoticeBannerProps) {
     <View
       style={[
         styles.layer,
+        belowTopBar ? styles.belowTopBar : null,
         {
           paddingTop: insets.top + th.space["3"],
           paddingLeft: insets.left + th.space["3"],
@@ -131,6 +137,10 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     zIndex: BANNER_Z_INDEX,
     pointerEvents: "box-none",
+  },
+  belowTopBar: {
+    top: NAV_FOOTPRINT,
+    zIndex: BELOW_TOP_BAR_Z_INDEX,
   },
   banner: {
     width: "100%",

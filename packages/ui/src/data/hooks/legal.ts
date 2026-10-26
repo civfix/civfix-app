@@ -79,6 +79,20 @@ export function useMyLegalStatus() {
 }
 
 /**
+ * True while the update prompt is up or about to open: a signed-in person past first run owes a document,
+ * or their status is still loading. The phone's own prompts (notifications, location) wait on it, so none
+ * opens over the update screen. A status that can't be read holds nothing back.
+ */
+export function useLegalUpdatePending(): boolean {
+  const { isAuthenticated, user } = useAuthState()
+  const status = useMyLegalStatus()
+  if (!isAuthenticated || user?.profileComplete === false) return false
+  // A fetch paused offline may never finish, so only one that is running holds the prompts back.
+  if (status.isPending) return status.fetchStatus === "fetching"
+  return (status.data?.required.length ?? 0) > 0
+}
+
+/**
  * The server answers an acceptance with the person's new status. Showing it at once closes the prompt or
  * the banner without waiting for the refetch.
  */

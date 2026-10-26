@@ -55,6 +55,12 @@ export function LegalUpdateGate() {
   return <LegalUpdateScreen required={required} notices={status.data?.notices ?? []} onOutdated={onOutdated} />
 }
 
+/** A document read inside the screen: the version owed, or the current one when that is missing. */
+interface Reading {
+  type: LegalDocumentType
+  current: boolean
+}
+
 interface LegalUpdateScreenProps {
   required: LegalDocumentMetaDTO[]
   notices: LegalDocumentMetaDTO[]
@@ -69,7 +75,7 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 }
   const logout = useLogout()
   const accept = useAcceptLegal()
-  const [reading, setReading] = useState<LegalDocumentType | null>(null)
+  const [reading, setReading] = useState<Reading | null>(null)
   const rootRef = useRef<View>(null)
   useContainOutside(rootRef)
 
@@ -79,6 +85,9 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
 
   const owed = [...required].sort((a, b) => DOCUMENT_ORDER.indexOf(a.type) - DOCUMENT_ORDER.indexOf(b.type))
   const owedVersion = (type: LegalDocumentType) => owed.find((item) => item.type === type)?.version
+  // Every legal link inside the screen opens here: anything that navigates would leave a page behind it.
+  const readOwed = (type: LegalDocumentType) => setReading({ type, current: false })
+  const readCurrent = (type: LegalDocumentType) => setReading({ type, current: true })
 
   // isPending reaches the button a render later, after a quick second press has already landed.
   const sending = useRef(false)
@@ -104,14 +113,15 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
       role="dialog"
       aria-modal
       accessibilityViewIsModal
-      {...(reading === null ? { "aria-labelledby": TITLE_ID } : { "aria-label": t(READ_KEYS[reading]) })}
+      {...(reading === null ? { "aria-labelledby": TITLE_ID } : { "aria-label": t(READ_KEYS[reading.type]) })}
     >
       {reading !== null ? (
         <LegalDocumentScreen
-          type={reading}
-          version={owedVersion(reading)}
+          type={reading.type}
+          version={reading.current ? undefined : owedVersion(reading.type)}
           onBack={closeReading}
-          onOpenLegalDocument={setReading}
+          onOpenLegalDocument={readOwed}
+          onOpenCurrentVersion={readCurrent}
         />
       ) : (
         <View style={[styles.page, { paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }]}>
@@ -123,7 +133,7 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
               {owed.map((item) => (
                 <View key={item.type} style={styles.document}>
                   {item.summary ? <Text style={styles.summary}>{item.summary}</Text> : null}
-                  <TextLink standalone onPress={() => setReading(item.type)}>
+                  <TextLink standalone onPress={() => readOwed(item.type)}>
                     {t(READ_KEYS[item.type])}
                   </TextLink>
                 </View>
