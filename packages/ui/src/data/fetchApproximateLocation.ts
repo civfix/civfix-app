@@ -14,7 +14,7 @@ export async function fetchApproximateLocation(
   const cached = qc.getQueryData<GetApproximateLocationResponse>(queryKeys.approximateLocation)
   if (cached) return { lat: cached.lat, lng: cached.lng }
   try {
-    const resolved = await qc.fetchQuery<GetApproximateLocationResponse>({
+    const resolved = await qc.query<GetApproximateLocationResponse>({
       queryKey: queryKeys.approximateLocation,
       queryFn: () => api.getApproximateLocation({}),
       staleTime: APPROXIMATE_LOCATION_STALE_MS,

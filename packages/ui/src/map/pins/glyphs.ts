@@ -1,6 +1,6 @@
 export const DROP_PIN_GLYPH = "M12 5 V19 M5 12 H19"
 
-export const PIN_GLYPHS: Record<string, string> = {
+export const PIN_GLYPHS = {
   hazard: "M12 4 L2 20 H22 L12 4 Z M12 10 v4 M12 17 v0.5",
   encampment: "M3.5 21 L14 3 M20.5 21 L10 3 M15.5 21 L12 15 L8.5 21 M3.5 21 H20.5",
   cleanup:
@@ -15,8 +15,10 @@ export const PIN_GLYPHS: Record<string, string> = {
   other:
     "M5 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2 M12 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2 M19 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2",
   drop: DROP_PIN_GLYPH,
-}
+} satisfies Record<string, string>
+
+const GLYPH_BY_NAME: Readonly<Record<string, string>> = PIN_GLYPHS
 
 export function glyphForCategory(category: string): string {
-  return PIN_GLYPHS[category] ?? PIN_GLYPHS.other!
+  return GLYPH_BY_NAME[category] ?? PIN_GLYPHS.other
 }

@@ -53,6 +53,14 @@ export function linkKeyProps(activate: () => void): object | null {
   return { onKeyDown: (event: unknown) => activateOnLinkKey(event, activate) }
 }
 
+/**
+ * Props RN's types do not declare that RNW forwards to the DOM node (data attributes, `tabIndex` on Text,
+ * `transitionend`). Typed as a bare object so a call site spreads them without widening the component.
+ */
+export function domProps(props: Record<string, unknown>): object {
+  return props
+}
+
 /** RN's `CursorValue` is a narrow union while RNW accepts any CSS cursor, so the cursor helpers widen via `unknown`. */
 export const webCursorPointer: ViewStyle = isWeb
   ? ({ cursor: "pointer" } as unknown as ViewStyle)
@@ -72,7 +80,7 @@ export const webCursorColResize: ViewStyle = isWeb
   : {}
 
 /** RNW defaults Text to `user-select: none`, so body content opts back in to be copyable. */
-export const webSelectableText: TextStyle = isWeb ? ({ userSelect: "text" } as TextStyle) : {}
+export const webSelectableText: TextStyle = isWeb ? { userSelect: "text" } : {}
 
 /**
  * Browsers never break inside a word, so a long unbreakable run (a name, a handle, a URL) sets the text's
@@ -84,7 +92,7 @@ export const webBreakAnywhere: TextStyle = isWeb
   : {}
 
 /** Button label Text inside a Pressable can inherit selection in some browsers despite RNW's default. */
-export const webNoSelect: TextStyle = isWeb ? ({ userSelect: "none" } as TextStyle) : {}
+export const webNoSelect: TextStyle = isWeb ? { userSelect: "none" } : {}
 
 /**
  * An RNW `<TextInput>` is a real DOM input that paints the UA focus outline and, for a textarea, a UA
@@ -171,7 +179,7 @@ export const focusRingProps: { dataSet?: Record<string, string> } = isWeb
  * its own native style.
  */
 export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t.colors.accent }): ViewStyle {
-  return isWeb ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle) : native
+  return isWeb ? { boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } : native
 }
 
 /**
@@ -180,7 +188,7 @@ export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t
  * loses to the `[data-focus-ring]:focus-visible` rule's specificity.
  */
 export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb
-  ? ({ outlineOffset: -FOCUS_RING_FOOTPRINT } as unknown as ViewStyle)
+  ? { outlineOffset: -FOCUS_RING_FOOTPRINT }
   : {}
 
 /**

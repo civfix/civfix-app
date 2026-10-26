@@ -203,7 +203,7 @@ function RailTab({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected }}
-      {...({ "aria-selected": selected } as object)}
+      aria-selected={selected}
       accessibilityLabel={t(tab.labelKey)}
       {...focusRingProps}
       style={(state) => [

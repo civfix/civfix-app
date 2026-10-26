@@ -7,7 +7,7 @@
  * `animatedPosition`, so it tracks the sheet exactly at every drag fraction. Stepping an inset from React
  * state or re-deriving the card height by interpolation both left the card edge lagging the content.
  */
-import React, { useMemo, useRef, useCallback, useEffect } from "react"
+import { useMemo, useRef, useCallback, useEffect } from "react"
 import { View, useWindowDimensions, ScrollView as RNScrollView, FlatList as RNFlatList } from "react-native"
 import BottomSheet from "@gorhom/bottom-sheet"
 import Animated, {
@@ -29,7 +29,7 @@ import { SHEET_FLOAT_SIDE, SHEET_HANDLE_HEIGHT, SHEET_HEADER_SIDE_PAD, sheetHead
 import { useSheetCollapse } from "./useSheetCollapse.native"
 import { useSheetExitFreeze } from "./useSheetExitFreeze"
 import { defaultRenderBody } from "./BodyRouter"
-import { ScrollHostProvider } from "./ScrollHost"
+import { ScrollHostProvider, type ScrollHostComponent } from "./ScrollHost"
 import { makeContentBottomReserveScrollHost } from "./ContentBottomReserve"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { makeMinimizeAwareScrollHost } from "./MinimizeAwareScroll.native"
@@ -69,8 +69,8 @@ import type { CompactShellProps } from "./CompactShell.types"
 const SHEET_SCROLL_HOST = makeMinimizeAwareScrollHost(
   makeKeyboardAwareScrollHost(
     makeSheetHandoffScrollHost({
-      ScrollView: RNScrollView as React.ComponentType<any>,
-      FlatList: RNFlatList as React.ComponentType<any>,
+      ScrollView: RNScrollView,
+      FlatList: RNFlatList as ScrollHostComponent,
     }),
     { onKeyboardShow: () => useNavStore.getState().setSnap(2) },
   ),

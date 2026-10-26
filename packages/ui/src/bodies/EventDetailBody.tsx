@@ -172,8 +172,8 @@ function useEventMapFocus(cleanup: CleanupDTO) {
     }
     useMapFocus.getState().setEvent({
       id: cleanup.id,
-      lat: cleanup.lat as number,
-      lng: cleanup.lng as number,
+      lat: cleanup.lat,
+      lng: cleanup.lng,
       eventKind: cleanup.eventKind,
     })
     useNavStore.getState().setSnap(1)
@@ -291,7 +291,7 @@ function EventDetailHeader({
         </View>
         <AddressRow
           address={where ?? null}
-          point={hasPoint ? { lat: cleanup.lat as number, lng: cleanup.lng as number } : null}
+          point={hasPoint ? { lat: cleanup.lat, lng: cleanup.lng } : null}
           focusTarget={{ kind: "cleanup", id: cleanup.id, eventKind: cleanup.eventKind }}
           verified={isVerifiedEventAddress(cleanup.addressSource, cleanup.address)}
           fallbackLabel={cleanup.type === "route" ? t("where.route") : t("where.meeting_point")}

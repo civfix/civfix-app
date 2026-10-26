@@ -35,7 +35,7 @@ export function useApproxCenter(enabled: boolean, refreshIfNull: boolean): Appro
       else setSettledFor(refreshIfNull)
     }
     void qc
-      .fetchQuery<LatLng | null>({
+      .query<LatLng | null>({
         queryKey: queryKeys.userLocation,
         queryFn: () => resolveUserLocation(geo, api, qc),
         staleTime: refreshIfNull ? 0 : Infinity,

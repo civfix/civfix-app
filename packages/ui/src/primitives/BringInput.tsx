@@ -66,6 +66,7 @@ export function BringInput({ value, onChange }: BringInputProps) {
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
           returnKeyType="done"
+          submitBehavior="submit"
           blurOnSubmit={false}
           style={[styles.input, webInputReset]}
         />

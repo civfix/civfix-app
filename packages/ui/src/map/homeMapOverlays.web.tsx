@@ -99,11 +99,11 @@ export function useUserLocationDot({
       el.className = "cf-map-user-dot"
       el.setAttribute("role", "img")
       userMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([userLocation!.lng, userLocation!.lat])
+        .setLngLat([userLocation.lng, userLocation.lat])
         .addTo(map)
       el.setAttribute("aria-label", t("a11y.userLocation"))
     } else {
-      userMarkerRef.current.setLngLat([userLocation!.lng, userLocation!.lat])
+      userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat])
       userMarkerRef.current.getElement().setAttribute("aria-label", t("a11y.userLocation"))
     }
   }, [mapReady, showUserLocation, userLocation, t, mapRef])

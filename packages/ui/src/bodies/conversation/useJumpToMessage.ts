@@ -24,7 +24,7 @@ export function useJumpToMessage({
   windowRows,
   fetchAround,
 }: {
-  listRef: React.MutableRefObject<RNFlatList<RenderItem> | null>
+  listRef: React.RefObject<RNFlatList<RenderItem> | null>
   roomId: string
   data: RenderItem[]
   aroundWindow: ChatItem[] | null

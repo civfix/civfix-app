@@ -1,7 +1,7 @@
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles } from "../theme"
+import { domProps, makeThemedStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
 import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -256,7 +256,7 @@ const WebPageLayer = memo(function WebPageLayer({
       pointerEvents={pointer}
       aria-hidden={!active}
       tabIndex={-1}
-      {...({ onTransitionEnd, dataSet: { civfixPageLayer: "" } } as any)}
+      {...domProps({ onTransitionEnd, dataSet: { civfixPageLayer: "" } })}
     >
       <View style={[styles.layerContent, { paddingTop, paddingBottom: boxReserve }]}>
         <IosKeyboardAvoidingView

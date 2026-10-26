@@ -18,7 +18,7 @@ const thread = (id: string, kind: RoomKind): MessageThreadDTO =>
 const THREADS: ListThreadsResponse = {
   items: [thread("t-group", "group"), thread("t-report", "report")],
   nextCursor: null,
-} as unknown as ListThreadsResponse
+}
 
 function renderLookup(roomKind: RoomKind) {
   const api = { listThreads: vi.fn(async () => THREADS) }

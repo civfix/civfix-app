@@ -423,7 +423,7 @@ describe("the capture step keeps its header attached to its content", () => {
     for (const step of steps) {
       for (const hasMedia of [false, true]) {
         for (const hasViewfinder of [false, true]) {
-          expect(showsCaptureCard(step, hasMedia, hasViewfinder, "expanded"), `${step} ${hasMedia} ${hasViewfinder}`).toBe(
+          expect(showsCaptureCard(step, hasMedia, hasViewfinder, "expanded"), `${step} ${String(hasMedia)} ${String(hasViewfinder)}`).toBe(
             step === "capture" && !hasMedia,
           )
         }
@@ -573,7 +573,7 @@ describe("viewfinderResumeGraceEligible", () => {
           for (const isReportView of [false, true]) {
             expect(
               viewfinderResumeGraceEligible(step, mounted, covered, isReportView),
-              `${step}/${mounted}/${covered}/${isReportView}`,
+              `${step}/${String(mounted)}/${String(covered)}/${String(isReportView)}`,
             ).toBe(!isReportView && viewfinderSessionActive(step, mounted, covered, true))
           }
         }

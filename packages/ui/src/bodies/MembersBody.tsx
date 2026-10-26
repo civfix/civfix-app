@@ -3,7 +3,6 @@ import { View, Pressable, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import type { IconName } from "../typography"
 import {
   EmptyState,
   LoadingState,
@@ -100,7 +99,7 @@ const MemberRow = memo(function MemberRow({
             ? settableRolesOtherThan(targetRole).map((role) => ({
                 key: `role-${role}`,
                 label: t("manage.make_role", { role: tEnums(`cleanupMemberRole.${role}`) }),
-                icon: role === "member" ? ("UserMinus" as IconName) : ("UserPlus" as IconName),
+                icon: role === "member" ? ("UserMinus" as const) : ("UserPlus" as const),
                 disabled: managePending,
                 onPress: () => onSetRole(person.id, role),
               }))

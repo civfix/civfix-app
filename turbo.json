@@ -13,7 +13,8 @@
       "dependsOn": ["^build"]
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/eslint.typed.cjs"]
     },
     "test": {
       "dependsOn": ["^build"]

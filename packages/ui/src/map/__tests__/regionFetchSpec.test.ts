@@ -257,7 +257,7 @@ function runRegionFetchWalk(seed: number, steps: number): RegionWalkResult {
       trace.push("k")
     } else {
       const r = decision.region
-      trace.push(`${decision.action[0]}${[r.west, r.south, r.east, r.north].map((v) => v.toFixed(6)).join(",")}`)
+      trace.push(`${decision.action.charAt(0)}${[r.west, r.south, r.east, r.north].map((v) => v.toFixed(6)).join(",")}`)
       inFlight = decision.action === "request"
       state = { loaded: state.loaded, requested: decision.region }
     }

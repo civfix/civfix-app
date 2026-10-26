@@ -127,8 +127,7 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
 
     const reconcileRef = React.useRef<() => void>(() => {})
     const runnerRef = React.useRef<IdleRunner | null>(null)
-    if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
-    const runner = runnerRef.current
+    const runner = (runnerRef.current ??= createIdleRunner(() => reconcileRef.current()))
 
     React.useLayoutEffect(() => {
       reconcileRef.current = () => {
@@ -255,7 +254,7 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
       const fill = alpha(th.colors.brand.bloom, REPORT_PICK_RADIUS_FILL_ALPHA)
       const line = alpha(th.colors.brand.bloom, REPORT_PICK_RADIUS_LINE_ALPHA)
       const apply = () => {
-        const existing = map.getSource(RADIUS_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
+        const existing = map.getSource<maplibregl.GeoJSONSource>(RADIUS_SOURCE_ID)
         if (existing) {
           // Never rejects: a worker failure is reported on the map's "error" event instead.
           void existing.setData(radiusFeature)

@@ -78,7 +78,7 @@ describe("the ZoomableMedia seam split", () => {
       expect(src).not.toMatch(/react-native-gesture-handler/)
       expect(src).not.toMatch(/react-native-reanimated/)
       expect(src).not.toMatch(/Gesture\.\w/)
-      expect(src).not.toMatch(/useSharedValue|useAnimatedStyle|runOnJS/)
+      expect(src).not.toMatch(/useSharedValue|useAnimatedStyle|runOnJS|scheduleOnRN/)
     }
   })
 
@@ -176,8 +176,8 @@ describe("the native gesture set", () => {
 
   it("only shrinks the full-screen pan surface once the zoom-out animation has finished", () => {
     expect(native).toMatch(/const nextZoomed = isZoomed\(next\.scale\)/)
-    expect(native).toMatch(/if \(nextZoomed\) runOnJS\(setZoomed\)\(true\)/)
-    expect(native).toMatch(/if \(finished && !nextZoomed\) runOnJS\(setZoomed\)\(false\)/)
+    expect(native).toMatch(/if \(nextZoomed\) scheduleOnRN\(setZoomed, true\)/)
+    expect(native).toMatch(/if \(finished && !nextZoomed\) scheduleOnRN\(setZoomed, false\)/)
   })
 })
 

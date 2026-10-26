@@ -71,7 +71,7 @@ function org(id: string, over: Partial<OrganizationDTO> = {}): OrganizationDTO {
     createdAt: "2026-01-01T00:00:00.000Z",
     myRole: "member",
     ...over,
-  } as OrganizationDTO
+  }
 }
 
 function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
@@ -88,7 +88,7 @@ function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
     myCapabilities: [],
     myRole: null,
     ...over,
-  } as HostedEventDTO
+  }
 }
 
 function member(
@@ -117,7 +117,7 @@ function invite(id: string, over: Partial<OrganizationInviteDTO> = {}): Organiza
     createdAt: "2026-01-01T00:00:00.000Z",
     expiresAt: "2026-02-01T00:00:00.000Z",
     ...over,
-  } as OrganizationInviteDTO
+  }
 }
 
 describe("dashboard scope", () => {

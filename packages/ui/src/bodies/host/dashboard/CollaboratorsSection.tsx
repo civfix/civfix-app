@@ -4,7 +4,6 @@ import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } fr
 import { DELETED_USER_LABEL, appErrorCode } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme } from "../../../theme"
 import { Text, TextLink, iconMap } from "../../../typography"
-import type { IconName } from "../../../typography"
 import {
   Avatar,
   IconActionButton,
@@ -97,7 +96,7 @@ function MemberRow({
     ...actions.roles.map((role) => ({
       key: `role-${role}`,
       label: t("team.make_role", { role: tEnums(`organizationMemberRole.${role}`) }),
-      icon: (role === "member" ? "UserMinus" : "UserPlus") as IconName,
+      icon: role === "member" ? ("UserMinus" as const) : ("UserPlus" as const),
       disabled: pending,
       onPress: () => onSetRole(person.id, role),
     })),

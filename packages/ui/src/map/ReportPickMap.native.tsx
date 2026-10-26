@@ -136,8 +136,7 @@ export const ReportPickMap = memo(
       }
     })
     const runnerRef = useRef<IdleRunner | null>(null)
-    if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
-    const runner = runnerRef.current
+    const runner = (runnerRef.current ??= createIdleRunner(() => recomputeRef.current()))
 
     useEffect(() => () => runner.dispose(), [runner])
 

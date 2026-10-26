@@ -1,4 +1,4 @@
-import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
+import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from "react"
 import { useInfiniteQuery, type QueryClient } from "@tanstack/react-query"
 import type { ChatHistoryResponse, ChatMessageDTO, RoomKind } from "@civfix/contract"
 import type { ChatItem } from "../../helpers"
@@ -39,8 +39,8 @@ export interface ChatHistoryCacheDeps {
   roomId: string
   roomKind: RoomKind
   canReadHistory: boolean
-  liveMessagesRef: MutableRefObject<ChatMessageDTO[]>
-  aroundWindowRef: MutableRefObject<ChatItem[] | null>
+  liveMessagesRef: RefObject<ChatMessageDTO[]>
+  aroundWindowRef: RefObject<ChatItem[] | null>
   setLiveMessages: Dispatch<SetStateAction<ChatMessageDTO[]>>
   setAroundWindow: Dispatch<SetStateAction<ChatItem[] | null>>
   pruneLiveMessages: (folded: ReadonlySet<string>) => void
@@ -96,7 +96,7 @@ export function useChatHistoryCache({
     const data = queryClient.getQueryData<ChatHistoryData>(key)
     if (!data || data.pages.length === 0) return
     const next = applyHistoryCacheOps(
-      { pages: data.pages, pageParams: data.pageParams as unknown[] },
+      { pages: data.pages, pageParams: data.pageParams },
       ops,
     )
     if (next.pages !== data.pages || next.pageParams !== data.pageParams) {
@@ -135,7 +135,7 @@ export function useChatHistoryCache({
           return
         }
         const next = applyHistoryCacheOps(
-          { pages: current.pages, pageParams: current.pageParams as unknown[] },
+          { pages: current.pages, pageParams: current.pageParams },
           [op],
         )
         if (next.pages !== current.pages || next.pageParams !== current.pageParams) {

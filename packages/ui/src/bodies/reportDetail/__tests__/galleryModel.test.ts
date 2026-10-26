@@ -4,7 +4,7 @@ import { partitionGalleryMedia } from "../galleryModel"
 
 type Media = ReportDTO["media"][number]
 const media = (id: string, status: Media["status"], kind: Media["kind"] = "image"): Media =>
-  ({ id, status, kind, url: `https://x/${id}` }) as Media
+  ({ id, status, kind, url: `https://x/${id}` })
 
 describe("partitionGalleryMedia", () => {
   it("splits ready, processing and failed media and counts a tile for every unlisted pending upload", () => {

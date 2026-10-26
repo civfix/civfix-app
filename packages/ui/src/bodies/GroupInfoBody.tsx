@@ -3,7 +3,6 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { ChatGroupDTO, GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import type { IconName } from "../typography"
 import {
   EmptyState,
   LoadingState,
@@ -78,21 +77,21 @@ const GroupMemberRow = memo(function GroupMemberRow({
                   return {
                     key: action,
                     label: t("make_admin"),
-                    icon: "Award" as IconName,
+                    icon: "Award",
                     onPress: () => onAction("make-admin", person.id),
                   }
                 case "remove-admin":
                   return {
                     key: action,
                     label: t("remove_admin"),
-                    icon: "Close" as IconName,
+                    icon: "Close",
                     onPress: () => onAction("remove-admin", person.id),
                   }
                 case "remove":
                   return {
                     key: action,
                     label: t("remove_member"),
-                    icon: "Trash2" as IconName,
+                    icon: "Trash2",
                     destructive: true,
                     onPress: () => goToConfirm("confirm-remove"),
                   }
