@@ -33,11 +33,12 @@ describe("the legal helpers are backend only", () => {
     }
   }, 60_000)
 
-  it("T31: the legal pages keep theirs until #240 moves them to the API", async () => {
-    const errors = await restrictedImports(
-      "src/components/legal/x.tsx",
-      'import { legalDocument } from "@civfix/contract/legal"\n',
-    )
-    expect(errors).toEqual([])
-  }, 60_000)
+  it.each(["src/components/legal/x.tsx", "src/app/legal/x.tsx", "scripts/x.mjs"])(
+    "T30: %s, now the legal pages read the API, may not import them either",
+    async (file) => {
+      const errors = await restrictedImports(file, 'import { legalDocument } from "@civfix/contract/legal"\n')
+      expect(errors).toHaveLength(1)
+    },
+    60_000,
+  )
 })

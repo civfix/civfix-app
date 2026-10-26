@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
-  PRIVACY_URL,
   PROD_API_HOST,
   SOURCE_REPO_URL,
-  TERMS_URL,
   WEB_ORIGIN,
   managePath,
   orgPagePath,
@@ -15,6 +13,7 @@ import {
   sourceUrl,
   webOrigin,
 } from "../externalUrls"
+import { legalDocumentUrl } from "../legalDocument"
 
 describe("the source link the AGPL asks every host to offer", () => {
   it("points at the repository root until a host states the deployed commit", () => {
@@ -49,7 +48,7 @@ describe("the configurable web origin", () => {
     try {
       setWebOrigin("https://civfix.dev/")
       expect(webOrigin()).toBe("https://civfix.dev")
-      expect(TERMS_URL).toBe(`${WEB_ORIGIN}/legal/terms`)
+      expect(legalDocumentUrl("terms")).toBe(`${WEB_ORIGIN}/legal/terms`)
     } finally {
       setWebOrigin(WEB_ORIGIN)
     }
@@ -59,8 +58,8 @@ describe("the configurable web origin", () => {
 
 describe("legal URLs", () => {
   it("derives every civfix-hosted legal URL from the one origin", () => {
-    expect(TERMS_URL).toBe(`${WEB_ORIGIN}/legal/terms`)
-    expect(PRIVACY_URL).toBe(`${WEB_ORIGIN}/legal/privacy`)
+    expect(legalDocumentUrl("terms")).toBe(`${WEB_ORIGIN}/legal/terms`)
+    expect(legalDocumentUrl("privacy")).toBe(`${WEB_ORIGIN}/legal/privacy`)
   })
 })
 

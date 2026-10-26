@@ -1,22 +1,14 @@
-import { createHash } from "node:crypto"
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { existsSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
-import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
 
 import {
   aasaExcludeOrder,
-  canonicalDocumentText,
-  extractLegalArticle,
-  isPlaceholderLegalHash,
   DEV_ONLY_ROUTES,
   leakedDevRoutes,
-  legalDocumentHash,
   missingAasaExcludes,
   REQUIRED_AASA_EXCLUDES,
-  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 import { pageExtensionsFor } from "../next.config.mjs"
@@ -105,105 +97,6 @@ describe("AASA gate", () => {
     expect(verdict.ok).toBe(false)
     expect(verdict.reason).toContain("details[1]")
     expect(missingAasaExcludes(association, ["/manage*"])).toEqual(["/manage*"])
-  })
-})
-
-describe("legal document hashing", () => {
-  const html = [
-    "<html><head><title>x</title></head><body>",
-    '<article class="legal-prose" data-legal-doc="terms" data-legal-version="2026-09-06">',
-    "<section><h2>1. Heading</h2><p>First   paragraph &amp; more.</p></section>",
-    "<script>ignored()</script>",
-    "</article></body></html>",
-  ].join("\n")
-
-  it("extracts the article, its version and a stable hash", () => {
-    const article = extractLegalArticle(html)
-    expect(article?.version).toBe("2026-09-06")
-    const hashed = legalDocumentHash(html)
-    expect(hashed?.sha256).toMatch(/^[0-9a-f]{64}$/)
-    expect(legalDocumentHash(html)?.sha256).toBe(hashed?.sha256)
-  })
-
-  it("hashes text, not markup, so a purely presentational change does not invalidate consent", () => {
-    const restyled = html.replace("<section>", '<section class="tidy">')
-    expect(legalDocumentHash(restyled)?.sha256).toBe(legalDocumentHash(html)?.sha256)
-  })
-
-  it("changes when a single word of the document changes", () => {
-    const edited = html.replace("First", "Second")
-    expect(legalDocumentHash(edited)?.sha256).not.toBe(legalDocumentHash(html)?.sha256)
-  })
-
-  it("ignores the version attribute, so a version bump alone is not a content change", () => {
-    const bumped = html.replace('data-legal-version="2026-09-06"', 'data-legal-version="2027-01-01"')
-    expect(legalDocumentHash(bumped)?.sha256).toBe(legalDocumentHash(html)?.sha256)
-  })
-
-  it("decodes entities and collapses whitespace", () => {
-    expect(canonicalDocumentText("<p>a &amp;  b</p><p>c</p>")).toBe("a & b\nc")
-  })
-
-  it("drops scripts and styles rather than hashing them", () => {
-    expect(canonicalDocumentText("<p>a</p><script>evil()</script>")).toBe("a")
-  })
-
-  it("returns null when there is no legal article to hash", () => {
-    expect(legalDocumentHash("<html><body><p>nope</p></body></html>")).toBe(null)
-  })
-})
-
-describe("rendered legal documents", () => {
-  const stamped =
-    '<article class="legal-prose" data-legal-doc="terms" data-legal-version="2026-09-06"><p>Terms.</p></article>'
-
-  function exportWith(pages) {
-    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
-    for (const [route, html] of Object.entries(pages)) {
-      mkdirSync(join(outDir, "legal", route), { recursive: true })
-      if (html !== null) writeFileSync(join(outDir, "legal", route, "index.html"), html, "utf8")
-    }
-    return outDir
-  }
-
-  it("is empty when the export has no legal directory", () => {
-    const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
-    try {
-      expect(renderedLegalDocuments(outDir)).toEqual([])
-    } finally {
-      rmSync(outDir, { recursive: true, force: true })
-    }
-  })
-
-  it("lists every route with an index.html in route order, stamped or not, with its type and hash", () => {
-    const outDir = exportWith({ terms: stamped, privacy: "<p>no stamp</p>", empty: null })
-    try {
-      const documents = renderedLegalDocuments(outDir)
-      expect(documents.map((document) => document.route)).toEqual(["privacy", "terms"])
-      const [privacy, terms] = documents
-      expect(privacy.type).toBe(null)
-      expect(privacy.hashed).toBe(null)
-      expect(terms.type).toBe("terms")
-      expect(terms.html).toBe(stamped)
-      expect(terms.hashed).toEqual(legalDocumentHash(stamped))
-    } finally {
-      rmSync(outDir, { recursive: true, force: true })
-    }
-  })
-})
-
-describe("legal placeholder detection", () => {
-  it("recognizes the sha256(type@version) placeholders the contract still carries", () => {
-    for (const document of LEGAL_DOCUMENTS) {
-      const placeholder = createHash("sha256")
-        .update(`${document.type}@${document.version}`, "utf8")
-        .digest("hex")
-      expect(isPlaceholderLegalHash(document.type, document.version, placeholder)).toBe(true)
-    }
-  })
-
-  it("does not mistake a real content hash for a placeholder", () => {
-    expect(isPlaceholderLegalHash("terms", "2026-09-06", "0".repeat(64))).toBe(false)
   })
 })
 

@@ -59,6 +59,7 @@ import de_host_ticket from "../locales/de/host-ticket.json"
 import de_host_tickets from "../locales/de/host-tickets.json"
 import de_language_settings from "../locales/de/language-settings.json"
 import de_leaderboard from "../locales/de/leaderboard.json"
+import de_legal from "../locales/de/legal.json"
 import de_lightbox from "../locales/de/lightbox.json"
 import de_map_address from "../locales/de/map-address.json"
 import de_map_ui from "../locales/de/map-ui.json"
@@ -163,6 +164,7 @@ const catalog: ResourceLanguage = {
   "host-tickets": de_host_tickets,
   "language-settings": de_language_settings,
   "leaderboard": de_leaderboard,
+  "legal": de_legal,
   "lightbox": de_lightbox,
   "map-address": de_map_address,
   "map-ui": de_map_ui,

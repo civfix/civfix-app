@@ -1,0 +1,12 @@
+{
+  "meta": "버전 {{version}} · {{date}}부터 시행",
+  "earlier_version": "{{date}}의 이전 버전입니다.",
+  "unavailable": "이 이전 버전은 여기에서 볼 수 없습니다.",
+  "current_link": "현재 버전 읽기",
+  "error": {
+    "title": "이 문서를 불러오지 못했습니다",
+    "body": "연결을 확인하고 다시 시도해 주세요."
+  },
+  "retry": "다시 시도",
+  "back": "뒤로"
+}

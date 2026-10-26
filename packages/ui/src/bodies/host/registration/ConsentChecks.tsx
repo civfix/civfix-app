@@ -11,9 +11,8 @@ import {
   webTransition,
 } from "../../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../../typography"
-import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
-import { PRIVACY_URL, TERMS_URL } from "../../../primitives/externalUrls"
+import { useOpenLegalDocument } from "../../../primitives/useOpenLegalDocument"
 import type { ConsentState } from "./consentModel"
 
 const CHECKBOX_SIZE = 20
@@ -76,14 +75,7 @@ export function ConsentChecks({
 }: ConsentChecksProps) {
   const styles = useStyles()
   const { t } = useT("host-ticket")
-  const openExternal = useOpenExternal()
-
-  const openLegal = React.useCallback(
-    (url: string) => {
-      void openExternal?.open(url)
-    },
-    [openExternal],
-  )
+  const openLegal = useOpenLegalDocument()
 
   return (
     <View style={styles.list}>
@@ -102,10 +94,10 @@ export function ConsentChecks({
       {/* The links sit outside the checkbox: a checkbox's children are presentational, so screen
           readers and keyboards cannot reach a link nested inside it. */}
       <View style={styles.links}>
-        <TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>
+        <TextLink variant="caption" standalone onPress={() => openLegal("terms")}>
           {t("consent.terms_link")}
         </TextLink>
-        <TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>
+        <TextLink variant="caption" standalone onPress={() => openLegal("privacy")}>
           {t("consent.privacy_link")}
         </TextLink>
       </View>

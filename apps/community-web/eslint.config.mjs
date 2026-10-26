@@ -16,8 +16,6 @@ const TYPED_FILES = [...TS_FILES, "scripts/**/*.mjs"]
 const FUNCTIONS_TESTS = ["functions/**/*.test.ts"]
 
 // Clients read legal versions from the API; the contract's helpers serve the backend (DECISIONS §66).
-// #240 widens this from the features to the whole app once the legal pages read the API too.
-const LEGAL_HELPER_FILES = ["src/features/**"]
 const LEGAL_HELPER_NAMES = ["currentVersion", "legalDocument", "isCurrent", "currentLegalVersion", "LEGAL_DOCUMENTS"]
 const LEGAL_HELPER_PATHS = ["@civfix/contract", "@civfix/contract/legal"].map((name) => ({
   name,
@@ -125,7 +123,6 @@ export default tseslint.config(
   },
   {
     name: "community-web/legal-helpers",
-    files: LEGAL_HELPER_FILES,
     rules: {
       "no-restricted-imports": ["error", { paths: LEGAL_HELPER_PATHS }],
     },

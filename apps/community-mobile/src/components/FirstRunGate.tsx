@@ -30,6 +30,7 @@ import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
 import { friendlyError } from "@/lib/errors"
+import { useLegalScreenOnTop } from "@/hooks/useLegalScreenOnTop"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
@@ -45,6 +46,7 @@ function FirstRunForm() {
   const th = useTheme()
   const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const legalOnTop = useLegalScreenOnTop()
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const signOut = useAuthStore((s) => s.signOut)
@@ -106,7 +108,7 @@ function FirstRunForm() {
   }, [canSubmit, trimmedHandle, displayName, setUser, t])
 
   return (
-    <View style={styles.overlay}>
+    <View style={[styles.overlay, legalOnTop ? styles.stepAside : null]}>
       <IosKeyboardAvoidingView style={styles.root}>
         <KeyboardPinnedSurface>
           <FirstRunScrollView
@@ -265,6 +267,7 @@ const useStyles = makeThemedStyles((t) => ({
     zIndex: 50,
     elevation: 50,
   },
+  stepAside: { display: "none" },
   root: { flex: 1, backgroundColor: t.colors.bg },
   scroll: {
     paddingHorizontal: t.space["5"],
