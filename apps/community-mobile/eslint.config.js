@@ -21,6 +21,7 @@ const TYPED_RULES = {
   // falls through to undefined when a union grows.
   "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
   "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "separate-type-imports" }],
+  "@typescript-eslint/no-import-type-side-effects": "error",
   "@typescript-eslint/no-unsafe-argument": "error",
   "@typescript-eslint/no-unsafe-assignment": "error",
   "@typescript-eslint/no-unsafe-call": "error",

@@ -25,7 +25,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
 import { appErrorCode } from "@civfix/contract"
-import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
+import type { SettableEventMemberRole } from "../../data/eventTeamTiers"
 import { HostBodyState } from "./HostBodyState"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {

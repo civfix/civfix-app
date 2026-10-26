@@ -60,6 +60,7 @@ export default tseslint.config(
         "warn",
         { prefer: "type-imports", fixStyle: "separate-type-imports" },
       ],
+      "@typescript-eslint/no-import-type-side-effects": "error",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { useReverseLabel, reverseLabelText } from "../../data"
