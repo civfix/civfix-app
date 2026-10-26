@@ -18,6 +18,13 @@ const BANNED_PATHS = [
   { name: "maplibre-gl", message: "maplibre-gl is web-only; import it only in a *.web.* map seam file." },
   { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
 ]
+// Clients read legal versions from the API; the contract's helpers serve the backend (DECISIONS §66).
+const LEGAL_HELPER_NAMES = ["currentVersion", "legalDocument", "isCurrent", "currentLegalVersion", "LEGAL_DOCUMENTS"]
+const LEGAL_HELPER_PATHS = ["@civfix/contract", "@civfix/contract/legal"].map((name) => ({
+  name,
+  importNames: LEGAL_HELPER_NAMES,
+  message: "Legal versions come from the API (useLegalDocuments in @civfix/ui/data); this helper is backend only.",
+}))
 const BANNED_PATH_PATTERNS = [{ group: ["next/*"], message: "next/* is web-app-only and must not leak into @civfix/ui." }]
 
 const RN_FREE_FILES = ["src/theme/schemes.ts", "src/primitives/externalUrls.ts"]
@@ -103,7 +110,7 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
-          paths: [...BANNED_PATHS],
+          paths: [...BANNED_PATHS, ...LEGAL_HELPER_PATHS],
           patterns: [...BANNED_PATTERNS, ...BANNED_PATH_PATTERNS, ...NATIVE_ONLY_PATTERNS],
         },
       ],
@@ -118,6 +125,7 @@ export default tseslint.config(
           paths: [
             { name: "@expo/vector-icons", message: "Use lucide-react-native via @civfix/ui/typography instead of @expo/vector-icons." },
             { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
+            ...LEGAL_HELPER_PATHS,
           ],
           patterns: [...BANNED_PATH_PATTERNS, ...NATIVE_ONLY_PATTERNS],
         },
@@ -133,6 +141,7 @@ export default tseslint.config(
           paths: [
             { name: "@expo/vector-icons", message: "Use lucide-react-native via @civfix/ui/typography instead of @expo/vector-icons." },
             { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
+            ...LEGAL_HELPER_PATHS,
           ],
           patterns: [...BANNED_PATH_PATTERNS],
         },
@@ -145,7 +154,7 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
-          paths: [...BANNED_PATHS, ...RN_FREE_PATHS],
+          paths: [...BANNED_PATHS, ...RN_FREE_PATHS, ...LEGAL_HELPER_PATHS],
           patterns: [...BANNED_PATTERNS, ...BANNED_PATH_PATTERNS, ...NATIVE_ONLY_PATTERNS, ...RN_FREE_PATTERNS],
         },
       ],

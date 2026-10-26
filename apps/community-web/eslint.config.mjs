@@ -15,6 +15,16 @@ const TS_FILES = ["**/*.ts", "**/*.tsx"]
 const TYPED_FILES = [...TS_FILES, "scripts/**/*.mjs"]
 const FUNCTIONS_TESTS = ["functions/**/*.test.ts"]
 
+// Clients read legal versions from the API; the contract's helpers serve the backend (DECISIONS §66).
+// #240 widens this from the features to the whole app once the legal pages read the API too.
+const LEGAL_HELPER_FILES = ["src/features/**"]
+const LEGAL_HELPER_NAMES = ["currentVersion", "legalDocument", "isCurrent", "currentLegalVersion", "LEGAL_DOCUMENTS"]
+const LEGAL_HELPER_PATHS = ["@civfix/contract", "@civfix/contract/legal"].map((name) => ({
+  name,
+  importNames: LEGAL_HELPER_NAMES,
+  message: "Legal versions come from the API (useLegalDocuments in @civfix/ui/data); this helper is backend only.",
+}))
+
 const HOST_CONSOLE_FILES = ["src/features/host/**", "src/components/console/**", "src/app/manage/**"]
 const HOST_CONSOLE_UI_MESSAGE =
   "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
@@ -114,6 +124,14 @@ export default tseslint.config(
     },
   },
   {
+    name: "community-web/legal-helpers",
+    files: LEGAL_HELPER_FILES,
+    rules: {
+      "no-restricted-imports": ["error", { paths: LEGAL_HELPER_PATHS }],
+    },
+  },
+  {
+    // Replaces the legal-helpers options for the console's files, so it repeats them.
     name: "community-web/host-console",
     files: HOST_CONSOLE_FILES,
     rules: {
@@ -149,6 +167,7 @@ export default tseslint.config(
             },
             { name: "next/router", message: "The console is App Router + its own history bridge." },
             { name: "maplibre-gl", message: "The console renders no map." },
+            ...LEGAL_HELPER_PATHS,
           ],
           patterns: [
             {

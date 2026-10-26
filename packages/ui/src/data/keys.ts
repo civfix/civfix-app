@@ -102,16 +102,8 @@ export const queryKeys = {
   orgMembers: (orgId: string) => ["org-admin", orgId, "members"] as const,
   orgInvites: (orgId: string) => ["org-admin", orgId, "invites"] as const,
   myOrgInvites: ["org-invites", "mine"] as const,
-  get legalRoot(): readonly ["legal"] {
-    throw new Error("not implemented")
-  },
-  get legalDocuments(): readonly ["legal", "documents"] {
-    throw new Error("not implemented")
-  },
-  legalDocument: (_type: LegalDocumentType, _version: string): readonly ["legal", "documents", LegalDocumentType, string] => {
-    throw new Error("not implemented")
-  },
-  get myLegalStatus(): readonly ["legal", "me"] {
-    throw new Error("not implemented")
-  },
+  legalRoot: ["legal"] as const,
+  legalDocuments: ["legal", "documents"] as const,
+  legalDocument: (type: LegalDocumentType, version: string) => ["legal", "documents", type, version] as const,
+  myLegalStatus: ["legal", "me"] as const,
 }

@@ -24,12 +24,12 @@ export const PRIVACY_0921 = legalDocument(
   "2026-09-21",
   "e7bb3df8d1bae0ebf3dac45021beb1f260c3035f2bf3cabd0201e2586eb2f127",
 )
-export const COOKIES_0916 = legalDocument(
+const COOKIES_0916 = legalDocument(
   "cookies",
   "2026-09-16",
   "4a05415bba1ef0301058815ce6d01f98eb593bd18378e7ce52555074da3064c0",
 )
-export const SUBPROCESSORS_0916 = legalDocument(
+const SUBPROCESSORS_0916 = legalDocument(
   "subprocessors",
   "2026-09-16",
   "5ab722bb37cc2972ada7521b6dc239bfd85f82691d0e3e2489f5dcac9983a198",

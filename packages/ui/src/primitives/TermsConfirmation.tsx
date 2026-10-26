@@ -11,16 +11,17 @@ import {
   MIN_TOUCH_TARGET,
 } from "../theme"
 import { Text } from "../typography"
-import type { LegalDocumentType } from "@civfix/contract"
-import { currentVersion } from "@civfix/contract/legal"
+import type { LegalDocumentDTO, LegalDocumentType } from "@civfix/contract"
 import { useOpenExternal } from "../capabilities"
+import { useLegalDocuments } from "../data"
 import { useT } from "../i18n"
 import { CheckboxBox } from "./CheckboxBox"
 import { PRIVACY_URL, TERMS_URL } from "./externalUrls"
 
 export interface AcceptedLegalDocument {
-  id: LegalDocumentType
+  type: LegalDocumentType
   version: string
+  sha256: string
 }
 
 export interface TermsConfirmationProps {
@@ -31,6 +32,19 @@ export interface TermsConfirmationProps {
 }
 
 const DEFAULT_DOCUMENTS: readonly LegalDocumentType[] = ["terms", "privacy"]
+
+function acceptedDocuments(
+  fetched: readonly LegalDocumentDTO[] | undefined,
+  types: readonly LegalDocumentType[],
+): AcceptedLegalDocument[] | null {
+  const accepted: AcceptedLegalDocument[] = []
+  for (const type of types) {
+    const document = fetched?.find((entry) => entry.type === type)
+    if (document === undefined) return null
+    accepted.push({ type, version: document.version, sha256: document.sha256 })
+  }
+  return accepted
+}
 
 export function TermsConfirmation({
   confirmed,
@@ -48,13 +62,30 @@ export function TermsConfirmation({
     [openExternal],
   )
 
+  const legal = useLegalDocuments({ enabled: onAccept !== undefined })
+  // A confirming tick taken before the documents arrived; it is accepted once they do, if still ticked.
+  const [acceptPending, setAcceptPending] = React.useState(false)
+
   const toggle = React.useCallback(() => {
     const next = !confirmed
     onConfirmedChange(next)
-    if (next && onAccept) {
-      onAccept(documents.map((id) => ({ id, version: currentVersion(id) })))
+    if (!onAccept) return
+    const accepted = next ? acceptedDocuments(legal.data, documents) : null
+    if (accepted) onAccept(accepted)
+    setAcceptPending(next && accepted === null)
+  }, [confirmed, documents, legal.data, onAccept, onConfirmedChange])
+
+  React.useEffect(() => {
+    if (!acceptPending || !onAccept) return
+    if (!confirmed) {
+      setAcceptPending(false)
+      return
     }
-  }, [confirmed, documents, onAccept, onConfirmedChange])
+    const accepted = acceptedDocuments(legal.data, documents)
+    if (accepted === null) return
+    setAcceptPending(false)
+    onAccept(accepted)
+  }, [acceptPending, confirmed, documents, legal.data, onAccept])
 
   return (
     <View style={styles.row}>

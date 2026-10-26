@@ -35,7 +35,8 @@
     "sms": "Schickt mir Updates zu dieser Veranstaltung per SMS. Es können Nachrichten- und Datengebühren anfallen.",
     "sms_a11y": "SMS-Updates zu dieser Veranstaltung erhalten",
     "version": "Nutzungsbedingungen Version {{version}}",
-    "required_error": "Bitte stimme den Nutzungsbedingungen und der Datenschutzerklärung zu, um dich anzumelden."
+    "required_error": "Bitte stimme den Nutzungsbedingungen und der Datenschutzerklärung zu, um dich anzumelden.",
+    "outdated": "Unsere Bedingungen haben sich geändert. Bitte sieh sie dir an und stimme erneut zu."
   },
   "form": {
     "heading": "Anmelden",

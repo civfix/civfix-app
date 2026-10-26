@@ -115,7 +115,7 @@ describe("GuestRsvpSheet", () => {
     expect(sheet).toContain("const [sendingCode, setSendingCode] = useState(false)")
     expect(sheet).toContain("const sendPending = sendingCode || request.isPending")
     expect(sheet).toContain("loading={sendPending}")
-    expect(sheet).toContain("disabled={!canSubmitGuestForm(form, sendPending)}")
+    expect(sheet).toContain("disabled={!canSubmitGuestForm(form, sendPending) || legalWaiting}")
   })
 
   it("refuses a re-entrant send through a REF, so two presses in one frame cannot both mint", () => {

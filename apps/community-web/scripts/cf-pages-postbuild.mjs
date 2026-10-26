@@ -10,7 +10,7 @@ import {
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { LEGAL_DOCUMENTS } from "@civfix/contract/legal"
+import { LEGAL_DOCUMENTS, legalDocument } from "@civfix/contract/legal"
 
 import {
   NOINDEX_RULE,
@@ -341,7 +341,8 @@ for (const { route, type, hashed } of legalDocuments) {
   if (hashed === null) continue
   legalRendered.set(type, { route, ...hashed })
 
-  const declared = LEGAL_DOCUMENTS.find((document) => document.type === type)
+  // `legalDocument` throws on a type the contract doesn't declare; that case is reported as drift below.
+  const declared = LEGAL_DOCUMENTS.some((document) => document.type === type) ? legalDocument(type) : undefined
   if (declared === undefined) {
     legalDrift.push(`${type}: rendered at /legal/${route}/ but absent from LEGAL_DOCUMENTS`)
     continue

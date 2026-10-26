@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import { fileURLToPath } from "node:url"
 import { ESLint, type Linter } from "eslint"
 
-const APP_DIR = fileURLToPath(new URL("..", import.meta.url))
+const APP_DIR = fileURLToPath(new URL("..", import.meta.url).href)
 const BANNED = ["currentVersion", "legalDocument", "isCurrent", "currentLegalVersion", "LEGAL_DOCUMENTS"]
 const SOURCES = ["@civfix/contract/legal", "@civfix/contract"]
 

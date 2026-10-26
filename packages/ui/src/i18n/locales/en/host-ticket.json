@@ -35,7 +35,8 @@
     "sms": "Text me updates about this event. Message and data rates may apply.",
     "sms_a11y": "Receive text updates about this event",
     "version": "Terms version {{version}}",
-    "required_error": "Please agree to the Terms and Privacy Policy to register."
+    "required_error": "Please agree to the Terms and Privacy Policy to register.",
+    "outdated": "Our terms changed. Please review and agree again."
   },
   "form": {
     "heading": "Register",
