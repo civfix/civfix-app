@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
 import { EASE_STANDARD_CSS, motion, useReducedMotion, webNoSelect } from "../theme"
 import { useT } from "../i18n"

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { View, Pressable, Platform, type TextStyle } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import {

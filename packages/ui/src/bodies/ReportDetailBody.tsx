@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { View, Pressable } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { isVerifiedReportAddress } from "@civfix/contract"

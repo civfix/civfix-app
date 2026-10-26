@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { categoryColor, makeThemedStyles, useTheme, focusRingProps } from "../../theme"

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import type { CleanupDTO } from "@civfix/contract"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTheme } from "../../theme"

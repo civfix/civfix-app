@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { View, StyleSheet, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"

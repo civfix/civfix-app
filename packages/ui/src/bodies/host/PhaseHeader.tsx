@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, View } from "react-native"
 import type { EventPhase } from "@civfix/contract"
 import { makeThemedStyles, useReducedMotion, useTheme, type Theme } from "../../theme"

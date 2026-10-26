@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { makeThemedStyles, motion } from "../theme"

@@ -1,4 +1,3 @@
-import * as React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type * as ReactNative from "react-native"

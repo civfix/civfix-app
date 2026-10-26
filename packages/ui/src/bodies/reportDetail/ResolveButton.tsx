@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Pressable, ActivityIndicator } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"

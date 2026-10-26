@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable } from "react-native"
 import { focusRingProps, webHover, webTransition } from "../../theme"
 import { Text } from "../../typography"

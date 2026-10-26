@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { View, type ViewStyle } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { space, useTheme } from "../theme"

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
 import { bodyTransitionPlan, translateRatio, type BodyTransitionPlan } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"

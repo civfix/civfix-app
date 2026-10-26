@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Pressable, View } from "react-native"
 import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/contract"
 import { deriveCleanupStatus } from "@civfix/contract/host"

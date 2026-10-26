@@ -2,7 +2,6 @@
  * No header role: the wordmark always sits inside the home button's pill, and rn-web would render the role
  * as an extra `<h1>` above each surface's real heading (see `theme/webAffordances.headingLevel`).
  */
-import React from "react"
 import { View, Text, StyleSheet } from "react-native"
 import { fontFamily, wordmarkColors } from "../theme"
 

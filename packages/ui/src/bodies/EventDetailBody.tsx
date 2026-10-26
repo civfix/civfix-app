@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/contract"
 import { isVerifiedEventAddress } from "@civfix/contract"

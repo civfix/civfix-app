@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, headingLevel } from "../../theme"

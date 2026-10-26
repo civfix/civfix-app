@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import type { TFunction } from "i18next"
 import { focusRingProps, useTheme } from "../../theme"

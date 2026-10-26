@@ -1,4 +1,3 @@
-import React from "react"
 import { ActivityIndicator, Pressable, View } from "react-native"
 import {
   MIN_TOUCH_TARGET,

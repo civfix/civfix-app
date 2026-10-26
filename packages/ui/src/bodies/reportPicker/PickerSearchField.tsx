@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webCursorPointer, webInputReset } from "../../theme"
 import { Icon, iconMap } from "../../typography"

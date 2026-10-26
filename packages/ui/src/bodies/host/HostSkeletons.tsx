@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { makeThemedStyles, radius as radiusScale } from "../../theme"
 import { METER_HEIGHT } from "../../primitives/Meter"

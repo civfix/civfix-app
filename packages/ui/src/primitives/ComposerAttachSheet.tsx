@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, Platform } from "react-native"
 import { makeThemedStyles, useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../theme"
 import { iconMap } from "../typography"

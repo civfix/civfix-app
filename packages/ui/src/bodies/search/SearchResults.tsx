@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { CleanupDTO, LatLng, ReportPinDTO, UserSearchResultDTO } from "@civfix/contract"
 import { eventChip } from "@civfix/contract/datetime"
