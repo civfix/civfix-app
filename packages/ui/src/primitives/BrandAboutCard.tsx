@@ -5,7 +5,8 @@ import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { Brand } from "./Brand"
-import { DONATE_URL, PRIVACY_URL, TERMS_URL, offProductionApiHost, sourceUrl } from "./externalUrls"
+import { DONATE_URL, offProductionApiHost, sourceUrl } from "./externalUrls"
+import { useOpenLegalDocument } from "./useOpenLegalDocument"
 
 /**
  * Zero-width non-joiner (U+200C). Interpolated into the eyebrow's `{{zwnj}}` slot (between "(" and "c") so
@@ -23,6 +24,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   const styles = useStyles()
   const th = useTheme()
   const openExternal = useOpenExternal()
+  const openLegalDocument = useOpenLegalDocument()
   const { t } = useT("about")
   const offProductionHost = offProductionApiHost()
 
@@ -55,8 +57,8 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
     void openExternal?.open(DONATE_URL)
   }
 
-  const openLegal = (url: string) => {
-    void openExternal?.open(url)
+  const openSource = () => {
+    void openExternal?.open(sourceUrl())
   }
 
   const cardTransform = [
@@ -120,7 +122,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
 
             <View style={styles.legalRow}>
               <Pressable
-                onPress={() => openLegal(TERMS_URL)}
+                onPress={() => openLegalDocument("terms")}
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.terms_a11y")}
                 hitSlop={6}
@@ -131,7 +133,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
               </Pressable>
               <Text style={styles.legalDot}>·</Text>
               <Pressable
-                onPress={() => openLegal(PRIVACY_URL)}
+                onPress={() => openLegalDocument("privacy")}
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.privacy_a11y")}
                 hitSlop={6}
@@ -142,7 +144,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
               </Pressable>
               <Text style={styles.legalDot}>·</Text>
               <Pressable
-                onPress={() => openLegal(sourceUrl())}
+                onPress={openSource}
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.source_a11y")}
                 hitSlop={6}

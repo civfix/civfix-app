@@ -13,6 +13,8 @@ import type {
   UserProfileDTO,
   SearchUsersResponse,
   HandleAvailableResponse,
+  GetLegalDocumentsResponse,
+  UserDTO,
 } from "@civfix/contract"
 import { isValidHandle } from "@civfix/contract"
 import { useApi, useAuthState, useOnUserUpdated } from "../context"
@@ -20,6 +22,7 @@ import { queryKeys } from "../keys"
 import { coercePages } from "../infinitePages"
 import { listItems } from "../types"
 import { useDebouncedValue } from "./useDebouncedValue"
+import { recordSignUpAcceptance, useLegalDocuments } from "./legal"
 import {
   profilePastEventsAction,
   profilePastEventsView,
@@ -366,13 +369,43 @@ export function useUpdateProfile() {
   const onUserUpdated = useOnUserUpdated()
   return useMutation<UpdateProfileResponse, unknown, UpdateProfileRequest>({
     mutationFn: (body) => api.updateProfile(body),
-    onSuccess: (res) => {
-      onUserUpdated?.(res.user)
-      void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
-      void qc.invalidateQueries({ queryKey: PEOPLE_LIST_KEY })
-      // Settings builds its next save from this profile, so mutateAsync must not resolve before it is fresh.
-      return qc.invalidateQueries({ queryKey: queryKeys.myProfile })
+    onSuccess: (res) => applySavedProfile(qc, onUserUpdated, res.user),
+  })
+}
+
+function applySavedProfile(
+  qc: QueryClient,
+  onUserUpdated: ((user: UserDTO) => void) | undefined,
+  user: UserDTO,
+): Promise<void> {
+  onUserUpdated?.(user)
+  void qc.invalidateQueries({ queryKey: queryKeys.profile(user.id) })
+  void qc.invalidateQueries({ queryKey: PEOPLE_LIST_KEY })
+  // Settings builds its next save from this profile, so mutateAsync must not resolve before it is fresh.
+  return qc.invalidateQueries({ queryKey: queryKeys.myProfile })
+}
+
+/**
+ * First run's Continue: the profile update, then the sign-up record of the legal documents. The record
+ * waits for the saved profile because a refused update keeps first run open and the server takes a
+ * sign-up record only while the account has none, so recording first would get the retry refused. The
+ * saved user, which closes first run, is applied only once the record settles, so the update prompt
+ * never opens over what the person has just agreed to.
+ */
+export function useCompleteFirstRun() {
+  const api = useApi()
+  const qc = useQueryClient()
+  const onUserUpdated = useOnUserUpdated()
+  // Loaded while the form is filled in, so Continue has the versions its Terms checkbox agreed to.
+  useLegalDocuments()
+  return useMutation<UpdateProfileResponse, unknown, UpdateProfileRequest>({
+    mutationFn: async (body) => {
+      const shown = qc.getQueryData<GetLegalDocumentsResponse>(queryKeys.legalDocuments)?.documents ?? []
+      const res = await api.updateProfile(body)
+      await recordSignUpAcceptance(api, qc, shown)
+      return res
     },
+    onSuccess: (res) => applySavedProfile(qc, onUserUpdated, res.user),
   })
 }
 

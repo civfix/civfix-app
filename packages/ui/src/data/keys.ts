@@ -1,4 +1,4 @@
-import type { RoomKind } from "@civfix/contract"
+import type { LegalDocumentType, RoomKind } from "@civfix/contract"
 
 export const queryKeys = {
   session: ["session"] as const,
@@ -102,4 +102,8 @@ export const queryKeys = {
   orgMembers: (orgId: string) => ["org-admin", orgId, "members"] as const,
   orgInvites: (orgId: string) => ["org-admin", orgId, "invites"] as const,
   myOrgInvites: ["org-invites", "mine"] as const,
+  legalRoot: ["legal"] as const,
+  legalDocuments: ["legal", "documents"] as const,
+  legalDocument: (type: LegalDocumentType, version: string) => ["legal", "documents", type, version] as const,
+  myLegalStatus: ["legal", "me"] as const,
 }

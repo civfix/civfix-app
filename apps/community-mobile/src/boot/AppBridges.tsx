@@ -1,7 +1,12 @@
 import React, { useEffect } from "react"
 import { Platform } from "react-native"
 import { useRouter } from "expo-router"
-import { setBrandAboutPresenter, setOnboardingTourPresenter, setScanPresenter } from "@civfix/ui"
+import {
+  setBrandAboutPresenter,
+  setLegalDocumentPresenter,
+  setOnboardingTourPresenter,
+  setScanPresenter,
+} from "@civfix/ui"
 import { setCameraNavigator } from "@/lib/nativeCamera"
 import { codeScannerSupported } from "@/lib/scannerSupport"
 import { useOnboardingStore } from "@/store/onboardingStore"
@@ -40,6 +45,15 @@ function BrandAboutBridge(): null {
   return null
 }
 
+function LegalDocumentBridge(): null {
+  const router = useRouter()
+  useEffect(() => {
+    setLegalDocumentPresenter((type) => router.push(`/legal/${type}`))
+    return () => setLegalDocumentPresenter(null)
+  }, [router])
+  return null
+}
+
 function OnboardingTourBridge(): null {
   useEffect(() => {
     setOnboardingTourPresenter(() => useOnboardingStore.getState().replay())
@@ -55,6 +69,7 @@ export function AppBridges() {
       <CameraNavigatorBridge />
       <ScanPresenterBridge />
       <BrandAboutBridge />
+      <LegalDocumentBridge />
       <OnboardingTourBridge />
     </>
   )

@@ -59,6 +59,7 @@ import ko_host_ticket from "../locales/ko/host-ticket.json"
 import ko_host_tickets from "../locales/ko/host-tickets.json"
 import ko_language_settings from "../locales/ko/language-settings.json"
 import ko_leaderboard from "../locales/ko/leaderboard.json"
+import ko_legal from "../locales/ko/legal.json"
 import ko_lightbox from "../locales/ko/lightbox.json"
 import ko_map_address from "../locales/ko/map-address.json"
 import ko_map_ui from "../locales/ko/map-ui.json"
@@ -163,6 +164,7 @@ const catalog: ResourceLanguage = {
   "host-tickets": ko_host_tickets,
   "language-settings": ko_language_settings,
   "leaderboard": ko_leaderboard,
+  "legal": ko_legal,
   "lightbox": ko_lightbox,
   "map-address": ko_map_address,
   "map-ui": ko_map_ui,

@@ -155,8 +155,7 @@ describe("the outbound URLs are stated once", () => {
     const urls = strip(read("../externalUrls.ts"))
     expect(urls).toContain('export const DONATE_URL = "https://reachoutla.org/help"')
     expect(urls).toContain('export const WEB_ORIGIN = "https://civfix.org"')
-    expect(urls).toContain("export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`")
-    expect(urls).toContain("export const PRIVACY_URL = `${WEB_ORIGIN}/legal/privacy`")
+    expect(strip(read("../legalDocument.ts"))).toContain("return `${WEB_ORIGIN}/legal/${type}`")
     expect(urls).toContain('SOURCE_REPO_URL, sourceLink } from "../helpers"')
     expect(urls).toContain("export { SOURCE_REPO_URL }")
     expect(strip(read("../../helpers/legal-source.ts"))).toContain(

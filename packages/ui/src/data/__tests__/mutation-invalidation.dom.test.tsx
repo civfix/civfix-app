@@ -56,6 +56,7 @@ import {
   useUndoEventCheckIn,
   useWalkupRegistration,
 } from "../hooks/host"
+import { useAcceptLegal } from "../hooks/legal"
 import { useDeleteAccount, useReportContent, useRequestEmailCode, useRequestMyData } from "../hooks/moderation"
 import {
   useMarkNotificationsRead,
@@ -89,7 +90,7 @@ import {
   useUnmarkReportFixed,
 } from "../hooks/reports"
 import { useReverseLabel } from "../hooks/reverseLabel"
-import { useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
+import { useCompleteFirstRun, useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
 import {
   useIssueServiceHoursCertificate,
   useLogEventHours,
@@ -233,6 +234,16 @@ describe("reports.ts mutation invalidations", () => {
   })
 })
 
+describe("legal.ts mutation invalidations", () => {
+  it("useAcceptLegal invalidates the signed-in person's legal status", async () => {
+    const api = { acceptLegal: resolves({ required: [], notices: [], accepted: {} }) }
+    const body = {
+      items: [{ type: "terms" as const, version: "2026-09-21", sha256: "a".repeat(64), action: "accepted" as const }],
+    }
+    expect(await invalidationsOf(() => useAcceptLegal(), body, api)).toEqual([key("legal", "me")])
+  })
+})
+
 describe("social.ts mutation invalidations", () => {
   it("useFollowPerson invalidates nothing", async () => {
     const api = { followPerson: resolves({ isFollowing: true, followers: 5 }) }
@@ -246,6 +257,21 @@ describe("social.ts mutation invalidations", () => {
       key("people"),
       key("profile", "me"),
     ])
+  })
+
+  it("useCompleteFirstRun invalidates my legal status once it is recorded, then what useUpdateProfile does", async () => {
+    const terms = { type: "terms", version: "2026-09-21", sha256: "a".repeat(64) }
+    const api = {
+      getLegalDocuments: resolves({ documents: [terms] }),
+      updateProfile: resolves({ user: { id: ME.id } }),
+      acceptLegal: resolves({ required: [], notices: [], accepted: {} }),
+    }
+    const { result, queryClient, invalidations } = renderWithData(() => useCompleteFirstRun(), api)
+    await waitFor(() => expect(queryClient.getQueryData(["legal", "documents"])).toBeDefined())
+    await act(async () => {
+      await result.current.mutateAsync({ handle: "mia", displayName: "Mia Me" })
+    })
+    expect(invalidations).toEqual([key("legal", "me"), key("profile", ME.id), key("people"), key("profile", "me")])
   })
 })
 

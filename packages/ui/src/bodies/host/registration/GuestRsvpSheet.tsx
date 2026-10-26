@@ -39,6 +39,7 @@ import {
   consentPayload,
   type ConsentState,
 } from "./consentModel"
+import { useConsentVersions } from "./useConsentVersions"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
@@ -129,6 +130,10 @@ export function GuestRsvpSheet({
     [questions, ticketTypeId, answers],
   )
 
+  // Consent is part of the form only for an event with ticket types.
+  const legal = useConsentVersions(visible && hasTypes)
+  const legalWaiting = hasTypes && legal.versions === null
+
   const smsOffered = guestSmsEnabled === true && !smsBlocked
   const sendPending = sendingCode || request.isPending
 
@@ -179,14 +184,23 @@ export function GuestRsvpSheet({
   const secondsLeft = guestResendSecondsLeft(resendReadyAt, nowMs)
 
   const registrationExtras = useMemo(() => {
-    if (!hasTypes || !selectedType) return {}
+    if (!hasTypes || !selectedType || legal.versions === null) return {}
     return {
       ticketTypeId: selectedType.id,
       partySize: clampPartySize(partySize, selectedType.maxPartySize),
       ...(shownQuestions.length > 0 ? { answers: answerPayload(shownQuestions, answers) } : {}),
-      consent: consentPayload(consent),
+      consent: consentPayload(consent, legal.versions),
     }
-  }, [answers, consent, hasTypes, partySize, selectedType, shownQuestions])
+  }, [answers, consent, hasTypes, legal.versions, partySize, selectedType, shownQuestions])
+
+  // The terms changed under the guest: back to the form, where the boxes are, to agree again.
+  const consentOutdated = useCallback(() => {
+    setStep("form")
+    setCode("")
+    setResendReadyAt(null)
+    setConsent(EMPTY_CONSENT)
+    setLocalErrorKey("host-ticket:consent.outdated")
+  }, [])
 
   const sendCode = useCallback(
     (name: string, contact: GuestContactPayload) => {
@@ -231,6 +245,10 @@ export function GuestRsvpSheet({
             setStep("code")
           } catch (err) {
             if (stale()) return
+            if (legal.adoptOutdated(err)) {
+              consentOutdated()
+              return
+            }
             if (guestSmsUnavailable(contact.channel, appErrorFields(err))) {
               setSmsBlocked(true)
               setForm((prev) => ({ ...prev, channel: "email", phone: "" }))
@@ -241,13 +259,13 @@ export function GuestRsvpSheet({
         }
       })()
     },
-    [getTurnstileToken, registrationExtras, request, settleSend, verify],
+    [consentOutdated, getTurnstileToken, legal, registrationExtras, request, settleSend, verify],
   )
 
   const submitForm = useCallback(() => {
     const name = guestNameValue(form.name)
     const contact = guestContactPayload(form)
-    if (name === null || contact === null || sendPending) return
+    if (name === null || contact === null || sendPending || legalWaiting) return
     if (hasTypes) {
       const missing = missingRequired(shownQuestions, answers)
       if (missing.length > 0) {
@@ -262,7 +280,7 @@ export function GuestRsvpSheet({
     }
     setLocalErrorKey(null)
     sendCode(name, contact)
-  }, [answers, consent, form, hasTypes, sendPending, sendCode, shownQuestions])
+  }, [answers, consent, form, hasTypes, legalWaiting, sendPending, sendCode, shownQuestions])
 
   const onResend = useCallback(() => {
     const name = guestNameValue(form.name)
@@ -281,12 +299,17 @@ export function GuestRsvpSheet({
         {
           onSuccess: () => setStep("success"),
           onError: (err) => {
+            if (legal.adoptOutdated(err)) {
+              verify.reset()
+              consentOutdated()
+              return
+            }
             if (guestAttemptsExhausted(appErrorFields(err))) setExhausted(true)
           },
         },
       )
     },
-    [sentTo, verify, request, registrationExtras, settleSend],
+    [consentOutdated, legal, sentTo, verify, request, registrationExtras, settleSend],
   )
 
   const submitCode = useCallback(() => runVerify(code), [runVerify, code])
@@ -316,6 +339,7 @@ export function GuestRsvpSheet({
         return t(guestVerifyErrorKey(appErrorCode(verify.error), appErrorFields(verify.error)))
       }
     }
+    if (step === "form" && hasTypes && legal.failed) return t("error.generic")
     return null
   })()
 
@@ -347,7 +371,7 @@ export function GuestRsvpSheet({
             label={t("form.submit")}
             onPress={submitForm}
             loading={sendPending}
-            disabled={!canSubmitGuestForm(form, sendPending)}
+            disabled={!canSubmitGuestForm(form, sendPending) || legalWaiting}
           />
         </>
       )
@@ -576,9 +600,18 @@ export function GuestRsvpSheet({
               <ConsentChecks
                 value={consent}
                 onChange={setConsent}
+                termsVersion={legal.versions?.terms ?? null}
                 showSms={form.channel === "sms"}
                 disabled={sendPending}
               />
+              {legal.failed ? (
+                <SecondaryButton
+                  label={t("host-common:action.retry")}
+                  onPress={legal.retry}
+                  size="sm"
+                  style={styles.stacked}
+                />
+              ) : null}
             </>
           ) : null}
         </>

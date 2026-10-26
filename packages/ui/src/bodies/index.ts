@@ -19,6 +19,12 @@ export type { DonationLinkFieldError } from "./settings/donationLinkField"
 export type { DonationLink, DonationLinkSource } from "./donationLink"
 export { SettingsPrivacyBody } from "./SettingsPrivacyBody"
 
+export { LegalDocumentBody } from "./LegalDocumentBody"
+export type { LegalDocumentBodyProps } from "./LegalDocumentBody"
+export { LegalDocumentScreen } from "./LegalDocumentScreen"
+export type { LegalDocumentScreenProps } from "./LegalDocumentScreen"
+export { LegalUpdateGate } from "./LegalUpdateGate"
+
 export { ConnectionsBody } from "./ConnectionsBody"
 export type { ConnectionsBodyProps } from "./ConnectionsBody"
 

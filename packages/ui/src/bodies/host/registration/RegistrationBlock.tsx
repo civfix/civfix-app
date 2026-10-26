@@ -42,6 +42,7 @@ import {
   consentPayload,
   type ConsentState,
 } from "./consentModel"
+import { useConsentVersions } from "./useConsentVersions"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { seedAnswers } from "./questionModel"
@@ -97,6 +98,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     [questionList, ticketTypeId, answers],
   )
 
+  const legal = useConsentVersions(showsForm)
   const register = useRegisterForEvent(cleanup.id)
   const cancel = useCancelEventRegistration(cleanup.id)
   const joinWaitlist = useJoinEventWaitlist(cleanup.id)
@@ -127,7 +129,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   }, [questionList])
 
   const submit = useCallback(() => {
-    if (!selectedType) return
+    if (!selectedType || legal.versions === null) return
     setErrorText(null)
     const missing = missingRequired(shown, answers)
     if (missing.length > 0) {
@@ -151,7 +153,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
         partySize: clampPartySize(partySize, selectedType.maxPartySize),
         ...(needsCode ? { accessCode: accessCode.trim() } : {}),
         ...(shown.length > 0 ? { answers: answerPayload(shown, answers) } : {}),
-        consent: consentPayload(consent),
+        consent: consentPayload(consent, legal.versions),
         joinWaitlistIfFull: selectedType.waitlistEnabled,
       },
       {
@@ -170,7 +172,14 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
             { variant: "success" },
           )
         },
-        onError: (err) => setErrorText(t(registerErrorKey(appErrorCode(err)))),
+        onError: (err) => {
+          if (legal.adoptOutdated(err)) {
+            setConsent(EMPTY_CONSENT)
+            setErrorText(t("consent.outdated"))
+            return
+          }
+          setErrorText(t(registerErrorKey(appErrorCode(err))))
+        },
       },
     )
   }, [
@@ -178,6 +187,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     answers,
     consent,
     idempotencyKey,
+    legal,
     partySize,
     register,
     selectedType,
@@ -369,7 +379,21 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
         />
       )}
 
-      <ConsentChecks value={consent} onChange={setConsent} disabled={register.isPending} />
+      <ConsentChecks
+        value={consent}
+        onChange={setConsent}
+        termsVersion={legal.versions?.terms ?? null}
+        disabled={register.isPending}
+      />
+
+      {legal.failed ? (
+        <View style={styles.actions}>
+          <Text style={styles.error} accessibilityRole="alert">
+            {t("error.generic")}
+          </Text>
+          <SecondaryButton label={t("host-common:action.retry")} onPress={legal.retry} size="sm" />
+        </View>
+      ) : null}
 
       {errorText ? (
         <Text style={styles.error} accessibilityRole="alert">
@@ -381,7 +405,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
         label={t("form.submit")}
         onPress={onPressRegister}
         loading={register.isPending}
-        disabled={selectedType === null}
+        disabled={selectedType === null || legal.versions === null}
       />
     </View>
   )

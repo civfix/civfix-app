@@ -35,7 +35,8 @@
     "sms": "Envíame novedades de este evento por SMS. Se pueden aplicar tarifas de mensajes y datos.",
     "sms_a11y": "Recibir novedades de este evento por SMS",
     "version": "Términos versión {{version}}",
-    "required_error": "Acepta los Términos y la Política de Privacidad para inscribirte."
+    "required_error": "Acepta los Términos y la Política de Privacidad para inscribirte.",
+    "outdated": "Nuestros términos cambiaron. Revísalos y acéptalos de nuevo."
   },
   "form": {
     "heading": "Inscribirse",

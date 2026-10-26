@@ -1,7 +1,7 @@
-import React, { useMemo } from "react"
+import React from "react"
 import { View, Pressable } from "react-native"
-import { currentVersion } from "@civfix/contract/legal"
 import {
+  a11yState,
   focusRingProps,
   makeThemedStyles,
   MIN_TOUCH_TARGET,
@@ -11,9 +11,8 @@ import {
   webTransition,
 } from "../../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../../typography"
-import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
-import { PRIVACY_URL, TERMS_URL } from "../../../primitives/externalUrls"
+import { useOpenLegalDocument } from "../../../primitives/useOpenLegalDocument"
 import type { ConsentState } from "./consentModel"
 
 const CHECKBOX_SIZE = 20
@@ -21,6 +20,8 @@ const CHECKBOX_SIZE = 20
 export interface ConsentChecksProps {
   value: ConsentState
   onChange: (next: ConsentState) => void
+  /** The Terms version the consent sends; null hides the line until it is known. */
+  termsVersion: string | null
   showHostContact?: boolean
   showSms?: boolean
   disabled?: boolean
@@ -46,7 +47,7 @@ function Row({
       onPress={disabled ? undefined : onToggle}
       disabled={disabled}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked, disabled }}
+      {...a11yState({ checked, disabled })}
       accessibilityLabel={a11yLabel}
       {...focusRingProps}
       style={(state) => [
@@ -67,22 +68,14 @@ function Row({
 export function ConsentChecks({
   value,
   onChange,
+  termsVersion,
   showHostContact = true,
   showSms = false,
   disabled = false,
 }: ConsentChecksProps) {
   const styles = useStyles()
   const { t } = useT("host-ticket")
-  const openExternal = useOpenExternal()
-
-  const openLegal = React.useCallback(
-    (url: string) => {
-      void openExternal?.open(url)
-    },
-    [openExternal],
-  )
-
-  const termsVersion = useMemo(() => currentVersion("terms"), [])
+  const openLegal = useOpenLegalDocument()
 
   return (
     <View style={styles.list}>
@@ -101,10 +94,10 @@ export function ConsentChecks({
       {/* The links sit outside the checkbox: a checkbox's children are presentational, so screen
           readers and keyboards cannot reach a link nested inside it. */}
       <View style={styles.links}>
-        <TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>
+        <TextLink variant="caption" standalone onPress={() => openLegal("terms")}>
           {t("consent.terms_link")}
         </TextLink>
-        <TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>
+        <TextLink variant="caption" standalone onPress={() => openLegal("privacy")}>
           {t("consent.privacy_link")}
         </TextLink>
       </View>
@@ -131,7 +124,9 @@ export function ConsentChecks({
         </Row>
       ) : null}
 
-      <Text style={styles.version}>{t("consent.version", { version: termsVersion })}</Text>
+      {termsVersion === null ? null : (
+        <Text style={styles.version}>{t("consent.version", { version: termsVersion })}</Text>
+      )}
     </View>
   )
 }
