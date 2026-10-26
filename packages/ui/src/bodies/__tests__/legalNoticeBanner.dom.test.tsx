@@ -2,7 +2,7 @@ import * as React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import type { LegalDocumentMetaDTO, MyLegalStatusResponse } from "@civfix/contract"
+import { AppError, ErrorCode, type LegalDocumentMetaDTO, type MyLegalStatusResponse } from "@civfix/contract"
 import { LegalNoticeBanner } from "../LegalNoticeBanner"
 import {
   COOKIES,
@@ -132,6 +132,32 @@ describe("LegalNoticeBanner", () => {
     expect((await screen.findByRole("alert")).textContent).toBe("Something went wrong. Please try again.")
     expect(screen.getByText("We've updated our Cookies notice. Adds two providers")).toBeTruthy()
     await waitFor(() => expect(gotIt().getAttribute("aria-disabled")).not.toBe("true"))
+  })
+
+  it("an outdated notice refetches the status and the next Got it acknowledges the new version", async () => {
+    const NEXT = { ...COOKIES, version: "2026-11-02", sha256: "d".repeat(64), summary: "Second change" }
+    const { api, setStatus } = showBanner(status({ notices: [COOKIES] }))
+    api.acceptLegal.mockImplementationOnce(async () => {
+      setStatus(status({ notices: [NEXT] }))
+      throw new AppError(ErrorCode.CONFLICT, "outdated", {
+        details: {
+          reason: "legal_version_outdated",
+          current: [{ type: "cookies", version: NEXT.version, sha256: NEXT.sha256 }],
+        },
+      })
+    })
+    await screen.findByText(/Cookies notice/)
+    fireEvent.click(gotIt())
+    await waitFor(() => expect(api.getMyLegalStatus).toHaveBeenCalledTimes(2))
+    expect(await screen.findByText("We've updated our Cookies notice. Second change")).toBeTruthy()
+    expect(screen.queryByRole("alert")).toBeNull()
+
+    fireEvent.click(gotIt())
+    await waitFor(() => expect(api.acceptLegal).toHaveBeenCalledTimes(2))
+    expect(api.acceptLegal.mock.calls[1]?.[0]).toStrictEqual({
+      items: [{ type: "cookies", version: NEXT.version, sha256: NEXT.sha256, action: "acknowledged" }],
+      surface: "notice",
+    })
   })
 
   it("T25: stays out of the way while something is owed", async () => {

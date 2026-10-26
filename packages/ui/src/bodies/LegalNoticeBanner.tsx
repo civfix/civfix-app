@@ -1,10 +1,16 @@
-import React, { useContext, useRef } from "react"
+import React, { useCallback, useContext, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { LegalDocumentMetaDTO, LegalDocumentType } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, focusRingProps, makeThemedStyles, useTheme, webCursor } from "../theme"
 import { Text } from "../typography"
-import { noticeAcknowledgement, useAcceptLegal, useAuthState, useMyLegalStatus } from "../data"
+import {
+  noticeAcknowledgement,
+  outdatedLegalVersions,
+  useAcceptLegal,
+  useAuthState,
+  useMyLegalStatus,
+} from "../data"
 import { useT } from "../i18n"
 import { openLegalDocumentInPlace } from "../primitives/legalDocumentNav"
 
@@ -25,15 +31,23 @@ const NOTICE_KEYS = {
 export function LegalNoticeBanner() {
   const { isAuthenticated, user } = useAuthState()
   const status = useMyLegalStatus()
+  const { refetch } = status
+  const onOutdated = useCallback(() => void refetch(), [refetch])
   if (!isAuthenticated || user?.profileComplete === false || !status.data) return null
   // While something is owed the update prompt is up, and its Accept and continue acknowledges these too.
   if (status.data.required.length > 0) return null
   const notice = status.data.notices[0]
   if (!notice) return null
-  return <NoticeBanner key={`${notice.type}:${notice.version}`} notice={notice} />
+  return <NoticeBanner key={`${notice.type}:${notice.version}`} notice={notice} onOutdated={onOutdated} />
 }
 
-function NoticeBanner({ notice }: { notice: LegalDocumentMetaDTO }) {
+interface NoticeBannerProps {
+  notice: LegalDocumentMetaDTO
+  /** The version stopped being current while the banner was up: the server names the new one. */
+  onOutdated: () => void
+}
+
+function NoticeBanner({ notice, onOutdated }: NoticeBannerProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("legal")
@@ -47,11 +61,16 @@ function NoticeBanner({ notice }: { notice: LegalDocumentMetaDTO }) {
     if (sending.current) return
     sending.current = true
     acknowledge.mutate(noticeAcknowledgement(notice), {
+      onError: (err) => {
+        if (outdatedLegalVersions(err) !== null) onOutdated()
+      },
       onSettled: () => {
         sending.current = false
       },
     })
   }
+  // An outdated version isn't the person's problem: the refetch brings the current notice to acknowledge.
+  const failed = acknowledge.isError && outdatedLegalVersions(acknowledge.error) === null
 
   return (
     <View
@@ -66,7 +85,7 @@ function NoticeBanner({ notice }: { notice: LegalDocumentMetaDTO }) {
     >
       <View style={styles.banner}>
         <Text style={styles.text}>{notice.summary ? `${sentence} ${notice.summary}` : sentence}</Text>
-        {acknowledge.isError ? (
+        {failed ? (
           <Text style={styles.error} accessibilityRole="alert">
             {t("accept_error")}
           </Text>
