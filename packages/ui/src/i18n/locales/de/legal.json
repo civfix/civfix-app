@@ -1,0 +1,12 @@
+{
+  "meta": "Version {{version}} · gültig ab {{date}}",
+  "earlier_version": "Dies ist eine frühere Version vom {{date}}.",
+  "unavailable": "Diese frühere Version ist hier nicht verfügbar.",
+  "current_link": "Aktuelle Version lesen",
+  "error": {
+    "title": "Dieses Dokument konnte nicht geladen werden",
+    "body": "Prüfe deine Verbindung und versuche es erneut."
+  },
+  "retry": "Erneut versuchen",
+  "back": "Zurück"
+}

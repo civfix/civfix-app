@@ -12,11 +12,10 @@ import {
 } from "../theme"
 import { Text } from "../typography"
 import type { LegalDocumentDTO, LegalDocumentType } from "@civfix/contract"
-import { useOpenExternal } from "../capabilities"
 import { useLegalDocuments } from "../data"
 import { useT } from "../i18n"
 import { CheckboxBox } from "./CheckboxBox"
-import { PRIVACY_URL, TERMS_URL } from "./externalUrls"
+import { useOpenLegalDocument } from "./useOpenLegalDocument"
 
 export interface AcceptedLegalDocument {
   type: LegalDocumentType
@@ -54,13 +53,7 @@ export function TermsConfirmation({
 }: TermsConfirmationProps) {
   const styles = useStyles()
   const { t } = useT("onboarding-terms")
-  const openExternal = useOpenExternal()
-  const openLegal = React.useCallback(
-    (url: string) => {
-      void openExternal?.open(url)
-    },
-    [openExternal],
-  )
+  const openLegal = useOpenLegalDocument()
 
   const legal = useLegalDocuments({ enabled: onAccept !== undefined })
   // A confirming tick taken before the documents arrived; it is accepted once they do, if still ticked.
@@ -109,7 +102,7 @@ export function TermsConfirmation({
         <Text
           variant="body"
           style={styles.link}
-          onPress={() => openLegal(TERMS_URL)}
+          onPress={() => openLegal("terms")}
           accessibilityRole="link"
           accessibilityLabel={t("a11y.terms_link")}
         >
@@ -119,7 +112,7 @@ export function TermsConfirmation({
         <Text
           variant="body"
           style={styles.link}
-          onPress={() => openLegal(PRIVACY_URL)}
+          onPress={() => openLegal("privacy")}
           accessibilityRole="link"
           accessibilityLabel={t("a11y.privacy_link")}
         >

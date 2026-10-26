@@ -14,8 +14,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json",
     "og-image": "node scripts/generate-og-image.mjs",
     "test": "vitest run",
-    "clean": "rimraf .next out *.tsbuildinfo",
-    "legal-hashes": "node scripts/legal-hashes.mjs"
+    "clean": "rimraf .next out *.tsbuildinfo"
   },
   "dependencies": {
     "@civfix/contract": "0.68.0-b-feat-legal-contract-api.gda06526",

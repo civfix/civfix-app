@@ -13,6 +13,7 @@ import { useAuthStore } from "@/store/authStore"
 import { ONBOARDING_VERSION, useOnboardingStore } from "@/store/onboardingStore"
 import { onboardingBackPlan, onboardingEnterPlan, shouldShowOnboarding } from "@/lib/onboardingPlan"
 import { OnboardingPager } from "@/components/onboarding/OnboardingPager"
+import { useLegalScreenOnTop } from "@/hooks/useLegalScreenOnTop"
 
 const ENTER_TIMING = {
   duration: motion.dur.d4,
@@ -45,6 +46,7 @@ export function OnboardingGate({
   const status = useAuthStore((s) => s.status)
   const profileIncomplete = useAuthStore((s) => s.user?.profileComplete === false)
   const reduceMotion = useReducedMotion() === true
+  const legalOnTop = useLegalScreenOnTop()
   const styles = useStyles()
 
   const visible = shouldShowOnboarding({
@@ -113,7 +115,7 @@ export function OnboardingGate({
   }, [index])
 
   useEffect(() => {
-    if (!visible) return
+    if (!visible || legalOnTop) return
     const onBackPress = (): boolean => {
       const plan = onboardingBackPlan(indexRef.current)
       if (plan.type === "previous") setIndex(plan.to)
@@ -121,7 +123,7 @@ export function OnboardingGate({
     }
     const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress)
     return () => subscription.remove()
-  }, [visible])
+  }, [visible, legalOnTop])
 
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: fade.value,
@@ -136,7 +138,7 @@ export function OnboardingGate({
       accessibilityViewIsModal={visible}
       accessibilityElementsHidden={!visible}
       importantForAccessibility={visible ? "auto" : "no-hide-descendants"}
-      style={[styles.overlay, overlayStyle]}
+      style={[styles.overlay, overlayStyle, legalOnTop ? styles.stepAside : null]}
     >
       <OnboardingPager
         index={index}
@@ -155,4 +157,5 @@ const useStyles = makeThemedStyles((t) => ({
     zIndex: 40,
     elevation: 40,
   },
+  stepAside: { display: "none" },
 }))

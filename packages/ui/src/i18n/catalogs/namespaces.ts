@@ -60,6 +60,7 @@ export const namespaces = [
   "host-tickets",
   "language-settings",
   "leaderboard",
+  "legal",
   "lightbox",
   "map-address",
   "map-ui",

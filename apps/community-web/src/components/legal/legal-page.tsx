@@ -1,6 +1,7 @@
-import * as React from "react"
+"use client"
+
+import dynamic from "next/dynamic"
 import Link from "next/link"
-import { legalDocument, type LegalDocumentVersion } from "@civfix/contract/legal"
 import type { LegalDocumentType } from "@civfix/contract"
 
 import { Wordmark } from "@/components/brand"
@@ -8,43 +9,17 @@ import { Wordmark } from "@/components/brand"
 import { LEGAL_ENTITY } from "./legal-entity"
 import { SOURCE } from "@/lib/source"
 
-export type LegalDocId = Extract<LegalDocumentType, "terms" | "privacy" | "cookies" | "subprocessors">
+// The document is React Native Web, which touches the DOM as it loads, so the static page is its shell.
+const LegalDocument = dynamic(() => import("./legal-document").then((m) => m.LegalDocument), { ssr: false })
 
-const DOCS: { id: LegalDocId; href: string; label: string }[] = [
+const DOCS: { id: LegalDocumentType; href: string; label: string }[] = [
   { id: "terms", href: "/legal/terms", label: "Terms of Service" },
   { id: "privacy", href: "/legal/privacy", label: "Privacy Policy" },
   { id: "cookies", href: "/legal/cookies", label: "Cookies & Storage" },
   { id: "subprocessors", href: "/legal/subprocessors", label: "Sub-processors" },
 ]
 
-export const LEGAL_DOC_IDS: readonly LegalDocId[] = DOCS.map((doc) => doc.id)
-
-export function legalVersionFor(id: LegalDocId): LegalDocumentVersion {
-  return legalDocument(id)
-}
-
-const EFFECTIVE_DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-})
-
-function formatEffectiveDate(effectiveAt: string): string {
-  const at = new Date(effectiveAt)
-  return Number.isNaN(at.getTime()) ? effectiveAt : EFFECTIVE_DATE_FORMAT.format(at)
-}
-
-interface LegalPageProps {
-  active: LegalDocId
-  title: string
-  intro?: string
-  children: React.ReactNode
-}
-
-export function LegalPage({ active, title, intro, children }: LegalPageProps) {
-  const document = legalVersionFor(active)
-
+export function LegalPage({ active }: { active: LegalDocumentType }) {
   return (
     <div className="legal-page">
       <div className="legal-shell">
@@ -69,19 +44,7 @@ export function LegalPage({ active, title, intro, children }: LegalPageProps) {
           ))}
         </nav>
 
-        <h1 className="legal-title">{title}</h1>
-        <p className="legal-meta">
-          Version {document.version} · effective {formatEffectiveDate(document.effectiveAt)}
-          {intro ? ` · ${intro}` : ""}
-        </p>
-
-        <article
-          className="legal-prose"
-          data-legal-doc={document.type}
-          data-legal-version={document.version}
-        >
-          {children}
-        </article>
+        <LegalDocument type={active} />
 
         <footer className="legal-foot">
           <span>

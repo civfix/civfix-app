@@ -1,5 +1,6 @@
 import * as React from "react"
 import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
@@ -15,6 +16,8 @@ vi.mock("../../typography", async () => {
   const RN = await vi.importActual<typeof ReactNative>("react-native")
   return { Text: RN.Text, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
 })
+
+const VIEW_SOURCE = readFileSync(join(__dirname, "..", "LegalDocumentView.tsx"), "utf8")
 
 const open = vi.fn(async (_url: string) => {})
 const assign = vi.fn()
@@ -145,8 +148,7 @@ describe("LegalDocumentView", () => {
   })
 
   it("T12: takes every color from the theme, so dark differs from light", () => {
-    const source = readFileSync(new URL("../LegalDocumentView.tsx", import.meta.url), "utf8")
-    expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/)
+    expect(VIEW_SOURCE).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/)
 
     const document = terms([paragraph("Body.")])
     const light = show(document, { scheme: "light" })

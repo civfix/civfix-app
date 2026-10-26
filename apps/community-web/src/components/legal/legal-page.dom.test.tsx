@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { AppError, ErrorCode, type LegalDocumentDTO } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 
@@ -83,6 +83,12 @@ const current = async () => ({ documents: CURRENT_DOCUMENTS })
 const withCurrentPrivacy = (privacy: LegalDocumentDTO) => async () => ({
   documents: CURRENT_DOCUMENTS.map((document) => (document.type === "privacy" ? privacy : document)),
 })
+
+// The page loads the document view on demand; loading its module graph once up front keeps that first
+// load out of each test's wait for the page to settle.
+beforeAll(async () => {
+  await import("./legal-document")
+}, 60_000)
 
 afterEach(() => {
   cleanup()

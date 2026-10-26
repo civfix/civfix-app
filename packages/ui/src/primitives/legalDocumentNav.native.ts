@@ -1,5 +1,6 @@
 import type { LegalDocumentType } from "@civfix/contract"
+import { presentLegalDocument } from "./legalDocument"
 
-export function openLegalDocumentInPlace(_type: LegalDocumentType): boolean {
-  throw new Error("not implemented")
+export function openLegalDocumentInPlace(type: LegalDocumentType): boolean {
+  return presentLegalDocument(type)
 }

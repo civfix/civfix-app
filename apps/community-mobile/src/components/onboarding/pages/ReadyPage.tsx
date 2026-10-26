@@ -8,12 +8,11 @@ import {
   iconMap,
   PrimaryButton,
   SecondaryButton,
-  TERMS_URL,
-  PRIVACY_URL,
+  useOpenLegalDocument,
   type IconName,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { useHaptics, useOpenExternal } from "@civfix/ui/capabilities"
+import { useHaptics } from "@civfix/ui/capabilities"
 import { AuthOptions } from "@/components/AuthOptions"
 import { hrefFromRoute } from "@/lib/authResume"
 import { useSignInProviders } from "@/hooks/useAuthFlow"
@@ -78,17 +77,11 @@ function LegalLinks() {
   const th = useTheme()
   const styles = useStyles()
   const { t: tLegal } = useT("onboarding-terms")
-  const openExternal = useOpenExternal()
-  const open = useCallback(
-    (url: string) => {
-      void openExternal?.open(url)
-    },
-    [openExternal],
-  )
+  const openLegal = useOpenLegalDocument()
   return (
     <View style={styles.legal}>
       <Pressable
-        onPress={() => open(TERMS_URL)}
+        onPress={() => openLegal("terms")}
         accessibilityRole="link"
         accessibilityLabel={tLegal("a11y.terms_link")}
         hitSlop={LINK_HIT_SLOP}
@@ -102,7 +95,7 @@ function LegalLinks() {
         {t("ready.legal.separator")}
       </Text>
       <Pressable
-        onPress={() => open(PRIVACY_URL)}
+        onPress={() => openLegal("privacy")}
         accessibilityRole="link"
         accessibilityLabel={tLegal("a11y.privacy_link")}
         hitSlop={LINK_HIT_SLOP}

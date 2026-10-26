@@ -104,8 +104,6 @@ export type { SettingsRowProps, SettingsSectionProps, SettingsToggleBinding } fr
 
 export {
   DONATE_URL,
-  TERMS_URL,
-  PRIVACY_URL,
   managePath,
   orgPagePath,
   SOURCE_REPO_URL,
@@ -122,6 +120,17 @@ export type { QrTicketProps } from "./QrTicket"
 
 export { Markdown } from "./Markdown"
 export type { MarkdownProps } from "./Markdown"
+
+export { LegalDocumentView } from "./LegalDocumentView"
+export type { LegalDocumentViewProps } from "./LegalDocumentView"
+export {
+  legalDocumentTypeOf,
+  legalDocumentUrl,
+  presentLegalDocument,
+  setLegalDocumentPresenter,
+} from "./legalDocument"
+export type { LegalDocumentPresenter } from "./legalDocument"
+export { useOpenLegalDocument } from "./useOpenLegalDocument"
 
 export { setScanPresenter, scannerAvailable, presentScanner, resolveScan } from "./scannerPresenter"
 export { useScannerAvailable } from "./useScannerAvailable"

@@ -49,9 +49,6 @@ export function offProductionApiHost(): string {
 
 export const DONATE_URL = "https://reachoutla.org/help"
 
-export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`
-export const PRIVACY_URL = `${WEB_ORIGIN}/legal/privacy`
-
 export function managePath(eventId: string): string {
   return `/manage/events/${encodeURIComponent(eventId)}`
 }

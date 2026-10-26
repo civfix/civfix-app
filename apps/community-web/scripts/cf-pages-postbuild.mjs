@@ -10,8 +10,6 @@ import {
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { LEGAL_DOCUMENTS, legalDocument } from "@civfix/contract/legal"
-
 import {
   NOINDEX_RULE,
   isProductionOrigin,
@@ -20,12 +18,10 @@ import {
 } from "./robots-policy.mjs"
 import {
   aasaExcludeOrder,
-  isPlaceholderLegalHash,
   leakedDevRoutes,
   missingAasaExcludes,
   OG_IMAGE_MAX_BYTES,
   REQUIRED_AASA_EXCLUDES,
-  renderedLegalDocuments,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 
@@ -328,102 +324,6 @@ console.log(
         `(no ${NOINDEX_RULE} rule in ${HEADERS_FILE}).`
     : `[cf-pages] robots policy: ${siteOrigin} is NOT production, ${HEADERS_FILE} now serves ` +
         `"${NOINDEX_RULE}" on /* so no staging URL is indexed as a duplicate of civfix.org.`,
-)
-
-const legalDocuments = renderedLegalDocuments(outDir)
-
-const legalDrift = []
-const legalPlaceholders = []
-const legalRendered = new Map()
-
-for (const { route, type, hashed } of legalDocuments) {
-  if (type === null) continue
-  if (hashed === null) continue
-  legalRendered.set(type, { route, ...hashed })
-
-  // `legalDocument` throws on a type the contract doesn't declare; that case is reported as drift below.
-  const declared = LEGAL_DOCUMENTS.some((document) => document.type === type) ? legalDocument(type) : undefined
-  if (declared === undefined) {
-    legalDrift.push(`${type}: rendered at /legal/${route}/ but absent from LEGAL_DOCUMENTS`)
-    continue
-  }
-  if (hashed.version !== declared.version) {
-    legalDrift.push(
-      `${type}: page renders version ${hashed.version ?? "(none)"} but LEGAL_DOCUMENTS says ` +
-        `${declared.version}`,
-    )
-    continue
-  }
-  if (isPlaceholderLegalHash(type, declared.version, declared.sha256)) {
-    legalPlaceholders.push(`${type} -> ${hashed.sha256}`)
-    continue
-  }
-  if (hashed.sha256 !== declared.sha256) {
-    legalDrift.push(
-      `${type}: rendered sha256 ${hashed.sha256} != LEGAL_DOCUMENTS ${declared.sha256}`,
-    )
-  }
-}
-
-const legalRoutesMissingStamp = legalDocuments
-  .filter(({ html, hashed }) => !/data-legal-doc="[^"]+"/.test(html) || hashed === null)
-  .map(({ route }) => route)
-
-if (legalRoutesMissingStamp.length > 0) {
-  console.error(
-    `[cf-pages] ERROR: these /legal/ routes render a page but carry no hashable legal document: ` +
-      `${legalRoutesMissingStamp.join(", ")}. Every /legal/<slug>/ page must render its content inside ` +
-      `<article class="legal-prose"> with data-legal-doc + data-legal-version (components/legal/legal-page.tsx ` +
-      `does this). Without the stamp the drift gate silently SKIPS the document, which is worse than no ` +
-      `gate: consent records would keep claiming a hash nothing verifies. If a route is deliberately not a ` +
-      `versioned legal document, move it out of /legal/.`,
-  )
-  process.exit(1)
-}
-
-const declaredWebTypes = LEGAL_DOCUMENTS.map((document) => document.type)
-const unrenderedTypes = declaredWebTypes.filter((type) => !legalRendered.has(type))
-
-if (legalDrift.length > 0) {
-  console.error(
-    `[cf-pages] ERROR: legal document drift:\n  ${legalDrift.join("\n  ")}\n` +
-      `  consent_records.document_sha256 is the evidence that a donor accepted THAT EXACT TEXT ` +
-      `and the backend validates consent payloads against @civfix/contract/legal. A page ` +
-      `whose text moved without its version and hash moving with it makes every consent record ` +
-      `written since unverifiable. Run \`node scripts/legal-hashes.mjs\` and update ` +
-      `src/legal/documents.ts in civfix-contract (version, effectiveAt and sha256 change ` +
-      `as ONE edit), publish it, and adopt that version here and in civfix-backend.`,
-  )
-  process.exit(1)
-}
-
-if (unrenderedTypes.length > 0) {
-  console.error(
-    `[cf-pages] ERROR: these legal document types are declared in @civfix/contract/legal but no ` +
-      `/legal/<slug>/ page renders them: ${unrenderedTypes.join(", ")}. Every versioned document ` +
-      `must be rendered somewhere this gate can hash it, or the sha256 a consent record cites is ` +
-      `a number that verifies no text. Add the page (components/legal/legal-page.tsx) and its ` +
-      `LegalDocId, or remove the type from LEGAL_DOCUMENTS.`,
-  )
-  process.exit(1)
-}
-
-if (legalPlaceholders.length > 0) {
-  console.error(
-    `[cf-pages] ERROR: these legal documents still carry the sha256("<type>@<version>") ` +
-      `PLACEHOLDER hash in @civfix/contract/legal:\n  ${legalPlaceholders.join("\n  ")}\n` +
-      `  A placeholder hashes no document, so a consent record citing it is unverifiable evidence. ` +
-      `Paste the real hashes (printed above, and by \`node scripts/legal-hashes.mjs\`) into ` +
-      `src/legal/documents.ts in civfix-contract - version, effectiveAt and sha256 move ` +
-      `as ONE edit - and mirror them into the backend legal seed ` +
-      `migration.`,
-  )
-  process.exit(1)
-}
-
-console.log(
-  `[cf-pages] legal documents checked: ${legalRendered.size} rendered and hash-matched, ` +
-    `0 placeholders, 0 unrendered.`,
 )
 
 const APP_ERROR_IDENTITY_MARKER = /\.name\s*=\s*(["'])AppError\1/g
