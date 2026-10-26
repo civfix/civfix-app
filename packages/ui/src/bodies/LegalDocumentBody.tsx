@@ -42,6 +42,8 @@ export function LegalDocumentBody({ type, version }: LegalDocumentBodyProps) {
       <EarlierVersionUnavailable type={type} />
     )
   }
+  // Without the current version the pinned one can't be labelled current or earlier truthfully.
+  if (current.isError) return <LoadFailed onRetry={() => void current.refetch()} />
   return <LegalDocumentView document={document} current={current.data?.version === document.version} />
 }
 
