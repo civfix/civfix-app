@@ -4,7 +4,7 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/contract"
 import { colorSchemes } from "@civfix/tokens"
-import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
+import { LegalUpdateGate, ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
@@ -228,6 +228,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <ToastProvider>
                 <BootSplash>{children}</BootSplash>
                 <FirstRunGate />
+                <LegalUpdateGate />
                 <SignOutFailureNotice />
               </ToastProvider>
             </I18nMount>

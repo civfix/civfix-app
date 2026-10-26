@@ -5,7 +5,7 @@ import type { LegalDocumentType } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { LegalDocumentBody } from "./LegalDocumentBody"
+import { LegalDocumentBody, type LegalDocumentBodyProps } from "./LegalDocumentBody"
 
 const BACK_ICON_SIZE = 21
 const BACK_HIT_SLOP = 6
@@ -13,10 +13,15 @@ const BACK_HIT_SLOP = 6
 export interface LegalDocumentScreenProps {
   type: LegalDocumentType
   onBack: () => void
+  version?: LegalDocumentBodyProps["version"]
+  onOpenLegalDocument?: LegalDocumentBodyProps["onOpenLegalDocument"]
 }
 
-/** The phone app's full-screen reader for one legal document, opened from any legal link in the app. */
-export function LegalDocumentScreen({ type, onBack }: LegalDocumentScreenProps) {
+/**
+ * The full-screen reader for one legal document: the phone app's, opened from any legal link in the app,
+ * and the update prompt's on both platforms.
+ */
+export function LegalDocumentScreen({ type, onBack, version, onOpenLegalDocument }: LegalDocumentScreenProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("legal")
@@ -40,7 +45,7 @@ export function LegalDocumentScreen({ type, onBack }: LegalDocumentScreenProps) 
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + th.space["8"] }]}
       >
-        <LegalDocumentBody type={type} />
+        <LegalDocumentBody type={type} version={version} onOpenLegalDocument={onOpenLegalDocument} />
       </ScrollView>
     </View>
   )

@@ -23,6 +23,7 @@ export { LegalDocumentBody } from "./LegalDocumentBody"
 export type { LegalDocumentBodyProps } from "./LegalDocumentBody"
 export { LegalDocumentScreen } from "./LegalDocumentScreen"
 export type { LegalDocumentScreenProps } from "./LegalDocumentScreen"
+export { LegalUpdateGate } from "./LegalUpdateGate"
 
 export { ConnectionsBody } from "./ConnectionsBody"
 export type { ConnectionsBodyProps } from "./ConnectionsBody"

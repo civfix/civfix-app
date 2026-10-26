@@ -32,7 +32,7 @@ vi.mock("@civfix/ui/data", async (importOriginal) => ({
     availability: { data: { available: true }, isFetching: false, isError: false },
     checkedHandle: handle.trim(),
   }),
-  useUpdateProfile: () => ({ mutate, isPending: false, isError: false, error: null }),
+  useCompleteFirstRun: () => ({ mutate, isPending: false, isError: false, error: null }),
 }))
 vi.mock("@/hooks/use-visual-viewport-shift", () => ({ useVisualViewportShift: () => 0 }))
 vi.mock("@/lib/api", async (importOriginal) => ({

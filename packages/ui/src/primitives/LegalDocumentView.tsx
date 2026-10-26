@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react"
 import { ScrollView, View } from "react-native"
-import type { LegalBlock } from "@civfix/contract"
+import type { LegalBlock, LegalDocumentType } from "@civfix/contract"
 import { safeDateFormat } from "@civfix/contract/datetime"
 import { parseMarkdownInline } from "@civfix/contract/markdown"
 import { headingLevel, makeThemedStyles } from "../theme"
@@ -19,6 +19,8 @@ const EFFECTIVE_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "lo
 export interface LegalDocumentViewProps {
   document: ReadableLegalDocument
   current: boolean
+  /** Shows a linked legal document itself; without it the link opens that document's own page in place. */
+  onOpenLegalDocument?: ((type: LegalDocumentType) => void) | undefined
 }
 
 function Inline({ text, onOpenLink, keyPrefix }: { text: string; onOpenLink: (href: string) => void; keyPrefix: string }) {
@@ -26,7 +28,7 @@ function Inline({ text, onOpenLink, keyPrefix }: { text: string; onOpenLink: (hr
   return <InlineRun nodes={nodes} onOpenLink={onOpenLink} keyPrefix={keyPrefix} />
 }
 
-export function LegalDocumentView({ document, current }: LegalDocumentViewProps) {
+export function LegalDocumentView({ document, current, onOpenLegalDocument }: LegalDocumentViewProps) {
   const styles = useStyles()
   const { t } = useT("legal")
   const { locale } = useLocale()
@@ -37,10 +39,14 @@ export function LegalDocumentView({ document, current }: LegalDocumentViewProps)
   const onOpenLink = useCallback(
     (href: string) => {
       const type = legalDocumentTypeOfUrl(href)
+      if (type !== null && onOpenLegalDocument) {
+        onOpenLegalDocument(type)
+        return
+      }
       if (type !== null && openLegalDocumentInPlace(type)) return
       void openExternal?.open(href)
     },
-    [openExternal],
+    [openExternal, onOpenLegalDocument],
   )
 
   const renderBlock = (block: LegalBlock, index: number) => {
