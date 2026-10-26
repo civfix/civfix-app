@@ -1,4 +1,5 @@
 import { createRequire } from "node:module"
+import eslintReact from "@eslint-react/eslint-plugin"
 import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
 import reactHooks from "eslint-plugin-react-hooks"
@@ -10,6 +11,7 @@ import {
   TYPED_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
+import { LEAKED_RENDER_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
@@ -50,19 +52,28 @@ export default tseslint.config(
       },
       rules: {
         ...reactPlugin.configs.flat.recommended.rules,
-        ...reactHooks.configs.recommended.rules,
+        ...reactHooksRules(reactHooks),
+        ...REACT_RULES,
         ...nextPlugin.flatConfig.recommended.rules,
         ...nextPlugin.flatConfig.coreWebVitals.rules,
+        ...jsxA11yPlugin.flatConfigs.strict.rules,
         "import/no-anonymous-default-export": "error",
         "react/no-unknown-property": "off",
         "react/react-in-jsx-scope": "off",
         "react/prop-types": "off",
         "jsx-a11y/alt-text": ["error", { elements: ["img"], img: ["Image"] }],
-        "jsx-a11y/aria-props": "error",
-        "jsx-a11y/aria-proptypes": "error",
-        "jsx-a11y/aria-unsupported-elements": "error",
-        "jsx-a11y/role-has-required-aria-props": "error",
-        "jsx-a11y/role-supports-aria-props": "error",
+        // Deprecated in favor of label-has-associated-control, which strict already runs.
+        "jsx-a11y/label-has-for": "off",
+        // ConsoleLink renders an <a>, so its call sites need content too. A <Trans> slot is a SlotLink:
+        // Trans supplies its text from the translation.
+        "jsx-a11y/anchor-has-content": ["error", { components: ["ConsoleLink"] }],
+        // A component's autoFocus prop is checked where it lands on a DOM element.
+        "jsx-a11y/no-autofocus": ["error", { ignoreNonDOM: true }],
+        // A fieldset's legend names the group natively; radiogroup adds the required and invalid state its
+        // radios need announced. This is the one pairing the recommended preset allows and strict drops.
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": ["error", { fieldset: ["radiogroup"] }],
+        // images.unoptimized is set for the static export, so next/image would render a plain <img> anyway.
+        "@next/next/no-img-element": "off",
         "react/jsx-no-target-blank": "off",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
@@ -78,10 +89,11 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: { "@tanstack/query": pluginQuery },
+    plugins: { "@tanstack/query": pluginQuery, "@eslint-react": eslintReact },
     rules: {
       ...Object.assign({}, ...escalateWarnings(pluginQuery.configs["flat/recommended"]).map((config) => config.rules ?? {})),
       ...TYPED_RULES,
+      ...LEAKED_RENDER_RULES,
     },
   },
   {

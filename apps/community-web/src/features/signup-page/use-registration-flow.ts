@@ -14,6 +14,7 @@ import {
   missingRequired,
   visibleQuestions as shownQuestions,
 } from "@civfix/contract/host"
+import { useNow } from "@civfix/ui/data"
 
 import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
@@ -41,10 +42,8 @@ type Step =
 
 export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode: string | null) {
   const isAuthenticated = useAuthStore((store) => store.status === "authenticated")
-  const windowState = React.useMemo(
-    () => registrationWindowState(page, Date.now()),
-    [page],
-  )
+  const now = useNow()
+  const windowState = React.useMemo(() => registrationWindowState(page, now), [page, now])
 
   const tickets = selectableTickets(page)
   const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() =>

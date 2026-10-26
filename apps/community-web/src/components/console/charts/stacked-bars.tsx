@@ -4,6 +4,8 @@ import { useState } from "react"
 import { formatCount } from "@civfix/ui/helpers"
 import { EMPTY_VALUE, useLocale } from "@civfix/ui/i18n"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 import { ChartFrame, integerYAxis, PLOT_PAD, XLabels, YGrid } from "./chart-frame"
 import { useMeasuredWidth } from "./chart-utils"
 import type { TooltipState } from "./chart-utils"
@@ -73,13 +75,13 @@ export function StackedBars({
         height={height}
         palette={palette}
       />
-      {labels.map((label, i) => {
+      {keyedByValue(labels, (label) => label).map(({ entry: label, key }, i) => {
         let running = 0
         const x = PLOT_PAD.left + i * slot + (slot - barW) / 2
         if (suppressedAt[i]) {
           const stubY = PLOT_PAD.top + plotH - SUPPRESSED_STUB_HEIGHT
           return (
-            <g key={`${label}:${i}`}>
+            <g key={key}>
               <rect
                 x={x}
                 y={stubY}
@@ -101,7 +103,7 @@ export function StackedBars({
           )
         }
         return (
-          <g key={`${label}:${i}`}>
+          <g key={key}>
             {series.map((s, si) => {
               const value = s.values[i] ?? 0
               if (value <= 0) return null
