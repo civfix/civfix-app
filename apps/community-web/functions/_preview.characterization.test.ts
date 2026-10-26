@@ -324,7 +324,7 @@ describe("hostile entity content through the real rewriter", () => {
       expect(parsed.meta.get("twitter:image")).toBe(HOSTILE_MEDIA)
       expect(parsed.meta.get("og:url")).toBe(`${origin}/${segment}/${id}`)
       expect(parsed.links.get("canonical")).toBe(`${origin}/${segment}/${id}`)
-      expect(expected.title).toMatch(/<script>|"><script>/)
+      expect(expected.title).toContain("<script>")
     })
 
     it(`hands the ${kind} document title to the rewriter as text, never as html`, async () => {

@@ -98,7 +98,7 @@ function stripComments(text) {
 
 const lineOf = (text, index) => text.slice(0, index).split("\n").length
 const STR = `(?:"([^"\\\\]*)"|'([^'\\\\]*)')`
-const escapeId = (id) => id.replace(/\$/g, "\\$")
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 function bindings(text) {
   const bound = new Map()
@@ -130,7 +130,7 @@ for (const [workspace, dirs] of SCANNED) {
     const bound = bindings(text)
     for (const id of new Set(["t", ...bound.keys()])) {
       const call = new RegExp(
-        `(?<![\\w$.])${escapeId(id)}\\(\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)'|\`([^\`]*)\`)([^)]{0,${MAX_OPTIONS_LOOKAHEAD}})`,
+        `(?<![\\w$.])${escapeRegExp(id)}\\(\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)'|\`([^\`]*)\`)([^)]{0,${MAX_OPTIONS_LOOKAHEAD}})`,
         "g",
       )
       for (const m of text.matchAll(call)) {
