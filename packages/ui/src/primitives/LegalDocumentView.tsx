@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react"
-import { ScrollView, View } from "react-native"
+import React, { useCallback, useMemo, useState } from "react"
+import { ScrollView, View, type LayoutChangeEvent } from "react-native"
 import type { LegalBlock, LegalDocumentType } from "@civfix/contract"
 import { safeDateFormat } from "@civfix/contract/datetime"
 import { parseMarkdownInline } from "@civfix/contract/markdown"
@@ -11,8 +11,10 @@ import { InlineRun } from "./Markdown"
 import { legalDocumentTypeOfUrl, type ReadableLegalDocument } from "./legalDocument"
 import { openLegalDocumentInPlace } from "./legalDocumentNav"
 
-// Wide enough for a sentence per line in a cell; a table wider than the screen scrolls sideways.
-const TABLE_CELL_MIN_WIDTH = 180
+// Wide enough for a few words per line in a cell, and narrow enough that four columns fit the /legal page's
+// 716 inner width; a table wider than its box scrolls sideways.
+const TABLE_CELL_MIN_WIDTH = 176
+const TABLE_BORDER_WIDTH = 1
 
 const EFFECTIVE_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }
 
@@ -83,28 +85,7 @@ export function LegalDocumentView({ document, current, onOpenLegalDocument }: Le
           </View>
         )
       case "table":
-        return (
-          <ScrollView key={key} horizontal style={styles.tableScroll} contentContainerStyle={styles.tableContent}>
-            <View role="table" style={styles.table}>
-              <View role="row" style={[styles.row, styles.headerRow]}>
-                {block.columns.map((column, columnIndex) => (
-                  <Text key={`${key}.h${columnIndex}`} role="columnheader" style={[styles.cell, styles.headerCell]}>
-                    <Inline text={column} onOpenLink={onOpenLink} keyPrefix={`${key}.h${columnIndex}`} />
-                  </Text>
-                ))}
-              </View>
-              {block.rows.map((row, rowIndex) => (
-                <View key={`${key}.r${rowIndex}`} role="row" style={[styles.row, styles.rowDivider]}>
-                  {row.map((cell, cellIndex) => (
-                    <Text key={`${key}.r${rowIndex}.${cellIndex}`} role="cell" style={[styles.cell, styles.bodyCell]}>
-                      <Inline text={cell} onOpenLink={onOpenLink} keyPrefix={`${key}.r${rowIndex}.${cellIndex}`} />
-                    </Text>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        )
+        return <LegalTable key={key} block={block} blockKey={key} onOpenLink={onOpenLink} />
     }
   }
 
@@ -117,6 +98,57 @@ export function LegalDocumentView({ document, current, onOpenLegalDocument }: Le
       {current ? null : <Text style={styles.earlier}>{t("earlier_version", { date: effective })}</Text>}
       <View style={styles.blocks}>{document.blocks.map(renderBlock)}</View>
     </View>
+  )
+}
+
+function LegalTable({
+  block,
+  blockKey,
+  onOpenLink,
+}: {
+  block: Extract<LegalBlock, { kind: "table" }>
+  blockKey: string
+  onOpenLink: (href: string) => void
+}) {
+  const styles = useStyles()
+  const [innerWidth, setInnerWidth] = useState(0)
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    setInnerWidth(event.nativeEvent.layout.width - 2 * TABLE_BORDER_WIDTH)
+  }, [])
+  // Cells size from their text's one-line width otherwise, so every column would be as wide as the longest
+  // cell and only the first would show. Equal columns, never under the minimum, wrap their text instead.
+  const tableWidth = Math.max(innerWidth, block.columns.length * TABLE_CELL_MIN_WIDTH)
+  const cellWidth = { width: tableWidth / block.columns.length }
+
+  return (
+    <ScrollView horizontal style={styles.tableScroll} onLayout={onLayout}>
+      <View role="table" style={{ width: tableWidth }}>
+        <View role="row" style={[styles.row, styles.headerRow]}>
+          {block.columns.map((column, columnIndex) => (
+            <Text
+              key={`${blockKey}.h${columnIndex}`}
+              role="columnheader"
+              style={[styles.cell, cellWidth, styles.headerCell]}
+            >
+              <Inline text={column} onOpenLink={onOpenLink} keyPrefix={`${blockKey}.h${columnIndex}`} />
+            </Text>
+          ))}
+        </View>
+        {block.rows.map((row, rowIndex) => (
+          <View key={`${blockKey}.r${rowIndex}`} role="row" style={[styles.row, styles.rowDivider]}>
+            {row.map((cell, cellIndex) => (
+              <Text
+                key={`${blockKey}.r${rowIndex}.${cellIndex}`}
+                role="cell"
+                style={[styles.cell, cellWidth, styles.bodyCell]}
+              >
+                <Inline text={cell} onOpenLink={onOpenLink} keyPrefix={`${blockKey}.r${rowIndex}.${cellIndex}`} />
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   )
 }
 
@@ -195,15 +227,9 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   tableScroll: {
-    borderWidth: 1,
+    borderWidth: TABLE_BORDER_WIDTH,
     borderColor: t.colors.border,
     borderRadius: t.radius.md,
-  },
-  tableContent: {
-    flexGrow: 1,
-  },
-  table: {
-    flexGrow: 1,
   },
   row: {
     flexDirection: "row",
@@ -216,8 +242,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderTopColor: t.colors.border,
   },
   cell: {
-    flex: 1,
-    minWidth: TABLE_CELL_MIN_WIDTH,
+    flexShrink: 0,
     paddingVertical: t.space["3"],
     paddingHorizontal: t.space["4"],
     fontSize: t.fontSize["14"],

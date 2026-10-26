@@ -4,7 +4,7 @@ import {
   type LegalDocumentDTO,
   type LegalDocumentType,
 } from "@civfix/contract"
-import { WEB_ORIGIN } from "./externalUrls"
+import { webOrigin } from "./externalUrls"
 
 /** A version the API has text for; versions from before DECISIONS §66 have none to show. */
 export type ReadableLegalDocument = LegalDocumentDTO & { title: string; blocks: LegalBlock[] }
@@ -24,8 +24,9 @@ export function legalDocumentPath(type: LegalDocumentType): string {
   return `/legal/${type}/`
 }
 
+/** The document's page on the site this build is configured for, so staging and local link to their own. */
 export function legalDocumentUrl(type: LegalDocumentType): string {
-  return `${WEB_ORIGIN}/legal/${type}`
+  return `${webOrigin()}/legal/${type}`
 }
 
 const LEGAL_DOCUMENT_URL = /^https:\/\/civfix\.org\/legal\/([a-z]+)\/?$/
