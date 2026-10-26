@@ -77,7 +77,7 @@ export function useChatInbound({
         settleSend(cid)
       }
       inboundBuffer.current.push({ message, explicitClientId, viewerTruth })
-      if (flushTimer.current === null) flushTimer.current = setTimeout(flushInbound, INBOUND_FLUSH_MS)
+      flushTimer.current ??= setTimeout(flushInbound, INBOUND_FLUSH_MS)
     },
     [settleSend, flushInbound],
   )

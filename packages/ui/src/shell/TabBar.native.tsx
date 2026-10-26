@@ -10,7 +10,6 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
   Easing,
   ReduceMotion,
-  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
@@ -19,6 +18,7 @@ import Animated, {
   type DerivedValue,
   type SharedValue,
 } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { makeThemedStyles, motion, space, useTheme } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
@@ -220,7 +220,7 @@ export function TabBar() {
         ? withTiming(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
         : withTiming(target, { ...dockMorphOutConfig(), reduceMotion: ReduceMotion.System }, (finished) => {
             "worklet"
-            if (finished) runOnJS(setSearchExitSettled)(true)
+            if (finished) scheduleOnRN(setSearchExitSettled, true)
           })
   }, [view, reduceMotion, regionW, p, setSearchExitSettled])
 
@@ -318,7 +318,7 @@ export function TabBar() {
           const index = lockedIndexForPillCenter(tx.value + pillW / 2, tabW, TAB_PILL_LOCK_COUNT)
           const lockedX = selectedPillRect(index, tabW).x
           tx.value = reduceMotion ? lockedX : withTiming(lockedX, pillCfg)
-          runOnJS(lockOnTab)(index)
+          scheduleOnRN(lockOnTab, index)
         }),
     [panArmed, tabW, pillW, reduceMotion, pillCfg, lockOnTab, panLive, tx],
   )

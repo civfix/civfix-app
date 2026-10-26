@@ -6,7 +6,7 @@
  */
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform } from "react-native"
-import type { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native"
+import type { TextInputKeyPressEvent } from "react-native"
 import { MESSAGE_BODY_MAX, type ChatMessageDTO, type UserSearchResultDTO } from "@civfix/contract"
 import type { ComposerMedia } from "../../data"
 import type { MentionCandidate } from "../../primitives"
@@ -40,7 +40,7 @@ export interface ComposerModeState {
   onOpenReply: (message: ChatMessageDTO) => void
   cancelComposerMode: () => void
   onSend: () => void
-  onComposerKeyPress: ((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void) | undefined
+  onComposerKeyPress: ((e: TextInputKeyPressEvent) => void) | undefined
 }
 
 export function useComposerMode({
@@ -107,9 +107,9 @@ export function useComposerMode({
     // the EDIT kind specifically: a reply is a send with a reference, media and all.
     const media: ComposerMedia[] = submitMode?.kind === "edit"
       ? []
-      : att.attachments
-          .filter((a) => a.uploadId)
-          .map((a) => ({ uploadId: a.uploadId!, kind: a.kind, localUri: a.uri, posterUri: a.posterUri ?? null }))
+      : att.attachments.flatMap((a) =>
+          a.uploadId ? [{ uploadId: a.uploadId, kind: a.kind, localUri: a.uri, posterUri: a.posterUri ?? null }] : [],
+        )
     const resolved = resolveComposerSubmit(submitMode, draft, media.length > 0)
     if (resolved.action === "noop") return
     // Same mention grammar the bubble renderer tints with (mentionMatch), so a mention that reads as
@@ -152,7 +152,7 @@ export function useComposerMode({
   const onComposerKeyPress = useMemo(
     () =>
       Platform.OS === "web"
-        ? (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+        ? (e: TextInputKeyPressEvent) => {
             if (isComposerCancelKey(e)) {
               if (conversationFieldEscape(composerMode !== null) === "cancel-mode") cancelComposerMode()
               else grow.ref.current?.blur()
@@ -169,7 +169,7 @@ export function useComposerMode({
   const onOpenEdit = useCallback((message: ChatMessageDTO) => {
     // Re-entrant guard: picking Edit on message B while already editing A must NOT re-park A's
     // in-progress edit text over the user's ORIGINAL draft - only the first entry parks.
-    if (savedDraftRef.current === null) savedDraftRef.current = { ...draftStateRef.current }
+    savedDraftRef.current ??= { ...draftStateRef.current }
     setComposerMode({ kind: "edit", message })
     setDraft((message.body ?? "").slice(0, MESSAGE_BODY_MAX))
     setMentioned(

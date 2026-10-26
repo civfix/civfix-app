@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { QR_QUIET_ZONE, qrPath } from "../qrMatrix"
 
 const grid = (rows: string[]): boolean[][] =>
-  rows.map((row) => [...row].map((cell) => cell === "#"))
+  rows.map((row) => row.split("").map((cell) => cell === "#"))
 
 describe("qrPath", () => {
   it("uses the LARGER dimension as the module count, so no row is silently cropped", () => {

@@ -148,8 +148,7 @@ export function buildRenderItems(
     rows.push({ type: "row", id: item.message.clientId ?? item.message.id, item, showName, groupStart, groupEnd: false })
     lastAuthor = author
   }
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]!
+  for (const [i, row] of rows.entries()) {
     if (row.type !== "row") continue
     const next = rows[i + 1]
     row.groupEnd =

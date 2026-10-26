@@ -166,8 +166,7 @@ const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props
 
   const reconcileRef = React.useRef<() => void>(() => {})
   const runnerRef = React.useRef<IdleRunner | null>(null)
-  if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
-  const runner = runnerRef.current
+  const runner = (runnerRef.current ??= createIdleRunner(() => reconcileRef.current()))
   React.useLayoutEffect(() => {
     reconcileRef.current = () => {
       const map = mapRef.current

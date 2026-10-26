@@ -170,9 +170,10 @@ export class ChatSocketCore implements ChatSocketLike {
       return "dropped"
     }
     const frame = parsed.data
-    if (this.isOpen()) {
+    const socket = this.openSocket()
+    if (socket) {
       try {
-        this.socket!.send(JSON.stringify(frame))
+        socket.send(JSON.stringify(frame))
         return "sent"
       } catch {
         // A socket that reports OPEN but throws on send never fires onclose by itself, so a queued
@@ -194,15 +195,20 @@ export class ChatSocketCore implements ChatSocketLike {
     return "queued"
   }
 
+  private openSocket(): WebSocket | null {
+    return this.socket?.readyState === WS_OPEN ? this.socket : null
+  }
+
   private isOpen(): boolean {
-    return this.socket !== null && this.socket.readyState === WS_OPEN
+    return this.openSocket() !== null
   }
 
   private writeFrame(frame: WsClientMessage): void {
     const parsed = WsClientMessageSchema.safeParse(frame)
-    if (!parsed.success || !this.isOpen()) return
+    const socket = this.openSocket()
+    if (!parsed.success || !socket) return
     try {
-      this.socket!.send(JSON.stringify(parsed.data))
+      socket.send(JSON.stringify(parsed.data))
     } catch {
       return
     }
@@ -366,12 +372,13 @@ export class ChatSocketCore implements ChatSocketLike {
   }
 
   private flushQueue(): void {
-    if (!this.isOpen() || this.sendQueue.length === 0) return
+    const socket = this.openSocket()
+    if (!socket || this.sendQueue.length === 0) return
     const queued = this.sendQueue
     this.sendQueue = []
-    for (let i = 0; i < queued.length; i += 1) {
+    for (const [i, frame] of queued.entries()) {
       try {
-        this.socket!.send(JSON.stringify(queued[i]!))
+        socket.send(JSON.stringify(frame))
       } catch {
         this.sendQueue = [...queued.slice(i), ...this.sendQueue]
         return

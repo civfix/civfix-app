@@ -50,7 +50,7 @@ const STAT_VALUE_BUDGET: Readonly<Record<StatTileColumns, readonly [number, numb
 export function statValueSize(value: string | null, columns: StatTileColumns): StatValueSize {
   if (value === null) return "24"
   const budget = STAT_VALUE_BUDGET[columns]
-  const length = [...value].length
+  const length = Array.from(value).length
   if (length > budget[1]) return "18"
   if (length > budget[0]) return "20"
   return "24"

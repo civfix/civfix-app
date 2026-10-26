@@ -69,6 +69,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
     [post.body, post.mentions],
   )
   const timeAgo = useListTimeAgo()
+  const { event: linkedEvent, report: linkedReport } = post
   const identity = React.useMemo(
     () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
     [post.author, post.organization, t],
@@ -199,27 +200,27 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               </View>
             ) : null}
 
-            {post.event ? (
+            {linkedEvent ? (
               <View style={styles.block}>
                 <LinkedEventCard
-                  event={post.event}
+                  event={linkedEvent}
                   layout="list"
-                  timeZone={post.event.timezone ?? undefined}
-                  onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+                  timeZone={linkedEvent.timezone ?? undefined}
+                  onPress={() => openEntry({ kind: "cleanup", id: linkedEvent.id })}
                 />
               </View>
             ) : null}
 
-            {post.report ? (
+            {linkedReport ? (
               <View style={styles.block}>
                 <LinkedReportCard
                   report={{
-                    ...post.report,
-                    thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id),
+                    ...linkedReport,
+                    thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id),
                   }}
                   layout="list"
                   headline="title"
-                  onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+                  onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
                 />
               </View>
             ) : null}

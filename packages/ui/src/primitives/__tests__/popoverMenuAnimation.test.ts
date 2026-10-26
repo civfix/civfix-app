@@ -152,7 +152,7 @@ describe("the shared menu motion hook (source-pinned)", () => {
       .filter((file) => file.source.includes("useMenuMotion("))
     expect(callers.length).toBeGreaterThan(0)
     for (const { name, source } of callers) {
-      for (const [, passed] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
+      for (const [, passed = ""] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
         expect(passed, `${name} passes ${passed} as recipes`).toMatch(/^[A-Z][A-Z0-9_]*$/)
         expect(source, `${name} must hoist ${passed} to a module constant`).toMatch(
           new RegExp(`^const ${passed}: MenuMotionRecipes = `, "m"),

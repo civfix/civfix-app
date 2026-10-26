@@ -40,7 +40,7 @@ const reports: ReportPinDTO[] = [
 class LaidOutResizeObserver {
   constructor(private readonly callback: ResizeObserverCallback) {}
   observe(target: Element) {
-    queueMicrotask(() => this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver))
+    queueMicrotask(() => this.callback([{ target } as ResizeObserverEntry], this))
   }
   unobserve() {}
   disconnect() {}

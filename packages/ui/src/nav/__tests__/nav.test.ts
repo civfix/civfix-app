@@ -977,16 +977,16 @@ describe("seed derives the detent from the PRISTINE store (a cold compact web lo
   })
 
   it.each([
-    ["/host", { kind: "create-cleanup" } as DetailEntry],
-    ["/settings", { kind: "settings" } as DetailEntry],
-    ["/settings/privacy", { kind: "settings-privacy" } as DetailEntry],
-    ["/dashboard", { kind: "event-dashboard" } as DetailEntry],
-    ["/profile", { kind: "profile" } as DetailEntry],
-    ["/leaderboard/0644000", { kind: "leaderboard", geoid: "0644000" } as DetailEntry],
-    ["/people/u1/followers", { kind: "followers", id: "u1" } as DetailEntry],
+    ["/host", { kind: "create-cleanup" }],
+    ["/settings", { kind: "settings" }],
+    ["/settings/privacy", { kind: "settings-privacy" }],
+    ["/dashboard", { kind: "event-dashboard" }],
+    ["/profile", { kind: "profile" }],
+    ["/leaderboard/0644000", { kind: "leaderboard", geoid: "0644000" }],
+    ["/people/u1/followers", { kind: "followers", id: "u1" }],
     [
       "/messages/members/group/g1",
-      { kind: "members", id: "g1", roomKind: "group" } as DetailEntry,
+      { kind: "members", id: "g1", roomKind: "group" },
     ],
   ])("a cold deep link to %s opens the sheet full, never at the 96px peek", (path, entry) => {
     resetPristine()

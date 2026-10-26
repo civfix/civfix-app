@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, StyleSheet } from "react-native"
-import type { ReportCategory } from "@civfix/contract"
 import { MAX_REPORT_ADDR_LENGTH } from "@civfix/contract"
 import type { LatLng } from "@civfix/contract/geocode"
 import { makeThemedStyles, useTheme, useLayoutMode } from "../../theme"
@@ -75,7 +74,7 @@ export function ReviewStep({
     (place: AddressPick) => setLocation(place.lat, place.lng, "manual"),
     [setLocation],
   )
-  const category = draft.category as ReportCategory | null
+  const category = draft.category
   const pin = useMemo(() => reportPinTarget(category), [category])
 
   return (

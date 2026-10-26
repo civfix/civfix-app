@@ -114,7 +114,7 @@ export function TabButton({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
-      {...({ "aria-selected": active } as object)}
+      aria-selected={active}
       accessibilityLabel={label}
       style={({ pressed }) => [styles.tab, pressed ? styles.pressed : null]}
     >

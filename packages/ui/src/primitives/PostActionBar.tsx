@@ -129,7 +129,7 @@ const HALO_TRANSITION: ViewStyle =
 
 const RING_FOOTPRINT = FOCUS_RING_WIDTH + FOCUS_RING_OFFSET
 const WEB_ACTION_FOCUS_INSET: ViewStyle =
-  Platform.OS === "web" ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle) : {}
+  Platform.OS === "web" ? { outlineOffset: -RING_FOOTPRINT } : {}
 
 interface ActionBoxStyles {
   pad: ViewStyle

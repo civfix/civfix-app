@@ -278,7 +278,7 @@ const KIND_ROUTES: Record<DetailKind, KindRoute> = {
 
 // Entries restored from history or storage are typed but not guaranteed to carry a current kind.
 function kindRoute(entry: DetailEntry): KindRoute | undefined {
-  return entry.kind === "view" ? undefined : (KIND_ROUTES[entry.kind] as KindRoute | undefined)
+  return entry.kind === "view" ? undefined : KIND_ROUTES[entry.kind]
 }
 
 function entryText(text: EntryText | undefined, entry: DetailEntry, fallback: string): string {

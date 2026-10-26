@@ -158,7 +158,7 @@ export function ProfileEventsSection({
               onPress={() => onSelectTab(id)}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
-              {...({ "aria-selected": selected } as object)}
+              aria-selected={selected}
               {...focusRingProps}
               // 34pt pill + 5pt top/bottom reaches the 44pt floor; vertical only, since the segments
               // are flex neighbours and horizontal slop would overlap the other segment.

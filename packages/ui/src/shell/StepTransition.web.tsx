@@ -16,7 +16,7 @@ interface Entrance {
 }
 
 function entranceStyle(entrance: Entrance | null): ViewStyle {
-  if (!entrance) return {} as ViewStyle
+  if (!entrance) return {}
   const { flipped, plan } = entrance
   return {
     transform: translateRatio(flipped ? 0 : plan.fromRatio),
@@ -38,7 +38,7 @@ export function StepTransition({ children, direction, style, transitionKey }: St
   const [entrance, setEntrance] = useState<Entrance | null>(null)
   const prevKeyRef = useRef(transitionKey)
   const navRef = useRef(0)
-  const nodeRef = useRef<any>(null)
+  const nodeRef = useRef<View>(null)
 
   useLayoutEffect(() => {
     if (transitionKey === prevKeyRef.current) return

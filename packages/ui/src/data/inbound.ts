@@ -86,9 +86,9 @@ function upsertMessageIntoPages(
   let changed = false
   const nextPages = pages.map((page) => {
     const idx = page.items.findIndex((m) => m.id === message.id)
-    if (idx === -1) return page
+    const local = page.items[idx]
+    if (local === undefined) return page
     replaced = true
-    const local = page.items[idx]!
     const stored = preserveViewer ? preserveViewerFields(local, message) : message
     if (stored === local) return page
     changed = true

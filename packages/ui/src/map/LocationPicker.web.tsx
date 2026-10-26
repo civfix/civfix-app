@@ -58,7 +58,7 @@ function InlineLocationPicker({
   })
 
   const seedRef = React.useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
 
   const ensureMarker = React.useCallback(

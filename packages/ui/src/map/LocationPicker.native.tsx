@@ -117,7 +117,7 @@ export function LocationPicker({
   // so there is no camera to be wrong. Once adopted it is FROZEN, because the seed's only job is to place
   // the camera at mount: re-seeding it later would yank the map out from under a user who has since panned.
   const seedRef = useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
   const initialViewState = useMemo(
     () =>

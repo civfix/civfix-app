@@ -18,6 +18,7 @@ export function ComparisonSection({ data }: { data: GetEventAnalyticsResponse })
       : null
 
   const signups = wholeEventSignups(data)
+  const checkInPercent = ratePercent(data.rates.checkIn)
 
   const rows: Array<{ key: string; value: number | null; median: number | null; text: string }> = [
     {
@@ -30,7 +31,7 @@ export function ComparisonSection({ data }: { data: GetEventAnalyticsResponse })
       key: "check_in_rate",
       value: data.rates.checkIn.value,
       median: comparison.medians.checkInRate,
-      text: ratePercent(data.rates.checkIn) === null ? EMPTY_VALUE : `${ratePercent(data.rates.checkIn)}%`,
+      text: checkInPercent === null ? EMPTY_VALUE : `${checkInPercent}%`,
     },
     {
       key: "hours_per_volunteer",

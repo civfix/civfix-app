@@ -41,7 +41,7 @@ export function ProfileTabBar({ model, onSelect }: ProfileTabBarProps) {
           onPress={() => onSelect(tab.id)}
           accessibilityRole={tab.role}
           accessibilityState={{ selected: tab.selected }}
-          {...({ "aria-selected": tab.selected } as object)}
+          aria-selected={tab.selected}
           {...focusRingProps}
           // 34pt of pill + 5pt top/bottom reaches the 44pt floor without growing the track. Vertical only:
           // the tabs are `flex: 1` neighbours, so horizontal slop would overlap the next tab's region.

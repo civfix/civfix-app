@@ -3,9 +3,8 @@ import {
   Platform,
   Pressable,
   View,
-  type NativeSyntheticEvent,
   type TextInput as RNTextInput,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, motion, useTheme, webInputReset } from "../../theme"
@@ -52,7 +51,7 @@ export function ExpandedSearchField() {
   }, [setQuery])
 
   const onKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    (event: TextInputKeyPressEvent) => {
       const web = event as unknown as { key?: string; preventDefault?: () => void }
       if (web.key !== "Escape") return
       web.preventDefault?.()

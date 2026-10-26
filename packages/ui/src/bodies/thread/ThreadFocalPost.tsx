@@ -112,6 +112,7 @@ export function ThreadFocalPost({
     usePostRowActions({ post, identity, onOpenEntry })
   const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
   const embedded = model.embeddedPost
+  const { event: linkedEvent, report: linkedReport } = post
   const openOriginal = React.useMemo(
     () =>
       isRepost && embedded && !embedded.deleted
@@ -244,37 +245,37 @@ export function ThreadFocalPost({
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.event ? (
+      {!isFix && !isRepost && linkedEvent ? (
         <View style={styles.block}>
           <LinkedEventCard
-            event={post.event}
+            event={linkedEvent}
             layout="list"
             variant="detail"
-            timeZone={post.event.timezone ?? undefined}
-            onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+            timeZone={linkedEvent.timezone ?? undefined}
+            onPress={() => openEntry({ kind: "cleanup", id: linkedEvent.id })}
           />
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.report ? (
+      {!isFix && !isRepost && linkedReport ? (
         <View style={styles.block}>
           <LinkedReportCard
-            report={{ ...post.report, thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id) }}
+            report={{ ...linkedReport, thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id) }}
             layout="list"
             headline="title"
-            onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+            onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
           />
         </View>
       ) : null}
 
-      {model.embeddedPost ? (
+      {embedded ? (
         <View style={styles.block}>
           <EmbeddedPost
-            post={model.embeddedPost}
+            post={embedded}
             t={t}
             timeAgo={timeAgo}
             prominent={isRepost}
-            onPress={() => openEntry({ kind: "post-thread", id: model.embeddedPost!.id })}
+            onPress={() => openEntry({ kind: "post-thread", id: embedded.id })}
           />
         </View>
       ) : null}

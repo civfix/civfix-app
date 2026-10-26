@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { motion } from "../theme"
+import { domProps, motion } from "../theme"
 import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransition.types"
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
@@ -190,9 +190,9 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
         key={slot}
         ref={slot === "a" ? slotARef : slotBRef}
         style={[styles.layer, castLayerStyle(layer, transition, zIndex, active)]}
-        {...({
+        {...domProps({
           onTransitionEnd: (event: LayerTransitionEndEvent) => onLayerTransitionEnd(slot, event),
-        } as any)}
+        })}
       >
         {active ? activeContent : outgoingContent}
       </View>
