@@ -127,6 +127,8 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
       termsVersion: terms,
       disclosureVersion: privacy,
       hostContactOptIn,
+      // The page offers no SMS box, so the honest answer is no; the server stores it as a required yes/no.
+      smsOptIn: false,
       surface: REGISTRATION_CONSENT_SURFACE,
     },
   })
