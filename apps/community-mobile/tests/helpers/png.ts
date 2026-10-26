@@ -38,10 +38,10 @@ function unfilter(raw: Buffer, width: number, height: number): Buffer {
     const target = row * stride
     const above = target - stride
     for (let index = 0; index < stride; index += 1) {
-      const left = index >= CHANNELS ? out[target + index - CHANNELS] : 0
-      const up = row > 0 ? out[above + index] : 0
-      const upLeft = row > 0 && index >= CHANNELS ? out[above + index - CHANNELS] : 0
-      const value = line[index]
+      const left = index >= CHANNELS ? out.readUInt8(target + index - CHANNELS) : 0
+      const up = row > 0 ? out.readUInt8(above + index) : 0
+      const upLeft = row > 0 && index >= CHANNELS ? out.readUInt8(above + index - CHANNELS) : 0
+      const value = line.readUInt8(index)
       let restored: number
       if (filter === 0) restored = value
       else if (filter === 1) restored = value + left
@@ -102,10 +102,10 @@ export function pixelAt(png: DecodedPng, x: number, y: number): Rgba {
   const clampedY = Math.min(Math.max(y, 0), png.height - 1)
   const offset = (clampedY * png.width + clampedX) * CHANNELS
   return {
-    r: png.pixels[offset],
-    g: png.pixels[offset + 1],
-    b: png.pixels[offset + 2],
-    a: png.pixels[offset + 3],
+    r: png.pixels.readUInt8(offset),
+    g: png.pixels.readUInt8(offset + 1),
+    b: png.pixels.readUInt8(offset + 2),
+    a: png.pixels.readUInt8(offset + 3),
   }
 }
 
@@ -135,8 +135,8 @@ export function readPngHeader(bytes: Buffer): PngHeader {
   return {
     width: bytes.readUInt32BE(16),
     height: bytes.readUInt32BE(20),
-    bitDepth: bytes[24],
-    colourType: bytes[25],
-    interlace: bytes[28],
+    bitDepth: bytes.readUInt8(24),
+    colourType: bytes.readUInt8(25),
+    interlace: bytes.readUInt8(28),
   }
 }

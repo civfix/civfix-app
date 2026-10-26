@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import { URL } from "node:url"
+import { defined } from "./helpers/defined.ts"
 import {
   BOOT_DEADLINE_MS,
   BOOT_GATE_THRESHOLDS_MS,
@@ -339,8 +340,8 @@ test("a shared request is only joined by callers under the same key: a token wri
   const fresh = check(1000)
   assert.equal(runs, 2)
 
-  gates[0]("signed-out answer")
-  gates[1]("signed-in answer")
+  defined(gates[0], "the first request's resolver")("signed-out answer")
+  defined(gates[1], "the second request's resolver")("signed-in answer")
   assert.equal(await first, "signed-out answer")
   assert.equal(await joined, "signed-out answer")
   assert.equal(await fresh, "signed-in answer")
