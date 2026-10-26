@@ -6,6 +6,7 @@ import type { BBox } from "@civfix/contract"
 import { useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { alpha } from "../theme/alpha"
 import { useCartoApiKey } from "../data"
+import { useT } from "../i18n"
 import { rasterMapStyle, carryStyleOverlay, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { bindBundledWorker } from "./maplibreWorker.web"
 import { TeardropPin, EventPin, ClusterBubble } from "./pins"
@@ -20,6 +21,8 @@ import {
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
 import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 import {
   REPORT_PICK_FLY_MS,
   REPORT_PICK_MEETING_PIN_OPACITY,
@@ -43,6 +46,17 @@ function boundsToBBox(map: MlMap): BBox {
 
 export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMapProps>(
   function ReportPickMap(props, ref) {
+    const { t } = useT("map-ui")
+    return (
+      <MapSurfaceGuard fallback={<MapUnavailable hint={t("unavailable.reportList")} />}>
+        <ReportPickMapCanvas ref={ref} {...props} />
+      </MapSurfaceGuard>
+    )
+  },
+)
+
+const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapProps>(
+  function ReportPickMapCanvas(props, ref) {
     const {
       center,
       radiusM,

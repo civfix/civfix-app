@@ -28,6 +28,8 @@ import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } fro
 import { attachPressGestures } from "./mapPressGestures.web"
 import { useFocusAndFlyToCamera } from "./homeMapCamera.web"
 import { useDropPinMarker, useModeMapControls, usePickMarker, useUserLocationDot } from "./homeMapOverlays.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
@@ -45,6 +47,15 @@ function mapBoundsToBBox(map: MlMap): BBox {
 }
 
 export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref) {
+  const { t } = useT("map-ui")
+  return (
+    <MapSurfaceGuard fallback={<MapUnavailable hint={t("unavailable.home")} />}>
+      <MapCanvas ref={ref} {...props} />
+    </MapSurfaceGuard>
+  )
+})
+
+const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props, ref) {
   const { t } = useT("map-ui")
   const {
     reports = NO_REPORTS,
