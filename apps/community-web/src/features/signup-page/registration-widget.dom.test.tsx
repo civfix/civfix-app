@@ -3,7 +3,7 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { AppError, ErrorCode, GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
+import { AppError, ErrorCode, EventConsentInputSchema, GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
 import type { LegalDocumentDTO, LegalDocumentType, PublicEventPageDTO } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider, queryKeys, type DataContextValue } from "@civfix/ui/data"
@@ -702,6 +702,63 @@ describe("legal versions from the API", () => {
     expect((guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject({
       termsVersion: "2026-10-30",
       disclosureVersion: "2026-10-30",
+    })
+  })
+
+  it("T36: a member's consent is exactly what the page collected, SMS answered no", async () => {
+    const user = userEvent.setup()
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((memberSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(memberSubmit())
+    await screen.findByText("web-signup:outcome.registered")
+    const consent = registerForEvent.mock.calls[0]?.[0]?.consent
+    expect(consent).toEqual({
+      termsVersion: "2026-09-21",
+      disclosureVersion: "2026-09-21",
+      hostContactOptIn: false,
+      smsOptIn: false,
+      surface: "web_register",
+    })
+    expect(EventConsentInputSchema.safeParse(consent).success).toBe(true)
+  })
+
+  it("T37: a guest's code request and verification both answer SMS no", async () => {
+    const user = userEvent.setup()
+    authenticated = false
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((guestSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await fillGuest(user)
+    await user.click(guestSubmit())
+    await screen.findByText("code.title")
+    await user.type(screen.getByLabelText("code.label"), "123456")
+    await user.click(screen.getByRole("button", { name: /code\.submit/ }))
+    await screen.findByText("web-signup:outcome.registered")
+
+    const requested = (guestRsvpRequest.mock.calls[0]?.[0] as { consent: Record<string, unknown> }).consent
+    const verified = (guestRsvpVerify.mock.calls[0]?.[0] as { consent: Record<string, unknown> }).consent
+    for (const consent of [requested, verified]) {
+      expect(Object.keys(consent)).toContain("smsOptIn")
+      expect(consent.smsOptIn).toBe(false)
+    }
+  })
+
+  it("T38: the retry after an outdated answer still answers SMS no, with the new terms", async () => {
+    const user = userEvent.setup()
+    registerForEvent.mockRejectedValueOnce(outdatedConflict())
+    renderWidget(page(), { fetchDocuments: true })
+    await waitFor(() => expect((memberSubmit() as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(memberSubmit())
+    await screen.findByRole("alert")
+
+    await user.click(screen.getByLabelText("form.terms"))
+    await user.click(memberSubmit())
+    await screen.findByText("web-signup:outcome.registered")
+    expect(registerForEvent.mock.calls[1]?.[0]?.consent).toMatchObject({
+      smsOptIn: false,
+      termsVersion: "2026-10-30",
     })
   })
 })
