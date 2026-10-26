@@ -43,7 +43,7 @@ pnpm i18n:check    # locale keys complete across languages, and every t(...) cal
 pnpm knip          # unused files, exports and dependencies
 pnpm jscpd         # duplicated code, fails above the configured threshold
 pnpm clean
-pnpm doctor        # expo-doctor on the mobile app
+pnpm run doctor:expo  # expo-doctor on the mobile app (`pnpm doctor` is pnpm's own command)
 ```
 
 Per package:
