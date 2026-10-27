@@ -146,8 +146,8 @@ describe("the all-events mode answers for the whole portfolio", () => {
     expect(BODY).not.toContain("onPickEvent: (id: string) => void")
   })
 
-  it("keeps the by-event list keys unique even when two events share a title", () => {
-    expect(BODY).toContain("key={`${index}:${row.key}`}")
+  it("keys the by-event list by event id, so two events that share a title stay distinct", () => {
+    expect(BODY).toContain("key={row.key}")
   })
 
   it("names the filter from the row when the picker has not fetched that event", () => {

@@ -21,6 +21,7 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { PostOverflowButton } from "../../primitives/PostOverflowButton"
+import { withTextOffsets } from "../../primitives/listKeys"
 import {
   buildPostCardModel,
   identityA11yLabel,
@@ -102,7 +103,7 @@ export function ThreadFocalPost({
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const stats = React.useMemo(() => buildFocalPostStats(post.counts, t), [post.counts, t])
   const bodySegments = React.useMemo(
-    () => splitPostBodyMentions(post.body ?? "", post.mentions),
+    () => withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions)),
     [post.body, post.mentions],
   )
   const isFix = model.variant === "fix-confirmed"
@@ -198,10 +199,10 @@ export function ThreadFocalPost({
 
       {!isFix && !isRepost && bodySegments.length > 0 ? (
         <Text style={styles.body}>
-          {bodySegments.map((segment, index) =>
+          {bodySegments.map((segment) =>
             segment.kind === "mention" ? (
               <Text
-                key={`${segment.userId}-${index}`}
+                key={segment.offset}
                 style={styles.bodyMention}
                 accessibilityRole="link"
                 onPress={() => openPerson(segment.userId)}

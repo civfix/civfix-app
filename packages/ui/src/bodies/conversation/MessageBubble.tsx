@@ -6,6 +6,7 @@ import type { ChatMessageDTO, MediaDTO, UserMentionDTO, ReactionEmoji } from "@c
 import { useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
+import { withTextOffsets } from "../../primitives/listKeys"
 import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
 import { announce } from "../../announce"
 import { useLocale, useT } from "../../i18n"
@@ -60,20 +61,20 @@ function renderChatTokens(
   { body, tintStyle, onOpenPerson, onOpenLink }: RenderChatBodyInput,
 ): React.ReactNode {
   if (tokens.length === 1 && tokens[0]?.kind === "text") return body
-  return tokens.map((token, i) => {
+  return withTextOffsets(tokens).map((token) => {
     if (token.kind === "text") return token.text
     if (token.kind === "mention") {
       const userId = token.userId
       if (userId === null) {
         return (
-          <Text key={`m${i}`} style={tintStyle}>
+          <Text key={token.offset} style={tintStyle}>
             {token.text}
           </Text>
         )
       }
       return (
         <Text
-          key={`m${i}`}
+          key={token.offset}
           style={tintStyle}
           accessibilityRole="link"
           onPress={() => onOpenPerson({ id: userId, handle: token.handle })}
@@ -85,7 +86,7 @@ function renderChatTokens(
     const target = token.target
     return (
       <Text
-        key={`l${i}`}
+        key={token.offset}
         style={tintStyle}
         accessibilityRole="link"
         onPress={() => onOpenLink(target)}

@@ -14,6 +14,7 @@ import {
   missingRequired,
   visibleQuestions as shownQuestions,
 } from "@civfix/contract/host"
+import { useNow } from "@civfix/ui/data"
 
 import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
@@ -41,10 +42,10 @@ type Step =
 
 export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode: string | null) {
   const isAuthenticated = useAuthStore((store) => store.status === "authenticated")
-  const windowState = React.useMemo(
-    () => registrationWindowState(page, Date.now()),
-    [page],
-  )
+  // Read once when the widget opens: a confirmation or a half-filled form is never swapped for "closed"
+  // just because the clock passed the close time while it was on screen.
+  const openedAt = useNow(0)
+  const windowState = React.useMemo(() => registrationWindowState(page, openedAt), [page, openedAt])
 
   const tickets = selectableTickets(page)
   const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() =>

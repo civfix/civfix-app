@@ -1,5 +1,5 @@
-// The typed rule set the civfix-app workspaces enforce. CommonJS so the CommonJS mobile config can
-// require it and the ESM configs can import it without a loader flag.
+// The typed rule set the civfix-app workspaces enforce. CommonJS so any config, ESM or CommonJS, can load
+// it without a loader flag.
 //
 // Off on purpose, measured on this code: no-unnecessary-condition (the contract client passes through
 // bodies that fail their schema, so the guards on them are deliberate), strict-boolean-expressions,

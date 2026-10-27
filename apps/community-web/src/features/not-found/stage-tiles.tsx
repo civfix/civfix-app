@@ -134,7 +134,7 @@ export function TilesStage({ live }: { live: boolean }) {
       <div ref={stageRef} className={live ? "nf-tiles is-live" : "nf-tiles"}>
         {DIGITS.map((digit, i) => (
           <div
-            key={i}
+            key={digit.tone}
             ref={(el) => {
               tileRefs.current[i] = el
             }}

@@ -8,7 +8,7 @@ import { PopoverMenu, SecondaryButton, SegmentedControl, usePopoverAnchor } from
 import { useMeasuredWidth } from "../../charts"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
-import { useAuthState } from "../../data"
+import { useAuthState, useNow } from "../../data"
 import { useEventAnalytics, useHostAnalyticsSummary } from "../../data/hooks/analytics"
 import { useRelativeTime, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -68,7 +68,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const canView = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "view_analytics")
   const event = useEventAnalytics(picked ?? undefined, "full", { enabled: !all && canView })
 
-  const now = Date.now()
+  const now = useNow()
   const generatedAt = all ? (summary.data?.generatedAt ?? null) : (event.data?.generatedAt ?? null)
   const updatedAgo = generatedAt === null ? null : relative(generatedAt, now)
 

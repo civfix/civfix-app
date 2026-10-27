@@ -1,7 +1,11 @@
+import eslintReact from "@eslint-react/eslint-plugin"
 import eslint from "@eslint/js"
 import pluginQuery from "@tanstack/eslint-plugin-query"
+import react from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
+import reactNative from "eslint-plugin-react-native"
 import tseslint from "typescript-eslint"
+import { LEAKED_RENDER_RULES, REACT_NATIVE_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
 import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, escalateWarnings } from "../../eslint.typed.cjs"
 
 const BANNED_PATTERNS = [
@@ -72,10 +76,13 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
-    plugins: { "react-hooks": reactHooks },
+    plugins: { "react-hooks": reactHooks, react, "react-native": reactNative, "@eslint-react": eslintReact },
+    settings: { react: { version: "detect" } },
     rules: {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "error",
+      ...reactHooksRules(reactHooks),
+      ...REACT_RULES,
+      ...REACT_NATIVE_RULES,
+      ...LEAKED_RENDER_RULES,
     },
   },
   ...escalateWarnings(pluginQuery.configs["flat/recommended"]),

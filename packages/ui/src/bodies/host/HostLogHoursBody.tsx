@@ -30,8 +30,10 @@ export function HostLogHoursBody({ id }: { id: string }) {
   // denied state; an undefined id keeps the query disabled.
   const hours = useEventHours(manages ? id : undefined)
 
-  const boundaryAt = event === null ? null : nextEventBoundaryMs(event, Date.now())
-  const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
+  const now = useNow(NOW_TICK_MS, {
+    boundaryAt: (at) => (event === null ? null : nextEventBoundaryMs(event, at)),
+    idleAfterLastBoundary: true,
+  })
 
   const onClose = useCallback(() => {
     useNavStore.getState().back()

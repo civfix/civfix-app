@@ -29,7 +29,7 @@ function crashCopy(): typeof CRASH_COPY {
 }
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
-  const copy = useMemo(crashCopy, [])
+  const copy = useMemo(() => crashCopy(), [])
   const theme = useAppearanceTheme()
   const crash = useMemo(() => crashStyles(theme), [theme])
 

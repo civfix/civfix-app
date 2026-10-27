@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { CleanupDTO, LatLng, ReportPinDTO, UserSearchResultDTO } from "@civfix/contract"
 import { eventChip } from "@civfix/contract/datetime"
+import { eventEndsAtMs } from "@civfix/contract/host"
 import { announce } from "../../announce"
 import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../../theme"
 import {
@@ -18,6 +19,7 @@ import {
   useAuthState,
   useJoinCleanup,
   useNearbyCleanups,
+  useNow,
   useReportSearch,
   useUserLocation,
   useUserSearch,
@@ -86,6 +88,7 @@ function PersonHitRow({ person }: { person: UserSearchResultDTO }) {
 export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
   const join = useJoinCleanup(cleanup.id)
+  const now = useNow(0, { boundaryAt: eventEndsAtMs(cleanup) })
   const expanded = useLayoutMode() === "expanded"
   const { hovered, hoverProps } = useRowHover()
   const { locale } = useLocale()
@@ -113,7 +116,7 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
         going={cleanup.joined}
         onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
         busy={join.isPending}
-        ended={hasEventEnded(cleanup, Date.now())}
+        ended={hasEventEnded(cleanup, now)}
         nextPath={`/cleanups/${cleanup.id}`}
         size="sm"
       />

@@ -24,10 +24,13 @@ import { ToastProvider, useToast, type ToastApi } from "../../../../packages/ui/
 
 const MESSAGE = "Couldn't send to Ana_with_a_very_long_name_without_any_spaces"
 
-let toast: ToastApi | null = null
+const toastRef: { current: ToastApi | null } = { current: null }
 
 function Harness({ sheetOpen }: { sheetOpen: boolean }) {
-  toast = useToast()
+  const toast = useToast()
+  React.useEffect(() => {
+    toastRef.current = toast
+  })
   return (
     <ModalCardSheet
       visible={sheetOpen}
@@ -52,7 +55,7 @@ function mount(sheetOpen: boolean) {
 
 function showRetryToast(retry: () => void): void {
   act(() => {
-    toast!.show(MESSAGE, { variant: "error", action: { label: "Try again", onPress: retry } })
+    toastRef.current!.show(MESSAGE, { variant: "error", action: { label: "Try again", onPress: retry } })
   })
 }
 
@@ -62,7 +65,7 @@ function dialog(): HTMLElement {
 
 afterEach(() => {
   cleanup()
-  toast = null
+  toastRef.current = null
 })
 
 describe("a toast shown while a sheet is open", () => {

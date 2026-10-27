@@ -78,11 +78,14 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "5.20.8",
     "@expo/fingerprint": "~0.15.5",
     "@tanstack/eslint-plugin-query": "5.103.2",
     "@types/react": "~19.1.0",
     "eslint": "^9.16.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-native": "5.0.0",
     "expo-doctor": "1.21.5",
     "typescript": "~5.9.2"
   },

@@ -4,6 +4,8 @@ import { useState } from "react"
 import { formatCount } from "@civfix/ui/helpers"
 import { useLocale } from "@civfix/ui/i18n"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 import { ChartFrame, integerYAxis, XLabels, YGrid } from "./chart-frame"
 import type { PlotPadding } from "./chart-frame"
 import { useMeasuredWidth } from "./chart-utils"
@@ -64,12 +66,12 @@ export function Histogram({
         height={height}
         palette={palette}
       />
-      {bins.map((bin, i) => {
+      {keyedByValue(bins, (bin) => bin.label).map(({ entry: bin, key }, i) => {
         const x = PAD.left + i * slot + (slot - barW) / 2
         const y = axis.yAt(bin.count)
         return (
           <rect
-            key={`${bin.label}:${i}`}
+            key={key}
             x={x}
             y={y}
             width={barW}

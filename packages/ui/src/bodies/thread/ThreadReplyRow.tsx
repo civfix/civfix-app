@@ -33,6 +33,7 @@ import {
   splitPostBodyMentions,
 } from "../postCardModel"
 import { POST_CARD_RHYTHM } from "../../primitives/postCardRhythm"
+import { withTextOffsets } from "../../primitives/listKeys"
 import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
@@ -65,7 +66,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   const { hovered, hoverProps } = useRowHover()
   const { t } = useT("home-feed")
   const segments = React.useMemo(
-    () => splitPostBodyMentions(post.body ?? "", post.mentions),
+    () => withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions)),
     [post.body, post.mentions],
   )
   const timeAgo = useListTimeAgo()
@@ -174,10 +175,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 
             {segments.length > 0 ? (
               <Text style={styles.body}>
-                {segments.map((segment, index) =>
+                {segments.map((segment) =>
                   segment.kind === "mention" ? (
                     <Text
-                      key={`${segment.userId}-${index}`}
+                      key={segment.offset}
                       style={styles.bodyMention}
                       accessibilityRole="link"
                       onPress={(event) => {
