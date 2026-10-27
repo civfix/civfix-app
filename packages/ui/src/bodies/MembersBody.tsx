@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webScrimProps, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   EmptyState,
@@ -557,7 +557,7 @@ export function MembersBody({
           onPress={() => setLeaveOpen(false)}
           {...webScrimProps}
         />
-        <View style={styles.modalCenter} pointerEvents="box-none">
+        <View style={[styles.modalCenter, pointerEventStyles["box-none"]]}>
           <View style={styles.card}>
             <Text variant="bodyStrong" color={th.colors.text}>
               {t("action.leave")}

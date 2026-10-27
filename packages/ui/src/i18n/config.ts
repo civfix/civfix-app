@@ -36,6 +36,8 @@ export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInsta
     // A catalog is added before its language is activated, so there is nothing to suspend on, and no
     // <Suspense> boundary exists.
     react: { useSuspense: false },
+    // i18next 25.6 logs a vendor promotion to the console on its first init, in every user's console.
+    showSupportNotice: false,
   })
   return instance
 }

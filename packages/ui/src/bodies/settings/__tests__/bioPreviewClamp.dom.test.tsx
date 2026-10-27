@@ -23,7 +23,9 @@ vi.mock("../../../primitives", async () => ({
 const longBio = ["First paragraph of a long bio.".repeat(6), "", "Second paragraph.", "Third paragraph."].join("\n")
 
 describe("the Bio row previews the bio in two lines", () => {
-  beforeAll(() => Promise.all(Object.values(lazyCatalogs).map((load) => load())))
+  beforeAll(async () => {
+    await Promise.all(Object.values(lazyCatalogs).map((load) => load()))
+  })
 
   it("clamps a long multi-line bio", async () => {
     render(

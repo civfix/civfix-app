@@ -192,8 +192,8 @@ describe("Toast", () => {
   const SRC = code(read("../../primitives/Toast.tsx"))
 
   it("lets taps through everywhere but the card, which dismisses itself", () => {
-    expect(SRC).toContain('<View style={styles.overlay} pointerEvents="box-none">')
-    expect(SRC).not.toContain('pointerEvents="none"')
+    expect(SRC).toContain('<View style={[styles.overlay, pointerEventStyles["box-none"]]}>')
+    expect(SRC).not.toContain("pointerEventStyles.none")
     expect(SRC).toContain("onPress={dismiss}")
   })
 

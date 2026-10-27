@@ -1,6 +1,7 @@
 import eslintReact from "@eslint-react/eslint-plugin"
 import eslint from "@eslint/js"
 import pluginQuery from "@tanstack/eslint-plugin-query"
+import vitest from "@vitest/eslint-plugin"
 import react from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
 import reactNative from "eslint-plugin-react-native"
@@ -19,6 +20,7 @@ import {
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
+  VITEST_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
 
@@ -53,7 +55,7 @@ const RN_FREE_PATTERNS = [
 
 export default tseslint.config(
   {
-    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "scripts/**"],
+    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "vitest.console-guard.ts", "coverage/**", "scripts/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -86,7 +88,8 @@ export default tseslint.config(
   },
   {
     files: TEST_FILES,
-    rules: TEST_RELAXED_RULES,
+    plugins: { vitest },
+    rules: { ...TEST_RELAXED_RULES, ...VITEST_RULES },
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],

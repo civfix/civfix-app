@@ -15,6 +15,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
     "i18n:check": "turbo run i18n:check && pnpm i18n:check:call-sites",
     "i18n:check:call-sites": "node scripts/check-i18n-call-sites.mjs",
     "knip": "knip",

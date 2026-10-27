@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, useReducedMotion, focusRingProps, webScrimProps } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  useReducedMotion,
+  focusRingProps,
+  webScrimProps,
+  pointerEventStyles,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
@@ -83,7 +90,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
         />
       </Animated.View>
 
-      <View style={styles.center} pointerEvents="box-none">
+      <View style={[styles.center, pointerEventStyles["box-none"]]}>
         <Animated.View style={[styles.card, { opacity: progress, transform: cardTransform }]}>
           <Pressable
             ref={closeRef}

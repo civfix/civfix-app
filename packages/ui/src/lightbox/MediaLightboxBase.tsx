@@ -11,6 +11,7 @@ import {
   webScrimProps,
   MIN_TOUCH_TARGET,
   PRESSED_OPACITY,
+  pointerEventStyles,
 } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import { MediaPreview } from "../primitives/MediaPreview"
@@ -111,7 +112,7 @@ export function MediaLightboxBase({
         ) : null}
 
         {current && current.kind !== "image" ? (
-          <View style={styles.stage} pointerEvents="box-none">
+          <View style={[styles.stage, pointerEventStyles["box-none"]]}>
             {media}
           </View>
         ) : null}

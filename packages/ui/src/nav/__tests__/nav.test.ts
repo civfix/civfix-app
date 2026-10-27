@@ -55,7 +55,9 @@ function countNotifications(run: () => void): number {
   return calls
 }
 
-beforeEach(() => resetStore())
+beforeEach(() => {
+  resetStore()
+})
 
 describe("route round-trip (entryFromPath . pathForEntry)", () => {
   const cases: Array<[string, DetailEntry]> = [
@@ -1076,7 +1078,9 @@ describe("viewForEntry / titleForEntry / searchModeFor", () => {
 })
 
 describe("report flow return", () => {
-  beforeEach(() => resetStore())
+  beforeEach(() => {
+    resetStore()
+  })
 
   it("captures the surface the wizard was launched from, stack and all", () => {
     useNavStore.getState().selectView("events")
@@ -1164,7 +1168,9 @@ describe("report flow return", () => {
 })
 
 describe("unwindTo", () => {
-  beforeEach(() => resetStore())
+  beforeEach(() => {
+    resetStore()
+  })
 
   it("truncates to the LAST matching entry and records the pop", () => {
     useNavStore.getState().push({ kind: "create-cleanup" })

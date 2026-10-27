@@ -15,6 +15,6 @@
     "types": ["node"],
     "outDir": "dist"
   },
-  "include": ["src", "__tests__", "tsup.config.ts", "eslint.config.js"],
+  "include": ["src", "__tests__", "tsup.config.ts", "eslint.config.js", "vitest.config.ts", "vitest.console-guard.ts"],
   "exclude": ["node_modules", "dist"]
 }

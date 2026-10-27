@@ -1,6 +1,7 @@
 import eslint from "@eslint/js"
+import vitest from "@vitest/eslint-plugin"
 import tseslint from "typescript-eslint"
-import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES } from "../../eslint.typed.cjs"
+import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, VITEST_RULES } from "../../eslint.typed.cjs"
 
 // @civfix/tokens must stay framework-free: never import or re-export react / react-dom /
 // react-native (or any react-native-* lib) or @civfix/ui. @civfix/ui depends ON this package, never the
@@ -31,7 +32,7 @@ const FRAMEWORK_FREE_IMPORTS = {
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.ts", "*.config.bundled_*.mjs"],
+    ignores: ["dist/**", "node_modules/**", "coverage/**", "*.config.js", "*.config.ts", "*.config.bundled_*.mjs"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -64,7 +65,8 @@ export default tseslint.config(
   },
   {
     files: TEST_FILES,
-    rules: TEST_RELAXED_RULES,
+    plugins: { vitest },
+    rules: { ...TEST_RELAXED_RULES, ...VITEST_RULES },
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],

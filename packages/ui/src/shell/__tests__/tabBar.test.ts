@@ -46,7 +46,9 @@ import { DOCK_H } from "../../surface/liquidGlass/liquidGlassModel"
 import { useTabBarStore } from "../tabBarStore"
 import { useSearchBarStore } from "../searchBarStore"
 
-beforeEach(() => useTabBarStore.setState({ tabBarHeight: 0, lastNonSearchView: "home" }))
+beforeEach(() => {
+  useTabBarStore.setState({ tabBarHeight: 0, lastNonSearchView: "home" })
+})
 
 describe("map-first tab bar model", () => {
   it("contains Map, Home, Messages, and the Report view tab in order (no always-coral accent flag)", () => {
@@ -413,7 +415,9 @@ describe("sheetSnapPoints (the compact sheet's three snap heights, shared by bot
 })
 
 describe("docked search bar pinned-state store", () => {
-  beforeEach(() => useSearchBarStore.setState({ pinned: false, barHeight: 60 }))
+  beforeEach(() => {
+    useSearchBarStore.setState({ pinned: false, barHeight: 60 })
+  })
 
   it("defaults to unpinned so web (which never sets it) keeps its resting layout", () => {
     expect(useSearchBarStore.getState().pinned).toBe(false)
