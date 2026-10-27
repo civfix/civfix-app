@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { View, StyleSheet, type ViewStyle } from "react-native"
-import { makeThemedStyles, useTheme } from "../theme"
+import { View, StyleSheet } from "react-native"
+import { domElement } from "../primitives/domElement"
+import { makeThemedStyles, useTheme, webStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
@@ -17,7 +18,7 @@ import {
 import { INLINE_PICK_HEIGHT, type PortraitMapPickStepProps } from "./PortraitMapPickStep.types"
 
 /** RN's style types stop at "absolute"; react-native-web hands "fixed" straight to CSS. */
-const WEB_FIXED_POSITION = { position: "fixed" } as unknown as Pick<ViewStyle, "position">
+const WEB_FIXED_POSITION = webStyle({ position: "fixed" })
 /** Above the web shell and its sheet, since the step is portalled to the document body. */
 const PICK_STEP_Z_INDEX = 1000
 
@@ -110,7 +111,7 @@ export function PortraitMapPickStep({
     // Only a keyboard opener moves focus into the search: on a phone a focused input raises the soft
     // keyboard over the map the step exists to show.
     if (opener?.matches(":focus-visible")) {
-      const topBar = topBarRef.current as unknown as HTMLElement | null
+      const topBar = domElement(topBarRef.current)
       topBar?.querySelector("input")?.focus()
     }
     const onKeyDown = (e: KeyboardEvent) => {

@@ -5,6 +5,7 @@ import pluginQuery from "@tanstack/eslint-plugin-query"
 import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
 import {
+  DOUBLE_CAST_SELECTORS,
   LINTER_OPTIONS,
   TEST_FILES,
   TEST_RELAXED_RULES,
@@ -107,9 +108,19 @@ export default tseslint.config(
     rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
   },
   {
+    name: "community-web/source-syntax",
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
     // The OAuth provider logos are third-party brand marks whose colours the providers mandate.
     name: "community-web/raw-colors-exempt",
     files: [...RAW_COLOR_EXEMPT_FILES, "src/**/provider-glyphs.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
+    name: "community-web/tests-syntax",
+    files: TEST_FILES,
     rules: { "no-restricted-syntax": "off" },
   },
   {

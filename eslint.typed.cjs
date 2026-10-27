@@ -4,7 +4,11 @@
 // Off on purpose, measured on this code: no-unnecessary-condition (the contract client passes through
 // bodies that fail their schema, so the guards on them are deliberate), strict-boolean-expressions,
 // no-confusing-void-expression, require-await, promise-function-async, unbound-method and
-// no-unnecessary-type-arguments, which flag mostly correct code or pure style.
+// no-unnecessary-type-arguments, which flag mostly correct code or pure style. no-unsafe-type-assertion is
+// off too: once the double casts were gone it still flagged 153/63/24 assertions in ui/web/mobile source,
+// nearly all narrowing TypeScript cannot express, such as an index read after a bounds check, a query id
+// its `enabled` flag already guards, `Object.keys` as a key union, or `Snap` arithmetic. `as unknown as`
+// is banned instead.
 
 const TYPED_RULES = {
   "@typescript-eslint/no-floating-promises": "error",
@@ -64,6 +68,15 @@ const TYPED_RULES = {
   ],
 }
 
+// `x as unknown as T` asserts a type the compiler cannot relate to the value at all. Web-only CSS on an RN
+// style goes through @civfix/ui's webStyle(); anything else narrows with a guard or parses at the boundary.
+const DOUBLE_CAST_SELECTORS = [
+  {
+    selector: 'TSAsExpression > TSAsExpression.expression[typeAnnotation.type="TSUnknownKeyword"]',
+    message: "No `as unknown as`: narrow with a type guard, parse at the boundary, or use webStyle() for web-only CSS.",
+  },
+]
+
 const TEST_FILES = [
   "**/__tests__/**",
   "**/__testing__/**",
@@ -107,4 +120,11 @@ function escalateWarnings(configs) {
   })
 }
 
-module.exports = { TYPED_RULES, TEST_FILES, TEST_RELAXED_RULES, LINTER_OPTIONS, escalateWarnings }
+module.exports = {
+  TYPED_RULES,
+  DOUBLE_CAST_SELECTORS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  LINTER_OPTIONS,
+  escalateWarnings,
+}

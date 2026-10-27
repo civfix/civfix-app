@@ -14,7 +14,14 @@ import {
   reactHooksRules,
   withoutReactHooks,
 } from "../../eslint.react.cjs"
-import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, escalateWarnings } from "../../eslint.typed.cjs"
+import {
+  DOUBLE_CAST_SELECTORS,
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  escalateWarnings,
+} from "../../eslint.typed.cjs"
 
 const MOBILE_TYPED_RULES = {
   ...TYPED_RULES,
@@ -67,7 +74,15 @@ export default defineConfig([
     rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
   },
   {
+    files: ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
     files: RAW_COLOR_EXEMPT_FILES,
+    rules: { "no-restricted-syntax": ["error", ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
+    files: TEST_FILES,
     rules: { "no-restricted-syntax": "off" },
   },
   {

@@ -24,15 +24,17 @@ export function firstFixture<T>(items: readonly T[]): T {
 export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)
 export const daysAgo = (d: number): string => isoFromNow(-d * MS_PER_DAY)
 
-export const GALLERY_VIEWER = {
+export const GALLERY_VIEWER: UserDTO = {
   id: "me",
   displayName: "Sam Okafor",
   handle: "samok",
   avatarUrl: null,
-  role: "user",
+  role: "citizen",
+  locale: "en",
+  createdAt: daysAgo(400),
   allowDirectMessages: true,
   showVolunteerHours: true,
-} as unknown as UserDTO
+}
 
 export const GALLERY_MY_PROFILE: UserProfileDTO = {
   id: "me",

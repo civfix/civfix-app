@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { domProps, motion } from "../theme"
+import { domProps, motion, webStyle } from "../theme"
 import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransition.types"
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
@@ -69,13 +69,13 @@ function castLayerStyle(
   zIndex: number | undefined,
   interactive: boolean,
 ): ViewStyle {
-  return {
+  return webStyle({
     transform: layer.transform,
     opacity: layer.opacity,
     transition,
     zIndex,
     pointerEvents: interactive ? undefined : "none",
-  } as unknown as ViewStyle
+  })
 }
 
 interface Animation {

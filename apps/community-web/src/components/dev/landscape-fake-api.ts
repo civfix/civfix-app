@@ -232,7 +232,7 @@ const JURISDICTION: JurisdictionDTO = {
   routable: true,
 }
 
-const sharedFake = makeFakeApiClient() as unknown as Record<string, unknown>
+const sharedFake = makeFakeApiClient()
 
 const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown>> = {
   myProfile: async (): Promise<GetProfileResponse> => ({
@@ -284,4 +284,4 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
   getJurisdictionLeaderboard: async () => LEADERBOARD,
 }
 
-export const landscapeFakeApi: ApiClient = makeCannedApi(canned, (name) => sharedFake[name])
+export const landscapeFakeApi: ApiClient = makeCannedApi(canned, (name): unknown => Reflect.get(sharedFake, name))
