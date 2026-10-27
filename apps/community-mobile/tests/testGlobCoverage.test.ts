@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url"
 import { defined } from "./helpers/defined.ts"
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..")
-const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8")) as { scripts: { test: string } }
+const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8")) as {
+  scripts: { test: string; "test:coverage": string }
+}
 const testScript = pkg.scripts.test
 
 // Gitignored or generated trees never hold tracked tests; ios/ and android/ are prebuild output.
@@ -34,6 +36,11 @@ test("the test script hands Node quoted globs, so the shell cannot flatten **", 
   const globs = scriptGlobs()
   assert.ok(globs.length > 0, `no quoted glob in the test script: ${testScript}`)
   for (const glob of globs) assert.match(glob, /\*\*\//, `${glob} does not recurse`)
+})
+
+test("CI's coverage run is the test script plus the coverage flags, so both run the same files and setup", () => {
+  const coverageFlags = / --(?:experimental-test-coverage|test-coverage-[a-z]+=\S+)/g
+  assert.equal(pkg.scripts["test:coverage"].replace(coverageFlags, ""), testScript)
 })
 
 test("every test file in the app is run by the test script", () => {

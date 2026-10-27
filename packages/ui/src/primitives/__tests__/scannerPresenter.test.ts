@@ -8,7 +8,9 @@ import {
   subscribeScannerAvailability,
 } from "../scannerPresenter"
 
-afterEach(() => resetScanPresenterForTests())
+afterEach(() => {
+  resetScanPresenterForTests()
+})
 
 describe("scannerAvailable", () => {
   it("is false with no presenter, so a UI hides the Scan action instead of offering a dead button", () => {

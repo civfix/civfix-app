@@ -2,6 +2,7 @@ import { createRequire } from "node:module"
 import eslintReact from "@eslint-react/eslint-plugin"
 import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
+import vitest from "@vitest/eslint-plugin"
 import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
 import {
@@ -10,6 +11,7 @@ import {
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
+  VITEST_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
 import {
@@ -37,7 +39,7 @@ const HOST_CONSOLE_UI_MESSAGE =
 
 export default tseslint.config(
   {
-    ignores: [".next/**", "out/**", "public/**", "next-env.d.ts"],
+    ignores: [".next/**", "out/**", "public/**", "coverage/**", "next-env.d.ts"],
   },
   { linterOptions: LINTER_OPTIONS },
   ...escalateWarnings([
@@ -127,6 +129,12 @@ export default tseslint.config(
     name: "community-web/tests",
     files: TEST_FILES,
     rules: TEST_RELAXED_RULES,
+  },
+  {
+    name: "community-web/vitest",
+    files: [...TEST_FILES, "scripts/**/*.test.mjs"],
+    plugins: { vitest },
+    rules: VITEST_RULES,
   },
   {
     // Pages Functions tests import node:fs and vitest, which the Workers-only functions/tsconfig.json

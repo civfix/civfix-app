@@ -85,6 +85,7 @@ const TEST_FILES = [
   "**/*.test.tsx",
   "tests/**",
   "vitest.setup.ts",
+  "vitest.console-guard.ts",
 ]
 
 // Test doubles and fixtures lean on loose casts and asserted lookups; source code gets no such slack.
@@ -101,6 +102,29 @@ const TEST_RELAXED_RULES = {
   "@typescript-eslint/no-unsafe-return": "off",
   "@typescript-eslint/no-unsafe-unary-minus": "off",
 }
+
+// For the vitest suites. A focused or skipped test silently shrinks the run, and a test with no assertion
+// passes whatever the code does.
+const VITEST_RULES = {
+  "vitest/no-focused-tests": "error",
+  "vitest/no-disabled-tests": "error",
+  "vitest/valid-expect": ["error", { maxArgs: 2 }],
+  // The suites assert through expect* helpers (expectConsoleError, expectInSourceOrder, expectUnclamped and
+  // the like); the rule does not follow a helper into its body.
+  "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*", "assert"] }],
+}
+
+// node:test has no lint plugin; these catch the focused-test forms the vitest rule covers elsewhere.
+const NODE_TEST_FOCUS_SELECTORS = [
+  {
+    selector: 'CallExpression[callee.object.name=/^(test|it|describe|suite)$/][callee.property.name="only"]',
+    message: "No focused tests: `.only` drops every other test from the run.",
+  },
+  {
+    selector: 'CallExpression[callee.name=/^(test|it|describe|suite)$/] > ObjectExpression > Property[key.name="only"]',
+    message: "No focused tests: `{ only: true }` drops every other test from the run.",
+  },
+]
 
 const LINTER_OPTIONS = { reportUnusedDisableDirectives: "error" }
 
@@ -125,6 +149,8 @@ module.exports = {
   DOUBLE_CAST_SELECTORS,
   TEST_FILES,
   TEST_RELAXED_RULES,
+  VITEST_RULES,
+  NODE_TEST_FOCUS_SELECTORS,
   LINTER_OPTIONS,
   escalateWarnings,
 }

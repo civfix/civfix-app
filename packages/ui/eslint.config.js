@@ -1,6 +1,7 @@
 import eslintReact from "@eslint-react/eslint-plugin"
 import eslint from "@eslint/js"
 import pluginQuery from "@tanstack/eslint-plugin-query"
+import vitest from "@vitest/eslint-plugin"
 import react from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
 import reactNative from "eslint-plugin-react-native"
@@ -19,6 +20,7 @@ import {
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
+  VITEST_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
 
@@ -40,6 +42,16 @@ const BANNED_PATHS = [
 ]
 const BANNED_PATH_PATTERNS = [{ group: ["next/*"], message: "next/* is web-app-only and must not leak into @civfix/ui." }]
 
+// react-native-web deprecates the pointerEvents prop (and logs it); the style key from pointerEventStyles
+// is the same on both platforms. BlurSurface and KeyboardAnchorView map their own prop to that style.
+const POINTER_EVENTS_PROP_SELECTORS = [
+  {
+    selector:
+      'JSXOpeningElement:not([name.name=/^(BlurSurface|KeyboardAnchorView)$/]) > JSXAttribute[name.name="pointerEvents"]',
+    message: "No pointerEvents prop on web-rendered views: put pointerEventStyles[value] last in the style array.",
+  },
+]
+
 const RN_FREE_FILES = ["src/theme/schemes.ts", "src/primitives/externalUrls.ts"]
 const RN_FREE_PATHS = [
   { name: "react", message: "This module is published as an RN-free subpath; it must not import react." },
@@ -53,7 +65,7 @@ const RN_FREE_PATTERNS = [
 
 export default tseslint.config(
   {
-    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "scripts/**"],
+    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "vitest.console-guard.ts", "coverage/**", "scripts/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -86,7 +98,8 @@ export default tseslint.config(
   },
   {
     files: TEST_FILES,
-    rules: TEST_RELAXED_RULES,
+    plugins: { vitest },
+    rules: { ...TEST_RELAXED_RULES, ...VITEST_RULES },
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
@@ -154,6 +167,13 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
+    rules: {
+      "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS, ...POINTER_EVENTS_PROP_SELECTORS],
+    },
+  },
+  {
+    // Native renders the prop without complaint, and the .native seams keep it.
+    files: ["src/**/*.native.ts", "src/**/*.native.tsx"],
     rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
   },
   {

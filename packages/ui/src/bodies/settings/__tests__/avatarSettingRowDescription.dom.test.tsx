@@ -42,7 +42,9 @@ function expectUnclamped(el: HTMLElement) {
 
 describe("the Profile photo row shows its whole description", () => {
   // A locale catalog's first import outlasts findByText's wait; warm the module cache the provider loads from.
-  beforeAll(() => Promise.all(Object.values(lazyCatalogs).map((load) => load())))
+  beforeAll(async () => {
+    await Promise.all(Object.values(lazyCatalogs).map((load) => load()))
+  })
 
   it.each(descriptions)("%s %s", async (lng, _key, text, uploading) => {
     render(

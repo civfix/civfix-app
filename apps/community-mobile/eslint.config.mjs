@@ -17,6 +17,7 @@ import {
 import {
   DOUBLE_CAST_SELECTORS,
   LINTER_OPTIONS,
+  NODE_TEST_FOCUS_SELECTORS,
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
@@ -40,8 +41,13 @@ const MOBILE_TYPED_RULES = {
   ],
 }
 
+const expoConfigs = escalateWarnings(withoutReactHooks([expoConfig].flat()))
+const expoTypeScript = expoConfigs.find((config) => config.plugins?.["@typescript-eslint"])
+
 export default defineConfig([
-  ...escalateWarnings(withoutReactHooks([expoConfig].flat())),
+  ...expoConfigs,
+  // The preset parses only .ts and .tsx; the test runner's setup module is .mts.
+  { ...expoTypeScript, files: ["**/*.mts"] },
   { linterOptions: LINTER_OPTIONS },
   {
     // `scripts/*` are Node ESM dev tools, not RN app source.
@@ -56,7 +62,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -83,7 +89,7 @@ export default defineConfig([
   },
   {
     files: TEST_FILES,
-    rules: { "no-restricted-syntax": "off" },
+    rules: { "no-restricted-syntax": ["error", ...NODE_TEST_FOCUS_SELECTORS] },
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

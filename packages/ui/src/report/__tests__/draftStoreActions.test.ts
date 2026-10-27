@@ -10,7 +10,9 @@ function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
 const store = () => useDraftReportStore.getState()
 const draft = () => useDraftReportStore.getState().draft
 
-beforeEach(() => store().reset())
+beforeEach(() => {
+  store().reset()
+})
 
 describe("draftStore idempotency key", () => {
   it("mints a key once and returns the same key on every later call", () => {

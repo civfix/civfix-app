@@ -45,20 +45,24 @@
     "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint . --max-warnings=0",
     "clean": "rimraf dist *.tsbuildinfo",
     "dev": "tsup --watch"
   },
   "devDependencies": {
+    "@civfix/contract": "^0.64.0",
+    "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/eslint-plugin": "1.6.27",
     "eslint": "^9.16.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.18.0",
-    "vitest": "^4.1.12",
-    "@civfix/contract": "^0.64.0"
+    "vitest": "^4.1.12"
   },
   "engines": {
     "node": ">=20"

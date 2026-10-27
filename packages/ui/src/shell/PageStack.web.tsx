@@ -2,7 +2,7 @@ import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "r
 import { StyleSheet, useWindowDimensions, View } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { domElement } from "../primitives/domElement"
-import { domProps, makeThemedStyles, webStyle } from "../theme"
+import { domProps, makeThemedStyles, webStyle, pointerEventStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
 import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -253,8 +253,7 @@ const WebPageLayer = memo(function WebPageLayer({
   return (
     <View
       ref={layerRef}
-      style={[styles.layer, motionStyle]}
-      pointerEvents={pointer}
+      style={[styles.layer, motionStyle, pointerEventStyles[pointer]]}
       aria-hidden={!active}
       tabIndex={-1}
       {...domProps({ onTransitionEnd, dataSet: { civfixPageLayer: "" } })}
@@ -277,7 +276,7 @@ const WebPageLayer = memo(function WebPageLayer({
         </IosKeyboardAvoidingView>
       </View>
       {scrimOpacity === null ? null : (
-        <View style={[styles.scrim, scrimStyle]} pointerEvents="none" />
+        <View style={[styles.scrim, scrimStyle, pointerEventStyles.none]} />
       )}
     </View>
   )

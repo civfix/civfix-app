@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom"
 import { View, StyleSheet } from "react-native"
 import { domElement } from "../primitives/domElement"
-import { makeThemedStyles, useTheme, webStyle } from "../theme"
+import { makeThemedStyles, useTheme, webStyle, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
@@ -129,8 +129,8 @@ export function PortraitMapPickStep({
   if (!live || typeof document === "undefined") return null
 
   const chrome = (
-    <View style={styles.host} pointerEvents="box-none">
-      <View ref={topBarRef} style={styles.topBar} pointerEvents="auto">
+    <View style={[styles.host, pointerEventStyles["box-none"]]}>
+      <View ref={topBarRef} style={[styles.topBar, pointerEventStyles.auto]}>
         <View style={styles.titleRow}>
           <Icon icon={iconMap.MapPin} size={16} color={th.colors.brand.bloom} />
           <Text style={styles.title} numberOfLines={1}>
@@ -141,9 +141,9 @@ export function PortraitMapPickStep({
       </View>
 
       {mapRegistered ? (
-        <View style={styles.spacer} pointerEvents="box-none" />
+        <View style={[styles.spacer, pointerEventStyles["box-none"]]} />
       ) : (
-        <View style={styles.inlineWrap} pointerEvents="auto">
+        <View style={[styles.inlineWrap, pointerEventStyles.auto]}>
           <LocationPicker
             value={localPoint}
             onChange={onInlineChange}
@@ -156,7 +156,7 @@ export function PortraitMapPickStep({
         </View>
       )}
 
-      <View pointerEvents="auto">
+      <View style={pointerEventStyles.auto}>
         <PickStepBottomBar point={point} onConfirm={confirm} onCancel={cancel} style={styles.bottomBar} />
       </View>
     </View>

@@ -78,8 +78,8 @@ describe("Toast host", () => {
   })
 
   it("anchors at the bottom and lets touches through everywhere but the card", () => {
-    expect(TOAST_SOURCE).toContain('pointerEvents="box-none"')
-    expect(TOAST_SOURCE).not.toContain('pointerEvents="none"')
+    expect(TOAST_SOURCE).toContain('pointerEventStyles["box-none"]')
+    expect(TOAST_SOURCE).not.toContain("pointerEventStyles.none")
     expect(TOAST_SOURCE).toContain("{ bottom: offset }")
   })
 

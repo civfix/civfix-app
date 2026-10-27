@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef } from "react"
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
-import { focusRingProps, makeThemedStyles, motion, useTheme, MIN_TOUCH_TARGET } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  motion,
+  useTheme,
+  MIN_TOUCH_TARGET,
+  pointerEventStyles,
+} from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Icon, Text, iconMap } from "../../typography"
 import { useT } from "../../i18n"
@@ -65,7 +72,7 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
   if (!visible) return null
 
   return (
-    <Animated.View style={[styles.slot, motionStyle]} pointerEvents="box-none">
+    <Animated.View style={[styles.slot, motionStyle, pointerEventStyles["box-none"]]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}

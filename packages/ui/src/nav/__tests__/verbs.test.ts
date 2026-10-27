@@ -16,7 +16,9 @@ function resetStore(): void {
   })
 }
 
-beforeEach(() => resetStore())
+beforeEach(() => {
+  resetStore()
+})
 
 describe("openPinnedMessages", () => {
   it("pushes the pinned-messages detail as a drill-down (thread stays beneath for Back)", () => {

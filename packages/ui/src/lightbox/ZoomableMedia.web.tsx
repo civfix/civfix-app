@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View } from "react-native"
-import { EASE_STANDARD_CSS, motion, useReducedMotion, webNoSelect, webStyle } from "../theme"
+import {
+  EASE_STANDARD_CSS,
+  motion,
+  useReducedMotion,
+  webNoSelect,
+  webStyle,
+  pointerEventStyles,
+} from "../theme"
 import { useT } from "../i18n"
 import {
   ZOOM_IDENTITY,
@@ -313,7 +320,7 @@ export function ZoomableMedia({
   }, [apply, surface])
 
   return (
-    <View style={viewportStyle} pointerEvents="box-none">
+    <View style={[viewportStyle, pointerEventStyles["box-none"]]}>
       <View
         ref={setSurfaceNode}
         style={[zoomed ? surfaceZoomedStyle : surfaceStyle, webNoSelect]}

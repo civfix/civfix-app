@@ -47,8 +47,12 @@ function feed(items: PostDTO[]): InfiniteData<FeedPageDTO> {
 const FEED_ALL = queryKeys.homeFeed("all", "me")
 
 describe("createFeedCountsBatcher", () => {
-  beforeEach(() => vi.useFakeTimers())
-  afterEach(() => vi.useRealTimers())
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it("batches every id noted within the window into ONE deduplicated fetch", () => {
     const calls: string[][] = []

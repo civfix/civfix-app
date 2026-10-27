@@ -34,7 +34,9 @@ const expectInvariant = (): void => {
   expect(s.active).toEqual(s.stack[s.stack.length - 1] ?? null)
 }
 
-beforeEach(() => resetStore())
+beforeEach(() => {
+  resetStore()
+})
 
 describe("entryIdentity", () => {
   it("is kind + the discriminating ids, so session-only fields never fork an entry", () => {
