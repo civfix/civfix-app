@@ -42,6 +42,16 @@ const BANNED_PATHS = [
 ]
 const BANNED_PATH_PATTERNS = [{ group: ["next/*"], message: "next/* is web-app-only and must not leak into @civfix/ui." }]
 
+// react-native-web deprecates the pointerEvents prop (and logs it); the style key from pointerEventStyles
+// is the same on both platforms. BlurSurface and KeyboardAnchorView map their own prop to that style.
+const POINTER_EVENTS_PROP_SELECTORS = [
+  {
+    selector:
+      'JSXOpeningElement:not([name.name=/^(BlurSurface|KeyboardAnchorView)$/]) > JSXAttribute[name.name="pointerEvents"]',
+    message: "No pointerEvents prop on web-rendered views: put pointerEventStyles[value] last in the style array.",
+  },
+]
+
 const RN_FREE_FILES = ["src/theme/schemes.ts", "src/primitives/externalUrls.ts"]
 const RN_FREE_PATHS = [
   { name: "react", message: "This module is published as an RN-free subpath; it must not import react." },
@@ -157,6 +167,13 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
+    rules: {
+      "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS, ...POINTER_EVENTS_PROP_SELECTORS],
+    },
+  },
+  {
+    // Native renders the prop without complaint, and the .native seams keep it.
+    files: ["src/**/*.native.ts", "src/**/*.native.tsx"],
     rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
   },
   {
