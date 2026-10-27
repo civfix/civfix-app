@@ -135,6 +135,25 @@ describe("member one-tap registration", () => {
     expect(registerForEvent).toHaveBeenCalledTimes(1)
   })
 
+  it("keeps the confirmation on screen after the window closes behind it", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) })
+      const closesAt = new Date(Date.now() + 30_000).toISOString()
+      renderWidget(page({ event: { ...page().event, registrationClosesAt: closesAt } }))
+      await user.click(screen.getByLabelText("form.terms"))
+      await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
+      await screen.findByText("web-signup:outcome.registered")
+      act(() => {
+        vi.advanceTimersByTime(5 * 60_000)
+      })
+      expect(screen.getByText("web-signup:outcome.registered")).toBeTruthy()
+      expect(screen.queryByText("widget.closed_title")).toBe(null)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("shows a waitlisted state when the server waitlists instead of registering", async () => {
     const user = userEvent.setup()
     registerForEvent.mockResolvedValue({ outcome: "waitlisted", registration: null })

@@ -29,8 +29,8 @@ function reactHooksRules(reactHooksPlugin) {
   )
 }
 
-// eslint-config-next 15 and eslint-config-expo 10 register react-hooks v5, and which copy a preset loads
-// is up to module resolution, so their plugin and rules are dropped and the pinned v7 is the only one.
+// eslint-config-expo 10 registers react-hooks v5, and which copy a preset loads is up to module resolution,
+// so its plugin and rules are dropped and the pinned v7 is the only one.
 function withoutReactHooks(configs) {
   return configs.map((config) => {
     const { plugins, rules, ...rest } = config

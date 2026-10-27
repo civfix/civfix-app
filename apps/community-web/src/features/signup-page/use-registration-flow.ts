@@ -42,8 +42,10 @@ type Step =
 
 export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode: string | null) {
   const isAuthenticated = useAuthStore((store) => store.status === "authenticated")
-  const now = useNow()
-  const windowState = React.useMemo(() => registrationWindowState(page, now), [page, now])
+  // Read once when the widget opens: a confirmation or a half-filled form is never swapped for "closed"
+  // just because the clock passed the close time while it was on screen.
+  const openedAt = useNow(0)
+  const windowState = React.useMemo(() => registrationWindowState(page, openedAt), [page, openedAt])
 
   const tickets = selectableTickets(page)
   const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() =>
