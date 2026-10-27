@@ -133,17 +133,25 @@ export function rowKey(row: object): string | undefined {
   return (row as KeyedRow)[ROW_KEY]
 }
 
+// The contract client passes a body that fails its schema through, so a list is checked before it is mapped.
+function withBlockRowKeys(block: EventPageBlock): EventPageBlock {
+  switch (block.kind) {
+    case "agenda":
+      return Array.isArray(block.items) ? { ...block, items: block.items.map(withRowKey) } : block
+    case "faq":
+      return Array.isArray(block.items) ? { ...block, items: block.items.map(withRowKey) } : block
+    case "hosts":
+      return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
+    case "sponsors":
+      return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
+    default:
+      return block
+  }
+}
+
 /** Keys every list row of blocks loaded from the server, copying rather than touching the cache. */
 export function withRowKeys(blocks: readonly EventPageBlock[]): EventPageBlock[] {
-  return blocks.map((block) => {
-    const source = block as unknown as Draftable
-    const listKey = listKeyOf(source)
-    if (!listKey) return block
-    return {
-      ...source,
-      [listKey]: (source[listKey] as Row[]).map(withRowKey),
-    } as unknown as EventPageBlock
-  })
+  return blocks.map(withBlockRowKeys)
 }
 
 /**
@@ -152,7 +160,7 @@ export function withRowKeys(blocks: readonly EventPageBlock[]): EventPageBlock[]
  * added but never filled in. `rowIndex[i]` is the editor row the i-th kept row came from.
  */
 function normalizeBlock(block: EventPageBlock): { block: EventPageBlock; rowIndex: number[] } {
-  const source = block as unknown as Draftable
+  const source: Draftable = block
   const next = normalizeText(source, block.kind === "about")
   const listKey = listKeyOf(source)
   const rowIndex: number[] = []
@@ -166,7 +174,9 @@ function normalizeBlock(block: EventPageBlock): { block: EventPageBlock; rowInde
     })
     next[listKey] = kept
   }
-  return { block: next as unknown as EventPageBlock, rowIndex }
+  // Every key survives and a string only becomes a trimmed string or null on a field the contract types
+  // `string | null`, so the draft keeps its block's shape; blockSaveErrors validates it before any save.
+  return { block: next as EventPageBlock, rowIndex }
 }
 
 export function normalizeBlocksForSave(blocks: readonly EventPageBlock[]): EventPageBlock[] {

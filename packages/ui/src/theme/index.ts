@@ -158,5 +158,7 @@ export {
   FOCUS_RING_WIDTH,
   FOCUS_RING_OUTLINE,
 } from "./webAffordances"
+export { webStyle } from "./webStyle"
+export type { WebOnlyStyle, WebStyle } from "./webStyle"
 
 export const POST_SURFACE: "flat" | "card" = "flat"

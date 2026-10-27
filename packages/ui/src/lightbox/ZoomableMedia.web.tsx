@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, type ViewStyle } from "react-native"
-import { EASE_STANDARD_CSS, motion, useReducedMotion, webNoSelect } from "../theme"
+import { View } from "react-native"
+import { EASE_STANDARD_CSS, motion, useReducedMotion, webNoSelect, webStyle } from "../theme"
 import { useT } from "../i18n"
 import {
   ZOOM_IDENTITY,
@@ -29,18 +29,17 @@ const WHEEL_SETTLE_DELAY_MS = 160
 
 const SETTLE_MS = motion.zoomSettle.duration
 
-// RN's ViewStyle types neither `touchAction` nor a CSS cursor, hence the casts.
-const surfaceStyle = {
+const surfaceStyle = webStyle({
   ...zoomSurfaceStyle,
   touchAction: "none",
   cursor: "zoom-in",
-} as unknown as ViewStyle
+})
 
-const surfaceZoomedStyle = {
+const surfaceZoomedStyle = webStyle({
   ...zoomSurfaceZoomedStyle,
   touchAction: "none",
   cursor: "grab",
-} as unknown as ViewStyle
+})
 
 const viewportStyle = zoomViewportStyle
 

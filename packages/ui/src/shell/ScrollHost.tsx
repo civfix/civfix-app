@@ -68,7 +68,7 @@ export interface DecoratedScrollProps {
 
 const DEFAULT_SCROLL_HOST: ScrollHostValue = {
   ScrollView: RNScrollView,
-  FlatList: RNFlatList as unknown as React.ComponentType<ScrollHostListProps>,
+  FlatList: RNFlatList as ScrollHostComponent,
 }
 
 const ScrollHostContext = createContext<ScrollHostValue>(DEFAULT_SCROLL_HOST)

@@ -1,11 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react"
-import {
-  View,
-  PanResponder,
-  useWindowDimensions,
-  type ViewStyle,
-} from "react-native"
-import { makeThemedStyles, space, motion, focusRingProps } from "../theme"
+import { View, PanResponder, useWindowDimensions } from "react-native"
+import { makeThemedStyles, space, motion, focusRingProps, webStyle } from "../theme"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
 import { lerp } from "../surface/liquidGlass/liquidGlassModel"
@@ -181,13 +176,13 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
 
   const settleTransition =
     dragging || !snapAnimated || prefersReducedMotion() ? "none" : SETTLE_TRANSITION
-  const anchorStyle = {
+  const anchorStyle = webStyle({
     height,
     bottom: 0,
     transition: settleTransition,
-  } as unknown as ViewStyle
+  })
 
-  const cardStyle = {
+  const cardStyle = webStyle({
     left: side,
     right: side,
     bottom,
@@ -196,7 +191,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     transition: settleTransition,
-  } as unknown as ViewStyle
+  })
 
   const headerVPad = sheetHeaderPad(snap)
 
@@ -263,7 +258,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     paddingTop: t.space["2"],
-    ...({ touchAction: "none", cursor: "grab", userSelect: "none" } as unknown as ViewStyle),
+    ...webStyle({ touchAction: "none", cursor: "grab", userSelect: "none" }),
   },
   handleBar: {
     ...SHEET_HANDLE_BAR,

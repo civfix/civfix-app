@@ -8,7 +8,7 @@ import {
 } from "react-native"
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/contract"
-import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme } from "../theme"
+import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme, webStyle } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -367,9 +367,9 @@ const PROMO_CLEARANCE = 14
 const EMPTY_FILL_MIN_HEIGHT = 300
 const webScrollFade = (t: Theme): ViewStyle =>
   IS_WEB
-    ? ({
+    ? webStyle({
         backgroundImage: `linear-gradient(to bottom, ${alpha(t.colors.bg, 0)}, ${t.colors.bg})`,
-      } as unknown as ViewStyle)
+      })
     : {}
 
 const useStyles = makeThemedStyles((t) => ({

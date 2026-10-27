@@ -16,6 +16,7 @@ import {
   webTransition,
   focusRingProps,
   type Theme,
+  webStyle,
 } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
@@ -101,7 +102,7 @@ export function Rail() {
   const lozengeStyle: ViewStyle = {
     opacity: lozengeVisible ? 1 : 0,
     transform: [{ translateX: railItemLeft(lozengeVisible ? index : 0) }],
-    ...(isWeb ? ({ transition: tabPillTransition(reduceMotion) } as unknown as ViewStyle) : null),
+    ...(isWeb ? webStyle({ transition: tabPillTransition(reduceMotion) }) : null),
   }
 
   return (
@@ -116,7 +117,7 @@ export function Rail() {
             opacity: mounted ? 1 : 0,
             transform: [{ scale: mounted ? 1 : MOUNT_SCALE_FROM }],
           },
-          isWeb && !reduceMotion ? ({ transition: MOUNT_TRANSITION } as unknown as ViewStyle) : null,
+          isWeb && !reduceMotion ? webStyle({ transition: MOUNT_TRANSITION }) : null,
         ]}
       >
         <Pressable

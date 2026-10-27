@@ -13,7 +13,14 @@ import {
   REACT_RULES,
   reactHooksRules,
 } from "../../eslint.react.cjs"
-import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, escalateWarnings } from "../../eslint.typed.cjs"
+import {
+  DOUBLE_CAST_SELECTORS,
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  escalateWarnings,
+} from "../../eslint.typed.cjs"
 
 const BANNED_PATTERNS = [
   { group: ["expo", "expo-*", "expo/*"], message: "expo-* is platform-native; import it only in a *.native.* seam file." },
@@ -147,10 +154,14 @@ export default tseslint.config(
   },
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
-    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
   },
   {
     files: RAW_COLOR_EXEMPT_FILES,
+    rules: { "no-restricted-syntax": ["error", ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
+    files: TEST_FILES,
     rules: { "no-restricted-syntax": "off" },
   },
   {

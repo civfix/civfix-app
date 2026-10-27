@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
+import { webStyle } from "../theme/webStyle"
 import { bodyTransitionPlan, translateRatio, type BodyTransitionPlan } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 import { cssTransitionParts } from "./motionCss"
@@ -18,7 +19,7 @@ interface Entrance {
 function entranceStyle(entrance: Entrance | null): ViewStyle {
   if (!entrance) return {}
   const { flipped, plan } = entrance
-  return {
+  return webStyle({
     transform: translateRatio(flipped ? 0 : plan.fromRatio),
     opacity: flipped ? 1 : 0,
     transition: flipped
@@ -31,7 +32,7 @@ function entranceStyle(entrance: Entrance | null): ViewStyle {
             : [["opacity", plan.fadeDuration]],
         )
       : "none",
-  } as unknown as ViewStyle
+  })
 }
 
 export function StepTransition({ children, direction, style, transitionKey }: StepTransitionProps) {

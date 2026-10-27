@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Platform, Animated } from "react-native"
-import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
+import type { PressableStateCallbackType, ViewStyle } from "react-native"
 import type { ChatItem } from "../../helpers"
 import type { ChatMessageDTO, MediaDTO, UserMentionDTO, ReactionEmoji } from "@civfix/contract"
-import { useTheme, focusRingProps } from "../../theme"
+import { domProps, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
 import { withTextOffsets } from "../../primitives/listKeys"
@@ -517,12 +517,12 @@ export const Bubble = React.memo(function Bubble({
   )
   const webContextMenuProps =
     isWeb && menuAvailable
-      ? ({
+      ? domProps({
           onContextMenu: (e: { preventDefault?: () => void }) => {
             e.preventDefault?.()
             openContextMenu()
           },
-        } as unknown as Partial<ViewProps>)
+        })
       : null
 
   const rowContent = (

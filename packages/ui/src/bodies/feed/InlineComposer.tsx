@@ -8,6 +8,7 @@ import {
   type TextInput as RNTextInput,
 } from "react-native"
 import { POST_BODY_MAX } from "@civfix/contract"
+import { domElement } from "../../primitives/domElement"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
@@ -44,7 +45,6 @@ import {
   inlineComposerClosesOnBlur,
   inlineComposerFocusWithin,
   inlineComposerOwnsDraft,
-  type InlineComposerFocusHost,
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
@@ -186,8 +186,9 @@ function InlineComposerForOwner() {
       const pressingOwnControl = pressingOwnControlRef.current
       setBodyFocused(false)
       const settle = (next: unknown) => {
+        const card = domElement(cardRef.current)
         const focusWithin = inlineComposerFocusWithin({
-          card: cardRef.current as unknown as InlineComposerFocusHost | null,
+          card: card && { contains: (node) => node instanceof Node && card.contains(node) },
           next,
           pressingOwnControl,
         })
