@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Platform,
   Pressable,
@@ -203,7 +203,7 @@ function RailTab({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected }}
-      {...({ "aria-selected": selected } as object)}
+      aria-selected={selected}
       accessibilityLabel={t(tab.labelKey)}
       {...focusRingProps}
       style={(state) => [

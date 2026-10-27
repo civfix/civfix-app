@@ -33,7 +33,7 @@ describe("the new kinds are registered everywhere a kind must be registered", ()
   })
 
   it.each(HOST_KINDS)("%s has a header title, so a full page always has an exit", (kind) => {
-    expect(titleForEntry({ kind } as DetailEntry)).not.toBe("")
+    expect(titleForEntry({ kind })).not.toBe("")
   })
 })
 
@@ -119,7 +119,7 @@ describe("parent view + flow protection", () => {
       "host-analytics",
       "org-manage",
     ] as const) {
-      expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
+      expect(parentViewForEntry({ kind }), kind).toBe("events")
     }
   })
 

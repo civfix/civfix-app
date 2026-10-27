@@ -169,7 +169,7 @@ describe("portrait shell layer plan", () => {
     ]
     for (const view of ["home", "map", "messaging", "report", "search", "social"] as const) {
       for (const active of kinds) {
-        expect(portraitShellPlan(view, active, false), `${view} / ${active?.kind}`).toEqual(
+        expect(portraitShellPlan(view, active, false), `${view} / ${active?.kind ?? "none"}`).toEqual(
           plan(view, active),
         )
       }

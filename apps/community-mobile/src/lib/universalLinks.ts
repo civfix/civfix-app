@@ -45,14 +45,17 @@ export function resolveIncomingPath(raw: unknown, { isDev = false }: ResolveOpti
 
   const web = WEB_URL.exec(raw)
   if (web) {
-    if (!isWebHost(web[1])) return { type: "home" }
-    return fromPath(web[2] ?? "/", raw)
+    const [, authority, rest] = web
+    if (authority === undefined || !isWebHost(authority)) return { type: "home" }
+    return fromPath(rest ?? "/", raw)
   }
 
   const scheme = SCHEME.exec(raw)
   if (scheme) {
-    if (!APP_SCHEMES.has(scheme[1].toLowerCase())) return { type: "home" }
-    return fromAppSchemeUrl(raw, scheme[1].toLowerCase(), raw.slice(scheme[0].length), isDev)
+    const [prefix, name] = scheme
+    const schemeName = name?.toLowerCase()
+    if (schemeName === undefined || !APP_SCHEMES.has(schemeName)) return { type: "home" }
+    return fromAppSchemeUrl(raw, schemeName, raw.slice(prefix.length), isDev)
   }
 
   if (!raw.startsWith("/") || raw.startsWith("//")) return { type: "home" }

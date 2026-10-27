@@ -61,8 +61,6 @@
       "ignoreBinaries": ["scripts/store-build.sh", "scripts/prep-archive.sh"]
     }
   },
-  // expo-doctor runs through npx on purpose (CI and the root `doctor` script): it is not a dependency.
-  "ignoreBinaries": ["expo-doctor"],
   // A type used in its own file often names the shape of an exported value (props, a hook's return);
   // un-exporting it breaks the ui declaration build (TS4023/TS4058), so only foreign-unused types count.
   "ignoreExportsUsedInFile": { "interface": true, "type": true },

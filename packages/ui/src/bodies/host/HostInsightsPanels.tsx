@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View } from "react-native"
 import type { EventInsights, EventPhase, EventSlotDTO, InsightsBroadcast } from "@civfix/contract"
 import { timeLabel } from "@civfix/contract/datetime"

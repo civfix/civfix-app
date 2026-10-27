@@ -61,7 +61,7 @@ describe("presentScanner", () => {
     const first = presentScanner()
     const second = presentScanner()
     await expect(first).resolves.toBeNull()
-    resolveScan("tok-3", sessions[1] as string)
+    resolveScan("tok-3", sessions[1])
     await expect(second).resolves.toBe("tok-3")
   })
 

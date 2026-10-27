@@ -3,6 +3,7 @@ import { globSync, readdirSync, readFileSync } from "node:fs"
 import { dirname, join, relative, sep } from "node:path"
 import { test } from "node:test"
 import { fileURLToPath } from "node:url"
+import { defined } from "./helpers/defined.ts"
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..")
 const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8")) as { scripts: { test: string } }
@@ -26,7 +27,7 @@ function testFilesUnder(dir: string): string[] {
 }
 
 function scriptGlobs(): string[] {
-  return [...testScript.matchAll(/'([^']+)'/g)].map((match) => match[1])
+  return [...testScript.matchAll(/'([^']+)'/g)].map((match) => defined(match[1], `the glob in ${match[0]}`))
 }
 
 test("the test script hands Node quoted globs, so the shell cannot flatten **", () => {

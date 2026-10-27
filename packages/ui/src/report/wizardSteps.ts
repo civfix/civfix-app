@@ -36,7 +36,7 @@ export function stepAfterCapture(
   const resumed = resumeStep(draft, mode)
   if (resumed !== "capture" && order.includes(resumed)) return resumed
   const i = order.indexOf("capture")
-  return (order[i + 1] as Step | undefined) ?? "capture"
+  return (order[i + 1]) ?? "capture"
 }
 
 export interface StepReadiness {

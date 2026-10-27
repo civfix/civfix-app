@@ -1,4 +1,3 @@
-import React from "react"
 import { useT } from "../i18n"
 import { AppearanceOptionList } from "./AppearanceOptionList"
 import { SettingsSubpage } from "./settings/SettingsSubpage"

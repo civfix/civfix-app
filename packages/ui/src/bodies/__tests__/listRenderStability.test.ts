@@ -146,7 +146,7 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
 
   it("the THREAD's single focal card opts in - one roster per screen, not one per row", () => {
     const focal = code(read("../thread/ThreadFocalPost.tsx"))
-    expect(focal).toMatch(/<LinkedEventCard\s+event=\{post\.event\}\s+layout="list"\s+variant="detail"/)
+    expect(focal).toMatch(/<LinkedEventCard\s+event=\{linkedEvent\}\s+layout="list"\s+variant="detail"/)
   })
 
   it("the list-scale rows stay on the default feed variant", () => {

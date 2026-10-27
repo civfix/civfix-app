@@ -7,7 +7,7 @@ import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { buildLocalReplyTo, REPLY_EXCERPT_MAX } from "../replyPreview"
 
 function person(id: string, name: string): PersonDTO {
-  return { id, name, followers: 0, following: 0, isFollowing: false } as PersonDTO
+  return { id, name, followers: 0, following: 0, isFollowing: false }
 }
 
 function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO {
@@ -21,7 +21,7 @@ function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO 
     mentions: [],
     createdAt: "2026-07-18T12:00:00.000Z",
     ...partial,
-  } as ChatMessageDTO
+  }
 }
 
 describe("buildLocalReplyTo", () => {

@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { NotificationCategory, NotificationCategorySetting } from "@civfix/contract"
 import {
@@ -28,6 +27,12 @@ import { useT } from "../i18n"
 import { SectionEyebrow } from "./profile/SectionHeadings"
 import { useNotificationSettingsPage, type PushBanner } from "./notificationSettings/useNotificationSettingsPage"
 
+const SKELETON_SECTIONS = [
+  { section: "reports", rows: 2 },
+  { section: "messages", rows: 3 },
+  { section: "events", rows: 3 },
+] as const
+
 export function NotificationSettingsBody() {
   const styles = useStyles()
   const th = useTheme()
@@ -55,8 +60,8 @@ export function NotificationSettingsBody() {
   if (isPending || page.query.isLoading) {
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {[2, 3, 3].map((rows, i) => (
-          <SkeletonGroup key={i} style={i > 0 ? styles.sectionGap : null}>
+        {SKELETON_SECTIONS.map(({ section, rows }, i) => (
+          <SkeletonGroup key={section} style={i > 0 ? styles.sectionGap : null}>
             <SkeletonText width="28%" height={11} style={styles.skeletonLabel} />
             <SkeletonList rows={rows} kind="settings" />
           </SkeletonGroup>

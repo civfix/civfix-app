@@ -14,6 +14,13 @@ import type {
 import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, NOTIFICATION_CATEGORY_DEFAULTS } from "@civfix/contract"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
+
+/** Every gallery list is authored non-empty, so an empty one is a broken fixture and fails loudly. */
+export function firstFixture<T>(items: readonly T[]): T {
+  const [first] = items
+  if (first === undefined) throw new Error("gallery fixture list is empty")
+  return first
+}
 export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)
 export const daysAgo = (d: number): string => isoFromNow(-d * MS_PER_DAY)
 

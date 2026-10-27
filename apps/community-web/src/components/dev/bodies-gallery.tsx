@@ -85,6 +85,7 @@ import {
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
+  firstFixture,
   galleryChatHistory,
   galleryThreads,
   hoursAgo,
@@ -128,7 +129,7 @@ function event(id: string, title: string, daysAgo: number, organizerId: string):
     galleryUrls: [],
     ticketTypes: [],
     myCapabilities: [],
-  } as CleanupDTO
+  }
 }
 
 const PERSON_PROFILE: UserProfileDTO = {
@@ -312,6 +313,8 @@ const POST_BASE = {
   threadRootId: null,
 } satisfies Partial<PostDTO>
 
+const NEAREST_CLEANUP = firstFixture(NEARBY_CLEANUPS.items)
+
 const FEED_POSTS: PostDTO[] = [
   {
     ...POST_BASE,
@@ -325,9 +328,9 @@ const FEED_POSTS: PostDTO[] = [
       title: "Creekside litter sweep",
       eventKind: "cleanup",
       status: "upcoming",
-      scheduledAt: NEARBY_CLEANUPS.items[0]!.scheduledAt,
-      lat: NEARBY_CLEANUPS.items[0]!.lat,
-      lng: NEARBY_CLEANUPS.items[0]!.lng,
+      scheduledAt: NEAREST_CLEANUP.scheduledAt,
+      lat: NEAREST_CLEANUP.lat,
+      lng: NEAREST_CLEANUP.lng,
       going: 8,
       organizer: ORGANIZER,
       linkedAt: isoFromNow(-35 * MS_PER_MINUTE),
@@ -417,7 +420,7 @@ const CLEANUP_DETAIL: CleanupDTO = {
   bring: ["Work gloves", "Water bottle", "Sturdy shoes"],
   address: "Boathouse dock, Echo Park Lake",
   linkedReports: LINKED_REPORTS,
-} as CleanupDTO
+}
 
 const SLOTS: EventSlotDTO[] = [
   {
@@ -446,7 +449,7 @@ const EDIT_CLEANUP_DETAIL: CleanupDTO = {
   address: "24th St & Folsom, San Francisco",
   linkedReports: LINKED_REPORTS,
   slots: SLOTS.slice(0, 2),
-} as CleanupDTO
+}
 
 const SLOT_CLEANUP: CleanupDTO = {
   ...CLEANUP_DETAIL,
@@ -790,7 +793,7 @@ function slotCleanupWithClaim(base: CleanupDTO, slotId: string | null): CleanupD
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
-const postActionFake = async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!
+const postActionFake = async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? firstFixture(FEED_POSTS)
 
 const chatHistoryFake = async (): Promise<ChatHistoryResponse> => CHAT_HISTORY
 
@@ -820,14 +823,14 @@ const fakeApi: ApiClient = makeCannedApi(
     }),
     listSaves: async () => ({ items: FEED_POSTS.filter((post) => post.viewer.saved), nextCursor: null }),
     listReplies: async () => ({ items: [], nextCursor: null }),
-    getPost: async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!,
+    getPost: async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? firstFixture(FEED_POSTS),
     likePost: postActionFake,
     unlikePost: postActionFake,
     savePost: postActionFake,
     unsavePost: postActionFake,
     repostPost: postActionFake,
     unrepostPost: postActionFake,
-    createPost: async (): Promise<PostDTO> => FEED_POSTS[0]!,
+    createPost: async (): Promise<PostDTO> => firstFixture(FEED_POSTS),
     deletePost: async () => ({ ok: true }),
     listCleanups: async (
       args?: { when?: string },

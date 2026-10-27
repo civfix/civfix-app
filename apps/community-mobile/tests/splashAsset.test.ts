@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { tokens } from "@civfix/tokens"
 import { appConfigFactory, pluginOptions } from "./helpers/appConfig.ts"
+import { defined } from "./helpers/defined.ts"
 import { decodeRgbaPng, pixelAt, transparentShare } from "./helpers/png.ts"
 
 const appConfig = appConfigFactory({ config: {} })
@@ -54,7 +55,7 @@ function assertComponents(components: Record<string, string>, hex: string, label
   for (const [channel, expected] of channels) {
     assert.ok(
       Math.abs(Number(components[channel]) - expected) < 1e-6,
-      `${label}: ${channel} is ${components[channel]}, expected ${expected} (${hex})`,
+      `${label}: ${channel} is ${String(components[channel])}, expected ${expected} (${hex})`,
     )
   }
   assert.equal(Number(components.alpha), 1, `${label}: alpha must be opaque`)
@@ -124,7 +125,7 @@ test(
       "SplashScreenBackground must hold a single appearance; a second one reopens dark mode",
     )
     assert.equal(colors.filter(isDarkEntry).length, 0)
-    assertComponents(colors[0].color.components, LIGHT, "SplashScreenBackground light")
+    assertComponents(defined(colors[0], "the light appearance").color.components, LIGHT, "SplashScreenBackground light")
   },
 )
 
@@ -137,7 +138,7 @@ test(
     for (const entry of images) {
       assert.ok(
         typeof entry.filename !== "string" || !entry.filename.startsWith("dark_image"),
-        `SplashScreenLogo still lists ${entry.filename}`,
+        `SplashScreenLogo still lists ${String(entry.filename)}`,
       )
     }
     for (const name of ["dark_image.png", "dark_image@2x.png", "dark_image@3x.png"]) {

@@ -25,7 +25,7 @@ export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInsta
     lng: locale in initialResources ? locale : FALLBACK_LOCALE,
     fallbackLng: FALLBACK_LOCALE,
     supportedLngs: SupportedLocaleSchema.options,
-    ns: namespaces as unknown as string[],
+    ns: namespaces,
     defaultNS,
     // A copy, because i18next adds loaded catalogs into the object it is given, and that object is a
     // module singleton shared by every instance.

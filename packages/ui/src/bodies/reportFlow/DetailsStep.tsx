@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { MAX_REPORT_TITLE_LENGTH } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"

@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, type StyleProp, type ViewStyle } from "react-native"
 import {
   makeThemedStyles,

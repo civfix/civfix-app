@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
 import { detailTrailingActionFor } from "../detailTrailingAction"
 import { ALL_DETAIL_KINDS, useNavStore } from "../../nav"
-import type { DetailEntry, DetailKind } from "../../nav"
+import type { DetailKind } from "../../nav"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -60,7 +60,7 @@ describe("detailTrailingActionFor", () => {
     expect(detailTrailingActionFor({ kind: "person", id: "u1" })).toEqual([])
     expect(detailTrailingActionFor({ kind: "view", view: "map" })).toEqual([])
     const withActions = ALL_DETAIL_KINDS.filter((kind: DetailKind) => {
-      const actions = detailTrailingActionFor({ kind } as DetailEntry)
+      const actions = detailTrailingActionFor({ kind })
       expect(Array.isArray(actions), kind).toBe(true)
       return actions.length > 0
     })

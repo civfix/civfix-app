@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"

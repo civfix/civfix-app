@@ -118,7 +118,7 @@ describe("public/sw.js", () => {
     await worker.click(clickData("/reports/r1"))
 
     expect(worker.openWindow).toHaveBeenCalledTimes(1)
-    const target = new URL(worker.openWindow.mock.calls[0]![0] as string, ORIGIN)
+    const target = new URL(worker.openWindow.mock.calls[0]![0], ORIGIN)
     expect(target.origin).toBe(ORIGIN)
     expect(target.pathname).toBe("/reports/r1")
   })
@@ -137,7 +137,7 @@ describe("public/sw.js", () => {
       const withoutTab = loadServiceWorker(ORIGIN)
       await withoutTab.click(clickData(link))
       expect(withoutTab.openWindow).toHaveBeenCalledTimes(1)
-      const opened = new URL(withoutTab.openWindow.mock.calls[0]![0] as string, ORIGIN)
+      const opened = new URL(withoutTab.openWindow.mock.calls[0]![0], ORIGIN)
       expect(opened.origin).toBe(ORIGIN)
       expect(opened.pathname).toBe("/")
       expect(opened.search).toBe("?readNotification=n1")

@@ -77,7 +77,7 @@ interface MarkAllReadCtx extends MarkReadCtx {
 function snapshotFlatLists(qc: QueryClient): NonNullable<MarkReadCtx["previous"]> {
   return qc
     .getQueriesData<NotificationDTO[]>(notificationListFilters)
-    .filter(([, data]) => Array.isArray(data)) as Array<readonly [readonly unknown[], NotificationDTO[] | undefined]>
+    .filter(([, data]) => Array.isArray(data))
 }
 
 function patchReadInFlatLists(qc: QueryClient, marked: (n: NotificationDTO) => boolean): void {

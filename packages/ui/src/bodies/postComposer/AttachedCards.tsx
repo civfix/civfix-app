@@ -1,4 +1,3 @@
-import React from "react"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import type { PostComposerAttach } from "../usePostComposerAttach"

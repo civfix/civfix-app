@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { View, StyleSheet, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -7,7 +7,7 @@ import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
 import { useResetOnOpen } from "../primitives/useModalClosed"
 import { LocationPicker } from "./LocationPicker"
-import { useLocationPick, type PickDraft } from "./locationPickStore"
+import { useLocationPick } from "./locationPickStore"
 import type { LatLng } from "./LocationPicker.types"
 import {
   PickStepBottomBar,
@@ -63,7 +63,7 @@ export function PortraitMapPickStep({
 
   useEffect(() => {
     if (!live || !mapRegistered) return
-    useLocationPick.getState().start((pointRef.current as PickDraft | null) ?? null, pinRef.current)
+    useLocationPick.getState().start(pointRef.current ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }

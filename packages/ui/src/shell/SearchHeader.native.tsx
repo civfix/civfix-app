@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState, type RefObject } from "react"
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import { View, Pressable } from "react-native"
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet"
 import { ReduceMotion, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated"

@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet } from "react-native"
 import { BadgeCheck } from "lucide-react-native/icons"
 import { useTheme } from "../theme"

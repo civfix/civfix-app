@@ -90,7 +90,7 @@ function reachabilityOutcome(err: unknown): BootNetworkOutcome {
 function refreshGuestCapabilities(set: SetAuthState): void {
   void restoreSession()
     .then((session) => set({ guestSmsEnabled: session.guestSmsEnabled, networkOutcome: "ok" }))
-    .catch((err) => set({ networkOutcome: reachabilityOutcome(err) }))
+    .catch((err: unknown) => set({ networkOutcome: reachabilityOutcome(err) }))
 }
 
 function pushUnregisterDeps(): PushUnregisterDeps {

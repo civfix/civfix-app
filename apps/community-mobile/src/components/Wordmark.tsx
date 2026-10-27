@@ -1,6 +1,6 @@
 import React from "react"
 import { View, StyleSheet } from "react-native"
-import { fontFamily, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
+import { fontFamily, wordmarkColors, WORDMARK_GLYPHS } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
@@ -14,13 +14,13 @@ export function Wordmark({ size = 23 }: { size?: number }) {
       accessibilityRole="header"
       accessibilityLabel={t("a11y.brand_logo")}
     >
-      {WORDMARK_LETTERS.map((letter, i) => (
+      {WORDMARK_GLYPHS.map((glyph, i) => (
         <Text
-          key={`${letter}-${i}`}
+          key={glyph.slot}
           color={wordmarkColors[i]}
           style={[styles.letter, { fontSize: size, letterSpacing }]}
         >
-          {letter}
+          {glyph.char}
         </Text>
       ))}
     </View>

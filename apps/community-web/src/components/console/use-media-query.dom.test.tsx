@@ -20,7 +20,7 @@ function stubMatchMedia(matching: string) {
     addListener: () => {},
     removeListener: () => {},
     dispatchEvent: () => false,
-  })) as unknown as typeof window.matchMedia
+  }))
 }
 
 describe("useMediaQuery", () => {

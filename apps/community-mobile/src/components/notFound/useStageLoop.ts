@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
-import { runOnJS, useFrameCallback, useSharedValue, type FrameInfo } from "react-native-reanimated"
+import { useFrameCallback, useSharedValue, type FrameInfo } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 
 /** A UI-thread step: advances the stage by `dt` seconds, false once it has come to rest. */
 export type StageStep = (dt: number) => boolean
@@ -27,7 +28,7 @@ export function useStageLoop(step: StageStep | null): () => void {
       const dt = Math.min((frame.timeSincePreviousFrame ?? 0) / 1000, MAX_STEP_S)
       if (!step(dt)) {
         settled.value = true
-        runOnJS(setActive)(false)
+        scheduleOnRN(setActive, false)
       }
     },
     [step, settled, setActive],
@@ -46,6 +47,6 @@ export function useStageLoop(step: StageStep | null): () => void {
     "worklet"
     if (!settled.value) return
     settled.value = false
-    runOnJS(setActive)(true)
+    scheduleOnRN(setActive, true)
   }, [settled, setActive])
 }

@@ -1,4 +1,3 @@
-import React from "react"
 import { DISPLAY_NAME_MAX_LENGTH } from "@civfix/contract"
 import { Text } from "../../typography"
 import { TextField } from "../../primitives"

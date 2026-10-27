@@ -24,11 +24,11 @@ function thread(id: string, unread: number): MessageThreadDTO {
     members: 2,
     lastFromMe: false,
     muted: false,
-  } as MessageThreadDTO
+  }
 }
 
 function page(items: MessageThreadDTO[], nextCursor: string | null = null): ListThreadsResponse {
-  return { items, nextCursor } as unknown as ListThreadsResponse
+  return { items, nextCursor }
 }
 
 /** True when `prefix` is a leading sub-array of `key` (how React Query matches a partial queryKey). */

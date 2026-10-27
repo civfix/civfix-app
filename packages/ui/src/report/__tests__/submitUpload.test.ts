@@ -3,17 +3,17 @@ import { AppError, ErrorCode } from "@civfix/contract"
 import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../../data/uploadMedia"
 
 function okFetch(status = 200): typeof fetch {
-  return (async () => ({ ok: status >= 200 && status < 300, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: status >= 200 && status < 300, status }) as Response
 }
 
 function statusFetch(status: number): typeof fetch {
-  return (async () => ({ ok: false, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: false, status }) as Response
 }
 
 function rejectingFetch(err: unknown): typeof fetch {
-  return (async () => {
+  return async () => {
     throw err
-  }) as unknown as typeof fetch
+  }
 }
 
 function neverSettlesFetch(): typeof fetch {

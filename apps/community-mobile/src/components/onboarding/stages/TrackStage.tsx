@@ -6,6 +6,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated"
+import type { ReportCategory } from "@civfix/contract"
 import {
   BlurSurface,
   ClusterBubble,
@@ -46,12 +47,15 @@ const TOTAL_MS = 4800
 const DROP_MS = motion.gravity.duration
 const SQUASH_MS = 160
 
-const PIN_DROP_WINDOWS = TRACK_PINS.map((_, i) =>
-  stageWindow(TOTAL_MS, i * STAGE_STAGGER_MS, i * STAGE_STAGGER_MS + DROP_MS),
-)
-const PIN_SQUASH_WINDOWS = TRACK_PINS.map((_, i) =>
-  stageWindow(TOTAL_MS, i * STAGE_STAGGER_MS + DROP_MS, i * STAGE_STAGGER_MS + DROP_MS + SQUASH_MS),
-)
+const PIN_MOTIONS = TRACK_PINS.map((pin, i) => ({
+  pin,
+  drop: stageWindow(TOTAL_MS, i * STAGE_STAGGER_MS, i * STAGE_STAGGER_MS + DROP_MS),
+  squash: stageWindow(
+    TOTAL_MS,
+    i * STAGE_STAGGER_MS + DROP_MS,
+    i * STAGE_STAGGER_MS + DROP_MS + SQUASH_MS,
+  ),
+}))
 
 const W_MERGE = stageWindow(TOTAL_MS, 1200, 1600)
 const W_CLUSTER = stageWindow(TOTAL_MS, 1400, 1780)
@@ -76,18 +80,21 @@ const LOZENGE_LEFT = DOCK_PADDING + (DOCK_CELL - LOZENGE_WIDTH) / 2
 const LOZENGE_TRAVEL = DOCK_CELL
 const DOCK_RISE = DOCK_HEIGHT + space["4"]
 
-const DOCK_ICONS: readonly LucideIcon[] = [
-  iconMap.Newspaper,
-  iconMap.Map,
-  iconMap.MessageCircle,
-  iconMap.Plus,
+const DOCK_ICONS: readonly { readonly tab: string; readonly icon: LucideIcon }[] = [
+  { tab: "feed", icon: iconMap.Newspaper },
+  { tab: "map", icon: iconMap.Map },
+  { tab: "messages", icon: iconMap.MessageCircle },
+  { tab: "post", icon: iconMap.Plus },
 ]
 const DOCK_SELECTED_INDEX = 1
 
 const POP = motion.pop
 
 function TrackPin({
-  index,
+  category,
+  rise,
+  drop,
+  squash,
   progress,
   at,
   merges,
@@ -95,7 +102,10 @@ function TrackPin({
   mergeY,
   active,
 }: {
-  index: number
+  category: ReportCategory
+  rise: number
+  drop: readonly [number, number]
+  squash: readonly [number, number]
   progress: SharedValue<number>
   at: BoxPoint
   merges: boolean
@@ -103,10 +113,7 @@ function TrackPin({
   mergeY: number
   active: boolean
 }) {
-  const pin = TRACK_PINS[index]
-  const drop = PIN_DROP_WINDOWS[index]
-  const squash = PIN_SQUASH_WINDOWS[index]
-  const distance = STAGE_DROP_PX * 4 * pin.rise
+  const distance = STAGE_DROP_PX * 4 * rise
 
   const style = useAnimatedStyle(() => {
     const d = GRAVITY_EASE(segment(progress.value, drop[0], drop[1]))
@@ -129,7 +136,7 @@ function TrackPin({
 
   return (
     <Animated.View style={[spotStyle(at, -PIN_SIZE / 2, -PIN_HEIGHT), style]}>
-      <TeardropPin category={pin.category} size={PIN_SIZE} active={active} />
+      <TeardropPin category={category} size={PIN_SIZE} active={active} />
     </Animated.View>
   )
 }
@@ -170,7 +177,9 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
   })
 
   const rowPin = TRACK_PINS[TRACK_ROW_PIN_INDEX]
-  const status = TRACK_STATUS_CYCLE[Math.min(Math.max(step - 1, 0), TRACK_STATUS_CYCLE.length - 1)]
+  const status =
+    TRACK_STATUS_CYCLE[Math.min(Math.max(step - 1, 0), TRACK_STATUS_CYCLE.length - 1)] ??
+    TRACK_STATUS_CYCLE[0]
 
   return (
     <View
@@ -189,12 +198,15 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
             const cluster = frame.at(TRACK_CLUSTER_SPOT)
             return (
               <>
-                {TRACK_PINS.map((pin, i) => {
+                {PIN_MOTIONS.map(({ pin, drop, squash }, i) => {
                   const at = frame.at(pin.spot)
                   return (
                     <TrackPin
-                      key={`${pin.category}-${i}`}
-                      index={i}
+                      key={pin.category}
+                      category={pin.category}
+                      rise={pin.rise}
+                      drop={drop}
+                      squash={squash}
                       progress={progress}
                       at={at}
                       merges={TRACK_CLUSTER_MEMBERS.includes(i)}
@@ -232,8 +244,8 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
         <Animated.View style={[styles.dockWrap, dockStyle]}>
           <BlurSurface kind="dock" style={styles.dock}>
             <Animated.View style={[styles.lozenge, lozengeStyle]} />
-            {DOCK_ICONS.map((icon, i) => (
-              <View key={i} style={styles.dockCell}>
+            {DOCK_ICONS.map(({ tab, icon }, i) => (
+              <View key={tab} style={styles.dockCell}>
                 <Icon
                   icon={icon}
                   size={20}

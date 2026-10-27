@@ -1,7 +1,7 @@
-import { useCallback, type ForwardedRef, type MutableRefObject } from "react"
+import { useCallback, type ForwardedRef, type RefObject } from "react"
 
 export function assignMergedRef<T extends I, I>(
-  inner: MutableRefObject<I | null>,
+  inner: RefObject<I | null>,
   forwarded: ForwardedRef<T>,
   node: T | null,
 ): void {
@@ -11,7 +11,7 @@ export function assignMergedRef<T extends I, I>(
 }
 
 export function useMergedRef<T extends I, I>(
-  inner: MutableRefObject<I | null>,
+  inner: RefObject<I | null>,
   forwarded: ForwardedRef<T>,
 ): (node: T | null) => void {
   return useCallback((node: T | null) => assignMergedRef(inner, forwarded, node), [inner, forwarded])

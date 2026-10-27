@@ -52,11 +52,15 @@ function renderBlock(node: MarkdownNode, index: number, classes: MarkdownClasses
       </p>
     )
   }
-  const items = node.items.map((item, itemIndex) => (
-    <li key={`item-${itemIndex}`} className={classes.listItem}>
-      {renderInline(item.children, classes)}
-    </li>
-  ))
+  // A parsed node has no identity but its path in the document, which re-parses whole on every edit.
+  const items = node.items.map((item, itemIndex) => {
+    const itemKey = `item-${itemIndex}`
+    return (
+      <li key={itemKey} className={classes.listItem}>
+        {renderInline(item.children, classes)}
+      </li>
+    )
+  })
   return node.ordered ? (
     <ol key={key} className={classes.orderedList}>
       {items}

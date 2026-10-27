@@ -94,8 +94,8 @@ afterEach(() => {
 describe("FirstRunGate display name", () => {
   it("caps the two name fields so first + space + last fits the server's 80-char display name", () => {
     renderWithQuery(<FirstRunGate />)
-    const first = screen.getByLabelText("first_name_label") as HTMLInputElement
-    const last = screen.getByLabelText("last_name_label") as HTMLInputElement
+    const first = screen.getByLabelText<HTMLInputElement>("first_name_label")
+    const last = screen.getByLabelText<HTMLInputElement>("last_name_label")
     expect(first.maxLength + 1 + last.maxLength).toBeLessThanOrEqual(80)
   })
 
@@ -147,7 +147,7 @@ describe("a failed sign-out from the first-run gate", () => {
     expect(notice.className).toContain("z-session-alert")
     expect(Z_SESSION_ALERT).toBeGreaterThan(Number(gate.style.zIndex))
 
-    const retry = within(notice).getByRole("button", { name: "sign_out_failed.retry" }) as HTMLButtonElement
+    const retry = within(notice).getByRole<HTMLButtonElement>("button", { name: "sign_out_failed.retry" })
     expect(retry.disabled).toBe(false)
     await act(async () => {
       fireEvent.click(retry)
@@ -167,7 +167,7 @@ describe("a failed sign-out from the first-run gate", () => {
     })
 
     const notice = await screen.findByRole("alert")
-    const retry = within(notice).getByRole("button", { name: "sign_out_failed.retry" })
+    const retry = within(notice).getByRole<HTMLButtonElement>("button", { name: "sign_out_failed.retry" })
     const close = within(notice).getByRole("button", { name: "close" })
     expect(document.activeElement).toBe(retry)
 

@@ -25,8 +25,9 @@ import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
 
 export function FirstRunGate() {
   const required = useFirstRunRequired()
-  if (!required) return null
-  return <FirstRunForm />
+  const user = useCurrentUser()
+  if (!required || !user) return null
+  return <FirstRunForm user={user} />
 }
 
 /**
@@ -52,9 +53,8 @@ function inertOutside(el: HTMLElement): () => void {
   }
 }
 
-function FirstRunForm() {
+function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrentUser>> }) {
   const { t } = useT("web-registration")
-  const user = useCurrentUser()!
   const logout = useLogout()
   const update = useUpdateProfile()
 

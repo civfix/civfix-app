@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { radius } from "../../theme"
 import { SkeletonBlock, SkeletonGroup, SkeletonList, SkeletonText } from "../../primitives"
