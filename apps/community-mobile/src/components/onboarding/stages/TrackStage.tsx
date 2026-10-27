@@ -80,11 +80,11 @@ const LOZENGE_LEFT = DOCK_PADDING + (DOCK_CELL - LOZENGE_WIDTH) / 2
 const LOZENGE_TRAVEL = DOCK_CELL
 const DOCK_RISE = DOCK_HEIGHT + space["4"]
 
-const DOCK_ICONS: readonly LucideIcon[] = [
-  iconMap.Newspaper,
-  iconMap.Map,
-  iconMap.MessageCircle,
-  iconMap.Plus,
+const DOCK_ICONS: readonly { readonly tab: string; readonly icon: LucideIcon }[] = [
+  { tab: "feed", icon: iconMap.Newspaper },
+  { tab: "map", icon: iconMap.Map },
+  { tab: "messages", icon: iconMap.MessageCircle },
+  { tab: "post", icon: iconMap.Plus },
 ]
 const DOCK_SELECTED_INDEX = 1
 
@@ -202,7 +202,7 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
                   const at = frame.at(pin.spot)
                   return (
                     <TrackPin
-                      key={`${pin.category}-${i}`}
+                      key={pin.category}
                       category={pin.category}
                       rise={pin.rise}
                       drop={drop}
@@ -244,8 +244,8 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
         <Animated.View style={[styles.dockWrap, dockStyle]}>
           <BlurSurface kind="dock" style={styles.dock}>
             <Animated.View style={[styles.lozenge, lozengeStyle]} />
-            {DOCK_ICONS.map((icon, i) => (
-              <View key={i} style={styles.dockCell}>
+            {DOCK_ICONS.map(({ tab, icon }, i) => (
+              <View key={tab} style={styles.dockCell}>
                 <Icon
                   icon={icon}
                   size={20}

@@ -217,6 +217,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.15(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
     devDependencies:
+      '@eslint-react/eslint-plugin':
+        specifier: 5.20.8
+        version: 5.20.8(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       '@expo/fingerprint':
         specifier: ~0.15.5
         version: 0.15.5
@@ -232,6 +235,12 @@ importers:
       eslint-config-expo:
         specifier: ~10.0.0
         version: 10.0.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+      eslint-plugin-react-hooks:
+        specifier: 7.1.1
+        version: 7.1.1(eslint@9.39.5(jiti@2.7.0))
+      eslint-plugin-react-native:
+        specifier: 5.0.0
+        version: 5.0.0(eslint@9.39.5(jiti@2.7.0))
       expo-doctor:
         specifier: 1.21.5
         version: 1.21.5
