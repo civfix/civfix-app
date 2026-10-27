@@ -1,5 +1,5 @@
-// The React rule set the civfix-app workspaces enforce, next to eslint.typed.cjs and CommonJS for the
-// same reason. Each config registers the plugins itself; this module only names the rules.
+// The React and styling rule sets the civfix-app workspaces enforce, next to eslint.typed.cjs and CommonJS
+// for the same reason. Each config registers the plugins itself; this module only names the rules.
 //
 // Off on purpose, measured on this code: react/jsx-no-leaked-render (not type-aware, so it flags plain
 // booleans; the typed @eslint-react rule below covers the real crash), react/jsx-no-useless-fragment,
@@ -73,8 +73,8 @@ const HEX_COLOR = /(?<![\w&\x2F])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3
 const RAW_COLOR_MESSAGE =
   "Raw hex colour: use a @civfix/tokens value, a Tailwind token utility or the theme (`@civfix/ui/theme`)."
 
-// no-restricted-syntax entries, spread into each workspace's rule so other entries can share it. An
-// in-page anchor (`href="#add"`) is a fragment, not a colour.
+// no-restricted-syntax entries, spread into each workspace's rule. An in-page anchor (`href="#add"`) is a
+// fragment, not a colour.
 const RAW_COLOR_SELECTORS = [
   { selector: `Literal[value=${HEX_COLOR}]:not(JSXAttribute[name.name="href"] > Literal)`, message: RAW_COLOR_MESSAGE },
   { selector: `TemplateElement[value.raw=${HEX_COLOR}]`, message: RAW_COLOR_MESSAGE },

@@ -83,7 +83,7 @@ const PHOTO_URL =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">' +
       '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
-      `<stop offset="0" stop-color="${tokens.color.category.encampment}"/>` +
+      `<stop offset="0" stop-color="${tokens.color.brand.sky}"/>` +
       `<stop offset="1" stop-color="${tokens.color.bloom["600"]}"/>` +
       "</linearGradient></defs>" +
       '<rect width="80" height="80" fill="url(#g)"/>' +
