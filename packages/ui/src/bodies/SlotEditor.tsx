@@ -22,6 +22,7 @@ import {
   FOCUS_RING_COLOR,
   FOCUS_RING_OFFSET,
   FOCUS_RING_WIDTH,
+  webStyle,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
@@ -74,13 +75,13 @@ const CAPACITY_MAX_DIGITS = String(MAX_SLOT_CAPACITY).length
 
 const WEB_FIELD_RING: TextStyle =
   Platform.OS === "web"
-    ? ({
+    ? webStyle({
         outlineStyle: "solid",
         outlineWidth: FOCUS_RING_WIDTH,
         outlineColor: FOCUS_RING_COLOR,
         outlineOffset: FOCUS_RING_OFFSET,
         borderRadius: radius.xs,
-      } as unknown as TextStyle)
+      })
     : {}
 
 export interface SlotEditorProps {

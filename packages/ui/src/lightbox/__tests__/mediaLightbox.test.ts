@@ -49,7 +49,7 @@ describe("the zoomable stage", () => {
     expect(base).toContain('current && current.kind === "image" ? (')
     expect(base).toContain("<ZoomableMedia")
     expect(base).toContain('current && current.kind !== "image" ? (')
-    expect(base).toMatch(/<View style=\{styles\.stage\} pointerEvents="box-none">/)
+    expect(base).toMatch(/<View style=\{\[styles\.stage, pointerEventStyles\["box-none"\]\]\}>/)
   })
 
   it("hands the stage its measured content box and the window as the viewport", () => {
@@ -243,7 +243,7 @@ describe("the web pointer surface", () => {
   })
 
   it("keeps its own gesture surface tap-transparent while unzoomed", () => {
-    expect(web).toContain('<View style={viewportStyle} pointerEvents="box-none">')
+    expect(web).toContain('<View style={[viewportStyle, pointerEventStyles["box-none"]]}>')
     expect(web).toContain("zoomed ? surfaceZoomedStyle : surfaceStyle")
   })
 })

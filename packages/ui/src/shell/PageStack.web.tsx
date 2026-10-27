@@ -1,7 +1,8 @@
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
+import { StyleSheet, useWindowDimensions, View } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { domProps, makeThemedStyles } from "../theme"
+import { domElement } from "../primitives/domElement"
+import { domProps, makeThemedStyles, webStyle, pointerEventStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
 import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
@@ -232,11 +233,11 @@ const WebPageLayer = memo(function WebPageLayer({
   const contentReserve = reserve === "content" ? paddingBottom : 0
   const bodyScrollHost =
     reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
-  const motionStyle = { transform, opacity, transition } as unknown as ViewStyle
-  const scrimStyle = { opacity: scrimOpacity ?? 0, transition } as unknown as ViewStyle
+  const motionStyle = webStyle({ transform, opacity, transition })
+  const scrimStyle = webStyle({ opacity: scrimOpacity ?? 0, transition })
 
   useLayoutEffect(() => {
-    const node = layerRef.current as unknown as HTMLElement | null
+    const node = domElement(layerRef.current)
     if (!node) return
     if (active) node.removeAttribute("inert")
     else node.setAttribute("inert", "")
@@ -252,8 +253,7 @@ const WebPageLayer = memo(function WebPageLayer({
   return (
     <View
       ref={layerRef}
-      style={[styles.layer, motionStyle]}
-      pointerEvents={pointer}
+      style={[styles.layer, motionStyle, pointerEventStyles[pointer]]}
       aria-hidden={!active}
       tabIndex={-1}
       {...domProps({ onTransitionEnd, dataSet: { civfixPageLayer: "" } })}
@@ -276,7 +276,7 @@ const WebPageLayer = memo(function WebPageLayer({
         </IosKeyboardAvoidingView>
       </View>
       {scrimOpacity === null ? null : (
-        <View style={[styles.scrim, scrimStyle]} pointerEvents="none" />
+        <View style={[styles.scrim, scrimStyle, pointerEventStyles.none]} />
       )}
     </View>
   )

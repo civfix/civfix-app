@@ -158,5 +158,7 @@ export {
   FOCUS_RING_WIDTH,
   FOCUS_RING_OUTLINE,
 } from "./webAffordances"
+export { webStyle } from "./webStyle"
+export { pointerEventStyles } from "./pointerEventStyles"
 
 export const POST_SURFACE: "flat" | "card" = "flat"

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { View, Pressable, ScrollView, Image } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
-import { useTheme, focusRingProps } from "../../theme"
+import { useTheme, focusRingProps, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"
 import { useLightbox } from "../../lightbox"
@@ -147,7 +147,7 @@ export function ReportGallery({
               >
                 <Image source={{ uri: thumbUri }} style={styles.thumbImg} resizeMode="cover" />
                 {m.kind === "video" ? (
-                  <View style={styles.thumbVideoBadge} pointerEvents="none">
+                  <View style={[styles.thumbVideoBadge, pointerEventStyles.none]}>
                     <Icon icon={iconMap.Video} size={12} color={th.colors.onScrim} />
                   </View>
                 ) : null}

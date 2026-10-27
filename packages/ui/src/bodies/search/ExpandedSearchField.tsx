@@ -6,6 +6,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputKeyPressEvent,
 } from "react-native"
+import { readWebKeyPress } from "../../primitives/composerKeyPress"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, motion, useTheme, webInputReset } from "../../theme"
 import { Icon, iconMap } from "../../typography"
@@ -52,9 +53,8 @@ export function ExpandedSearchField() {
 
   const onKeyPress = useCallback(
     (event: TextInputKeyPressEvent) => {
-      const web = event as unknown as { key?: string; preventDefault?: () => void }
-      if (web.key !== "Escape") return
-      web.preventDefault?.()
+      if (readWebKeyPress(event).key !== "Escape") return
+      if (typeof event.preventDefault === "function") event.preventDefault()
       if (searchFieldEscape(query) === "clear") clearQuery()
       else inputRef.current?.blur()
     },

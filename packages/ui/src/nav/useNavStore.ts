@@ -56,14 +56,18 @@ function lastIndexOfIdentity(stack: readonly DetailEntry[], identity: string): n
   return -1
 }
 
+function assignChanged<K extends keyof DetailEntry>(target: DetailEntry, source: DetailEntry, key: K): boolean {
+  const value = source[key]
+  if (value === undefined || Object.is(target[key], value)) return false
+  target[key] = value
+  return true
+}
+
 function mergeEntryParams(existing: DetailEntry, incoming: DetailEntry): DetailEntry {
   const merged: DetailEntry = { ...existing }
-  const fields = merged as unknown as Record<string, unknown>
   let changed = false
-  for (const [key, value] of Object.entries(incoming)) {
-    if (value === undefined || Object.is(fields[key], value)) continue
-    fields[key] = value
-    changed = true
+  for (const key of Object.keys(incoming) as (keyof DetailEntry)[]) {
+    if (assignChanged(merged, incoming, key)) changed = true
   }
   return changed ? merged : existing
 }

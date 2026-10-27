@@ -10,6 +10,7 @@ import {
   WEB_ROW_FOCUS_INSET,
   webCursor,
   webTransition,
+  pointerEventStyles,
 } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
@@ -226,7 +227,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               </View>
             ) : null}
 
-            <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
+            <View style={[styles.actionsWrap, pointerEventStyles[isOptimistic ? "none" : "auto"]]}>
               <PostActionBar
                 variant="reply"
                 postId={post.id}

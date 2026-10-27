@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Platform, Animated } from "react-native"
-import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
+import type { PressableStateCallbackType, ViewStyle } from "react-native"
 import type { ChatItem } from "../../helpers"
 import type { ChatMessageDTO, MediaDTO, UserMentionDTO, ReactionEmoji } from "@civfix/contract"
-import { useTheme, focusRingProps } from "../../theme"
+import { domProps, useTheme, focusRingProps, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
 import { withTextOffsets } from "../../primitives/listKeys"
@@ -113,12 +113,12 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
   }, [v])
   return (
     <Animated.View
-      pointerEvents="none"
       style={[
         StyleSheet.absoluteFillObject,
         shape === "rounded" ? styles.flashOverlayRounded : shape === "card" ? styles.flashOverlayCard : styles.flashOverlayBubble,
         mine ? styles.flashOverlayMine : styles.flashOverlayTheirs,
         { opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, mine ? 0.35 : 0.16] }) },
+        pointerEventStyles.none,
       ]}
     />
   )
@@ -517,12 +517,12 @@ export const Bubble = React.memo(function Bubble({
   )
   const webContextMenuProps =
     isWeb && menuAvailable
-      ? ({
+      ? domProps({
           onContextMenu: (e: { preventDefault?: () => void }) => {
             e.preventDefault?.()
             openContextMenu()
           },
-        } as unknown as Partial<ViewProps>)
+        })
       : null
 
   const rowContent = (
@@ -633,7 +633,13 @@ export const Bubble = React.memo(function Bubble({
     >
       {swipe.active ? (
         <>
-          <Animated.View pointerEvents="none" style={[styles.swipeReplyHint, { opacity: swipe.progress }]}>
+          <Animated.View
+            style={[
+              styles.swipeReplyHint,
+              { opacity: swipe.progress },
+              pointerEventStyles.none,
+            ]}
+          >
             <Icon icon={iconMap.CornerUpLeft} size={16} color={th.colors.textSubtle} />
           </Animated.View>
           <Animated.View

@@ -78,15 +78,20 @@ function isSnapshot(value: unknown): value is NavSnapshot {
   )
 }
 
+function isNavHistoryEntry(value: unknown): value is NavHistoryEntry {
+  if (!isRecord(value)) return false
+  return (
+    value.v === 2 &&
+    typeof value.seq === "number" &&
+    typeof value.depth === "number" &&
+    (value.beneath === null || isSnapshot(value.beneath)) &&
+    isSnapshot(value.snapshot)
+  )
+}
+
 export function readNavHistory(state: unknown): NavHistoryEntry | null {
   if (!isRecord(state)) return null
-  const nav = state.civfixNav
-  if (!isRecord(nav)) return null
-  if (nav.v !== 2) return null
-  if (typeof nav.seq !== "number" || typeof nav.depth !== "number") return null
-  if (nav.beneath !== null && !isSnapshot(nav.beneath)) return null
-  if (!isSnapshot(nav.snapshot)) return null
-  return nav as unknown as NavHistoryEntry
+  return isNavHistoryEntry(state.civfixNav) ? state.civfixNav : null
 }
 
 export function stampNavHistory(

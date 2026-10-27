@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react"
 import { Platform, type TextInput } from "react-native"
+import { domElement } from "./domElement"
 
 export interface AutoGrowInput {
   ref: RefObject<TextInput | null>
@@ -20,12 +21,8 @@ export function useAutoGrowInput(value: string, min: number, max: number): AutoG
   // on the next render, so these pre-paint style writes never flash.
   useLayoutEffect(() => {
     if (Platform.OS !== "web") return
-    const node = ref.current as unknown as {
-      scrollHeight: number
-      rows: number
-      style: { height: string }
-    } | null
-    if (!node || typeof node.scrollHeight !== "number") return
+    const node = domElement(ref.current)
+    if (!(node instanceof HTMLTextAreaElement)) return
     node.rows = 1
     const prevHeight = node.style.height
     node.style.height = "auto"

@@ -19,6 +19,7 @@ vi.mock("lucide-react-native/icons", () => {
   return new Proxy({}, { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) })
 })
 
+import { I18nProvider } from "../../../../packages/ui/src/i18n"
 import { ModalCardSheet } from "../../../../packages/ui/src/primitives/ModalCardSheet"
 import { ToastProvider, useToast, type ToastApi } from "../../../../packages/ui/src/primitives/Toast"
 
@@ -45,12 +46,18 @@ function Harness({ sheetOpen }: { sheetOpen: boolean }) {
   )
 }
 
-function mount(sheetOpen: boolean) {
-  return render(
-    <ToastProvider>
-      <Harness sheetOpen={sheetOpen} />
-    </ToastProvider>,
+function tree(sheetOpen: boolean) {
+  return (
+    <I18nProvider locale="en">
+      <ToastProvider>
+        <Harness sheetOpen={sheetOpen} />
+      </ToastProvider>
+    </I18nProvider>
   )
+}
+
+function mount(sheetOpen: boolean) {
+  return render(tree(sheetOpen))
 }
 
 function showRetryToast(retry: () => void): void {
@@ -97,11 +104,7 @@ describe("a toast shown while a sheet is open", () => {
     showRetryToast(() => {})
     expect(dialog().contains(screen.getByText(MESSAGE))).toBe(true)
 
-    view.rerender(
-      <ToastProvider>
-        <Harness sheetOpen={false} />
-      </ToastProvider>,
-    )
+    view.rerender(tree(false))
 
     const messages = screen.getAllByText(MESSAGE)
     expect(messages).toHaveLength(1)
@@ -113,11 +116,7 @@ describe("a toast shown while a sheet is open", () => {
     const view = mount(false)
     showRetryToast(() => {})
 
-    view.rerender(
-      <ToastProvider>
-        <Harness sheetOpen />
-      </ToastProvider>,
-    )
+    view.rerender(tree(true))
 
     const messages = screen.getAllByText(MESSAGE)
     expect(messages).toHaveLength(1)

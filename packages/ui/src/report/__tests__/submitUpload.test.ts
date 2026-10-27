@@ -34,7 +34,9 @@ function rejection(upload: Promise<void>): Promise<AppError> {
 }
 
 describe("putUpload", () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it("(a) resolves when the PUT is ok", async () => {
     await expect(putUpload("https://x", {}, "body" as BodyInit, 1000, okFetch())).resolves.toBeUndefined()

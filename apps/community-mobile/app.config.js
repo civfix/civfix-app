@@ -263,7 +263,7 @@ module.exports = ({ config }) => ({
     [
       "expo-notifications",
       {
-        color: "#FF7A6B",
+        color: tokens.logo.bloom,
         mode: apsEnvironmentMode(),
       },
     ],

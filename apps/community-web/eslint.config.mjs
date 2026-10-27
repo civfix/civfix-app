@@ -2,16 +2,25 @@ import { createRequire } from "node:module"
 import eslintReact from "@eslint-react/eslint-plugin"
 import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
+import vitest from "@vitest/eslint-plugin"
 import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
 import {
+  DOUBLE_CAST_SELECTORS,
   LINTER_OPTIONS,
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
+  VITEST_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
-import { LEAKED_RENDER_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
+import {
+  LEAKED_RENDER_RULES,
+  RAW_COLOR_EXEMPT_FILES,
+  RAW_COLOR_SELECTORS,
+  REACT_RULES,
+  reactHooksRules,
+} from "../../eslint.react.cjs"
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
@@ -30,7 +39,7 @@ const HOST_CONSOLE_UI_MESSAGE =
 
 export default tseslint.config(
   {
-    ignores: [".next/**", "out/**", "public/**", "next-env.d.ts"],
+    ignores: [".next/**", "out/**", "public/**", "coverage/**", "next-env.d.ts"],
   },
   { linterOptions: LINTER_OPTIONS },
   ...escalateWarnings([
@@ -97,9 +106,35 @@ export default tseslint.config(
     },
   },
   {
+    name: "community-web/raw-colors",
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
+  },
+  {
+    name: "community-web/source-syntax",
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS, ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
+    // The OAuth provider logos are third-party brand marks whose colours the providers mandate.
+    name: "community-web/raw-colors-exempt",
+    files: [...RAW_COLOR_EXEMPT_FILES, "src/**/provider-glyphs.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...DOUBLE_CAST_SELECTORS] },
+  },
+  {
+    name: "community-web/tests-syntax",
+    files: TEST_FILES,
+    rules: { "no-restricted-syntax": "off" },
+  },
+  {
     name: "community-web/tests",
     files: TEST_FILES,
     rules: TEST_RELAXED_RULES,
+  },
+  {
+    name: "community-web/vitest",
+    files: [...TEST_FILES, "scripts/**/*.test.mjs"],
+    plugins: { vitest },
+    rules: VITEST_RULES,
   },
   {
     // Pages Functions tests import node:fs and vitest, which the Workers-only functions/tsconfig.json

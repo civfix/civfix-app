@@ -1,4 +1,4 @@
-import { makeThemedStyles } from "../theme"
+import { makeThemedStyles, pointerEventStyles } from "../theme"
 import { Text } from "../typography"
 import { DEFAULT_ATTRIBUTION } from "./mapStyle"
 
@@ -17,7 +17,13 @@ export interface MapCreditProps {
 export function MapCredit({ bottomInset = null }: MapCreditProps) {
   const styles = useStyles()
   return (
-    <Text style={[styles.credit, bottomInset != null ? { bottom: bottomInset } : null]} pointerEvents="none">
+    <Text
+      style={[
+        styles.credit,
+        bottomInset != null ? { bottom: bottomInset } : null,
+        pointerEventStyles.none,
+      ]}
+    >
       {DEFAULT_ATTRIBUTION}
     </Text>
   )
