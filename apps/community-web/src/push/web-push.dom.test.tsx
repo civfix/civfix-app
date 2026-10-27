@@ -176,7 +176,7 @@ describe("the page side of a notification click", () => {
     stubBrowser("default")
     const worker = loadServiceWorker(window.location.origin)
     await worker.click({ notificationId: "n1", category: "reportUpdates", link: "/reports/r1" })
-    const opened = new URL(worker.openWindow.mock.calls[0]![0] as string, window.location.origin)
+    const opened = new URL(worker.openWindow.mock.calls[0]![0], window.location.origin)
     window.history.replaceState(null, "", opened.pathname + opened.search + opened.hash)
 
     uninstall = await startSignedIn()
@@ -211,7 +211,7 @@ describe("a clicked notification's page, with the real shell mounted", () => {
     const worker = loadServiceWorker(window.location.origin)
     await worker.click({ notificationId: "n1", category: "reportUpdates", link: "/reports/r1" })
 
-    await loadThroughShell(new URL(worker.openWindow.mock.calls[0]![0] as string, window.location.origin))
+    await loadThroughShell(new URL(worker.openWindow.mock.calls[0]![0], window.location.origin))
 
     await vi.waitFor(() => expect(api.markNotificationsRead).toHaveBeenCalled())
     expect(api.markNotificationsRead).toHaveBeenCalledTimes(1)

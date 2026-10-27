@@ -1,4 +1,3 @@
-import React from "react"
 import type { CleanupDTO, EventInsights } from "@civfix/contract"
 import { useTheme } from "../../theme"
 import { Text } from "../../typography"

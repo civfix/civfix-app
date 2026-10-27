@@ -417,12 +417,10 @@ function voteToggle(qc: QueryClient, api: ApiClient, id: string, call: Parameter
     ...base,
     mutationKey: meTooMutationKey(id),
     scope: { id: `report-me-too:${id}` },
-    onSuccess: (...args: Parameters<NonNullable<typeof base.onSuccess>>) => {
-      if (!laterTapPending()) return base.onSuccess?.(...args)
-    },
-    onError: (...args: Parameters<NonNullable<typeof base.onError>>) => {
-      if (!laterTapPending()) return base.onError?.(...args)
-    },
+    onSuccess: (...args: Parameters<NonNullable<typeof base.onSuccess>>) =>
+      laterTapPending() ? undefined : base.onSuccess?.(...args),
+    onError: (...args: Parameters<NonNullable<typeof base.onError>>) =>
+      laterTapPending() ? undefined : base.onError?.(...args),
   } satisfies typeof base
 }
 

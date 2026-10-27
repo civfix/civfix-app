@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { StyleSheet, View, useWindowDimensions } from "react-native"
 import { makeThemedStyles, useAppearancePreference, useTheme } from "../theme"
 import { Icon, iconMap, Text } from "../typography"

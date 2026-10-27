@@ -1,4 +1,4 @@
-import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
+import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from "react"
 import type { ChatMessageDTO, MediaDTO, ReplyToDTO, RoomKind, UserDTO } from "@civfix/contract"
 import type { OutboxEntry } from "../../helpers"
 import { replayableEntries } from "../inbound"
@@ -31,7 +31,7 @@ export interface ChatOutboxDeps {
   myUserId: string | null
   user: UserDTO | null
   outbox: OutboxEntry[]
-  outboxRef: MutableRefObject<OutboxEntry[]>
+  outboxRef: RefObject<OutboxEntry[]>
   setOutbox: Dispatch<SetStateAction<OutboxEntry[]>>
   setTransientError: Dispatch<SetStateAction<ChatRoomError | null>>
   findMessage: (messageId: string) => ChatMessageDTO | undefined

@@ -4,7 +4,7 @@
  * carries `key`, `shiftKey`, `isComposing` and `preventDefault`; `WebKeyPress` reads that richer event
  * through RN's prop type. Both checks are web only.
  */
-import type { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native"
+import type { TextInputKeyPressEvent } from "react-native"
 
 interface WebKeyPress {
   key?: string
@@ -14,7 +14,7 @@ interface WebKeyPress {
 }
 
 /** An Enter that commits an IME candidate (e.g. CJK) must not send. */
-export function isComposerSendKey(e: NativeSyntheticEvent<TextInputKeyPressEventData>): boolean {
+export function isComposerSendKey(e: TextInputKeyPressEvent): boolean {
   const we = e as unknown as WebKeyPress
   if (we.key !== "Enter" || we.shiftKey) return false
   if (we.nativeEvent?.isComposing) return false
@@ -23,7 +23,7 @@ export function isComposerSendKey(e: NativeSyntheticEvent<TextInputKeyPressEvent
 }
 
 /** Escape also dismisses IME candidate windows, and that dismissal must not cancel the edit. */
-export function isComposerCancelKey(e: NativeSyntheticEvent<TextInputKeyPressEventData>): boolean {
+export function isComposerCancelKey(e: TextInputKeyPressEvent): boolean {
   const we = e as unknown as WebKeyPress
   if (we.key !== "Escape") return false
   if (we.nativeEvent?.isComposing) return false

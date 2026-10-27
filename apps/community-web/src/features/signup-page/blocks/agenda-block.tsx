@@ -4,6 +4,8 @@ import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/contract"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 type AgendaBlockData = Extract<EventPageBlock, { kind: "agenda" }>
 
 export function AgendaBlock({ block }: { block: AgendaBlockData }) {
@@ -13,8 +15,8 @@ export function AgendaBlock({ block }: { block: AgendaBlockData }) {
     <section className="signup-block">
       <h2>{block.title ?? t("blocks.agenda")}</h2>
       <ol className="signup-agenda">
-        {block.items.map((item, index) => (
-          <li key={`${item.title}-${index}`}>
+        {keyedByValue(block.items, (item) => `${item.time ?? ""} ${item.title}`).map(({ entry: item, key }) => (
+          <li key={key}>
             {item.time ? <span className="signup-agenda-time">{item.time}</span> : null}
             <span>
               <strong>{item.title}</strong>

@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import { SecondaryButton } from "../../../primitives"

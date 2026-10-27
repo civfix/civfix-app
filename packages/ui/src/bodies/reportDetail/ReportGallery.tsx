@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable, ScrollView, Image } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { useTheme, focusRingProps } from "../../theme"
@@ -65,11 +65,11 @@ export function ReportGallery({
         </View>
       )
     }
-    if (ownerFailed.length > 0) {
-      const first = ownerFailed[0]!
+    const firstFailed = ownerFailed[0]
+    if (firstFailed) {
       return (
         <View style={styles.gallery}>
-          <StatusTile kind={first.status === "rejected" ? "rejected" : "held"} variant="hero" />
+          <StatusTile kind={firstFailed.status === "rejected" ? "rejected" : "held"} variant="hero" />
         </View>
       )
     }

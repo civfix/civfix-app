@@ -49,7 +49,7 @@ export const EMPTY_REPLY_DRAFT: ReplyDraft = Object.freeze({
   attachedEvent: null,
   attachedReportId: null,
   updatedAt: 0,
-}) as ReplyDraft
+})
 
 export interface ReplyDraftState {
   drafts: Record<string, ReplyDraft>
@@ -78,15 +78,13 @@ function isEmptyDraft(draft: ReplyDraft): boolean {
  * when nothing is empty, the oldest draft outright. Returns the SAME object when nothing was evicted.
  */
 function evict(drafts: Record<string, ReplyDraft>): Record<string, ReplyDraft> {
-  const keys = Object.keys(drafts)
-  if (keys.length <= MAX_REPLY_DRAFTS) return drafts
-  const next = { ...drafts }
-  let remaining = keys.length
-  while (remaining > MAX_REPLY_DRAFTS) {
+  if (Object.keys(drafts).length <= MAX_REPLY_DRAFTS) return drafts
+  const next = new Map(Object.entries(drafts))
+  while (next.size > MAX_REPLY_DRAFTS) {
     let victim: string | null = null
     let victimAt = Number.POSITIVE_INFINITY
     let victimEmpty = false
-    for (const [key, draft] of Object.entries(next)) {
+    for (const [key, draft] of next) {
       const empty = isEmptyDraft(draft)
       // An empty draft always beats a non-empty one; between two of the same kind, the older loses.
       const better = victim === null || (empty && !victimEmpty) || (empty === victimEmpty && draft.updatedAt < victimAt)
@@ -97,10 +95,9 @@ function evict(drafts: Record<string, ReplyDraft>): Record<string, ReplyDraft> {
       }
     }
     if (victim === null) break
-    delete next[victim]
-    remaining -= 1
+    next.delete(victim)
   }
-  return next
+  return Object.fromEntries(next)
 }
 
 /** Apply `patch` to one target's draft (creating it from EMPTY_REPLY_DRAFT), stamp it, then evict. */
@@ -160,8 +157,7 @@ export const useReplyDraftStore = create<ReplyDraftState>((set, get) => ({
   clearDraft: (targetId) =>
     set((state) => {
       if (!(targetId in state.drafts)) return state
-      const drafts = { ...state.drafts }
-      delete drafts[targetId]
+      const { [targetId]: _cleared, ...drafts } = state.drafts
       return { drafts }
     }),
 }))

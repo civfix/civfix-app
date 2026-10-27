@@ -14,7 +14,7 @@ import { SearchHeader as WebSearchHeader } from "../SearchHeader.web"
 import { SearchHeader as NativeSearchHeader } from "../SearchHeader.native"
 import { MapControls } from "../../map/MapControls"
 
-const layout = vi.hoisted(() => ({ mode: "compact" as "compact" | "expanded" }))
+const layout = vi.hoisted(() => ({ mode: "compact" }))
 
 vi.mock("../../theme", async () => {
   const actual = await vi.importActual<typeof ThemeModule>("../../theme")

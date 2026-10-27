@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/contract"
 import { isVerifiedEventAddress } from "@civfix/contract"
@@ -19,6 +19,7 @@ import {
   useToast,
 } from "../primitives"
 import { DonateBlock } from "../primitives/DonateBlock"
+import { withValueKeys } from "../primitives/listKeys"
 import { GuestRsvpSheet } from "./host/registration/GuestRsvpSheet"
 import {
   useCleanup,
@@ -172,8 +173,8 @@ function useEventMapFocus(cleanup: CleanupDTO) {
     }
     useMapFocus.getState().setEvent({
       id: cleanup.id,
-      lat: cleanup.lat as number,
-      lng: cleanup.lng as number,
+      lat: cleanup.lat,
+      lng: cleanup.lng,
       eventKind: cleanup.eventKind,
     })
     useNavStore.getState().setSnap(1)
@@ -291,7 +292,7 @@ function EventDetailHeader({
         </View>
         <AddressRow
           address={where ?? null}
-          point={hasPoint ? { lat: cleanup.lat as number, lng: cleanup.lng as number } : null}
+          point={hasPoint ? { lat: cleanup.lat, lng: cleanup.lng } : null}
           focusTarget={{ kind: "cleanup", id: cleanup.id, eventKind: cleanup.eventKind }}
           verified={isVerifiedEventAddress(cleanup.addressSource, cleanup.address)}
           fallbackLabel={cleanup.type === "route" ? t("where.route") : t("where.meeting_point")}
@@ -347,10 +348,10 @@ function EventDetailsSection({
           <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
             {t("bring.heading")}
           </Text>
-          {cleanup.bring.map((item, i) => (
-            <View key={`${item}-${i}`} style={styles.bringRow}>
+          {withValueKeys(cleanup.bring).map(({ value, key }) => (
+            <View key={key} style={styles.bringRow}>
               <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
-              <Text style={styles.bringText}>{item}</Text>
+              <Text style={styles.bringText}>{value}</Text>
             </View>
           ))}
         </View>
@@ -447,8 +448,10 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
   const hasTicketTypes = cleanup.ticketTypes.length > 0
-  const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
-  const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
+  const now = useNow(NOW_TICK_MS, {
+    boundaryAt: (at) => nextEventBoundaryMs(cleanup, at),
+    idleAfterLastBoundary: true,
+  })
   useEventBoundaryRefresh(cleanup, now, cleanup.id)
   const status = deriveCleanupStatus(cleanup, now)
   const isCancelled = status === "cancelled"

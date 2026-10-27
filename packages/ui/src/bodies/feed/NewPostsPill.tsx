@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
 import { focusRingProps, makeThemedStyles, motion, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"

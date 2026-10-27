@@ -34,7 +34,7 @@ describe("cause 1 - the native picker has no neutral-centre fallback left", () =
     expect(picker).toContain("styles.pending")
     // The seed is adopted lazily (first non-null wins) and then frozen, so a later resolve cannot yank the
     // map out from under a user who has since panned.
-    expect(picker).toContain("if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null")
+    expect(picker).toContain("seedRef.current ??= value ?? initialCenter ?? null")
   })
 
   it("no longer ships the constant AT ALL - the web seam was converted too", () => {
@@ -56,7 +56,7 @@ describe("cause 1, web - the maplibre-gl picker is not constructed until a real 
   })
 
   it("adopts the first real point lazily and freezes it, exactly like the native seam", () => {
-    expect(webPicker).toContain("if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null")
+    expect(webPicker).toContain("seedRef.current ??= value ?? initialCenter ?? null")
     // The early return: no seed -> a warm placeholder and NO maplibre-gl instance, so there is no camera to
     // be wrong and nothing for a late resolve to race.
     expect(webPicker).toContain("if (!cameraSeed) {")

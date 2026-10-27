@@ -6,7 +6,7 @@ import { applyOtpInput, emptyOtpCells, otpCode } from "@/lib/otp"
 
 export interface OtpEntry {
   cells: string[]
-  refs: React.MutableRefObject<Array<HTMLInputElement | null>>
+  refs: React.RefObject<Array<HTMLInputElement | null>>
   type(index: number, raw: string): string | null
   paste(text: string): string | null
   clear(): void

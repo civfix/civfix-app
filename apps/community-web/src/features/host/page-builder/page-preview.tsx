@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import type { EventPageBlock, ThemeAccent } from "@civfix/contract"
 import { useT } from "@civfix/ui/i18n"
 
+import { keyedByValue } from "@/lib/list-keys"
 import { cn } from "@/lib/utils"
 import { MarkdownPreview } from "@/components/console/forms/rich-text/preview"
 
@@ -51,7 +52,6 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
       )}
     >
       {coverUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize
         <img src={coverUrl} alt="" className="aspect-[16/9] w-full object-cover" />
       ) : null}
       <div className="flex flex-col gap-token-5 p-token-4">
@@ -86,8 +86,8 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <ol className="flex flex-col gap-token-1">
-                    {block.items.map((item, index) => (
-                      <li key={index} className="flex gap-token-2 text-token-13">
+                    {keyedByValue(block.items, (item) => `${item.time ?? ""} ${item.title}`).map(({ entry: item, key }) => (
+                      <li key={key} className="flex gap-token-2 text-token-13">
                         <span className="w-20 shrink-0 font-mono text-console-ink-3">
                           {item.time ?? ""}
                         </span>
@@ -106,8 +106,8 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <ul className="flex flex-col gap-token-2">
-                    {block.entries.map((entry, index) => (
-                      <li key={index} className="text-token-13">
+                    {keyedByValue(block.entries, (entry) => entry.name).map(({ entry, key }) => (
+                      <li key={key} className="text-token-13">
                         <span className="font-semibold text-console-ink">{entry.name}</span>
                         {entry.role ? (
                           <span className="text-console-ink-3"> · {entry.role}</span>
@@ -124,8 +124,8 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <dl className="flex flex-col gap-token-2 text-token-13">
-                    {block.items.map((item, index) => (
-                      <div key={index}>
+                    {keyedByValue(block.items, (item) => item.question).map(({ entry: item, key }) => (
+                      <div key={key}>
                         <dt className="font-semibold text-console-ink">{item.question}</dt>
                         <dd className="text-console-ink-2">{item.answer}</dd>
                       </div>
@@ -150,8 +150,8 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <ul className="flex flex-wrap gap-token-2 text-token-13 text-console-ink-2">
-                    {block.entries.map((entry, index) => (
-                      <li key={index}>{entry.name}</li>
+                    {keyedByValue(block.entries, (entry) => entry.name).map(({ entry, key }) => (
+                      <li key={key}>{entry.name}</li>
                     ))}
                   </ul>
                 </PreviewSection>

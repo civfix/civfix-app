@@ -12,11 +12,11 @@ import {
 } from "../localChatAttachments"
 
 function media(id: string, url: string): MediaDTO {
-  return { id, kind: "image", url, thumbUrl: null, status: "validating" } as MediaDTO
+  return { id, kind: "image", url, thumbUrl: null, status: "validating" }
 }
 
 function ready(id: string, url: string): MediaDTO {
-  return { id, kind: "image", url, thumbUrl: null, status: "ready" } as MediaDTO
+  return { id, kind: "image", url, thumbUrl: null, status: "ready" }
 }
 
 function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO {
@@ -30,7 +30,7 @@ function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO 
     mentions: [],
     createdAt: "2026-09-16T12:00:00.000Z",
     ...partial,
-  } as ChatMessageDTO
+  }
 }
 
 function item(message: ChatMessageDTO): ChatItem {

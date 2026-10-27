@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react"
+import { forwardRef } from "react"
 import { TextInput as RNTextInput } from "react-native"
 import type { TextInputProps } from "./TextInput.types"
 

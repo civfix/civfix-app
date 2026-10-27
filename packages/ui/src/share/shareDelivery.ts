@@ -71,24 +71,19 @@ export function makeShareRuns(): ShareRuns {
 
 const ABORTED: unique symbol = Symbol("aborted")
 
-// The abandoned work keeps its rejection handler, so a late failure after an abort is not unhandled.
+// The race keeps a rejection handler on the abandoned work, so a late failure after an abort is not
+// unhandled. `aborted` races first so a signal that is already aborted wins over settled work.
 function unlessAborted<T>(work: Promise<T>, signal: AbortSignal | undefined): Promise<T | typeof ABORTED> {
   if (!signal) return work
-  return new Promise<T | typeof ABORTED>((resolve, reject) => {
-    const onAbort = (): void => resolve(ABORTED)
-    if (signal.aborted) onAbort()
-    else signal.addEventListener("abort", onAbort, { once: true })
-    work.then(
-      (value) => {
-        signal.removeEventListener("abort", onAbort)
-        resolve(value)
-      },
-      (err: unknown) => {
-        signal.removeEventListener("abort", onAbort)
-        reject(err)
-      },
-    )
+  let onAbort = (): void => undefined
+  const aborted = new Promise<typeof ABORTED>((resolve) => {
+    onAbort = () => resolve(ABORTED)
   })
+  if (signal.aborted) onAbort()
+  else signal.addEventListener("abort", onAbort, { once: true })
+  const detach = (): void => signal.removeEventListener("abort", onAbort)
+  void work.then(detach, detach)
+  return Promise.race([aborted, work])
 }
 
 function waitForSocketOpen(

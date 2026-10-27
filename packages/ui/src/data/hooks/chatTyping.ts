@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react"
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import type { RoomKind } from "@civfix/contract"
 import type { ChatSocketLike } from "../types"
 
@@ -59,7 +59,7 @@ export function useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled
 }
 
 /** Kept apart from `useChatTyping` so the caller can declare it after the socket lifecycle effect. */
-export function useClearTypingTimersOnUnmount(typingTimers: MutableRefObject<TimerMap>): void {
+export function useClearTypingTimersOnUnmount(typingTimers: RefObject<TimerMap>): void {
   useEffect(() => {
     const timers = typingTimers.current
     return () => {

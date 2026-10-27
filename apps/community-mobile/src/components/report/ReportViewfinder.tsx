@@ -311,11 +311,12 @@ export function ReportViewfinder({
         quality: 1,
         videoMaxDuration: MAX_VIDEO_SECONDS,
       })
-      if (result.canceled || result.assets.length === 0) {
+      const asset = result.canceled ? undefined : result.assets[0]
+      if (!asset) {
         setBusy(false)
         return
       }
-      emitCapture(capturedMediaFromPickerAsset(result.assets[0]!), "library")
+      emitCapture(capturedMediaFromPickerAsset(asset), "library")
     } catch {
       reportCaptureFailure("error.library")
     }

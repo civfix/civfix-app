@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import type { TicketTypeDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"

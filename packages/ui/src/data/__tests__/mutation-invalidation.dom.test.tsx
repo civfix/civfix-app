@@ -437,7 +437,7 @@ const optimisticPost = { id: "tmp-1", author: { id: ME.id } }
 describe("orgs.ts mutation invalidations", () => {
   it("useUpdateOrganization invalidates the old slug's page after a rename, then my organizations", async () => {
     expect(
-      await invalidationsOf(() => useUpdateOrganization("old-slug"), { id: ORG } as never, {
+      await invalidationsOf(() => useUpdateOrganization("old-slug"), { id: ORG }, {
         updateOrganization: resolves(organizationDto("new-slug")),
       }),
     ).toEqual([key("org", "old-slug"), key("orgs", "mine")])
@@ -445,7 +445,7 @@ describe("orgs.ts mutation invalidations", () => {
 
   it("useUpdateOrganization invalidates only my organizations when the slug is unchanged", async () => {
     expect(
-      await invalidationsOf(() => useUpdateOrganization("same-slug"), { id: ORG } as never, {
+      await invalidationsOf(() => useUpdateOrganization("same-slug"), { id: ORG }, {
         updateOrganization: resolves(organizationDto("same-slug")),
       }),
     ).toEqual([key("orgs", "mine")])
@@ -511,7 +511,7 @@ describe("groups.ts mutation invalidations", () => {
     expect(created.queryClient.getQueryData(["group", GROUP])).toEqual(group)
 
     expect(
-      await invalidationsOf(() => useUpdateGroup(), { id: GROUP, name: "Renamed" } as never, {
+      await invalidationsOf(() => useUpdateGroup(), { id: GROUP, name: "Renamed" }, {
         updateChatGroup: resolves({ ...group, name: "Renamed" }),
       }),
     ).toEqual([key("threads")])
@@ -768,7 +768,7 @@ describe("volunteer.ts mutation invalidations", () => {
       }),
     ).toEqual([key("certificates", "mine")])
     expect(
-      await invalidationsOf(() => useRevokeServiceHoursCertificate(), { code: "CODE" } as never, {
+      await invalidationsOf(() => useRevokeServiceHoursCertificate(), { code: "CODE" }, {
         revokeServiceHoursCertificate: resolves({}),
       }),
     ).toEqual([key("certificates", "mine")])

@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { TFunction } from "i18next"
 import type { OrganizationDTO, PersonDTO } from "@civfix/contract"

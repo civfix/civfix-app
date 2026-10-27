@@ -559,14 +559,14 @@ export default function PrimitivesGallery() {
         </Section>
 
         <Section title="SettingsToggle (tap to flip)">
-          <Specimen note={`on (value=${settingsA})`}>
+          <Specimen note={`on (value=${String(settingsA)})`}>
             <SettingsToggle
               value={settingsA}
               onValueChange={setSettingsA}
               accessibilityLabel="Setting A"
             />
           </Specimen>
-          <Specimen note={`off (value=${settingsB})`}>
+          <Specimen note={`off (value=${String(settingsB)})`}>
             <SettingsToggle
               value={settingsB}
               onValueChange={setSettingsB}

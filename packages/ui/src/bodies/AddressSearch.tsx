@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable, ActivityIndicator, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import { makeThemedStyles, useTheme, focusRingProps, webInputReset, PRESSED_OPACITY, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"

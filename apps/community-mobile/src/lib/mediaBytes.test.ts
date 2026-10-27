@@ -14,7 +14,7 @@ function segment(marker: number, payload: number[]): number[] {
 }
 
 function bytesOf(text: string): number[] {
-  return [...text].map((c) => c.charCodeAt(0))
+  return text.split("").map((c) => c.charCodeAt(0))
 }
 
 const EXIF_GPS_PAYLOAD = bytesOf("Exif\0\0MM*GPSLatitude 37.7749 GPSLongitude -122.4194")

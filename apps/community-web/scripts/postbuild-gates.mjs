@@ -98,8 +98,8 @@ export function missingAasaExcludes(association, required) {
 
 export function canonicalDocumentText(html) {
   const withoutScripts = html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script(?:[\t\n\f\r /][^>]*)?>[\s\S]*?<\/script(?:[\t\n\f\r /][^>]*)?>/gi, " ")
+    .replace(/<style(?:[\t\n\f\r /][^>]*)?>[\s\S]*?<\/style(?:[\t\n\f\r /][^>]*)?>/gi, " ")
   const blockBreaks = withoutScripts.replace(
     /<\/(p|div|section|article|h[1-6]|li|tr|table|ul|ol|dl|dd|dt|blockquote|header|footer)\s*>/gi,
     "\n",

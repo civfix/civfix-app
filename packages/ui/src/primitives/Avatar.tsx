@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { View, Image, StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native"
 import { avatarColor, monogram } from "@civfix/contract"
 import { makeThemedStyles, fontFamily, useTheme } from "../theme"

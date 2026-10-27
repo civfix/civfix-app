@@ -1,4 +1,3 @@
-import React from "react"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { DEFAULT_ATTRIBUTION } from "./mapStyle"

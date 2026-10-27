@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet, type ViewStyle } from "react-native"
 import { BlurView } from "expo-blur"
 import { useTheme, supportsBlur } from "../theme"

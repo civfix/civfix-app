@@ -28,9 +28,7 @@ function snapshotLists(
 ): Array<readonly [readonly unknown[], NotificationDTO[] | undefined]> {
   return qc
     .getQueriesData<NotificationDTO[]>({ queryKey: NOTIFICATIONS_PREFIX })
-    .filter(([, data]) => Array.isArray(data)) as Array<
-    readonly [readonly unknown[], NotificationDTO[] | undefined]
-  >
+    .filter(([, data]) => Array.isArray(data))
 }
 
 function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {

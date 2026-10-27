@@ -25,7 +25,7 @@ import { AuthModal } from "@/components/auth/auth-modal"
 import { useUiStore } from "@/store/ui-store"
 
 function cells(): HTMLInputElement[] {
-  return screen.getAllByLabelText(/^code\.digit_aria_label/) as HTMLInputElement[]
+  return screen.getAllByLabelText<HTMLInputElement>(/^code\.digit_aria_label/)
 }
 
 async function openAtCodeStep() {

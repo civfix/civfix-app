@@ -57,7 +57,7 @@ const RSVP_PILL_RESERVE = 88
 
 const CARD_RING_INSET = space["4"] + StyleSheet.hairlineWidth
 const WEB_CARD_RING: ViewStyle = IS_WEB
-  ? ({ outlineOffset: CARD_RING_INSET } as unknown as ViewStyle)
+  ? { outlineOffset: CARD_RING_INSET }
   : {}
 
 const SheetEventCard = React.memo(function SheetEventCard({

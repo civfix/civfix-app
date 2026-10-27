@@ -75,7 +75,7 @@ describe("OrgProfileForm (create)", () => {
     const user = userEvent.setup()
     const client = makeClient()
     const onSaved = vi.fn()
-    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client })
 
     await user.click(screen.getByRole("button", { name: "form.create_action" }))
 
@@ -87,10 +87,10 @@ describe("OrgProfileForm (create)", () => {
 
   it("derives the handle from the name until the host edits it", async () => {
     const user = userEvent.setup()
-    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: makeClient() as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: makeClient() })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers LA")
-    const slug = screen.getByLabelText("form.slug") as HTMLInputElement
+    const slug = screen.getByLabelText<HTMLInputElement>("form.slug")
     expect(slug.value).toBe("river-keepers-la")
 
     await user.clear(slug)
@@ -104,7 +104,7 @@ describe("OrgProfileForm (create)", () => {
   it("rejects a malformed handle before it reaches the API", async () => {
     const user = userEvent.setup()
     const client = makeClient()
-    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers")
     const slug = screen.getByLabelText("form.slug")
@@ -120,7 +120,7 @@ describe("OrgProfileForm (create)", () => {
     const user = userEvent.setup()
     const client = makeClient()
     const onSaved = vi.fn()
-    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "  River Keepers  ")
     await user.type(screen.getByLabelText(/form\.websiteUrl/), "https://riverkeepers.org")
@@ -146,7 +146,7 @@ describe("OrgProfileForm (create)", () => {
       vi.fn().mockRejectedValue(new AppError(ErrorCode.CONFLICT, "slug taken")),
     )
     const onSaved = vi.fn()
-    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={onSaved} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers")
     await user.click(screen.getByRole("button", { name: "form.create_action" }))
@@ -160,7 +160,7 @@ describe("OrgProfileForm (create)", () => {
     const client = makeClient(
       vi.fn().mockRejectedValue(new AppError(ErrorCode.VALIDATION, "That slug is reserved")),
     )
-    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers")
     await user.click(screen.getByRole("button", { name: "form.create_action" }))
@@ -177,7 +177,7 @@ describe("OrgProfileForm (create)", () => {
         }),
       ),
     )
-    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers")
     await user.click(screen.getByRole("button", { name: "form.create_action" }))
@@ -191,7 +191,7 @@ describe("OrgProfileForm (create)", () => {
     const client = makeClient(
       vi.fn().mockRejectedValue(new AppError(ErrorCode.VALIDATION, "Too many organizations")),
     )
-    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client as never })
+    renderConsole(<OrgProfileForm mode="create" onSaved={vi.fn()} />, { api: client })
 
     await user.type(screen.getByLabelText("form.name"), "River Keepers")
     await user.click(screen.getByRole("button", { name: "form.create_action" }))
@@ -211,7 +211,7 @@ describe("CreateOrgScreen", () => {
       <ConsoleNavigationProvider>
         <CreateOrgScreen />
       </ConsoleNavigationProvider>,
-      { api: client as never },
+      { api: client },
     )
 
     await user.type(await screen.findByLabelText("form.name"), "River Keepers")
@@ -242,7 +242,7 @@ describe("CreateOrgScreen", () => {
         .fn()
         .mockResolvedValue({ status: "unverified", kind: null, submittedAt: null }),
     }
-    renderConsole(<ConsoleApp />, { api: client as never })
+    renderConsole(<ConsoleApp />, { api: client })
 
     await user.type(await screen.findByLabelText("form.name"), "River Keepers")
     await user.click(screen.getByRole("button", { name: "form.create_action" }))

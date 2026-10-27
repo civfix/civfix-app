@@ -1,8 +1,14 @@
-import React, { useCallback, useRef } from "react"
+import React, { useCallback, useState } from "react"
 import type { BBox } from "@civfix/contract"
 import { Map as SharedMap, type MapHandle, type MapProps } from "@civfix/ui"
 
-let nextMapMountGeneration = 0
+let lastMapMountGeneration = 0
+
+// Each mounted map claims the next number once; a remount is a new instance with a new number.
+function claimMapMountGeneration(): number {
+  lastMapMountGeneration += 1
+  return lastMapMountGeneration
+}
 
 export type ManagedMapProps = Omit<MapProps, "onRegionChange"> & {
   onMapHandle: (generation: number, map: MapHandle | null) => void
@@ -14,12 +20,7 @@ export function ManagedMap({
   onInstanceRegionChange,
   ...mapProps
 }: ManagedMapProps) {
-  const generationRef = useRef<number | null>(null)
-  if (generationRef.current === null) {
-    nextMapMountGeneration += 1
-    generationRef.current = nextMapMountGeneration
-  }
-  const generation = generationRef.current
+  const [generation] = useState(claimMapMountGeneration)
 
   const setMapHandle = useCallback(
     (map: MapHandle | null) => onMapHandle(generation, map),

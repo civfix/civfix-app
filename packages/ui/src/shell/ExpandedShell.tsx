@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Animated,
   PanResponder,
@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps } from "../theme"
+import { domProps, motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps } from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
 import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
@@ -302,7 +302,7 @@ function PanelHeader({
         style={styles.title}
         numberOfLines={1}
         accessibilityRole="header"
-        {...({ "data-civfix-panel-heading": "", tabIndex: -1 } as any)}
+        {...domProps({ "data-civfix-panel-heading": "", tabIndex: -1 })}
       >
         {title}
       </Text>

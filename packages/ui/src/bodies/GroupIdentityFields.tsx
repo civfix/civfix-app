@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

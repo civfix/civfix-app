@@ -62,9 +62,7 @@ export function useDoubleTap(options: DoubleTapOptions): { onPress: () => void }
   optionsRef.current = options
 
   const controllerRef = useRef<TapController | null>(null)
-  if (controllerRef.current == null) {
-    controllerRef.current = createTapController(() => optionsRef.current)
-  }
+  controllerRef.current ??= createTapController(() => optionsRef.current)
 
   useEffect(() => {
     const controller = controllerRef.current

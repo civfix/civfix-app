@@ -1,8 +1,17 @@
 import { createRequire } from "node:module"
+import eslintReact from "@eslint-react/eslint-plugin"
 import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
 import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
+import {
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  escalateWarnings,
+} from "../../eslint.typed.cjs"
+import { LEAKED_RENDER_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
@@ -23,46 +32,54 @@ export default tseslint.config(
   {
     ignores: [".next/**", "out/**", "public/**", "next-env.d.ts"],
   },
-  ...tseslint.configs.recommended,
-  {
-    name: "community-web/next-core-web-vitals",
-    plugins: {
-      react: reactPlugin,
-      "react-hooks": reactHooks,
-      "jsx-a11y": jsxA11yPlugin,
-      import: importPlugin,
-      "@next/next": nextPlugin,
+  { linterOptions: LINTER_OPTIONS },
+  ...escalateWarnings([
+    ...tseslint.configs.recommended,
+    {
+      name: "community-web/next-core-web-vitals",
+      plugins: {
+        react: reactPlugin,
+        "react-hooks": reactHooks,
+        "jsx-a11y": jsxA11yPlugin,
+        import: importPlugin,
+        "@next/next": nextPlugin,
+      },
+      languageOptions: {
+        parserOptions: { ecmaFeatures: { jsx: true } },
+      },
+      settings: {
+        react: { version: "detect" },
+      },
+      rules: {
+        ...reactPlugin.configs.flat.recommended.rules,
+        ...reactHooksRules(reactHooks),
+        ...REACT_RULES,
+        ...nextPlugin.flatConfig.recommended.rules,
+        ...nextPlugin.flatConfig.coreWebVitals.rules,
+        ...jsxA11yPlugin.flatConfigs.strict.rules,
+        "import/no-anonymous-default-export": "error",
+        "react/no-unknown-property": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/prop-types": "off",
+        "jsx-a11y/alt-text": ["error", { elements: ["img"], img: ["Image"] }],
+        // Deprecated in favor of label-has-associated-control, which strict already runs.
+        "jsx-a11y/label-has-for": "off",
+        // ConsoleLink renders an <a>, so its call sites need content too. A <Trans> slot is a SlotLink:
+        // Trans supplies its text from the translation.
+        "jsx-a11y/anchor-has-content": ["error", { components: ["ConsoleLink"] }],
+        // A component's autoFocus prop is checked where it lands on a DOM element.
+        "jsx-a11y/no-autofocus": ["error", { ignoreNonDOM: true }],
+        // A fieldset's legend names the group natively; radiogroup adds the required and invalid state its
+        // radios need announced. This is the one pairing the recommended preset allows and strict drops.
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": ["error", { fieldset: ["radiogroup"] }],
+        // images.unoptimized is set for the static export, so next/image would render a plain <img> anyway.
+        "@next/next/no-img-element": "off",
+        "react/jsx-no-target-blank": "off",
+        "@typescript-eslint/no-unused-expressions": "error",
+        "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      },
     },
-    languageOptions: {
-      parserOptions: { ecmaFeatures: { jsx: true } },
-    },
-    settings: {
-      react: { version: "detect" },
-    },
-    rules: {
-      ...reactPlugin.configs.flat.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      ...nextPlugin.flatConfig.recommended.rules,
-      ...nextPlugin.flatConfig.coreWebVitals.rules,
-      "import/no-anonymous-default-export": "warn",
-      "react/no-unknown-property": "off",
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-      "jsx-a11y/alt-text": ["warn", { elements: ["img"], img: ["Image"] }],
-      "jsx-a11y/aria-props": "warn",
-      "jsx-a11y/aria-proptypes": "warn",
-      "jsx-a11y/aria-unsupported-elements": "warn",
-      "jsx-a11y/role-has-required-aria-props": "warn",
-      "jsx-a11y/role-supports-aria-props": "warn",
-      "react/jsx-no-target-blank": "off",
-      "@typescript-eslint/no-unused-expressions": "warn",
-      "@typescript-eslint/consistent-type-imports": [
-        "warn",
-        { prefer: "type-imports", fixStyle: "separate-type-imports" },
-      ],
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-    },
-  },
+  ]),
   {
     name: "community-web/typed",
     files: TYPED_FILES,
@@ -72,20 +89,17 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: { "@tanstack/query": pluginQuery },
+    plugins: { "@tanstack/query": pluginQuery, "@eslint-react": eslintReact },
     rules: {
-      ...Object.assign({}, ...pluginQuery.configs["flat/recommended"].map((config) => config.rules ?? {})),
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: true } }],
-      "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
-      "@typescript-eslint/no-unsafe-argument": "error",
-      "@typescript-eslint/no-unsafe-assignment": "error",
-      "@typescript-eslint/no-unsafe-call": "error",
-      "@typescript-eslint/no-unsafe-enum-comparison": "error",
-      "@typescript-eslint/no-unsafe-member-access": "error",
-      "@typescript-eslint/no-unsafe-return": "error",
-      "@typescript-eslint/no-unsafe-unary-minus": "error",
+      ...Object.assign({}, ...escalateWarnings(pluginQuery.configs["flat/recommended"]).map((config) => config.rules ?? {})),
+      ...TYPED_RULES,
+      ...LEAKED_RENDER_RULES,
     },
+  },
+  {
+    name: "community-web/tests",
+    files: TEST_FILES,
+    rules: TEST_RELAXED_RULES,
   },
   {
     // Pages Functions tests import node:fs and vitest, which the Workers-only functions/tsconfig.json
@@ -111,6 +125,22 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowNumber: true,
+          allowAny: true,
+          allowArray: false,
+          allowBoolean: false,
+          allowNever: false,
+          allowNullish: false,
+          allowRegExp: false,
+        },
+      ],
+      "@typescript-eslint/restrict-plus-operands": [
+        "error",
+        { allowAny: true, allowBoolean: false, allowNullish: false, allowNumberAndString: false, allowRegExp: false },
+      ],
     },
   },
   {

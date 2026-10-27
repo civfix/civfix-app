@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { View, Pressable } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { isVerifiedReportAddress } from "@civfix/contract"
@@ -185,7 +185,7 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       <Text style={[shared.eyebrow, styles.updatesGap]}>{t("updates_label")}</Text>
       <View>
         {timeline.map((node, i) => (
-          <TimelineRow key={i} node={node} last={i === timeline.length - 1} />
+          <TimelineRow key={node.key} node={node} last={i === timeline.length - 1} />
         ))}
       </View>
 

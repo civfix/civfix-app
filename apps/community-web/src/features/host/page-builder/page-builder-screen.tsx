@@ -83,14 +83,14 @@ export function PageBuilderScreen() {
     (accent ?? "bloom") !== data.theme.accent ||
     (cover?.mediaId ?? null) !== (data.coverMediaId ?? null) ||
     (noindex ?? false) !== data.seo.noindex ||
-    blocksDiffer(list, data.blocks as EventPageBlock[])
+    blocksDiffer(list, data.blocks)
 
   // A refetch reseeds the form only while it still matches the copy it was seeded from, so a server
   // change shows up without ever overwriting the host's unsaved edits.
   if (page.data && page.data !== seededFrom) {
     setSeededFrom(page.data)
     if (seededFrom === null || !differsFrom(seededFrom)) {
-      setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
+      setBlocks(withRowKeys(page.data.blocks))
       setSlug(page.data.slug ?? "")
       setAccent(page.data.theme.accent)
       setNoindex(page.data.seo.noindex)

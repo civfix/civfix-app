@@ -1,5 +1,5 @@
-import type { CheckinOutcome } from "@civfix/contract"
-import { ErrorCode } from "@civfix/contract"
+import type { CheckinOutcome, ErrorCodeTable } from "@civfix/contract"
+import { ErrorCode, byErrorCode } from "@civfix/contract"
 import type { PersistenceCapability, SecureStoreCapability } from "../capabilities"
 
 export type OutboxStore = PersistenceCapability | SecureStoreCapability
@@ -154,16 +154,20 @@ export interface ReplayOutcome {
   dropReason: ReplayDropReason | null
 }
 
+const REPLAY_SENT: ReplayOutcome = { disposition: "sent", dropReason: null }
+const REPLAY_RETRY: ReplayOutcome = { disposition: "retry", dropReason: null }
+
+const REPLAY_OUTCOMES: ErrorCodeTable<ReplayOutcome> = {
+  [ErrorCode.CONFLICT]: REPLAY_SENT,
+  [ErrorCode.RATE_LIMITED]: REPLAY_RETRY,
+  [ErrorCode.INTERNAL]: REPLAY_RETRY,
+  [ErrorCode.UNAUTHORIZED]: { disposition: "hold", dropReason: null },
+  [ErrorCode.FORBIDDEN]: { disposition: "drop", dropReason: "forbidden" },
+}
+
 export function replayOutcome(errorCode: string | undefined): ReplayOutcome {
-  if (errorCode === undefined || errorCode === ErrorCode.CONFLICT) {
-    return { disposition: "sent", dropReason: null }
-  }
-  if (errorCode === ErrorCode.RATE_LIMITED || errorCode === ErrorCode.INTERNAL) {
-    return { disposition: "retry", dropReason: null }
-  }
-  if (errorCode === ErrorCode.UNAUTHORIZED) return { disposition: "hold", dropReason: null }
-  if (errorCode === ErrorCode.FORBIDDEN) return { disposition: "drop", dropReason: "forbidden" }
-  return { disposition: "drop", dropReason: "refused" }
+  if (errorCode === undefined) return REPLAY_SENT
+  return byErrorCode(errorCode, REPLAY_OUTCOMES, { disposition: "drop", dropReason: "refused" })
 }
 
 export type ReplayEvent =

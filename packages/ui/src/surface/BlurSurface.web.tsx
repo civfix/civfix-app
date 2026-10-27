@@ -1,4 +1,3 @@
-import React from "react"
 import { View, type ViewStyle } from "react-native"
 import { useTheme } from "../theme"
 import type { BlurSurfaceProps } from "./types"

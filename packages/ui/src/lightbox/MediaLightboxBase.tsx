@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from "react"
+import { useCallback, useContext } from "react"
 import { Modal, View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
 import type { ModalProps, ViewProps } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"

@@ -50,7 +50,7 @@ describe("useEventWhen", () => {
   it("appends the event zone to the time and the range when the viewer's offset differs", () => {
     const when = useEventWhen(EVENT)
     expect(when.timeWithZone).toBe(`${when.time} PDT`)
-    expect(when.rangeWithZone).toBe(`${when.range} PDT`)
+    expect(when.rangeWithZone).toBe(`${String(when.range)} PDT`)
     expect(when.timeZone).toBe("America/Los_Angeles")
   })
 

@@ -1,4 +1,3 @@
-import React from "react"
 import {
   HANDLE_MAX_LENGTH,
   ErrorCode,
@@ -8,7 +7,7 @@ import {
 } from "@civfix/contract"
 import { Text } from "../../typography"
 import { SettingsRow, TextField } from "../../primitives"
-import { useHandleAvailability } from "../../data"
+import { useHandleAvailability, useNow } from "../../data"
 import { useLocale, useT } from "../../i18n"
 import { dayLabel, todayKey, type DayLabelOptions } from "../relativeTime"
 import { useEditorStyles } from "./editorStyles"
@@ -59,7 +58,8 @@ export function ChangeUsernameEditor({
   const { draft, setDraft, submitError } = editor
 
   const lockMs = lockedUntil ? new Date(lockedUntil).getTime() : NaN
-  const locked = !Number.isNaN(lockMs) && lockMs > Date.now()
+  const clock = useNow(0, { boundaryAt: Number.isNaN(lockMs) ? null : lockMs })
+  const locked = !Number.isNaN(lockMs) && lockMs > clock
 
   const trimmed = draft.trim()
   const valid = isValidHandle(trimmed)

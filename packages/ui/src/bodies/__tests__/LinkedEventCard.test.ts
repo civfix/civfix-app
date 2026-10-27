@@ -21,7 +21,7 @@ const EN: Record<string, string> = {
   "linked.a11y_remove": "Remove {{title}}",
 }
 
-const t = ((key: string, options: Record<string, unknown> = {}) => {
+const t = ((key: string, options: Record<string, string | number> = {}) => {
   const resolved =
     typeof options.count === "number"
       ? EN[`${key}_${options.count === 1 ? "one" : "other"}`] ?? EN[key]

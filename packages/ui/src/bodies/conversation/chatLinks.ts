@@ -69,7 +69,7 @@ export function parseHttpsUrl(url: string): ParsedHttpsUrl | null {
     ? authority.slice(0, -HTTPS_DEFAULT_PORT.length)
     : authority
   if (host.length === 0) return null
-  const rest = url.slice((match[0] as string).length)
+  const rest = url.slice(match[0].length)
   return { origin: `https://${host}`, path: rest.length > 0 ? rest : "/" }
 }
 

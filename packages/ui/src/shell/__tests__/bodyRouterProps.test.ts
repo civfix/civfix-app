@@ -298,7 +298,7 @@ function expectedType(renders: string): unknown {
 }
 
 const CASES = (Object.entries(BODY_CASES) as [BodyId, BodyCase[]][]).flatMap(([bodyId, cases]) =>
-  cases.map((c) => [`${bodyId} <- ${c.entry ? JSON.stringify({ kind: c.entry.kind, view: c.entry.view }) : `view ${c.view}`}`, bodyId, c] as const),
+  cases.map((c) => [`${bodyId} <- ${c.entry ? JSON.stringify({ kind: c.entry.kind, view: c.entry.view }) : `view ${String(c.view)}`}`, bodyId, c] as const),
 )
 
 describe("BodyRouter body table", () => {

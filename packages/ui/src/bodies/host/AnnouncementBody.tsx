@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { View } from "react-native"
 import { eventWhenLabel } from "@civfix/contract/datetime"
 import { headingLevel, makeThemedStyles } from "../../theme"

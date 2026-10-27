@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, headingLevel, makeThemedStyles, useLayoutMode, useTheme, webCursor, webHover } from "../theme"
 import { Icon, iconMap, Text } from "../typography"
@@ -42,7 +41,7 @@ export function PushPromptCard({ onTurnOn, onNotNow, onClose }: PushPromptCardPr
             variant="bodyStrong"
             style={styles.title}
             {...headingLevel(2)}
-            {...({ nativeID: "civfix-push-prompt-title" } as object)}
+            nativeID="civfix-push-prompt-title"
           >
             {t("title")}
           </Text>

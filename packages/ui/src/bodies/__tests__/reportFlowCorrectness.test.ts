@@ -131,7 +131,7 @@ describe("a submission never crosses to the next viewer", () => {
     const pipeline = submit.slice(submit.indexOf("export function useReportSubmit("), submit.indexOf("export function useFeedShareRetry("))
     expect(pipeline).toContain("return useCallback(async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {")
     const uploads = pipeline.indexOf("const mediaUploadIds = await uploadAll(")
-    const guards = [...pipeline.matchAll(/if \(!isCurrent\(\)\) throw new SubmitRunDiscarded\(\)/g)].map((m) => m.index!)
+    const guards = [...pipeline.matchAll(/if \(!isCurrent\(\)\) throw new SubmitRunDiscarded\(\)/g)].map((m) => m.index)
     const create = pipeline.indexOf("result = await createReport()")
     const share = pipeline.indexOf("let feedShare: FeedShareOutcome")
     expect(uploads).toBeGreaterThan(-1)

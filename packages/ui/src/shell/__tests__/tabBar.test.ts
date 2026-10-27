@@ -199,8 +199,8 @@ describe("map-first tab bar model", () => {
   it("releases the search body's exit freeze from the dockMorphOut timing, never from a config factory", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).toMatch(/searchExitPublish\(target, animated\)/)
-    expect(native).toMatch(/runOnJS\(setSearchExitSettled\)\(true\)/)
-    expect(native).toMatch(/if \(finished\) runOnJS\(setSearchExitSettled\)\(true\)/)
+    expect(native).toMatch(/scheduleOnRN\(setSearchExitSettled, true\)/)
+    expect(native).toMatch(/if \(finished\) scheduleOnRN\(setSearchExitSettled, true\)/)
     expect(native).not.toMatch(/\(finished\) => \{[^}]*Config\(\)/)
   })
 })
@@ -653,7 +653,7 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
     const chain = src.slice(start, end).replace(/\/\/[^\n]*/g, "")
     expect(chain).toMatch(/Gesture\.Pan\(\)/)
     expect(chain).toMatch(/\.onFinalize\(/)
-    expect(chain).toMatch(/runOnJS\(lockOnTab\)\(index\)/)
+    expect(chain).toMatch(/scheduleOnRN\(lockOnTab, index\)/)
     return chain
   }
 

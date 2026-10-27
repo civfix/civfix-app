@@ -26,6 +26,7 @@ import {
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
+  firstFixture,
   galleryChatHistory,
   galleryThreads,
   isoFromNow,
@@ -191,7 +192,8 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
 }
 
 function chatHistory(args?: Record<string, unknown>): ChatHistoryResponse {
-  return galleryChatHistory(String(args?.cleanupId ?? args?.threadId ?? args?.id ?? ""))
+  const roomId = [args?.cleanupId, args?.threadId, args?.id].find((value) => value !== undefined && value !== null)
+  return galleryChatHistory(typeof roomId === "string" ? roomId : "")
 }
 
 const THREADS = galleryThreads(ANN)
@@ -249,13 +251,14 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
     items: args?.when === "attending" ? UPCOMING_CLEANUPS.filter((c) => c.joined) : UPCOMING_CLEANUPS,
     nextCursor: null,
   }),
-  getCleanup: async (args) => CLEANUPS_BY_ID[String(args?.id ?? "")] ?? UPCOMING_CLEANUPS[0]!,
+  getCleanup: async (args) =>
+    (typeof args?.id === "string" ? CLEANUPS_BY_ID[args.id] : undefined) ?? firstFixture(UPCOMING_CLEANUPS),
   getCleanupAttendees: async () => ATTENDEES,
   getEventHours: async () => ({ scope: "self", entries: [], anyLogged: false }),
 
   listMyReports: async () => MY_REPORTS,
   getReport: async (args) =>
-    MY_REPORTS.items.find((r) => r.id === args?.id) ?? MY_REPORTS.items[0]!,
+    MY_REPORTS.items.find((r) => r.id === args?.id) ?? firstFixture(MY_REPORTS.items),
   searchReports: async () => ({ items: pinsIn(undefined), nextCursor: null }),
   mapReports: async (args): Promise<ReportClusterResponse> => ({
     clusters: [],

@@ -74,6 +74,11 @@ interface Harness {
   waited: Promise<unknown>[]
 }
 
+function requestedUrl(input: RequestInfo | URL | undefined): string | undefined {
+  if (input === undefined || typeof input === "string") return input
+  return input instanceof URL ? input.href : input.url
+}
+
 function harness(options: {
   path?: string | string[]
   url?: string
@@ -369,7 +374,7 @@ describe("runPreview", () => {
     const h = harness({ path: [], url: "https://civfix.org/cleanups/" })
     await runPreview(h.context, "event", { rewrite: h.rewrite })
     expect(h.fetchSpy).not.toHaveBeenCalled()
-    expect(String(h.assets.mock.calls[0]?.[0])).toBe("https://civfix.org/__spa/cleanups/")
+    expect(requestedUrl(h.assets.mock.calls[0]?.[0])).toBe("https://civfix.org/__spa/cleanups/")
   })
 
   it("leaves /pin/<id>/edit as the plain SPA shell", async () => {
@@ -714,7 +719,7 @@ describe("signup page previews (/e/:slug)", () => {
   it("reads the page from the public page endpoint, keyed on the slug", async () => {
     const h = signupHarness(SIGNUP_PAYLOAD)
     await runPreview(h.context, "signup", { rewrite: h.rewrite })
-    expect(h.assets.mock.calls[0]?.[0]?.toString()).toContain("/e/_/")
+    expect(requestedUrl(h.assets.mock.calls[0]?.[0])).toContain("/e/_/")
     expect(h.fetchSpy.mock.calls[0]?.[0]?.url).toBe(
       "https://api.civfix.org/v1/pages/beach-cleanup-may",
     )
@@ -824,7 +829,7 @@ describe("signup page previews (/e/:slug)", () => {
     const h = harness({ url: "https://civfix.org/e/", path: [] })
     const response = await runPreview(h.context, "signup", { rewrite: h.rewrite })
     expect(response.status).toBe(200)
-    expect(h.assets.mock.calls[0]?.[0]?.toString()).toContain("/e/_/")
+    expect(requestedUrl(h.assets.mock.calls[0]?.[0])).toContain("/e/_/")
     expect(h.rewrite).not.toHaveBeenCalled()
   })
 })
@@ -866,7 +871,7 @@ describe("post previews (/post/:id)", () => {
       upstream: async () => new Response(JSON.stringify(POST_PAYLOAD), { status: 200 }),
     })
     await runPreview(h.context, "post", { rewrite: h.rewrite })
-    expect(String(h.assets.mock.calls[0]?.[0])).toBe("https://civfix.org/post/_/")
+    expect(requestedUrl(h.assets.mock.calls[0]?.[0])).toBe("https://civfix.org/post/_/")
     expect(h.fetchSpy.mock.calls[0]?.[0]?.url).toBe(`https://api.civfix.org/v1/posts/${POST_ID}`)
   })
 

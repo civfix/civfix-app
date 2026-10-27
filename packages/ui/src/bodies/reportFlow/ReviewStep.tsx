@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, StyleSheet } from "react-native"
-import type { ReportCategory } from "@civfix/contract"
 import { MAX_REPORT_ADDR_LENGTH } from "@civfix/contract"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { makeThemedStyles, useTheme, useLayoutMode } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { TextField, PrimaryButton, CategoryChip } from "../../primitives"
@@ -75,7 +74,7 @@ export function ReviewStep({
     (place: AddressPick) => setLocation(place.lat, place.lng, "manual"),
     [setLocation],
   )
-  const category = draft.category as ReportCategory | null
+  const category = draft.category
   const pin = useMemo(() => reportPinTarget(category), [category])
 
   return (
