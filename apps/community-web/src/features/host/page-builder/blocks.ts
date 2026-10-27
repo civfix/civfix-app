@@ -144,7 +144,12 @@ function withBlockRowKeys(block: EventPageBlock): EventPageBlock {
       return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
     case "sponsors":
       return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
-    default:
+    case "hero":
+    case "about":
+    case "location":
+    case "donate":
+    case "registration":
+    case "contact":
       return block
   }
 }
