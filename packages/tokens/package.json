@@ -1,6 +1,6 @@
 {
   "name": "@civfix/tokens",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "civfix design tokens: colour scales for both schemes, the category and cleanup pin colours, type, spacing, radius and shadow scales, and the chip-contrast helpers. Consumed by civfix-app, civfix-admin and civfix-backend (email layout).",
   "license": "AGPL-3.0-only",
   "private": false,

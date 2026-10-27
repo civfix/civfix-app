@@ -11,7 +11,13 @@ import {
   TYPED_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
-import { LEAKED_RENDER_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
+import {
+  LEAKED_RENDER_RULES,
+  RAW_COLOR_EXEMPT_FILES,
+  RAW_COLOR_SELECTORS,
+  REACT_RULES,
+  reactHooksRules,
+} from "../../eslint.react.cjs"
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
@@ -95,6 +101,16 @@ export default tseslint.config(
       ...TYPED_RULES,
       ...LEAKED_RENDER_RULES,
     },
+  },
+  {
+    name: "community-web/raw-colors",
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
+  },
+  {
+    // The OAuth provider logos are third-party brand marks whose colours the providers mandate.
+    name: "community-web/raw-colors-exempt",
+    files: [...RAW_COLOR_EXEMPT_FILES, "src/**/provider-glyphs.tsx"],
+    rules: { "no-restricted-syntax": "off" },
   },
   {
     name: "community-web/tests",

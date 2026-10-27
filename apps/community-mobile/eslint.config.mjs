@@ -7,6 +7,8 @@ import { defineConfig } from "eslint/config"
 
 import {
   LEAKED_RENDER_RULES,
+  RAW_COLOR_EXEMPT_FILES,
+  RAW_COLOR_SELECTORS,
   REACT_NATIVE_RULES,
   REACT_RULES,
   reactHooksRules,
@@ -60,6 +62,13 @@ export default defineConfig([
   {
     files: TEST_FILES,
     rules: TEST_RELAXED_RULES,
+  },
+  {
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
+  },
+  {
+    files: RAW_COLOR_EXEMPT_FILES,
+    rules: { "no-restricted-syntax": "off" },
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

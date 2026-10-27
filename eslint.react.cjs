@@ -1,10 +1,12 @@
-// The React rule set the civfix-app workspaces enforce, next to eslint.typed.cjs and CommonJS for the
-// same reason. Each config registers the plugins itself; this module only names the rules.
+// The React and styling rule sets the civfix-app workspaces enforce, next to eslint.typed.cjs and CommonJS
+// for the same reason. Each config registers the plugins itself; this module only names the rules.
 //
 // Off on purpose, measured on this code: react/jsx-no-leaked-render (not type-aware, so it flags plain
 // booleans; the typed @eslint-react rule below covers the real crash), react/jsx-no-useless-fragment,
 // react-native/no-inline-styles (web-only CSS has to be inline on RN styles) and
 // react-native/no-unused-styles (false positives on StyleSheet factories).
+
+const { TEST_FILES } = require("./eslint.typed.cjs")
 
 // Off because every hit measured was intended code:
 // - refs flags the latest-ref pattern and immutability flags reanimated `.value` writes (281 and 57 in ui).
@@ -64,4 +66,30 @@ const REACT_NATIVE_RULES = {
   "react-native/no-color-literals": "error",
 }
 
-module.exports = { reactHooksRules, withoutReactHooks, REACT_RULES, LEAKED_RENDER_RULES, REACT_NATIVE_RULES }
+// A whole 3, 4, 6 or 8 digit hex colour. The lookbehind skips issue refs (`GH#203`), HTML entities
+// (`&#215;`) and URL fragments (`/page#bad`); the lookahead skips longer ids and fragments (`#add-photo`).
+// esquery reads a regex up to its first slash, so the pattern spells it \x2F.
+const HEX_COLOR = /(?<![\w&\x2F])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/
+const RAW_COLOR_MESSAGE =
+  "Raw hex colour: use a @civfix/tokens value, a Tailwind token utility or the theme (`@civfix/ui/theme`)."
+
+// no-restricted-syntax entries, spread into each workspace's rule. An in-page anchor (`href="#add"`) is a
+// fragment, not a colour.
+const RAW_COLOR_SELECTORS = [
+  { selector: `Literal[value=${HEX_COLOR}]:not(JSXAttribute[name.name="href"] > Literal)`, message: RAW_COLOR_MESSAGE },
+  { selector: `TemplateElement[value.raw=${HEX_COLOR}]`, message: RAW_COLOR_MESSAGE },
+]
+
+// Where colour values are defined: the theme folders. Test fixtures stand in for server data (avatar
+// gradients) and colour-math inputs.
+const RAW_COLOR_EXEMPT_FILES = ["**/theme/**", ...TEST_FILES]
+
+module.exports = {
+  reactHooksRules,
+  withoutReactHooks,
+  REACT_RULES,
+  LEAKED_RENDER_RULES,
+  REACT_NATIVE_RULES,
+  RAW_COLOR_SELECTORS,
+  RAW_COLOR_EXEMPT_FILES,
+}
