@@ -160,6 +160,25 @@ export const tokens = {
     qrInk: "#000000",
     qrPaper: "#FFFFFF",
   },
+  // CARTO's own tile ground colours: the map paper behind the raster has to match what the vendor tiles
+  // actually paint, so these follow CARTO, not the palette.
+  basemap: {
+    voyagerGround: "#F5F3EE",
+    darkMatterGround: "#0E0E0E",
+  },
+  // The platform's recording red, shown over the live camera feed whatever the app scheme is.
+  camera: {
+    recording: "#FF3B30",
+  },
+  // The logo's own letter colours, baked into the splash and icon art and the Android notification tint;
+  // they predate the palette scales and stay as drawn.
+  logo: {
+    bloom: "#FF7A6B",
+    sun: "#E5AE1C",
+    moss: "#6FB36F",
+    sky: "#6FB1DC",
+    lilac: "#9C82DE",
+  },
   font: {
     display: "Bricolage Grotesque",
     body: "Hanken Grotesk",

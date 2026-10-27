@@ -5,7 +5,14 @@ import react from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
 import reactNative from "eslint-plugin-react-native"
 import tseslint from "typescript-eslint"
-import { LEAKED_RENDER_RULES, REACT_NATIVE_RULES, REACT_RULES, reactHooksRules } from "../../eslint.react.cjs"
+import {
+  LEAKED_RENDER_RULES,
+  RAW_COLOR_EXEMPT_FILES,
+  RAW_COLOR_SELECTORS,
+  REACT_NATIVE_RULES,
+  REACT_RULES,
+  reactHooksRules,
+} from "../../eslint.react.cjs"
 import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, escalateWarnings } from "../../eslint.typed.cjs"
 
 const BANNED_PATTERNS = [
@@ -137,6 +144,14 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...RAW_COLOR_SELECTORS] },
+  },
+  {
+    files: RAW_COLOR_EXEMPT_FILES,
+    rules: { "no-restricted-syntax": "off" },
   },
   {
     files: RN_FREE_FILES,
