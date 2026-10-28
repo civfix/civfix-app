@@ -43,6 +43,7 @@ const FONTS = [
 ]
 
 // Resolved through package.json so it works under pnpm's symlinked layout.
+/** @param {string} pkg */
 function pkgFilesDir(pkg) {
   const pkgJson = require.resolve(`${pkg}/package.json`)
   return join(dirname(pkgJson), "files")

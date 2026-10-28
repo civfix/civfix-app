@@ -2,11 +2,14 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    // DOM for home-turf-form.test.mjs, which drives the static page in jsdom.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    // The vitest suites here import app source by its .ts path.
+    "allowImportingTsExtensions": true,
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["node"]

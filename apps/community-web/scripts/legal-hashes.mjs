@@ -18,14 +18,11 @@ if (!existsSync(legalOutDir)) {
   process.exit(1)
 }
 
-const rows = renderedLegalDocuments(outDir)
-  .filter(({ type, hashed }) => type !== null && hashed !== null)
-  .map(({ route, type, hashed }) => ({
-    type,
-    route: `/legal/${route}`,
-    version: hashed.version,
-    sha256: hashed.sha256,
-  }))
+const rows = renderedLegalDocuments(outDir).flatMap(({ route, type, hashed }) =>
+  type !== null && hashed !== null
+    ? [{ type, route: `/legal/${route}`, version: hashed.version, sha256: hashed.sha256 }]
+    : [],
+)
 
 rows.sort((a, b) => a.type.localeCompare(b.type))
 

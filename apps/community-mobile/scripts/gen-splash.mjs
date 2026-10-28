@@ -10,11 +10,10 @@
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import { readFileSync } from "node:fs"
-import { createRequire } from "node:module"
-
-const require = createRequire(import.meta.url)
-const sharp = require("sharp")
-const opentype = require("opentype.js")
+import { tokens } from "@civfix/tokens"
+// eslint-disable-next-line import/no-unresolved -- installed on demand with --no-save (see above), never a dependency
+import opentype from "opentype.js"
+import sharp from "sharp"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const appDir = join(here, "..")
@@ -30,7 +29,6 @@ const balooTtfPath = join(
   "Baloo2_800ExtraBold.ttf",
 )
 
-const { tokens } = require("@civfix/tokens")
 const { bloom: BLOOM, sun: SUN, moss: MOSS, sky: SKY, lilac: LILAC } = tokens.logo
 
 // Load Baloo 2 800 and convert the wordmark to vector glyph paths (librsvg's embedded-font support is
@@ -39,27 +37,40 @@ const balooBuf = readFileSync(balooTtfPath)
 const balooFont = opentype.parse(
   balooBuf.buffer.slice(balooBuf.byteOffset, balooBuf.byteOffset + balooBuf.byteLength),
 )
-const WORD = "civfix"
-const WORD_COLORS = [BLOOM, SUN, MOSS, SKY, LILAC, BLOOM] // c i v f i x
+const WORDMARK = [
+  { char: "c", color: BLOOM },
+  { char: "i", color: SUN },
+  { char: "v", color: MOSS },
+  { char: "f", color: SKY },
+  { char: "i", color: LILAC },
+  { char: "x", color: BLOOM },
+]
 
 /**
  * Build per-letter colored glyph <path>s for "civfix" at `fontSize`, centered around (cx, baselineY).
  * Returns an SVG <g> string. Uses the font's own advance widths with a small negative tracking.
  */
+/**
+ * @param {number} cx
+ * @param {number} baselineY
+ * @param {number} fontSize
+ */
 function wordmarkPaths(cx, baselineY, fontSize) {
   const tracking = -fontSize * 0.04
   const scale = fontSize / balooFont.unitsPerEm
-  const glyphs = WORD.split("").map((ch) => balooFont.charToGlyph(ch))
-  const advances = glyphs.map((g) => g.advanceWidth * scale + tracking)
-  const totalW = advances.reduce((a, b) => a + b, 0) - tracking
+  const letters = WORDMARK.map(({ char, color }) => {
+    const glyph = balooFont.charToGlyph(char)
+    return { glyph, color, advance: glyph.advanceWidth * scale + tracking }
+  })
+  const totalW = letters.reduce((sum, letter) => sum + letter.advance, 0) - tracking
   let x = cx - totalW / 2
   let out = ""
-  glyphs.forEach((g, i) => {
-    const path = g.getPath(x, baselineY, fontSize)
-    path.fill = WORD_COLORS[i]
+  for (const { glyph, color, advance } of letters) {
+    const path = glyph.getPath(x, baselineY, fontSize)
+    path.fill = color
     out += path.toSVG(2)
-    x += advances[i]
-  })
+    x += advance
+  }
   return out
 }
 
@@ -68,6 +79,7 @@ function wordmarkPaths(cx, baselineY, fontSize) {
  * canvas. The field behind it is the splash backgroundColor in app.config.js (the paper token, one
  * value per scheme). It is never painted here, or the light asset would show a bright box in dark mode.
  */
+/** @param {number} size */
 function splashSvg(size) {
   // Larger wordmark so the logo reads at a comfortable size once `contain`-fit on a tall phone (the
   // previous 0.165 left it looking tiny in the big square canvas).
@@ -81,6 +93,11 @@ function splashSvg(size) {
 }
 
 /** Rasterize an SVG string to a PNG in assetsDir. Renders large (density) then downscales for crisp edges. */
+/**
+ * @param {string} svg
+ * @param {string} out
+ * @param {number} size
+ */
 async function render(svg, out, size) {
   await sharp(Buffer.from(svg), { density: 384 }).resize(size, size).png().toFile(join(assetsDir, out))
   console.log("wrote", out)

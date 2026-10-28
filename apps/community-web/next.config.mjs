@@ -31,6 +31,7 @@ const packageSearchRoots = [
   new URL("./node_modules/", import.meta.url),
   new URL("../../node_modules/", import.meta.url),
 ]
+/** @param {string} name */
 const appPackageDir = (name) => {
   for (const root of packageSearchRoots) {
     const candidate = fileURLToPath(new URL(`${name}/`, root))
@@ -91,6 +92,7 @@ const DEFAULT_PAGE_EXTENSIONS = ["tsx", "ts", "jsx", "js"]
  * fake signed-in shell and load third-party sample media. scripts/cf-pages-postbuild.mjs fails the
  * build if one ever reaches out/.
  */
+/** @param {string} phase */
 export function pageExtensionsFor(phase) {
   return phase === PHASE_DEVELOPMENT_SERVER
     ? ["dev.tsx", ...DEFAULT_PAGE_EXTENSIONS]

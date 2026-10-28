@@ -125,7 +125,7 @@ if [ "$baked_api_url" != "$expected_api_url" ]; then
 fi
 build_version="$(unzip -p "$ipa" 'Payload/*.app/Info.plist' | plutil -convert json -o - - | node -e '
   const plist = JSON.parse(require("fs").readFileSync(0, "utf8"))
-  process.stdout.write(`${plist.CFBundleShortVersionString} (${plist.CFBundleVersion})`)
+  process.stdout.write(plist.CFBundleShortVersionString + " (" + plist.CFBundleVersion + ")")
 ')"
 echo "Built ${ipa}: version ${build_version}, profile ${profile}, API ${baked_api_url:-resolved at runtime (api.civfix.dev in TestFlight, api.civfix.org from the App Store)}"
 

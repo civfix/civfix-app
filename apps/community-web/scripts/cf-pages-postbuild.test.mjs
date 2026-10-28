@@ -25,8 +25,8 @@ const appDir = join(fileURLToPath(new URL(".", import.meta.url)), "..")
 const publicDir = join(appDir, "public")
 
 const redirects = readFileSync(join(publicDir, "_redirects"), "utf8")
-const association = JSON.parse(
-  readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"),
+const association = /** @type {unknown} */ (
+  JSON.parse(readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"))
 )
 
 describe("SPA-fallback completeness gate", () => {
@@ -170,6 +170,7 @@ describe("rendered legal documents", () => {
   const stamped =
     '<article class="legal-prose" data-legal-doc="terms" data-legal-version="2026-09-06"><p>Terms.</p></article>'
 
+  /** @param {Record<string, string | null>} pages */
   function exportWith(pages) {
     const outDir = mkdtempSync(join(tmpdir(), "civfix-legal-"))
     for (const [route, html] of Object.entries(pages)) {
@@ -194,11 +195,11 @@ describe("rendered legal documents", () => {
       const documents = renderedLegalDocuments(outDir)
       expect(documents.map((document) => document.route)).toEqual(["privacy", "terms"])
       const [privacy, terms] = documents
-      expect(privacy.type).toBe(null)
-      expect(privacy.hashed).toBe(null)
-      expect(terms.type).toBe("terms")
-      expect(terms.html).toBe(stamped)
-      expect(terms.hashed).toEqual(legalDocumentHash(stamped))
+      expect(privacy?.type).toBe(null)
+      expect(privacy?.hashed).toBe(null)
+      expect(terms?.type).toBe("terms")
+      expect(terms?.html).toBe(stamped)
+      expect(terms?.hashed).toEqual(legalDocumentHash(stamped))
     } finally {
       rmSync(outDir, { recursive: true, force: true })
     }

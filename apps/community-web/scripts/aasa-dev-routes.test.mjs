@@ -5,11 +5,16 @@ import { describe, expect, it } from "vitest"
 
 import { DEV_ONLY_ROUTES } from "./postbuild-gates.mjs"
 
-const association = JSON.parse(
-  readFileSync(
-    join(fileURLToPath(new URL(".", import.meta.url)), "..", "public", ".well-known", "apple-app-site-association"),
-    "utf8",
-  ),
+const parsed = /** @type {unknown} */ (
+  JSON.parse(
+    readFileSync(
+      join(fileURLToPath(new URL(".", import.meta.url)), "..", "public", ".well-known", "apple-app-site-association"),
+      "utf8",
+    ),
+  )
+)
+const association = /** @type {{ applinks: { details: { components: { "/": string, exclude?: boolean }[] }[] } }} */ (
+  parsed
 )
 
 describe("AASA and the dev galleries", () => {
