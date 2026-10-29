@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import type { HostedEventDTO } from "@civfix/contract"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"

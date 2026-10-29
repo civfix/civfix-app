@@ -12,6 +12,7 @@ import { tokens } from "@civfix/tokens"
 import { EASE_STANDARD_CSS } from "./motion"
 import { ACCENT_TEXT } from "./schemes"
 import type { Theme } from "./themes"
+import { webStyle } from "./webStyle"
 
 const isWeb = Platform.OS === "web"
 
@@ -53,13 +54,21 @@ export function linkKeyProps(activate: () => void): object | null {
   return { onKeyDown: (event: unknown) => activateOnLinkKey(event, activate) }
 }
 
-/** RN's `CursorValue` is a narrow union while RNW accepts any CSS cursor, so the cursor helpers widen via `unknown`. */
+/**
+ * Props RN's types do not declare that RNW forwards to the DOM node (data attributes, `tabIndex` on Text,
+ * `transitionend`). Typed as a bare object so a call site spreads them without widening the component.
+ */
+export function domProps(props: Record<string, unknown>): object {
+  return props
+}
+
+/** RN's `CursorValue` is a narrow union while RNW accepts any CSS cursor. */
 export const webCursorPointer: ViewStyle = isWeb
-  ? ({ cursor: "pointer" } as unknown as ViewStyle)
+  ? webStyle({ cursor: "pointer" })
   : {}
 
 export const webCursorDefault: ViewStyle = isWeb
-  ? ({ cursor: "default" } as unknown as ViewStyle)
+  ? webStyle({ cursor: "default" })
   : {}
 
 export function webCursor(disabled = false): ViewStyle {
@@ -68,11 +77,11 @@ export function webCursor(disabled = false): ViewStyle {
 }
 
 export const webCursorColResize: ViewStyle = isWeb
-  ? ({ cursor: "ew-resize" } as unknown as ViewStyle)
+  ? webStyle({ cursor: "ew-resize" })
   : {}
 
 /** RNW defaults Text to `user-select: none`, so body content opts back in to be copyable. */
-export const webSelectableText: TextStyle = isWeb ? ({ userSelect: "text" } as TextStyle) : {}
+export const webSelectableText: TextStyle = isWeb ? { userSelect: "text" } : {}
 
 /**
  * Browsers never break inside a word, so a long unbreakable run (a name, a handle, a URL) sets the text's
@@ -80,19 +89,19 @@ export const webSelectableText: TextStyle = isWeb ? ({ userSelect: "text" } as T
  * `break-word`) also lowers that min-content width; RN Text on native already breaks an overlong word.
  */
 export const webBreakAnywhere: TextStyle = isWeb
-  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)
+  ? webStyle({ overflowWrap: "anywhere" })
   : {}
 
 /** Button label Text inside a Pressable can inherit selection in some browsers despite RNW's default. */
-export const webNoSelect: TextStyle = isWeb ? ({ userSelect: "none" } as TextStyle) : {}
+export const webNoSelect: TextStyle = isWeb ? { userSelect: "none" } : {}
 
 /**
  * An RNW `<TextInput>` is a real DOM input that paints the UA focus outline and, for a textarea, a UA
  * border; our inputs draw their own border and ring, and are not tagged for the focus-ring stylesheet.
- * Spread it first so per-input styles still win. The outline keys are absent from RN's `TextStyle`.
+ * Spread it first so per-input styles still win. RN's `outlineStyle` has no `none`.
  */
 export const webInputReset: TextStyle = isWeb
-  ? ({ outlineStyle: "none", outlineWidth: 0, borderWidth: 0 } as unknown as TextStyle)
+  ? webStyle({ outlineStyle: "none", outlineWidth: 0, borderWidth: 0 })
   : {}
 
 /**
@@ -171,7 +180,7 @@ export const focusRingProps: { dataSet?: Record<string, string> } = isWeb
  * its own native style.
  */
 export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t.colors.accent }): ViewStyle {
-  return isWeb ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle) : native
+  return isWeb ? { boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } : native
 }
 
 /**
@@ -180,7 +189,7 @@ export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t
  * loses to the `[data-focus-ring]:focus-visible` rule's specificity.
  */
 export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb
-  ? ({ outlineOffset: -FOCUS_RING_FOOTPRINT } as unknown as ViewStyle)
+  ? { outlineOffset: -FOCUS_RING_FOOTPRINT }
   : {}
 
 /**

@@ -389,8 +389,7 @@ export function rowOffset(
   measured: ReadonlyMap<string, number>,
 ): number {
   let offset = 0
-  for (let i = 0; i < index; i++) {
-    const item = items[i]!
+  for (const item of items.slice(0, index)) {
     offset +=
       (measured.get(item.key) ??
         (item.kind === "header" ? PICKER_ESTIMATED_HEADER_HEIGHT : PICKER_ESTIMATED_ROW_HEIGHT)) +

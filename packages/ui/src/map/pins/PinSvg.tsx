@@ -1,7 +1,6 @@
-import React from "react"
 import { View } from "react-native"
 import Svg, { Path, G } from "react-native-svg"
-import { useTheme } from "../../theme"
+import { useTheme, pointerEventStyles } from "../../theme"
 import { Icon, iconMap } from "../../typography"
 import { inkOnFill, pinOutlineFor } from "./appearance"
 
@@ -46,8 +45,7 @@ export function PinBadge({ badge }: { badge: PinBadge }) {
   const fill = badge === "check" ? t.colors.brand.moss : t.colors.brand.bloom
   return (
     <View
-      pointerEvents="none"
-      style={{
+      style={[{
         position: "absolute",
         top: -2,
         right: -2,
@@ -59,7 +57,7 @@ export function PinBadge({ badge }: { badge: PinBadge }) {
         justifyContent: "center",
         borderWidth: 1.5,
         borderColor: t.colors.onAccent,
-      }}
+      }, pointerEventStyles.none]}
     >
       <Icon
         icon={badge === "check" ? iconMap.Check : iconMap.Plus}

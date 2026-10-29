@@ -158,7 +158,7 @@ test("the SHUTTER still attaches the device fix - the location-step skip depends
 test("a LIBRARY pick is emitted as a library capture, so it never takes the current device fix", () => {
   const pick = viewfinder.slice(viewfinder.indexOf("const onPickFromLibrary = useCallback"))
   const body = pick.slice(0, pick.indexOf("}, [busy, emitCapture, reportCaptureFailure])"))
-  assert.match(body, /emitCapture\(capturedMediaFromPickerAsset\(result\.assets\[0\]!\), "library"\)/)
+  assert.match(body, /emitCapture\(capturedMediaFromPickerAsset\(asset\), "library"\)/)
   assert.ok(!body.includes('"camera"'))
 })
 

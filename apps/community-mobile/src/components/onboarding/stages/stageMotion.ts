@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import {
   Easing,
   cancelAnimation,
-  runOnJS,
   useAnimatedReaction,
   useSharedValue,
   withDelay,
@@ -12,6 +11,7 @@ import {
   type SharedValue,
   type WithTimingConfig,
 } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { motion } from "@/theme"
 
 const STAGE_HOLD_MS = 2000
@@ -54,7 +54,8 @@ function stageStepFor(progress: number, stops: readonly number[]): number {
   "worklet"
   let step = 0
   for (let i = 0; i < stops.length; i += 1) {
-    if (progress >= stops[i]) step = i + 1
+    const stop = stops[i]
+    if (stop !== undefined && progress >= stop) step = i + 1
   }
   return step
 }
@@ -100,7 +101,7 @@ export function useStageStep(progress: SharedValue<number>, stops: readonly numb
     (next) => {
       if (next === settled.value) return
       settled.value = next
-      runOnJS(setStep)(next)
+      scheduleOnRN(setStep, next)
     },
     [stops],
   )

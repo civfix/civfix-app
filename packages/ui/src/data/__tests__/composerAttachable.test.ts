@@ -61,7 +61,7 @@ describe("the list filters", () => {
   })
 
   it("returns an empty list when nothing is selectable", () => {
-    expect(attachableReports([{ status: "resolved" as ReportStatus }])).toEqual([])
+    expect(attachableReports([{ status: "resolved" }])).toEqual([])
     expect(attachableEvents([event({ startsAt: NOW - 5 * HOUR })], NOW)).toEqual([])
   })
 })

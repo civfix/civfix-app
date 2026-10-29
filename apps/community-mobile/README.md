@@ -525,14 +525,15 @@ copies with the pin spots marked for checking the framing after moving a scene.
 ```sh
 pnpm install                                    # postinstall builds @civfix/tokens' dist
 pnpm turbo run typecheck lint test --filter=community-mobile   # what CI runs (builds the packages first)
-pnpm --filter community-mobile exec expo-doctor
+pnpm --filter community-mobile run doctor:expo
 pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no native compile)
 ```
 
 `.github/workflows/ci.yml` runs exactly that on every PR to `main` (the `community-mobile`
-job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflows/deploy-mobile.yml`
-(see "CI" above): a merge to `main` puts a staging build in TestFlight; nothing reaches a device
-before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.
+job), with the lockfile-pinned expo-doctor through the root `pnpm run doctor:expo`. Deploying is
+`.github/workflows/deploy-mobile.yml` (see "CI" above): a merge to `main` puts a staging build in
+TestFlight; nothing reaches a device before that workflow, a local `scripts/store-build.sh` run or a
+hand-driven archive runs.
 
 Launch-screen coverage splits along that line: `tests/splashConfig.test.ts` asserts the resolved
 `app.config.js` (automatic appearance for the app, the light paper background, and no `dark` block

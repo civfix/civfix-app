@@ -552,7 +552,7 @@ export function OrgProfileForm({
               platform={platform}
               value={draft[platform]}
               error={showError(socialFieldKey(platform))}
-              onChange={(value) => patch({ [platform]: value } as Partial<OrgProfileDraft>)}
+              onChange={(value) => patch({ [platform]: value })}
             />
           ))}
         </div>

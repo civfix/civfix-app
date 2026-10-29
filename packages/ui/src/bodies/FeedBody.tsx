@@ -8,7 +8,7 @@ import {
 } from "react-native"
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/contract"
-import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme } from "../theme"
+import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme, webStyle, pointerEventStyles } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -354,7 +354,7 @@ export function FeedBody() {
     <View style={styles.scrollHost}>
       {list}
       <NewPostsPill count={pendingNewPosts} onPress={showNewPosts} />
-      {isExpanded && IS_WEB ? <View pointerEvents="none" style={fadeStyle} /> : null}
+      {isExpanded && IS_WEB ? <View style={[fadeStyle, pointerEventStyles.none]} /> : null}
     </View>
   )
 }
@@ -367,9 +367,9 @@ const PROMO_CLEARANCE = 14
 const EMPTY_FILL_MIN_HEIGHT = 300
 const webScrollFade = (t: Theme): ViewStyle =>
   IS_WEB
-    ? ({
+    ? webStyle({
         backgroundImage: `linear-gradient(to bottom, ${alpha(t.colors.bg, 0)}, ${t.colors.bg})`,
-      } as unknown as ViewStyle)
+      })
     : {}
 
 const useStyles = makeThemedStyles((t) => ({

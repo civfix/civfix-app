@@ -123,7 +123,7 @@ export function useChatMessageActions({
     async (input: CreatePollInput): Promise<void> => {
       if (isDm) throw new AppError(ErrorCode.VALIDATION, "Polls are not available in direct messages.")
       const msg = await api.createPoll({
-        roomKind: roomKind as "cleanup" | "report" | "group",
+        roomKind,
         roomId,
         question: input.question,
         options: input.options,

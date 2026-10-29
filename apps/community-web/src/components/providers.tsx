@@ -208,17 +208,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     clientRef.current = makeQueryClient()
     restorePersistedCache(clientRef.current)
   }
+  const client = clientRef.current
 
   React.useEffect(() => {
-    return installCachePersistenceWriter(clientRef.current!)
-  }, [])
+    return installCachePersistenceWriter(client)
+  }, [client])
 
   React.useEffect(() => {
-    return installViewerScope(clientRef.current!)
-  }, [])
+    return installViewerScope(client)
+  }, [client])
 
   return (
-    <QueryClientProvider client={clientRef.current}>
+    <QueryClientProvider client={client}>
       <WebDataProvider>
         <CapabilitiesProvider value={webCapabilities}>
           <AuthHydrator />

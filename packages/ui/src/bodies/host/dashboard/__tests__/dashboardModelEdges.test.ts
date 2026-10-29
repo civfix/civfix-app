@@ -33,7 +33,7 @@ function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
     myCapabilities: [],
     myRole: null,
     ...over,
-  } as HostedEventDTO
+  }
 }
 
 function member(id: string, role: OrganizationMemberDTO["role"], over: Partial<OrganizationMemberDTO> = {}) {
@@ -117,7 +117,7 @@ describe("hosted event capabilities", () => {
   })
 
   it("passes the start, end and zone through to the shared when-label input", () => {
-    expect(hostedEventWhen(hosted({ timezone: "America/Los_Angeles" } as Partial<HostedEventDTO>))).toEqual({
+    expect(hostedEventWhen(hosted({ timezone: "America/Los_Angeles" }))).toEqual({
       status: "upcoming",
       scheduledAt: "2026-09-20T17:00:00.000Z",
       endsAt: "2026-09-20T21:00:00.000Z",
@@ -158,7 +158,7 @@ describe("portfolio and past-row edges", () => {
   })
 
   it("prefers credited hours over the not-logged hint", () => {
-    expect(pastRowMeta(hosted({ hoursCredited: 3, checkedInCount: 5 } as Partial<HostedEventDTO>)).hoursToken).toBe(
+    expect(pastRowMeta(hosted({ hoursCredited: 3, checkedInCount: 5 })).hoursToken).toBe(
       "hours",
     )
   })

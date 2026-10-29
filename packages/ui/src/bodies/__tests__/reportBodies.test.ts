@@ -187,7 +187,7 @@ describe("wizard step migration on a layout flip", () => {
       reportTypeId: null,
       title: "",
     }
-    expect(stepOrderFor("expanded").includes("location" as never)).toBe(false)
+    expect(stepOrderFor("expanded").includes("location")).toBe(false)
     const migrated = resumeStep(draft, "expanded")
     expect(migrated).toBe("category")
     expect(stepOrderFor("expanded").indexOf(migrated)).toBeGreaterThan(0)

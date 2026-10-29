@@ -194,7 +194,7 @@ describe("fakeHostedEvents", () => {
     for (const when of ["upcoming", "past"] as const) {
       for (const item of fakeHostedEvents(when, { now: NOW }).items) {
         const expected = [...hostCapabilities({ eventRole: item.myRole ?? null, orgRole: null })]
-        expect(item.myCapabilities, `${when} ${item.myRole}`).toEqual(expected)
+        expect(item.myCapabilities, `${when} ${item.myRole ?? "none"}`).toEqual(expected)
       }
     }
   })

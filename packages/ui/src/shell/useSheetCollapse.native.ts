@@ -1,5 +1,6 @@
-import { useCallback, useRef, type MutableRefObject } from "react"
-import { useSharedValue, useAnimatedReaction, runOnJS, type SharedValue } from "react-native-reanimated"
+import { useCallback, useRef, type RefObject } from "react"
+import { useSharedValue, useAnimatedReaction, type SharedValue } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { useNavStore, type Snap } from "../nav"
 import { useHaptics } from "../capabilities"
 import { COLLAPSE_SWAP_AT, isPeekIndex } from "./dragCollapse"
@@ -8,9 +9,9 @@ export interface SheetCollapse {
   onChange: (index: number) => void
   onAnimate: (fromIndex: number, toIndex: number) => void
   /** The last settled snap, tracked on the JS thread so the grab-handle tap can cycle without a shared value. */
-  currentIndexRef: MutableRefObject<number>
+  currentIndexRef: RefObject<number>
   /** What the sheet last reported, so a store-to-sheet sync only snaps for programmatic changes. */
-  reportedSnapRef: MutableRefObject<number>
+  reportedSnapRef: RefObject<number>
 }
 
 /**
@@ -60,7 +61,7 @@ export function useSheetCollapse(animatedIndex: SharedValue<number>): SheetColla
     (idx) => {
       if (collapseCommitted.value && idx <= COLLAPSE_SWAP_AT) {
         collapseCommitted.value = false
-        runOnJS(collapseToParent)()
+        scheduleOnRN(collapseToParent)
       }
     },
     [collapseToParent],

@@ -21,6 +21,7 @@ import {
   webScrimProps,
   webTransition,
   type Theme,
+  pointerEventStyles,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -129,8 +130,11 @@ export function ModalCardSheet({
       onDismiss={onDismiss}
     >
       <Animated.View
-        style={[styles.root, menuScrimStyle(cardMotion)]}
-        pointerEvents={cardMotion.exiting ? "none" : "auto"}
+        style={[
+          styles.root,
+          menuScrimStyle(cardMotion),
+          pointerEventStyles[cardMotion.exiting ? "none" : "auto"],
+        ]}
       >
         <Pressable
           style={styles.backdrop}

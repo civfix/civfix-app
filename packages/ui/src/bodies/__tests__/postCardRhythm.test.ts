@@ -208,7 +208,7 @@ describe("the timeline action row fits the narrowest supported screen", () => {
   })
 
   const label = (text: string): number =>
-    [...text].reduce((w, ch) => w + (ch === "." ? 3.7 : /[KMB]/.test(ch) ? 8.1 : 7.2), 0)
+    text.split("").reduce((w, ch) => w + (ch === "." ? 3.7 : /[KMB]/.test(ch) ? 8.1 : 7.2), 0)
 
   it("measures the column the row actually has, negative margins included", () => {
     // 375 - 2x16 inset - 52 gutter = 291 of content column, plus the 13pt the row's own negative margins

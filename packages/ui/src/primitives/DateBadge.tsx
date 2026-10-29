@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
 import { isValidTimeZone, safeDateFormat, wallClockInZone } from "@civfix/contract/datetime"
 import { makeThemedStyles, radius, useTheme } from "../theme"
@@ -84,17 +83,20 @@ export type DateTileVariant =
   | "eventCard"
   | "linkedEvent"
 
-export interface DateTileProps {
+interface DateTileText {
   day: string
   month: string
-  variant: DateTileVariant
-  color?: string
 }
 
-export function DateTile({ day, month, variant, color }: DateTileProps) {
+export type DateTileProps =
+  | (DateTileText & { variant: Exclude<DateTileVariant, "profileEvent"> })
+  | (DateTileText & { variant: "profileEvent"; color: string })
+
+export function DateTile(props: DateTileProps) {
+  const { day, month } = props
   const styles = useStyles()
   const t = useTheme()
-  switch (variant) {
+  switch (props.variant) {
     case "personEvent":
       return (
         <Tile
@@ -111,7 +113,8 @@ export function DateTile({ day, month, variant, color }: DateTileProps) {
           bottom={{ text: month, style: styles.sunChipMonth }}
         />
       )
-    case "profileEvent":
+    case "profileEvent": {
+      const { color } = props
       return (
         <Tile
           frame={[styles.profileEvent, { backgroundColor: `${color}${TINT_ALPHA_HEX}` }]}
@@ -119,6 +122,7 @@ export function DateTile({ day, month, variant, color }: DateTileProps) {
           bottom={{ text: month, color, style: styles.profileEventMonth }}
         />
       )
+    }
     case "searchHit":
       return (
         <Tile

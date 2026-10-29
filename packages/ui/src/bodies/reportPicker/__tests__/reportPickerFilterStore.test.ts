@@ -8,7 +8,9 @@ import {
 } from "../reportPickerFilterStore"
 
 describe("report picker filters", () => {
-  beforeEach(() => useReportPickerFilters.getState().reset())
+  beforeEach(() => {
+    useReportPickerFilters.getState().reset()
+  })
 
   it("offers every report category including other, all on by default", () => {
     expect([...PICKER_CATEGORIES]).toEqual([...ReportCategorySchema.options])

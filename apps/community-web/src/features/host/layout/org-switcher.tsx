@@ -62,7 +62,6 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
                 )}
               >
                 {org.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize
                   <img
                     src={org.logoUrl}
                     alt=""

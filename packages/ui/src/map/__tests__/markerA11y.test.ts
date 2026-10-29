@@ -77,7 +77,7 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
     expect((mapWeb.match(/label: targetMarkerA11yLabel\(target, t\),/g) ?? []).length).toBe(2)
   })
 
-  it("names markers AFTER maplibre's addTo, which overwrites aria-label with a generic 'Map marker'", () => {
+  it("names markers after maplibre's addTo, which labels a default marker itself", () => {
     expect(webMarkers).toMatch(/\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/)
     expect(webMarkers).not.toMatch(/el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/)
     expect(reportPickWeb).not.toContain("new maplibregl.Marker({ element: el, anchor: want.anchor })")

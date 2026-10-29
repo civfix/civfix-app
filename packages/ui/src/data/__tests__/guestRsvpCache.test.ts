@@ -55,7 +55,7 @@ function trackInvalidations(qc: QueryClient): string[][] {
   qc.invalidateQueries = ((filters?: { queryKey?: unknown }) => {
     if (filters && Array.isArray(filters.queryKey)) seen.push(filters.queryKey as string[])
     return original(filters as never)
-  }) as typeof qc.invalidateQueries
+  })
   return seen
 }
 

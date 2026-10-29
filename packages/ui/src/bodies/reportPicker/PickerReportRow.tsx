@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react"
+import { memo, useMemo } from "react"
 import { View } from "react-native"
 import { makeThemedStyles } from "../../theme"
 import { useT } from "../../i18n"

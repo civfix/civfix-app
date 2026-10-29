@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react"
+import { memo, useMemo } from "react"
 import { StyleSheet, View } from "react-native"
 import { BlurView } from "expo-blur"
 import { Canvas, Fill, Shader } from "@shopify/react-native-skia"

@@ -12,6 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker"
 import * as Location from "expo-location"
 import { CAMERA_CHROME_THEME, fontFamily, fontSize, makeThemedStyles, radius, space, useTheme } from "@/theme"
+import { tokens } from "@civfix/tokens"
 import { Text, PrimaryButton, useToast } from "@civfix/ui"
 import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
@@ -39,8 +40,6 @@ export type ReportViewfinderProps = Omit<CameraViewfinderProps, "onCancel"> & {
 }
 
 const stage = CAMERA_CHROME_THEME
-
-const RECORDING_RED = "#FF3B30"
 
 const ELAPSED_TICK_MS = 100
 
@@ -311,11 +310,12 @@ export function ReportViewfinder({
         quality: 1,
         videoMaxDuration: MAX_VIDEO_SECONDS,
       })
-      if (result.canceled || result.assets.length === 0) {
+      const asset = result.canceled ? undefined : result.assets[0]
+      if (!asset) {
         setBusy(false)
         return
       }
-      emitCapture(capturedMediaFromPickerAsset(result.assets[0]!), "library")
+      emitCapture(capturedMediaFromPickerAsset(asset), "library")
     } catch {
       reportCaptureFailure("error.library")
     }
@@ -467,7 +467,7 @@ const cameraStyles = StyleSheet.create({
     paddingVertical: space["1"],
     borderRadius: radius.pill,
   },
-  recDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: RECORDING_RED },
+  recDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: tokens.camera.recording },
   recText: {
     fontFamily: fontFamily.bodySemiBold,
     fontSize: fontSize["12"],
@@ -484,7 +484,7 @@ const cameraStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  shutterRec: { backgroundColor: RECORDING_RED },
+  shutterRec: { backgroundColor: tokens.camera.recording },
   shutterPressed: { transform: [{ scale: 0.94 }] },
   stopSquare: { width: 24, height: 24, borderRadius: 5, backgroundColor: stage.colors.neutral.card },
 })

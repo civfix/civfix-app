@@ -32,7 +32,7 @@ describe("searching your reports reaches past the first page", () => {
 
   it("stops at the bound, or after a failed page, and reports the result as partial", () => {
     expect(MAX).toBe(5)
-    expect(searchBackfill!({ ...typing, pagesLoaded: MAX! })).toBe("partial")
+    expect(searchBackfill!({ ...typing, pagesLoaded: MAX })).toBe("partial")
     expect(searchBackfill!({ ...typing, fetchNextPageFailed: true })).toBe("partial")
   })
 

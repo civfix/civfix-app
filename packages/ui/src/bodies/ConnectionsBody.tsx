@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import type { PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"

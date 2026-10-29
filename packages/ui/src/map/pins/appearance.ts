@@ -27,9 +27,9 @@ export function reportPinTarget(category: string | null | undefined): PinTarget 
 export function pinAppearanceFor(target: PinTarget, scheme: ColorSchemeName): PinAppearance {
   if (target.kind === "event") {
     if (target.eventKind === "other_volunteer") {
-      return { fill: colorSchemes[scheme].brand.lilac, glyph: PIN_GLYPHS.other_volunteer! }
+      return { fill: colorSchemes[scheme].brand.lilac, glyph: PIN_GLYPHS.other_volunteer }
     }
-    return { fill: cleanupColorFor(scheme), glyph: PIN_GLYPHS.cleanup! }
+    return { fill: cleanupColorFor(scheme), glyph: PIN_GLYPHS.cleanup }
   }
   if (!target.category) {
     return { fill: colorSchemes[scheme].brand.bloom, glyph: DROP_PIN_GLYPH }

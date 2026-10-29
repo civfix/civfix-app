@@ -17,20 +17,30 @@ import type * as UploadMedia from "../../data/uploadMedia"
 import type { UploadMediaInput } from "../../data/uploadMedia"
 import type * as I18n from "../../i18n"
 
-const deps = vi.hoisted(() => ({
-  api: {
-    createReport: vi.fn<(body: CreateReportRequest) => Promise<unknown>>(),
-    listUserPosts: vi.fn(),
-  },
-  camera: { kind: "fake-camera" },
-  hostSubmit: null as null | ((submission: unknown) => Promise<unknown>),
-  auth: { isAuthenticated: true, user: null as unknown, isPending: false },
-  profile: null as unknown,
-  createPost: vi.fn<(vars: CreatePostVars) => Promise<unknown>>(),
-  uploadMediaId: vi.fn<(input: UploadMediaInput) => Promise<string>>(),
-  invalidateQueries: vi.fn<(filters: { queryKey: readonly unknown[] }) => Promise<void>>(),
-  rememberLocalReportThumb: vi.fn(),
-}))
+interface SessionState {
+  auth: { isAuthenticated: boolean; user: unknown; isPending: boolean }
+  profile: unknown
+}
+
+const deps = vi.hoisted(() => {
+  const session: SessionState = {
+    auth: { isAuthenticated: true, user: null, isPending: false },
+    profile: null,
+  }
+  return {
+    ...session,
+    api: {
+      createReport: vi.fn<(body: CreateReportRequest) => Promise<unknown>>(),
+      listUserPosts: vi.fn(),
+    },
+    camera: { kind: "fake-camera" },
+    hostSubmit: null as null | ((submission: unknown) => Promise<unknown>),
+    createPost: vi.fn<(vars: CreatePostVars) => Promise<unknown>>(),
+    uploadMediaId: vi.fn<(input: UploadMediaInput) => Promise<string>>(),
+    invalidateQueries: vi.fn<(filters: { queryKey: readonly unknown[] }) => Promise<void>>(),
+    rememberLocalReportThumb: vi.fn(),
+  }
+})
 
 vi.mock("react", async (importOriginal) => ({
   ...(await importOriginal<typeof React>()),

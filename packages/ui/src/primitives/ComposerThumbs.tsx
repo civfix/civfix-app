@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"

@@ -1,5 +1,11 @@
 # @civfix/tokens
 
+## 0.1.1
+
+### Patch Changes
+
+- Add the CARTO basemap ground colours (`basemap`), the camera recording red (`camera.recording`) and the logo letter colours (`logo`), so the apps hold no raw hex values.
+
 ## 0.1.0
 
 ### Minor Changes

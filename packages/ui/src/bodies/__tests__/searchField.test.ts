@@ -99,7 +99,7 @@ describe("the Escape ladder's field half", () => {
     expect(bodyCode).toContain('searchFieldEscape(query) === "clear"')
     expect(bodyCode).toContain("onKeyPress")
     expect(bodyCode).not.toContain("onKeyDown")
-    expect(bodyCode).toContain('web.key !== "Escape"')
+    expect(bodyCode).toContain('readWebKeyPress(event).key !== "Escape"')
   })
 })
 

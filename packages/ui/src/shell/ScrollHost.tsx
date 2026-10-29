@@ -35,8 +35,13 @@ import {
   type ViewStyle,
 } from "react-native"
 
+// RN's, reanimated's and the decorators' scroll components have unrelated props types, and props are
+// contravariant, so no narrower type admits all of them without a cast at every producer.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the one loose alias, see above
+export type ScrollHostComponent = React.ComponentType<any>
+
 export interface ScrollHostValue {
-  ScrollView: React.ComponentType<any>
+  ScrollView: ScrollHostComponent
   FlatList: React.ComponentType<ScrollHostListProps>
 }
 
@@ -62,8 +67,8 @@ export interface DecoratedScrollProps {
 }
 
 const DEFAULT_SCROLL_HOST: ScrollHostValue = {
-  ScrollView: RNScrollView as React.ComponentType<any>,
-  FlatList: RNFlatList as unknown as React.ComponentType<ScrollHostListProps>,
+  ScrollView: RNScrollView,
+  FlatList: RNFlatList as ScrollHostComponent,
 }
 
 const ScrollHostContext = createContext<ScrollHostValue>(DEFAULT_SCROLL_HOST)
@@ -87,7 +92,7 @@ export const PLAIN_SCROLL_HOST = DEFAULT_SCROLL_HOST
 
 export function decorateScrollHost(
   base: ScrollHostValue,
-  wrap: (Base: React.ComponentType<any>) => React.ComponentType<any>,
+  wrap: (Base: ScrollHostComponent) => ScrollHostComponent,
 ): ScrollHostValue {
   return { ScrollView: wrap(base.ScrollView), FlatList: wrap(base.FlatList) }
 }

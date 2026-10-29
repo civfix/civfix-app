@@ -44,17 +44,14 @@ export function useAddressSearch({
   const proximityRef = useRef<Promise<LatLng | null> | null>(null)
 
   const resolveProximity = useCallback((): Promise<LatLng | null> => {
-    if (!proximityRef.current) {
-      proximityRef.current = (async () => {
-        const pos = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
-        if (pos) return { lat: pos.latitude, lng: pos.longitude }
-        const approximate = await fetchApproximateLocation(api, qc)
-        if (approximate) return approximate
-        proximityRef.current = null
-        return null
-      })()
-    }
-    return proximityRef.current
+    return (proximityRef.current ??= (async () => {
+      const pos = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
+      if (pos) return { lat: pos.latitude, lng: pos.longitude }
+      const approximate = await fetchApproximateLocation(api, qc)
+      if (approximate) return approximate
+      proximityRef.current = null
+      return null
+    })())
   }, [geo, api, qc])
 
   const resolveBias = useCallback(async (): Promise<Bias> => {

@@ -18,7 +18,7 @@ export default function PostThreadScreen() {
   const openEntry = React.useCallback(
     (entry: DetailEntry) => {
       const route = threadEntryRoute(entry)
-      if (route) router.push({ pathname: route.pathname as never, params: route.params })
+      if (route) router.push({ pathname: route.pathname, params: route.params })
     },
     [router],
   )

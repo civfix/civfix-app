@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { View } from "react-native"
 import type { HostedEventDTO } from "@civfix/contract"
 import { nextEventBoundaryMs } from "@civfix/contract/host"
@@ -68,8 +68,7 @@ export function EventDashboardBody() {
 
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
   const pastEvents = useMemo(() => hostedEventRows(past.data?.pages), [past.data])
-  const boundaryAt = soonestBoundary(upcomingEvents, Date.now())
-  const nowMs = useNow(NOW_TICK_MS, { boundaryAt })
+  const nowMs = useNow(NOW_TICK_MS, { boundaryAt: (at) => soonestBoundary(upcomingEvents, at) })
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)

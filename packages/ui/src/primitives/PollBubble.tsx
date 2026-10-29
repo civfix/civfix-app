@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, View, Pressable, StyleSheet } from "react-native"
 import type { PollDTO } from "@civfix/contract"
 import {

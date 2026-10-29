@@ -8,7 +8,9 @@ import {
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
-beforeEach(() => setOnboardingTourPresenter(null))
+beforeEach(() => {
+  setOnboardingTourPresenter(null)
+})
 
 describe("the onboarding-tour presenter seam", () => {
   it("exports the setter, the plain reader and the subscribing hook", () => {

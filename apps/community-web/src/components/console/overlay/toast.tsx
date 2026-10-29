@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react"
-import type { FocusEvent, ReactNode } from "react"
+import type { ReactNode } from "react"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
@@ -138,6 +138,31 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
     [setPaused],
   )
 
+  // The region only observes the pointer and focus inside it to hold its timers; it is not itself
+  // something to operate, so it listens rather than taking interactive handlers.
+  useEffect(() => {
+    const stack = stackRef.current
+    if (!stack) return
+    const hover = (inside: boolean) => () => {
+      pointerInside.current = inside
+      syncPause(document.activeElement)
+    }
+    const enter = hover(true)
+    const leave = hover(false)
+    const focusIn = (event: FocusEvent) => syncPause(event.target)
+    const focusOut = (event: FocusEvent) => syncPause(event.relatedTarget)
+    stack.addEventListener("pointerenter", enter)
+    stack.addEventListener("pointerleave", leave)
+    stack.addEventListener("focusin", focusIn)
+    stack.addEventListener("focusout", focusOut)
+    return () => {
+      stack.removeEventListener("pointerenter", enter)
+      stack.removeEventListener("pointerleave", leave)
+      stack.removeEventListener("focusin", focusIn)
+      stack.removeEventListener("focusout", focusOut)
+    }
+  }, [syncPause])
+
   useEffect(() => {
     // A toast removed from under the pointer does not reliably fire pointerleave on the stack, and an
     // empty stack has no hit area left to leave, so a stale hover would hold every later toast.
@@ -189,16 +214,6 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
       <section
         ref={stackRef}
         aria-label={t("toast.region")}
-        onPointerEnter={() => {
-          pointerInside.current = true
-          syncPause(document.activeElement)
-        }}
-        onPointerLeave={() => {
-          pointerInside.current = false
-          syncPause(document.activeElement)
-        }}
-        onFocus={(event: FocusEvent) => syncPause(event.target)}
-        onBlur={(event: FocusEvent) => syncPause(event.relatedTarget)}
         className="pointer-events-none fixed bottom-token-4 right-token-4 z-console-toast flex w-[min(360px,calc(100vw-theme(spacing.token-8)))] flex-col gap-token-2"
       >
         {items.map((item) => (

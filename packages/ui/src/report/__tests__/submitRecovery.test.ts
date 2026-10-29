@@ -66,7 +66,9 @@ describe("a refused submission offers a way to change the report", () => {
 })
 
 describe("stale upload ids are dropped after the server refuses them", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   it("recognises only a VALIDATION that names mediaUploadIds", () => {
     expect(invalidatesUploadIds(AppError.validation({ mediaUploadIds: "unavailable" }))).toBe(true)

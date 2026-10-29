@@ -6,7 +6,7 @@ import {
   appErrorFields,
 } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
-import type { CreateReportRequest, ReportCategory, ReportType } from "@civfix/contract"
+import type { CreateReportRequest, ReportType } from "@civfix/contract"
 import { useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useApi, useAuthState, useMyProfile, useSubmitReport, queryKeys } from "../data"
@@ -249,7 +249,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () 
     const addr = submittedAddr(draft)
     const submission: ReportSubmission = {
       idempotencyKey,
-      category: draft.category as ReportCategory,
+      category: draft.category,
       type: (draft.reportTypeId ?? "other") as ReportType,
       lat: draft.lat,
       lng: draft.lng,
@@ -296,7 +296,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () 
       const input = buildFeedShareInput({ enabled: true, caption }, target)
       const reportSource: FeedShareReportSource = {
         id: result.reportId,
-        category: (result.category ?? submission.category) as ReportCategory,
+        category: result.category ?? submission.category,
         type: submission.type,
         title: draft.title,
         lat: result.lat,

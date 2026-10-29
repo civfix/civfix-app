@@ -1,4 +1,3 @@
-import React from "react"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { PortraitShellFrame, type PortraitShellProps } from "./PortraitShell.shared"
 import { initialTabBarFootprint } from "./tabBarLogic"

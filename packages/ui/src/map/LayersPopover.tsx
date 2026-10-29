@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"

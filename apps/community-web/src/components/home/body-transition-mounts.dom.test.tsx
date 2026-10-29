@@ -15,27 +15,19 @@ const SETTLE_MS = 400
 const mounts: string[] = []
 const unmounts: string[] = []
 
-const probes = new Map<string, React.ComponentType>()
-
-function probeFor(id: string): React.ComponentType {
-  const existing = probes.get(id)
-  if (existing) return existing
-  const Probe = () => {
-    React.useEffect(() => {
-      mounts.push(id)
-      return () => {
-        unmounts.push(id)
-      }
-    }, [])
-    return <div data-testid={`body-${id}`}>{id}</div>
-  }
-  probes.set(id, Probe)
-  return Probe
+function Probe({ id }: { id: string }) {
+  React.useEffect(() => {
+    mounts.push(id)
+    return () => {
+      unmounts.push(id)
+    }
+  }, [id])
+  return <div data-testid={`body-${id}`}>{id}</div>
 }
 
+// Keyed by id, so each screen is its own instance the way each route's body is.
 function Screen({ id }: { id: string }) {
-  const Probe = probeFor(id)
-  return <Probe />
+  return <Probe key={id} id={id} />
 }
 
 function Host({ id, direction }: { id: string; direction: "push" | "pop" | "replace" }) {
@@ -99,7 +91,6 @@ beforeEach(() => {
   mounts.length = 0
   unmounts.length = 0
   detailMounts.length = 0
-  probes.clear()
   setReducedMotion(false)
   vi.useFakeTimers()
 })

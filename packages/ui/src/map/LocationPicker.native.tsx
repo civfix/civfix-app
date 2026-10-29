@@ -41,7 +41,7 @@
  * the map's own markers use, so what the user drags around IS the marker the thing will get (Ionicons are
  * banned in @civfix/ui).
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, StyleSheet, type NativeSyntheticEvent } from "react-native"
 import {
   Map,
@@ -117,7 +117,7 @@ export function LocationPicker({
   // so there is no camera to be wrong. Once adopted it is FROZEN, because the seed's only job is to place
   // the camera at mount: re-seeding it later would yank the map out from under a user who has since panned.
   const seedRef = useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
   const initialViewState = useMemo(
     () =>

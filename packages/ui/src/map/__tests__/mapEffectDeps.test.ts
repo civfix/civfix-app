@@ -62,7 +62,7 @@ describe("Map.web", () => {
   const src = read("../Map.web.tsx")
 
   it("keeps the idle runner for the life of the component, so listing it never rebuilds the map", () => {
-    expect(src).toContain("if (runnerRef.current === null) runnerRef.current = createIdleRunner(")
+    expect(src).toContain("const runner = (runnerRef.current ??= createIdleRunner(")
     const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useEffect(")
     expect(build).toContain("}, [runner])")
   })
@@ -78,7 +78,7 @@ describe("ReportPickMap.web", () => {
   const src = read("../ReportPickMap.web.tsx")
 
   it("builds its map once and reads the CARTO key from the last committed render", () => {
-    expect(src).toContain("if (runnerRef.current === null) runnerRef.current = createIdleRunner(")
+    expect(src).toContain("const runner = (runnerRef.current ??= createIdleRunner(")
     const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useMemo(")
     expect(build).toContain("cartoApiKey: cartoApiKeyRef.current,")
     expect(build).toContain("}, [runner])")
