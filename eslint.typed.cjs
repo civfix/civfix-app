@@ -114,6 +114,22 @@ const VITEST_RULES = {
   "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*", "assert"] }],
 }
 
+// node:test's test()/describe() return promises the runner itself awaits.
+const NODE_TEST_TYPED_RULES = {
+  "@typescript-eslint/no-floating-promises": [
+    "error",
+    {
+      allowForKnownSafeCalls: [
+        {
+          from: "package",
+          package: "node:test",
+          name: ["test", "describe", "it", "suite", "before", "after", "beforeEach", "afterEach"],
+        },
+      ],
+    },
+  ],
+}
+
 // node:test has no lint plugin; these catch the focused-test forms the vitest rule covers elsewhere.
 const NODE_TEST_FOCUS_SELECTORS = [
   {
@@ -151,6 +167,7 @@ module.exports = {
   TEST_RELAXED_RULES,
   VITEST_RULES,
   NODE_TEST_FOCUS_SELECTORS,
+  NODE_TEST_TYPED_RULES,
   LINTER_OPTIONS,
   escalateWarnings,
 }

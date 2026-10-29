@@ -36,6 +36,7 @@ jobs:
       - run: node --test scripts/*.test.mjs
       - run: node scripts/check-tokens-version.mjs
       - run: pnpm turbo run build typecheck lint test:coverage --filter="./packages/*"
+      - run: pnpm turbo run typecheck:scripts lint:scripts
       - run: pnpm --filter @civfix/ui i18n:check
       # Repo-wide gates (apps included) live here because this job already installs every workspace;
       # the resources check imports @civfix/contract from the registry install.
@@ -73,4 +74,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run typecheck lint test:coverage --filter=community-mobile
+      - run: shellcheck apps/community-mobile/scripts/*.sh
       - run: pnpm run doctor:expo

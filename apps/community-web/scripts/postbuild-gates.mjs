@@ -19,47 +19,89 @@ export const REQUIRED_AASA_EXCLUDES = [
   "/unsubscribe*",
 ]
 
+/** @param {string[]} outEntries */
 export function leakedDevRoutes(outEntries) {
   const names = new Set(outEntries)
   return DEV_ONLY_ROUTES.filter((route) => names.has(route) || names.has(`${route}.html`))
 }
 
+/**
+ * @param {string[]} shellRoutes
+ * @param {string} redirects
+ */
 export function spaFallbackGaps(shellRoutes, redirects) {
+  /** @type {Set<string>} */
   const rules = new Set()
   for (const raw of redirects.split("\n")) {
     const line = raw.trim()
     if (line.length === 0 || line.startsWith("#")) continue
     const [from] = line.split(/\s+/)
     if (from === undefined) continue
-    const match = /^\/([^/*\s]+)\/\*$/.exec(from)
-    if (match) rules.add(match[1])
+    const route = /^\/([^/*\s]+)\/\*$/.exec(from)?.[1]
+    if (route !== undefined) rules.add(route)
   }
   return shellRoutes.filter((route) => !rules.has(route)).sort()
 }
 
-function detailEntries(association) {
-  const details = association?.applinks?.details
-  return Array.isArray(details) ? details : []
+// The association file is parsed JSON, so every level is read as untrusted shape.
+/**
+ * @param {unknown} value
+ * @param {string} key
+ * @returns {unknown}
+ */
+const field = (value, key) =>
+  value !== null && typeof value === "object" ? /** @type {Record<string, unknown>} */ (value)[key] : undefined
+
+/**
+ * @param {unknown} value
+ * @returns {value is unknown[]}
+ */
+const isArray = (value) => Array.isArray(value)
+
+/** @param {unknown} entry */
+const isCatchAll = (entry) => field(entry, "/") === "/*" && field(entry, "exclude") !== true
+
+/**
+ * @param {unknown} entry
+ * @param {string} fallback
+ */
+const componentPath = (entry, fallback) => {
+  const path = field(entry, "/")
+  return typeof path === "string" ? path : fallback
 }
 
+/** @param {unknown} entry */
+const isExclude = (entry) => field(entry, "exclude") === true
+
+/**
+ * @param {unknown} association
+ * @returns {unknown[]}
+ */
+function detailEntries(association) {
+  const details = field(field(association, "applinks"), "details")
+  return isArray(details) ? details : []
+}
+
+/**
+ * @param {unknown} association
+ * @returns {{ ok: boolean, reason: string | null, catchAllIndex: number, lateExcludes: string[] }}
+ */
 export function aasaExcludeOrder(association) {
   const details = detailEntries(association)
   if (details.length === 0) {
     return { ok: false, reason: "no-components", catchAllIndex: -1, lateExcludes: [] }
   }
   for (const [index, detail] of details.entries()) {
-    const components = detail?.components
-    if (!Array.isArray(components)) {
+    const components = field(detail, "components")
+    if (!isArray(components)) {
       return { ok: false, reason: `no-components (details[${index}])`, catchAllIndex: -1, lateExcludes: [] }
     }
-    const catchAllIndex = components.findIndex(
-      (entry) => entry?.["/"] === "/*" && entry?.exclude !== true,
-    )
+    const catchAllIndex = components.findIndex(isCatchAll)
     if (catchAllIndex === -1) continue
     const lateExcludes = components
       .slice(catchAllIndex + 1)
-      .filter((entry) => entry?.exclude === true)
-      .map((entry) => String(entry?.["/"] ?? "?"))
+      .filter(isExclude)
+      .map((entry) => componentPath(entry, "?"))
     if (lateExcludes.length > 0) {
       return {
         ok: false,
@@ -69,33 +111,36 @@ export function aasaExcludeOrder(association) {
       }
     }
   }
-  const anyCatchAll = details.some((detail) =>
-    (Array.isArray(detail?.components) ? detail.components : []).some(
-      (entry) => entry?.["/"] === "/*" && entry?.exclude !== true,
-    ),
-  )
+  const anyCatchAll = details.some((detail) => {
+    const components = field(detail, "components")
+    return isArray(components) && components.some(isCatchAll)
+  })
   if (!anyCatchAll) {
     return { ok: false, reason: "no-catch-all", catchAllIndex: -1, lateExcludes: [] }
   }
   return { ok: true, reason: null, catchAllIndex: 0, lateExcludes: [] }
 }
 
+/**
+ * @param {unknown} association
+ * @param {string[]} required
+ */
 export function missingAasaExcludes(association, required) {
   const details = detailEntries(association)
   if (details.length === 0) return [...required]
+  /** @type {Set<string>} */
   const missing = new Set()
   for (const detail of details) {
-    const components = Array.isArray(detail?.components) ? detail.components : []
+    const components = field(detail, "components")
     const present = new Set(
-      components
-        .filter((entry) => entry?.exclude === true)
-        .map((entry) => String(entry?.["/"] ?? "")),
+      (isArray(components) ? components : []).filter(isExclude).map((entry) => componentPath(entry, "")),
     )
     for (const pattern of required) if (!present.has(pattern)) missing.add(pattern)
   }
   return required.filter((pattern) => missing.has(pattern))
 }
 
+/** @param {string} html */
 export function canonicalDocumentText(html) {
   const withoutScripts = html
     .replace(/<script(?:[\t\n\f\r /][^>]*)?>[\s\S]*?<\/script(?:[\t\n\f\r /][^>]*)?>/gi, " ")
@@ -112,6 +157,7 @@ export function canonicalDocumentText(html) {
     .join("\n")
 }
 
+/** @type {Record<string, string | undefined>} */
 const NAMED_ENTITIES = {
   amp: "&",
   lt: "<",
@@ -134,17 +180,19 @@ const NAMED_ENTITIES = {
   le: "≤",
 }
 
+/** @param {string} value */
 function decodeEntities(value) {
-  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, body) => {
+  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (/** @type {string} */ match, /** @type {string} */ body) => {
     if (body.startsWith("#x") || body.startsWith("#X")) {
       return String.fromCodePoint(Number.parseInt(body.slice(2), 16))
     }
     if (body.startsWith("#")) return String.fromCodePoint(Number.parseInt(body.slice(1), 10))
-    const named = NAMED_ENTITIES[body.toLowerCase()]
-    return named === undefined ? match : named
+    const name = body.toLowerCase()
+    return (Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : undefined) ?? match
   })
 }
 
+/** @param {string} html */
 export function extractLegalArticle(html) {
   const open = /<article\b[^>]*class="[^"]*legal-prose[^"]*"[^>]*>/i.exec(html)
   if (open === null) return null
@@ -169,6 +217,7 @@ export function extractLegalArticle(html) {
   }
 }
 
+/** @param {string} html */
 export function legalDocumentHash(html) {
   const article = extractLegalArticle(html)
   if (article === null) return null
@@ -178,10 +227,16 @@ export function legalDocumentHash(html) {
   }
 }
 
+/**
+ * @param {string} type
+ * @param {string} version
+ * @param {string} sha256
+ */
 export function isPlaceholderLegalHash(type, version, sha256) {
   return createHash("sha256").update(`${type}@${version}`, "utf8").digest("hex") === sha256
 }
 
+/** @param {string} outDir */
 export function renderedLegalDocuments(outDir) {
   const legalOutDir = join(outDir, "legal")
   if (!existsSync(legalOutDir)) return []

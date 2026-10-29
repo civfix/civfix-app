@@ -5,15 +5,37 @@ import { describe, expect, it } from "vitest"
 
 const PAGE = readFileSync(new URL("../public/home-turf/index.html", import.meta.url), "utf8")
 
+/**
+ * @typedef {{ ok: boolean, status: number }} FakeResponse
+ * @typedef {() => Promise<FakeResponse>} FakeFetch
+ * @typedef {{ callback: (token: string) => void }} TurnstileOptions
+ * @typedef {import("jsdom").DOMWindow & {
+ *   turnstile?: { render(slot: string, options: TurnstileOptions): string, reset(): void },
+ *   onTurnstileLoad?: () => void,
+ * }} PageWindow
+ */
+
+/**
+ * @param {Document} doc
+ * @param {string} id
+ */
+function byId(doc, id) {
+  const element = doc.getElementById(id)
+  if (element === null) throw new Error(`the home-turf page has no #${id}`)
+  return element
+}
+
+/** @param {{ fetchImpl: FakeFetch, solveTurnstile: boolean }} options */
 function mountPage({ fetchImpl, solveTurnstile }) {
   const dom = new JSDOM(PAGE, {
     runScripts: "dangerously",
     beforeParse(window) {
-      window.fetch = fetchImpl
+      Object.assign(window, { fetch: fetchImpl })
     },
   })
-  const { window } = dom
+  const window = /** @type {PageWindow} */ (dom.window)
   const doc = window.document
+  /** @type {TurnstileOptions | undefined} */
   let widget
   window.turnstile = {
     render(_slot, options) {
@@ -23,22 +45,28 @@ function mountPage({ fetchImpl, solveTurnstile }) {
     },
     reset() {},
   }
+  if (!window.onTurnstileLoad) throw new Error("the home-turf page never defined onTurnstileLoad")
   window.onTurnstileLoad()
 
   for (const field of doc.querySelectorAll("#coach-form [required]")) {
-    if (field.tagName === "SELECT") field.selectedIndex = 1
-    else if (field.type === "email") field.value = "coach@example.com"
-    else if (field.type === "tel") field.value = "5555550100"
-    else field.value = "Filled"
+    if (field instanceof window.HTMLSelectElement) field.selectedIndex = 1
+    else if (field instanceof window.HTMLInputElement || field instanceof window.HTMLTextAreaElement) {
+      field.value = field.type === "email" ? "coach@example.com" : field.type === "tel" ? "5555550100" : "Filled"
+    }
   }
 
-  const form = doc.getElementById("coach-form")
+  const form = byId(doc, "coach-form")
+  const button = form.querySelector("button[type=submit]")
+  if (!(button instanceof window.HTMLButtonElement)) throw new Error("the coach form has no submit button")
   const submit = () => form.dispatchEvent(new window.Event("submit", { cancelable: true }))
   return {
-    status: doc.getElementById("form-status"),
+    status: byId(doc, "form-status"),
     alert: () => doc.getElementById("form-error"),
-    button: form.querySelector("button[type=submit]"),
-    solveTurnstile: () => widget.callback("token"),
+    button,
+    solveTurnstile: () => {
+      if (!widget) throw new Error("the Turnstile widget never rendered")
+      widget.callback("token")
+    },
     submit,
   }
 }
@@ -50,17 +78,18 @@ describe("home-turf coach form status", () => {
     const page = mountPage({ fetchImpl: () => new Promise(() => {}), solveTurnstile: false })
     page.submit()
     const first = page.alert()
-    expect(first.getAttribute("role")).toBe("alert")
-    expect(first.textContent).toContain("not a robot")
+    expect(first?.getAttribute("role")).toBe("alert")
+    expect(first?.textContent).toContain("not a robot")
     expect(page.status.getAttribute("role")).toBe("status")
 
     page.submit()
     expect(page.alert()).not.toBe(first)
-    expect(first.isConnected).toBe(false)
+    expect(first?.isConnected).toBe(false)
     expect(page.status.getAttribute("role")).toBe("status")
   })
 
   it("marks the button busy while submitting and alerts on a rejected submit", async () => {
+    /** @type {((response: FakeResponse) => void) | undefined} */
     let respond
     const page = mountPage({
       fetchImpl: () => new Promise((resolve) => (respond = resolve)),
@@ -70,12 +99,13 @@ describe("home-turf coach form status", () => {
     expect(page.button.getAttribute("aria-busy")).toBe("true")
     expect(page.button.disabled).toBe(true)
 
+    if (!respond) throw new Error("the form never called fetch")
     respond({ ok: false, status: 429 })
     await settle()
     expect(page.button.hasAttribute("aria-busy")).toBe(false)
     expect(page.button.disabled).toBe(false)
-    expect(page.alert().getAttribute("role")).toBe("alert")
-    expect(page.alert().textContent).toContain("Too many attempts")
+    expect(page.alert()?.getAttribute("role")).toBe("alert")
+    expect(page.alert()?.textContent).toContain("Too many attempts")
   })
 
   it("clears the alert and reports success politely when a submit succeeds after an error", async () => {

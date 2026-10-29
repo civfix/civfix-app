@@ -94,7 +94,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist-types",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.vitest.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.vitest.json && tsc -p scripts/tsconfig.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "NODE_OPTIONS=--max-old-space-size=4096 eslint . --max-warnings=0",

@@ -6,10 +6,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["*.mjs"]
+  "include": ["*.mjs"],
+  "exclude": ["*.test.mjs"]
 }
