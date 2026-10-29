@@ -150,32 +150,15 @@ export default tseslint.config(
     },
   },
   {
-    name: "community-web/scripts",
-    files: ["scripts/**/*.mjs"],
-    rules: {
-      // The build scripts are untyped JavaScript: type-aware linting guards their promise handling,
-      // while every value TypeScript cannot infer is `any` by construction.
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/restrict-template-expressions": [
-        "error",
-        {
-          allowNumber: true,
-          allowAny: true,
-          allowArray: false,
-          allowBoolean: false,
-          allowNever: false,
-          allowNullish: false,
-          allowRegExp: false,
-        },
-      ],
-      "@typescript-eslint/restrict-plus-operands": [
-        "error",
-        { allowAny: true, allowBoolean: false, allowNullish: false, allowNumberAndString: false, allowRegExp: false },
-      ],
+    // The script tests run in jsdom as well as Node, so they get their own DOM-aware project.
+    name: "community-web/scripts-tests",
+    files: ["scripts/**/*.test.mjs"],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: "./scripts/tsconfig.test.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
   },
   {

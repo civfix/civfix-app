@@ -40,7 +40,12 @@ const INTENTIONAL_EMPTY = new Set([
   "ko/onboarding-terms:label.lead",
 ])
 
+/**
+ * @param {unknown} obj
+ * @returns {Set<string>}
+ */
 function keyPaths(obj, prefix = "") {
+  /** @type {Set<string>} */
   const out = new Set()
   if (obj === null || typeof obj !== "object" || Array.isArray(obj)) return out
   for (const [k, v] of Object.entries(obj)) {
@@ -56,9 +61,13 @@ function keyPaths(obj, prefix = "") {
   return out
 }
 
+/**
+ * @param {string} lng
+ * @param {string} ns
+ */
 function readCatalog(lng, ns) {
   try {
-    return JSON.parse(readFileSync(join(localesDir, lng, `${ns}.json`), "utf8"))
+    return /** @type {unknown} */ (JSON.parse(readFileSync(join(localesDir, lng, `${ns}.json`), "utf8")))
   } catch {
     return null
   }
@@ -73,8 +82,7 @@ let failures = 0
 
 const enKeysByNs = new Map(namespaces.map((ns) => [ns, keyPaths(readCatalog(SOURCE, ns) ?? {})]))
 
-for (const ns of namespaces) {
-  const enKeys = enKeysByNs.get(ns)
+for (const [ns, enKeys] of enKeysByNs) {
   for (const lng of TARGETS) {
     const cat = readCatalog(lng, ns)
     if (cat === null) {
@@ -103,7 +111,12 @@ for (const ns of namespaces) {
   }
 }
 
+/**
+ * @param {unknown} obj
+ * @returns {string[]}
+ */
 function emptyValuePaths(obj, prefix = "") {
+  /** @type {string[]} */
   const out = []
   if (obj === null || typeof obj !== "object") return out
   for (const [k, v] of Object.entries(obj)) {
@@ -114,6 +127,7 @@ function emptyValuePaths(obj, prefix = "") {
   return out
 }
 
+/** @type {string[]} */
 const emptyFailures = []
 for (const lng of [SOURCE, ...TARGETS]) {
   for (const ns of namespaces) {
@@ -131,7 +145,12 @@ if (emptyFailures.length) {
 }
 
 // Tests are skipped: source-grep guards quote example keys as plain strings, not real call sites.
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
 function collectSourceFiles(dir) {
+  /** @type {string[]} */
   const out = []
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === "__tests__" || entry.name === "node_modules") continue
@@ -146,10 +165,15 @@ function collectSourceFiles(dir) {
 }
 
 // Illustrative call sites in docblocks must never be scanned as real ones.
+/** @param {string} text */
 function stripComments(text) {
   return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 }
 
+/**
+ * @param {Set<string>} keySet
+ * @param {string} key
+ */
 function keyExists(keySet, key) {
   return keySet.has(key) || keySet.has(`${key}_one`) || keySet.has(`${key}_other`)
 }
@@ -157,6 +181,7 @@ function keyExists(keySet, key) {
 const T_CALL = /\bt\(\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|`([^`]*)`)/g
 
 const enKeyUnion = new Set([...enKeysByNs.values()].flatMap((s) => [...s]))
+/** @type {string[]} */
 const sourceFailures = []
 
 for (const file of collectSourceFiles(srcDir)) {

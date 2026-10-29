@@ -21,7 +21,7 @@ const CHROME_CANDIDATES = [
   "/usr/bin/chromium",
   "/usr/bin/chromium-browser",
   "/usr/bin/google-chrome",
-].filter(Boolean)
+].filter(/** @returns {candidate is string} */ (candidate) => Boolean(candidate))
 
 const chrome = CHROME_CANDIDATES.find((candidate) => existsSync(candidate))
 if (!chrome) {
@@ -46,6 +46,7 @@ const WORDMARK = [
 const pin = readFileSync(join(publicDir, "favicon.svg"), "utf8")
 const baloo = readFileSync(join(publicDir, "fonts", "Baloo2_800ExtraBold.woff2")).toString("base64")
 
+/** @param {number} size */
 function pinSvg(size) {
   return pin.replace("<svg", `<svg width="${size}" height="${size}"`)
 }

@@ -45,7 +45,7 @@ test("note keys never become environment variables", () => {
 
 test("extends is resolved and a cycle or an unknown profile is refused", () => {
   const fixture = { build: { a: { env: { X: "1" } }, b: { extends: "a", env: { Y: "2" } }, c: { extends: "c" } } }
-  assert.deepEqual((resolveProfile(fixture, "b") as BuildProfile).env, { X: "1", Y: "2" })
+  assert.deepEqual(resolveProfile(fixture, "b").env, { X: "1", Y: "2" })
   assert.throws(() => resolveProfile(fixture, "c"), /extends itself/)
   assert.throws(() => resolveProfile(fixture, "missing"), /no build profile 'missing'/)
 })
