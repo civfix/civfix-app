@@ -7,6 +7,7 @@ import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const SCRIPT = fileURLToPath(new URL("./check-tokens-version.mjs", import.meta.url));
+/** @type {string[]} */
 const stubDirs = [];
 
 after(() => {
@@ -15,6 +16,7 @@ after(() => {
 
 // npm and git are replaced on PATH so the check runs against a scripted registry and tag state,
 // never the real registry or this checkout's refs.
+/** @param {{ npm: string, git: string }} stubs */
 const runWithStubs = ({ npm, git }) => {
   const dir = mkdtempSync(join(tmpdir(), "check-tokens-version-"));
   stubDirs.push(dir);
@@ -25,7 +27,7 @@ const runWithStubs = ({ npm, git }) => {
   }
   return spawnSync(process.execPath, [SCRIPT], {
     encoding: "utf8",
-    env: { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` },
+    env: { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH ?? ""}` },
   });
 };
 

@@ -7,8 +7,10 @@ import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "check-i18n-call-sites.mjs")
+/** @type {string[]} */
 const roots = []
 
+/** @param {Record<string, string>} files */
 function fixture(files) {
   const root = mkdtempSync(join(tmpdir(), "i18n-call-sites-"))
   roots.push(root)
@@ -32,6 +34,7 @@ function fixture(files) {
   return root
 }
 
+/** @param {string} root */
 function run(root) {
   return spawnSync(process.execPath, [SCRIPT], { env: { ...process.env, I18N_CALL_SITES_ROOT: root }, encoding: "utf8" })
 }

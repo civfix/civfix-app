@@ -9,6 +9,7 @@ import { join } from "node:path"
 import { CATALOGS_DIR, i18nDir, renderI18nModules } from "./i18n-modules.mjs"
 
 const { modules } = renderI18nModules()
+/** @type {string[]} */
 const stale = []
 for (const [path, body] of modules) {
   const file = join(i18nDir, path)

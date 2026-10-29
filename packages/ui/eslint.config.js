@@ -65,7 +65,7 @@ const RN_FREE_PATTERNS = [
 
 export default tseslint.config(
   {
-    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "vitest.console-guard.ts", "coverage/**", "scripts/**"],
+    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "vitest.console-guard.ts", "coverage/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -87,7 +87,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx", "scripts/**/*.mjs"],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -95,6 +95,11 @@ export default tseslint.config(
       },
     },
     rules: TYPED_RULES,
+  },
+  {
+    // The i18n build scripts are Node ESM under checkJs, which already reports an undeclared name.
+    files: ["scripts/**/*.mjs"],
+    rules: { "no-undef": "off" },
   },
   {
     files: TEST_FILES,

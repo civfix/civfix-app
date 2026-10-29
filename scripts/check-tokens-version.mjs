@@ -5,9 +5,12 @@ const PACKAGE = "@civfix/tokens";
 const MAIN_REF = "refs/remotes/origin/main";
 const release = process.argv.includes("--release");
 
-const { version } = JSON.parse(
-  readFileSync(new URL("../packages/tokens/package.json", import.meta.url), "utf8"),
+const manifest = /** @type {unknown} */ (
+  JSON.parse(readFileSync(new URL("../packages/tokens/package.json", import.meta.url), "utf8"))
 );
+const version =
+  typeof manifest === "object" && manifest !== null && "version" in manifest ? manifest.version : undefined;
+if (typeof version !== "string") throw new Error(`packages/tokens/package.json has no string "version"`);
 const tag = `${PACKAGE}@${version}`;
 
 const readPublishedVersions = () => {
@@ -17,8 +20,10 @@ const readPublishedVersions = () => {
       stdio: ["ignore", "pipe", "pipe"],
     });
   } catch (error) {
-    const stderr = String(error.stderr ?? "");
-    const reason = /\bcode (E[A-Z0-9]+)\b/.exec(stderr)?.[1] ?? String(error.message).split("\n")[0];
+    const stderr =
+      error instanceof Error && "stderr" in error && typeof error.stderr === "string" ? error.stderr : "";
+    const message = error instanceof Error ? error.message : String(error);
+    const reason = /\bcode (E[A-Z0-9]+)\b/.exec(stderr)?.[1] ?? message.split("\n")[0] ?? message;
     // The registry answers 404 until the first release, which is a valid starting point, not an outage.
     if (reason === "E404") return "[]";
     console.error(
@@ -31,10 +36,15 @@ const readPublishedVersions = () => {
   }
 };
 
-const viewed = JSON.parse(readPublishedVersions());
-const published = Array.isArray(viewed) ? viewed : [viewed];
+// `npm view --json` prints a bare string instead of a one-element array when one version exists.
+const viewed = /** @type {unknown} */ (JSON.parse(readPublishedVersions()));
+const published = (Array.isArray(viewed) ? viewed : [viewed]).filter(
+  /** @returns {candidate is string} */ (candidate) => typeof candidate === "string",
+);
 
+/** @param {...string} args */
 const git = (...args) => spawnSync("git", args, { encoding: "utf8" });
+/** @param {...string} args */
 const gitOrThrow = (...args) => {
   const result = git(...args);
   if (result.status !== 0) {
@@ -48,31 +58,39 @@ const tagExists = tagCommit.status === 0;
 const tagOnMain = (() => {
   if (!tagExists) return false;
   const ancestry = git("merge-base", "--is-ancestor", tagCommit.stdout.trim(), MAIN_REF);
-  if (ancestry.status > 1) {
+  // 0 and 1 are merge-base's yes and no; anything else, including death by a signal, is a failure.
+  if (ancestry.status !== 0 && ancestry.status !== 1) {
     throw new Error(`git merge-base failed: ${ancestry.stderr.trim()}`);
   }
   return ancestry.status === 0;
 })();
 
+/** @typedef {[major: number, minor: number, patch: number]} Version */
+
+/**
+ * @param {string} candidate
+ * @returns {Version | null}
+ */
 const parseStable = (candidate) => {
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(candidate);
-  return match ? match.slice(1).map(Number) : null;
+  return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
 };
+/**
+ * @param {Version} a
+ * @param {Version} b
+ */
+const compareVersions = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
 const nextFreeVersion = () => {
+  /** @type {Version} */
+  const lowest = [0, 0, 0];
   const [major, minor] = published
     .map(parseStable)
-    .filter(Boolean)
-    .reduce((highest, current) => {
-      for (let index = 0; index < 3; index += 1) {
-        if (current[index] !== highest[index]) {
-          return current[index] > highest[index] ? current : highest;
-        }
-      }
-      return highest;
-    }, [0, 0, 0]);
+    .filter((candidate) => candidate !== null)
+    .reduce((highest, current) => (compareVersions(current, highest) > 0 ? current : highest), lowest);
   return `${major}.${minor + 1}.0`;
 };
 
+/** @param {string} reason */
 const refuse = (reason) => {
   console.error(
     [

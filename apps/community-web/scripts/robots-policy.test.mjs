@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeSiteUrl } from "../src/lib/site-meta"
+import { normalizeSiteUrl } from "../src/lib/site-meta.ts"
 import {
   NOINDEX_RULE,
   PRODUCTION_SITE_URL,

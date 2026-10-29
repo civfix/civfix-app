@@ -12,8 +12,10 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint lint:scripts",
+    "lint:scripts": "eslint scripts --max-warnings=0",
+    "typecheck": "turbo run typecheck typecheck:scripts",
+    "typecheck:scripts": "tsc -p scripts/tsconfig.json",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "i18n:check": "turbo run i18n:check && pnpm i18n:check:call-sites",
@@ -26,9 +28,14 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.16.0",
     "jscpd": "4.3.0",
     "knip": "5.88.1",
-    "turbo": "^2.3.3"
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0"
   },
   "pnpm": {
     "//overrides": "The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. Drop each entry once its parent ships the fixed range itself.",
