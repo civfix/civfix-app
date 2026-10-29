@@ -13,7 +13,7 @@ declare module "opentype.js" {
     unitsPerEm: number
     charToGlyph(char: string): Glyph
   }
-  // CommonJS only: an ES import gets module.exports as the default export.
+  // The default export is the namespace gen-splash.mjs calls; no named imports are declared.
   const opentype: { parse(buffer: ArrayBufferLike): Font }
   export default opentype
 }

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // home-turf-form.test.mjs drives the static page in jsdom; the build scripts stay Node-only.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // The vitest suites import app source by its .ts path.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["*.mjs"],
+  "exclude": []
+}

@@ -11,7 +11,7 @@
     "predev": "node scripts/copy-contract-fonts.mjs",
     "build": "next build && node scripts/cf-pages-postbuild.mjs",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json && tsc -p ./scripts/tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json && tsc -p ./scripts/tsconfig.json && tsc -p ./scripts/tsconfig.test.json",
     "og-image": "node scripts/generate-og-image.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

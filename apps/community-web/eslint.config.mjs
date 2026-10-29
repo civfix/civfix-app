@@ -150,6 +150,18 @@ export default tseslint.config(
     },
   },
   {
+    // The script tests run in jsdom as well as Node, so they get their own DOM-aware project.
+    name: "community-web/scripts-tests",
+    files: ["scripts/**/*.test.mjs"],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: "./scripts/tsconfig.test.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     name: "community-web/host-console",
     files: HOST_CONSOLE_FILES,
     rules: {

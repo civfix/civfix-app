@@ -187,7 +187,8 @@ function decodeEntities(value) {
       return String.fromCodePoint(Number.parseInt(body.slice(2), 16))
     }
     if (body.startsWith("#")) return String.fromCodePoint(Number.parseInt(body.slice(1), 10))
-    return NAMED_ENTITIES[body.toLowerCase()] ?? match
+    const name = body.toLowerCase()
+    return (Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : undefined) ?? match
   })
 }
 

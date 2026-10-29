@@ -49,8 +49,6 @@ const WORDMARK = [
 /**
  * Build per-letter colored glyph <path>s for "civfix" at `fontSize`, centered around (cx, baselineY).
  * Returns an SVG <g> string. Uses the font's own advance widths with a small negative tracking.
- */
-/**
  * @param {number} cx
  * @param {number} baselineY
  * @param {number} fontSize
@@ -92,8 +90,8 @@ function splashSvg(size) {
   </svg>`
 }
 
-/** Rasterize an SVG string to a PNG in assetsDir. Renders large (density) then downscales for crisp edges. */
 /**
+ * Rasterize an SVG string to a PNG in assetsDir. Renders large (density) then downscales for crisp edges.
  * @param {string} svg
  * @param {string} out
  * @param {number} size
