@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps, linkKeyProps, webCursor } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"

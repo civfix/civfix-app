@@ -1,4 +1,3 @@
-import React from "react"
 import type { StyleProp, TextStyle } from "react-native"
 import { webNoSelect } from "../theme"
 import { Text, Icon, type LucideIcon } from "../typography"

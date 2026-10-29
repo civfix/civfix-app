@@ -52,6 +52,7 @@ function filed(filing: Partial<ReportFilingDTO> = {}, overrides: Record<string, 
 }
 
 const FILED_NODE: TimelineNode = {
+  key: "intake",
   kind: "forwarded",
   when: "rel:2026-10-02T09:00:00.000Z",
   text: "Filed with City of Los Angeles",
@@ -94,6 +95,7 @@ describe("buildTimeline with a city filing", () => {
       rel,
     )
     expect(nodes[1]).toEqual({
+      key: "intake",
       kind: "forwarded",
       when: "rel:2026-10-02T09:00:00.000Z",
       text: "Linked to an existing city request",
@@ -125,7 +127,7 @@ describe("buildTimeline with a city filing", () => {
     expect(nodes).toHaveLength(3)
     expect(nodes[0]!.kind).toBe("submitted")
     expect(nodes[1]).toEqual(FILED_NODE)
-    expect(nodes[2]).toEqual({ kind: "resolved", when: "rel:2026-10-05T12:00:00.000Z", text: "Resolved" })
+    expect(nodes[2]).toEqual({ key: "entry-4", kind: "resolved", when: "rel:2026-10-05T12:00:00.000Z", text: "Resolved" })
     for (const node of nodes) {
       for (const field of [node.text, node.detail ?? ""]) {
         expect(field).not.toContain("Sent to jurisdiction")
@@ -152,6 +154,7 @@ describe("buildTimeline with a city filing", () => {
     )
     expect(nodes).toHaveLength(3)
     expect(nodes[2]).toEqual({
+      key: "entry-2",
       kind: "note",
       when: "rel:2026-10-03T08:00:00.000Z",
       text: "Update",
@@ -186,8 +189,9 @@ describe("buildTimeline with a city filing", () => {
       t,
       rel,
     )
-    expect(nodes[2]).toEqual({ kind: "hidden", when: "rel:2026-10-03T08:00:00.000Z", text: "Hidden from the map" })
+    expect(nodes[2]).toEqual({ key: "entry-1", kind: "hidden", when: "rel:2026-10-03T08:00:00.000Z", text: "Hidden from the map" })
     expect(nodes[3]).toEqual({
+      key: "entry-2",
       kind: "forwarded",
       when: "rel:2026-10-04T08:00:00.000Z",
       text: "Reply from the city",
@@ -199,26 +203,29 @@ describe("buildTimeline with a city filing", () => {
 
 describe("buildTimeline without a city filing", () => {
   const T10_EXPECTED_TAIL: TimelineNode[] = [
-    { kind: "pending", when: "rel:2026-10-01T10:00:00.000Z", text: "Pending submission to city", pending: true },
+    { key: "intake", kind: "pending", when: "rel:2026-10-01T10:00:00.000Z", text: "Pending submission to city", pending: true },
     {
+      key: "entry-1",
       kind: "forwarded",
       when: "rel:2026-10-02T09:00:00.000Z",
       text: "In progress",
       detail: "Sent to jurisdiction (311@lacity.org)",
     },
     {
+      key: "entry-2",
       kind: "note",
       when: "rel:2026-10-02T09:01:00.000Z",
       text: "Update",
       detail: "Filed with City of Los Angeles · Request 1-2345678901",
     },
     {
+      key: "entry-3",
       kind: "note",
       when: "rel:2026-10-02T09:02:00.000Z",
       text: "Update",
       detail: "Linked to City of Los Angeles request 1-2345678901",
     },
-    { kind: "resolved", when: "rel:2026-10-05T12:00:00.000Z", text: "Resolved" },
+    { key: "entry-4", kind: "resolved", when: "rel:2026-10-05T12:00:00.000Z", text: "Resolved" },
   ]
 
   it("T10: keeps the pending node and renders route entries as today", () => {
@@ -237,6 +244,7 @@ describe("buildTimeline without a city filing", () => {
   it("T12: keeps today's forwarded node when gov is set with no filing field", () => {
     const nodes = buildTimeline(report({ gov: true }), t, rel)
     expect(nodes[1]).toEqual({
+      key: "intake",
       kind: "forwarded",
       when: "rel:2026-10-01T10:05:00.000Z",
       text: "Forwarded to the city agency",

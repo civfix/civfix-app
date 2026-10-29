@@ -30,12 +30,8 @@ const balooTtfPath = join(
   "Baloo2_800ExtraBold.ttf",
 )
 
-// Brand colors (from colors_and_type.css).
-const SUN_600 = "#E5AE1C"
-const MOSS = "#6FB36F"
-const SKY = "#6FB1DC"
-const LILAC = "#9C82DE"
-const BLOOM = "#FF7A6B"
+const { tokens } = require("@civfix/tokens")
+const { bloom: BLOOM, sun: SUN, moss: MOSS, sky: SKY, lilac: LILAC } = tokens.logo
 
 // Load Baloo 2 800 and convert the wordmark to vector glyph paths (librsvg's embedded-font support is
 // unreliable, so we draw the real letterforms as filled <path>s and color each letter ourselves).
@@ -44,7 +40,7 @@ const balooFont = opentype.parse(
   balooBuf.buffer.slice(balooBuf.byteOffset, balooBuf.byteOffset + balooBuf.byteLength),
 )
 const WORD = "civfix"
-const WORD_COLORS = [BLOOM, SUN_600, MOSS, SKY, LILAC, BLOOM] // c i v f i x
+const WORD_COLORS = [BLOOM, SUN, MOSS, SKY, LILAC, BLOOM] // c i v f i x
 
 /**
  * Build per-letter colored glyph <path>s for "civfix" at `fontSize`, centered around (cx, baselineY).

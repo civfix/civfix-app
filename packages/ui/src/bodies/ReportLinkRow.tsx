@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { Animated, StyleSheet } from "react-native"
 import type { LatLng } from "@civfix/contract/geocode"
 import { useTheme } from "../theme"

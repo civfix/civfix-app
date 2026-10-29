@@ -57,7 +57,7 @@ function renderComposer(dto: BroadcastDTO) {
         <BroadcastComposer broadcast={dto} />
       </ConsoleEventProvider>
     </ConsoleNavigationProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }

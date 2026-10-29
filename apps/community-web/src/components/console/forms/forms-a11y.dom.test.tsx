@@ -96,7 +96,7 @@ describe("Field", () => {
 
 describe("ErrorSummary", () => {
   it("jumps to the field without smooth scrolling when reduced motion is requested", () => {
-    window.matchMedia = ((query: string) => ({
+    window.matchMedia = (query: string) => ({
       matches: query === "(prefers-reduced-motion: reduce)",
       media: query,
       onchange: null,
@@ -105,7 +105,7 @@ describe("ErrorSummary", () => {
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
+    })
     renderConsole(
       <>
         <input id="title" />

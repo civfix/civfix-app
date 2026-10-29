@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { View } from "react-native"
 import type { LinkedEventRef } from "@civfix/contract"
 import { makeThemedStyles } from "../../theme"

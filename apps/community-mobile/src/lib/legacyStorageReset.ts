@@ -52,7 +52,7 @@ export async function adoptStorageEnvironment(): Promise<boolean> {
   if (__DEV__) {
     console.log(
       `[storage-env] namespace="${namespace || PROD_STORAGE_ENV}" previous=${marker ?? "<none>"} ` +
-        `purgedLegacyIds=${purged}`,
+        `purgedLegacyIds=${String(purged)}`,
     )
   }
   return purged

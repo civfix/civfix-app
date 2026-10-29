@@ -434,7 +434,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
 
   it("commits the pop through the nav store from the JS thread only", () => {
     const chain = panChain()
-    expect(chain).toMatch(/runOnJS\(commitSwipeBack\)\(front\.value\)/)
+    expect(chain).toMatch(/scheduleOnRN\(commitSwipeBack, front\.value\)/)
     expect(chain).not.toMatch(/useNavStore/)
     expect(src).toMatch(/useNavStore\.getState\(\)\.back\(\)/)
   })

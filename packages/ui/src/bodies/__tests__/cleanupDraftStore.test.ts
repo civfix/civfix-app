@@ -9,7 +9,9 @@ function mkForm(seedLinkedReportId?: string): CleanupFormValue {
   return { ...emptyCleanupForm(seedLinkedReportId), timezone: "America/Los_Angeles", slots: [] }
 }
 
-beforeEach(() => useCleanupDraft.getState().clear())
+beforeEach(() => {
+  useCleanupDraft.getState().clear()
+})
 
 describe("cleanupDraftStore", () => {
   it("begins a fresh draft and marks it active", () => {

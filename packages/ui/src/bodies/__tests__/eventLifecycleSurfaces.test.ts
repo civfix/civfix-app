@@ -62,15 +62,18 @@ describe("no surface marks an event completed any more", () => {
 
   it("ticks the clock off the shared hook and stops once the event can no longer change", () => {
     const source = code(hostMode)
-    expect(source).toContain("useNow(boundaryAt === null ? 0 : PHASE_TICK_MS, { boundaryAt })")
-    expect(source).toContain("nextEventBoundaryMs(clock, Date.now())")
+    expect(source).toContain("useNow(PHASE_TICK_MS, {")
+    expect(source).toContain("boundaryAt: (at) => (clock === null ? null : nextEventBoundaryMs(clock, at)),")
+    expect(source).toContain("idleAfterLastBoundary: true,")
+    expect(source).not.toContain("Date.now()")
     expect(source).not.toMatch(/react-native-reanimated/)
   })
 
   it("stops the detail body's clock on the same terms as the host surfaces", () => {
     const source = code(body)
-    expect(source).toContain("const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())")
-    expect(source).toContain("useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })")
+    expect(source).toContain("const now = useNow(NOW_TICK_MS, {")
+    expect(source).toContain("boundaryAt: (at) => nextEventBoundaryMs(cleanup, at),")
+    expect(source).toContain("idleAfterLastBoundary: true,")
   })
 
   it("refetches the surfaces the boundary crossing invalidated", () => {

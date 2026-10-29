@@ -1,13 +1,13 @@
-import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, StyleSheet, useWindowDimensions, View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   type SharedValue,
 } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { isFlowKind, useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { makeThemedStyles, motion } from "../theme"
 import { detailLeadingAffordance } from "./backAffordance"
@@ -128,7 +128,7 @@ export function PageStack({
       exit.value = withTiming(1, SETTLE_CFG, (finished) => {
         "worklet"
         dragging.value = 0
-        if (finished) runOnJS(dropLeaving)(goneKey)
+        if (finished) scheduleOnRN(dropLeaving, goneKey)
       })
       return
     }
@@ -143,7 +143,7 @@ export function PageStack({
       setLeaving({ key: goneKey, entry: goneEntry, stack: prevStack })
       exit.value = withTiming(1, POP_CFG, (finished) => {
         "worklet"
-        if (finished) runOnJS(dropLeaving)(goneKey)
+        if (finished) scheduleOnRN(dropLeaving, goneKey)
       })
       return
     }
@@ -210,7 +210,7 @@ export function PageStack({
             })
             return
           }
-          runOnJS(commitSwipeBack)(front.value)
+          scheduleOnRN(commitSwipeBack, front.value)
         }),
     [commitSwipeBack, dragging, front, swipeArmed, width],
   )

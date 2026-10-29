@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import Svg, { Path, Rect } from "react-native-svg"
 import { qrInk, qrPaper } from "@civfix/tokens"

@@ -1,11 +1,12 @@
 import { coordsLabel } from "@civfix/contract"
 import * as React from "react"
-import maplibregl from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
 import { shadowSchemes } from "@civfix/tokens"
 import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import {
   PICKER_EASE_MS,
   PICKER_ZOOM,
@@ -17,6 +18,8 @@ import {
 import { useLocationPick } from "./locationPickStore"
 import { pinAppearanceFor } from "./pins"
 import { applyPinElementTheme, makePinElement } from "./pins/pinElement.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 
 /** Below this the marker already sits on the value, so an echo of the picker's own change does not ease. */
 const MARKER_MOVED_EPSILON_DEG = 1e-6
@@ -55,7 +58,7 @@ function InlineLocationPicker({
   })
 
   const seedRef = React.useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
 
   const ensureMarker = React.useCallback(
@@ -83,6 +86,7 @@ function InlineLocationPicker({
     if (mapRef.current || !containerRef.current || !cameraSeed) return
     const start: [number, number] = [cameraSeed.lng, cameraSeed.lat]
 
+    bindBundledWorker()
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -188,6 +192,17 @@ function InlineLocationPicker({
   )
 }
 
+function InlinePickerUnavailable({ height = PICKER_HEIGHT }: Pick<LocationPickerProps, "height">) {
+  const { t } = useT("map-ui")
+  const th = useTheme()
+  const styles = React.useMemo(() => makeStyles(th), [th])
+  return (
+    <div style={{ ...styles.wrap, height }}>
+      <MapUnavailable hint={t("unavailable.picker")} />
+    </div>
+  )
+}
+
 function samePickPoint(a: LatLng, b: LatLng): boolean {
   return Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG && Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
 }
@@ -285,7 +300,11 @@ export function LocationPicker(props: LocationPickerProps) {
   if (props.mode === "main-map" && mapRegistered) {
     return <MainMapLocationPicker {...props} />
   }
-  return <InlineLocationPicker {...props} />
+  return (
+    <MapSurfaceGuard fallback={<InlinePickerUnavailable height={props.height} />}>
+      <InlineLocationPicker {...props} />
+    </MapSurfaceGuard>
+  )
 }
 
 function makeStyles(t: Theme): Record<string, React.CSSProperties> {

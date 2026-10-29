@@ -55,7 +55,7 @@ function invite(
     expiresAt: null,
     acceptedAt: null,
     ...over,
-  } as EventTeamInviteDTO
+  }
 }
 
 describe("team ordering", () => {

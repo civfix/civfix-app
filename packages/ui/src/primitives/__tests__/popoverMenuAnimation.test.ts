@@ -152,7 +152,7 @@ describe("the shared menu motion hook (source-pinned)", () => {
       .filter((file) => file.source.includes("useMenuMotion("))
     expect(callers.length).toBeGreaterThan(0)
     for (const { name, source } of callers) {
-      for (const [, passed] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
+      for (const [, passed = ""] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
         expect(passed, `${name} passes ${passed} as recipes`).toMatch(/^[A-Z][A-Z0-9_]*$/)
         expect(source, `${name} must hoist ${passed} to a module constant`).toMatch(
           new RegExp(`^const ${passed}: MenuMotionRecipes = `, "m"),
@@ -176,7 +176,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("blocks interaction while the menu is leaving, so a double tap cannot re-enter it", () => {
-    expect(anchoredPopover).toMatch(/pointerEvents=\{motion\.exiting \? "none" : "auto"\}/)
+    expect(anchoredPopover).toMatch(/pointerEventStyles\[motion\.exiting \? "none" : "auto"\]/)
   })
 
   it("dismisses on an outside tap and on the platform back gesture", () => {
@@ -289,7 +289,7 @@ describe("every dropdown in the package rides the same motion", () => {
     expect(contextMenu).toMatch(/menuCardStyle\(motion, cardOrigin\)/)
     expect(contextMenu).toMatch(/menuCardStyle\(motion, reactionOrigin\)/)
     expect(contextMenu).toMatch(/menuCardStyle\(motion, webOrigin\)/)
-    expect(contextMenu).toMatch(/pointerEvents=\{motion\.exiting \? "none" : "auto"\}/)
+    expect(contextMenu).toMatch(/pointerEventStyles\[motion\.exiting \? "none" : "auto"\]/)
   })
 
   it("the bubble clone's spring respects reduced motion and stops with the menu", () => {

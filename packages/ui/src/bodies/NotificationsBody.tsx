@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from "react"
+import { memo, useCallback, useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { NotificationDTO, NotificationType } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webHover, webTransition, type Theme } from "../theme"

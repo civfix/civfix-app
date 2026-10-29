@@ -28,7 +28,7 @@ const EN: Record<string, string> = {
   "post_card.media_a11y": "Post attachment",
 }
 
-const t = ((key: string, options: Record<string, unknown> = {}) => {
+const t = ((key: string, options: Record<string, string | number> = {}) => {
   const count = options.count
   const resolved = typeof count === "number"
     ? EN[`${key}${count === 1 ? "_one" : "_other"}`]
@@ -99,7 +99,7 @@ describe("buildReplyComposerHeightPlan", () => {
               const plan = buildReplyComposerHeightPlan({
                 rootHeight, keyboardInset, expanded, hasThumbs, measuredChrome,
               })
-              const where = `${rootHeight}/${keyboardInset}/${measuredChrome}/${hasThumbs}/${expanded}`
+              const where = `${rootHeight}/${keyboardInset}/${String(measuredChrome)}/${String(hasThumbs)}/${String(expanded)}`
               expect(plan.inputMax, where).toBeGreaterThanOrEqual(REPLY_INPUT_MIN)
               expect(plan.inputMax, where).toBeLessThanOrEqual(REPLY_INPUT_MAX_CAP)
               expect(

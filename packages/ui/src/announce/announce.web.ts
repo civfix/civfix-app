@@ -20,7 +20,7 @@ const REGION_ID: Record<Priority, string> = {
 const ANNOUNCE_DELAY_MS = 50
 
 /** Per region, so a rapid re-announce replaces its own stale write. */
-const pending: Partial<Record<Priority, ReturnType<typeof setTimeout>>> = {}
+const pending = new Map<Priority, ReturnType<typeof setTimeout>>()
 
 function getOrCreate(priority: Priority): HTMLElement {
   const id = REGION_ID[priority]
@@ -34,7 +34,7 @@ function getOrCreate(priority: Priority): HTMLElement {
   region.style.width = "1px"
   region.style.height = "1px"
   region.style.overflow = "hidden"
-  region.style.clip = "rect(0, 0, 0, 0)"
+  region.style.clipPath = "inset(50%)"
   document.body.appendChild(region)
   return region
 }
@@ -49,11 +49,14 @@ export const announce: AnnounceFn = (message, opts) => {
   const priority: Priority = opts?.priority ?? "polite"
   const region = getOrCreate(priority)
 
-  const prior = pending[priority]
+  const prior = pending.get(priority)
   if (prior !== undefined) clearTimeout(prior)
   region.textContent = ""
-  pending[priority] = setTimeout(() => {
-    delete pending[priority]
-    region.textContent = message
-  }, ANNOUNCE_DELAY_MS)
+  pending.set(
+    priority,
+    setTimeout(() => {
+      pending.delete(priority)
+      region.textContent = message
+    }, ANNOUNCE_DELAY_MS),
+  )
 }

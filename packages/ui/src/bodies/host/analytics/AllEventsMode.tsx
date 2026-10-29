@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import {
   MAX_HOST_SUMMARY_EVENT_ROWS,
@@ -85,9 +84,9 @@ export function AllEventsMode({
           <Text variant="caption">{t("page.by_event_empty")}</Text>
         ) : (
           <View style={styles.block}>
-            {rows.map((row, index) => (
+            {rows.map((row) => (
               <EventBarRow
-                key={`${index}:${row.key}`}
+                key={row.key}
                 row={row}
                 max={rowMax}
                 onPress={() => onPickEvent(row)}

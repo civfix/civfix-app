@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ChatMessageDTO } from "@civfix/contract"
 import {
@@ -27,9 +26,9 @@ export function PinnedBar({ pins, activeIndex, onTap, onOpenList }: PinnedBarPro
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
-  if (pins.length === 0) return null
   const index = Math.min(Math.max(activeIndex, 0), pins.length - 1)
-  const active = pins[index]!
+  const active = pins[index]
+  if (!active) return null
   const excerptBody = excerptOf(active.body ?? "")
   const excerpt = excerptBody || t("bubble.reply_media")
   const segments = Math.min(pins.length, SEGMENT_CAP)

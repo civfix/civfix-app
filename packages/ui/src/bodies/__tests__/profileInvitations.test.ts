@@ -131,7 +131,7 @@ describe("invitations live on the viewer's own profile", () => {
       for (const key of keys) {
         expect(profile.invites?.[key], `${lng} invites.${key}`).toBeTruthy()
       }
-      const dashboard = catalog(lng, "event-dashboard") as Record<string, unknown>
+      const dashboard = catalog(lng, "event-dashboard")
       expect(dashboard.invites, `${lng} event-dashboard.invites`).toBeUndefined()
     }
   })

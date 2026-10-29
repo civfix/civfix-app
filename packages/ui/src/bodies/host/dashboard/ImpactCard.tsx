@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { HostedEventsAnalyticsResponse } from "@civfix/contract"
 import { makeThemedStyles } from "../../../theme"

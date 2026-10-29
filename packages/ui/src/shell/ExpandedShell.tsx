@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Animated,
   PanResponder,
@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps } from "../theme"
+import { domProps, motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps, webStyle, pointerEventStyles } from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
 import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
@@ -59,7 +59,7 @@ function cardVisibilityStyle(visible: boolean, reduceMotion: boolean): ViewStyle
     opacity: visible ? 1 : 0,
     transform: [{ translateX: shift }],
     ...(isWeb
-      ? ({ transition: visible ? CARD_SHOW_TRANSITION : CARD_HIDE_TRANSITION } as unknown as ViewStyle)
+      ? webStyle({ transition: visible ? CARD_SHOW_TRANSITION : CARD_HIDE_TRANSITION })
       : null),
   }
 }
@@ -68,7 +68,7 @@ function handleVisibilityStyle(visible: boolean): ViewStyle {
   return {
     opacity: visible ? 1 : 0,
     ...(isWeb
-      ? ({ transition: visible ? HANDLE_SHOW_TRANSITION : HANDLE_HIDE_TRANSITION } as unknown as ViewStyle)
+      ? webStyle({ transition: visible ? HANDLE_SHOW_TRANSITION : HANDLE_HIDE_TRANSITION })
       : null),
   }
 }
@@ -208,7 +208,6 @@ export function ExpandedShell({
       <Rail />
 
       <Animated.View
-        pointerEvents={cardVisible ? "auto" : "none"}
         accessibilityElementsHidden={!cardVisible}
         importantForAccessibility={cardVisible ? "auto" : "no-hide-descendants"}
         style={[
@@ -216,6 +215,7 @@ export function ExpandedShell({
           th.shadows.s4,
           { width: animatedWidth },
           cardVisibilityStyle(cardVisible, reduceMotion),
+          pointerEventStyles[cardVisible ? "auto" : "none"],
         ]}
       >
         <ScrollHostProvider value={PANEL_SCROLL_HOST}>
@@ -238,7 +238,6 @@ export function ExpandedShell({
 
       <Animated.View
         {...resizeResponder.panHandlers}
-        pointerEvents={cardVisible ? "auto" : "none"}
         accessibilityRole="adjustable"
         accessibilityLabel={t("a11y.resize_sidebar")}
         accessibilityValue={{ min: resizeMin, max: resizeMax, now: resizeNow }}
@@ -264,9 +263,10 @@ export function ExpandedShell({
           styles.resizeHandle,
           { transform: [{ translateX: animatedWidth }] },
           handleVisibilityStyle(cardVisible),
+          pointerEventStyles[cardVisible ? "auto" : "none"],
         ]}
       >
-        <View style={styles.resizeGrip} pointerEvents="none" />
+        <View style={[styles.resizeGrip, pointerEventStyles.none]} />
       </Animated.View>
     </>
   )
@@ -302,7 +302,7 @@ function PanelHeader({
         style={styles.title}
         numberOfLines={1}
         accessibilityRole="header"
-        {...({ "data-civfix-panel-heading": "", tabIndex: -1 } as any)}
+        {...domProps({ "data-civfix-panel-heading": "", tabIndex: -1 })}
       >
         {title}
       </Text>
@@ -375,7 +375,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     ...webCursorColResize,
-    ...({ touchAction: "none", userSelect: "none" } as unknown as ViewStyle),
+    ...webStyle({ touchAction: "none", userSelect: "none" }),
   },
   resizeGrip: {
     width: 6,

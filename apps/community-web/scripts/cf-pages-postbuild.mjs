@@ -157,7 +157,7 @@ const excludeOrder = aasaExcludeOrder(association)
 
 if (!excludeOrder.ok) {
   console.error(
-    `[cf-pages] ERROR: ${AASA_RELATIVE} exclude ordering is wrong (${excludeOrder.reason}` +
+    `[cf-pages] ERROR: ${AASA_RELATIVE} exclude ordering is wrong (${excludeOrder.reason ?? "unknown"}` +
       `${excludeOrder.lateExcludes.length > 0 ? `: ${excludeOrder.lateExcludes.join(", ")}` : ""}). ` +
       `iOS evaluates components IN ORDER and stops at the FIRST match, so every ` +
       `{"exclude": true} entry must appear BEFORE the {"/": "/*"} catch-all. An exclude listed after ` +

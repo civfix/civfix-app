@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { createApiClient } from "@civfix/contract/client"
-import type { UserDTO } from "@civfix/contract"
+import type { ReportDTO, UserDTO } from "@civfix/contract"
 
 import {
   useAuthStore,
@@ -22,6 +22,39 @@ const USER: UserDTO = {
   role: "citizen",
   locale: "en",
   createdAt: "2026-01-01T00:00:00.000Z",
+}
+
+const REPORT: ReportDTO = {
+  id: "22222222-2222-4222-8222-222222222222",
+  category: "trash",
+  status: "published",
+  visibility: "public",
+  lat: 34,
+  lng: -118,
+  geomSource: "manual",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  mine: true,
+  gov: false,
+  following: false,
+  media: [],
+  mediaPending: 0,
+  mediaRejected: 0,
+  timeline: [],
+  linkedEvents: [],
+  confirmCount: 0,
+  confirmedByMe: false,
+  fixedCount: 0,
+  fixedByMe: false,
+}
+
+// The csrf tests call createReport (POST /reports) and listMyReports (GET /reports); each gets a body its
+// response schema accepts, so the client never falls back to the raw body.
+async function reportsResponse(_url: string | URL | Request, init?: RequestInit): Promise<Response> {
+  const body = init?.method === "GET" ? { items: [REPORT], nextCursor: null } : REPORT
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  })
 }
 
 /** Map-backed localStorage stand-in (node env has none) so the snapshot writes are observable. */
@@ -86,15 +119,10 @@ describe("auth-store CSRF token", () => {
 
 describe("shared client x-csrf-token wiring", () => {
   function clientWithSpy() {
-    const fetchSpy = vi.fn(async () =>
-      new Response(JSON.stringify({}), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    )
+    const fetchSpy = vi.fn(reportsResponse)
     const client = createApiClient({
       baseURL: "http://localhost:8080",
-      fetchImpl: fetchSpy as unknown as typeof fetch,
+      fetchImpl: fetchSpy,
       getCsrfToken: () => getCsrfToken(),
     })
     return { client, fetchSpy }
@@ -251,15 +279,10 @@ describe("resolveCsrfToken boot-race wiring (async token getter)", () => {
   }
 
   function clientWithSpy() {
-    const fetchSpy = vi.fn(async () =>
-      new Response(JSON.stringify({}), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    )
+    const fetchSpy = vi.fn(reportsResponse)
     const client = createApiClient({
       baseURL: "http://localhost:8080",
-      fetchImpl: fetchSpy as unknown as typeof fetch,
+      fetchImpl: fetchSpy,
       // The REAL wiring from lib/api.ts (the shared client awaits the getter for csrf endpoints).
       getCsrfToken: resolveCsrfToken,
     })

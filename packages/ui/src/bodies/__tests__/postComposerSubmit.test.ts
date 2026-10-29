@@ -134,7 +134,7 @@ describe("toPostOrganizationRef", () => {
   })
 
   it("leaves verifiedKind off an unverified org rather than writing a null", () => {
-    const ref = toPostOrganizationRef({ ...org, verifiedStatus: "pending", verifiedKind: null } as OrganizationDTO)
+    const ref = toPostOrganizationRef({ ...org, verifiedStatus: "pending", verifiedKind: null })
     expect(ref.verified).toBe(false)
     expect(ref).not.toHaveProperty("verifiedKind")
   })

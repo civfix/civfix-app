@@ -40,8 +40,8 @@ function currentValue(): string {
   return screen.getByTestId("value").textContent ?? ""
 }
 
-function onPlatform(platform: string) {
-  vi.spyOn(navigator, "platform", "get").mockReturnValue(platform)
+function onUserAgent(userAgent: string) {
+  vi.spyOn(navigator, "userAgent", "get").mockReturnValue(userAgent)
 }
 
 afterEach(() => {
@@ -159,14 +159,14 @@ describe("RichTextEditor", () => {
   })
 
   it("hints the Command shortcut in the button tooltip on Apple platforms", () => {
-    onPlatform("MacIntel")
+    onUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15")
     renderConsole(<Harness />, { withToasts: false })
     const bold = screen.getByRole("button", { name: "editor.bold" })
     expect(bold.getAttribute("title")).toBe("editor.bold (⌘B)")
   })
 
   it("hints the Ctrl shortcut in the button tooltip on other platforms", () => {
-    onPlatform("Win32")
+    onUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36")
     renderConsole(<Harness />, { withToasts: false })
     const bold = screen.getByRole("button", { name: "editor.bold" })
     expect(bold.getAttribute("title")).toBe("editor.bold (editor.shortcut_ctrl(key=B))")

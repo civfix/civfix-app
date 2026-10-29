@@ -18,6 +18,7 @@ import {
   webHover,
   webTransition,
   WEB_ROW_FOCUS_INSET,
+  pointerEventStyles,
 } from "../../theme"
 import { Text, Icon, iconMap, type IconName } from "../../typography"
 import { ThreadAvatar, PopoverMenu, usePopoverAnchor, useSwipeActions, closeOpenSwipeActions } from "../../primitives"
@@ -271,8 +272,11 @@ export const ThreadRow = React.memo(function ThreadRow({
       {swipe.active ? (
         <>
           <Animated.View
-            pointerEvents={swipe.open ? "auto" : "none"}
-            style={[styles.actionsLayer, { width: swipe.width, opacity: swipe.progress }]}
+            style={[
+              styles.actionsLayer,
+              { width: swipe.width, opacity: swipe.progress },
+              pointerEventStyles[swipe.open ? "auto" : "none"],
+            ]}
           >
             {rowActions.map((action) => (
               <ThreadRowAction

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from "vitest"
 import type { UserDTO } from "@civfix/contract"
 
 import { runGatedAction } from "@/hooks/use-auth-gate"
@@ -42,8 +42,8 @@ function flush(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0))
 }
 
-let action: ReturnType<typeof vi.fn>
-let openAuthModal: ReturnType<typeof vi.fn>
+let action: Mock<() => void>
+let openAuthModal: Mock<() => void>
 
 beforeEach(() => {
   vi.stubGlobal("window", { localStorage: makeStorage() })

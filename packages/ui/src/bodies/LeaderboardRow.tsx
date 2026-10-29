@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"

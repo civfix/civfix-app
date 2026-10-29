@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View } from "react-native"
 import { MAX_LINKED_REPORTS } from "@civfix/contract"
 import type { LatLng } from "@civfix/contract/geocode"

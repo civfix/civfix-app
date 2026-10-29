@@ -29,14 +29,14 @@ export function isInternalLink(link: string): boolean {
 
 export function toInternalHref(link: unknown): Href | null {
   if (typeof link !== "string") return null
-  return isInternalLink(link) ? (link as Href) : null
+  return isInternalLink(link) ? link : null
 }
 
 const RESUME_PATH = /^\/(?!\/)[A-Za-z0-9\-._~%/?#=&+,]*$/
 
-export function toResumeHref(next: unknown): Href | null {
+export function toResumeHref(next: unknown): string | null {
   if (typeof next !== "string") return null
-  return RESUME_PATH.test(next) ? (next as Href) : null
+  return RESUME_PATH.test(next) ? next : null
 }
 
 const EXTERNAL_URL = /^https:\/\/[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?([/?#]|$)/i

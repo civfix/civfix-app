@@ -10,7 +10,15 @@ import {
 } from "react-native"
 import type { HostAnalyticsSummaryResponse } from "@civfix/contract"
 import { visibleValue } from "@civfix/contract/host"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, hitSlopToTarget } from "../../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  hitSlopToTarget,
+  pointerEventStyles,
+} from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
@@ -409,7 +417,7 @@ function EmptyChart({ width, label }: { width: number; label: string }) {
         labelColor={th.colors.textSubtle}
         accessibilityLabel={label}
       />
-      <View style={styles.emptyLabel} pointerEvents="none">
+      <View style={[styles.emptyLabel, pointerEventStyles.none]}>
         <Text variant="caption" numberOfLines={2} style={styles.emptyText}>
           {label}
         </Text>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, expectTypeOf, it } from "vitest"
 import type { CleanupDTO, OrganizationDTO, PostDTO, ReportDTO, UserProfileDTO } from "@civfix/contract"
 
 import {
@@ -42,12 +42,11 @@ const SIZED_THUMBED = { ...SIZED_IMAGE, thumbUrl: "https://cdn.x/a_t.jpg" }
 
 describe("contract shapes", () => {
   it("accepts the published DTOs without a cast", () => {
-    const report: ReportPreviewInput = {} as ReportDTO
-    const event: EventPreviewInput = {} as CleanupDTO
-    const person: PersonPreviewInput = {} as UserProfileDTO
-    const org: OrganizationPreviewInput = {} as OrganizationDTO
-    const post: PostPreviewInput = {} as PostDTO
-    expect([report, event, person, org, post]).toHaveLength(5)
+    expectTypeOf<ReportDTO>().toExtend<ReportPreviewInput>()
+    expectTypeOf<CleanupDTO>().toExtend<EventPreviewInput>()
+    expectTypeOf<UserProfileDTO>().toExtend<PersonPreviewInput>()
+    expectTypeOf<OrganizationDTO>().toExtend<OrganizationPreviewInput>()
+    expectTypeOf<PostDTO>().toExtend<PostPreviewInput>()
   })
 })
 

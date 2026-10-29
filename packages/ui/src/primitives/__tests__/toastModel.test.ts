@@ -78,8 +78,8 @@ describe("Toast host", () => {
   })
 
   it("anchors at the bottom and lets touches through everywhere but the card", () => {
-    expect(TOAST_SOURCE).toContain('pointerEvents="box-none"')
-    expect(TOAST_SOURCE).not.toContain('pointerEvents="none"')
+    expect(TOAST_SOURCE).toContain('pointerEventStyles["box-none"]')
+    expect(TOAST_SOURCE).not.toContain("pointerEventStyles.none")
     expect(TOAST_SOURCE).toContain("{ bottom: offset }")
   })
 
@@ -170,7 +170,7 @@ describe("Toast card layout", () => {
   it("breaks an unbreakable message inside the card on web", () => {
     expect(TOAST_SOURCE).toContain("style={[styles.message, webBreakAnywhere]}")
     expect(read("../../theme/webAffordances.ts")).toContain(
-      'export const webBreakAnywhere: TextStyle = isWeb\n  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)\n  : {}',
+      'export const webBreakAnywhere: TextStyle = isWeb\n  ? webStyle({ overflowWrap: "anywhere" })\n  : {}',
     )
   })
 
