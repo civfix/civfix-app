@@ -21,6 +21,6 @@ describe("Avatar photo loading", () => {
   })
 
   it("imports useCallback from react", () => {
-    expect(AVATAR).toMatch(/^import React, \{[^}]*\buseCallback\b[^}]*\} from "react"/m)
+    expect(AVATAR).toMatch(/^import \{[^}]*\buseCallback\b[^}]*\} from "react"/m)
   })
 })

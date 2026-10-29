@@ -56,8 +56,9 @@ describe("what the Log hours screen may show", () => {
 describe("the screen wires that gate to the shared clock", () => {
   it("derives the window from the clock rather than the stored status", () => {
     expect(body).toContain("hasEventEnded(event, now)")
-    expect(body).toContain("nextEventBoundaryMs(event, Date.now())")
-    expect(body).toContain("useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })")
+    expect(body).toContain("boundaryAt: (at) => (event === null ? null : nextEventBoundaryMs(event, at)),")
+    expect(body).toContain("idleAfterLastBoundary: true,")
+    expect(body).not.toContain("Date.now()")
     expect(body).not.toMatch(/status === "done"/)
   })
 

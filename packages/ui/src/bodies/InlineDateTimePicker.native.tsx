@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Platform } from "react-native"
 import DateTimePicker, {
   DateTimePickerAndroid,

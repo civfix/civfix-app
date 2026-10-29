@@ -47,7 +47,7 @@ describe("SignOutFailureNotice", () => {
     useSignOutRetryStore.setState({ failed: true, pending: true })
     render(<SignOutFailureNotice />)
 
-    const retry = screen.getByRole("button", { name: "sign_out_failed.retry" }) as HTMLButtonElement
+    const retry = screen.getByRole<HTMLButtonElement>("button", { name: "sign_out_failed.retry" })
     expect(retry.disabled).toBe(true)
   })
 

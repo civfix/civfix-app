@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import { formatCertificateCode } from "@civfix/contract"
 import { webSelectableText, focusRingProps } from "../../../theme"

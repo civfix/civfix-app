@@ -315,7 +315,7 @@ export function AnalyticsScreen() {
                   id: step.step,
                   label: step.label,
                   value: step.value === null ? EMPTY_VALUE : format.number(step.value),
-                  tone: index === 0 ? "sky" : index === overview.data!.funnel.length - 1 ? "moss" : "neutral",
+                  tone: index === 0 ? "sky" : index === overview.data.funnel.length - 1 ? "moss" : "neutral",
                 }))}
               />
             ) : null}

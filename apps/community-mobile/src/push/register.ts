@@ -55,8 +55,7 @@ function isRealProjectId(id: string | undefined): id is string {
 function easProjectId(): string | undefined {
   const fromExtra = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)
     ?.eas?.projectId
-  const fromEas = (Constants as unknown as { easConfig?: { projectId?: string } }).easConfig
-    ?.projectId
+  const fromEas = Constants.easConfig?.projectId
   if (isRealProjectId(fromEas)) return fromEas
   if (isRealProjectId(fromExtra)) return fromExtra
   return undefined

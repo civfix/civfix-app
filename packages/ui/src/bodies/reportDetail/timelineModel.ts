@@ -4,6 +4,7 @@ import { type NodeKind, kindForStatus, citizenStatusLabel } from "../../primitiv
 import { timelineEntryRender } from "../../primitives/reportTimelineModel"
 
 export interface TimelineNode {
+  key: string
   kind: NodeKind
   when: string
   text: string
@@ -22,6 +23,7 @@ export function buildTimeline(
 ): TimelineNode[] {
   const nodes: TimelineNode[] = []
   nodes.push({
+    key: "submitted",
     kind: "submitted",
     when: rel(report.createdAt),
     text: report.mine ? t("timeline.reported_by_you") : t("timeline.reported_by_neighbor"),
@@ -32,12 +34,14 @@ export function buildTimeline(
     nodes.push(filedNode(filing, t, rel))
   } else if (report.gov) {
     nodes.push({
+      key: "intake",
       kind: "forwarded",
       when: rel(report.publishedAt ?? report.createdAt),
       text: t("timeline.forwarded_to_city"),
     })
   } else {
     nodes.push({
+      key: "intake",
       kind: "pending",
       when: rel(report.createdAt),
       text: t("timeline.pending_submission"),
@@ -47,6 +51,8 @@ export function buildTimeline(
 
   let prevStatus: ReportStatus | null = null
   report.timeline.forEach((entry, i) => {
+    // The log carries no id and only ever grows, so an entry's place in it is its identity.
+    const key = `entry-${i}`
     const render = timelineEntryRender(entry, i, prevStatus)
     prevStatus = entry.status
     // The filed node stands for every routing of the report, including the "Sent to jurisdiction"
@@ -54,15 +60,16 @@ export function buildTimeline(
     if (filing && entry.kind === "route") return
     if (render === "skip") return
     if (render === "hidden") {
-      nodes.push({ kind: "hidden", when: rel(entry.at), text: t("timeline.hidden_from_map") })
+      nodes.push({ key, kind: "hidden", when: rel(entry.at), text: t("timeline.hidden_from_map") })
       return
     }
     if (render === "unhidden") {
-      nodes.push({ kind: "unhidden", when: rel(entry.at), text: t("timeline.shown_on_map_again") })
+      nodes.push({ key, kind: "unhidden", when: rel(entry.at), text: t("timeline.shown_on_map_again") })
       return
     }
     if (render === "reopened") {
       nodes.push({
+        key,
         kind: "reopened",
         when: rel(entry.at),
         text: t("timeline.reopened"),
@@ -72,6 +79,7 @@ export function buildTimeline(
     }
     if (render === "reply") {
       nodes.push({
+        key,
         kind: "forwarded",
         when: rel(entry.at),
         text: t("timeline.reply_from_city"),
@@ -82,6 +90,7 @@ export function buildTimeline(
     }
     if (render === "note") {
       nodes.push({
+        key,
         kind: "note",
         when: rel(entry.at),
         text: t("timeline.update"),
@@ -90,6 +99,7 @@ export function buildTimeline(
       return
     }
     nodes.push({
+      key,
       kind: kindForStatus(entry.status),
       when: rel(entry.at),
       text: citizenStatusLabel(t, entry.status),
@@ -102,6 +112,7 @@ export function buildTimeline(
   )
   for (const ev of linked) {
     nodes.push({
+      key: `linked-${ev.id}`,
       kind: "linked",
       when: rel(ev.linkedAt),
       text: t("timeline.linked_to_cleanup", { title: ev.title }),
@@ -122,6 +133,7 @@ function filedNode(
   else if (filing.jurisdictionName) text = t("timeline.filed_with", { jurisdiction: filing.jurisdictionName })
   else text = t("timeline.filed_with_city")
   return {
+    key: "intake",
     kind: "forwarded",
     when: rel(filing.filedAt),
     text,

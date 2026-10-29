@@ -15,7 +15,7 @@ const EN: Record<string, string> = {
   "post_card.unavailable": "This post is no longer available.",
 }
 
-const t = ((key: string, vars?: Record<string, unknown>) => {
+const t = ((key: string, vars?: Record<string, string | number>) => {
   const template = EN[key] ?? key
   return template.replace(/{{(\w+)}}/g, (_, name: string) => String(vars?.[name] ?? ""))
 }) as unknown as TFunction

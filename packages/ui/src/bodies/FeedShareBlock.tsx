@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET, pointerEventStyles } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { useT } from "../i18n"
 import { Text, Icon, iconMap } from "../typography"
@@ -61,8 +61,7 @@ export function FeedShareBlock({
 
   return (
     <View
-      style={[styles.block, busy ? styles.busy : null]}
-      pointerEvents={busy ? "none" : "auto"}
+      style={[styles.block, busy ? styles.busy : null, pointerEventStyles[busy ? "none" : "auto"]]}
       onLayout={(e) => {
         yRef.current = e.nativeEvent.layout.y
       }}

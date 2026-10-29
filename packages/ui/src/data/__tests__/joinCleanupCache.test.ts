@@ -118,7 +118,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     })
 
     // Error -> rollback all three to the pre-tap (joined, going=5).
-    opts.onError?.(new Error("offline"), true, ctx!, fnCtx(qc))
+    opts.onError?.(new Error("offline"), true, ctx, fnCtx(qc))
     expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
     expect(qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))![0]).toMatchObject({
       joined: true,
@@ -136,7 +136,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     // the reconcile and the settle invalidation all targeted the UUID key and the page never changed.
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup(REFCODE),
-      cleanup("c1", false, 4, { referenceCode: REFCODE } as Partial<CleanupDTO>),
+      cleanup("c1", false, 4, { referenceCode: REFCODE }),
     )
     qc.setQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50), [cleanup("c1", false, 4)])
     qc.setQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"), attendees(4))
@@ -167,7 +167,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     })
 
     // The settle invalidation marks the refcode entry stale so it refetches (slots etc. reconcile).
-    opts.onSettled?.({ joined: true, going: 6 }, null, false, ctx!, fnCtx(qc))
+    opts.onSettled?.({ joined: true, going: 6 }, null, false, ctx, fnCtx(qc))
     expect(qc.getQueryState(queryKeys.cleanup(REFCODE))?.isInvalidated).toBe(true)
   })
 
@@ -175,7 +175,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     const qc = new QueryClient()
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup(REFCODE),
-      cleanup("c1", false, 4, { referenceCode: REFCODE } as Partial<CleanupDTO>),
+      cleanup("c1", false, 4, { referenceCode: REFCODE }),
     )
 
     const err = new Error("This event is closed.")
@@ -188,7 +188,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
       going: 5,
     })
 
-    opts.onError?.(err, false, ctx!, fnCtx(qc))
+    opts.onError?.(err, false, ctx, fnCtx(qc))
     expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup(REFCODE))).toMatchObject({
       joined: false,
       going: 4,
@@ -200,7 +200,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     // Opened once from a share link (refcode) and once from a list (UUID): two live entries.
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup(REFCODE),
-      cleanup("c1", false, 4, { referenceCode: REFCODE } as Partial<CleanupDTO>),
+      cleanup("c1", false, 4, { referenceCode: REFCODE }),
     )
     qc.setQueryData<CleanupDTO>(queryKeys.cleanup("c1"), cleanup("c1", false, 4))
 
@@ -209,7 +209,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup(REFCODE))).toMatchObject({ joined: true, going: 5 })
     expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
 
-    opts.onSettled?.({ joined: true, going: 5 }, null, false, ctx!, fnCtx(qc))
+    opts.onSettled?.({ joined: true, going: 5 }, null, false, ctx, fnCtx(qc))
     expect(qc.getQueryState(queryKeys.cleanup(REFCODE))?.isInvalidated).toBe(true)
     expect(qc.getQueryState(queryKeys.cleanup("c1"))?.isInvalidated).toBe(true)
   })
@@ -279,7 +279,7 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     const opts = joinOptions(qc, "c1", async () => ({ joined: false, going: 4 }))
     const ctx = await opts.onMutate?.(true, fnCtx(qc))
     opts.onSuccess?.({ joined: false, going: 4 }, true, ctx!, fnCtx(qc))
-    opts.onSettled?.({ joined: false, going: 4 }, null, true, ctx!, fnCtx(qc))
+    opts.onSettled?.({ joined: false, going: 4 }, null, true, ctx, fnCtx(qc))
 
     expect(qc.getQueryState(queryKeys.cleanup(REFCODE))?.isInvalidated).toBe(true)
     expect(qc.getQueryState(queryKeys.cleanup("c1"))?.isInvalidated).toBe(true)
@@ -302,7 +302,7 @@ describe("event slot claim cache reconciliation (real hook options)", () => {
     const qc = new QueryClient()
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup(REFCODE),
-      cleanup("c1", false, 4, { referenceCode: REFCODE } as Partial<CleanupDTO>),
+      cleanup("c1", false, 4, { referenceCode: REFCODE }),
     )
     qc.setQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50), [cleanup("c1", false, 4)])
 

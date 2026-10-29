@@ -1,9 +1,8 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, headingLevel } from "../../theme"
 import { Text, iconMap } from "../../typography"
-import type { IconName } from "../../typography"
 import {
   LoadingState,
   ModalCardSheet,
@@ -25,7 +24,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
 import { appErrorCode } from "@civfix/contract"
-import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
+import type { SettableEventMemberRole } from "../../data/eventTeamTiers"
 import { HostBodyState } from "./HostBodyState"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {
@@ -73,7 +72,7 @@ const TeamMemberRow = memo(function TeamMemberRow({
           ...actions.roles.map((role) => ({
             key: `role-${role}`,
             label: tMembers("manage.make_role", { role: tEnums(`cleanupMemberRole.${role}`) }),
-            icon: role === "member" ? ("UserMinus" as IconName) : ("UserPlus" as IconName),
+            icon: role === "member" ? ("UserMinus" as const) : ("UserPlus" as const),
             disabled: managePending,
             onPress: () => onSetRole(person.id, role),
           })),

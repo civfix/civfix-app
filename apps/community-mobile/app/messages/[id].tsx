@@ -36,7 +36,7 @@ export default function ConversationScreen() {
       followers: 0,
       following: 0,
       isFollowing: false,
-    } as PersonDTO
+    }
   }, [roomKind, peerId, peerName, peerHandle, t])
 
   const onBack = useCallback(() => {

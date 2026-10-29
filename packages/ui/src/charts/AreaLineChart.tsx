@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import Svg, { Line, Path } from "react-native-svg"
 import { makeThemedStyles } from "../theme"
@@ -100,9 +99,9 @@ export function AreaLineChart({
       </Svg>
       {xTicks && xTicks.length > 0 ? (
         <View style={[styles.ticks, { width }]}>
-          {xTicks.map((tick, index) => (
+          {xTicks.map((tick) => (
             <Text
-              key={`${index}:${tick.label}`}
+              key={tick.x}
               variant="caption"
               numberOfLines={1}
               style={[

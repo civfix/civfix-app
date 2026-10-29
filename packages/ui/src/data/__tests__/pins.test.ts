@@ -10,7 +10,7 @@ import { mergePins } from "../pins"
 const ROOM = "room-1"
 
 function person(id: string): PersonDTO {
-  return { id, name: id, followers: 0, following: 0, isFollowing: false } as PersonDTO
+  return { id, name: id, followers: 0, following: 0, isFollowing: false }
 }
 
 function msg(
@@ -26,7 +26,7 @@ function msg(
     mentions: [],
     createdAt: "2026-07-18T09:00:00.000Z",
     ...partial,
-  } as ChatMessageDTO
+  }
 }
 
 const ids = (pins: ChatMessageDTO[]) => pins.map((m) => m.id)

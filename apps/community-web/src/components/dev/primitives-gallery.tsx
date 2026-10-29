@@ -46,6 +46,7 @@ import {
   type SparkPoint,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
+import { tokens } from "@civfix/tokens"
 import type { ReportStatus, ReportCategory } from "@civfix/contract"
 
 const noop = () => {}
@@ -82,11 +83,12 @@ const PHOTO_URL =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">' +
       '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#db2777"/>' +
+      `<stop offset="0" stop-color="${tokens.color.brand.sky}"/>` +
+      `<stop offset="1" stop-color="${tokens.color.bloom["600"]}"/>` +
       "</linearGradient></defs>" +
       '<rect width="80" height="80" fill="url(#g)"/>' +
-      '<circle cx="40" cy="30" r="14" fill="#ffffff" fill-opacity="0.85"/>' +
-      '<rect x="16" y="48" width="48" height="28" rx="14" fill="#ffffff" fill-opacity="0.85"/>' +
+      `<circle cx="40" cy="30" r="14" fill="${tokens.color.neutral.card}" fill-opacity="0.85"/>` +
+      `<rect x="16" y="48" width="48" height="28" rx="14" fill="${tokens.color.neutral.card}" fill-opacity="0.85"/>` +
       "</svg>",
   )
 
@@ -197,7 +199,7 @@ function BlurStage({ note, children }: { note: string; children: React.ReactNode
         }}
       >
         <div style={{ position: "absolute", inset: 0, display: "flex" }}>
-          {["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"].map((c) => (
+          {Object.values(theme.colors.brand).map((c) => (
             <div key={c} style={{ flex: 1, height: "100%", backgroundColor: c }} />
           ))}
         </div>
@@ -559,14 +561,14 @@ export default function PrimitivesGallery() {
         </Section>
 
         <Section title="SettingsToggle (tap to flip)">
-          <Specimen note={`on (value=${settingsA})`}>
+          <Specimen note={`on (value=${String(settingsA)})`}>
             <SettingsToggle
               value={settingsA}
               onValueChange={setSettingsA}
               accessibilityLabel="Setting A"
             />
           </Specimen>
-          <Specimen note={`off (value=${settingsB})`}>
+          <Specimen note={`off (value=${String(settingsB)})`}>
             <SettingsToggle
               value={settingsB}
               onValueChange={setSettingsB}

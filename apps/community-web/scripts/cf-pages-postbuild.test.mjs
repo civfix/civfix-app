@@ -148,6 +148,19 @@ describe("legal document hashing", () => {
     expect(canonicalDocumentText("<p>a</p><script>evil()</script>")).toBe("a")
   })
 
+  it("ends a script or style wherever the HTML tokenizer does", () => {
+    expect(canonicalDocumentText("<p>a</p><SCRIPT>evil()</SCRIPT >")).toBe("a")
+    expect(canonicalDocumentText('<p>a</p><script type="x">evil()</script\n data-x="1">')).toBe("a")
+    expect(canonicalDocumentText("<p>a</p><style>p{}</style\t>")).toBe("a")
+    expect(canonicalDocumentText("<p>a</p><script>one()</script/><p>b</p><script>two()</script>")).toBe("a\nb")
+  })
+
+  it("keeps the text of elements that only start with script or style", () => {
+    expect(canonicalDocumentText("<p>a</p><script-note>b</script-note><styled-text>c</styled-text>")).toBe(
+      "a\nb c",
+    )
+  })
+
   it("returns null when there is no legal article to hash", () => {
     expect(legalDocumentHash("<html><body><p>nope</p></body></html>")).toBe(null)
   })

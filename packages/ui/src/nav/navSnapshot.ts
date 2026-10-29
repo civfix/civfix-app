@@ -45,14 +45,14 @@ const SESSION_FIELDS = [
 // can never be silently dropped from history and report-return snapshots.
 const PERSISTED_KEYS = [...ENTRY_IDENTITY_FIELDS, ...SESSION_FIELDS] as const
 
+function copyDefined<K extends keyof DetailEntry>(target: DetailEntry, source: DetailEntry, key: K): void {
+  const value = source[key]
+  if (value !== undefined) target[key] = value
+}
+
 export function persistableEntry(entry: DetailEntry): DetailEntry {
   const out: DetailEntry = { kind: entry.kind }
-  const source = entry as unknown as Record<string, unknown>
-  const target = out as unknown as Record<string, unknown>
-  for (const key of PERSISTED_KEYS) {
-    const value = source[key]
-    if (value !== undefined) target[key] = value
-  }
+  for (const key of PERSISTED_KEYS) copyDefined(out, entry, key)
   return out
 }
 

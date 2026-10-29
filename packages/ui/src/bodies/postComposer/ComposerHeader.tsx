@@ -1,7 +1,6 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import type { TFunction } from "i18next"
-import { focusRingProps, useTheme } from "../../theme"
+import { focusRingProps, useTheme, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import type { PostComposerModel } from "../postComposerModel"
 import { usePostComposerStyles } from "./postComposerStyles"
@@ -34,7 +33,7 @@ export function ComposerHeader({
       >
         <Icon icon={iconMap.Close} size={17} color={th.colors.text} strokeWidth={2} />
       </Pressable>
-      <View pointerEvents="none" style={styles.headerTitleWrap}>
+      <View style={[styles.headerTitleWrap, pointerEventStyles.none]}>
         <Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>
       </View>
       <View style={styles.headerSpacer} />

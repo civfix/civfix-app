@@ -14,8 +14,6 @@ import {
   Platform,
   useWindowDimensions,
   type KeyboardEvent,
-  type StyleProp,
-  type ViewStyle,
 } from "react-native"
 import { isEdgeToEdge } from "react-native-is-edge-to-edge"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
@@ -27,7 +25,6 @@ import {
   useDerivedValue,
   useSharedValue,
   withTiming,
-  type SharedValue,
 } from "react-native-reanimated"
 import { motion } from "../theme"
 import {
@@ -258,11 +255,11 @@ export function useKeyboardAnchor({
 
   const lift = useDerivedValue(() => keyboardLift(overlap.value, restSv.value, gapSv.value))
   const liftStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }))
-  // Widened to the cross-platform contract: `liftStyle` must go to an Animated.View (or
-  // <KeyboardAnchorView>), never a plain View, and `lift` is read-only in practice.
+  // `liftStyle` must go to an Animated.View (or <KeyboardAnchorView>), never a plain View, and
+  // `lift` is read-only in practice.
   return {
-    liftStyle: liftStyle as unknown as StyleProp<ViewStyle>,
-    lift: lift as unknown as SharedValue<number>,
+    liftStyle,
+    lift,
     reserved,
     engaged,
   }

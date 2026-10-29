@@ -46,7 +46,9 @@ import { DOCK_H } from "../../surface/liquidGlass/liquidGlassModel"
 import { useTabBarStore } from "../tabBarStore"
 import { useSearchBarStore } from "../searchBarStore"
 
-beforeEach(() => useTabBarStore.setState({ tabBarHeight: 0, lastNonSearchView: "home" }))
+beforeEach(() => {
+  useTabBarStore.setState({ tabBarHeight: 0, lastNonSearchView: "home" })
+})
 
 describe("map-first tab bar model", () => {
   it("contains Map, Home, Messages, and the Report view tab in order (no always-coral accent flag)", () => {
@@ -199,8 +201,8 @@ describe("map-first tab bar model", () => {
   it("releases the search body's exit freeze from the dockMorphOut timing, never from a config factory", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).toMatch(/searchExitPublish\(target, animated\)/)
-    expect(native).toMatch(/runOnJS\(setSearchExitSettled\)\(true\)/)
-    expect(native).toMatch(/if \(finished\) runOnJS\(setSearchExitSettled\)\(true\)/)
+    expect(native).toMatch(/scheduleOnRN\(setSearchExitSettled, true\)/)
+    expect(native).toMatch(/if \(finished\) scheduleOnRN\(setSearchExitSettled, true\)/)
     expect(native).not.toMatch(/\(finished\) => \{[^}]*Config\(\)/)
   })
 })
@@ -413,7 +415,9 @@ describe("sheetSnapPoints (the compact sheet's three snap heights, shared by bot
 })
 
 describe("docked search bar pinned-state store", () => {
-  beforeEach(() => useSearchBarStore.setState({ pinned: false, barHeight: 60 }))
+  beforeEach(() => {
+    useSearchBarStore.setState({ pinned: false, barHeight: 60 })
+  })
 
   it("defaults to unpinned so web (which never sets it) keeps its resting layout", () => {
     expect(useSearchBarStore.getState().pinned).toBe(false)
@@ -653,7 +657,7 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
     const chain = src.slice(start, end).replace(/\/\/[^\n]*/g, "")
     expect(chain).toMatch(/Gesture\.Pan\(\)/)
     expect(chain).toMatch(/\.onFinalize\(/)
-    expect(chain).toMatch(/runOnJS\(lockOnTab\)\(index\)/)
+    expect(chain).toMatch(/scheduleOnRN\(lockOnTab, index\)/)
     return chain
   }
 

@@ -64,23 +64,25 @@ export function sharedDeadlineRequest<T>(
     const current = flight !== null && flight.key === key ? flight : start(key)
     flight = current
     if (Date.now() + deadlineMs > current.abortAt) armAbort(current, deadlineMs)
-    return new Promise<T>((resolve, reject) => {
-      const own = setTimeout(() => {
+    let own: ReturnType<typeof setTimeout> | undefined
+    const missed = new Promise<never>((_, reject) => {
+      own = setTimeout(() => {
         // A request that has already missed someone's deadline may be hung: the next caller (a
         // Retry tap) must send a fresh one instead of joining it.
         if (flight === current) flight = null
         reject(new RequestDeadlineError(deadlineMs))
       }, deadlineMs)
-      current.result.then(
-        (value) => {
-          clearTimeout(own)
-          resolve(value)
-        },
-        (err: unknown) => {
-          clearTimeout(own)
-          reject(current.expired ? new RequestDeadlineError(deadlineMs) : err)
-        },
-      )
     })
+    const settled = current.result.then(
+      (value) => {
+        clearTimeout(own)
+        return value
+      },
+      (err: unknown) => {
+        clearTimeout(own)
+        throw current.expired ? new RequestDeadlineError(deadlineMs) : err
+      },
+    )
+    return Promise.race([settled, missed])
   }
 }

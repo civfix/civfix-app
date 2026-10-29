@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Image, Pressable, StyleSheet, View } from "react-native"
 import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webTransition } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"

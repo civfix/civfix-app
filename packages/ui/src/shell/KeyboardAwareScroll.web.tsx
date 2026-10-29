@@ -13,8 +13,8 @@
  * pinned-footer suppression reads the nearest KeyboardHostReserveScope, so a footer lifting one surface
  * never collapses the reserve of a scroller on a surface pushed over it.
  */
-import React, { forwardRef, useEffect, useMemo, useRef } from "react"
-import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
+import { forwardRef, useEffect, useMemo, useRef } from "react"
+import type { DecoratedScrollProps, ScrollHostComponent, ScrollHostValue } from "./ScrollHost"
 import { withExtraBottomPadding } from "./bottomPadding"
 import { useKeyboardHostReserved } from "./keyboardScrollScope"
 import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
@@ -44,9 +44,9 @@ function getScrollableNode(node: WebScrollRef | null): HTMLElement | null {
 }
 
 function makeKeyboardAwareScrollView(
-  Base: React.ComponentType<any>,
+  Base: ScrollHostComponent,
   options: KeyboardAwareScrollHostOptions,
-): React.ComponentType<any> {
+): ScrollHostComponent {
   // Bound once per host (the options are module-level constants at every call site), so the effect
   // below does not depend on them.
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
@@ -81,7 +81,7 @@ function makeKeyboardAwareScrollView(
           const rect = target.getBoundingClientRect()
           const over = rect.bottom - (viewportBottom - KEYBOARD_REVEAL_MARGIN)
           if (over > 0) el.scrollTop += over
-        }, SETTLE_MS) as unknown as number
+        }, SETTLE_MS)
       }
       el.addEventListener("focusin", onFocusIn)
       return () => {
@@ -99,7 +99,7 @@ function makeKeyboardAwareScrollView(
     return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />
   })
   KeyboardAwareScrollView.displayName = "KeyboardAwareScrollView"
-  return KeyboardAwareScrollView as unknown as React.ComponentType<any>
+  return KeyboardAwareScrollView
 }
 
 /** `FlatList` passes through unchanged: list inputs live in the list header, never under the keyboard. */

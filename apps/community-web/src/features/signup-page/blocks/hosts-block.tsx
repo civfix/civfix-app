@@ -4,6 +4,8 @@ import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/contract"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 type HostsBlockData = Extract<EventPageBlock, { kind: "hosts" }>
 
 export function HostsBlock({ block }: { block: HostsBlockData }) {
@@ -13,9 +15,8 @@ export function HostsBlock({ block }: { block: HostsBlockData }) {
     <section className="signup-block">
       <h2>{block.title ?? t("blocks.hosts")}</h2>
       <ul className="signup-hosts">
-        {block.entries.map((entry, index) => (
-          <li key={`${entry.name}-${index}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
+        {keyedByValue(block.entries, (entry) => entry.name).map(({ entry, key }) => (
+          <li key={key}>
             {entry.avatarUrl ? <img src={entry.avatarUrl} alt="" width={44} height={44} /> : null}
             <span>
               <strong>{entry.name}</strong>

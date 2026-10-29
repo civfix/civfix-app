@@ -51,7 +51,7 @@ function renderBuilder(dto: EventPageDTO) {
     <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <PageBuilderScreen />
     </ConsoleEventProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }
@@ -126,7 +126,7 @@ describe("PageBuilderScreen server refresh", () => {
     const qc = makeTestQueryClient()
     const client = { getEventPage: vi.fn().mockResolvedValue(dto) }
     render(
-      <ConsoleTestHarness options={{ api: client as never }} client={qc}>
+      <ConsoleTestHarness options={{ api: client }} client={qc}>
         <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
           <PageBuilderScreen />
         </ConsoleEventProvider>

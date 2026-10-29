@@ -82,7 +82,7 @@ describe("linked-report saves are optimistic inside the mutation, not before it"
     const ctx = await opts.onMutate?.({ ...SAVE_LINKS }, fnCtx(qc))
     expect(linked(qc)).toEqual(["b"])
 
-    opts.onError?.(new Error("offline"), { ...SAVE_LINKS }, ctx as never, fnCtx(qc))
+    opts.onError?.(new Error("offline"), { ...SAVE_LINKS }, ctx, fnCtx(qc))
 
     expect(linked(qc)).toEqual(["a"])
   })

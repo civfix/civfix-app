@@ -85,5 +85,11 @@
       "keep": "Keep editing"
     }
   },
-  "finding_area": "Finding your area…"
+  "finding_area": "Finding your area…",
+  "unavailable": {
+    "title": "Map unavailable",
+    "home": "This browser can't display the map. You can still browse reports and events.",
+    "picker": "This browser can't display the map. Search for an address to place the pin instead.",
+    "reportList": "This browser can't display the map. You can still choose reports from the list."
+  }
 }

@@ -3,17 +3,17 @@ import { AppError, ErrorCode } from "@civfix/contract"
 import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../../data/uploadMedia"
 
 function okFetch(status = 200): typeof fetch {
-  return (async () => ({ ok: status >= 200 && status < 300, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: status >= 200 && status < 300, status }) as Response
 }
 
 function statusFetch(status: number): typeof fetch {
-  return (async () => ({ ok: false, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: false, status }) as Response
 }
 
 function rejectingFetch(err: unknown): typeof fetch {
-  return (async () => {
+  return async () => {
     throw err
-  }) as unknown as typeof fetch
+  }
 }
 
 function neverSettlesFetch(): typeof fetch {
@@ -34,7 +34,9 @@ function rejection(upload: Promise<void>): Promise<AppError> {
 }
 
 describe("putUpload", () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it("(a) resolves when the PUT is ok", async () => {
     await expect(putUpload("https://x", {}, "body" as BodyInit, 1000, okFetch())).resolves.toBeUndefined()

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { EventAnswerValue, EventQuestionDTO } from "@civfix/contract"

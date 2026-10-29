@@ -4,7 +4,7 @@ import {
   useRef,
   useState,
   type Dispatch,
-  type MutableRefObject,
+  type RefObject,
   type SetStateAction,
 } from "react"
 import type { ChatItem, OutboxEntry } from "../../helpers"
@@ -13,13 +13,13 @@ import type { ChatMessageDTO } from "@civfix/contract"
 export interface ChatBuffers {
   liveMessages: ChatMessageDTO[]
   setLiveMessages: Dispatch<SetStateAction<ChatMessageDTO[]>>
-  liveMessagesRef: MutableRefObject<ChatMessageDTO[]>
+  liveMessagesRef: RefObject<ChatMessageDTO[]>
   outbox: OutboxEntry[]
   setOutbox: Dispatch<SetStateAction<OutboxEntry[]>>
-  outboxRef: MutableRefObject<OutboxEntry[]>
+  outboxRef: RefObject<OutboxEntry[]>
   aroundWindow: ChatItem[] | null
   setAroundWindow: Dispatch<SetStateAction<ChatItem[] | null>>
-  aroundWindowRef: MutableRefObject<ChatItem[] | null>
+  aroundWindowRef: RefObject<ChatItem[] | null>
   pruneLiveMessages: (folded: ReadonlySet<string>) => void
 }
 

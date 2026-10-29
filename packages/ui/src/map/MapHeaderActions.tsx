@@ -1,4 +1,3 @@
-import React from "react"
 import { StyleSheet, View } from "react-native"
 import { space } from "../theme"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"

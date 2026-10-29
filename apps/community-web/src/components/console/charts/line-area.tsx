@@ -79,7 +79,7 @@ export function LineArea({
             label: s.label,
             value: s.values[hover] === null || s.values[hover] === undefined
               ? suppressedLabel
-              : formatCount(s.values[hover] as number, locale, { compact: true }),
+              : formatCount(s.values[hover], locale, { compact: true }),
             color: s.color ?? palette.seriesColor(si),
           })),
         }

@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import { focusRingProps } from "../../../theme"
 import { Text } from "../../../typography"

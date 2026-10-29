@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Platform } from "react-native"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { reportPinTarget } from "../../map"
 import type { PinTarget } from "../../map/pins"
 import { useDraftReportStore } from "../../report/draftStore"

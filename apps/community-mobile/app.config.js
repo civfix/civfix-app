@@ -117,7 +117,7 @@ module.exports = ({ config }) => ({
   name: "civfix",
   slug: "civfix-community",
   scheme: DEV_VARIANT ? "civfix-dev" : "civfix",
-  version: "1.4.0",
+  version: "1.4.1",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: DEV_VARIANT ? "./assets/icon-dev.png" : "./assets/icon.png",
@@ -263,7 +263,7 @@ module.exports = ({ config }) => ({
     [
       "expo-notifications",
       {
-        color: "#FF7A6B",
+        color: tokens.logo.bloom,
         mode: apsEnvironmentMode(),
       },
     ],

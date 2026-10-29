@@ -13,7 +13,9 @@ function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
 }
 
 describe("draftStore media", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   it("startFromCapture seeds a fresh single-item draft and the EXIF/GPS pin", () => {
     useDraftReportStore
@@ -118,7 +120,9 @@ describe("draftStore media", () => {
  * LOCATION step for every ordinary reporter who confirms a location.
  */
 describe("draftStore prefilled location", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   it("defaults to false and stays false for the wizard's own setLocation calls", () => {
     expect(useDraftReportStore.getState().draft.locationPrefilled).toBe(false)
@@ -183,7 +187,9 @@ describe("draftStore prefilled location", () => {
  * report's share intent or - critically - its created post id.
  */
 describe("draftStore feed share", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   it("defaults to OFF with a blank caption and no post id", () => {
     const d = useDraftReportStore.getState().draft
@@ -231,7 +237,9 @@ describe("draftStore feed share", () => {
 })
 
 describe("draftStore address ownership", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   it("lets a resolved address prefill an untouched field", () => {
     useDraftReportStore.getState().setPrefilledAddress("123 Main St, Inglewood, CA")
@@ -273,7 +281,9 @@ describe("draftStore address ownership", () => {
 })
 
 describe("removing the capture that placed the pin", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   const located = (uri: string) => cap(uri, { location: { lat: 1, lng: 2, source: "exif" } })
 
@@ -347,7 +357,9 @@ describe("removing the capture that placed the pin", () => {
 })
 
 describe("releasing captures that leave the draft", () => {
-  beforeEach(() => useDraftReportStore.getState().reset())
+  beforeEach(() => {
+    useDraftReportStore.getState().reset()
+  })
 
   function releasable(uri: string) {
     const release = vi.fn()

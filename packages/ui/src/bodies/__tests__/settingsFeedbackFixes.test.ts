@@ -58,8 +58,8 @@ describe("Settings > Account editors map the save failure onto honest copy", () 
   it("closes the sheet on a saved commit and keeps it open with the mapped copy on a failed one", async () => {
     const calls: string[] = []
     const setters = {
-      setEditing: (editing: boolean) => calls.push(`editing:${editing}`),
-      setSubmitError: (message: string | null) => calls.push(`error:${message}`),
+      setEditing: (editing: boolean) => calls.push(`editing:${String(editing)}`),
+      setSubmitError: (message: string | null) => calls.push(`error:${String(message)}`),
     }
     const saved: string[] = []
     sheetCommit(

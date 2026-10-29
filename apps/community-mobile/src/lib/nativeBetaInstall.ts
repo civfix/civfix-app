@@ -46,7 +46,7 @@ export function isBetaInstall(): boolean {
     console.log(
       `[install-source] StoreKit container ${probe.dir ?? "<unreadable>"}; ` +
         `${APP_STORE_RECEIPT}=${JSON.stringify(probe.store)}, ` +
-        `${SANDBOX_RECEIPT}=${JSON.stringify(probe.sandbox)} -> beta=${beta}`,
+        `${SANDBOX_RECEIPT}=${JSON.stringify(probe.sandbox)} -> beta=${String(beta)}`,
     )
   }
   return beta

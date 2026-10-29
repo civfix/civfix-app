@@ -1,4 +1,3 @@
-import * as React from "react"
 import { describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
@@ -20,6 +19,7 @@ const OPEN_ERROR = "Couldn't open the city site. Try again."
 const CASE_URL = "https://myla311.lacity.gov/s/"
 
 const FILED_WITH_CASE: TimelineNode = {
+  key: "intake",
   kind: "forwarded",
   when: "Oct 2",
   text: "Filed with City of Los Angeles",
@@ -86,7 +86,7 @@ describe("TimelineRow filed node on web", () => {
   })
 
   it("T19: shows neither a request line nor a link without a case", () => {
-    renderRow({ kind: "forwarded", when: "Oct 2", text: "Filed with the city" })
+    renderRow({ key: "intake", kind: "forwarded", when: "Oct 2", text: "Filed with the city" })
     expect(screen.getByText("Filed with the city")).toBeTruthy()
     expect(screen.queryByText(/^Request/)).toBeNull()
     expect(screen.queryByText(CHECK_STATUS)).toBeNull()

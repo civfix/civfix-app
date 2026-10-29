@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from "react"
+import { useCallback, useContext } from "react"
 import { Modal, View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
 import type { ModalProps, ViewProps } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
@@ -11,6 +11,7 @@ import {
   webScrimProps,
   MIN_TOUCH_TARGET,
   PRESSED_OPACITY,
+  pointerEventStyles,
 } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import { MediaPreview } from "../primitives/MediaPreview"
@@ -111,7 +112,7 @@ export function MediaLightboxBase({
         ) : null}
 
         {current && current.kind !== "image" ? (
-          <View style={styles.stage} pointerEvents="box-none">
+          <View style={[styles.stage, pointerEventStyles["box-none"]]}>
             {media}
           </View>
         ) : null}

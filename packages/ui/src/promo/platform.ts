@@ -7,11 +7,10 @@ export type AppPlatform = "ios" | "ipados" | "android" | "other"
 
 export interface PlatformProbe {
   userAgent: string
-  platform?: string
   maxTouchPoints?: number
 }
 
-export function detectAppPlatform({ userAgent, platform, maxTouchPoints = 0 }: PlatformProbe): AppPlatform {
+export function detectAppPlatform({ userAgent, maxTouchPoints = 0 }: PlatformProbe): AppPlatform {
   // iPhone / iPod first: their UA also contains "like Mac OS X", so a Mac check would false-positive.
   if (/iPhone|iPod/.test(userAgent)) return "ios"
 
@@ -21,8 +20,7 @@ export function detectAppPlatform({ userAgent, platform, maxTouchPoints = 0 }: P
 
   // iPadOS 13+ requests desktop sites by default and reports a UA byte-identical to desktop Safari on a
   // Mac. The ONLY practical distinguisher is touch: no Mac reports maxTouchPoints > 1, every iPad does.
-  const looksMac = platform === "MacIntel" || /Macintosh/.test(userAgent)
-  if (looksMac && maxTouchPoints > 1) return "ipados"
+  if (/Macintosh/.test(userAgent) && maxTouchPoints > 1) return "ipados"
 
   return "other"
 }

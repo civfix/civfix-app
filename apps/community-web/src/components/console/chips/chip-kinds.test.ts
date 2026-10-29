@@ -93,7 +93,7 @@ describe("console chip registry", () => {
       for (const [value, entry] of Object.entries(family as Record<string, ChipKindEntry>)) {
         const signature = `${entry.hue}|${entry.icon.displayName ?? entry.icon.name}`
         const previous = seen.get(signature)
-        expect(previous, `${kind}.${value} duplicates ${kind}.${previous}`).toBeUndefined()
+        expect(previous, `${kind}.${value} duplicates ${kind}.${previous ?? "nothing"}`).toBeUndefined()
         seen.set(signature, value)
       }
     }

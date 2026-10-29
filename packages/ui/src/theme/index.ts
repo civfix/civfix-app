@@ -71,7 +71,7 @@ function nativeShadow(
     shadowOpacity: opacity,
     shadowRadius: blur,
     elevation,
-  } as ViewStyle
+  }
 }
 
 export function coloredShadow(
@@ -95,7 +95,7 @@ export function pinGlow(
   elevation: number,
 ): ViewStyle {
   if (Platform.OS === "web") {
-    return { filter: `drop-shadow(0 ${offsetY}px ${blur}px ${hexWithAlpha(color, opacity)})` } as unknown as ViewStyle
+    return { filter: `drop-shadow(0 ${offsetY}px ${blur}px ${hexWithAlpha(color, opacity)})` }
   }
   return nativeShadow(color, offsetY, blur, opacity, elevation)
 }
@@ -149,6 +149,7 @@ export {
   headingLevel,
   stopPress,
   linkKeyProps,
+  domProps,
   inputFocusedStyle,
   ROW_A11Y_PROPS,
   WEB_ROW_FOCUS_INSET,
@@ -157,5 +158,7 @@ export {
   FOCUS_RING_WIDTH,
   FOCUS_RING_OUTLINE,
 } from "./webAffordances"
+export { webStyle } from "./webStyle"
+export { pointerEventStyles } from "./pointerEventStyles"
 
 export const POST_SURFACE: "flat" | "card" = "flat"

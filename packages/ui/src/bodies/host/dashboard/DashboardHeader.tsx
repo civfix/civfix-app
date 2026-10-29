@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { View } from "react-native"
 import type { HostPortfolioKpis, OrganizationDTO } from "@civfix/contract"
 import { headingLevel, makeThemedStyles } from "../../../theme"

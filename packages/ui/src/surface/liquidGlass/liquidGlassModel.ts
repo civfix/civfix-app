@@ -142,9 +142,9 @@ export function parseRgba(color: string): [number, number, number, number] {
       rgba[4] === undefined ? 1 : Number(rgba[4]),
     ]
   }
-  const hex = color.match(/^#([0-9a-fA-F]{6})$/)
-  if (hex) {
-    const n = parseInt(hex[1]!, 16)
+  const hex = color.match(/^#([0-9a-fA-F]{6})$/)?.[1]
+  if (hex !== undefined) {
+    const n = parseInt(hex, 16)
     return [((n >> 16) & 0xff) / 255, ((n >> 8) & 0xff) / 255, (n & 0xff) / 255, 1]
   }
   return [1, 1, 1, 0]

@@ -62,7 +62,7 @@ test("an id-less thread or post-thread entry is never bridged", () => {
   assert.equal(bridgeKey({ kind: "thread" }), null)
   assert.equal(bridgeKey({ kind: "post-thread" }), null)
   const { actions } = run([{ active: { kind: "thread" }, now: 0 }])
-  assert.equal(actions[0].type, "none")
+  assert.equal(actions[0]?.type, "none")
 })
 
 test("a thread carries its room kind and DM peer across the param boundary", () => {
@@ -100,9 +100,9 @@ test("the re-entrant pop the bridge itself causes does NOT re-arm the guard into
     { active: null, now: 1000 },
     { active: thread("A"), now: 1000 },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[1].type, "none")
-  assert.equal(actions[2].type, "drop")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[1]?.type, "none")
+  assert.equal(actions[2]?.type, "drop")
   assert.equal(guard.recentKey, "thread:A")
 })
 
@@ -125,8 +125,8 @@ test("the window is a DOUBLE-TAP window, so backing out and re-tapping the row b
     { active: null, now: 0 },
     { active: thread("A"), now: 400 },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "bridge")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[2]?.type, "bridge")
   assert.ok(BRIDGE_REPEAT_WINDOW_MS <= 300)
 })
 
@@ -136,8 +136,8 @@ test("re-opening the same thread after the window bridges again", () => {
     { active: null, now: 0 },
     { active: thread("A"), now: BRIDGE_REPEAT_WINDOW_MS },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "bridge")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[2]?.type, "bridge")
 })
 
 test("open A, close, reopen A bridges both opens", () => {
@@ -147,8 +147,8 @@ test("open A, close, reopen A bridges both opens", () => {
     { active: thread("A"), now: 5000 },
     { active: null, now: 5000 },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "bridge")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[2]?.type, "bridge")
 })
 
 test("a different room right after the first still bridges - the window is per target", () => {
@@ -157,8 +157,8 @@ test("a different room right after the first still bridges - the window is per t
     { active: null, now: 0 },
     { active: thread("B"), now: 60 },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "bridge")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[2]?.type, "bridge")
   assert.equal((actions[2] as { key: string }).key, "thread:B")
 })
 
@@ -206,9 +206,9 @@ test("a non-bridged kind becoming active clears the open latch without erasing t
     { active: { kind: "pin", id: "r1" }, now: 10 },
     { active: thread("A"), now: 20 },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[1].type, "none")
-  assert.equal(actions[2].type, "drop")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[1]?.type, "none")
+  assert.equal(actions[2]?.type, "drop")
   assert.equal(guard.openKey, "thread:A")
 })
 
@@ -248,8 +248,8 @@ test("a notification for the thread ALREADY on screen drops instead of pushing a
     { active: null, now: 0 },
     { active: thread("A"), now: 30_000, focused: "thread:A" },
   ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "drop")
+  assert.equal(actions[0]?.type, "bridge")
+  assert.equal(actions[2]?.type, "drop")
   assert.equal((actions[2] as { key: string }).key, "thread:A")
 })
 
@@ -259,14 +259,14 @@ test("the same notification long after the repeat window still bridges when that
     { active: null, now: 0 },
     { active: thread("A"), now: 30_000, focused: null },
   ])
-  assert.equal(actions[2].type, "bridge")
+  assert.equal(actions[2]?.type, "bridge")
 })
 
 test("a notification for a DIFFERENT room still pushes while the first room is on screen", () => {
   const { actions } = run([
     { active: thread("B"), now: 30_000, focused: "thread:A" },
   ])
-  assert.equal(actions[0].type, "bridge")
+  assert.equal(actions[0]?.type, "bridge")
   assert.equal((actions[0] as { key: string }).key, "thread:B")
 })
 
@@ -276,8 +276,8 @@ test("post-thread and composer honour the on-screen check the same way", () => {
     { active: null, now: 5000 },
     { active: composer("reply", "P1"), now: 6000, focused: "composer:reply:P1" },
   ])
-  assert.equal(actions[0].type, "drop")
-  assert.equal(actions[2].type, "drop")
+  assert.equal(actions[0]?.type, "drop")
+  assert.equal(actions[2]?.type, "drop")
 })
 
 test("stackWithoutBridged removes exactly the bridged entry, not whatever is on top", () => {
@@ -339,7 +339,7 @@ test("the announcement composer stays in the sheet so its draft guard applies", 
   assert.equal(bridgeKey({ kind: "host-announce", id: "c1" }), null)
   assert.equal(bridgeRoute({ kind: "host-announce", id: "c1" }), null)
   const { actions } = run([{ active: { kind: "host-announce", id: "c1" }, now: 0 }])
-  assert.equal(actions[0].type, "none")
+  assert.equal(actions[0]?.type, "none")
 })
 
 test("a cold-start bridge waits until the root layout's Stack is in the navigation state", () => {

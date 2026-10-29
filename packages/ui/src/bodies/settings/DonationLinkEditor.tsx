@@ -1,4 +1,3 @@
-import React from "react"
 import { HTTPS_URL_MAX_LENGTH } from "@civfix/contract"
 import { Text, TextLink } from "../../typography"
 import { TextField } from "../../primitives"

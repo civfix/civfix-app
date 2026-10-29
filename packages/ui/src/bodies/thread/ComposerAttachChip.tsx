@@ -6,7 +6,6 @@
  *
  * Presentation-only: the composer owns what is attached and what removing it does.
  */
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"

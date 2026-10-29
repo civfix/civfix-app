@@ -1,4 +1,3 @@
-import React from "react"
 import { View, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
 import { useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { iconMap } from "../typography"

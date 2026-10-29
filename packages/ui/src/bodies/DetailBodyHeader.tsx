@@ -1,6 +1,5 @@
-import React from "react"
 import { Platform, Pressable, StyleSheet, View } from "react-native"
-import { focusRingProps, headingLevel, makeThemedStyles, wash, useLayoutMode, useTheme, MIN_TOUCH_TARGET } from "../theme"
+import { focusRingProps, headingLevel, makeThemedStyles, wash, useLayoutMode, useTheme, MIN_TOUCH_TARGET, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   DETAIL_BACK_SIZE,
@@ -63,13 +62,13 @@ export function DetailBodyHeader({ title, backLabel, onBack, compactTitle }: Det
         <Icon icon={iconMap.ArrowLeft} size={COMPACT_BACK_ICON_SIZE} color={th.colors.text} />
       </Pressable>
       {compactTitle === "heading" ? (
-        <View pointerEvents="none" style={styles.headerTitleWrap}>
+        <View style={[styles.headerTitleWrap, pointerEventStyles.none]}>
           <Text variant="heading" accessibilityRole="header" {...headingLevel(1)}>
             {title}
           </Text>
         </View>
       ) : (
-        <View pointerEvents="none" style={[styles.headerTitleWrap, styles.headerTitleWrapInset]}>
+        <View style={[styles.headerTitleWrap, styles.headerTitleWrapInset, pointerEventStyles.none]}>
           <Text variant="heading" numberOfLines={1}>
             {title}
           </Text>

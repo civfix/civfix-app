@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { View, StyleSheet, type ViewStyle } from "react-native"
-import { makeThemedStyles, useTheme } from "../theme"
+import { View, StyleSheet } from "react-native"
+import { domElement } from "../primitives/domElement"
+import { makeThemedStyles, useTheme, webStyle, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
 import { useResetOnOpen } from "../primitives/useModalClosed"
 import { LocationPicker } from "./LocationPicker"
-import { useLocationPick, type PickDraft } from "./locationPickStore"
+import { useLocationPick } from "./locationPickStore"
 import type { LatLng } from "./LocationPicker.types"
 import {
   PickStepBottomBar,
@@ -17,7 +18,7 @@ import {
 import { INLINE_PICK_HEIGHT, type PortraitMapPickStepProps } from "./PortraitMapPickStep.types"
 
 /** RN's style types stop at "absolute"; react-native-web hands "fixed" straight to CSS. */
-const WEB_FIXED_POSITION = { position: "fixed" } as unknown as Pick<ViewStyle, "position">
+const WEB_FIXED_POSITION = webStyle({ position: "fixed" })
 /** Above the web shell and its sheet, since the step is portalled to the document body. */
 const PICK_STEP_Z_INDEX = 1000
 
@@ -63,7 +64,7 @@ export function PortraitMapPickStep({
 
   useEffect(() => {
     if (!live || !mapRegistered) return
-    useLocationPick.getState().start((pointRef.current as PickDraft | null) ?? null, pinRef.current)
+    useLocationPick.getState().start(pointRef.current ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }
@@ -110,7 +111,7 @@ export function PortraitMapPickStep({
     // Only a keyboard opener moves focus into the search: on a phone a focused input raises the soft
     // keyboard over the map the step exists to show.
     if (opener?.matches(":focus-visible")) {
-      const topBar = topBarRef.current as unknown as HTMLElement | null
+      const topBar = domElement(topBarRef.current)
       topBar?.querySelector("input")?.focus()
     }
     const onKeyDown = (e: KeyboardEvent) => {
@@ -128,8 +129,8 @@ export function PortraitMapPickStep({
   if (!live || typeof document === "undefined") return null
 
   const chrome = (
-    <View style={styles.host} pointerEvents="box-none">
-      <View ref={topBarRef} style={styles.topBar} pointerEvents="auto">
+    <View style={[styles.host, pointerEventStyles["box-none"]]}>
+      <View ref={topBarRef} style={[styles.topBar, pointerEventStyles.auto]}>
         <View style={styles.titleRow}>
           <Icon icon={iconMap.MapPin} size={16} color={th.colors.brand.bloom} />
           <Text style={styles.title} numberOfLines={1}>
@@ -140,9 +141,9 @@ export function PortraitMapPickStep({
       </View>
 
       {mapRegistered ? (
-        <View style={styles.spacer} pointerEvents="box-none" />
+        <View style={[styles.spacer, pointerEventStyles["box-none"]]} />
       ) : (
-        <View style={styles.inlineWrap} pointerEvents="auto">
+        <View style={[styles.inlineWrap, pointerEventStyles.auto]}>
           <LocationPicker
             value={localPoint}
             onChange={onInlineChange}
@@ -155,7 +156,7 @@ export function PortraitMapPickStep({
         </View>
       )}
 
-      <View pointerEvents="auto">
+      <View style={pointerEventStyles.auto}>
         <PickStepBottomBar point={point} onConfirm={confirm} onCancel={cancel} style={styles.bottomBar} />
       </View>
     </View>

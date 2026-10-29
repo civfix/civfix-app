@@ -32,7 +32,7 @@ function renderOverview(over: Partial<CleanupDTO>) {
       <OverviewScreen />
     </ConsoleEventProvider>,
     {
-      api: new Proxy({}, { get: () => vi.fn().mockImplementation(pending) }) as never,
+      api: new Proxy({}, { get: () => vi.fn().mockImplementation(pending) }),
     },
   )
 }

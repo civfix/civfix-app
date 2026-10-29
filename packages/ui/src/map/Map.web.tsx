@@ -1,10 +1,12 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap } from "maplibre-gl"
 import type { BBox } from "@civfix/contract"
 import { useLayoutMode, useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import { TeardropPin, EventPin, BlendPin, ClusterBubble, clusterToneFor } from "./pins"
 import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
@@ -26,6 +28,8 @@ import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } fro
 import { attachPressGestures } from "./mapPressGestures.web"
 import { useFocusAndFlyToCamera } from "./homeMapCamera.web"
 import { useDropPinMarker, useModeMapControls, usePickMarker, useUserLocationDot } from "./homeMapOverlays.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
@@ -43,6 +47,15 @@ function mapBoundsToBBox(map: MlMap): BBox {
 }
 
 export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref) {
+  const { t } = useT("map-ui")
+  return (
+    <MapSurfaceGuard fallback={<MapUnavailable hint={t("unavailable.home")} />}>
+      <MapCanvas ref={ref} {...props} />
+    </MapSurfaceGuard>
+  )
+})
+
+const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props, ref) {
   const { t } = useT("map-ui")
   const {
     reports = NO_REPORTS,
@@ -153,8 +166,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
   const reconcileRef = React.useRef<() => void>(() => {})
   const runnerRef = React.useRef<IdleRunner | null>(null)
-  if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
-  const runner = runnerRef.current
+  const runner = (runnerRef.current ??= createIdleRunner(() => reconcileRef.current()))
   React.useLayoutEffect(() => {
     reconcileRef.current = () => {
       const map = mapRef.current
@@ -282,6 +294,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     const markers = markersRef.current
     const seed = initialCenterRef.current
 
+    bindBundledWorker()
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
