@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { CheckinOutcome, EventCheckinCountersDTO } from "@civfix/contract"
 import { checkinResultRender, type CheckinTone } from "@civfix/contract/host"

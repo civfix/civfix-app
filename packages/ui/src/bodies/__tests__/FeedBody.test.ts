@@ -212,11 +212,11 @@ describe("the card's timeline has no scrollbar, and a fade instead", () => {
 
   it("terminates the list with a gradient that cannot itself become a false affordance", () => {
     expect(SRC).toContain("linear-gradient(to bottom")
-    expect(SRC).toMatch(/<View pointerEvents="none" style=\{fadeStyle\}/)
+    expect(SRC).toMatch(/<View style=\{\[fadeStyle, pointerEventStyles\.none\]\}/)
     expect(SRC).toMatch(/const fadeStyle = useMemo\(\s*\(\) => \[styles\.scrollFade/)
     expect(SRC).toContain("{ bottom: promoHeight }")
     expect(SRC).toContain(
-      '{isExpanded && IS_WEB ? <View pointerEvents="none" style={fadeStyle} /> : null}',
+      '{isExpanded && IS_WEB ? <View style={[fadeStyle, pointerEventStyles.none]} /> : null}',
     )
     expect(SRC).not.toContain("if (!isExpanded || !IS_WEB) return list")
   })

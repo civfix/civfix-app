@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles, motion } from "../theme"
+import { makeThemedStyles, motion, pointerEventStyles } from "../theme"
 import { BodyTransition } from "./BodyTransition"
 import { CompactShell } from "./CompactShell"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
@@ -214,8 +214,11 @@ export function PortraitShellFrame({
               {baseBody}
               {homeSlotMounted ? (
                 <View
-                  style={[styles.keepAliveSlot, homeSlotVisible ? null : styles.keepAliveHidden]}
-                  pointerEvents={homeSlotVisible ? "auto" : "none"}
+                  style={[
+                    styles.keepAliveSlot,
+                    homeSlotVisible ? null : styles.keepAliveHidden,
+                    pointerEventStyles[homeSlotVisible ? "auto" : "none"],
+                  ]}
                   accessibilityElementsHidden={!homeSlotVisible}
                   importantForAccessibility={homeSlotVisible ? "auto" : "no-hide-descendants"}
                 >
@@ -227,8 +230,8 @@ export function PortraitShellFrame({
                   style={[
                     styles.keepAliveSlot,
                     messagingSlotVisible ? null : styles.keepAliveHidden,
+                    pointerEventStyles[messagingSlotVisible ? "auto" : "none"],
                   ]}
-                  pointerEvents={messagingSlotVisible ? "auto" : "none"}
                   accessibilityElementsHidden={!messagingSlotVisible}
                   importantForAccessibility={messagingSlotVisible ? "auto" : "no-hide-descendants"}
                 >
@@ -241,8 +244,11 @@ export function PortraitShellFrame({
             {reportSlotMounted ? (
               <View
                 key={`report:${reportSlotGeneration}`}
-                style={[styles.keepAliveSlot, reportSlotVisible ? null : styles.keepAliveHidden]}
-                pointerEvents={reportSlotVisible ? "auto" : "none"}
+                style={[
+                  styles.keepAliveSlot,
+                  reportSlotVisible ? null : styles.keepAliveHidden,
+                  pointerEventStyles[reportSlotVisible ? "auto" : "none"],
+                ]}
                 accessibilityElementsHidden={!reportSlotVisible}
                 importantForAccessibility={reportSlotVisible ? "auto" : "no-hide-descendants"}
               >
@@ -289,8 +295,11 @@ export function PortraitShellFrame({
 
       {dockVisible ? (
         <View
-          style={[styles.tabBar, { zIndex: frame.bottomChrome.zIndex }]}
-          pointerEvents={sheetActive ? "none" : "box-none"}
+          style={[
+            styles.tabBar,
+            { zIndex: frame.bottomChrome.zIndex },
+            pointerEventStyles[sheetActive ? "none" : "box-none"],
+          ]}
         >
           <TabBar />
         </View>

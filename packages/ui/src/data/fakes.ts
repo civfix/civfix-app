@@ -48,8 +48,11 @@ export function makeFakeApiClient(): ApiClient {
       get(_target, prop) {
         if (prop === "then") return undefined // not a thenable; avoid await-unwrapping the proxy itself
         const key = String(prop)
-        if (key in geoMethods) return (geoMethods as unknown as Record<string, unknown>)[key]
-        if (key in postMethods) return (postMethods as unknown as Record<string, unknown>)[key]
+        const source = key in geoMethods ? geoMethods : key in postMethods ? postMethods : null
+        if (source) {
+          const method: unknown = Reflect.get(source, key)
+          return method
+        }
         return (..._args: unknown[]): Promise<never> =>
           Promise.reject(
             new Error(

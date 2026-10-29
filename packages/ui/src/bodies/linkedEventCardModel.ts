@@ -46,6 +46,9 @@ export function visibleAttendeeSlots(previewCount: number, going: number): numbe
   return Math.min(FACE_CAP, Math.max(previewCount, Math.min(FACE_CAP, going)))
 }
 
+/** The stack's cells in order. A placeholder stands in for no one, so its seat is the only identity it has. */
+export const ATTENDEE_SEATS: readonly string[] = Array.from({ length: FACE_CAP }, (_unused, seat) => `seat-${seat}`)
+
 const MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
 const DAY_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric" }
 const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" }

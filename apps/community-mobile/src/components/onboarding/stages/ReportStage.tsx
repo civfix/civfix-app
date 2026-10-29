@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   type SharedValue,
 } from "react-native-reanimated"
-import { REPORT_TYPE_TO_CATEGORY } from "@civfix/contract"
+import { REPORT_TYPE_TO_CATEGORY, type ReportType } from "@civfix/contract"
 import { CategoryChip, Icon, TeardropPin, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { categoryColor, makeThemedStyles, motion, useTheme, wash } from "@/theme"
@@ -42,13 +42,15 @@ const W_SQUASH = stageWindow(TOTAL_MS, 4080, 4410)
 const W_GLOW = stageWindow(TOTAL_MS, 4080, 4920)
 const W_SUCCESS = stageWindow(TOTAL_MS, 4210, 4960)
 
-const ROW_WINDOWS = REPORT_STAGE_TYPES.map((_, i) =>
-  stageWindow(
+const TYPE_ROWS = REPORT_STAGE_TYPES.map((type, i) => ({
+  type,
+  selected: i === REPORT_STAGE_SELECTED_INDEX,
+  enter: stageWindow(
     TOTAL_MS,
     ROW_START_MS + i * ROW_STAGGER_MS,
     ROW_START_MS + i * ROW_STAGGER_MS + ROW_DURATION_MS,
   ),
-)
+}))
 
 const PIN_SIZE = 38
 const PIN_HEIGHT = pinHeightFor(PIN_SIZE)
@@ -67,14 +69,21 @@ const SELECTED_TINT_AMOUNT = 0.86
 
 const POP = motion.pop
 
-function TypeRow({ index, progress }: { index: number; progress: SharedValue<number> }) {
+function TypeRow({
+  type,
+  selected,
+  enter,
+  progress,
+}: {
+  type: ReportType
+  selected: boolean
+  enter: readonly [number, number]
+  progress: SharedValue<number>
+}) {
   const { t } = useT("enums")
   const th = useTheme()
   const styles = useStyles()
-  const type = REPORT_STAGE_TYPES[index]
   const category = REPORT_TYPE_TO_CATEGORY[type]
-  const selected = index === REPORT_STAGE_SELECTED_INDEX
-  const enter = ROW_WINDOWS[index]
 
   const rowStyle = useAnimatedStyle(() => {
     const s = STANDARD_EASE(segment(progress.value, enter[0], enter[1]))
@@ -220,8 +229,14 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
             </View>
             <View style={styles.types}>
               <Text variant="caption">{t("report.stage.what")}</Text>
-              {REPORT_STAGE_TYPES.map((type, i) => (
-                <TypeRow key={type} index={i} progress={progress} />
+              {TYPE_ROWS.map(({ type, selected, enter }) => (
+                <TypeRow
+                  key={type}
+                  type={type}
+                  selected={selected}
+                  enter={enter}
+                  progress={progress}
+                />
               ))}
             </View>
           </View>

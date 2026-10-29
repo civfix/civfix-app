@@ -4,7 +4,8 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
-    "outDir": "dist-types"
+    "outDir": "dist-types",
+    "types": ["react"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist-types", "src/**/__tests__/**"]

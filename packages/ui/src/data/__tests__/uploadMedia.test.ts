@@ -165,7 +165,7 @@ describe("the web progress path (XMLHttpRequest)", () => {
   it("uploads through XHR so the web host gets real byte progress", async () => {
     const g = globalThis as { XMLHttpRequest?: unknown }
     const before = g.XMLHttpRequest
-    g.XMLHttpRequest = FakeXhr as unknown as typeof XMLHttpRequest
+    g.XMLHttpRequest = FakeXhr
     try {
       const { client, calls } = api()
       const fractions: number[] = []
@@ -198,7 +198,7 @@ describe("the web progress path (XMLHttpRequest)", () => {
     }
     const g = globalThis as { XMLHttpRequest?: unknown }
     const before = g.XMLHttpRequest
-    g.XMLHttpRequest = RefusingXhr as unknown as typeof XMLHttpRequest
+    g.XMLHttpRequest = RefusingXhr
     try {
       const { client, calls } = api()
       const err = await uploadMedia({

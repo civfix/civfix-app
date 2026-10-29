@@ -25,7 +25,7 @@ export function shareSnapshotOf(
 ): ShareSnapshot {
   return {
     title: draft.title.trim() || untitled,
-    category: (draft.category as ReportCategory | null) ?? null,
+    category: draft.category ?? null,
     addr: draft.addr,
     thumbUrl: draft.media[0]?.uri ?? null,
     caption: draft.feedCaption,

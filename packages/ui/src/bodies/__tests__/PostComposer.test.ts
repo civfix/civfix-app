@@ -337,7 +337,7 @@ describe("buildComposerQuoteRef", () => {
   })
 
   it("keeps a body-less post renderable", () => {
-    const ref = buildComposerQuoteRef({ ...post, body: null } as PostDTO)
+    const ref = buildComposerQuoteRef({ ...post, body: null })
     expect(ref.excerpt).toBe("")
     expect(ref.body).toBeNull()
   })

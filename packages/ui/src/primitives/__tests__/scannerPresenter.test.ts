@@ -8,7 +8,9 @@ import {
   subscribeScannerAvailability,
 } from "../scannerPresenter"
 
-afterEach(() => resetScanPresenterForTests())
+afterEach(() => {
+  resetScanPresenterForTests()
+})
 
 describe("scannerAvailable", () => {
   it("is false with no presenter, so a UI hides the Scan action instead of offering a dead button", () => {
@@ -61,7 +63,7 @@ describe("presentScanner", () => {
     const first = presentScanner()
     const second = presentScanner()
     await expect(first).resolves.toBeNull()
-    resolveScan("tok-3", sessions[1] as string)
+    resolveScan("tok-3", sessions[1])
     await expect(second).resolves.toBe("tok-3")
   })
 

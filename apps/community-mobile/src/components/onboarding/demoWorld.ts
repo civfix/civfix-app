@@ -2,7 +2,7 @@ import type { ChatItem } from "@civfix/ui/helpers"
 import type { CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/contract"
 import { TOGETHER_EVENT_SPOT, TRACK_PINS } from "./onboardingMapScenes"
 
-export const DEMO_ORGANIZER: PersonDTO = {
+export const DEMO_ORGANIZER = {
   id: "onboarding-organizer",
   name: "Maya Alvarez",
   handle: "demo_maya",
@@ -11,7 +11,7 @@ export const DEMO_ORGANIZER: PersonDTO = {
   followers: 0,
   following: 0,
   isFollowing: false,
-}
+} satisfies PersonDTO
 
 export const DEMO_NEIGHBOR: PersonDTO = {
   id: "onboarding-neighbor",
@@ -48,7 +48,7 @@ export const DEMO_EVENT_LNG = TOGETHER_EVENT_SPOT.lng
 
 export const DEMO_REPORT_ID = "onboarding-report"
 
-export const REPORT_STAGE_TYPES: readonly ReportType[] = ["dump", "graffiti", "pavement"]
+export const REPORT_STAGE_TYPES = ["dump", "graffiti", "pavement"] as const satisfies readonly ReportType[]
 export const REPORT_STAGE_SELECTED_INDEX = 1
 
 export const TRACK_CLUSTER_MEMBERS: readonly number[] = [5, 6]
@@ -58,7 +58,11 @@ export const TRACK_ROW_PIN_INDEX = 0
 export const DEMO_REPORT_LAT = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lat
 export const DEMO_REPORT_LNG = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lng
 
-export const TRACK_STATUS_CYCLE: readonly ReportStatus[] = ["published", "in_progress", "resolved"]
+export const TRACK_STATUS_CYCLE = [
+  "published",
+  "in_progress",
+  "resolved",
+] as const satisfies readonly ReportStatus[]
 
 export function demoCleanup(
   title: string,
@@ -93,7 +97,7 @@ export function demoChatItems(
   askBody: string,
   replyBody: string,
   sentAt: readonly [string, string],
-): ChatItem[] {
+): readonly [ChatItem, ChatItem] {
   return [
     {
       message: {

@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { useTheme, type Theme } from "../../theme"
 import { Text, Icon, iconMap, type IconName } from "../../typography"

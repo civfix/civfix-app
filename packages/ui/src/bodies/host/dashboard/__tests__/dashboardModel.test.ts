@@ -71,7 +71,7 @@ function org(id: string, over: Partial<OrganizationDTO> = {}): OrganizationDTO {
     createdAt: "2026-01-01T00:00:00.000Z",
     myRole: "member",
     ...over,
-  } as OrganizationDTO
+  }
 }
 
 function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
@@ -88,7 +88,7 @@ function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
     myCapabilities: [],
     myRole: null,
     ...over,
-  } as HostedEventDTO
+  }
 }
 
 function member(
@@ -117,7 +117,7 @@ function invite(id: string, over: Partial<OrganizationInviteDTO> = {}): Organiza
     createdAt: "2026-01-01T00:00:00.000Z",
     expiresAt: "2026-02-01T00:00:00.000Z",
     ...over,
-  } as OrganizationInviteDTO
+  }
 }
 
 describe("dashboard scope", () => {
@@ -968,13 +968,13 @@ describe("portfolio surface", () => {
 
   it("ticks the dashboard clock off the shared hook instead of reading it mid-render", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("const nowMs = useNow(NOW_TICK_MS, { boundaryAt })")
+    expect(body).toContain("const nowMs = useNow(NOW_TICK_MS, { boundaryAt: (at) => soonestBoundary(upcomingEvents, at) })")
+    expect(body).not.toContain("Date.now()")
     expect(body).not.toContain("const now = new Date()")
   })
 
   it("re-reads the soonest boundary each tick, so a later one still schedules a refresh", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("const boundaryAt = soonestBoundary(upcomingEvents, Date.now())")
     expect(body).not.toMatch(/useMemo\(\(\) => soonestBoundary\([^)]*\), \[upcomingEvents\]\)/)
     expect(body).toContain("function soonestBoundary(events: readonly HostedEventDTO[], at: number)")
   })

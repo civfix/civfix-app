@@ -4,7 +4,7 @@ import { firstReportPhoto, latestNote, reportThumbUrl } from "../reportsListMode
 
 type Media = ReportDTO["media"][number]
 const media = (id: string, status: Media["status"], kind: Media["kind"] = "image"): Media =>
-  ({ id, status, kind, url: `https://x/${id}` }) as Media
+  ({ id, status, kind, url: `https://x/${id}` })
 
 function report(over: Partial<ReportDTO> = {}): ReportDTO {
   return {
@@ -31,7 +31,7 @@ describe("report list helpers", () => {
   it("thumbs a row with the first ready photo's thumbnail, its full image without one, or nothing", () => {
     const thumbed = { ...media("i", "ready"), thumbUrl: "https://x/i-thumb" } as Media
     expect(reportThumbUrl(report({ media: [media("v", "ready", "video"), thumbed] }))).toBe("https://x/i-thumb")
-    expect(reportThumbUrl(report({ media: [{ ...media("i", "ready"), thumbUrl: null } as Media] }))).toBe("https://x/i")
+    expect(reportThumbUrl(report({ media: [{ ...media("i", "ready"), thumbUrl: null }] }))).toBe("https://x/i")
     expect(reportThumbUrl(report({ media: [media("p", "validating")] }))).toBeNull()
   })
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO } from "@civfix/contract"
 import {

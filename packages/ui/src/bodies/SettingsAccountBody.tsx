@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
 import type { SocialLinks, UpdateProfileRequest } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"

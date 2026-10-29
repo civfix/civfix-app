@@ -8,7 +8,9 @@ import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
  * the whole session.
  */
 describe("withTimeout", () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it("resolves a promise that settles in time with its own value, untouched", async () => {
     const value = { coords: { latitude: 1, longitude: 2 } }

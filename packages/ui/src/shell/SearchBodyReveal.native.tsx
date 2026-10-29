@@ -1,4 +1,4 @@
-import React, { createContext, forwardRef, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, forwardRef, useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { makeThemedStyles } from "../theme"
@@ -11,6 +11,7 @@ import {
   ScrollHostProvider,
   decorateScrollHost,
   type DecoratedScrollProps,
+  type ScrollHostComponent,
   type ScrollHostValue,
 } from "./ScrollHost"
 import { useSearchBarStore } from "./searchBarStore"
@@ -21,7 +22,7 @@ import type { SearchBodyRevealProps } from "./SearchBodyReveal.types"
 const DockClearanceFallbackContext = createContext(0)
 DockClearanceFallbackContext.displayName = "DockClearanceFallbackContext"
 
-function makeDockClearanceScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
+function makeDockClearanceScroll(Base: ScrollHostComponent): ScrollHostComponent {
   const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(function DockClearanceScroll(
     { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
     ref,
@@ -52,7 +53,7 @@ function makeDockClearanceScroll(Base: React.ComponentType<any>): React.Componen
     )
   })
   DockClearanceScroll.displayName = "DockClearanceScroll"
-  return DockClearanceScroll as unknown as React.ComponentType<any>
+  return DockClearanceScroll
 }
 
 function makeDockClearanceScrollHost(base: ScrollHostValue): ScrollHostValue {

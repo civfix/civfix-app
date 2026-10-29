@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { StyleSheet, View, useWindowDimensions } from "react-native"
 import { haversineMeters, type ReportPinDTO } from "@civfix/contract"
 import type { LatLng } from "@civfix/contract/geocode"

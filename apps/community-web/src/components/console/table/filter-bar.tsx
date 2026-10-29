@@ -66,10 +66,11 @@ function activeChipsFor(facet: FilterFacet): ActiveFilterChip[] {
 }
 
 function multiSummary(facet: MultiFacet): string {
-  if (facet.values.length === 0) return facet.label
-  const first = facet.options.find((o) => o.value === facet.values[0])
+  const [firstValue] = facet.values
+  if (firstValue === undefined) return facet.label
+  const first = facet.options.find((o) => o.value === firstValue)
   const extra = facet.values.length - 1
-  return `${facet.label}: ${first?.label ?? facet.values[0]}${extra > 0 ? ` +${extra}` : ""}`
+  return `${facet.label}: ${first?.label ?? firstValue}${extra > 0 ? ` +${extra}` : ""}`
 }
 
 const CHIP_BUTTON_BASE =

@@ -55,7 +55,7 @@ function zustandStores(): { stores: StoreDeclaration[]; problems: string[] } {
       const allowed = ZUSTAND_VALUE_IMPORTS[module!]
       const names = named ? named[1]!.split(",").map((part) => part.trim()).filter(Boolean) : []
       if (!named || !allowed || names.some((name) => !allowed.includes(name))) {
-        problems.push(`${path}: unrecognised zustand import \`${clause}\` from "${module}"`)
+        problems.push(`${path}: unrecognised zustand import \`${clause!}\` from "${module!}"`)
       }
     }
     if (!/import\s+\{[^}]*\bcreate\b[^}]*\}\s+from\s+"zustand"/.test(text)) continue

@@ -1,4 +1,4 @@
-import { stripTrailingSlashes, SOURCE_REPO_URL, sourceLink } from "../helpers"
+import { stripTrailingSlashes, trimSlashes, SOURCE_REPO_URL, sourceLink } from "../helpers"
 
 export const WEB_ORIGIN = "https://civfix.org"
 
@@ -40,7 +40,7 @@ export function setApiHost(apiUrl: string): void {
   } catch {
     host = value
   }
-  configuredApiHost = host.toLowerCase().replace(/^\/+|\/+$/g, "")
+  configuredApiHost = trimSlashes(host.toLowerCase())
 }
 
 export function offProductionApiHost(): string {

@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import { useContext } from "react"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { useAppPromoStore } from "../promo/appPromoStore"
 import { PortraitShellFrame, type PortraitShellProps } from "./PortraitShell.shared"

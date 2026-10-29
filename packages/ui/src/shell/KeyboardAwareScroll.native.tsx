@@ -1,4 +1,4 @@
-import React, {
+import {
   forwardRef,
   useCallback,
   useContext,
@@ -17,7 +17,7 @@ import {
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { motion } from "../theme"
-import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostComponent, ScrollHostValue } from "./ScrollHost"
 import { withExtraBottomPadding } from "./bottomPadding"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
@@ -79,10 +79,10 @@ function measureViewportTop(node: ScrollableNode, apply: (top: number) => void):
 }
 
 function makeKeyboardAwareScrollable(
-  Base: React.ComponentType<any>,
+  Base: ScrollHostComponent,
   options: KeyboardAwareScrollHostOptions,
   adapter: ScrollableAdapter,
-): React.ComponentType<any> {
+): ScrollHostComponent {
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
   const KeyboardAwareScrollable = forwardRef<ScrollableNode, DecoratedScrollProps>(function KeyboardAwareScrollable(
@@ -246,7 +246,7 @@ function makeKeyboardAwareScrollable(
     )
   })
   KeyboardAwareScrollable.displayName = "KeyboardAwareScrollable"
-  return KeyboardAwareScrollable as unknown as React.ComponentType<any>
+  return KeyboardAwareScrollable
 }
 
 export function makeKeyboardAwareScrollHost(

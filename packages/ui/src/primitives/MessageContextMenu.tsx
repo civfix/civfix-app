@@ -20,6 +20,7 @@ import {
   webNoSelect,
   focusRingProps,
   webScrimProps,
+  pointerEventStyles,
 } from "../theme"
 import { Text } from "../typography"
 import type { LucideIcon } from "../typography"
@@ -215,8 +216,10 @@ export function MessageContextMenu({
         onDismiss={onModalDismiss}
       >
         <View
-          style={cardPosition ? styles.rootAnchored : styles.rootCentered}
-          pointerEvents={motion.exiting ? "none" : "auto"}
+          style={[
+            cardPosition ? styles.rootAnchored : styles.rootCentered,
+            pointerEventStyles[motion.exiting ? "none" : "auto"],
+          ]}
         >
           <Pressable
             style={styles.backdropWeb}
@@ -306,10 +309,12 @@ export function MessageContextMenu({
       onDismiss={onModalDismiss}
     >
       <View
-        style={bands ? styles.rootAnchored : styles.rootCentered}
-        pointerEvents={motion.exiting ? "none" : "auto"}
+        style={[
+          bands ? styles.rootAnchored : styles.rootCentered,
+          pointerEventStyles[motion.exiting ? "none" : "auto"],
+        ]}
       >
-        <Animated.View pointerEvents="none" style={[styles.scrim, menuScrimStyle(motion)]} />
+        <Animated.View style={[styles.scrim, menuScrimStyle(motion), pointerEventStyles.none]} />
         <Pressable
           style={styles.scrimTouch}
           accessibilityRole="button"
@@ -320,7 +325,6 @@ export function MessageContextMenu({
         {bands ? (
           <>
             <Animated.View
-              pointerEvents="none"
               style={[
                 styles.bubbleHolder,
                 {
@@ -330,6 +334,7 @@ export function MessageContextMenu({
                   opacity: motion.progress,
                   transform: [{ scale }],
                 },
+                pointerEventStyles.none,
               ]}
             >
               {bubble}

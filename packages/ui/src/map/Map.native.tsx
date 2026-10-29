@@ -231,8 +231,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     }
   })
   const runnerRef = useRef<IdleRunner | null>(null)
-  if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
-  const runner = runnerRef.current
+  const runner = (runnerRef.current ??= createIdleRunner(() => recomputeRef.current()))
 
   useEffect(() => {
     return () => {

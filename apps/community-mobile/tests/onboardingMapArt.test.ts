@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { space } from "../../../packages/tokens/src/design-tokens.ts"
 import { DEFAULT_ATTRIBUTION } from "../../../packages/ui/src/map/mapStyle.ts"
+import { defined } from "./helpers/defined.ts"
 import { readPngHeader } from "./helpers/png.ts"
 import {
   LA_BASIN_BOUNDS,
@@ -251,7 +252,7 @@ test("the manifest matches the stills byte for byte and nothing else lives in th
   assert.equal(manifest.attribution, DEFAULT_ATTRIBUTION)
   for (const name of onDisk) {
     const bytes = readFileSync(new URL(name, assetsDir))
-    const entry = manifest.files[name]
+    const entry = defined(manifest.files[name], `${name} in the manifest`)
     assert.equal(entry.bytes, bytes.length, `${name}: size drifted from the manifest`)
     assert.equal(
       entry.sha256,
@@ -271,7 +272,7 @@ test("every still was cut from the scene the table describes today", () => {
       for (const scale of ONBOARDING_MAP_SCALES) {
         const name = mapArtFileName(stage, scheme, scale)
         assert.deepEqual(
-          manifest.files[name].scene,
+          defined(manifest.files[name], `${name} in the manifest`).scene,
           { center, zoom, widthPt, heightPt },
           `${name}: scene drifted from the manifest; re-run scripts/onboarding-map-art.mjs`,
         )
@@ -288,8 +289,10 @@ test("the stills stay inside the weight budget and light differs from dark", () 
   assert.ok(total <= MAX_TOTAL_BYTES, `onboarding stills weigh ${total} bytes`)
   for (const stage of ONBOARDING_MAP_STAGES) {
     for (const scale of ONBOARDING_MAP_SCALES) {
-      const light = manifest.files[mapArtFileName(stage, "light", scale)]
-      const dark = manifest.files[mapArtFileName(stage, "dark", scale)]
+      const lightName = mapArtFileName(stage, "light", scale)
+      const darkName = mapArtFileName(stage, "dark", scale)
+      const light = defined(manifest.files[lightName], `${lightName} in the manifest`)
+      const dark = defined(manifest.files[darkName], `${darkName} in the manifest`)
       assert.notEqual(light.sha256, dark.sha256, `${stage}: light and dark stills are identical`)
     }
   }

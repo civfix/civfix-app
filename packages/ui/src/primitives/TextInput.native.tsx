@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react"
+import { forwardRef, useCallback, useEffect, useRef } from "react"
 import { TextInput as RNTextInput } from "react-native"
 import { keyboardFocusStore, type KeyboardFocusNode } from "../shell/keyboardFocusStore"
 import { useKeyboardRevealGroup } from "../shell/keyboardRevealGroup"

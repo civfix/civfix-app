@@ -6,9 +6,8 @@ export const FIRST_NAME_MAX = 40
 export const LAST_NAME_MAX = DISPLAY_NAME_MAX_LENGTH - FIRST_NAME_MAX - 1
 
 export function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
+  const [first = "", ...rest] = displayName.trim().split(/\s+/).filter(Boolean)
+  return { first, last: rest.join(" ") }
 }
 
 export function stripHandlePrefix(text: string): string {

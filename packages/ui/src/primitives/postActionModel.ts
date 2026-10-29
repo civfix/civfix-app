@@ -1,5 +1,5 @@
 import { formatCount } from "../helpers"
-import { type PostCounts, type PostViewer } from "@civfix/contract"
+import type { PostCounts, PostViewer } from "@civfix/contract"
 import { space } from "@civfix/tokens"
 import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 import type { AnchorRect } from "./menuMotionModel"

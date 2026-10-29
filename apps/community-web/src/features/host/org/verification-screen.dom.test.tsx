@@ -53,7 +53,7 @@ function renderVerification(
     <ConsoleOrgProvider org={org()}>
       <VerificationScreen />
     </ConsoleOrgProvider>,
-    { api: client as never },
+    { api: client },
   )
   return { ...view, client }
 }

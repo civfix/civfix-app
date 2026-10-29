@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"

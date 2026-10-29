@@ -4,7 +4,7 @@ import type { DesiredMarker as Desired, MarkerEntry as Entry } from "../domMarke
 
 interface FakeEl {
   style: Record<string, string>
-  attrs: Record<string, string>
+  attrs: Map<string, string>
   parentNode: FakeParent | null
   setAttribute: (name: string, value: string) => void
   removeAttribute: (name: string) => void
@@ -67,19 +67,19 @@ vi.mock("maplibre-gl", () => {
       return this.el
     }
   }
-  return { default: { Marker }, Marker }
+  return { Marker }
 })
 
 function fakeElement(): FakeEl {
   const el: FakeEl = {
     style: {},
-    attrs: {},
+    attrs: new Map(),
     parentNode: null,
     setAttribute(name, value) {
-      el.attrs[name] = value
+      el.attrs.set(name, value)
     },
     removeAttribute(name) {
-      delete el.attrs[name]
+      el.attrs.delete(name)
     },
     addEventListener() {},
   }
@@ -143,7 +143,7 @@ describe("syncMarkers", () => {
     syncMarkers(map, current, new Map([["r:1", want("a", { onClick: pressB, lngLat: [3, 4], label: "moved" })]]))
     expect(renders).toHaveLength(1)
     expect(entry?.onClick.fn).toBe(pressB)
-    expect((entry?.marker.getElement() as unknown as FakeEl).attrs["aria-label"]).toBe("moved")
+    expect((entry?.marker.getElement() as unknown as FakeEl).attrs.get("aria-label")).toBe("moved")
     expect((entry?.marker as unknown as { lngLat: [number, number] }).lngLat).toEqual([3, 4])
   })
 
@@ -151,19 +151,19 @@ describe("syncMarkers", () => {
     const current = new Map<string, Entry>()
     syncMarkers(map, current, new Map([["r:1", want("off", { pressed: false })]]))
     const el = current.get("r:1")?.marker.getElement() as unknown as FakeEl
-    expect(el.attrs["aria-label"]).toBe("pin off")
-    expect(el.attrs["aria-pressed"]).toBe("false")
+    expect(el.attrs.get("aria-label")).toBe("pin off")
+    expect(el.attrs.get("aria-pressed")).toBe("false")
     expect(el.style.cursor).toBe("default")
 
     syncMarkers(map, current, new Map([["r:1", want("on", { pressed: true, onClick: () => {} })]]))
-    expect(el.attrs["aria-label"]).toBe("pin on")
-    expect(el.attrs["aria-pressed"]).toBe("true")
+    expect(el.attrs.get("aria-label")).toBe("pin on")
+    expect(el.attrs.get("aria-pressed")).toBe("true")
     expect(el.style.cursor).toBe("pointer")
-    expect(el.attrs.role).toBe("button")
-    expect(el.attrs.tabindex).toBe("0")
+    expect(el.attrs.get("role")).toBe("button")
+    expect(el.attrs.get("tabindex")).toBe("0")
 
     syncMarkers(map, current, new Map([["r:1", want("plain")]]))
-    expect(el.attrs["aria-pressed"]).toBeUndefined()
+    expect(el.attrs.get("aria-pressed")).toBeUndefined()
   })
 
   it("moves a re-rendered marker to the top of the stack, where a rebuilt one used to land", () => {

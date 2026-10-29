@@ -33,7 +33,7 @@ function renderEditor(questions: EventQuestionDTO[]) {
   const qc = makeTestQueryClient()
   const client = { listEventQuestions: vi.fn().mockResolvedValue({ items: questions }) }
   render(
-    <ConsoleTestHarness options={{ api: client as never }} client={qc}>
+    <ConsoleTestHarness options={{ api: client }} client={qc}>
       <QuestionsEditor eventId={EVENT_ID} ticketTypes={[]} />
     </ConsoleTestHarness>,
   )

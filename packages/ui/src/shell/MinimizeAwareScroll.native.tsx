@@ -1,20 +1,20 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react"
+import { forwardRef, useCallback, useEffect, useRef } from "react"
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native"
-import { decorateScrollHost, type DecoratedScrollProps, type ScrollHostValue } from "./ScrollHost"
+import { decorateScrollHost, type DecoratedScrollProps, type ScrollHostComponent, type ScrollHostValue } from "./ScrollHost"
 import { useDockMinimizeStore } from "./dockMinimizeStore"
 import { useNavStore } from "../nav"
 
 let dockScrollOwner: object | null = null
 
 function claimDockScroll(token: object): boolean {
-  if (dockScrollOwner === null) dockScrollOwner = token
+  dockScrollOwner ??= token
   return dockScrollOwner === token
 }
 
 const minimizeState = useDockMinimizeStore.getState
 const navState = useNavStore.getState
 
-function makeMinimizeAwareScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
+function makeMinimizeAwareScroll(Base: ScrollHostComponent): ScrollHostComponent {
   const MinimizeAwareScroll = forwardRef<unknown, DecoratedScrollProps>(function MinimizeAwareScroll(
     { onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
@@ -63,7 +63,7 @@ function makeMinimizeAwareScroll(Base: React.ComponentType<any>): React.Componen
     )
   })
   MinimizeAwareScroll.displayName = "MinimizeAwareScroll"
-  return MinimizeAwareScroll as unknown as React.ComponentType<any>
+  return MinimizeAwareScroll
 }
 
 export function makeMinimizeAwareScrollHost(base: ScrollHostValue): ScrollHostValue {

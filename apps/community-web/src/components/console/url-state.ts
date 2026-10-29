@@ -74,14 +74,18 @@ export function applyConsolePatch(
   params: ConsoleParams,
   patch: ConsoleParamPatch,
 ): ConsoleParams {
-  const next: ConsoleParams = { ...params }
+  let next: ConsoleParams = { ...params }
   for (const [key, value] of Object.entries(patch) as [
     ConsoleParamKey,
     string | null | undefined,
   ][]) {
     if (!KNOWN_KEYS.has(key)) continue
-    if (value === null || value === undefined || value === "") delete next[key]
-    else next[key] = value
+    if (value === null || value === undefined || value === "") {
+      const { [key]: _cleared, ...rest } = next
+      next = rest
+    } else {
+      next[key] = value
+    }
   }
   return next
 }

@@ -1,4 +1,3 @@
-import React from "react"
 import { ActivityIndicator, StyleSheet, View } from "react-native"
 import { Text } from "../typography"
 import { makeThemedStyles, useTheme } from "../theme"

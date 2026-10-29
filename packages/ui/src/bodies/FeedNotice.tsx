@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, MIN_TOUCH_TARGET } from "../theme"

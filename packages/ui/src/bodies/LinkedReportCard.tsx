@@ -1,6 +1,5 @@
-import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET } from "../theme"
+import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { CategoryChip, StatusBadge, FramedImage } from "../primitives"
 import { useT } from "../i18n"
@@ -122,7 +121,7 @@ export function LinkedReportCard({
       </View>
 
       {badge ? (
-        <View style={[styles.badge, { backgroundColor: cat }]} pointerEvents="none">
+        <View style={[styles.badge, { backgroundColor: cat }, pointerEventStyles.none]}>
           <Icon
             icon={badge === "plus" ? iconMap.Plus : iconMap.Check}
             size={13}

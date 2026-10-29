@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import type { PostDTO } from "@civfix/contract"
 import { makeThemedStyles, focusRingProps, webCursorPointer, webTransition, MIN_TOUCH_TARGET } from "../../theme"

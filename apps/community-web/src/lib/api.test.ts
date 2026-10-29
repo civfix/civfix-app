@@ -16,7 +16,7 @@ function clientRespondingWith(status: number, body: unknown) {
 
 async function catchFrom(api: ReturnType<typeof clientRespondingWith>): Promise<unknown> {
   const caught = await api.listBlocks({}).then(
-    () => null as unknown,
+    () => null,
     (err: unknown) => err,
   )
   expect(caught).toBeInstanceOf(Error)

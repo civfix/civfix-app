@@ -9,7 +9,9 @@ import {
   rememberLocalReportThumb,
 } from "../localReportThumbs"
 
-beforeEach(() => clearLocalReportThumbs())
+beforeEach(() => {
+  clearLocalReportThumbs()
+})
 
 describe("localReportThumbs", () => {
   it("round-trips a remembered uri", () => {

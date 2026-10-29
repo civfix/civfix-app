@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import type { PostDTO } from "@civfix/contract"
 import { focusRingProps } from "../../theme"

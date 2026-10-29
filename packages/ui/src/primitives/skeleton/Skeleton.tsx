@@ -115,7 +115,8 @@ export type SkeletonRowKind = "person" | "report" | "notification" | "settings" 
 export interface SkeletonRowKindSpec {
   readonly avatar: number | null
   readonly avatarRadius: number | null
-  readonly lines: readonly DimensionValue[]
+  /** Each line's width, distinct within a row, so a width also keys its line. */
+  readonly lines: readonly `${number}%`[]
   readonly trailing: number | null
   readonly trailingHeight: number
   readonly trailingRadius: number
@@ -208,7 +209,7 @@ export function SkeletonRow({ kind = "person", style }: SkeletonRowProps) {
       )}
       <View style={styles.copy}>
         {spec.lines.map((width, index) => (
-          <SkeletonText key={index} width={width} height={index === 0 ? 12 : 10} />
+          <SkeletonText key={width} width={width} height={index === 0 ? 12 : 10} />
         ))}
       </View>
       {spec.trailing === null ? null : (

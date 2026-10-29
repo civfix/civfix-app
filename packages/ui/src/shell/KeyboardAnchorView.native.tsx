@@ -1,5 +1,4 @@
 /** The anchor's style goes last so a caller's static `style` can never clobber the transform. */
-import React from "react"
 import Animated from "react-native-reanimated"
 import type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
 

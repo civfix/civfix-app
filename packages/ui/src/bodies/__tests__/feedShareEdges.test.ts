@@ -23,7 +23,9 @@ const me: PersonDTO = {
   isFollowing: false,
 }
 
-afterEach(() => vi.useRealTimers())
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 describe("personFromAuthUser", () => {
   it("projects the signed-in user onto a zero-count person", () => {

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react"
 import { mergeChatItems, type ChatItem } from "../../helpers"
-import { type RoomKind } from "@civfix/contract"
+import type { RoomKind } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { restoreLocalChatAttachments } from "../localChatAttachments"
 import { roomEndpoints } from "./chatRoom"

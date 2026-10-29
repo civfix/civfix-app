@@ -36,10 +36,10 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn(PANEL_CLASSES, className)}>
-      {icon && <span className={ICON_BUBBLE_CLASSES}>{icon}</span>}
+      {icon ? <span className={ICON_BUBBLE_CLASSES}>{icon}</span> : null}
       {title && <TitleTag className={TITLE_CLASSES}>{title}</TitleTag>}
-      {body && <p className={BODY_CLASSES}>{body}</p>}
-      {action && <div className="mt-4 flex justify-center">{action}</div>}
+      {body ? <p className={BODY_CLASSES}>{body}</p> : null}
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   )
 }

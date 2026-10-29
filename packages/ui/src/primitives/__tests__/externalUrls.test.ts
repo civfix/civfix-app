@@ -102,4 +102,17 @@ describe("the resolved API host, so a beta plane switch is never invisible", () 
       setApiHost("")
     }
   })
+
+  it("strips the slashes around a bare host in linear time", () => {
+    try {
+      setApiHost("//API.civfix.dev/")
+      expect(offProductionApiHost()).toBe("api.civfix.dev")
+      const started = performance.now()
+      setApiHost(`${"/".repeat(200_000)}x${"/".repeat(200_000)}y`)
+      expect(performance.now() - started).toBeLessThan(250)
+      expect(offProductionApiHost()).toBe(`x${"/".repeat(200_000)}y`)
+    } finally {
+      setApiHost("")
+    }
+  })
 })
