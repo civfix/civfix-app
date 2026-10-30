@@ -1,7 +1,7 @@
 export interface MapCameraTarget {
   lat: number
   lng: number
-  zoom?: number
+  zoom?: number | undefined
 }
 
 export interface MapViewportSnapshot {

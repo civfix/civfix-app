@@ -40,9 +40,9 @@ export class PlayError extends Error {}
 /**
  * @typedef {{ client_email: string, private_key: string }} ServiceAccount
  * @typedef {{
- *   bundles?: { versionCode: number }[],
- *   apks?: { versionCode: number }[],
- *   tracks?: { track: string, releases?: { versionCodes?: string[] }[] }[],
+ *   bundles?: { versionCode: number }[] | undefined,
+ *   apks?: { versionCode: number }[] | undefined,
+ *   tracks?: { track: string, releases?: { versionCodes?: string[] }[] }[] | undefined,
  * }} PlayListing
  * @typedef {{ name?: string, versionCodes: string[], status: string }} PlayRelease
  * @typedef {{
@@ -152,7 +152,7 @@ export function playClient({ packageName, token, fetchImpl = fetch }) {
     const response = await fetchImpl(url, {
       method,
       headers: { authorization: `Bearer ${token}`, ...(json ? { "content-type": "application/json" } : {}), ...headers },
-      body: json ? JSON.stringify(json) : body,
+      body: json ? JSON.stringify(json) : (body ?? null),
       signal: AbortSignal.timeout(timeout),
     })
     if (!response.ok) {
@@ -244,7 +244,7 @@ export async function nextVersionCode(client, floor) {
 
 /**
  * @param {PlayEdits} client
- * @param {{ bytes: Buffer, track: string, name?: string }} release
+ * @param {{ bytes: Buffer, track: string, name?: string | undefined }} release
  */
 export async function publishBundle(client, { bytes, track, name }) {
   const status = Object.hasOwn(TRACK_STATUS, track) ? TRACK_STATUS[/** @type {keyof typeof TRACK_STATUS} */ (track)] : undefined

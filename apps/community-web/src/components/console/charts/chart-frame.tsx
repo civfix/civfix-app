@@ -125,7 +125,7 @@ export interface ChartFrameProps {
   legend?: LegendItem[]
   onMouseMove?: (event: MouseEvent<SVGSVGElement>) => void
   onMouseLeave?: () => void
-  className?: string
+  className?: string | undefined
   children: ReactNode
 }
 

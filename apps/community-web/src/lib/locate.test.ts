@@ -11,7 +11,7 @@ type ErrorCb = (err: unknown) => void
 
 /** A controllable `navigator.geolocation` stub that records every getCurrentPosition call. */
 function makeGeoStub() {
-  const calls: { options?: PositionOptions; resolve: (lat: number, lng: number) => void; reject: (err?: unknown) => void }[] = []
+  const calls: { options?: PositionOptions | undefined; resolve: (lat: number, lng: number) => void; reject: (err?: unknown) => void }[] = []
   const geolocation = {
     getCurrentPosition: (onOk: SuccessCb, onErr?: ErrorCb, options?: PositionOptions) => {
       calls.push({

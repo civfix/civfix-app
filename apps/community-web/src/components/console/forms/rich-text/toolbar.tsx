@@ -20,7 +20,7 @@ const COMMANDS: readonly { id: RichTextCommand; icon: LucideIcon; labelKey: stri
 
 export interface RichTextToolbarProps {
   onCommand: (command: RichTextCommand) => void
-  disabled?: boolean
+  disabled?: boolean | undefined
   className?: string
 }
 

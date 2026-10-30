@@ -11,7 +11,7 @@ export interface TimelineEntry {
   id: string
   at: string
   atLabel: string
-  actorLabel?: string
+  actorLabel?: string | undefined
   body: ReactNode
   note?: string | null
   internal?: boolean
