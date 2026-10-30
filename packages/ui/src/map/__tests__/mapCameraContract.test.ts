@@ -60,8 +60,8 @@ describe("the Show on map fly-to on both seams", () => {
       "activeMarkerIds(\n    focusedPinId,\n    focusedCleanupId,\n    flyToHighlight,\n  )",
     )
     expect(mapWeb).toContain("const active = activePinId === node.id")
-    expect(mapWeb).toContain(
-      "}, [runner, mapReady, index, points, activePinId, activeCleanupId, flyToHighlight, focus, th.scheme])",
+    expect(mapWeb).toMatch(
+      /\}, \[\s*runner,\s*mapReady,\s*index,\s*points,\s*activePinId,\s*activeCleanupId,\s*flyToHighlight,\s*focus,\s*th\.scheme,?\s*\]\)/,
     )
   })
 
@@ -134,8 +134,8 @@ describe("a Show on map target the map has not loaded", () => {
   })
 
   it("keeps a native long press on the standalone marker from dropping a pin", () => {
-    expect(mapNative).toContain(
-      'if (offMapTarget) markers.push({ lat: offMapTarget.lat, lng: offMapTarget.lng, anchor: "bottom" })',
+    expect(mapNative).toMatch(
+      /if \(offMapTarget\)\s+markers\.push\(\{ lat: offMapTarget\.lat, lng: offMapTarget\.lng, anchor: "bottom" \}\)/,
     )
   })
 })

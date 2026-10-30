@@ -182,8 +182,8 @@ describe("loading is announced", () => {
     expect(view).toContain(
       "<ActivityIndicator color={t.colors.brand.bloom} accessibilityLabel={loading} />",
     )
-    expect(view).toContain(
-      'accessible accessibilityRole="progressbar" accessibilityLabel={loading}',
+    expect(view).toMatch(
+      /accessible\s+accessibilityRole="progressbar"\s+accessibilityLabel=\{loading\}/,
     )
   })
 })
@@ -202,8 +202,8 @@ describe("the About card is modal", () => {
 describe("composer thumbs say which attachment they remove and when one is uploading", () => {
   it("numbers the remove control and labels the spinner", () => {
     const thumbs = code("../ComposerThumbs.tsx")
-    expect(thumbs).toContain(
-      't("media.remove_attachment_n", { index: index + 1, count: attachments.length })',
+    expect(thumbs).toMatch(
+      /t\("media\.remove_attachment_n", \{\s*index: index \+ 1,\s*count: attachments\.length,?\s*\}\)/,
     )
     expect(thumbs).toContain('accessibilityLabel={t("media.uploading")}')
   })

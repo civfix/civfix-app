@@ -134,7 +134,7 @@ describe("PortraitMapPickStep", () => {
     expect(sliceBetween(src, "const onPickPlace = useCallback(", "const onMapDrop")).toContain(
       "[setLocalPoint],",
     )
-    expect(src).toContain("setLocalPoint({ lat, lng }), [setLocalPoint])")
+    expect(src).toMatch(/setLocalPoint\(\{ lat, lng \}\),\s*\[setLocalPoint\],?\s*\)/)
   })
 })
 

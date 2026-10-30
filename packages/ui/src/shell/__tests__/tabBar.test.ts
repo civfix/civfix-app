@@ -88,7 +88,7 @@ describe("map-first tab bar model", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).not.toContain("withSpring")
     expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphInConfig\(\)/)
-    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphOutConfig\(\)/)
+    expect(native).toMatch(/withTiming\(\s*target,\s*\{ \.\.\.dockMorphOutConfig\(\)/)
     const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
     expect(configs).toContain(
       "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(motion.dockMorphIn)",
@@ -171,7 +171,7 @@ describe("map-first tab bar model", () => {
     expect(header).toMatch(/setKeyboardReserve\(anchor\.reserved\)/)
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).toMatch(
-      /useDockedSearchRise\(riseRef, dockedSearch\.value, dockKeyboardRestOffset\(insets\.bottom, DOCK_PLATFORM\), searchActive, p\)/,
+      /useDockedSearchRise\(\s*riseRef,\s*dockedSearch\.value,\s*dockKeyboardRestOffset\(insets\.bottom, DOCK_PLATFORM\),\s*searchActive,\s*p,?\s*\)/,
     )
     expect(header).toMatch(/focusSettleCommand\(pinned, searchActive, p\.value\)/)
     const web = readFileSync(new URL("../SearchHeader.web.tsx", import.meta.url), "utf8")
@@ -286,7 +286,9 @@ describe("dock-morph chrome schedules (each element rides ONE window off p; no c
 
   it("the ✕ CLEARS back to the resting search page (onClearSearch); only the LEADING circle exits Search", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
-    const clearBlock = native.slice(native.indexOf("<Animated.View style={[styles.clear"))
+    const clearAt = native.search(/<Animated\.View\s+style=\{\[styles\.clear,/)
+    expect(clearAt).toBeGreaterThan(-1)
+    const clearBlock = native.slice(clearAt)
     expect(clearBlock).toMatch(/onPress=\{onClearSearch\}/)
     expect(clearBlock).toMatch(/tSearch\("a11y\.clear"\)/)
     expect(clearBlock).not.toMatch(/onExitSearch/)

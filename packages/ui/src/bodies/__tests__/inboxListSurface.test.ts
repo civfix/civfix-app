@@ -108,7 +108,7 @@ describe("the separator", () => {
     expect(inbox).toContain(
       "backgroundColor: IS_WEB ? wash(t.colors.borderStrong, 0.45, t) : t.colors.borderStrong",
     )
-    expect(postCard).toMatch(/separator: Platform\.OS === "web"/)
+    expect(postCard).toMatch(/separator:\s+Platform\.OS === "web"/)
   })
 })
 
@@ -198,7 +198,7 @@ describe("pull-to-refresh", () => {
   })
 
   it("hands the list a MEMOIZED element, not a fresh one per keystroke in the search field", () => {
-    expect(inbox).toMatch(/const refresh = useMemo\(\s*\(\) => \(\s*<RefreshControl/)
+    expect(inbox).toMatch(/const refresh = useMemo\(\s*\(\) => \(?\s*<RefreshControl/)
     expect(inbox).toContain("[refreshing, onRefresh")
     expect(inbox).toContain("refreshControl={isAuthenticated ? refresh : undefined}")
   })

@@ -27,7 +27,7 @@ function menuItem(key: string): string {
 }
 
 const MENU_STATE_HOOK: Record<string, RegExp> = {
-  "PostCard.tsx": /= usePostOverflowMenuState\(post\)/,
+  "PostCard.tsx": /=\s+usePostOverflowMenuState\(post\)/,
   "thread/ThreadFocalPost.tsx": /usePostRowActions\(\{ post, identity, onOpenEntry \}\)/,
   "thread/ThreadReplyRow.tsx": /usePostRowActions\(\{ post, identity, onOpenEntry \}\)/,
 }
@@ -117,8 +117,8 @@ describe("the overflow button is one primitive with one hit target", () => {
     expect(BUTTON).toContain("styles.moreHalo")
     expect(BUTTON).toContain("WEB_MORE_HALO_TOP")
     expect(BUTTON).toContain("webTransition")
-    expect(BUTTON).toContain(
-      "state.pressed ? styles.moreHaloPressed : webHover(state) ? styles.moreHaloHovered : null",
+    expect(BUTTON).toMatch(
+      /state\.pressed\s+\? styles\.moreHaloPressed\s+: webHover\(state\)\s+\? styles\.moreHaloHovered\s+: null/,
     )
     expect(BUTTON).toContain(
       "<Icon icon={iconMap.Ellipsis} size={RHYTHM.overflowGlyph} color={th.colors.textMuted} />",
@@ -234,8 +234,8 @@ describe("a repost row never deletes the original it embeds", () => {
   })
 
   it("offers Undo repost on the viewer's own repost, driven by the repost toggle", () => {
-    expect(MENU).toContain(
-      "const isOwnRepost = isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId",
+    expect(MENU).toMatch(
+      /const isOwnRepost =\s+isAuthenticated && viewerId != null && repost !== null && viewerId === repost\.authorId/,
     )
     expect(MENU).toContain("const undoRepost = useRepost(subjectId)")
     const undoItem = menuItem("undo-repost")

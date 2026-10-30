@@ -33,8 +33,8 @@ describe("focus follows the page on top", () => {
     expect(adapter).toContain(
       `.filter((element) => !element.closest('[aria-hidden="true"], [inert]'))`,
     )
-    expect(adapter).toContain(
-      'lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")',
+    expect(adapter).toMatch(
+      /lastFocusable\("\[data-civfix-panel-heading\]"\) \?\?\s+lastFocusable\("\[data-civfix-page-layer\]"\)/,
     )
   })
 })

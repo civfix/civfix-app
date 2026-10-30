@@ -46,8 +46,8 @@ describe("the submit error screen", () => {
     )
     expect(edit).toContain('setSubmitPhase("idle")')
     expect(edit).toContain("setStep(target)")
-    expect(body).toContain(
-      "submitErrorRecovery(appErrorCode(settled.error), appErrorFields(settled.error), stepOrder)",
+    expect(body).toMatch(
+      /submitErrorRecovery\(\s*appErrorCode\(settled\.error\),\s*appErrorFields\(settled\.error\),\s*stepOrder,?\s*\)/,
     )
     expect(body).toContain("onEdit={editAfterFailure}")
   })
@@ -77,7 +77,9 @@ describe("report type copy is localized", () => {
   it("renders the label and sub from the catalogs and seeds a localized default title", () => {
     expect(body).toContain("const label = t(`enums:reportType.${type.id}`)")
     expect(body).toContain("const sub = t(`types.${type.id}.sub`)")
-    expect(body).toContain('type.glyph ? "" : t(`enums:reportType.${type.id}`), type.id)')
+    expect(body).toMatch(
+      /type\.glyph \? "" : t\(`enums:reportType\.\$\{type\.id\}`\),\s*type\.id,?\s*\)/,
+    )
     expect(body).not.toContain("type.label")
     expect(body).not.toContain("type.sub")
   })
@@ -135,7 +137,7 @@ describe("a remount adopts the run it missed", () => {
   it("does the work of a run outside React state so an unmounted body loses nothing", () => {
     const perform = slice(
       "const performSubmit = useCallback(",
-      "}, [fromComposer, submit, reset, t, haptics])",
+      "[fromComposer, submit, reset, t, haptics]",
     )
     expect(perform).not.toMatch(/setSubmitPhase|setResult|setShareSnapshot|setSubmitError/)
     expect(perform).toContain('return { kind: "done", result: res, share }')
@@ -155,8 +157,8 @@ describe("a submission never crosses to the next viewer", () => {
       submit.indexOf("export function useReportSubmit("),
       submit.indexOf("export function useFeedShareRetry("),
     )
-    expect(pipeline).toContain(
-      "return useCallback(async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {",
+    expect(pipeline).toMatch(
+      /return useCallback\(\s*async \(isCurrent: \(\) => boolean = \(\) => true\): Promise<ReportSubmitOutcome> => \{/,
     )
     const uploads = pipeline.indexOf("const mediaUploadIds = await uploadAll(")
     const guards = [
@@ -176,7 +178,7 @@ describe("a submission never crosses to the next viewer", () => {
 
   it("does no post-settle work for a discarded run and shows it to nobody", () => {
     const perform = flat(
-      slice("const performSubmit = useCallback(", "}, [fromComposer, submit, reset, t, haptics])"),
+      slice("const performSubmit = useCallback(", "[fromComposer, submit, reset, t, haptics]"),
     )
     expect(perform).toContain("async (isCurrent: () => boolean): Promise<SubmitSettled> => {")
     expect(perform).toContain("const res = await submit(isCurrent)")
@@ -259,7 +261,7 @@ describe("target sizes and radio semantics", () => {
   })
 
   it("groups the type rows as a radiogroup and names each row with its sub-line", () => {
-    expect(body).toContain('<View style={styles.typeList} accessibilityRole="radiogroup"')
+    expect(body).toMatch(/<View\s+style=\{styles\.typeList\}\s+accessibilityRole="radiogroup"/)
     expect(body).toContain('accessibilityLabel={t("types.row_a11y", { label, sub })}')
     expect(body).toContain("accessibilityState={{ checked: selected }}")
   })

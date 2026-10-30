@@ -39,10 +39,10 @@ describe("1. the retained map goes INERT while it is not the surface", () => {
 
 describe("2. the retained map is not RE-RENDERED from a tab it is invisible on", () => {
   it("memoizes the native seam", () => {
-    expect(mapNative).toContain(
-      "export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {",
+    expect(mapNative).toMatch(
+      /export const Map = memo\(\s*forwardRef<MapHandle, MapProps>\(function Map\(props, ref\) \{/,
     )
-    expect(mapNative).toMatch(/import React, \{ forwardRef, memo,/)
+    expect(mapNative).toMatch(/import React, \{\s*forwardRef,\s*memo,/)
   })
 })
 
@@ -69,8 +69,8 @@ describe("3. the report slot is PRE-WARMED after boot, and OFF the boot path", (
     expect(portrait).toContain(
       'const reportSlotVisible = RETAIN_REPORT_BODY && frame.base.bodyMounted && baseView === "report"',
     )
-    expect(reportBody).toContain(
-      "viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)",
+    expect(reportBody).toMatch(
+      /viewfinderSessionActive\(\s*activeStep,\s*viewfinderMounted,\s*stackNonEmpty,\s*runActive,?\s*\)/,
     )
   })
 })

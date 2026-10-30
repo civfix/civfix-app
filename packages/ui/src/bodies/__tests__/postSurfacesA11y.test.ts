@@ -122,8 +122,8 @@ describe("loading states have a name", () => {
 
 describe("screen titles are headings", () => {
   it("the composer's centered title", () => {
-    expect(strip(surfaceSource("postComposer"))).toContain(
-      '<Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>',
+    expect(strip(surfaceSource("postComposer"))).toMatch(
+      /<Text accessibilityRole="header" style=\{styles\.headerTitle\}>\s*\{presentation\.title\}\s*<\/Text>/,
     )
   })
 
@@ -144,8 +144,8 @@ describe("the feed-share caption counter", () => {
 
   it("announces the same number it shows, translated", () => {
     const counter = between(share, "styles.counter,", "</Text>")
-    expect(counter).toContain(
-      'accessibilityLabel={tc("caption_remaining_a11y", { count: FEED_CAPTION_MAX - caption.length })}',
+    expect(counter).toMatch(
+      /accessibilityLabel=\{tc\("caption_remaining_a11y", \{\s*count: FEED_CAPTION_MAX - caption\.length,?\s*\}\)\}/,
     )
     expect(counter).not.toContain("${caption.length} / ${FEED_CAPTION_MAX}")
   })
@@ -201,7 +201,7 @@ describe("composer controls meet the 44pt target", () => {
 
   it("PostComposer's add-media control, with the 36pt disc drawn inside", () => {
     const composer = strip(surfaceSource("postComposer"))
-    expect(composer).toMatch(/addMedia: \{ width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET,/)
-    expect(composer).toMatch(/addMediaDisc: \{ width: 36, height: 36,/)
+    expect(composer).toMatch(/addMedia: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(composer).toMatch(/addMediaDisc: \{\s*width: 36,\s*height: 36,/)
   })
 })

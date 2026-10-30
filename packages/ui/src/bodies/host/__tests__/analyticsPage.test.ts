@@ -116,7 +116,7 @@ describe("what the redesign took off the single-event page", () => {
   })
 
   it("hides the page-view and donation tiles until there is something to show", () => {
-    expect(BODY).toContain("{views > 0 ? (")
+    expect(BODY).toContain("{views > 0 ? <StatTile")
     expect(BODY).toContain("{donations > 0 ? (")
   })
 

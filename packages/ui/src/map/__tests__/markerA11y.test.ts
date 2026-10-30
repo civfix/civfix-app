@@ -147,7 +147,7 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
     )
     const picker = read("../LocationPicker.web.tsx")
     expect(picker).toMatch(
-      /style=\{styles\.canvas\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.picker"\)\}/,
+      /style=\{styles\.canvas\}\s+role="region"\s+aria-label=\{t\("a11y\.picker"\)\}/,
     )
   })
 

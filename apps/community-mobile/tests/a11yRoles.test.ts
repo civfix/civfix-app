@@ -24,7 +24,7 @@ test("screen titles are exposed as headers", () => {
   assert.match(groupInfo, /<RouteHeader title=\{t\("title\.group_info"\)\}/)
 
   const members = read("../app/messages/members/[roomKind]/[id].tsx")
-  assert.match(members, /<RouteHeader\s+title=\{t\(roomKind/)
+  assert.match(members, /<RouteHeader\s+title=\{t\(\s*roomKind/)
 
   const header = read("../src/components/ui/ScreenHeader.tsx")
   const title = header.slice(header.indexOf("{title ? ("), header.indexOf("{title}"))

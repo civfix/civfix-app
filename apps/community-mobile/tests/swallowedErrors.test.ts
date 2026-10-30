@@ -49,7 +49,7 @@ test("an unreadable cold-start notification tap is logged instead of silently dr
   const hook = deepLinks.slice(deepLinks.indexOf("function useNotificationDeepLinks("))
   assert.match(
     hook.slice(0, hook.indexOf("\n}\n")),
-    /Notifications\.clearLastNotificationResponse\(\)\s*\} catch \(err\) \{\s*console\.warn\("\[push\][^"]*", errorName\(err\)\)/,
+    /Notifications\.clearLastNotificationResponse\(\)\s*\} catch \(err\) \{\s*console\.warn\(\s*"\[push\][^"]*",\s*errorName\(err\),?\s*\)/,
   )
 })
 

@@ -181,8 +181,8 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
   it("gives the repost meta row the same overflow button the ordinary row has", () => {
     const metaRows = CARD.split("function ").filter((block) => block.startsWith("PostMetaRow("))
     expect(metaRows).toHaveLength(1)
-    expect(metaRows[0]).toContain(
-      '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />',
+    expect(metaRows[0]).toMatch(
+      /<PostOverflowButton\s+label=\{t\("post_card\.more_a11y"\)\}\s+onPress=\{onOpenMenu\}\s+buttonRef=\{menuRef\}\s+expanded=\{menuOpen\}\s+\/>/,
     )
     expect(CARD.split("<PostMetaRow").length - 1).toBe(1)
     expect(CARD).toMatch(
@@ -191,7 +191,7 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
   })
 
   it("hands the menu the redirected subject and a way back to the original", () => {
-    expect(CARD).toContain("= usePostOverflowMenuState(post)")
+    expect(CARD).toMatch(/=\s+usePostOverflowMenuState\(post\)/)
     expect(src("../postCardActions.ts")).toContain(
       "const menuSubject = React.useMemo(() => postMenuSubject(post), [post])",
     )

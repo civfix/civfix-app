@@ -48,7 +48,7 @@ test("a rejected permission probe never counts as a prompted grant", () => {
 })
 
 test("the first-fix wait is the same fix read under the longer cap", () => {
-  assert.match(hook, /const readFix = useCallback\(async \(timeoutMs: number = GPS_TIMEOUT_MS\)/)
+  assert.match(hook, /const readFix = useCallback\(\s*async \(timeoutMs: number = GPS_TIMEOUT_MS\)/)
   assert.match(
     hook,
     /const awaitFirstFix = useCallback\(\(\) => readFix\(FIRST_FIX_TIMEOUT_MS\), \[readFix\]\)/,

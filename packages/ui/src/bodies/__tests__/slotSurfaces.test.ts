@@ -80,12 +80,11 @@ describe("the date/time picker seam stays a seam", () => {
 
   const files = sourceFiles(bodiesDir)
 
-  it("keeps the base file to the two re-export lines Metro needs", () => {
+  it("keeps the base file to the two re-export statements Metro needs", () => {
     const base = readFileSync(new URL("../InlineDateTimePicker.tsx", import.meta.url), "utf8")
-    const lines = base.trim().split("\n")
-    expect(lines).toHaveLength(2)
-    expect(lines[0]).toContain('from "./InlineDateTimePicker.web"')
-    expect(lines[1]).toContain('from "./InlineDateTimePicker.types"')
+    expect(base.trim()).toMatch(
+      /^export \{[^}]*\} from "\.\/InlineDateTimePicker\.web"\nexport type \{[^}]*\} from "\.\/InlineDateTimePicker\.types"$/,
+    )
   })
 
   it("names the optional native picker peer in the .native seam and nowhere else, so web never resolves it", () => {
@@ -320,7 +319,9 @@ describe("the slot editor validates against the EVENT's window, not just the row
   it("greys the out-of-reach split chips instead of hiding them, and de-dupes a second tap", () => {
     expect(editor).toContain("const offeredSplits = splitCounts(eventWindow, value, shiftTitle)")
     expect(editor).toContain("disabled={!offeredSplits.includes(count)}")
-    expect(editor).toMatch(/generateShiftDrafts\([\s\S]*?value,\s*\)/)
+    expect(editor).toMatch(
+      /generateShiftDrafts\(\s*eventWindow,\s*count,\s*shiftTitle,\s*\(\) => makeSlotKey\(\),\s*value,?\s*\)/,
+    )
   })
 
   it("greys Set a time until the event HAS an end, rather than letting the tap do nothing", () => {

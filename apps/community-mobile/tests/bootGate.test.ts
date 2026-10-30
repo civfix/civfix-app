@@ -325,7 +325,7 @@ test("the loading gate is bounded by the boot model, never by an open-ended auth
 test("the offline gate is what the user sees when the server cannot be reached at boot", () => {
   assert.match(
     layout,
-    /boot\.phase === "offline" \? <BootOfflineGate \/> : <AuthGate mode="loading" \/>/,
+    /boot\.phase === "offline" \? \(?\s*<BootOfflineGate \/>\s*\)? : \(?\s*<AuthGate mode="loading" \/>/,
   )
 })
 

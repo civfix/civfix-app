@@ -87,7 +87,7 @@ describe("cause 2 - the pick step seeds its point in RENDER, not one commit late
   it("reconciles the open edge during render so the picker's first mount carries the draft point", () => {
     expect(pickStep).toContain("if (session.open !== visible) {")
     expect(pickStep).toContain(
-      "setSession({ open: visible, point: visible ? value ?? null : null })",
+      "setSession({ open: visible, point: visible ? (value ?? null) : null })",
     )
     // An effect keyed on `visible` cannot run before the commit that mounts LocationPicker, so it could only
     // correct a wrong first camera, never prevent one.

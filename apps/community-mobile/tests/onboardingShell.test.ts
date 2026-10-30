@@ -12,8 +12,8 @@ const store = readFileSync(new URL("../src/store/onboardingStore.ts", import.met
 const keys = readFileSync(new URL("../src/lib/mmkvKeys.ts", import.meta.url), "utf8")
 
 test("the tour mounts BELOW the registration gate, so the two never share the screen", () => {
-  const tour = layout.indexOf(
-    "<OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />",
+  const tour = layout.search(
+    /<OnboardingGate\s+gateActive=\{gateActive\}\s+loadingGateMounted=\{gateMounted\}\s+\/>/,
   )
   const firstRun = layout.indexOf("<FirstRunGate />")
   assert.ok(tour > -1)
@@ -129,7 +129,7 @@ test("the email path hands the screen back before pushing the OTP card above the
   assert.match(authFlow, /enabled: providers\.data \?\? ALL_OAUTH_PROVIDERS,/)
   assert.match(
     readyPage,
-    /<AuthOptions\n\s+enabled=\{enabled\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
+    /<AuthOptions\s+enabled=\{enabled\}\s+onHandoff=\{onHandoff\}\s+next=\{resumeHref\}\s+\/>/,
   )
   const handoff = authOptions.indexOf("onHandoff?.()")
   const push = authOptions.indexOf('pathname: "/auth/otp"')
@@ -321,7 +321,7 @@ test("a replay is a session request, not an unwritten completion flag", () => {
 test("the tour takes over the loading gate without a second fade", () => {
   assert.match(
     layout,
-    /<OnboardingGate gateActive=\{gateActive\} loadingGateMounted=\{gateMounted\} \/>/,
+    /<OnboardingGate\s+gateActive=\{gateActive\}\s+loadingGateMounted=\{gateMounted\}\s+\/>/,
   )
   assert.match(
     gate,

@@ -895,8 +895,8 @@ describe("the wiring (source-pinned)", () => {
     const source = surfaceSource("postComposer")
     const success = sliceBetween(source, "(post, input) => {", "\n      },\n    )")
     // Keyed off what was SUBMITTED, never the `mode` prop - the two can disagree mid-flight.
-    expect(success).toContain(
-      'if (postSubmitDestination(input.kind) === "thread") push({ kind: "post-thread", id: post.id })',
+    expect(success).toMatch(
+      /if \(postSubmitDestination\(input\.kind\) === "thread"\)\s+push\(\{ kind: "post-thread", id: post\.id \}\)/,
     )
     const submit = sliceBetween(source, "export function useSubmitPost()", "\n}\n")
     expect(submit).toMatch(
@@ -987,7 +987,9 @@ describe("the wiring (source-pinned)", () => {
 
   it("the share gate in report/submit.ts takes the answer as a parameter", () => {
     const source = readSource("../../report/submit.ts")
-    expect(source).toMatch(/export function useReportSubmit\(options\?: ReportSubmitOptions\)/)
+    expect(source).toMatch(
+      /export function useReportSubmit\(\s*options\?: ReportSubmitOptions,?\s*\)/,
+    )
     expect(source).toMatch(/const forComposer = options\?\.forComposer === true/)
     expect(source).toMatch(/^\s*!forComposer &&$/m)
     // It must not be able to reach the store at all.

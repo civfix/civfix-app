@@ -168,12 +168,12 @@ test("the SHUTTER still attaches the device fix - the location-step skip depends
     viewfinder.indexOf("const onTakePhoto = useCallback"),
     viewfinder.indexOf("const beginRecording = useCallback"),
   )
-  assert.ok(take.includes('}, "camera")'), "a photo shutter capture is a camera capture")
+  assert.match(take, /\},\s*"camera",?\s*\)/, "a photo shutter capture is a camera capture")
   const record = viewfinder.slice(
     viewfinder.indexOf("onRecordingFinished:"),
     viewfinder.indexOf("onRecordingError:"),
   )
-  assert.ok(record.includes('}, "camera")'), "a recorded video is a camera capture")
+  assert.match(record, /\},\s*"camera",?\s*\)/, "a recorded video is a camera capture")
   assert.ok(viewfinder.includes("Location.requestForegroundPermissionsAsync()"))
 })
 

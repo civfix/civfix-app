@@ -104,7 +104,7 @@ describe("the coral links keep their contrast in EVERY state", () => {
     expect(searchBody).toMatch(/linkHovered: \{ textDecorationLine: "underline" \}/)
     expect(searchBody).not.toMatch(/linkHovered: \{ opacity/)
     expect(searchBody).toMatch(
-      /webHover\(state\) \? styles\.linkHovered : null,\s*\]\}\s*>\s*\{label\}/,
+      /webHover\(state\) \? styles\.linkHovered : null,?\s*\]\}\s*>\s*\{label\}/,
     )
   })
 })

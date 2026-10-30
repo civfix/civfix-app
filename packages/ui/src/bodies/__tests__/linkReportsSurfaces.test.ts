@@ -353,8 +353,8 @@ describe("host tools open the same picker in commit mode", () => {
 
   it("without coordinates the sheet still opens, on the pin-first surface", () => {
     expect(hostSheet).toContain("if (!readonly && center) {")
-    expect(hostSheet).toContain(
-      't(readonly ? "linked_reports_sheet.caption_readonly" : "linked_reports_sheet.caption_pin_first")',
+    expect(hostSheet).toMatch(
+      /t\(\s*readonly\s+\? "linked_reports_sheet\.caption_readonly"\s+: "linked_reports_sheet\.caption_pin_first",?\s*\)/,
     )
     expect(hostSheet).toContain("hasCoords: center !== null")
     expect(hostSheet).toContain("[cleanup.lat, cleanup.lng]")

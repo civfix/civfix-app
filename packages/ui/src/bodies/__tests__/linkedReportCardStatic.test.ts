@@ -7,7 +7,7 @@ describe("a LinkedReportCard with nothing to press", () => {
   it("renders the card as a plain View, not a disabled button", () => {
     expect(card).toMatch(/const card =\s*onPress \|\| selectable \? \(\s*<Pressable/)
     const staticBranch =
-      /\) : \(\s*<View style=\{\[styles\.card[\s\S]*?<\/View>\s*\)/.exec(card)?.[0] ?? ""
+      /\) : \(\s*<View\s+style=\{\[\s*styles\.card[\s\S]*?<\/View>\s*\)/.exec(card)?.[0] ?? ""
     expect(staticBranch).toContain("{content}")
     expect(staticBranch).not.toContain("accessibilityRole")
     expect(staticBranch).not.toContain("accessibilityLabel")

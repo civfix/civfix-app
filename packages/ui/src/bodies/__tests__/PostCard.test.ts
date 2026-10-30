@@ -583,7 +583,7 @@ describe("the flat row's focus ring is drawn INSIDE its own box", () => {
     // `[data-focus-ring]:focus-visible` (0,2,0) - so as a StyleSheet entry the inset silently loses and
     // the ring stays outside. A plain object is written inline, which outranks any stylesheet rule.
     expect(AFFORDANCES).toMatch(
-      /export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\n\s*\? \{ outlineOffset:/,
+      /export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\s*\? \{ outlineOffset:/,
     )
     expect(SRC).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
     expect(SRC).not.toMatch(/const WEB_ROW_FOCUS_INSET/)

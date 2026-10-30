@@ -24,7 +24,7 @@ describe("the post composers guard against a double submit", () => {
     it(`${name} checks the ref before it does any work`, () => {
       const check = source.indexOf("if (submittingRef.current) return")
       const claim = source.indexOf("submittingRef.current = true")
-      const mutate = source.search(/create\.mutate(Async)?\(/)
+      const mutate = source.search(/create\s*\.mutate(Async)?\(/)
       expect(check).toBeGreaterThan(-1)
       expect(claim).toBeGreaterThan(check)
       expect(mutate).toBeGreaterThan(claim)

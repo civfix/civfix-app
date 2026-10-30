@@ -43,7 +43,7 @@ describe("PostMediaGrid spends the thumb on split cells only", () => {
 
   it("passes the rendition through the shared rule", () => {
     expect(source).toMatch(/thumbUri=\{postMediaGridThumbUri\(item, split\)\}/)
-    expect(source).toMatch(/return split \? media\.thumbUrl \?\? null : null/)
+    expect(source).toMatch(/return split \? \(media\.thumbUrl \?\? null\) : null/)
   })
 })
 

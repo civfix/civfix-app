@@ -48,7 +48,7 @@ describe("PageStack.native routes the reserve per layer", () => {
     )
     expect(src).toMatch(/const contentReserve = reserve === "content" \? paddingBottom : 0/)
     expect(src).toMatch(
-      /const bodyScrollHost = reserve === "content" \? contentBottomReserveScrollHost\(scrollHost\) : scrollHost/,
+      /const bodyScrollHost =\s+reserve === "content" \? contentBottomReserveScrollHost\(scrollHost\) : scrollHost/,
     )
     expect(src).toMatch(
       /<View style=\{\[styles\.layerContent, \{ paddingBottom: boxReserve, paddingTop \}\]\}>/,

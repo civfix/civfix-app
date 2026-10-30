@@ -212,8 +212,8 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
   it("reveals the overflow chip on hover (or while its menu is open) and opens the house PopoverMenu", () => {
     expect(inbox).toContain("const { hovered, hoverProps } = useRowHover()")
     expect(inbox).toContain("{IS_WEB ? (")
-    expect(inbox).toContain(
-      "rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed",
+    expect(inbox).toMatch(
+      /rowMenuChipShown\(state, hovered \|\| menuOpen, coarsePointer\)\s+\? null\s+: styles\.menuChipConcealed/,
     )
     expect(inbox).toContain("icon={iconMap.Ellipsis}")
     expect(inbox).toContain("<PopoverMenu")

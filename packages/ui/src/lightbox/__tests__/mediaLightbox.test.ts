@@ -34,7 +34,9 @@ describe("the lightbox controls sit in the safe area", () => {
   })
 
   it("positions the close button and both chevrons from those offsets", () => {
-    expect(base).toContain("style={(state) => [styles.controlBase, offset, webCursor(false),")
+    expect(base).toMatch(
+      /style=\{\(state\) => \[\s*styles\.controlBase,\s*offset,\s*webCursor\(false\),/,
+    )
     expect(base.match(/styles\.controlBase,/g)).toHaveLength(1)
     for (const control of ["close", "prev", "next"]) {
       expect(base).toContain(`offset={offsets.${control}}`)
@@ -73,8 +75,7 @@ describe("the zoomable stage", () => {
 describe("the ZoomableMedia seam split", () => {
   it("keeps gesture-handler and reanimated inside the native seam", () => {
     expect(native).toMatch(/^import \{ Gesture, [\w, ]+\} from "react-native-gesture-handler"$/m)
-    expect(native).toMatch(/^import Animated, \{$/m)
-    expect(native).toContain('} from "react-native-reanimated"')
+    expect(native).toMatch(/^import Animated, \{[^}]*\} from "react-native-reanimated"$/m)
   })
 
   it("keeps both of them OUT of the web seam and the selector", () => {
@@ -123,8 +124,8 @@ describe("the native gesture set", () => {
   it("arms the pan only past a travel slop, so a double tap is never swallowed by the race", () => {
     expect(native).toMatch(/^const PAN_ACTIVATE_TRAVEL = 12$/m)
     expect(native).toContain("onTouchesDown((event) => {")
-    expect(native).toContain(
-      "if (!travelExceeds(panTouchOrigin.value, { x: touch.absoluteX, y: touch.absoluteY }, PAN_ACTIVATE_TRAVEL)) {",
+    expect(native).toMatch(
+      /if \(\s*!travelExceeds\(\s*panTouchOrigin\.value,\s*\{ x: touch\.absoluteX, y: touch\.absoluteY \},\s*PAN_ACTIVATE_TRAVEL,?\s*\)\s*\) \{/,
     )
   })
 

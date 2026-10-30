@@ -108,7 +108,7 @@ describe("NotificationsBody rows answer the pointer like every other list root",
   it("branches on webHover with the 120ms webTransition and is ring-tagged", () => {
     expect(notifications).toContain("webHover(state)")
     expect(notifications).toContain("webTransition")
-    const row = notifications.match(/accessibilityLabel=\{item\.read[\s\S]*?\]\}/)?.[0] ?? ""
+    const row = notifications.match(/accessibilityLabel=\{\s*item\.read[\s\S]*?\]\}/)?.[0] ?? ""
     expect(row).toContain("focusRingProps")
   })
 

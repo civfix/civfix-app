@@ -127,11 +127,11 @@ describe("PageStack.native animates and snapshots only when the layer keys chang
   })
 
   it("moves the leaving-layer snapshot only after the same-keys guard", () => {
-    const afterGuard = sliceBetween(
-      effect.body,
-      "if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return",
-      "const direction =",
+    const guardAt = effect.body.search(
+      /if \(prevKeys\.length === layerKeys\.length && prevKeys\.every\(\(key, i\) => key === layerKeys\[i\]\)\)\s+return\b/,
     )
+    expect(guardAt).toBeGreaterThan(-1)
+    const afterGuard = sliceBetween(effect.body.slice(guardAt), "return", "const direction =")
     for (const write of [
       "prevKeysRef.current = layerKeys",
       "prevEntriesRef.current = entries",
@@ -165,7 +165,7 @@ describe("useKeyboardAnchor.native keeps one stable apply", () => {
   })
 
   it("reserves with the committed rest offset and gap, so apply never goes stale", () => {
-    const apply = sliceBetween(source, "const apply = useCallback(", "}, [overlap, owned])")
+    const apply = sliceBetween(source, "const apply = useCallback(", "[overlap, owned],")
     expect(apply).toContain(
       "keyboardLift(cmd.reserveOverlap, restOffsetRef.current, gapRef.current)",
     )

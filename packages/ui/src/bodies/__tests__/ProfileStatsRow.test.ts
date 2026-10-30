@@ -12,7 +12,7 @@ const catalog = JSON.parse(
 
 const items = [
   ...SOURCE.matchAll(
-    /\{ key: "([a-z]+)", value: ([^,]+), labelKey: "([a-z.]+)", connection: ([^ ]+) \}/g,
+    /\{\s*key: "([a-z]+)",\s*value: ([^,]+),\s*labelKey: "([a-z.]+)",\s*connection: ([^\s,]+),?\s*\}/g,
   ),
 ]
 
@@ -36,8 +36,8 @@ describe("the profile's five numbers", () => {
 
   it("makes ONLY the two connection counts pressable", () => {
     expect(items.map((m) => m[4])).toEqual(['"following"', '"followers"', "null", "null", "null"])
-    expect(SOURCE).toContain(
-      "const onPress = which != null && onOpenConnections != null ? () => onOpenConnections(which) : null",
+    expect(SOURCE).toMatch(
+      /const onPress =\s+which != null && onOpenConnections != null \? \(\) => onOpenConnections\(which\) : null/,
     )
     expect(SOURCE).toMatch(/if \(!onPress\) \{/)
     expect(SOURCE).toContain("onPress={onPress}")

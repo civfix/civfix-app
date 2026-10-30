@@ -68,11 +68,19 @@ describe("--console-* variables track @civfix/tokens", () => {
     it(`${scheme} elevation matches shadowSchemes`, () => {
       const block = blockFor(scheme)
       const s = shadowSchemes[scheme]
-      expect(readVar(block, "console-shadow-1")).toBe(s.s1)
-      expect(readVar(block, "console-shadow-2")).toBe(s.s2)
-      expect(readVar(block, "console-shadow-3")).toBe(s.s3)
-      expect(readVar(block, "console-shadow-4")).toBe(s.s4)
-      expect(readVar(block, "console-shadow-ring")).toBe(s.ring)
+      // Prettier lays the stylesheet out (spaces after commas, a layer per line, 0.30 -> 0.3), so the
+      // comparison is on values, not spelling.
+      const shadow = (value: string) =>
+        value
+          .replace(/\d*\.?\d+/g, (n) => String(Number(n)))
+          .replace(/\s*,\s*/g, ", ")
+          .replace(/\s+/g, " ")
+          .trim()
+      expect(shadow(readVar(block, "console-shadow-1"))).toBe(shadow(s.s1))
+      expect(shadow(readVar(block, "console-shadow-2"))).toBe(shadow(s.s2))
+      expect(shadow(readVar(block, "console-shadow-3"))).toBe(shadow(s.s3))
+      expect(shadow(readVar(block, "console-shadow-4"))).toBe(shadow(s.s4))
+      expect(shadow(readVar(block, "console-shadow-ring"))).toBe(shadow(s.ring))
     })
   }
 })

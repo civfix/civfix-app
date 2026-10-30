@@ -34,7 +34,7 @@ describe("cluster report rows", () => {
 
   it("shows the report's address as sent, else the pin description", () => {
     expect(cluster).toContain(
-      "subtitle={report ? report.addr ?? pin.description ?? null : pin.description ?? null}",
+      "subtitle={report ? (report.addr ?? pin.description ?? null) : (pin.description ?? null)}",
     )
   })
 })

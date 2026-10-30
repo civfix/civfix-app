@@ -78,7 +78,7 @@ describe("the embed cards reuse the house cards and the cached data hooks", () =
     expect(EMBEDS).toContain('import { LinkedEventCard } from "../LinkedEventCard"')
     expect(EMBEDS).toContain('import { LinkedReportCard } from "../LinkedReportCard"')
     expect(EMBEDS).toMatch(
-      /<LinkedReportCard report=\{reportToCardData\(report\)\} layout="list" headline="title"/,
+      /<LinkedReportCard\s+report=\{reportToCardData\(report\)\}\s+layout="list"\s+headline="title"/,
     )
     expect(EMBEDS).toMatch(
       /<LinkedEventCard\s+event=\{ref\}\s+cleanup=\{query\.data\}\s+layout="list"/,
@@ -248,8 +248,8 @@ describe("a link-only message is drawn as its card, never as a tinted bubble fra
     expect(BUBBLE).toContain(
       "const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken",
     )
-    expect(BUBBLE).toContain(
-      "<ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />",
+    expect(BUBBLE).toMatch(
+      /<ReactionChips\s+reactions=\{reactions\}\s+onToggle=\{toggleReaction\}\s+mine=\{tinted\}\s+disabled=\{!reactable\}\s+\/>/,
     )
     expect(
       BUBBLE.match(/<FlashOverlay mine=\{tinted\} shape=\{bare \? "card" : "bubble"\} \/>/g)
@@ -340,8 +340,8 @@ describe("the post card byline gives the name the first line and moves the handl
       card.indexOf("{byline ? ("),
     )
     expect(nameRow).toContain("{identity.name}")
-    expect(nameRow).toContain(
-      '<OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />',
+    expect(nameRow).toMatch(
+      /<OrgAffiliationBadge\s+organization=\{identity\.affiliation\}\s+size="sm"\s+interactive=\{false\}\s+\/>/,
     )
     expect(nameRow).not.toContain("byline")
     expect(nameRow).not.toContain("timeAgo")
@@ -397,7 +397,7 @@ describe("a shared post still previews the event or report attached to it", () =
       "const { isRepost, embedded, media, displayEvent, displayReport } = view",
     )
     expect(feed).toMatch(/<LinkedEventCard\s+event=\{displayEvent\}/)
-    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{ \.\.\.displayReport,/)
+    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.displayReport,/)
   })
 
   it("hangs the attachment below the body and the photos, never above the byline", () => {
@@ -417,8 +417,8 @@ describe("a shared post still previews the event or report attached to it", () =
     expect(card).toContain(
       "const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null",
     )
-    expect(card).toContain(
-      "const reportCard = linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null",
+    expect(card).toMatch(
+      /const reportCard =\s+linkedReport && !embeddedKeys\.has\(`report:\$\{linkedReport\.id\}`\) \? linkedReport : null/,
     )
     expect(EMBEDS).toContain(
       "const embeddedKeys = useMemo(() => new Set(refs.map((link) => link.key)), [refs])",

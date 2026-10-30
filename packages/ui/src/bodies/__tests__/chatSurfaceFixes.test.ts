@@ -182,8 +182,8 @@ describe("the group edit sheet can discard a newly picked photo", () => {
 describe("the inbox row menu is reachable without hover on web", () => {
   it("always mounts the More chip on web and reveals it on hover, focus, open menu or touch", () => {
     expect(INBOX).not.toContain("{IS_WEB && (hovered || menuOpen) ? (")
-    expect(INBOX).toContain(
-      "rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed",
+    expect(INBOX).toMatch(
+      /rowMenuChipShown\(state, hovered \|\| menuOpen, coarsePointer\)\s+\? null\s+: styles\.menuChipConcealed/,
     )
     expect(INBOX).toContain("const coarsePointer = useCoarsePointer()")
     expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| coarsePointer\) return true/)
@@ -245,8 +245,8 @@ describe("typing indicator label is exposed on native", () => {
 
 describe("the native bubble offers its long-press menu to screen readers", () => {
   it("declares a labelled longpress action that opens the context menu", () => {
-    expect(BUBBLE).toContain(
-      'menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined',
+    expect(BUBBLE).toMatch(
+      /menuAvailable\s+\? \[\{ name: "longpress", label: t\("bubble\.message_actions"\) \}\]\s+: undefined/,
     )
     expect(BUBBLE).toMatch(/if \(e\.nativeEvent\.actionName === "longpress"\) openContextMenu\(\)/)
   })

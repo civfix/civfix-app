@@ -433,8 +433,8 @@ describe("the Report tab's keep-alive slot", () => {
     )
     expect(pickStepWeb).toContain("const live = visible && !inert")
     expect(pickStepWeb).toContain('if (!live || typeof document === "undefined") return null')
-    expect(report).toContain(
-      "viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)",
+    expect(report).toMatch(
+      /viewfinderSessionActive\(\s*activeStep,\s*viewfinderMounted,\s*stackNonEmpty,\s*runActive,?\s*\)/,
     )
   })
 
@@ -455,8 +455,8 @@ describe("the home + messages keep-alive slots", () => {
     expect(portrait).toContain(
       'const homeSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "home"',
     )
-    expect(portrait).toContain(
-      'const messagingSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "messaging"',
+    expect(portrait).toMatch(
+      /const messagingSlotVisible =\s+RETAIN_TAB_BODIES && frame\.base\.bodyMounted && baseView === "messaging"/,
     )
     expect(portrait).toMatch(
       /const homeSlotBody = useMemo\(\(\) => renderBody\(null, "home"\), \[renderBody\]\)/,

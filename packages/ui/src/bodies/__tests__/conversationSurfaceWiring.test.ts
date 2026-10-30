@@ -60,7 +60,7 @@ describe("the row memo can actually skip", () => {
     expect(BUBBLE).toMatch(
       /function bubblePropsEqual\(prev: BubbleProps, next: BubbleProps\): boolean/,
     )
-    expect(BUBBLE).toMatch(/a\.message !== b\.message \|\| a\.mine !== b\.mine/)
+    expect(BUBBLE).toMatch(/a\.message !== b\.message \|\|\s+a\.mine !== b\.mine/)
   })
 
   it("renderItem depends on a stable retry, not on chat.retry", () => {

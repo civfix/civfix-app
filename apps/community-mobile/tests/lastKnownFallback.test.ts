@@ -12,7 +12,7 @@ const READERS = [
 ]
 
 const LAST_KNOWN =
-  /Location\.getLastKnownPositionAsync\(\{\s*maxAge: LAST_KNOWN_MAX_AGE_MS,?\s*\}\)(\.catch\(\(\) => null\))?/g
+  /Location\.getLastKnownPositionAsync\(\{\s*maxAge: LAST_KNOWN_MAX_AGE_MS,?\s*\}\)(\.catch\(\s*\(\) => null,?\s*\))?/g
 
 for (const file of READERS) {
   test(`${file}: a failed cached read falls through to a fresh fix instead of giving up`, () => {

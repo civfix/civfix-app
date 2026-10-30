@@ -171,7 +171,7 @@ describe("the line chart places its ticks through the shared rule", () => {
     const views = SRC.match(/<View[^>]*accessibilityLabel=\{accessibilityLabel\}[^>]*>/g) ?? []
     expect(views).toHaveLength(2)
     for (const view of views) {
-      expect(view).toContain("accessible ")
+      expect(view).toMatch(/\saccessible\s/)
       expect(view).toContain('accessibilityRole="image"')
     }
   })

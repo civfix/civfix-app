@@ -338,8 +338,8 @@ describe("wizardHeaderMode", () => {
   })
 
   it("switches on exactly the same boolean the back chevron is gated on", () => {
-    expect(wizardSource).toContain(
-      "const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))",
+    expect(wizardSource).toMatch(
+      /const showBack =\s+useNavStore\(\(s\) => showBackAffordance\(\{ stack: s\.stack, mode, stepIndex \}\)\)/,
     )
     expect(wizardSource).toContain('wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root"')
     expect(wizardSource).toContain("{showBack ? (")
@@ -352,8 +352,8 @@ describe("wizardHeaderMode", () => {
 
 describe("the capture step's embedded viewfinder wiring", () => {
   it("DERIVES the camera from the draft - there is no open/closed state left to go stale", () => {
-    expect(wizardSource).toContain(
-      "const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)",
+    expect(wizardSource).toMatch(
+      /const viewfinderVisible = rendersEmbeddedViewfinder\(\s*activeStep,\s*hasMedia,\s*Viewfinder != null,\s*mode,?\s*\)/,
     )
     expect(wizardCode).not.toContain("viewfinderOpen")
     expect(wizardCode).not.toContain("setViewfinderOpen")
@@ -375,8 +375,8 @@ describe("the capture step's embedded viewfinder wiring", () => {
   })
 
   it("gates the camera SESSION on the shared predicate, not merely on being mounted", () => {
-    expect(wizardSource).toContain(
-      "viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)",
+    expect(wizardSource).toMatch(
+      /viewfinderSessionActive\(\s*activeStep,\s*viewfinderMounted,\s*stackNonEmpty,\s*runActive,?\s*\)/,
     )
     expect(wizardSource).toContain("active={sessionActive}")
     expect(wizardSource).toContain('const runActive = useNavStore((s) => s.view === "report")')
@@ -432,8 +432,8 @@ describe("the capture step keeps its header attached to its content", () => {
 
   it("still caps the coral card, so the fill cannot become a wall of colour", () => {
     expect(styleBlock("photoDropFill")).toContain("maxHeight: 520")
-    expect(wizardSource).toContain(
-      'const captureCardFills = mode === "expanded" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)',
+    expect(wizardSource).toMatch(
+      /const captureCardFills =\s+mode === "expanded" && showsCaptureCard\(activeStep, hasMedia, Viewfinder != null, mode\)/,
     )
     expect(wizardSource).toContain("captureCardFills ? styles.contentFill : null")
     expect(wizardSource).toContain("fill ? styles.stepBlockFill : null")
@@ -716,9 +716,9 @@ describe("the capture review shows no location banner", () => {
 
 describe("the derived-viewfinder wiring (source-pinned)", () => {
   it("keeps the camera gate a pure render-time derivation with no state and no effect behind it", () => {
-    const gate =
-      "const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)"
-    expect(wizardSource).toContain(gate)
+    expect(wizardSource).toMatch(
+      /const viewfinderVisible = rendersEmbeddedViewfinder\(\s*activeStep,\s*hasMedia,\s*Viewfinder != null,\s*mode,?\s*\)/,
+    )
     expect(wizardSource).not.toMatch(/useState[^\n]*rendersEmbeddedViewfinder/)
     expect(wizardCode).not.toMatch(/setViewfinder(Visible|Open)/)
   })

@@ -133,8 +133,8 @@ describe("Discovery leaderboard asks for the extras threshold, renders the previ
   const source = surfaceSource("search")
 
   it("requests LEADERBOARD_REQUEST_LIMIT, never the preview limit", () => {
-    expect(source).toContain(
-      "useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })",
+    expect(source).toMatch(
+      /useJurisdictionLeaderboard\(geo\?\.geoid, \{\s+limit: LEADERBOARD_REQUEST_LIMIT,\s+\}\)/,
     )
     expect(source).not.toContain("{ limit: LEADERBOARD_PREVIEW_LIMIT }")
   })

@@ -24,8 +24,8 @@ describe("report detail accessibility", () => {
   })
 
   it("names the icon-only status thumb as an image", () => {
-    expect(detail).toContain(
-      '<View style={[styles.thumb, styles.thumbStatus]} accessible accessibilityRole="image" accessibilityLabel={label}>',
+    expect(detail).toMatch(
+      /<View\s+style=\{\[styles\.thumb, styles\.thumbStatus\]\}\s+accessible\s+accessibilityRole="image"\s+accessibilityLabel=\{label\}\s+>/,
     )
   })
 })

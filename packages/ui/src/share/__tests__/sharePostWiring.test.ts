@@ -62,7 +62,7 @@ describe("the provider is mounted by every host that renders a feed", () => {
   })
 
   it("mounts the sheet only once a target exists, so no session pays for its queries", () => {
-    expect(PROVIDER).toMatch(/\{target \? <SharePostSheet visible=\{visible\}/)
+    expect(PROVIDER).toMatch(/\{target \? \(?\s*<SharePostSheet visible=\{visible\}/)
   })
 
   it("keeps the sheet mounted until it reports itself closed, so a deferred OS share cannot be dropped", () => {
@@ -102,7 +102,7 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     )
     expect(NATIVE_SHEET).toMatch(/tone=\{copyTile\.tone\}/)
     expect(NATIVE_SHEET).toMatch(
-      /<ShareActionTile icon="Share" label=\{t\("actions.more"\)\} onPress=\{onShareAnotherWay\} disabled=\{pending\}/,
+      /<ShareActionTile\s+icon="Share"\s+label=\{t\("actions.more"\)\}\s+onPress=\{onShareAnotherWay\}\s+disabled=\{pending\}/,
     )
     expect(PEOPLE).toMatch(/<FlatList\s+horizontal/)
     expect(PEOPLE).toContain('accessibilityRole="checkbox"')
@@ -209,7 +209,7 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
       )
       expect(source).toContain("onClosed={settled}")
       expect(source).toMatch(
-        /const onShareAnotherWay = useCallback\(\(\) => run\(session\.shareElsewhere\)/,
+        /const onShareAnotherWay = useCallback\(\s*\(\) => run\(session\.shareElsewhere\)/,
       )
     }
     expect(SESSION).toContain("void shareLink({")
@@ -251,7 +251,7 @@ describe("a send in flight can never seal the sheet", () => {
 
   it("parks the OS share sheet while a send is running, so the two cannot race", () => {
     expect(SHEET).toMatch(/onPress=\{onShareAnotherWay\}\s*disabled=\{pending\}/)
-    expect(NATIVE_SHEET).toMatch(/onPress=\{onShareAnotherWay\} disabled=\{pending\}/)
+    expect(NATIVE_SHEET).toMatch(/onPress=\{onShareAnotherWay\}\s+disabled=\{pending\}/)
   })
 
   it("stays quiet about a run the viewer cancelled, beyond what actually got through", () => {

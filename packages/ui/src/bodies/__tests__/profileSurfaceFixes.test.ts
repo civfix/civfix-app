@@ -48,7 +48,7 @@ describe("notifications list", () => {
       "const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)",
     )
     expect(src).toMatch(
-      /accessibilityLabel=\{item\.read\s*\? \[item\.title, \.\.\.a11yDetails\]\.join\(", "\)\s*: \[t\("row\.unreadSuffix", \{ title: item\.title \}\), \.\.\.a11yDetails\]\.join\(", "\)\}/,
+      /accessibilityLabel=\{\s*item\.read\s*\? \[item\.title, \.\.\.a11yDetails\]\.join\(", "\)\s*: \[t\("row\.unreadSuffix", \{ title: item\.title \}\), \.\.\.a11yDetails\]\.join\(", "\)\s*\}/,
     )
   })
 })
