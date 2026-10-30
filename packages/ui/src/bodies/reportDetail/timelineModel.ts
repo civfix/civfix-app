@@ -139,7 +139,8 @@ function filedNode(
 ): TimelineNode {
   let text: string
   if (filing.linkedExisting) text = t("timeline.linked_existing")
-  else if (filing.jurisdictionName) text = t("timeline.filed_with", { jurisdiction: filing.jurisdictionName })
+  else if (filing.jurisdictionName)
+    text = t("timeline.filed_with", { jurisdiction: filing.jurisdictionName })
   else text = t("timeline.filed_with_city")
   return {
     key: "intake",
