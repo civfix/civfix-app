@@ -22,7 +22,7 @@ export interface ChartBar {
   label?: string
   value: number | null
   color: string
-  stackValue?: number
+  stackValue?: number | undefined
   stackColor?: string
   valueLabel?: string
 }

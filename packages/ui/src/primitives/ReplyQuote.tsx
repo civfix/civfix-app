@@ -9,7 +9,7 @@ import { QUOTE_ACCENT_LINE, excerptOf } from "./quoteStrip"
 export interface ReplyQuoteProps {
   replyTo: ReplyToDTO
   mine: boolean
-  onPress?: () => void
+  onPress?: (() => void) | undefined
   loading?: boolean
 }
 

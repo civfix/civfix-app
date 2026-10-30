@@ -48,7 +48,7 @@ export function DateBadge({
 }: {
   iso: string
   size?: number
-  timeZone?: string
+  timeZone?: string | undefined
 }) {
   const styles = useStyles()
   const t = useTheme()

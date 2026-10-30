@@ -15,5 +15,11 @@ export interface IconProps {
 }
 
 export function Icon({ icon: IconCmp, size, color, strokeWidth }: IconProps) {
-  return <IconCmp size={size} color={color} strokeWidth={strokeWidth ?? 2} />
+  return (
+    <IconCmp
+      {...(size !== undefined ? { size } : {})}
+      {...(color !== undefined ? { color } : {})}
+      strokeWidth={strokeWidth ?? 2}
+    />
+  )
 }

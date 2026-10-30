@@ -22,10 +22,10 @@ export type ButtonVariant = "primary" | "destructive" | "dark" | "outline" | "gh
 export interface PrimaryButtonProps {
   label: string
   onPress: () => void
-  variant?: ButtonVariant
-  loading?: boolean
+  variant?: ButtonVariant | undefined
+  loading?: boolean | undefined
   disabled?: boolean
-  icon?: LucideIcon
+  icon?: LucideIcon | undefined
   accessibilityLabel?: string
   style?: StyleProp<ViewStyle>
 }

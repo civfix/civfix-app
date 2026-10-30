@@ -15,9 +15,9 @@ export function Avatar({
   decorative,
 }: {
   name: string
-  photoUrl?: string | null
-  seed?: string
-  gradient?: readonly [string, string] | null
+  photoUrl?: string | null | undefined
+  seed?: string | undefined
+  gradient?: readonly [string, string] | null | undefined
   size?: number
   style?: StyleProp<ViewStyle>
   accessibilityLabel?: string

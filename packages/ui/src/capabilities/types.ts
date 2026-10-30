@@ -48,7 +48,7 @@ export interface CameraCapability {
 export interface GeoPosition {
   latitude: number
   longitude: number
-  accuracy?: number
+  accuracy?: number | undefined
 }
 
 export interface GeolocationCapability {

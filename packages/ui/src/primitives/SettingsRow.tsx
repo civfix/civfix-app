@@ -17,14 +17,14 @@ export interface SettingsToggleBinding {
 export interface SettingsRowProps {
   label: string
   icon?: IconName
-  sub?: string
-  subNumberOfLines?: number
-  value?: string
+  sub?: string | undefined
+  subNumberOfLines?: number | undefined
+  value?: string | undefined
   onPress?: () => void
   toggle?: SettingsToggleBinding
   variant?: "default" | "destructive"
   disabled?: boolean
-  chevron?: boolean
+  chevron?: boolean | undefined
   accessibilityLabel?: string
 }
 
@@ -64,9 +64,9 @@ function RowContent({
   destructive,
 }: {
   label: string
-  icon?: IconName
-  sub?: string
-  subNumberOfLines?: number
+  icon?: IconName | undefined
+  sub?: string | undefined
+  subNumberOfLines?: number | undefined
   destructive: boolean
 }) {
   const styles = useStyles()

@@ -54,7 +54,7 @@ export function withCartoKey(url: string, key?: string): string {
 }
 
 export interface RasterMapStyleOptions {
-  cartoApiKey?: string
+  cartoApiKey?: string | undefined
   scheme?: ColorSchemeName
 }
 

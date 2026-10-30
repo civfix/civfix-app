@@ -4,7 +4,7 @@ export const DOUBLE_TAP_WINDOW_MS = 280
 
 export interface DoubleTapOptions {
   onSingleTap?: () => void
-  onDoubleTap?: () => void
+  onDoubleTap?: (() => void) | undefined
   windowMs?: number
 }
 

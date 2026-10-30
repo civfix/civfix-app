@@ -199,7 +199,7 @@ const PostActionButton = React.memo(function PostActionButton({
   label: string
   disabled: boolean
   reducedMotion: boolean
-  buttonRef?: React.Ref<NativeView>
+  buttonRef?: React.Ref<NativeView> | undefined
   layout: PostActionLayout
 }) {
   const styles = useStyles()
