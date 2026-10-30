@@ -6,7 +6,9 @@ import { useGalleryStyles } from "./galleryStyles"
 
 export type StatusTileKind = "processing" | "rejected" | "held"
 
-const statusTile = (t: Theme): Record<StatusTileKind, { icon: IconName; labelKey: string; color: string }> => ({
+const statusTile = (
+  t: Theme,
+): Record<StatusTileKind, { icon: IconName; labelKey: string; color: string }> => ({
   processing: { icon: "Clock", labelKey: "gallery.tile_processing", color: t.colors.textSubtle },
   rejected: { icon: "Ban", labelKey: "gallery.tile_rejected", color: t.colors.brand.bloom },
   held: { icon: "AlertCircle", labelKey: "gallery.tile_held", color: t.colors.brand.sun },
@@ -20,7 +22,12 @@ export function StatusTile({ kind, variant }: { kind: StatusTileKind; variant: "
   const label = t(labelKey)
   if (variant === "thumb") {
     return (
-      <View style={[styles.thumb, styles.thumbStatus]} accessible accessibilityRole="image" accessibilityLabel={label}>
+      <View
+        style={[styles.thumb, styles.thumbStatus]}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={label}
+      >
         <Icon icon={iconMap[icon]} size={16} color={color} />
       </View>
     )

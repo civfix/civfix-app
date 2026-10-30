@@ -243,7 +243,12 @@ function PostMetaRow({
 
       <View style={styles.metaSpacer} />
 
-      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />
+      <PostOverflowButton
+        label={t("post_card.more_a11y")}
+        onPress={onOpenMenu}
+        buttonRef={menuRef}
+        expanded={menuOpen}
+      />
     </View>
   )
 }
@@ -273,17 +278,26 @@ function LabeledMedia({
       accessibilityRole="imagebutton"
       accessibilityLabel={alt}
       {...focusRingProps}
-      style={(state) => [styles.fixMediaCell, webCursor(false), state.pressed ? styles.pressed : null]}
+      style={(state) => [
+        styles.fixMediaCell,
+        webCursor(false),
+        state.pressed ? styles.pressed : null,
+      ]}
     >
       <MediaPreview
         uri={media.url}
         kind={media.kind}
         posterUri={media.thumbUrl}
-        thumbUri={wide ? null : media.thumbUrl ?? null}
+        thumbUri={wide ? null : (media.thumbUrl ?? null)}
         aspectRatio={wide ? CLEARED_MEDIA_ASPECT : BEFORE_AFTER_MEDIA_ASPECT}
         alt={alt}
       />
-      <View style={[styles.mediaLabel, tone === "after" ? styles.mediaLabelAfter : styles.mediaLabelBefore]}>
+      <View
+        style={[
+          styles.mediaLabel,
+          tone === "after" ? styles.mediaLabelAfter : styles.mediaLabelBefore,
+        ]}
+      >
         <Text style={styles.mediaLabelText}>{label}</Text>
       </View>
     </Pressable>
@@ -410,7 +424,10 @@ function PostCardAttachments({
       {displayReport && !model.showFixShowcase ? (
         <View style={styles.attachment}>
           <LinkedReportCard
-            report={{ ...displayReport, thumbUrl: displayReport.thumbUrl ?? localReportThumb(displayReport.id) }}
+            report={{
+              ...displayReport,
+              thumbUrl: displayReport.thumbUrl ?? localReportThumb(displayReport.id),
+            }}
             layout="list"
             headline="title"
             onPress={() => onOpenReport(displayReport.id)}
@@ -426,7 +443,12 @@ function PostCardAttachments({
 
       {!isRepost && embedded ? (
         <View style={styles.attachment}>
-          <EmbeddedPost post={embedded} t={t} timeAgo={timeAgo} onPress={() => onOpenPost(embedded.id)} />
+          <EmbeddedPost
+            post={embedded}
+            t={t}
+            timeAgo={timeAgo}
+            onPress={() => onOpenPost(embedded.id)}
+          />
         </View>
       ) : null}
     </>
@@ -454,7 +476,11 @@ function RepostBody({
   const text = repostBodyText(embedded)
   if (!text) return null
   return (
-    <Text variant="body" numberOfLines={clamped ? POST_BODY_CLAMP_LINES : undefined} style={styles.bodyText}>
+    <Text
+      variant="body"
+      numberOfLines={clamped ? POST_BODY_CLAMP_LINES : undefined}
+      style={styles.bodyText}
+    >
       {text}
     </Text>
   )
@@ -475,26 +501,31 @@ export const PostCard = React.memo(function PostCard({
   const { t } = useT("home-feed")
   const layout = useLayoutMode()
   const [expanded, setExpanded] = React.useState(false)
-  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = usePostOverflowMenuState(post)
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } =
+    usePostOverflowMenuState(post)
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const view = React.useMemo(() => buildPostCardView(post, model), [post, model])
   const { isRepost, embedded, rowPostId, actionTargetId, openableOriginalId, media } = view
 
   const openPost = React.useCallback(
-    (postId: string) => (onOpenPost ? onOpenPost(postId) : push({ kind: "post-thread", id: postId })),
+    (postId: string) =>
+      onOpenPost ? onOpenPost(postId) : push({ kind: "post-thread", id: postId }),
     [onOpenPost, push],
   )
   const openPerson = React.useCallback(
-    (personId: string) => (onOpenPerson ? onOpenPerson(personId) : push({ kind: "person", id: personId })),
+    (personId: string) =>
+      onOpenPerson ? onOpenPerson(personId) : push({ kind: "person", id: personId }),
     [onOpenPerson, push],
   )
   const openEvent = React.useCallback(
-    (eventId: string) => (onOpenEvent ? onOpenEvent(eventId) : push({ kind: "cleanup", id: eventId })),
+    (eventId: string) =>
+      onOpenEvent ? onOpenEvent(eventId) : push({ kind: "cleanup", id: eventId }),
     [onOpenEvent, push],
   )
   const openReport = React.useCallback(
-    (reportId: string) => (onOpenReport ? onOpenReport(reportId) : push({ kind: "pin", id: reportId })),
+    (reportId: string) =>
+      onOpenReport ? onOpenReport(reportId) : push({ kind: "pin", id: reportId }),
     [onOpenReport, push],
   )
 
@@ -505,7 +536,12 @@ export const PostCard = React.memo(function PostCard({
   const embeddedIdentity = React.useMemo(
     () =>
       embedded
-        ? buildPostIdentity(embedded.author, embedded.organization, t, t("post_card.deleted_account"))
+        ? buildPostIdentity(
+            embedded.author,
+            embedded.organization,
+            t,
+            t("post_card.deleted_account"),
+          )
         : null,
     [embedded, t],
   )
@@ -585,7 +621,11 @@ export const PostCard = React.memo(function PostCard({
             {...focusRingProps}
             {...linkKeyProps(openAuthor)}
             {...AVATAR_WEB_PROPS}
-            style={(state) => [styles.gutter, webCursor(false), state.pressed ? styles.pressed : null]}
+            style={(state) => [
+              styles.gutter,
+              webCursor(false),
+              state.pressed ? styles.pressed : null,
+            ]}
           >
             <Avatar
               name={rowIdentity.avatarName}
@@ -625,7 +665,11 @@ export const PostCard = React.memo(function PostCard({
                 {...linkKeyProps(() => {
                   if (post.replyToId) openPost(post.replyToId)
                 })}
-                style={(state) => [styles.replyingTo, webCursor(false), state.pressed ? styles.pressed : null]}
+                style={(state) => [
+                  styles.replyingTo,
+                  webCursor(false),
+                  state.pressed ? styles.pressed : null,
+                ]}
               >
                 <Text numberOfLines={1} style={styles.replyingToText}>
                   {model.replyingToLabel}
@@ -649,7 +693,11 @@ export const PostCard = React.memo(function PostCard({
                 accessibilityLabel={t("post_card.show_more")}
                 hitSlop={6}
                 {...focusRingProps}
-                style={(state) => [styles.showMore, webCursor(false), state.pressed ? styles.pressed : null]}
+                style={(state) => [
+                  styles.showMore,
+                  webCursor(false),
+                  state.pressed ? styles.pressed : null,
+                ]}
               >
                 <Text style={styles.showMoreText}>{t("post_card.show_more")}</Text>
               </Pressable>
@@ -739,9 +787,10 @@ const useStyles = makeThemedStyles((t) => ({
   rowCardHovered: {
     borderColor: t.colors.borderStrong,
   },
-  separator: Platform.OS === "web"
-    ? { height: 1, backgroundColor: wash(t.colors.borderStrong, 0.45, t) }
-    : { height: StyleSheet.hairlineWidth, backgroundColor: t.colors.borderStrong },
+  separator:
+    Platform.OS === "web"
+      ? { height: 1, backgroundColor: wash(t.colors.borderStrong, 0.45, t) }
+      : { height: StyleSheet.hairlineWidth, backgroundColor: t.colors.borderStrong },
   pressed: {
     opacity: 0.62,
   },

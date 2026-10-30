@@ -71,7 +71,10 @@ export function zoomTranslationLimits(scale: number, geometry: ZoomGeometry): Zo
   }
 }
 
-export function clampZoomTransform(transform: ZoomTransform, geometry: ZoomGeometry): ZoomTransform {
+export function clampZoomTransform(
+  transform: ZoomTransform,
+  geometry: ZoomGeometry,
+): ZoomTransform {
   "worklet"
   const scale = clampZoomScale(transform.scale, geometry.maxScale)
   const limits = zoomTranslationLimits(scale, geometry)
@@ -140,7 +143,10 @@ export function panZoomTransform(
   )
 }
 
-export function settleZoomTransform(transform: ZoomTransform, geometry: ZoomGeometry): ZoomTransform {
+export function settleZoomTransform(
+  transform: ZoomTransform,
+  geometry: ZoomGeometry,
+): ZoomTransform {
   "worklet"
   if (!isZoomed(transform.scale)) return ZOOM_IDENTITY
   return clampZoomTransform(transform, geometry)
@@ -153,7 +159,10 @@ export function wheelZoomScale(
 ): number {
   "worklet"
   const from = clampZoomScale(scale, maxScale)
-  return clampZoomScale(from * Math.exp(-finite(deltaY, 0) * LIGHTBOX_WHEEL_SCALE_PER_PIXEL), maxScale)
+  return clampZoomScale(
+    from * Math.exp(-finite(deltaY, 0) * LIGHTBOX_WHEEL_SCALE_PER_PIXEL),
+    maxScale,
+  )
 }
 
 export const LIGHTBOX_KEY_ZOOM_STEP = 1.5

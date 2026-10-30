@@ -68,7 +68,9 @@ export function PhaseDot({ phase }: PhaseDotProps) {
   }, [live, pulse, reducedMotion, t.motion])
 
   return (
-    <Animated.View style={[styles.dot, { backgroundColor: phaseDotColor(t, phase), opacity: pulse }]} />
+    <Animated.View
+      style={[styles.dot, { backgroundColor: phaseDotColor(t, phase), opacity: pulse }]}
+    />
   )
 }
 

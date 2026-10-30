@@ -56,7 +56,6 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "home-view": "scroll",
 }
 
-
 const PERMANENT_SHEET_KINDS = ["drop-pin"] as const satisfies readonly DetailKind[]
 
 export const SHEET_ONLY_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>(PERMANENT_SHEET_KINDS)
@@ -149,7 +148,11 @@ export function fullEntryStack(
 ): DetailEntry[] {
   const entries: DetailEntry[] = []
   for (const entry of stack) {
-    if (entry && entry.kind !== "view" && resolveBodyLayout(entry.kind, fullPageDetails) === "full") {
+    if (
+      entry &&
+      entry.kind !== "view" &&
+      resolveBodyLayout(entry.kind, fullPageDetails) === "full"
+    ) {
       entries.push(entry)
     }
   }
@@ -204,12 +207,19 @@ export function portraitFramePlan(
   }
 }
 
-
-export function effectiveBaseView(view: View, lastNonSearchView: View, searchIsOverlay: boolean): View {
+export function effectiveBaseView(
+  view: View,
+  lastNonSearchView: View,
+  searchIsOverlay: boolean,
+): View {
   return searchIsOverlay && view === "search" ? lastNonSearchView : view
 }
 
-function revealStyle(progress: number, start: number, end: number): { opacity: number; translateY: number } {
+function revealStyle(
+  progress: number,
+  start: number,
+  end: number,
+): { opacity: number; translateY: number } {
   "worklet"
   const raw = (progress - start) / (end - start)
   const w = raw < 0 ? 0 : raw > 1 ? 1 : raw

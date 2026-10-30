@@ -184,7 +184,8 @@ export function PageBuilderScreen() {
   const slugStatus = useMemo(() => {
     if (currentSlug === "") return null
     if (!slugValid) return { tone: "error" as const, message: t("slug.invalid") }
-    if (currentSlug === (page.data?.slug ?? "")) return { tone: "ok" as const, message: t("slug.current") }
+    if (currentSlug === (page.data?.slug ?? ""))
+      return { tone: "ok" as const, message: t("slug.current") }
     if (slugCheck.isFetching) return { tone: "info" as const, message: t("slug.checking") }
     if (!slugCheck.data) return null
     if (slugCheck.data.available) return { tone: "ok" as const, message: t("slug.available") }
@@ -266,7 +267,10 @@ export function PageBuilderScreen() {
                   label={t("slug.label")}
                   htmlFor="page-slug"
                   hint={t("slug.hint")}
-                  error={serverFields.slug ?? (slugStatus?.tone === "error" ? slugStatus.message : undefined)}
+                  error={
+                    serverFields.slug ??
+                    (slugStatus?.tone === "error" ? slugStatus.message : undefined)
+                  }
                 >
                   <TextInput
                     id="page-slug"

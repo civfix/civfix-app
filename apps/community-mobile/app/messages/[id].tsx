@@ -14,7 +14,13 @@ export default function ConversationScreen() {
   const router = useRouter()
   const th = useTheme()
   const { t } = useT("conversation")
-  const { id, roomKind: roomKindParam, peerId, peerName, peerHandle } = useLocalSearchParams<{
+  const {
+    id,
+    roomKind: roomKindParam,
+    peerId,
+    peerName,
+    peerHandle,
+  } = useLocalSearchParams<{
     id: string
     roomKind?: string
     peerId?: string
@@ -67,7 +73,9 @@ export default function ConversationScreen() {
         {...(peer ? { peer } : {})}
         fullScreen
         onBack={onBack}
-        onOpenProfile={(personId) => router.push({ pathname: "/people/[id]", params: { id: personId } })}
+        onOpenProfile={(personId) =>
+          router.push({ pathname: "/people/[id]", params: { id: personId } })
+        }
         onOpenMembers={() =>
           router.push({
             pathname: "/messages/members/[roomKind]/[id]",

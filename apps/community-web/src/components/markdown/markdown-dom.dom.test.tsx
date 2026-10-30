@@ -40,7 +40,11 @@ describe("markdown-dom", () => {
     expect(root.querySelector("p")!.className).toBe("p")
     expect(root.querySelector("ul")!.className).toBe("ul")
     expect(root.querySelector("ol")!.className).toBe("ol")
-    expect(Array.from(root.querySelectorAll("li")).map((li) => li.className)).toEqual(["li", "li", "li"])
+    expect(Array.from(root.querySelectorAll("li")).map((li) => li.className)).toEqual([
+      "li",
+      "li",
+      "li",
+    ])
     expect(root.querySelector("strong")!.className).toBe("b")
     expect(root.querySelector("em")!.className).toBe("i")
     expect(root.querySelector("a")!.className).toBe("a")

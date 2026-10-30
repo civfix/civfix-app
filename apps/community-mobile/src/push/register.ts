@@ -18,10 +18,7 @@ function systemT(): (key: string) => string {
   return createI18n(resolveActiveLocale(null)).getFixedT(null, "mobile-system")
 }
 
-LogBox.ignoreLogs([
-  "Error reading persisted server registration info",
-  "getRegistrationInfoAsync",
-])
+LogBox.ignoreLogs(["Error reading persisted server registration info", "getRegistrationInfoAsync"])
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

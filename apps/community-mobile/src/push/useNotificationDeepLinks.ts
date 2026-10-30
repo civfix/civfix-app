@@ -32,7 +32,10 @@ export function useNotificationDeepLinks(dismissToShell: () => void) {
       handle(Notifications.getLastNotificationResponse())
       Notifications.clearLastNotificationResponse()
     } catch (err) {
-      console.warn("[push] the notification that launched the app could not be read", errorName(err))
+      console.warn(
+        "[push] the notification that launched the app could not be read",
+        errorName(err),
+      )
     }
 
     return () => sub.remove()

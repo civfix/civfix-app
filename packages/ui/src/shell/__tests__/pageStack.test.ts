@@ -291,20 +291,30 @@ describe("canSwipeBack - when the edge gesture is armed", () => {
 
 describe("pageLayerPointerEvents - who may be touched during a pop", () => {
   it("keeps the active page interactive when nothing is leaving", () => {
-    expect(pageLayerPointerEvents({ active: true, isLeaving: false, hasLeaving: false })).toBe("auto")
+    expect(pageLayerPointerEvents({ active: true, isLeaving: false, hasLeaving: false })).toBe(
+      "auto",
+    )
   })
 
   it("makes the LEAVING layer swallow touches for its whole exit", () => {
-    expect(pageLayerPointerEvents({ active: false, isLeaving: true, hasLeaving: true })).toBe("box-only")
+    expect(pageLayerPointerEvents({ active: false, isLeaving: true, hasLeaving: true })).toBe(
+      "box-only",
+    )
   })
 
   it("keeps the revealed page untouchable until the exit completes", () => {
-    expect(pageLayerPointerEvents({ active: true, isLeaving: false, hasLeaving: true })).toBe("none")
+    expect(pageLayerPointerEvents({ active: true, isLeaving: false, hasLeaving: true })).toBe(
+      "none",
+    )
   })
 
   it("keeps buried resident layers untouchable in every state", () => {
-    expect(pageLayerPointerEvents({ active: false, isLeaving: false, hasLeaving: false })).toBe("none")
-    expect(pageLayerPointerEvents({ active: false, isLeaving: false, hasLeaving: true })).toBe("none")
+    expect(pageLayerPointerEvents({ active: false, isLeaving: false, hasLeaving: false })).toBe(
+      "none",
+    )
+    expect(pageLayerPointerEvents({ active: false, isLeaving: false, hasLeaving: true })).toBe(
+      "none",
+    )
   })
 })
 
@@ -336,9 +346,15 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   const model = readFileSync(new URL("../pageStackModel.ts", import.meta.url), "utf8")
 
   it("gives the WORKLET directive to every model function a gesture/animation callback calls", () => {
-    expect(model).toMatch(/export function pageLayerStyle\([^)]*\): PageLayerStyle \{\n {2}"worklet"/)
-    expect(model).toMatch(/export function swipeBackDecision\([^)]*\): SwipeBackDecision \{\n {2}"worklet"/)
-    expect(panChain()).toMatch(/swipeBackDecision\(e\.translationX, e\.velocityX, width, SWIPE_TOKENS\)/)
+    expect(model).toMatch(
+      /export function pageLayerStyle\([^)]*\): PageLayerStyle \{\n {2}"worklet"/,
+    )
+    expect(model).toMatch(
+      /export function swipeBackDecision\([^)]*\): SwipeBackDecision \{\n {2}"worklet"/,
+    )
+    expect(panChain()).toMatch(
+      /swipeBackDecision\(e\.translationX, e\.velocityX, width, SWIPE_TOKENS\)/,
+    )
     expect(src).toMatch(/pageLayerStyle\(ownProgress, aboveProgress, width, tokens\)/)
   })
 
@@ -351,7 +367,9 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
 
   it("resolves every layer token from the motion vocabulary, never from a literal", () => {
     const pageMotion = readFileSync(new URL("../pageStackMotion.ts", import.meta.url), "utf8")
-    expect(src).toMatch(/import \{ PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING \} from "\.\/pageStackMotion"/)
+    expect(src).toMatch(
+      /import \{ PAGE_HEADER_STYLE, PAGE_MOTION, PAGE_TIMING \} from "\.\/pageStackMotion"/,
+    )
     expect(pageMotion).toMatch(/travelRatio: motion\.pageTravelRatio/)
     expect(pageMotion).toMatch(/parallaxRatio: motion\.pageParallaxRatio/)
     expect(pageMotion).toMatch(/scrimOpacity: motion\.pageScrimOpacity/)
@@ -383,7 +401,9 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
       /const stackSlices = useMemo\(\(\) => stack\.map\(\(_, index\) => stack\.slice\(0, index \+ 1\)\), \[stack\]\)/,
     )
     expect(src).toMatch(/stack: stackSlices\[stack\.indexOf\(entry\)\] \?\? stack/)
-    expect(src).toMatch(/rendered\.push\(\{ key: leaving\.key, entry: leaving\.entry, stack: leaving\.stack \}\)/)
+    expect(src).toMatch(
+      /rendered\.push\(\{ key: leaving\.key, entry: leaving\.entry, stack: leaving\.stack \}\)/,
+    )
   })
 
   it("scopes the injected keyboard-aware scroll host to the ACTIVE layer", () => {
@@ -391,7 +411,9 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
     expect(kb).toContain("const pageActive = usePageIsActive()")
     expect(kb).toMatch(/if \(!pageActiveRef\.current \|\| !ownsFocusedInput\(\)\) return/)
     expect(kb).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
-    expect(src).toMatch(/<ScrollHostProvider value=\{bodyScrollHost\}>\s*\n\s*<PageActiveProvider value=\{active\}>/)
+    expect(src).toMatch(
+      /<ScrollHostProvider value=\{bodyScrollHost\}>\s*\n\s*<PageActiveProvider value=\{active\}>/,
+    )
   })
 
   const panChain = () => {
@@ -452,9 +474,15 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
 
   it("puts the safe-area padding INSIDE the layer - on its box for a pinned footer, in the scroll content otherwise", () => {
     expect(src).toMatch(/style=\{\[styles\.layer, layerStyle\]\}/)
-    expect(src).toMatch(/<View style=\{\[styles\.layerContent, \{ paddingBottom: boxReserve, paddingTop \}\]\}>/)
-    expect(src).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
-    expect(src).toMatch(/layer: \{\s*\.\.\.StyleSheet\.absoluteFillObject,\s*backgroundColor: t\.colors\.bg,/)
+    expect(src).toMatch(
+      /<View style=\{\[styles\.layerContent, \{ paddingBottom: boxReserve, paddingTop \}\]\}>/,
+    )
+    expect(src).toMatch(
+      /const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/,
+    )
+    expect(src).toMatch(
+      /layer: \{\s*\.\.\.StyleSheet\.absoluteFillObject,\s*backgroundColor: t\.colors\.bg,/,
+    )
     const portrait = readFileSync(new URL("../PortraitShell.shared.tsx", import.meta.url), "utf8")
     expect(portrait).toMatch(/insets=\{overlayInsets\}/)
     expect(portrait).not.toMatch(/\{ zIndex: frame\.overlay\.zIndex \},\s*\n\s*overlayInsets,/)
@@ -489,7 +517,9 @@ describe("PageStack.web: retained whole-page layers, no gesture", () => {
   })
 
   it("keeps the safe-area inset and the keyboard inset on TWO nested boxes per layer", () => {
-    expect(web).toMatch(/style=\{\[styles\.layerContent, \{ paddingTop, paddingBottom: boxReserve \}\]\}/)
+    expect(web).toMatch(
+      /style=\{\[styles\.layerContent, \{ paddingTop, paddingBottom: boxReserve \}\]\}/,
+    )
     expect(web).toMatch(/style=\{\[styles\.layerContent, webKeyboardInset\]\}/)
   })
 
@@ -503,7 +533,9 @@ describe("PageStack.web: retained whole-page layers, no gesture", () => {
   })
 
   it("makes every retained layer below the top inert and gives each layer a focus fallback", () => {
-    expect(web).toMatch(/if \(active\) node\.removeAttribute\("inert"\)\s*else node\.setAttribute\("inert", ""\)/)
+    expect(web).toMatch(
+      /if \(active\) node\.removeAttribute\("inert"\)\s*else node\.setAttribute\("inert", ""\)/,
+    )
     expect(web).toMatch(/\}, \[active\]\)/)
     expect(web).toMatch(/ref=\{layerRef\}/)
     expect(web).toMatch(/tabIndex=\{-1\}/)

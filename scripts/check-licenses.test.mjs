@@ -120,7 +120,13 @@ describe("parseLicenseReport", () => {
   })
 
   it("fails on a shape it does not understand instead of passing the gate", () => {
-    for (const bad of [null, [], { MIT: "a" }, { MIT: [{ versions: ["1.0.0"] }] }, { MIT: [{ name: "a", versions: [1] }] }]) {
+    for (const bad of [
+      null,
+      [],
+      { MIT: "a" },
+      { MIT: [{ versions: ["1.0.0"] }] },
+      { MIT: [{ name: "a", versions: [1] }] },
+    ]) {
       assert.throws(() => parseLicenseReport(bad), JSON.stringify(bad))
     }
   })

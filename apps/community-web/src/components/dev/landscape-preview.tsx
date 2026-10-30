@@ -67,7 +67,10 @@ export default function LandscapePreview() {
         <CapabilitiesProvider value={fakeCapabilities}>
           {/* display: contents adds an anchor for the verification scripts without adding a box to the
               layout being measured. */}
-          <div data-civfix-fake-shell={signedOut ? "signed-out" : "signed-in"} style={{ display: "contents" }}>
+          <div
+            data-civfix-fake-shell={signedOut ? "signed-out" : "signed-in"}
+            style={{ display: "contents" }}
+          >
             <AppShellFrame />
           </div>
         </CapabilitiesProvider>

@@ -4,7 +4,8 @@ import { checkInRingA11y } from "../analyticsModel"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
-const t = (key: string, options: Record<string, unknown> = {}) => `${key}|${JSON.stringify(options)}`
+const t = (key: string, options: Record<string, unknown> = {}) =>
+  `${key}|${JSON.stringify(options)}`
 
 describe("the check-in ring's spoken label", () => {
   it("carries the rate, since the accessible ring hides the percentage drawn inside it", () => {

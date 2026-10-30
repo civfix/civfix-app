@@ -316,7 +316,11 @@ function HostsEditor({ block, onChange, errorAt }: KindEditorProps<"hosts">) {
         errorAt={errorAt}
         rowLabel={(n) => t("block.hosts.entry", { n })}
         fields={[
-          { key: "name", label: t("block.hosts.name"), maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName },
+          {
+            key: "name",
+            label: t("block.hosts.name"),
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName,
+          },
           {
             key: "role",
             label: t("block.hosts.role"),
@@ -352,7 +356,11 @@ function FaqEditor({ block, onChange, errorAt }: KindEditorProps<"faq">) {
         errorAt={errorAt}
         rowLabel={(n) => t("block.faq.item", { n })}
         fields={[
-          { key: "question", label: t("block.faq.question"), maxLength: EVENT_PAGE_BLOCK_LIMITS.faqQuestion },
+          {
+            key: "question",
+            label: t("block.faq.question"),
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.faqQuestion,
+          },
           {
             key: "answer",
             label: t("block.faq.answer"),
@@ -404,7 +412,11 @@ function SponsorsEditor({ block, onChange, errorAt }: KindEditorProps<"sponsors"
         errorAt={errorAt}
         rowLabel={(n) => t("block.sponsors.entry", { n })}
         fields={[
-          { key: "name", label: t("block.sponsors.name"), maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName },
+          {
+            key: "name",
+            label: t("block.sponsors.name"),
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName,
+          },
           {
             key: "url",
             label: t("block.sponsors.url"),

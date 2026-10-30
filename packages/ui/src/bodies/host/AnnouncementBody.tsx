@@ -70,9 +70,7 @@ export function AnnouncementBody({ id, announcementId }: AnnouncementBodyProps) 
   const byline = announcementByline(announcement, t("announce.byline_host"))
   const counts = announcementCounts(announcement)
   const event = cleanup.data
-  const eventWhen = event
-    ? eventWhenLabel(event, { locale, weekdays, viewerTimeZone })
-    : null
+  const eventWhen = event ? eventWhenLabel(event, { locale, weekdays, viewerTimeZone }) : null
 
   return (
     <ScrollView

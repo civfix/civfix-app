@@ -43,7 +43,9 @@ describe("no surface marks an event completed any more", () => {
       expect(source).not.toMatch(/useCompleteCleanup/)
       expect(source).not.toMatch(/completionArmed/)
     }
-    expect(existsSync(new URL("../../primitives/CompleteEventSheet.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../../primitives/CompleteEventSheet.tsx", import.meta.url))).toBe(
+      false,
+    )
   })
 
   it("sends the host's Log hours affordances at the dedicated screen", () => {
@@ -56,14 +58,16 @@ describe("no surface marks an event completed any more", () => {
 
   it("injects a ticked `now` into the stage rather than letting the model read the clock", () => {
     const source = code(hostMode)
-    expect(source).toContain("const stage = clock === null ? \"upcoming\" : hostStage(clock, now)")
+    expect(source).toContain('const stage = clock === null ? "upcoming" : hostStage(clock, now)')
     expect(source.match(/now: Date\.now\(\)/g) ?? []).toHaveLength(0)
   })
 
   it("ticks the clock off the shared hook and stops once the event can no longer change", () => {
     const source = code(hostMode)
     expect(source).toContain("useNow(PHASE_TICK_MS, {")
-    expect(source).toContain("boundaryAt: (at) => (clock === null ? null : nextEventBoundaryMs(clock, at)),")
+    expect(source).toContain(
+      "boundaryAt: (at) => (clock === null ? null : nextEventBoundaryMs(clock, at)),",
+    )
     expect(source).toContain("idleAfterLastBoundary: true,")
     expect(source).not.toContain("Date.now()")
     expect(source).not.toMatch(/react-native-reanimated/)
@@ -98,8 +102,12 @@ describe("no surface marks an event completed any more", () => {
 describe("an ended event closes RSVP without closing check-in", () => {
   it("keeps the staff row reachable past the end, and never gates it on the end time", () => {
     const source = code(body)
-    expect(source).toContain("!actsAsHost && (canCheckIn || canViewRoster) && (isLive || canViewRoster)")
-    expect(source).toContain('const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")')
+    expect(source).toContain(
+      "!actsAsHost && (canCheckIn || canViewRoster) && (isLive || canViewRoster)",
+    )
+    expect(source).toContain(
+      'const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")',
+    )
     expect(source).not.toMatch(/canCheckIn && isUpcoming/)
   })
 
@@ -143,7 +151,9 @@ describe("EventHoursBlock renders inside its host's scroller", () => {
     expect(source).toContain('import { useReducedMotion } from "../theme/useReducedMotion"')
     expect(source).toContain("const reduceMotion = useReducedMotion() === true")
     expect(source).not.toContain("AccessibilityInfo")
-    expect(source).toMatch(/if \(reduceMotion\) \{\s*translateY\.stopAnimation\(\)\s*translateY\.setValue\(0\)/)
+    expect(source).toMatch(
+      /if \(reduceMotion\) \{\s*translateY\.stopAnimation\(\)\s*translateY\.setValue\(0\)/,
+    )
     expect(source).toContain("}, [reduceMotion, translateY])")
     // The fade still plays under reduce motion - it is only the offset that is settled outright.
     expect(source).toMatch(/fadeUpTiming\(opacity, 1\)\.start\(\)/)
@@ -206,7 +216,9 @@ describe("LogHoursEditor re-opens seeded rather than blank", () => {
     // credit standing. The edit pass says so; the first pass keeps the original skip hint.
     const source = code(editor)
     expect(source).toContain("log_hours.blank_hint_edit")
-    expect(source).toContain("hasLoggedRows ? t(\"log_hours.blank_hint_edit\") : t(\"log_hours.blank_hint\")")
+    expect(source).toContain(
+      'hasLoggedRows ? t("log_hours.blank_hint_edit") : t("log_hours.blank_hint")',
+    )
     expect(source).toContain("const hasLoggedRows = (initialEntries?.length ?? 0) > 0")
   })
 })

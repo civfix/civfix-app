@@ -12,7 +12,15 @@ const SELECTED_WASH = 0.92
 // The "other" glyph circle stands in for a category pin, so both share one footprint.
 const TYPE_MARK_SIZE = 30
 
-function ReportTypeRow({ type, selected, onPress }: { type: ReportTypeOption; selected: boolean; onPress: () => void }) {
+function ReportTypeRow({
+  type,
+  selected,
+  onPress,
+}: {
+  type: ReportTypeOption
+  selected: boolean
+  onPress: () => void
+}) {
   const styles = useStyles()
   const flowStyles = useFlowStyles()
   const th = useTheme()
@@ -44,7 +52,9 @@ function ReportTypeRow({ type, selected, onPress }: { type: ReportTypeOption; se
         <Text style={styles.typeTitle}>{label}</Text>
         <Text style={styles.typeSub}>{sub}</Text>
       </View>
-      <View style={[styles.check, selected ? { backgroundColor: color, borderColor: color } : null]}>
+      <View
+        style={[styles.check, selected ? { backgroundColor: color, borderColor: color } : null]}
+      >
         {selected ? <Icon icon={iconMap.Check} size={15} color={th.colors.onAccent} /> : null}
       </View>
     </Pressable>
@@ -59,13 +69,23 @@ export function CategoryStep() {
   const setCategory = useDraftReportStore((s) => s.setCategory)
   return (
     <View style={flowStyles.stepBlock}>
-      <View style={styles.typeList} accessibilityRole="radiogroup" accessibilityLabel={t("wizard.category.title")}>
+      <View
+        style={styles.typeList}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t("wizard.category.title")}
+      >
         {REPORT_TYPES.map((type) => (
           <ReportTypeRow
             key={type.id}
             type={type}
             selected={reportTypeId === type.id}
-            onPress={() => setCategory(type.category, type.glyph ? "" : t(`enums:reportType.${type.id}`), type.id)}
+            onPress={() =>
+              setCategory(
+                type.category,
+                type.glyph ? "" : t(`enums:reportType.${type.id}`),
+                type.id,
+              )
+            }
           />
         ))}
       </View>

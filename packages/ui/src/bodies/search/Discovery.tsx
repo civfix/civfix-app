@@ -47,7 +47,9 @@ function SuggestedPersonCard({ person, expanded }: { person: PersonDTO; expanded
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t("person.view_profile_a11y", { name: person.name })}
-        onPress={() => useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })}
+        onPress={() =>
+          useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })
+        }
         {...focusRingProps}
         style={(state) => [styles.personTap, webTransition, state.pressed ? styles.pressed : null]}
       >
@@ -97,7 +99,9 @@ export function Discovery({ expanded }: { expanded: boolean }) {
       }),
     [jurisdictionQuery.data, myHours.data],
   )
-  const leaderboardQuery = useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })
+  const leaderboardQuery = useJurisdictionLeaderboard(geo?.geoid, {
+    limit: LEADERBOARD_REQUEST_LIMIT,
+  })
   const leaderboardPage = leaderboardQuery.data?.pages[0]
   const showLeaderboard = !!geo && leaderboardQuery.isSuccess
   const tick = useListTimeTick()
@@ -141,7 +145,11 @@ export function Discovery({ expanded }: { expanded: boolean }) {
 
       {sections.people.length > 0 ? (
         <>
-          <Text accessibilityRole="header" {...headingLevel(2)} style={[styles.sectionTitle, styles.railTitle]}>
+          <Text
+            accessibilityRole="header"
+            {...headingLevel(2)}
+            style={[styles.sectionTitle, styles.railTitle]}
+          >
             {t("search_page.suggested_people")}
           </Text>
           <RNScrollView
@@ -159,7 +167,9 @@ export function Discovery({ expanded }: { expanded: boolean }) {
 
       {sections.events.length > 0 ? (
         <>
-          <View style={[styles.sectionHeader, sections.people.length > 0 ? styles.laterTitle : null]}>
+          <View
+            style={[styles.sectionHeader, sections.people.length > 0 ? styles.laterTitle : null]}
+          >
             <Text accessibilityRole="header" {...headingLevel(2)} style={styles.sectionTitle}>
               {t("search_page.events_near")}
             </Text>

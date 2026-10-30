@@ -5,7 +5,13 @@ import { nextEventBoundaryMs } from "@civfix/contract/host"
 import { makeThemedStyles } from "../../theme"
 import { iconMap } from "../../typography"
 import { SignInPrompt } from "../../primitives"
-import { NOW_TICK_MS, useAuthState, useEventBoundaryRefresh, useNow, useRequireAuth } from "../../data"
+import {
+  NOW_TICK_MS,
+  useAuthState,
+  useEventBoundaryRefresh,
+  useNow,
+  useRequireAuth,
+} from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
 import { hostedEventRows, useEventInsights, useMyHostedEvents } from "../../data/hooks/host"
 import { useCleanup } from "../../data/hooks/cleanups"

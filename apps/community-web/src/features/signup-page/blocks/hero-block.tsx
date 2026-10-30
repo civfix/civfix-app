@@ -20,7 +20,11 @@ const WHEN_OPTIONS: Intl.DateTimeFormatOptions = {
  * The start in the event's own zone. An event without a usable one (a row from before events had a
  * zone) is shown in the visitor's zone, which the label still names. "" for an unreadable instant.
  */
-export function formatEventWhen(startsAt: string, timezone: string | null | undefined, locale: string): string {
+export function formatEventWhen(
+  startsAt: string,
+  timezone: string | null | undefined,
+  locale: string,
+): string {
   return safeDateFormat(startsAt, locale, WHEN_OPTIONS, timezone)
 }
 

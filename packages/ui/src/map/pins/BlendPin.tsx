@@ -23,7 +23,10 @@ export const BlendPin = React.memo(function BlendPin({
     <View>
       <EventPin active={active} eventKind={eventKind} />
       <View style={[styles.count, t.shadows.s2]}>
-        <Text variant="caption" color={inkOnFill(t.colors.brand.bloom, t.scheme, t.colors.onAccent)}>
+        <Text
+          variant="caption"
+          color={inkOnFill(t.colors.brand.bloom, t.scheme, t.colors.onAccent)}
+        >
           {count > 99 ? "99+" : String(count)}
         </Text>
       </View>

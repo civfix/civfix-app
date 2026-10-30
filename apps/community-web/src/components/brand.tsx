@@ -5,7 +5,11 @@ import * as React from "react"
 /** The per-letter colors live in design.css (`.cf-logo .s1` to `.s6`). */
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={["cf-logo", className].filter(Boolean).join(" ")} role="img" aria-label="civfix">
+    <span
+      className={["cf-logo", className].filter(Boolean).join(" ")}
+      role="img"
+      aria-label="civfix"
+    >
       <span className="ch s1" aria-hidden="true">
         <b>c</b>
       </span>

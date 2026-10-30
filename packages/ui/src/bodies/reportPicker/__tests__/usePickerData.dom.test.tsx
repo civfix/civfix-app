@@ -4,12 +4,25 @@ import { render } from "@testing-library/react"
 import { usePickerData } from "../usePickerData"
 import { PICKER_CATEGORIES, useReportPickerFilters } from "../reportPickerFilterStore"
 
-const idle = { data: undefined, isError: false, isPending: false, isLoading: false, error: null, refetch: () => {} }
+const idle = {
+  data: undefined,
+  isError: false,
+  isPending: false,
+  isLoading: false,
+  error: null,
+  refetch: () => {},
+}
 
 vi.mock("../../../data", () => ({
   useMapReports: () => idle,
   useReport: () => idle,
-  useReportSearch: () => ({ ...idle, items: [], hasNextPage: false, isFetchingNextPage: false, fetchNextPage: () => {} }),
+  useReportSearch: () => ({
+    ...idle,
+    items: [],
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: () => {},
+  }),
 }))
 
 vi.mock("../../../i18n", () => ({ useT: () => ({ t: (key: string) => key }) }))

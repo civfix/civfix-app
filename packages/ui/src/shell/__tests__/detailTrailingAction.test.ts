@@ -74,7 +74,7 @@ describe("detailTrailingActionFor", () => {
 describe("the trailing chip", () => {
   it("performs the action's intent as a push, and nothing else", () => {
     expect(BUTTON).toContain("onPress={() => push(action.push)}")
-    expect(BUTTON).toContain('accessibilityLabel={t(action.a11yKey)}')
+    expect(BUTTON).toContain("accessibilityLabel={t(action.a11yKey)}")
     expect(BUTTON).toContain('useT("nav")')
     expect(BUTTON).toContain("if (!action) return null")
   })
@@ -133,8 +133,12 @@ describe("every host that draws a detail header draws the trailing chip", () => 
   })
 
   it("reaches both page stacks through the SHARED DetailHeader, so neither can miss it", () => {
-    expect(PAGE_NATIVE).toContain("<DetailHeader active={entry} stack={stack} dismissGesture={false} />")
-    expect(PAGE_WEB).toContain("<DetailHeader active={entry} stack={stack} dismissGesture={false} />")
+    expect(PAGE_NATIVE).toContain(
+      "<DetailHeader active={entry} stack={stack} dismissGesture={false} />",
+    )
+    expect(PAGE_WEB).toContain(
+      "<DetailHeader active={entry} stack={stack} dismissGesture={false} />",
+    )
     expect(PAGE_NATIVE).not.toContain("<DetailBar")
     expect(PAGE_WEB).not.toContain("<DetailBar")
   })

@@ -1,6 +1,13 @@
 import { View, Pressable } from "react-native"
 import type { TicketTypeDTO } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import { ticketTypeSelectable } from "@civfix/contract/host"

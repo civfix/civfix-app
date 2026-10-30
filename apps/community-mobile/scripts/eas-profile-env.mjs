@@ -36,9 +36,12 @@ export function resolveProfile(eas, name, seen = []) {
  */
 export function profileEnv(eas, name) {
   const profile = resolveProfile(eas, name)
-  const env = Object.fromEntries(Object.entries(profile.env ?? {}).filter(([key]) => ENV_KEY.test(key)))
+  const env = Object.fromEntries(
+    Object.entries(profile.env ?? {}).filter(([key]) => ENV_KEY.test(key)),
+  )
   for (const [key, value] of Object.entries(env)) {
-    if (/[\r\n]/.test(String(value))) throw new Error(`eas.json profile '${name}' ${key} spans lines`)
+    if (/[\r\n]/.test(String(value)))
+      throw new Error(`eas.json profile '${name}' ${key} spans lines`)
   }
   return env
 }
@@ -49,7 +52,9 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     console.error("usage: node scripts/eas-profile-env.mjs <profile>")
     process.exit(1)
   }
-  const parsed = /** @type {unknown} */ (JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "utf8")))
+  const parsed = /** @type {unknown} */ (
+    JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "utf8"))
+  )
   const eas = /** @type {EasJson} */ (parsed)
   for (const [key, value] of Object.entries(profileEnv(eas, name))) console.log(`${key}=${value}`)
 }

@@ -336,7 +336,9 @@ function ToastCard({
   }, [action, id, onDismiss])
 
   return (
-    <Animated.View style={[styles.slot, { bottom: offset }, motionStyle, pointerEventStyles["box-none"]]}>
+    <Animated.View
+      style={[styles.slot, { bottom: offset }, motionStyle, pointerEventStyles["box-none"]]}
+    >
       <View
         style={styles.card}
         role={moved ? undefined : live.role}

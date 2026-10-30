@@ -37,13 +37,19 @@ describe("reportHitRowModel", () => {
         .subtitle,
     ).toBe("0.4 mi")
     expect(
-      reportHitRowModel({ report: { ...FULL, ...MID, addr: null }, categoryLabel: "Parks", viewer: HERE })
-        .subtitle,
+      reportHitRowModel({
+        report: { ...FULL, ...MID, addr: null },
+        categoryLabel: "Parks",
+        viewer: HERE,
+      }).subtitle,
     ).toBe("6.9 mi")
     // Above 10 mi distanceLabel switches to whole miles.
     expect(
-      reportHitRowModel({ report: { ...FULL, ...FAR, addr: null }, categoryLabel: "Parks", viewer: HERE })
-        .subtitle,
+      reportHitRowModel({
+        report: { ...FULL, ...FAR, addr: null },
+        categoryLabel: "Parks",
+        viewer: HERE,
+      }).subtitle,
     ).toBe("14 mi")
   })
 
@@ -91,27 +97,39 @@ describe("reportHitRowModel", () => {
 
   it("falls the title back to the localized category label", () => {
     expect(
-      reportHitRowModel({ report: { ...FULL, title: null }, categoryLabel: "Parks", viewer: HERE }).title,
+      reportHitRowModel({ report: { ...FULL, title: null }, categoryLabel: "Parks", viewer: HERE })
+        .title,
     ).toBe("Parks")
     expect(
-      reportHitRowModel({ report: { ...FULL, title: "   " }, categoryLabel: "Parks", viewer: HERE }).title,
+      reportHitRowModel({ report: { ...FULL, title: "   " }, categoryLabel: "Parks", viewer: HERE })
+        .title,
     ).toBe("Parks")
   })
 
   it("normalizes a missing or blank thumb to null so the row draws the category pin dot", () => {
     expect(
-      reportHitRowModel({ report: { ...FULL, thumbUrl: null }, categoryLabel: "Parks", viewer: HERE })
-        .thumbUrl,
+      reportHitRowModel({
+        report: { ...FULL, thumbUrl: null },
+        categoryLabel: "Parks",
+        viewer: HERE,
+      }).thumbUrl,
     ).toBeNull()
     expect(
-      reportHitRowModel({ report: { ...FULL, thumbUrl: "  " }, categoryLabel: "Parks", viewer: HERE })
-        .thumbUrl,
+      reportHitRowModel({
+        report: { ...FULL, thumbUrl: "  " },
+        categoryLabel: "Parks",
+        viewer: HERE,
+      }).thumbUrl,
     ).toBeNull()
   })
 
   it("reports the distance on its own, empty without a viewer point", () => {
-    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE }).distance).toBe("0.4 mi")
-    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: null }).distance).toBe("")
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE }).distance).toBe(
+      "0.4 mi",
+    )
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: null }).distance).toBe(
+      "",
+    )
     expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks" }).distance).toBe("")
   })
 
@@ -124,19 +142,30 @@ describe("reportHitRowModel", () => {
     })
     expect(row.distance).toBe("0.4 mi")
     expect(row.subtitle).toBe("0.4 mi · 1200 S Hope St")
-    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", distanceM: 0 }).distance).toBe("0.0 mi")
+    expect(reportHitRowModel({ report: FULL, categoryLabel: "Parks", distanceM: 0 }).distance).toBe(
+      "0.0 mi",
+    )
   })
 
   it("leads the location line with the tag, and a tag alone still beats the description", () => {
     expect(
-      reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE, leadingTag: "Linked" }).subtitle,
+      reportHitRowModel({
+        report: FULL,
+        categoryLabel: "Parks",
+        viewer: HERE,
+        leadingTag: "Linked",
+      }).subtitle,
     ).toBe("Linked · 0.4 mi · 1200 S Hope St")
     expect(
-      reportHitRowModel({ report: { ...FULL, addr: null }, categoryLabel: "Parks", leadingTag: "Linked" })
-        .subtitle,
+      reportHitRowModel({
+        report: { ...FULL, addr: null },
+        categoryLabel: "Parks",
+        leadingTag: "Linked",
+      }).subtitle,
     ).toBe("Linked")
     expect(
-      reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE, leadingTag: null }).subtitle,
+      reportHitRowModel({ report: FULL, categoryLabel: "Parks", viewer: HERE, leadingTag: null })
+        .subtitle,
     ).toBe("0.4 mi · 1200 S Hope St")
   })
 })

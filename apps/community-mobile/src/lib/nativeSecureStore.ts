@@ -15,7 +15,9 @@ const OPTIONS: SecureStore.SecureStoreOptions = {
 }
 
 async function encryptionKey(): Promise<string | null> {
-  const existing = normalizeSecureBlobKey(await SecureStore.getItemAsync(ENCRYPTION_KEY_ITEM, OPTIONS))
+  const existing = normalizeSecureBlobKey(
+    await SecureStore.getItemAsync(ENCRYPTION_KEY_ITEM, OPTIONS),
+  )
   if (existing) return existing
   const minted = mintSecureBlobKey((count) => Crypto.getRandomBytes(count))
   if (!minted) return null

@@ -1,7 +1,13 @@
 import { useEffect, useMemo } from "react"
 import { Appearance, useColorScheme } from "react-native"
 import * as SystemUI from "expo-system-ui"
-import { getAppearancePreference, resolveColorScheme, themeFor, type ColorSchemeName, type Theme } from "@/theme"
+import {
+  getAppearancePreference,
+  resolveColorScheme,
+  themeFor,
+  type ColorSchemeName,
+  type Theme,
+} from "@/theme"
 import { useAppearanceStore } from "@/store/appearanceStore"
 
 export function currentTheme(): Theme {

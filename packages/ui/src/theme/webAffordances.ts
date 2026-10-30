@@ -7,7 +7,12 @@
  * The focus ring targets CSS `:focus-visible` from one injected stylesheet rather than RNW's `focused`
  * flag, which is true for mouse focus too and would flash the ring on every click.
  */
-import { Platform, type ViewStyle, type TextStyle, type PressableStateCallbackType } from "react-native"
+import {
+  Platform,
+  type ViewStyle,
+  type TextStyle,
+  type PressableStateCallbackType,
+} from "react-native"
 import { tokens } from "@civfix/tokens"
 import { EASE_STANDARD_CSS } from "./motion"
 import { ACCENT_TEXT } from "./schemes"
@@ -63,22 +68,16 @@ export function domProps(props: Record<string, unknown>): object {
 }
 
 /** RN's `CursorValue` is a narrow union while RNW accepts any CSS cursor. */
-export const webCursorPointer: ViewStyle = isWeb
-  ? webStyle({ cursor: "pointer" })
-  : {}
+export const webCursorPointer: ViewStyle = isWeb ? webStyle({ cursor: "pointer" }) : {}
 
-export const webCursorDefault: ViewStyle = isWeb
-  ? webStyle({ cursor: "default" })
-  : {}
+export const webCursorDefault: ViewStyle = isWeb ? webStyle({ cursor: "default" }) : {}
 
 export function webCursor(disabled = false): ViewStyle {
   if (!isWeb) return {}
   return disabled ? webCursorDefault : webCursorPointer
 }
 
-export const webCursorColResize: ViewStyle = isWeb
-  ? webStyle({ cursor: "ew-resize" })
-  : {}
+export const webCursorColResize: ViewStyle = isWeb ? webStyle({ cursor: "ew-resize" }) : {}
 
 /** RNW defaults Text to `user-select: none`, so body content opts back in to be copyable. */
 export const webSelectableText: TextStyle = isWeb ? { userSelect: "text" } : {}
@@ -88,9 +87,7 @@ export const webSelectableText: TextStyle = isWeb ? { userSelect: "text" } : {}
  * min-content width and pushes a content-sized container past the viewport. `anywhere` (unlike
  * `break-word`) also lowers that min-content width; RN Text on native already breaks an overlong word.
  */
-export const webBreakAnywhere: TextStyle = isWeb
-  ? webStyle({ overflowWrap: "anywhere" })
-  : {}
+export const webBreakAnywhere: TextStyle = isWeb ? webStyle({ overflowWrap: "anywhere" }) : {}
 
 /** Button label Text inside a Pressable can inherit selection in some browsers despite RNW's default. */
 export const webNoSelect: TextStyle = isWeb ? { userSelect: "none" } : {}
@@ -179,7 +176,10 @@ export const focusRingProps: { dataSet?: Record<string, string> } = isWeb
  * on every platform, plus the ring token on web. A field whose native focus is shown some other way passes
  * its own native style.
  */
-export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t.colors.accent }): ViewStyle {
+export function inputFocusedStyle(
+  t: Theme,
+  native: ViewStyle = { borderColor: t.colors.accent },
+): ViewStyle {
   return isWeb ? { boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } : native
 }
 
@@ -188,9 +188,7 @@ export function inputFocusedStyle(t: Theme, native: ViewStyle = { borderColor: t
  * is pulled inside by its whole footprint. It must stay a plain inline style: as a StyleSheet class it
  * loses to the `[data-focus-ring]:focus-visible` rule's specificity.
  */
-export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb
-  ? { outlineOffset: -FOCUS_RING_FOOTPRINT }
-  : {}
+export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb ? { outlineOffset: -FOCUS_RING_FOOTPRINT } : {}
 
 /**
  * A feed row is a pointer convenience, never an accessibility element: it wraps the name, permalink,

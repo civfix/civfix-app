@@ -95,7 +95,13 @@ body {
 `
 
 const TARGETS = [
-  { name: "og.png", html: ogHtml, width: OG_WIDTH, height: OG_HEIGHT, maxBytes: OG_IMAGE_MAX_BYTES },
+  {
+    name: "og.png",
+    html: ogHtml,
+    width: OG_WIDTH,
+    height: OG_HEIGHT,
+    maxBytes: OG_IMAGE_MAX_BYTES,
+  },
   { name: "apple-touch-icon.png", html: iconHtml, width: ICON_SIZE, height: ICON_SIZE },
 ]
 

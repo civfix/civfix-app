@@ -102,7 +102,9 @@ describe("persistentStorage on web", () => {
     const blocked = () => {
       throw new Error("SecurityError")
     }
-    vi.stubGlobal("window", { localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked } })
+    vi.stubGlobal("window", {
+      localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    })
     const storage = webStorage(MAP_FILTERS_STORAGE_ID)
     expect(storage.getItem("civfix.map-filters")).toBeNull()
     expect(() => storage.setItem("civfix.map-filters", "{}")).not.toThrow()

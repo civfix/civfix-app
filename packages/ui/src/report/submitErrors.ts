@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next"
-import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
+import {
+  ErrorCode,
+  appErrorCode,
+  appErrorFields,
+  byErrorCode,
+  type ErrorCodeTable,
+} from "@civfix/contract"
 
 const TEXT_FIELDS: ReadonlySet<string> = new Set(["title", "description", "addr"])
 
@@ -17,7 +23,8 @@ export function submitErrorMessage(err: unknown, t: TFunction): string {
   const code = appErrorCode(err)
   if (code === ErrorCode.VALIDATION) {
     const fieldKeys = Object.keys(appErrorFields(err) ?? {}).map((key) => key.split(".")[0])
-    if (fieldKeys.some((key) => key !== undefined && TEXT_FIELDS.has(key))) return t("errors.validation_text")
+    if (fieldKeys.some((key) => key !== undefined && TEXT_FIELDS.has(key)))
+      return t("errors.validation_text")
     if (fieldKeys.includes("mediaUploadIds")) return t("errors.validation_media")
     return t("errors.validation")
   }

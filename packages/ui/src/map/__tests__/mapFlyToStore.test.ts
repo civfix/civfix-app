@@ -1,8 +1,20 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { useMapFlyTo } from "../mapFlyToStore"
 
-const target = { kind: "cleanup" as const, id: "e1", lat: 34.05, lng: -118.24, eventKind: "cleanup" as const }
-const reportTarget = { kind: "report" as const, id: "r1", lat: 34.06, lng: -118.25, category: "hazard" as const }
+const target = {
+  kind: "cleanup" as const,
+  id: "e1",
+  lat: 34.05,
+  lng: -118.24,
+  eventKind: "cleanup" as const,
+}
+const reportTarget = {
+  kind: "report" as const,
+  id: "r1",
+  lat: 34.06,
+  lng: -118.25,
+  category: "hazard" as const,
+}
 
 beforeEach(() => {
   useMapFlyTo.setState({ request: null, highlight: null })
@@ -23,7 +35,11 @@ describe("mapFlyToStore", () => {
   it("carries the pin styling on both, so the map can draw a target it has not loaded", () => {
     useMapFlyTo.getState().requestFlyTo(target)
     expect(useMapFlyTo.getState().request).toMatchObject({ eventKind: "cleanup" })
-    expect(useMapFlyTo.getState().highlight).toMatchObject({ eventKind: "cleanup", lat: 34.05, lng: -118.24 })
+    expect(useMapFlyTo.getState().highlight).toMatchObject({
+      eventKind: "cleanup",
+      lat: 34.05,
+      lng: -118.24,
+    })
     useMapFlyTo.getState().requestFlyTo(reportTarget)
     expect(useMapFlyTo.getState().request).toMatchObject({ category: "hazard" })
     expect(useMapFlyTo.getState().highlight).toEqual(reportTarget)

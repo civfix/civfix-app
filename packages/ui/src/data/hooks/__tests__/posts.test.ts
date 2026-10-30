@@ -111,14 +111,26 @@ describe("useLikePost optimism (buildToggleMutation)", () => {
     qc.setQueryData(FEED_ALL, feed([post("A"), post("B")]))
     qc.setQueryData(queryKeys.post("A"), post("A"))
 
-    const server = post("A", { viewer: { liked: true, reposted: false, saved: false }, counts: { likes: 9, reposts: 2, replies: 1, saves: 0 } })
+    const server = post("A", {
+      viewer: { liked: true, reposted: false, saved: false },
+      counts: { likes: 9, reposts: 2, replies: 1, saves: 0 },
+    })
     const opts = loose<boolean, PostDTO>(buildToggleMutation(qc, "A", "liked", async () => server))
     const ctx = await opts.onMutate(false) // currentlyLiked = false -> like
 
     // Optimistic: A flipped in BOTH caches, B untouched.
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
-    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({ viewer: { liked: false }, counts: { likes: 5 } })
-    expect(qc.getQueryData<PostDTO>(queryKeys.post("A"))).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
+    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({
+      viewer: { liked: false },
+      counts: { likes: 5 },
+    })
+    expect(qc.getQueryData<PostDTO>(queryKeys.post("A"))).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
 
     // Server confirms -> reconcile the authoritative count everywhere.
     opts.onSuccess(server, false, ctx)
@@ -137,11 +149,20 @@ describe("useLikePost optimism (buildToggleMutation)", () => {
       }),
     )
     const ctx = await opts.onMutate(false)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
 
     opts.onError(new Error("offline"), false, ctx)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: false }, counts: { likes: 5 } })
-    expect(qc.getQueryData<PostDTO>(queryKeys.post("A"))).toMatchObject({ viewer: { liked: false }, counts: { likes: 5 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { liked: false },
+      counts: { likes: 5 },
+    })
+    expect(qc.getQueryData<PostDTO>(queryKeys.post("A"))).toMatchObject({
+      viewer: { liked: false },
+      counts: { likes: 5 },
+    })
   })
 })
 
@@ -164,11 +185,17 @@ describe("useSavePost optimism (buildToggleMutation, manageSaves)", () => {
     )
     const ctx = await opts.onMutate(false) // save
 
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { saved: true }, counts: { saves: 1 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { saved: true },
+      counts: { saves: 1 },
+    })
     expect(itemIn(qc, queryKeys.saves, "A")).toMatchObject({ id: "A", viewer: { saved: true } })
 
     opts.onError(new Error("offline"), false, ctx)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { saved: false }, counts: { saves: 0 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { saved: false },
+      counts: { saves: 0 },
+    })
     expect(itemIn(qc, queryKeys.saves, "A")).toBeUndefined()
   })
 
@@ -186,7 +213,10 @@ describe("useSavePost optimism (buildToggleMutation, manageSaves)", () => {
     )
     await opts.onMutate(true) // currentlySaved = true -> unsave
 
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { saved: false }, counts: { saves: 3 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { saved: false },
+      counts: { saves: 3 },
+    })
     expect(itemIn(qc, queryKeys.saves, "A")).toBeUndefined()
   })
 })
@@ -202,10 +232,16 @@ describe("useRepost optimism (buildToggleMutation)", () => {
       }),
     )
     const ctx = await opts.onMutate(false)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { reposted: true }, counts: { reposts: 3 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { reposted: true },
+      counts: { reposts: 3 },
+    })
 
     opts.onError(new Error("offline"), false, ctx)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { reposted: false }, counts: { reposts: 2 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { reposted: false },
+      counts: { reposts: 2 },
+    })
   })
 
   it("never stores an original-target response under a pure-repost wrapper key", async () => {
@@ -243,12 +279,18 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
 
     const ctx = await opts.onMutate(vars)
     // Optimistic post is at the FRONT of both lists.
-    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(FEED_ALL)!.pages[0]!.items[0]!.id).toBe("temp_1")
-    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(authorKey)!.pages[0]!.items[0]!.id).toBe("temp_1")
+    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(FEED_ALL)!.pages[0]!.items[0]!.id).toBe(
+      "temp_1",
+    )
+    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(authorKey)!.pages[0]!.items[0]!.id).toBe(
+      "temp_1",
+    )
 
     // Server responds -> the temp post is replaced by the authoritative one (id swap, order kept).
     opts.onSuccess(server, vars, ctx)
-    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(FEED_ALL)!.pages[0]!.items[0]!.id).toBe("server_1")
+    expect(qc.getQueryData<InfiniteData<FeedPageDTO>>(FEED_ALL)!.pages[0]!.items[0]!.id).toBe(
+      "server_1",
+    )
     expect(itemIn(qc, FEED_ALL, "temp_1")).toBeUndefined()
     expect(itemIn(qc, authorKey, "server_1")).toBeDefined()
   })
@@ -260,10 +302,18 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     qc.setQueryData(repliesKey, feed([post("r0", { kind: "reply", replyToId: "parent" })]))
 
     const optimistic = post("temp_reply", { kind: "reply", replyToId: "parent", body: "me too" })
-    const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }) }
+    const api = {
+      createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }),
+    }
     const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
-      input: { kind: "reply", replyToId: "parent", body: "me too", mediaUploadIds: [], mentionedUserIds: [] },
+      input: {
+        kind: "reply",
+        replyToId: "parent",
+        body: "me too",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      },
       optimistic,
     }
 
@@ -278,19 +328,25 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     expect(itemIn(qc, FEED_ALL, "parent")).toMatchObject({ counts: { replies: 1 } })
 
     opts.onSettled(undefined, undefined, vars)
-    expect(invalidated(qc)).toEqual(
-      expect.arrayContaining([repliesKey, queryKeys.post("parent")]),
-    )
+    expect(invalidated(qc)).toEqual(expect.arrayContaining([repliesKey, queryKeys.post("parent")]))
   })
 
   it("answering a reply also refreshes the thread ABOVE it, where the answer inlines under its parent", async () => {
     const qc = recordInvalidations(new QueryClient())
     qc.setQueryData(queryKeys.post("first"), post("first", { kind: "reply", replyToId: "root" }))
 
-    const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
+    const api = {
+      createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }),
+    }
     const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
-      input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
+      input: {
+        kind: "reply",
+        replyToId: "first",
+        body: "answer",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      },
       optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
     }
 
@@ -306,10 +362,18 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
 
   it("skips the grandparent refresh, without throwing, when the parent detail is not cached", async () => {
     const qc = recordInvalidations(new QueryClient())
-    const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
+    const api = {
+      createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }),
+    }
     const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
-      input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
+      input: {
+        kind: "reply",
+        replyToId: "first",
+        body: "answer",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      },
       optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
     }
 
@@ -322,10 +386,18 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     const qc = recordInvalidations(new QueryClient())
     qc.setQueryData(queryKeys.post("root"), post("root"))
 
-    const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "root" }) }
+    const api = {
+      createPost: async () => post("server_reply", { kind: "reply", replyToId: "root" }),
+    }
     const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
-      input: { kind: "reply", replyToId: "root", body: "reply", mediaUploadIds: [], mentionedUserIds: [] },
+      input: {
+        kind: "reply",
+        replyToId: "root",
+        body: "reply",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      },
       optimistic: post("temp_reply", { kind: "reply", replyToId: "root" }),
     }
 
@@ -342,15 +414,25 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     qc.setQueryData(FEED_ALL, feed([post("parent")]))
     const repliesKey = queryKeys.postReplies("parent")
     qc.setQueryData(repliesKey, {
-      pages: [{ items: [post("r0", { kind: "reply", replyToId: "parent" })], nextCursor: "cursor-2" }],
+      pages: [
+        { items: [post("r0", { kind: "reply", replyToId: "parent" })], nextCursor: "cursor-2" },
+      ],
       pageParams: [undefined],
     })
 
     const optimistic = post("temp_reply", { kind: "reply", replyToId: "parent", body: "me too" })
-    const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }) }
+    const api = {
+      createPost: async () => post("server_reply", { kind: "reply", replyToId: "parent" }),
+    }
     const opts = loose<CreatePostVars, PostDTO, CreateCtx>(buildCreateMutation(qc, api))
     const vars: CreatePostVars = {
-      input: { kind: "reply", replyToId: "parent", body: "me too", mediaUploadIds: [], mentionedUserIds: [] },
+      input: {
+        kind: "reply",
+        replyToId: "parent",
+        body: "me too",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      },
       optimistic,
     }
 
@@ -363,9 +445,7 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     expect(itemIn(qc, FEED_ALL, "parent")).toMatchObject({ counts: { replies: 1 } })
 
     opts.onSettled(undefined, undefined, vars)
-    expect(invalidated(qc)).toEqual(
-      expect.arrayContaining([repliesKey, queryKeys.post("parent")]),
-    )
+    expect(invalidated(qc)).toEqual(expect.arrayContaining([repliesKey, queryKeys.post("parent")]))
   })
 
   // The server's `events` feed predicate is exactly `p.event_id IS NOT NULL`, so an event-attached post
@@ -453,7 +533,9 @@ describe("concurrent-toggle context isolation", () => {
     const qc = new QueryClient()
     qc.setQueryData(FEED_ALL, feed([post("A"), post("B")]))
 
-    const optsA = loose<boolean, PostDTO>(buildToggleMutation(qc, "A", "liked", async () => post("A"))) // A succeeds
+    const optsA = loose<boolean, PostDTO>(
+      buildToggleMutation(qc, "A", "liked", async () => post("A")),
+    ) // A succeeds
     const optsB = loose<boolean, PostDTO>(
       buildToggleMutation(qc, "B", "liked", async () => {
         throw new Error("offline")
@@ -463,16 +545,32 @@ describe("concurrent-toggle context isolation", () => {
     // Both toggles fire optimistically (interleaved), each carrying its OWN per-call context.
     const ctxA = await optsA.onMutate(false)
     const ctxB = await optsB.onMutate(false)
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
-    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
+    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
 
     // B fails and rolls back TARGETED (only B), using ctxB's snapshot - A's optimistic like survives.
     optsB.onError(new Error("offline"), false, ctxB)
-    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({ viewer: { liked: false }, counts: { likes: 5 } })
-    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: true }, counts: { likes: 6 } })
+    expect(itemIn(qc, FEED_ALL, "B")).toMatchObject({
+      viewer: { liked: false },
+      counts: { likes: 5 },
+    })
+    expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({
+      viewer: { liked: true },
+      counts: { likes: 6 },
+    })
 
     // A then succeeds and reconciles independently.
-    optsA.onSuccess(post("A", { viewer: { liked: true, reposted: false, saved: false } }), false, ctxA)
+    optsA.onSuccess(
+      post("A", { viewer: { liked: true, reposted: false, saved: false } }),
+      false,
+      ctxA,
+    )
     expect(itemIn(qc, FEED_ALL, "A")).toMatchObject({ viewer: { liked: true } })
   })
 })

@@ -18,7 +18,8 @@ const METADATA_TIMEOUT_MS = 3000
 export function overVideoLimits(meta: VideoMetadata): boolean {
   // Rounded like the worker's cap: a clip from a 10 s camera limit reads a few hundredths over 10 s once
   // its audio priming counts, and the worker publishes it, so refusing it here would block a valid upload.
-  const tooLong = Number.isFinite(meta.durationSec) && Math.round(meta.durationSec) > MAX_VIDEO_SECONDS
+  const tooLong =
+    Number.isFinite(meta.durationSec) && Math.round(meta.durationSec) > MAX_VIDEO_SECONDS
   return tooLong || Math.max(meta.width, meta.height) > MAX_VIDEO_LONG_EDGE
 }
 

@@ -1,6 +1,15 @@
 import React from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, webHover, webTransition, headingLevel } from "../theme"
+import {
+  makeThemedStyles,
+  space,
+  useTheme,
+  focusRingProps,
+  webCursor,
+  webHover,
+  webTransition,
+  headingLevel,
+} from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { ToggleRowContent } from "./ToggleRowContent"
 import { IconTile, LIST_DIVIDER_INSET } from "./ListRow"
@@ -74,7 +83,10 @@ function RowContent({
     <>
       {icon ? <IconTile icon={icon} tone={destructive ? "danger" : "neutral"} /> : null}
       <View style={styles.meta}>
-        <Text style={[styles.label, destructive ? styles.labelDestructive : null]} numberOfLines={2}>
+        <Text
+          style={[styles.label, destructive ? styles.labelDestructive : null]}
+          numberOfLines={2}
+        >
           {label}
         </Text>
         {sub ? (
@@ -115,7 +127,13 @@ export function SettingsRow({
           onValueChange={toggle.onValueChange}
           columnStyle={styles.toggleTextCol}
         >
-          <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={false} />
+          <RowContent
+            label={label}
+            icon={icon}
+            sub={sub}
+            subNumberOfLines={subNumberOfLines}
+            destructive={false}
+          />
         </ToggleRowContent>
       </View>
     )
@@ -124,7 +142,13 @@ export function SettingsRow({
   if (!onPress) {
     return (
       <View style={[styles.row, disabled ? styles.rowDisabled : null]}>
-        <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={destructive} />
+        <RowContent
+          label={label}
+          icon={icon}
+          sub={sub}
+          subNumberOfLines={subNumberOfLines}
+          destructive={destructive}
+        />
         {value ? (
           <Text style={styles.value} numberOfLines={1}>
             {value}
@@ -150,7 +174,13 @@ export function SettingsRow({
         state.pressed && !disabled ? styles.rowPressed : null,
       ]}
     >
-      <RowContent label={label} icon={icon} sub={sub} subNumberOfLines={subNumberOfLines} destructive={destructive} />
+      <RowContent
+        label={label}
+        icon={icon}
+        sub={sub}
+        subNumberOfLines={subNumberOfLines}
+        destructive={destructive}
+      />
       {value ? (
         <Text style={styles.value} numberOfLines={1}>
           {value}

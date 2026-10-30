@@ -46,7 +46,9 @@ function TypingDots() {
             styles.typingDot,
             {
               opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }),
-              transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }) }],
+              transform: [
+                { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }) },
+              ],
             },
           ]}
         />
@@ -55,7 +57,13 @@ function TypingDots() {
   )
 }
 
-export const TypingBubble = React.memo(function TypingBubble({ name, color }: { name: string | null; color: string }) {
+export const TypingBubble = React.memo(function TypingBubble({
+  name,
+  color,
+}: {
+  name: string | null
+  color: string
+}) {
   const styles = useBubbleStyles()
   const { t } = useT("conversation")
   return (

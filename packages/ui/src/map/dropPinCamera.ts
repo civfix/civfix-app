@@ -66,7 +66,10 @@ export type DropPinCameraTarget = CameraTarget
  * An explicit three-way rather than `detents[detent]`: hosts feed this from the nav store at runtime, so a
  * stale or absent value must land on MID instead of reading past the tuple and offsetting by NaN.
  */
-function occludedHeight(detents: readonly [number, number, number], detent: Snap | undefined): number {
+function occludedHeight(
+  detents: readonly [number, number, number],
+  detent: Snap | undefined,
+): number {
   const [peek, mid, full] = detents
   if (detent === 0) return peek
   if (detent === 2) return full

@@ -34,7 +34,10 @@ export function useConvoNavigation({
     closeMenu()
     if (!peerId) return
     if (onOpenProfile) onOpenProfile(peerId)
-    else useNavStore.getState().push({ kind: "person", id: peer && peer.id === peerId ? (peer.handle ?? peerId) : peerId })
+    else
+      useNavStore
+        .getState()
+        .push({ kind: "person", id: peer && peer.id === peerId ? (peer.handle ?? peerId) : peerId })
   }, [closeMenu, peerId, onOpenProfile, peer])
 
   const onMembers = useCallback(() => {
@@ -68,7 +71,10 @@ export function useConvoNavigation({
       const stack = nav.stack
       const below = stack.length >= 2 ? stack[stack.length - 2] : undefined
       if (below && below.kind === "thread" && below.id === id) {
-        nav.setStack([...stack.slice(0, stack.length - 2), { ...below, jumpToMessageId: messageId }])
+        nav.setStack([
+          ...stack.slice(0, stack.length - 2),
+          { ...below, jumpToMessageId: messageId },
+        ])
       } else {
         nav.setStack([
           ...stack.slice(0, Math.max(0, stack.length - 1)),
@@ -88,5 +94,13 @@ export function useConvoNavigation({
     [onOpenProfile],
   )
 
-  return { openProfile, onMembers, viewReport, onGroupInfo, onOpenPinList, jumpFromPinned, onOpenPerson }
+  return {
+    openProfile,
+    onMembers,
+    viewReport,
+    onGroupInfo,
+    onOpenPinList,
+    jumpFromPinned,
+    onOpenPerson,
+  }
 }

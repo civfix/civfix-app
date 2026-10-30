@@ -60,7 +60,13 @@ export function KpiCell({
   )
 }
 
-export function StatStrip({ children, className }: { children: ReactNode; className?: string | undefined }) {
+export function StatStrip({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string | undefined
+}) {
   return (
     <div
       className={cn(

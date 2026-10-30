@@ -15,12 +15,7 @@ export function visibilityKindOf(kind: string | null | undefined): TimelineVisib
 }
 
 export type TimelineEntryRender =
-  | TimelineVisibilityKind
-  | "skip"
-  | "reply"
-  | "reopened"
-  | "note"
-  | "status"
+  TimelineVisibilityKind | "skip" | "reply" | "reopened" | "note" | "status"
 
 export function timelineEntryRender(
   entry: Pick<ReportTimelineEntryDTO, "status" | "kind" | "note" | "body">,

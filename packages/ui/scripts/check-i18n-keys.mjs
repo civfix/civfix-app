@@ -24,7 +24,8 @@ import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const localesDir = process.env.CIVFIX_I18N_LOCALES_DIR ?? join(__dirname, "..", "src", "i18n", "locales")
+const localesDir =
+  process.env.CIVFIX_I18N_LOCALES_DIR ?? join(__dirname, "..", "src", "i18n", "locales")
 const srcDir = join(__dirname, "..", "src")
 
 const SOURCE = "en"
@@ -67,7 +68,9 @@ function keyPaths(obj, prefix = "") {
  */
 function readCatalog(lng, ns) {
   try {
-    return /** @type {unknown} */ (JSON.parse(readFileSync(join(localesDir, lng, `${ns}.json`), "utf8")))
+    return /** @type {unknown} */ (
+      JSON.parse(readFileSync(join(localesDir, lng, `${ns}.json`), "utf8"))
+    )
   } catch {
     return null
   }
@@ -105,8 +108,10 @@ for (const [ns, enKeys] of enKeysByNs) {
 
     if (missing.length || extra.length) {
       failures++
-      if (missing.length) console.error(`MISSING KEYS in ${lng}/${ns}.json:\n  ${missing.join("\n  ")}`)
-      if (extra.length) console.error(`EXTRA KEYS in ${lng}/${ns}.json (not in en):\n  ${extra.join("\n  ")}`)
+      if (missing.length)
+        console.error(`MISSING KEYS in ${lng}/${ns}.json:\n  ${missing.join("\n  ")}`)
+      if (extra.length)
+        console.error(`EXTRA KEYS in ${lng}/${ns}.json (not in en):\n  ${extra.join("\n  ")}`)
     }
   }
 }

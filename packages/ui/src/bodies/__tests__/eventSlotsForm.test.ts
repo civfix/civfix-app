@@ -112,13 +112,19 @@ describe("slot windows", () => {
 
   it("accepts a window that sits inside the event", () => {
     expect(slotDraftError(timed(), undefined, EVENT_WINDOW)).toBeNull()
-    expect(slotDraftError(timed({ startsAt: at(0), endsAt: at(240) }), undefined, EVENT_WINDOW)).toBeNull()
+    expect(
+      slotDraftError(timed({ startsAt: at(0), endsAt: at(240) }), undefined, EVENT_WINDOW),
+    ).toBeNull()
   })
 
   it("refuses a shift shorter than the shared 15-minute floor", () => {
-    expect(slotDraftError(timed({ endsAt: at(14) }), undefined, EVENT_WINDOW)).toBe("window-too-short")
+    expect(slotDraftError(timed({ endsAt: at(14) }), undefined, EVENT_WINDOW)).toBe(
+      "window-too-short",
+    )
     expect(slotDraftError(timed({ endsAt: at(15) }), undefined, EVENT_WINDOW)).toBeNull()
-    expect(slotDraftError(timed({ endsAt: at(-60) }), undefined, EVENT_WINDOW)).toBe("window-too-short")
+    expect(slotDraftError(timed({ endsAt: at(-60) }), undefined, EVENT_WINDOW)).toBe(
+      "window-too-short",
+    )
   })
 
   it("refuses a timed slot on an event with no end, and with no window at all", () => {
@@ -129,12 +135,12 @@ describe("slot windows", () => {
   })
 
   it("refuses a shift that pokes out of either end of the event", () => {
-    expect(slotDraftError(timed({ startsAt: at(-30), endsAt: at(60) }), undefined, EVENT_WINDOW)).toBe(
-      "window-outside-event",
-    )
-    expect(slotDraftError(timed({ startsAt: at(180), endsAt: at(300) }), undefined, EVENT_WINDOW)).toBe(
-      "window-outside-event",
-    )
+    expect(
+      slotDraftError(timed({ startsAt: at(-30), endsAt: at(60) }), undefined, EVENT_WINDOW),
+    ).toBe("window-outside-event")
+    expect(
+      slotDraftError(timed({ startsAt: at(180), endsAt: at(300) }), undefined, EVENT_WINDOW),
+    ).toBe("window-outside-event")
   })
 
   it("leaves an UNTIMED slot alone, even on an event with no end", () => {
@@ -199,9 +205,9 @@ describe("generateShiftDrafts", () => {
 
   it("produces nothing for a window with no length", () => {
     seq = 0
-    expect(generateShiftDrafts({ start: EVENT_START, end: EVENT_START }, 2, shift, nextKey)).toEqual(
-      [],
-    )
+    expect(
+      generateShiftDrafts({ start: EVENT_START, end: EVENT_START }, 2, shift, nextKey),
+    ).toEqual([])
   })
 
   it("stays inside the same limits slotDraftError enforces", () => {
@@ -316,9 +322,9 @@ describe("slotsValid", () => {
 
   it("accepts a capacity at or above the claims, and a NEW slot the map knows nothing about", () => {
     const claimed = claimedBySlotId([slot("s1", { capacity: 4, claimed: 3 })])
-    expect(slotsValid([draft("a", { id: "s1", title: "Truck driver", capacity: "3" })], claimed)).toBe(
-      true,
-    )
+    expect(
+      slotsValid([draft("a", { id: "s1", title: "Truck driver", capacity: "3" })], claimed),
+    ).toBe(true)
     // A draft with no server id cannot have claims - it does not exist yet.
     expect(slotsValid([draft("b", { title: "Grill", capacity: "1" })], claimed)).toBe(true)
   })
@@ -326,9 +332,12 @@ describe("slotsValid", () => {
 
 describe("claimedBySlotId", () => {
   it("maps each existing slot's id to its live claim count", () => {
-    expect(
-      claimedBySlotId([slot("s1", { claimed: 4 }), slot("s2", { claimed: 0 })]),
-    ).toEqual(new Map([["s1", 4], ["s2", 0]]))
+    expect(claimedBySlotId([slot("s1", { claimed: 4 }), slot("s2", { claimed: 0 })])).toEqual(
+      new Map([
+        ["s1", 4],
+        ["s2", 0],
+      ]),
+    )
     expect(claimedBySlotId([])).toEqual(new Map())
   })
 })

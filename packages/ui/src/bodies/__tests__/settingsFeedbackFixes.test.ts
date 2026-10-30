@@ -13,9 +13,9 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 
 describe("Settings > Account editors map the save failure onto honest copy", () => {
   it("tells a throttled or refused save apart from a transient one", () => {
-    expect(profileSaveErrorKey(new AppError(ErrorCode.RATE_LIMITED, "slow"), "bio.error.generic")).toBe(
-      PROFILE_SAVE_RATE_LIMITED_KEY,
-    )
+    expect(
+      profileSaveErrorKey(new AppError(ErrorCode.RATE_LIMITED, "slow"), "bio.error.generic"),
+    ).toBe(PROFILE_SAVE_RATE_LIMITED_KEY)
     expect(profileSaveErrorKey(new AppError(ErrorCode.VALIDATION, "no"), "bio.error.generic")).toBe(
       PROFILE_SAVE_VALIDATION_KEY,
     )
@@ -140,7 +140,9 @@ describe("delete-account dialog", () => {
   it("focuses the code field from an effect that cancels its timer on close or unmount", () => {
     expect(src).not.toMatch(/onSuccess: \(\) => \{[\s\S]{0,120}setTimeout\(/)
     expect(src).toContain("setCodeFocusRequest((n) => n + 1)")
-    expect(src).toMatch(/if \(!visible \|\| codeFocusRequest === 0\) return[\s\S]{0,120}return \(\) => clearTimeout\(timer\)/)
+    expect(src).toMatch(
+      /if \(!visible \|\| codeFocusRequest === 0\) return[\s\S]{0,120}return \(\) => clearTimeout\(timer\)/,
+    )
   })
 
   it("inks every warning line with the AA danger token", () => {

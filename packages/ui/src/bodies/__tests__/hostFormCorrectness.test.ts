@@ -42,7 +42,9 @@ describe("a cover upload lands on the draft as it is when the upload finishes", 
 
   it("commits the cover through the merge path on both hosts, never the render-time spread", () => {
     expect(form).toContain("useCoverUpload({ mergeIntoCurrent: onPatch, patchRendered: patch })")
-    expect(form).toContain("mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
+    expect(form).toContain(
+      "mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })",
+    )
     expect(form).not.toContain("patch({ coverMediaId: uploaded.mediaId")
     expect(form).not.toContain("patchRendered({ coverMediaId: uploaded.mediaId")
     expect(create).toContain("useCleanupDraft.getState().merge(partial)")
@@ -77,7 +79,9 @@ describe("publishing a new event is idempotent per draft", () => {
   it("sends the draft's key and refuses a second publish while one is in flight", () => {
     expect(create).toContain("const { idempotencyKey } = useCleanupDraft.getState()")
     expect(create).toContain("...(idempotencyKey ? { idempotencyKey } : {})")
-    expect(create).toMatch(/if \(publishing\.current\) return[\s\S]*?publishing\.current = true\s*create\.mutate\(/)
+    expect(create).toMatch(
+      /if \(publishing\.current\) return[\s\S]*?publishing\.current = true\s*create\.mutate\(/,
+    )
     expect(create).toMatch(/onSettled: \(\) => \{\s*publishing\.current = false\s*\}/)
   })
 })
@@ -114,7 +118,9 @@ describe("the edit route waits for the session before judging the viewer", () =>
 
 describe("the edit form's linked-report cards", () => {
   it("re-puts the cards whenever the event's refs change, not only when the id list does", () => {
-    expect(edit).toMatch(/put\(linkedReports\.map\(linkedRefToCardData\)\)\s*\}, \[linkedReports\]\)/)
+    expect(edit).toMatch(
+      /put\(linkedReports\.map\(linkedRefToCardData\)\)\s*\}, \[linkedReports\]\)/,
+    )
     expect(edit).not.toContain("}, [linkedReportIds])")
   })
 

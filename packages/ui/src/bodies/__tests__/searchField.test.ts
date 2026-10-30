@@ -36,7 +36,9 @@ describe("where the field lives", () => {
 
 describe("the field owns no state", () => {
   it("reads and writes the SHARED query, so the three surfaces stay in step with what is typed", () => {
-    expect(bodyCode).toMatch(/function ExpandedSearchField\(\)[\s\S]*?useNavStore\(\(s\) => s\.query\)/)
+    expect(bodyCode).toMatch(
+      /function ExpandedSearchField\(\)[\s\S]*?useNavStore\(\(s\) => s\.query\)/,
+    )
     expect(bodyCode).toContain("useNavStore((s) => s.setQuery)")
   })
 
@@ -55,7 +57,9 @@ describe("the field owns no state", () => {
   it("commits on submit, on opening a result, and on leaving a non-empty field", () => {
     expect(bodyCode).toContain("onSubmitEditing={() => commitSearchRecent(query)}")
     expect(bodyCode).toMatch(/const unpinned = wasPinnedRef\.current && !pinned/)
-    expect(bodyCode).toMatch(/state\.stack\.length > prev\.stack\.length\) commitRef\.current\(prev\.query\)/)
+    expect(bodyCode).toMatch(
+      /state\.stack\.length > prev\.stack\.length\) commitRef\.current\(prev\.query\)/,
+    )
   })
 
   it("commits the SHARED pending input, not a private last-non-empty ref", () => {
@@ -82,7 +86,9 @@ describe("the field owns no state", () => {
   })
 
   it("an explicit clear discards the pending input, so the blur that follows records nothing", () => {
-    expect(bodyCode).toMatch(/const clearQuery = useCallback\(\(\) => \{\s*discardSearchInput\(\)\s*setQuery\(""\)/)
+    expect(bodyCode).toMatch(
+      /const clearQuery = useCallback\(\(\) => \{\s*discardSearchInput\(\)\s*setQuery\(""\)/,
+    )
     expect(bodyCode).toContain('searchFieldEscape(query) === "clear") clearQuery()')
     expect(bodyCode).toContain("onPress={clearQuery}")
     expect(bodyCode).not.toContain('onPress={() => setQuery("")}')
@@ -90,7 +96,9 @@ describe("the field owns no state", () => {
 
   it("the docked bar's clear discards it too - it drives the same pinned commit", () => {
     expect(tabBar).toMatch(/onClear: \(\) => \{\s*discardSearchInput\(\)\s*setQuery\(""\)/)
-    expect(tabBar).toContain('import { discardSearchInput } from "../bodies/search/searchRecentStore"')
+    expect(tabBar).toContain(
+      'import { discardSearchInput } from "../bodies/search/searchRecentStore"',
+    )
   })
 })
 

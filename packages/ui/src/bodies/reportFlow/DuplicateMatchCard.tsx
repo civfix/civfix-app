@@ -1,6 +1,13 @@
 import { useState } from "react"
 import { Image, Pressable, StyleSheet, View } from "react-native"
-import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webTransition } from "../../theme"
+import {
+  categoryColor,
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  wash,
+  webTransition,
+} from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
 import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useT } from "../../i18n"
@@ -74,7 +81,11 @@ export function DuplicateMatchCard({
       >
         <View style={[styles.cardMedia, { backgroundColor: wash(cat, 0.84, th) }]}>
           {pin.thumbUrl ? (
-            <Image source={{ uri: pin.thumbUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <Image
+              source={{ uri: pin.thumbUrl }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
           ) : (
             <Icon icon={CATEGORY_ICONS[pin.category]} size={40} color={cat} />
           )}

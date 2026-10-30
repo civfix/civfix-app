@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest"
 import type { ChatItem } from "../../helpers"
 import { aroundWindowState } from "../conversation/aroundWindowState"
 
-const item = { message: { id: "m1" }, mine: false, pending: false, failed: false } as unknown as ChatItem
+const item = {
+  message: { id: "m1" },
+  mine: false,
+  pending: false,
+  failed: false,
+} as unknown as ChatItem
 
 describe("aroundWindowState", () => {
   it("no window at all is inactive - the merged transcript renders", () => {

@@ -193,7 +193,10 @@ export function reportLookupKey(query: string): string | null {
   return null
 }
 
-export function reportShortCode(report: { id: string; referenceCode?: string | null | undefined }): string {
+export function reportShortCode(report: {
+  id: string
+  referenceCode?: string | null | undefined
+}): string {
   const reference = report.referenceCode?.trim()
   return `#${reference || report.id.slice(0, SHORT_ID_LENGTH)}`
 }
@@ -219,20 +222,23 @@ export function queryRank(pin: ReportPinDTO, query: string): QueryRank | null {
   const id = pin.id.toLowerCase()
   const reference = normalize(pin.referenceCode)
   if (q === id || (reference.length > 0 && q === reference)) return QUERY_RANK.exactId
-  if (id.startsWith(q) || (reference.length > 0 && reference.startsWith(q))) return QUERY_RANK.idPrefix
+  if (id.startsWith(q) || (reference.length > 0 && reference.startsWith(q)))
+    return QUERY_RANK.idPrefix
   const title = normalize(pin.title)
   const tokens = q.split(/\s+/).filter(Boolean)
   if (title.length > 0) {
     if (title.startsWith(q)) return QUERY_RANK.titlePrefix
     const words = title.split(/[^a-z0-9]+/i).filter(Boolean)
-    if (tokens.every((token) => words.some((word) => word.startsWith(token)))) return QUERY_RANK.titleWord
+    if (tokens.every((token) => words.some((word) => word.startsWith(token))))
+      return QUERY_RANK.titleWord
     if (tokens.every((token) => title.includes(token))) return QUERY_RANK.titleContains
   }
   const rest = [pin.description, pin.addr, reference, id]
     .map(normalize)
     .filter((part) => part.length > 0)
     .join(" ")
-  if (tokens.every((token) => rest.includes(token) || title.includes(token))) return QUERY_RANK.otherFields
+  if (tokens.every((token) => rest.includes(token) || title.includes(token)))
+    return QUERY_RANK.otherFields
   return null
 }
 
@@ -346,7 +352,10 @@ export interface PickerPage {
   total: number
 }
 
-export function pickerListItems(sections: PickerSections, limit = Number.POSITIVE_INFINITY): PickerPage {
+export function pickerListItems(
+  sections: PickerSections,
+  limit = Number.POSITIVE_INFINITY,
+): PickerPage {
   const items: PickerListItem[] = []
   let shown = 0
   let total = 0
@@ -466,10 +475,7 @@ export interface SelectionDiff {
   dirty: boolean
 }
 
-export function selectionDiff(
-  ids: readonly string[],
-  linked: ReadonlySet<string>,
-): SelectionDiff {
+export function selectionDiff(ids: readonly string[], linked: ReadonlySet<string>): SelectionDiff {
   let added = 0
   const chosen = new Set(ids)
   for (const id of ids) if (!linked.has(id)) added++
@@ -490,10 +496,7 @@ export function pinStateKey(state: PickerPinState, mode: PickerMode): PickerStat
 }
 
 export type PickerRowTagKey =
-  | "row_linked_tag"
-  | "row_added_tag"
-  | "row_unlinking_tag"
-  | "row_removed_tag"
+  "row_linked_tag" | "row_added_tag" | "row_unlinking_tag" | "row_removed_tag"
 
 export function rowTagKey(state: PickerPinState, mode: PickerMode): PickerRowTagKey | null {
   if (state === "linked") return mode === "draft" ? "row_added_tag" : "row_linked_tag"
@@ -528,13 +531,7 @@ export function pinTapIntent(id: string, focusedId: string | null): PickerPinTap
 }
 
 export type PickerListState =
-  | "loading"
-  | "error"
-  | "too_wide"
-  | "no_layers"
-  | "no_match"
-  | "empty"
-  | "rows"
+  "loading" | "error" | "too_wide" | "no_layers" | "no_match" | "empty" | "rows"
 
 export function pickerListState(input: {
   hasRegion: boolean

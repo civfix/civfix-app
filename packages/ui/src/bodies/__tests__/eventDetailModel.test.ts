@@ -9,8 +9,14 @@ describe("eventStatusLine", () => {
   })
 
   it("names the viewer's hosting role on a live event", () => {
-    expect(eventStatusLine({ ...base, isOrganizer: true })).toEqual({ key: "status.hosting", tone: "live" })
-    expect(eventStatusLine({ ...base, isCohost: true })).toEqual({ key: "status.cohosting", tone: "live" })
+    expect(eventStatusLine({ ...base, isOrganizer: true })).toEqual({
+      key: "status.hosting",
+      tone: "live",
+    })
+    expect(eventStatusLine({ ...base, isCohost: true })).toEqual({
+      key: "status.cohosting",
+      tone: "live",
+    })
   })
 
   it("lets the event's lifecycle outrank the viewer's role", () => {
@@ -22,6 +28,8 @@ describe("eventStatusLine", () => {
       key: "status.ended",
       tone: "ended",
     })
-    expect(eventStatusLine({ ...base, isCancelled: true, isDone: true })?.key).toBe("status.cancelled")
+    expect(eventStatusLine({ ...base, isCancelled: true, isDone: true })?.key).toBe(
+      "status.cancelled",
+    )
   })
 })

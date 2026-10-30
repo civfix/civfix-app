@@ -41,8 +41,12 @@ function ProfileReportRow({ report, onPress }: { report: ReportDTO; onPress: () 
         <Icon icon={iconMap.MapPin} size={17} color={color} />
       </View>
       <View style={styles.reportMeta}>
-        <Text style={styles.reportTitle} numberOfLines={1}>{title}</Text>
-        <Text style={styles.reportLocation} numberOfLines={1}>{location}</Text>
+        <Text style={styles.reportTitle} numberOfLines={1}>
+          {title}
+        </Text>
+        <Text style={styles.reportLocation} numberOfLines={1}>
+          {location}
+        </Text>
       </View>
       <StatusBadge status={report.status} />
     </Pressable>
@@ -83,9 +87,14 @@ export function ProfileReportsSection({
             accessibilityRole="button"
             accessibilityLabel={t("reports.see_all_a11y")}
             {...focusRingProps}
-            style={({ pressed }) => [styles.seeAllReports, pressed ? styles.reportRowPressed : null]}
+            style={({ pressed }) => [
+              styles.seeAllReports,
+              pressed ? styles.reportRowPressed : null,
+            ]}
           >
-            <Text style={styles.seeAllReportsText}>{t("reports.see_all", { count: totalCount })}</Text>
+            <Text style={styles.seeAllReportsText}>
+              {t("reports.see_all", { count: totalCount })}
+            </Text>
             <Icon icon={iconMap.ChevronRight} size={15} color={th.colors.brand.bloom} />
           </Pressable>
         </View>

@@ -19,9 +19,7 @@ vi.mock("../../typography", async () => {
 const spanish = vi.hoisted(() => ({ release: (_: unknown) => {} }))
 
 vi.mock("../../i18n/catalogs/lazy", async () => {
-  const es = await vi.importActual<{ default: Record<string, unknown> }>(
-    "../../i18n/catalogs/es",
-  )
+  const es = await vi.importActual<{ default: Record<string, unknown> }>("../../i18n/catalogs/es")
   return {
     lazyCatalogs: {
       es: () =>
@@ -40,7 +38,13 @@ function Probe() {
   return <p data-testid="probe">{`${locale}:${t("save")}`}</p>
 }
 
-function Host({ initial, onChoose }: { initial: SupportedLocale; onChoose: (code: SupportedLocale) => void }) {
+function Host({
+  initial,
+  onChoose,
+}: {
+  initial: SupportedLocale
+  onChoose: (code: SupportedLocale) => void
+}) {
   const [locale, setLocale] = React.useState(initial)
   const choose = React.useCallback(
     (code: SupportedLocale) => {

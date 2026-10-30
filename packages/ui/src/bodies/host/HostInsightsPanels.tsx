@@ -135,7 +135,12 @@ function ShiftsPanel({
     <SectionCard label={t("shifts.section")}>
       <View style={styles.stack}>
         {rows.map((slot) => (
-          <ShiftRow key={slot.id} slot={slot} current={running?.has(slot.id) ?? false} timeZone={timeZone} />
+          <ShiftRow
+            key={slot.id}
+            slot={slot}
+            current={running?.has(slot.id) ?? false}
+            timeZone={timeZone}
+          />
         ))}
         {timed.length > MAX_COLLAPSED_SHIFTS ? (
           <TextLink standalone variant="label" onPress={() => setExpanded(!expanded)}>

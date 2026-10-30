@@ -8,15 +8,12 @@ import { describe, expect, it } from "vitest"
 import { reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import { ReportCategorySchema } from "@civfix/contract"
 import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/tokens"
-import {
-  pinAppearanceFor,
-  eventPinTarget,
-  reportPinTarget,
-} from "../pins/appearance"
+import { pinAppearanceFor, eventPinTarget, reportPinTarget } from "../pins/appearance"
 import { DROP_PIN_GLYPH, PIN_GLYPHS, glyphForCategory } from "../pins/glyphs"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
-const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
+const code = (src: string) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
 
 describe("a report target never yields the event glyph", () => {
   it("draws the picked category's own teardrop, in both schemes", () => {
@@ -41,7 +38,11 @@ describe("a report target never yields the event glyph", () => {
 
   it("falls back to the NEUTRAL drop pin - never the calendar - when no category is chosen yet", () => {
     for (const scheme of ["light", "dark"] as const) {
-      for (const target of [reportPinTarget(null), reportPinTarget(undefined), reportPinTarget("")]) {
+      for (const target of [
+        reportPinTarget(null),
+        reportPinTarget(undefined),
+        reportPinTarget(""),
+      ]) {
         const pin = pinAppearanceFor(target, scheme)
         expect(pin.glyph).toBe(DROP_PIN_GLYPH)
         expect(pin.glyph).not.toBe(PIN_GLYPHS.cleanup)

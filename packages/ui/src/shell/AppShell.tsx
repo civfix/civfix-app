@@ -49,36 +49,32 @@ export function AppShell({
   return (
     <MediaLightboxProvider>
       <SharePostProvider>
-      <View style={StyleSheet.absoluteFill}>
-        {mountMap ? (
-          <View
-            style={[StyleSheet.absoluteFill, styles.map, mapVisible ? null : styles.mapDetached]}
-            accessibilityElementsHidden={!mapVisible}
-            importantForAccessibility={mapVisible ? "auto" : "no-hide-descendants"}
-          >
-            {map}
-          </View>
-        ) : null}
-        {mountMapControls ? <View style={styles.controls}>{mapControls}</View> : null}
-        {mode === "expanded" ? (
-          <ExpandedShell renderBody={renderBody} stack={stack} />
-        ) : (
-          <PortraitShell
-            active={active}
-            plan={basePlan}
-            renderBody={renderBody}
-            view={view}
-            baseView={baseView}
-            fullPageDetails={fullPageDetails}
-            stack={stack}
-          />
-        )}
-        {authOverlay ? (
-          <View style={styles.overlay}>
-            {authOverlay}
-          </View>
-        ) : null}
-      </View>
+        <View style={StyleSheet.absoluteFill}>
+          {mountMap ? (
+            <View
+              style={[StyleSheet.absoluteFill, styles.map, mapVisible ? null : styles.mapDetached]}
+              accessibilityElementsHidden={!mapVisible}
+              importantForAccessibility={mapVisible ? "auto" : "no-hide-descendants"}
+            >
+              {map}
+            </View>
+          ) : null}
+          {mountMapControls ? <View style={styles.controls}>{mapControls}</View> : null}
+          {mode === "expanded" ? (
+            <ExpandedShell renderBody={renderBody} stack={stack} />
+          ) : (
+            <PortraitShell
+              active={active}
+              plan={basePlan}
+              renderBody={renderBody}
+              view={view}
+              baseView={baseView}
+              fullPageDetails={fullPageDetails}
+              stack={stack}
+            />
+          )}
+          {authOverlay ? <View style={styles.overlay}>{authOverlay}</View> : null}
+        </View>
       </SharePostProvider>
     </MediaLightboxProvider>
   )

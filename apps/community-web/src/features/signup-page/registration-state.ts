@@ -1,24 +1,11 @@
 import type { PublicEventPageDTO, PublicPageTicketType, RegisterOutcome } from "@civfix/contract"
 import { hasEventEnded, registerOutcomeKey, sortedTicketTypes } from "@civfix/contract/host"
 
-export type WidgetState =
-  | "cancelled"
-  | "closed"
-  | "not_yet_open"
-  | "sold_out"
-  | "open"
+export type WidgetState = "cancelled" | "closed" | "not_yet_open" | "sold_out" | "open"
 
-export function registrationWindowState(
-  page: PublicEventPageDTO,
-  now: number,
-): WidgetState {
+export function registrationWindowState(page: PublicEventPageDTO, now: number): WidgetState {
   if (page.event.status === "cancelled") return "cancelled"
-  if (
-    hasEventEnded(
-      { scheduledAt: page.event.startsAt, endsAt: page.event.endsAt ?? null },
-      now,
-    )
-  ) {
+  if (hasEventEnded({ scheduledAt: page.event.startsAt, endsAt: page.event.endsAt ?? null }, now)) {
     return "closed"
   }
 
@@ -51,7 +38,10 @@ export function ticketById(
   return page.ticketTypes.find((ticket) => ticket.id === ticketTypeId) ?? null
 }
 
-export function waitlistAvailable(ticket: PublicPageTicketType | null, page: PublicEventPageDTO): boolean {
+export function waitlistAvailable(
+  ticket: PublicPageTicketType | null,
+  page: PublicEventPageDTO,
+): boolean {
   if (ticket !== null) return ticket.waitlistEnabled
   return page.waitlistEnabled
 }

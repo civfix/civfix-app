@@ -1,7 +1,14 @@
 import { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  focusRingProps,
+  inputFocusedStyle,
+  MIN_TOUCH_TARGET,
+} from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
@@ -35,7 +42,13 @@ export interface PollCreateSheetProps {
   onClose: () => void
 }
 
-export function PollCreateSheet({ visible, pending = false, error, onCreate, onClose }: PollCreateSheetProps) {
+export function PollCreateSheet({
+  visible,
+  pending = false,
+  error,
+  onCreate,
+  onClose,
+}: PollCreateSheetProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation-polls")
@@ -73,7 +86,12 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
       actions={
         <>
           <SecondaryButton label={t("cancel")} onPress={onClose} size="sm" />
-          <PrimaryButton label={t("create")} onPress={commit} loading={pending} disabled={!canSubmit} />
+          <PrimaryButton
+            label={t("create")}
+            onPress={commit}
+            loading={pending}
+            disabled={!canSubmit}
+          />
         </>
       }
     >
@@ -88,7 +106,11 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
         accessibilityLabel={t("question_placeholder")}
         onFocus={() => setFocusedField("q")}
         onBlur={() => setFocusedField(null)}
-        style={[webInputReset, styles.questionInput, focusedField === "q" ? inputFocusedStyle(th) : null]}
+        style={[
+          webInputReset,
+          styles.questionInput,
+          focusedField === "q" ? inputFocusedStyle(th) : null,
+        ]}
       />
 
       <View style={styles.options}>
@@ -118,7 +140,10 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
                 accessibilityLabel={t("remove_option", { index: idx + 1 })}
                 hitSlop={6}
                 {...focusRingProps}
-                style={({ pressed }) => [styles.removeBtn, pressed ? styles.removeBtnPressed : null]}
+                style={({ pressed }) => [
+                  styles.removeBtn,
+                  pressed ? styles.removeBtnPressed : null,
+                ]}
               >
                 <Icon icon={iconMap.Close} size={16} color={th.colors.textSubtle} />
               </Pressable>

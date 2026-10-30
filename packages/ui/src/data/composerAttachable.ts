@@ -22,6 +22,9 @@ export function attachableReports<T extends { status: ReportStatus }>(reports: r
   return reports.filter(isAttachableReport)
 }
 
-export function attachableEvents<T extends EventWindowLike>(events: readonly T[], now: number): T[] {
+export function attachableEvents<T extends EventWindowLike>(
+  events: readonly T[],
+  now: number,
+): T[] {
   return events.filter((event) => isAttachableEvent(event, now))
 }

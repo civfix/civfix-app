@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo } from "react"
 import { Megaphone } from "lucide-react"
-import type { EventRegistrationDTO, RegistrationRosterFilter, RegistrationRosterSort } from "@civfix/contract"
+import type {
+  EventRegistrationDTO,
+  RegistrationRosterFilter,
+  RegistrationRosterSort,
+} from "@civfix/contract"
 import { useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -109,7 +113,8 @@ export function AttendeesScreen() {
               label: type.name,
             })),
             values: ticketTypeId ? [ticketTypeId] : [],
-            onChange: (values: string[]) => setFilters({ ticket: values[values.length - 1] ?? null }),
+            onChange: (values: string[]) =>
+              setFilters({ ticket: values[values.length - 1] ?? null }),
           },
         ]
       : []),
@@ -143,10 +148,7 @@ export function AttendeesScreen() {
         </div>
       </div>
 
-      <FilterBar
-        facets={facets}
-        onReset={() => setFilters({ q: null, ticket: null })}
-      />
+      <FilterBar facets={facets} onReset={() => setFilters({ q: null, ticket: null })} />
 
       <p className="text-token-12 text-console-ink-3">
         {t("summary.shown", { shown: format.number(rows.length) })}

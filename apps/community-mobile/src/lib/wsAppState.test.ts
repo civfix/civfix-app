@@ -104,7 +104,11 @@ test("foregrounding with no connection intent opens nothing", () => {
   applyAppStateTransition("active", core)
 
   assert.equal(core.opens, 0)
-  assert.equal(core.suspended, false, "the kick must not leave the core stuck in the suspended state")
+  assert.equal(
+    core.suspended,
+    false,
+    "the kick must not leave the core stuck in the suspended state",
+  )
 })
 
 test("inactive and other transitions are ignored", () => {

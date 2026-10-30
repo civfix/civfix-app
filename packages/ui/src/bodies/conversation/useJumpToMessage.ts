@@ -62,7 +62,10 @@ export function useJumpToMessage({
   )
   const onScrollToIndexFailed = useCallback(
     (info: { index: number; averageItemLength: number }) => {
-      listRef.current?.scrollToOffset({ offset: info.index * info.averageItemLength, animated: false })
+      listRef.current?.scrollToOffset({
+        offset: info.index * info.averageItemLength,
+        animated: false,
+      })
       if (scrollRetriedRef.current) return
       scrollRetriedRef.current = true
       if (scrollRetryTimerRef.current) clearTimeout(scrollRetryTimerRef.current)

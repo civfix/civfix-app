@@ -190,11 +190,7 @@ export function TeamScreen() {
               chips={<Chip kind="team-role" value={row.role} size="sm" />}
               trailing={
                 row.status === "pending" ? (
-                  <ConsoleButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPendingRevoke(row.id)}
-                  >
+                  <ConsoleButton variant="ghost" size="sm" onClick={() => setPendingRevoke(row.id)}>
                     {t("invites.revoke")}
                   </ConsoleButton>
                 ) : (

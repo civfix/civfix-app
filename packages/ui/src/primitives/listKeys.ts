@@ -29,7 +29,9 @@ export function withTextOffsets<T extends { readonly text: string }>(
 }
 
 /** Keys plain values by the value itself, counting repeats so a duplicate entry still gets its own key. */
-export function withValueKeys(values: readonly string[]): { readonly value: string; readonly key: string }[] {
+export function withValueKeys(
+  values: readonly string[],
+): { readonly value: string; readonly key: string }[] {
   const seen = new Map<string, number>()
   return values.map((value) => {
     const occurrence = seen.get(value) ?? 0

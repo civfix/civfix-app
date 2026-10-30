@@ -81,5 +81,14 @@ export function usePickLayer({
   }, [pickLingerArmed])
   const pickLayerMounted = pickLayerOpen || (pickLingerArmed && pickLayerOffViewHold)
 
-  return { pickPoint, pickPin, pickCenter, openPicker, onPickConfirm, onPickCancel, pickLayerOpen, pickLayerMounted }
+  return {
+    pickPoint,
+    pickPin,
+    pickCenter,
+    openPicker,
+    onPickConfirm,
+    onPickCancel,
+    pickLayerOpen,
+    pickLayerMounted,
+  }
 }

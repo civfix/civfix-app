@@ -16,12 +16,19 @@ vi.mock("react-native-safe-area-context", async () => {
 
 vi.mock("lucide-react-native/icons", () => {
   const Glyph = () => null
-  return new Proxy({}, { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) })
+  return new Proxy(
+    {},
+    { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) },
+  )
 })
 
 import { I18nProvider } from "../../../../packages/ui/src/i18n"
 import { ModalCardSheet } from "../../../../packages/ui/src/primitives/ModalCardSheet"
-import { ToastProvider, useToast, type ToastApi } from "../../../../packages/ui/src/primitives/Toast"
+import {
+  ToastProvider,
+  useToast,
+  type ToastApi,
+} from "../../../../packages/ui/src/primitives/Toast"
 
 const MESSAGE = "Couldn't send to Ana_with_a_very_long_name_without_any_spaces"
 
@@ -62,7 +69,10 @@ function mount(sheetOpen: boolean) {
 
 function showRetryToast(retry: () => void): void {
   act(() => {
-    toastRef.current!.show(MESSAGE, { variant: "error", action: { label: "Try again", onPress: retry } })
+    toastRef.current!.show(MESSAGE, {
+      variant: "error",
+      action: { label: "Try again", onPress: retry },
+    })
   })
 }
 

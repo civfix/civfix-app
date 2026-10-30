@@ -53,7 +53,9 @@ describe("keyboardFocusStore", () => {
   it("keeps the version monotonic across focus, growth and blur", () => {
     const field = node()
     const seen: number[] = []
-    const unsubscribe = keyboardFocusStore.subscribe(() => seen.push(keyboardFocusStore.getState().version))
+    const unsubscribe = keyboardFocusStore.subscribe(() =>
+      seen.push(keyboardFocusStore.getState().version),
+    )
     keyboardFocusStore.setFocused(field, "scope-a")
     keyboardFocusStore.bump()
     keyboardFocusStore.clearFocused(field)

@@ -1,7 +1,13 @@
 import eslint from "@eslint/js"
 import vitest from "@vitest/eslint-plugin"
 import tseslint from "typescript-eslint"
-import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, VITEST_RULES } from "../../eslint.typed.cjs"
+import {
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  VITEST_RULES,
+} from "../../eslint.typed.cjs"
 
 // @civfix/tokens must stay framework-free: never import or re-export react / react-dom /
 // react-native (or any react-native-* lib) or @civfix/ui. @civfix/ui depends ON this package, never the
@@ -11,19 +17,34 @@ const FRAMEWORK_FREE_IMPORTS = {
     "error",
     {
       paths: [
-        { name: "react", message: "@civfix/tokens must stay framework-free; React belongs in @civfix/ui." },
-        { name: "react-dom", message: "@civfix/tokens must stay framework-free; react-dom belongs in @civfix/ui." },
-        { name: "react-native", message: "@civfix/tokens must stay framework-free; react-native belongs in @civfix/ui." },
-        { name: "@civfix/ui", message: "@civfix/tokens must not depend on @civfix/ui (the dependency runs the other way)." },
+        {
+          name: "react",
+          message: "@civfix/tokens must stay framework-free; React belongs in @civfix/ui.",
+        },
+        {
+          name: "react-dom",
+          message: "@civfix/tokens must stay framework-free; react-dom belongs in @civfix/ui.",
+        },
+        {
+          name: "react-native",
+          message: "@civfix/tokens must stay framework-free; react-native belongs in @civfix/ui.",
+        },
+        {
+          name: "@civfix/ui",
+          message:
+            "@civfix/tokens must not depend on @civfix/ui (the dependency runs the other way).",
+        },
       ],
       patterns: [
         {
           group: ["react-native-*"],
-          message: "@civfix/tokens must stay framework-free; react-native-* libs belong in @civfix/ui.",
+          message:
+            "@civfix/tokens must stay framework-free; react-native-* libs belong in @civfix/ui.",
         },
         {
           group: ["@civfix/ui/*"],
-          message: "@civfix/tokens must not depend on @civfix/ui subpaths (the dependency runs the other way).",
+          message:
+            "@civfix/tokens must not depend on @civfix/ui subpaths (the dependency runs the other way).",
         },
       ],
     },
@@ -32,7 +53,14 @@ const FRAMEWORK_FREE_IMPORTS = {
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "node_modules/**", "coverage/**", "*.config.js", "*.config.ts", "*.config.bundled_*.mjs"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "coverage/**",
+      "*.config.js",
+      "*.config.ts",
+      "*.config.bundled_*.mjs",
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

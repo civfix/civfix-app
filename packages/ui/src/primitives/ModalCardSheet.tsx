@@ -161,12 +161,25 @@ export function ModalCardSheet({
             >
               {tone === "danger" ? (
                 <View style={styles.headerBadge}>
-                  <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
+                  <Icon
+                    icon={iconMap[headerIcon]}
+                    size={16}
+                    color={headerIconColor ?? t.colors.brand.bloom}
+                  />
                 </View>
               ) : (
-                <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+                <Icon
+                  icon={iconMap[headerIcon]}
+                  size={16}
+                  color={headerIconColor ?? t.colors.text}
+                />
               )}
-              <Text variant="bodyStrong" color={t.colors.text} style={styles.title} numberOfLines={1}>
+              <Text
+                variant="bodyStrong"
+                color={t.colors.text}
+                style={styles.title}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {fullBleed ? (

@@ -8,7 +8,9 @@ describe("SuccessCheck draw", () => {
 
   it("animates the check's dash offset as a prop, never through per-frame React state", () => {
     expect(source).toContain("const AnimatedPath = Animated.createAnimatedComponent(Path)")
-    expect(source).toMatch(/draw\.interpolate\(\{ inputRange: \[0, 1\], outputRange: \[CHECK_LENGTH, 0\] \}\)/)
+    expect(source).toMatch(
+      /draw\.interpolate\(\{ inputRange: \[0, 1\], outputRange: \[CHECK_LENGTH, 0\] \}\)/,
+    )
     expect(source).toContain("strokeDashoffset={dashOffset}")
     expect(source).not.toMatch(/addListener|useState/)
   })

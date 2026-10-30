@@ -15,16 +15,14 @@ describe("hoursReceiptState", () => {
 
   it("hides the receipt until the event is done", () => {
     for (const status of ["upcoming", "active", "cancelled"] as const) {
-      expect(
-        hoursReceiptState({ ...attended, status, myHours: 2, anyLogged: true }),
-      ).toBe("hidden")
+      expect(hoursReceiptState({ ...attended, status, myHours: 2, anyLogged: true })).toBe("hidden")
     }
   })
 
   it("hides the receipt from an acting host and from a non-attendee", () => {
-    expect(
-      hoursReceiptState({ ...attended, actsAsHost: true, myHours: 2, anyLogged: true }),
-    ).toBe("hidden")
+    expect(hoursReceiptState({ ...attended, actsAsHost: true, myHours: 2, anyLogged: true })).toBe(
+      "hidden",
+    )
     expect(hoursReceiptState({ ...attended, joined: false, myHours: null, anyLogged: true })).toBe(
       "hidden",
     )
@@ -50,8 +48,12 @@ describe("hoursReceiptState", () => {
 
 describe("hasEventEnded", () => {
   it("prefers endsAt over the scheduled start", () => {
-    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: "2026-07-27T11:30:00.000Z" }, NOW)).toBe(true)
-    expect(hasEventEnded({ scheduledAt: "2026-07-20T11:00:00.000Z", endsAt: FUTURE }, NOW)).toBe(false)
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: "2026-07-27T11:30:00.000Z" }, NOW)).toBe(
+      true,
+    )
+    expect(hasEventEnded({ scheduledAt: "2026-07-20T11:00:00.000Z", endsAt: FUTURE }, NOW)).toBe(
+      false,
+    )
   })
 
   it("falls back to the shared default duration when endsAt is absent", () => {
@@ -66,7 +68,9 @@ describe("hasEventEnded", () => {
   })
 
   it("treats the end instant itself as ended - the window is strict", () => {
-    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: new Date(NOW).toISOString() }, NOW)).toBe(true)
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: new Date(NOW).toISOString() }, NOW)).toBe(
+      true,
+    )
   })
 
   it("fails closed on a schedule it cannot read, and treats an unparseable endsAt as absent", () => {

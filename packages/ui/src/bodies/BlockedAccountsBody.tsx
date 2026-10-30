@@ -3,7 +3,13 @@ import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, hitSlopToTarget } from "../theme"
 import { Text, iconMap } from "../typography"
-import { Avatar, ListBodyEmpty, useListBodyStyles, useListEndReached, useToast } from "../primitives"
+import {
+  Avatar,
+  ListBodyEmpty,
+  useListBodyStyles,
+  useListEndReached,
+  useToast,
+} from "../primitives"
 import { useListBlocks, useUnblockUser } from "../data"
 import { blockedAccountsOf } from "../data/hooks/direct"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -52,9 +58,7 @@ const BlockedRow = memo(function BlockedRow({
         {...focusRingProps}
         style={({ pressed }) => [styles.unblock, pressed ? styles.unblockPressed : null]}
       >
-        <Text style={styles.unblockText}>
-          {pending ? t("row.unblocking") : t("row.unblock")}
-        </Text>
+        <Text style={styles.unblockText}>{pending ? t("row.unblocking") : t("row.unblock")}</Text>
       </Pressable>
     </View>
   )
@@ -96,7 +100,9 @@ export function BlockedAccountsBody() {
       data={items}
       keyExtractor={idKeyExtractor}
       style={listStyles.list}
-      contentContainerStyle={items.length === 0 ? listStyles.listEmpty : listStyles.listContentInset}
+      contentContainerStyle={
+        items.length === 0 ? listStyles.listEmpty : listStyles.listContentInset
+      }
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}

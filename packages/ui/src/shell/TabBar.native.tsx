@@ -1,11 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  Keyboard,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-} from "react-native"
+import { Keyboard, Platform, Pressable, StyleSheet, TextInput } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
   Easing,
@@ -70,13 +64,7 @@ import { useDockedSearchRise } from "./SearchHeader.native"
 import { dockMorphProgress } from "./dockMorphProgress.native"
 import { sheetDockOcclusion } from "./sheetDockOcclusion.native"
 import { useDockMinimizeStore } from "./dockMinimizeStore"
-import {
-  TABS,
-  TAB_COUNT,
-  useTabBarModel,
-  useDockedSearchModel,
-  type TabDef,
-} from "./TabBar.shared"
+import { TABS, TAB_COUNT, useTabBarModel, useDockedSearchModel, type TabDef } from "./TabBar.shared"
 
 const EASING = Easing.bezier(...motion.easing)
 
@@ -145,7 +133,10 @@ function MorphTabCell({
     }
     const m = tabIconMorph(p.value)
     const eff = m.opacity * (1 - mz.value)
-    return { opacity: eff, transform: [{ translateX: 0 }, { translateY: 0 }, { scale: 0.82 + 0.18 * eff }] }
+    return {
+      opacity: eff,
+      transform: [{ translateX: 0 }, { translateY: 0 }, { scale: 0.82 + 0.18 * eff }],
+    }
   })
   return (
     <Pressable
@@ -218,10 +209,14 @@ export function TabBar() {
     p.value =
       target === 1
         ? withTiming(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
-        : withTiming(target, { ...dockMorphOutConfig(), reduceMotion: ReduceMotion.System }, (finished) => {
-            "worklet"
-            if (finished) scheduleOnRN(setSearchExitSettled, true)
-          })
+        : withTiming(
+            target,
+            { ...dockMorphOutConfig(), reduceMotion: ReduceMotion.System },
+            (finished) => {
+              "worklet"
+              if (finished) scheduleOnRN(setSearchExitSettled, true)
+            },
+          )
   }, [view, reduceMotion, regionW, p, setSearchExitSettled])
 
   const mz = useSharedValue(minimized ? 1 : 0)
@@ -324,8 +319,20 @@ export function TabBar() {
   )
 
   const riseRef = useRef<Animated.View>(null)
-  const { riseStyle, onLayout: onRiseLayout, onFieldFocus, onFieldBlur, focusProgress, pinned } =
-    useDockedSearchRise(riseRef, dockedSearch.value, dockKeyboardRestOffset(insets.bottom, DOCK_PLATFORM), searchActive, p)
+  const {
+    riseStyle,
+    onLayout: onRiseLayout,
+    onFieldFocus,
+    onFieldBlur,
+    focusProgress,
+    pinned,
+  } = useDockedSearchRise(
+    riseRef,
+    dockedSearch.value,
+    dockKeyboardRestOffset(insets.bottom, DOCK_PLATFORM),
+    searchActive,
+    p,
+  )
 
   const shapes = useDerivedValue<DockShapes>(
     () => dockShapes(p.value, regionW, focusProgress.value, mz.value),
@@ -378,7 +385,10 @@ export function TabBar() {
   })
   const placeholderStyle = useAnimatedStyle(() => {
     const ph = placeholderMorph(p.value)
-    return { opacity: dockedSearch.value.length > 0 ? 0 : ph.opacity, transform: [{ translateX: ph.translateX }] }
+    return {
+      opacity: dockedSearch.value.length > 0 ? 0 : ph.opacity,
+      transform: [{ translateX: ph.translateX }],
+    }
   })
   const inputStyle = useAnimatedStyle(() => ({ opacity: windowProgress(p.value, 0.65, 1) }))
   const clearStyle = useAnimatedStyle(() => {
@@ -396,7 +406,11 @@ export function TabBar() {
 
   return (
     <Animated.View
-      style={[styles.container, { paddingBottom: dockBottomGap(insets.bottom, DOCK_PLATFORM) }, occlusionStyle]}
+      style={[
+        styles.container,
+        { paddingBottom: dockBottomGap(insets.bottom, DOCK_PLATFORM) },
+        occlusionStyle,
+      ]}
       onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}
     >
       <Animated.View ref={riseRef} onLayout={onRiseLayout} style={riseStyle}>
@@ -420,7 +434,10 @@ export function TabBar() {
                 />
 
                 <GestureDetector gesture={pan}>
-                  <Animated.View style={[styles.tabStrip, { width: wide }]} accessibilityRole="tablist">
+                  <Animated.View
+                    style={[styles.tabStrip, { width: wide }]}
+                    accessibilityRole="tablist"
+                  >
                     {TABS.map((tab, i) => (
                       <MorphTab
                         key={tab.id}
@@ -474,7 +491,12 @@ export function TabBar() {
                   style={[styles.magnifier, { left: restMagX - ICON_SIZE / 2 }, magStyle]}
                   pointerEvents="none"
                 >
-                  <Icon icon={iconMap.Search} size={ICON_SIZE} strokeWidth={ICON_STROKE} color={th.colors.textMuted} />
+                  <Icon
+                    icon={iconMap.Search}
+                    size={ICON_SIZE}
+                    strokeWidth={ICON_STROKE}
+                    color={th.colors.textMuted}
+                  />
                 </Animated.View>
 
                 <Animated.View
@@ -509,7 +531,11 @@ export function TabBar() {
                   </Animated.Text>
                 </Animated.View>
 
-                <Animated.View style={[styles.clear, clearStyle]} pointerEvents={pinned ? "auto" : "none"} {...a11yReachableWhen(pinned)}>
+                <Animated.View
+                  style={[styles.clear, clearStyle]}
+                  pointerEvents={pinned ? "auto" : "none"}
+                  {...a11yReachableWhen(pinned)}
+                >
                   <Pressable
                     onPress={onClearSearch}
                     accessibilityRole="button"
@@ -517,7 +543,12 @@ export function TabBar() {
                     hitSlop={8}
                     style={styles.clearHit}
                   >
-                    <Icon icon={iconMap.Close} size={20} strokeWidth={ICON_STROKE} color={th.colors.textMuted} />
+                    <Icon
+                      icon={iconMap.Close}
+                      size={20}
+                      strokeWidth={ICON_STROKE}
+                      color={th.colors.textMuted}
+                    />
                   </Pressable>
                 </Animated.View>
               </>

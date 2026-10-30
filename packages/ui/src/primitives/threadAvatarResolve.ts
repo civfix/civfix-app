@@ -19,7 +19,7 @@ export interface ResolvedThreadAvatar {
 export function resolveThreadAvatar(thread: ThreadAvatarInput): ResolvedThreadAvatar {
   const isGroup = thread.kind === "group" || thread.kind === "cleanup" || thread.kind === "report"
   // A group never shows a peer photo; ignore any peer attached to a non-DM thread.
-  const peer = isGroup ? null : thread.peer ?? null
+  const peer = isGroup ? null : (thread.peer ?? null)
   const seed = peer?.id ?? threadRoomId(thread)
   const gradient = peer?.avatar ?? null
   const color = gradient?.[0] ?? avatarColor(seed)

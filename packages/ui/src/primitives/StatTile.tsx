@@ -4,7 +4,12 @@ import { useT } from "../i18n"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { TrendSparkline } from "./TrendSparkline"
-import { statTileSpokenLabel, statValueSize, STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
+import {
+  statTileSpokenLabel,
+  statValueSize,
+  STAT_VALUE_UNKNOWN,
+  type StatTileColumns,
+} from "./statTileModel"
 import type { SparkPoint } from "./trendSparklineModel"
 
 export const STAT_TILE_MIN_HEIGHT = 88
@@ -53,7 +58,9 @@ export function StatTile({
       style={styles.tile}
       accessible
       accessibilityRole="text"
-      accessibilityLabel={accessibilityLabel ?? statTileSpokenLabel(label, value, t("stat_unknown"))}
+      accessibilityLabel={
+        accessibilityLabel ?? statTileSpokenLabel(label, value, t("stat_unknown"))
+      }
     >
       <Text variant="caption" numberOfLines={2} style={styles.label}>
         {label}

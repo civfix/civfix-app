@@ -13,27 +13,42 @@ const t = (key: string, options?: Record<string, unknown>): string =>
 
 describe("embeddedPostA11yLabel", () => {
   it("names the author and the quoted text", () => {
-    expect(embeddedPostA11yLabel(t, { prominent: false, name: "Ana", excerpt: "Pothole on 5th", deleted: false })).toBe(
-      'post_card.open_quote_a11y{"name":"Ana","excerpt":"Pothole on 5th"}',
-    )
+    expect(
+      embeddedPostA11yLabel(t, {
+        prominent: false,
+        name: "Ana",
+        excerpt: "Pothole on 5th",
+        deleted: false,
+      }),
+    ).toBe('post_card.open_quote_a11y{"name":"Ana","excerpt":"Pothole on 5th"}')
   })
 
   it("says reposted for the prominent repost card", () => {
-    expect(embeddedPostA11yLabel(t, { prominent: true, name: "Ana", excerpt: "Pothole", deleted: false })).toBe(
-      'post_card.open_repost_a11y{"name":"Ana","excerpt":"Pothole"}',
-    )
+    expect(
+      embeddedPostA11yLabel(t, {
+        prominent: true,
+        name: "Ana",
+        excerpt: "Pothole",
+        deleted: false,
+      }),
+    ).toBe('post_card.open_repost_a11y{"name":"Ana","excerpt":"Pothole"}')
   })
 
   it("reads the unavailable notice for a deleted post instead of a stale excerpt", () => {
-    expect(embeddedPostA11yLabel(t, { prominent: false, name: "Deleted account", excerpt: "old", deleted: true })).toBe(
-      'post_card.open_quote_a11y{"name":"Deleted account","excerpt":"post_card.unavailable"}',
-    )
+    expect(
+      embeddedPostA11yLabel(t, {
+        prominent: false,
+        name: "Deleted account",
+        excerpt: "old",
+        deleted: true,
+      }),
+    ).toBe('post_card.open_quote_a11y{"name":"Deleted account","excerpt":"post_card.unavailable"}')
   })
 
   it("falls back to the author alone when the post has no text", () => {
-    expect(embeddedPostA11yLabel(t, { prominent: false, name: "Ana", excerpt: "   ", deleted: false })).toBe(
-      'post_card.open_thread_a11y{"name":"Ana"}',
-    )
+    expect(
+      embeddedPostA11yLabel(t, { prominent: false, name: "Ana", excerpt: "   ", deleted: false }),
+    ).toBe('post_card.open_thread_a11y{"name":"Ana"}')
   })
 })
 

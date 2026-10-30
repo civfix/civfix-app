@@ -209,7 +209,9 @@ function ReportPickerSurface({
 
   const mapHeight = Math.max(COMPACT_MAP_MIN, Math.round(windowHeight * COMPACT_MAP_RATIO))
 
-  const searchField = <PickerSearchField query={query} onChangeQuery={setQuery} expanded={expanded} />
+  const searchField = (
+    <PickerSearchField query={query} onChangeQuery={setQuery} expanded={expanded} />
+  )
 
   const map = (
     <ReportPickMap

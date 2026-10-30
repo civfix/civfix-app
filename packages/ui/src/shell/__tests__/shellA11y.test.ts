@@ -67,7 +67,9 @@ describe("native dock tab bar semantics", () => {
     expect(native).toMatch(
       /pointerEvents=\{searchActive \? "none" : "auto"\}\s*\{\.\.\.a11yReachableWhen\(!searchActive\)\}/,
     )
-    expect(native).toMatch(/pointerEvents=\{pinned \? "auto" : "none"\}\s*\{\.\.\.a11yReachableWhen\(pinned\)\}/)
+    expect(native).toMatch(
+      /pointerEvents=\{pinned \? "auto" : "none"\}\s*\{\.\.\.a11yReachableWhen\(pinned\)\}/,
+    )
     expect(native).toMatch(/accessibilityElementsHidden: !reachable/)
     expect(native).toMatch(/reachable \? \("auto" as const\) : \("no-hide-descendants" as const\)/)
   })
@@ -103,7 +105,9 @@ describe("compact sheet grab handle", () => {
     const native = read("CompactSheetChrome.native.tsx")
     const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle).toContain('accessibilityRole="adjustable"')
-    expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
+    expect(handle).toContain(
+      "accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}",
+    )
     expect(handle).toContain("accessibilityActions={ADJUST_ACTIONS}")
     expect(handle).toContain("onAccessibilityAction={(e) => onAdjust(e.nativeEvent.actionName)}")
   })
@@ -150,13 +154,17 @@ describe("compact sheet grab handle at a bound and its spoken value", () => {
     expect(handler.length).toBeGreaterThan(0)
     expect(handler).toContain("sheetSnapKeyOutcome(cur, event.key)")
     expect(handler).toMatch(/if \(outcome\.next === null\) return\s+setSnap\(outcome\.next\)/)
-    expect(elementAround(web, "style={styles.handleArea}")).toContain('"aria-valuetext": tNav(sheetSnapValueKey(snap))')
+    expect(elementAround(web, "style={styles.handleArea}")).toContain(
+      '"aria-valuetext": tNav(sheetSnapValueKey(snap))',
+    )
   })
 
   it("the native handle speaks the snap name as its value text", () => {
     const native = read("CompactSheetChrome.native.tsx")
     const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle.length).toBeGreaterThan(0)
-    expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
+    expect(handle).toContain(
+      "accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}",
+    )
   })
 })

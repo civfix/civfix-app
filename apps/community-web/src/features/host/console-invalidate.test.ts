@@ -173,15 +173,17 @@ describe("upsertMyOrganization", () => {
     upsertMyOrganization(qc, org({ myRole: "owner" }))
     expect(qc.getQueryData(["orgs", "mine"])).toEqual([org({ myRole: "owner" })])
     upsertMyOrganization(qc, org({ id: "org_2", slug: "sea", name: "Sea" }))
-    expect((qc.getQueryData(["orgs", "mine"]) as unknown[]).map((row) => (row as { id: string }).id)).toEqual([
-      "org_1",
-      "org_2",
-    ])
+    expect(
+      (qc.getQueryData(["orgs", "mine"]) as unknown[]).map((row) => (row as { id: string }).id),
+    ).toEqual(["org_1", "org_2"])
   })
 
   it("merges an existing row so the fresh DTO wins without dropping fields it lacks", () => {
     const qc = new QueryClient()
-    qc.setQueryData(["orgs", "mine"], [org({ myRole: "owner", memberCount: 3 }), org({ id: "org_2" })])
+    qc.setQueryData(
+      ["orgs", "mine"],
+      [org({ myRole: "owner", memberCount: 3 }), org({ id: "org_2" })],
+    )
     upsertMyOrganization(qc, org({ name: "River Keepers" }))
     expect(qc.getQueryData(["orgs", "mine"])).toEqual([
       org({ name: "River Keepers", myRole: "owner", memberCount: 3 }),

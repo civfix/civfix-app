@@ -31,8 +31,7 @@ const ROWS: Row[] = [
   },
   {
     name: "CARTO & OpenStreetMap contributors",
-    purpose:
-      "Map basemap tiles loaded directly by your device or browser when you view the map.",
+    purpose: "Map basemap tiles loaded directly by your device or browser when you view the map.",
     data: "IP address and tile requests made by your client when the basemap loads.",
     location: "United States / EU",
   },
@@ -75,10 +74,10 @@ export default function SubprocessorsPage() {
     >
       <section>
         <p>
-          civfix uses a small set of third-party providers to operate the service. Each one Processes
-          personal data on our behalf, under contract (or, for our open-source geocoding fallback, under
-          its public terms of use), only to provide its part of civfix. We keep the list short on
-          purpose. This page is the list referenced by our{" "}
+          civfix uses a small set of third-party providers to operate the service. Each one
+          Processes personal data on our behalf, under contract (or, for our open-source geocoding
+          fallback, under its public terms of use), only to provide its part of civfix. We keep the
+          list short on purpose. This page is the list referenced by our{" "}
           <a href="/legal/privacy">Privacy Policy</a>.
         </p>
         <div className="legal-table-wrap">
@@ -94,9 +93,7 @@ export default function SubprocessorsPage() {
             <tbody>
               {ROWS.map((r) => (
                 <tr key={r.name}>
-                  <th scope="row">
-                    {r.name}
-                  </th>
+                  <th scope="row">{r.name}</th>
                   <td>{r.purpose}</td>
                   <td>{r.data}</td>
                   <td>{r.location}</td>
@@ -110,33 +107,32 @@ export default function SubprocessorsPage() {
       <section>
         <h2>Sign-in and routing</h2>
         <p>
-          When you sign in through an identity provider (such as Google or Apple), that provider acts as
-          an independent controller of your relationship with it; we receive only a basic identifier.
-          When we forward a report to the government body responsible for a location, that agency
-          receives the report as an independent recipient, not as our sub-processor.
+          When you sign in through an identity provider (such as Google or Apple), that provider
+          acts as an independent controller of your relationship with it; we receive only a basic
+          identifier. When we forward a report to the government body responsible for a location,
+          that agency receives the report as an independent recipient, not as our sub-processor.
         </p>
       </section>
 
       <section>
         <h2>International transfers</h2>
         <p>
-          civfix is operated from the United States, and several of the providers above are located in the
-          United States and other countries. Where we transfer the personal information of users in the
-          European Economic Area, the United Kingdom, or Switzerland to a country without an adequacy
-          decision, we rely on appropriate safeguards - principally the European Commission&rsquo;s
-          Standard Contractual Clauses and the UK International Data Transfer Addendum, together with the
-          EU-US / UK Extension / Swiss-US Data Privacy Framework where the provider is certified. See the{" "}
-          <a href="/legal/privacy">Privacy Policy</a> for details and how to request a copy of the
-          safeguards.
+          civfix is operated from the United States, and several of the providers above are located
+          in the United States and other countries. Where we transfer the personal information of
+          users in the European Economic Area, the United Kingdom, or Switzerland to a country
+          without an adequacy decision, we rely on appropriate safeguards - principally the European
+          Commission&rsquo;s Standard Contractual Clauses and the UK International Data Transfer
+          Addendum, together with the EU-US / UK Extension / Swiss-US Data Privacy Framework where
+          the provider is certified. See the <a href="/legal/privacy">Privacy Policy</a> for details
+          and how to request a copy of the safeguards.
         </p>
       </section>
 
       <section>
         <h2>Changes to this list</h2>
         <p>
-          We may add or replace sub-processors as civfix evolves. When we do, we will update this page
-          and the &ldquo;Last updated&rdquo; date. For questions, email{" "}
-          <LegalContactLink />.
+          We may add or replace sub-processors as civfix evolves. When we do, we will update this
+          page and the &ldquo;Last updated&rdquo; date. For questions, email <LegalContactLink />.
         </p>
       </section>
     </LegalPage>

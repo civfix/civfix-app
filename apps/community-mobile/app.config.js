@@ -41,7 +41,9 @@ function androidVersionCode() {
   if (raw === undefined || raw === "") return ANDROID_VERSION_CODE_FLOOR
   const code = Number(raw)
   if (!Number.isInteger(code) || code < ANDROID_VERSION_CODE_FLOOR) {
-    throw new Error(`CIVFIX_ANDROID_VERSION_CODE must be a whole number >= ${ANDROID_VERSION_CODE_FLOOR}, got '${raw}'`)
+    throw new Error(
+      `CIVFIX_ANDROID_VERSION_CODE must be a whole number >= ${ANDROID_VERSION_CODE_FLOOR}, got '${raw}'`,
+    )
   }
   return code
 }

@@ -1,9 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import {
-  APPEARANCE_PREFERENCES,
-  DEFAULT_APPEARANCE_PREFERENCE,
-} from "@civfix/ui/theme/schemes"
+import { APPEARANCE_PREFERENCES, DEFAULT_APPEARANCE_PREFERENCE } from "@civfix/ui/theme/schemes"
 
 import { APPEARANCE_SCRIPT, APPEARANCE_STORAGE_KEY } from "@/lib/appearance-script"
 
@@ -75,7 +72,7 @@ describe("the pre-paint appearance script", () => {
   })
 
   it("leaves the store with no default literal of its own to drift from", () => {
-    expect(store).toContain('DEFAULT_APPEARANCE_PREFERENCE,\n  isAppearancePreference,')
+    expect(store).toContain("DEFAULT_APPEARANCE_PREFERENCE,\n  isAppearancePreference,")
     expect(store).toContain('from "@civfix/ui/theme"')
     expect(store).not.toMatch(/AppearancePreference = "(system|light|dark)"/)
   })

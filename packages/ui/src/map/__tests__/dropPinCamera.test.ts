@@ -138,7 +138,12 @@ describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
 
 describe("dropPinCamera: expanded takes the frame plan's occlusionLeft", () => {
   const frame = (over: Partial<Parameters<typeof expandedFramePlan>[0]> = {}) =>
-    expandedFramePlan({ view: "home", stackLength: 0, sidebarWidth: SIDEBAR_DEFAULT_WIDTH, ...over })
+    expandedFramePlan({
+      view: "home",
+      stackLength: 0,
+      sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
+      ...over,
+    })
 
   it("offsets by half the SHELL INSET + CARD, not half the card", () => {
     // 14 + 440 = 454 -> a 227px offset; at z17 that is 227 / (512 * 2**17) * 360 = 1.21772e-3 deg.
@@ -349,9 +354,9 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
       const midY = pinScreenY(windowHeight, SF.lat, at(1))
       expect(midY - DROP_PIN_ART).toBeGreaterThan(safeTop)
       // The geometry `dropPinFlow` acts on by settling compact at MID.
-      expect(windowHeight - sheetSnapPoints(windowHeight, sheetTopReserve)[2] - safeTop).toBeLessThan(
-        DROP_PIN_ART,
-      )
+      expect(
+        windowHeight - sheetSnapPoints(windowHeight, sheetTopReserve)[2] - safeTop,
+      ).toBeLessThan(DROP_PIN_ART)
     })
   }
 
@@ -538,8 +543,12 @@ describe("shouldRestoreDropPinCamera: a dismissal restores, a COMMITMENT does no
     // And the predicate accepts a viewport parked on EITHER endpoint - both are places the APP put the
     // camera, so neither is a user pan. (Task 2.2 turns the second half into a real measurement; here it
     // only has to not be rejected.)
-    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FLOWN) }))).toBe(true)
-    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FROM) }))).toBe(true)
+    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FLOWN) }))).toBe(
+      true,
+    )
+    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FROM) }))).toBe(
+      true,
+    )
   })
 
   it("does nothing with no snapshot - a long press that armed none (no map had reported yet)", () => {
@@ -620,13 +629,21 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
   })
 
   it("tolerates a sub-threshold nudge in BOTH axes (settle noise, not intent)", () => {
-    for (const viewport of [nudgeEastPx(FLOWN, 11), nudgeSouthPx(FLOWN, 11), nudgeEastPx(FLOWN, -11)]) {
+    for (const viewport of [
+      nudgeEastPx(FLOWN, 11),
+      nudgeSouthPx(FLOWN, 11),
+      nudgeEastPx(FLOWN, -11),
+    ]) {
       expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport }))).toBe(true)
     }
   })
 
   it("cancels on a deliberate pan in BOTH axes", () => {
-    for (const viewport of [nudgeEastPx(FLOWN, 13), nudgeSouthPx(FLOWN, 13), nudgeEastPx(FLOWN, -40)]) {
+    for (const viewport of [
+      nudgeEastPx(FLOWN, 13),
+      nudgeSouthPx(FLOWN, 13),
+      nudgeEastPx(FLOWN, -40),
+    ]) {
       expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport }))).toBe(false)
     }
   })
@@ -672,7 +689,9 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
   it("restores when the viewport is still on the PRE-PRESS camera (dismissed MID-FLY)", () => {
     // Map.native publishes to useMapViewport only on region settle, so an immediate map tap still finds
     // the pre-press camera in the store.
-    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FROM) }))).toBe(true)
+    expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FROM) }))).toBe(
+      true,
+    )
   })
 
   it("does NOT let a LOW-ZOOM pre-press camera launder a pan at the drop-pin zoom", () => {
@@ -695,7 +714,10 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
     }
     expect(wrapped.center.lng).toBeLessThan(-179.9)
     expect(
-      shouldRestoreDropPinCamera(snapshot({ flownTo: atDateline }), dismissal({ viewport: wrapped })),
+      shouldRestoreDropPinCamera(
+        snapshot({ flownTo: atDateline }),
+        dismissal({ viewport: wrapped }),
+      ),
     ).toBe(true)
   })
 

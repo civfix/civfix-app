@@ -43,9 +43,9 @@ describe("timelineEntryRender", () => {
     expect(timelineEntryRender({ status: "submitted" }, 0, null)).toBe("skip")
     expect(timelineEntryRender({ status: "held" }, 0, null)).toBe("skip")
     expect(timelineEntryRender({ status: "published" }, 0, null)).toBe("skip")
-    expect(timelineEntryRender({ status: "held", note: "Awaiting automated review" }, 1, "submitted")).toBe(
-      "status",
-    )
+    expect(
+      timelineEntryRender({ status: "held", note: "Awaiting automated review" }, 1, "submitted"),
+    ).toBe("status")
   })
 
   it("still renders a city reply on a published report", () => {

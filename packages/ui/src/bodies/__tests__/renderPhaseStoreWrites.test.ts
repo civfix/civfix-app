@@ -89,7 +89,9 @@ describe("no body writes a store during render", () => {
     it(`${name} keeps its useState initializers read-only`, () => {
       for (const block of blocks) {
         expect(block, `store operation called during render in ${name}`).not.toMatch(STORE_OP)
-        expect(block, `store handed to a writer during render in ${name}`).not.toMatch(STORE_HANDOFF)
+        expect(block, `store handed to a writer during render in ${name}`).not.toMatch(
+          STORE_HANDOFF,
+        )
       }
     })
   }

@@ -100,7 +100,12 @@ function TypeRow({
       opacity: interpolate(s, [0, 0.1], [0, 1], Extrapolation.CLAMP),
       transform: [
         {
-          scale: interpolate(s, [0, 0.55, 1], [POP.from, POP.overshoot, POP.to], Extrapolation.CLAMP),
+          scale: interpolate(
+            s,
+            [0, 0.55, 1],
+            [POP.from, POP.overshoot, POP.to],
+            Extrapolation.CLAMP,
+          ),
         },
       ],
     }
@@ -144,7 +149,10 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
     const leave = STANDARD_EASE(segment(progress.value, W_COMPRESS[0], W_COMPRESS[1]))
     return {
       opacity: interpolate(enter, [0, 0.3, 1], [0, 1, 1], Extrapolation.CLAMP) * (1 - leave),
-      transform: [{ translateY: (enter - 1) * CARD_RISE + leave * 12 }, { scale: 1 - leave * 0.18 }],
+      transform: [
+        { translateY: (enter - 1) * CARD_RISE + leave * 12 },
+        { scale: 1 - leave * 0.18 },
+      ],
     }
   })
 
@@ -284,7 +292,7 @@ const useStyles = makeThemedStyles((t) => {
       paddingHorizontal: t.space["4"],
     },
     successTitle: {
-      textAlign: "center"
+      textAlign: "center",
     },
     card: {
       position: "absolute",

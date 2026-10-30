@@ -8,7 +8,12 @@ import { useNavStore } from "../../../nav"
 import { useDuplicateCleanup } from "../../../data/hooks/cleanups"
 import { InlineDateTimePicker } from "../../InlineDateTimePicker"
 import { TimezoneField } from "../../TimezoneField"
-import { formInstantMs, timeCarrier, wallClockToFormDate, wallClockToFormTime } from "../../calendarModel"
+import {
+  formInstantMs,
+  timeCarrier,
+  wallClockToFormDate,
+  wallClockToFormTime,
+} from "../../calendarModel"
 import { appErrorCode } from "@civfix/contract"
 import { duplicateErrorKey, duplicateReady, nextDuplicateStart } from "./dashboardModel"
 
@@ -114,7 +119,9 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
         timeZone={timeZone}
         onDateChange={(next) => {
           setDate(next)
-          setTime((current) => (current ? timeCarrier(next, current.getHours(), current.getMinutes()) : current))
+          setTime((current) =>
+            current ? timeCarrier(next, current.getHours(), current.getMinutes()) : current,
+          )
         }}
         onTimeChange={setTime}
       />

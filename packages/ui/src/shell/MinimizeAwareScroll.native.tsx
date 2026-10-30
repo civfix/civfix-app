@@ -1,6 +1,11 @@
 import { forwardRef, useCallback, useEffect, useRef } from "react"
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native"
-import { decorateScrollHost, type DecoratedScrollProps, type ScrollHostComponent, type ScrollHostValue } from "./ScrollHost"
+import {
+  decorateScrollHost,
+  type DecoratedScrollProps,
+  type ScrollHostComponent,
+  type ScrollHostValue,
+} from "./ScrollHost"
 import { useDockMinimizeStore } from "./dockMinimizeStore"
 import { useNavStore } from "../nav"
 
@@ -15,53 +20,53 @@ const minimizeState = useDockMinimizeStore.getState
 const navState = useNavStore.getState
 
 function makeMinimizeAwareScroll(Base: ScrollHostComponent): ScrollHostComponent {
-  const MinimizeAwareScroll = forwardRef<unknown, DecoratedScrollProps>(function MinimizeAwareScroll(
-    { onScroll, scrollEventThrottle, horizontal, ...rest },
-    ref,
-  ) {
-    const tokenRef = useRef<object>({})
-    const ownsRef = useRef(false)
+  const MinimizeAwareScroll = forwardRef<unknown, DecoratedScrollProps>(
+    function MinimizeAwareScroll({ onScroll, scrollEventThrottle, horizontal, ...rest }, ref) {
+      const tokenRef = useRef<object>({})
+      const ownsRef = useRef(false)
 
-    useEffect(() => {
-      if (horizontal) return
-      const token = tokenRef.current
-      const owns = claimDockScroll(token)
-      ownsRef.current = owns
-      if (owns) minimizeState().reset()
-      return () => {
-        ownsRef.current = false
-        if (dockScrollOwner !== token) return
-        dockScrollOwner = null
-        minimizeState().reset()
-      }
-    }, [horizontal])
-
-    const handleScroll = useCallback(
-      (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (!horizontal) {
-          const owns = ownsRef.current || (dockScrollOwner === null && claimDockScroll(tokenRef.current))
-          if (owns) {
-            ownsRef.current = true
-            const y = e.nativeEvent.contentOffset.y
-            const suppressed = navState().view === "search"
-            minimizeState().handleScroll(y, suppressed)
-          }
+      useEffect(() => {
+        if (horizontal) return
+        const token = tokenRef.current
+        const owns = claimDockScroll(token)
+        ownsRef.current = owns
+        if (owns) minimizeState().reset()
+        return () => {
+          ownsRef.current = false
+          if (dockScrollOwner !== token) return
+          dockScrollOwner = null
+          minimizeState().reset()
         }
-        onScroll?.(e)
-      },
-      [onScroll, horizontal],
-    )
+      }, [horizontal])
 
-    return (
-      <Base
-        ref={ref}
-        horizontal={horizontal}
-        onScroll={handleScroll}
-        scrollEventThrottle={scrollEventThrottle ?? 16}
-        {...rest}
-      />
-    )
-  })
+      const handleScroll = useCallback(
+        (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          if (!horizontal) {
+            const owns =
+              ownsRef.current || (dockScrollOwner === null && claimDockScroll(tokenRef.current))
+            if (owns) {
+              ownsRef.current = true
+              const y = e.nativeEvent.contentOffset.y
+              const suppressed = navState().view === "search"
+              minimizeState().handleScroll(y, suppressed)
+            }
+          }
+          onScroll?.(e)
+        },
+        [onScroll, horizontal],
+      )
+
+      return (
+        <Base
+          ref={ref}
+          horizontal={horizontal}
+          onScroll={handleScroll}
+          scrollEventThrottle={scrollEventThrottle ?? 16}
+          {...rest}
+        />
+      )
+    },
+  )
   MinimizeAwareScroll.displayName = "MinimizeAwareScroll"
   return MinimizeAwareScroll
 }

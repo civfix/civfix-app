@@ -81,9 +81,7 @@ describe("RichTextEditor", () => {
 
   it("inserts an https link and keeps the label selected", async () => {
     const user = userEvent.setup()
-    renderConsole(
-      <Harness initial="civfix" promptForLink={() => "https://civfix.org"} />,
-    )
+    renderConsole(<Harness initial="civfix" promptForLink={() => "https://civfix.org"} />)
     const area = editor()
     area.focus()
     area.setSelectionRange(0, 6)
@@ -93,10 +91,9 @@ describe("RichTextEditor", () => {
 
   it("REFUSES a javascript: url and says so instead of writing it into the source", async () => {
     const user = userEvent.setup()
-    renderConsole(
-      <Harness initial="civfix" promptForLink={() => "javascript:alert(1)"} />,
-      { withToasts: false },
-    )
+    renderConsole(<Harness initial="civfix" promptForLink={() => "javascript:alert(1)"} />, {
+      withToasts: false,
+    })
     const area = editor()
     area.focus()
     area.setSelectionRange(0, 6)
@@ -159,14 +156,18 @@ describe("RichTextEditor", () => {
   })
 
   it("hints the Command shortcut in the button tooltip on Apple platforms", () => {
-    onUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15")
+    onUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    )
     renderConsole(<Harness />, { withToasts: false })
     const bold = screen.getByRole("button", { name: "editor.bold" })
     expect(bold.getAttribute("title")).toBe("editor.bold (⌘B)")
   })
 
   it("hints the Ctrl shortcut in the button tooltip on other platforms", () => {
-    onUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+    onUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    )
     renderConsole(<Harness />, { withToasts: false })
     const bold = screen.getByRole("button", { name: "editor.bold" })
     expect(bold.getAttribute("title")).toBe("editor.bold (editor.shortcut_ctrl(key=B))")

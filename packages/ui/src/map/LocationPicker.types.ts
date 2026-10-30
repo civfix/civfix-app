@@ -39,7 +39,10 @@ export interface LocationPickerProps {
 
 export type PickerSurface = "map" | "pending" | "search"
 
-export function pickerSurface(cameraSeed: LatLng | null, centerSettled: boolean | undefined): PickerSurface {
+export function pickerSurface(
+  cameraSeed: LatLng | null,
+  centerSettled: boolean | undefined,
+): PickerSurface {
   if (cameraSeed) return "map"
   return centerSettled ? "search" : "pending"
 }
