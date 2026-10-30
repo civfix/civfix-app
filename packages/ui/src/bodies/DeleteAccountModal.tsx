@@ -9,7 +9,7 @@ import { useRequestEmailCode, useDeleteAccount } from "../data"
 import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 import { useT } from "../i18n"
 
-type TFn = (key: string, opts?: Record<string, unknown>) => string
+type TFn = { (key: string): string; (key: string, opts: Record<string, unknown>): string }
 
 export interface DeleteAccountModalProps {
   visible: boolean

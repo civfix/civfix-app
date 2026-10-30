@@ -33,7 +33,7 @@ function Chip({
   logoUrl?: string | null
   active: boolean
   a11yLabel: string
-  disabled?: boolean
+  disabled?: boolean | undefined
   onPress: () => void
 }) {
   const styles = useStyles()

@@ -53,7 +53,7 @@ export function DateFieldRow(props: DateFieldRowProps) {
       value: pickerSeed(value, minDate),
       mode: "date",
       display: "default",
-      minimumDate: minDate ?? undefined,
+      ...(minDate ? { minimumDate: minDate } : {}),
       onChange: commit,
     })
   }, [commit, minDate, value])
@@ -72,7 +72,7 @@ export function DateFieldRow(props: DateFieldRowProps) {
             mode="date"
             display="compact"
             value={current}
-            minimumDate={minDate ?? undefined}
+            {...(minDate ? { minimumDate: minDate } : {})}
             accentColor={th.colors.brand.bloom}
             themeVariant={th.scheme}
             onChange={commit}
@@ -122,8 +122,8 @@ export function TimeFieldRow(props: TimeFieldRowProps) {
             mode="time"
             display="compact"
             value={current}
-            minimumDate={minTime ?? undefined}
-            maximumDate={maxTime ?? undefined}
+            {...(minTime ? { minimumDate: minTime } : {})}
+            {...(maxTime ? { maximumDate: maxTime } : {})}
             minuteInterval={minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL}
             accentColor={th.colors.brand.bloom}
             themeVariant={th.scheme}
