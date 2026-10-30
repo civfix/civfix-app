@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import { CapabilitiesProvider, makeFakeCapabilities, type PlatformCapabilities } from "../../../capabilities"
+import {
+  CapabilitiesProvider,
+  makeFakeCapabilities,
+  type PlatformCapabilities,
+} from "../../../capabilities"
 import { I18nProvider } from "../../../i18n"
 import { ToastContext } from "../../../primitives/toastContext"
 import { TimelineRow } from "../TimelineRow"
@@ -26,7 +30,10 @@ const FILED_WITH_CASE: TimelineNode = {
   caseId: "1-2345678901",
 }
 
-function renderRow(node: TimelineNode, capabilities: PlatformCapabilities = makeFakeCapabilities()) {
+function renderRow(
+  node: TimelineNode,
+  capabilities: PlatformCapabilities = makeFakeCapabilities(),
+) {
   const toast = { show: vi.fn() }
   render(
     <CapabilitiesProvider value={capabilities}>
@@ -79,7 +86,7 @@ describe("TimelineRow filed node on web", () => {
   })
 
   it("T18: shows an error toast when the host has no openExternal", async () => {
-    const capabilities = { ...makeFakeCapabilities(), openExternal: undefined }
+    const { openExternal: _omitted, ...capabilities } = makeFakeCapabilities()
     const { toast } = renderRow({ ...FILED_WITH_CASE, caseUrl: CASE_URL }, capabilities)
     await press(screen.getByRole("link", { name: CHECK_STATUS_A11Y }))
     expect(toast.show).toHaveBeenCalledWith(OPEN_ERROR, { variant: "error" })

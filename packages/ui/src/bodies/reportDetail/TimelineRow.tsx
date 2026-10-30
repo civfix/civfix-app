@@ -58,7 +58,9 @@ export function TimelineRow({ node, last }: { node: TimelineNode; last: boolean 
         </View>
         {node.detail ? <Text style={styles.tlDetail}>{node.detail}</Text> : null}
         {node.caseId ? (
-          <Text style={styles.tlDetail}>{t("timeline.request_number", { caseId: node.caseId })}</Text>
+          <Text style={styles.tlDetail}>
+            {t("timeline.request_number", { caseId: node.caseId })}
+          </Text>
         ) : null}
         {caseUrl ? (
           <Pressable
