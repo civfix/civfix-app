@@ -14,7 +14,7 @@ import { TilesSkeleton } from "../HostSkeletons"
 export function CheckinCounters({
   counters,
 }: {
-  counters: { data?: EventCheckinCountersDTO; isLoading: boolean; isError: boolean }
+  counters: { data?: EventCheckinCountersDTO | undefined; isLoading: boolean; isError: boolean }
 }) {
   const { t } = useT("host-common")
   const { locale } = useLocale()

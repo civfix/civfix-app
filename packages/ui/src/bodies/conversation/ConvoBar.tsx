@@ -24,11 +24,11 @@ export function ConvoBar({
   onlineCount: number
   mode: LayoutMode
   onBack: () => void
-  onMenu?: () => void
+  onMenu?: (() => void) | undefined
   menuOpen?: boolean
   menuAnchorRef?: React.RefObject<RNView | null>
-  onMembers?: () => void
-  onTitlePress?: () => void
+  onMembers?: (() => void) | undefined
+  onTitlePress?: (() => void) | undefined
 }) {
   const styles = useConvoHeaderStyles()
   const th = useTheme()

@@ -19,7 +19,7 @@ export function SectionEyebrow({ children, inline = false }: { children: string;
   )
 }
 
-export function SubHead({ label, count }: { label: string; count?: number }) {
+export function SubHead({ label, count }: { label: string; count?: number | undefined }) {
   const sectionStyles = useSectionStyles()
   return (
     <View style={sectionStyles.subhead}>

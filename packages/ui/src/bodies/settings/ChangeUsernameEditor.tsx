@@ -14,7 +14,7 @@ import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const HANDLE_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.RATE_LIMITED]: "handle.error.rate_limited",

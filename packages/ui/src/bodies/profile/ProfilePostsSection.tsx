@@ -14,12 +14,12 @@ export interface ProfilePosts {
   isError: boolean
   hasMore: boolean
   isLoadingMore: boolean
-  onLoadMore?: () => void
+  onLoadMore?: (() => void) | undefined
 }
 
 export interface ProfilePostsSectionProps {
   posts: ProfilePosts
-  onOpenSaved?: () => void
+  onOpenSaved?: (() => void) | undefined
 }
 
 export function ProfilePostsSection({ posts, onOpenSaved }: ProfilePostsSectionProps) {

@@ -51,7 +51,7 @@ export interface ThreadReplyRowProps {
   rail: ThreadRailSegment
   hairline?: boolean
   isOptimistic?: boolean
-  onOpenEntry?: (entry: DetailEntry) => void
+  onOpenEntry?: ((entry: DetailEntry) => void) | undefined
   onDeleted?: (postId: string) => void
 }
 
