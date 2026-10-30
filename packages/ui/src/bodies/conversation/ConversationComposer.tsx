@@ -35,7 +35,7 @@ export function ConversationComposer({
   onCreatePoll: (input: PollCreateInput) => Promise<boolean>
   pollCreatePending: boolean
   pollCreateError: string | null
-  notice?: string
+  notice?: string | undefined
   style?: StyleProp<ViewStyle>
 }) {
   const styles = useComposerStyles()

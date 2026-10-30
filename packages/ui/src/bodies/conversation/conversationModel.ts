@@ -28,8 +28,8 @@ export interface ConvoMeta {
   roomId: string
   muted?: boolean
   channel?: boolean
-  peerId?: string
-  peerName?: string
+  peerId?: string | undefined
+  peerName?: string | undefined
   peerAvatarUrl?: string | null
   peerAvatar?: PersonDTO["avatar"]
 }

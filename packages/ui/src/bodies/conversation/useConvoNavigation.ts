@@ -19,16 +19,16 @@ export function useConvoNavigation({
 }: {
   id: string
   roomKind: RoomKind
-  peer?: PersonDTO
-  peerId?: string
+  peer?: PersonDTO | undefined
+  peerId?: string | undefined
   fullScreen: boolean
   closeMenu: () => void
-  onOpenProfile?: (peerId: string) => void
-  onOpenMembers?: () => void
-  onOpenGroupInfo?: () => void
-  onViewReport?: () => void
-  onOpenPinnedList?: () => void
-  onJumpFromPinned?: (messageId: string) => void
+  onOpenProfile?: ((peerId: string) => void) | undefined
+  onOpenMembers?: (() => void) | undefined
+  onOpenGroupInfo?: (() => void) | undefined
+  onViewReport?: (() => void) | undefined
+  onOpenPinnedList?: (() => void) | undefined
+  onJumpFromPinned?: ((messageId: string) => void) | undefined
 }) {
   const openProfile = useCallback(() => {
     closeMenu()
@@ -80,7 +80,7 @@ export function useConvoNavigation({
   )
 
   const onOpenPerson = useCallback(
-    (target: { id: string; handle?: string | null; deleted?: boolean }) => {
+    (target: { id: string; handle?: string | null | undefined; deleted?: boolean | undefined }) => {
       if (target.deleted) return
       if (onOpenProfile) onOpenProfile(target.id)
       else useNavStore.getState().push({ kind: "person", id: target.handle ?? target.id })
