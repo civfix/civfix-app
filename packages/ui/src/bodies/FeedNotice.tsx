@@ -13,10 +13,10 @@ export interface FeedNoticeLink {
 export interface FeedNoticeProps {
   icon: keyof typeof iconMap
   title: string
-  body?: string
+  body?: string | undefined
   link?: FeedNoticeLink
-  actionLabel?: string
-  onAction?: () => void
+  actionLabel?: string | undefined
+  onAction?: (() => void) | undefined
   plain?: boolean
 }
 
@@ -25,8 +25,8 @@ function NoticeCopy({
   link,
   linkStyle,
 }: {
-  body?: string
-  link?: FeedNoticeLink
+  body?: string | undefined
+  link?: FeedNoticeLink | undefined
   linkStyle?: StyleProp<TextStyle>
 }) {
   if (!link) return <>{body}</>

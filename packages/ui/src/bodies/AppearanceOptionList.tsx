@@ -28,7 +28,7 @@ const AppearanceRow = React.memo(function AppearanceRow({
 }: {
   code: AppearancePreference
   label: string
-  sub?: string
+  sub?: string | undefined
   selected: boolean
   pending: boolean
   onSelect: (code: AppearancePreference) => void

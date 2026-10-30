@@ -30,13 +30,13 @@ export type LinkedEventCardVariant = "feed" | "detail"
 
 export interface LinkedEventCardProps {
   event: LinkedEventRef
-  cleanup?: CleanupDTO
+  cleanup?: CleanupDTO | undefined
   onPress?: () => void
   layout?: "strip" | "list"
   selectable?: boolean
   selected?: boolean
   onRemove?: () => void
-  timeZone?: string
+  timeZone?: string | undefined
   variant?: LinkedEventCardVariant
 }
 

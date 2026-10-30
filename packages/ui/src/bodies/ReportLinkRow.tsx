@@ -21,7 +21,7 @@ export interface ReportLinkRowProps {
   id: string
   center: LatLng | null
   selected: boolean
-  card?: LinkedReportCardEntry
+  card?: LinkedReportCardEntry | undefined
   disabled?: boolean
   onToggle: (id: string, title: string) => void
 }

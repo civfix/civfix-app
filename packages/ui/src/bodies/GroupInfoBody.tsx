@@ -363,7 +363,7 @@ function useLeaveGroupSheet({
   id: string
   viewerId: string | null
   removeMember: ReturnType<typeof useRemoveGroupMember>
-  onBack?: () => void
+  onBack?: (() => void) | undefined
 }) {
   const leavingRef = useRef(false)
   const [open, setOpen] = useState(false)

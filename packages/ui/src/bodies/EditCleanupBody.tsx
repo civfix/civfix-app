@@ -29,7 +29,7 @@ import { eventCoverChanged } from "./eventCoverModel"
 import { EventFormSkeleton, FORM_CONTROL_HEIGHT, FormValidationRow } from "./eventFormParts"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const SAVE_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.VALIDATION]: "save.error.validation",

@@ -31,7 +31,7 @@ export function buildProfileStats(source: ProfileStatsSource): ProfileStatItem[]
 }
 
 export interface ProfileStatsRowProps extends ProfileStatsSource {
-  onOpenConnections?: (which: ProfileConnectionKey) => void
+  onOpenConnections?: ((which: ProfileConnectionKey) => void) | undefined
 }
 
 export function ProfileStatsRow({

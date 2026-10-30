@@ -16,8 +16,8 @@ export interface PostOverflowMenuProps {
   onClose: () => void
   onOpenPerson: (personId: string) => void
   anchorRect?: AnchorRect | null
-  onOpenOriginal?: () => void
-  onDeleted?: () => void
+  onOpenOriginal?: (() => void) | undefined
+  onDeleted?: (() => void) | undefined
 }
 
 const noop = () => {}

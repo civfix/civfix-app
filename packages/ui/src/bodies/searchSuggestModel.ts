@@ -56,7 +56,7 @@ export interface SuggestEventLike {
   lat: number
   lng: number
   /** Server-computed meters from the viewer, when the query was location-biased. */
-  dist?: number | null
+  dist?: number | null | undefined
 }
 
 export interface SearchSuggestions<C, P, R, L> {
