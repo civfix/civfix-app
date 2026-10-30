@@ -198,8 +198,8 @@ function setup(options: {
   url: string
   path?: string[]
   env?: Partial<PreviewEnv>
-  upstream?: (request: Request) => Promise<Response>
-  asset?: () => Response
+  upstream?: ((request: Request) => Promise<Response>) | undefined
+  asset?: (() => Response) | undefined
 }): Run {
   const cache = makeCache()
   vi.stubGlobal("caches", { default: cache })

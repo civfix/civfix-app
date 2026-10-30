@@ -146,7 +146,7 @@ export function optimisticPostId(now: number): string {
 
 export interface ThreadRowPost {
   readonly id: string
-  readonly replyToId?: string | null
+  readonly replyToId?: string | null | undefined
 }
 
 export interface ThreadRow<T extends ThreadRowPost> {

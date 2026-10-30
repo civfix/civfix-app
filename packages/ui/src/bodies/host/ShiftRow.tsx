@@ -10,7 +10,7 @@ import { useLocale, useT } from "../../i18n"
 export interface ShiftRowProps {
   slot: EventSlotDTO
   current?: boolean
-  timeZone?: string
+  timeZone?: string | undefined
 }
 
 export function ShiftRow({ slot, current = false, timeZone }: ShiftRowProps) {

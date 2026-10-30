@@ -3,7 +3,7 @@ import type { CameraCapability, CapturedMedia } from "../../capabilities"
 import { uploadMediaId } from "../../data/uploadMedia"
 import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 export async function uploadAvatar(
   api: ApiClient,

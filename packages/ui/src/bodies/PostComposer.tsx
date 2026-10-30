@@ -64,7 +64,7 @@ export interface PostComposerStandaloneHost {
 
 export interface PostComposerProps {
   mode?: PostComposerMode
-  targetPostId?: string
+  targetPostId?: string | undefined
   onPosted?: (post: PostDTO) => void
   standalone?: PostComposerStandaloneHost
 }

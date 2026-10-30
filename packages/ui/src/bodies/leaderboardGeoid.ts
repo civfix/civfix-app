@@ -19,9 +19,9 @@ export interface DiscoveryGeoid {
 
 export function resolveDiscoveryGeoid(input: {
   /** From `useResolveJurisdiction`: `undefined` while loading, `null` for an uncovered point. */
-  resolved?: { geoid: string; name?: string | null } | null
+  resolved?: { geoid: string; name?: string | null | undefined } | null
   /** From `useMyHours`: absent when signed out or still loading. */
-  myHours?: { byJurisdiction: ReadonlyArray<{ geoid: string; name?: string | null }> } | null
+  myHours?: { byJurisdiction: ReadonlyArray<{ geoid: string; name?: string | null | undefined }> } | null
 }): DiscoveryGeoid | null {
   const resolved = input.resolved
   if (resolved && resolved.geoid) {

@@ -79,7 +79,7 @@ export interface GuestRsvpSheetProps {
   nextPath: string
   onClose: () => void
   ticketTypes?: readonly TicketTypeDTO[]
-  questions?: readonly EventQuestionDTO[]
+  questions?: readonly EventQuestionDTO[] | undefined
 }
 
 export function GuestRsvpSheet({

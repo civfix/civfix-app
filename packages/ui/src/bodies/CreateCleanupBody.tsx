@@ -283,9 +283,9 @@ function ReviewSummary({
 }
 
 interface HostSeed {
-  seedReportId?: string
-  seedPoint?: HostSeedPoint
-  seedOrganizationId?: string
+  seedReportId?: string | undefined
+  seedPoint?: HostSeedPoint | undefined
+  seedOrganizationId?: string | undefined
 }
 
 /**

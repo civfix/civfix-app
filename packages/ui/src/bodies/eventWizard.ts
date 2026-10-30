@@ -21,7 +21,7 @@ export const DEFAULT_WIZARD_DURATION_MS = 2 * 3_600_000
 
 export interface EventScheduleSource {
   scheduledAt: string
-  endsAt?: string | null
+  endsAt?: string | null | undefined
 }
 
 export interface EventScheduleDraft {

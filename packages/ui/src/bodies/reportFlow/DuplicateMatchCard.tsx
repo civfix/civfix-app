@@ -40,7 +40,7 @@ export function DuplicateMatchCard({
   width: number | undefined
   onOpen: (row: NearbyReportRow) => void
   /** Absent for a guest, who gets no "I see this too". */
-  onMeToo?: (row: NearbyReportRow) => void
+  onMeToo?: ((row: NearbyReportRow) => void) | undefined
   meTooBusy?: boolean
   meTooDisabled?: boolean
 }) {

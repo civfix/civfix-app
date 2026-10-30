@@ -179,7 +179,7 @@ export function SocialBody() {
   const suggested = suggestions.data ?? []
   const listData: Array<UserSearchResultDTO | PersonDTO> = hasQuery ? results : suggested
 
-  const onOpenPerson = useCallback((person: { id: string; handle?: string | null }) => {
+  const onOpenPerson = useCallback((person: { id: string; handle?: string | null | undefined }) => {
     useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })
   }, [])
 

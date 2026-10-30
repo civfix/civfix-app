@@ -14,7 +14,7 @@ export interface QRowProps {
   pressLabel?: string
   wrapTitle?: boolean
   clampTitle?: boolean
-  ident?: string
+  ident?: string | undefined
   sub?: ReactNode
   chips?: ReactNode
   trailing?: ReactNode
@@ -23,7 +23,7 @@ export interface QRowProps {
   selectable?: boolean
   selectLabel?: string
   onSelectChange?: (selected: boolean) => void
-  onPress?: () => void
+  onPress?: (() => void) | undefined
   density?: "tight" | "cozy"
   as?: "row" | "card"
   leadingAlign?: "center" | "start"

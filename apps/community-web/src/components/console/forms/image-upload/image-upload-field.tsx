@@ -43,8 +43,8 @@ export interface ImageUploadFieldProps {
   onChange: (values: ConsoleImage[]) => void
   max?: number
   label: string
-  disabled?: boolean
-  className?: string
+  disabled?: boolean | undefined
+  className?: string | undefined
 }
 
 export function ImageUploadField({

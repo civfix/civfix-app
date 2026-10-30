@@ -20,10 +20,10 @@ export interface LinkedEventCardModel {
 
 export interface LinkedEventCardContext {
   viewerTimeZone?: string
-  address?: string | null
-  going?: number
-  joined?: boolean
-  attendees?: readonly LinkedEventRef["organizer"][]
+  address?: string | null | undefined
+  going?: number | undefined
+  joined?: boolean | undefined
+  attendees?: readonly LinkedEventRef["organizer"][] | undefined
   showAttendance?: boolean
 }
 

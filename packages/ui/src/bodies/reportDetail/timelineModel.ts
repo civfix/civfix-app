@@ -8,7 +8,7 @@ export interface TimelineNode {
   kind: NodeKind
   when: string
   text: string
-  detail?: string
+  detail?: string | undefined
   pending?: boolean
   note?: string
   body?: string
