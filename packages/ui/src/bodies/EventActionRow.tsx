@@ -8,7 +8,7 @@ export interface EventActionRowProps {
   label: string
   onPress?: () => void
   disabled?: boolean
-  hint?: string
+  hint?: string | undefined
   destructive?: boolean
   accessibilityLabel?: string
 }

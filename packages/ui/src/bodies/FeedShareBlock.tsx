@@ -23,7 +23,7 @@ export interface FeedShareBlockProps {
   nowLabel: string
   attachment: React.ReactNode | null
   attachmentPlaceholder?: string
-  onRequestReveal?: (y: number) => void
+  onRequestReveal?: ((y: number) => void) | undefined
   busy?: boolean
 }
 
@@ -88,7 +88,7 @@ export function FeedShareBlock({
 
 export interface FeedSharePreviewProps {
   authorName: string
-  authorId?: string
+  authorId?: string | undefined
   authorPhotoUrl?: string | null
   authorAvatar?: readonly [string, string] | null
   nowLabel: string
@@ -97,7 +97,7 @@ export interface FeedSharePreviewProps {
   placeholder?: string
   captionA11yLabel?: string
   attachment: React.ReactNode | null
-  attachmentPlaceholder?: string
+  attachmentPlaceholder?: string | undefined
   onPress?: () => void
   footnote?: string
 }

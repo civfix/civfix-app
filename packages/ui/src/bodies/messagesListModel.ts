@@ -1,5 +1,5 @@
 export function matchesThreadQuery(
-  thread: { title: string; last?: string | null },
+  thread: { title: string; last?: string | null | undefined },
   query: string,
 ): boolean {
   const q = query.trim().toLowerCase()

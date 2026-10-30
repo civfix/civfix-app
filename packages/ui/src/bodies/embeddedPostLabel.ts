@@ -1,4 +1,4 @@
-type LabelT = (key: string, options?: Record<string, unknown>) => string
+type LabelT = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 export interface EmbeddedPostLabelInput {
   prominent: boolean

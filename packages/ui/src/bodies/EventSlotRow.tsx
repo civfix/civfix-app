@@ -35,7 +35,7 @@ const PILL_HIT_SLOP = 7
 
 const SLOT_TILE_SIZE = 34
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 /**
  * The row's capacity/status line, or null when the state has nothing to say about counts.

@@ -44,7 +44,7 @@ export interface PostDraft {
   replyToId?: string | null
   repostOfId?: string | null
   mentionedUserIds?: string[]
-  organizationId?: string | null
+  organizationId?: string | null | undefined
 }
 
 export type PostSubmitResolution =
