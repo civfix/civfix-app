@@ -19,7 +19,7 @@
     "legal-hashes": "node scripts/legal-hashes.mjs"
   },
   "dependencies": {
-    "@civfix/contract": "0.66.0-b-feat-city-filing-contract.g82d07a7",
+    "@civfix/contract": "0.66.0-b-chore-city-filing-sync-main.g120c1a2",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",

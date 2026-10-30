@@ -22,6 +22,12 @@ minimumReleaseAgeExclude:
   - "@civfix/*"
 # Refuse a version published with weaker provenance than the versions before it (a stolen token, not CI).
 trustPolicy: no-downgrade
+# Exact versions that fail that check only because one earlier release happened to carry provenance, each checked to
+# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one
+# attested stable release before 0.8.2). Drop each entry once the tree leaves that version. Never exclude a package
+# name without a version.
+trustPolicyExclude:
+  - react-native-worklets@0.5.1
 # A git or tarball-URL subdependency carries no publish time or provenance, so it would slip past both checks above.
 blockExoticSubdeps: true
 # A new install script must stop the install for review: skipped silently, it can also break a native binary unnoticed.
