@@ -195,7 +195,10 @@ describe("filterStore: enabledCategoriesArray", () => {
   it("returns the enabled categories in canonical order", () => {
     useReportFilterStore.getState().toggle("water")
     useReportFilterStore.getState().toggle("trash")
-    expect(enabledCategoriesArray(useReportFilterStore.getState().enabled)).toEqual(["trash", "water"])
+    expect(enabledCategoriesArray(useReportFilterStore.getState().enabled)).toEqual([
+      "trash",
+      "water",
+    ])
   })
 
   it("is empty when nothing is enabled", () => {

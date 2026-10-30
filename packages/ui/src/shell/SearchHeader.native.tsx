@@ -34,7 +34,9 @@ function SearchPill({
         onChangeText={onChangeText}
         onFocus={onFocus}
       />
-      {mode === "people" ? <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} /> : null}
+      {mode === "people" ? (
+        <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} />
+      ) : null}
     </View>
   )
 }
@@ -110,10 +112,26 @@ export function SearchHeader(props: SearchHeaderProps) {
   const styles = useSearchHeaderStyles()
   const th = useTheme()
   const { t } = useT("common-search")
-  const { value, placeholder, mode, onChangeText, onFocus, userName, userPhotoUrl, onOpenProfile, onSignIn } = props
+  const {
+    value,
+    placeholder,
+    mode,
+    onChangeText,
+    onFocus,
+    userName,
+    userPhotoUrl,
+    onOpenProfile,
+    onSignIn,
+  } = props
   return (
     <View style={styles.row}>
-      <SearchPill value={value} placeholder={placeholder} mode={mode} onChangeText={onChangeText} onFocus={onFocus} />
+      <SearchPill
+        value={value}
+        placeholder={placeholder}
+        mode={mode}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+      />
       {onSignIn ? (
         <Pressable
           onPress={onSignIn}

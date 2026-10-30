@@ -153,7 +153,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.source_a11y")}
                 hitSlop={6}
-              {...focusRingProps}
+                {...focusRingProps}
               >
                 <Text style={styles.legalLink}>{t("legal.source")}</Text>
               </Pressable>

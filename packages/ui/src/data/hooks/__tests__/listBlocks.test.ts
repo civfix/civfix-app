@@ -48,7 +48,10 @@ describe("listBlocksQueryOptions", () => {
 })
 
 describe("BlockedAccountsBody", () => {
-  const body = readFileSync(new URL("../../../bodies/BlockedAccountsBody.tsx", import.meta.url), "utf8")
+  const body = readFileSync(
+    new URL("../../../bodies/BlockedAccountsBody.tsx", import.meta.url),
+    "utf8",
+  )
   it("loads the next page at the end of the list and shows a footer spinner while it does", () => {
     expect(body).toContain("onEndReached={onEndReached}")
     expect(body).toContain("const onEndReached = useListEndReached(query)")

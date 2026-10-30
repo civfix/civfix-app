@@ -169,7 +169,11 @@ export function HostModeBody({ id }: { id: string }) {
   const sheetActions = useHostSheetActions(id, closeSheet)
 
   const shareTitle = event?.title ?? ""
-  const sharePath = cleanupSharePath({ pageSlug: event?.pageSlug, referenceCode: event?.referenceCode, id })
+  const sharePath = cleanupSharePath({
+    pageSlug: event?.pageSlug,
+    referenceCode: event?.referenceCode,
+    id,
+  })
 
   const onShare = useCallback(() => {
     void shareLink({ title: shareTitle, path: sharePath }).then((result) => {

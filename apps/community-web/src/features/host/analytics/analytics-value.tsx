@@ -22,7 +22,11 @@ export interface AnalyticsValueProps {
   k?: number
 }
 
-export function AnalyticsValue({ value, kind = "count", k = ANALYTICS_SUPPRESSION_K }: AnalyticsValueProps) {
+export function AnalyticsValue({
+  value,
+  kind = "count",
+  k = ANALYTICS_SUPPRESSION_K,
+}: AnalyticsValueProps) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
   if (value === null) {

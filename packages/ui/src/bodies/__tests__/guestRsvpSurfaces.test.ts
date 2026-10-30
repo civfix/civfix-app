@@ -21,7 +21,9 @@ describe("RsvpPill signed-out seam", () => {
 
 describe("EventDetailBody wiring", () => {
   it("offers the guest path only where the host can mint a Turnstile token", () => {
-    expect(detail).toContain("const onSignedOutRsvp = getTurnstileToken ? openGuestRsvp : undefined")
+    expect(detail).toContain(
+      "const onSignedOutRsvp = getTurnstileToken ? openGuestRsvp : undefined",
+    )
     expect(detail).toContain("onGuestRsvp={onSignedOutRsvp}")
   })
 
@@ -153,6 +155,8 @@ describe("GuestRsvpSheet", () => {
     expect(modal).toContain('event.key === "Escape"')
     expect(modal).toContain("handlersRef.current.onClose()")
     expect(modal).not.toContain("backdropDismissDisabled ? undefined : onCommit")
-    expect(sheet).toContain('<SecondaryButton label={t("form.cancel")} onPress={onClose} size="sm" />')
+    expect(sheet).toContain(
+      '<SecondaryButton label={t("form.cancel")} onPress={onClose} size="sm" />',
+    )
   })
 })

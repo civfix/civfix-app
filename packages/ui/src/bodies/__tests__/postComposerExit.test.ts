@@ -55,7 +55,13 @@ const eventRef: LinkedEventRef = {
   lat: 33.98,
   lng: -118.42,
   going: 12,
-  organizer: { id: "organizer-1", name: "Maya Lopez", followers: 42, following: 7, isFollowing: false },
+  organizer: {
+    id: "organizer-1",
+    name: "Maya Lopez",
+    followers: 42,
+    following: 7,
+    isFollowing: false,
+  },
   linkedAt: "2026-07-29T00:00:00.000Z",
 }
 
@@ -150,7 +156,9 @@ function stageDraft() {
   store.setMentionedUsers([maya])
   store.setAttachedReport(reportRef)
   store.setAttachedEvent(eventRef)
-  store.setMedia([{ uri: "file:///photo.jpg", kind: "image", posterUri: null, uploadId: "u1", status: "ready" }])
+  store.setMedia([
+    { uri: "file:///photo.jpg", kind: "image", posterUri: null, uploadId: "u1", status: "ready" },
+  ])
 }
 
 beforeEach(() => {
@@ -164,7 +172,12 @@ beforeEach(() => {
 })
 
 describe("isGenuinePostComposerExit", () => {
-  const base = { pendingCreate: null, claimedCreate: null, stack: [] as DetailEntry[], liveMounts: 0 }
+  const base = {
+    pendingCreate: null,
+    claimedCreate: null,
+    stack: [] as DetailEntry[],
+    liveMounts: 0,
+  }
 
   it("is an exit only when nothing is in flight, on the stack, or mounted", () => {
     expect(isGenuinePostComposerExit(base)).toBe(true)
@@ -180,9 +193,9 @@ describe("isGenuinePostComposerExit", () => {
 
   it("is NOT an exit while the composer entry is still on the nav stack (web forward push)", () => {
     expect(isGenuinePostComposerExit({ ...base, stack: [composerEntry] })).toBe(false)
-    expect(isGenuinePostComposerExit({ ...base, stack: [{ kind: "post", id: "p1" }, composerEntry] })).toBe(
-      false,
-    )
+    expect(
+      isGenuinePostComposerExit({ ...base, stack: [{ kind: "post", id: "p1" }, composerEntry] }),
+    ).toBe(false)
     // Somebody else's stack is not a veto.
     expect(isGenuinePostComposerExit({ ...base, stack: [{ kind: "post", id: "p1" }] })).toBe(true)
   })
@@ -809,7 +822,9 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(/useEffect\(\(\) => trackPostComposerMount\(EXIT_HOST\), \[\]\)/)
     // The host reads BOTH halves of the intent, and reads them at decision time (no captured values).
     expect(source).toMatch(/readIntent: \(\) => \{[\s\S]*?claimedCreate: state\.claimedCreate/)
-    expect(source).toMatch(/discard: \(\) => usePostComposerStore\.getState\(\)\.discardAttachments\(\)/)
+    expect(source).toMatch(
+      /discard: \(\) => usePostComposerStore\.getState\(\)\.discardAttachments\(\)/,
+    )
     // The deliberate close also clears the local media mirrors, as the submit `onSuccess` path does: an
     // effect mirrors `carriedMedia` + the attachment hook back into the draft, so a store-only discard is
     // undone when a late upload-finalize republishes the hook's list.
@@ -817,7 +832,13 @@ describe("the wiring (source-pinned)", () => {
       /const closeComposer = \(\) => \{\s*\n\s*usePostComposerStore\.getState\(\)\.discardAttachments\(\)\s*\n\s*attachments\.reset\(\)\s*\n\s*setCarriedMedia\(\[\]\)\s*\n\s*setDroppedMedia\(0\)\s*\n\s*;\(onBack \?\? back\)\(\)/,
     )
     expect(source).toMatch(/<ComposerHeader[^>]*?onClose=\{closeComposer\}/)
-    expect(sliceBetween(surfacePart("postComposer", "ComposerHeader.tsx"), "export function ComposerHeader(", "\n}\n")).toMatch(/accessibilityLabel=\{t\("close_a11y"\)\}\s*onPress=\{onClose\}/)
+    expect(
+      sliceBetween(
+        surfacePart("postComposer", "ComposerHeader.tsx"),
+        "export function ComposerHeader(",
+        "\n}\n",
+      ),
+    ).toMatch(/accessibilityLabel=\{t\("close_a11y"\)\}\s*onPress=\{onClose\}/)
   })
 
   it("PostComposer drops a stale REPORT create-intent at mount", () => {
@@ -878,7 +899,9 @@ describe("the wiring (source-pinned)", () => {
       'if (postSubmitDestination(input.kind) === "thread") push({ kind: "post-thread", id: post.id })',
     )
     const submit = sliceBetween(source, "export function useSubmitPost()", "\n}\n")
-    expect(submit).toMatch(/onSuccess: \(post\) => \{\s*haptics\.success\(\)\s*onPosted\(post, prepared\.input\)/)
+    expect(submit).toMatch(
+      /onSuccess: \(post\) => \{\s*haptics\.success\(\)\s*onPosted\(post, prepared\.input\)/,
+    )
     expect(success).toContain("else useFeedScrollTopStore.getState().requestScrollTop()")
     // The feed has a list ref and consumes the request, or the new post lands off-screen for a reader
     // who had scrolled down. The ref is TYPED through the ScrollHost seam - no `as never`.
@@ -918,7 +941,9 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(/const runActive = useNavStore\(\(s\) => s\.view === "report"\)/)
     // The SEARCH exemption is the shared predicate, not a second inline rule: the effect's release branch,
     // the deferred decision and the detour watch have to agree, and re-deriving it here is how they drift.
-    expect(source).toMatch(/const runSurvives = useNavStore\(\(s\) => reportRunSurvivesView\(s\.view\)\)/)
+    expect(source).toMatch(
+      /const runSurvives = useNavStore\(\(s\) => reportRunSurvivesView\(s\.view\)\)/,
+    )
     expect(source).toMatch(
       /useEffect\(\(\) => \{\s*\n\s*const composer = usePostComposerStore\.getState\(\)\s*\n\s*if \(runActive\) composer\.claimPendingCreate\("report"\)\s*\n\s*else if \(!runSurvives\) composer\.releaseClaimedCreate\("report"\)\s*\n\s*return \(\) => deferReportRunRelease\(REPORT_RUN_EXIT_HOST\)\s*\n\s*\}, \[runActive, runSurvives\]\)/,
     )
@@ -945,8 +970,12 @@ describe("the wiring (source-pinned)", () => {
 
   it("ReportFlowBody routes on THIS RUN'S claim and threads it, never re-reading the latch", () => {
     const source = reportFlowSource()
-    expect(readSource("../ReportFlowBody.tsx")).toContain("useReportSubmitFlow({ fromComposer, stepOrder, setStep })")
-    expect(source).toMatch(/const fromComposer = usePostComposerStore\(\(s\) => s\.claimedCreate\) === "report"/)
+    expect(readSource("../ReportFlowBody.tsx")).toContain(
+      "useReportSubmitFlow({ fromComposer, stepOrder, setStep })",
+    )
+    expect(source).toMatch(
+      /const fromComposer = usePostComposerStore\(\(s\) => s\.claimedCreate\) === "report"/,
+    )
     expect(source).toMatch(/useReportSubmit\(\{ forComposer: fromComposer \}\)/)
     expect(source).toMatch(/if \(fromComposer\) \{/)
     expect(source).toMatch(/composer\.releaseClaimedCreate\("report"\)/)
@@ -996,12 +1025,16 @@ describe("the wiring (source-pinned)", () => {
     // The composer opens no report flow at all.
     expect(surfaceSource("postComposer")).not.toMatch(/selectView\("report"\)/)
     // And the helper is reachable by the hosts' own entry points (mobile's `/report` shim).
-    expect(readSource("../index.ts")).toMatch(/export \{[^}]*\bopenReportFlow\b[^}]*\} from "\.\/composerCreateFlow"/)
+    expect(readSource("../index.ts")).toMatch(
+      /export \{[^}]*\bopenReportFlow\b[^}]*\} from "\.\/composerCreateFlow"/,
+    )
 
     // The helper is the one place that decides what a non-composer entry inherits...
     const flow = readSource("../composerCreateFlow.ts")
     expect(flow).toMatch(/export function openReportFlow\(\): void/)
-    expect(flow).toMatch(/if \(composer\.draft\.pendingCreate === "report"\) composer\.setPendingCreate\(null\)/)
+    expect(flow).toMatch(
+      /if \(composer\.draft\.pendingCreate === "report"\) composer\.setPendingCreate\(null\)/,
+    )
     expect(flow).toMatch(/composer\.releaseClaimedCreate\("report"\)/)
     // ...but ONLY when the tap actually starts a fresh run: the same predicate the effect, the deferred
     // release and the detour watch read, so an entry point cannot settle a claim that is still someone's.

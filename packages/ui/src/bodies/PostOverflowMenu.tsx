@@ -90,7 +90,8 @@ function PostOverflowMenuContent({
   const repost = subject.repost
   const isOwn = isAuthenticated && viewerId != null && viewerId === subject.authorId
   const canDelete = isOwn && repost === null
-  const isOwnRepost = isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId
+  const isOwnRepost =
+    isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId
   const undoRepost = useRepost(subjectId)
 
   const submitReport = useCallback(

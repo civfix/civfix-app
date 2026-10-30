@@ -27,7 +27,12 @@ test("a video of unknown length passes", () => {
 
 test("a photo always passes", () => {
   assert.equal(
-    overVideoDuration({ uri: "file:///shot.jpg", kind: "image", mime: "image/jpeg", durationSec: 60 }),
+    overVideoDuration({
+      uri: "file:///shot.jpg",
+      kind: "image",
+      mime: "image/jpeg",
+      durationSec: 60,
+    }),
     false,
   )
 })

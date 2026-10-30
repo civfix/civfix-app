@@ -138,7 +138,11 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               </Text>
               {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
-                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+                <OrgAffiliationBadge
+                  organization={identity.affiliation}
+                  size="sm"
+                  interactive={false}
+                />
               ) : null}
               {identity.viaLabel ? (
                 <Pressable
@@ -198,7 +202,13 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 
             {media.length > 0 ? (
               <View style={styles.block}>
-                <PostMediaGrid media={media} t={t} radius={14} maxHeight={240} onPressItem={openMedia} />
+                <PostMediaGrid
+                  media={media}
+                  t={t}
+                  radius={14}
+                  maxHeight={240}
+                  onPressItem={openMedia}
+                />
               </View>
             ) : null}
 

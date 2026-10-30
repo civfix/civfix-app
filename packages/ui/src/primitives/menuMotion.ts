@@ -120,8 +120,18 @@ export function menuCardStyle(motion: MenuMotion, origin: MenuOrigin) {
   return {
     opacity: progress,
     transform: [
-      { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [origin.translateX, 0] }) },
-      { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [origin.translateY, 0] }) },
+      {
+        translateX: progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [origin.translateX, 0],
+        }),
+      },
+      {
+        translateY: progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [origin.translateY, 0],
+        }),
+      },
       { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [MENU_SCALE_FROM, 1] }) },
     ],
   }

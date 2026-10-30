@@ -1,14 +1,34 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { markerA11yLabel, markerButtonA11y, targetMarkerA11yLabel, type MarkerLabelT } from "../markerFocus"
+import {
+  markerA11yLabel,
+  markerButtonA11y,
+  targetMarkerA11yLabel,
+  type MarkerLabelT,
+} from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
-const t: MarkerLabelT = (key: string, options?: Record<string, unknown>) => (options ? `${key}${JSON.stringify(options)}` : key)
+const t: MarkerLabelT = (key: string, options?: Record<string, unknown>) =>
+  options ? `${key}${JSON.stringify(options)}` : key
 
 const report = (title: string | null) =>
-  ({ type: "report", key: "r", id: "r1", lat: 0, lng: 0, pin: { category: "water", title } }) as unknown as ClusterNode
+  ({
+    type: "report",
+    key: "r",
+    id: "r1",
+    lat: 0,
+    lng: 0,
+    pin: { category: "water", title },
+  }) as unknown as ClusterNode
 const event = { id: "c1", title: "Beach day", eventKind: "cleanup" }
-const eventNode = { type: "event", key: "e", id: "c1", lat: 0, lng: 0, event } as unknown as ClusterNode
+const eventNode = {
+  type: "event",
+  key: "e",
+  id: "c1",
+  lat: 0,
+  lng: 0,
+  event,
+} as unknown as ClusterNode
 const blendNode = {
   type: "blend",
   key: "b",
@@ -18,19 +38,31 @@ const blendNode = {
   event,
   reports: [{}, {}],
 } as unknown as ClusterNode
-const cluster = { type: "cluster", key: "k", count: 12, reportCount: 10, eventCount: 2 } as unknown as ClusterNode
+const cluster = {
+  type: "cluster",
+  key: "k",
+  count: 12,
+  reportCount: 10,
+  eventCount: 2,
+} as unknown as ClusterNode
 
 describe("markerA11yLabel names every home-map marker", () => {
   it("names a report by its category and title, and by category alone when untitled or blank", () => {
     expect(markerA11yLabel(report("Burst main"), t)).toBe(
       'a11y.reportPin{"category":"enums:category.water","title":"Burst main"}',
     )
-    expect(markerA11yLabel(report(null), t)).toBe('a11y.reportPinUntitled{"category":"enums:category.water"}')
-    expect(markerA11yLabel(report("   "), t)).toBe('a11y.reportPinUntitled{"category":"enums:category.water"}')
+    expect(markerA11yLabel(report(null), t)).toBe(
+      'a11y.reportPinUntitled{"category":"enums:category.water"}',
+    )
+    expect(markerA11yLabel(report("   "), t)).toBe(
+      'a11y.reportPinUntitled{"category":"enums:category.water"}',
+    )
   })
 
   it("names an event by its kind and title", () => {
-    expect(markerA11yLabel(eventNode, t)).toBe('a11y.eventPin{"kind":"enums:eventKind.cleanup","title":"Beach day"}')
+    expect(markerA11yLabel(eventNode, t)).toBe(
+      'a11y.eventPin{"kind":"enums:eventKind.cleanup","title":"Beach day"}',
+    )
   })
 
   it("names a blend by its event and the number of reports it carries", () => {
@@ -44,12 +76,15 @@ describe("markerA11yLabel names every home-map marker", () => {
   })
 
   it("names the standalone focus marker, which has no title", () => {
-    expect(targetMarkerA11yLabel({ kind: "report", id: "r", lat: 0, lng: 0, category: "hazard" }, t)).toBe(
-      'a11y.reportPinUntitled{"category":"enums:category.hazard"}',
-    )
-    expect(targetMarkerA11yLabel({ kind: "cleanup", id: "c", lat: 0, lng: 0, eventKind: "other_volunteer" }, t)).toBe(
-      'a11y.eventPinUntitled{"kind":"enums:eventKind.other_volunteer"}',
-    )
+    expect(
+      targetMarkerA11yLabel({ kind: "report", id: "r", lat: 0, lng: 0, category: "hazard" }, t),
+    ).toBe('a11y.reportPinUntitled{"category":"enums:category.hazard"}')
+    expect(
+      targetMarkerA11yLabel(
+        { kind: "cleanup", id: "c", lat: 0, lng: 0, eventKind: "other_volunteer" },
+        t,
+      ),
+    ).toBe('a11y.eventPinUntitled{"kind":"enums:eventKind.other_volunteer"}')
   })
 })
 
@@ -69,8 +104,12 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
     expect(webMarkers).toMatch(
       /el\.addEventListener\("keydown", \(e: KeyboardEvent\) => \{\n\s+if \(e\.key !== "Enter" && e\.key !== " "\) return\n\s+e\.preventDefault\(\)\n\s+e\.stopPropagation\(\)\n\s+press\(\)/,
     )
-    expect(webMarkers).toMatch(/const press = \(\) => \{\n\s+beforePress\?\.\(\)\n\s+onClick\.fn\?\.\(\)/)
-    expect(mapWeb).toMatch(/function endFlyToHighlight\(\): void \{\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/)
+    expect(webMarkers).toMatch(
+      /const press = \(\) => \{\n\s+beforePress\?\.\(\)\n\s+onClick\.fn\?\.\(\)/,
+    )
+    expect(mapWeb).toMatch(
+      /function endFlyToHighlight\(\): void \{\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/,
+    )
     expect(mapWeb).toContain("syncMarkers(map, markersRef.current, desired, endFlyToHighlight)")
     expect(reportPickWeb).toContain("syncMarkers(map, markersRef.current, desired)")
     expect((mapWeb.match(/label: markerA11yLabel\(node, t\),/g) ?? []).length).toBe(4)
@@ -78,20 +117,38 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
   })
 
   it("names markers after maplibre's addTo, which labels a default marker itself", () => {
-    expect(webMarkers).toMatch(/\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/)
-    expect(webMarkers).not.toMatch(/el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/)
-    expect(reportPickWeb).not.toContain("new maplibregl.Marker({ element: el, anchor: want.anchor })")
-    expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("a11y\.userLocation"\)\)/)
-    expect(webOverlays).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("dropPin\.locationA11y"\)\)/)
-    expect(reportPickWeb).toMatch(/\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", meetingPointLabel\)/)
+    expect(webMarkers).toMatch(
+      /\.addTo\(map\)\n(\s+\/\/.*\n)?\s+el\.setAttribute\("aria-label", want\.label\)/,
+    )
+    expect(webMarkers).not.toMatch(
+      /el\.setAttribute\("aria-label", want\.label\)\n[\s\S]{0,200}new maplibregl\.Marker/,
+    )
+    expect(reportPickWeb).not.toContain(
+      "new maplibregl.Marker({ element: el, anchor: want.anchor })",
+    )
+    expect(webOverlays).toMatch(
+      /\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("a11y\.userLocation"\)\)/,
+    )
+    expect(webOverlays).toMatch(
+      /\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", t\("dropPin\.locationA11y"\)\)/,
+    )
+    expect(reportPickWeb).toMatch(
+      /\.addTo\(map\)\n\s+el\.setAttribute\("aria-label", meetingPointLabel\)/,
+    )
   })
 
   it("gives the labelled non-interactive elements a role that allows aria-label", () => {
-    expect(webOverlays).toMatch(/className = "cf-map-user-dot"\n\s+el\.setAttribute\("role", "img"\)/)
+    expect(webOverlays).toMatch(
+      /className = "cf-map-user-dot"\n\s+el\.setAttribute\("role", "img"\)/,
+    )
     expect(webOverlays).toMatch(/pointerEvents = "none"\n\s+el\.setAttribute\("role", "img"\)/)
-    expect(mapWeb).toMatch(/ref=\{containerRef\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.homeMap"\)\}/)
+    expect(mapWeb).toMatch(
+      /ref=\{containerRef\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.homeMap"\)\}/,
+    )
     const picker = read("../LocationPicker.web.tsx")
-    expect(picker).toMatch(/style=\{styles\.canvas\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.picker"\)\}/)
+    expect(picker).toMatch(
+      /style=\{styles\.canvas\}\n\s+role="region"\n\s+aria-label=\{t\("a11y\.picker"\)\}/,
+    )
   })
 
   it("draws the house focus ring on a focused marker", () => {
@@ -112,7 +169,9 @@ describe("native markers are accessible buttons", () => {
 describe("a screen reader's activate presses the native marker", () => {
   it("declares the activate action and routes it to the marker's own press with its id", () => {
     const pressed: string[] = []
-    const props = markerButtonA11y("Water leak", "pin-r1", (event) => pressed.push(event.nativeEvent.id))
+    const props = markerButtonA11y("Water leak", "pin-r1", (event) =>
+      pressed.push(event.nativeEvent.id),
+    )
     expect(props).toMatchObject({
       accessible: true,
       accessibilityRole: "button",

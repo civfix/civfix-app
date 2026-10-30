@@ -75,11 +75,15 @@ describe("guest name and email boundaries", () => {
 
 describe("guest contact payload edges", () => {
   it("returns null for an sms form with an invalid phone even when the email is valid", () => {
-    expect(guestContactPayload({ name: "Ada", channel: "sms", email: "a@b.co", phone: "123" })).toBeNull()
+    expect(
+      guestContactPayload({ name: "Ada", channel: "sms", email: "a@b.co", phone: "123" }),
+    ).toBeNull()
   })
 
   it("lets an sms form submit with a blank email", () => {
-    expect(canSubmitGuestForm({ name: "Ada", channel: "sms", email: "", phone: "4155551234" }, false)).toBe(true)
+    expect(
+      canSubmitGuestForm({ name: "Ada", channel: "sms", email: "", phone: "4155551234" }, false),
+    ).toBe(true)
   })
 })
 

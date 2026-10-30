@@ -10,7 +10,13 @@ import {
 import { POST_BODY_MAX } from "@civfix/contract"
 import { domElement } from "../../primitives/domElement"
 import { TextInput } from "../../primitives/TextInput"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  MIN_TOUCH_TARGET,
+} from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
@@ -27,7 +33,11 @@ import {
   postComposerCanAttach,
   snapshotCarriedMedia,
 } from "../postComposerMedia"
-import { buildOptimisticPost, resolvePostSubmit, toPostOrganizationRef } from "../postComposerSubmit"
+import {
+  buildOptimisticPost,
+  resolvePostSubmit,
+  toPostOrganizationRef,
+} from "../postComposerSubmit"
 import {
   selectPostComposerDraft,
   selectPostComposerDraftOwner,
@@ -65,13 +75,19 @@ function InlineComposerForOwner() {
   const cardRef = useRef<View>(null)
 
   const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
-  const mentionedUsers = usePostComposerStore((state) => selectPostComposerDraft(state).mentionedUsers)
+  const mentionedUsers = usePostComposerStore(
+    (state) => selectPostComposerDraft(state).mentionedUsers,
+  )
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setMedia = usePostComposerStore((state) => state.setMedia)
   const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
-  const draftOrganizationId = usePostComposerStore((state) => selectPostComposerDraft(state).organizationId)
-  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(selectPostComposerDraft(state)))
+  const draftOrganizationId = usePostComposerStore(
+    (state) => selectPostComposerDraft(state).organizationId,
+  )
+  const ownsDraft = usePostComposerStore((state) =>
+    inlineComposerOwnsDraft(selectPostComposerDraft(state)),
+  )
 
   const { postAsOrganizations, postAsOrganizationId, postAsOrganization } = usePostAsOrganization(
     { organizationId: draftOrganizationId },
@@ -113,8 +129,7 @@ function InlineComposerForOwner() {
     () => activePostMentions(body, mentionedUsers),
     [body, mentionedUsers],
   )
-  const hasReadyMedia =
-    composerMedia.length === 0 || mediaUploadIds.length === composerMedia.length
+  const hasReadyMedia = composerMedia.length === 0 || mediaUploadIds.length === composerMedia.length
   const resolution = resolvePostSubmit(
     {
       body,

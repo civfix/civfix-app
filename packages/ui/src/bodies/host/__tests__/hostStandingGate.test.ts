@@ -18,16 +18,16 @@ const legacyOrganizerEvent = {
 describe("a legacy organizer (no role, no capabilities on the DTO)", () => {
   it("only passes a capability check once the standing adds the organizer fallback", () => {
     expect(hasHostCapability(legacyOrganizerEvent, "check_in")).toBe(false)
-    expect(hasHostCapability(cleanupHostStanding(legacyOrganizerEvent, ORGANIZER), "check_in")).toBe(
-      true,
-    )
+    expect(
+      hasHostCapability(cleanupHostStanding(legacyOrganizerEvent, ORGANIZER), "check_in"),
+    ).toBe(true)
     expect(managesEvent(cleanupHostStanding(legacyOrganizerEvent, ORGANIZER))).toBe(true)
   })
 
   it("gives a stranger nothing through the same fallback", () => {
-    expect(hasHostCapability(cleanupHostStanding(legacyOrganizerEvent, "someone-else"), "check_in")).toBe(
-      false,
-    )
+    expect(
+      hasHostCapability(cleanupHostStanding(legacyOrganizerEvent, "someone-else"), "check_in"),
+    ).toBe(false)
   })
 })
 
@@ -40,7 +40,9 @@ describe("every host screen gates on the same standing host mode uses", () => {
   ])("%s", (file, capability) => {
     const src = read(`../${file}`)
     expect(src).toContain("const viewerId = useAuthState().user?.id ?? null")
-    expect(src).toContain(`hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), ${capability})`)
+    expect(src).toContain(
+      `hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), ${capability})`,
+    )
     expect(src).not.toContain("hasHostCapability(cleanup.data,")
   })
 

@@ -98,7 +98,9 @@ export function assembleSearchSuggestions<
 }): SearchSuggestions<C, P, R, L> {
   const events = cleanups
     .map((c) => {
-      const meters = location ? (c.dist ?? haversineMeters(location, { lat: c.lat, lng: c.lng })) : null
+      const meters = location
+        ? (c.dist ?? haversineMeters(location, { lat: c.lat, lng: c.lng }))
+        : null
       return { c, score: eventBlendScore(meters, c.scheduledAt, now) }
     })
     .sort((a, b) => a.score - b.score)

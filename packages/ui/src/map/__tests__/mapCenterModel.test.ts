@@ -48,7 +48,9 @@ describe("resolution order", () => {
 
 describe("the never-a-hardcoded-centre invariant", () => {
   it("never invents a point: no input, no centre", () => {
-    expect(resolveMapCenter({ precise: null, approximate: null, remembered: null }).center).toBeNull()
+    expect(
+      resolveMapCenter({ precise: null, approximate: null, remembered: null }).center,
+    ).toBeNull()
   })
 
   it("treats an off-globe or non-finite candidate as absent rather than centring on it", () => {
@@ -59,8 +61,12 @@ describe("the never-a-hardcoded-centre invariant", () => {
       { lat: 0, lng: Number.POSITIVE_INFINITY },
     ]
     for (const point of bad) {
-      expect(resolveMapCenter({ precise: point, approximate: null, remembered: null }).center).toBeNull()
-      expect(resolveMapCenter({ precise: null, approximate: point, remembered: null }).center).toBeNull()
+      expect(
+        resolveMapCenter({ precise: point, approximate: null, remembered: null }).center,
+      ).toBeNull()
+      expect(
+        resolveMapCenter({ precise: null, approximate: point, remembered: null }).center,
+      ).toBeNull()
     }
   })
 

@@ -5,11 +5,10 @@ import { dropPinMenuAlreadyOpen, dropPinRestoreFlyArgs } from "./dropPinRestore.
 test("dropPinRestoreFlyArgs transposes to THIS SCREEN'S flyTo(lng, lat, zoom)", () => {
   // The map home's own flyTo takes LNG first; MapHandle.flyTo, called in replayPendingMapTarget, takes LAT
   // first. Getting this backwards flies to a valid-but-wrong coordinate with no error.
-  assert.deepEqual(dropPinRestoreFlyArgs({ lat: 34.05, lng: -118.25, zoom: 12.5 }), [
-    -118.25,
-    34.05,
-    12.5,
-  ])
+  assert.deepEqual(
+    dropPinRestoreFlyArgs({ lat: 34.05, lng: -118.25, zoom: 12.5 }),
+    [-118.25, 34.05, 12.5],
+  )
 })
 
 test("dropPinRestoreFlyArgs is not symmetric - a transposed impl fails this", () => {

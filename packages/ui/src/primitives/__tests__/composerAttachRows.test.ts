@@ -3,7 +3,11 @@ import { composerAttachRows } from "../composerAttachRows"
 
 describe("composerAttachRows", () => {
   it("native, poll-capable: photo, camera, poll", () => {
-    expect(composerAttachRows({ isWeb: false, canCreatePoll: true })).toEqual(["photo", "camera", "poll"])
+    expect(composerAttachRows({ isWeb: false, canCreatePoll: true })).toEqual([
+      "photo",
+      "camera",
+      "poll",
+    ])
   })
 
   it("hides the poll row when the room cannot create polls (dm / channel read-only)", () => {

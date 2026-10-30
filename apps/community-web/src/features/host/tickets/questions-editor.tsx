@@ -309,7 +309,11 @@ export function QuestionsEditor({
 
       <p className="mb-token-3 text-token-12 text-console-ink-3">{t("questions.archive_note")}</p>
 
-      <StateGate {...gate} onRetry={() => void questions.refetch()} skeleton={<LoadingState count={3} />}>
+      <StateGate
+        {...gate}
+        onRetry={() => void questions.refetch()}
+        skeleton={<LoadingState count={3} />}
+      >
         {list.length === 0 ? (
           <p className="text-token-13 text-console-ink-3">{t("questions.empty")}</p>
         ) : (

@@ -36,9 +36,7 @@ export class ConsoleErrorBoundary extends React.Component<
         role="alert"
         className="flex min-h-screen flex-col items-center justify-center gap-token-3 bg-console-canvas px-token-5 text-center"
       >
-        <p className="font-display text-token-18 font-bold text-console-ink">
-          {this.props.title}
-        </p>
+        <p className="font-display text-token-18 font-bold text-console-ink">{this.props.title}</p>
         <p className="max-w-md text-token-13 text-console-ink-2">{this.props.body}</p>
         <ConsoleButton onClick={this.reset}>{this.props.retryLabel}</ConsoleButton>
       </div>

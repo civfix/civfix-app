@@ -112,7 +112,11 @@ describe("event mutations reach the host dashboard", () => {
 })
 
 describe("useMyHostedEvents is never frozen shut", () => {
-  const fn = section(hostSource, "export function useMyHostedEvents", "export function hostedEventRows")
+  const fn = section(
+    hostSource,
+    "export function useMyHostedEvents",
+    "export function hostedEventRows",
+  )
 
   it("is keyed off the factory, so the root invalidation is a prefix match", () => {
     expect(fn).toContain("queryKey: queryKeys.hostedEvents(when, orgId)")
@@ -130,8 +134,16 @@ describe("useMyHostedEvents is never frozen shut", () => {
 
 describe("registration changes refresh every event list that shows attendance", () => {
   it.each([
-    ["useRegisterForEvent", "export function useRegisterForEvent", "export interface CancelRegistrationVars"],
-    ["useCancelEventRegistration", "export function useCancelEventRegistration", "export function useScanEventTicket"],
+    [
+      "useRegisterForEvent",
+      "export function useRegisterForEvent",
+      "export interface CancelRegistrationVars",
+    ],
+    [
+      "useCancelEventRegistration",
+      "export function useCancelEventRegistration",
+      "export function useScanEventTicket",
+    ],
   ])("%s invalidates the cleanup lists AND the org-page event lists", (_name, from, to) => {
     const fn = section(hostSource, from, to)
     expect(fn).toContain("invalidateCleanupLists(qc)")

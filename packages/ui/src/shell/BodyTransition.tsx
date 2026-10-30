@@ -4,7 +4,4 @@
  * through the explicit `.web` specifier so it never resolves back into this module.
  */
 export { BodyTransition } from "./BodyTransition.web"
-export type {
-  BodyTransitionProps,
-  BodyTransitionDirection,
-} from "./BodyTransition.types"
+export type { BodyTransitionProps, BodyTransitionDirection } from "./BodyTransition.types"

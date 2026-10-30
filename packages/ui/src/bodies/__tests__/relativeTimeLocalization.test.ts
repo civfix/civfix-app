@@ -1,6 +1,13 @@
 import { readFileSync, readdirSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { clockTime, dayLabel, distanceLabel, focalTimestamp, listTimeAgo, todayKey } from "../relativeTime"
+import {
+  clockTime,
+  dayLabel,
+  distanceLabel,
+  focalTimestamp,
+  listTimeAgo,
+  todayKey,
+} from "../relativeTime"
 import { eventDistanceLabel } from "../eventDistance"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { buildRenderItems } from "../conversation/conversationModel"
@@ -158,7 +165,11 @@ describe("clock and focal timestamps follow the app locale, not the device's", (
   const clock = (locale: string) =>
     new Date(afternoon).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
   const date = (locale: string) =>
-    new Date(afternoon).toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
+    new Date(afternoon).toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
 
   it("formats the chat clock time in the supplied locale", () => {
     expect(clock("ko-KR")).not.toBe(clock("en-US"))
@@ -183,8 +194,12 @@ describe("clock, focal and distance labels follow the APP locale", () => {
   })
 
   it("hands the app locale to every caller, not the device default", () => {
-    expect(read("../conversation/MessageBubble.tsx")).toContain("clockTime(message.createdAt, locale)")
-    expect(read("../thread/ThreadFocalPost.tsx")).toContain("focalTimestamp(post.createdAt, locale)")
+    expect(read("../conversation/MessageBubble.tsx")).toContain(
+      "clockTime(message.createdAt, locale)",
+    )
+    expect(read("../thread/ThreadFocalPost.tsx")).toContain(
+      "focalTimestamp(post.createdAt, locale)",
+    )
     expect(read("../EventsBody.tsx")).toContain("eventDistanceLabel(cleanup.dist, locale)")
     expect(read("../EventDetailBody.tsx")).toContain("eventDistanceLabel(cleanup.dist, locale)")
   })

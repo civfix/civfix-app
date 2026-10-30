@@ -7,7 +7,10 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 
 test("the wordmark is one focusable header, not six letters", () => {
   const wordmark = read("../src/components/Wordmark.tsx")
-  const row = wordmark.slice(wordmark.indexOf("<View"), wordmark.indexOf(">", wordmark.indexOf("<View")))
+  const row = wordmark.slice(
+    wordmark.indexOf("<View"),
+    wordmark.indexOf(">", wordmark.indexOf("<View")),
+  )
   assert.match(row, /\baccessible\b/)
   assert.match(row, /accessibilityRole="header"/)
   assert.match(row, /accessibilityLabel=\{t\("a11y\.brand_logo"\)\}/)

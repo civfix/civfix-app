@@ -69,9 +69,7 @@ export interface RestoreContext {
 }
 
 export type RestoreDecision =
-  | { action: "hydrate"; clientState: DehydratedState }
-  | { action: "discard" }
-  | { action: "skip" }
+  { action: "hydrate"; clientState: DehydratedState } | { action: "discard" } | { action: "skip" }
 
 export function hasCacheOwner(userId: string | null): userId is string {
   return typeof userId === "string" && userId.length > 0

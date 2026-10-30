@@ -25,10 +25,18 @@ export function HostBodyState({ state, t }: HostBodyStateProps) {
   }
 
   if (state === "error") {
-    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
+    return (
+      <HostStateNotice
+        icon="CloudOff"
+        title={t("state.error_title")}
+        body={t("state.error_body")}
+      />
+    )
   }
 
-  return <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
+  return (
+    <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
+  )
 }
 
 export const useHostBodyStyles = makeThemedStyles((t) => ({

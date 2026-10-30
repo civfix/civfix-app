@@ -37,10 +37,19 @@ const hostSheet = code(read("../host/LinkedReportsSheet.tsx"))
 const modalSheet = code(read("../../primitives/ModalCardSheet.tsx"))
 const bodiesIndex = code(read("../index.ts"))
 
-const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as Record<string, unknown>
+const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as Record<
+  string,
+  unknown
+>
 const hostMode = JSON.parse(read("../../i18n/locales/en/host-mode.json")) as Record<string, unknown>
-const reportPicker = JSON.parse(read("../../i18n/locales/en/report-picker.json")) as Record<string, unknown>
-const eventCreate = JSON.parse(read("../../i18n/locales/en/event-create.json")) as Record<string, unknown>
+const reportPicker = JSON.parse(read("../../i18n/locales/en/report-picker.json")) as Record<
+  string,
+  unknown
+>
+const eventCreate = JSON.parse(read("../../i18n/locales/en/event-create.json")) as Record<
+  string,
+  unknown
+>
 
 function catalogHas(catalog: Record<string, unknown>, path: string): boolean {
   const parts = path.split(".")
@@ -83,7 +92,9 @@ describe("the inline block is a summary plus a door to the map picker", () => {
 
   it("subscribes to the cards it actually names, not the whole record", () => {
     expect(picker).not.toContain("useLinkedReportCards((s) => s.cards)")
-    expect(picker).toContain('useLinkedReportCards((s) => value.filter((id) => s.cards[id]).join(","))')
+    expect(picker).toContain(
+      'useLinkedReportCards((s) => value.filter((id) => s.cards[id]).join(","))',
+    )
     expect(picker).toContain("useMemo(() => {")
     expect(picker).toContain("[knownKey]")
   })
@@ -119,7 +130,9 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     expect(surface).toContain("reportLookupKey(debounced)")
     expect(surface).toContain("useReport(lookupKey ?? undefined)")
     expect(surface).toContain("cardToPin(reportToCardData(lookup.data))")
-    expect(surface).toMatch(/mergePins\(linked, fetchedPins, searching \? search\.items : \[\], lookupPins\)/)
+    expect(surface).toMatch(
+      /mergePins\(linked, fetchedPins, searching \? search\.items : \[\], lookupPins\)/,
+    )
   })
 
   it("pages the list from the pure model and offers three more at the tail", () => {
@@ -148,13 +161,19 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("filters rows and markers through ONE filter object, so a pin always has a row", () => {
-    expect(surface).toContain("pickerRows({ ...filter, pins, viewport, ids: idSet, linked: linkedSet })")
-    expect(surface).toMatch(/const filter = useMemo\(\s*\(\) => \(\{\s*center,\s*categories: enabled,\s*nearbyOnly,/)
+    expect(surface).toContain(
+      "pickerRows({ ...filter, pins, viewport, ids: idSet, linked: linkedSet })",
+    )
+    expect(surface).toMatch(
+      /const filter = useMemo\(\s*\(\) => \(\{\s*center,\s*categories: enabled,\s*nearbyOnly,/,
+    )
   })
 
   it("keeps the marker memo off the selection - only pins the filter would hide are named", () => {
-    expect(surface).toContain("keptPinIds(pins, chosenSet, filter).join(\",\")")
-    expect(surface).toContain("useMemo(() => new Set(keepKey ? keepKey.split(\",\") : []), [keepKey])")
+    expect(surface).toContain('keptPinIds(pins, chosenSet, filter).join(",")')
+    expect(surface).toContain(
+      'useMemo(() => new Set(keepKey ? keepKey.split(",") : []), [keepKey])',
+    )
     expect(surface).toContain("[pins, keepSet, filter]")
     expect(surface).not.toContain("mapPinsFor(pins, new Set([...linkedSet, ...idSet])")
   })
@@ -163,7 +182,9 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     const region = sliceBetween(surface, "const onRegionChange", "const listState")
     expect(region).toContain("const next = pickerFetchRegion(bbox)")
     expect(region).toContain("setTooWide(next === null)")
-    expect(region).toContain("setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))")
+    expect(region).toContain(
+      "setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))",
+    )
     expect(region.indexOf("setTooWide")).toBeLessThan(region.indexOf("setFetchRegion"))
   })
 
@@ -175,13 +196,17 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
 
   it("starts every event with the default layers instead of the last event's", () => {
     // A layout effect: the reset lands before the first paint, so no frame shows the last event's layers.
-    expect(surface).toMatch(/useLayoutEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
+    expect(surface).toMatch(
+      /useLayoutEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/,
+    )
   })
 
   it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {
     expect(surface).toContain('pinTapIntent(id, focusedId) === "toggle"')
     expect(surface).toContain("scrollToRow(id)")
-    expect(surface).toMatch(/onPressRow[\s\S]*?toggle\(id, title\)[\s\S]*?flyTo\(pin\.lat, pin\.lng\)/)
+    expect(surface).toMatch(
+      /onPressRow[\s\S]*?toggle\(id, title\)[\s\S]*?flyTo\(pin\.lat, pin\.lng\)/,
+    )
     expect(surface).toContain("scrollToOffset?.(")
   })
 
@@ -351,7 +376,10 @@ describe("the event page names the count once the strip runs long", () => {
 
 describe("every key these surfaces name exists in en", () => {
   it("the link row's card label exists in en/report-linked.json", () => {
-    const linked = JSON.parse(read("../../i18n/locales/en/report-linked.json")) as Record<string, unknown>
+    const linked = JSON.parse(read("../../i18n/locales/en/report-linked.json")) as Record<
+      string,
+      unknown
+    >
     expect(catalogHas(linked, "card.a11yLabelCode")).toBe(true)
     expect(row).toContain('tLinked("card.a11yLabelCode"')
   })
@@ -405,7 +433,10 @@ describe("every key these surfaces name exists in en", () => {
       "linkedReports.showMoreA11y",
     ]
     for (const lng of ["en", "es", "de", "ko"]) {
-      const catalog = JSON.parse(read(`../../i18n/locales/${lng}/event-form.json`)) as Record<string, unknown>
+      const catalog = JSON.parse(read(`../../i18n/locales/${lng}/event-form.json`)) as Record<
+        string,
+        unknown
+      >
       for (const key of dead) expect(catalogHas(catalog, key), `${lng}: ${key}`).toBe(false)
       expect(catalogHas(catalog, "linkedReports.pick_on_map"), lng).toBe(true)
     }

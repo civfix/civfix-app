@@ -57,7 +57,13 @@ const HOSTILE_PAYLOADS: Record<PreviewKind, { segment: string; id: string; paylo
     segment: "people",
     id: UUID,
     payload: {
-      profile: { id: UUID, name: HOSTILE, handle: HOSTILE_HANDLE, bio: HOSTILE, avatarUrl: HOSTILE_MEDIA },
+      profile: {
+        id: UUID,
+        name: HOSTILE,
+        handle: HOSTILE_HANDLE,
+        bio: HOSTILE,
+        avatarUrl: HOSTILE_MEDIA,
+      },
     },
   },
   signup: {
@@ -208,9 +214,7 @@ function setup(options: {
       options.asset?.() ??
       new Response(SHELL_HTML, { status: 200, headers: { "Content-Type": "text/html" } }),
   )
-  const fetchSpy = vi.fn(
-    options.upstream ?? (async () => new Response("", { status: 404 })),
-  )
+  const fetchSpy = vi.fn(options.upstream ?? (async () => new Response("", { status: 404 })))
   vi.stubGlobal("fetch", fetchSpy)
   const waited: Promise<unknown>[] = []
   return {
@@ -262,7 +266,8 @@ function parseAppendedHead(html: string): ParsedHead {
     const linkMatch = metaMatch ? null : LINK_TAG.exec(rest)
     const match = metaMatch ?? linkMatch
     if (!match) throw new Error(`unparseable head tail: ${rest.slice(0, 80)}`)
-    if (metaMatch) meta.set(unescapeHtml(metaMatch[2] as string), unescapeHtml(metaMatch[3] as string))
+    if (metaMatch)
+      meta.set(unescapeHtml(metaMatch[2] as string), unescapeHtml(metaMatch[3] as string))
     else links.set(unescapeHtml(match[1] as string), unescapeHtml(match[2] as string))
     tagCount += 1
     rest = rest.slice(match[0].length)
@@ -301,7 +306,10 @@ describe("hostile entity content through the real rewriter", () => {
       expect(rewrites).toHaveLength(1)
       const head = rewrites[0]?.elements.find((element) => element.tag === "head") as FakeElement
       expect(head.appended).toHaveLength(1)
-      const appended = head.appended[0] as { content: string; options: { html?: boolean } | undefined }
+      const appended = head.appended[0] as {
+        content: string
+        options: { html?: boolean } | undefined
+      }
       expect(appended.options).toEqual({ html: true })
 
       const html = appended.content
@@ -351,7 +359,11 @@ describe("hostile entity content through the real rewriter", () => {
 
   it("keeps non-ascii text verbatim and double-escapes an entity the author typed", async () => {
     const { id, payload } = HOSTILE_PAYLOADS.post
-    const run = setup({ url: `https://civfix.org/post/${id}`, path: [id], upstream: jsonUpstream(payload) })
+    const run = setup({
+      url: `https://civfix.org/post/${id}`,
+      path: [id],
+      upstream: jsonUpstream(payload),
+    })
     await handlePreview(run.context, "post")
     const head = rewrites[0]?.elements.find((element) => element.tag === "head") as FakeElement
     const html = head.appended[0]?.content ?? ""
@@ -361,7 +373,11 @@ describe("hostile entity content through the real rewriter", () => {
 
   it("strips the shell's managed meta and links and leaves charset, viewport, stylesheet and manifest", async () => {
     const { id, payload } = HOSTILE_PAYLOADS.report
-    const run = setup({ url: `https://civfix.org/pin/${id}`, path: [id], upstream: jsonUpstream(payload) })
+    const run = setup({
+      url: `https://civfix.org/pin/${id}`,
+      path: [id],
+      upstream: jsonUpstream(payload),
+    })
     await handlePreview(run.context, "report")
     const record = rewrites[0] as RewriteRecord
     expect(record.selectors).toEqual(["head > title", "meta", "link", "head"])
@@ -405,7 +421,9 @@ describe("upstream timeout", () => {
       upstream: (request) => {
         seen = request
         return new Promise<Response>((_, reject) => {
-          request.signal.addEventListener("abort", () => reject(new DOMException("The operation timed out.", "TimeoutError")))
+          request.signal.addEventListener("abort", () =>
+            reject(new DOMException("The operation timed out.", "TimeoutError")),
+          )
         })
       },
     })
@@ -433,15 +451,30 @@ describe("upstream timeout", () => {
 })
 
 describe("Cache-Control on every outcome", () => {
-  const outcomes: { label: string; upstream: () => Promise<Response>; entry: string; marker: string | null }[] = [
+  const outcomes: {
+    label: string
+    upstream: () => Promise<Response>
+    entry: string
+    marker: string | null
+  }[] = [
     {
       label: "a found entity",
       upstream: jsonUpstream(HOSTILE_PAYLOADS.report.payload),
       entry: "public, max-age=300",
       marker: null,
     },
-    { label: "a 404", upstream: async () => new Response("", { status: 404 }), entry: "public, max-age=60", marker: "missing" },
-    { label: "a 410", upstream: async () => new Response("", { status: 410 }), entry: "public, max-age=60", marker: "missing" },
+    {
+      label: "a 404",
+      upstream: async () => new Response("", { status: 404 }),
+      entry: "public, max-age=60",
+      marker: "missing",
+    },
+    {
+      label: "a 410",
+      upstream: async () => new Response("", { status: 410 }),
+      entry: "public, max-age=60",
+      marker: "missing",
+    },
   ]
 
   for (const { label, upstream, entry, marker } of outcomes) {
@@ -494,7 +527,11 @@ describe("Cache-Control on every outcome", () => {
       asset: () =>
         new Response(SHELL_HTML, {
           status: 200,
-          headers: { "Content-Type": "text/html", "Cache-Control": "public, max-age=14400", ETag: '"abc"' },
+          headers: {
+            "Content-Type": "text/html",
+            "Cache-Control": "public, max-age=14400",
+            ETag: '"abc"',
+          },
         }),
     })
     const response = await runPreview(run.context, "report", { rewrite: (shell) => shell })
@@ -512,8 +549,18 @@ describe("security headers on every Function response", () => {
     contentType: string
     status: number
   }[] = [
-    { label: "the bare-prefix browse page", path: () => [], contentType: HTML_CONTENT_TYPE, status: 200 },
-    { label: "a nested SPA route", path: (id) => [id, "edit"], contentType: HTML_CONTENT_TYPE, status: 200 },
+    {
+      label: "the bare-prefix browse page",
+      path: () => [],
+      contentType: HTML_CONTENT_TYPE,
+      status: 200,
+    },
+    {
+      label: "a nested SPA route",
+      path: (id) => [id, "edit"],
+      contentType: HTML_CONTENT_TYPE,
+      status: 200,
+    },
     {
       label: "a shell the asset server could not find",
       path: (id) => [id],
@@ -588,15 +635,60 @@ describe("origin, canonical, noindex and API per hostname", () => {
   }
 
   const table: { host: string; origin: string; noindex: boolean; api: string }[] = [
-    { host: "civfix.org", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
-    { host: "www.civfix.org", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
-    { host: "civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
-    { host: "civfix.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
-    { host: "www.civfix.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
-    { host: "staging.civfix-web.pages.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
-    { host: "dev.civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
-    { host: "a1b2c3d4.civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
-    { host: "evil.example", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
+    {
+      host: "civfix.org",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
+    {
+      host: "www.civfix.org",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
+    {
+      host: "civfix-web.pages.dev",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
+    {
+      host: "civfix.dev",
+      origin: "https://civfix.dev",
+      noindex: true,
+      api: "https://api.civfix.dev",
+    },
+    {
+      host: "www.civfix.dev",
+      origin: "https://civfix.dev",
+      noindex: true,
+      api: "https://api.civfix.dev",
+    },
+    {
+      host: "staging.civfix-web.pages.dev",
+      origin: "https://civfix.dev",
+      noindex: true,
+      api: "https://api.civfix.dev",
+    },
+    {
+      host: "dev.civfix-web.pages.dev",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
+    {
+      host: "a1b2c3d4.civfix-web.pages.dev",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
+    {
+      host: "evil.example",
+      origin: "https://civfix.org",
+      noindex: false,
+      api: "https://api.civfix.org",
+    },
   ]
 
   for (const { host, origin, noindex, api } of table) {

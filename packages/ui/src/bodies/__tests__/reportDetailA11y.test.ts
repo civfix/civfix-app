@@ -13,7 +13,8 @@ function unannouncedViewLabels(src: string): string[] {
 
 describe("report detail accessibility", () => {
   it("exposes the pending-info toggle's expanded state like the full-message toggle", () => {
-    const toggle = /accessibilityLabel=\{t\("timeline\.pending_a11y"\)\}[\s\S]*?\/>/.exec(detail)?.[0] ?? ""
+    const toggle =
+      /accessibilityLabel=\{t\("timeline\.pending_a11y"\)\}[\s\S]*?\/>/.exec(detail)?.[0] ?? ""
     expect(toggle).toContain("accessibilityState={{ expanded: open }}")
   })
 

@@ -111,7 +111,8 @@ export function useChatRoomSocket({
           }
           break
         case "typing":
-          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId) markTyping(frame.userId)
+          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId)
+            markTyping(frame.userId)
           break
         case "error":
           if (!frameInRoom(frame, roomId, roomKind)) break

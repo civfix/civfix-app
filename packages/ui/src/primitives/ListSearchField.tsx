@@ -1,6 +1,14 @@
 import { useState } from "react"
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset, hitSlopToTarget, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  hitSlopToTarget,
+  MIN_TOUCH_TARGET,
+  inputFocusedStyle,
+} from "../theme"
 import { Icon, iconMap } from "../typography"
 import { TextInput } from "./TextInput"
 import type { TextInputProps } from "./TextInput.types"
@@ -64,7 +72,9 @@ export function ListSearchField({
           style={styles.clearTarget}
         >
           {({ pressed }) => (
-            <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>{clearIcon}</View>
+            <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>
+              {clearIcon}
+            </View>
           )}
         </Pressable>
       ) : (

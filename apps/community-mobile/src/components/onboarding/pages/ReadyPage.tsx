@@ -46,13 +46,7 @@ function SignInOptions({ onHandoff }: { onHandoff: () => void }) {
       </View>
     )
   }
-  return (
-    <AuthOptions
-      enabled={enabled}
-      onHandoff={onHandoff}
-      next={resumeHref}
-    />
-  )
+  return <AuthOptions enabled={enabled} onHandoff={onHandoff} next={resumeHref} />
 }
 
 function TrustStrip() {

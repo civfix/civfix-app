@@ -23,7 +23,10 @@ describe("every pin body reads against the basemap (WCAG 1.4.11, 3:1)", () => {
     const ground = basemapPaper("light")
     const outline = pinOutlineFor("light")
     for (const [name, fill] of Object.entries(pinFills("light"))) {
-      const best = Math.max(contrastRatio(fill, ground), outline ? contrastRatio(outline, ground) : 0)
+      const best = Math.max(
+        contrastRatio(fill, ground),
+        outline ? contrastRatio(outline, ground) : 0,
+      )
       expect(best, name).toBeGreaterThanOrEqual(PIN_NON_TEXT_CONTRAST)
     }
   })
@@ -53,9 +56,10 @@ describe("glyphs, counts and checks read against their own fill", () => {
     for (const scheme of SCHEMES) {
       const onAccent = makeThemeColors(scheme).onAccent
       for (const [name, fill] of Object.entries(pinFills(scheme))) {
-        expect(contrastRatio(inkOnFill(fill, scheme, onAccent), fill), `${scheme}/${name}`).toBeGreaterThanOrEqual(
-          PIN_NON_TEXT_CONTRAST,
-        )
+        expect(
+          contrastRatio(inkOnFill(fill, scheme, onAccent), fill),
+          `${scheme}/${name}`,
+        ).toBeGreaterThanOrEqual(PIN_NON_TEXT_CONTRAST)
       }
     }
   })
@@ -64,7 +68,10 @@ describe("glyphs, counts and checks read against their own fill", () => {
     for (const scheme of SCHEMES) {
       const onAccent = makeThemeColors(scheme).onAccent
       const bloom = colorSchemes[scheme].brand.bloom
-      expect(contrastRatio(inkOnFill(bloom, scheme, onAccent), bloom), scheme).toBeGreaterThanOrEqual(4.5)
+      expect(
+        contrastRatio(inkOnFill(bloom, scheme, onAccent), bloom),
+        scheme,
+      ).toBeGreaterThanOrEqual(4.5)
     }
   })
 

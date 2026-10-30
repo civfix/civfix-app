@@ -1,6 +1,11 @@
 import eslint from "@eslint/js"
 import tseslint from "typescript-eslint"
-import { LINTER_OPTIONS, NODE_TEST_FOCUS_SELECTORS, NODE_TEST_TYPED_RULES, TYPED_RULES } from "./eslint.typed.cjs"
+import {
+  LINTER_OPTIONS,
+  NODE_TEST_FOCUS_SELECTORS,
+  NODE_TEST_TYPED_RULES,
+  TYPED_RULES,
+} from "./eslint.typed.cjs"
 
 // The workspace-root build and CI scripts. Each workspace lints its own tree with its own config.
 export default tseslint.config(

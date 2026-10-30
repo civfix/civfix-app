@@ -30,7 +30,9 @@ describe("the mount seed takes its layout mode from the shared shell rule", () =
 
 describe("focus follows the page on top", () => {
   it("skips hidden and inert layers and falls back to the page layer when it has no heading", () => {
-    expect(adapter).toContain(`.filter((element) => !element.closest('[aria-hidden="true"], [inert]'))`)
+    expect(adapter).toContain(
+      `.filter((element) => !element.closest('[aria-hidden="true"], [inert]'))`,
+    )
     expect(adapter).toContain(
       'lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")',
     )
@@ -40,7 +42,9 @@ describe("focus follows the page on top", () => {
 describe("in-app hrefs resolve through the web address map", () => {
   it("hands the web mapping to the internal-href capability that notifications and chat links use", () => {
     expect(internalHref).toContain("entryFor: entryFromWebPath,")
-    expect(internalHref).toMatch(/const entry = entryFromWebPath\(path\)\s+if \(!entry\) return false/)
+    expect(internalHref).toMatch(
+      /const entry = entryFromWebPath\(path\)\s+if \(!entry\) return false/,
+    )
     expect(providers).toContain("openInternalHref: webOpenInternalHref,")
     expect(providers).not.toContain("entryFromPath")
   })

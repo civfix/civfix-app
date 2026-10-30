@@ -25,7 +25,11 @@ const FILES = [
 test("no error is swallowed without a stated reason", () => {
   for (const file of FILES) {
     const source = read(file)
-    assert.doesNotMatch(source, /catch\s*(\([^)]*\))?\s*\{\s*\}/, `${file} has an empty catch block`)
+    assert.doesNotMatch(
+      source,
+      /catch\s*(\([^)]*\))?\s*\{\s*\}/,
+      `${file} has an empty catch block`,
+    )
     assert.doesNotMatch(source, /\.catch\(\(\) => \{\}\)/, `${file} has an anonymous no-op .catch`)
     assert.doesNotMatch(source, /\.catch\(\(\) => false\)/, `${file} discards a failure as false`)
   }
@@ -54,5 +58,8 @@ test("log lines carry only the error's name, never its message", () => {
   for (const user of ["../src/boot/useBootstrap.ts", "../src/push/useNotificationDeepLinks.ts"]) {
     assert.match(read(user), /import \{ errorName \} from "@\/lib\/errorName"/)
   }
-  assert.match(helper.slice(0, helper.indexOf("\n}\n")), /return err instanceof Error \? err\.name : typeof err/)
+  assert.match(
+    helper.slice(0, helper.indexOf("\n}\n")),
+    /return err instanceof Error \? err\.name : typeof err/,
+  )
 })

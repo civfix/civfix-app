@@ -30,7 +30,12 @@ function decisionsMatch(actual: RegionFetchDecision, expected: RegionFetchDecisi
   return bboxesClose(actual.region, expected.region)
 }
 
-const box = (west: number, south: number, east: number, north: number): BBox => ({ west, south, east, north })
+const box = (west: number, south: number, east: number, north: number): BBox => ({
+  west,
+  south,
+  east,
+  north,
+})
 
 /** Downtown LA, where the latitude term binds as it does on a phone. */
 const aroundLA = (halfLng: number, halfLat: number): BBox =>
@@ -38,25 +43,80 @@ const aroundLA = (halfLng: number, halfLat: number): BBox =>
 
 const IMPLIED_ZOOM_CASES: { name: string; bbox: BBox; zoom: number; pins: boolean }[] = [
   { name: "the whole world is zoom 3", bbox: box(-180, -85, 180, 85), zoom: 3, pins: false },
-  { name: "a 1.4 degree LA viewport is zoom 10", bbox: box(-119.0, 33.7, -117.6, 34.8), zoom: 10, pins: true },
+  {
+    name: "a 1.4 degree LA viewport is zoom 10",
+    bbox: box(-119.0, 33.7, -117.6, 34.8),
+    zoom: 10,
+    pins: true,
+  },
   { name: "a zero-size box is zoom 0", bbox: box(0, 0, 0, 0), zoom: 0, pins: false },
-  { name: "a 2.8125 degree span sits exactly on the pin zoom", bbox: box(0, 0, 2.8125, 1), zoom: 10, pins: true },
-  { name: "a span just wider than 2.8125 degrees is aggregates", bbox: box(0, 0, 2.82, 1), zoom: 9, pins: false },
+  {
+    name: "a 2.8125 degree span sits exactly on the pin zoom",
+    bbox: box(0, 0, 2.8125, 1),
+    zoom: 10,
+    pins: true,
+  },
+  {
+    name: "a span just wider than 2.8125 degrees is aggregates",
+    bbox: box(0, 0, 2.82, 1),
+    zoom: 9,
+    pins: false,
+  },
   { name: "latitude binds at twice its extent", bbox: box(0, 0, 1, 2), zoom: 9, pins: false },
-  { name: "a 1.40625 degree tall box reaches the pin zoom through latitude", bbox: box(0, 0, 1, 1.40625), zoom: 10, pins: true },
+  {
+    name: "a 1.40625 degree tall box reaches the pin zoom through latitude",
+    bbox: box(0, 0, 1, 1.40625),
+    zoom: 10,
+    pins: true,
+  },
   { name: "a 5.625 degree span is zoom 9", bbox: box(0, 0, 5.625, 1), zoom: 9, pins: false },
-  { name: "a microscopic box clamps to zoom 22", bbox: box(0, 0, 1e-6, 1e-7), zoom: 22, pins: true },
-  { name: "a span wider than the reference clamps to zoom 0", bbox: box(0, 0, 5000, 1), zoom: 0, pins: false },
-  { name: "an antimeridian-crossing box (west > east) is not wrapped: only its latitude counts", bbox: box(179, -1, -179, 1), zoom: 9, pins: false },
+  {
+    name: "a microscopic box clamps to zoom 22",
+    bbox: box(0, 0, 1e-6, 1e-7),
+    zoom: 22,
+    pins: true,
+  },
+  {
+    name: "a span wider than the reference clamps to zoom 0",
+    bbox: box(0, 0, 5000, 1),
+    zoom: 0,
+    pins: false,
+  },
+  {
+    name: "an antimeridian-crossing box (west > east) is not wrapped: only its latitude counts",
+    bbox: box(179, -1, -179, 1),
+    zoom: 9,
+    pins: false,
+  },
   { name: "a fully inverted box is zoom 0", bbox: box(10, 5, 0, 0), zoom: 0, pins: false },
   { name: "a NaN edge is zoom 0", bbox: box(Number.NaN, 0, 1, 1), zoom: 0, pins: false },
 ]
 
 const PAD_CASES: { name: string; bbox: BBox; factor: number; padded: BBox }[] = [
-  { name: "the default factor grows each axis by 60%", bbox: box(-118.5, 33.75, -117.5, 34.25), factor: 0.6, padded: box(-118.8, 33.6, -117.2, 34.4) },
-  { name: "a zero factor leaves the box unchanged", bbox: box(-118.5, 33.75, -117.5, 34.25), factor: 0, padded: box(-118.5, 33.75, -117.5, 34.25) },
-  { name: "padding near a pole is not clamped to 90", bbox: box(0, 80, 10, 89), factor: 0.6, padded: box(-3, 77.3, 13, 91.7) },
-  { name: "an antimeridian-crossing box is padded inward, not wrapped", bbox: box(179, -1, -179, 1), factor: 0.6, padded: box(286.4, -1.6, -286.4, 1.6) },
+  {
+    name: "the default factor grows each axis by 60%",
+    bbox: box(-118.5, 33.75, -117.5, 34.25),
+    factor: 0.6,
+    padded: box(-118.8, 33.6, -117.2, 34.4),
+  },
+  {
+    name: "a zero factor leaves the box unchanged",
+    bbox: box(-118.5, 33.75, -117.5, 34.25),
+    factor: 0,
+    padded: box(-118.5, 33.75, -117.5, 34.25),
+  },
+  {
+    name: "padding near a pole is not clamped to 90",
+    bbox: box(0, 80, 10, 89),
+    factor: 0.6,
+    padded: box(-3, 77.3, 13, 91.7),
+  },
+  {
+    name: "an antimeridian-crossing box is padded inward, not wrapped",
+    bbox: box(179, -1, -179, 1),
+    factor: 0.6,
+    padded: box(286.4, -1.6, -286.4, 1.6),
+  },
 ]
 
 // Width 1 x height 0.5 around LA; padded it is width 1.6 x height 0.8, a pin-scale region.
@@ -66,16 +126,66 @@ const panEast = (b: BBox, d: number): BBox => box(b.west + d, b.south, b.east + 
 const panNorth = (b: BBox, d: number): BBox => box(b.west, b.south + d, b.east, b.north + d)
 
 const COVERS_CASES: { name: string; loaded: BBox; viewport: BBox; covers: boolean }[] = [
-  { name: "a padded region covers the viewport it was built from", loaded: REGION, viewport: VIEWPORT, covers: true },
-  { name: "a pan that stays inside the 12% edge margin is covered", loaded: REGION, viewport: panEast(VIEWPORT, 0.1), covers: true },
-  { name: "a pan into the east edge margin is not covered", loaded: REGION, viewport: panEast(VIEWPORT, 0.11), covers: false },
-  { name: "a pan into the west edge margin is not covered", loaded: REGION, viewport: panEast(VIEWPORT, -0.11), covers: false },
-  { name: "a pan that stays inside the north margin is covered", loaded: REGION, viewport: panNorth(VIEWPORT, 0.05), covers: true },
-  { name: "a pan into the north edge margin is not covered", loaded: REGION, viewport: panNorth(VIEWPORT, 0.06), covers: false },
-  { name: "a pan into the south edge margin is not covered", loaded: REGION, viewport: panNorth(VIEWPORT, -0.06), covers: false },
-  { name: "zooming in to a viewport 1/3.48 of the region is still fine enough", loaded: REGION, viewport: box(-118.23, 33.95, -117.77, 34.15), covers: true },
-  { name: "zooming in past 3.5x coarseness is not covered", loaded: REGION, viewport: box(-118.225, 33.95, -117.775, 34.15), covers: false },
-  { name: "zooming out to the region itself is not covered", loaded: REGION, viewport: REGION, covers: false },
+  {
+    name: "a padded region covers the viewport it was built from",
+    loaded: REGION,
+    viewport: VIEWPORT,
+    covers: true,
+  },
+  {
+    name: "a pan that stays inside the 12% edge margin is covered",
+    loaded: REGION,
+    viewport: panEast(VIEWPORT, 0.1),
+    covers: true,
+  },
+  {
+    name: "a pan into the east edge margin is not covered",
+    loaded: REGION,
+    viewport: panEast(VIEWPORT, 0.11),
+    covers: false,
+  },
+  {
+    name: "a pan into the west edge margin is not covered",
+    loaded: REGION,
+    viewport: panEast(VIEWPORT, -0.11),
+    covers: false,
+  },
+  {
+    name: "a pan that stays inside the north margin is covered",
+    loaded: REGION,
+    viewport: panNorth(VIEWPORT, 0.05),
+    covers: true,
+  },
+  {
+    name: "a pan into the north edge margin is not covered",
+    loaded: REGION,
+    viewport: panNorth(VIEWPORT, 0.06),
+    covers: false,
+  },
+  {
+    name: "a pan into the south edge margin is not covered",
+    loaded: REGION,
+    viewport: panNorth(VIEWPORT, -0.06),
+    covers: false,
+  },
+  {
+    name: "zooming in to a viewport 1/3.48 of the region is still fine enough",
+    loaded: REGION,
+    viewport: box(-118.23, 33.95, -117.77, 34.15),
+    covers: true,
+  },
+  {
+    name: "zooming in past 3.5x coarseness is not covered",
+    loaded: REGION,
+    viewport: box(-118.225, 33.95, -117.775, 34.15),
+    covers: false,
+  },
+  {
+    name: "zooming out to the region itself is not covered",
+    loaded: REGION,
+    viewport: REGION,
+    covers: false,
+  },
 ]
 
 // Width 2 x height 1: its padded region is zoom 9 (aggregates). Width 1.6 x height 0.8: zoom 10 (pins).
@@ -257,7 +367,9 @@ function runRegionFetchWalk(seed: number, steps: number): RegionWalkResult {
       trace.push("k")
     } else {
       const r = decision.region
-      trace.push(`${decision.action.charAt(0)}${[r.west, r.south, r.east, r.north].map((v) => v.toFixed(6)).join(",")}`)
+      trace.push(
+        `${decision.action.charAt(0)}${[r.west, r.south, r.east, r.north].map((v) => v.toFixed(6)).join(",")}`,
+      )
       inFlight = decision.action === "request"
       state = { loaded: state.loaded, requested: decision.region }
     }

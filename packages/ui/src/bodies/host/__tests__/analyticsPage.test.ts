@@ -57,8 +57,8 @@ describe("the page filters on an event and a range, not on a lifecycle phase", (
     expect(BODY).toContain("usePopoverAnchor(setPickerRect)")
     expect(BODY).toContain("<PopoverMenu")
     expect(BODY).toContain('label: t("filter.all_events")')
-    expect(BODY).toContain("useMyHostedEvents(\"upcoming\", null)")
-    expect(BODY).toContain("useMyHostedEvents(\"past\", null)")
+    expect(BODY).toContain('useMyHostedEvents("upcoming", null)')
+    expect(BODY).toContain('useMyHostedEvents("past", null)')
   })
 
   it("offers the range as a segmented control built from the presets", () => {
@@ -151,9 +151,7 @@ describe("the all-events mode answers for the whole portfolio", () => {
   })
 
   it("names the filter from the row when the picker has not fetched that event", () => {
-    expect(BODY).toContain(
-      "(options.find((option) => option.id === picked)?.title ?? pickedLabel)",
-    )
+    expect(BODY).toContain("(options.find((option) => option.id === picked)?.title ?? pickedLabel)")
   })
 
   it("answers a press on that row, not only a web hover", () => {

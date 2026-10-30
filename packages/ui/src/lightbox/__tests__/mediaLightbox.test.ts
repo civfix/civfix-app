@@ -61,8 +61,12 @@ describe("the zoomable stage", () => {
 
   it("resets the zoom on every index change and on dismissal", () => {
     expect(base).toContain('resetToken={visible ? `${index}:${current.url}` : "closed"}')
-    expect(native).toMatch(/useEffect\(\(\) => \{[\s\S]*?setZoomed\(false\)[\s\S]*?\}, \[resetToken/)
-    expect(web).toMatch(/useEffect\(\(\) => \{\n\s*apply\(ZOOM_IDENTITY\)\n\s*\}, \[apply, resetToken\]\)/)
+    expect(native).toMatch(
+      /useEffect\(\(\) => \{[\s\S]*?setZoomed\(false\)[\s\S]*?\}, \[resetToken/,
+    )
+    expect(web).toMatch(
+      /useEffect\(\(\) => \{\n\s*apply\(ZOOM_IDENTITY\)\n\s*\}, \[apply, resetToken\]\)/,
+    )
   })
 })
 
@@ -183,7 +187,14 @@ describe("the native gesture set", () => {
 
 describe("the web pointer surface", () => {
   it("drives zoom from pointer, wheel and double-click events", () => {
-    for (const event of ["pointerdown", "pointermove", "pointerup", "pointercancel", "wheel", "dblclick"]) {
+    for (const event of [
+      "pointerdown",
+      "pointermove",
+      "pointerup",
+      "pointercancel",
+      "wheel",
+      "dblclick",
+    ]) {
       expect(web).toContain(`surface.addEventListener("${event}"`)
       expect(web).toContain(`surface.removeEventListener("${event}"`)
     }
@@ -206,7 +217,9 @@ describe("the web pointer surface", () => {
   })
 
   it("lets a trackpad accumulate small wheel steps, settling only once the stream stops", () => {
-    expect(web).toMatch(/wheelSettle = window\.setTimeout\(\(\) => \{\n\s*wheelSettle = null\n\s*settle\(\)\n\s*\}, WHEEL_SETTLE_DELAY_MS\)/)
+    expect(web).toMatch(
+      /wheelSettle = window\.setTimeout\(\(\) => \{\n\s*wheelSettle = null\n\s*settle\(\)\n\s*\}, WHEEL_SETTLE_DELAY_MS\)/,
+    )
     expect(web).not.toMatch(/apply\(\s*settleZoomTransform\(\s*focalZoomTransform/)
     expect(web).toContain("cancelWheelSettle()")
   })

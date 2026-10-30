@@ -32,11 +32,7 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import {
-  useConsoleFormat,
-  useConsoleInputZone,
-  useInputZoneNames,
-} from "../format"
+import { useConsoleFormat, useConsoleInputZone, useInputZoneNames } from "../format"
 import { consoleKeys } from "../console-keys"
 import {
   AUDIENCE_KINDS,
@@ -170,9 +166,7 @@ function composerSummaryErrors(
   ]
   return [
     ...(submitCount > 0
-      ? local
-          .filter(([check]) => !readiness[check])
-          .map(([, id, key]) => ({ id, message: t(key) }))
+      ? local.filter(([check]) => !readiness[check]).map(([, id, key]) => ({ id, message: t(key) }))
       : []),
     ...Object.entries(serverFields).map(([key, message]) => ({
       id: broadcastFieldInputId(key),
@@ -244,8 +238,7 @@ function useComposerActions(
   })
 
   const send = useMutation({
-    mutationFn: () =>
-      api.sendEventBroadcast({ id: eventId, broadcastId: broadcast?.id as string }),
+    mutationFn: () => api.sendEventBroadcast({ id: eventId, broadcastId: broadcast?.id as string }),
     onSuccess: (res) => {
       toast.toast({ title: t("composer.sending"), tone: "success" })
       setConfirmSend(false)
@@ -335,7 +328,10 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
 
   // eslint-disable-next-line @tanstack/query/exhaustive-deps -- previewFingerprint is the key's projection of draft and broadcast: keying on the raw objects would drop a fetched preview on edits that do not change what is sent
   const preview = useQuery<BroadcastPreviewDTO>({
-    queryKey: [...consoleKeys.broadcastPreview(eventId, broadcast?.id ?? "new"), previewFingerprint],
+    queryKey: [
+      ...consoleKeys.broadcastPreview(eventId, broadcast?.id ?? "new"),
+      previewFingerprint,
+    ],
     enabled: false,
     gcTime: 0,
     queryFn: () => {

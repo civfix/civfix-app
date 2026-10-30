@@ -17,14 +17,17 @@ const pickerTypes = read("../../map/LocationPicker.types.ts")
 const pickStep = read("../../map/PortraitMapPickStep.native.tsx")
 
 /** Source with comments stripped: the docblocks deliberately explain the removed fallback by name. */
-const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
+const code = (src: string) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
 
 describe("cause 1 - the native picker has no neutral-centre fallback left", () => {
   it("does not import or reference NEUTRAL_CENTER at all", () => {
     // "No point is known yet" and "the user is in Kansas" are different facts; the picker must not
     // substitute the second for the first.
     expect(code(picker)).not.toContain("NEUTRAL_CENTER")
-    expect(picker).toMatch(/import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/)
+    expect(picker).toMatch(
+      /import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/,
+    )
   })
 
   it("mounts NO map until a real centre exists, and shows a placeholder meanwhile", () => {
@@ -52,7 +55,9 @@ describe("cause 1 - the native picker has no neutral-centre fallback left", () =
 describe("cause 1, web - the maplibre-gl picker is not constructed until a real centre exists", () => {
   it("has no neutral-centre fallback left", () => {
     expect(code(webPicker)).not.toContain("NEUTRAL_CENTER")
-    expect(webPicker).toMatch(/import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/)
+    expect(webPicker).toMatch(
+      /import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/,
+    )
   })
 
   it("adopts the first real point lazily and freezes it, exactly like the native seam", () => {
@@ -66,7 +71,9 @@ describe("cause 1, web - the maplibre-gl picker is not constructed until a real 
     // The dep list is load-bearing in a way the native seam's is not: this effect's cleanup calls
     // `map.remove()`, so widening it to `value` would tear down and rebuild the map on every tap.
     expect(webPicker).toContain("}, [cameraSeed, ensureMarker])")
-    expect(webPicker).toContain("if (mapRef.current || !containerRef.current || !cameraSeed) return")
+    expect(webPicker).toContain(
+      "if (mapRef.current || !containerRef.current || !cameraSeed) return",
+    )
   })
 
   it("has no un-gated recovery effect left", () => {
@@ -79,7 +86,9 @@ describe("cause 1, web - the maplibre-gl picker is not constructed until a real 
 describe("cause 2 - the pick step seeds its point in RENDER, not one commit late", () => {
   it("reconciles the open edge during render so the picker's first mount carries the draft point", () => {
     expect(pickStep).toContain("if (session.open !== visible) {")
-    expect(pickStep).toContain("setSession({ open: visible, point: visible ? value ?? null : null })")
+    expect(pickStep).toContain(
+      "setSession({ open: visible, point: visible ? value ?? null : null })",
+    )
     // An effect keyed on `visible` cannot run before the commit that mounts LocationPicker, so it could only
     // correct a wrong first camera, never prevent one.
     expect(code(pickStep)).not.toContain("if (visible) setLocalPoint(value ?? null)")
@@ -138,7 +147,8 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     // retry that null sticks for the session, so Discovery's leaderboard and nearby reports vanish. Both
     // queryFns on this key therefore end on a cache read.
     const locationHook = read("../../data/hooks/location.ts")
-    const resolver = /async function resolveUserLocation\([\s\S]*?\n\}/.exec(locationHook)?.[0] ?? ""
+    const resolver =
+      /async function resolveUserLocation\([\s\S]*?\n\}/.exec(locationHook)?.[0] ?? ""
     expect(resolver).toContain("qc: QueryClient")
     expect(resolver).toContain(
       "return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null",
@@ -157,9 +167,13 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
     const locationHook = read("../../data/hooks/location.ts")
     expect(wizard).toContain('import { resolveUserLocation } from "../../data/hooks/location"')
-    expect(locationHook).toContain('import { DEVICE_FIX_TIMEOUT_MS, type LatLng } from "@civfix/contract"')
+    expect(locationHook).toContain(
+      'import { DEVICE_FIX_TIMEOUT_MS, type LatLng } from "@civfix/contract"',
+    )
     expect(locationHook).toContain('import { withTimeout } from "../../helpers"')
-    expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
+    expect(locationHook).toContain(
+      "await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)",
+    )
     // ...and the query must not retry: a denial that re-runs would re-prompt.
     expect(wizard).toContain("retry: false")
   })

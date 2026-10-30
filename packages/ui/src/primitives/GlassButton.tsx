@@ -1,6 +1,13 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { makeThemedStyles, useTheme, webCursor, webTransition, webHover, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webTransition,
+  webHover,
+  focusRingProps,
+} from "../theme"
 import { BlurSurface } from "../surface"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
 

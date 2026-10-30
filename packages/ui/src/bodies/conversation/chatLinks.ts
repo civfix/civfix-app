@@ -4,8 +4,7 @@ import { mentionScanRegex } from "./mentionMatch"
 import { normalizeHandle } from "../mentionText"
 
 export type ChatLinkTarget =
-  | { kind: "internal"; path: string; url: string }
-  | { kind: "external"; url: string }
+  { kind: "internal"; path: string; url: string } | { kind: "external"; url: string }
 
 export type ChatBodyToken =
   | { kind: "text"; text: string }
@@ -21,7 +20,26 @@ const HTTPS_URL_SCAN = /https:\/\/[^\s]+/gi
 const HTTPS_ORIGIN = /^https:\/\/([^/?#]*)/i
 const HOST = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(:\d{1,5})?$/
 
-const TRAILING_NOISE = new Set([".", ",", ";", ":", "!", "?", "'", '"', "“", "”", "‘", "’", "…", "*", "_", "~", "<", ">"])
+const TRAILING_NOISE = new Set([
+  ".",
+  ",",
+  ";",
+  ":",
+  "!",
+  "?",
+  "'",
+  '"',
+  "“",
+  "”",
+  "‘",
+  "’",
+  "…",
+  "*",
+  "_",
+  "~",
+  "<",
+  ">",
+])
 const CLOSERS: Record<string, string> = { ")": "(", "]": "[", "}": "{" }
 
 const HTTPS_DEFAULT_PORT = ":443"
@@ -161,7 +179,10 @@ function mentionSpans(body: string, mentions: ReadonlyMap<string, string | null>
   return spans
 }
 
-export function tokenizeChatBody(body: string, options: TokenizeChatBodyOptions = {}): ChatBodyToken[] {
+export function tokenizeChatBody(
+  body: string,
+  options: TokenizeChatBodyOptions = {},
+): ChatBodyToken[] {
   const origins = options.origins ?? []
   const links = linkSpans(body, origins)
   const mentions = mentionSpans(body, options.mentions ?? new Map()).filter(

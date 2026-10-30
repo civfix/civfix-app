@@ -82,9 +82,7 @@ describe("useLogout", () => {
   })
 
   it("keeps the user signed in on a server error, because the session cookie survives it", async () => {
-    logout.mockRejectedValue(
-      new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }),
-    )
+    logout.mockRejectedValue(new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }))
 
     await signOut()
 
@@ -230,6 +228,8 @@ describe("useRefreshSession", () => {
     expect(queryClient.getQueryState(queryKeys.mapReports(null, []))?.isInvalidated).toBe(false)
     expect(queryClient.getQueryState(queryKeys.report("r1"))?.isInvalidated).toBe(true)
     expect(queryClient.getQueryState(queryKeys.cleanupAttendees("c1"))?.isInvalidated).toBe(true)
-    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(
+      true,
+    )
   })
 })

@@ -42,7 +42,11 @@ export interface AnnouncementSeeAllLinkProps {
   hasMore: boolean
 }
 
-export function AnnouncementSeeAllLink({ cleanupId, loaded, hasMore }: AnnouncementSeeAllLinkProps) {
+export function AnnouncementSeeAllLink({
+  cleanupId,
+  loaded,
+  hasMore,
+}: AnnouncementSeeAllLinkProps) {
   const { t } = useT("host-broadcasts")
   const total = seeAllTotal(loaded, hasMore)
   return (
@@ -63,7 +67,12 @@ export function AnnouncementRetryRow({ onRetry }: { onRetry: () => void }) {
   return (
     <View style={styles.retryRow}>
       <Text variant="caption">{t("announce.section_error")}</Text>
-      <TextLink variant="label" standalone accessibilityLabel={t("announce.retry")} onPress={onRetry}>
+      <TextLink
+        variant="label"
+        standalone
+        accessibilityLabel={t("announce.retry")}
+        onPress={onRetry}
+      >
         {t("announce.retry")}
       </TextLink>
     </View>

@@ -11,7 +11,11 @@ export interface DeepLinkHostProps {
   deps?: React.DependencyList
 }
 
-export default function DeepLinkHost({ seed, to, deps = [] }: DeepLinkHostProps): React.JSX.Element {
+export default function DeepLinkHost({
+  seed,
+  to,
+  deps = [],
+}: DeepLinkHostProps): React.JSX.Element {
   const router = useRouter()
   const navigationRef = useNavigationContainerRef()
   const styles = useStyles()

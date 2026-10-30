@@ -351,10 +351,7 @@ function Panel({
   }
 
   return (
-    <PanelFrame
-      value={String(data.activity.reportsLinked)}
-      caption={t("card.impact_caption")}
-    >
+    <PanelFrame value={String(data.activity.reportsLinked)} caption={t("card.impact_caption")}>
       <StatRows
         rows={summaryImpactRows(data.activity).map((row) => ({
           key: row.key,

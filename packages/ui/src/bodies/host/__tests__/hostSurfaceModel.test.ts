@@ -39,7 +39,11 @@ const iso = (at: number): string => new Date(at).toISOString()
  * a stage the clock cannot produce is a state the app can never be in, so a hand-injected stage could
  * pin the CTA table to a phase/status pair that cannot co-exist.
  */
-function stageOf(startsAt: number, endsAt: number, status: EventWindowLike["status"] = "upcoming"): HostStage {
+function stageOf(
+  startsAt: number,
+  endsAt: number,
+  status: EventWindowLike["status"] = "upcoming",
+): HostStage {
   return hostStage({ status, scheduledAt: iso(startsAt), endsAt: iso(endsAt) }, NOW)
 }
 
@@ -154,7 +158,11 @@ describe("one primary CTA per stage", () => {
   it("keeps share when the viewer may not broadcast", () => {
     expect(
       hostPrimaryCta(
-        surface({ startsAt: NOW + 3 * HOUR, registeredSeats: 12, can: { ...ALL, broadcast: false } }),
+        surface({
+          startsAt: NOW + 3 * HOUR,
+          registeredSeats: 12,
+          can: { ...ALL, broadcast: false },
+        }),
       ),
     ).toBe("share")
   })
@@ -209,7 +217,13 @@ describe("one primary CTA per stage", () => {
     for (const stage of Object.values(STAGES)) {
       for (const can of [ALL, NONE]) {
         for (const hoursCredited of [0, 62.5]) {
-          const input = surface({ stage, can, hoursCredited, startsAt: NOW + HOUR, registeredSeats: 9 })
+          const input = surface({
+            stage,
+            can,
+            hoursCredited,
+            startsAt: NOW + HOUR,
+            registeredSeats: 9,
+          })
           const primary = hostPrimaryCta(input)
           const secondary = hostSecondaryCta(input)
           expect(secondary === null || secondary !== primary, `${stage}`).toBe(true)
@@ -225,7 +239,11 @@ describe("one primary CTA per stage", () => {
   })
 
   it("lets a past host correct hours that are already logged", () => {
-    const input = surface({ stage: STAGES.past, hoursCredited: 62.5, can: { ...ALL, broadcast: false } })
+    const input = surface({
+      stage: STAGES.past,
+      hoursCredited: 62.5,
+      can: { ...ALL, broadcast: false },
+    })
     expect(hostPrimaryCta(input)).toBe("duplicate")
     expect(hostSecondaryCta(input)).toBe("log_hours")
   })
@@ -314,9 +332,10 @@ describe("derived seat numbers", () => {
 
 describe("stat tiles per phase", () => {
   it("drops spots-left on an uncapped event", () => {
-    const keys = hostStatTiles(insights({ seats: { ...insights().seats, capacity: null } }), "upcoming").map(
-      (tile) => tile.key,
-    )
+    const keys = hostStatTiles(
+      insights({ seats: { ...insights().seats, capacity: null } }),
+      "upcoming",
+    ).map((tile) => tile.key)
     expect(keys).toEqual(["waitlist", "cancelled", "messages"])
   })
 
@@ -402,7 +421,11 @@ describe("action cards", () => {
   })
 
   it("gates cancel on the capability rather than on the stage alone", () => {
-    const cards = hostActionCards({ ...base, stage: STAGES.upcoming, can: { ...ALL, cancelEvent: false } })
+    const cards = hostActionCards({
+      ...base,
+      stage: STAGES.upcoming,
+      can: { ...ALL, cancelEvent: false },
+    })
     expect(cards.map((card) => card.key)).not.toContain("danger")
   })
 
@@ -419,7 +442,9 @@ describe("action cards", () => {
     expect(rowsFor({ stage: STAGES.underway })).not.toContain("log_hours")
     expect(rowsFor({ stage: STAGES.wrapping_up })).toContain("log_hours")
     expect(rowsFor({ stage: STAGES.past })).toContain("log_hours")
-    expect(rowsFor({ stage: STAGES.past, can: { ...ALL, logHours: false } })).not.toContain("log_hours")
+    expect(rowsFor({ stage: STAGES.past, can: { ...ALL, logHours: false } })).not.toContain(
+      "log_hours",
+    )
   })
 
   it("offers no-show marking only after the event and only while seats are unmarked", () => {
@@ -446,7 +471,12 @@ describe("action cards", () => {
   it("offers tickets on the web, where the console exists, and never on native", () => {
     expect(rowsFor({ stage: STAGES.upcoming, consoleReachable: true })).toContain("tickets")
     expect(rowsFor({ stage: STAGES.upcoming, consoleReachable: false })).not.toContain("tickets")
-    for (const stage of [STAGES.underway, STAGES.wrapping_up, STAGES.past, STAGES.cancelled] as const) {
+    for (const stage of [
+      STAGES.underway,
+      STAGES.wrapping_up,
+      STAGES.past,
+      STAGES.cancelled,
+    ] as const) {
       expect(rowsFor({ stage }), stage).not.toContain("tickets")
     }
   })
@@ -474,7 +504,10 @@ describe("action cards", () => {
   it("has one Team row, reachable for as long as the team is - the invite row was the same door", () => {
     for (const stage of [STAGES.upcoming, STAGES.underway, STAGES.past] as const) {
       const rows = rowsFor({ stage })
-      expect(rows.filter((row) => row === "team"), stage).toHaveLength(1)
+      expect(
+        rows.filter((row) => row === "team"),
+        stage,
+      ).toHaveLength(1)
     }
     expect(rowsFor({ stage: STAGES.upcoming, can: { ...ALL, manageTeam: false } })).not.toContain(
       "team",
@@ -497,9 +530,9 @@ describe("action cards", () => {
   })
 
   it("keeps the row off a gathering and off a host without manage_event", () => {
-    expect(rowsFor({ stage: STAGES.upcoming, isCleanup: false, linkedReportCount: 3 })).not.toContain(
-      "linked_reports",
-    )
+    expect(
+      rowsFor({ stage: STAGES.upcoming, isCleanup: false, linkedReportCount: 3 }),
+    ).not.toContain("linked_reports")
     expect(
       rowsFor({
         stage: STAGES.upcoming,
@@ -571,7 +604,6 @@ describe("a row never repeats a CTA the PhaseHeader is already showing", () => {
     expect(rows).not.toContain("announce")
     expect(rows).toContain("chat")
   })
-
 })
 
 describe("chart inputs", () => {
@@ -614,7 +646,10 @@ describe("chart inputs", () => {
     }))
     const points = arrivalSparkPoints(wide)
     expect(points).toHaveLength(MAX_ARRIVAL_SPARK_BUCKETS)
-    expect(points[points.length - 1]).toEqual({ key: String(59 * ARRIVAL_BUCKET_MINUTES), value: 59 })
+    expect(points[points.length - 1]).toEqual({
+      key: String(59 * ARRIVAL_BUCKET_MINUTES),
+      value: 59,
+    })
   })
 
   it("returns nothing at all when the server withheld the arrivals", () => {
@@ -650,7 +685,14 @@ describe("the duplicate sheet's event ref", () => {
     eventKind: "cleanup",
     scheduledAt: new Date(NOW).toISOString(),
     status: "done",
-    organizer: { id: "p-1", name: "Ann", handle: "ann", followers: 0, following: 0, isFollowing: false },
+    organizer: {
+      id: "p-1",
+      name: "Ann",
+      handle: "ann",
+      followers: 0,
+      following: 0,
+      isFollowing: false,
+    },
     going: 12,
     joined: true,
     bring: [],

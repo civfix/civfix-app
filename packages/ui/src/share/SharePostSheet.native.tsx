@@ -15,7 +15,12 @@ import { normalizeUserSearchTerm, useUserSearch } from "../data/hooks/direct"
 import { searchResultToPerson, toggleMember } from "../bodies/memberSelect"
 import { ShareActionTile } from "./ShareActionTile"
 import { SharePeople } from "./SharePeople"
-import { shareCopyTileFace, sharePeopleView, shareSheetFooter, type ShareCopyState } from "./shareSheetModel"
+import {
+  shareCopyTileFace,
+  sharePeopleView,
+  shareSheetFooter,
+  type ShareCopyState,
+} from "./shareSheetModel"
 import { useSharePostSession } from "./useSharePostSession"
 import type { SharePostSheetProps } from "./SharePostSheet.types"
 import { ShareNoteInput, ShareSignedOut } from "./ShareSheetParts"
@@ -104,7 +109,10 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
     copied: t("common-share:button.copied"),
     failed: t("actions.copy_failed"),
   })
-  const onShareAnotherWay = useCallback(() => run(session.shareElsewhere), [run, session.shareElsewhere])
+  const onShareAnotherWay = useCallback(
+    () => run(session.shareElsewhere),
+    [run, session.shareElsewhere],
+  )
   const onSignIn = useCallback(() => run(session.signIn), [run, session.signIn])
 
   return (
@@ -184,7 +192,12 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
               disabled={pending}
             />
           ) : null}
-          <ShareActionTile icon="Share" label={t("actions.more")} onPress={onShareAnotherWay} disabled={pending} />
+          <ShareActionTile
+            icon="Share"
+            label={t("actions.more")}
+            onPress={onShareAnotherWay}
+            disabled={pending}
+          />
         </View>
       )}
     </SlideUpSheet>

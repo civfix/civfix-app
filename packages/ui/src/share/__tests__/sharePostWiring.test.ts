@@ -22,7 +22,9 @@ const SHELL = code(read("../../shell/AppShell.tsx"))
 const BUBBLE = code(read("../../bodies/conversation/MessageBubble.tsx"))
 const MOBILE_LAYOUT = code(read("../../../../../apps/community-mobile/app/_layout.tsx"))
 const WEB_PROVIDERS = code(read("../../../../../apps/community-web/src/components/providers.tsx"))
-const WEB_INTERNAL_HREF = code(read("../../../../../apps/community-web/src/components/home/web-internal-href.ts"))
+const WEB_INTERNAL_HREF = code(
+  read("../../../../../apps/community-web/src/components/home/web-internal-href.ts"),
+)
 
 describe("the share glyph opens the sheet, and the primitives layer stays independent of it", () => {
   it("routes PostActionBar's onShare through useSharePost, not straight at shareLink", () => {
@@ -77,7 +79,9 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("shares one session hook between both presentations", () => {
     expect(SHEET).toContain("const session = useSharePostSession({ visible, target, onClose })")
-    expect(NATIVE_SHEET).toContain("const session = useSharePostSession({ visible, target, onClose })")
+    expect(NATIVE_SHEET).toContain(
+      "const session = useSharePostSession({ visible, target, onClose })",
+    )
     expect(SESSION).not.toMatch(/<\/?[A-Z][A-Za-z]*(\s|>|\/)/)
   })
 
@@ -93,9 +97,13 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     expect(NATIVE_SHEET).toContain("<SlideUpSheet")
     expect(NATIVE_SHEET).not.toContain("<ModalCardSheet")
     expect(NATIVE_SHEET).toContain("<SharePeople")
-    expect(NATIVE_SHEET).toMatch(/<ShareActionTile\s+icon=\{copyTile\.icon\}\s+label=\{copyTile\.label\}/)
+    expect(NATIVE_SHEET).toMatch(
+      /<ShareActionTile\s+icon=\{copyTile\.icon\}\s+label=\{copyTile\.label\}/,
+    )
     expect(NATIVE_SHEET).toMatch(/tone=\{copyTile\.tone\}/)
-    expect(NATIVE_SHEET).toMatch(/<ShareActionTile icon="Share" label=\{t\("actions.more"\)\} onPress=\{onShareAnotherWay\} disabled=\{pending\}/)
+    expect(NATIVE_SHEET).toMatch(
+      /<ShareActionTile icon="Share" label=\{t\("actions.more"\)\} onPress=\{onShareAnotherWay\} disabled=\{pending\}/,
+    )
     expect(PEOPLE).toMatch(/<FlatList\s+horizontal/)
     expect(PEOPLE).toContain('accessibilityRole="checkbox"')
   })
@@ -110,7 +118,9 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("keeps the copy tile's accessible NAME stable and reports the copied state as a value, not a rename", () => {
     expect(TILE).toContain("accessibilityLabel={name ?? label}")
-    expect(TILE).toContain("accessibilityValue={status === undefined ? undefined : { text: status }}")
+    expect(TILE).toContain(
+      "accessibilityValue={status === undefined ? undefined : { text: status }}",
+    )
     expect(TILE).not.toContain("accessibilityLiveRegion")
     expect(TILE).toContain('import { announce } from "../announce"')
     expect(TILE).toContain("announce(status)")
@@ -120,7 +130,9 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
   })
 
   it("native swaps the tiles for the compose bar once someone is picked, and never for a guest", () => {
-    expect(NATIVE_SHEET).toContain("const footer = shareSheetFooter(isAuthenticated, selected.length)")
+    expect(NATIVE_SHEET).toContain(
+      "const footer = shareSheetFooter(isAuthenticated, selected.length)",
+    )
     expect(NATIVE_SHEET).toMatch(/footer === "compose" \? \(/)
     expect(NATIVE_SHEET).toContain('t("actions.send_count", { count: selected.length })')
   })
@@ -132,14 +144,20 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("native confirms a copied link on the tile itself and never through the app toast, which sits behind the sheet's Modal", () => {
     expect(NATIVE_SHEET).not.toContain("useToast")
-    expect(NATIVE_SHEET).toMatch(/\.then\(\(\) => \{\s*haptics\.success\(\)\s*showCopyState\("copied"\)/)
-    expect(NATIVE_SHEET).toMatch(/\.catch\(\(\) => \{\s*haptics\.error\(\)\s*showCopyState\("failed"\)/)
+    expect(NATIVE_SHEET).toMatch(
+      /\.then\(\(\) => \{\s*haptics\.success\(\)\s*showCopyState\("copied"\)/,
+    )
+    expect(NATIVE_SHEET).toMatch(
+      /\.catch\(\(\) => \{\s*haptics\.error\(\)\s*showCopyState\("failed"\)/,
+    )
     expect(NATIVE_SHEET).toMatch(/\}, TOAST_QUIET_MS\)/)
     expect(NATIVE_SHEET).toMatch(/clearCopyReset\(\)\s*setCopyState\("idle"\)/)
   })
 
   it("native lays the guest prompt out as a row, so its fill-height variant takes its content height inside the content-sized sheet", () => {
-    expect(NATIVE_SHEET).toContain("<ShareSignedOut onSignIn={onSignIn} style={styles.signedOut} />")
+    expect(NATIVE_SHEET).toContain(
+      "<ShareSignedOut onSignIn={onSignIn} style={styles.signedOut} />",
+    )
     expect(PARTS).toMatch(/<View style=\{style\}>\s*<SignInPrompt/)
     expect(NATIVE_SHEET).toMatch(/signedOut: \{\s*flexDirection: "row"/)
     expect(NATIVE_SHEET).toContain('bodyLayout="fill"')
@@ -163,7 +181,9 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
   })
 
   it("never offers the viewer themselves as a recipient", () => {
-    expect(SESSION).toContain("const excludeIds = useMemo(() => (user?.id ? [user.id] : EMPTY_EXCLUDE)")
+    expect(SESSION).toContain(
+      "const excludeIds = useMemo(() => (user?.id ? [user.id] : EMPTY_EXCLUDE)",
+    )
     expect(SHEET).toContain("excludeIds={session.excludeIds}")
     expect(NATIVE_SHEET).toContain("excludeIds,")
   })
@@ -184,9 +204,13 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("offers the OS share sheet only AFTER its own overlay has fully left, which iOS requires", () => {
     for (const source of [SHEET, NATIVE_SHEET]) {
-      expect(source).toContain("const { run, settled } = useDeferredOverlayAction(visible, onCancel, onClosed)")
+      expect(source).toContain(
+        "const { run, settled } = useDeferredOverlayAction(visible, onCancel, onClosed)",
+      )
       expect(source).toContain("onClosed={settled}")
-      expect(source).toMatch(/const onShareAnotherWay = useCallback\(\(\) => run\(session\.shareElsewhere\)/)
+      expect(source).toMatch(
+        /const onShareAnotherWay = useCallback\(\(\) => run\(session\.shareElsewhere\)/,
+      )
     }
     expect(SESSION).toContain("void shareLink({")
   })
@@ -220,7 +244,9 @@ describe("a send in flight can never seal the sheet", () => {
     expect(SESSION).toMatch(
       /const onCancel = useCallback\(\(\): void => \{\s*if \(sending\.current\) \{\s*liveRun\.current = 0\s*share\.abort\(\)/,
     )
-    expect(SHEET).toContain('<SecondaryButton label={t("actions.cancel")} onPress={onCancel} size="sm" />')
+    expect(SHEET).toContain(
+      '<SecondaryButton label={t("actions.cancel")} onPress={onCancel} size="sm" />',
+    )
   })
 
   it("parks the OS share sheet while a send is running, so the two cannot race", () => {
@@ -229,13 +255,19 @@ describe("a send in flight can never seal the sheet", () => {
   })
 
   it("stays quiet about a run the viewer cancelled, beyond what actually got through", () => {
-    expect(SESSION).toMatch(/if \(liveRun\.current !== runId\) \{\s*if \(summary\.sent\.length > 0\) \{/)
+    expect(SESSION).toMatch(
+      /if \(liveRun\.current !== runId\) \{\s*if \(summary\.sent\.length > 0\) \{/,
+    )
   })
 
   it("keys completion to the run, so reopening the sheet cannot re-attach a cancelled one", () => {
     expect(SESSION).toMatch(/const runId = \+\+runSeq\.current\s*liveRun\.current = runId/)
     expect(SESSION).not.toContain("cancelledRef")
-    const reopen = sliceBetween(SESSION, "useEffect(() => {\n    if (!visible) return", "}, [visible])")
+    const reopen = sliceBetween(
+      SESSION,
+      "useEffect(() => {\n    if (!visible) return",
+      "}, [visible])",
+    )
     expect(reopen).toContain("setSelected(NO_SELECTION)")
     expect(reopen).not.toContain("liveRun")
   })
@@ -261,9 +293,15 @@ describe("the DM send path", () => {
   })
 
   it("stops the whole run on any transport failure, and only continues past a server refusal", () => {
-    expect(DELIVERY).toMatch(/if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs, deps\.signal\)\)\) \{\s*stopped = true\s*break/)
-    expect(DELIVERY).toMatch(/if \(outcome === "dropped"\) \{\s*waiter\.cancel\(\)\s*stopped = true\s*break/)
-    expect(DELIVERY).toMatch(/if \(verdict === "rejected"\) \{\s*outcomes\.set\(entry\.clientId, "failed"\)\s*continue/)
+    expect(DELIVERY).toMatch(
+      /if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs, deps\.signal\)\)\) \{\s*stopped = true\s*break/,
+    )
+    expect(DELIVERY).toMatch(
+      /if \(outcome === "dropped"\) \{\s*waiter\.cancel\(\)\s*stopped = true\s*break/,
+    )
+    expect(DELIVERY).toMatch(
+      /if \(verdict === "rejected"\) \{\s*outcomes\.set\(entry\.clientId, "failed"\)\s*continue/,
+    )
     expect(DELIVERY).toMatch(/stopped = true\s*break\s*\}\s*\} finally/)
   })
 
@@ -274,14 +312,18 @@ describe("the DM send path", () => {
   })
 
   it("bounds the ack wait with the same timeout the conversation composer uses", () => {
-    expect(HOOK).toContain('import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"')
+    expect(HOOK).toContain(
+      'import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"',
+    )
     expect(HOOK).toContain("ackTimeoutMs: SEND_TIMEOUT_MS")
   })
 
   it("reuses a thread id the inbox already knows instead of spending the openDm budget", () => {
     expect(HOOK).toMatch(/const known = knownRooms\?\.get\(recipientId\)/)
     expect(HOOK).toContain("return known ? Promise.resolve(known) : openDmRoom(api, recipientId)")
-    expect(SESSION).toContain("const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages)")
+    expect(SESSION).toContain(
+      "const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages)",
+    )
     expect(SESSION).toContain("share.send({ entries, body, knownRooms })")
   })
 
@@ -294,7 +336,9 @@ describe("the DM send path", () => {
 
   it("remembers every room a run opened, so a retry does not spend the openDm budget twice", () => {
     expect(HOOK).toContain("knownRooms?.get(recipientId) ?? openedRooms.current.get(recipientId)")
-    expect(HOOK).toContain("for (const [recipientId, roomId] of resolved) openedRooms.current.set(recipientId, roomId)")
+    expect(HOOK).toContain(
+      "for (const [recipientId, roomId] of resolved) openedRooms.current.set(recipientId, roomId)",
+    )
   })
 
   it("gives a frame the socket queued the composer's longer ack window", () => {
@@ -309,7 +353,9 @@ describe("the DM send path", () => {
   })
 
   it("re-arms the mounted flag on mount, so a dev double-invoke cannot wedge Send", () => {
-    expect(HOOK).toMatch(/useEffect\(\(\) => \{\s*alive\.current = true\s*return \(\) => \{\s*alive\.current = false/)
+    expect(HOOK).toMatch(
+      /useEffect\(\(\) => \{\s*alive\.current = true\s*return \(\) => \{\s*alive\.current = false/,
+    )
     expect(HOOK).toContain("if (alive.current) setIsPending(runs.busy)")
   })
 
@@ -321,7 +367,9 @@ describe("the DM send path", () => {
   })
 
   it("keeps only the failed recipients selected, so a manual resend cannot double-post", () => {
-    expect(SESSION).toContain("setSelected((prev) => prev.filter((person) => failedIds.has(person.id)))")
+    expect(SESSION).toContain(
+      "setSelected((prev) => prev.filter((person) => failedIds.has(person.id)))",
+    )
   })
 })
 
@@ -349,7 +397,9 @@ describe("a link in a message is opened BY THE HOST, never by shared code drivin
 
   it("hands the host a path, and keeps the entry lookup as the shared route parser's job", () => {
     const links = code(read("../../bodies/conversation/chatLinks.ts"))
-    expect(links).toContain('if (entryFromPath(parsed.path) === null) return { kind: "external", url }')
+    expect(links).toContain(
+      'if (entryFromPath(parsed.path) === null) return { kind: "external", url }',
+    )
     expect(links).toContain('return { kind: "internal", path: parsed.path, url }')
     expect(links).not.toContain("useNavStore")
   })
@@ -390,7 +440,9 @@ describe("both hosts inject openInternalHref", () => {
 
   it("web pushes the entry its own address map parses, because its shell persists across a push", () => {
     expect(WEB_PROVIDERS).toContain("openInternalHref: webOpenInternalHref,")
-    expect(WEB_INTERNAL_HREF).toMatch(/export const webOpenInternalHref: OpenInternalHrefCapability = \{/)
+    expect(WEB_INTERNAL_HREF).toMatch(
+      /export const webOpenInternalHref: OpenInternalHrefCapability = \{/,
+    )
     expect(WEB_INTERNAL_HREF).toContain("entryFor: entryFromWebPath,")
     expect(WEB_INTERNAL_HREF).toContain("const entry = entryFromWebPath(path)")
     expect(WEB_INTERNAL_HREF).toContain("useNavStore.getState().push(entry)")

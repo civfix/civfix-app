@@ -51,10 +51,22 @@ const DENIED_LICENSES = [
 const ALLOWED_PACKAGES = {
   // Font packages: the MIT covers their loader code, OFL-1.1 the font files the apps ship as separate
   // data, which OFL-1.1 allows bundled with any software (REUSE.toml declares the same fonts).
-  "@expo-google-fonts/baloo-2": { license: "MIT AND OFL-1.1", reason: "fonts under OFL-1.1, code under MIT" },
-  "@expo-google-fonts/bricolage-grotesque": { license: "MIT AND OFL-1.1", reason: "fonts under OFL-1.1, code under MIT" },
-  "@expo-google-fonts/hanken-grotesk": { license: "MIT AND OFL-1.1", reason: "fonts under OFL-1.1, code under MIT" },
-  "@expo-google-fonts/jetbrains-mono": { license: "MIT AND OFL-1.1", reason: "fonts under OFL-1.1, code under MIT" },
+  "@expo-google-fonts/baloo-2": {
+    license: "MIT AND OFL-1.1",
+    reason: "fonts under OFL-1.1, code under MIT",
+  },
+  "@expo-google-fonts/bricolage-grotesque": {
+    license: "MIT AND OFL-1.1",
+    reason: "fonts under OFL-1.1, code under MIT",
+  },
+  "@expo-google-fonts/hanken-grotesk": {
+    license: "MIT AND OFL-1.1",
+    reason: "fonts under OFL-1.1, code under MIT",
+  },
+  "@expo-google-fonts/jetbrains-mono": {
+    license: "MIT AND OFL-1.1",
+    reason: "fonts under OFL-1.1, code under MIT",
+  },
   // Its package.json spells the license "Apache 2.0", not an SPDX id; its LICENSE file is Apache-2.0.
   "qrcode-terminal": { license: "Apache 2.0", reason: "Apache-2.0 under a non-SPDX spelling" },
 }
@@ -205,7 +217,8 @@ export const parseLicenseReport = (value) => {
   /** @type {LicenseReport} */
   const report = {}
   for (const [license, packages] of Object.entries(value)) {
-    if (!isArray(packages)) throw new Error(`pnpm licenses list: "${license}" is not a list of packages`)
+    if (!isArray(packages))
+      throw new Error(`pnpm licenses list: "${license}" is not a list of packages`)
     report[license] = packages.map((pkg) => {
       const name = field(pkg, "name")
       const versions = field(pkg, "versions")

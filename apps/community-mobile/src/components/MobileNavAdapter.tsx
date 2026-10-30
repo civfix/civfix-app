@@ -67,8 +67,7 @@ export function useMobileNavAdapter(): void {
       shellMounted() ? (navigationRef.getCurrentRoute() ?? null) : null
     const focusedKey = (): string | null => nativeBridgeKey(focusedRoute())
     readFocusedRoute = focusedRoute
-    pushDetailRoute = (route) =>
-      router.push({ pathname: route.pathname, params: route.params })
+    pushDetailRoute = (route) => router.push({ pathname: route.pathname, params: route.params })
 
     const decide = (active: DetailEntry | null): void => {
       if (!shellMounted()) return

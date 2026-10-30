@@ -75,7 +75,18 @@ export function useInviteForm<Role>({
         onError: (err) => setErrorText(t(errorKey(appErrorCode(err)))),
       },
     )
-  }, [errorKey, identifierErrorKey, identifierKind, invite, onClose, role, sentMessage, t, toast, value])
+  }, [
+    errorKey,
+    identifierErrorKey,
+    identifierKind,
+    invite,
+    onClose,
+    role,
+    sentMessage,
+    t,
+    toast,
+    value,
+  ])
 
   return {
     identifierKind,

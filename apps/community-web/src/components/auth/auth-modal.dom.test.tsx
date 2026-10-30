@@ -51,7 +51,9 @@ afterEach(() => {
 describe("AuthModal one-time code", () => {
   it("keeps each digit in its own cell when a middle cell is cleared", async () => {
     await openAtCodeStep()
-    "12345".split("").forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
+    "12345"
+      .split("")
+      .forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
     fireEvent.change(cells()[2]!, { target: { value: "" } })
     expect(cells().map((cell) => cell.value)).toEqual(["1", "2", "", "4", "5", ""])
     expect(otpVerify).not.toHaveBeenCalled()
@@ -60,15 +62,21 @@ describe("AuthModal one-time code", () => {
   it("verifies the code the moment the sixth digit lands, with no deferred timer", async () => {
     otpVerify.mockReturnValue(new Promise(() => {}))
     await openAtCodeStep()
-    "123456".split("").forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
+    "123456"
+      .split("")
+      .forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
     expect(otpVerify).toHaveBeenCalledWith({ email: "a@b.co", code: "123456" })
   })
 
   it("returns focus to the first cell after a wrong code", async () => {
-    otpVerify.mockRejectedValue(Object.assign(new Error("bad"), { name: "AppError", code: "UNAUTHORIZED" }))
+    otpVerify.mockRejectedValue(
+      Object.assign(new Error("bad"), { name: "AppError", code: "UNAUTHORIZED" }),
+    )
     await openAtCodeStep()
     await act(async () => {
-      "123456".split("").forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
+      "123456"
+        .split("")
+        .forEach((digit, i) => fireEvent.change(cells()[i]!, { target: { value: digit } }))
     })
     expect(cells().every((cell) => cell.value === "" && !cell.disabled)).toBe(true)
     expect(document.activeElement).toBe(cells()[0])

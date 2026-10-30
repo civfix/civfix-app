@@ -76,15 +76,25 @@ describe("no client asks a third party where the viewer is", () => {
   })
 
   it("routes the approximate point through the typed client instead", () => {
-    const helper = readFileSync(join(repoRoot, "packages/ui/src/data/fetchApproximateLocation.ts"), "utf8")
+    const helper = readFileSync(
+      join(repoRoot, "packages/ui/src/data/fetchApproximateLocation.ts"),
+      "utf8",
+    )
     expect(helper).toContain("api.getApproximateLocation({})")
     expect(helper).toContain("queryKeys.approximateLocation")
-    for (const rel of ["packages/ui/src/bodies/useAddressSearch.ts", "packages/ui/src/data/hooks/location.ts"]) {
-      expect(readFileSync(join(repoRoot, rel), "utf8")).toContain("fetchApproximateLocation(api, qc)")
+    for (const rel of [
+      "packages/ui/src/bodies/useAddressSearch.ts",
+      "packages/ui/src/data/hooks/location.ts",
+    ]) {
+      expect(readFileSync(join(repoRoot, rel), "utf8")).toContain(
+        "fetchApproximateLocation(api, qc)",
+      )
     }
-    expect(readFileSync(join(repoRoot, "packages/ui/src/bodies/reportFlow/useApproxCenter.ts"), "utf8")).toContain(
-      "queryFn: () => resolveUserLocation(geo, api, qc),",
-    )
-    expect(readFileSync(join(repoRoot, "packages/ui/src/bodies/CreateCleanupBody.tsx"), "utf8")).toContain("useUserLocation()")
+    expect(
+      readFileSync(join(repoRoot, "packages/ui/src/bodies/reportFlow/useApproxCenter.ts"), "utf8"),
+    ).toContain("queryFn: () => resolveUserLocation(geo, api, qc),")
+    expect(
+      readFileSync(join(repoRoot, "packages/ui/src/bodies/CreateCleanupBody.tsx"), "utf8"),
+    ).toContain("useUserLocation()")
   })
 })

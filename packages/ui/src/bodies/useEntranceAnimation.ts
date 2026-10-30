@@ -40,13 +40,18 @@ export function useEntranceAnimation({
 
   const { translateY, scale } = from
   return useMemo(() => {
-    const rise = { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [translateY, 0] }) }
+    const rise = {
+      translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [translateY, 0] }),
+    }
     return {
       opacity: progress,
       transform:
         scale === undefined
           ? [rise]
-          : [rise, { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [scale, 1] }) }],
+          : [
+              rise,
+              { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [scale, 1] }) },
+            ],
     }
   }, [progress, scale, translateY])
 }

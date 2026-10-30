@@ -58,7 +58,8 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
       cleanup.lat != null && cleanup.lng != null
         ? geocodePointKey({ lat: cleanup.lat, lng: cleanup.lng })
         : null,
-    coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
+    coords:
+      cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
     date: wallClockToFormDate(start),
     time: wallClockToFormTime(start),
     endTime: seededEndTime(cleanup, timezone),
@@ -226,7 +227,9 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         ) : (
           <Icon icon={iconMap.Check} size={18} color={th.colors.onAccent} />
         )}
-        <Text style={styles.saveText}>{update.isPending ? t("save.saving") : t("save.button")}</Text>
+        <Text style={styles.saveText}>
+          {update.isPending ? t("save.saving") : t("save.button")}
+        </Text>
       </Pressable>
     </ScrollView>
   )
@@ -250,7 +253,9 @@ export function EditCleanupBody({ id }: { id: string }) {
           variant="detail"
           title={t("signIn.title")}
           body={t("signIn.body")}
-          onSignIn={() => requireAuth(() => {}, { next: pathForEntry({ kind: "edit-cleanup", id }) })}
+          onSignIn={() =>
+            requireAuth(() => {}, { next: pathForEntry({ kind: "edit-cleanup", id }) })
+          }
         />
       </View>
     )

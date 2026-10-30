@@ -383,11 +383,7 @@ function quantize(rgb, pixelCount) {
       b += entry.rgb[2] * entry.count
       indexByKey.set(entry.key, index)
     }
-    palette.push([
-      Math.round(r / box.count),
-      Math.round(g / box.count),
-      Math.round(b / box.count),
-    ])
+    palette.push([Math.round(r / box.count), Math.round(g / box.count), Math.round(b / box.count)])
   })
   const indices = new Uint8Array(pixelCount)
   for (let i = 0; i < pixelCount; i += 1) {
@@ -508,8 +504,16 @@ async function composeStill(scene, scheme) {
   const top = Math.round(center.y - height / 2)
   /** @type {{ tx: number, ty: number }[]} */
   const tiles = []
-  for (let ty = Math.floor(top / TILE_PX); ty <= Math.floor((top + height - 1) / TILE_PX); ty += 1) {
-    for (let tx = Math.floor(left / TILE_PX); tx <= Math.floor((left + width - 1) / TILE_PX); tx += 1) {
+  for (
+    let ty = Math.floor(top / TILE_PX);
+    ty <= Math.floor((top + height - 1) / TILE_PX);
+    ty += 1
+  ) {
+    for (
+      let tx = Math.floor(left / TILE_PX);
+      tx <= Math.floor((left + width - 1) / TILE_PX);
+      tx += 1
+    ) {
       tiles.push({ tx, ty })
     }
   }
@@ -533,7 +537,10 @@ async function composeStill(scene, scheme) {
         const o = (py * width + px) * 3
         for (let c = 0; c < 3; c += 1) {
           const blended = at(tile.rgba, s + c) * alpha + at(paper, c) * (1 - alpha)
-          rgb[o + c] = scheme === "dark" ? liftChannel(blended, DARK_RASTER_BRIGHTNESS_MIN) : Math.round(blended)
+          rgb[o + c] =
+            scheme === "dark"
+              ? liftChannel(blended, DARK_RASTER_BRIGHTNESS_MIN)
+              : Math.round(blended)
         }
       }
     }
@@ -595,7 +602,8 @@ function writePreview(dir, scene, scheme, still) {
 }
 
 mkdirSync(outDir, { recursive: true })
-if (!CARTO_KEY) console.warn("no CARTO key resolved from app.config.js; tiles will carry CARTO's watermark")
+if (!CARTO_KEY)
+  console.warn("no CARTO key resolved from app.config.js; tiles will carry CARTO's watermark")
 /** @type {{ attribution: string, tileRatio: string, files: Record<string, unknown> }} */
 const manifest = { attribution: DEFAULT_ATTRIBUTION, tileRatio: TILE_RATIO, files: {} }
 let totalBytes = 0
@@ -628,4 +636,6 @@ for (const stage of ONBOARDING_MAP_STAGES) {
 }
 
 writeFileSync(join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`)
-console.log(`total ${(totalBytes / 1024).toFixed(0)} KB across ${Object.keys(manifest.files).length} stills`)
+console.log(
+  `total ${(totalBytes / 1024).toFixed(0)} KB across ${Object.keys(manifest.files).length} stills`,
+)

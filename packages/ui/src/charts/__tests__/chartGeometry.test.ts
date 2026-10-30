@@ -27,7 +27,15 @@ describe("the y axis starts at zero and never at the smallest value", () => {
 
 describe("bars", () => {
   it("lays each bar in its own slot, with the gap taken off the width", () => {
-    const rects = barRects([{ key: "a", value: 5 }, { key: "b", value: 10 }], 40, 20, { gap: 4 })
+    const rects = barRects(
+      [
+        { key: "a", value: 5 },
+        { key: "b", value: 10 },
+      ],
+      40,
+      20,
+      { gap: 4 },
+    )
     expect(rects).toEqual([
       { key: "a", x: 2, y: 10, width: 16, height: 10 },
       { key: "b", x: 22, y: 0, width: 16, height: 20 },
@@ -35,7 +43,14 @@ describe("bars", () => {
   })
 
   it("reads a suppressed bar as no bar rather than as a full-height one", () => {
-    const rects = barRects([{ key: "a", value: null }, { key: "b", value: 4 }], 40, 20)
+    const rects = barRects(
+      [
+        { key: "a", value: null },
+        { key: "b", value: 4 },
+      ],
+      40,
+      20,
+    )
     expect(rects[0]?.height).toBe(0)
     expect(rects[1]?.height).toBe(20)
   })
@@ -182,4 +197,3 @@ describe("the drawn bar chart and the progress ring are each one labelled image"
     expect(roots[0]).toContain('accessibilityRole="image"')
   })
 })
-

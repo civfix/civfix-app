@@ -1,5 +1,11 @@
 import { useCallback } from "react"
-import { AppError, ErrorCode, type ChatMessageDTO, type ReactionEmoji, type RoomKind } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  type ChatMessageDTO,
+  type ReactionEmoji,
+  type RoomKind,
+} from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { applyVoteLocally } from "../pollVote"
 import { toggleReactionBucket } from "../reactions"
@@ -46,7 +52,8 @@ export function useChatMessageActions({
       roomEndpoints(api, roomKind, roomId)
         .toggleReaction(messageId, emoji)
         .then((updated) => {
-          if (updated && updated.id === messageId) patchMessage(messageId, { reactions: updated.reactions })
+          if (updated && updated.id === messageId)
+            patchMessage(messageId, { reactions: updated.reactions })
         })
         .catch(() => {
           patchMessage(messageId, snapshot)
@@ -67,8 +74,7 @@ export function useChatMessageActions({
       patchMessage(messageId, { body, editedAt: new Date().toISOString() })
 
       try {
-        const mentions =
-          mentionedUserIds && mentionedUserIds.length > 0 ? { mentionedUserIds } : {}
+        const mentions = mentionedUserIds && mentionedUserIds.length > 0 ? { mentionedUserIds } : {}
         const updated = isDm
           ? await api.editDmMessage({ threadId: roomId, messageId, body, ...mentions })
           : await api.editChatMessage({ roomKind, roomId, messageId, body, ...mentions })
@@ -121,7 +127,8 @@ export function useChatMessageActions({
 
   const createPoll = useCallback(
     async (input: CreatePollInput): Promise<void> => {
-      if (isDm) throw new AppError(ErrorCode.VALIDATION, "Polls are not available in direct messages.")
+      if (isDm)
+        throw new AppError(ErrorCode.VALIDATION, "Polls are not available in direct messages.")
       const msg = await api.createPoll({
         roomKind,
         roomId,
@@ -138,7 +145,8 @@ export function useChatMessageActions({
   const votePoll = useCallback(
     async (messageId: string, optionIdxs: number[]): Promise<void> => {
       const prior = findMessage(messageId)
-      if (!prior || !prior.poll) throw new AppError(ErrorCode.NOT_FOUND, "That poll is no longer available.")
+      if (!prior || !prior.poll)
+        throw new AppError(ErrorCode.NOT_FOUND, "That poll is no longer available.")
       const snapshot: Pick<ChatMessageDTO, "poll"> = { poll: prior.poll }
       const hadVoted = prior.poll.myVote.length > 0
 

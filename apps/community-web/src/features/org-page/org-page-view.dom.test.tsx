@@ -69,7 +69,12 @@ describe("public organization page copy", () => {
     orgQuery = { isPending: false, isError: true, error: { code: "NOT_FOUND", message: "x" } }
     await renderAt("/orgs/beach-crew/")
     cleanup()
-    orgQuery = { isPending: false, isError: true, error: new TypeError("Failed to fetch"), refetch: () => {} }
+    orgQuery = {
+      isPending: false,
+      isError: true,
+      error: new TypeError("Failed to fetch"),
+      refetch: () => {},
+    }
     await renderAt("/orgs/beach-crew/")
     expect(screen.getByText("public.error_title")).toBeTruthy()
     assertCatalogOnly()
@@ -86,16 +91,27 @@ describe("public organization page links", () => {
   })
 
   it("drops a website or donation URL with credentials, an IP literal or a non-https scheme", async () => {
-    const linkHrefs = () => Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href"))
+    const linkHrefs = () =>
+      Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href"))
     orgQuery = {
       isPending: false,
       isError: false,
-      data: { ...ORG, websiteUrl: "https://203.0.113.9/", donationUrl: "https://user@give.example.org/" },
+      data: {
+        ...ORG,
+        websiteUrl: "https://203.0.113.9/",
+        donationUrl: "https://user@give.example.org/",
+      },
     }
     await renderAt("/orgs/beach-crew/")
-    expect(linkHrefs().filter((href) => href?.includes("203.0.113.9") || href?.includes("user@"))).toEqual([])
+    expect(
+      linkHrefs().filter((href) => href?.includes("203.0.113.9") || href?.includes("user@")),
+    ).toEqual([])
     cleanup()
-    orgQuery = { isPending: false, isError: false, data: { ...ORG, websiteUrl: "http://beach.example.org/" } }
+    orgQuery = {
+      isPending: false,
+      isError: false,
+      data: { ...ORG, websiteUrl: "http://beach.example.org/" },
+    }
     await renderAt("/orgs/beach-crew/")
     expect(linkHrefs()).not.toContain("http://beach.example.org/")
     expect(linkHrefs()).toContain("https://give.example.org/")

@@ -1,4 +1,8 @@
-import { DISPLAY_NAME_MAX_LENGTH, isValidHandle, type HandleAvailableResponse } from "@civfix/contract"
+import {
+  DISPLAY_NAME_MAX_LENGTH,
+  isValidHandle,
+  type HandleAvailableResponse,
+} from "@civfix/contract"
 
 // The two fields plus the joining space must fit the display name cap, or the server rejects the save
 // with a VALIDATION error the user cannot act on.

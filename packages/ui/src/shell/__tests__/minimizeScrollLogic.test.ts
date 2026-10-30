@@ -29,7 +29,12 @@ describe("reduceMinimize priming + top band", () => {
   })
 
   it("at/above the top band (y <= MIN_OFFSET) the bar is ALWAYS restored, accumulator cleared", () => {
-    const minimized: MinimizeState = { lastY: 300, accum: MINIMIZE_THRESHOLD, minimized: true, primed: true }
+    const minimized: MinimizeState = {
+      lastY: 300,
+      accum: MINIMIZE_THRESHOLD,
+      minimized: true,
+      primed: true,
+    }
     const s = reduceMinimize(minimized, MINIMIZE_MIN_OFFSET) // exactly at the floor
     expect(s.minimized).toBe(false)
     expect(s.accum).toBe(0)
@@ -69,7 +74,12 @@ describe("reduceMinimize down-scroll collapses after ~threshold of travel", () =
 })
 
 describe("reduceMinimize up-scroll restores (hysteresis)", () => {
-  const minimized: MinimizeState = { lastY: 300, accum: MINIMIZE_THRESHOLD, minimized: true, primed: true }
+  const minimized: MinimizeState = {
+    lastY: 300,
+    accum: MINIMIZE_THRESHOLD,
+    minimized: true,
+    primed: true,
+  }
 
   it("a direction reversal restarts the accumulator, so one threshold of UP travel restores", () => {
     const s = reduceMinimize(minimized, 300 - MINIMIZE_THRESHOLD) // -14 in one frame
@@ -93,14 +103,24 @@ describe("reduceMinimize up-scroll restores (hysteresis)", () => {
 
 describe("reduceMinimize overscroll bounce", () => {
   it("clamps negative offsets (rubber-band past the top) to 0 and restores", () => {
-    const minimized: MinimizeState = { lastY: 200, accum: MINIMIZE_THRESHOLD, minimized: true, primed: true }
+    const minimized: MinimizeState = {
+      lastY: 200,
+      accum: MINIMIZE_THRESHOLD,
+      minimized: true,
+      primed: true,
+    }
     const s = reduceMinimize(minimized, -40)
     expect(s.minimized).toBe(false)
     expect(s.lastY).toBe(0)
   })
 
   it("an equal-offset frame is a no-op on the decision", () => {
-    const minimized: MinimizeState = { lastY: 200, accum: MINIMIZE_THRESHOLD, minimized: true, primed: true }
+    const minimized: MinimizeState = {
+      lastY: 200,
+      accum: MINIMIZE_THRESHOLD,
+      minimized: true,
+      primed: true,
+    }
     const s = reduceMinimize(minimized, 200)
     expect(s.minimized).toBe(true)
     expect(s.accum).toBe(MINIMIZE_THRESHOLD)
@@ -113,6 +133,8 @@ describe("reduceMinimize honours custom thresholds", () => {
     // With a tiny threshold of 4, a 5pt down-scroll collapses.
     expect(reduceMinimize(primed, 105, { threshold: 4 }).minimized).toBe(true)
     // With a large minOffset, an offset under it forces open.
-    expect(reduceMinimize({ ...primed, minimized: true }, 50, { minOffset: 80 }).minimized).toBe(false)
+    expect(reduceMinimize({ ...primed, minimized: true }, 50, { minOffset: 80 }).minimized).toBe(
+      false,
+    )
   })
 })

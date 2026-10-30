@@ -2,8 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
-const strip = (src: string): string =>
-  src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
   .map((file) => strip(read(file)))
@@ -93,7 +92,9 @@ describe("the thread row is flat, not a card", () => {
 describe("the separator", () => {
   it("is a FlatList separator, hoisted so it never remounts the list", () => {
     expect(inbox).toContain("ItemSeparatorComponent={ThreadSeparator}")
-    expect(inbox).toMatch(/function ThreadSeparator\(\) \{\s*const styles = useStyles\(\)\s*return <View style=\{styles\.separator\} \/>/)
+    expect(inbox).toMatch(
+      /function ThreadSeparator\(\) \{\s*const styles = useStyles\(\)\s*return <View style=\{styles\.separator\} \/>/,
+    )
     expect(inbox).not.toMatch(/<View style=\{styles\.separator\} \/>\s*<\/Pressable>/)
   })
 
@@ -117,7 +118,9 @@ describe("read and unread are distinguishable at a glance", () => {
     expect(inbox).toMatch(/title: \{[\s\S]{0,200}?color: t\.colors\.text,/)
     expect(inbox).toMatch(/titleUnread: \{\s*fontFamily: t\.fontFamily\.bodyBold,\s*\}/)
     expect(inbox).toContain("[styles.title, unread ? styles.titleUnread : null]")
-    expect(inbox).not.toMatch(/titleRead|title: \{[\s\S]{0,200}?color: t\.colors\.text(Muted|Subtle)/)
+    expect(inbox).not.toMatch(
+      /titleRead|title: \{[\s\S]{0,200}?color: t\.colors\.text(Muted|Subtle)/,
+    )
   })
 
   it("splits the PREVIEW by weight AND ink, and the read state is the quieter grey", () => {
@@ -158,7 +161,9 @@ describe("the preview is truncated ONCE, by the layout", () => {
       /function previewText\(thread: MessageThreadDTO, t: TFn\): string \{\s*const body = thread\.last\?\.trim\(\)\s*if \(!body\) return t\("preview\.new_conversation"\)\s*return thread\.lastFromMe \? t\("preview\.from_me", \{ text: body \}\) : body\s*\}/,
     )
     expect(inbox).toMatch(/\{previewText\(thread, t\)\}/)
-    expect(inbox).toMatch(/style=\{\[styles\.last, unread \? styles\.lastUnread : null\]\} numberOfLines=\{1\}/)
+    expect(inbox).toMatch(
+      /style=\{\[styles\.last, unread \? styles\.lastUnread : null\]\} numberOfLines=\{1\}/,
+    )
   })
 })
 
@@ -225,7 +230,12 @@ describe("the inbox search field", () => {
   })
 
   it("takes every one of its strings from the catalog", () => {
-    for (const key of ["search.placeholder", "search.a11y", "search.clear_a11y", "empty.no_match.title"]) {
+    for (const key of [
+      "search.placeholder",
+      "search.a11y",
+      "search.clear_a11y",
+      "empty.no_match.title",
+    ]) {
       expect(inbox).toContain(key)
     }
   })

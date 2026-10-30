@@ -28,7 +28,9 @@ describe("dark color scheme", () => {
 
   it("keeps every color a 6-digit hex", () => {
     const hexes = leafPaths(darkColor).map((path) =>
-      path.split(".").reduce<unknown>((acc, key) => (acc as Record<string, unknown>)[key], darkColor),
+      path
+        .split(".")
+        .reduce<unknown>((acc, key) => (acc as Record<string, unknown>)[key], darkColor),
     )
     for (const hex of hexes) expect(hex).toMatch(/^#[0-9A-F]{6}$/)
   })
@@ -82,7 +84,9 @@ describe("dark color scheme", () => {
   })
 
   it("keeps the on-accent foreground legible on the accent fill in the dark scheme", () => {
-    expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.bloom)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.bloom)).toBeGreaterThanOrEqual(
+      4.5,
+    )
     expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.moss)).toBeGreaterThanOrEqual(4.5)
     expect(contrastRatio(darkColor.neutral.paper, darkColor.brand.sun)).toBeGreaterThanOrEqual(4.5)
     for (const hex of Object.values(darkColor.category)) {

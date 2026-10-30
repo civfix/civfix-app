@@ -31,7 +31,21 @@ const association = /** @type {unknown} */ (
 
 describe("SPA-fallback completeness gate", () => {
   it("passes for the committed _redirects and the routes that ship a placeholder shell", () => {
-    const shipped = ["pin", "cleanups", "people", "messages", "groups", "channels", "post", "compose", "leaderboard", "service-record", "manage", "e", "orgs"]
+    const shipped = [
+      "pin",
+      "cleanups",
+      "people",
+      "messages",
+      "groups",
+      "channels",
+      "post",
+      "compose",
+      "leaderboard",
+      "service-record",
+      "manage",
+      "e",
+      "orgs",
+    ]
     expect(spaFallbackGaps(shipped, redirects)).toEqual([])
   })
 
@@ -136,7 +150,10 @@ describe("legal document hashing", () => {
   })
 
   it("ignores the version attribute, so a version bump alone is not a content change", () => {
-    const bumped = html.replace('data-legal-version="2026-09-06"', 'data-legal-version="2027-01-01"')
+    const bumped = html.replace(
+      'data-legal-version="2026-09-06"',
+      'data-legal-version="2027-01-01"',
+    )
     expect(legalDocumentHash(bumped)?.sha256).toBe(legalDocumentHash(html)?.sha256)
   })
 
@@ -152,13 +169,15 @@ describe("legal document hashing", () => {
     expect(canonicalDocumentText("<p>a</p><SCRIPT>evil()</SCRIPT >")).toBe("a")
     expect(canonicalDocumentText('<p>a</p><script type="x">evil()</script\n data-x="1">')).toBe("a")
     expect(canonicalDocumentText("<p>a</p><style>p{}</style\t>")).toBe("a")
-    expect(canonicalDocumentText("<p>a</p><script>one()</script/><p>b</p><script>two()</script>")).toBe("a\nb")
+    expect(
+      canonicalDocumentText("<p>a</p><script>one()</script/><p>b</p><script>two()</script>"),
+    ).toBe("a\nb")
   })
 
   it("keeps the text of elements that only start with script or style", () => {
-    expect(canonicalDocumentText("<p>a</p><script-note>b</script-note><styled-text>c</styled-text>")).toBe(
-      "a\nb c",
-    )
+    expect(
+      canonicalDocumentText("<p>a</p><script-note>b</script-note><styled-text>c</styled-text>"),
+    ).toBe("a\nb c")
   })
 
   it("returns null when there is no legal article to hash", () => {

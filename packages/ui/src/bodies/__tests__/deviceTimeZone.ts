@@ -9,7 +9,8 @@ import { afterEach, beforeEach, expect, vi } from "vitest"
 export function pinDeviceTimeZone(zone: string): void {
   beforeEach(() => {
     vi.stubEnv("TZ", zone)
-    const canonical = new Intl.DateTimeFormat("en-US", { timeZone: zone }).resolvedOptions().timeZone
+    const canonical = new Intl.DateTimeFormat("en-US", { timeZone: zone }).resolvedOptions()
+      .timeZone
     expect(new Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(canonical)
   })
   afterEach(() => {

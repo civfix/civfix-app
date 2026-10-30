@@ -87,12 +87,7 @@ export function RsvpPill({
         accessibilityRole="text"
         accessibilityState={{ disabled: true }}
         accessibilityLabel={t("a11y.ended")}
-        style={[
-          styles.target,
-          stretchToCell ? styles.targetStretch : null,
-          layout.target,
-          style,
-        ]}
+        style={[styles.target, stretchToCell ? styles.targetStretch : null, layout.target, style]}
       >
         <View
           style={[
@@ -119,7 +114,13 @@ export function RsvpPill({
       accessibilityState={{ selected: going, busy }}
       accessibilityLabel={going ? t("a11y.going") : t("a11y.rsvp")}
       {...focusRingProps}
-      style={[styles.target, stretchToCell ? styles.targetStretch : null, layout.target, webCursor(busy), style]}
+      style={[
+        styles.target,
+        stretchToCell ? styles.targetStretch : null,
+        layout.target,
+        webCursor(busy),
+        style,
+      ]}
     >
       {(state) => {
         const visual = (
@@ -140,7 +141,10 @@ export function RsvpPill({
             ) : going ? (
               <>
                 <Icon icon={iconMap.Check} size={14} color={fg} />
-                <Text color={fg} style={[styles.label, compact ? styles.labelSm : null, webNoSelect]}>
+                <Text
+                  color={fg}
+                  style={[styles.label, compact ? styles.labelSm : null, webNoSelect]}
+                >
                   {t("label.going")}
                 </Text>
               </>

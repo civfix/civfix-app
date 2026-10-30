@@ -50,7 +50,10 @@ function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
 describe("mark-notifications-read cache reconciliation", () => {
   it("flips read across every flat list (inbox + bell preview) and leaves the prefs object untouched", () => {
     const qc = new QueryClient()
-    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [note("n1", false), note("n2", false)])
+    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [
+      note("n1", false),
+      note("n2", false),
+    ])
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(20), [note("n1", false)])
     qc.setQueryData<NotificationPrefsDTO>(queryKeys.notificationPrefs, PREFS)
 
@@ -66,20 +69,22 @@ describe("mark-notifications-read cache reconciliation", () => {
 
   it("rolls every patched list back to its snapshot on error", () => {
     const qc = new QueryClient()
-    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [note("n1", false), note("n2", false)])
+    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [
+      note("n1", false),
+      note("n2", false),
+    ])
     qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(20), [note("n1", false)])
 
     const previous = snapshotLists(qc)
     patchReadInFlatLists(qc, ["n1", "n2"])
-    expect(qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(50))!.every((n) => n.read)).toBe(
-      true,
-    )
+    expect(
+      qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(50))!.every((n) => n.read),
+    ).toBe(true)
 
     for (const [key, data] of previous) qc.setQueryData(key as unknown[], data)
-    expect(qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(50))!.map((n) => n.read)).toEqual([
-      false,
-      false,
-    ])
+    expect(
+      qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(50))!.map((n) => n.read),
+    ).toEqual([false, false])
     const restoredPreview = qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(20))!
     expect(restoredPreview.map((n) => n.read)).toEqual([false])
   })
@@ -105,6 +110,8 @@ describe("useUpdatePrivacySettings user snapshot", () => {
     const src = readFileSync(join(__dirname, "..", "hooks", "notifications.ts"), "utf8")
     const body = sliceBetween(src, "export function useUpdatePrivacySettings", "return useMutation")
     expect(body).not.toMatch(/^ {2}userRef\.current = user$/m)
-    expect(body).toMatch(/useLayoutEffect\(\(\) => \{\n\s+userRef\.current = user\n\s+\}, \[user\]\)/)
+    expect(body).toMatch(
+      /useLayoutEffect\(\(\) => \{\n\s+userRef\.current = user\n\s+\}, \[user\]\)/,
+    )
   })
 })

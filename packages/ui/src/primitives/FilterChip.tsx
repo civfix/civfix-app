@@ -52,7 +52,9 @@ export function FilterChip({
       disabled={disabled}
       accessibilityRole={SELECTION_ROLE[selection]}
       {...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}
-      accessibilityLabel={accessibilityLabel ?? (count === undefined ? label : `${label}, ${count}`)}
+      accessibilityLabel={
+        accessibilityLabel ?? (count === undefined ? label : `${label}, ${count}`)
+      }
       hitSlop={CHIP_HIT_SLOP}
       {...focusRingProps}
       style={(state) => [

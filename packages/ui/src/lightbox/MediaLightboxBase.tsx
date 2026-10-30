@@ -89,7 +89,13 @@ export function MediaLightboxBase({
   ) : null
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} {...modalProps}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      {...modalProps}
+    >
       <View style={styles.root} accessibilityViewIsModal {...rootProps}>
         <Pressable
           style={styles.scrim}
@@ -112,9 +118,7 @@ export function MediaLightboxBase({
         ) : null}
 
         {current && current.kind !== "image" ? (
-          <View style={[styles.stage, pointerEventStyles["box-none"]]}>
-            {media}
-          </View>
+          <View style={[styles.stage, pointerEventStyles["box-none"]]}>{media}</View>
         ) : null}
 
         <LightboxControl
@@ -160,7 +164,14 @@ interface LightboxControlProps {
   iconColor: string
 }
 
-function LightboxControl({ onPress, label, offset, icon, iconSize, iconColor }: LightboxControlProps) {
+function LightboxControl({
+  onPress,
+  label,
+  offset,
+  icon,
+  iconSize,
+  iconColor,
+}: LightboxControlProps) {
   const styles = useStyles()
   return (
     <Pressable
@@ -168,7 +179,13 @@ function LightboxControl({ onPress, label, offset, icon, iconSize, iconColor }: 
       accessibilityRole="button"
       accessibilityLabel={label}
       {...focusRingProps}
-      style={(state) => [styles.controlBase, offset, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
+      style={(state) => [
+        styles.controlBase,
+        offset,
+        webCursor(false),
+        webTransition,
+        state.pressed ? styles.controlPressed : null,
+      ]}
     >
       <Icon icon={icon} size={iconSize} color={iconColor} />
     </Pressable>

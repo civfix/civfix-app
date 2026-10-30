@@ -9,11 +9,7 @@ import { useT } from "@civfix/ui/i18n"
 import { cn } from "@/lib/utils"
 import { errorMessage } from "@/lib/error-messages"
 import { releaseCaptured } from "@/lib/web-camera"
-import {
-  acceptDroppedImage,
-  pickConsoleImage,
-  uploadConsoleImage,
-} from "./upload"
+import { acceptDroppedImage, pickConsoleImage, uploadConsoleImage } from "./upload"
 
 import { ConsoleIconButton } from "../../button"
 
@@ -90,7 +86,10 @@ export function ImageUploadField({
     [onChange],
   )
 
-  const room = Math.max(0, max - values.length - slots.filter((s) => s.state === "uploading").length)
+  const room = Math.max(
+    0,
+    max - values.length - slots.filter((s) => s.state === "uploading").length,
+  )
 
   const startUpload = useCallback(
     async (mediaUri: string, media: Parameters<typeof uploadConsoleImage>[0]["media"]) => {

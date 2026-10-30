@@ -56,12 +56,22 @@ export function HostLogHoursBody({ id }: { id: string }) {
 
   if (gate === "denied") {
     return (
-      <HostStateNotice icon="Lock" title={t("state.no_access_title")} body={t("state.no_access_body")} />
+      <HostStateNotice
+        icon="Lock"
+        title={t("state.no_access_title")}
+        body={t("state.no_access_body")}
+      />
     )
   }
 
   if (gate === "not-yet") {
-    return <HostStateNotice icon="Clock" title={t("hours.not_yet_title")} body={t("hours.not_yet_body")} />
+    return (
+      <HostStateNotice
+        icon="Clock"
+        title={t("hours.not_yet_title")}
+        body={t("hours.not_yet_body")}
+      />
+    )
   }
 
   return (

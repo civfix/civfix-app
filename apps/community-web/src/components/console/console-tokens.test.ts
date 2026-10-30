@@ -4,10 +4,7 @@ import { colorSchemes, shadowSchemes } from "@civfix/tokens"
 import type { ColorSchemeName } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
 
-const CSS = readFileSync(
-  fileURLToPath(new URL("../../app/globals.css", import.meta.url)),
-  "utf8",
-)
+const CSS = readFileSync(fileURLToPath(new URL("../../app/globals.css", import.meta.url)), "utf8")
 
 function blockFor(scheme: ColorSchemeName): string {
   const start = CSS.indexOf(scheme === "light" ? "  :root {" : "  .dark {")
@@ -36,9 +33,7 @@ describe("--console-* variables track @civfix/tokens", () => {
       )
       expect(readVar(block, "console-tint").toUpperCase()).toBe(c.neutral.cardTint.toUpperCase())
       expect(readVar(block, "console-line").toUpperCase()).toBe(c.neutral.ink5.toUpperCase())
-      expect(readVar(block, "console-line-strong").toUpperCase()).toBe(
-        c.neutral.ink4.toUpperCase(),
-      )
+      expect(readVar(block, "console-line-strong").toUpperCase()).toBe(c.neutral.ink4.toUpperCase())
       expect(readVar(block, "console-ink").toUpperCase()).toBe(c.neutral.ink.toUpperCase())
       expect(readVar(block, "console-ink-2").toUpperCase()).toBe(c.neutral.ink2.toUpperCase())
       expect(readVar(block, "console-ink-3").toUpperCase()).toBe(c.neutral.ink3.toUpperCase())

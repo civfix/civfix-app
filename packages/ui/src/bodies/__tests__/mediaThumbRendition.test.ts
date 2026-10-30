@@ -21,7 +21,9 @@ describe("the MediaPreview seams decode the thumb rendition for images only", ()
 
   for (const [name, source] of Object.entries(SEAMS)) {
     it(`${name} resolves its image source from thumbUri`, () => {
-      expect(source).toMatch(/const \{ label, source, failed, onError \} = useMediaPreviewSource\(\{ kind, uri, thumbUri, alt \}\)/)
+      expect(source).toMatch(
+        /const \{ label, source, failed, onError \} = useMediaPreviewSource\(\{ kind, uri, thumbUri, alt \}\)/,
+      )
       expect(source).toMatch(/source=\{\{ uri: source \}\}/)
     })
 

@@ -181,7 +181,12 @@ function FirstRunForm() {
           </FirstRunScrollView>
 
           <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
-            <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
+            <PrimaryButton
+              label={t("continue")}
+              loading={submitting}
+              disabled={!canSubmit}
+              onPress={() => void onSubmit()}
+            />
             <Pressable
               onPress={() => void signOut()}
               accessibilityRole="button"
@@ -290,7 +295,11 @@ const useStyles = makeThemedStyles((t) => ({
   signOut: { alignSelf: "center", marginTop: t.space["3"] },
   signOutPressed: { opacity: 0.6 },
   signOutText: { textAlign: "center" },
-  retryTarget: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["2"] },
+  retryTarget: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
+    paddingHorizontal: t.space["2"],
+  },
   retryText: { fontFamily: t.fontFamily.bodySemiBold },
   retryPressed: { opacity: 0.6 },
 }))

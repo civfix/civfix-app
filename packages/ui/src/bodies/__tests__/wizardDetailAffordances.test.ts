@@ -41,14 +41,17 @@ describe("Toggle: one row, one tab stop", () => {
 
 describe("controls that are not RNW Pressables still get the house ring", () => {
   it("LocationPicker.web's Reset writes the data attribute by hand", () => {
-    const resetButton = locationPicker.match(/<button[\s\S]*?onClick=\{onReset\}[\s\S]*?>/)?.[0] ?? ""
+    const resetButton =
+      locationPicker.match(/<button[\s\S]*?onClick=\{onReset\}[\s\S]*?>/)?.[0] ?? ""
     expect(resetButton).toContain('data-focus-ring=""')
     expect(locationPicker).toMatch(/overlayReset: \{[\s\S]*?borderRadius: t\.radius\.pill/)
   })
 
   it("AddressSearch answers focus on the WRAPPER, since webInputReset strips the input's UA ring", () => {
     expect(addressSearch).toContain("webInputReset")
-    expect(addressSearch).toMatch(/style=\{\[styles\.field, focused \? styles\.fieldFocused : null\]\}/)
+    expect(addressSearch).toMatch(
+      /style=\{\[styles\.field, focused \? styles\.fieldFocused : null\]\}/,
+    )
     expect(addressSearch).toMatch(/onFocus=\{\(\) => \{\s*setFocused\(true\)/)
     expect(addressSearch).toMatch(/onBlur=\{\(\) => setFocused\(false\)\}/)
     expect(addressSearch).toMatch(/fieldFocused: inputFocusedStyle\(t\),\n {2}input: \{/)
@@ -69,12 +72,15 @@ describe("the composer's two attach lists speak one web vocabulary", () => {
   it.each([
     ["LinkedEventCard", linkedEvent],
     ["LinkedReportCard", linkedReport],
-  ])("%s carries the focus ring, the cursor, the hover branch and the house transition", (_name, src) => {
-    expect(src).toContain("focusRingProps")
-    expect(src).toContain("webTransition")
-    expect(src).toContain("webCursor")
-    expect(src).toContain("webHover(state)")
-  })
+  ])(
+    "%s carries the focus ring, the cursor, the hover branch and the house transition",
+    (_name, src) => {
+      expect(src).toContain("focusRingProps")
+      expect(src).toContain("webTransition")
+      expect(src).toContain("webCursor")
+      expect(src).toContain("webHover(state)")
+    },
+  )
 
   it("LinkedReportCard hovers with a FILL, because an opacity dim is invisible on a white card", () => {
     const hovered = linkedReport.match(/\n {2}hovered: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
@@ -85,7 +91,8 @@ describe("the composer's two attach lists speak one web vocabulary", () => {
 
   it("hovering a SELECTED picker card deepens its coral instead of repainting it tan", () => {
     expect(linkedReport).toMatch(/selectable && selected\s*\?\s*styles\.hoveredSelected/)
-    const hoveredSelected = linkedReport.match(/\n {2}hoveredSelected: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+    const hoveredSelected =
+      linkedReport.match(/\n {2}hoveredSelected: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(hoveredSelected).toContain('t.colors.bloom["100"]')
   })
 
@@ -107,7 +114,8 @@ describe("NotificationsBody rows answer the pointer like every other list root",
 
   it("an unread row keeps its coral wash on hover rather than being repainted tan", () => {
     expect(notifications).toMatch(/item\.read \? styles\.rowHovered : styles\.rowUnreadHovered/)
-    const unreadHover = notifications.match(/\n {2}rowUnreadHovered: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+    const unreadHover =
+      notifications.match(/\n {2}rowUnreadHovered: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
     expect(unreadHover).toContain('t.colors.bloom["100"]')
   })
 })
@@ -124,14 +132,19 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
 
   it("keeps the hugging pill on every LIST card, and renders none on the detail", () => {
     const rsvpElements = (src: string) =>
-      src.split("<RsvpPill").slice(1).map((seg) => seg.slice(0, seg.indexOf("/>")))
+      src
+        .split("<RsvpPill")
+        .slice(1)
+        .map((seg) => seg.slice(0, seg.indexOf("/>")))
     const cards: Array<[string, string]> = [
       ["SearchResults", strip(read("../search/SearchResults.tsx"))],
       ["EventsBody", strip(read("../EventsBody.tsx"))],
       ["LinkedEventCard", linkedEvent],
     ]
     const filled = cards.flatMap(([name, src]) =>
-      rsvpElements(src).filter((el) => /\bfill\b/.test(el)).map(() => name),
+      rsvpElements(src)
+        .filter((el) => /\bfill\b/.test(el))
+        .map(() => name),
     )
     expect(filled).toEqual([])
     expect(cards.every(([, src]) => rsvpElements(src).length > 0)).toBe(true)
@@ -158,7 +171,8 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     expect(eventDetail).not.toMatch(/useLayoutMode/)
     expect(eventDetail).not.toContain('label={t("actions.repost")}')
     expect(eventDetail).not.toContain('label={t("actions.share")}')
-    const titleRow = eventDetail.match(/<View style=\{styles\.titleRow\}>[\s\S]*?\n {8}<\/View>/)?.[0] ?? ""
+    const titleRow =
+      eventDetail.match(/<View style=\{styles\.titleRow\}>[\s\S]*?\n {8}<\/View>/)?.[0] ?? ""
     expect(titleRow).toContain("onPress={onRepost}")
     expect(titleRow).toContain("onPress={onShare}")
     expect(titleRow).toContain("iconMap.RefreshCw")

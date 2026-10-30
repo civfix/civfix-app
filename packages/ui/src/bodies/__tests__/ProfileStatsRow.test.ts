@@ -10,11 +10,21 @@ const catalog = JSON.parse(
   readFileSync(new URL("../../i18n/locales/en/profile-view.json", import.meta.url), "utf8"),
 ) as { stats?: Record<string, string>; impact?: Record<string, string> }
 
-const items = [...SOURCE.matchAll(/\{ key: "([a-z]+)", value: ([^,]+), labelKey: "([a-z.]+)", connection: ([^ ]+) \}/g)]
+const items = [
+  ...SOURCE.matchAll(
+    /\{ key: "([a-z]+)", value: ([^,]+), labelKey: "([a-z.]+)", connection: ([^ ]+) \}/g,
+  ),
+]
 
 describe("the profile's five numbers", () => {
   it("runs Following, Followers, Reports, Fixed, Cleanups - in that order", () => {
-    expect(items.map((m) => m[1])).toEqual(["following", "followers", "reports", "fixed", "cleanups"])
+    expect(items.map((m) => m[1])).toEqual([
+      "following",
+      "followers",
+      "reports",
+      "fixed",
+      "cleanups",
+    ])
     expect(items.map((m) => m[2])).toEqual([
       "source.following",
       "source.followers",
@@ -54,7 +64,9 @@ describe("the profile's five numbers", () => {
   })
 
   it("counts go through the ONE compact formatter the app already has", () => {
-    expect(SOURCE).toContain('import { formatPostActionCount } from "../primitives/postActionModel"')
+    expect(SOURCE).toContain(
+      'import { formatPostActionCount } from "../primitives/postActionModel"',
+    )
     expect(SOURCE).toContain("formatPostActionCount(item.value)")
     expect(SOURCE).not.toMatch(/toLocaleString|Intl\.NumberFormat/)
     expect(SOURCE).toContain("accessibilityLabel={`${count} ${label}`}")

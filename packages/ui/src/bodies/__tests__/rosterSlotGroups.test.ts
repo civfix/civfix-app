@@ -127,7 +127,11 @@ describe("a paginated roster omits the empty-slot placeholder", () => {
   })
 
   it("keeps the order, the counts and the trailing unassigned group", () => {
-    const items = groupRosterBySlot([person("p1"), person("p2", "s2"), person("p3", "s1")], slots, OPEN)
+    const items = groupRosterBySlot(
+      [person("p1"), person("p2", "s2"), person("p3", "s1")],
+      slots,
+      OPEN,
+    )
     expect(shape(items)).toEqual([
       "slot-header:s1",
       "member:p3",
@@ -149,12 +153,7 @@ describe("a paginated roster omits the empty-slot placeholder", () => {
 
   it("leaves the placeholder behaviour untouched when a title IS supplied", () => {
     const items = groupRosterBySlot([person("p1", "s2")], slots, OPTS)
-    expect(shape(items)).toEqual([
-      "slot-header:s1",
-      "slot-empty:s1",
-      "slot-header:s2",
-      "member:p1",
-    ])
+    expect(shape(items)).toEqual(["slot-header:s1", "slot-empty:s1", "slot-header:s2", "member:p1"])
   })
 })
 
@@ -253,7 +252,11 @@ describe("the grouping takes registration rows, not just attendees", () => {
 
 describe("rosterListKey", () => {
   it("is unique and stable across the three item kinds", () => {
-    const items = groupRosterBySlot([person("p1"), person("p2", "s1")], [slot("s1"), slot("s2")], OPTS)
+    const items = groupRosterBySlot(
+      [person("p1"), person("p2", "s1")],
+      [slot("s1"), slot("s2")],
+      OPTS,
+    )
     const keys = items.map(rosterListKey)
     expect(new Set(keys).size).toBe(keys.length)
     expect(keys).toContain("slot-header:unassigned")
@@ -303,7 +306,11 @@ describe("timed slots in the grouped roster", () => {
   })
 
   it("keeps the item keys exactly as they were", () => {
-    const items = groupRosterBySlot([person("p1", "early")], [timed("early", 0, 60), slot("s2")], OPTS)
+    const items = groupRosterBySlot(
+      [person("p1", "early")],
+      [timed("early", 0, 60), slot("s2")],
+      OPTS,
+    )
     expect(items.map(rosterListKey)).toContain("slot-header:early")
     expect(items.map(rosterListKey)).toContain("slot-empty:s2")
   })

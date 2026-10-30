@@ -44,7 +44,9 @@ describe("notifications list", () => {
   })
 
   it("announces the body and the time, not only the title", () => {
-    expect(src).toContain("const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)")
+    expect(src).toContain(
+      "const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)",
+    )
     expect(src).toMatch(
       /accessibilityLabel=\{item\.read\s*\? \[item\.title, \.\.\.a11yDetails\]\.join\(", "\)\s*: \[t\("row\.unreadSuffix", \{ title: item\.title \}\), \.\.\.a11yDetails\]\.join\(", "\)\}/,
     )
@@ -55,7 +57,9 @@ describe("service-hours transcript card", () => {
   const src = surfaceSource("certificateCard")
 
   it("tells the person when copying failed instead of swallowing it", () => {
-    expect(src).toContain('.catch(() => toast.show(t("transcript.copy_error"), { variant: "error" }))')
+    expect(src).toContain(
+      '.catch(() => toast.show(t("transcript.copy_error"), { variant: "error" }))',
+    )
     expect(src).not.toContain(".catch(() => {})")
   })
 
@@ -63,7 +67,9 @@ describe("service-hours transcript card", () => {
     expect(src).toContain("hitSlop={REVOKE_LINK_HIT_SLOP}")
     expect(src.match(/hitSlop=\{CONFIRM_BTN_HIT_SLOP\}/g) ?? []).toHaveLength(2)
     expectThemeHitSlop(src)
-    expect(src).toMatch(/top: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),\s*bottom: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),/)
+    expect(src).toMatch(
+      /top: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),\s*bottom: hitSlopToTarget\(CONFIRM_BTN_HEIGHT\),/,
+    )
   })
 })
 
@@ -71,7 +77,9 @@ describe("profile invitations", () => {
   it("keeps the invitations that loaded when the other source failed", () => {
     const card = read("../profile/InvitationsCard.tsx")
     expect(card).toMatch(/if \(errorNotice && slice\.total === 0\)/)
-    expect(card).toMatch(/onDecline=\{onDeclineOrgInvite\}\s*\/>\s*\)\)\}\s*\{errorNotice\}\s*<\/SectionCard>/)
+    expect(card).toMatch(
+      /onDecline=\{onDeclineOrgInvite\}\s*\/>\s*\)\)\}\s*\{errorNotice\}\s*<\/SectionCard>/,
+    )
   })
 
   it("exposes the decline link as disabled while the invite is in flight", () => {

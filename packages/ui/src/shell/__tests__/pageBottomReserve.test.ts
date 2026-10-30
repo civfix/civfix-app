@@ -20,7 +20,13 @@ describe("pageBottomReserve - where a full page wears its safe-area bottom", () 
   })
 
   it("boxes only the pages that pin a composer or footer under their list", () => {
-    expect([...BOX_KINDS].sort()).toEqual(["composer", "new-channel", "new-group", "post-thread", "thread"])
+    expect([...BOX_KINDS].sort()).toEqual([
+      "composer",
+      "new-channel",
+      "new-group",
+      "post-thread",
+      "thread",
+    ])
   })
 
   it("never boxes a table-scroll kind: by the table's own definition such a body pins nothing", () => {
@@ -37,12 +43,16 @@ describe("PageStack.native routes the reserve per layer", () => {
 
   it("pads the layer box only for a footer-pinning page, and hands a scroll-owning page its reserve as content padding", () => {
     expect(src).toMatch(/const reserve = pageBottomReserve\(entry\.kind\)/)
-    expect(src).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
+    expect(src).toMatch(
+      /const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/,
+    )
     expect(src).toMatch(/const contentReserve = reserve === "content" \? paddingBottom : 0/)
     expect(src).toMatch(
       /const bodyScrollHost = reserve === "content" \? contentBottomReserveScrollHost\(scrollHost\) : scrollHost/,
     )
-    expect(src).toMatch(/<View style=\{\[styles\.layerContent, \{ paddingBottom: boxReserve, paddingTop \}\]\}>/)
+    expect(src).toMatch(
+      /<View style=\{\[styles\.layerContent, \{ paddingBottom: boxReserve, paddingTop \}\]\}>/,
+    )
     expect(src).toMatch(
       /<ContentBottomReserveProvider value=\{contentReserve\}>\s*<ScrollHostProvider value=\{bodyScrollHost\}>/,
     )
@@ -65,7 +75,9 @@ describe("ContentBottomReserve - the one additive content-padding decorator", ()
 
   it("memoizes the decorated host per base so a page body never remounts on a re-render", () => {
     expect(src).toMatch(/new WeakMap<ScrollHostValue, ScrollHostValue>\(\)/)
-    expect(src).toMatch(/const cached = RESERVED_HOSTS\.get\(base\)\s*\n\s*if \(cached\) return cached/)
+    expect(src).toMatch(
+      /const cached = RESERVED_HOSTS\.get\(base\)\s*\n\s*if \(cached\) return cached/,
+    )
   })
 
   it("is the sheet's safe-area content padding too, not a second copy of it", () => {

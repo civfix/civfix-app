@@ -213,10 +213,7 @@ describe("PostCard model", () => {
   })
 
   it("has a null handle label when the author has no handle", () => {
-    const model = buildPostCardModel(
-      basePost({ author: { ...author, handle: null } }),
-      t,
-    )
+    const model = buildPostCardModel(basePost({ author: { ...author, handle: null } }), t)
 
     expect(model.handleLabel).toBeNull()
   })
@@ -247,7 +244,9 @@ describe("PostCard model", () => {
         new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url),
         "utf8",
       )
-      expect((JSON.parse(catalog) as Record<string, unknown>).post_card, locale).not.toHaveProperty("organizer")
+      expect((JSON.parse(catalog) as Record<string, unknown>).post_card, locale).not.toHaveProperty(
+        "organizer",
+      )
     }
   })
 
@@ -389,7 +388,10 @@ describe("PostCard replying-to line", () => {
       basePost({ report: resolvedReport, media: [] }),
       basePost({ report: resolvedReport, media: [media("cleared")] }),
       basePost({ report: resolvedReport, media: [media("before"), media("after")] }),
-      basePost({ report: { ...resolvedReport, status: "published" as const }, media: [media("a")] }),
+      basePost({
+        report: { ...resolvedReport, status: "published" as const },
+        media: [media("a")],
+      }),
     ]
     for (const post of cases) {
       const model = buildPostCardModel(post, t)
@@ -448,7 +450,9 @@ describe("post identity resolves who the card presents as", () => {
     expect(buildPostIdentity(official, null, t, "Deleted account").official).toBe(true)
     expect(buildPostIdentity(official, org, t, "Deleted account").official).toBe(false)
     expect(buildPostIdentity(author, null, t, "Deleted account").official).toBe(false)
-    expect(buildPostIdentity({ ...author, official: false }, null, t, "Deleted account").official).toBe(false)
+    expect(
+      buildPostIdentity({ ...author, official: false }, null, t, "Deleted account").official,
+    ).toBe(false)
     expect(buildPostIdentity(null, null, t, "Deleted account").official).toBe(false)
   })
 
@@ -475,12 +479,18 @@ describe("post identity resolves who the card presents as", () => {
  */
 describe("PostCard's link-role controls answer the keyboard", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
-  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(
+    new URL("../../theme/webAffordances.ts", import.meta.url),
+    "utf8",
+  )
 
   /** The JSX props block of the Pressable whose `accessibilityLabel` matches, so a grep is per control. */
   const pressableWith = (marker: string): string => {
     const at = SRC.indexOf(marker)
-    expect(at, `${marker} is gone from PostCard.tsx - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
+    expect(
+      at,
+      `${marker} is gone from PostCard.tsx - re-scope the guard, do not delete it`,
+    ).toBeGreaterThan(-1)
     const open = SRC.lastIndexOf("<Pressable", at)
     expect(open, `no <Pressable opens before ${marker}`).toBeGreaterThan(-1)
     const style = SRC.indexOf("style=", open)
@@ -502,23 +512,32 @@ describe("PostCard's link-role controls answer the keyboard", () => {
       'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}', // PostMetaRow timestamp
       "accessibilityLabel={model.replyingToLabel}", // the reply's parent link
     ]) {
-      expect(pressableWith(marker), `${marker} lost its keyboard activation`).toContain("linkKeyProps(")
+      expect(pressableWith(marker), `${marker} lost its keyboard activation`).toContain(
+        "linkKeyProps(",
+      )
     }
     // EVERY link-role Pressable in the file, not just the three named above: role and keys arrive
     // together or the control is a dead tab stop. (A link-role `Text` - the body's @mentions - is NOT a
     // tab stop: RNW gives a Text no tabIndex, so it is reached by pointer only and is out of scope here.)
-    const pressables = SRC.split("<Pressable").slice(1).map((block) => block.slice(0, block.indexOf("</Pressable>")))
+    const pressables = SRC.split("<Pressable")
+      .slice(1)
+      .map((block) => block.slice(0, block.indexOf("</Pressable>")))
     const linkPressables = pressables.filter((block) => /accessibilityRole="link"/.test(block))
     expect(linkPressables.length).toBeGreaterThanOrEqual(5)
     for (const block of linkPressables) {
-      expect(block, `a role=link Pressable has no keyboard activation:\n${block.slice(0, 200)}`).toContain(
-        "linkKeyProps(",
-      )
+      expect(
+        block,
+        `a role=link Pressable has no keyboard activation:\n${block.slice(0, 200)}`,
+      ).toContain("linkKeyProps(")
     }
   })
 
   it("stops Space scrolling the feed under the focused link, and ignores keys from nested controls", () => {
-    const helper = sliceBetween(AFFORDANCES, "function activateOnLinkKey", "export function linkKeyProps")
+    const helper = sliceBetween(
+      AFFORDANCES,
+      "function activateOnLinkKey",
+      "export function linkKeyProps",
+    )
     expect(helper).toContain('e.key !== "Enter"')
     expect(helper).toContain("e.target !== e.currentTarget")
     expect(helper).toContain("e.preventDefault?.()")
@@ -543,7 +562,10 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
 
 describe("the flat row's focus ring is drawn INSIDE its own box", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
-  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(
+    new URL("../../theme/webAffordances.ts", import.meta.url),
+    "utf8",
+  )
 
   it("insets the ring by its own footprint so the scroller cannot clip it", () => {
     // The row is exactly the width of an `overflow: hidden auto` scroller and the next row's opaque
@@ -551,14 +573,18 @@ describe("the flat row's focus ring is drawn INSIDE its own box", () => {
     // indicator was one coral bar ABOVE the row, i.e. pointing at the row above it.
     expect(AFFORDANCES).toContain("outlineOffset: -FOCUS_RING_FOOTPRINT")
     expect(AFFORDANCES).toMatch(/const RING_SPEC = .*\.exec\(tokens\.shadow\.ring\)/)
-    expect(AFFORDANCES).toMatch(/export const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/)
+    expect(AFFORDANCES).toMatch(
+      /export const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/,
+    )
   })
 
   it("passes it as a PLAIN style object, which is the only form that wins the cascade", () => {
     // RNW compiles StyleSheet entries into atomic CLASSES (specificity 0,1,0) and the ring rule is
     // `[data-focus-ring]:focus-visible` (0,2,0) - so as a StyleSheet entry the inset silently loses and
     // the ring stays outside. A plain object is written inline, which outranks any stylesheet rule.
-    expect(AFFORDANCES).toMatch(/export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\n\s*\? \{ outlineOffset:/)
+    expect(AFFORDANCES).toMatch(
+      /export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\n\s*\? \{ outlineOffset:/,
+    )
     expect(SRC).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
     expect(SRC).not.toMatch(/const WEB_ROW_FOCUS_INSET/)
     const rowFlat = sliceBetween(SRC, "rowFlat: {", "rowFlatHovered")

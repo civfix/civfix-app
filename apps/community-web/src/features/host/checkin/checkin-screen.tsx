@@ -20,7 +20,12 @@ import {
   WalkupSheet,
 } from "./checkin-sections"
 
-const DOOR_COUNTER_CELLS: readonly CounterCell[] = ["checked_in", "registered", "waitlist", "no_show"]
+const DOOR_COUNTER_CELLS: readonly CounterCell[] = [
+  "checked_in",
+  "registered",
+  "waitlist",
+  "no_show",
+]
 
 export function CheckinScreen() {
   const { t } = useT("host-checkin")

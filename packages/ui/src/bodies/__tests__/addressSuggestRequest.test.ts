@@ -9,12 +9,18 @@ import { ADDRESS_SUGGEST_LIMIT, buildSuggestRequest } from "../addressSuggestReq
 
 describe("address suggest request", () => {
   it("sends only q + limit when there is no bias", () => {
-    expect(buildSuggestRequest("1600 penn")).toEqual({ q: "1600 penn", limit: ADDRESS_SUGGEST_LIMIT })
+    expect(buildSuggestRequest("1600 penn")).toEqual({
+      q: "1600 penn",
+      limit: ADDRESS_SUGGEST_LIMIT,
+    })
   })
 
   it("carries the map-viewport bias when one resolved", () => {
     expect(
-      buildSuggestRequest("main st", { proximity: { lat: 34.05, lng: -118.24 }, proximityZoom: 13 }),
+      buildSuggestRequest("main st", {
+        proximity: { lat: 34.05, lng: -118.24 },
+        proximityZoom: 13,
+      }),
     ).toEqual({
       q: "main st",
       limit: ADDRESS_SUGGEST_LIMIT,

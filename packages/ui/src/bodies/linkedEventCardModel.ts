@@ -47,11 +47,18 @@ export function visibleAttendeeSlots(previewCount: number, going: number): numbe
 }
 
 /** The stack's cells in order. A placeholder stands in for no one, so its seat is the only identity it has. */
-export const ATTENDEE_SEATS: readonly string[] = Array.from({ length: FACE_CAP }, (_unused, seat) => `seat-${seat}`)
+export const ATTENDEE_SEATS: readonly string[] = Array.from(
+  { length: FACE_CAP },
+  (_unused, seat) => `seat-${seat}`,
+)
 
 const MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
 const DAY_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric" }
-const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" }
+const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  hour: "numeric",
+  minute: "2-digit",
+}
 
 /**
  * The attached-event card's presentation. `t` is bound to the `event-card` namespace (this card's own
@@ -70,16 +77,26 @@ export function buildLinkedEventCardModel(
   const going = context.going ?? event.going
   const joined = context.joined ?? false
   const attendees = context.attendees?.slice(0, FACE_CAP) ?? []
-  const month = valid ? safeDateFormat(event.scheduledAt, locale, MONTH_OPTIONS, timeZone).toUpperCase() : "--"
+  const month = valid
+    ? safeDateFormat(event.scheduledAt, locale, MONTH_OPTIONS, timeZone).toUpperCase()
+    : "--"
   const day = valid ? safeDateFormat(event.scheduledAt, locale, DAY_OPTIONS, timeZone) : "--"
-  const zone = valid ? eventZoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null
+  const zone = valid
+    ? eventZoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale)
+    : null
   const clock = valid
     ? safeDateFormat(event.scheduledAt, locale, CLOCK_OPTIONS, timeZone)
     : t("linked.schedule_unavailable")
   const scheduleLabel = zone === null ? clock : `${clock} ${zone}`
   const locationLabel = context.address?.trim() || t("linked.location_fallback")
   const goingLabel = t("going", { count: going })
-  const dateSlots = { month, day, title: event.title, schedule: scheduleLabel, location: locationLabel }
+  const dateSlots = {
+    month,
+    day,
+    title: event.title,
+    schedule: scheduleLabel,
+    location: locationLabel,
+  }
   return {
     title: event.title,
     month,

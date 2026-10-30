@@ -50,9 +50,7 @@ describe("shouldEngageHandoff", () => {
     expect(shouldEngageHandoff(0, 30, HANDOFF_SLOP, 10)).toBe(true)
   })
   it("defaults dx to 0, so a caller that passes none behaves exactly as a straight pull-down", () => {
-    expect(shouldEngageHandoff(0, 9, HANDOFF_SLOP)).toBe(
-      shouldEngageHandoff(0, 9, HANDOFF_SLOP, 0),
-    )
+    expect(shouldEngageHandoff(0, 9, HANDOFF_SLOP)).toBe(shouldEngageHandoff(0, 9, HANDOFF_SLOP, 0))
   })
   it("pins the axis literal to HANDOFF_AXIS_RATIO (worklet const-capture trap)", () => {
     expect(HANDOFF_AXIS_RATIO).toBe(1.5)

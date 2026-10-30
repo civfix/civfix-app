@@ -25,12 +25,18 @@ const theme = { colors: { accent: "#F0685C" } } as unknown as Theme
 describe("inputFocusedStyle", () => {
   it("draws the coral border and the ring token on web", async () => {
     const { inputFocusedStyle } = await load("web")
-    expect(inputFocusedStyle(theme)).toEqual({ boxShadow: tokens.shadow.ring, borderColor: "#F0685C" })
+    expect(inputFocusedStyle(theme)).toEqual({
+      boxShadow: tokens.shadow.ring,
+      borderColor: "#F0685C",
+    })
   })
 
   it("ignores the native fallback on web", async () => {
     const { inputFocusedStyle } = await load("web")
-    expect(inputFocusedStyle(theme, {})).toEqual({ boxShadow: tokens.shadow.ring, borderColor: "#F0685C" })
+    expect(inputFocusedStyle(theme, {})).toEqual({
+      boxShadow: tokens.shadow.ring,
+      borderColor: "#F0685C",
+    })
   })
 
   it("draws only the coral border on native", async () => {

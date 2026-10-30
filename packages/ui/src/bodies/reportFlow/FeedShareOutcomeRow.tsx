@@ -13,7 +13,13 @@ import type { FeedShareOutcome } from "../feedShare"
 import type { ShareSnapshot } from "./submitFlowModel"
 import { SUBMIT_STATE_MAX_WIDTH } from "./flowStyles"
 
-export function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; share: ShareSnapshot }) {
+export function FeedShareOutcomeRow({
+  outcome,
+  share,
+}: {
+  outcome: FeedShareOutcome
+  share: ShareSnapshot
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")

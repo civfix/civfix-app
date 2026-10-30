@@ -75,7 +75,10 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     ["thread (dm room)", { kind: "thread", id: "dm1", roomKind: "dm" }],
     ["thread (report room)", { kind: "thread", id: "r1", roomKind: "report" }],
     ["thread (group room)", { kind: "thread", id: "grp1", roomKind: "group" }],
-    ["pinned-messages (cleanup room)", { kind: "pinned-messages", id: "room1", roomKind: "cleanup" }],
+    [
+      "pinned-messages (cleanup room)",
+      { kind: "pinned-messages", id: "room1", roomKind: "cleanup" },
+    ],
     ["pinned-messages (dm room)", { kind: "pinned-messages", id: "dm1", roomKind: "dm" }],
     ["pinned-messages (report room)", { kind: "pinned-messages", id: "rep1", roomKind: "report" }],
     ["pinned-messages (group room)", { kind: "pinned-messages", id: "grp1", roomKind: "group" }],
@@ -116,13 +119,23 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
 
   it("distinguishes the report-room discriminator in the URL", () => {
     expect(pathForEntry({ kind: "thread", id: "x", roomKind: "report" })).toBe("/messages/report/x")
-    expect(entryFromPath("/messages/report/x")).toEqual({ kind: "thread", id: "x", roomKind: "report" })
+    expect(entryFromPath("/messages/report/x")).toEqual({
+      kind: "thread",
+      id: "x",
+      roomKind: "report",
+    })
   })
 
   it("distinguishes the group discriminator in the URL", () => {
     expect(pathForEntry({ kind: "thread", id: "x", roomKind: "group" })).toBe("/messages/group/x")
-    expect(entryFromPath("/messages/group/x")).toEqual({ kind: "thread", id: "x", roomKind: "group" })
-    expect(pathForEntry({ kind: "thread", id: "x", roomKind: "group", title: "Crew" })).toBe("/messages/group/x")
+    expect(entryFromPath("/messages/group/x")).toEqual({
+      kind: "thread",
+      id: "x",
+      roomKind: "group",
+    })
+    expect(pathForEntry({ kind: "thread", id: "x", roomKind: "group", title: "Crew" })).toBe(
+      "/messages/group/x",
+    )
   })
 
   it("new-group maps to /groups/new; other /groups children resolve to nothing", () => {
@@ -149,15 +162,31 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
   })
 
   it("pinned-messages uses the /messages/pins/<roomKind>/<id> form (no collision with the thread forms)", () => {
-    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "cleanup" })).toBe("/messages/pins/cleanup/x")
-    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "dm" })).toBe("/messages/pins/dm/x")
-    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "report" })).toBe("/messages/pins/report/x")
-    expect(entryFromPath("/messages/pins/report/x")).toEqual({ kind: "pinned-messages", id: "x", roomKind: "report" })
+    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "cleanup" })).toBe(
+      "/messages/pins/cleanup/x",
+    )
+    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "dm" })).toBe(
+      "/messages/pins/dm/x",
+    )
+    expect(pathForEntry({ kind: "pinned-messages", id: "x", roomKind: "report" })).toBe(
+      "/messages/pins/report/x",
+    )
+    expect(entryFromPath("/messages/pins/report/x")).toEqual({
+      kind: "pinned-messages",
+      id: "x",
+      roomKind: "report",
+    })
     expect(entryFromPath("/messages/pins/bogus/x")).toEqual({ kind: "messages" })
     expect(entryFromPath("/messages/pins/dm")).toEqual({ kind: "messages" })
     expect(entryFromPath("/messages/pins")).toEqual({ kind: "messages" })
-    expect(entryFromPath("/messages/pins-room-id")).toEqual({ kind: "thread", id: "pins-room-id", roomKind: "cleanup" })
-    expect(pathForEntry({ kind: "thread", id: "x", roomKind: "cleanup", jumpToMessageId: "m9" })).toBe("/messages/x")
+    expect(entryFromPath("/messages/pins-room-id")).toEqual({
+      kind: "thread",
+      id: "pins-room-id",
+      roomKind: "cleanup",
+    })
+    expect(
+      pathForEntry({ kind: "thread", id: "x", roomKind: "cleanup", jumpToMessageId: "m9" }),
+    ).toBe("/messages/x")
   })
 
   it("keeps the five /settings children apart, and an unknown child resolves to nothing", () => {
@@ -271,7 +300,11 @@ describe("push: a drill-down back-stack in BOTH modes (append)", () => {
     store().push({ kind: "profile" })
     store().push({ kind: "settings" })
     store().push({ kind: "settings-account" })
-    expect(store().stack).toEqual([{ kind: "profile" }, { kind: "settings" }, { kind: "settings-account" }])
+    expect(store().stack).toEqual([
+      { kind: "profile" },
+      { kind: "settings" },
+      { kind: "settings-account" },
+    ])
 
     store().back()
     expect(store().active).toEqual({ kind: "settings" })
@@ -820,7 +853,11 @@ describe("active === top-of-stack invariant", () => {
       const s = useNavStore.getState()
       expect(s.active).toEqual(s.stack[s.stack.length - 1] ?? null)
     }
-    const seq: DetailEntry[] = [{ kind: "cleanups" }, { kind: "cleanup", id: "c1" }, { kind: "thread", id: "r1", roomKind: "cleanup" }]
+    const seq: DetailEntry[] = [
+      { kind: "cleanups" },
+      { kind: "cleanup", id: "c1" },
+      { kind: "thread", id: "r1", roomKind: "cleanup" },
+    ]
     seq.forEach((e) => {
       useNavStore.getState().push(e)
       expectInvariant()
@@ -986,10 +1023,7 @@ describe("seed derives the detent from the PRISTINE store (a cold compact web lo
     ["/profile", { kind: "profile" }],
     ["/leaderboard/0644000", { kind: "leaderboard", geoid: "0644000" }],
     ["/people/u1/followers", { kind: "followers", id: "u1" }],
-    [
-      "/messages/members/group/g1",
-      { kind: "members", id: "g1", roomKind: "group" },
-    ],
+    ["/messages/members/group/g1", { kind: "members", id: "g1", roomKind: "group" }],
   ])("a cold deep link to %s opens the sheet full, never at the 96px peek", (path, entry) => {
     resetPristine()
     const seeded = entryFromPath(path)
@@ -1052,7 +1086,10 @@ describe("viewForEntry / titleForEntry / searchModeFor", () => {
 
   it("titleParamsForEntry carries the cluster COUNT (so i18next picks the locale's own plural form)", () => {
     const one = { kind: "cluster", reports: [{ id: "r1" }] } as unknown as DetailEntry
-    const three = { kind: "cluster", reports: [{ id: "r1" }, { id: "r2" }, { id: "r3" }] } as unknown as DetailEntry
+    const three = {
+      kind: "cluster",
+      reports: [{ id: "r1" }, { id: "r2" }, { id: "r3" }],
+    } as unknown as DetailEntry
     expect(titleParamsForEntry(one)).toEqual({ count: 1 })
     expect(titleParamsForEntry(three)).toEqual({ count: 3 })
     expect(titleParamsForEntry({ kind: "cluster" })).toEqual({ count: 0 })
@@ -1061,10 +1098,26 @@ describe("viewForEntry / titleForEntry / searchModeFor", () => {
   })
 
   it("searchModeFor switches between search and detail mode and picks the right placeholder KEY", () => {
-    expect(searchModeFor("home", null)).toEqual({ mode: "search", placeholder: "placeholder.places_events", kind: "places" })
-    expect(searchModeFor("messaging", null)).toEqual({ mode: "search", placeholder: "placeholder.people", kind: "people" })
-    expect(searchModeFor("reports", null)).toEqual({ mode: "search", placeholder: "placeholder.reports", kind: "reports" })
-    expect(searchModeFor("search", null)).toEqual({ mode: "search", placeholder: "placeholder.search", kind: "places" })
+    expect(searchModeFor("home", null)).toEqual({
+      mode: "search",
+      placeholder: "placeholder.places_events",
+      kind: "places",
+    })
+    expect(searchModeFor("messaging", null)).toEqual({
+      mode: "search",
+      placeholder: "placeholder.people",
+      kind: "people",
+    })
+    expect(searchModeFor("reports", null)).toEqual({
+      mode: "search",
+      placeholder: "placeholder.reports",
+      kind: "reports",
+    })
+    expect(searchModeFor("search", null)).toEqual({
+      mode: "search",
+      placeholder: "placeholder.search",
+      kind: "places",
+    })
     expect(searchModeFor("home", { kind: "pin", id: "x" }).mode).toBe("detail")
   })
 
@@ -1162,7 +1215,10 @@ describe("report flow return", () => {
     useNavStore.getState().finishReportFlow({ kind: "pin", id: "r1" })
 
     const s = useNavStore.getState()
-    expect(s.stack).toEqual([{ kind: "cleanup", id: "c1" }, { kind: "pin", id: "r1" }])
+    expect(s.stack).toEqual([
+      { kind: "cleanup", id: "c1" },
+      { kind: "pin", id: "r1" },
+    ])
     expect(s.originView).toBe("events")
   })
 })

@@ -1,5 +1,11 @@
 import { useCallback, useMemo } from "react"
-import type { InfiniteData, Query, QueryClient, QueryFilters, QueryKey } from "@tanstack/react-query"
+import type {
+  InfiniteData,
+  Query,
+  QueryClient,
+  QueryFilters,
+  QueryKey,
+} from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   BBox,
@@ -241,7 +247,9 @@ export function useReportSearch(
 type MyReportRow = ListMyReportsResponse["items"][number]
 
 interface MyReportsListsCtx {
-  prevLists?: ReadonlyArray<readonly [readonly unknown[], InfiniteData<ListMyReportsResponse> | undefined]>
+  prevLists?: ReadonlyArray<
+    readonly [readonly unknown[], InfiniteData<ListMyReportsResponse> | undefined]
+  >
 }
 
 function snapshotMyReportLists(qc: QueryClient): MyReportsListsCtx {
@@ -357,7 +365,10 @@ type ReportVote = "confirm" | "fixed" | null
  * The caller's vote after a call, as the API applies it: an account holds one vote per report, so adding one
  * moves the other, and removing a kind it does not hold changes nothing.
  */
-function voteAfter(call: "confirm" | "unconfirm" | "fixed" | "unfixed", current: ReportVote): ReportVote {
+function voteAfter(
+  call: "confirm" | "unconfirm" | "fixed" | "unfixed",
+  current: ReportVote,
+): ReportVote {
   if (call === "confirm" || call === "fixed") return call
   return current === (call === "unconfirm" ? "confirm" : "fixed") ? null : current
 }
@@ -365,7 +376,8 @@ function voteAfter(call: "confirm" | "unconfirm" | "fixed" | "unfixed", current:
 function castVote(prev: ReportDTO, call: Parameters<typeof voteAfter>[0]): ReportDTO {
   const current: ReportVote = prev.confirmedByMe ? "confirm" : prev.fixedByMe ? "fixed" : null
   const next = voteAfter(call, current)
-  const delta = (kind: Exclude<ReportVote, null>) => (next === kind ? 1 : 0) - (current === kind ? 1 : 0)
+  const delta = (kind: Exclude<ReportVote, null>) =>
+    (next === kind ? 1 : 0) - (current === kind ? 1 : 0)
   return {
     ...prev,
     confirmedByMe: next === "confirm",
@@ -381,7 +393,12 @@ const meTooMutationKey = (id: string) => ["report-me-too", id] as const
  * A vote (or its removal) on a report's page: the buttons and the counts move at once and roll back on failure.
  * Every kind of call on one report shares a scope, so a move from one vote to the other goes out in tap order.
  */
-function voteToggle(qc: QueryClient, api: ApiClient, id: string, call: Parameters<typeof voteAfter>[0]) {
+function voteToggle(
+  qc: QueryClient,
+  api: ApiClient,
+  id: string,
+  call: Parameters<typeof voteAfter>[0],
+) {
   const press = (prev: ReportDTO): ReportDTO => castVote(prev, call)
   const send = {
     confirm: () => api.confirmReport({ id }),
@@ -399,14 +416,18 @@ function voteToggle(qc: QueryClient, api: ApiClient, id: string, call: Parameter
       cancel: (client) => client.cancelQueries(reportAliasFilters(id)),
       onMutate: (client) => {
         const snapshot = client.getQueriesData<ReportDTO>(reportAliasFilters(id))
-        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? press(prev) : prev))
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) =>
+          prev ? press(prev) : prev,
+        )
         return snapshot
       },
       onError: (client, _vars, snapshot) => {
         for (const [key, data] of snapshot ?? []) client.setQueryData(key, data)
       },
       onSuccess: (client, res) => {
-        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) => (prev ? mergeVotes(prev, res) : prev))
+        client.setQueriesData<ReportDTO>(reportAliasFilters(id), (prev) =>
+          prev ? mergeVotes(prev, res) : prev,
+        )
       },
     },
   })

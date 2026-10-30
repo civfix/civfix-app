@@ -66,7 +66,9 @@ describe("SearchBody top-anchored recents", () => {
     // results->resting one, mounting Discovery's three react-query sections plus a horizontal ScrollView
     // of avatar cards on the fade frames. Both gates below read the single frozen `surface`, never `pinned`.
     expect(source).not.toMatch(/\{pinned \? <RecentlySearched/)
-    expect(source).toMatch(/const showRecents = surface === "recents" && \(!expanded \|\| recentCount > 0\)/)
+    expect(source).toMatch(
+      /const showRecents = surface === "recents" && \(!expanded \|\| recentCount > 0\)/,
+    )
     expect(source).toMatch(/const showDiscovery = surface === "discovery" \|\| expanded/)
     // `expanded` is a LAYOUT prop (it only tells Discovery to yield its large title to the landscape
     // head, see bodies/__tests__/searchField.test.ts) plus, here, the landscape-only rule that discovery STAYS under
@@ -80,7 +82,9 @@ describe("SearchBody top-anchored recents", () => {
     // pinned swap would land a first-run viewer on one grey placeholder line over ~750px of sand, and the
     // 25 controls below the field would leave the DOM the moment it took focus (the next Tab would exit
     // the document: WCAG 2.1.1 over a whole region).
-    expect(source).toContain("const recentCount = useSearchRecentStore((state) => state.recent.length)")
+    expect(source).toContain(
+      "const recentCount = useSearchRecentStore((state) => state.recent.length)",
+    )
     // With nothing recorded there is no recents block at all in expanded: the empty-recents copy has no
     // job under a field that has just been focused.
     expect(source).toMatch(/recentCount > 0/)
@@ -129,7 +133,9 @@ describe("Discovery leaderboard asks for the extras threshold, renders the previ
   const source = surfaceSource("search")
 
   it("requests LEADERBOARD_REQUEST_LIMIT, never the preview limit", () => {
-    expect(source).toContain("useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })")
+    expect(source).toContain(
+      "useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })",
+    )
     expect(source).not.toContain("{ limit: LEADERBOARD_PREVIEW_LIMIT }")
   })
 
@@ -157,7 +163,9 @@ describe("Discovery leaderboard survives an empty board", () => {
     // The row-count gate, in either of its two forms. `sections.leaderboard` is what gets RENDERED; it
     // must not decide whether the section exists.
     expect(source).not.toMatch(/geo && sections\.leaderboard\.length > 0/)
-    expect(source).not.toMatch(/sections\.leaderboard\.length > 0\s*\?\s*\(?\s*<DiscoveryLeaderboard/)
+    expect(source).not.toMatch(
+      /sections\.leaderboard\.length > 0\s*\?\s*\(?\s*<DiscoveryLeaderboard/,
+    )
   })
 
   it("renders the FULL page's empty copy rather than a second, drifting wording", () => {
@@ -180,7 +188,9 @@ describe("Discovery leaderboard survives an empty board", () => {
   })
 
   it("renders the empty branch through the compact shared primitive", () => {
-    expect(source).toMatch(/isEmpty \? \(\s*<View style=\{styles\.leaderboardEmpty\}>\s*<EmptyState\s+variant="inline"/)
+    expect(source).toMatch(
+      /isEmpty \? \(\s*<View style=\{styles\.leaderboardEmpty\}>\s*<EmptyState\s+variant="inline"/,
+    )
     expect(source).not.toMatch(/leaderboardEmptyTitle|leaderboardEmptyBody/)
     expect(source).not.toMatch(/leaderboardEmpty: \{[^}]*paddingVertical/)
   })
@@ -189,7 +199,9 @@ describe("Discovery leaderboard survives an empty board", () => {
     expect(source).toContain("const isEmpty = entries.length === 0")
     expect(source).toContain("styles.sectionHeader, precededBySection ? styles.laterTitle : null")
     expect(source).not.toContain("[styles.sectionHeader, styles.laterTitle]")
-    expect(source).toContain("precededBySection={sections.people.length > 0 || sections.events.length > 0}")
+    expect(source).toContain(
+      "precededBySection={sections.people.length > 0 || sections.events.length > 0}",
+    )
     expect(source).toMatch(/\{name && !isEmpty \? \(/)
     expect(source).not.toMatch(/\{name \? <Text style=\{styles\.leaderboardSub\}/)
   })

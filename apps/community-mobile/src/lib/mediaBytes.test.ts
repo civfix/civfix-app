@@ -138,19 +138,34 @@ test("contentTypeFromExtension maps the file extension, ignoring a query string"
 
 test("resolveUploadContentType prefers the bytes, then the extension, then the declared mime", () => {
   const mov = new Uint8Array([0, 0, 0, 0x14, ...bytesOf("ftypqt  ")])
-  assert.equal(resolveUploadContentType("video", mov, "file:///tmp/out.mp4", "video/mp4"), "video/quicktime")
+  assert.equal(
+    resolveUploadContentType("video", mov, "file:///tmp/out.mp4", "video/mp4"),
+    "video/quicktime",
+  )
 
   const unknown = new Uint8Array([1, 2, 3, 4])
-  assert.equal(resolveUploadContentType("video", unknown, "file:///tmp/out.mov", "video/mp4"), "video/quicktime")
-  assert.equal(resolveUploadContentType("image", unknown, "file:///tmp/out", "image/png"), "image/png")
+  assert.equal(
+    resolveUploadContentType("video", unknown, "file:///tmp/out.mov", "video/mp4"),
+    "video/quicktime",
+  )
+  assert.equal(
+    resolveUploadContentType("image", unknown, "file:///tmp/out", "image/png"),
+    "image/png",
+  )
 })
 
 test("resolveUploadContentType never returns a type the presign allowlist rejects", () => {
   const heic = new Uint8Array([0, 0, 0, 0x18, ...bytesOf("ftypheic")])
-  assert.equal(resolveUploadContentType("image", heic, "file:///tmp/a.heic", "image/heic"), "image/jpeg")
+  assert.equal(
+    resolveUploadContentType("image", heic, "file:///tmp/a.heic", "image/heic"),
+    "image/jpeg",
+  )
 
   const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-  assert.equal(resolveUploadContentType("video", png, "file:///tmp/a.png", "image/png"), "video/mp4")
+  assert.equal(
+    resolveUploadContentType("video", png, "file:///tmp/a.png", "image/png"),
+    "video/mp4",
+  )
 })
 
 function containsMarker(bytes: Uint8Array, marker: number): boolean {

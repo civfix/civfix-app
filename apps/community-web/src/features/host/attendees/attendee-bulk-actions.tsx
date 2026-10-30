@@ -102,7 +102,15 @@ function useAttendeeBulkMutations(
     onError: toastFailure,
   })
 
-  return { checkIn, noShow, remove, confirmNoShow, setConfirmNoShow, confirmRemove, setConfirmRemove }
+  return {
+    checkIn,
+    noShow,
+    remove,
+    confirmNoShow,
+    setConfirmNoShow,
+    confirmRemove,
+    setConfirmRemove,
+  }
 }
 
 export function AttendeeBulkActions({

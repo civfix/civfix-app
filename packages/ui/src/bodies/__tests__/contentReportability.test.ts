@@ -77,16 +77,32 @@ describe("the overflow button is one primitive with one hit target", () => {
   it("tells assistive tech it opens a menu and whether that menu is open", () => {
     expect(BUTTON).toContain("expanded: boolean")
     expect(BUTTON).toContain("{...a11yState({ expanded })}")
-    expect(BUTTON).toContain('const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null')
+    expect(BUTTON).toContain(
+      'const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null',
+    )
     expect(BUTTON).toContain("{...WEB_MENU_TRIGGER_PROPS}")
   })
 
   it("is exported from the primitives barrel", () => {
-    expect(BARREL).toContain('export { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "./PostOverflowButton"')
-    expect(BUTTON).toContain("export const POST_OVERFLOW_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}")
-    expect((SURFACES["PostCard.tsx"] ?? "").split("<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>").length).toBe(2)
-    expect((SURFACES["PostCard.tsx"] ?? "").match(/<PostMetaRow\s+variant=\{isRepost \? "repost" : "own"\}/g)).toHaveLength(1)
-    expect(SURFACES["thread/ThreadReplyRow.tsx"] ?? "").toContain("<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>")
+    expect(BARREL).toContain(
+      'export { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "./PostOverflowButton"',
+    )
+    expect(BUTTON).toContain(
+      "export const POST_OVERFLOW_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}",
+    )
+    expect(
+      (SURFACES["PostCard.tsx"] ?? "").split(
+        "<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>",
+      ).length,
+    ).toBe(2)
+    expect(
+      (SURFACES["PostCard.tsx"] ?? "").match(
+        /<PostMetaRow\s+variant=\{isRepost \? "repost" : "own"\}/g,
+      ),
+    ).toHaveLength(1)
+    expect(SURFACES["thread/ThreadReplyRow.tsx"] ?? "").toContain(
+      "<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>",
+    )
   })
 
   it("grows to the full 44pt box on web, where hitSlop does not exist", () => {
@@ -195,7 +211,10 @@ describe("every body that renders a post action bar also mounts the overflow men
   it("enumerates the surfaces from disk rather than a hand-kept list", () => {
     expect(actionBarSurfaces.length).toBe(Object.keys(SURFACES).length)
     for (const file of actionBarSurfaces) {
-      expect(Object.keys(SURFACES).some((name) => file.endsWith(name)), file).toBe(true)
+      expect(
+        Object.keys(SURFACES).some((name) => file.endsWith(name)),
+        file,
+      ).toBe(true)
     }
   })
 
@@ -211,7 +230,7 @@ describe("a repost row never deletes the original it embeds", () => {
     expect(MENU).toContain("const canDelete = isOwn && repost === null")
     const deleteItem = menuItem("delete")
     expect(deleteItem).toContain("onPress: () => onConfirmingDeleteChange(true)")
-    expect(MENU).toContain("...(canDelete\n        ? [\n            {\n              key: \"delete\"")
+    expect(MENU).toContain('...(canDelete\n        ? [\n            {\n              key: "delete"')
   })
 
   it("offers Undo repost on the viewer's own repost, driven by the repost toggle", () => {

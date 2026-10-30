@@ -15,8 +15,16 @@ test("every sign-in error row is announced to screen readers when it appears", (
     ["AuthOptions", authOptions],
     ["FirstRunGate", firstRun],
   ] as const) {
-    assert.match(source, /useEffect\(\(\) => \{\s*if \(error\) announce\(error\)\s*\}, \[error\]\)/, name)
-    assert.doesNotMatch(source, /accessibilityLiveRegion/, `${name}: a live region would double-announce on Android`)
+    assert.match(
+      source,
+      /useEffect\(\(\) => \{\s*if \(error\) announce\(error\)\s*\}, \[error\]\)/,
+      name,
+    )
+    assert.doesNotMatch(
+      source,
+      /accessibilityLiveRegion/,
+      `${name}: a live region would double-announce on Android`,
+    )
   }
 })
 
@@ -35,9 +43,15 @@ test("the first-run form always clears its spinner once the profile save settles
 })
 
 test("a failed username check says so and offers a retry instead of leaving Continue dead", () => {
-  assert.match(firstRun, /const \{ availability, checkedHandle \} = useHandleAvailabilityCheck\(handle, null\)/)
+  assert.match(
+    firstRun,
+    /const \{ availability, checkedHandle \} = useHandleAvailabilityCheck\(handle, null\)/,
+  )
   assert.match(firstRun, /const \{ refetch: recheckHandle \} = availability/)
-  assert.match(firstRun, /const retryHandleCheck = useCallback\(\(\) => void recheckHandle\(\), \[recheckHandle\]\)/)
+  assert.match(
+    firstRun,
+    /const retryHandleCheck = useCallback\(\(\) => void recheckHandle\(\), \[recheckHandle\]\)/,
+  )
   assert.match(firstRun, /\} = firstRunModel\(\{/)
   assert.match(firstRun, /checkFailed=\{checkFailed\}/)
   assert.match(firstRun, /onRetry=\{retryHandleCheck\}/)

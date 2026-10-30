@@ -74,11 +74,11 @@ export function HostAnnounceBody({ id }: { id: string }) {
   const audience = useMemo(() => audienceFor(audienceKind, slotIds), [audienceKind, slotIds])
   const settled = useDebouncedValue(audience, AUDIENCE_PREVIEW_DEBOUNCE_MS)
   const recipients = useAudiencePreview(id, settled, {
-    enabled: canBroadcast && audienceReady(settled.kind, settled.kind === "slots" ? settled.ids : []),
+    enabled:
+      canBroadcast && audienceReady(settled.kind, settled.kind === "slots" ? settled.ids : []),
   })
 
-  const ready =
-    announcementReady(body) && audienceReady(audienceKind, slotIds) && !create.isPending
+  const ready = announcementReady(body) && audienceReady(audienceKind, slotIds) && !create.isPending
 
   const submit = useCallback(() => {
     if (!ready || !canBroadcast) return
@@ -94,9 +94,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
         onSuccess: (announcement) => {
           toast.show(t("announce.sent_toast"), { variant: "success" })
           useNavStore.getState().back()
-          useNavStore
-            .getState()
-            .push({ kind: "announcement", id, announcementId: announcement.id })
+          useNavStore.getState().push({ kind: "announcement", id, announcementId: announcement.id })
         },
         onError: (err) => setErrorText(t(announcementErrorKey(appErrorCode(err)))),
       },
@@ -105,9 +103,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
 
   const toggleSlot = useCallback((slotId: string) => {
     setSlotIds((current) =>
-      current.includes(slotId)
-        ? current.filter((entry) => entry !== slotId)
-        : [...current, slotId],
+      current.includes(slotId) ? current.filter((entry) => entry !== slotId) : [...current, slotId],
     )
   }, [])
 
@@ -125,8 +121,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
     : count === null
       ? t("announce.count_loading")
       : t("announce.count", { total: count })
-  const sendLabel =
-    count === null ? t("announce.send") : t("announce.send_to", { total: count })
+  const sendLabel = count === null ? t("announce.send") : t("announce.send_to", { total: count })
 
   return (
     <ScrollView

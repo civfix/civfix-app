@@ -39,7 +39,11 @@ function scalarPatch(patch: Omit<UpdateCleanupRequest, "id">): Partial<CleanupDT
   return out
 }
 
-function onMutate(qc: QueryClient, id: string, patch: Omit<UpdateCleanupRequest, "id">): { prevDetail?: CleanupDTO | undefined } {
+function onMutate(
+  qc: QueryClient,
+  id: string,
+  patch: Omit<UpdateCleanupRequest, "id">,
+): { prevDetail?: CleanupDTO | undefined } {
   const prevDetail = qc.getQueryData<CleanupDTO>(queryKeys.cleanup(id))
   const sp = scalarPatch(patch)
   if (prevDetail) qc.setQueryData<CleanupDTO>(queryKeys.cleanup(id), { ...prevDetail, ...sp })
@@ -53,7 +57,10 @@ describe("cleanup edit (PATCH) cache reconciliation", () => {
   it("optimistically merges scalars onto the detail and the matching list row", () => {
     const qc = new QueryClient()
     qc.setQueryData<CleanupDTO>(queryKeys.cleanup("c1"), cleanup("c1"))
-    qc.setQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50), [cleanup("c1"), cleanup("c2")])
+    qc.setQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50), [
+      cleanup("c1"),
+      cleanup("c2"),
+    ])
 
     const patch: Omit<UpdateCleanupRequest, "id"> = {
       title: "Riverside cleanup",
@@ -67,7 +74,10 @@ describe("cleanup edit (PATCH) cache reconciliation", () => {
       eventKind: "cleanup",
     })
     const list = qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))!
-    expect(list.find((c) => c.id === "c1")).toMatchObject({ title: "Riverside cleanup", address: "Boathouse dock" })
+    expect(list.find((c) => c.id === "c1")).toMatchObject({
+      title: "Riverside cleanup",
+      address: "Boathouse dock",
+    })
     expect(list.find((c) => c.id === "c2")).toMatchObject({ title: "Cleanup c2" })
   })
 
@@ -92,7 +102,9 @@ describe("cleanup edit (PATCH) cache reconciliation", () => {
 
     qc.setQueryData<CleanupDTO>(queryKeys.cleanup("c1"), server)
     expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))!.linkedReports).toHaveLength(1)
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))!.linkedReports[0]).toMatchObject({ id: "r1" })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))!.linkedReports[0]).toMatchObject({
+      id: "r1",
+    })
   })
 
   it("rolls the detail back on error", () => {

@@ -33,9 +33,7 @@ describe("one header-control token set", () => {
       ["GlassButton", read("../../primitives/GlassButton.tsx")],
     ]
     for (const [name, source] of sources) {
-      expect(source, `${name} does not read the header-control tokens`).toContain(
-        "headerControls",
-      )
+      expect(source, `${name} does not read the header-control tokens`).toContain("headerControls")
     }
     expect(MAP_ACTION_SIZE).toBe(HEADER_CONTROL_SIZE)
   })

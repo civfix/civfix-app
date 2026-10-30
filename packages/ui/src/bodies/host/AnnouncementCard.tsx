@@ -1,6 +1,13 @@
 import { Pressable, StyleSheet, View } from "react-native"
 import type { AnnouncementDTO } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives"
 import { useRelativeTime, useT } from "../../i18n"

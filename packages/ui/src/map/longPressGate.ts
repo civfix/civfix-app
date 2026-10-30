@@ -53,7 +53,18 @@ export function longPressHitsMarker(
   size: LongPressViewportSize | null | undefined,
 ): boolean {
   if (!bounds || !size || markers.length === 0) return false
-  if (!finite(press.lat, press.lng, bounds.west, bounds.south, bounds.east, bounds.north, size.width, size.height)) {
+  if (
+    !finite(
+      press.lat,
+      press.lng,
+      bounds.west,
+      bounds.south,
+      bounds.east,
+      bounds.north,
+      size.width,
+      size.height,
+    )
+  ) {
     return false
   }
   if (size.width <= 0 || size.height <= 0) return false

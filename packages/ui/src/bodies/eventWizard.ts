@@ -46,7 +46,8 @@ export function eventWindowUntouched(
   value: EventScheduleDraft,
 ): boolean {
   if (!value.date || !value.time || !value.endTime) return false
-  if (!isScheduleUntouched(cleanup.scheduledAt, value.date, value.time, value.timezone)) return false
+  if (!isScheduleUntouched(cleanup.scheduledAt, value.date, value.time, value.timezone))
+    return false
   const seeded = seededEndTime(cleanup, value.timezone)
   return (
     value.endTime.getHours() === seeded.getHours() &&
@@ -58,10 +59,7 @@ export interface EventEndDraft extends EventScheduleDraft {
   slots: readonly SlotDraft[]
 }
 
-export function mustPersistEventEnd(
-  cleanup: EventScheduleSource,
-  form: EventEndDraft,
-): boolean {
+export function mustPersistEventEnd(cleanup: EventScheduleSource, form: EventEndDraft): boolean {
   if (!eventWindowUntouched(cleanup, form)) return true
   if (cleanup.endsAt != null) return false
   return form.slots.some((d) => slotDraftWindow(d) !== null)
@@ -156,7 +154,9 @@ export function eventStepSatisfied(
     case "where":
       return draft.coords !== null && isEventAddressComplete(draft.address)
     case "details":
-      return hasNamedSlot(draft.slots) && slotsValid(draft.slots, undefined, eventDraftWindow(draft))
+      return (
+        hasNamedSlot(draft.slots) && slotsValid(draft.slots, undefined, eventDraftWindow(draft))
+      )
     case "review":
       return EVENT_WIZARD_STEPS.every(
         (other) => isFinalEventStep(other) || eventStepSatisfied(other, draft, now),

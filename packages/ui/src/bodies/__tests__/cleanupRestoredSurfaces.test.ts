@@ -43,7 +43,11 @@ describe("chat transcript empty state", () => {
   const conversation = read("../ConversationBody.tsx")
 
   it("hands the inverted list's flip-back style and layout handler to both empty views", () => {
-    expect(conversation.match(/<View style=\{\[styles\.center, style\]\} onLayout=\{onLayout\}>/g)).toHaveLength(2)
-    expect(conversation).toContain("ListEmptyComponent={<TranscriptEmpty pinnedOnly={pinnedOnly} isGroup={isGroup} />}")
+    expect(
+      conversation.match(/<View style=\{\[styles\.center, style\]\} onLayout=\{onLayout\}>/g),
+    ).toHaveLength(2)
+    expect(conversation).toContain(
+      "ListEmptyComponent={<TranscriptEmpty pinnedOnly={pinnedOnly} isGroup={isGroup} />}",
+    )
   })
 })

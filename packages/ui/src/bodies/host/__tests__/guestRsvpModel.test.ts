@@ -169,19 +169,22 @@ describe("error mapping", () => {
 
   it.each(["en", "es", "de", "ko"])("carries the ended copy in the %s guest catalog", (locale) => {
     const catalog = JSON.parse(
-      readFileSync(new URL(`../../../i18n/locales/${locale}/event-guest-rsvp.json`, import.meta.url), "utf8"),
+      readFileSync(
+        new URL(`../../../i18n/locales/${locale}/event-guest-rsvp.json`, import.meta.url),
+        "utf8",
+      ),
     ) as { error: Record<string, string> }
     expect(catalog.error.ended?.length ?? 0).toBeGreaterThan(0)
     expect(catalog.error.ended).not.toBe(catalog.error.closed)
   })
 
   it("shows the start-over state ONLY when the server says the attempts are spent", () => {
-    expect(guestAttemptsExhausted(appErrorFields(verifyError(GuestOtpErrorReason.attemptsExhausted)))).toBe(
-      true,
-    )
-    expect(guestAttemptsExhausted(appErrorFields(verifyError(GuestOtpErrorReason.invalidCode)))).toBe(
-      false,
-    )
+    expect(
+      guestAttemptsExhausted(appErrorFields(verifyError(GuestOtpErrorReason.attemptsExhausted))),
+    ).toBe(true)
+    expect(
+      guestAttemptsExhausted(appErrorFields(verifyError(GuestOtpErrorReason.invalidCode))),
+    ).toBe(false)
     expect(guestAttemptsExhausted(undefined)).toBe(false)
     expect(guestAttemptsExhausted({ channel: "sms_unavailable" })).toBe(false)
   })
@@ -240,7 +243,10 @@ describe("the web Cmd/Ctrl+Enter commit per step", () => {
   })
 
   it("is what the sheet hands ModalCardSheet as onCommit", () => {
-    const sheet = readFileSync(new URL("../registration/GuestRsvpSheet.tsx", import.meta.url), "utf8")
+    const sheet = readFileSync(
+      new URL("../registration/GuestRsvpSheet.tsx", import.meta.url),
+      "utf8",
+    )
     expect(sheet).toContain("guestRsvpCommitFor(step, exhausted)")
     expect(sheet).not.toMatch(/\(exhausted \? startOver : submitCode\) : onClose/)
   })

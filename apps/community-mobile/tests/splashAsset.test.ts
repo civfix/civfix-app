@@ -125,7 +125,11 @@ test(
       "SplashScreenBackground must hold a single appearance; a second one reopens dark mode",
     )
     assert.equal(colors.filter(isDarkEntry).length, 0)
-    assertComponents(defined(colors[0], "the light appearance").color.components, LIGHT, "SplashScreenBackground light")
+    assertComponents(
+      defined(colors[0], "the light appearance").color.components,
+      LIGHT,
+      "SplashScreenBackground light",
+    )
   },
 )
 
@@ -133,7 +137,9 @@ test(
   "the generated ios imageset carries no dark logo entry, and no dark file on disk",
   { skip: skipWithoutPrebuild },
   () => {
-    const { images } = JSON.parse(readGenerated(new URL("Contents.json", IMAGESET))) as ImagesetContents
+    const { images } = JSON.parse(
+      readGenerated(new URL("Contents.json", IMAGESET)),
+    ) as ImagesetContents
     assert.equal(images.filter(isDarkEntry).length, 0)
     for (const entry of images) {
       assert.ok(

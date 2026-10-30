@@ -114,7 +114,9 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/EventDetailBody.tsx"]).toMatch(
       /<EventSlotsBlock[\s\S]*?timeZone=\{cleanup\.timezone \?\? undefined\}/,
     )
-    expect(SURFACES["bodies/host/HostModeBody.tsx"]).toContain("timeZone={event.timezone ?? undefined}")
+    expect(SURFACES["bodies/host/HostModeBody.tsx"]).toContain(
+      "timeZone={event.timezone ?? undefined}",
+    )
     expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toMatch(
       /<ShiftsPanel[\s\S]*?timeZone=\{timeZone\}/,
     )
@@ -155,9 +157,7 @@ describe("event surfaces render in the event's zone", () => {
   })
 
   it("takes the zone off the event row it is rendering, never off the device", () => {
-    expect(SURFACES["bodies/MembersBody.tsx"]).toContain(
-      "cleanupQuery.data?.timezone ?? undefined",
-    )
+    expect(SURFACES["bodies/MembersBody.tsx"]).toContain("cleanupQuery.data?.timezone ?? undefined")
     expect(SURFACES["bodies/host/EventRosterBlock.tsx"]).toContain(
       "cleanup.data?.timezone ?? undefined",
     )

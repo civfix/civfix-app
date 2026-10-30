@@ -80,7 +80,9 @@ describe("a repost renders its ORIGINAL, not a truncated preview of it", () => {
 
   it("attributes the repost's interactions to the ORIGINAL's author, never the booster", () => {
     expect(repostSubjectAuthorId(repost(ref()))).toBe("person-2")
-    expect(repostSubjectAuthorId({ ...repost(ref()), kind: "post", repostOf: null })).toBe("person-1")
+    expect(repostSubjectAuthorId({ ...repost(ref()), kind: "post", repostOf: null })).toBe(
+      "person-1",
+    )
     expect(repostSubjectAuthorId(repost(ref({ author: null })))).toBe("person-1")
   })
 })
@@ -94,10 +96,18 @@ describe("the overflow menu's subject is the post the row actually renders", () 
     })
 
     const quote: PostDTO = { ...repost(ref()), kind: "quote", body: "Worth joining." }
-    expect(postMenuSubject(quote)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
+    expect(postMenuSubject(quote)).toEqual({
+      id: "post-repost",
+      authorId: "person-1",
+      repost: null,
+    })
 
     const plain: PostDTO = { ...repost(ref()), kind: "post", repostOf: null }
-    expect(postMenuSubject(plain)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
+    expect(postMenuSubject(plain)).toEqual({
+      id: "post-repost",
+      authorId: "person-1",
+      repost: null,
+    })
   })
 
   it("reports no author at all when the original's account is gone", () => {
@@ -113,14 +123,22 @@ describe("the overflow menu's subject is the post the row actually renders", () 
     expect(postMenuSubject(gone)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
 
     const goneAndAuthorless = repost(ref({ deleted: true, author: null, excerpt: "" }))
-    expect(postMenuSubject(goneAndAuthorless)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
+    expect(postMenuSubject(goneAndAuthorless)).toEqual({
+      id: "post-repost",
+      authorId: "person-1",
+      repost: null,
+    })
   })
 
   it("offers no jump to an original that is gone", () => {
     const view = (post: PostDTO) => buildPostCardView(post, buildPostCardModel(post, t))
     expect(view(repost(ref())).openableOriginalId).toBe("post-original")
-    expect(view(repost(ref({ deleted: true, body: null, excerpt: "" }))).openableOriginalId).toBeNull()
-    expect(view({ ...repost(ref()), kind: "quote", body: "Worth joining." }).openableOriginalId).toBeNull()
+    expect(
+      view(repost(ref({ deleted: true, body: null, excerpt: "" }))).openableOriginalId,
+    ).toBeNull()
+    expect(
+      view({ ...repost(ref()), kind: "quote", body: "Worth joining." }).openableOriginalId,
+    ).toBeNull()
     const card = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
     expect(card).toContain("(openableOriginalId ? () => openPost(openableOriginalId) : undefined)")
     const focal = readFileSync(new URL("../thread/ThreadFocalPost.tsx", import.meta.url), "utf8")
@@ -129,13 +147,21 @@ describe("the overflow menu's subject is the post the row actually renders", () 
 
   it("routes the row, comment and quote to the live original and falls back to the wrapper", () => {
     const view = (post: PostDTO) => buildPostCardView(post, buildPostCardModel(post, t))
-    expect(view(repost(ref()))).toMatchObject({ isRepost: true, rowPostId: "post-original", actionTargetId: "post-original" })
+    expect(view(repost(ref()))).toMatchObject({
+      isRepost: true,
+      rowPostId: "post-original",
+      actionTargetId: "post-original",
+    })
     expect(view(repost(ref({ deleted: true, body: null, excerpt: "" })))).toMatchObject({
       rowPostId: "post-original",
       actionTargetId: "post-repost",
     })
     const plain: PostDTO = { ...repost(ref()), kind: "post", repostOf: null }
-    expect(view(plain)).toMatchObject({ isRepost: false, rowPostId: "post-repost", actionTargetId: "post-repost" })
+    expect(view(plain)).toMatchObject({
+      isRepost: false,
+      rowPostId: "post-repost",
+      actionTargetId: "post-repost",
+    })
   })
 })
 
@@ -146,7 +172,9 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
 
   it("hands the action bar the ORIGINAL's author so a self-repost cannot be offered", () => {
     expect(CARD).toContain("authorId={repostSubjectAuthorId(post)}")
-    expect(BAR).toContain("const isOwnPost = authorId != null && viewerId != null && authorId === viewerId")
+    expect(BAR).toContain(
+      "const isOwnPost = authorId != null && viewerId != null && authorId === viewerId",
+    )
     expect(BAR).toMatch(/onRepost: isOwnPost\s*\?\s*undefined/)
   })
 
@@ -164,7 +192,9 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
 
   it("hands the menu the redirected subject and a way back to the original", () => {
     expect(CARD).toContain("= usePostOverflowMenuState(post)")
-    expect(src("../postCardActions.ts")).toContain("const menuSubject = React.useMemo(() => postMenuSubject(post), [post])")
+    expect(src("../postCardActions.ts")).toContain(
+      "const menuSubject = React.useMemo(() => postMenuSubject(post), [post])",
+    )
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?subject=\{menuSubject\}/)
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
     expect(CARD).toContain("(openableOriginalId ? () => openPost(openableOriginalId) : undefined)")
@@ -174,7 +204,12 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
   })
 
   it("renders the original's media, event and report inline instead of gating them out", () => {
-    const photo = { id: "m1", kind: "image" as const, url: "https://cdn/1.jpg", status: "ready" as const }
+    const photo = {
+      id: "m1",
+      kind: "image" as const,
+      url: "https://cdn/1.jpg",
+      status: "ready" as const,
+    }
     const event = { id: "event-1" } as NonNullable<PostRefDTO["event"]>
     const report = { id: "report-1" } as NonNullable<PostRefDTO["report"]>
     const shared = repost(ref({ media: [photo], event, report }))
@@ -183,13 +218,22 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
     expect(view.displayEvent).toBe(event)
     expect(view.displayReport).toBe(report)
 
-    const own: PostDTO = { ...shared, kind: "post", repostOf: null, media: [], event: null, report: null }
+    const own: PostDTO = {
+      ...shared,
+      kind: "post",
+      repostOf: null,
+      media: [],
+      event: null,
+      report: null,
+    }
     const ownView = buildPostCardView(own, buildPostCardModel(own, t))
     expect(ownView.media).toEqual([])
     expect(ownView.displayEvent).toBeNull()
     expect(ownView.displayReport).toBeNull()
 
-    expect(CARD).toContain("const { isRepost, embedded, media, displayEvent, displayReport } = view")
+    expect(CARD).toContain(
+      "const { isRepost, embedded, media, displayEvent, displayReport } = view",
+    )
     expect(CARD).toContain('{t("post_card.unavailable")}')
   })
 })

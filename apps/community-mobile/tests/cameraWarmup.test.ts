@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import { URL } from "node:url"
 
-
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const mapHome = read("../app/index.tsx")
 const viewfinder = read("../src/components/report/ReportViewfinder.tsx")
@@ -26,12 +25,21 @@ test("the map element is memoized, and NOT on the nav view", () => {
   for (const dep of ["pins", "cleanupItems", "focusedPinId", "focusedCleanupId"]) {
     assert.ok(deps.includes(dep), `the map memo dropped its ${dep} dependency`)
   }
-  assert.ok(mapHome.includes("map={mapElement}"), "the host offers the map for EVERY view so the shared shell can retain it")
-  assert.ok(!/map=\{[^}]*\?[^}]*mapElement/.test(mapHome), "the map element is never mounted conditionally")
+  assert.ok(
+    mapHome.includes("map={mapElement}"),
+    "the host offers the map for EVERY view so the shared shell can retain it",
+  )
+  assert.ok(
+    !/map=\{[^}]*\?[^}]*mapElement/.test(mapHome),
+    "the map element is never mounted conditionally",
+  )
 })
 
 test("the host never hands the shared Map a basemap style - it must follow the color scheme", () => {
-  assert.ok(!mapHome.includes("mapStyle"), "app/index.tsx must omit mapStyle so @civfix/ui picks it per scheme")
+  assert.ok(
+    !mapHome.includes("mapStyle"),
+    "app/index.tsx must omit mapStyle so @civfix/ui picks it per scheme",
+  )
 })
 
 test("the map memo deliberately leaves `initialCenter` out of its dependencies", () => {
@@ -47,7 +55,9 @@ test("the resume grace softens the SESSION decision and nothing else", () => {
   assert.ok(session.includes("const veto = cameraSessionVeto(surfaceInputs)"))
   assert.ok(viewfinder.includes("useViewfinderSession({"))
   assert.ok(
-    viewfinder.includes("startsDeferredRecording(pendingRecordRef.current, sessionRunningOnSurface, audioEnabled)"),
+    viewfinder.includes(
+      "startsDeferredRecording(pendingRecordRef.current, sessionRunningOnSurface, audioEnabled)",
+    ),
   )
 })
 
@@ -110,7 +120,10 @@ test("the grace's clock hangs off the WINDOW, so a return tears both down togeth
   assert.ok(clock.includes("return () => clearTimeout(timer)"))
   const depsAt = clock.indexOf("}, [")
   assert.ok(depsAt > -1, "the grace clock is no longer an effect")
-  assert.ok(clock.slice(depsAt).startsWith("}, [graceHeld])"), "the clock must be keyed on `graceHeld`")
+  assert.ok(
+    clock.slice(depsAt).startsWith("}, [graceHeld])"),
+    "the clock must be keyed on `graceHeld`",
+  )
 })
 
 test("the camera preview draws NO location of its own - no chip, no cache, no reverse-geocode", () => {
@@ -139,18 +152,27 @@ test("a PRE-WARMED viewfinder spends no location read and no network request", (
   )
   for (const reader of readers) assert.ok(shutterFn.includes(reader))
   const callers = viewfinder.match(/readShutterLocation\b/g) ?? []
-  assert.equal(callers.length, 2, "readShutterLocation is declared once and handed once to locateCapture")
+  assert.equal(
+    callers.length,
+    2,
+    "readShutterLocation is declared once and handed once to locateCapture",
+  )
 })
 
 test("the SHUTTER still attaches the device fix - the location-step skip depends on it", () => {
   assert.ok(viewfinder.includes("async function readShutterLocation()"))
-  assert.ok(viewfinder.includes("const located = await locateCapture(media, origin, readShutterLocation)"))
+  assert.ok(
+    viewfinder.includes("const located = await locateCapture(media, origin, readShutterLocation)"),
+  )
   const take = viewfinder.slice(
     viewfinder.indexOf("const onTakePhoto = useCallback"),
     viewfinder.indexOf("const beginRecording = useCallback"),
   )
   assert.ok(take.includes('}, "camera")'), "a photo shutter capture is a camera capture")
-  const record = viewfinder.slice(viewfinder.indexOf("onRecordingFinished:"), viewfinder.indexOf("onRecordingError:"))
+  const record = viewfinder.slice(
+    viewfinder.indexOf("onRecordingFinished:"),
+    viewfinder.indexOf("onRecordingError:"),
+  )
   assert.ok(record.includes('}, "camera")'), "a recorded video is a camera capture")
   assert.ok(viewfinder.includes("Location.requestForegroundPermissionsAsync()"))
 })

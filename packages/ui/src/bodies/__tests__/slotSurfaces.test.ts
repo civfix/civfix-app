@@ -90,7 +90,9 @@ describe("the date/time picker seam stays a seam", () => {
 
   it("names the optional native picker peer in the .native seam and nowhere else, so web never resolves it", () => {
     const importers = files
-      .filter((file) => readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"))
+      .filter((file) =>
+        readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"),
+      )
       .map((file) => file.slice(bodiesDir.length))
     expect(importers).toEqual(["InlineDateTimePicker.native.tsx"])
   })
@@ -195,7 +197,9 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     // A null capacity means at least one slot is unlimited, and printing a sum then would understate an
     // event that can take everyone - so those boards print the claim count, or say nobody has yet.
     expect(source).toContain("slotBoardSummary(slots)")
-    expect(source).toContain('summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0')
+    expect(source).toContain(
+      'summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0',
+    )
     expect(source).toContain('t("block.filled"')
     expect(source).toContain('t("block.signed_up"')
     expect(source).toContain('t("block.none_signed_up")')
@@ -258,7 +262,9 @@ describe("a LIVE event with no slots still has a way in", () => {
     expect(detail).toContain(
       "cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes",
     )
-    expect(detail).toContain("const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard")
+    expect(detail).toContain(
+      "const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard",
+    )
     expect(detail).toContain(
       'mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}',
     )
@@ -331,7 +337,9 @@ describe("the slot editor validates against the EVENT's window, not just the row
   it("offers the common first slot as a one-tap chip instead of prefilling every board alike", () => {
     expect(editor).toContain("value.every(isBlankSlotDraft)")
     expect(editor).toContain('t("editor.suggest_general")')
-    expect(editor).toContain('index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"')
+    expect(editor).toContain(
+      'index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"',
+    )
   })
 
   it("tells the host of an end-less event that timing a slot will store the end it shows", () => {

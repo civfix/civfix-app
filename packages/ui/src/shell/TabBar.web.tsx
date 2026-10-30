@@ -55,11 +55,11 @@ export function TabBar() {
   }
 
   return (
-    <View
-      style={containerStyle}
-      onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}
-    >
-      <View style={[styles.bar, th.shadows.s3]} onLayout={(e) => setBarW(e.nativeEvent.layout.width)}>
+    <View style={containerStyle} onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}>
+      <View
+        style={[styles.bar, th.shadows.s3]}
+        onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
+      >
         <BarGlass />
         {barW > 0 ? <View style={[styles.pill, pillStyle]} /> : null}
         <View

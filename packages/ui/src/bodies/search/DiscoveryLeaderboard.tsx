@@ -33,7 +33,10 @@ export function DiscoveryLeaderboard({
   const { user } = useAuthState()
   const isEmpty = entries.length === 0
   const youEntry: LeaderboardEntryDTO | null =
-    user && typeof viewerRank === "number" && typeof viewerHours === "number" && viewerRank > LEADERBOARD_PREVIEW_LIMIT
+    user &&
+    typeof viewerRank === "number" &&
+    typeof viewerHours === "number" &&
+    viewerRank > LEADERBOARD_PREVIEW_LIMIT
       ? {
           rank: viewerRank,
           userId: user.id,

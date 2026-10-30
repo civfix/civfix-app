@@ -10,11 +10,15 @@ vi.mock("@civfix/ui/i18n", async () => {
 })
 
 vi.mock("@/components/console/forms/image-upload/upload", () => ({
-  pickConsoleImage: vi.fn().mockResolvedValue({ kind: "image", uri: "blob:letter", mime: "image/jpeg" }),
-  acceptDroppedImage: vi.fn().mockResolvedValue(null),
-  uploadConsoleImage: vi
+  pickConsoleImage: vi
     .fn()
-    .mockResolvedValue({ uploadId: "up_1", mediaId: "66666666-6666-4666-8666-666666666666", previewUrl: "blob:letter" }),
+    .mockResolvedValue({ kind: "image", uri: "blob:letter", mime: "image/jpeg" }),
+  acceptDroppedImage: vi.fn().mockResolvedValue(null),
+  uploadConsoleImage: vi.fn().mockResolvedValue({
+    uploadId: "up_1",
+    mediaId: "66666666-6666-4666-8666-666666666666",
+    previewUrl: "blob:letter",
+  }),
 }))
 
 import { renderConsole } from "@/components/console/__testing__/harness"
@@ -38,7 +42,11 @@ function org(over: Partial<OrganizationDTO> = {}): OrganizationDTO {
 
 function renderVerification(
   current: OrganizationVerificationDTO,
-  applied: OrganizationVerificationDTO = { status: "pending", kind: "nonprofit", submittedAt: "2026-09-08T00:00:00.000Z" },
+  applied: OrganizationVerificationDTO = {
+    status: "pending",
+    kind: "nonprofit",
+    submittedAt: "2026-09-08T00:00:00.000Z",
+  },
 ) {
   // The server's read reflects the write once it lands, as the real API does after an apply.
   let latest = current
@@ -68,8 +76,11 @@ describe("EIN helpers", () => {
     expect(normalizeEin("12-34")).toBe("12-34")
     expect(normalizeEin("1")).toBe("1")
     const einAccepted = (einNumber: string) =>
-      ApplyOrganizationVerificationRequestSchema.safeParse({ id: ORG_ID, kind: "nonprofit", einNumber })
-        .success
+      ApplyOrganizationVerificationRequestSchema.safeParse({
+        id: ORG_ID,
+        kind: "nonprofit",
+        einNumber,
+      }).success
     expect(einAccepted("12-3456789")).toBe(true)
     expect(einAccepted("123456789")).toBe(true)
     expect(einAccepted("12-345")).toBe(false)
@@ -103,7 +114,10 @@ describe("VerificationScreen", () => {
     const { client } = renderVerification({ status: "unverified", kind: null })
 
     await user.type(await screen.findByLabelText(/verification\.field_einNumber/), "123456789")
-    await user.type(screen.getByLabelText(/verification\.field_note/), "Determination letter attached")
+    await user.type(
+      screen.getByLabelText(/verification\.field_note/),
+      "Determination letter attached",
+    )
     await user.click(screen.getByRole("button", { name: /gallery\.add/ }))
     expect(await screen.findByRole("button", { name: "upload.remove" })).toBeTruthy()
 

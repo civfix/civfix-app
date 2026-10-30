@@ -35,7 +35,12 @@ const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").repl
 const inbox = ["../MessagingListBody.tsx", "../inbox/inboxLayout.ts", "../inbox/ThreadRow.tsx"]
   .map((file) => strip(read(file)))
   .join("\n")
-const ROW_ACTION_LABELS = { mute: "Mute", markRead: "Mark read", delete: "Delete", deleteA11y: "Delete conversation" }
+const ROW_ACTION_LABELS = {
+  mute: "Mute",
+  markRead: "Mark read",
+  delete: "Delete",
+  deleteA11y: "Delete conversation",
+}
 const timeAgoHook = strip(read("../useListTimeAgo.ts"))
 const swipeHook = strip(read("../../primitives/useSwipeActions.ts"))
 const swipeModel = strip(read("../../primitives/swipeActionsModel.ts"))
@@ -45,7 +50,9 @@ const LOCALES = ["en", "es", "de", "ko"] as const
 describe("the row's timestamp is client-rendered and ticks", () => {
   it("formats lastMessageAt through the localized seam, falling back to the server string", () => {
     expect(inbox).toContain("const timeAgo = useTickingListTimeAgo()")
-    expect(inbox).toContain("const stamp = thread.lastMessageAt ? timeAgo(thread.lastMessageAt) : thread.ago")
+    expect(inbox).toContain(
+      "const stamp = thread.lastMessageAt ? timeAgo(thread.lastMessageAt) : thread.ago",
+    )
     expect(inbox).toContain("{stamp ? <Text style={styles.ago}>{stamp}</Text> : null}")
     // The frozen server string must not render directly.
     expect(inbox).not.toContain("{thread.ago ? <Text")
@@ -57,7 +64,9 @@ describe("the row's timestamp is client-rendered and ticks", () => {
     expect(timeAgoHook).toMatch(/if \(tickListeners\.size === 0 && tickTimer !== null\)/)
     expect(timeAgoHook).toContain("clearInterval(tickTimer)")
     expect((timeAgoHook.match(/setInterval\(/g) ?? []).length).toBe(1)
-    expect(inbox, "the row subscribes to the shared clock - it does not own one").not.toContain("setInterval")
+    expect(inbox, "the row subscribes to the shared clock - it does not own one").not.toContain(
+      "setInterval",
+    )
   })
 
   it("keeps the un-ticking formatter for the surfaces that never asked for one", () => {
@@ -128,7 +137,9 @@ describe("the native swipe uses the house gesture primitive", () => {
   })
 
   it("always animates home on release - a short drag on a CLOSED row never parks mid-lane", () => {
-    expect(swipeHook).toMatch(/if \(shouldSnapOpen\(x, w, g\.vx\)\) openActions\(\)\s*else snapClosed\(\)/)
+    expect(swipeHook).toMatch(
+      /if \(shouldSnapOpen\(x, w, g\.vx\)\) openActions\(\)\s*else snapClosed\(\)/,
+    )
     expect(swipeHook).toMatch(
       /const snapClosed = useCallback\(\(\) => \{\s*if \(openRowCloser === closeRef\.current\) openRowCloser = null\s*settle\(false\)\s*\}/,
     )
@@ -139,7 +150,9 @@ describe("the native swipe uses the house gesture primitive", () => {
   })
 
   it("shuts any other open row the moment a drag engages, not only once it snaps open", () => {
-    expect(swipeHook).toMatch(/onPanResponderGrant: \(\) => \{\s*tickedRef\.current = false\s*closeOtherRow\(\)\s*\}/)
+    expect(swipeHook).toMatch(
+      /onPanResponderGrant: \(\) => \{\s*tickedRef\.current = false\s*closeOtherRow\(\)\s*\}/,
+    )
     expect(swipeHook).toMatch(/const openActions = useCallback\(\(\) => \{\s*closeOtherRow\(\)/)
   })
 
@@ -169,17 +182,28 @@ describe("the destructive third action", () => {
   it("removes the row optimistically and puts it back, in place, if the server refuses", () => {
     expect(reportChat).toContain("onMutate")
     expect(reportChat).toContain("qc.cancelQueries({ queryKey: queryKeys.threads })")
-    expect(reportChat).toMatch(/onError[\s\S]*?items\.splice\(Math\.min\(slot\.index, items\.length\), 0, slot\.item\)/)
-    expect(reportChat).toMatch(/onSettled[\s\S]*?invalidateQueries\(\{ queryKey: queryKeys\.threads \}\)/)
+    expect(reportChat).toMatch(
+      /onError[\s\S]*?items\.splice\(Math\.min\(slot\.index, items\.length\), 0, slot\.item\)/,
+    )
+    expect(reportChat).toMatch(
+      /onSettled[\s\S]*?invalidateQueries\(\{ queryKey: queryKeys\.threads \}\)/,
+    )
   })
 
   it("reads destructive from the token scale and is reachable without a gesture", () => {
-    expect(inbox).toContain("backgroundColor: t.colors.bloom[\"600\"]")
+    expect(inbox).toContain('backgroundColor: t.colors.bloom["600"]')
     const del = threadRowActions({ unread: false, muted: false, labels: ROW_ACTION_LABELS }).at(-1)
-    expect(del).toMatchObject({ key: "delete", icon: "Trash2", destructive: true, a11yLabel: "Delete conversation" })
+    expect(del).toMatchObject({
+      key: "delete",
+      icon: "Trash2",
+      destructive: true,
+      a11yLabel: "Delete conversation",
+    })
     expect(inbox).toContain("icon={action.icon}")
     expect(inbox).toMatch(/actionName === "delete"/)
-    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toContain(
+      "rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))",
+    )
     expect(inbox).toContain("deleteA11y: deleteA11yLabel")
   })
 })
@@ -188,7 +212,9 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
   it("reveals the overflow chip on hover (or while its menu is open) and opens the house PopoverMenu", () => {
     expect(inbox).toContain("const { hovered, hoverProps } = useRowHover()")
     expect(inbox).toContain("{IS_WEB ? (")
-    expect(inbox).toContain("rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed")
+    expect(inbox).toContain(
+      "rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed",
+    )
     expect(inbox).toContain("icon={iconMap.Ellipsis}")
     expect(inbox).toContain("<PopoverMenu")
     expect(inbox).toContain("usePopoverAnchor(setAnchorRect)")
@@ -207,11 +233,15 @@ describe("web gets a hover menu instead, and both platforms get a non-gesture pa
 
   it("offers mark-read ONLY where there is something to clear", () => {
     const keys = (unread: boolean) =>
-      threadRowActions({ unread, muted: false, labels: ROW_ACTION_LABELS }).map((action) => action.key)
+      threadRowActions({ unread, muted: false, labels: ROW_ACTION_LABELS }).map(
+        (action) => action.key,
+      )
     expect(keys(true)).toEqual(["mute", "markRead", "delete"])
     expect(keys(false)).toEqual(["mute", "delete"])
     expect(inbox).toMatch(/threadRowActions\(\{\s*unread,\s*muted,/)
-    expect(inbox).toContain("rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))")
+    expect(inbox).toContain(
+      "rowActions.map((action) => ({ name: action.key, label: action.a11yLabel }))",
+    )
     expect(inbox).toMatch(/rowActions\.map\(\(action\) => \(\{\s*key: action\.key,/)
     expect(inbox).toMatch(/\{rowActions\.map\(\(action\) => \(\s*<ThreadRowAction/)
     expect(inbox).toContain("actionCount: rowActions.length")

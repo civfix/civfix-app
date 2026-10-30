@@ -61,7 +61,9 @@ describe("socialLinksFromDraft", () => {
   })
 
   it("drops a pasted leading @, like the invite drawer does for handles", () => {
-    expect(socialLinksFromDraft({ ...EMPTY_ORG_DRAFT, x: "@riverkeepers", tiktok: " @rk " })).toEqual({
+    expect(
+      socialLinksFromDraft({ ...EMPTY_ORG_DRAFT, x: "@riverkeepers", tiktok: " @rk " }),
+    ).toEqual({
       x: "riverkeepers",
       tiktok: "rk",
     })
@@ -252,7 +254,9 @@ describe("CreateOrgScreen", () => {
     expect(screen.queryByText("not_found_title")).toBeNull()
     expect(releaseRefetch).not.toBeNull()
     ;(releaseRefetch as unknown as () => void)()
-    await waitFor(() => expect(client.listMyOrganizations.mock.calls.length).toBeGreaterThanOrEqual(2))
+    await waitFor(() =>
+      expect(client.listMyOrganizations.mock.calls.length).toBeGreaterThanOrEqual(2),
+    )
     expect(screen.getByText("next.welcome_title(name=River Keepers)")).toBeTruthy()
     expect(screen.queryByText("not_found_title")).toBeNull()
   })

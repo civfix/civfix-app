@@ -1,7 +1,15 @@
 import { useState } from "react"
 import { View, Pressable, ActivityIndicator, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, focusRingProps, webInputReset, PRESSED_OPACITY, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webInputReset,
+  PRESSED_OPACITY,
+  MIN_TOUCH_TARGET,
+  inputFocusedStyle,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { useAddressSearch, type AddressPick } from "./useAddressSearch"
@@ -19,11 +27,13 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
   const th = useTheme()
   const { t } = useT("map-address")
   const [focused, setFocused] = useState(false)
-  const { loading, results, status, runSearch, onChange, reopen, choose, clear } = useAddressSearch({
-    value,
-    onChangeText,
-    onPick,
-  })
+  const { loading, results, status, runSearch, onChange, reopen, choose, clear } = useAddressSearch(
+    {
+      value,
+      onChangeText,
+      onPick,
+    },
+  )
 
   return (
     <View>

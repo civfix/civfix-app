@@ -195,7 +195,12 @@ describe("draftStore media helpers", () => {
     store().addCapture(cap("b"))
     store().setMedia({ uri: "c", kind: "video", mime: "video/mp4", durationSec: 3 })
     expect(draft().media).toHaveLength(1)
-    expect(draft().media[0]).toMatchObject({ uri: "c", kind: "video", mime: "video/mp4", durationSec: 3 })
+    expect(draft().media[0]).toMatchObject({
+      uri: "c",
+      kind: "video",
+      mime: "video/mp4",
+      durationSec: 3,
+    })
     expect(draft().media[0]?.id).toBeTruthy()
   })
 

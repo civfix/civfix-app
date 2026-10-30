@@ -48,7 +48,13 @@ const SECTION_ICON: Record<OrgSection, LucideIcon> = {
   settings: Settings,
 }
 
-const BOTTOM_TAB_ORDER: readonly OrgSection[] = ["overview", "events", "members", "verification", "settings"]
+const BOTTOM_TAB_ORDER: readonly OrgSection[] = [
+  "overview",
+  "events",
+  "members",
+  "verification",
+  "settings",
+]
 
 export interface OrgScreenProps {
   orgId: string

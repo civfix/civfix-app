@@ -2,7 +2,12 @@
 
 import { createContext, useCallback, useContext, useMemo } from "react"
 import type { ReactNode } from "react"
-import type { CleanupDTO, HostCapability, OrganizationDTO, OrganizationMemberRole } from "@civfix/contract"
+import type {
+  CleanupDTO,
+  HostCapability,
+  OrganizationDTO,
+  OrganizationMemberRole,
+} from "@civfix/contract"
 import { cleanupHostStanding, hasHostCapability, useAuthState } from "@civfix/ui/data"
 
 import {
@@ -41,10 +46,7 @@ export function ConsoleNavigationProvider({ children }: { children: ReactNode })
   const go = useCallback((next: ConsoleRoute, params?: ConsoleParams) => {
     navigateConsole(hrefForRoute(next), params ?? {})
   }, [])
-  const value = useMemo<ConsoleNavigation>(
-    () => ({ route, pathname, go }),
-    [route, pathname, go],
-  )
+  const value = useMemo<ConsoleNavigation>(() => ({ route, pathname, go }), [route, pathname, go])
   return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>
 }
 
