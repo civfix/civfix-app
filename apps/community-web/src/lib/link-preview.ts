@@ -291,21 +291,18 @@ export interface SignupPagePreviewInput {
   visibility?: string | null | undefined
   noindex?: boolean | null | undefined
   coverUrl?: string | null | undefined
-  seo?:
-    | {
-        title?: string | null | undefined
-        description?: string | null | undefined
-        noindex?: boolean | null | undefined
-      }
-    | null
-    | undefined
+  seo?: {
+    title?: string | null | undefined
+    description?: string | null | undefined
+    noindex?: boolean | null | undefined
+  } | null | undefined
   event?: {
     title?: string | null | undefined
     startsAt?: string | null | undefined
     timezone?: string | null | undefined
     status?: string | null | undefined
     address?: string | null | undefined
-  } | null
+  } | null | undefined
   organization?: { name?: string | null | undefined } | null | undefined
 }
 
