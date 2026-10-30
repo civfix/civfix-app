@@ -170,15 +170,15 @@ export interface BubbleProps {
   onReply: (message: ChatMessageDTO) => void
   onDelete: (messageId: string) => void
   onSetPinned?: (messageId: string, pinned: boolean) => void
-  onVotePoll?: (messageId: string, optionIdxs: number[]) => void
-  onStopPoll?: (messageId: string) => void
+  onVotePoll?: ((messageId: string, optionIdxs: number[]) => void) | undefined
+  onStopPoll?: ((messageId: string) => void) | undefined
   onReport: (messageId: string) => void
   onReportPhoto?: (mediaId: string) => void
   onBlock?: (author: { id: string; name?: string | null }) => void
   onToggleReaction: (messageId: string, emoji: ReactionEmoji) => void
-  onOpenPerson: (target: { id: string; handle?: string | null; deleted?: boolean }) => void
+  onOpenPerson: (target: { id: string; handle?: string | null | undefined; deleted?: boolean | undefined }) => void
   flash?: boolean
-  onJumpToMessage?: (messageId: string) => void
+  onJumpToMessage?: ((messageId: string) => void) | undefined
   jumpLoading?: boolean
   pinnedOnlyView?: boolean
   onJumpFromPinned?: (messageId: string) => void

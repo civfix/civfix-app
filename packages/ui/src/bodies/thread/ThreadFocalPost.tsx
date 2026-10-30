@@ -41,7 +41,7 @@ export interface ThreadFocalPostProps {
   post: PostDTO
   parent: ThreadFocalParent
   onFocusComposer: () => void
-  onOpenEntry?: (entry: DetailEntry) => void
+  onOpenEntry?: ((entry: DetailEntry) => void) | undefined
   onDeleted?: () => void
 }
 

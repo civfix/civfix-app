@@ -54,12 +54,12 @@ export function BubbleMenus({
   onReply: (message: ChatMessageDTO) => void
   onEdit: () => void
   onDelete: (messageId: string) => void
-  onSetPinned?: (messageId: string, pinned: boolean) => void
-  onJumpFromPinned?: (messageId: string) => void
-  onVotePoll?: (messageId: string, optionIdxs: number[]) => void
-  onStopPoll?: (messageId: string) => void
+  onSetPinned?: ((messageId: string, pinned: boolean) => void) | undefined
+  onJumpFromPinned?: ((messageId: string) => void) | undefined
+  onVotePoll?: ((messageId: string, optionIdxs: number[]) => void) | undefined
+  onStopPoll?: ((messageId: string) => void) | undefined
   onReport: (messageId: string) => void
-  onBlock?: (author: { id: string; name?: string | null }) => void
+  onBlock?: ((author: { id: string; name?: string | null }) => void) | undefined
 }) {
   const { t } = useT("conversation")
   const { t: tp } = useT("conversation-polls")

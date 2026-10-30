@@ -24,9 +24,9 @@ export function DiscoveryLeaderboard({
   name: string | null
   entries: readonly LeaderboardEntryDTO[]
   precededBySection?: boolean
-  participantCount?: number | null
-  viewerRank?: number | null
-  viewerHours?: number | null
+  participantCount?: number | null | undefined
+  viewerRank?: number | null | undefined
+  viewerHours?: number | null | undefined
 }) {
   const styles = useSearchStyles()
   const { t } = useT("home-sidebar")

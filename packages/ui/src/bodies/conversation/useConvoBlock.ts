@@ -14,7 +14,7 @@ export function useConvoBlock({
   closeMenu,
   onBack,
 }: {
-  peerId?: string
+  peerId?: string | undefined
   title: string
   closeMenu: () => void
   onBack: () => void
