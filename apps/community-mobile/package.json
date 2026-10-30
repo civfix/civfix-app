@@ -22,7 +22,7 @@
     "prep:appstore": "scripts/prep-archive.sh appstore"
   },
   "dependencies": {
-    "@civfix/contract": "0.65.0-b-feat-notification-center-contract.g58d238e",
+    "@civfix/contract": "0.66.0-b-integration-notification-center.g66a7652",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@expo-google-fonts/baloo-2": "^0.4.2",
