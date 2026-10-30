@@ -1,0 +1,19 @@
+node_modules
+.turbo
+.next
+out
+coverage
+.wrangler
+.expo
+dist
+dist-types
+pnpm-lock.yaml
+next-env.d.ts
+apps/*/ios
+apps/*/android
+apps/community-web/public
+# Rendered by packages/ui/scripts/gen-i18n-resources.mjs; check-i18n-resources.mjs compares them byte for byte.
+packages/ui/src/i18n/catalogs
+packages/ui/src/i18n/resources.ts
+# Prose and tables are hand-laid-out and not machine-formatted; the formatting pass covered code only.
+*.md
