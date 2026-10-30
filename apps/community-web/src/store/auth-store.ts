@@ -30,14 +30,14 @@ export interface AuthState {
    * Server config rather than user state, so it survives sign-out and a response that omits it. Undefined
    * until a live session answer arrives, which GuestRsvpSheet reads as email-only (the safe default).
    */
-  guestSmsEnabled?: boolean
+  guestSmsEnabled?: boolean | undefined
 
   setSession: (input: {
     user: UserDTO | null
-    csrfToken?: string | null
+    csrfToken?: string | null | undefined
     roles?: string[]
-    enabledProviders?: OAuthProvider[]
-    guestSmsEnabled?: boolean
+    enabledProviders?: OAuthProvider[] | undefined
+    guestSmsEnabled?: boolean | undefined
   }) => void
   setStatus: (status: AuthStatus) => void
   /**

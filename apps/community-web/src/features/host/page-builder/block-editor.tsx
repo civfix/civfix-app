@@ -30,7 +30,7 @@ interface KindEditorProps<K extends EventPageBlockKind> {
 export interface BlockEditorProps {
   block: EventPageBlock
   onChange: (patch: Partial<EventPageBlock>) => void
-  errors?: Readonly<Record<string, BlockIssue>>
+  errors?: Readonly<Record<string, BlockIssue>> | undefined
 }
 
 function BlockFields({ children }: { children: ReactNode }) {
@@ -43,11 +43,11 @@ interface BlockTextFieldProps {
   value: string | null | undefined
   maxLength: number
   onChange: (value: string) => void
-  multiline?: boolean
-  optional?: boolean
+  multiline?: boolean | undefined
+  optional?: boolean | undefined
   hint?: string
-  error?: string
-  placeholder?: string
+  error?: string | undefined
+  placeholder?: string | undefined
   type?: "email"
 }
 
@@ -93,7 +93,7 @@ function BlockTitleField({
   block,
   onChange,
 }: {
-  block: { id: string; title?: string | null }
+  block: { id: string; title?: string | null | undefined }
   onChange: (patch: { title: string }) => void
 }) {
   const { t } = useT("host-page-builder")

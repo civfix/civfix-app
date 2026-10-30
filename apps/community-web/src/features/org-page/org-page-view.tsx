@@ -19,7 +19,7 @@ import { isSafeHttpsUrl, parseMarkdownSubset } from "@civfix/contract/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 /** The public page's copy lives in the `host-org` namespace next to its stats (`stats.*`). */
 function kindLabel(t: Translate, kind: NonNullable<OrganizationDTO["verifiedKind"]>): string {

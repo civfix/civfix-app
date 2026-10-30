@@ -90,8 +90,8 @@ function readIfd(
   tiffStart: number,
   ifdOffset: number,
   little: boolean,
-): Map<number, { ascii?: string; rationals?: number[] }> {
-  const out = new Map<number, { ascii?: string; rationals?: number[] }>()
+): Map<number, { ascii?: string | undefined; rationals?: number[] | undefined }> {
+  const out = new Map<number, { ascii?: string | undefined; rationals?: number[] | undefined }>()
   // The 2-byte entry count must be readable; an out-of-range IFD pointer yields no entries.
   if (!inBounds(view, ifdOffset, 2)) return out
   const entryCount = Math.min(view.getUint16(ifdOffset, little), MAX_IFD_ENTRIES)
