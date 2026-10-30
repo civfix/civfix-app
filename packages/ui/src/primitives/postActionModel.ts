@@ -12,14 +12,14 @@ export interface PostActionModel {
   key: PostActionKey
   countLabel: string | null
   active: boolean
-  onPress?: () => void
+  onPress?: (() => void) | undefined
   sharePath?: string
 }
 
 export interface PostActionCallbacks {
   onLike?: (currentlyLiked: boolean) => void
-  onRepost?: (currentlyReposted: boolean) => void
-  onComment?: () => void
+  onRepost?: ((currentlyReposted: boolean) => void) | undefined
+  onComment?: (() => void) | undefined
   onSave?: (currentlySaved: boolean) => void
   onShare?: (path: string) => void
 }

@@ -15,10 +15,10 @@ export interface LocationPickerProps {
    * nothing means "not known yet", never "use a default": there is no default, because a fallback centre
    * opened the pin-drop map thousands of miles from the reporter.
    */
-  initialCenter?: LatLng
+  initialCenter?: LatLng | undefined
   /** Resolution finished with no point, so the picker asks for an address instead of loading forever. */
-  centerSettled?: boolean
-  height?: number
+  centerSettled?: boolean | undefined
+  height?: number | undefined
   /**
    * "main-map" collects taps on the web's persistent main map through `locationPickStore` when one is
    * registered, falling back to the inline map on a cold deep link. Native ignores it: there is no

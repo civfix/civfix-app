@@ -97,7 +97,7 @@ const VARIANT_STYLES_WITH_SELECT: Record<
 
 export interface AppTextProps extends TextProps {
   variant?: Variant
-  color?: string
+  color?: string | undefined
 }
 
 function TextImpl({ variant = "body", color, style, ...rest }: AppTextProps) {

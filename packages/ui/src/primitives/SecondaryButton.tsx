@@ -18,7 +18,7 @@ const SECONDARY_SM_HIT_SLOP = hitSlopToTarget(SECONDARY_HEIGHT_SM)
 export interface SecondaryButtonProps {
   label: string
   onPress: () => void
-  icon?: LucideIcon
+  icon?: LucideIcon | undefined
   trailingIcon?: LucideIcon
   size?: "sm" | "md" | "lg"
   disabled?: boolean

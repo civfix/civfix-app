@@ -8,7 +8,7 @@ export interface ComposerModeBarProps {
   mode: "edit" | "reply"
   title: string
   excerpt: string
-  accentColor?: string
+  accentColor?: string | undefined
   onCancel: () => void
 }
 

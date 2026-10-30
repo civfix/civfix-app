@@ -39,7 +39,7 @@ function scalarPatch(patch: Omit<UpdateCleanupRequest, "id">): Partial<CleanupDT
   return out
 }
 
-function onMutate(qc: QueryClient, id: string, patch: Omit<UpdateCleanupRequest, "id">): { prevDetail?: CleanupDTO } {
+function onMutate(qc: QueryClient, id: string, patch: Omit<UpdateCleanupRequest, "id">): { prevDetail?: CleanupDTO | undefined } {
   const prevDetail = qc.getQueryData<CleanupDTO>(queryKeys.cleanup(id))
   const sp = scalarPatch(patch)
   if (prevDetail) qc.setQueryData<CleanupDTO>(queryKeys.cleanup(id), { ...prevDetail, ...sp })

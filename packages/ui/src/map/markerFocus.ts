@@ -40,7 +40,7 @@ export function flyToTargetOffMap(
   return nodes.some((node) => markerNodeIsActive(node, pinId, cleanupId)) ? null : highlight
 }
 
-export type MarkerLabelT = (key: string, options?: Record<string, unknown>) => string
+export type MarkerLabelT = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 function reportMarkerLabel(category: string, title: string | null | undefined, t: MarkerLabelT): string {
   const categoryLabel = t(`enums:category.${category}`)

@@ -44,7 +44,7 @@ describe("every pin body reads against the basemap (WCAG 1.4.11, 3:1)", () => {
   it("PinSvg strokes the body with the scheme outline", () => {
     const src = readFileSync(new URL("../pins/PinSvg.tsx", import.meta.url), "utf8")
     expect(src).toContain("const outline = pinOutlineFor(t.scheme)")
-    expect(src).toContain("stroke={outline ?? undefined}")
+    expect(src).toContain("{ stroke: outline }")
   })
 })
 
