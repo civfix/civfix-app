@@ -15,7 +15,7 @@ import { useEscape, useFocusTrap } from "./use-focus-trap"
 export type ConfirmSeverity = "neutral" | "warn" | "danger"
 
 export interface ConfirmPayload {
-  reason?: string
+  reason?: string | undefined
 }
 
 export interface ConfirmModalProps {

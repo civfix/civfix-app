@@ -2,7 +2,7 @@ import * as React from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { act, cleanup, render, screen } from "@testing-library/react"
 
-const calls: Array<{ key: string; options?: Record<string, unknown> }> = []
+const calls: Array<{ key: string; options?: Record<string, unknown> | undefined }> = []
 const transProps: Array<Record<string, unknown>> = []
 let orgQuery: Record<string, unknown> = {}
 

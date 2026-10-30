@@ -45,7 +45,7 @@ const KINDS: readonly EventQuestionKind[] = [
 
 export interface DraftQuestion {
   key: string
-  id?: string
+  id?: string | undefined
   kind: EventQuestionKind
   prompt: string
   helpText: string

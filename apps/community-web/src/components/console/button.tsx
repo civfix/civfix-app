@@ -33,7 +33,7 @@ const SIZE_CLASSES: Record<ConsoleButtonSize, string> = {
 
 export interface ConsoleButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ConsoleButtonVariant
+  variant?: ConsoleButtonVariant | undefined
   size?: ConsoleButtonSize
 }
 
