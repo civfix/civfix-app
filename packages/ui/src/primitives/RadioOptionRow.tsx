@@ -15,7 +15,7 @@ export type RadioOptionRowLayout = "flush" | "inset"
 
 export interface RadioOptionRowProps {
   label: string
-  sub?: string
+  sub?: string | undefined
   selected: boolean
   pending: boolean
   onPress: () => void

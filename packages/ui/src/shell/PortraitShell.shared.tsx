@@ -64,7 +64,7 @@ export interface PortraitShellProps {
   view: NavView
   baseView: NavView
   fullPageDetails?: boolean
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
 }
 
 interface PortraitShellFrameProps extends PortraitShellProps {

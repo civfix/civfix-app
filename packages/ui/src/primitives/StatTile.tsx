@@ -24,7 +24,7 @@ export type StatTone = "neutral" | "success" | "danger"
 export interface StatTileProps {
   label: string
   value: string | null
-  hint?: string
+  hint?: string | undefined
   trend?: readonly SparkPoint[]
   tone?: StatTone
   accessibilityLabel?: string

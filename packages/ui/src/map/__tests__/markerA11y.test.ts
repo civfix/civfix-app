@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { markerA11yLabel, markerButtonA11y, targetMarkerA11yLabel, type MarkerLabelT } from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
-const t: MarkerLabelT = (key, options) => (options ? `${key}${JSON.stringify(options)}` : key)
+const t: MarkerLabelT = (key: string, options?: Record<string, unknown>) => (options ? `${key}${JSON.stringify(options)}` : key)
 
 const report = (title: string | null) =>
   ({ type: "report", key: "r", id: "r1", lat: 0, lng: 0, pin: { category: "water", title } }) as unknown as ClusterNode

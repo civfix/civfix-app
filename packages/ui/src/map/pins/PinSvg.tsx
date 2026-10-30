@@ -17,8 +17,8 @@ export function PinSvg({ fill, glyph, size }: { fill: string; glyph: string; siz
       <Path
         d={BODY_PATH}
         fill={fill}
-        stroke={outline ?? undefined}
-        strokeWidth={outline ? BODY_OUTLINE_WIDTH : undefined}
+        {...(outline !== null ? { stroke: outline } : {})}
+        {...(outline ? { strokeWidth: BODY_OUTLINE_WIDTH } : {})}
         strokeLinejoin="round"
       />
       <G

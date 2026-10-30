@@ -222,7 +222,7 @@ function replaceInList(
 /** Per-call snapshot of the side caches a toggle patches besides the single `post(id)` detail. */
 interface ToggleAlsoCtx {
   /** The target post's exact pre-mutation value, for a TARGETED (concurrency-safe) list rollback. */
-  original?: PostDTO
+  original?: PostDTO | undefined
 }
 
 /**
@@ -395,7 +395,7 @@ export function buildCreateMutation(
 /** Per-call snapshot of the caches a delete clears, for an exact rollback. */
 interface DeleteCtx {
   prevLists: ReadonlyArray<readonly [readonly unknown[], InfiniteData<FeedPageDTO> | undefined]>
-  prevDetail?: PostDTO
+  prevDetail?: PostDTO | undefined
 }
 
 /** Build the `useMutation` options for soft-deleting a post (removes it from every cache). */

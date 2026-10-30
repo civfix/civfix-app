@@ -117,7 +117,7 @@ export function useNearbyCleanups(
       (
         (await api.listCleanups({ when: "upcoming", limit, ...(near ? { near } : {}) })).items ?? []
       ).filter((c): c is CleanupDTO => c != null),
-    select,
+    ...(select ? { select } : {}),
     placeholderData: (prev) => prev,
   })
 }

@@ -4,7 +4,7 @@ import { threadRoomId } from "../data/threadRoom"
 export type ThreadAvatarPeer = Pick<PersonDTO, "id" | "name" | "avatarUrl" | "avatar">
 
 export type ThreadAvatarInput = Pick<MessageThreadDTO, "id" | "kind" | "title" | "refId"> & {
-  peer?: ThreadAvatarPeer | null
+  peer?: ThreadAvatarPeer | null | undefined
 }
 
 export interface ResolvedThreadAvatar {

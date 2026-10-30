@@ -7,7 +7,7 @@ const CREDIT_FONT_SIZE = 9
 
 export interface MapCreditProps {
   /** Lifts the credit above host chrome that floats over the map's bottom edge. */
-  bottomInset?: number | null
+  bottomInset?: number | null | undefined
 }
 
 /**

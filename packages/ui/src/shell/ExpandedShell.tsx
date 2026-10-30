@@ -77,7 +77,7 @@ const PANEL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export interface ExpandedShellProps {
   renderBody?: RenderBody
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
 }
 
 export function ExpandedShell({

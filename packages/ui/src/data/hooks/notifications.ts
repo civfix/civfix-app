@@ -88,12 +88,18 @@ export function useNotificationPrefs() {
   })
 }
 
+// The optimistic write spreads the patch over the cached prefs, so an explicit `undefined` would blank a
+// field the server leaves unchanged.
+type NotificationPrefsPatch = {
+  [K in keyof UpdateNotificationPrefsRequest]?: Exclude<UpdateNotificationPrefsRequest[K], undefined>
+}
+
 export function useUpdateNotificationPrefs() {
   const api = useApi()
   const qc = useQueryClient()
 
   return useMutation(
-    optimisticPatch<NotificationPrefsDTO, UpdateNotificationPrefsRequest, NotificationPrefsDTO>(qc, {
+    optimisticPatch<NotificationPrefsDTO, NotificationPrefsPatch, NotificationPrefsDTO>(qc, {
       key: queryKeys.notificationPrefs,
       mutationFn: (patch) => api.updateNotificationPrefs(patch),
       patch: (prev, patch) => ({ ...prev, ...patch }),
@@ -116,7 +122,7 @@ interface PrivacySettingsCtx {
   >
 }
 
-function privacySettingsPatch(next: PrivacySettingsVars): UpdateSettingsRequest {
+function privacySettingsPatch(next: PrivacySettingsVars): Exclude<PrivacySettingsVars, boolean> {
   return typeof next === "boolean" ? { allowDirectMessages: next } : next
 }
 
