@@ -56,9 +56,7 @@ export function TimelineList({
               <span className="font-semibold text-console-ink">{entry.actorLabel} </span>
             ) : null}
             {entry.body}
-            {entry.note ? (
-              <span className="text-console-ink-3">{` "${entry.note}"`}</span>
-            ) : null}
+            {entry.note ? <span className="text-console-ink-3">{` "${entry.note}"`}</span> : null}
           </span>
           {entry.internal ? (
             <span title={t("timeline.internal")} className="shrink-0 self-center">

@@ -2,7 +2,14 @@ import { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
 import { CONTENT_REPORT_DETAILS_MAX, type ContentReportReason } from "@civfix/contract"
-import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
+import {
+  a11yState,
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  focusRingProps,
+  inputFocusedStyle,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
@@ -20,7 +27,6 @@ const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
   "self_harm",
   "other",
 ]
-
 
 export interface ReportContentSheetProps {
   visible: boolean
@@ -75,7 +81,12 @@ export function ReportContentSheet({
       actions={
         <>
           <SecondaryButton label={t("actions.cancel")} onPress={onClose} size="sm" />
-          <PrimaryButton label={t("actions.submit")} onPress={commit} loading={pending} disabled={!canSubmit} />
+          <PrimaryButton
+            label={t("actions.submit")}
+            onPress={commit}
+            loading={pending}
+            disabled={!canSubmit}
+          />
         </>
       }
     >

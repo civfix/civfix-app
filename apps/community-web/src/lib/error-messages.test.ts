@@ -11,7 +11,9 @@ describe("errorMessage", () => {
 
   it("falls back to the provided fallback when no override matches (no raw server text leaked)", () => {
     const err = new AppError(ErrorCode.CONFLICT, "Already exists.")
-    expect(errorMessage(err, { VALIDATION: "Check your input." }, { fallback: "Nope." })).toBe("Nope.")
+    expect(errorMessage(err, { VALIDATION: "Check your input." }, { fallback: "Nope." })).toBe(
+      "Nope.",
+    )
   })
 
   it("uses the built-in default fallback when none is provided", () => {

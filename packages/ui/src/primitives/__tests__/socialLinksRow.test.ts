@@ -27,7 +27,9 @@ describe("presentSocialPlatforms", () => {
 
   it("trims a handle before it reaches socialLinkUrl", () => {
     const [entry] = presentSocialPlatforms({ tiktok: " civfix " })
-    expect(entry && socialLinkUrl(entry.platform, entry.value)).toBe("https://www.tiktok.com/@civfix")
+    expect(entry && socialLinkUrl(entry.platform, entry.value)).toBe(
+      "https://www.tiktok.com/@civfix",
+    )
   })
 })
 

@@ -18,7 +18,9 @@ describe("the web drop-pin camera restore", () => {
 
   it("reads the pre-press camera and menu state BEFORE openDropPinMenu changes them", () => {
     const before = handler.indexOf("const viewportBefore = useMapViewport.getState().viewport")
-    const menu = handler.indexOf('const menuAlreadyOpen = navBefore.stack.some((entry) => entry.kind === "drop-pin")')
+    const menu = handler.indexOf(
+      'const menuAlreadyOpen = navBefore.stack.some((entry) => entry.kind === "drop-pin")',
+    )
     const open = handler.indexOf("if (!openDropPinMenu(lat, lng)) return")
     expect(before).toBeGreaterThan(-1)
     expect(menu).toBeGreaterThan(before)

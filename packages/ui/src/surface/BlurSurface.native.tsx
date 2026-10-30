@@ -25,9 +25,7 @@ export function BlurSurface({ kind, children, style, pointerEvents }: BlurSurfac
           { backgroundColor: supportsBlur ? spec.fill : spec.fillFallback },
         ]}
       />
-      {sheen ? (
-        <View style={[styles.sheen, styles.noPointer, { backgroundColor: sheen }]} />
-      ) : null}
+      {sheen ? <View style={[styles.sheen, styles.noPointer, { backgroundColor: sheen }]} /> : null}
       {children}
     </View>
   )

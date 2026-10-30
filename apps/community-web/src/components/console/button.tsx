@@ -4,19 +4,13 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-export type ConsoleButtonVariant =
-  | "primary"
-  | "secondary"
-  | "outline"
-  | "ghost"
-  | "destructive"
+export type ConsoleButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "destructive"
 export type ConsoleButtonSize = "sm" | "md" | "lg" | "icon"
 
 const VARIANT_CLASSES: Record<ConsoleButtonVariant, string> = {
   primary:
     "bg-console-ink text-console-surface shadow-console-1 hover:opacity-90 disabled:hover:opacity-100",
-  secondary:
-    "bg-console-surface-alt text-console-ink hover:bg-console-tint",
+  secondary: "bg-console-surface-alt text-console-ink hover:bg-console-tint",
   outline:
     "border border-console-line bg-console-surface text-console-ink hover:bg-console-surface-alt",
   ghost: "text-console-ink-2 hover:bg-console-surface-alt hover:text-console-ink",
@@ -31,8 +25,7 @@ const SIZE_CLASSES: Record<ConsoleButtonSize, string> = {
   icon: "h-8 w-8 rounded-sm",
 }
 
-export interface ConsoleButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ConsoleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ConsoleButtonVariant | undefined
   size?: ConsoleButtonSize
 }
@@ -60,7 +53,14 @@ export interface ConsoleIconButtonProps extends ConsoleButtonProps {
 
 export const ConsoleIconButton = React.forwardRef<HTMLButtonElement, ConsoleIconButtonProps>(
   ({ label, variant = "ghost", size = "icon", ...props }, ref) => (
-    <ConsoleButton ref={ref} aria-label={label} title={label} variant={variant} size={size} {...props} />
+    <ConsoleButton
+      ref={ref}
+      aria-label={label}
+      title={label}
+      variant={variant}
+      size={size}
+      {...props}
+    />
   ),
 )
 ConsoleIconButton.displayName = "ConsoleIconButton"

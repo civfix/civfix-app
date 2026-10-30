@@ -5,14 +5,28 @@ import type { ChatItem } from "../../helpers"
 import type { ChatMessageDTO, MediaDTO, UserMentionDTO, ReactionEmoji } from "@civfix/contract"
 import { domProps, useTheme, focusRingProps, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { ReactionChips, ReplyQuote, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
+import {
+  ReactionChips,
+  ReplyQuote,
+  useDoubleTap,
+  useSwipeReply,
+  useToast,
+  PollBubble,
+  VerifiedBadge,
+} from "../../primitives"
 import { withTextOffsets } from "../../primitives/listKeys"
 import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
 import { announce } from "../../announce"
 import { useLocale, useT } from "../../i18n"
 import { buildMessageActions, isBlockableAuthor } from "../messageActions"
 import { clockTime } from "../relativeTime"
-import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
+import {
+  appLinkOrigins,
+  mentionLookup,
+  tokenizeChatBody,
+  type ChatBodyToken,
+  type ChatLinkTarget,
+} from "./chatLinks"
 import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
 import { ChatLinkEmbeds } from "./ChatLinkEmbeds"
 import { BUBBLE_LONG_PRESS_MS, FLASH_DURATION_MS, senderNameColor } from "./conversationModel"
@@ -106,7 +120,11 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
     const useNative = Platform.OS !== "web"
     const anim = Animated.sequence([
       Animated.timing(v, { toValue: 1, duration: FLASH_IN_MS, useNativeDriver: useNative }),
-      Animated.timing(v, { toValue: 0, duration: FLASH_DURATION_MS - FLASH_IN_MS, useNativeDriver: useNative }),
+      Animated.timing(v, {
+        toValue: 0,
+        duration: FLASH_DURATION_MS - FLASH_IN_MS,
+        useNativeDriver: useNative,
+      }),
     ])
     anim.start()
     return () => anim.stop()
@@ -115,7 +133,11 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
     <Animated.View
       style={[
         StyleSheet.absoluteFillObject,
-        shape === "rounded" ? styles.flashOverlayRounded : shape === "card" ? styles.flashOverlayCard : styles.flashOverlayBubble,
+        shape === "rounded"
+          ? styles.flashOverlayRounded
+          : shape === "card"
+            ? styles.flashOverlayCard
+            : styles.flashOverlayBubble,
         mine ? styles.flashOverlayMine : styles.flashOverlayTheirs,
         { opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, mine ? 0.35 : 0.16] }) },
         pointerEventStyles.none,
@@ -176,7 +198,11 @@ export interface BubbleProps {
   onReportPhoto?: (mediaId: string) => void
   onBlock?: (author: { id: string; name?: string | null }) => void
   onToggleReaction: (messageId: string, emoji: ReactionEmoji) => void
-  onOpenPerson: (target: { id: string; handle?: string | null | undefined; deleted?: boolean | undefined }) => void
+  onOpenPerson: (target: {
+    id: string
+    handle?: string | null | undefined
+    deleted?: boolean | undefined
+  }) => void
   flash?: boolean
   onJumpToMessage?: ((messageId: string) => void) | undefined
   jumpLoading?: boolean
@@ -189,7 +215,10 @@ function bubblePropsEqual(prev: BubbleProps, next: BubbleProps): boolean {
   const b = next.item
   if (
     a !== b &&
-    (a.message !== b.message || a.mine !== b.mine || a.pending !== b.pending || a.failed !== b.failed)
+    (a.message !== b.message ||
+      a.mine !== b.mine ||
+      a.pending !== b.pending ||
+      a.failed !== b.failed)
   ) {
     return false
   }
@@ -213,7 +242,11 @@ function SenderName({
   const th = useTheme()
   const name = (
     <Text
-      style={[styles.who, from.official ? styles.whoBadged : null, { color: senderNameColor(from.id, th.scheme) }]}
+      style={[
+        styles.who,
+        from.official ? styles.whoBadged : null,
+        { color: senderNameColor(from.id, th.scheme) },
+      ]}
       numberOfLines={1}
       onPress={from.deleted ? undefined : () => onOpenPerson(from)}
       accessibilityRole={from.deleted ? undefined : "button"}
@@ -400,23 +433,28 @@ export const Bubble = React.memo(function Bubble({
   const reactable = canReact && !pending && !failed
   const removed = message.deletedAt != null
   const { onPress: onBubblePress } = useDoubleTap({
-    onDoubleTap:
-      reactable && message.id ? () => onToggleReaction(message.id, "like") : undefined,
+    onDoubleTap: reactable && message.id ? () => onToggleReaction(message.id, "like") : undefined,
   })
 
   const quotedId = message.replyTo?.id
-  const onQuotePress =
-    quotedId && onJumpToMessage ? () => onJumpToMessage(quotedId) : undefined
+  const onQuotePress = quotedId && onJumpToMessage ? () => onJumpToMessage(quotedId) : undefined
 
   const swipe = useSwipeReply({
     enabled:
-      canReply && !pending && !failed && !removed && message.kind !== "system" && Boolean(message.id),
+      canReply &&
+      !pending &&
+      !failed &&
+      !removed &&
+      message.kind !== "system" &&
+      Boolean(message.id),
     onTrigger: () => onReply(message),
   })
 
   if (removed && !(mine && (pending || failed))) {
     return (
-      <View style={[styles.bubbleWrap, mine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs, wrapGap]}>
+      <View
+        style={[styles.bubbleWrap, mine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs, wrapGap]}
+      >
         <TombstonePill />
         {flash ? <FlashOverlay mine={false} shape="rounded" /> : null}
       </View>
@@ -424,7 +462,7 @@ export const Bubble = React.memo(function Bubble({
   }
 
   const from = message.from
-  const poll = message.kind === "poll" ? message.poll ?? null : null
+  const poll = message.kind === "poll" ? (message.poll ?? null) : null
   const isPoll = poll != null
   const descriptors = buildMessageActions({
     mine,
@@ -483,7 +521,14 @@ export const Bubble = React.memo(function Bubble({
 
   const bubbleInner = (
     <>
-      {message.replyTo ? <ReplyQuote replyTo={message.replyTo} mine={mine} onPress={onQuotePress} loading={jumpLoading} /> : null}
+      {message.replyTo ? (
+        <ReplyQuote
+          replyTo={message.replyTo}
+          mine={mine}
+          onPress={onQuotePress}
+          loading={jumpLoading}
+        />
+      ) : null}
       {isPoll && poll ? (
         <PollBubble
           poll={poll}
@@ -507,7 +552,12 @@ export const Bubble = React.memo(function Bubble({
           onOpen={onOpenEmbed}
         />
       ) : null}
-      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />
+      <ReactionChips
+        reactions={reactions}
+        onToggle={toggleReaction}
+        mine={tinted}
+        disabled={!reactable}
+      />
     </>
   )
   const bubbleClone = !menu.everOpened ? null : hasBody ? (
@@ -527,7 +577,9 @@ export const Bubble = React.memo(function Bubble({
 
   const rowContent = (
     <>
-      {showName && message.from ? <SenderName from={message.from} onOpenPerson={onOpenPerson} /> : null}
+      {showName && message.from ? (
+        <SenderName from={message.from} onOpenPerson={onOpenPerson} />
+      ) : null}
       {message.forwardedToCity ? (
         <View style={styles.forwardPill}>
           <Icon icon={iconMap.Mail} size={12} color={th.colors.brand.moss} />
@@ -553,7 +605,9 @@ export const Bubble = React.memo(function Bubble({
             onLongPress={menuAvailable ? openContextMenu : undefined}
             delayLongPress={BUBBLE_LONG_PRESS_MS}
             accessibilityActions={
-              menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined
+              menuAvailable
+                ? [{ name: "longpress", label: t("bubble.message_actions") }]
+                : undefined
             }
             onAccessibilityAction={
               menuAvailable
@@ -588,7 +642,12 @@ export const Bubble = React.memo(function Bubble({
       />
       {inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}
       {!hasBody ? (
-        <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={false} disabled={!reactable} />
+        <ReactionChips
+          reactions={reactions}
+          onToggle={toggleReaction}
+          mine={false}
+          disabled={!reactable}
+        />
       ) : null}
       {flash && !hasBody ? <FlashOverlay mine={false} shape="rounded" /> : null}
 
@@ -615,7 +674,9 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       {(groupEnd || edited) && !inFlight ? (
         <View style={styles.metaLine}>
-          {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt, locale)}</Text> : null}
+          {groupEnd ? (
+            <Text style={styles.timeText}>{clockTime(message.createdAt, locale)}</Text>
+          ) : null}
           {edited ? <Text style={styles.editedText}>{t("bubble.edited")}</Text> : null}
         </View>
       ) : null}
@@ -634,11 +695,7 @@ export const Bubble = React.memo(function Bubble({
       {swipe.active ? (
         <>
           <Animated.View
-            style={[
-              styles.swipeReplyHint,
-              { opacity: swipe.progress },
-              pointerEventStyles.none,
-            ]}
+            style={[styles.swipeReplyHint, { opacity: swipe.progress }, pointerEventStyles.none]}
           >
             <Icon icon={iconMap.CornerUpLeft} size={16} color={th.colors.textSubtle} />
           </Animated.View>

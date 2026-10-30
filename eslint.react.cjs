@@ -41,7 +41,9 @@ function withoutReactHooks(configs) {
       ...rest,
       ...(plugins && { plugins: otherPlugins }),
       ...(rules && {
-        rules: Object.fromEntries(Object.entries(rules).filter(([name]) => !name.startsWith("react-hooks/"))),
+        rules: Object.fromEntries(
+          Object.entries(rules).filter(([name]) => !name.startsWith("react-hooks/")),
+        ),
       }),
     }
   })
@@ -76,7 +78,10 @@ const RAW_COLOR_MESSAGE =
 // no-restricted-syntax entries, spread into each workspace's rule. An in-page anchor (`href="#add"`) is a
 // fragment, not a colour.
 const RAW_COLOR_SELECTORS = [
-  { selector: `Literal[value=${HEX_COLOR}]:not(JSXAttribute[name.name="href"] > Literal)`, message: RAW_COLOR_MESSAGE },
+  {
+    selector: `Literal[value=${HEX_COLOR}]:not(JSXAttribute[name.name="href"] > Literal)`,
+    message: RAW_COLOR_MESSAGE,
+  },
   { selector: `TemplateElement[value.raw=${HEX_COLOR}]`, message: RAW_COLOR_MESSAGE },
 ]
 

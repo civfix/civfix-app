@@ -71,7 +71,9 @@ describe("detailTrailingActionFor", () => {
     for (const kind of ["activity", "settings"] as const) {
       resetCompact()
       useNavStore.getState().push({ kind: "profile" })
-      const action = detailTrailingActionFor(useNavStore.getState().active).find((a) => a.push.kind === kind)
+      const action = detailTrailingActionFor(useNavStore.getState().active).find(
+        (a) => a.push.kind === kind,
+      )
       expect(action, kind).toBeDefined()
       useNavStore.getState().push(action!.push)
       expect(useNavStore.getState().active?.kind).toBe(kind)
@@ -142,8 +144,12 @@ describe("every host that draws a detail header draws the trailing chip", () => 
   })
 
   it("reaches both page stacks through the SHARED DetailHeader, so neither can miss it", () => {
-    expect(PAGE_NATIVE).toContain("<DetailHeader active={entry} stack={stack} dismissGesture={false} />")
-    expect(PAGE_WEB).toContain("<DetailHeader active={entry} stack={stack} dismissGesture={false} />")
+    expect(PAGE_NATIVE).toContain(
+      "<DetailHeader active={entry} stack={stack} dismissGesture={false} />",
+    )
+    expect(PAGE_WEB).toContain(
+      "<DetailHeader active={entry} stack={stack} dismissGesture={false} />",
+    )
     expect(PAGE_NATIVE).not.toContain("<DetailBar")
     expect(PAGE_WEB).not.toContain("<DetailBar")
   })
@@ -155,7 +161,10 @@ describe("the bell's and the gear's a11y labels", () => {
 
   it.each(["en", "es", "de", "ko"])("%s names it in the nav namespace", (lng) => {
     expect(locale(lng).a11y?.settings, `${lng}/nav.json is missing a11y.settings`).toBeTruthy()
-    expect(locale(lng).a11y?.notifications, `${lng}/nav.json is missing a11y.notifications`).toBeTruthy()
+    expect(
+      locale(lng).a11y?.notifications,
+      `${lng}/nav.json is missing a11y.notifications`,
+    ).toBeTruthy()
   })
 
   it("left no orphan behind in the profile-view namespace", () => {

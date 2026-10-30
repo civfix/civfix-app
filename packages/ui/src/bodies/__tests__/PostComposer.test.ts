@@ -84,10 +84,7 @@ describe("PostComposer presentation model", () => {
   })
 
   it("resolves a selected event snapshot even when the viewer is not attending it", () => {
-    const selectedEvent = buildComposerEventRef(
-      nonAttendingEvent,
-      "2026-07-21T18:30:00.000Z",
-    )
+    const selectedEvent = buildComposerEventRef(nonAttendingEvent, "2026-07-21T18:30:00.000Z")
 
     expect(resolveComposerEvent(nonAttendingEvent.id, selectedEvent, [])).toEqual(selectedEvent)
   })
@@ -99,7 +96,9 @@ describe("PostComposer presentation model", () => {
     expect(keyboardDismissModeFor("android")).toBe("on-drag")
     expect(keyboardDismissModeFor("web")).toBe("on-drag")
     const source = surfaceSource("postComposer")
-    expect(source).toMatch(/^const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor\(Platform\.OS\)$/m)
+    expect(source).toMatch(
+      /^const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor\(Platform\.OS\)$/m,
+    )
     expect(source).toContain("keyboardDismissMode={KEYBOARD_DISMISS_MODE}")
     expect(source).not.toMatch(/automaticallyAdjustKeyboardInsets|contentInset=/)
   })
@@ -120,7 +119,9 @@ describe("PostComposer presentation model", () => {
 
   it("reads standalone-ness from an explicit host prop, never from a nav guess", () => {
     const source = surfaceSource("postComposer")
-    expect(source).toMatch(/export interface PostComposerStandaloneHost \{\s*\n\s*onBack: \(\) => void/)
+    expect(source).toMatch(
+      /export interface PostComposerStandaloneHost \{\s*\n\s*onBack: \(\) => void/,
+    )
     expect(source).toMatch(/standalone\?: PostComposerStandaloneHost/)
     expect(source).not.toMatch(/^\s*onBack\?: \(\) => void$/m)
     const route = readFileSync(
@@ -133,21 +134,32 @@ describe("PostComposer presentation model", () => {
   it("never double-reserves in the shell: the shell reserves for the composer and injects a PLAIN host", () => {
     const layout = readFileSync(new URL("../../shell/bodyLayout.ts", import.meta.url), "utf8")
     expect(layout).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
-    const shell = readFileSync(new URL("../../shell/PortraitShell.shared.tsx", import.meta.url), "utf8")
+    const shell = readFileSync(
+      new URL("../../shell/PortraitShell.shared.tsx", import.meta.url),
+      "utf8",
+    )
     expect(shell).toMatch(
       /const overlayScrollHost = frame\.overlay\.keyboardAvoidance\s*\n?\s*\? PLAIN_SCROLL_HOST/,
     )
     expect(shell).toMatch(
       /frame\.overlay\.keyboardAvoidance && keyboardInset > 0 \? \{ paddingBottom: keyboardInset \} : null/,
     )
-    const web = readFileSync(new URL("../../shell/KeyboardAwareScroll.web.tsx", import.meta.url), "utf8")
+    const web = readFileSync(
+      new URL("../../shell/KeyboardAwareScroll.web.tsx", import.meta.url),
+      "utf8",
+    )
     expect(web).toMatch(/reserveKeyboardPadding/)
-    const native = readFileSync(new URL("../../shell/PageStack.native.tsx", import.meta.url), "utf8")
+    const native = readFileSync(
+      new URL("../../shell/PageStack.native.tsx", import.meta.url),
+      "utf8",
+    )
     expect(native).toMatch(
       /const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance && active \}\)/,
     )
     expect(pageBottomReserve("composer")).toBe("box")
-    expect(native).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
+    expect(native).toMatch(
+      /const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/,
+    )
     expect(native).toMatch(/paddingBottom: boxReserve, paddingTop/)
   })
 
@@ -164,10 +176,12 @@ describe("PostComposer presentation model", () => {
 
 describe("attach plan", () => {
   it("hides the attach feature entirely while signed out (both candidate queries are auth-gated)", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      signedIn: false,
-      events: { loaded: true, count: 3, expanded: false, attached: false },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        signedIn: false,
+        events: { loaded: true, count: 3, expanded: false, attached: false },
+      }),
+    )
 
     expect(plan.variant).toBe("hidden")
     expect(plan.eventPanelVisible).toBe(false)
@@ -181,18 +195,24 @@ describe("attach plan", () => {
 
   it("the full-screen reply collapses to pill triggers", () => {
     expect(buildPostComposerAttachPlan(planArgs({ mode: "reply" })).variant).toBe("pills")
-    expect(buildPostComposerAttachPlan(planArgs({ mode: "reply", attachmentPanel: "events" }))).toMatchObject({
+    expect(
+      buildPostComposerAttachPlan(planArgs({ mode: "reply", attachmentPanel: "events" })),
+    ).toMatchObject({
       eventPanelVisible: true,
       reportPanelVisible: false,
     })
     // Sections mode never opens a pill panel, whatever stale panel state remains.
-    expect(buildPostComposerAttachPlan(planArgs({ attachmentPanel: "events" })).eventPanelVisible).toBe(false)
+    expect(
+      buildPostComposerAttachPlan(planArgs({ attachmentPanel: "events" })).eventPanelVisible,
+    ).toBe(false)
   })
 
   it("caps a collapsed group at the candidate cap and offers Show more with the hidden count", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      events: { loaded: true, count: 5, expanded: false, attached: false },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        events: { loaded: true, count: 5, expanded: false, attached: false },
+      }),
+    )
 
     expect(plan.events).toEqual({
       state: "list",
@@ -204,9 +224,11 @@ describe("attach plan", () => {
   })
 
   it("shows everything expanded, with Show fewer to collapse again", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      events: { loaded: true, count: 5, expanded: true, attached: false },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        events: { loaded: true, count: 5, expanded: true, attached: false },
+      }),
+    )
 
     expect(plan.events).toEqual({
       state: "list",
@@ -219,16 +241,20 @@ describe("attach plan", () => {
 
   it("keeps Show more visible while more pages exist server-side, even collapsed under the cap", () => {
     // A loaded-only count can lie about the total: 2 loaded rows fit the cap, but pages remain.
-    const collapsed = buildPostComposerAttachPlan(planArgs({
-      reports: { loaded: true, count: 2, expanded: false, hasNextPage: true, attached: false },
-    }))
+    const collapsed = buildPostComposerAttachPlan(
+      planArgs({
+        reports: { loaded: true, count: 2, expanded: false, hasNextPage: true, attached: false },
+      }),
+    )
     expect(collapsed.reports.showMoreVisible).toBe(true)
     // And the "(N)" label is suppressed whenever the total is unknown.
     expect(collapsed.reports.showMoreCount).toBeNull()
 
-    const expanded = buildPostComposerAttachPlan(planArgs({
-      reports: { loaded: true, count: 6, expanded: true, hasNextPage: true, attached: false },
-    }))
+    const expanded = buildPostComposerAttachPlan(
+      planArgs({
+        reports: { loaded: true, count: 6, expanded: true, hasNextPage: true, attached: false },
+      }),
+    )
     expect(expanded.reports).toMatchObject({
       state: "list",
       visibleCount: 6,
@@ -239,30 +265,43 @@ describe("attach plan", () => {
   })
 
   it("swaps an attached kind's list for the attached card in place (sections), leaving the other group alone", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      events: { loaded: true, count: 4, expanded: true, attached: true },
-      reports: { loaded: true, count: 3, expanded: false, hasNextPage: false, attached: false },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        events: { loaded: true, count: 4, expanded: true, attached: true },
+        reports: { loaded: true, count: 3, expanded: false, hasNextPage: false, attached: false },
+      }),
+    )
 
-    expect(plan.events).toMatchObject({ state: "attached", visibleCount: 0, showMoreVisible: false })
-    expect(plan.reports).toMatchObject({ state: "list", visibleCount: POST_COMPOSER_ATTACH_CANDIDATE_CAP })
+    expect(plan.events).toMatchObject({
+      state: "attached",
+      visibleCount: 0,
+      showMoreVisible: false,
+    })
+    expect(plan.reports).toMatchObject({
+      state: "list",
+      visibleCount: POST_COMPOSER_ATTACH_CANDIDATE_CAP,
+    })
   })
 
   it("keeps a pills panel a full picker even while its kind is attached (the pill doubles as change)", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      mode: "reply",
-      attachmentPanel: "events",
-      events: { loaded: true, count: 3, expanded: false, attached: true },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        mode: "reply",
+        attachmentPanel: "events",
+        events: { loaded: true, count: 3, expanded: false, attached: true },
+      }),
+    )
 
     expect(plan.events).toMatchObject({ state: "list", visibleCount: 3 })
   })
 
   it("reserves space while loading and stays discoverable when empty", () => {
-    const plan = buildPostComposerAttachPlan(planArgs({
-      events: { loaded: false, count: 0, expanded: false, attached: false },
-      reports: { loaded: true, count: 0, expanded: false, hasNextPage: false, attached: false },
-    }))
+    const plan = buildPostComposerAttachPlan(
+      planArgs({
+        events: { loaded: false, count: 0, expanded: false, attached: false },
+        reports: { loaded: true, count: 0, expanded: false, hasNextPage: false, attached: false },
+      }),
+    )
 
     expect(plan.events.state).toBe("loading")
     expect(plan.reports.state).toBe("empty")
@@ -271,18 +310,61 @@ describe("attach plan", () => {
 
 describe("stale attached-id hygiene", () => {
   it("clears an event id once the attending list has loaded without resolving it", () => {
-    expect(shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: false, loaded: true })).toBe(true)
-    expect(shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: false, loaded: false })).toBe(false)
-    expect(shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: true, loaded: true })).toBe(false)
-    expect(shouldClearStaleAttachedEvent({ attachedEventId: null, resolved: false, loaded: true })).toBe(false)
+    expect(
+      shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: false, loaded: true }),
+    ).toBe(true)
+    expect(
+      shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: false, loaded: false }),
+    ).toBe(false)
+    expect(
+      shouldClearStaleAttachedEvent({ attachedEventId: "event-1", resolved: true, loaded: true }),
+    ).toBe(false)
+    expect(
+      shouldClearStaleAttachedEvent({ attachedEventId: null, resolved: false, loaded: true }),
+    ).toBe(false)
   })
 
   it("only proves a report id stale once every page is loaded (it may live on an unfetched page)", () => {
-    expect(shouldClearStaleAttachedReport({ attachedReportId: "r1", resolved: false, loaded: true, hasNextPage: false })).toBe(true)
-    expect(shouldClearStaleAttachedReport({ attachedReportId: "r1", resolved: false, loaded: true, hasNextPage: true })).toBe(false)
-    expect(shouldClearStaleAttachedReport({ attachedReportId: "r1", resolved: false, loaded: false, hasNextPage: false })).toBe(false)
-    expect(shouldClearStaleAttachedReport({ attachedReportId: "r1", resolved: true, loaded: true, hasNextPage: false })).toBe(false)
-    expect(shouldClearStaleAttachedReport({ attachedReportId: null, resolved: false, loaded: true, hasNextPage: false })).toBe(false)
+    expect(
+      shouldClearStaleAttachedReport({
+        attachedReportId: "r1",
+        resolved: false,
+        loaded: true,
+        hasNextPage: false,
+      }),
+    ).toBe(true)
+    expect(
+      shouldClearStaleAttachedReport({
+        attachedReportId: "r1",
+        resolved: false,
+        loaded: true,
+        hasNextPage: true,
+      }),
+    ).toBe(false)
+    expect(
+      shouldClearStaleAttachedReport({
+        attachedReportId: "r1",
+        resolved: false,
+        loaded: false,
+        hasNextPage: false,
+      }),
+    ).toBe(false)
+    expect(
+      shouldClearStaleAttachedReport({
+        attachedReportId: "r1",
+        resolved: true,
+        loaded: true,
+        hasNextPage: false,
+      }),
+    ).toBe(false)
+    expect(
+      shouldClearStaleAttachedReport({
+        attachedReportId: null,
+        resolved: false,
+        loaded: true,
+        hasNextPage: false,
+      }),
+    ).toBe(false)
   })
 })
 
@@ -347,19 +429,30 @@ describe("mergeMention", () => {
   const alex = { id: "u1", handle: "alex", displayName: "Alex" }
 
   it("records a picked user as a mention DTO, dropping the search row's extra fields", () => {
-    const picked = { ...alex, avatar: null, avatarUrl: "https://cdn/a.jpg" } as unknown as Parameters<typeof mergeMention>[1]
+    const picked = {
+      ...alex,
+      avatar: null,
+      avatarUrl: "https://cdn/a.jpg",
+    } as unknown as Parameters<typeof mergeMention>[1]
     expect(mergeMention([], picked)).toEqual([alex])
   })
 
   it("moves a re-picked user to the end with its fresh names instead of listing it twice", () => {
     const bea = { id: "u2", handle: "bea", displayName: "Bea" }
-    const renamed = { ...alex, displayName: "Alex R" } as unknown as Parameters<typeof mergeMention>[1]
+    const renamed = { ...alex, displayName: "Alex R" } as unknown as Parameters<
+      typeof mergeMention
+    >[1]
     expect(mergeMention([alex, bea], renamed)).toEqual([bea, { ...alex, displayName: "Alex R" }])
   })
 
   it("records nothing for a jurisdiction handle, which stays plain body text", () => {
     expect(
-      mergeMention([alex], { kind: "jurisdiction", id: "city", handle: "cityofla", displayName: "City of LA" }),
+      mergeMention([alex], {
+        kind: "jurisdiction",
+        id: "city",
+        handle: "cityofla",
+        displayName: "City of LA",
+      }),
     ).toBeNull()
   })
 })

@@ -18,11 +18,7 @@ export function OnboardingFooter({
   const styles = useStyles()
   return (
     <View style={styles.footer}>
-      <PrimaryButton
-        label={t("nav.next")}
-        accessibilityLabel={t("a11y.next")}
-        onPress={onNext}
-      />
+      <PrimaryButton label={t("nav.next")} accessibilityLabel={t("a11y.next")} onPress={onNext} />
       <View style={styles.backSlot}>
         {canGoBack ? (
           <Pressable

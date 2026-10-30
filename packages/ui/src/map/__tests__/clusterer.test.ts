@@ -244,7 +244,14 @@ describe("marker identity", () => {
       buildIndex([
         reportPoint("r1", 34.05, -118.25),
         eventPoint("e2", 47.6, -122.3),
-        { kind: "blend", id: "e1", lat: 40.0, lng: -74.0, event, reports: [pin("r9", 40.0, -74.0)] },
+        {
+          kind: "blend",
+          id: "e1",
+          lat: 40.0,
+          lng: -74.0,
+          event,
+          reports: [pin("r9", 40.0, -74.0)],
+        },
         { kind: "aggregate", id: "1,2", lat: 1, lng: 2, count: 4 },
       ]),
       WORLD,
@@ -259,13 +266,24 @@ describe("cluster drill-down", () => {
     const event = eventDto("e1", 34.05, -118.25)
     const index = buildIndex([
       reportPoint("r1", 34.05, -118.25),
-      { kind: "blend", id: "e1", lat: 34.0501, lng: -118.2501, event, reports: [pin("r2", 34.05, -118.25)] },
+      {
+        kind: "blend",
+        id: "e1",
+        lat: 34.0501,
+        lng: -118.2501,
+        event,
+        reports: [pin("r2", 34.05, -118.25)],
+      },
       eventPoint("e2", 34.0502, -118.2502),
     ])
     const cluster = clustersOf(queryClusters(index, WORLD, 10))[0]!
     const leaves = leavesOfCluster(index, cluster.clusterId as number)
     expect(leaves).toHaveLength(3)
-    expect(reportsOfPoints(leaves).map((r) => r.id).sort()).toEqual(["r1", "r2"])
+    expect(
+      reportsOfPoints(leaves)
+        .map((r) => r.id)
+        .sort(),
+    ).toEqual(["r1", "r2"])
   })
 
   it("lists a pure-report cluster with exactly the reports its bubble counted", () => {
@@ -402,7 +420,9 @@ describe("query hygiene", () => {
   })
 
   it("clamps a non-finite zoom and stays empty with no points", () => {
-    expect(queryClusters(buildIndex([reportPoint("a", 34.05, -118.25)]), WORLD, Number.NaN)).toHaveLength(1)
+    expect(
+      queryClusters(buildIndex([reportPoint("a", 34.05, -118.25)]), WORLD, Number.NaN),
+    ).toHaveLength(1)
     expect(queryClusters(buildIndex([]), WORLD, 10)).toHaveLength(0)
   })
 
@@ -451,14 +471,34 @@ describe("sameRenderedNode", () => {
     expect(sameRenderedNode(a!, moved!)).toBe(false)
 
     const cluster = clustersOf(queryClusters(buildIndex(denseReports(6)), WORLD, 10))[0]!
-    expect(sameRenderedNode(cluster, { ...cluster, reportCount: cluster.reportCount - 1, eventCount: 1 })).toBe(false)
+    expect(
+      sameRenderedNode(cluster, {
+        ...cluster,
+        reportCount: cluster.reportCount - 1,
+        eventCount: 1,
+      }),
+    ).toBe(false)
     expect(sameRenderedNode(cluster, { ...cluster, count: cluster.count + 1 })).toBe(false)
     expect(sameRenderedNode(cluster, { ...cluster, clusterId: 999 })).toBe(true)
   })
 
   it("never equates nodes of different kinds that share a key and position", () => {
-    const report = { type: "report", key: "k", id: "x", lng: 0, lat: 0, pin: pin("x", 0, 0) } as ClusterNode
-    const event = { type: "event", key: "k", id: "x", lng: 0, lat: 0, event: eventDto("x", 0, 0) } as ClusterNode
+    const report = {
+      type: "report",
+      key: "k",
+      id: "x",
+      lng: 0,
+      lat: 0,
+      pin: pin("x", 0, 0),
+    } as ClusterNode
+    const event = {
+      type: "event",
+      key: "k",
+      id: "x",
+      lng: 0,
+      lat: 0,
+      event: eventDto("x", 0, 0),
+    } as ClusterNode
     expect(sameRenderedNode(report, event)).toBe(false)
   })
 })

@@ -4,9 +4,7 @@ export function matchesThreadQuery(
 ): boolean {
   const q = query.trim().toLowerCase()
   if (!q) return true
-  return (
-    thread.title.toLowerCase().includes(q) || (thread.last ?? "").toLowerCase().includes(q)
-  )
+  return thread.title.toLowerCase().includes(q) || (thread.last ?? "").toLowerCase().includes(q)
 }
 
 export const UNREAD_BADGE_CAP = 99

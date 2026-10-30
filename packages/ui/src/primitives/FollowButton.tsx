@@ -27,7 +27,13 @@ export interface FollowButtonProps {
   style?: StyleProp<ViewStyle>
 }
 
-export function FollowButton({ personId, isFollowing, nextPath, size = "md", style }: FollowButtonProps) {
+export function FollowButton({
+  personId,
+  isFollowing,
+  nextPath,
+  size = "md",
+  style,
+}: FollowButtonProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("profile-follow")

@@ -51,53 +51,52 @@ function makeKeyboardAwareScrollView(
   // below does not depend on them.
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
-  const KeyboardAwareScrollView = forwardRef<WebScrollRef, DecoratedScrollProps>(function KeyboardAwareScrollView(
-    { contentContainerStyle, ...rest },
-    ref,
-  ) {
-    const innerRef = useRef<WebScrollRef | null>(null)
-    const inset = useKeyboardInset()
-    const hostReserved = useKeyboardHostReserved()
+  const KeyboardAwareScrollView = forwardRef<WebScrollRef, DecoratedScrollProps>(
+    function KeyboardAwareScrollView({ contentContainerStyle, ...rest }, ref) {
+      const innerRef = useRef<WebScrollRef | null>(null)
+      const inset = useKeyboardInset()
+      const hostReserved = useKeyboardHostReserved()
 
-    const setRefs = useMergedRef(innerRef, ref)
+      const setRefs = useMergedRef(innerRef, ref)
 
-    useEffect(() => {
-      if (typeof window === "undefined") return
-      if (!ownsFocusedInput()) return
-      const el = getScrollableNode(innerRef.current)
-      if (!el) return
-      // Only a touch device raises a soft keyboard; on desktop focusing a field must not grow or scroll.
-      const isTouch = isCoarsePointer()
-      // Typed explicitly to avoid the node/DOM `Timeout` ambiguity.
-      let settleTimer: number | undefined
-      const onFocusIn = (e: FocusEvent) => {
-        const target = e.target as HTMLElement | null
-        if (!isTouch || !target || !/^(INPUT|TEXTAREA)$/.test(target.tagName)) return
-        options.onKeyboardShow?.()
-        if (settleTimer !== undefined) window.clearTimeout(settleTimer)
-        settleTimer = window.setTimeout(() => {
-          const vv = window.visualViewport
-          const viewportBottom = vv ? vv.height + vv.offsetTop : window.innerHeight
-          const rect = target.getBoundingClientRect()
-          const over = rect.bottom - (viewportBottom - KEYBOARD_REVEAL_MARGIN)
-          if (over > 0) el.scrollTop += over
-        }, SETTLE_MS)
-      }
-      el.addEventListener("focusin", onFocusIn)
-      return () => {
-        el.removeEventListener("focusin", onFocusIn)
-        if (settleTimer !== undefined) window.clearTimeout(settleTimer)
-      }
-    }, [])
+      useEffect(() => {
+        if (typeof window === "undefined") return
+        if (!ownsFocusedInput()) return
+        const el = getScrollableNode(innerRef.current)
+        if (!el) return
+        // Only a touch device raises a soft keyboard; on desktop focusing a field must not grow or scroll.
+        const isTouch = isCoarsePointer()
+        // Typed explicitly to avoid the node/DOM `Timeout` ambiguity.
+        let settleTimer: number | undefined
+        const onFocusIn = (e: FocusEvent) => {
+          const target = e.target as HTMLElement | null
+          if (!isTouch || !target || !/^(INPUT|TEXTAREA)$/.test(target.tagName)) return
+          options.onKeyboardShow?.()
+          if (settleTimer !== undefined) window.clearTimeout(settleTimer)
+          settleTimer = window.setTimeout(() => {
+            const vv = window.visualViewport
+            const viewportBottom = vv ? vv.height + vv.offsetTop : window.innerHeight
+            const rect = target.getBoundingClientRect()
+            const over = rect.bottom - (viewportBottom - KEYBOARD_REVEAL_MARGIN)
+            if (over > 0) el.scrollTop += over
+          }, SETTLE_MS)
+        }
+        el.addEventListener("focusin", onFocusIn)
+        return () => {
+          el.removeEventListener("focusin", onFocusIn)
+          if (settleTimer !== undefined) window.clearTimeout(settleTimer)
+        }
+      }, [])
 
-    // Additive to the form's own bottom gutter; suppressed when a pinned footer in scope already reserved it.
-    const mergedContentStyle = useMemo(() => {
-      const reserve = reserveKeyboardPadding() && !hostReserved ? inset : 0
-      return withExtraBottomPadding(contentContainerStyle, reserve)
-    }, [contentContainerStyle, hostReserved, inset])
+      // Additive to the form's own bottom gutter; suppressed when a pinned footer in scope already reserved it.
+      const mergedContentStyle = useMemo(() => {
+        const reserve = reserveKeyboardPadding() && !hostReserved ? inset : 0
+        return withExtraBottomPadding(contentContainerStyle, reserve)
+      }, [contentContainerStyle, hostReserved, inset])
 
-    return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />
-  })
+      return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />
+    },
+  )
   KeyboardAwareScrollView.displayName = "KeyboardAwareScrollView"
   return KeyboardAwareScrollView
 }

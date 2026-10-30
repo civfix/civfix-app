@@ -2,7 +2,11 @@ import { memo, useMemo } from "react"
 import { StyleSheet, View } from "react-native"
 import { BlurView } from "expo-blur"
 import { Canvas, Fill, Shader } from "@shopify/react-native-skia"
-import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated"
 import { makeThemedStyles, useTheme, supportsBlur, type Theme } from "../../theme"
 import {
   DOCK_H,

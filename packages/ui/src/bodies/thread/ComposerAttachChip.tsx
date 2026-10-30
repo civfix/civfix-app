@@ -35,7 +35,9 @@ export function ComposerAttachChip({ kind, title, onRemove }: ComposerAttachChip
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t(kind === "event" ? "reply.remove_event_a11y" : "reply.remove_report_a11y")}
+        accessibilityLabel={t(
+          kind === "event" ? "reply.remove_event_a11y" : "reply.remove_report_a11y",
+        )}
         onPress={onRemove}
         hitSlop={8}
         {...focusRingProps}

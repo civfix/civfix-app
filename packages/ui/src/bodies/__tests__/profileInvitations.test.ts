@@ -105,9 +105,9 @@ describe("invitations live on the viewer's own profile", () => {
     expect(dashboard).not.toContain("Invitation")
     expect(dashboard).not.toContain("Invite")
     expect(dashboard).not.toContain("invite")
-    expect(
-      existsSync(new URL("../host/dashboard/InvitationsCard.tsx", import.meta.url)),
-    ).toBe(false)
+    expect(existsSync(new URL("../host/dashboard/InvitationsCard.tsx", import.meta.url))).toBe(
+      false,
+    )
     expect(existsSync(new URL("../host/dashboard/InviteRows.tsx", import.meta.url))).toBe(false)
   })
 

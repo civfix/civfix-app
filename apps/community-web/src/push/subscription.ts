@@ -9,10 +9,14 @@ import { webPushKey } from "@/push/web-push-key"
 const PUSH_UNREGISTER_TIMEOUT_MS = 3_000
 
 export function serviceWorkerContainer(): ServiceWorkerContainer | null {
-  return typeof navigator !== "undefined" && navigator.serviceWorker ? navigator.serviceWorker : null
+  return typeof navigator !== "undefined" && navigator.serviceWorker
+    ? navigator.serviceWorker
+    : null
 }
 
-async function currentSubscription(container: ServiceWorkerContainer): Promise<PushSubscription | null> {
+async function currentSubscription(
+  container: ServiceWorkerContainer,
+): Promise<PushSubscription | null> {
   const registration = await container.getRegistration("/")
   return registration ? registration.pushManager.getSubscription() : null
 }
@@ -29,7 +33,10 @@ function sameBytes(buffer: ArrayBuffer | null, bytes: Uint8Array): boolean {
   return view.every((byte, i) => byte === bytes[i])
 }
 
-async function subscribe(registration: ServiceWorkerRegistration, key: string): Promise<PushSubscription> {
+async function subscribe(
+  registration: ServiceWorkerRegistration,
+  key: string,
+): Promise<PushSubscription> {
   const applicationServerKey = decodeBase64Url(key)
   const existing = await registration.pushManager.getSubscription()
   // A browser refuses a second key for the same site, so a subscription to an old key goes first.
@@ -78,7 +85,9 @@ export async function unsubscribeBrowser(container: ServiceWorkerContainer): Pro
  * PUSH_UNREGISTER_TIMEOUT_MS, and resolves with the subscription so the caller can drop it once signed
  * out. Never rejects: a sign-out goes ahead whatever happens here.
  */
-export async function unregisterSubscription(container: ServiceWorkerContainer): Promise<PushSubscription | null> {
+export async function unregisterSubscription(
+  container: ServiceWorkerContainer,
+): Promise<PushSubscription | null> {
   let subscription: PushSubscription | null
   try {
     subscription = await currentSubscription(container)
@@ -97,7 +106,10 @@ export async function unregisterSubscription(container: ServiceWorkerContainer):
     }, PUSH_UNREGISTER_TIMEOUT_MS)
   })
   const request = api
-    .pushUnregister({ platform: "web", token: JSON.stringify(subscription) }, { signal: controller.signal })
+    .pushUnregister(
+      { platform: "web", token: JSON.stringify(subscription) },
+      { signal: controller.signal },
+    )
     .then(
       () => undefined,
       (err: unknown) => warnPush("unregistering the subscription", err),

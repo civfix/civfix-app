@@ -29,10 +29,13 @@ describe("PopoverMenu placement", () => {
   })
 
   it("left-aligns to the trigger when asked, still clamped", () => {
-    expect(positionPostActionMenu({ x: 24, y: 100, width: 44, height: 44 }, VIEWPORT, CARD, "left").left)
-      .toBe(24)
-    expect(positionPostActionMenu({ x: 300, y: 100, width: 44, height: 44 }, VIEWPORT, CARD, "left").left)
-      .toBe(VIEWPORT.width - CARD.width - 8)
+    expect(
+      positionPostActionMenu({ x: 24, y: 100, width: 44, height: 44 }, VIEWPORT, CARD, "left").left,
+    ).toBe(24)
+    expect(
+      positionPostActionMenu({ x: 300, y: 100, width: 44, height: 44 }, VIEWPORT, CARD, "left")
+        .left,
+    ).toBe(VIEWPORT.width - CARD.width - 8)
   })
 
   it("never places a card off the top edge, even when it cannot fit either way", () => {

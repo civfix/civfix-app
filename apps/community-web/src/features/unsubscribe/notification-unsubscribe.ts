@@ -9,9 +9,7 @@ import { api } from "@/lib/api"
 import { unsubscribeTokenFromSearch } from "./unsubscribe-view"
 
 export type NotificationUnsubscribe =
-  | { phase: "checking" }
-  | { phase: "done"; category: NotificationCategory }
-  | { phase: "unusable" }
+  { phase: "checking" } | { phase: "done"; category: NotificationCategory } | { phase: "unusable" }
 
 /** POSTs the link's token once, then names the category the server unchecked Email for. */
 export function useNotificationUnsubscribe(): NotificationUnsubscribe {
@@ -31,7 +29,9 @@ export function useNotificationUnsubscribe(): NotificationUnsubscribe {
 
     api
       .unsubscribeNotificationEmail({ token })
-      .then((res) => setState(res.category ? { phase: "done", category: res.category } : { phase: "unusable" }))
+      .then((res) =>
+        setState(res.category ? { phase: "done", category: res.category } : { phase: "unusable" }),
+      )
       .catch(() => setState({ phase: "unusable" }))
   }, [])
 

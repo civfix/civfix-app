@@ -38,14 +38,28 @@ test("storeVersionVerdict passes when the app has no released version yet", () =
 test("fetchLiveStoreVersion reads the live version from Apple's lookup payload", async () => {
   const fetchImpl = async (url: string) => {
     assert.equal(url, "https://itunes.apple.com/lookup?bundleId=org.civfix.community")
-    return { ok: true, status: 200, json: async () => ({ resultCount: 1, results: [{ version: "1.2.1" }] }) }
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ resultCount: 1, results: [{ version: "1.2.1" }] }),
+    }
   }
-  assert.equal(await fetchLiveStoreVersion("org.civfix.community", fetchImpl as unknown as typeof fetch), "1.2.1")
+  assert.equal(
+    await fetchLiveStoreVersion("org.civfix.community", fetchImpl as unknown as typeof fetch),
+    "1.2.1",
+  )
 })
 
 test("fetchLiveStoreVersion treats an unlisted bundle id as no released version", async () => {
-  const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ resultCount: 0, results: [] }) })
-  assert.equal(await fetchLiveStoreVersion("org.example.new", fetchImpl as unknown as typeof fetch), null)
+  const fetchImpl = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ resultCount: 0, results: [] }),
+  })
+  assert.equal(
+    await fetchLiveStoreVersion("org.example.new", fetchImpl as unknown as typeof fetch),
+    null,
+  )
 })
 
 test("fetchLiveStoreVersion reports a transport or HTTP failure as the lookup being unavailable", async () => {
@@ -64,10 +78,16 @@ test("fetchLiveStoreVersion reports a transport or HTTP failure as the lookup be
 })
 
 test("fetchLiveStoreVersion fails on a malformed payload rather than treating it as unavailable", async () => {
-  const malformed = async () => ({ ok: true, status: 200, json: async () => ({ resultCount: 1, results: [{}] }) })
+  const malformed = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ resultCount: 1, results: [{}] }),
+  })
   await assert.rejects(
     fetchLiveStoreVersion("org.civfix.community", malformed as unknown as typeof fetch),
-    (error: unknown) => !(error instanceof StoreLookupUnavailable) && /without a version/.test((error as Error).message),
+    (error: unknown) =>
+      !(error instanceof StoreLookupUnavailable) &&
+      /without a version/.test((error as Error).message),
   )
 })
 

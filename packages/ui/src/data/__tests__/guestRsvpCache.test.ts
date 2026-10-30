@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, CleanupAttendeesResponse, GuestRsvpVerifyResponse } from "@civfix/contract"
+import type {
+  CleanupDTO,
+  CleanupAttendeesResponse,
+  GuestRsvpVerifyResponse,
+} from "@civfix/contract"
 import { queryKeys } from "../keys"
 import { applyGuestRsvpToCaches, guestRsvpVerifyMutationOptions } from "../hooks/cleanups"
 
@@ -52,10 +56,10 @@ function runOnSuccess(qc: QueryClient, id: string, res: GuestRsvpVerifyResponse 
 function trackInvalidations(qc: QueryClient): string[][] {
   const seen: string[][] = []
   const original = qc.invalidateQueries.bind(qc)
-  qc.invalidateQueries = ((filters?: { queryKey?: unknown }) => {
+  qc.invalidateQueries = (filters?: { queryKey?: unknown }) => {
     if (filters && Array.isArray(filters.queryKey)) seen.push(filters.queryKey as string[])
     return original(filters as never)
-  })
+  }
   return seen
 }
 

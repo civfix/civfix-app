@@ -29,7 +29,8 @@ export function stepSign(swing: SignSwing, size: SignSize, dt: number): boolean 
   // A rigid plate swinging on its right bolt.
   const comX = -(size.width / 2 - size.boltInset)
   const comY = size.height / 2
-  const inertia = (size.width * size.width + size.height * size.height) / 12 + comX * comX + comY * comY
+  const inertia =
+    (size.width * size.width + size.height * size.height) / 12 + comX * comX + comY * comY
   const rx = comX * Math.cos(swing.angle) - comY * Math.sin(swing.angle)
   swing.spin += ((GRAVITY * rx) / inertia - swing.spin * DAMPING) * dt
   swing.angle += swing.spin * dt

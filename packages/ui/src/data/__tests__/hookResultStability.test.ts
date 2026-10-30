@@ -16,7 +16,9 @@ describe("query hooks keep TanStack's tracked-property subscription", () => {
     const notifications = code(read("../hooks/notifications.ts"))
     expect(direct).not.toContain("...query")
     expect(notifications).not.toContain("...query")
-    expect(direct).toContain("return { data, isLoading, isPending, isError, refetch, term: trimmed }")
+    expect(direct).toContain(
+      "return { data, isLoading, isPending, isError, refetch, term: trimmed }",
+    )
     expect(notifications).toContain("return { data, isLoading, isError, isFetching }")
   })
 
@@ -45,8 +47,12 @@ describe("superseded type-ahead and pan queries abort their request", () => {
 
   it("map pins, report search and the audience preview pass the signal as the call's extra", () => {
     const reports = code(read("../hooks/reports.ts"))
-    expect(reports).toMatch(/queryFn: \(\{ signal \}\) =>\s*api\.mapReports\([\s\S]*?\{ signal \},\s*\)/)
-    expect(reports).toMatch(/queryFn: \(\{ pageParam, signal \}\) =>\s*api\.searchReports\([\s\S]*?\{ signal \},\s*\)/)
+    expect(reports).toMatch(
+      /queryFn: \(\{ signal \}\) =>\s*api\.mapReports\([\s\S]*?\{ signal \},\s*\)/,
+    )
+    expect(reports).toMatch(
+      /queryFn: \(\{ pageParam, signal \}\) =>\s*api\.searchReports\([\s\S]*?\{ signal \},\s*\)/,
+    )
     expect(code(read("../hooks/announcements.ts"))).toMatch(
       /queryFn: \(\{ signal \}\) =>\s*api\.previewEventBroadcast\([\s\S]*?\{ signal \},\s*\)/,
     )
@@ -57,7 +63,11 @@ describe("a room switch reuses the chat socket", () => {
   const SOCKET = code(read("../hooks/chatRoomSocket.ts"))
 
   it("holds the socket in its own effect, keyed off the room", () => {
-    const join = sliceBetween(SOCKET, "setJoinRejected(null)", "useEffect(() => {\n    if (!enabled) return")
+    const join = sliceBetween(
+      SOCKET,
+      "setJoinRejected(null)",
+      "useEffect(() => {\n    if (!enabled) return",
+    )
     expect(join).not.toContain("socket.retain()")
     expect(join).not.toContain("socket.release()")
     expect(SOCKET).toMatch(
@@ -66,7 +76,11 @@ describe("a room switch reuses the chat socket", () => {
   })
 
   it("declares the hold after the join effect, so unmount flushes and leaves before releasing", () => {
-    expect(SOCKET.indexOf("socket.leave(roomId, roomKind)")).toBeLessThan(SOCKET.indexOf("socket.release()"))
-    expect(SOCKET.indexOf("socket.join(roomId, roomKind)")).toBeLessThan(SOCKET.indexOf("socket.retain()"))
+    expect(SOCKET.indexOf("socket.leave(roomId, roomKind)")).toBeLessThan(
+      SOCKET.indexOf("socket.release()"),
+    )
+    expect(SOCKET.indexOf("socket.join(roomId, roomKind)")).toBeLessThan(
+      SOCKET.indexOf("socket.retain()"),
+    )
   })
 })

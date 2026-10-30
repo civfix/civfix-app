@@ -272,14 +272,17 @@ function MeetAddressField({
     addressSource: value.addressSource,
   })
   const pinMoved = eventAddressPinMoved({ coords: value.coords, current })
-  const missing = value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
+  const missing =
+    value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
   const cityHint = resolution.data?.cityStateLabel?.trim() ?? ""
 
   return (
     <View style={styles.addressBlock}>
       <TextField
         label={t("address.label")}
-        placeholder={status === "manual" ? t("address.placeholderManual") : t("address.placeholder")}
+        placeholder={
+          status === "manual" ? t("address.placeholderManual") : t("address.placeholder")
+        }
         value={value.address}
         onChangeText={(text) =>
           commit.current(eventAddressEdit({ text, coords: value.coords, current }))
@@ -559,8 +562,20 @@ function MeetLocationField({
         />
       ) : (
         <>
-          <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-          <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
+          <AddressSearch
+            value={value.addrQuery}
+            onChangeText={(addrQuery) => patch({ addrQuery })}
+            onPick={onPickPlace}
+          />
+          <LocationPicker
+            value={value.coords}
+            onChange={onDropPin}
+            onClear={() => patch({ coords: null })}
+            initialCenter={initialCenter ?? undefined}
+            centerSettled={centerSettled}
+            mode={pickMode}
+            pin={pin}
+          />
         </>
       )}
       <TextField
@@ -586,7 +601,10 @@ function WhenSection({
   const styles = useStyles()
   const { t } = useT("event-form")
 
-  const onChangeDate = useCallback((date: Date) => patch(dateChangePatch(value, date)), [patch, value])
+  const onChangeDate = useCallback(
+    (date: Date) => patch(dateChangePatch(value, date)),
+    [patch, value],
+  )
 
   const onChangeStartTime = useCallback(
     (time: Date) => patch(startTimeChangePatch(value, time)),
@@ -601,7 +619,8 @@ function WhenSection({
   const scheduleErrors = useMemo(() => {
     const found = scheduleFieldErrors(value, value.timezone)
     const vars = { minutes: MIN_EVENT_DURATION_MINUTES }
-    const message = (key: ScheduleFieldErrorKey | undefined) => (key === undefined ? null : t(`error.${key}`, vars))
+    const message = (key: ScheduleFieldErrorKey | undefined) =>
+      key === undefined ? null : t(`error.${key}`, vars)
     const stale = (key: ScheduleFieldErrorKey | undefined) =>
       scheduleUnchanged && (key === "date_past" || key === "time_past")
     return {
@@ -1005,4 +1024,3 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.85,
   },
 }))
-

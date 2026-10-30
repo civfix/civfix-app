@@ -27,7 +27,10 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
   const toast = useToast()
   const qc = useQueryClient()
   const update = useUpdateCleanup()
-  const saved = useMemo(() => cleanup.linkedReports.map((report) => report.id), [cleanup.linkedReports])
+  const saved = useMemo(
+    () => cleanup.linkedReports.map((report) => report.id),
+    [cleanup.linkedReports],
+  )
   const linkedPins = useMemo(() => cleanup.linkedReports.map(refToPin), [cleanup.linkedReports])
   const [errorText, setErrorText] = useState<string | null>(null)
   const [shown, setShown] = useState(visible)
@@ -78,7 +81,8 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
   )
 
   const center = useMemo(
-    () => (cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null),
+    () =>
+      cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
     [cleanup.lat, cleanup.lng],
   )
 
@@ -110,7 +114,11 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
       actions={<PrimaryButton label={t("linked_reports_sheet.close")} onPress={onClose} />}
     >
       <Text variant="caption" color={th.colors.textSubtle}>
-        {t(readonly ? "linked_reports_sheet.caption_readonly" : "linked_reports_sheet.caption_pin_first")}
+        {t(
+          readonly
+            ? "linked_reports_sheet.caption_readonly"
+            : "linked_reports_sheet.caption_pin_first",
+        )}
       </Text>
 
       {visible ? (

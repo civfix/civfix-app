@@ -182,26 +182,29 @@ export default function MapHomeScreen() {
   )
 
   const bboxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const onRegionChange = useCallback((generation: number, viewport: BBox, _zoom: number) => {
-    if (mapLifecycleRef.current.mountedGeneration !== generation) return
+  const onRegionChange = useCallback(
+    (generation: number, viewport: BBox, _zoom: number) => {
+      if (mapLifecycleRef.current.mountedGeneration !== generation) return
 
-    if (mapLifecycleRef.current.readyGeneration !== generation) {
-      mapLifecycleRef.current = markMapReady(mapLifecycleRef.current, generation)
-      replayPendingMapTarget(generation)
-    }
-    pendingViewportGenerationRef.current = generation
-    if (bboxTimerRef.current) clearTimeout(bboxTimerRef.current)
-    bboxTimerRef.current = setTimeout(() => {
-      bboxTimerRef.current = null
-      const decision = decideRegionFetch(
-        { loaded: loadedBboxRef.current, requested: requestedBboxRef.current },
-        viewport,
-      )
-      if (decision.action === "keep") return
-      requestedBboxRef.current = decision.region
-      setBbox(decision.region)
-    }, REGION_FETCH_DEBOUNCE_MS)
-  }, [replayPendingMapTarget])
+      if (mapLifecycleRef.current.readyGeneration !== generation) {
+        mapLifecycleRef.current = markMapReady(mapLifecycleRef.current, generation)
+        replayPendingMapTarget(generation)
+      }
+      pendingViewportGenerationRef.current = generation
+      if (bboxTimerRef.current) clearTimeout(bboxTimerRef.current)
+      bboxTimerRef.current = setTimeout(() => {
+        bboxTimerRef.current = null
+        const decision = decideRegionFetch(
+          { loaded: loadedBboxRef.current, requested: requestedBboxRef.current },
+          viewport,
+        )
+        if (decision.action === "keep") return
+        requestedBboxRef.current = decision.region
+        setBbox(decision.region)
+      }, REGION_FETCH_DEBOUNCE_MS)
+    },
+    [replayPendingMapTarget],
+  )
 
   useEffect(() => {
     if (reports.isError) {
@@ -384,7 +387,9 @@ export default function MapHomeScreen() {
     (id: string) => {
       lastControlTapRef.current = Date.now()
       const c = cleanupItems.find((x) => x.id === id)
-      useNavStore.getState().openDetail({ kind: "cleanup", id, title: c?.title, lat: c?.lat, lng: c?.lng })
+      useNavStore
+        .getState()
+        .openDetail({ kind: "cleanup", id, title: c?.title, lat: c?.lat, lng: c?.lng })
       if (c?.lat != null && c?.lng != null) flyTo(c.lng, c.lat)
     },
     [cleanupItems, flyTo],
@@ -447,9 +452,14 @@ export default function MapHomeScreen() {
   }, [])
   const onPressBlend = useCallback((event: CleanupDTO, blendReports: ReportPinDTO[]) => {
     lastControlTapRef.current = Date.now()
-    useNavStore
-      .getState()
-      .openDetail({ kind: "blend", event, reports: blendReports, title: event.title, lat: event.lat, lng: event.lng })
+    useNavStore.getState().openDetail({
+      kind: "blend",
+      event,
+      reports: blendReports,
+      title: event.title,
+      lat: event.lat,
+      lng: event.lng,
+    })
   }, [])
 
   const pins = useMemo<ReportPinDTO[]>(
@@ -525,11 +535,7 @@ export default function MapHomeScreen() {
               pointerEvents="box-none"
               onTouchStart={markControlInteraction}
             >
-              <MapControls
-                topInset={insets.top}
-                unreadCount={unreadMessages}
-                onLocate={onLocate}
-              />
+              <MapControls topInset={insets.top} unreadCount={unreadMessages} onLocate={onLocate} />
             </View>
           ) : null
         }

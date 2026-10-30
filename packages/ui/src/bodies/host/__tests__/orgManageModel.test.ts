@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/contract"
-import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SOCIAL_HANDLE_PREFIX, SocialLinksSchema } from "@civfix/contract"
+import {
+  MAX_ORG_DESCRIPTION,
+  MAX_ORG_NAME,
+  SOCIAL_HANDLE_PREFIX,
+  SocialLinksSchema,
+} from "@civfix/contract"
 import {
   canOpenOrgManage,
   counterVisible,
@@ -95,9 +100,13 @@ describe("each section PATCHes only its own fields", () => {
   })
 
   it("names a prefix for every platform, so no field asks for a whole URL", () => {
-    expect(Object.keys(SOCIAL_HANDLE_PREFIX).sort()).toEqual(
-      ["facebook", "instagram", "tiktok", "whatsapp", "x"],
-    )
+    expect(Object.keys(SOCIAL_HANDLE_PREFIX).sort()).toEqual([
+      "facebook",
+      "instagram",
+      "tiktok",
+      "whatsapp",
+      "x",
+    ])
   })
 })
 
@@ -108,7 +117,8 @@ describe("validation is the contract's own zod, never a second copy of the rules
     )
     expect(profileErrors({ name: "   ", description: "", logoMediaId: null }).name).toBeTruthy()
     expect(
-      profileErrors({ name: "x".repeat(MAX_ORG_NAME + 1), description: "", logoMediaId: null }).name,
+      profileErrors({ name: "x".repeat(MAX_ORG_NAME + 1), description: "", logoMediaId: null })
+        .name,
     ).toBeTruthy()
     expect(profileErrors({ name: "Ok", description: "", logoMediaId: null })).toEqual({})
   })

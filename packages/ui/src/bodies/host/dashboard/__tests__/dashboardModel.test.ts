@@ -39,8 +39,7 @@ import { hasHostCapability } from "../../../../data/hooks/host"
 
 const DAY_MS = 86_400_000
 
-const source = (file: string): string =>
-  readFileSync(new URL(file, import.meta.url), "utf8")
+const source = (file: string): string => readFileSync(new URL(file, import.meta.url), "utf8")
 
 const DASHBOARD_PAGE_FILES = [
   "../../EventDashboardBody.tsx",
@@ -237,7 +236,6 @@ describe("org role gating", () => {
     expect(canManageOrgTeam("member")).toBe(false)
     expect(canManageOrgTeam(null)).toBe(false)
   })
-
 })
 
 describe("collaborator actions", () => {
@@ -273,26 +271,52 @@ describe("collaborator actions", () => {
   })
 
   it("offers nothing to a member who cannot manage the team", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false, lastAdmin: false }))
-      .toEqual({ roles: [], canRemove: false })
+    expect(
+      orgMemberActions({
+        member: member("u1", "member"),
+        viewerId: "u9",
+        canManage: false,
+        canSetRole: false,
+        lastAdmin: false,
+      }),
+    ).toEqual({ roles: [], canRemove: false })
   })
 
   it("never offers actions on the owner or on yourself", () => {
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
+        orgMemberActions({
+          member: member("u1", "owner"),
+          viewerId: "u9",
+          canManage: true,
+          canSetRole: true,
+          lastAdmin: false,
+        }),
       ),
     ).toBe(false)
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
+        orgMemberActions({
+          member: member("u9", "admin"),
+          viewerId: "u9",
+          canManage: true,
+          canSetRole: true,
+          lastAdmin: false,
+        }),
       ),
     ).toBe(false)
   })
 
   it("offers the other role and removal to a manager", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }))
-      .toEqual({ roles: ["admin"], canRemove: true })
+    expect(
+      orgMemberActions({
+        member: member("u1", "member"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: false,
+      }),
+    ).toEqual({ roles: ["admin"], canRemove: true })
   })
 
   it("honours canRemove from the server", () => {
@@ -345,9 +369,9 @@ describe("collaborator actions", () => {
       invite(`i${index}`),
     )
     expect(orgInviteQuotaReached(pending)).toBe(true)
-    expect(orgInviteQuotaReached([...pending.slice(1), invite("gone", { status: "revoked" })])).toBe(
-      false,
-    )
+    expect(
+      orgInviteQuotaReached([...pending.slice(1), invite("gone", { status: "revoked" })]),
+    ).toBe(false)
     expect(pendingOrgInvites([invite("a"), invite("b", { status: "declined" })])).toHaveLength(1)
   })
 })
@@ -355,8 +379,13 @@ describe("collaborator actions", () => {
 describe("duplicate scheduling", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
   const LA = "America/Los_Angeles"
-  const carrier = (wall: { year: number; month: number; day: number; hours: number; minutes: number }) =>
-    new Date(wall.year, wall.month - 1, wall.day, wall.hours, wall.minutes, 0, 0)
+  const carrier = (wall: {
+    year: number
+    month: number
+    day: number
+    hours: number
+    minutes: number
+  }) => new Date(wall.year, wall.month - 1, wall.day, wall.hours, wall.minutes, 0, 0)
 
   it("keeps a future start as the default", () => {
     const seeded = nextDuplicateStart("2026-09-20T17:00:00.000Z", LA, now)
@@ -378,9 +407,9 @@ describe("duplicate scheduling", () => {
     expect(seeded.instantMs).toBeGreaterThan(afterSpring.getTime())
     expect(seeded.wallClock.hours).toBe(10)
     expect(new Date(seeded.instantMs).toISOString()).toBe("2027-03-20T17:00:00.000Z")
-    expect(duplicateReady(carrier(seeded.wallClock), carrier(seeded.wallClock), LA, afterSpring)).toBe(
-      true,
-    )
+    expect(
+      duplicateReady(carrier(seeded.wallClock), carrier(seeded.wallClock), LA, afterSpring),
+    ).toBe(true)
   })
 
   it("falls back to a week out when the source start does not parse", () => {
@@ -424,7 +453,14 @@ describe("error copy", () => {
     for (const code of ["CONFLICT", "FORBIDDEN", "NOT_FOUND", undefined]) {
       expect(leaf(collaboratorErrorKey(code))).toBeTruthy()
     }
-    for (const code of ["NOT_FOUND", "CONFLICT", "FORBIDDEN", "RATE_LIMITED", "VALIDATION", undefined]) {
+    for (const code of [
+      "NOT_FOUND",
+      "CONFLICT",
+      "FORBIDDEN",
+      "RATE_LIMITED",
+      "VALIDATION",
+      undefined,
+    ]) {
       expect(leaf(orgInviteErrorKey(code))).toBeTruthy()
     }
     expect(leaf(orgInviteIdentifierErrorKey("email"))).toBeTruthy()
@@ -560,9 +596,9 @@ describe("next up", () => {
       endsAt: "2026-09-10T12:00:00.000Z",
     })
     expect(nextUpEvent([justDone], now)).toBeNull()
-    expect(nextUpEvent([justDone, row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })], now)?.event.id).toBe(
-      "soon",
-    )
+    expect(
+      nextUpEvent([justDone, row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })], now)?.event.id,
+    ).toBe("soon")
   })
 
   it("is fed BOTH windows by the dashboard body, not just the upcoming one", () => {
@@ -586,7 +622,9 @@ describe("impact", () => {
     suppressed: value === null,
   })
 
-  const analytics = (over: Partial<HostedEventsAnalyticsResponse> = {}): HostedEventsAnalyticsResponse => ({
+  const analytics = (
+    over: Partial<HostedEventsAnalyticsResponse> = {},
+  ): HostedEventsAnalyticsResponse => ({
     generatedAt: "2026-09-10T12:00:00.000Z",
     range: "all",
     k: 5,
@@ -664,13 +702,15 @@ describe("first event and past rows", () => {
   })
 
   it("prints turnout once anyone registered and hours once anyone was credited", () => {
-    expect(pastRowMeta(row("a", { registeredCount: 38, checkedInCount: 31, hoursCredited: 62 })))
-      .toEqual({ cancelled: false, showedUp: true, hoursToken: "hours" })
+    expect(
+      pastRowMeta(row("a", { registeredCount: 38, checkedInCount: 31, hoursCredited: 62 })),
+    ).toEqual({ cancelled: false, showedUp: true, hoursToken: "hours" })
   })
 
   it("calls out a finished event whose hours nobody logged", () => {
-    expect(pastRowMeta(row("b", { registeredCount: 8, checkedInCount: 6, hoursCredited: 0 })))
-      .toEqual({ cancelled: false, showedUp: true, hoursToken: "not_logged" })
+    expect(
+      pastRowMeta(row("b", { registeredCount: 8, checkedInCount: 6, hoursCredited: 0 })),
+    ).toEqual({ cancelled: false, showedUp: true, hoursToken: "not_logged" })
   })
 
   it("says nothing about hours for an event nobody checked in to", () => {
@@ -690,8 +730,9 @@ describe("first event and past rows", () => {
   })
 
   it("keeps the cancelled token off a completed event that simply had no arrivals", () => {
-    expect(pastRowMeta(row("e", { status: "done", registeredCount: 6, checkedInCount: 0 })))
-      .toEqual({ cancelled: false, showedUp: true, hoursToken: null })
+    expect(
+      pastRowMeta(row("e", { status: "done", registeredCount: 6, checkedInCount: 0 })),
+    ).toEqual({ cancelled: false, showedUp: true, hoursToken: null })
   })
 
   it("prints the cancelled token in the past row instead of the showed-up and hours ones", () => {
@@ -751,7 +792,7 @@ describe("portfolio surface", () => {
     expect(body).toContain("portfolioKpis(upcoming.data?.pages)")
     expect(body).toContain("kpis={kpis}")
     expect(dashboardSource("DashboardHeader.tsx")).toContain("header.summary")
-    expect(body).toContain('useHostedEventsAnalytics(ANALYTICS_RANGE')
+    expect(body).toContain("useHostedEventsAnalytics(ANALYTICS_RANGE")
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
     expect(body).toContain("<TopVolunteersCard")
@@ -832,7 +873,10 @@ describe("portfolio surface", () => {
 
   it("retires the strings the redesign deleted, in all four locales", () => {
     for (const lng of ["en", "es", "de", "ko"]) {
-      const cat = catalog(lng, "event-dashboard") as Record<string, Record<string, string> | undefined>
+      const cat = catalog(lng, "event-dashboard") as Record<
+        string,
+        Record<string, string> | undefined
+      >
       expect(cat.tabs).toBeUndefined()
       expect(cat.org_picker).toBeUndefined()
       expect(cat.numbers).toBeUndefined()
@@ -876,9 +920,7 @@ describe("portfolio surface", () => {
     expect(body).toContain("<AnalyticsCarouselCard orgId={activeOrgId} />")
     expect(body).not.toContain("analyticsFocus")
     expect(body).not.toContain("analytics.for_event")
-    expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain(
-      "useHostAnalyticsSummary(orgId)",
-    )
+    expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain("useHostAnalyticsSummary(orgId)")
   })
 
   it("makes the hidden-shift line a pressable route into host tools", () => {
@@ -896,7 +938,9 @@ describe("portfolio surface", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onOpen={onOpenEvent}")
     expect(body).toContain("const { onCreate, onOpenEvent, onHostTools, onShare } = nav")
-    expect(dashboardNavSource()).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
+    expect(dashboardNavSource()).toContain(
+      'push({ kind: "cleanup", id: event.id, title: event.title })',
+    )
   })
 
   it("keeps the staffing and shift lines audible by folding them into the card label", () => {
@@ -925,14 +969,16 @@ describe("portfolio surface", () => {
     expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')
     expect(card).toContain("style={styles.share}")
     expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,\s*zIndex: 1,/)
-    expect(card).toContain("paddingRight: ICON_ACTION_SIZE + t.space[\"2\"]")
+    expect(card).toContain('paddingRight: ICON_ACTION_SIZE + t.space["2"]')
     const button = source("../../../../primitives/IconActionButton.tsx")
     expectThemeHitSlop(button)
     expect(button).toContain("const ICON_ACTION_HIT_SLOP = hitSlopToTarget(ICON_ACTION_SIZE)")
     expect(button).toContain("hitSlop={ICON_ACTION_HIT_SLOP}")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onShare={onShare}")
-    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: cleanupSharePath(event) })")
+    expect(dashboardNavSource()).toContain(
+      "shareLink({ title: event.title, path: cleanupSharePath(event) })",
+    )
   })
 
   it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {
@@ -968,7 +1014,9 @@ describe("portfolio surface", () => {
 
   it("ticks the dashboard clock off the shared hook instead of reading it mid-render", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("const nowMs = useNow(NOW_TICK_MS, { boundaryAt: (at) => soonestBoundary(upcomingEvents, at) })")
+    expect(body).toContain(
+      "const nowMs = useNow(NOW_TICK_MS, { boundaryAt: (at) => soonestBoundary(upcomingEvents, at) })",
+    )
     expect(body).not.toContain("Date.now()")
     expect(body).not.toContain("const now = new Date()")
   })
@@ -976,6 +1024,8 @@ describe("portfolio surface", () => {
   it("re-reads the soonest boundary each tick, so a later one still schedules a refresh", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toMatch(/useMemo\(\(\) => soonestBoundary\([^)]*\), \[upcomingEvents\]\)/)
-    expect(body).toContain("function soonestBoundary(events: readonly HostedEventDTO[], at: number)")
+    expect(body).toContain(
+      "function soonestBoundary(events: readonly HostedEventDTO[], at: number)",
+    )
   })
 })

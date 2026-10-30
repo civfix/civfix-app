@@ -101,7 +101,9 @@ export function GuestCancelView() {
           <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-pill bg-bloom-50 text-primary">
             <CalendarX2 className="h-7 w-7" aria-hidden="true" />
           </span>
-          <h1 className="font-display text-token-30 font-extrabold text-ink">{t("confirm.title")}</h1>
+          <h1 className="font-display text-token-30 font-extrabold text-ink">
+            {t("confirm.title")}
+          </h1>
           <p className="mx-auto mt-2 max-w-md text-token-15 text-ink-2">{t("confirm.body")}</p>
           <div className="mt-6 flex flex-col gap-2.5">
             <Button variant="destructive" onClick={() => void cancelRsvp()}>

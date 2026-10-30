@@ -34,9 +34,7 @@ describe("AppShell fires it", () => {
   it("passes the flag into portraitShellPlan's retainMap argument", () => {
     // If this call loses its fourth argument every assertion below still passes and the map is rebuilt.
     expect(appShell).toContain('import { MAP_IS_RETAINED } from "./mapRetentionPlatform"')
-    expect(appShell).toContain(
-      "portraitShellPlan(baseView, active, fullPageDetails, mapRetained)",
-    )
+    expect(appShell).toContain("portraitShellPlan(baseView, active, fullPageDetails, mapRetained)")
   })
 
   it("keeps the CONTROLS out of it - they are chrome, not a hidden surface", () => {

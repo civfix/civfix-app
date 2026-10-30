@@ -1,7 +1,21 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { ErrorCode, errorCopyKey, type ErrorCodeTable, type NotificationDTO, type NotificationType } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webHover, webTransition, type Theme } from "../theme"
+import {
+  ErrorCode,
+  errorCopyKey,
+  type ErrorCodeTable,
+  type NotificationDTO,
+  type NotificationType,
+} from "@civfix/contract"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useLayoutMode,
+  useTheme,
+  webHover,
+  webTransition,
+  type Theme,
+} from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { EmptyState, LoadingState, SignInPrompt, useToast } from "../primitives"
 import {
@@ -23,7 +37,10 @@ const MARK_READ_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.RATE_LIMITED]: "markReadError.rate_limited",
 }
 
-function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: string; tint: string } {
+function typeMeta(
+  type: NotificationType,
+  t: Theme,
+): { glyph: IconName; color: string; tint: string } {
   switch (type) {
     case "report_update":
       return { glyph: "MapPin", color: t.colors.brand.sky, tint: t.colors.sky["50"] }
@@ -78,9 +95,11 @@ const NotificationRow = memo(function NotificationRow({
     <Pressable
       onPress={press}
       accessibilityRole="button"
-      accessibilityLabel={unread
-        ? [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")
-        : [item.title, ...a11yDetails].join(", ")}
+      accessibilityLabel={
+        unread
+          ? [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")
+          : [item.title, ...a11yDetails].join(", ")
+      }
       {...focusRingProps}
       style={(state) => [
         styles.row,
@@ -149,7 +168,9 @@ export function NotificationsBody() {
     if (!listShown || !hasUnread || markAllBlocked) return
     mutateMarkAll(undefined, {
       onError: (err) =>
-        toast.show(t(errorCopyKey(err, MARK_READ_ERROR_KEYS, "markReadError.generic")), { variant: "error" }),
+        toast.show(t(errorCopyKey(err, MARK_READ_ERROR_KEYS, "markReadError.generic")), {
+          variant: "error",
+        }),
     })
   }, [listShown, hasUnread, markAllBlocked, mutateMarkAll, toast, t])
 

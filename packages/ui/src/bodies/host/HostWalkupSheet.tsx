@@ -27,7 +27,12 @@ export interface HostWalkupSheetProps {
   onClose: () => void
 }
 
-export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: HostWalkupSheetProps) {
+export function HostWalkupSheet({
+  visible,
+  cleanupId,
+  ticketTypes,
+  onClose,
+}: HostWalkupSheetProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-mode")
@@ -77,7 +82,11 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           onClose()
         },
         onError: (err) =>
-          setErrorText(appErrorCode(err) === ErrorCode.FORBIDDEN ? t("walkup.error_forbidden") : t("walkup.error")),
+          setErrorText(
+            appErrorCode(err) === ErrorCode.FORBIDDEN
+              ? t("walkup.error_forbidden")
+              : t("walkup.error"),
+          ),
       },
     )
   }, [canSubmit, onClose, partySize, selected, t, toast, trimmed, walkup])
@@ -96,7 +105,12 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
       error={errorText}
       actions={
         <>
-          <SecondaryButton label={t("walkup.cancel")} onPress={onClose} size="sm" disabled={walkup.isPending} />
+          <SecondaryButton
+            label={t("walkup.cancel")}
+            onPress={onClose}
+            size="sm"
+            disabled={walkup.isPending}
+          />
           <PrimaryButton
             label={t("walkup.submit")}
             onPress={submit}

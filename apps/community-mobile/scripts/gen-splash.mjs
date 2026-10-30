@@ -97,7 +97,10 @@ function splashSvg(size) {
  * @param {number} size
  */
 async function render(svg, out, size) {
-  await sharp(Buffer.from(svg), { density: 384 }).resize(size, size).png().toFile(join(assetsDir, out))
+  await sharp(Buffer.from(svg), { density: 384 })
+    .resize(size, size)
+    .png()
+    .toFile(join(assetsDir, out))
   console.log("wrote", out)
 }
 

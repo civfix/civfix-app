@@ -28,7 +28,12 @@ describe("useDraft restore", () => {
   it("restores a current draft for the same owner", () => {
     window.localStorage.setItem(
       KEY,
-      JSON.stringify({ version: "v1", savedAt: Date.now(), owner: "viewer-1", value: { title: "Hi" } }),
+      JSON.stringify({
+        version: "v1",
+        savedAt: Date.now(),
+        owner: "viewer-1",
+        value: { title: "Hi" },
+      }),
     )
     const { result } = renderHook(() => useDraft(KEY, { title: "" }))
     expect(result.current.restored).toBe(true)
@@ -38,7 +43,12 @@ describe("useDraft restore", () => {
   it("discards a draft saved by another account", () => {
     window.localStorage.setItem(
       KEY,
-      JSON.stringify({ version: "v1", savedAt: Date.now(), owner: "someone-else", value: { title: "Hi" } }),
+      JSON.stringify({
+        version: "v1",
+        savedAt: Date.now(),
+        owner: "someone-else",
+        value: { title: "Hi" },
+      }),
     )
     const { result } = renderHook(() => useDraft(KEY, { title: "" }))
     expect(result.current.restored).toBe(false)
@@ -48,7 +58,12 @@ describe("useDraft restore", () => {
 
 describe("useDraft retired scopes", () => {
   it("sweeps the pre-event-zone ticket and broadcast drafts of every viewer, and nothing else", () => {
-    const envelope = JSON.stringify({ version: "v1", savedAt: Date.now(), owner: "viewer-1", value: {} })
+    const envelope = JSON.stringify({
+      version: "v1",
+      savedAt: Date.now(),
+      owner: "viewer-1",
+      value: {},
+    })
     const eventId = "0d6f1c52-3b7e-4c1a-9f0e-2a7c5b8d9e10"
     // The keys the drafts were stored under before the scopes were versioned.
     const retired = [
@@ -90,7 +105,10 @@ describe("useDraft write", () => {
     act(() => {
       vi.advanceTimersByTime(1)
     })
-    const envelope = JSON.parse(window.localStorage.getItem(KEY) as string) as Record<string, unknown>
+    const envelope = JSON.parse(window.localStorage.getItem(KEY) as string) as Record<
+      string,
+      unknown
+    >
     expect(envelope).toMatchObject({ version: "v1", owner: "viewer-1", value: { title: "Hi" } })
   })
 

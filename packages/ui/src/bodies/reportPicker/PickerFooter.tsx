@@ -6,7 +6,12 @@ import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, TextLink } from "../../typography"
 import { PrimaryButton } from "../../primitives"
 import { useT } from "../../i18n"
-import { footerRemovedKey, type PickerAction, type PickerMode, type SelectionDiff } from "./reportPickerModel"
+import {
+  footerRemovedKey,
+  type PickerAction,
+  type PickerMode,
+  type SelectionDiff,
+} from "./reportPickerModel"
 
 export function PickerFooter({
   mode,
@@ -35,13 +40,22 @@ export function PickerFooter({
   const { t } = useT("report-picker")
   const summary =
     diff.selected > 0 ? t("footer_selected", { count: diff.selected }) : t("footer_none")
-  const removedText =
-    diff.removed > 0 ? t(footerRemovedKey(mode), { count: diff.removed }) : null
+  const removedText = diff.removed > 0 ? t(footerRemovedKey(mode), { count: diff.removed }) : null
 
   return (
-    <View style={[styles.footer, { paddingBottom: (expanded ? 0 : (insets?.bottom ?? 0)) + th.space["3"] }]}>
+    <View
+      style={[
+        styles.footer,
+        { paddingBottom: (expanded ? 0 : (insets?.bottom ?? 0)) + th.space["3"] },
+      ]}
+    >
       {error ? (
-        <Text variant="caption" color={th.colors.bloom["600"]} numberOfLines={2} style={styles.footerError}>
+        <Text
+          variant="caption"
+          color={th.colors.bloom["600"]}
+          numberOfLines={2}
+          style={styles.footerError}
+        >
           {error}
         </Text>
       ) : null}

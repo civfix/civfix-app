@@ -1,6 +1,11 @@
 import { createContext, forwardRef, useContext, useMemo } from "react"
 import { withExtraBottomPadding } from "./bottomPadding"
-import { decorateScrollHost, type DecoratedScrollProps, type ScrollHostComponent, type ScrollHostValue } from "./ScrollHost"
+import {
+  decorateScrollHost,
+  type DecoratedScrollProps,
+  type ScrollHostComponent,
+  type ScrollHostValue,
+} from "./ScrollHost"
 
 const ContentBottomReserveContext = createContext(0)
 ContentBottomReserveContext.displayName = "ContentBottomReserveContext"
@@ -15,19 +20,23 @@ function makeContentBottomReserveScroll(
   Base: ScrollHostComponent,
   useReserve: () => number,
 ): ScrollHostComponent {
-  const ContentBottomReserveScroll = forwardRef<unknown, DecoratedScrollProps>(function ContentBottomReserveScroll(
-    { contentContainerStyle, horizontal, ...rest },
-    ref,
-  ) {
-    const reserve = useReserve()
-    const mergedContentStyle = useMemo(() => {
-      if (horizontal || reserve <= 0) return contentContainerStyle
-      return withExtraBottomPadding(contentContainerStyle, reserve)
-    }, [contentContainerStyle, horizontal, reserve])
-    return (
-      <Base ref={ref} contentContainerStyle={mergedContentStyle} horizontal={horizontal} {...rest} />
-    )
-  })
+  const ContentBottomReserveScroll = forwardRef<unknown, DecoratedScrollProps>(
+    function ContentBottomReserveScroll({ contentContainerStyle, horizontal, ...rest }, ref) {
+      const reserve = useReserve()
+      const mergedContentStyle = useMemo(() => {
+        if (horizontal || reserve <= 0) return contentContainerStyle
+        return withExtraBottomPadding(contentContainerStyle, reserve)
+      }, [contentContainerStyle, horizontal, reserve])
+      return (
+        <Base
+          ref={ref}
+          contentContainerStyle={mergedContentStyle}
+          horizontal={horizontal}
+          {...rest}
+        />
+      )
+    },
+  )
   ContentBottomReserveScroll.displayName = "ContentBottomReserveScroll"
   return ContentBottomReserveScroll
 }

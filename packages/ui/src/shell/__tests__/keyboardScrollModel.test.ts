@@ -27,7 +27,13 @@ const focus = (
 const show = (
   overlap: number,
   extra: Partial<Extract<ScrollKeyboardSignal, { type: "show" }>> = {},
-): ScrollKeyboardSignal => ({ type: "show", overlap, reserves: true, hostReserved: false, ...extra })
+): ScrollKeyboardSignal => ({
+  type: "show",
+  overlap,
+  reserves: true,
+  hostReserved: false,
+  ...extra,
+})
 
 const opened = (reserves = true) =>
   run(initialScrollKeyboardState(MINE), focus(MINE), show(345, { reserves }))
@@ -61,7 +67,11 @@ describe("reduceScrollKeyboard", () => {
   })
 
   it("leaves only the reveal margin when a pinned sibling already lifts by the overlap", () => {
-    const next = run(initialScrollKeyboardState(MINE), focus(MINE), show(345, { hostReserved: true }))
+    const next = run(
+      initialScrollKeyboardState(MINE),
+      focus(MINE),
+      show(345, { hostReserved: true }),
+    )
     expect(next.reserve).toBe(16)
     expect(next.revealVersion).toBe(1)
   })
@@ -100,7 +110,8 @@ describe("reduceScrollKeyboard", () => {
     expect(run(opened(), { type: "content-grew" }).revealVersion).toBe(2)
     expect(run(opened(), focus("scope-other"), { type: "content-grew" }).revealVersion).toBe(1)
     expect(
-      run(opened(), { type: "hide" }, { type: "hold-expired" }, { type: "content-grew" }).revealVersion,
+      run(opened(), { type: "hide" }, { type: "hold-expired" }, { type: "content-grew" })
+        .revealVersion,
     ).toBe(1)
   })
 

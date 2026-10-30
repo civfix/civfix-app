@@ -4,7 +4,9 @@ import type { CalendarSaveInput, CalendarSaveResult } from "./calendarFile.types
 export const CALENDAR_BLOB_REVOKE_MS = 1000
 
 export function calendarSaveAvailable(_input: Pick<CalendarSaveInput, "writer">): boolean {
-  return typeof document !== "undefined" && typeof URL !== "undefined" && typeof Blob !== "undefined"
+  return (
+    typeof document !== "undefined" && typeof URL !== "undefined" && typeof Blob !== "undefined"
+  )
 }
 
 export async function saveCalendarFile(input: CalendarSaveInput): Promise<CalendarSaveResult> {

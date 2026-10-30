@@ -11,7 +11,11 @@ export type LinkedReportHeadline = "reference" | "title"
  * for a blank title, so a row is never empty.
  */
 export function linkedReportHeadline(
-  report: { id: string; title?: string | null | undefined; referenceCode?: string | null | undefined },
+  report: {
+    id: string
+    title?: string | null | undefined
+    referenceCode?: string | null | undefined
+  },
   headline: LinkedReportHeadline,
   typeLabel: string,
   categoryLabel: string,

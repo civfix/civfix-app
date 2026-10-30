@@ -73,7 +73,10 @@ const ABORTED: unique symbol = Symbol("aborted")
 
 // The race keeps a rejection handler on the abandoned work, so a late failure after an abort is not
 // unhandled. `aborted` races first so a signal that is already aborted wins over settled work.
-function unlessAborted<T>(work: Promise<T>, signal: AbortSignal | undefined): Promise<T | typeof ABORTED> {
+function unlessAborted<T>(
+  work: Promise<T>,
+  signal: AbortSignal | undefined,
+): Promise<T | typeof ABORTED> {
   if (!signal) return work
   let onAbort = (): void => undefined
   const aborted = new Promise<typeof ABORTED>((resolve) => {

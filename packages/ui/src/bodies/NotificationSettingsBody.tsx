@@ -25,7 +25,10 @@ import { useAuthState, useRequireAuth } from "../data"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { SectionEyebrow } from "./profile/SectionHeadings"
-import { useNotificationSettingsPage, type PushBanner } from "./notificationSettings/useNotificationSettingsPage"
+import {
+  useNotificationSettingsPage,
+  type PushBanner,
+} from "./notificationSettings/useNotificationSettingsPage"
 
 const SKELETON_SECTIONS = [
   { section: "reports", rows: 2 },
@@ -59,7 +62,11 @@ export function NotificationSettingsBody() {
   }
   if (isPending || page.query.isLoading) {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {SKELETON_SECTIONS.map(({ section, rows }, i) => (
           <SkeletonGroup key={section} style={i > 0 ? styles.sectionGap : null}>
             <SkeletonText width="28%" height={11} style={styles.skeletonLabel} />
@@ -86,8 +93,16 @@ export function NotificationSettingsBody() {
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <PushOffBanner banner={page.pushBanner} showHelp={page.showSiteSettingsHelp} onTurnOn={page.turnOnPush} />
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <PushOffBanner
+        banner={page.pushBanner}
+        showHelp={page.showSiteSettingsHelp}
+        onTurnOn={page.turnOnPush}
+      />
       {page.emailDisabled ? (
         <View style={styles.emailNote}>
           <Icon icon={iconMap.Mail} size={16} color={th.colors.textMuted} />
@@ -97,7 +112,12 @@ export function NotificationSettingsBody() {
         </View>
       ) : null}
       {page.sections.map((section, i) => (
-        <View key={section.id} style={i > 0 || page.pushBanner !== "none" || page.emailDisabled ? styles.sectionGap : null}>
+        <View
+          key={section.id}
+          style={
+            i > 0 || page.pushBanner !== "none" || page.emailDisabled ? styles.sectionGap : null
+          }
+        >
           <View style={styles.sectionLabelRow}>
             <SectionEyebrow inline>{t(`sections.${section.id}`)}</SectionEyebrow>
           </View>
@@ -139,7 +159,9 @@ function PushOffBanner({
         <Icon icon={iconMap.BellOff} size={20} color={th.colors.sun["700"]} />
       </View>
       <View style={styles.bannerText}>
-        <Text variant="bodyStrong">{unsupported ? t("push_off.unsupported") : t("push_off.title")}</Text>
+        <Text variant="bodyStrong">
+          {unsupported ? t("push_off.unsupported") : t("push_off.title")}
+        </Text>
         {showHelp ? (
           <Text variant="caption" style={styles.bannerHelp}>
             {t("push_off.site_settings")}

@@ -22,12 +22,7 @@ export function LinkAction({
       style={(state) => [styles.clear, webTransition, state.pressed ? styles.pressed : null]}
     >
       {(state) => (
-        <Text
-          style={[
-            styles.clearLabel,
-            webHover(state) ? styles.linkHovered : null,
-          ]}
-        >
+        <Text style={[styles.clearLabel, webHover(state) ? styles.linkHovered : null]}>
           {label}
         </Text>
       )}

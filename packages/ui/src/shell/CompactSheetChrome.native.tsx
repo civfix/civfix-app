@@ -1,6 +1,11 @@
 import { View, Pressable, StyleSheet, Platform } from "react-native"
 import { useBottomSheetInternal, type BottomSheetBackgroundProps } from "@gorhom/bottom-sheet"
-import Animated, { useAnimatedStyle, interpolate, Extrapolation, type SharedValue } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  type SharedValue,
+} from "react-native-reanimated"
 import { BlurView } from "expo-blur"
 import { makeThemedStyles, useTheme } from "../theme"
 import { useNavStore } from "../nav"
@@ -82,7 +87,12 @@ export function makeBackground(
       }
     })
     const radiusStyle = useAnimatedStyle(() => {
-      const radius = interpolate(animatedIndex.value, [0, 2], SHEET_FLOAT_RADIUS, Extrapolation.CLAMP)
+      const radius = interpolate(
+        animatedIndex.value,
+        [0, 2],
+        SHEET_FLOAT_RADIUS,
+        Extrapolation.CLAMP,
+      )
       return {
         borderTopLeftRadius: radius,
         borderTopRightRadius: radius,
@@ -95,7 +105,11 @@ export function makeBackground(
         <Animated.View style={[styles.cardShadow, cardStyle]}>
           <Animated.View style={[styles.cardClip, radiusStyle]}>
             {useBlur ? (
-              <AnimatedBlur intensity={th.glass.sheet.blurIntensity} tint={th.scheme === "dark" ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+              <AnimatedBlur
+                intensity={th.glass.sheet.blurIntensity}
+                tint={th.scheme === "dark" ? "dark" : "light"}
+                style={StyleSheet.absoluteFill}
+              />
             ) : null}
             <View style={styles.cardWash} />
             <View style={styles.cardSheen} />

@@ -21,7 +21,13 @@ import {
   pointerEventStyles,
 } from "../../theme"
 import { Text, Icon, iconMap, type IconName } from "../../typography"
-import { ThreadAvatar, PopoverMenu, usePopoverAnchor, useSwipeActions, closeOpenSwipeActions } from "../../primitives"
+import {
+  ThreadAvatar,
+  PopoverMenu,
+  usePopoverAnchor,
+  useSwipeActions,
+  closeOpenSwipeActions,
+} from "../../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../../primitives"
 import type { ThreadRoomVars } from "../../data"
 import { useT } from "../../i18n"
@@ -141,7 +147,12 @@ export const ThreadRow = React.memo(function ThreadRow({
       threadRowActions({
         unread,
         muted,
-        labels: { mute: muteLabel, markRead: markReadLabel, delete: deleteLabel, deleteA11y: deleteA11yLabel },
+        labels: {
+          mute: muteLabel,
+          markRead: markReadLabel,
+          delete: deleteLabel,
+          deleteA11y: deleteA11yLabel,
+        },
       }),
     [unread, muted, muteLabel, markReadLabel, deleteLabel, deleteA11yLabel],
   )
@@ -212,9 +223,7 @@ export const ThreadRow = React.memo(function ThreadRow({
       }}
       accessibilityRole="button"
       accessibilityLabel={
-        unread
-          ? t("row.a11y_unread", { title: thread.title, count: thread.unread })
-          : thread.title
+        unread ? t("row.a11y_unread", { title: thread.title, count: thread.unread }) : thread.title
       }
       accessibilityActions={a11yActions}
       onAccessibilityAction={onA11yAction}
@@ -315,7 +324,9 @@ export const ThreadRow = React.memo(function ThreadRow({
             style={(state) => [
               styles.menuChip,
               webTransition,
-              rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed,
+              rowMenuChipShown(state, hovered || menuOpen, coarsePointer)
+                ? null
+                : styles.menuChipConcealed,
               webHover(state) ? styles.menuChipHovered : null,
               state.pressed ? styles.menuChipPressed : null,
             ]}

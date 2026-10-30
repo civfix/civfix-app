@@ -65,7 +65,10 @@ export function loadServiceWorker(origin: string, windows: FakeWindowClient[] = 
 
   function push(payload: unknown) {
     const waitUntil = vi.fn()
-    dispatch("push", { data: { json: () => payload, text: () => JSON.stringify(payload) }, waitUntil })
+    dispatch("push", {
+      data: { json: () => payload, text: () => JSON.stringify(payload) },
+      waitUntil,
+    })
     return { waitUntil }
   }
 

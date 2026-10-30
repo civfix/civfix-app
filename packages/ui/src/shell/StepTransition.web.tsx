@@ -49,7 +49,11 @@ export function StepTransition({ children, direction, style, transitionKey }: St
       setEntrance(null)
       return
     }
-    setEntrance({ nav: navRef.current, plan: bodyTransitionPlan(direction, false, BODY_TIMING), flipped: false })
+    setEntrance({
+      nav: navRef.current,
+      plan: bodyTransitionPlan(direction, false, BODY_TIMING),
+      flipped: false,
+    })
   }, [direction, transitionKey])
 
   useFlipPhase({

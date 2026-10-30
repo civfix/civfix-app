@@ -67,7 +67,10 @@ export function OverviewScreen() {
         <h2 id="overview-counters" className="sr-only">
           {t("counters.heading")}
         </h2>
-        <ArrivalsSummary eventId={eventId} {...(eventTimeZone ? { timeZone: eventTimeZone } : {})} />
+        <ArrivalsSummary
+          eventId={eventId}
+          {...(eventTimeZone ? { timeZone: eventTimeZone } : {})}
+        />
       </section>
 
       <section
@@ -182,9 +185,7 @@ export function OverviewScreen() {
               onRetry={() => void ticketTypes.refetch()}
               skeleton={<LoadingState count={2} />}
               empty={types.length === 0}
-              emptyState={
-                <p className="text-token-13 text-console-ink-3">{t("tickets.none")}</p>
-              }
+              emptyState={<p className="text-token-13 text-console-ink-3">{t("tickets.none")}</p>}
             >
               <Donut
                 summary={t("tickets.a11y")}
@@ -223,10 +224,7 @@ export function OverviewScreen() {
             {t("quick.tickets")}
           </ConsoleLink>
         ) : null}
-        <a
-          href={`/cleanups/${eventId}/`}
-          className={QUICK_LINK_CLASS}
-        >
+        <a href={`/cleanups/${eventId}/`} className={QUICK_LINK_CLASS}>
           <ExternalLink aria-hidden className="h-4 w-4" />
           {t("quick.public_view")}
         </a>

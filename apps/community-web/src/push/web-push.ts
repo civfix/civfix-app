@@ -27,10 +27,14 @@ function startSession(): () => void {
     started = true
 
     const sync = () => {
-      syncSubscription(registration, stillWanted).catch((err: unknown) => warnPush("subscribing", err))
+      syncSubscription(registration, stillWanted).catch((err: unknown) =>
+        warnPush("subscribing", err),
+      )
     }
     const reconcile = () => {
-      closeReadNotifications(registration).catch((err: unknown) => warnPush("closing read notifications", err))
+      closeReadNotifications(registration).catch((err: unknown) =>
+        warnPush("closing read notifications", err),
+      )
     }
     sync()
     reconcile()
@@ -76,7 +80,8 @@ export function installWebPush(): () => void {
     const nowSignedOut = signedOut(state)
     if (nowSignedOut && !wasSignedOut) {
       const container = serviceWorkerContainer()
-      if (container) unsubscribeBrowser(container).catch((err: unknown) => warnPush("unsubscribing", err))
+      if (container)
+        unsubscribeBrowser(container).catch((err: unknown) => warnPush("unsubscribing", err))
     }
     wasSignedOut = nowSignedOut
   }

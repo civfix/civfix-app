@@ -23,7 +23,6 @@ import {
   SITE_NAME,
 } from "./site-meta"
 
-
 const TITLE_MAX = 90
 const EVENT_TITLE_MAX = 80
 const DESCRIPTION_MAX = 200
@@ -103,7 +102,10 @@ function isPublicMediaUrl(url: string | null | undefined): url is string {
 }
 
 function joinParts(parts: readonly (string | null | undefined)[]): string {
-  return parts.map((part) => part?.trim()).filter((part): part is string => !!part).join(" · ")
+  return parts
+    .map((part) => part?.trim())
+    .filter((part): part is string => !!part)
+    .join(" · ")
 }
 
 function finishDescription(parts: readonly (string | null | undefined)[]): string {
@@ -140,9 +142,7 @@ export interface MediaSlideInput {
   thumbUrl?: string | null | undefined
 }
 
-function firstCarouselImage(
-  media: readonly MediaSlideInput[] | null | undefined,
-): string | null {
+function firstCarouselImage(media: readonly MediaSlideInput[] | null | undefined): string | null {
   const slide = (media ?? []).find((item) => item.status === "ready")
   if (!slide) return null
   if (isPublicMediaUrl(slide.thumbUrl)) return slide.thumbUrl
@@ -199,9 +199,7 @@ export function previewForReport(
   const cityName = input.cityName ? oneLine(input.cityName) : ""
   const headline = cityName ? `${kindLabel} in ${cityName}` : kindLabel
 
-  const statusLabel = input.status
-    ? REPORT_STATUS_LABELS[input.status as ReportStatus]
-    : undefined
+  const statusLabel = input.status ? REPORT_STATUS_LABELS[input.status as ReportStatus] : undefined
   const description =
     (joinParts([input.title, input.description])
       ? finishDescription([statusLabel, input.title, input.description])
@@ -270,7 +268,8 @@ export function previewForPerson(
   const byline = personByline(input)
   if (!byline) return null
 
-  const description = (input.bio ? truncateText(input.bio, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
+  const description =
+    (input.bio ? truncateText(input.bio, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
   const image = isPublicMediaUrl(input.avatarUrl) ? input.avatarUrl : null
 
   return {
@@ -291,18 +290,24 @@ export interface SignupPagePreviewInput {
   visibility?: string | null | undefined
   noindex?: boolean | null | undefined
   coverUrl?: string | null | undefined
-  seo?: {
-    title?: string | null | undefined
-    description?: string | null | undefined
-    noindex?: boolean | null | undefined
-  } | null | undefined
-  event?: {
-    title?: string | null | undefined
-    startsAt?: string | null | undefined
-    timezone?: string | null | undefined
-    status?: string | null | undefined
-    address?: string | null | undefined
-  } | null | undefined
+  seo?:
+    | {
+        title?: string | null | undefined
+        description?: string | null | undefined
+        noindex?: boolean | null | undefined
+      }
+    | null
+    | undefined
+  event?:
+    | {
+        title?: string | null | undefined
+        startsAt?: string | null | undefined
+        timezone?: string | null | undefined
+        status?: string | null | undefined
+        address?: string | null | undefined
+      }
+    | null
+    | undefined
   organization?: { name?: string | null | undefined } | null | undefined
 }
 
@@ -396,9 +401,11 @@ interface PostSubjectInput {
   body?: string | null | undefined
   deleted?: boolean | null | undefined
   author?: BylineInput | null | undefined
-  organization?: { name?: string | null | undefined; slug?: string | null | undefined } | null | undefined
+  organization?:
+    { name?: string | null | undefined; slug?: string | null | undefined } | null | undefined
   media?: readonly MediaSlideInput[] | null | undefined
-  report?: { title?: string | null | undefined; thumbUrl?: string | null | undefined } | null | undefined
+  report?:
+    { title?: string | null | undefined; thumbUrl?: string | null | undefined } | null | undefined
   event?: { title?: string | null | undefined } | null | undefined
 }
 
@@ -432,7 +439,8 @@ export function previewForPost(
 
   const body = truncateText(subject.body ?? "", DESCRIPTION_MAX)
   const attached = subject.report?.title ?? subject.event?.title ?? ""
-  const description = body || (attached ? truncateText(attached, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
+  const description =
+    body || (attached ? truncateText(attached, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
 
   const quoted = !isRepost && input.repostOf && !input.repostOf.deleted ? input.repostOf : null
   const image =

@@ -50,7 +50,9 @@ export function spaFallbackGaps(shellRoutes, redirects) {
  * @returns {unknown}
  */
 const field = (value, key) =>
-  value !== null && typeof value === "object" ? /** @type {Record<string, unknown>} */ (value)[key] : undefined
+  value !== null && typeof value === "object"
+    ? /** @type {Record<string, unknown>} */ (value)[key]
+    : undefined
 
 /**
  * @param {unknown} value
@@ -94,7 +96,12 @@ export function aasaExcludeOrder(association) {
   for (const [index, detail] of details.entries()) {
     const components = field(detail, "components")
     if (!isArray(components)) {
-      return { ok: false, reason: `no-components (details[${index}])`, catchAllIndex: -1, lateExcludes: [] }
+      return {
+        ok: false,
+        reason: `no-components (details[${index}])`,
+        catchAllIndex: -1,
+        lateExcludes: [],
+      }
     }
     const catchAllIndex = components.findIndex(isCatchAll)
     if (catchAllIndex === -1) continue
@@ -133,7 +140,9 @@ export function missingAasaExcludes(association, required) {
   for (const detail of details) {
     const components = field(detail, "components")
     const present = new Set(
-      (isArray(components) ? components : []).filter(isExclude).map((entry) => componentPath(entry, "")),
+      (isArray(components) ? components : [])
+        .filter(isExclude)
+        .map((entry) => componentPath(entry, "")),
     )
     for (const pattern of required) if (!present.has(pattern)) missing.add(pattern)
   }
@@ -182,14 +191,17 @@ const NAMED_ENTITIES = {
 
 /** @param {string} value */
 function decodeEntities(value) {
-  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (/** @type {string} */ match, /** @type {string} */ body) => {
-    if (body.startsWith("#x") || body.startsWith("#X")) {
-      return String.fromCodePoint(Number.parseInt(body.slice(2), 16))
-    }
-    if (body.startsWith("#")) return String.fromCodePoint(Number.parseInt(body.slice(1), 10))
-    const name = body.toLowerCase()
-    return (Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : undefined) ?? match
-  })
+  return value.replace(
+    /&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g,
+    (/** @type {string} */ match, /** @type {string} */ body) => {
+      if (body.startsWith("#x") || body.startsWith("#X")) {
+        return String.fromCodePoint(Number.parseInt(body.slice(2), 16))
+      }
+      if (body.startsWith("#")) return String.fromCodePoint(Number.parseInt(body.slice(1), 10))
+      const name = body.toLowerCase()
+      return (Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : undefined) ?? match
+    },
+  )
 }
 
 /** @param {string} html */

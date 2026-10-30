@@ -96,9 +96,7 @@ export function ReviewStep({
         {!point ? (
           <View style={styles.validationRow}>
             <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.brand.bloom} />
-            <Text style={styles.errorText}>
-              {t("review.no_location")}
-            </Text>
+            <Text style={styles.errorText}>{t("review.no_location")}</Text>
           </View>
         ) : null}
         {compact ? (
@@ -106,7 +104,15 @@ export function ReviewStep({
         ) : (
           <>
             <AddressSearch value={addrQuery} onChangeText={setAddrQuery} onPick={onPickPlace} />
-            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter.center ?? undefined} centerSettled={initialCenter.settled} mode={pickMode} pin={pin} />
+            <LocationPicker
+              value={point}
+              onChange={onDropPin}
+              onClear={clearLocation}
+              initialCenter={initialCenter.center ?? undefined}
+              centerSettled={initialCenter.settled}
+              mode={pickMode}
+              pin={pin}
+            />
           </>
         )}
         <TextField
@@ -120,25 +126,25 @@ export function ReviewStep({
       <RouteCard point={point} />
 
       {fromComposer ? null : (
-      <FeedShareBlock
-        enabled={draft.shareToFeed}
-        onToggle={setShareToFeed}
-        caption={draft.feedCaption}
-        onChangeCaption={setFeedCaption}
-        label={t("share.label")}
-        helper={t("share.helper")}
-        captionPlaceholder={t("share.caption_placeholder")}
-        captionA11yLabel={t("share.caption_a11y")}
-        nowLabel={t("share.now")}
-        onRequestReveal={onRequestReveal}
-        attachment={
-          <LinkedReportCard
-            report={buildReportPreviewCard(draft, t("review.untitled"))}
-            layout="list"
-            headline="title"
-          />
-        }
-      />
+        <FeedShareBlock
+          enabled={draft.shareToFeed}
+          onToggle={setShareToFeed}
+          caption={draft.feedCaption}
+          onChangeCaption={setFeedCaption}
+          label={t("share.label")}
+          helper={t("share.helper")}
+          captionPlaceholder={t("share.caption_placeholder")}
+          captionA11yLabel={t("share.caption_a11y")}
+          nowLabel={t("share.now")}
+          onRequestReveal={onRequestReveal}
+          attachment={
+            <LinkedReportCard
+              report={buildReportPreviewCard(draft, t("review.untitled"))}
+              layout="list"
+              headline="title"
+            />
+          }
+        />
       )}
     </View>
   )
@@ -183,11 +189,7 @@ function RouteStatus({ point }: { point: LatLng | null }) {
         </Text>
       )
     case "uncovered":
-      return (
-        <Text style={styles.routeSub}>
-          {t("review.route_uncovered")}
-        </Text>
-      )
+      return <Text style={styles.routeSub}>{t("review.route_uncovered")}</Text>
     case "unavailable":
       return (
         <View style={styles.routeRetry}>

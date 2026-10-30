@@ -1,9 +1,23 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { domProps, focusRingProps, makeThemedStyles, motion, useTheme, webCursor, webHover, webTransition } from "../theme"
+import {
+  domProps,
+  focusRingProps,
+  makeThemedStyles,
+  motion,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
-import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
+import {
+  DETAIL_BACK_SIZE,
+  DETAIL_BACK_RADIUS,
+  DETAIL_BACK_ICON_SIZE,
+  detailTitleStyle,
+} from "./detailHeader"
 import { DetailTrailingButtons } from "./DetailTrailingButton"
 import type { DetailTrailingAction } from "./detailTrailingAction"
 import { backPressDecision } from "./pageStackModel"

@@ -52,7 +52,16 @@ const LA = { lat: 34.0522, lng: -118.2437 }
 const VIEW: BBox = { west: -118.26, east: -118.23, south: 34.04, north: 34.065 }
 
 function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
-  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, confirmCount: 0, fixedCount: 0, ...over }
+  return {
+    id,
+    category: "trash",
+    status: "published",
+    lat: LA.lat,
+    lng: LA.lng,
+    confirmCount: 0,
+    fixedCount: 0,
+    ...over,
+  }
 }
 
 function north(meters: number): number {
@@ -80,10 +89,18 @@ describe("pinState + presentation", () => {
   })
 
   it("draws a selected pin active with a check, a linked pin muted with a check", () => {
-    expect(pinPresentation("selected", false)).toEqual({ active: true, badge: "check", muted: false })
+    expect(pinPresentation("selected", false)).toEqual({
+      active: true,
+      badge: "check",
+      muted: false,
+    })
     expect(pinPresentation("linked", false)).toEqual({ active: false, badge: "check", muted: true })
     expect(pinPresentation("linked", true)).toEqual({ active: true, badge: "check", muted: false })
-    expect(pinPresentation("unlinking", false)).toEqual({ active: false, badge: null, muted: false })
+    expect(pinPresentation("unlinking", false)).toEqual({
+      active: false,
+      badge: null,
+      muted: false,
+    })
     expect(pinPresentation("idle", true)).toEqual({ active: true, badge: null, muted: false })
   })
 
@@ -180,7 +197,12 @@ describe("pins", () => {
   })
 
   it("matches every token across title, detail, address and reference", () => {
-    const p = pin("a", { title: "TV dumped", description: "by the alley", addr: "5th St", referenceCode: "DU-42" })
+    const p = pin("a", {
+      title: "TV dumped",
+      description: "by the alley",
+      addr: "5th St",
+      referenceCode: "DU-42",
+    })
     expect(matchesQuery(p, "")).toBe(true)
     expect(matchesQuery(p, "alley tv")).toBe(true)
     expect(matchesQuery(p, "du-42")).toBe(true)
@@ -197,8 +219,17 @@ describe("pins", () => {
   })
 
   it("keeps baseline pins on the map even when their layer is off, and caps the total", () => {
-    const pins = [pin("keep", { category: "hazard" }), ...Array.from({ length: 5 }, (_u, i) => pin(`p${i}`))]
-    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: false, radiusM: 500, query: "" }
+    const pins = [
+      pin("keep", { category: "hazard" }),
+      ...Array.from({ length: 5 }, (_u, i) => pin(`p${i}`)),
+    ]
+    const filter = {
+      center: LA,
+      categories: new Set(["trash" as const]),
+      nearbyOnly: false,
+      radiusM: 500,
+      query: "",
+    }
     const shown = mapPinsFor(pins, new Set(["keep"]), filter, 3)
     expect(shown.map((p) => p.id)).toEqual(["keep", "p0", "p1"])
     expect(PICKER_MAX_PINS).toBeGreaterThanOrEqual(200)
@@ -226,7 +257,9 @@ describe("pins", () => {
 
     expect(pinsFor()).toEqual(rowsFor())
     expect(pinsFor()).not.toContain("far")
-    expect(pinsFor({ categories: new Set(["trash"]) })).toEqual(rowsFor({ categories: new Set(["trash"]) }))
+    expect(pinsFor({ categories: new Set(["trash"]) })).toEqual(
+      rowsFor({ categories: new Set(["trash"]) }),
+    )
     expect(pinsFor({ nearbyOnly: false, query: "couch" })).toEqual(
       rowsFor({ nearbyOnly: false, query: "couch" }),
     )
@@ -239,13 +272,23 @@ describe("pins", () => {
       lat: north(9000),
       referenceCode: "HA-4-000007",
     })
-    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: true, radiusM: 500, query: "ha-4-000007" }
+    const filter = {
+      center: LA,
+      categories: new Set(["trash" as const]),
+      nearbyOnly: true,
+      radiusM: 500,
+      query: "ha-4-000007",
+    }
     expect(pickerFit(hit, filter)?.passes).toBe(true)
     expect(mapPinsFor([hit], new Set<string>(), filter).map((p) => p.id)).toEqual([hit.id])
     expect(
-      pickerRows({ ...filter, pins: [hit], viewport: null, ids: new Set<string>(), linked: new Set<string>() }).map(
-        (r) => r.pin.id,
-      ),
+      pickerRows({
+        ...filter,
+        pins: [hit],
+        viewport: null,
+        ids: new Set<string>(),
+        linked: new Set<string>(),
+      }).map((r) => r.pin.id),
     ).toEqual([hit.id])
   })
 
@@ -256,7 +299,13 @@ describe("pins", () => {
       pin("chosen-far", { lat: north(4000) }),
       pin("idle-hidden", { category: "hazard", lat: north(140) }),
     ]
-    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: true, radiusM: 500, query: "" }
+    const filter = {
+      center: LA,
+      categories: new Set(["trash" as const]),
+      nearbyOnly: true,
+      radiusM: 500,
+      query: "",
+    }
     const chosen = new Set(["chosen-visible", "chosen-hidden", "chosen-far"])
     expect(keptPinIds(pins, chosen, filter)).toEqual(["chosen-far", "chosen-hidden"])
     expect(keptPinIds(pins, new Set<string>(), filter)).toEqual([])
@@ -328,7 +377,14 @@ describe("rows", () => {
     expect(sections.view.map((r) => r.pin.id)).toEqual(["near", "mid"])
     expect(sections.matches).toEqual([])
     const { items, shown, total } = pickerListItems(sections)
-    expect(items.map((i) => i.key)).toEqual(["h:linked", "r:unlinking", "r:far-linked", "h:view", "r:near", "r:mid"])
+    expect(items.map((i) => i.key)).toEqual([
+      "h:linked",
+      "r:unlinking",
+      "r:far-linked",
+      "h:view",
+      "r:near",
+      "r:mid",
+    ])
     expect([shown, total]).toEqual([4, 4])
     expect(rowIndexOf(items, "near")).toBe(4)
     expect(rowOrdinalOf(items, "near")).toBe(2)
@@ -385,7 +441,11 @@ describe("ranking by the typed text", () => {
       "far-exact",
       "near-title",
     ])
-    expect(pickerRows({ ...base, query: "" }).map((r) => r.pin.id)).toEqual(["near-title", "near-prefix", "mid-prefix"])
+    expect(pickerRows({ ...base, query: "" }).map((r) => r.pin.id)).toEqual([
+      "near-title",
+      "near-prefix",
+      "mid-prefix",
+    ])
   })
 
   it("recognises a pasted full uuid or reference code as a lookup key, normalised", () => {
@@ -404,7 +464,9 @@ describe("ranking by the typed text", () => {
 })
 
 describe("paging", () => {
-  const rows = Array.from({ length: 11 }, (_u, i) => pin(`p${String(i).padStart(2, "0")}`, { lat: north(i * 10) }))
+  const rows = Array.from({ length: 11 }, (_u, i) =>
+    pin(`p${String(i).padStart(2, "0")}`, { lat: north(i * 10) }),
+  )
   const sections = pickerSections(
     pickerRows({
       pins: rows,
@@ -424,7 +486,10 @@ describe("paging", () => {
     expect(PICKER_PAGE_STEP).toBe(3)
     const first = pickerListItems(sections, PICKER_PAGE_FIRST)
     expect([first.shown, first.total]).toEqual([8, 11])
-    expect(first.items.filter((i) => i.kind === "header").map((i) => i.key)).toEqual(["h:linked", "h:view"])
+    expect(first.items.filter((i) => i.kind === "header").map((i) => i.key)).toEqual([
+      "h:linked",
+      "h:view",
+    ])
     expect(nextPageSize(8, 11)).toBe(11)
     expect(nextPageSize(11, 11)).toBe(11)
     const second = pickerListItems(sections, nextPageSize(8, 11))
@@ -443,11 +508,51 @@ describe("paging", () => {
   })
 
   it("shows the button while rows remain, fetches another page only during a search, then hides", () => {
-    expect(loadMoreState({ shown: 8, total: 11, searching: false, hasNextPage: false, fetchingNextPage: false })).toBe("more")
-    expect(loadMoreState({ shown: 11, total: 11, searching: false, hasNextPage: true, fetchingNextPage: false })).toBe("hidden")
-    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: true, fetchingNextPage: false })).toBe("fetch")
-    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: true, fetchingNextPage: true })).toBe("loading")
-    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: false, fetchingNextPage: false })).toBe("hidden")
+    expect(
+      loadMoreState({
+        shown: 8,
+        total: 11,
+        searching: false,
+        hasNextPage: false,
+        fetchingNextPage: false,
+      }),
+    ).toBe("more")
+    expect(
+      loadMoreState({
+        shown: 11,
+        total: 11,
+        searching: false,
+        hasNextPage: true,
+        fetchingNextPage: false,
+      }),
+    ).toBe("hidden")
+    expect(
+      loadMoreState({
+        shown: 11,
+        total: 11,
+        searching: true,
+        hasNextPage: true,
+        fetchingNextPage: false,
+      }),
+    ).toBe("fetch")
+    expect(
+      loadMoreState({
+        shown: 11,
+        total: 11,
+        searching: true,
+        hasNextPage: true,
+        fetchingNextPage: true,
+      }),
+    ).toBe("loading")
+    expect(
+      loadMoreState({
+        shown: 11,
+        total: 11,
+        searching: true,
+        hasNextPage: false,
+        fetchingNextPage: false,
+      }),
+    ).toBe("hidden")
   })
 })
 
@@ -461,9 +566,21 @@ describe("selection + footer", () => {
   it("picks Done when clean, Link N in the draft, Save changes when committing", () => {
     const clean = selectionDiff(["a"], new Set(["a"]))
     const dirty = selectionDiff(["a", "b"], new Set(["a"]))
-    expect(pickerAction("draft", clean, false)).toEqual({ key: "action_done", count: 1, enabled: true })
-    expect(pickerAction("draft", dirty, false)).toEqual({ key: "action_link", count: 2, enabled: true })
-    expect(pickerAction("commit", dirty, false)).toEqual({ key: "action_save", count: 2, enabled: true })
+    expect(pickerAction("draft", clean, false)).toEqual({
+      key: "action_done",
+      count: 1,
+      enabled: true,
+    })
+    expect(pickerAction("draft", dirty, false)).toEqual({
+      key: "action_link",
+      count: 2,
+      enabled: true,
+    })
+    expect(pickerAction("commit", dirty, false)).toEqual({
+      key: "action_save",
+      count: 2,
+      enabled: true,
+    })
     expect(pickerAction("commit", dirty, true).enabled).toBe(false)
   })
 
@@ -483,8 +600,20 @@ describe("selection + footer", () => {
       lng: 1,
       linkedAt: "2026-01-01T00:00:00.000Z",
     }
-    const card: LinkedReportCardEntry = { id: "b", category: "hazard", status: "published", lat: 2, lng: 2, title: "B" }
-    const refs = optimisticLinkedRefs(["b", "a", "ghost"], [kept], { b: card }, "2026-02-02T00:00:00.000Z")
+    const card: LinkedReportCardEntry = {
+      id: "b",
+      category: "hazard",
+      status: "published",
+      lat: 2,
+      lng: 2,
+      title: "B",
+    }
+    const refs = optimisticLinkedRefs(
+      ["b", "a", "ghost"],
+      [kept],
+      { b: card },
+      "2026-02-02T00:00:00.000Z",
+    )
     expect(refs.map((r) => r.id)).toEqual(["b", "a"])
     expect(refs[0]).toEqual(refFromCard(card, "2026-02-02T00:00:00.000Z"))
     expect(refs[1]).toBe(kept)
@@ -558,7 +687,10 @@ describe("rowOffset", () => {
 
   it("sums the estimates plus one gap per item above an unmeasured row", () => {
     expect(rowOffset(items, 2, new Map())).toBe(
-      PICKER_ESTIMATED_HEADER_HEIGHT + PICKER_ROW_GAP + PICKER_ESTIMATED_ROW_HEIGHT + PICKER_ROW_GAP,
+      PICKER_ESTIMATED_HEADER_HEIGHT +
+        PICKER_ROW_GAP +
+        PICKER_ESTIMATED_ROW_HEIGHT +
+        PICKER_ROW_GAP,
     )
   })
 

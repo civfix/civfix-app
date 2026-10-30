@@ -19,7 +19,9 @@ interface DeliveredData {
  * Browsers get no silent pushes to clear notifications read elsewhere, so a focused tab closes this
  * browser's delivered notifications-page ones whose ids are read or gone from the first page.
  */
-export async function closeReadNotifications(registration: ServiceWorkerRegistration): Promise<void> {
+export async function closeReadNotifications(
+  registration: ServiceWorkerRegistration,
+): Promise<void> {
   const delivered = (await registration.getNotifications()).filter((notification) => {
     const { category } = (notification.data ?? {}) as DeliveredData
     return !CHAT_CATEGORIES.has(category as NotificationCategory)

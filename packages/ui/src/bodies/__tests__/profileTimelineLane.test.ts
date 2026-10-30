@@ -2,8 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { surfaceSource } from "../../__tests__/sourceGuards"
 
-const read = (relative: string): string =>
-  readFileSync(new URL(relative, import.meta.url), "utf8")
+const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
 const stripComments = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -25,7 +24,6 @@ describe("no timeline host declares its own full-bleed margin", () => {
       expect(code).toMatch(/ProfileTimelineLane/)
     })
   }
-
 })
 
 const PAGE_SURFACES: Record<keyof typeof HOSTS, { file: string; style: string }> = {
@@ -38,7 +36,9 @@ const PAGE_SURFACES: Record<keyof typeof HOSTS, { file: string; style: string }>
 describe("every lane host sits on a surface that paints the page background", () => {
   for (const [host, { file, style }] of Object.entries(PAGE_SURFACES)) {
     it(`${host} -> ${file} styles.${style}`, () => {
-      const block = new RegExp(`\\b${style}:\\s*\\{([^{}]*)\\}`).exec(stripComments(read(`../${file}`)))
+      const block = new RegExp(`\\b${style}:\\s*\\{([^{}]*)\\}`).exec(
+        stripComments(read(`../${file}`)),
+      )
       expect(block, `${file} declares no styles.${style}`).not.toBeNull()
       expect(block?.[1]).toMatch(/backgroundColor: t\.colors\.bg/)
     })

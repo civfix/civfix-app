@@ -14,12 +14,7 @@
  * the primary key is handled. The `also` snapshot it returns from onMutate is carried in the per-call mutation context
  * (NOT a closure), so concurrent mutations on the same hook each roll back their own snapshot.
  */
-import type {
-  QueryClient,
-  QueryKey,
-  UseMutationOptions,
-  InfiniteData,
-} from "@tanstack/react-query"
+import type { QueryClient, QueryKey, UseMutationOptions, InfiniteData } from "@tanstack/react-query"
 
 /**
  * Side patches that run alongside the primary key within the same mutation phases. `onMutate` may
@@ -194,7 +189,9 @@ export function optimisticListPatch<TItem, TVars, TRes, TAlsoCtx = unknown>(
           const queue = [...originals]
           qc.setQueryData<InfiniteData<{ items: TItem[] }>>(
             key,
-            mapInfinitePages(current, (item) => (matches(item, vars) ? queue.shift() ?? item : item)),
+            mapInfinitePages(current, (item) =>
+              matches(item, vars) ? (queue.shift() ?? item) : item,
+            ),
           )
         }
       }

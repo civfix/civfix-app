@@ -27,7 +27,9 @@ export function SettingsSubpage({
       showsVerticalScrollIndicator={false}
     >
       {headerTitlesPanel ? null : <Text style={styles.title}>{title}</Text>}
-      <Text style={[styles.subtitle, subtitleStyle, headerTitlesPanel ? styles.subtitleAlone : null]}>
+      <Text
+        style={[styles.subtitle, subtitleStyle, headerTitlesPanel ? styles.subtitleAlone : null]}
+      >
         {subtitle}
       </Text>
       {children}

@@ -94,7 +94,11 @@ describe("firstRunModel", () => {
 
   it("reports a failed check once the request settles, and not while a retry is in flight", () => {
     const failed = { isFetching: false, isError: true }
-    expect(model({ availability: failed })).toMatchObject({ checkFailed: true, checking: false, canSubmit: false })
+    expect(model({ availability: failed })).toMatchObject({
+      checkFailed: true,
+      checking: false,
+      canSubmit: false,
+    })
     expect(model({ availability: { ...failed, isFetching: true } })).toMatchObject({
       checkFailed: false,
       checking: true,
@@ -103,7 +107,13 @@ describe("firstRunModel", () => {
 
   it("says nothing about availability for an invalid handle", () => {
     const view = model({ handle: "a!", checkedHandle: "a!" })
-    expect(view).toMatchObject({ handleValid: false, checking: false, available: false, taken: false, checkFailed: false })
+    expect(view).toMatchObject({
+      handleValid: false,
+      checking: false,
+      available: false,
+      taken: false,
+      checkFailed: false,
+    })
   })
 
   it("previews the handle, then the name, then a placeholder", () => {

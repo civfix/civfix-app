@@ -10,14 +10,7 @@ import {
 } from "../theme"
 
 type Variant =
-  | "display"
-  | "title"
-  | "heading"
-  | "body"
-  | "bodyStrong"
-  | "label"
-  | "caption"
-  | "mono"
+  "display" | "title" | "heading" | "body" | "bodyStrong" | "label" | "caption" | "mono"
 
 type VariantStyles = Record<Variant, TextStyle>
 

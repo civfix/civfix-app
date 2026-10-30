@@ -33,7 +33,9 @@ vi.mock("../../primitives", async () => {
   const { View } = await vi.importActual<typeof ReactNative>("react-native")
   // The mocked dot above, so a dot drawn through the barrel and one drawn by GlassButton look alike.
   const { UnreadDot } = await import("../../primitives/UnreadDot")
-  const { GlassButton } = await vi.importActual<{ GlassButton: React.ComponentType }>("../../primitives/GlassButton")
+  const { GlassButton } = await vi.importActual<{ GlassButton: React.ComponentType }>(
+    "../../primitives/GlassButton",
+  )
   return {
     Avatar: () => <View testID="avatar" />,
     Brand: () => null,
@@ -54,7 +56,9 @@ vi.mock("react-native-reanimated", () => ({
   withTiming: (value: number) => value,
 }))
 vi.mock("../motionConfigs.native", () => ({ dockFocusConfig: () => ({}) }))
-vi.mock("../useKeyboardAnchor.native", () => ({ useKeyboardAnchor: () => ({ liftStyle: null, reserved: 0 }) }))
+vi.mock("../useKeyboardAnchor.native", () => ({
+  useKeyboardAnchor: () => ({ liftStyle: null, reserved: 0 }),
+}))
 // The expanded map's other controls are their own screens; the profile entry and the bar's buttons are under test.
 vi.mock("../../map/LayersPopover", () => ({
   LayersPopover: () => null,
@@ -98,7 +102,11 @@ function surface(avatar: Avatar, signedIn: boolean) {
   }
 }
 
-function renderAvatar(avatar: Avatar, getNotificationUnread: ReturnType<typeof vi.fn>, signedIn = true) {
+function renderAvatar(
+  avatar: Avatar,
+  getNotificationUnread: ReturnType<typeof vi.fn>,
+  signedIn = true,
+) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const context = makeFakeDataContext({
     api: { getNotificationUnread } as unknown as ApiClient,
@@ -124,7 +132,12 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const AVATARS: Avatar[] = ["HeaderProfileButton", "SearchHeader.web", "SearchHeader.native", "ProfileEntry"]
+const AVATARS: Avatar[] = [
+  "HeaderProfileButton",
+  "SearchHeader.web",
+  "SearchHeader.native",
+  "ProfileEntry",
+]
 
 describe.each(AVATARS)("GH#226 the %s avatar", (avatar) => {
   it("T8: says unread and wears the dot exactly while the server says hasUnread", async () => {

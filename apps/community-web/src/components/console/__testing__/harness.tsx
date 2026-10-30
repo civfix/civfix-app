@@ -52,7 +52,9 @@ export function ConsoleTestHarness({
     <QueryClientProvider client={queryClient}>
       <ApiProvider value={makeDataContext(options)}>
         <I18nProvider locale="en">
-          {options.withToasts === false ? children : (
+          {options.withToasts === false ? (
+            children
+          ) : (
             <ConsoleToastProvider>{children}</ConsoleToastProvider>
           )}
         </I18nProvider>

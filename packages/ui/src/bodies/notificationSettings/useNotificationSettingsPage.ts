@@ -69,7 +69,9 @@ export function useNotificationSettingsPage(): NotificationSettingsPage {
   const save = update.mutateAsync
   const change = useCallback(
     (category: NotificationCategory, next: Partial<NotificationCategorySetting>) => {
-      save({ category, change: next }).catch(() => toast.show(t("save_error"), { variant: "error" }))
+      save({ category, change: next }).catch(() =>
+        toast.show(t("save_error"), { variant: "error" }),
+      )
     },
     [save, toast, t],
   )

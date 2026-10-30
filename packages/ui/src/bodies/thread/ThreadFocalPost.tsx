@@ -62,7 +62,12 @@ function ReplyToLine({
   const th = useTheme()
   if (parentDeleted(parent)) {
     return (
-      <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1} style={styles.replyToLine}>
+      <Text
+        variant="caption"
+        color={th.colors.textSubtle}
+        numberOfLines={1}
+        style={styles.replyToLine}
+      >
         {t("thread.parent_unavailable")}
       </Text>
     )
@@ -162,7 +167,11 @@ export function ThreadFocalPost({
               </Text>
               {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
-                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+                <OrgAffiliationBadge
+                  organization={identity.affiliation}
+                  size="sm"
+                  interactive={false}
+                />
               ) : null}
             </View>
             {identity.handleLabel ? (
@@ -237,7 +246,12 @@ export function ThreadFocalPost({
                 { backgroundColor: wash(categoryColor(post.report.category, th.scheme), 0.82, th) },
               ]}
             >
-              <Text style={[styles.categoryPillText, { color: categoryColor(post.report.category, th.scheme) }]}>
+              <Text
+                style={[
+                  styles.categoryPillText,
+                  { color: categoryColor(post.report.category, th.scheme) },
+                ]}
+              >
                 {model.categoryLabel}
               </Text>
             </View>
@@ -261,7 +275,10 @@ export function ThreadFocalPost({
       {!isFix && !isRepost && linkedReport ? (
         <View style={styles.block}>
           <LinkedReportCard
-            report={{ ...linkedReport, thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id) }}
+            report={{
+              ...linkedReport,
+              thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id),
+            }}
             layout="list"
             headline="title"
             onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
@@ -294,8 +311,7 @@ export function ThreadFocalPost({
           <View style={styles.statsRow}>
             {stats.map((stat) => (
               <Text key={stat.key} variant="caption">
-                <Text style={styles.statCount}>{formatPostActionCount(stat.count)}</Text>
-                {" "}
+                <Text style={styles.statCount}>{formatPostActionCount(stat.count)}</Text>{" "}
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </Text>
             ))}
@@ -334,7 +350,11 @@ export function ThreadFocalPost({
 export function ThreadFocalSkeleton() {
   const styles = useStyles()
   return (
-    <View style={styles.root} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View
+      style={styles.root}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <View style={styles.authorRow}>
         <View style={styles.skeletonAvatar} />
         <View style={styles.authorCopy}>

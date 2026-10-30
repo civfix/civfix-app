@@ -69,7 +69,13 @@ describe("BulkBar", () => {
         count={2}
         onClear={() => {}}
         actions={[
-          { id: "remove", label: "Remove", disabled: true, disabledReason: "Event has ended", onPress },
+          {
+            id: "remove",
+            label: "Remove",
+            disabled: true,
+            disabledReason: "Event has ended",
+            onPress,
+          },
         ]}
       />,
     )

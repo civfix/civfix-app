@@ -80,11 +80,22 @@ export function ReportFlowBody() {
     [mode, skipLocationStep],
   )
 
-  const [step, setStep] = useState<Step>(() => resumeStep(useDraftReportStore.getState().draft, mode))
+  const [step, setStep] = useState<Step>(() =>
+    resumeStep(useDraftReportStore.getState().draft, mode),
+  )
   const [viewfinderMountable, setViewfinderMountable] = useState(false)
-  const { submitPhase, submitError, submitRecovery, result, shareSnapshot, runSubmit, editAfterFailure } =
-    useReportSubmitFlow({ fromComposer, stepOrder, setStep })
-  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
+  const {
+    submitPhase,
+    submitError,
+    submitRecovery,
+    result,
+    shareSnapshot,
+    runSubmit,
+    editAfterFailure,
+  } = useReportSubmitFlow({ fromComposer, stepOrder, setStep })
+  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(
+    null,
+  )
   const revealShareBlock = useCallback((y: number) => {
     scrollRef.current?.scrollTo?.({ y, animated: true })
   }, [])
@@ -101,8 +112,14 @@ export function ReportFlowBody() {
     if (orphaned) setStep(activeStep)
   }, [orphaned, activeStep])
 
-  const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)
-  const captureCardFills = mode === "expanded" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)
+  const viewfinderVisible = rendersEmbeddedViewfinder(
+    activeStep,
+    hasMedia,
+    Viewfinder != null,
+    mode,
+  )
+  const captureCardFills =
+    mode === "expanded" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)
 
   useEffect(() => {
     const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)
@@ -130,7 +147,12 @@ export function ReportFlowBody() {
     )
   }, [stepIndex, stepOrder.length, stepTitle, t])
   const isLast = activeStep === "review"
-  const sessionActive = viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)
+  const sessionActive = viewfinderSessionActive(
+    activeStep,
+    viewfinderMounted,
+    stackNonEmpty,
+    runActive,
+  )
   const sessionResumeGrace = viewfinderResumeGraceEligible(
     activeStep,
     viewfinderMounted,
@@ -165,7 +187,8 @@ export function ReportFlowBody() {
     openMatch,
   } = useDuplicateGate(onNext)
   const gateOpen = duplicateMatches !== null
-  const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex })) || gateOpen
+  const showBack =
+    useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex })) || gateOpen
   const atViewRoot = stepIndex === 0 && !stackNonEmpty && !gateOpen
 
   const onBack = useCallback(() => {
@@ -220,16 +243,24 @@ export function ReportFlowBody() {
     [landViewfinderCapture],
   )
 
-  const { pickPoint, pickPin, pickCenter, openPicker, onPickConfirm, onPickCancel, pickLayerOpen, pickLayerMounted } =
-    usePickLayer({
-      activeStep,
-      hasMedia,
-      hasLocation,
-      stackNonEmpty,
-      runActive,
-      advanceFromLocation,
-      cancelLocation,
-    })
+  const {
+    pickPoint,
+    pickPin,
+    pickCenter,
+    openPicker,
+    onPickConfirm,
+    onPickCancel,
+    pickLayerOpen,
+    pickLayerMounted,
+  } = usePickLayer({
+    activeStep,
+    hasMedia,
+    hasLocation,
+    stackNonEmpty,
+    runActive,
+    advanceFromLocation,
+    cancelLocation,
+  })
 
   if (submitPhase !== "idle") {
     return (
@@ -250,14 +281,21 @@ export function ReportFlowBody() {
   return (
     <KeyboardPinnedSurface style={styles.root}>
       {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
-        <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
+        <View
+          style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}
+        >
           <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
             {t("header.title")}
           </Text>
           <HeaderProfileButton />
         </View>
       ) : (
-        <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
+        <View
+          style={[
+            styles.headerBase,
+            mode === "expanded" ? styles.headerExpanded : styles.headerCompact,
+          ]}
+        >
           {showBack ? (
             <Pressable
               onPress={onBack}
@@ -311,10 +349,7 @@ export function ReportFlowBody() {
         <ScrollView
           ref={scrollRef}
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            captureCardFills ? styles.contentFill : null,
-          ]}
+          contentContainerStyle={[styles.content, captureCardFills ? styles.contentFill : null]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -323,12 +358,8 @@ export function ReportFlowBody() {
             direction={stepDirection}
             style={captureCardFills ? styles.stepHostFill : null}
           >
-            {activeStep === "capture" ? (
-              <CaptureStep mode={mode} />
-            ) : null}
-            {activeStep === "location" ? (
-              <LocationStep onOpenPicker={openPicker} />
-            ) : null}
+            {activeStep === "capture" ? <CaptureStep mode={mode} /> : null}
+            {activeStep === "location" ? <LocationStep onOpenPicker={openPicker} /> : null}
             {activeStep === "category" ? <CategoryStep /> : null}
             {activeStep === "details" ? <DetailsStep /> : null}
             {activeStep === "review" ? (
@@ -352,10 +383,16 @@ export function ReportFlowBody() {
             accessibilityLabel={t("wizard.duplicate.new")}
             accessibilityState={{ disabled: false, busy: false }}
             {...focusRingProps}
-            style={({ pressed }) => [styles.nextBtn, styles.newBtn, pressed ? flowStyles.pressed : null]}
+            style={({ pressed }) => [
+              styles.nextBtn,
+              styles.newBtn,
+              pressed ? flowStyles.pressed : null,
+            ]}
           >
             <Icon icon={iconMap.Plus} size={16} color={th.colors.text} />
-            <Text style={[styles.nextText, { color: th.colors.text }]}>{t("wizard.duplicate.new")}</Text>
+            <Text style={[styles.nextText, { color: th.colors.text }]}>
+              {t("wizard.duplicate.new")}
+            </Text>
           </Pressable>
         </KeyboardPinnedFooter>
       ) : showsWizardFooter(activeStep, hasMedia) ? (
@@ -365,7 +402,11 @@ export function ReportFlowBody() {
             disabled={!canAdvance}
             accessibilityRole="button"
             accessibilityLabel={
-              checkingDuplicates ? t("footer.checking_a11y") : isLast ? t("footer.drop_pin") : t("footer.continue")
+              checkingDuplicates
+                ? t("footer.checking_a11y")
+                : isLast
+                  ? t("footer.drop_pin")
+                  : t("footer.continue")
             }
             accessibilityState={{ disabled: !canAdvance, busy: checkingDuplicates }}
             {...focusRingProps}
@@ -375,7 +416,12 @@ export function ReportFlowBody() {
               pressed && canAdvance ? flowStyles.pressed : null,
             ]}
           >
-            <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
+            <Text
+              style={[
+                styles.nextText,
+                { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle },
+              ]}
+            >
               {isLast ? t("footer.drop_pin") : t("footer.continue")}
             </Text>
             <View style={styles.nextIcon}>

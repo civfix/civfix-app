@@ -96,7 +96,8 @@ export function ChangeUsernameEditor({
             : t("handle.availability.taken")
       return { text, tone: "error" as const }
     }
-    if (availability.data?.available) return { text: t("handle.hint.available"), tone: "ok" as const }
+    if (availability.data?.available)
+      return { text: t("handle.hint.available"), tone: "ok" as const }
     return { text: "", tone: "muted" as const }
   })()
 

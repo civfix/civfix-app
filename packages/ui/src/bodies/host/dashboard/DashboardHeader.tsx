@@ -31,7 +31,13 @@ export interface DashboardHeaderProps {
   onCreate: () => void
 }
 
-export function DashboardHeader({ scope, kpis, teaching, scopeMenu, onCreate }: DashboardHeaderProps) {
+export function DashboardHeader({
+  scope,
+  kpis,
+  teaching,
+  scopeMenu,
+  onCreate,
+}: DashboardHeaderProps) {
   const styles = useStyles()
   const { t } = useT("event-dashboard")
   const { user } = useAuthState()
@@ -63,9 +69,7 @@ export function DashboardHeader({ scope, kpis, teaching, scopeMenu, onCreate }: 
             icon={iconMap.Plus}
             label={t("create.short")}
             accessibilityLabel={
-              scope.org
-                ? t("create.a11y_org", { org: scope.org.name })
-                : t("create.a11y_personal")
+              scope.org ? t("create.a11y_org", { org: scope.org.name }) : t("create.a11y_personal")
             }
             onPress={onCreate}
           />

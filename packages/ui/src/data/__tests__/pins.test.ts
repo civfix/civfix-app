@@ -13,9 +13,7 @@ function person(id: string): PersonDTO {
   return { id, name: id, followers: 0, following: 0, isFollowing: false }
 }
 
-function msg(
-  partial: Partial<ChatMessageDTO> & { id: string },
-): ChatMessageDTO {
+function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO {
   return {
     cleanupId: ROOM,
     from: person("user-other"),
@@ -101,7 +99,11 @@ describe("mergePins", () => {
 
   it("a tombstone in the initial snapshot itself is excluded (defensive)", () => {
     const initial = [
-      msg({ id: "m1", pinnedAt: "2026-07-18T10:00:00.000Z", deletedAt: "2026-07-18T12:00:00.000Z" }),
+      msg({
+        id: "m1",
+        pinnedAt: "2026-07-18T10:00:00.000Z",
+        deletedAt: "2026-07-18T12:00:00.000Z",
+      }),
     ]
     expect(mergePins(initial, [])).toEqual([])
   })

@@ -1,4 +1,11 @@
-import { View, Pressable, ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
+import {
+  View,
+  Pressable,
+  ActivityIndicator,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
@@ -12,7 +19,12 @@ export interface ComposerThumbsProps {
   style?: StyleProp<ViewStyle>
 }
 
-export function ComposerThumbs({ attachments, onRemove, singleRow = false, style }: ComposerThumbsProps) {
+export function ComposerThumbs({
+  attachments,
+  onRemove,
+  singleRow = false,
+  style,
+}: ComposerThumbsProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("common")
@@ -30,13 +42,20 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
           />
           {!a.uploadId ? (
             <View style={styles.thumbUploading}>
-              <ActivityIndicator size="small" color={th.colors.onScrim} accessibilityLabel={t("media.uploading")} />
+              <ActivityIndicator
+                size="small"
+                color={th.colors.onScrim}
+                accessibilityLabel={t("media.uploading")}
+              />
             </View>
           ) : null}
           <Pressable
             onPress={() => onRemove(a.id)}
             accessibilityRole="button"
-            accessibilityLabel={t("media.remove_attachment_n", { index: index + 1, count: attachments.length })}
+            accessibilityLabel={t("media.remove_attachment_n", {
+              index: index + 1,
+              count: attachments.length,
+            })}
             hitSlop={THUMB_REMOVE_HIT_SLOP}
             {...focusRingProps}
             style={({ pressed }) => [styles.thumbRemove, pressed ? styles.pressed : null]}

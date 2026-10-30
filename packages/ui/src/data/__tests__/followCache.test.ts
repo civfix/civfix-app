@@ -48,9 +48,7 @@ function patchFlat(
   next: { isFollowing: boolean; followers: number },
 ): void {
   qc.setQueriesData<PersonDTO[]>({ queryKey: PEOPLE_KEY }, (prev) =>
-    Array.isArray(prev)
-      ? prev.map((p) => (p.id === id ? { ...p, ...next } : p))
-      : prev,
+    Array.isArray(prev) ? prev.map((p) => (p.id === id ? { ...p, ...next } : p)) : prev,
   )
 }
 
@@ -104,20 +102,31 @@ describe("follow toggle people-list reconciliation (task 5)", () => {
   it("optimistically flips a FLAT PersonDTO[] row under the ['people'] prefix on follow", async () => {
     const qc = new QueryClient()
     // The web home-sidebar caches search hits as a flat PersonDTO[] under ["people","search",q].
-    qc.setQueryData<PersonDTO[]>(["people", "search", "ann"], [person("u1", false, 4), person("u2", false, 9)])
+    qc.setQueryData<PersonDTO[]>(
+      ["people", "search", "ann"],
+      [person("u1", false, 4), person("u2", false, 9)],
+    )
 
     const opts = buildFollowOptions(qc, "u1", async () => ({ isFollowing: true, followers: 5 }))
     // currentlyFollowing = false (the state before the tap): follow.
     const ctx = await opts.onMutate?.(false)
 
     const afterMutate = qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!
-    expect(afterMutate.find((p) => p.id === "u1")).toMatchObject({ isFollowing: true, followers: 5 })
+    expect(afterMutate.find((p) => p.id === "u1")).toMatchObject({
+      isFollowing: true,
+      followers: 5,
+    })
     // The other row is untouched.
-    expect(afterMutate.find((p) => p.id === "u2")).toMatchObject({ isFollowing: false, followers: 9 })
+    expect(afterMutate.find((p) => p.id === "u2")).toMatchObject({
+      isFollowing: false,
+      followers: 9,
+    })
 
     // Server confirms -> reconcile (authoritative count).
     opts.onSuccess?.({ isFollowing: true, followers: 6 }, false, ctx)
-    expect(qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1")).toMatchObject({
+    expect(
+      qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1"),
+    ).toMatchObject({
       isFollowing: true,
       followers: 6,
     })
@@ -132,13 +141,17 @@ describe("follow toggle people-list reconciliation (task 5)", () => {
     })
     const ctx = await opts.onMutate?.(false)
     // Optimistically followed.
-    expect(qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1")).toMatchObject({
+    expect(
+      qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1"),
+    ).toMatchObject({
       isFollowing: true,
       followers: 5,
     })
     // Error -> rollback.
     opts.onError?.(new Error("offline"), false, ctx)
-    expect(qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1")).toMatchObject({
+    expect(
+      qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1"),
+    ).toMatchObject({
       isFollowing: false,
       followers: 4,
     })
@@ -169,7 +182,11 @@ function buildConnectionsFollowOptions(
     PersonDTO,
     boolean,
     FollowPersonResponse,
-    { prevConn?: ReadonlyArray<readonly [readonly unknown[], InfiniteData<{ items: PersonDTO[] }> | undefined]> }
+    {
+      prevConn?: ReadonlyArray<
+        readonly [readonly unknown[], InfiniteData<{ items: PersonDTO[] }> | undefined]
+      >
+    }
   >(qc, {
     key: PEOPLE_KEY,
     mutationFn: () => server(),
@@ -199,7 +216,10 @@ function buildConnectionsFollowOptions(
         if (ctx?.prevConn) for (const [k, d] of ctx.prevConn) client.setQueryData(k as unknown[], d)
       },
       onSuccess: (client, res) => {
-        patchPersonInConnectionLists(client, id, { isFollowing: res.isFollowing, followers: res.followers })
+        patchPersonInConnectionLists(client, id, {
+          isFollowing: res.isFollowing,
+          followers: res.followers,
+        })
       },
     },
   }) as unknown as LooseOptions
@@ -215,10 +235,15 @@ describe("follow toggle connections-list reconciliation", () => {
       pageParams: [undefined],
     })
 
-    const opts = buildConnectionsFollowOptions(qc, "u1", async () => ({ isFollowing: false, followers: 9 }))
+    const opts = buildConnectionsFollowOptions(qc, "u1", async () => ({
+      isFollowing: false,
+      followers: 9,
+    }))
     const ctx = await opts.onMutate?.(true)
 
-    const afterMutate = qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!
+    const afterMutate = qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(
+      queryKeys.following(viewer),
+    )!
     expect(afterMutate.pages[0]!.items.find((p) => p.id === "u1")).toMatchObject({
       isFollowing: false,
       followers: 9,
@@ -229,7 +254,9 @@ describe("follow toggle connections-list reconciliation", () => {
     })
 
     opts.onSuccess?.({ isFollowing: false, followers: 8 }, true, ctx)
-    const afterSuccess = qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!
+    const afterSuccess = qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(
+      queryKeys.following(viewer),
+    )!
     expect(afterSuccess.pages[0]!.items.find((p) => p.id === "u1")).toMatchObject({
       isFollowing: false,
       followers: 8,
@@ -249,12 +276,14 @@ describe("follow toggle connections-list reconciliation", () => {
     })
     const ctx = await opts.onMutate?.(true)
     expect(
-      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!.items[0],
+      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!
+        .items[0],
     ).toMatchObject({ isFollowing: false, followers: 9 })
 
     opts.onError?.(new Error("offline"), true, ctx)
     expect(
-      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!.items[0],
+      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!
+        .items[0],
     ).toMatchObject({ isFollowing: true, followers: 10 })
   })
 })

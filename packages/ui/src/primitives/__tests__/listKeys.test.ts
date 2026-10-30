@@ -12,7 +12,9 @@ describe("withTextOffsets", () => {
   })
 
   it("leaves each run's own fields untouched", () => {
-    expect(withTextOffsets([{ kind: "text", text: "hi" }])).toEqual([{ kind: "text", text: "hi", offset: 0 }])
+    expect(withTextOffsets([{ kind: "text", text: "hi" }])).toEqual([
+      { kind: "text", text: "hi", offset: 0 },
+    ])
   })
 })
 

@@ -26,7 +26,9 @@ describe("lightboxAspectRatio", () => {
     expect(lightboxAspectRatio({ width: 1600, height: null })).toBe(LIGHTBOX_FALLBACK_ASPECT_RATIO)
     expect(lightboxAspectRatio({ width: 0, height: 900 })).toBe(LIGHTBOX_FALLBACK_ASPECT_RATIO)
     expect(lightboxAspectRatio({ width: -4, height: 3 })).toBe(LIGHTBOX_FALLBACK_ASPECT_RATIO)
-    expect(lightboxAspectRatio({ width: Number.NaN, height: 3 })).toBe(LIGHTBOX_FALLBACK_ASPECT_RATIO)
+    expect(lightboxAspectRatio({ width: Number.NaN, height: 3 })).toBe(
+      LIGHTBOX_FALLBACK_ASPECT_RATIO,
+    )
   })
 })
 

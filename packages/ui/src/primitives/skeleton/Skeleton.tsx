@@ -260,9 +260,7 @@ export function SkeletonDetail({
   const styles = useStyles()
   return (
     <View {...A11Y_HIDDEN} style={[styles.detail, style]}>
-      {hero === false ? null : (
-        <SkeletonBlock width="100%" height={hero} radius={heroRadius} />
-      )}
+      {hero === false ? null : <SkeletonBlock width="100%" height={hero} radius={heroRadius} />}
       <View style={styles.detailCopy}>
         <SkeletonText width="72%" height={18} />
         {Array.from({ length: lines }, (_unused, index) => (

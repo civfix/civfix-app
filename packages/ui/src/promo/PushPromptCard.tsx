@@ -1,5 +1,13 @@
 import { Pressable, StyleSheet, View } from "react-native"
-import { focusRingProps, headingLevel, makeThemedStyles, useLayoutMode, useTheme, webCursor, webHover } from "../theme"
+import {
+  focusRingProps,
+  headingLevel,
+  makeThemedStyles,
+  useLayoutMode,
+  useTheme,
+  webCursor,
+  webHover,
+} from "../theme"
 import { Icon, iconMap, Text } from "../typography"
 import { PrimaryButton } from "../primitives/PrimaryButton"
 import { useT } from "../i18n"
@@ -26,11 +34,19 @@ export function PushPromptCard({ onTurnOn, onNotNow, onClose }: PushPromptCardPr
   return (
     <View
       pointerEvents="box-none"
-      style={expanded ? styles.anchorExpanded : [styles.anchorCompact, { bottom: tabBarHeight + th.space["3"] }]}
+      style={
+        expanded
+          ? styles.anchorExpanded
+          : [styles.anchorCompact, { bottom: tabBarHeight + th.space["3"] }]
+      }
     >
       <View
         accessibilityRole="none"
-        {...({ role: "dialog", "aria-modal": false, "aria-labelledby": "civfix-push-prompt-title" } as object)}
+        {...({
+          role: "dialog",
+          "aria-modal": false,
+          "aria-labelledby": "civfix-push-prompt-title",
+        } as object)}
         style={[styles.card, th.shadows.s3, expanded ? styles.cardExpanded : null]}
       >
         <View style={styles.head}>
@@ -51,7 +67,11 @@ export function PushPromptCard({ onTurnOn, onNotNow, onClose }: PushPromptCardPr
             accessibilityLabel={t("close")}
             hitSlop={6}
             {...focusRingProps}
-            style={(state) => [styles.close, webCursor(), webHover(state) ? styles.closeHovered : null]}
+            style={(state) => [
+              styles.close,
+              webCursor(),
+              webHover(state) ? styles.closeHovered : null,
+            ]}
           >
             <Icon icon={iconMap.Close} size={16} color={th.colors.textMuted} />
           </Pressable>

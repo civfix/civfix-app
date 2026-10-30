@@ -62,7 +62,12 @@ export function LoadingState({
   const loading = tCommon("loading")
   if (skeleton) {
     return (
-      <View style={styles.skeletonList} accessible accessibilityRole="progressbar" accessibilityLabel={loading}>
+      <View
+        style={styles.skeletonList}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel={loading}
+      >
         <SkeletonList rows={rows} kind={skeleton} />
       </View>
     )

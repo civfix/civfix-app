@@ -163,7 +163,8 @@ export function ZoomableMedia({
       cancelWheelSettle()
       if (pointers.size === 0) rect = surface.getBoundingClientRect()
       pointers.set(event.pointerId, local(event))
-      if (typeof surface.setPointerCapture === "function") surface.setPointerCapture(event.pointerId)
+      if (typeof surface.setPointerCapture === "function")
+        surface.setPointerCapture(event.pointerId)
       const two = pair()
       if (two) {
         pinchStart = {

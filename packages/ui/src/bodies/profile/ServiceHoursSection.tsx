@@ -44,8 +44,11 @@ function OwnServiceHours({ totalHours }: { totalHours?: number | undefined }) {
   const byOrganization = hoursQuery.data?.hours.byOrganization ?? []
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
-  const { hasNextPage: entriesHaveNext, isFetchingNextPage: entriesFetchingNext, fetchNextPage: fetchNextEntries } =
-    entriesQuery
+  const {
+    hasNextPage: entriesHaveNext,
+    isFetchingNextPage: entriesFetchingNext,
+    fetchNextPage: fetchNextEntries,
+  } = entriesQuery
   const onLoadMore = useCallback(() => {
     if (entriesHaveNext && !entriesFetchingNext) void fetchNextEntries()
   }, [entriesHaveNext, entriesFetchingNext, fetchNextEntries])
@@ -69,7 +72,13 @@ function OwnServiceHours({ totalHours }: { totalHours?: number | undefined }) {
   )
 }
 
-function PublicServiceHours({ userId, totalHours }: { userId?: string | undefined; totalHours?: number | undefined }) {
+function PublicServiceHours({
+  userId,
+  totalHours,
+}: {
+  userId?: string | undefined
+  totalHours?: number | undefined
+}) {
   const th = useTheme()
   const { t } = useT("volunteer-hours")
   const query = usePublicHoursEntries(userId)
@@ -280,7 +289,9 @@ function VisibilityIndicator() {
       style={({ pressed }) => [styles.visibility, pressed ? styles.pressedDim : null]}
     >
       <Icon
-        icon={state === "public" ? iconMap.Globe : state === "private" ? iconMap.Lock : iconMap.Users}
+        icon={
+          state === "public" ? iconMap.Globe : state === "private" ? iconMap.Lock : iconMap.Users
+        }
         size={13}
         color={th.colors.textSubtle}
       />

@@ -191,7 +191,11 @@ export function MessageContextMenu({
   }
 
   if (isWeb) {
-    const { actionsMaxH, cardH, position: cardPosition } = resolveWebMenuFrame(
+    const {
+      actionsMaxH,
+      cardH,
+      position: cardPosition,
+    } = resolveWebMenuFrame(
       anchor,
       { width: winW, height: winH },
       {
@@ -249,7 +253,9 @@ export function MessageContextMenu({
                 <View style={styles.separator} />
               </>
             ) : null}
-            <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+            <ScrollView style={{ maxHeight: actionsMaxH }}>
+              {actions.map(renderActionRow)}
+            </ScrollView>
           </Animated.View>
         </View>
       </Modal>
@@ -296,7 +302,12 @@ export function MessageContextMenu({
   const reactionOrigin = menuOrigin(
     anchor,
     bands
-      ? { left: reactionsLeft, top: bands.reactionsTop, width: reactionRowW, height: REACTION_ROW_H }
+      ? {
+          left: reactionsLeft,
+          top: bands.reactionsTop,
+          width: reactionRowW,
+          height: REACTION_ROW_H,
+        }
       : null,
   )
 
@@ -360,16 +371,22 @@ export function MessageContextMenu({
               ]}
               accessibilityRole="menu"
             >
-              <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+              <ScrollView style={{ maxHeight: actionsMaxH }}>
+                {actions.map(renderActionRow)}
+              </ScrollView>
             </Animated.View>
           </>
         ) : (
           <Animated.View style={[styles.centeredColumn, menuCardStyle(motion, cardOrigin)]}>
             {showReactions ? (
-              <View style={[styles.reactionCard, styles.reactionCardCentered]}>{renderReactionRow()}</View>
+              <View style={[styles.reactionCard, styles.reactionCardCentered]}>
+                {renderReactionRow()}
+              </View>
             ) : null}
             <View style={[styles.card, styles.cardCentered]} accessibilityRole="menu">
-              <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+              <ScrollView style={{ maxHeight: actionsMaxH }}>
+                {actions.map(renderActionRow)}
+              </ScrollView>
             </View>
           </Animated.View>
         )}

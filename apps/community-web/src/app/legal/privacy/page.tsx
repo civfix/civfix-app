@@ -49,7 +49,8 @@ const RETENTION_ROWS: RetentionRow[] = [
       "A guest gives an email or phone number only so the host can reach them about that one event.",
   },
   {
-    category: "Delivery records for host messages (which message went to whom, and whether it sent)",
+    category:
+      "Delivery records for host messages (which message went to whom, and whether it sent)",
     period: "180 days",
     basis:
       "Enough to diagnose a failed delivery and enforce message limits. We record no opens and no clicks.",
@@ -94,38 +95,43 @@ export default function PrivacyPage() {
       <section>
         <h2>1. Overview</h2>
         <p>
-          This Privacy Policy explains what personal information civfix collects, why we collect it, who
-          we share it with, how long we keep it, and the choices and rights you have. civfix is operated
-          by <strong>Reach Out Los Angeles Inc.</strong>, a registered 501(&zwnj;c)(3) nonprofit organization
-          (&ldquo;Reach Out Los Angeles,&rdquo; &ldquo;civfix,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;),
-          which is the controller of the personal information described here. It covers the civfix iOS
-          app, Android app, and web app.
+          This Privacy Policy explains what personal information civfix collects, why we collect it,
+          who we share it with, how long we keep it, and the choices and rights you have. civfix is
+          operated by <strong>Reach Out Los Angeles Inc.</strong>, a registered 501(&zwnj;c)(3)
+          nonprofit organization (&ldquo;Reach Out Los Angeles,&rdquo; &ldquo;civfix,&rdquo;
+          &ldquo;we,&rdquo; &ldquo;us&rdquo;), which is the controller of the personal information
+          described here. It covers the civfix iOS app, Android app, and web app.
         </p>
         <p>
-          civfix is built to do a specific thing: let you report a local issue at a precise place and
-          route it to the responsible government body. So location and the photos or videos you attach
-          are at the center of how it works. We try to collect only what we need for that, and we strip
-          metadata we do not need (see Section 3).
+          civfix is built to do a specific thing: let you report a local issue at a precise place
+          and route it to the responsible government body. So location and the photos or videos you
+          attach are at the center of how it works. We try to collect only what we need for that,
+          and we strip metadata we do not need (see Section 3).
         </p>
         <p>
-          A note on scope. civfix is operated by a US-based 501(&zwnj;c)(3) nonprofit and is offered to
-          residents of the United States, the European Economic Area (EEA), and the United Kingdom.
-          Because we make civfix available to people in the EEA and the UK, the EU General Data Protection
-          Regulation (GDPR) and the UK GDPR apply to our processing of their personal information; this
-          Policy describes the legal bases we rely on (Section 3), how we transfer information
-          internationally (Section 4), and the rights those laws give you (Section 8). Reach Out Los
-          Angeles is the <strong>data controller</strong> for that information.
+          A note on scope. civfix is operated by a US-based 501(&zwnj;c)(3) nonprofit and is offered
+          to residents of the United States, the European Economic Area (EEA), and the United
+          Kingdom. Because we make civfix available to people in the EEA and the UK, the EU General
+          Data Protection Regulation (GDPR) and the UK GDPR apply to our processing of their
+          personal information; this Policy describes the legal bases we rely on (Section 3), how we
+          transfer information internationally (Section 4), and the rights those laws give you
+          (Section 8). Reach Out Los Angeles is the <strong>data controller</strong> for that
+          information.
         </p>
         <p>
-          We run <strong>no advertising, analytics, or third-party tracking technology inside the civfix
-          apps or website</strong>; we do not build advertising profiles; and we do not sell your personal
-          information or &ldquo;share&rdquo; it for cross-context behavioral advertising. We do promote
-          civfix on outside channels such as social media - but that is advertising <em>about</em> civfix
-          on other platforms and places no tracking inside civfix itself (see our{" "}
-          <a href="/legal/cookies">Cookies &amp; Storage</a> notice). Some US state privacy laws that apply
-          only to for-profit businesses - such as the California Consumer Privacy Act (CCPA) - do not bind a
-          bona fide nonprofit, but we honor their substance as a matter of practice and extend the core of
-          these rights to everyone.
+          We run{" "}
+          <strong>
+            no advertising, analytics, or third-party tracking technology inside the civfix apps or
+            website
+          </strong>
+          ; we do not build advertising profiles; and we do not sell your personal information or
+          &ldquo;share&rdquo; it for cross-context behavioral advertising. We do promote civfix on
+          outside channels such as social media - but that is advertising <em>about</em> civfix on
+          other platforms and places no tracking inside civfix itself (see our{" "}
+          <a href="/legal/cookies">Cookies &amp; Storage</a> notice). Some US state privacy laws
+          that apply only to for-profit businesses - such as the California Consumer Privacy Act
+          (CCPA) - do not bind a bona fide nonprofit, but we honor their substance as a matter of
+          practice and extend the core of these rights to everyone.
         </p>
       </section>
 
@@ -134,31 +140,34 @@ export default function PrivacyPage() {
 
         <h3>Account information</h3>
         <p>
-          civfix does not use passwords. When you create an account you sign in through a third-party
-          identity provider (for example Google or Apple), which shares with us a basic identifier such
-          as your email address and, depending on the provider and your settings, your name. You may add
-          a display name, a short bio, and a profile photo. We generate your default avatar from your
-          identifier, so a photo is optional.
+          civfix does not use passwords. When you create an account you sign in through a
+          third-party identity provider (for example Google or Apple), which shares with us a basic
+          identifier such as your email address and, depending on the provider and your settings,
+          your name. You may add a display name, a short bio, and a profile photo. We generate your
+          default avatar from your identifier, so a photo is optional.
         </p>
 
         <h3>Reports and the content you submit</h3>
         <ul>
           <li>
-            <strong>Precise location.</strong> The pin location (latitude and longitude) of the issue
-            you report. This is precise geolocation and is treated as sensitive information under several
-            laws. From the pin we derive the responsible jurisdiction and a coarse &ldquo;City,
-            State&rdquo; label, and we compute an approximate grid cell used for clustering on the map
-            and for abuse limits.
+            <strong>Precise location.</strong> The pin location (latitude and longitude) of the
+            issue you report. This is precise geolocation and is treated as sensitive information
+            under several laws. From the pin we derive the responsible jurisdiction and a coarse
+            &ldquo;City, State&rdquo; label, and we compute an approximate grid cell used for
+            clustering on the map and for abuse limits.
           </li>
           <li>
-            <strong>Photos and videos.</strong> The media you attach to a report (up to five items per
-            report). When media is processed, we read and then <strong>strip embedded metadata,
-            including any GPS coordinates stored in the file (EXIF)</strong>, and we do not keep that raw
-            GPS fix. We generate a thumbnail and, for video, re-encode the container to remove metadata.
+            <strong>Photos and videos.</strong> The media you attach to a report (up to five items
+            per report). When media is processed, we read and then{" "}
+            <strong>
+              strip embedded metadata, including any GPS coordinates stored in the file (EXIF)
+            </strong>
+            , and we do not keep that raw GPS fix. We generate a thumbnail and, for video, re-encode
+            the container to remove metadata.
           </li>
           <li>
-            <strong>Report details.</strong> The category you choose, an optional description, and the
-            report&rsquo;s status timeline over time.
+            <strong>Report details.</strong> The category you choose, an optional description, and
+            the report&rsquo;s status timeline over time.
           </li>
         </ul>
 
@@ -172,23 +181,26 @@ export default function PrivacyPage() {
 
         <h3>Notifications</h3>
         <p>
-          If you enable push notifications, we store a device push token so we can deliver them, plus
-          your notification preferences (including any quiet hours). We store in-app notifications (such
-          as a new follower or a report update).
+          If you enable push notifications, we store a device push token so we can deliver them,
+          plus your notification preferences (including any quiet hours). We store in-app
+          notifications (such as a new follower or a report update).
         </p>
 
         <h3>Donation links</h3>
         <p>
-          <strong>civfix does not process payments and never has access to your payment details.</strong>{" "}
-          An organization, a host or a person can add a <strong>donation link</strong> to their profile,
-          their organization page or an event. It is an ordinary external web address they choose. Opening
-          it takes you to that site, which is operated by them and their own payment processor: anything
-          you enter there - your name, your email address, your card - is collected by that site under its
-          own privacy notice, not ours. We receive no donation amount, no donor identity and no card data.
+          <strong>
+            civfix does not process payments and never has access to your payment details.
+          </strong>{" "}
+          An organization, a host or a person can add a <strong>donation link</strong> to their
+          profile, their organization page or an event. It is an ordinary external web address they
+          choose. Opening it takes you to that site, which is operated by them and their own payment
+          processor: anything you enter there - your name, your email address, your card - is
+          collected by that site under its own privacy notice, not ours. We receive no donation
+          amount, no donor identity and no card data.
         </p>
         <p>
-          We count how many times a donation link on an event is opened. That count is a daily total shown
-          to the host and carries no identifier of who opened it.
+          We count how many times a donation link on an event is opened. That count is a daily total
+          shown to the host and carries no identifier of who opened it.
         </p>
 
         <h3>Technical, security, and anti-abuse information</h3>
@@ -196,10 +208,10 @@ export default function PrivacyPage() {
           <li>
             <strong>IP address.</strong> We process your IP address to operate the service securely:
             to enforce rate limits, to run anti-bot challenges, to record the IP associated with a
-            session for audit and account-security purposes, and (for anonymous reports) to perform a
-            coarse sanity check that the reported location is plausible. This sanity check uses
-            approximate, country/region-level location derived from your IP by our network provider; we
-            do not use it to pinpoint you.
+            session for audit and account-security purposes, and (for anonymous reports) to perform
+            a coarse sanity check that the reported location is plausible. This sanity check uses
+            approximate, country/region-level location derived from your IP by our network provider;
+            we do not use it to pinpoint you.
           </li>
           <li>
             <strong>Anonymous-submission tokens and claim codes.</strong> If you submit without an
@@ -207,14 +219,15 @@ export default function PrivacyPage() {
             report&rsquo;s status and optionally link it to an account later (see Section 6).
           </li>
           <li>
-            <strong>Device and log data.</strong> Standard information such as request metadata, app and
-            device type, and error diagnostics generated when the service runs or when something goes
-            wrong.
+            <strong>Device and log data.</strong> Standard information such as request metadata, app
+            and device type, and error diagnostics generated when the service runs or when something
+            goes wrong.
           </li>
         </ul>
         <p>
-          We do <strong>not</strong> use third-party advertising or analytics trackers inside civfix, we do
-          not build advertising profiles, and we do not sell your personal information.
+          We do <strong>not</strong> use third-party advertising or analytics trackers inside
+          civfix, we do not build advertising profiles, and we do not sell your personal
+          information.
         </p>
       </section>
 
@@ -223,57 +236,61 @@ export default function PrivacyPage() {
         <p>We use the information above to:</p>
         <ul>
           <li>
-            create and publish your reports, determine the responsible jurisdiction, and forward reports
-            to the appropriate government agency;
+            create and publish your reports, determine the responsible jurisdiction, and forward
+            reports to the appropriate government agency;
           </li>
           <li>
-            show reports and cleanups on the public map and to your neighbors, and track a report&rsquo;s
-            status;
+            show reports and cleanups on the public map and to your neighbors, and track a
+            report&rsquo;s status;
           </li>
           <li>
-            operate cleanups, chat, profiles, follows, and notifications, and let you check the status
-            of an anonymous report;
+            operate cleanups, chat, profiles, follows, and notifications, and let you check the
+            status of an anonymous report;
           </li>
           <li>
-            keep civfix safe by detecting and preventing spam, fraud, duplicate or abusive reports, and
-            other misuse, and enforce our Terms;
+            keep civfix safe by detecting and preventing spam, fraud, duplicate or abusive reports,
+            and other misuse, and enforce our Terms;
           </li>
           <li>
-            run, maintain, debug, secure, and improve civfix, and back it up so it can be restored; and
+            run, maintain, debug, secure, and improve civfix, and back it up so it can be restored;
+            and
           </li>
           <li>comply with the law and respond to lawful requests.</li>
         </ul>
         <p>
-          <strong>Legal bases (GDPR / UK GDPR).</strong> Where these laws apply, we rely on the following
-          legal bases:
+          <strong>Legal bases (GDPR / UK GDPR).</strong> Where these laws apply, we rely on the
+          following legal bases:
         </p>
         <ul>
           <li>
-            <strong>Performance of a contract</strong> - to create your account and provide the features
-            you use (publishing and routing your reports, cleanups, chat, profiles, follows, and
-            notifications).
+            <strong>Performance of a contract</strong> - to create your account and provide the
+            features you use (publishing and routing your reports, cleanups, chat, profiles,
+            follows, and notifications).
           </li>
           <li>
-            <strong>Consent</strong> - for push notifications, and for accessing or processing precise
-            device location when you choose to use it; you can withdraw consent at any time (in your
-            device or app settings) without affecting processing already carried out.
+            <strong>Consent</strong> - for push notifications, and for accessing or processing
+            precise device location when you choose to use it; you can withdraw consent at any time
+            (in your device or app settings) without affecting processing already carried out.
           </li>
           <li>
-            <strong>Legitimate interests</strong> - to operate, secure, debug, and improve civfix, to
-            prevent spam, fraud, and abuse, and to maintain the public and civic record of reports. Where
-            we rely on legitimate interests, you have the right to object (Section 8).
+            <strong>Legitimate interests</strong> - to operate, secure, debug, and improve civfix,
+            to prevent spam, fraud, and abuse, and to maintain the public and civic record of
+            reports. Where we rely on legitimate interests, you have the right to object (Section
+            8).
           </li>
           <li>
-            <strong>Legal obligation</strong> - to comply with the law and respond to lawful requests; and
-            in our or the public&rsquo;s <strong>vital interests</strong> where life or safety is at risk.
+            <strong>Legal obligation</strong> - to comply with the law and respond to lawful
+            requests; and in our or the public&rsquo;s <strong>vital interests</strong> where life
+            or safety is at risk.
           </li>
         </ul>
         <p>
-          <strong>Marketing.</strong> The emails and notifications we send today are transactional and
-          service-related - sign-in codes, and report, cleanup, and account updates you have opted into.
-          If we ever send you promotional or marketing messages, we will rely on your consent where the
-          law requires it, and you can object or unsubscribe at any time. Advertising civfix on outside
-          platforms (such as social media) does not place any tracking inside civfix.
+          <strong>Marketing.</strong> The emails and notifications we send today are transactional
+          and service-related - sign-in codes, and report, cleanup, and account updates you have
+          opted into. If we ever send you promotional or marketing messages, we will rely on your
+          consent where the law requires it, and you can object or unsubscribe at any time.
+          Advertising civfix on outside platforms (such as social media) does not place any tracking
+          inside civfix.
         </p>
       </section>
 
@@ -284,81 +301,86 @@ export default function PrivacyPage() {
             <strong>The public.</strong> Published reports, including the photos/videos, the pin
             location, the category, and your description, are visible on the public map and lists.
             Your profile, the cleanups you host, and your chat messages are visible to the relevant
-            audience. Do not include anything in a report or message that you do not want to be public.
+            audience. Do not include anything in a report or message that you do not want to be
+            public.
           </li>
           <li>
-            <strong>Government agencies.</strong> We forward reports to the government body responsible
-            for the reported location so the issue can be addressed. We may also share reporter contact
-            information with an agency only where appropriate and subject to controls.
+            <strong>Government agencies.</strong> We forward reports to the government body
+            responsible for the reported location so the issue can be addressed. We may also share
+            reporter contact information with an agency only where appropriate and subject to
+            controls.
           </li>
           <li>
-            <strong>Service providers (sub-processors).</strong> We use a small set of vendors to host
-            the service, store and deliver media, send email, deliver push notifications, run anti-abuse
-            challenges, and serve the map. They process information on our behalf under contract. See our{" "}
-            <a href="/legal/subprocessors">Sub-processors</a> list.
+            <strong>Service providers (sub-processors).</strong> We use a small set of vendors to
+            host the service, store and deliver media, send email, deliver push notifications, run
+            anti-abuse challenges, and serve the map. They process information on our behalf under
+            contract. See our <a href="/legal/subprocessors">Sub-processors</a> list.
           </li>
           <li>
-            <strong>Event hosts.</strong> If you register for an event, the host sees your display name,
-            your ticket type and party size, your answers to the host&rsquo;s registration questions, and
-            whether you checked in. A host does <strong>not</strong> see your email address or phone
-            number unless you registered as a guest without a civfix account, where an email address is
-            how the host reaches you. Host messages are <strong>relayed</strong> by civfix rather than
-            sent from your address, and we do not track opens or clicks on them.
+            <strong>Event hosts.</strong> If you register for an event, the host sees your display
+            name, your ticket type and party size, your answers to the host&rsquo;s registration
+            questions, and whether you checked in. A host does <strong>not</strong> see your email
+            address or phone number unless you registered as a guest without a civfix account, where
+            an email address is how the host reaches you. Host messages are <strong>relayed</strong>{" "}
+            by civfix rather than sent from your address, and we do not track opens or clicks on
+            them.
           </li>
           <li>
-            <strong>Legal and safety.</strong> We may disclose information to comply with the law, valid
-            legal process, or a lawful request, or to protect the rights, safety, and security of
-            civfix, our users, or the public.
+            <strong>Legal and safety.</strong> We may disclose information to comply with the law,
+            valid legal process, or a lawful request, or to protect the rights, safety, and security
+            of civfix, our users, or the public.
           </li>
           <li>
-            <strong>Business transfers.</strong> If civfix is involved in a merger, acquisition, or sale
-            of assets, information may be transferred as part of that transaction, subject to this
-            Policy.
+            <strong>Business transfers.</strong> If civfix is involved in a merger, acquisition, or
+            sale of assets, information may be transferred as part of that transaction, subject to
+            this Policy.
           </li>
         </ul>
         <p>
-          <strong>International transfers.</strong> civfix is operated from the United States, and some of
-          our providers are located in the United States and other countries, so your information may be
-          processed outside your own country. When we transfer the personal information of EEA, UK, or
-          Swiss users to a country that has not been recognized as providing an adequate level of
-          protection, we use appropriate safeguards - principally the European Commission&rsquo;s{" "}
-          <strong>Standard Contractual Clauses</strong> (and, for transfers from the UK, the UK{" "}
-          <strong>International Data Transfer Addendum</strong>), together with the{" "}
-          <strong>EU-US / UK Extension / Swiss-US Data Privacy Framework</strong> where the receiving
-          provider is certified. You can request a copy of the safeguards we rely on by emailing us at the
-          address in Section 11.
+          <strong>International transfers.</strong> civfix is operated from the United States, and
+          some of our providers are located in the United States and other countries, so your
+          information may be processed outside your own country. When we transfer the personal
+          information of EEA, UK, or Swiss users to a country that has not been recognized as
+          providing an adequate level of protection, we use appropriate safeguards - principally the
+          European Commission&rsquo;s <strong>Standard Contractual Clauses</strong> (and, for
+          transfers from the UK, the UK <strong>International Data Transfer Addendum</strong>),
+          together with the <strong>EU-US / UK Extension / Swiss-US Data Privacy Framework</strong>{" "}
+          where the receiving provider is certified. You can request a copy of the safeguards we
+          rely on by emailing us at the address in Section 11.
         </p>
       </section>
 
       <section>
         <h2>5. Where information is stored, and security</h2>
         <p>
-          The primary civfix database and application are hosted with our cloud infrastructure provider;
-          report photos and videos are stored on object storage and delivered through a content delivery
-          network. We protect information with measures including encryption in transit, scoped access,
-          rate limiting and abuse controls, isolation of untrusted media processing, metadata stripping,
-          and encrypted backups used for disaster recovery. Our error-tracking system is self-hosted on
-          our own infrastructure rather than a third-party analytics vendor. No method of storage or
-          transmission is perfectly secure, so we cannot guarantee absolute security.
+          The primary civfix database and application are hosted with our cloud infrastructure
+          provider; report photos and videos are stored on object storage and delivered through a
+          content delivery network. We protect information with measures including encryption in
+          transit, scoped access, rate limiting and abuse controls, isolation of untrusted media
+          processing, metadata stripping, and encrypted backups used for disaster recovery. Our
+          error-tracking system is self-hosted on our own infrastructure rather than a third-party
+          analytics vendor. No method of storage or transmission is perfectly secure, so we cannot
+          guarantee absolute security.
         </p>
         <p>
-          For the small set of cookies and on-device storage civfix uses - all of it strictly necessary
-          or a first-party preference, with no advertising or cross-site tracking - and why we show no
-          consent banner, see our <a href="/legal/cookies">Cookies &amp; Storage</a> notice.
+          For the small set of cookies and on-device storage civfix uses - all of it strictly
+          necessary or a first-party preference, with no advertising or cross-site tracking - and
+          why we show no consent banner, see our <a href="/legal/cookies">Cookies &amp; Storage</a>{" "}
+          notice.
         </p>
       </section>
 
       <section>
         <h2>6. Anonymous reports and what &ldquo;anonymous&rdquo; means</h2>
         <p>
-          You can report without an account. An anonymous report is not tied to a civfix profile and we
-          do not attach your name or email to it. However:
+          You can report without an account. An anonymous report is not tied to a civfix profile and
+          we do not attach your name or email to it. However:
         </p>
         <ul>
           <li>
-            we issue a short-lived token and a per-report <strong>claim code</strong> so you can check
-            its status and, if you choose, link the report to an account later, which makes the report{" "}
-            <strong>retroactively linkable</strong> to you;
+            we issue a short-lived token and a per-report <strong>claim code</strong> so you can
+            check its status and, if you choose, link the report to an account later, which makes
+            the report <strong>retroactively linkable</strong> to you;
           </li>
           <li>
             we still process technical information such as your IP address for security and the
@@ -367,38 +389,39 @@ export default function PrivacyPage() {
           <li>anonymous reports remain subject to valid legal process.</li>
         </ul>
         <p>
-          If you want a report to stay unlinked, do not enter its claim code into an account and do not
-          include identifying details in the description or media.
+          If you want a report to stay unlinked, do not enter its claim code into an account and do
+          not include identifying details in the description or media.
         </p>
       </section>
 
       <section>
         <h2>7. Data retention</h2>
         <p>
-          We retain personal information indefinitely by default, for as long as it remains useful to
-          provide civfix, to maintain the public and civic record of reports, and to meet our legal and
-          operational needs. In particular:
+          We retain personal information indefinitely by default, for as long as it remains useful
+          to provide civfix, to maintain the public and civic record of reports, and to meet our
+          legal and operational needs. In particular:
         </p>
         <ul>
           <li>
-            account information is retained while your account is active and afterward, unless and until
-            you ask us to delete it;
+            account information is retained while your account is active and afterward, unless and
+            until you ask us to delete it;
           </li>
           <li>
-            published reports and their media are retained as part of the public record and because they
-            have been forwarded to or relied on by an agency, including after you delete your account;
+            published reports and their media are retained as part of the public record and because
+            they have been forwarded to or relied on by an agency, including after you delete your
+            account;
           </li>
           <li>
-            cleanup chat history, notifications, and security and log data are retained for as long as
-            they remain useful for operating and securing civfix; and
+            cleanup chat history, notifications, and security and log data are retained for as long
+            as they remain useful for operating and securing civfix; and
           </li>
           <li>
             never-attached media uploads are automatically swept and deleted shortly after upload.
           </li>
         </ul>
         <p>
-          The table below gives the specific period, or the criteria we use to work one out, for each
-          category of personal information - as California law requires us to state.
+          The table below gives the specific period, or the criteria we use to work one out, for
+          each category of personal information - as California law requires us to state.
         </p>
         <div className="legal-table-wrap">
           <table>
@@ -412,9 +435,7 @@ export default function PrivacyPage() {
             <tbody>
               {RETENTION_ROWS.map((r) => (
                 <tr key={r.category}>
-                  <th scope="row">
-                    {r.category}
-                  </th>
+                  <th scope="row">{r.category}</th>
                   <td>{r.period}</td>
                   <td>{r.basis}</td>
                 </tr>
@@ -432,33 +453,33 @@ export default function PrivacyPage() {
       <section>
         <h2>8. Your rights and choices</h2>
         <p>
-          Depending on where you live, you have rights over your personal information. If you are in the
-          EEA, the UK, or Switzerland, the GDPR and UK GDPR give you the rights below; we also make the
-          core of these rights available to everyone as a matter of practice, not only where a particular
-          law strictly requires it:
+          Depending on where you live, you have rights over your personal information. If you are in
+          the EEA, the UK, or Switzerland, the GDPR and UK GDPR give you the rights below; we also
+          make the core of these rights available to everyone as a matter of practice, not only
+          where a particular law strictly requires it:
         </p>
         <ul>
           <li>
-            <strong>Access and portability.</strong> Request a copy of the personal information associated
-            with your account, in a portable format.
+            <strong>Access and portability.</strong> Request a copy of the personal information
+            associated with your account, in a portable format.
           </li>
           <li>
-            <strong>Rectification.</strong> Correct information that is inaccurate or incomplete; you can
-            edit much of your profile directly in the app.
+            <strong>Rectification.</strong> Correct information that is inaccurate or incomplete;
+            you can edit much of your profile directly in the app.
           </li>
           <li>
-            <strong>Erasure.</strong> Delete your account, and request takedown of a report you submitted.
-            Some content that has been published or forwarded to an agency may be retained as part of the
-            public and civic record described in Section 7, and we may retain limited information where the
-            law allows or requires it.
+            <strong>Erasure.</strong> Delete your account, and request takedown of a report you
+            submitted. Some content that has been published or forwarded to an agency may be
+            retained as part of the public and civic record described in Section 7, and we may
+            retain limited information where the law allows or requires it.
           </li>
           <li>
-            <strong>Restriction.</strong> Ask us to limit how we use your information while a request is
-            being resolved.
+            <strong>Restriction.</strong> Ask us to limit how we use your information while a
+            request is being resolved.
           </li>
           <li>
-            <strong>Objection.</strong> Object to processing we carry out on the basis of our legitimate
-            interests. You can object to direct marketing at any time, and we will stop.
+            <strong>Objection.</strong> Object to processing we carry out on the basis of our
+            legitimate interests. You can object to direct marketing at any time, and we will stop.
           </li>
           <li>
             <strong>Withdraw consent.</strong> Where we rely on your consent (for example push
@@ -466,42 +487,42 @@ export default function PrivacyPage() {
             processing.
           </li>
           <li>
-            <strong>Notifications and location controls.</strong> Turn push notifications on or off, and
-            control whether you share precise location when you create a report (through your device and
-            the choices in the report flow).
+            <strong>Notifications and location controls.</strong> Turn push notifications on or off,
+            and control whether you share precise location when you create a report (through your
+            device and the choices in the report flow).
           </li>
         </ul>
         <p>
-          We do not make decisions about you that produce legal or similarly significant effects based
-          solely on automated processing. To exercise a right, email{" "}
-          <LegalContactLink />; we respond within the timeframes
-          the law requires (generally within one month under the GDPR/UK GDPR). We will not discriminate
-          against you for exercising your rights, and we do not sell or &ldquo;share&rdquo; personal
-          information for cross-context behavioral advertising as those terms are defined under US state
-          privacy laws.
+          We do not make decisions about you that produce legal or similarly significant effects
+          based solely on automated processing. To exercise a right, email <LegalContactLink />; we
+          respond within the timeframes the law requires (generally within one month under the
+          GDPR/UK GDPR). We will not discriminate against you for exercising your rights, and we do
+          not sell or &ldquo;share&rdquo; personal information for cross-context behavioral
+          advertising as those terms are defined under US state privacy laws.
         </p>
         <p>
-          <strong>EEA / UK data-protection contact and complaints.</strong> For any privacy matter, EEA
-          and UK users can contact <strong>Roman Aytur</strong> at{" "}
-          <LegalContactLink />. Because civfix is operated from
-          outside the EEA and the UK, we are also appointing a representative established in the European
-          Union and in the United Kingdom under Article 27 of the GDPR / UK GDPR; we will publish that
-          representative&rsquo;s name and contact details here. You also have the right to lodge a complaint
-          with your local data protection authority - in the UK, the Information Commissioner&rsquo;s Office
-          (ICO) - though we hope you will contact us first so we can help.
+          <strong>EEA / UK data-protection contact and complaints.</strong> For any privacy matter,
+          EEA and UK users can contact <strong>Roman Aytur</strong> at <LegalContactLink />. Because
+          civfix is operated from outside the EEA and the UK, we are also appointing a
+          representative established in the European Union and in the United Kingdom under Article
+          27 of the GDPR / UK GDPR; we will publish that representative&rsquo;s name and contact
+          details here. You also have the right to lodge a complaint with your local data protection
+          authority - in the UK, the Information Commissioner&rsquo;s Office (ICO) - though we hope
+          you will contact us first so we can help.
         </p>
       </section>
 
       <section>
         <h2>9. Children</h2>
         <p>
-          civfix is a general-audience service and is not directed to children. You must be at least 13 to
-          use civfix (see our <a href="/legal/terms">Terms of Service</a>), and we do not knowingly collect
-          personal information from a child under that age. In parts of the EEA, the GDPR allows a member
-          state to set the age for consenting to online services anywhere between 13 and 16; in the UK it
-          is 13. If you are in a country that sets a higher age, you may use civfix only if you meet that
-          age or have the consent of a holder of parental responsibility. If you believe a child below the
-          applicable age has provided us personal information, contact us and we will delete it.
+          civfix is a general-audience service and is not directed to children. You must be at least
+          13 to use civfix (see our <a href="/legal/terms">Terms of Service</a>), and we do not
+          knowingly collect personal information from a child under that age. In parts of the EEA,
+          the GDPR allows a member state to set the age for consenting to online services anywhere
+          between 13 and 16; in the UK it is 13. If you are in a country that sets a higher age, you
+          may use civfix only if you meet that age or have the consent of a holder of parental
+          responsibility. If you believe a child below the applicable age has provided us personal
+          information, contact us and we will delete it.
         </p>
       </section>
 
@@ -509,18 +530,18 @@ export default function PrivacyPage() {
         <h2>10. Changes to this Policy</h2>
         <p>
           We may update this Policy. When we make material changes, we will update the &ldquo;Last
-          updated&rdquo; date and, where appropriate, provide additional notice. Your continued use of
-          civfix after the changes take effect means you accept the updated Policy.
+          updated&rdquo; date and, where appropriate, provide additional notice. Your continued use
+          of civfix after the changes take effect means you accept the updated Policy.
         </p>
       </section>
 
       <section>
         <h2>11. Contact us</h2>
         <p>
-          The data controller is <strong>Reach Out Los Angeles Inc.</strong>, a California 501(&zwnj;c)(3)
-          nonprofit. For privacy questions or to exercise any of the rights in Section 8, contact{" "}
-          <strong>Roman Aytur</strong> at <LegalContactLink />.
-          EEA and UK users have additional contact and complaint options in Section 8.
+          The data controller is <strong>Reach Out Los Angeles Inc.</strong>, a California
+          501(&zwnj;c)(3) nonprofit. For privacy questions or to exercise any of the rights in
+          Section 8, contact <strong>Roman Aytur</strong> at <LegalContactLink />. EEA and UK users
+          have additional contact and complaint options in Section 8.
         </p>
       </section>
     </LegalPage>

@@ -2,7 +2,8 @@ import type { CleanupDTO, PersonDTO, ReportPinDTO } from "@civfix/contract"
 
 export type LayoutMode = "compact" | "expanded"
 
-export type View = "home" | "map" | "events" | "messaging" | "social" | "reports" | "search" | "report"
+export type View =
+  "home" | "map" | "events" | "messaging" | "social" | "reports" | "search" | "report"
 
 export const ALL_VIEWS = [
   "home",
@@ -118,7 +119,9 @@ export const ALL_DETAIL_KINDS = [
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]
 
-type AssertExhaustive<Union extends string, Arr extends readonly string[]> = [Union] extends [Arr[number]]
+type AssertExhaustive<Union extends string, Arr extends readonly string[]> = [Union] extends [
+  Arr[number],
+]
   ? [Arr[number]] extends [Union]
     ? true
     : false

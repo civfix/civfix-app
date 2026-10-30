@@ -4,7 +4,11 @@ import { whenNavigationReady, type NavigationReadiness } from "./navigationReady
 
 function fakeContainer(ready: boolean) {
   const listeners = new Set<() => void>()
-  const container: NavigationReadiness & { ready: boolean; emitReady: () => void; listeners: Set<() => void> } = {
+  const container: NavigationReadiness & {
+    ready: boolean
+    emitReady: () => void
+    listeners: Set<() => void>
+  } = {
     ready,
     listeners,
     isReady: () => container.ready,

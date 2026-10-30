@@ -245,7 +245,11 @@ export function OrgManageBody({ slug }: { slug: string }) {
                   accessibilityLabel={t("manage.logo_remove")}
                   hitSlop={GHOST_HIT_SLOP}
                   {...focusRingProps}
-                  style={(state) => [styles.ghost, webCursor(), state.pressed ? styles.pressed : null]}
+                  style={(state) => [
+                    styles.ghost,
+                    webCursor(),
+                    state.pressed ? styles.pressed : null,
+                  ]}
                 >
                   <Text style={styles.ghostText}>{t("manage.logo_remove")}</Text>
                 </Pressable>
@@ -337,7 +341,11 @@ export function OrgManageBody({ slug }: { slug: string }) {
                 onPress={() => setLinks(initialLinks)}
                 disabled={save.isPending}
               />
-              <PrimaryButton label={t("manage.save")} onPress={saveLinks} loading={save.isPending} />
+              <PrimaryButton
+                label={t("manage.save")}
+                onPress={saveLinks}
+                loading={save.isPending}
+              />
             </View>
           ) : null}
         </SectionCard>

@@ -24,7 +24,7 @@ const EN: Record<string, string> = {
 const t = ((key: string, options: Record<string, string | number> = {}) => {
   const resolved =
     typeof options.count === "number"
-      ? EN[`${key}_${options.count === 1 ? "one" : "other"}`] ?? EN[key]
+      ? (EN[`${key}_${options.count === 1 ? "one" : "other"}`] ?? EN[key])
       : EN[key]
   if (resolved == null) throw new Error(`missing translation: ${key}`)
   return resolved.replace(/{{(\w+)}}/g, (_m, name: string) => String(options[name] ?? ""))
@@ -58,10 +58,7 @@ describe("LinkedEventCard model", () => {
       address: "Ballona Creek Bike Path, Playa del Rey",
       joined: false,
       showAttendance: true,
-      attendees: [
-        event.organizer,
-        { ...event.organizer, id: "person-2", name: "Maria G." },
-      ],
+      attendees: [event.organizer, { ...event.organizer, id: "person-2", name: "Maria G." }],
     })
 
     expect(model).toMatchObject({
@@ -96,11 +93,13 @@ describe("LinkedEventCard model", () => {
   })
 
   it("prefers live attendance state and provides an actionable location fallback", () => {
-    expect(buildLinkedEventCardModel(event, t, "en-US", "UTC", {
-      going: 19,
-      joined: true,
-      address: "   ",
-    })).toMatchObject({
+    expect(
+      buildLinkedEventCardModel(event, t, "en-US", "UTC", {
+        going: 19,
+        joined: true,
+        address: "   ",
+      }),
+    ).toMatchObject({
       goingLabel: "19 going",
       locationLabel: "Open event for location",
       rsvpActive: true,
@@ -130,7 +129,12 @@ describe("LinkedEventCard model", () => {
   })
 
   it("localizes the unparseable-schedule fallback instead of hardcoding English", () => {
-    const model = buildLinkedEventCardModel({ ...event, scheduledAt: "not-a-date" }, t, "en-US", "UTC")
+    const model = buildLinkedEventCardModel(
+      { ...event, scheduledAt: "not-a-date" },
+      t,
+      "en-US",
+      "UTC",
+    )
     expect(model).toMatchObject({ month: "--", day: "--", scheduleLabel: "Schedule unavailable" })
   })
 

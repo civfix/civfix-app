@@ -51,7 +51,9 @@ const BroadcastsRouter = lazy(() =>
 const AnalyticsScreen = lazy(() =>
   import("../analytics/analytics-screen").then((m) => ({ default: m.AnalyticsScreen })),
 )
-const TeamScreen = lazy(() => import("../team/team-screen").then((m) => ({ default: m.TeamScreen })))
+const TeamScreen = lazy(() =>
+  import("../team/team-screen").then((m) => ({ default: m.TeamScreen })),
+)
 const SettingsScreen = lazy(() =>
   import("../settings/settings-screen").then((m) => ({ default: m.SettingsScreen })),
 )
@@ -231,4 +233,3 @@ function EventSectionScreen({ section }: { section: Exclude<EventSection, "broad
       return <SettingsScreen />
   }
 }
-

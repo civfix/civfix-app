@@ -7,7 +7,9 @@ import { I18nProvider } from "@civfix/ui/i18n"
 const unsubscribeNotificationEmail = vi.fn<(...args: unknown[]) => Promise<unknown>>()
 
 vi.mock("@/lib/api", () => ({
-  api: { unsubscribeNotificationEmail: (...args: unknown[]) => unsubscribeNotificationEmail(...args) },
+  api: {
+    unsubscribeNotificationEmail: (...args: unknown[]) => unsubscribeNotificationEmail(...args),
+  },
 }))
 
 const { default: NotificationUnsubscribePage } = await import("./page")
@@ -63,7 +65,9 @@ describe("GH#223 /unsubscribe/notifications/", () => {
   })
 
   it("T22: a failed request reads as a link that didn't work", async () => {
-    unsubscribeNotificationEmail.mockRejectedValue(Object.assign(new Error("Service Unavailable"), { status: 503 }))
+    unsubscribeNotificationEmail.mockRejectedValue(
+      Object.assign(new Error("Service Unavailable"), { status: 503 }),
+    )
     renderAt(`?t=${TOKEN}`)
     expect((await screen.findByRole("heading")).textContent).toBe(UNUSABLE)
     expectSettingsLink()

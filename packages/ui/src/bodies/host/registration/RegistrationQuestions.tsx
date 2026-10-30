@@ -175,7 +175,11 @@ export function RegistrationQuestions({
 
             {question.kind === "checkbox" || question.kind === "consent" ? (
               <CheckRow
-                label={question.kind === "consent" ? (question.consentText ?? question.prompt) : question.prompt}
+                label={
+                  question.kind === "consent"
+                    ? (question.consentText ?? question.prompt)
+                    : question.prompt
+                }
                 checked={value === true}
                 disabled={disabled}
                 a11yLabel={promptA11y}

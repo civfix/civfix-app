@@ -100,7 +100,11 @@ export const useReportFilterStore = create<ReportFilterState>()(
       storage: createJSONStorage(() => persistentStorage(MAP_FILTERS_STORAGE_ID), {
         replacer: (_key, value) => (value instanceof Set ? { __set: [...value] } : value),
         reviver: (_key, value) => {
-          if (value && typeof value === "object" && Array.isArray((value as { __set?: unknown }).__set)) {
+          if (
+            value &&
+            typeof value === "object" &&
+            Array.isArray((value as { __set?: unknown }).__set)
+          ) {
             return new Set((value as { __set: ReportCategory[] }).__set)
           }
           return value

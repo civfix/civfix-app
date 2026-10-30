@@ -37,14 +37,17 @@ const HARNESS_MODULES: Record<string, unknown> = {
   "react/jsx-runtime": realRequire("react/jsx-runtime") as unknown,
   "react-native": {
     View: RNView,
-    StyleSheet: { create: <T,>(styles: T): T => styles, hairlineWidth: 1 },
+    StyleSheet: { create: <T>(styles: T): T => styles, hairlineWidth: 1 },
   },
   "../theme": { makeThemedStyles: () => () => ({}), useTheme: () => ({ colors: {} }) },
   "../typography": { Text: standIn("Text") },
   "../surface": { BlurSurface: standIn("BlurSurface") },
   "../bodies": new Proxy(
     {},
-    { get: (_, key) => (typeof key === "string" && key !== "__esModule" ? bodyExport(key) : undefined) },
+    {
+      get: (_, key) =>
+        typeof key === "string" && key !== "__esModule" ? bodyExport(key) : undefined,
+    },
   ),
   "./bodyRoutes": bodyRoutes,
 }
@@ -65,7 +68,8 @@ function loadBodyRouter(): BodyRouterFn {
   })
   const moduleRecord: { exports: Record<string, unknown> } = { exports: {} }
   const harnessRequire = (specifier: string): unknown => {
-    if (!(specifier in HARNESS_MODULES)) throw new Error(`BodyRouter harness has no stand-in for ${specifier}`)
+    if (!(specifier in HARNESS_MODULES))
+      throw new Error(`BodyRouter harness has no stand-in for ${specifier}`)
     return HARNESS_MODULES[specifier]
   }
   const factory = runInThisContext(`(function (exports, require, module) {${outputText}\n})`) as (
@@ -152,14 +156,20 @@ const BODY_CASES = {
   ],
   notifications: [{ entry: full("activity"), renders: "NotificationsBody", props: {} }],
   // T18: the settings route keeps its nav kind and renders the per-category page.
-  notificationPrefs: [{ entry: full("notification-prefs"), renders: "NotificationSettingsBody", props: {} }],
+  notificationPrefs: [
+    { entry: full("notification-prefs"), renders: "NotificationSettingsBody", props: {} },
+  ],
   conversation: [
     {
       entry: full("thread"),
       renders: "ConversationBody",
       props: { id: "x1", roomKind: "dm", peer: PEER, jumpToMessageId: "m1" },
     },
-    { entry: { kind: "thread" }, renders: "ConversationBody", props: { id: "", roomKind: "cleanup" } },
+    {
+      entry: { kind: "thread" },
+      renders: "ConversationBody",
+      props: { id: "", roomKind: "cleanup" },
+    },
   ],
   pinnedMessages: [
     {
@@ -184,16 +194,48 @@ const BODY_CASES = {
     { entry: { kind: "view", view: "report" }, view: "home", renders: "ReportFlowBody", props: {} },
   ],
   clusterReports: [
-    { entry: full("cluster"), renders: "ClusterReportsBody", props: { reports: REPORTS, event: EVENT } },
-    { entry: { kind: "cluster" }, renders: "ClusterReportsBody", props: { reports: [], event: null } },
-    { entry: full("blend"), renders: "ClusterReportsBody", props: { reports: REPORTS, event: EVENT } },
-    { entry: { kind: "blend" }, renders: "ClusterReportsBody", props: { reports: [], event: null } },
+    {
+      entry: full("cluster"),
+      renders: "ClusterReportsBody",
+      props: { reports: REPORTS, event: EVENT },
+    },
+    {
+      entry: { kind: "cluster" },
+      renders: "ClusterReportsBody",
+      props: { reports: [], event: null },
+    },
+    {
+      entry: full("blend"),
+      renders: "ClusterReportsBody",
+      props: { reports: REPORTS, event: EVENT },
+    },
+    {
+      entry: { kind: "blend" },
+      renders: "ClusterReportsBody",
+      props: { reports: [], event: null },
+    },
   ],
   connections: [
-    { entry: full("followers"), renders: "ConnectionsBody", props: { id: "x1", mode: "followers" } },
-    { entry: full("following"), renders: "ConnectionsBody", props: { id: "x1", mode: "following" } },
-    { entry: { kind: "followers" }, renders: "ConnectionsBody", props: { id: "", mode: "followers" } },
-    { entry: { kind: "following" }, renders: "ConnectionsBody", props: { id: "", mode: "following" } },
+    {
+      entry: full("followers"),
+      renders: "ConnectionsBody",
+      props: { id: "x1", mode: "followers" },
+    },
+    {
+      entry: full("following"),
+      renders: "ConnectionsBody",
+      props: { id: "x1", mode: "following" },
+    },
+    {
+      entry: { kind: "followers" },
+      renders: "ConnectionsBody",
+      props: { id: "", mode: "followers" },
+    },
+    {
+      entry: { kind: "following" },
+      renders: "ConnectionsBody",
+      props: { id: "", mode: "following" },
+    },
   ],
   leaderboard: [
     { entry: full("leaderboard"), renders: "LeaderboardBody", props: { geoid: "06037" } },
@@ -204,14 +246,23 @@ const BODY_CASES = {
     { entry: { kind: "members" }, renders: "MembersBody", props: { id: "", roomKind: "cleanup" } },
   ],
   blockedAccounts: [{ entry: full("blocked"), renders: "BlockedAccountsBody", props: {} }],
-  languageSettings: [{ entry: full("language-settings"), renders: "LanguageSettingsBody", props: {} }],
-  appearanceSettings: [{ entry: full("appearance-settings"), renders: "AppearanceSettingsBody", props: {} }],
+  languageSettings: [
+    { entry: full("language-settings"), renders: "LanguageSettingsBody", props: {} },
+  ],
+  appearanceSettings: [
+    { entry: full("appearance-settings"), renders: "AppearanceSettingsBody", props: {} },
+  ],
   settings: [{ entry: full("settings"), renders: "SettingsBody", props: {} }],
   settingsAccount: [{ entry: full("settings-account"), renders: "SettingsAccountBody", props: {} }],
   settingsPrivacy: [{ entry: full("settings-privacy"), renders: "SettingsPrivacyBody", props: {} }],
   mapView: [
     { entry: null, view: "map", renders: "View", props: { style: { flex: 1 } } },
-    { entry: { kind: "view", view: "map" }, view: "home", renders: "View", props: { style: { flex: 1 } } },
+    {
+      entry: { kind: "view", view: "map" },
+      view: "home",
+      renders: "View",
+      props: { style: { flex: 1 } },
+    },
   ],
   search: [
     { entry: null, view: "search", renders: "SearchBody", props: {} },
@@ -226,8 +277,16 @@ const BODY_CASES = {
     { entry: { kind: "post-thread" }, renders: "PostThreadBody", props: { id: "" } },
   ],
   postComposer: [
-    { entry: full("composer"), renders: "PostComposer", props: { mode: "quote", targetPostId: "p1" } },
-    { entry: { kind: "composer" }, renders: "PostComposer", props: { mode: "post", targetPostId: undefined } },
+    {
+      entry: full("composer"),
+      renders: "PostComposer",
+      props: { mode: "quote", targetPostId: "p1" },
+    },
+    {
+      entry: { kind: "composer" },
+      renders: "PostComposer",
+      props: { mode: "post", targetPostId: undefined },
+    },
   ],
   saves: [{ entry: full("saves"), renders: "SavedPostsBody", props: {} }],
   dropPin: [
@@ -274,8 +333,16 @@ const BODY_CASES = {
     { entry: { kind: "host-analytics" }, renders: "EventAnalyticsBody", props: { id: "" } },
   ],
   announcement: [
-    { entry: full("announcement"), renders: "AnnouncementBody", props: { id: "x1", announcementId: "a1" } },
-    { entry: { kind: "announcement" }, renders: "AnnouncementBody", props: { id: "", announcementId: "" } },
+    {
+      entry: full("announcement"),
+      renders: "AnnouncementBody",
+      props: { id: "x1", announcementId: "a1" },
+    },
+    {
+      entry: { kind: "announcement" },
+      renders: "AnnouncementBody",
+      props: { id: "", announcementId: "" },
+    },
   ],
   announcements: [
     { entry: full("announcements"), renders: "AnnouncementsBody", props: { id: "x1" } },
@@ -298,7 +365,14 @@ function expectedType(renders: string): unknown {
 }
 
 const CASES = (Object.entries(BODY_CASES) as [BodyId, BodyCase[]][]).flatMap(([bodyId, cases]) =>
-  cases.map((c) => [`${bodyId} <- ${c.entry ? JSON.stringify({ kind: c.entry.kind, view: c.entry.view }) : `view ${String(c.view)}`}`, bodyId, c] as const),
+  cases.map(
+    (c) =>
+      [
+        `${bodyId} <- ${c.entry ? JSON.stringify({ kind: c.entry.kind, view: c.entry.view }) : `view ${String(c.view)}`}`,
+        bodyId,
+        c,
+      ] as const,
+  ),
 )
 
 describe("BodyRouter body table", () => {
@@ -309,7 +383,9 @@ describe("BodyRouter body table", () => {
 
   it("exercises every view and every detail kind at least once", () => {
     const all = Object.values(BODY_CASES).flat() as BodyCase[]
-    const kinds = new Set(all.flatMap((c) => (c.entry && c.entry.kind !== "view" ? [c.entry.kind] : [])))
+    const kinds = new Set(
+      all.flatMap((c) => (c.entry && c.entry.kind !== "view" ? [c.entry.kind] : [])),
+    )
     const views = new Set(all.flatMap((c) => (c.entry ? [] : [c.view])))
     expect([...kinds].sort()).toEqual(Object.keys(DETAIL_BODY).sort())
     expect([...views].sort()).toEqual(Object.keys(VIEW_BODY).sort())

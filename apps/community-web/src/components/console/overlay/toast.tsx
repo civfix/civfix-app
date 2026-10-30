@@ -1,15 +1,7 @@
 "use client"
 
 import { X } from "lucide-react"
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { useT } from "@civfix/ui/i18n"
 

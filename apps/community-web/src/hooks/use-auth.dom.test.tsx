@@ -9,7 +9,13 @@ import { queryKeys } from "@/lib/query"
 
 const logout = vi.fn<(options: { signal?: AbortSignal }) => Promise<unknown>>()
 const session = vi.fn<(...args: unknown[]) => unknown>()
-const pushUnregister = vi.fn<(body: { platform: string; token: string }, options?: { signal?: AbortSignal }) => Promise<unknown>>()
+const pushUnregister =
+  vi.fn<
+    (
+      body: { platform: string; token: string },
+      options?: { signal?: AbortSignal },
+    ) => Promise<unknown>
+  >()
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
@@ -86,9 +92,7 @@ describe("useLogout", () => {
   })
 
   it("keeps the user signed in on a server error, because the session cookie survives it", async () => {
-    logout.mockRejectedValue(
-      new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }),
-    )
+    logout.mockRejectedValue(new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }))
 
     await signOut()
 
@@ -234,7 +238,9 @@ describe("useRefreshSession", () => {
     expect(queryClient.getQueryState(queryKeys.mapReports(null, []))?.isInvalidated).toBe(false)
     expect(queryClient.getQueryState(queryKeys.report("r1"))?.isInvalidated).toBe(true)
     expect(queryClient.getQueryState(queryKeys.cleanupAttendees("c1"))?.isInvalidated).toBe(true)
-    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(
+      true,
+    )
   })
 })
 
@@ -262,11 +268,18 @@ describe("useLogout with a browser push subscription", () => {
     await signOut()
 
     expect(pushUnregister).toHaveBeenCalledTimes(1)
-    expect(pushUnregister.mock.calls[0]![0]).toEqual({ platform: "web", token: JSON.stringify(subscription) })
+    expect(pushUnregister.mock.calls[0]![0]).toEqual({
+      platform: "web",
+      token: JSON.stringify(subscription),
+    })
     expect(logout).toHaveBeenCalledTimes(1)
-    expect(pushUnregister.mock.invocationCallOrder[0]!).toBeLessThan(logout.mock.invocationCallOrder[0]!)
+    expect(pushUnregister.mock.invocationCallOrder[0]!).toBeLessThan(
+      logout.mock.invocationCallOrder[0]!,
+    )
     expect(subscription.unsubscribe).toHaveBeenCalled()
-    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(subscription.unsubscribe.mock.invocationCallOrder[0]!)
+    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(
+      subscription.unsubscribe.mock.invocationCallOrder[0]!,
+    )
     expect(useAuthStore.getState().user).toBeNull()
   })
 
@@ -297,7 +310,9 @@ describe("useLogout with a browser push subscription", () => {
       await pending
     })
     expect(subscription.unsubscribe).toHaveBeenCalled()
-    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(subscription.unsubscribe.mock.invocationCallOrder[0]!)
+    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(
+      subscription.unsubscribe.mock.invocationCallOrder[0]!,
+    )
   })
 
   it("T25: still signs out and unsubscribes when pushUnregister fails on the network", async () => {

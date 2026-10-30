@@ -40,12 +40,20 @@ describe("buildFeedShareInput", () => {
       const input = buildFeedShareInput({ enabled: true, caption }, { reportId: "r1" })
       expect(input).not.toBeNull()
       expect(input).not.toHaveProperty("body")
-      expect(input).toMatchObject({ kind: "post", reportId: "r1", mediaUploadIds: [], mentionedUserIds: [] })
+      expect(input).toMatchObject({
+        kind: "post",
+        reportId: "r1",
+        mediaUploadIds: [],
+        mentionedUserIds: [],
+      })
     }
   })
 
   it("trims and slices a 281-char caption to exactly 280", () => {
-    const input = buildFeedShareInput({ enabled: true, caption: "x".repeat(281) }, { reportId: "r1" })
+    const input = buildFeedShareInput(
+      { enabled: true, caption: "x".repeat(281) },
+      { reportId: "r1" },
+    )
     expect(input?.body).toHaveLength(280)
   })
 
@@ -101,7 +109,14 @@ describe("buildEventPreviewCard", () => {
 
   it("builds a LinkedEventRef once the three fields exist", () => {
     const card = buildEventPreviewCard(
-      { title: " Beach cleanup ", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time, timezone: "UTC" },
+      {
+        title: " Beach cleanup ",
+        eventKind: "cleanup",
+        coords: { lat: 1, lng: 2 },
+        date,
+        time,
+        timezone: "UTC",
+      },
       me,
       "2026-07-25T00:00:00.000Z",
     )
@@ -257,7 +272,9 @@ describe("findExistingFeedPost", () => {
   it("returns null on an empty / absent page and on a different author", () => {
     expect(findExistingFeedPost({ items: [] }, { reportId: "report-1" }, me.id)).toBeNull()
     expect(findExistingFeedPost(null, { reportId: "report-1" }, me.id)).toBeNull()
-    const other = { items: [post("p1", { report: reportRef, author: { ...me, id: "someone-else" } })] }
+    const other = {
+      items: [post("p1", { report: reportRef, author: { ...me, id: "someone-else" } })],
+    }
     expect(findExistingFeedPost(other, { reportId: "report-1" }, me.id)).toBeNull()
   })
 })

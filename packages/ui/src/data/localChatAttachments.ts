@@ -29,7 +29,7 @@ export function linkLocalChatAttachments(clientId: string, messageId: string): v
 }
 
 export function localChatAttachments(message: ChatMessageDTO): MediaDTO[] | null {
-  return byKey.get(message.id) ?? (message.clientId ? byKey.get(message.clientId) ?? null : null)
+  return byKey.get(message.id) ?? (message.clientId ? (byKey.get(message.clientId) ?? null) : null)
 }
 
 function settled(media: MediaDTO): boolean {

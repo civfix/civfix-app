@@ -18,7 +18,10 @@ function stringsSayingMeToo(lng: string): string[] {
     }
   }
   for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
-    walk(JSON.parse(readFileSync(new URL(file, dir), "utf8")), `${lng}/${file.replace(/\.json$/, "")}`)
+    walk(
+      JSON.parse(readFileSync(new URL(file, dir), "utf8")),
+      `${lng}/${file.replace(/\.json$/, "")}`,
+    )
   }
   return hits
 }

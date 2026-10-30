@@ -159,7 +159,16 @@ function useAddMembersSheet(id: string) {
       },
     )
   }, [selected, addMembers, id])
-  return { open, openSheet, close, selected, setSelected, error, pending: addMembers.isPending, onConfirm }
+  return {
+    open,
+    openSheet,
+    close,
+    selected,
+    setSelected,
+    error,
+    pending: addMembers.isPending,
+    onConfirm,
+  }
 }
 
 function AddMembersSheet({
@@ -193,12 +202,24 @@ function AddMembersSheet({
         </>
       }
     >
-      <MemberPicker selected={sheet.selected} onChange={sheet.setSelected} excludeIds={excludeIds} />
+      <MemberPicker
+        selected={sheet.selected}
+        onChange={sheet.setSelected}
+        excludeIds={excludeIds}
+      />
     </ModalCardSheet>
   )
 }
 
-function useEditGroupSheet({ id, group, isOwner }: { id: string; group: ChatGroupDTO | undefined; isOwner: boolean }) {
+function useEditGroupSheet({
+  id,
+  group,
+  isOwner,
+}: {
+  id: string
+  group: ChatGroupDTO | undefined
+  isOwner: boolean
+}) {
   const updateGroup = useUpdateGroup()
   const savingRef = useRef(false)
   const [open, setOpen] = useState(false)
@@ -244,7 +265,18 @@ function useEditGroupSheet({ id, group, isOwner }: { id: string; group: ChatGrou
         },
       },
     )
-  }, [valid, avatar, updateGroup, id, name, description, visibility, isOwner, group?.visibility, picked])
+  }, [
+    valid,
+    avatar,
+    updateGroup,
+    id,
+    name,
+    description,
+    visibility,
+    isOwner,
+    group?.visibility,
+    picked,
+  ])
   return {
     open,
     openSheet,
@@ -328,7 +360,9 @@ function EditGroupSheet({
                   onPress={() => sheet.setVisibility(v)}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: active }}
-                  accessibilityLabel={t(v === "public" ? "visibility_public" : "visibility_private")}
+                  accessibilityLabel={t(
+                    v === "public" ? "visibility_public" : "visibility_private",
+                  )}
                   {...focusRingProps}
                   style={({ pressed }) => [
                     styles.visibilityOption,
@@ -341,7 +375,12 @@ function EditGroupSheet({
                     size={15}
                     color={active ? th.colors.brand.moss : th.colors.textMuted}
                   />
-                  <Text style={[styles.visibilityOptionText, active ? styles.visibilityOptionTextActive : null]}>
+                  <Text
+                    style={[
+                      styles.visibilityOptionText,
+                      active ? styles.visibilityOptionTextActive : null,
+                    ]}
+                  >
                     {t(v === "public" ? "visibility_public" : "visibility_private")}
                   </Text>
                 </Pressable>
@@ -541,7 +580,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
         }
         subtitle={group?.description ?? null}
         memberLine={
-          isChannel ? t("subscribers", { count: memberCount }) : t("members", { count: memberCount })
+          isChannel
+            ? t("subscribers", { count: memberCount })
+            : t("members", { count: memberCount })
         }
         footer={
           isOwner && group ? (
@@ -566,8 +607,16 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
           disabled={toggleMute.isPending || !group}
           onPress={onToggleMute}
         />
-        {canManage ? <ChatInfoActionRow icon="UserPlus" label={isChannel ? t("add_subscribers") : t("add_members")} onPress={addSheet.openSheet} /> : null}
-        {canManage ? <ChatInfoActionRow icon="Pencil" label={t("edit_info")} onPress={editSheet.openSheet} /> : null}
+        {canManage ? (
+          <ChatInfoActionRow
+            icon="UserPlus"
+            label={isChannel ? t("add_subscribers") : t("add_members")}
+            onPress={addSheet.openSheet}
+          />
+        ) : null}
+        {canManage ? (
+          <ChatInfoActionRow icon="Pencil" label={t("edit_info")} onPress={editSheet.openSheet} />
+        ) : null}
         {isChannel && isPublic && clipboard ? (
           <ChatInfoActionRow icon="Link2" label={t("copy_link")} onPress={onCopyLink} />
         ) : null}
@@ -581,7 +630,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
         ) : null}
       </View>
 
-      <Text style={styles.sectionLabel}>{isChannel ? t("subscribers_section") : t("members_section")}</Text>
+      <Text style={styles.sectionLabel}>
+        {isChannel ? t("subscribers_section") : t("members_section")}
+      </Text>
     </View>
   )
 
@@ -618,7 +669,11 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
       />
 
       <AddMembersSheet sheet={addSheet} excludeIds={addExcludeIds} />
-      <EditGroupSheet sheet={editSheet} isOwner={isOwner} fallbackAvatarUrl={group?.avatar?.url ?? null} />
+      <EditGroupSheet
+        sheet={editSheet}
+        isOwner={isOwner}
+        fallbackAvatarUrl={group?.avatar?.url ?? null}
+      />
       <LeaveGroupSheet sheet={leaveSheet} isChannel={isChannel} groupName={group?.name ?? ""} />
     </>
   )

@@ -50,7 +50,8 @@ const MOBILE_ROWS: StorageRow[] = [
   {
     item: "Authentication token",
     where: "Device secure storage (iOS Keychain / Android Keystore, via SecureStore)",
-    purpose: "Keeps you signed in on the mobile app, stored in the operating system's secure store.",
+    purpose:
+      "Keeps you signed in on the mobile app, stored in the operating system's secure store.",
     classification: "Strictly necessary (authentication)",
   },
   {
@@ -71,26 +72,28 @@ export default function CookiesPage() {
       <section>
         <h2>1. The short version</h2>
         <p>
-          civfix uses only a small set of <strong>strictly necessary</strong> cookies and local storage
-          needed to sign you in, keep your account secure, and remember a couple of interface
-          preferences. We do <strong>not</strong> use any advertising, analytics, or cross-site tracking
-          technology; we set no third-party tracking cookies; and we do not sell or share your information
-          for advertising.
+          civfix uses only a small set of <strong>strictly necessary</strong> cookies and local
+          storage needed to sign you in, keep your account secure, and remember a couple of
+          interface preferences. We do <strong>not</strong> use any advertising, analytics, or
+          cross-site tracking technology; we set no third-party tracking cookies; and we do not sell
+          or share your information for advertising.
         </p>
         <p>
-          Because everything we store is either strictly necessary or a first-party preference you set
-          yourself - the categories that privacy and &ldquo;cookie&rdquo; laws exempt from consent -{" "}
-          <strong>civfix does not show a cookie consent banner</strong>. There is nothing non-essential to
-          consent to. This holds for visitors in the European Economic Area and the United Kingdom as
-          well: under the EU ePrivacy rules and the UK&rsquo;s PECR, strictly necessary storage and a
-          preference you set yourself are exempt from consent. If that ever changes - for example, if we
-          were to add any analytics or advertising technology, or a campaign-measurement pixel to the
-          website - we would update this page and add the appropriate consent controls first.
+          Because everything we store is either strictly necessary or a first-party preference you
+          set yourself - the categories that privacy and &ldquo;cookie&rdquo; laws exempt from
+          consent - <strong>civfix does not show a cookie consent banner</strong>. There is nothing
+          non-essential to consent to. This holds for visitors in the European Economic Area and the
+          United Kingdom as well: under the EU ePrivacy rules and the UK&rsquo;s PECR, strictly
+          necessary storage and a preference you set yourself are exempt from consent. If that ever
+          changes - for example, if we were to add any analytics or advertising technology, or a
+          campaign-measurement pixel to the website - we would update this page and add the
+          appropriate consent controls first.
         </p>
         <p className="legal-note">
-          This page is referenced by, and is part of, our <a href="/legal/privacy">Privacy Policy</a>. It
-          describes client-side storage; for the full picture of what personal information we process and
-          your choices, see the Privacy Policy.
+          This page is referenced by, and is part of, our{" "}
+          <a href="/legal/privacy">Privacy Policy</a>. It describes client-side storage; for the
+          full picture of what personal information we process and your choices, see the Privacy
+          Policy.
         </p>
       </section>
 
@@ -109,9 +112,7 @@ export default function CookiesPage() {
             <tbody>
               {WEB_ROWS.map((r) => (
                 <tr key={r.item}>
-                  <th scope="row">
-                    {r.item}
-                  </th>
+                  <th scope="row">{r.item}</th>
                   <td>{r.where}</td>
                   <td>{r.purpose}</td>
                   <td>{r.classification}</td>
@@ -121,9 +122,10 @@ export default function CookiesPage() {
           </table>
         </div>
         <p>
-          The map basemap is loaded directly from a map tile provider when you view the map; that request
-          carries your IP address as any web request does, and is used only to serve the map. See our{" "}
-          <a href="/legal/subprocessors">Sub-processors</a> page for who serves the map.
+          The map basemap is loaded directly from a map tile provider when you view the map; that
+          request carries your IP address as any web request does, and is used only to serve the
+          map. See our <a href="/legal/subprocessors">Sub-processors</a> page for who serves the
+          map.
         </p>
       </section>
 
@@ -142,9 +144,7 @@ export default function CookiesPage() {
             <tbody>
               {MOBILE_ROWS.map((r) => (
                 <tr key={r.item}>
-                  <th scope="row">
-                    {r.item}
-                  </th>
+                  <th scope="row">{r.item}</th>
                   <td>{r.where}</td>
                   <td>{r.purpose}</td>
                   <td>{r.classification}</td>
@@ -158,40 +158,39 @@ export default function CookiesPage() {
       <section>
         <h2>4. No advertising or cross-site tracking</h2>
         <p>
-          civfix runs no advertising, analytics, or third-party tracking technology inside the apps or
-          website. We do not set third-party
-          tracking cookies, do not build advertising profiles, and do not sell or &ldquo;share&rdquo;
-          your personal information for cross-context behavioral advertising as those terms are used
-          under US state privacy laws. Our error-tracking system is self-hosted on our own infrastructure
-          rather than a third-party analytics vendor. Event hosts can see how many people opened their
-          signup page, but only as a count - there is no per-visitor identifier behind it and no
-          engagement tracking in the messages a host sends.
+          civfix runs no advertising, analytics, or third-party tracking technology inside the apps
+          or website. We do not set third-party tracking cookies, do not build advertising profiles,
+          and do not sell or &ldquo;share&rdquo; your personal information for cross-context
+          behavioral advertising as those terms are used under US state privacy laws. Our
+          error-tracking system is self-hosted on our own infrastructure rather than a third-party
+          analytics vendor. Event hosts can see how many people opened their signup page, but only
+          as a count - there is no per-visitor identifier behind it and no engagement tracking in
+          the messages a host sends.
         </p>
         <p>
           We may promote civfix on outside platforms such as social media. That is advertising{" "}
-          <em>about</em> civfix on someone else&rsquo;s platform, governed by that platform&rsquo;s own
-          policies; it does not place any cookie, pixel, or tracker inside civfix. If we ever add a
-          campaign-measurement pixel to our own website to see how those promotions perform, that would be
-          non-essential tracking - so we would add a consent banner and ask for your permission first, as
-          described in Section 1.
+          <em>about</em> civfix on someone else&rsquo;s platform, governed by that platform&rsquo;s
+          own policies; it does not place any cookie, pixel, or tracker inside civfix. If we ever
+          add a campaign-measurement pixel to our own website to see how those promotions perform,
+          that would be non-essential tracking - so we would add a consent banner and ask for your
+          permission first, as described in Section 1.
         </p>
       </section>
 
       <section>
         <h2>5. Your controls</h2>
         <p>
-          You can clear the cookies and local storage above at any time through your browser settings, or
-          by signing out (which clears your session). On mobile, signing out clears the stored
-          authentication token, and removing the app clears its on-device storage. Clearing strictly
-          necessary storage will sign you out and reset your saved preferences.
+          You can clear the cookies and local storage above at any time through your browser
+          settings, or by signing out (which clears your session). On mobile, signing out clears the
+          stored authentication token, and removing the app clears its on-device storage. Clearing
+          strictly necessary storage will sign you out and reset your saved preferences.
         </p>
       </section>
 
       <section>
         <h2>6. Contact us</h2>
         <p>
-          Questions about cookies or storage? Email{" "}
-          <LegalContactLink />.
+          Questions about cookies or storage? Email <LegalContactLink />.
         </p>
       </section>
     </LegalPage>

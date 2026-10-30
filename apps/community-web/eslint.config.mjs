@@ -24,7 +24,9 @@ import {
 
 // The react, jsx-a11y and import plugins are the exact copies the legacy `next/core-web-vitals`
 // preset ran, so they resolve through eslint-config-next rather than as undeclared app dependencies.
-const requireFromNextPreset = createRequire(createRequire(import.meta.url).resolve("eslint-config-next"))
+const requireFromNextPreset = createRequire(
+  createRequire(import.meta.url).resolve("eslint-config-next"),
+)
 const reactPlugin = requireFromNextPreset("eslint-plugin-react")
 const jsxA11yPlugin = requireFromNextPreset("eslint-plugin-jsx-a11y")
 const importPlugin = requireFromNextPreset("eslint-plugin-import")
@@ -33,7 +35,11 @@ const TS_FILES = ["**/*.ts", "**/*.tsx"]
 const TYPED_FILES = [...TS_FILES, "scripts/**/*.mjs"]
 const FUNCTIONS_TESTS = ["functions/**/*.test.ts"]
 
-const HOST_CONSOLE_FILES = ["src/features/host/**", "src/components/console/**", "src/app/manage/**"]
+const HOST_CONSOLE_FILES = [
+  "src/features/host/**",
+  "src/components/console/**",
+  "src/app/manage/**",
+]
 const HOST_CONSOLE_UI_MESSAGE =
   "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
 
@@ -80,12 +86,18 @@ export default tseslint.config(
         "jsx-a11y/no-autofocus": ["error", { ignoreNonDOM: true }],
         // A fieldset's legend names the group natively; radiogroup adds the required and invalid state its
         // radios need announced. This is the one pairing the recommended preset allows and strict drops.
-        "jsx-a11y/no-noninteractive-element-to-interactive-role": ["error", { fieldset: ["radiogroup"] }],
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": [
+          "error",
+          { fieldset: ["radiogroup"] },
+        ],
         // images.unoptimized is set for the static export, so next/image would render a plain <img> anyway.
         "@next/next/no-img-element": "off",
         "react/jsx-no-target-blank": "off",
         "@typescript-eslint/no-unused-expressions": "error",
-        "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+        ],
       },
     },
   ]),
@@ -100,7 +112,12 @@ export default tseslint.config(
     },
     plugins: { "@tanstack/query": pluginQuery, "@eslint-react": eslintReact },
     rules: {
-      ...Object.assign({}, ...escalateWarnings(pluginQuery.configs["flat/recommended"]).map((config) => config.rules ?? {})),
+      ...Object.assign(
+        {},
+        ...escalateWarnings(pluginQuery.configs["flat/recommended"]).map(
+          (config) => config.rules ?? {},
+        ),
+      ),
       ...TYPED_RULES,
       ...LEAKED_RENDER_RULES,
     },
@@ -178,8 +195,14 @@ export default tseslint.config(
                 "@civfix/ui/theme's barrel imports react-native. Use @civfix/ui/theme/schemes (the RN-free subpath) for scheme names and palettes, and lib/color-scheme.ts to read the same `.dark` class the --console-* variables key off.",
             },
             { name: "@civfix/ui/surface", message: HOST_CONSOLE_UI_MESSAGE },
-            { name: "@civfix/ui/realtime", message: "The realtime channel is mounted once by components/providers.tsx." },
-            { name: "@civfix/ui/typography", message: "Console typography comes from the Tailwind token scale." },
+            {
+              name: "@civfix/ui/realtime",
+              message: "The realtime channel is mounted once by components/providers.tsx.",
+            },
+            {
+              name: "@civfix/ui/typography",
+              message: "Console typography comes from the Tailwind token scale.",
+            },
             {
               name: "@civfix/ui/capabilities",
               message:
@@ -193,7 +216,8 @@ export default tseslint.config(
             },
             {
               name: "next/link",
-              message: "Use layout/console-link.tsx: a Next transition would target a path the static manifest does not contain.",
+              message:
+                "Use layout/console-link.tsx: a Next transition would target a path the static manifest does not contain.",
             },
             { name: "next/router", message: "The console is App Router + its own history bridge." },
             { name: "maplibre-gl", message: "The console renders no map." },

@@ -39,23 +39,38 @@ describe("post composer media merge", () => {
     // An empty local hook must not overwrite the draft and orphan its finalized uploadIds.
     expect(mergePostComposerMedia([carried], [])).toEqual([carried])
     expect(mergePostComposerThumbs([carried], [])).toEqual([
-      { id: "carried:0:file:///staged.jpg", uri: carried.uri, kind: "image", posterUri: null, uploadId: "upload-1" },
+      {
+        id: "carried:0:file:///staged.jpg",
+        uri: carried.uri,
+        kind: "image",
+        posterUri: null,
+        uploadId: "upload-1",
+      },
     ])
   })
 
   it("appends this mount's picks after the carried items and caps the total", () => {
-    expect(mergePostComposerMedia([carried], [picked])).toEqual([carried, toPostComposerMedia(picked)])
-    const many = Array.from({ length: 6 }, (_, i) => ({ ...picked, id: `att-${i}`, uri: `file:///${i}.jpg` }))
+    expect(mergePostComposerMedia([carried], [picked])).toEqual([
+      carried,
+      toPostComposerMedia(picked),
+    ])
+    const many = Array.from({ length: 6 }, (_, i) => ({
+      ...picked,
+      id: `att-${i}`,
+      uri: `file:///${i}.jpg`,
+    }))
     expect(mergePostComposerMedia([carried], many)).toHaveLength(POST_COMPOSER_MEDIA_CAP)
     expect(mergePostComposerThumbs([carried], many)).toHaveLength(POST_COMPOSER_MEDIA_CAP)
   })
 
   it("marks a not-yet-finalized pick as uploading, and a finalized one as ready", () => {
-    expect(toPostComposerMedia({ id: "att-1", uri: "file:///a.jpg", kind: "image" })).toMatchObject({
-      uploadId: null,
-      status: "uploading",
-      posterUri: null,
-    })
+    expect(toPostComposerMedia({ id: "att-1", uri: "file:///a.jpg", kind: "image" })).toMatchObject(
+      {
+        uploadId: null,
+        status: "uploading",
+        posterUri: null,
+      },
+    )
     expect(toPostComposerMedia(picked)).toMatchObject({ uploadId: "upload-2", status: "ready" })
   })
 
@@ -105,7 +120,10 @@ describe("carried media snapshot", () => {
   })
 
   it("does not trust a status of ready without an uploadId (nothing to submit)", () => {
-    expect(snapshotCarriedMedia([{ ...unfinished, status: "ready" }])).toEqual({ carried: [], dropped: 1 })
+    expect(snapshotCarriedMedia([{ ...unfinished, status: "ready" }])).toEqual({
+      carried: [],
+      dropped: 1,
+    })
   })
 
   it("is a no-op for an empty draft", () => {
@@ -119,7 +137,9 @@ describe("postComposerCanAttach", () => {
     // the merge would then slice the fifth item off after it uploaded.
     expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 2 })).toBe(false)
     expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 1 })).toBe(true)
-    expect(postComposerCanAttach({ hookCanAttach: true, carried: 0, picked: POST_COMPOSER_MEDIA_CAP })).toBe(false)
+    expect(
+      postComposerCanAttach({ hookCanAttach: true, carried: 0, picked: POST_COMPOSER_MEDIA_CAP }),
+    ).toBe(false)
   })
 
   it("never overrides the hook's own refusal (no camera, busy, or its own cap)", () => {
@@ -129,7 +149,10 @@ describe("postComposerCanAttach", () => {
   it("is what BOTH composers gate the add-media control on", () => {
     const composers: Record<string, string> = {
       "../PostComposer.tsx": surfaceSource("postComposer"),
-      "../feed/InlineComposer.tsx": readFileSync(new URL("../feed/InlineComposer.tsx", import.meta.url), "utf8"),
+      "../feed/InlineComposer.tsx": readFileSync(
+        new URL("../feed/InlineComposer.tsx", import.meta.url),
+        "utf8",
+      ),
     }
     for (const [file, source] of Object.entries(composers)) {
       expect(source, file).toMatch(/const canAttachMedia = postComposerCanAttach\(\{/)

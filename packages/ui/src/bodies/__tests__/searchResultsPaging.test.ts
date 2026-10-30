@@ -12,7 +12,9 @@ describe("search results report paging", () => {
 
   it("only offers more when the painted reports are the live query's, never the held previous ones", () => {
     expect(src).toContain("const showMoreReports = hits === live && reportSearch.hasNextPage")
-    expect(src).toMatch(/searchResultRows\(hits, \{\s*show: showMoreReports,\s*loading: reportSearch\.isFetchingNextPage,\s*\}\)/)
+    expect(src).toMatch(
+      /searchResultRows\(hits, \{\s*show: showMoreReports,\s*loading: reportSearch\.isFetchingNextPage,\s*\}\)/,
+    )
   })
 
   it("rebuilds the rows only when the painted hits or the paging flags change, so mounted cells keep their items", () => {
