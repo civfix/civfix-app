@@ -64,7 +64,7 @@ describe("draft list edits", () => {
     expect(updateSlotDraft(list, "k2", { title: "Grill" })[1]).toEqual(
       draft("k2", { title: "Grill" }),
     )
-    expect(updateSlotDraft(list, "k1", { key: "hijacked" } as Partial<SlotDraft>)[0]?.key).toBe("k1")
+    expect(updateSlotDraft(list, "k1", { key: "hijacked" })[0]?.key).toBe("k1")
   })
 
   it("ignores a patch for an unknown key", () => {

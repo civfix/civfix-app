@@ -117,7 +117,7 @@ describe("every house overlay reports the moment it has fully left the screen", 
     expect(CARD_SHEET).toMatch(/visible=\{rendered\}/)
     expect(CARD_SHEET).toMatch(/animationType="none"/)
     expect(CARD_SHEET).not.toMatch(/animationType="fade"/)
-    expect(CARD_SHEET).toMatch(/pointerEvents=\{cardMotion\.exiting \? "none" : "auto"\}/)
+    expect(CARD_SHEET).toMatch(/pointerEventStyles\[cardMotion\.exiting \? "none" : "auto"\]/)
     expect(CARD_SHEET).toContain("onDismiss={onDismiss}")
     expect(SLIDE_UP).toContain("const onModalDismiss = useModalClosed(rendered, onClosed)")
     expect(SLIDE_UP).toContain("onDismiss={onModalDismiss}")

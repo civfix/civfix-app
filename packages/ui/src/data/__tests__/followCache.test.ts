@@ -38,7 +38,7 @@ function person(id: string, isFollowing: boolean, followers: number): PersonDTO 
     followers,
     following: 0,
     isFollowing,
-  } as PersonDTO
+  }
 }
 
 /** Patch the person in every FLAT PersonDTO[] under the prefix (the hook's `patchPersonInFlatLists`). */
@@ -116,7 +116,7 @@ describe("follow toggle people-list reconciliation (task 5)", () => {
     expect(afterMutate.find((p) => p.id === "u2")).toMatchObject({ isFollowing: false, followers: 9 })
 
     // Server confirms -> reconcile (authoritative count).
-    opts.onSuccess?.({ isFollowing: true, followers: 6 }, false, ctx as never)
+    opts.onSuccess?.({ isFollowing: true, followers: 6 }, false, ctx)
     expect(qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1")).toMatchObject({
       isFollowing: true,
       followers: 6,
@@ -137,7 +137,7 @@ describe("follow toggle people-list reconciliation (task 5)", () => {
       followers: 5,
     })
     // Error -> rollback.
-    opts.onError?.(new Error("offline"), false, ctx as never)
+    opts.onError?.(new Error("offline"), false, ctx)
     expect(qc.getQueryData<PersonDTO[]>(["people", "search", "ann"])!.find((p) => p.id === "u1")).toMatchObject({
       isFollowing: false,
       followers: 4,
@@ -228,7 +228,7 @@ describe("follow toggle connections-list reconciliation", () => {
       followers: 3,
     })
 
-    opts.onSuccess?.({ isFollowing: false, followers: 8 }, true, ctx as never)
+    opts.onSuccess?.({ isFollowing: false, followers: 8 }, true, ctx)
     const afterSuccess = qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!
     expect(afterSuccess.pages[0]!.items.find((p) => p.id === "u1")).toMatchObject({
       isFollowing: false,
@@ -252,7 +252,7 @@ describe("follow toggle connections-list reconciliation", () => {
       qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!.items[0],
     ).toMatchObject({ isFollowing: false, followers: 9 })
 
-    opts.onError?.(new Error("offline"), true, ctx as never)
+    opts.onError?.(new Error("offline"), true, ctx)
     expect(
       qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following(viewer))!.pages[0]!.items[0],
     ).toMatchObject({ isFollowing: true, followers: 10 })

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Image, Pressable, ScrollView as RNScrollView, StyleSheet, View } from "react-native"
 import type { LatLng, ReportPinDTO } from "@civfix/contract"
 import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webHover, webTransition } from "../../theme"

@@ -1,4 +1,3 @@
-import React from "react"
 import { Modal, type ModalProps } from "react-native"
 import { FullWindowInsets } from "../shell/systemNoticeFrameContext"
 

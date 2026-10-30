@@ -103,9 +103,10 @@ export function optionList(
   const used = new Set<number>()
   const values: (string | null)[] = labels.map((label) => {
     const index = saved.findIndex((option, i) => !used.has(i) && option.label === label)
-    if (index === -1) return null
+    const option = saved[index]
+    if (option === undefined) return null
     used.add(index)
-    return saved[index]!.value
+    return option.value
   })
   labels.forEach((_, position) => {
     if (values[position] !== null) return

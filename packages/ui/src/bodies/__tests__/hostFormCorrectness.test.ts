@@ -14,7 +14,9 @@ function mkForm(overrides: Partial<CleanupFormValue> = {}): CleanupFormValue {
   return { ...emptyCleanupForm(), timezone: "America/Los_Angeles", slots: [], ...overrides }
 }
 
-beforeEach(() => useCleanupDraft.getState().clear())
+beforeEach(() => {
+  useCleanupDraft.getState().clear()
+})
 
 describe("a cover upload lands on the draft as it is when the upload finishes", () => {
   it("keeps what the host typed while the upload was in flight", () => {

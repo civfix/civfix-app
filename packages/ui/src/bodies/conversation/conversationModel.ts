@@ -10,7 +10,7 @@ import {
   type PersonDTO,
   type RoomKind,
 } from "@civfix/contract"
-import { type ChatItem } from "../../helpers"
+import type { ChatItem } from "../../helpers"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
 import { useThreadForRoom } from "../../data/hooks/chat"
@@ -148,8 +148,7 @@ export function buildRenderItems(
     rows.push({ type: "row", id: item.message.clientId ?? item.message.id, item, showName, groupStart, groupEnd: false })
     lastAuthor = author
   }
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]!
+  for (const [i, row] of rows.entries()) {
     if (row.type !== "row") continue
     const next = rows[i + 1]
     row.groupEnd =

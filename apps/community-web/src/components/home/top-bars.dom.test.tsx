@@ -126,7 +126,7 @@ describe("the system notice on web", () => {
       width: 390,
       height: 36,
       toJSON: () => ({}),
-    } as DOMRect)
+    })
     renderBars()
     const bar = await screen.findByTestId("system-notice")
     const style = getComputedStyle(bar)

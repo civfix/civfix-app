@@ -14,7 +14,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { FullWindowModal } from "./FullWindowModal"
-import { makeThemedStyles, webScrimProps } from "../theme"
+import { makeThemedStyles, webScrimProps, pointerEventStyles } from "../theme"
 import { menuCardStyle, menuScrimStyle, type MenuMotion } from "./menuMotion"
 import type { MenuOrigin } from "./menuMotionModel"
 
@@ -120,12 +120,14 @@ export function AnchoredPopover({
       onDismiss={onDismiss}
     >
       <View
-        style={centered ? styles.rootCentered : styles.rootAnchored}
+        style={[
+          centered ? styles.rootCentered : styles.rootAnchored,
+          pointerEventStyles[motion.exiting ? "none" : "auto"],
+        ]}
         accessibilityViewIsModal
         onAccessibilityEscape={onClose}
-        pointerEvents={motion.exiting ? "none" : "auto"}
       >
-        <Animated.View pointerEvents="none" style={[styles.backdrop, menuScrimStyle(motion)]} />
+        <Animated.View style={[styles.backdrop, menuScrimStyle(motion), pointerEventStyles.none]} />
         <Pressable
           style={styles.backdropTouch}
           accessibilityRole="button"

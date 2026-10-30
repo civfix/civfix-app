@@ -105,7 +105,7 @@ describe("a11y", () => {
     expect(rail).toContain('"aria-orientation": "horizontal"')
     expect(rail).toContain('accessibilityRole="tab"')
     expect(rail).toContain("accessibilityState={{ selected }}")
-    expect(rail).toContain('"aria-selected": selected')
+    expect(rail).toContain("aria-selected={selected}")
     expect(rail).toContain("focusRingProps")
     expect(rail).toContain('dataSet: { civfixRail: "" }')
   })

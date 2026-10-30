@@ -84,6 +84,6 @@ export function captureDropActiveStyleFor(theme: Theme): ViewStyle {
       `0 0 0 3px ${theme.colors.brand.bloom}`,
       shadowSchemes[theme.scheme].pin,
     ].join(", "),
-  } as ViewStyle
+  }
 }
 

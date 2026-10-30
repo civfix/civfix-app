@@ -64,7 +64,7 @@ afterEach(() => {
 describe("ConsoleApp signed out", () => {
   it("stashes the invite token, keeps it in the URL, and offers the invite sign-in copy", async () => {
     window.history.replaceState(null, "", `${ACCEPT_PATH}#token=${TOKEN}`)
-    renderConsole(<ConsoleApp />, { api: makeClient() as never, authenticated: false })
+    renderConsole(<ConsoleApp />, { api: makeClient(), authenticated: false })
 
     expect(await screen.findByText("accept.signed_out_title")).toBeTruthy()
     expect(screen.getByText("accept.signed_out_body")).toBeTruthy()
@@ -77,7 +77,7 @@ describe("ConsoleApp signed out", () => {
   it("opens the auth modal from the invite copy", async () => {
     const user = userEvent.setup()
     window.history.replaceState(null, "", `${ACCEPT_PATH}#token=${TOKEN}`)
-    renderConsole(<ConsoleApp />, { api: makeClient() as never, authenticated: false })
+    renderConsole(<ConsoleApp />, { api: makeClient(), authenticated: false })
     await user.click(await screen.findByRole("button", { name: "accept.sign_in" }))
     expect(useUiStore.getState().authModalOpen).toBe(true)
     expect(await screen.findByRole("dialog")).toBeTruthy()
@@ -88,7 +88,7 @@ describe("ConsoleApp signed out", () => {
   })
 
   it("shows the plain signed-out state anywhere else, stashing nothing", async () => {
-    renderConsole(<ConsoleApp />, { api: makeClient() as never, authenticated: false })
+    renderConsole(<ConsoleApp />, { api: makeClient(), authenticated: false })
     expect(await screen.findByText("auth.signed_out_title")).toBeTruthy()
     expect(screen.queryByText("accept.signed_out_title")).toBeNull()
     expect(window.sessionStorage.getItem(ORG_INVITE_TOKEN_STASH_KEY)).toBeNull()
@@ -100,7 +100,7 @@ describe("ConsoleApp invite token", () => {
     const user = userEvent.setup()
     window.sessionStorage.setItem(ORG_INVITE_TOKEN_STASH_KEY, TOKEN)
     const client = makeClient()
-    renderConsole(<ConsoleApp />, { api: client as never })
+    renderConsole(<ConsoleApp />, { api: client })
 
     await waitFor(() => expect(window.location.pathname).toBe(ACCEPT_PATH))
     await user.click(await screen.findByRole("button", { name: "accept.action" }))
@@ -112,7 +112,7 @@ describe("ConsoleApp invite token", () => {
   })
 
   it("does not redirect a boot without a stash", async () => {
-    renderConsole(<ConsoleApp />, { api: makeClient() as never })
+    renderConsole(<ConsoleApp />, { api: makeClient() })
     await new Promise((resolve) => setTimeout(resolve, 20))
     expect(window.location.pathname).toBe("/manage/")
   })
@@ -121,7 +121,7 @@ describe("ConsoleApp invite token", () => {
     const user = userEvent.setup()
     window.history.replaceState(null, "", `${ACCEPT_PATH}#token=${TOKEN}`)
     const client = makeClient()
-    renderConsole(<ConsoleApp />, { api: client as never })
+    renderConsole(<ConsoleApp />, { api: client })
 
     const accept = await screen.findByRole("button", { name: "accept.action" })
     await waitFor(() => expect(window.location.hash).toBe(""))
@@ -140,7 +140,7 @@ describe("ConsoleApp invite token", () => {
     const user = userEvent.setup()
     window.history.replaceState(null, "", `${ACCEPT_PATH}#token=${TOKEN}`)
     const client = makeClient()
-    renderConsole(<ConsoleApp />, { api: client as never })
+    renderConsole(<ConsoleApp />, { api: client })
 
     await user.click(await screen.findByRole("button", { name: "accept.action" }))
     await waitFor(() => expect(window.location.pathname).toBe(`/manage/orgs/${ORG_ID}/`))

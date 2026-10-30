@@ -27,7 +27,7 @@ export function useRelativeTime(): UseRelativeTime {
   )
 
   const weekdays = useMemo<readonly string[]>(() => {
-    const raw = t("weekdays", { returnObjects: true, defaultValue: WEEKDAYS as unknown as string[] })
+    const raw = t("weekdays", { returnObjects: true, defaultValue: [...WEEKDAYS] })
     return Array.isArray(raw) && raw.length === 7 ? (raw as string[]) : WEEKDAYS
   }, [t])
 

@@ -4,11 +4,11 @@ import type { AppLifecycleState } from "@/lib/lifecycleTypes"
 
 export function useAppLifecycleState(): AppLifecycleState {
   const [appState, setAppState] = useState<AppLifecycleState>(
-    AppState.currentState as AppLifecycleState,
+    AppState.currentState,
   )
   useEffect(() => {
     const sub = AppState.addEventListener("change", (next) =>
-      setAppState(next as AppLifecycleState),
+      setAppState(next),
     )
     return () => sub.remove()
   }, [])

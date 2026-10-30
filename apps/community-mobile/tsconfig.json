@@ -1,7 +1,6 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": ["expo/tsconfig.base", "../../tsconfig.base.json"],
   "compilerOptions": {
-    "strict": true,
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
@@ -12,7 +11,8 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "tests/**/*.mts"
   ],
   "exclude": [
     "node_modules"

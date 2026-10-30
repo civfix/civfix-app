@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Pressable, ActivityIndicator, type StyleProp, type ViewStyle } from "react-native"
 import {
   makeThemedStyles,

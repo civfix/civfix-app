@@ -120,7 +120,7 @@ function parseTiffForGps(view: DataView, tiffStart: number): ExifGps | null {
 
   // IFD0 holds only the GPSInfo pointer (a LONG) we care about; read it directly rather than decoding
   // every IFD0 entry. Absent pointer -> no GPS block.
-  const gpsPointer = findLongValue(view, tiffStart, ifd0Offset, TAG_GPS_IFD_POINTER, little)
+  const gpsPointer = findLongValue(view, ifd0Offset, TAG_GPS_IFD_POINTER, little)
   if (gpsPointer === undefined) return null
 
   const gps = readIfd(view, tiffStart, tiffStart + gpsPointer, little)
@@ -145,7 +145,6 @@ function parseTiffForGps(view: DataView, tiffStart: number): ExifGps | null {
 /** Re-read a LONG-typed IFD entry value (used for the GPS IFD pointer). */
 function findLongValue(
   view: DataView,
-  tiffStart: number,
   ifdOffset: number,
   wantTag: number,
   little: boolean,

@@ -59,7 +59,7 @@ function renderAnalytics(tab: string, tabApi: Record<string, unknown>) {
     <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <AnalyticsScreen />
     </ConsoleEventProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }

@@ -1,4 +1,3 @@
-import React from "react"
 import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { Text } from "../../../typography"
 import { SectionCard, StatTile, StatTileRow, statTileColumns } from "../../../primitives"

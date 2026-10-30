@@ -128,7 +128,6 @@ export function AppDownloadBanner() {
         style={{ flex: "0 0 auto", display: "inline-block" }}
       >
         {/* The badge artwork is 40px tall; 32px keeps the banner compact. */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
         <img
           src={link.badgeSrc}
           alt=""

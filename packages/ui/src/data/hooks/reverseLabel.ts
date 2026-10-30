@@ -19,7 +19,7 @@
  * Framework-light: reaches the host API client through the injected data context (useApi); no expo / next /
  * maplibre import.
  */
-import { useQuery } from "@tanstack/react-query"
+import { skipToken, useQuery } from "@tanstack/react-query"
 import { coordsLabel, roundGeocodeCoord } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { useApi } from "../context"
@@ -70,7 +70,7 @@ export function useReverseLabel(point: ReverseLabelPoint | null) {
   return useQuery<string | null>({
     queryKey: queryKeys.reverseLabel(point ? lat : null, point ? lng : null),
     enabled: point !== null,
-    queryFn: () => fetchReverseLabel(api, point!),
+    queryFn: point ? () => fetchReverseLabel(api, point) : skipToken,
     retry: false,
     staleTime: GEOCODE_STALE_MS,
   })

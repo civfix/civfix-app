@@ -18,7 +18,7 @@ test("goHome marks a nav teardown, the signal the refocused root reads to drop a
 test("goToMap selects the map view, closing any shell panel, before it dismisses to home", () => {
   const calls: string[] = []
   goToMap(
-    { dismissTo: (href) => calls.push(`dismissTo ${String(href)}`) },
+    { dismissTo: (href) => calls.push(`dismissTo ${typeof href === "string" ? href : JSON.stringify(href)}`) },
     { selectView: (view) => calls.push(`selectView ${view}`) },
   )
   assert.deepEqual(calls, ["selectView map", `dismissTo ${HOME_HREF}`])

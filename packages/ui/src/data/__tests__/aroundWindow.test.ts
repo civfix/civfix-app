@@ -9,7 +9,7 @@ import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { applyUpdatesToWindow } from "../aroundWindow"
 
 function person(id: string): PersonDTO {
-  return { id, name: id, followers: 0, following: 0, isFollowing: false } as PersonDTO
+  return { id, name: id, followers: 0, following: 0, isFollowing: false }
 }
 
 function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO {
@@ -23,7 +23,7 @@ function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO 
     mentions: [],
     createdAt: "2026-07-18T10:00:00.000Z",
     ...partial,
-  } as ChatMessageDTO
+  }
 }
 
 function item(message: ChatMessageDTO, mine = false): ChatItem {

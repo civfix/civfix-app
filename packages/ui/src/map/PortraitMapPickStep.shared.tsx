@@ -3,7 +3,7 @@
  * copies had already started to drift.
  */
 import { coordsLabel } from "@civfix/contract"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

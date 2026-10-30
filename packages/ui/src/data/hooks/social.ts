@@ -292,7 +292,7 @@ export function useProfileEvents(
   return useInfiniteQuery<ProfileEventsResponse>({
     queryKey: queryKeys.profileEvents(id ?? "unknown", cursor),
     enabled: !!id && enabled && cursor !== null,
-    initialPageParam: (cursor ?? undefined) as string | undefined,
+    initialPageParam: cursor ?? undefined,
     queryFn: ({ pageParam }) =>
       api.getProfileEvents({
         id: id as string,

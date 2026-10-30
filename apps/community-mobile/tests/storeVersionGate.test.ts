@@ -52,14 +52,14 @@ test("fetchLiveStoreVersion reports a transport or HTTP failure as the lookup be
   const failing = async () => ({ ok: false, status: 503, json: async () => ({}) })
   await assert.rejects(
     fetchLiveStoreVersion("org.civfix.community", failing as unknown as typeof fetch),
-    (error: unknown) => error instanceof StoreLookupUnavailable && /HTTP 503/.test((error as Error).message),
+    (error: unknown) => error instanceof StoreLookupUnavailable && /HTTP 503/.test(error.message),
   )
   const offline = async () => {
     throw new Error("getaddrinfo ENOTFOUND itunes.apple.com")
   }
   await assert.rejects(
-    fetchLiveStoreVersion("org.civfix.community", offline as unknown as typeof fetch),
-    (error: unknown) => error instanceof StoreLookupUnavailable && /ENOTFOUND/.test((error as Error).message),
+    fetchLiveStoreVersion("org.civfix.community", offline),
+    (error: unknown) => error instanceof StoreLookupUnavailable && /ENOTFOUND/.test(error.message),
   )
 })
 

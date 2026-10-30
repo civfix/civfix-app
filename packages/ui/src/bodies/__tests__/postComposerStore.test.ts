@@ -28,7 +28,9 @@ const selectedEvent: LinkedEventRef = {
   linkedAt: "2026-07-21T18:30:00.000Z",
 }
 
-beforeEach(() => usePostComposerStore.getState().reset())
+beforeEach(() => {
+  usePostComposerStore.getState().reset()
+})
 
 describe("postComposerStore", () => {
   it("keeps a serializable draft alive outside a composer mount", () => {

@@ -140,7 +140,7 @@ describe("every list timestamp goes through the localized seam", () => {
         .replace(/^\s*\/\/.*$/gm, "")
       for (const match of source.matchAll(/\b(listTimeAgo|dayLabel)\(([^)]*)\)/g)) {
         const args = (match[2] ?? "").split(",")
-        if (args.length < 2) offenders.push(`${file.split("/src/")[1]}: ${match[0]}`)
+        if (args.length < 2) offenders.push(`${file.split("/src/")[1] ?? file}: ${match[0]}`)
       }
     }
     expect(offenders, "call useListTimeAgo() / pass DayLabelOptions instead").toEqual([])

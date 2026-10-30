@@ -118,26 +118,12 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.0
+      # No dependency or build cache in this job: it holds the Cloudflare token and publishes the
+      # bundle, so nothing another run wrote into a cache may feed what it installs or ships.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
-
-      - name: Restore Turbo + Next.js build cache
-        # The cache key is scoped by environment. Staging and production build the same commit with
-        # different NEXT_PUBLIC_* values, which are inlined into the chunks at compile time, so a key on
-        # the sha alone would let production restore the Next webpack cache staging just wrote. Turbo
-        # hashes its env inputs, but this step restores `.next/cache` underneath it, so the guarantee
-        # has to be here. Never merge these two caches.
-        uses: actions/cache@v4
-        with:
-          path: |
-            .turbo
-            apps/community-web/.next/cache
-          key: ${{ runner.os }}-web-build-${{ env.DEPLOY_ENV }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-web-build-${{ env.DEPLOY_ENV }}-
 
       - name: Resolve the build environment
         # Every NEXT_PUBLIC_* is resolved once, from DEPLOY_ENV, and written to $GITHUB_ENV for the two
@@ -196,8 +182,9 @@ jobs:
 
       - name: Publish to Cloudflare Pages
         # wrangler reads apps/community-web/wrangler.jsonc (project name + out dir) and uploads the
-        # sibling functions/ dir, so the deploy runs from the app directory. `pnpm dlx` keeps wrangler
-        # outside the workspace (pnpm refuses `pnpm add` in a workspace root).
+        # sibling functions/ dir, so the deploy runs from the app directory. wrangler is a pinned
+        # devDependency of the app: the lockfile, not the registry at deploy time, decides what runs
+        # next to the token.
         working-directory: apps/community-web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -205,4 +192,4 @@ jobs:
         # $PAGES_BRANCH, not the git ref: Cloudflare treats the project's production branch name as
         # "this is production". `main` is that name and must only ever be published by a release build;
         # staging publishes the `staging` alias, which is what civfix.dev points at.
-        run: pnpm dlx wrangler@3 pages deploy --branch="$PAGES_BRANCH"
+        run: pnpm exec wrangler pages deploy --branch="$PAGES_BRANCH"

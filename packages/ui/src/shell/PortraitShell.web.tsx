@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import { useContext } from "react"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { PortraitShellFrame, type PortraitShellProps } from "./PortraitShell.shared"
 import { initialTabBarFootprint } from "./tabBarLogic"

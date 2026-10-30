@@ -118,7 +118,7 @@ async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   const digest = await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, bytes)
   const view = new Uint8Array(digest)
   let out = ""
-  for (let i = 0; i < view.length; i++) out += view[i]!.toString(16).padStart(2, "0")
+  for (const byte of view) out += byte.toString(16).padStart(2, "0")
   return out
 }
 
@@ -187,8 +187,8 @@ export const nativeCamera: CameraCapability = {
       videoMaxDuration: MAX_VIDEO_SECONDS,
     })
     sweepStaleMediaTempFiles()
-    if (result.canceled || result.assets.length === 0) return null
-    return capturedMediaFromPickerAsset(result.assets[0]!)
+    const asset = result.canceled ? undefined : result.assets[0]
+    return asset ? capturedMediaFromPickerAsset(asset) : null
   },
 
   async exceedsVideoLimits(media: CapturedMedia): Promise<boolean> {

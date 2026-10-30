@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
 import type { SocialPlatform } from "@civfix/contract"
 import {

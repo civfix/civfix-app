@@ -117,7 +117,9 @@ describe("clearPersistentStorage on native", () => {
 })
 
 describe("persistentStorage on web", () => {
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
 
   it("is a no-op during the static-export build, where there is no window", () => {
     const storage = webStorage(MAP_FILTERS_STORAGE_ID)

@@ -1,6 +1,6 @@
 {
   "name": "community-web",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "license": "AGPL-3.0-only",
   "description": "civfix public user web app: static-exported Next.js SPA over the civfix API.",
@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json",
     "og-image": "node scripts/generate-og-image.mjs",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "clean": "rimraf .next out *.tsbuildinfo",
     "legal-hashes": "node scripts/legal-hashes.mjs"
   },
@@ -22,13 +23,13 @@
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
-    "@tanstack/react-query": "^5.62.7",
+    "@tanstack/react-query": "^5.102.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
     "lucide-react-native": "1.17.0",
-    "maplibre-gl": "^4.7.1",
-    "next": "15.5.25",
+    "maplibre-gl": "^6.16.0",
+    "next": "15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native-gesture-handler": "~2.28.0",
@@ -40,11 +41,13 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@civfix/testing": "workspace:*",
+    "@eslint-react/eslint-plugin": "5.20.8",
     "@fontsource/baloo-2": "^5",
     "@fontsource/bricolage-grotesque": "^5",
     "@fontsource/jetbrains-mono": "^5",
     "@fontsource/manrope": "^5",
-    "@next/eslint-plugin-next": "15.5.25",
+    "@next/eslint-plugin-next": "15.5.28",
     "@tanstack/eslint-plugin-query": "5.103.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.3",
@@ -52,10 +55,12 @@
     "@types/node": "^22.10.2",
     "@types/react": "~19.1.0",
     "@types/react-dom": "~19.1.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/eslint-plugin": "1.6.27",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
-    "eslint-config-next": "15.5.25",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-config-next": "15.5.28",
+    "eslint-plugin-react-hooks": "7.1.1",
     "jsdom": "^30.0.1",
     "postcss": "^8.5.28",
     "rimraf": "^6.0.1",
@@ -63,6 +68,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.0",
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12",
+    "wrangler": "4.152.0"
   }
 }

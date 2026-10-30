@@ -4,6 +4,8 @@ import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/contract"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 type FaqBlockData = Extract<EventPageBlock, { kind: "faq" }>
 
 export function FaqBlock({ block }: { block: FaqBlockData }) {
@@ -13,8 +15,8 @@ export function FaqBlock({ block }: { block: FaqBlockData }) {
     <section className="signup-block">
       <h2>{block.title ?? t("blocks.faq")}</h2>
       <dl className="signup-faq">
-        {block.items.map((item, index) => (
-          <div key={`${item.question}-${index}`}>
+        {keyedByValue(block.items, (item) => item.question).map(({ entry: item, key }) => (
+          <div key={key}>
             <dt>{item.question}</dt>
             <dd>{item.answer}</dd>
           </div>

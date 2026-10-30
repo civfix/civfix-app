@@ -53,7 +53,7 @@ function renderTeam(members: EventTeamMemberDTO[]) {
     <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <TeamScreen />
     </ConsoleEventProvider>,
-    { api: client as never },
+    { api: client },
   )
   return { ...view, client }
 }

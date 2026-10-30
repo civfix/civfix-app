@@ -99,14 +99,19 @@ interface EmailStepProps {
 }
 
 export function EmailStep({ t, email, onEmailChange, submitting, error, onSubmit }: EmailStepProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  // The step replaces the button that opened it, so its field takes the focus that button held.
+  React.useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
   return (
     <form className="cf-auth-form" onSubmit={onSubmit}>
       <input
+        ref={inputRef}
         className="input cf-auth-email-input"
         type="email"
         inputMode="email"
         autoComplete="email"
-        autoFocus
         required
         placeholder={t("email.placeholder")}
         value={email}
@@ -157,6 +162,12 @@ export function CodeStep({
   onResend,
   onUseDifferentEmail,
 }: CodeStepProps) {
+  const cellRefs = otp.refs
+  // The step replaces the button that opened it, so the first cell takes the focus that button held.
+  React.useEffect(() => {
+    cellRefs.current[0]?.focus()
+  }, [cellRefs])
+  const cellIds = React.useMemo(() => Array.from({ length }, (_unused, n) => `digit-${n + 1}`), [length])
   return (
     <>
       <div
@@ -166,15 +177,14 @@ export function CodeStep({
         role="group"
         aria-label={t("code.group_aria_label")}
       >
-        {Array.from({ length }).map((_, i) => (
+        {cellIds.map((cellId, i) => (
           <input
-            key={i}
+            key={cellId}
             ref={(el) => {
               otp.refs.current[i] = el
             }}
             className="otp-cell"
             value={otp.cells[i] ?? ""}
-            autoFocus={i === 0}
             onChange={(event) => onType(i, event.target.value)}
             onKeyDown={(event) => otp.onKeyDown(i, event)}
             maxLength={1}

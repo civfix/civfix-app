@@ -26,6 +26,7 @@ import {
   useTheme,
   webBreakAnywhere,
   type Theme,
+  pointerEventStyles,
 } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { Text, TextLink, Icon, iconMap } from "../typography"
@@ -248,7 +249,7 @@ function ToastHost({ stage, placement }: { stage: ToastStage; placement: ToastPl
   const styles = useStyles()
   const offset = useToastBottomOffset(placement)
   return (
-    <View style={styles.overlay} pointerEvents="box-none">
+    <View style={[styles.overlay, pointerEventStyles["box-none"]]}>
       {stage.entries.map((entry) => (
         <ToastCard
           key={entry.item.id}
@@ -335,7 +336,7 @@ function ToastCard({
   }, [action, id, onDismiss])
 
   return (
-    <Animated.View style={[styles.slot, { bottom: offset }, motionStyle]} pointerEvents="box-none">
+    <Animated.View style={[styles.slot, { bottom: offset }, motionStyle, pointerEventStyles["box-none"]]}>
       <View
         style={styles.card}
         role={moved ? undefined : live.role}

@@ -1,5 +1,6 @@
 import type * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap, Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
 
 export interface MarkerEntry {
@@ -95,7 +96,6 @@ export function syncMarkers(
     const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
       .setLngLat(want.lngLat)
       .addTo(map)
-    // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
     el.setAttribute("aria-label", want.label)
     current.set(key, { marker, root, signature: want.signature, anchor: want.anchor, onClick })
   }

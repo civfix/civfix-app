@@ -10,7 +10,7 @@ export interface ConsoleLinkProps
 }
 
 export const ConsoleLink = React.forwardRef<HTMLAnchorElement, ConsoleLinkProps>(
-  ({ href, onClick, ...props }, ref) => (
+  ({ href, onClick, children, ...props }, ref) => (
     <a
       ref={ref}
       href={href}
@@ -23,7 +23,9 @@ export const ConsoleLink = React.forwardRef<HTMLAnchorElement, ConsoleLinkProps>
         navigateConsole(href)
       }}
       {...props}
-    />
+    >
+      {children}
+    </a>
   ),
 )
 ConsoleLink.displayName = "ConsoleLink"

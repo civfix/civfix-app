@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
 import { MAX_ANNOUNCEMENT_BODY, MAX_ANNOUNCEMENT_TITLE, appErrorCode } from "@civfix/contract"
 import { TextInput } from "../../primitives/TextInput"

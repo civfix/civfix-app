@@ -13,7 +13,7 @@
  * No `Modal`, `FlatList` or inner `ScrollView`: the expansion grows the card inside the page's existing
  * scroller (the same constraint as `SlotEditor`).
  */
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { View, LayoutAnimation, Platform } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { AttendeeDTO, EventSlotDTO } from "@civfix/contract"

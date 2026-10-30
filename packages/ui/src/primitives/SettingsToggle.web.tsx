@@ -1,6 +1,5 @@
-import React from "react"
-import { Pressable, View, type ViewStyle } from "react-native"
-import { makeThemedStyles, motion, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
+import { Pressable, View } from "react-native"
+import { makeThemedStyles, motion, useReducedMotion, useTheme, webCursor, focusRingProps, webStyle } from "../theme"
 import { alpha } from "../theme/alpha"
 import type { SettingsToggleProps } from "./SettingsToggle.types"
 import {
@@ -23,10 +22,10 @@ export function SettingsToggle({
   const styles = useStyles()
   const t = useTheme()
   const still = useReducedMotion() !== false
-  const knobStyle = {
+  const knobStyle = webStyle({
     transform: [{ translateX: value ? KNOB_ON_X : KNOB_OFF_X }],
     transition: still ? undefined : KNOB_TRANSITION,
-  } as unknown as ViewStyle
+  })
 
   return (
     <Pressable

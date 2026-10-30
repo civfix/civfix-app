@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { headingLevel } from "../../theme"

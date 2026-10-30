@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from "react"
+import { forwardRef, useMemo } from "react"
 import { Pressable, View, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
 import { useAppConfig } from "../data/hooks/appConfig"
 import { useT } from "../i18n"

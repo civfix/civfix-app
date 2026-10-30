@@ -1,10 +1,9 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { FullWindowModal } from "../primitives/FullWindowModal"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webScrimProps, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import type { IconName } from "../typography"
 import {
   EmptyState,
   LoadingState,
@@ -101,7 +100,7 @@ const MemberRow = memo(function MemberRow({
             ? settableRolesOtherThan(targetRole).map((role) => ({
                 key: `role-${role}`,
                 label: t("manage.make_role", { role: tEnums(`cleanupMemberRole.${role}`) }),
-                icon: role === "member" ? ("UserMinus" as IconName) : ("UserPlus" as IconName),
+                icon: role === "member" ? ("UserMinus" as const) : ("UserPlus" as const),
                 disabled: managePending,
                 onPress: () => onSetRole(person.id, role),
               }))
@@ -559,7 +558,7 @@ export function MembersBody({
           onPress={() => setLeaveOpen(false)}
           {...webScrimProps}
         />
-        <View style={styles.modalCenter} pointerEvents="box-none">
+        <View style={[styles.modalCenter, pointerEventStyles["box-none"]]}>
           <View style={styles.card}>
             <Text variant="bodyStrong" color={th.colors.text}>
               {t("action.leave")}

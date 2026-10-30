@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import type * as ApiModule from "@/lib/api"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import { AppError, ErrorCode } from "@civfix/contract"
-import type { PublicEventPageDTO } from "@civfix/contract"
 
 const getPublicEventPage = vi.fn<(...args: unknown[]) => unknown>()
 
@@ -53,7 +52,7 @@ describe("SignupView copy", () => {
       ],
       ticketTypes: [],
       questions: [],
-    } as unknown as PublicEventPageDTO)
+    })
     await renderAt("/e/beach-cleanup/")
     expect(screen.getByRole("heading", { level: 2, name: "blocks.about" })).toBeTruthy()
     expect(screen.getByRole("heading", { level: 2, name: "Good to know" })).toBeTruthy()

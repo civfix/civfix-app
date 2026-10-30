@@ -21,7 +21,7 @@ export function carriedBearerToken(headers: HeadersInit | undefined): string | n
   const value = headerValue(headers, "authorization")
   if (typeof value !== "string") return null
   const match = BEARER.exec(value.trim())
-  return match ? match[1]! : null
+  return match?.[1] ?? null
 }
 
 export interface SessionTeardownDeps {

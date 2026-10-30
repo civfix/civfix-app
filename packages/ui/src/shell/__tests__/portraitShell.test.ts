@@ -169,7 +169,7 @@ describe("portrait shell layer plan", () => {
     ]
     for (const view of ["home", "map", "messaging", "report", "search", "social"] as const) {
       for (const active of kinds) {
-        expect(portraitShellPlan(view, active, false), `${view} / ${active?.kind}`).toEqual(
+        expect(portraitShellPlan(view, active, false), `${view} / ${active?.kind ?? "none"}`).toEqual(
           plan(view, active),
         )
       }
@@ -370,7 +370,7 @@ describe("the Report tab's keep-alive slot", () => {
   it("HIDES the slot with opacity, never display:none (Fabric culls display:none native views, remounting the camera)", () => {
     expect(portrait).not.toMatch(/display: "none"/)
     expect(portrait).toMatch(/reportSlotVisible \? null : styles\.keepAliveHidden/)
-    expect(portrait).toMatch(/pointerEvents=\{reportSlotVisible \? "auto" : "none"\}/)
+    expect(portrait).toMatch(/pointerEventStyles\[reportSlotVisible \? "auto" : "none"\]/)
     expect(portrait).toMatch(/accessibilityElementsHidden=\{!reportSlotVisible\}/)
     expect(portrait).toMatch(
       /importantForAccessibility=\{reportSlotVisible \? "auto" : "no-hide-descendants"\}/,
@@ -449,8 +449,8 @@ describe("the home + messages keep-alive slots", () => {
   it("HIDES the list slots with opacity 0 (layout kept, so re-show pays no relayout) and keeps them un-keyed", () => {
     expect(portrait).toMatch(/homeSlotVisible \? null : styles\.keepAliveHidden/)
     expect(portrait).toMatch(/messagingSlotVisible \? null : styles\.keepAliveHidden/)
-    expect(portrait).toMatch(/pointerEvents=\{homeSlotVisible \? "auto" : "none"\}/)
-    expect(portrait).toMatch(/pointerEvents=\{messagingSlotVisible \? "auto" : "none"\}/)
+    expect(portrait).toMatch(/pointerEventStyles\[homeSlotVisible \? "auto" : "none"\]/)
+    expect(portrait).toMatch(/pointerEventStyles\[messagingSlotVisible \? "auto" : "none"\]/)
     expect(portrait).toMatch(/accessibilityElementsHidden=\{!homeSlotVisible\}/)
     expect(portrait).toMatch(/accessibilityElementsHidden=\{!messagingSlotVisible\}/)
     expect(portrait).toMatch(/keepAliveHidden: \{\s*opacity: 0,\s*pointerEvents: "none",\s*\}/)

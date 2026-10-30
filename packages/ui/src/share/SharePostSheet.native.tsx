@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { UserSearchResultDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"

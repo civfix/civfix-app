@@ -16,7 +16,7 @@ import {
 import { FullWindowModal } from "./FullWindowModal"
 import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { makeThemedStyles, motion, useTheme, webScrimProps } from "../theme"
+import { makeThemedStyles, motion, useTheme, webScrimProps, pointerEventStyles } from "../theme"
 import { KeyboardAnchorView } from "../shell/KeyboardAnchorView"
 import { useKeyboardAnchor } from "../shell/useKeyboardAnchor"
 import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
@@ -125,12 +125,11 @@ export function SlideUpSheet({
       onDismiss={onModalDismiss}
     >
       <View
-        style={styles.root}
+        style={[styles.root, pointerEventStyles[sheetMotion.exiting ? "none" : "auto"]]}
         accessibilityViewIsModal
         onAccessibilityEscape={onClose}
-        pointerEvents={sheetMotion.exiting ? "none" : "auto"}
       >
-        <Animated.View pointerEvents="none" style={[styles.scrim, menuScrimStyle(sheetMotion)]} />
+        <Animated.View style={[styles.scrim, menuScrimStyle(sheetMotion), pointerEventStyles.none]} />
         <Pressable
           style={styles.scrimTouch}
           accessibilityRole="button"

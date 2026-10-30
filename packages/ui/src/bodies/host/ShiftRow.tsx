@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { EventSlotDTO } from "@civfix/contract"
 import { timeRangeLabel } from "@civfix/contract/datetime"

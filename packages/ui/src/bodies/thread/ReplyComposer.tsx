@@ -26,8 +26,7 @@ import {
   View,
   type View as NativeView,
   type LayoutChangeEvent,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
@@ -301,7 +300,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
     )
   }
 
-  const onKeyPress = (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+  const onKeyPress = (event: TextInputKeyPressEvent) => {
     if (Platform.OS !== "web") return
     if (isComposerSendKey(event)) {
       if (!submitDisabled) send()

@@ -28,7 +28,7 @@ describe("web dock tab bar semantics", () => {
 
   it("emits aria-selected on each tab, since RNW drops accessibilityState.selected", () => {
     const tab = sliceBetween(shared, "export function TabButton", "export function SearchOrb")
-    expect(tab).toContain('{...({ "aria-selected": active } as object)}')
+    expect(tab).toContain("aria-selected={active}")
   })
 
   it("marks the tab row as a horizontal tablist", () => {

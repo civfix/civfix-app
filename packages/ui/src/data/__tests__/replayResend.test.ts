@@ -11,7 +11,7 @@ import type { OutboxEntry } from "../../helpers"
 import { markResending } from "../hooks/chat"
 
 const entry = (clientId: string, status: OutboxEntry["status"]): OutboxEntry =>
-  ({ clientId, status, message: { id: clientId } as ChatMessageDTO }) as OutboxEntry
+  ({ clientId, status, message: { id: clientId } as ChatMessageDTO })
 
 describe("markResending", () => {
   it("flips exactly the captured failed entries back to sending", () => {

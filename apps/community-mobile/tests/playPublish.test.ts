@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { createVerify, generateKeyPairSync } from "node:crypto"
 import { test } from "node:test"
+import { defined } from "./helpers/defined.ts"
 
 import {
   PlayError,
@@ -69,7 +70,11 @@ test("parseServiceAccount accepts a service account key and rejects anything els
 
 test("signAssertion produces an RS256 JWT for the androidpublisher scope, signed by the key", () => {
   const jwt = signAssertion(account, 1_000_000)
-  const [header, claims, signature] = jwt.split(".")
+  const parts = jwt.split(".")
+  assert.equal(parts.length, 3, "a JWT has a header, claims and signature")
+  const header = defined(parts[0], "the JWT header")
+  const claims = defined(parts[1], "the JWT claims")
+  const signature = defined(parts[2], "the JWT signature")
   assert.deepEqual(JSON.parse(Buffer.from(header, "base64url").toString()), { alg: "RS256", typ: "JWT" })
   assert.deepEqual(JSON.parse(Buffer.from(claims, "base64url").toString()), {
     iss: account.client_email,
@@ -157,14 +162,16 @@ test("uploadBundle opens a resumable session and PUTs the bytes to the session U
   const client = playClient({ packageName: "org.civfix.community", token: "t0k", fetchImpl })
   const bytes = Buffer.from("bundle-bytes")
   assert.deepEqual(await client.uploadBundle("edit-1", bytes), { versionCode: 12 })
-  assert.equal(calls[0].method, "POST")
+  const session = defined(calls[0], "the session request")
+  const put = defined(calls[1], "the upload PUT")
+  assert.equal(session.method, "POST")
   assert.equal(
-    calls[0].url,
+    session.url,
     "https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/org.civfix.community/edits/edit-1/bundles?uploadType=resumable",
   )
-  assert.equal(calls[0].headers["x-upload-content-length"], String(bytes.length))
-  assert.equal(calls[0].headers.authorization, "Bearer t0k")
-  assert.deepEqual([calls[1].method, calls[1].url, calls[1].body], ["PUT", "https://upload.example/session/1", bytes])
+  assert.equal(session.headers["x-upload-content-length"], String(bytes.length))
+  assert.equal(session.headers.authorization, "Bearer t0k")
+  assert.deepEqual([put.method, put.url, put.body], ["PUT", "https://upload.example/session/1", bytes])
 })
 
 test("an API error surfaces Google's message without the query string", async () => {

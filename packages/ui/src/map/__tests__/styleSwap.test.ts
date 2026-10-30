@@ -28,7 +28,7 @@ const dropsRadius = (ops: ReturnType<typeof diff>) =>
   ops.some(
     (op) =>
       (op.command === "removeSource" && op.args[0] === RADIUS) ||
-      (op.command === "removeLayer" && String(op.args[0]).startsWith(RADIUS)),
+      (op.command === "removeLayer" && typeof op.args[0] === "string" && op.args[0].startsWith(RADIUS)),
   )
 
 describe("a scheme swap keeps the report picker's radius overlay", () => {

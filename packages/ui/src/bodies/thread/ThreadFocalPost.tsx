@@ -21,6 +21,7 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { PostOverflowButton } from "../../primitives/PostOverflowButton"
+import { withTextOffsets } from "../../primitives/listKeys"
 import {
   buildPostCardModel,
   identityA11yLabel,
@@ -102,7 +103,7 @@ export function ThreadFocalPost({
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const stats = React.useMemo(() => buildFocalPostStats(post.counts, t), [post.counts, t])
   const bodySegments = React.useMemo(
-    () => splitPostBodyMentions(post.body ?? "", post.mentions),
+    () => withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions)),
     [post.body, post.mentions],
   )
   const isFix = model.variant === "fix-confirmed"
@@ -112,6 +113,7 @@ export function ThreadFocalPost({
     usePostRowActions({ post, identity, onOpenEntry })
   const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
   const embedded = model.embeddedPost
+  const { event: linkedEvent, report: linkedReport } = post
   const openOriginal = React.useMemo(
     () =>
       isRepost && embedded && !embedded.deleted
@@ -197,10 +199,10 @@ export function ThreadFocalPost({
 
       {!isFix && !isRepost && bodySegments.length > 0 ? (
         <Text style={styles.body}>
-          {bodySegments.map((segment, index) =>
+          {bodySegments.map((segment) =>
             segment.kind === "mention" ? (
               <Text
-                key={`${segment.userId}-${index}`}
+                key={segment.offset}
                 style={styles.bodyMention}
                 accessibilityRole="link"
                 onPress={() => openPerson(segment.userId)}
@@ -244,37 +246,37 @@ export function ThreadFocalPost({
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.event ? (
+      {!isFix && !isRepost && linkedEvent ? (
         <View style={styles.block}>
           <LinkedEventCard
-            event={post.event}
+            event={linkedEvent}
             layout="list"
             variant="detail"
-            timeZone={post.event.timezone ?? undefined}
-            onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+            timeZone={linkedEvent.timezone ?? undefined}
+            onPress={() => openEntry({ kind: "cleanup", id: linkedEvent.id })}
           />
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.report ? (
+      {!isFix && !isRepost && linkedReport ? (
         <View style={styles.block}>
           <LinkedReportCard
-            report={{ ...post.report, thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id) }}
+            report={{ ...linkedReport, thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id) }}
             layout="list"
             headline="title"
-            onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+            onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
           />
         </View>
       ) : null}
 
-      {model.embeddedPost ? (
+      {embedded ? (
         <View style={styles.block}>
           <EmbeddedPost
-            post={model.embeddedPost}
+            post={embedded}
             t={t}
             timeAgo={timeAgo}
             prominent={isRepost}
-            onPress={() => openEntry({ kind: "post-thread", id: model.embeddedPost!.id })}
+            onPress={() => openEntry({ kind: "post-thread", id: embedded.id })}
           />
         </View>
       ) : null}

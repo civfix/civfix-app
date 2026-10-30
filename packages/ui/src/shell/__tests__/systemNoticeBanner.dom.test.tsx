@@ -3,7 +3,6 @@
  * phone, dismissed per device until its text changes. These run the web build (react-native-web) against a
  * fake `getAppConfig`, the same seam the apps' data providers fill.
  */
-import * as React from "react"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -325,7 +324,7 @@ describe("systemNoticeStore: the published height", () => {
       width: 320,
       height,
       toJSON: () => ({}),
-    } as DOMRect)
+    })
   }
 
   it("T15: 36 while shown, 0 once dismissed, and never persisted", async () => {

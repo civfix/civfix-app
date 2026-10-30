@@ -22,7 +22,7 @@ import {
 
 /** Every kind's extra fields are optional on DetailEntry. */
 const entryFor = (kind: DetailKind): DetailEntry =>
-  ({ kind, id: "x", lat: 1, lng: 2 }) as DetailEntry
+  ({ kind, id: "x", lat: 1, lng: 2 })
 
 const SCROLL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "scroll")
 const FULL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "full")
@@ -260,7 +260,7 @@ describe("fullEntryStack - the page stack itself", () => {
       for (const kind of ALL_DETAIL_KINDS) {
         const entry = entryFor(kind)
         const expected = resolveBodyLayout(kind, flag) === "full" ? [entry] : []
-        expect(fullEntryStack([entry], flag), `${kind} @ ${flag}`).toEqual(expected)
+        expect(fullEntryStack([entry], flag), `${kind} @ ${String(flag)}`).toEqual(expected)
       }
     }
   })
@@ -345,7 +345,7 @@ describe("pageLayerKey - stable page identity", () => {
       { kind: "my-ticket", id: "e1", seatId: "seat-9" },
       { kind: "composer", composerMode: "quote", targetPostId: "p1" },
     ] satisfies DetailEntry[]) {
-      expect(pageLayerKey("home", entry, 3), entry.kind).toBe(`3:${entryIdentity(entry)}`)
+      expect(pageLayerKey("home", entry, 3), entry.kind).toBe(`3:${entryIdentity(entry)!}`)
     }
   })
 
@@ -361,7 +361,7 @@ describe("pageLayerKey - stable page identity", () => {
   it("reflects EVERY field `entryIdentity` discriminates on, so a new one cannot silently collide", () => {
     for (const field of ENTRY_IDENTITY_FIELDS) {
       const bare: DetailEntry = { kind: "cleanup" }
-      const set = { ...bare, [field]: "discriminator" } as DetailEntry
+      const set = { ...bare, [field]: "discriminator" }
       expect(entryIdentity(bare), field).not.toBe(entryIdentity(set))
       expect(pageLayerKey("home", bare, 0), field).not.toBe(pageLayerKey("home", set, 0))
     }

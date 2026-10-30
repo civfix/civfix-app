@@ -19,6 +19,7 @@ stay separate and install `@civfix/contract` and `@civfix/tokens` from the priva
 | --- | --- | --- |
 | `packages/tokens` | `@civfix/tokens` | The design tokens (colour scales for both schemes, category and cleanup pin colours, type, spacing, radius and shadow scales) and the chip-contrast helpers. Framework-free, no runtime deps. **Published** to the private registry for civfix-admin and civfix-backend. [README](packages/tokens/README.md) |
 | `packages/ui` | `@civfix/ui` (private) | The shared React Native UI (theme, primitives, shells, nav store, feature bodies, the Map seam, the app-only `helpers`) rendered on web via react-native-web. Never published. [README](packages/ui/README.md) |
+| `packages/testing` | `@civfix/testing` (private) | Shared test support: the console guard every suite loads first, which fails a test on an unexpected `console.error` or `console.warn`. Consumed as TypeScript source; never published. [README](packages/testing/README.md) |
 | `apps/community-web` | `community-web` | Next.js 15 static-export SPA (React 19 + RN-web + shadcn) plus its Cloudflare Pages config and Functions. [README](apps/community-web/README.md) |
 | `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 54 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
 
@@ -39,11 +40,12 @@ pnpm build         # @civfix/tokens -> dist (tsup), @civfix/ui -> dist-types, we
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm test:coverage # the tests with each workspace's coverage threshold, as CI runs them
 pnpm i18n:check    # locale keys complete across languages, and every t(...) call site in ui, web and mobile resolves
 pnpm knip          # unused files, exports and dependencies
 pnpm jscpd         # duplicated code, fails above the configured threshold
 pnpm clean
-pnpm doctor        # expo-doctor on the mobile app
+pnpm run doctor:expo  # expo-doctor on the mobile app (`pnpm doctor` is pnpm's own command)
 ```
 
 Per package:
