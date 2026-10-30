@@ -279,7 +279,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
       animatedIndex={animatedIndex}
       animatedPosition={animatedPosition}
       animationConfigs={animationConfigs}
-      onClose={onClosed}
+      {...(onClosed ? { onClose: onClosed } : {})}
       enableDynamicSizing={false}
       // Any inset lifts the card off the screen bottom; home-indicator clearance is content padding instead.
       bottomInset={0}

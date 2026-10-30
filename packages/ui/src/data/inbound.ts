@@ -9,8 +9,8 @@ import { effectiveClientId, preserveViewerFields, reconcileInbound, type OutboxE
 
 export interface InboundFrame {
   message: ChatMessageDTO
-  explicitClientId?: string
-  viewerTruth?: boolean
+  explicitClientId?: string | undefined
+  viewerTruth?: boolean | undefined
 }
 
 export function foldInboundBatch(
@@ -225,7 +225,7 @@ const FATAL_ROOM_ERROR_CODES: ReadonlySet<string> = new Set([
 
 // Room ids are unique only within a kind, and the server omits `roomKind` on cleanup-room frames.
 export function frameInRoom(
-  frame: { cleanupId?: string; roomKind?: RoomKind },
+  frame: { cleanupId?: string | undefined; roomKind?: RoomKind | undefined },
   roomId: string,
   roomKind: RoomKind,
 ): boolean {

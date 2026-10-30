@@ -206,7 +206,7 @@ interface PrivacySettingsCtx {
   >
 }
 
-function privacySettingsPatch(next: PrivacySettingsVars): UpdateSettingsRequest {
+function privacySettingsPatch(next: PrivacySettingsVars): Exclude<PrivacySettingsVars, boolean> {
   return typeof next === "boolean" ? { allowDirectMessages: next } : next
 }
 

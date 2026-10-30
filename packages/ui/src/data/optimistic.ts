@@ -45,8 +45,8 @@ export interface OptimisticAlso<TVars, TRes, TAlsoCtx> {
  * package that emits declarations (@civfix/ui) needs the name to be importable (TS4058).
  */
 export interface OptimisticContext<TPrevious, TAlsoCtx> {
-  previous?: TPrevious
-  alsoCtx?: TAlsoCtx
+  previous?: TPrevious | undefined
+  alsoCtx?: TAlsoCtx | undefined
 }
 
 export interface OptimisticPatchOptions<TData, TVars, TRes, TAlsoCtx = unknown> {

@@ -54,7 +54,7 @@ export function LoadingState({
 }: {
   variant?: StateVariant
   skeleton?: SkeletonRowKind
-  rows?: number
+  rows?: number | undefined
 }) {
   const styles = useStyles()
   const t = useTheme()
@@ -82,7 +82,7 @@ function IconBubble({
 }: {
   icon: LucideIcon
   tone: StateTone
-  iconColor?: string
+  iconColor?: string | undefined
   iconSize?: number
 }) {
   const styles = useStyles()
@@ -97,7 +97,7 @@ function IconBubble({
 export interface EmptyStateProps {
   icon?: LucideIcon
   title: string
-  body?: string
+  body?: string | undefined
   tone?: StateTone
   iconColor?: string
   iconSize?: number

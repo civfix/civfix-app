@@ -214,7 +214,7 @@ export function zoomGeometry(input: {
   contentHeight: number
   viewportWidth: number
   viewportHeight: number
-  maxScale?: number
+  maxScale?: number | undefined
 }): ZoomGeometry {
   return {
     contentWidth: Math.max(0, finite(input.contentWidth, 0)),

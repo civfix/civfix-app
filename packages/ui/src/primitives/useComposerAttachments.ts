@@ -119,5 +119,6 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
 function attachErrorText(attachError: AttachErrorState | null, t: Translate): string | null {
   if (!attachError) return null
   if (attachError.key === "video_limits") return t("media.video_limits")
-  return t(`attach_error.${attachError.key}`, attachError.params)
+  const key = `attach_error.${attachError.key}`
+  return attachError.params ? t(key, attachError.params) : t(key)
 }

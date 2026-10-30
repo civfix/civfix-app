@@ -15,7 +15,7 @@ export function stripHandlePrefix(text: string): string {
 }
 
 export interface FirstRunAvailability {
-  data?: HandleAvailableResponse
+  data?: HandleAvailableResponse | undefined
   isFetching: boolean
   isError: boolean
 }
