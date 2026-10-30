@@ -38,7 +38,7 @@ export const INITIAL_BRIDGE_GUARD: BridgeGuard = { openKey: null, recentKey: nul
 
 export interface NativeNavState {
   index?: number
-  routes: readonly { state?: object }[]
+  routes: readonly { state?: object | undefined }[]
 }
 
 /**

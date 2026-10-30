@@ -7,7 +7,7 @@ import {
   type ErrorCodeTable,
 } from "@civfix/contract"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const LOCALIZED_CODES: readonly ErrorCode[] = [
   ErrorCode.UNAUTHORIZED,
