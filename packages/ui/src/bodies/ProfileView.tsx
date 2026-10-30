@@ -15,11 +15,7 @@ import {
 import { useNavStore } from "../nav"
 import { AffiliationRow } from "./AffiliationRow"
 import { ProfileStatsRow } from "./ProfileStatsRow"
-import {
-  PROFILE_DEFAULT_TAB,
-  buildProfileTabsModel,
-  type ProfileTabId,
-} from "./profileTabsModel"
+import { PROFILE_DEFAULT_TAB, buildProfileTabsModel, type ProfileTabId } from "./profileTabsModel"
 import { ProfileEventsSection } from "./profile/ProfileEventsSection"
 import { useProfilePastEvents } from "../data"
 import { ProfilePostsSection, type ProfilePosts } from "./profile/ProfilePostsSection"
@@ -117,7 +113,12 @@ export function ProfileView({
         />
         <View style={styles.heroWho}>
           <View style={styles.heroNameRow}>
-            <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header" {...headingLevel(2)}>
+            <Text
+              style={styles.heroName}
+              numberOfLines={1}
+              accessibilityRole="header"
+              {...headingLevel(2)}
+            >
               {profile.name}
             </Text>
           </View>
@@ -131,7 +132,9 @@ export function ProfileView({
 
       {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
 
-      {affiliation ? <AffiliationRow organization={affiliation} style={styles.affiliation} /> : null}
+      {affiliation ? (
+        <AffiliationRow organization={affiliation} style={styles.affiliation} />
+      ) : null}
 
       <SocialLinksRow links={profile.socialLinks} style={styles.socialRow} />
 

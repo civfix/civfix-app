@@ -39,11 +39,7 @@ describe("splitProfileEvents (modern: upcomingEvents present)", () => {
   })
 
   it("treats an EMPTY upcoming array as the modern path, not as a missing field", () => {
-    const split = splitProfileEvents(
-      [event("p", "2026-01-02T10:00:00.000Z", "me")],
-      [],
-      "me",
-    )
+    const split = splitProfileEvents([event("p", "2026-01-02T10:00:00.000Z", "me")], [], "me")
 
     expect(split.upcomingHosting).toEqual([])
     expect(split.upcomingGoing).toEqual([])
@@ -51,11 +47,7 @@ describe("splitProfileEvents (modern: upcomingEvents present)", () => {
   })
 
   it("leaves upcomingGoing empty for a public viewer (server sends hosting-only)", () => {
-    const split = splitProfileEvents(
-      [],
-      [event("a", "2026-08-01T10:00:00.000Z", "them")],
-      "them",
-    )
+    const split = splitProfileEvents([], [event("a", "2026-08-01T10:00:00.000Z", "them")], "them")
 
     expect(split.upcomingHosting.map((e) => e.id)).toEqual(["a"])
     expect(split.upcomingGoing).toEqual([])
@@ -64,10 +56,7 @@ describe("splitProfileEvents (modern: upcomingEvents present)", () => {
   it("preserves the source order within each bucket", () => {
     const split = splitProfileEvents(
       [],
-      [
-        event("a", "2026-08-03T10:00:00.000Z", "me"),
-        event("b", "2026-08-01T10:00:00.000Z", "me"),
-      ],
+      [event("a", "2026-08-03T10:00:00.000Z", "me"), event("b", "2026-08-01T10:00:00.000Z", "me")],
       "me",
     )
 

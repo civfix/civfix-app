@@ -54,14 +54,27 @@ describe("every row answers the pointer", () => {
       )
     }
     expect(inbox).toMatch(/rowHovered: \{[\s\S]{0,160}?backgroundColor: t\.colors\.bgAlt/)
-    expect(inbox).toMatch(/rowPressed: \{[\s\S]{0,160}?backgroundColor: wash\(t\.colors\.borderStrong, 0\.35, t\)/)
+    expect(inbox).toMatch(
+      /rowPressed: \{[\s\S]{0,160}?backgroundColor: wash\(t\.colors\.borderStrong, 0\.35, t\)/,
+    )
     expect(inbox).not.toMatch(/rowPressed: \{[\s\S]{0,160}?transform/)
     expect(reportRow).toMatch(/rowHovered: \{[\s\S]{0,80}?backgroundColor: t\.colors\.bgAlt/)
-    expect(reportRow).toMatch(/rowCardHovered: \{[\s\S]{0,160}?backgroundColor: t\.colors\.surfaceTint/)
+    expect(reportRow).toMatch(
+      /rowCardHovered: \{[\s\S]{0,160}?backgroundColor: t\.colors\.surfaceTint/,
+    )
   })
 
   it("tags its Pressables for the coral keyboard ring instead of Chrome's blue UA outline", () => {
-    for (const src of [searchBody, searchResults, leaderboardRow, inbox, reportRow, people, events, composer]) {
+    for (const src of [
+      searchBody,
+      searchResults,
+      leaderboardRow,
+      inbox,
+      reportRow,
+      people,
+      events,
+      composer,
+    ]) {
       expect(src).toContain("focusRingProps")
     }
   })
@@ -90,7 +103,9 @@ describe("the coral links keep their contrast in EVERY state", () => {
   it("hovers with an underline on the label, never an opacity dim", () => {
     expect(searchBody).toMatch(/linkHovered: \{ textDecorationLine: "underline" \}/)
     expect(searchBody).not.toMatch(/linkHovered: \{ opacity/)
-    expect(searchBody).toMatch(/webHover\(state\) \? styles\.linkHovered : null,\s*\]\}\s*>\s*\{label\}/)
+    expect(searchBody).toMatch(
+      /webHover\(state\) \? styles\.linkHovered : null,?\s*\]\}\s*>\s*\{label\}/,
+    )
   })
 })
 

@@ -73,9 +73,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const updatedAgo = generatedAt === null ? null : relative(generatedAt, now)
 
   const pickedTitle =
-    picked === null
-      ? null
-      : (options.find((option) => option.id === picked)?.title ?? pickedLabel)
+    picked === null ? null : (options.find((option) => option.id === picked)?.title ?? pickedLabel)
 
   const filters = (
     <View style={styles.filters}>
@@ -197,8 +195,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
 
   if (all) {
     if (summary.isPending) return frame(skeleton)
-    if (summary.isError || !summary.data)
-      return frame(errorState(() => void summary.refetch()))
+    if (summary.isError || !summary.data) return frame(errorState(() => void summary.refetch()))
     return frame(
       <AllEventsMode
         data={summary.data}
@@ -220,7 +217,12 @@ export function EventAnalyticsBody({ id }: { id: string }) {
 
   if (!canView) {
     return frame(
-      <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />,
+      <FeedNotice
+        plain
+        icon="Lock"
+        title={t("state.denied_title")}
+        body={t("state.denied_body")}
+      />,
     )
   }
 

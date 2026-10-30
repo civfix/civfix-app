@@ -16,7 +16,9 @@ describe("Avatar photo loading", () => {
   })
 
   it("memoizes the source object on the url it resolves from", () => {
-    expect(AVATAR).toContain('const photoSource = useMemo(() => ({ uri: photoUrl as string }), [photoUrl])')
+    expect(AVATAR).toContain(
+      "const photoSource = useMemo(() => ({ uri: photoUrl as string }), [photoUrl])",
+    )
     expect(AVATAR).toContain("source={photoSource}")
   })
 

@@ -250,7 +250,9 @@ describe("useReportSubmit request composition (api branch)", () => {
     seedReadyDraft()
     useDraftReportStore.getState().setFlag("safetyHazard", true)
     await useReportSubmit()()
-    expect(deps.api.createReport.mock.calls[0]?.[0].description).toBe("Reported as a safety hazard.")
+    expect(deps.api.createReport.mock.calls[0]?.[0].description).toBe(
+      "Reported as a safety hazard.",
+    )
   })
 
   it("appends the flag notes without truncating, leaving the length cap to the description input", async () => {
@@ -266,9 +268,17 @@ describe("useReportSubmit request composition (api branch)", () => {
 
   it("maps the created report into the result, reading any non-held status as published", async () => {
     seedReadyDraft()
-    deps.api.createReport.mockResolvedValue(reportDto({ id: "r-9", status: "open", lat: 5, lng: 6 }))
+    deps.api.createReport.mockResolvedValue(
+      reportDto({ id: "r-9", status: "open", lat: 5, lng: 6 }),
+    )
     const out = await useReportSubmit()()
-    expect(out).toMatchObject({ reportId: "r-9", lat: 5, lng: 6, category: "trash", status: "published" })
+    expect(out).toMatchObject({
+      reportId: "r-9",
+      lat: 5,
+      lng: 6,
+      category: "trash",
+      status: "published",
+    })
   })
 
   it("keeps a held status as held", async () => {
@@ -281,7 +291,12 @@ describe("useReportSubmit request composition (api branch)", () => {
 
 describe("useReportSubmit host branch", () => {
   it("hands the submission to the host submitter instead of the api client", async () => {
-    const hostSubmit = vi.fn(async () => ({ reportId: "r-h", lat: 1, lng: 2, status: "published" as const }))
+    const hostSubmit = vi.fn(async () => ({
+      reportId: "r-h",
+      lat: 1,
+      lng: 2,
+      status: "published" as const,
+    }))
     deps.hostSubmit = hostSubmit
     seedReadyDraft()
     const s = useDraftReportStore.getState()
@@ -315,7 +330,11 @@ describe("useReportSubmit uploads and retries", () => {
     await useReportSubmit()()
     const uris = deps.uploadMediaId.mock.calls.map(([arg]) => arg.media.uri)
     expect(uris).toEqual(["file:///a.jpg", "file:///b.mp4", "file:///c.jpg"])
-    expect(deps.api.createReport.mock.calls[0]?.[0].mediaUploadIds).toEqual(["up-1", "up-2", "up-3"])
+    expect(deps.api.createReport.mock.calls[0]?.[0].mediaUploadIds).toEqual([
+      "up-1",
+      "up-2",
+      "up-3",
+    ])
     expect(useDraftReportStore.getState().draft.media.map((m) => m.uploadId)).toEqual([
       "up-1",
       "up-2",
@@ -374,7 +393,10 @@ describe("useReportSubmit uploads and retries", () => {
     const err = await submitError(useReportSubmit())
     expect(err.code).toBe(ErrorCode.MEDIA_REJECTED)
     expect(deps.api.createReport).not.toHaveBeenCalled()
-    expect(useDraftReportStore.getState().draft.media.map((m) => m.uploadId)).toEqual(["up-a", undefined])
+    expect(useDraftReportStore.getState().draft.media.map((m) => m.uploadId)).toEqual([
+      "up-a",
+      undefined,
+    ])
   })
 
   it("reuses the idempotency key and the cached upload ids on a retry after a failed create", async () => {
@@ -528,7 +550,15 @@ describe("useReportSubmit feed share", () => {
       retry: {
         target: { reportId: "r-1" },
         caption: "Caption",
-        report: { id: "r-1", category: "trash", type: "dump", title: "Dump", lat: 34.1, lng: -118.2, addr: null },
+        report: {
+          id: "r-1",
+          category: "trash",
+          type: "dump",
+          title: "Dump",
+          lat: 34.1,
+          lng: -118.2,
+          addr: null,
+        },
       },
     })
     expect(useDraftReportStore.getState().draft.feedPostId).toBeNull()

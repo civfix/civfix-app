@@ -80,18 +80,28 @@ describe("zoomTranslationLimits", () => {
   })
 
   it("clamps the scale before measuring", () => {
-    expect(zoomTranslationLimits(99, phone)).toEqual(zoomTranslationLimits(LIGHTBOX_MAX_SCALE, phone))
+    expect(zoomTranslationLimits(99, phone)).toEqual(
+      zoomTranslationLimits(LIGHTBOX_MAX_SCALE, phone),
+    )
   })
 })
 
 describe("clampZoomTransform", () => {
   it("pulls a runaway translation back to the bound, leaving no empty gutter", () => {
-    expect(clampZoomTransform({ scale: 2, x: 900, y: -900 }, phone)).toEqual({ scale: 2, x: 150, y: -200 })
+    expect(clampZoomTransform({ scale: 2, x: 900, y: -900 }, phone)).toEqual({
+      scale: 2,
+      x: 150,
+      y: -200,
+    })
   })
 
   it("recentres whenever the axis cannot overflow", () => {
     expect(clampZoomTransform({ scale: 1, x: 40, y: -40 }, phone)).toEqual({ scale: 1, x: 0, y: 0 })
-    expect(clampZoomTransform({ scale: 2, x: 10, y: 90 }, letterboxed)).toEqual({ scale: 2, x: 10, y: 0 })
+    expect(clampZoomTransform({ scale: 2, x: 10, y: 90 }, letterboxed)).toEqual({
+      scale: 2,
+      x: 10,
+      y: 0,
+    })
   })
 
   it("survives a non-finite transform", () => {
@@ -227,8 +237,16 @@ describe("doubleTapZoomTransform", () => {
 
 describe("panZoomTransform", () => {
   it("adds the drag delta and clamps to the bounds", () => {
-    expect(panZoomTransform({ scale: 2, x: 0, y: 0 }, 40, -60, phone)).toEqual({ scale: 2, x: 40, y: -60 })
-    expect(panZoomTransform({ scale: 2, x: 140, y: 0 }, 40, 0, phone)).toEqual({ scale: 2, x: 150, y: 0 })
+    expect(panZoomTransform({ scale: 2, x: 0, y: 0 }, 40, -60, phone)).toEqual({
+      scale: 2,
+      x: 40,
+      y: -60,
+    })
+    expect(panZoomTransform({ scale: 2, x: 140, y: 0 }, 40, 0, phone)).toEqual({
+      scale: 2,
+      x: 150,
+      y: 0,
+    })
   })
 
   it("cannot move an unzoomed image", () => {
@@ -251,7 +269,11 @@ describe("settleZoomTransform", () => {
   })
 
   it("keeps a real zoom but pulls the gutters shut", () => {
-    expect(settleZoomTransform({ scale: 2, x: 400, y: -400 }, phone)).toEqual({ scale: 2, x: 150, y: -200 })
+    expect(settleZoomTransform({ scale: 2, x: 400, y: -400 }, phone)).toEqual({
+      scale: 2,
+      x: 150,
+      y: -200,
+    })
   })
 })
 
@@ -380,7 +402,11 @@ describe("the zoom model stays callable from the UI thread", () => {
   })
 
   it("keeps the helpers a gesture worklet reaches workletized too", () => {
-    expect(src).toMatch(/function finite\(value: number, fallback: number\): number \{\n {2}"worklet"/)
-    expect(src).toMatch(/function clampToLimit\(value: number, limit: number\): number \{\n {2}"worklet"/)
+    expect(src).toMatch(
+      /function finite\(value: number, fallback: number\): number \{\n {2}"worklet"/,
+    )
+    expect(src).toMatch(
+      /function clampToLimit\(value: number, limit: number\): number \{\n {2}"worklet"/,
+    )
   })
 })

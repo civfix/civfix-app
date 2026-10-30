@@ -499,4 +499,6 @@ if (appErrorCopies === 0) {
   process.exit(1)
 }
 
-console.log(`[cf-pages] AppError single-instance check OK (1 copy, in ${appErrorSites.map((site) => site.file).join(", ")}).`)
+console.log(
+  `[cf-pages] AppError single-instance check OK (1 copy, in ${appErrorSites.map((site) => site.file).join(", ")}).`,
+)

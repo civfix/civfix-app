@@ -71,7 +71,7 @@ interface MarkReadCtx {
 }
 
 interface MarkAllReadCtx extends MarkReadCtx {
-  unread?: NotificationUnreadResponse
+  unread?: NotificationUnreadResponse | undefined
 }
 
 function snapshotFlatLists(qc: QueryClient): NonNullable<MarkReadCtx["previous"]> {
@@ -113,7 +113,9 @@ export function useMarkAllNotificationsRead() {
       const previous = snapshotFlatLists(qc)
       const unread = qc.getQueryData<NotificationUnreadResponse>(queryKeys.notificationsUnread)
       patchReadInFlatLists(qc, () => true)
-      qc.setQueryData<NotificationUnreadResponse>(queryKeys.notificationsUnread, { hasUnread: false })
+      qc.setQueryData<NotificationUnreadResponse>(queryKeys.notificationsUnread, {
+        hasUnread: false,
+      })
       return { previous, unread }
     },
     onError: (_err, _vars, ctx) => {
@@ -153,7 +155,10 @@ function withCategoryChange(
 ): NotificationSettingsDTO {
   return {
     ...settings,
-    categories: { ...settings.categories, [category]: { ...settings.categories[category], ...change } },
+    categories: {
+      ...settings.categories,
+      [category]: { ...settings.categories[category], ...change },
+    },
   }
 }
 
@@ -165,16 +170,25 @@ export function useUpdateNotificationSettings() {
   const qc = useQueryClient()
   const key = queryKeys.notificationSettings
 
-  return useMutation<NotificationSettingsDTO, unknown, NotificationSettingChange, NotificationSettingRollback>({
+  return useMutation<
+    NotificationSettingsDTO,
+    unknown,
+    NotificationSettingChange,
+    NotificationSettingRollback
+  >({
     mutationKey: key,
-    mutationFn: ({ category, change }) => api.updateNotificationSettings({ categories: { [category]: change } }),
+    mutationFn: ({ category, change }) =>
+      api.updateNotificationSettings({ categories: { [category]: change } }),
     onMutate: async (vars) => {
       await qc.cancelQueries({ queryKey: key })
       const current = qc.getQueryData<NotificationSettingsDTO>(key)
       if (!current) return {}
       const before = current.categories[vars.category]
       const previous = Object.fromEntries(
-        Object.keys(vars.change).map((field) => [field, before[field as keyof NotificationCategorySetting]]),
+        Object.keys(vars.change).map((field) => [
+          field,
+          before[field as keyof NotificationCategorySetting],
+        ]),
       ) as Partial<NotificationCategorySetting>
       qc.setQueryData<NotificationSettingsDTO>(key, withCategoryChange(current, vars))
       return { previous }
@@ -187,7 +201,8 @@ export function useUpdateNotificationSettings() {
       )
     },
     onSuccess: (server) => {
-      if (qc.isMutating({ mutationKey: key }) === 1) qc.setQueryData<NotificationSettingsDTO>(key, server)
+      if (qc.isMutating({ mutationKey: key }) === 1)
+        qc.setQueryData<NotificationSettingsDTO>(key, server)
     },
   })
 }
@@ -222,7 +237,8 @@ export function useUpdatePrivacySettings() {
 
   return useMutation<UpdateSettingsResponse, unknown, PrivacySettingsVars, PrivacySettingsCtx>({
     scope: { id: "me-settings" },
-    mutationFn: (next) => api.updateSettings(privacySettingsPatch(next) satisfies UpdateSettingsRequest),
+    mutationFn: (next) =>
+      api.updateSettings(privacySettingsPatch(next) satisfies UpdateSettingsRequest),
     onMutate: (next) => {
       const current = userRef.current
       if (!current || !onUserUpdated) return {}
@@ -250,12 +266,16 @@ export function useUpdatePrivacySettings() {
       onUserUpdated?.(res.user)
       qc.setQueryData<GetProfileResponse>(queryKeys.myProfile, (prev) =>
         prev
-          ? { ...prev, profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours } }
+          ? {
+              ...prev,
+              profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours },
+            }
           : prev,
       )
       void qc.invalidateQueries({ queryKey: queryKeys.myProfile })
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
-      if (res.user.handle) void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
+      if (res.user.handle)
+        void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
       if (privacySettingsPatch(next).primaryOrganizationId !== undefined) {
         void qc.invalidateQueries({ queryKey: queryKeys.postsRoot })
         void qc.invalidateQueries({ queryKey: queryKeys.postRoot })

@@ -11,9 +11,11 @@ export type LayerTransitionEndEvent = Pick<
  */
 export function forceReflow(targets: readonly unknown[], documentFallback: boolean): void {
   for (const target of targets) {
-    if (typeof (target as { offsetHeight?: unknown } | null | undefined)?.offsetHeight === "number") return
+    if (typeof (target as { offsetHeight?: unknown } | null | undefined)?.offsetHeight === "number")
+      return
   }
-  if (documentFallback && typeof document !== "undefined") void document.documentElement.offsetHeight
+  if (documentFallback && typeof document !== "undefined")
+    void document.documentElement.offsetHeight
 }
 
 export interface FlipPhase {
@@ -27,7 +29,14 @@ export interface FlipPhase {
   settle: (nav: number) => void
 }
 
-export function useFlipPhase({ pendingNav, phaseNav, fallbackMs, reflow, flip, settle }: FlipPhase): void {
+export function useFlipPhase({
+  pendingNav,
+  phaseNav,
+  fallbackMs,
+  reflow,
+  flip,
+  settle,
+}: FlipPhase): void {
   const handlersRef = useRef({ reflow, flip, settle })
   useLayoutEffect(() => {
     handlersRef.current = { reflow, flip, settle }

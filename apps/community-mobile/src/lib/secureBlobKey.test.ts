@@ -24,8 +24,14 @@ test("every character is drawn from the random bytes, with no constant positions
 })
 
 test("a source that cannot produce enough randomness yields no key at all", () => {
-  assert.equal(mintSecureBlobKey(() => new Uint8Array(4)), null)
-  assert.equal(mintSecureBlobKey(() => new Uint8Array(0)), null)
+  assert.equal(
+    mintSecureBlobKey(() => new Uint8Array(4)),
+    null,
+  )
+  assert.equal(
+    mintSecureBlobKey(() => new Uint8Array(0)),
+    null,
+  )
 })
 
 test("a key already in the keychain is honoured verbatim, including the older hex shape", () => {

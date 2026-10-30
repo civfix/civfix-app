@@ -11,23 +11,34 @@ import { TeardropPin, EventPin, BlendPin, ClusterBubble, clusterToneFor } from "
 import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
-import {
-  clusterFallbackZoom,
-  clusterListReports,
-  clusterPressTarget,
-} from "./clusterer"
+import { clusterFallbackZoom, clusterListReports, clusterPressTarget } from "./clusterer"
 import { useLocationPick } from "./locationPickStore"
 import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
-import { activeMarkerIds, flyToTargetOffMap, markerA11yLabel, targetMarkerA11yLabel } from "./markerFocus"
+import {
+  activeMarkerIds,
+  flyToTargetOffMap,
+  markerA11yLabel,
+  targetMarkerA11yLabel,
+} from "./markerFocus"
 import { CAMERA_EASE_MS, CLUSTER_FLY_MS, DEFAULT_ZOOM } from "./mapCamera"
 import { ensureMapFocusRingStyle } from "./mapFocusRing.web"
-import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
+import {
+  disposeMarkers,
+  syncMarkers,
+  type DesiredMarker,
+  type MarkerEntry,
+} from "./domMarkerLayer.web"
 import { attachPressGestures } from "./mapPressGestures.web"
 import { useFocusAndFlyToCamera } from "./homeMapCamera.web"
-import { useDropPinMarker, useModeMapControls, usePickMarker, useUserLocationDot } from "./homeMapOverlays.web"
+import {
+  useDropPinMarker,
+  useModeMapControls,
+  usePickMarker,
+  useUserLocationDot,
+} from "./homeMapOverlays.web"
 import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
 import { MapUnavailable } from "./MapUnavailable"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
@@ -141,28 +152,25 @@ const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props
   const { index, query } = useClusters(points)
   const indexRef = React.useRef<MapClusterIndex>(index)
 
-  const pressCluster = React.useCallback(
-    (node: Extract<ClusterNode, { type: "cluster" }>) => {
-      const map = mapRef.current
-      if (!map) return
-      const currentZoom = map.getZoom()
-      const target = clusterPressTarget(indexRef.current, node, currentZoom)
-      const flyToCluster = (zoom: number) =>
-        map.easeTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
-      if (target !== null) {
-        flyToCluster(target)
-        return
-      }
-      const handler = onPressClusterRef.current
-      const listing = clusterListReports(indexRef.current, node)
-      if (handler && listing !== null && listing.length > 0) {
-        handler(listing)
-        return
-      }
-      flyToCluster(clusterFallbackZoom(currentZoom))
-    },
-    [],
-  )
+  const pressCluster = React.useCallback((node: Extract<ClusterNode, { type: "cluster" }>) => {
+    const map = mapRef.current
+    if (!map) return
+    const currentZoom = map.getZoom()
+    const target = clusterPressTarget(indexRef.current, node, currentZoom)
+    const flyToCluster = (zoom: number) =>
+      map.easeTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
+    if (target !== null) {
+      flyToCluster(target)
+      return
+    }
+    const handler = onPressClusterRef.current
+    const listing = clusterListReports(indexRef.current, node)
+    if (handler && listing !== null && listing.length > 0) {
+      handler(listing)
+      return
+    }
+    flyToCluster(clusterFallbackZoom(currentZoom))
+  }, [])
 
   const reconcileRef = React.useRef<() => void>(() => {})
   const runnerRef = React.useRef<IdleRunner | null>(null)
@@ -356,7 +364,15 @@ const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props
 
   useModeMapControls({ mapRef, mapReady, mode })
   useUserLocationDot({ mapRef, mapReady, showUserLocation, userLocation, t })
-  usePickMarker({ mapRef, mapReady, pickActive, mode, themeRef, scheme: th.scheme, occlusionLeftRef })
+  usePickMarker({
+    mapRef,
+    mapReady,
+    pickActive,
+    mode,
+    themeRef,
+    scheme: th.scheme,
+    occlusionLeftRef,
+  })
   useDropPinMarker({ mapRef, mapReady, droppedPin, scheme: th.scheme, t })
 
   React.useEffect(() => {
@@ -374,7 +390,17 @@ const MapCanvas = React.forwardRef<MapHandle, MapProps>(function MapCanvas(props
   React.useEffect(() => {
     indexRef.current = index
     if (mapReady) runner.flush()
-  }, [runner, mapReady, index, points, activePinId, activeCleanupId, flyToHighlight, focus, th.scheme])
+  }, [
+    runner,
+    mapReady,
+    index,
+    points,
+    activePinId,
+    activeCleanupId,
+    flyToHighlight,
+    focus,
+    th.scheme,
+  ])
 
   useFocusAndFlyToCamera(mapRef, mapReady, mode, focus, flyToRequest, occlusionLeftRef)
 

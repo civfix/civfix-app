@@ -44,7 +44,11 @@ export function CompactLocationField({
             </Text>
           )}
         </View>
-        <Icon icon={point ? iconMap.ChevronRight : iconMap.Plus} size={16} color={th.colors.textMuted} />
+        <Icon
+          icon={point ? iconMap.ChevronRight : iconMap.Plus}
+          size={16}
+          color={th.colors.textMuted}
+        />
       </Pressable>
       {point && onClear ? (
         <Pressable

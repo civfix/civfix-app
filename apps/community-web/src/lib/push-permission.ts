@@ -31,7 +31,10 @@ export function onPushPermissionGranted(listener: () => void): () => void {
   }
 }
 
-async function ask(notification: typeof Notification, key: string | null): Promise<PushPermissionStatus> {
+async function ask(
+  notification: typeof Notification,
+  key: string | null,
+): Promise<PushPermissionStatus> {
   if (key === null) return "unsupported"
   const status = fromBrowser(await notification.requestPermission())
   if (status === "granted") for (const listener of grantListeners) listener()
@@ -52,6 +55,8 @@ export const webPushPermission: PushPermissionCapability = {
     // Safari honours requestPermission only within the click itself, so a key status() already read is
     // used without awaiting anything first.
     const key = knownWebPushKey()
-    return key !== undefined ? ask(notification, key) : serverKey().then((read) => ask(notification, read))
+    return key !== undefined
+      ? ask(notification, key)
+      : serverKey().then((read) => ask(notification, read))
   },
 }

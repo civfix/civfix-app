@@ -79,19 +79,25 @@ function requestedUrl(input: RequestInfo | URL | undefined): string | undefined 
   return input instanceof URL ? input.href : input.url
 }
 
-function harness(options: {
-  path?: string | string[]
-  url?: string
-  env?: Partial<PreviewEnv>
-  upstream?: () => Promise<Response>
-} = {}): Harness {
+function harness(
+  options: {
+    path?: string | string[]
+    url?: string
+    env?: Partial<PreviewEnv>
+    upstream?: () => Promise<Response>
+  } = {},
+): Harness {
   const assets = vi.fn<PreviewEnv["ASSETS"]["fetch"]>(async () => shellResponse())
-  const fetchSpy = vi.fn<(input: Request) => Promise<Response>>(options.upstream ?? (async () => new Response(JSON.stringify(REPORT_PAYLOAD), { status: 200 })))
+  const fetchSpy = vi.fn<(input: Request) => Promise<Response>>(
+    options.upstream ?? (async () => new Response(JSON.stringify(REPORT_PAYLOAD), { status: 200 })),
+  )
   vi.stubGlobal("fetch", fetchSpy)
   const waited: Promise<unknown>[] = []
   const rewrite = vi.fn((shell: Response, preview: LinkPreview) => {
-    const html = SHELL_HTML.replace("<title>civfix</title>", `<title>${documentTitle(preview)}</title>`)
-      .replace("</head>", `${metaTagsHtml(preview)}</head>`)
+    const html = SHELL_HTML.replace(
+      "<title>civfix</title>",
+      `<title>${documentTitle(preview)}</title>`,
+    ).replace("</head>", `${metaTagsHtml(preview)}</head>`)
     return new Response(html, { status: shell.status, headers: shell.headers })
   })
   return {
@@ -172,7 +178,10 @@ describe("parsePreviewRoute", () => {
       post: { ok: [UUID], bad: ["GR-12-000001", "ada"] },
     }
     const hostile = ["a.b", "..%2F", "../secret", "a/b", "a b", "a?b", "%2e%2e", "-leading", ""]
-    for (const [kind, { ok, bad }] of Object.entries(matrix) as [PreviewKind, (typeof matrix)[PreviewKind]][]) {
+    for (const [kind, { ok, bad }] of Object.entries(matrix) as [
+      PreviewKind,
+      (typeof matrix)[PreviewKind],
+    ][]) {
       for (const id of ok) expect(isValidPreviewId(kind, id), `${kind} ${id}`).toBe(true)
       for (const id of [...bad, ...hostile]) {
         expect(isValidPreviewId(kind, id), `${kind} ${id}`).toBe(false)
@@ -223,11 +232,15 @@ describe("apiBaseFor", () => {
   const assets = { fetch: async () => shellResponse() }
 
   it("defaults to the production API", () => {
-    expect(apiBaseFor("https://civfix.org/pin/abc", { ASSETS: assets })).toBe("https://api.civfix.org")
+    expect(apiBaseFor("https://civfix.org/pin/abc", { ASSETS: assets })).toBe(
+      "https://api.civfix.org",
+    )
   })
 
   it("uses the staging API only for an exactly-matching staging host", () => {
-    expect(apiBaseFor("https://civfix.dev/pin/abc", { ASSETS: assets })).toBe("https://api.civfix.dev")
+    expect(apiBaseFor("https://civfix.dev/pin/abc", { ASSETS: assets })).toBe(
+      "https://api.civfix.dev",
+    )
     expect(apiBaseFor("https://staging.civfix-web.pages.dev/pin/abc", { ASSETS: assets })).toBe(
       "https://api.civfix.dev",
     )
@@ -253,7 +266,8 @@ describe("apiBaseFor", () => {
 
 describe("cache policy", () => {
   const assets = { fetch: async () => shellResponse() }
-  const hostOf = (requestUrl: string) => new URL(apiBaseFor(requestUrl, { ASSETS: assets })).hostname
+  const hostOf = (requestUrl: string) =>
+    new URL(apiBaseFor(requestUrl, { ASSETS: assets })).hostname
 
   it("keys by api host, kind and validated id", () => {
     expect(previewCacheKey("report", "abc", "api.civfix.org")).toBe(
@@ -306,14 +320,16 @@ describe("cache policy", () => {
   it("carries the upstream outcome through the negative entry", () => {
     expect(upstreamOutcome(200)).toBe("found")
     for (const status of [404, 410]) expect(upstreamOutcome(status)).toBe("missing")
-    for (const status of [403, 429, 500, 502, 503]) expect(upstreamOutcome(status)).toBe("transient")
+    for (const status of [403, 429, 500, 502, 503])
+      expect(upstreamOutcome(status)).toBe("transient")
     expect(negativeCacheOutcome(negativeCacheResponse("missing"))).toBe("missing")
     expect(negativeCacheOutcome(negativeCacheResponse("transient"))).toBe("transient")
     expect(negativeCacheOutcome(cacheablePayloadResponse("{}"))).toBeNull()
   })
 
   it("treats every non-2xx upstream status as a fallback", () => {
-    for (const status of [404, 429, 500, 502, 503, 301, 401]) expect(shouldFallback(status)).toBe(true)
+    for (const status of [404, 429, 500, 502, 503, 301, 401])
+      expect(shouldFallback(status)).toBe(true)
     expect(shouldFallback(200)).toBe(false)
   })
 
@@ -354,7 +370,9 @@ describe("cache policy", () => {
     const response = await runPreview(prod.context, "report", { rewrite: prod.rewrite })
     expect(prod.fetchSpy).toHaveBeenCalledTimes(1)
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
+    expect(html).toContain(
+      '<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">',
+    )
     expect(html).not.toContain("robots")
   })
 })
@@ -503,7 +521,9 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).toContain('<meta name="robots" content="noindex">')
-      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
+      expect(html).toContain(
+        '<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">',
+      )
     }
   })
 
@@ -514,7 +534,9 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).not.toContain("robots")
-      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
+      expect(html).toContain(
+        '<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">',
+      )
     }
   })
 
@@ -558,13 +580,20 @@ describe("runPreview", () => {
     expect(h.rewrite).toHaveBeenCalledTimes(1)
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate")
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
+    expect(html).toContain(
+      '<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">',
+    )
   })
 })
 
 describe("canonical url", () => {
   it("comes from the serving origin and the DTO id", () => {
-    const preview = buildPreview("report", REPORT_PAYLOAD, "route-fallback-id", "https://civfix.dev")
+    const preview = buildPreview(
+      "report",
+      REPORT_PAYLOAD,
+      "route-fallback-id",
+      "https://civfix.dev",
+    )
     expect(preview?.url).toBe("https://civfix.dev/pin/8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22")
     expect(metaTagsHtml(preview!)).toContain(
       '<link rel="canonical" href="https://civfix.dev/pin/8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22">',
@@ -573,9 +602,9 @@ describe("canonical url", () => {
 
   it("falls back to the validated route id when the payload id is unusable", () => {
     const origin = "https://civfix.org"
-    expect(buildPreview("report", { ...REPORT_PAYLOAD, id: "../evil" }, "safe-id", origin)?.url).toBe(
-      "https://civfix.org/pin/safe-id",
-    )
+    expect(
+      buildPreview("report", { ...REPORT_PAYLOAD, id: "../evil" }, "safe-id", origin)?.url,
+    ).toBe("https://civfix.org/pin/safe-id")
     expect(buildPreview("report", { ...REPORT_PAYLOAD, id: 7 }, "safe-id", origin)?.url).toBe(
       "https://civfix.org/pin/safe-id",
     )
@@ -584,7 +613,9 @@ describe("canonical url", () => {
   it("reads the person id out of the profile envelope", () => {
     const preview = buildPreview(
       "person",
-      { profile: { id: "5b2d7e1c-3f4a-4b6c-8d9e-0a1b2c3d4e5f", name: "Ada Rivera", handle: "ada" } },
+      {
+        profile: { id: "5b2d7e1c-3f4a-4b6c-8d9e-0a1b2c3d4e5f", name: "Ada Rivera", handle: "ada" },
+      },
       "route-id",
       "https://civfix.org",
     )
@@ -614,10 +645,9 @@ describe("preview head on the staging host", () => {
   }
 
   it("emits every tag iMessage, WhatsApp, Slack, Telegram and LinkedIn read, on the request origin", async () => {
-    const { html, response } = await renderEvent(
-      `https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`,
-    )
-    const description = "Sat, Sep 12, 10:00 AM PDT · Bring gloves. Ask for Dana at 12 Elm St, apt 5."
+    const { html, response } = await renderEvent(`https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`)
+    const description =
+      "Sat, Sep 12, 10:00 AM PDT · Bring gloves. Ask for Dana at 12 Elm St, apt 5."
     const title = "Ballona Creek cleanup on civfix"
 
     expect(response.headers.get("Content-Type")).toBe(HTML_CONTENT_TYPE)
@@ -726,7 +756,12 @@ describe("signup page previews (/e/:slug)", () => {
   })
 
   it("canonicalizes to /e/<slug>, not to the shell", () => {
-    const preview = buildPreview("signup", SIGNUP_PAYLOAD, "beach-cleanup-may", "https://civfix.org")
+    const preview = buildPreview(
+      "signup",
+      SIGNUP_PAYLOAD,
+      "beach-cleanup-may",
+      "https://civfix.org",
+    )
     expect(preview?.url).toBe("https://civfix.org/e/beach-cleanup-may")
   })
 
@@ -749,7 +784,10 @@ describe("signup page previews (/e/:slug)", () => {
   it("refuses a presigned cover, because an og:image is cached and mirrored forever", () => {
     const signed = buildPreview(
       "signup",
-      { ...SIGNUP_PAYLOAD, coverUrl: "https://media.civfix.org/pages/cover.jpg?X-Amz-Signature=abc" },
+      {
+        ...SIGNUP_PAYLOAD,
+        coverUrl: "https://media.civfix.org/pages/cover.jpg?X-Amz-Signature=abc",
+      },
       "s",
       "https://civfix.org",
     )
@@ -788,7 +826,10 @@ describe("signup page previews (/e/:slug)", () => {
   it("prefers the host's SEO title and description over the event's", () => {
     const preview = buildPreview(
       "signup",
-      { ...SIGNUP_PAYLOAD, seo: { title: "Come clean the beach", description: "Gloves provided." } },
+      {
+        ...SIGNUP_PAYLOAD,
+        seo: { title: "Come clean the beach", description: "Gloves provided." },
+      },
       "s",
       "https://civfix.org",
     )
@@ -807,9 +848,14 @@ describe("signup page previews (/e/:slug)", () => {
   })
 
   it("falls back to the branded default when the page has no title at all", () => {
-    expect(buildPreview("signup", { ...SIGNUP_PAYLOAD, event: null, seo: null }, "s", "https://civfix.org")).toBe(
-      null,
-    )
+    expect(
+      buildPreview(
+        "signup",
+        { ...SIGNUP_PAYLOAD, event: null, seo: null },
+        "s",
+        "https://civfix.org",
+      ),
+    ).toBe(null)
   })
 
   it("serves the branded default, without noindexing, when the API is unreachable", async () => {
@@ -855,11 +901,14 @@ const POST_PAYLOAD = {
   viewer: { liked: true, reposted: false, saved: true },
 }
 
-function postHarness(options: { path?: string[]; upstream?: () => Promise<Response> } = {}): Harness {
+function postHarness(
+  options: { path?: string[]; upstream?: () => Promise<Response> } = {},
+): Harness {
   return harness({
     url: `https://civfix.dev/post/${POST_ID}`,
     path: options.path ?? [POST_ID],
-    upstream: options.upstream ?? (async () => new Response(JSON.stringify(POST_PAYLOAD), { status: 200 })),
+    upstream:
+      options.upstream ?? (async () => new Response(JSON.stringify(POST_PAYLOAD), { status: 200 })),
   })
 }
 
@@ -913,7 +962,8 @@ describe("post previews (/post/:id)", () => {
     const h = harness({
       url: `https://civfix.org/post/${POST_ID}`,
       path: [POST_ID],
-      upstream: async () => new Response(JSON.stringify({ error: { code: "NOT_FOUND" } }), { status: 404 }),
+      upstream: async () =>
+        new Response(JSON.stringify({ error: { code: "NOT_FOUND" } }), { status: 404 }),
     })
     const html = await (await runPreview(h.context, "post", { rewrite: h.rewrite })).text()
     expect(html).toContain('<meta property="og:title" content="civfix">')

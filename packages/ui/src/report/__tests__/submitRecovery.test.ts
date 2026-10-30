@@ -5,7 +5,12 @@ import {
   CreateReportRequestSchema,
   MAX_REPORT_DESCRIPTION_LENGTH,
 } from "@civfix/contract"
-import { STEP_ORDER_COMPACT, STEP_ORDER_EXPANDED, stepOrderFor, submitErrorRecovery } from "../wizardSteps"
+import {
+  STEP_ORDER_COMPACT,
+  STEP_ORDER_EXPANDED,
+  stepOrderFor,
+  submitErrorRecovery,
+} from "../wizardSteps"
 import {
   composeDescription,
   createSubmitRunSlot,
@@ -20,11 +25,15 @@ const NO_FLAGS = { blockingSidewalk: false, safetyHazard: false }
 
 describe("a refused submission offers a way to change the report", () => {
   it("sends a slur-filtered title or description to the details step without a looping retry", () => {
-    expect(submitErrorRecovery("VALIDATION", { title: "not allowed" }, STEP_ORDER_COMPACT)).toEqual({
-      retryable: false,
-      editStep: "details",
-    })
-    expect(submitErrorRecovery("VALIDATION", { description: "not allowed" }, STEP_ORDER_EXPANDED)).toEqual({
+    expect(submitErrorRecovery("VALIDATION", { title: "not allowed" }, STEP_ORDER_COMPACT)).toEqual(
+      {
+        retryable: false,
+        editStep: "details",
+      },
+    )
+    expect(
+      submitErrorRecovery("VALIDATION", { description: "not allowed" }, STEP_ORDER_EXPANDED),
+    ).toEqual({
       retryable: false,
       editStep: "details",
     })
@@ -32,7 +41,11 @@ describe("a refused submission offers a way to change the report", () => {
 
   it("sends an unclaimable upload to the capture step and still lets a re-upload retry", () => {
     expect(
-      submitErrorRecovery("VALIDATION", { mediaUploadIds: "One or more media uploads are unavailable." }, STEP_ORDER_COMPACT),
+      submitErrorRecovery(
+        "VALIDATION",
+        { mediaUploadIds: "One or more media uploads are unavailable." },
+        STEP_ORDER_COMPACT,
+      ),
     ).toEqual({ retryable: true, editStep: "capture" })
     expect(submitErrorRecovery("MEDIA_REJECTED", undefined, STEP_ORDER_COMPACT)).toEqual({
       retryable: false,
@@ -41,22 +54,39 @@ describe("a refused submission offers a way to change the report", () => {
   })
 
   it("routes a location refusal to the location step, or to review where the layout has none", () => {
-    expect(submitErrorRecovery("GPS_IMPLAUSIBLE", undefined, STEP_ORDER_COMPACT).editStep).toBe("location")
-    expect(submitErrorRecovery("VALIDATION", { lat: "bad" }, STEP_ORDER_EXPANDED).editStep).toBe("review")
+    expect(submitErrorRecovery("GPS_IMPLAUSIBLE", undefined, STEP_ORDER_COMPACT).editStep).toBe(
+      "location",
+    )
+    expect(submitErrorRecovery("VALIDATION", { lat: "bad" }, STEP_ORDER_EXPANDED).editStep).toBe(
+      "review",
+    )
     expect(
-      submitErrorRecovery("NOT_ROUTABLE", undefined, stepOrderFor("compact", { skipLocation: true })).editStep,
+      submitErrorRecovery(
+        "NOT_ROUTABLE",
+        undefined,
+        stepOrderFor("compact", { skipLocation: true }),
+      ).editStep,
     ).toBe("review")
-    expect(submitErrorRecovery("VALIDATION", { addr: "not allowed" }, STEP_ORDER_COMPACT).editStep).toBe("review")
+    expect(
+      submitErrorRecovery("VALIDATION", { addr: "not allowed" }, STEP_ORDER_COMPACT).editStep,
+    ).toBe("review")
   })
 
   it("matches nested zod field paths by their first segment", () => {
-    expect(submitErrorRecovery("VALIDATION", { "mediaUploadIds.0": "Invalid" }, STEP_ORDER_COMPACT).editStep).toBe(
-      "capture",
-    )
+    expect(
+      submitErrorRecovery("VALIDATION", { "mediaUploadIds.0": "Invalid" }, STEP_ORDER_COMPACT)
+        .editStep,
+    ).toBe("capture")
   })
 
   it("keeps Try again for transient failures, with review as the edit target", () => {
-    for (const code of ["INTERNAL", "RATE_LIMITED", "TURNSTILE_FAILED", "UNAUTHORIZED", undefined]) {
+    for (const code of [
+      "INTERNAL",
+      "RATE_LIMITED",
+      "TURNSTILE_FAILED",
+      "UNAUTHORIZED",
+      undefined,
+    ]) {
       expect(submitErrorRecovery(code, undefined, STEP_ORDER_COMPACT)).toEqual({
         retryable: true,
         editStep: "review",
@@ -109,7 +139,10 @@ describe("the description field leaves room for the flag notes", () => {
       { blockingSidewalk: true, safetyHazard: false },
       { blockingSidewalk: false, safetyHazard: true },
     ]) {
-      const composed = composeDescription({ description: "x".repeat(descriptionMaxLength(flags)), flags })
+      const composed = composeDescription({
+        description: "x".repeat(descriptionMaxLength(flags)),
+        flags,
+      })
       expect(composed?.length).toBe(MAX_REPORT_DESCRIPTION_LENGTH)
     }
   })
@@ -209,7 +242,9 @@ describe("a submission belongs to the viewer who started it", () => {
   })
 
   it("never leaves a run that claims itself (a composer hand-off) for the next mount to adopt", async () => {
-    const slot = createSubmitRunSlot<{ kind: string }>({ claimsItself: (settled) => settled.kind === "composer" })
+    const slot = createSubmitRunSlot<{ kind: string }>({
+      claimsItself: (settled) => settled.kind === "composer",
+    })
     await slot.start(async () => ({ kind: "composer" }))
     expect(slot.unclaimed()).toBeNull()
 

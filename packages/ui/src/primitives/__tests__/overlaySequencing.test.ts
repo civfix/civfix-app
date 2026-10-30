@@ -92,17 +92,25 @@ describe("every house overlay reports the moment it has fully left the screen", 
   })
 
   it("MessageContextMenu runs reactions and row actions through the same gate and settles off both of its Modals", () => {
-    expect(CONTEXT_MENU).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
+    expect(CONTEXT_MENU).toContain(
+      "const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)",
+    )
     expect(CONTEXT_MENU).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
-    expect(CONTEXT_MENU).toMatch(/const handleReact = \(emoji: ReactionEmoji\) => run\(\(\) => onReact\(emoji\)\)/)
-    expect(CONTEXT_MENU).toMatch(/const handleAction = \(action: ContextMenuAction\) => run\(action\.onPress\)/)
+    expect(CONTEXT_MENU).toMatch(
+      /const handleReact = \(emoji: ReactionEmoji\) => run\(\(\) => onReact\(emoji\)\)/,
+    )
+    expect(CONTEXT_MENU).toMatch(
+      /const handleAction = \(action: ContextMenuAction\) => run\(action\.onPress\)/,
+    )
     expect(CONTEXT_MENU.match(/onDismiss=\{onModalDismiss\}/g)).toHaveLength(2)
     expect(CONTEXT_MENU).not.toMatch(/action\.onPress\(\)\s*onClose\(\)/)
     expect(CONTEXT_MENU).not.toMatch(/onReact\(emoji\)\s*onClose\(\)/)
   })
 
   it("PopoverMenu runs every row action through the gate and settles off its own Modal", () => {
-    expect(POPOVER).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
+    expect(POPOVER).toContain(
+      "const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)",
+    )
     expect(POPOVER).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
     expect(POPOVER).toMatch(
       /const handlePress = useCallback\(\(item: PopoverMenuItem\) => pressPopoverMenuItem\(item, run\), \[run\]\)/,
@@ -112,7 +120,9 @@ describe("every house overlay reports the moment it has fully left the screen", 
   })
 
   it("ModalCardSheet and SlideUpSheet expose onClosed through the same hook, off the post-exit rendered flag", () => {
-    expect(CARD_SHEET).toContain("const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })")
+    expect(CARD_SHEET).toContain(
+      "const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })",
+    )
     expect(CARD_SHEET).toContain("const onDismiss = useModalClosed(rendered, onClosed)")
     expect(CARD_SHEET).toMatch(/visible=\{rendered\}/)
     expect(CARD_SHEET).toMatch(/animationType="none"/)
@@ -125,20 +135,28 @@ describe("every house overlay reports the moment it has fully left the screen", 
   })
 
   it("the motion hook reads recipes through a ref, so an inline recipe object can never restart an animation", () => {
-    expect(MENU_MOTION).toMatch(/const recipesRef = useRef\(recipes\)\s*if \(MENU_MOTION_DEV_ASSERTS/)
+    expect(MENU_MOTION).toMatch(
+      /const recipesRef = useRef\(recipes\)\s*if \(MENU_MOTION_DEV_ASSERTS/,
+    )
     expect(MENU_MOTION).toMatch(/\}\s*recipesRef\.current = recipes/)
-    expect(MENU_MOTION).toMatch(/\}, \[visible, ready, reducedMotion, useNativeDriver, progress\]\)/)
+    expect(MENU_MOTION).toMatch(
+      /\}, \[visible, ready, reducedMotion, useNativeDriver, progress\]\)/,
+    )
   })
 
   it("SlideUpSheet builds its translate graph once per height, not once per render", () => {
-    expect(SLIDE_UP).toMatch(/const translateY = useMemo\([\s\S]*?\[progress, dragY, sheetHeight, winH\],\s*\)/)
+    expect(SLIDE_UP).toMatch(
+      /const translateY = useMemo\([\s\S]*?\[progress, dragY, sheetHeight, winH\],\s*\)/,
+    )
   })
 })
 
 describe("the post overflow menu stays mounted until the surface it opened has actually gone", () => {
   it("retains on activity and releases on a surface's onClosed, never on a timer", () => {
     expect(OVERFLOW).toMatch(/if \(active\) setRetained\(true\)/)
-    expect(OVERFLOW).toMatch(/const onSurfaceClosed = useCallback\(\(\) => \{\s*if \(!activeRef\.current\) setRetained\(false\)/)
+    expect(OVERFLOW).toMatch(
+      /const onSurfaceClosed = useCallback\(\(\) => \{\s*if \(!activeRef\.current\) setRetained\(false\)/,
+    )
     expect(OVERFLOW).not.toContain("setTimeout")
     expect(OVERFLOW).not.toContain("RELEASE_AFTER_CLOSE_MS")
   })
@@ -149,7 +167,9 @@ describe("the post overflow menu stays mounted until the surface it opened has a
   })
 
   it("opens the report sheet from the row action, which the menu defers until it has closed", () => {
-    expect(OVERFLOW).toMatch(/const startReport = useCallback\(\s*\(\) => requireAuth\(\(\) => onReportOpenChange\(true\)/)
+    expect(OVERFLOW).toMatch(
+      /const startReport = useCallback\(\s*\(\) => requireAuth\(\(\) => onReportOpenChange\(true\)/,
+    )
     expect(OVERFLOW).toMatch(/key: "report",[\s\S]*?onPress: startReport/)
   })
 })
@@ -162,7 +182,9 @@ describe("callers no longer hand-roll the after-dismiss dance", () => {
   })
 
   it("both attach sheets run Photo and Camera through the gate, so an iOS action parked while the sheet dismisses is flushed on unmount and dropped on reopen", () => {
-    expect(ACTION_SHEET).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)")
+    expect(ACTION_SHEET).toContain(
+      "const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)",
+    )
     expect(ACTION_SHEET).toContain("const onModalDismiss = useModalClosed(visible, settled)")
     expect(ACTION_SHEET.match(/onDismiss=\{onModalDismiss\}/g)).toHaveLength(2)
     expect(ACTION_SHEET).toContain("const content = children(run)")
@@ -174,7 +196,9 @@ describe("callers no longer hand-roll the after-dismiss dance", () => {
       expect(sheet, name).not.toContain("pendingActionRef")
       expect(sheet, name).not.toContain('Platform.OS === "ios"')
     }
-    expect(COMPOSER_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
+    expect(COMPOSER_ATTACH).toMatch(
+      /<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/,
+    )
     expect(COMPOSER_ATTACH).toContain("onPress={() => runAfterDismiss(handlers[key])}")
     expect(REPLY_ATTACH).toMatch(/<AnchoredActionSheet\s+visible=\{visible\}\s+onClose=\{onClose\}/)
     expect(REPLY_ATTACH).toContain('runAfterDismiss(key === "photo" ? onPhoto : onCamera)')
@@ -189,7 +213,9 @@ describe("callers no longer hand-roll the after-dismiss dance", () => {
 
   it("the share provider releases its target when the sheet reports it closed, not after 400ms", () => {
     expect(SHARE_PROVIDER).not.toContain("setTimeout")
-    expect(SHARE_PROVIDER).toMatch(/const release = useCallback\(\(\) => \{\s*if \(!visibleRef\.current\) setTarget\(null\)/)
+    expect(SHARE_PROVIDER).toMatch(
+      /const release = useCallback\(\(\) => \{\s*if \(!visibleRef\.current\) setTarget\(null\)/,
+    )
     expect(SHARE_PROVIDER).toContain("onClose={close} onClosed={release}")
   })
 })

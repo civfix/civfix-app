@@ -13,7 +13,12 @@ describe("the fake pushPermission capability", () => {
 
   it("T2: setStatus sets what status() resolves, for every status", async () => {
     const fake = fakePushPermission()
-    for (const s of ["granted", "denied", "undetermined", "unsupported"] as PushPermissionStatus[]) {
+    for (const s of [
+      "granted",
+      "denied",
+      "undetermined",
+      "unsupported",
+    ] as PushPermissionStatus[]) {
       fake.setStatus(s)
       await expect(fake.status()).resolves.toBe(s)
     }

@@ -14,7 +14,16 @@ vi.mock("../../../primitives", () => ({ CATEGORY_ICONS: {}, MetaDot: () => null 
 
 function row(over: Partial<NearbyReportRow["pin"]>, distanceM: number): NearbyReportRow {
   return {
-    pin: { id: "r1", category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, ...over },
+    pin: {
+      id: "r1",
+      category: "trash",
+      status: "published",
+      lat: 34.1,
+      lng: -118.3,
+      confirmCount: 0,
+      fixedCount: 0,
+      ...over,
+    },
     distanceM,
   }
 }
@@ -55,8 +64,13 @@ describe("DuplicateMatchCard", () => {
     renderCard(row({ title: "Overflowing bin", confirmCount: 3 }, 11.2))
     const card = screen.getByRole("button")
     expect(card.getAttribute("aria-label")).toBeNull()
-    expect(card).toHaveProperty("textContent", "Overflowing binTrashAbout 10 m away3 neighbors confirmed this")
-    expect(screen.getByRole("button", { name: /About 10 m away.*3 neighbors confirmed this/ })).toBe(card)
+    expect(card).toHaveProperty(
+      "textContent",
+      "Overflowing binTrashAbout 10 m away3 neighbors confirmed this",
+    )
+    expect(
+      screen.getByRole("button", { name: /About 10 m away.*3 neighbors confirmed this/ }),
+    ).toBe(card)
   })
 })
 

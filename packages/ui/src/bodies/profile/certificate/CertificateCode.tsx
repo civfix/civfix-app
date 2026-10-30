@@ -5,13 +5,7 @@ import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import { useCertificateCardStyles } from "./certificateCardStyles"
 
-export function CertificateCopyButton({
-  onPress,
-  color,
-}: {
-  onPress: () => void
-  color: string
-}) {
+export function CertificateCopyButton({ onPress, color }: { onPress: () => void; color: string }) {
   const styles = useCertificateCardStyles()
   const { t } = useT("volunteer-hours")
   return (
@@ -51,7 +45,9 @@ export function CertificateCode({
       >
         {t("transcript.code", { code: formatted })}
       </Text>
-      {canCopy ? <CertificateCopyButton onPress={() => onCopy(formatted)} color={copyColor} /> : null}
+      {canCopy ? (
+        <CertificateCopyButton onPress={() => onCopy(formatted)} color={copyColor} />
+      ) : null}
     </View>
   )
 }

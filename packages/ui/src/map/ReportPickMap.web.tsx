@@ -20,7 +20,12 @@ import {
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
-import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
+import {
+  disposeMarkers,
+  syncMarkers,
+  type DesiredMarker,
+  type MarkerEntry,
+} from "./domMarkerLayer.web"
 import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
 import { MapUnavailable } from "./MapUnavailable"
 import {
@@ -121,7 +126,8 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
       const map = mapRef.current
       if (!map) return
       const currentZoom = map.getZoom()
-      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
+      const target =
+        clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       map.easeTo({ center: [node.lng, node.lat], zoom: target, duration: REPORT_PICK_FLY_MS })
     }, [])
 
@@ -228,7 +234,11 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
       })
       map.on("moveend", syncViewport)
       map.on("click", (e) => {
-        if (e.originalEvent.target instanceof Element && e.originalEvent.target.closest(".maplibregl-marker")) return
+        if (
+          e.originalEvent.target instanceof Element &&
+          e.originalEvent.target.closest(".maplibregl-marker")
+        )
+          return
         onPressMapRef.current?.()
       })
 
@@ -246,7 +256,10 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
       }
     }, [runner])
 
-    const radiusFeature = React.useMemo(() => radiusCircleFeature(center, radiusM), [center, radiusM])
+    const radiusFeature = React.useMemo(
+      () => radiusCircleFeature(center, radiusM),
+      [center, radiusM],
+    )
 
     React.useEffect(() => {
       const map = mapRef.current
@@ -323,7 +336,10 @@ const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapP
       if (!map || !mapReady || styleSchemeRef.current === th.scheme) return
       styleSchemeRef.current = th.scheme
       map.setStyle(
-        rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme: th.scheme }) as maplibregl.StyleSpecification,
+        rasterMapStyle(DEFAULT_ATTRIBUTION, {
+          cartoApiKey,
+          scheme: th.scheme,
+        }) as maplibregl.StyleSpecification,
         { transformStyle: carryStyleOverlay(RADIUS_SOURCE_ID) },
       )
     }, [mapReady, cartoApiKey, th.scheme])

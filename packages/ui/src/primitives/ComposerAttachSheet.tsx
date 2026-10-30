@@ -1,5 +1,12 @@
 import { Pressable, Platform } from "react-native"
-import { makeThemedStyles, useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  webTransition,
+  webHover,
+  focusRingProps,
+} from "../theme"
 import { iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useT } from "../i18n"
@@ -44,7 +51,11 @@ export function ComposerAttachSheet({
 
   const rows = composerAttachRows({ isWeb: Platform.OS === "web", canCreatePoll })
 
-  const handlers: Record<ComposerAttachRowKey, () => void> = { photo: onPhoto, camera: onCamera, poll: onPoll }
+  const handlers: Record<ComposerAttachRowKey, () => void> = {
+    photo: onPhoto,
+    camera: onCamera,
+    poll: onPoll,
+  }
 
   return (
     <AnchoredActionSheet

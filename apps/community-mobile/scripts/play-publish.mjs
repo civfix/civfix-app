@@ -60,7 +60,8 @@ export class PlayError extends Error {}
  * @param {string} name
  * @returns {unknown}
  */
-const field = (value, name) => (typeof value === "object" && value !== null ? Reflect.get(value, name) : undefined)
+const field = (value, name) =>
+  typeof value === "object" && value !== null ? Reflect.get(value, name) : undefined
 
 /**
  * @param {string} json
@@ -72,12 +73,24 @@ export function parseServiceAccount(json) {
   try {
     key = JSON.parse(json)
   } catch {
-    throw new PlayError("PLAY_SERVICE_ACCOUNT_JSON is not valid JSON; paste the whole downloaded key file")
+    throw new PlayError(
+      "PLAY_SERVICE_ACCOUNT_JSON is not valid JSON; paste the whole downloaded key file",
+    )
   }
   const clientEmail = field(key, "client_email")
   const privateKey = field(key, "private_key")
-  if (typeof key !== "object" || key === null || field(key, "type") !== "service_account" || typeof clientEmail !== "string" || !clientEmail || typeof privateKey !== "string" || !privateKey) {
-    throw new PlayError("PLAY_SERVICE_ACCOUNT_JSON is not a service account key (needs client_email and private_key)")
+  if (
+    typeof key !== "object" ||
+    key === null ||
+    field(key, "type") !== "service_account" ||
+    typeof clientEmail !== "string" ||
+    !clientEmail ||
+    typeof privateKey !== "string" ||
+    !privateKey
+  ) {
+    throw new PlayError(
+      "PLAY_SERVICE_ACCOUNT_JSON is not a service account key (needs client_email and private_key)",
+    )
   }
   return { ...key, client_email: clientEmail, private_key: privateKey }
 }
@@ -92,9 +105,17 @@ const base64url = (value) => Buffer.from(value).toString("base64url")
 export function signAssertion(account, nowSeconds) {
   const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }))
   const claims = base64url(
-    JSON.stringify({ iss: account.client_email, scope: SCOPE, aud: TOKEN_URL, iat: nowSeconds, exp: nowSeconds + 3600 }),
+    JSON.stringify({
+      iss: account.client_email,
+      scope: SCOPE,
+      aud: TOKEN_URL,
+      iat: nowSeconds,
+      exp: nowSeconds + 3600,
+    }),
   )
-  const signature = createSign("RSA-SHA256").update(`${header}.${claims}`).sign(account.private_key, "base64url")
+  const signature = createSign("RSA-SHA256")
+    .update(`${header}.${claims}`)
+    .sign(account.private_key, "base64url")
   return `${header}.${claims}.${signature}`
 }
 
@@ -117,7 +138,9 @@ export async function accessToken(account, { fetchImpl = fetch, now = Date.now()
   const token = field(body, "access_token")
   if (!response.ok || typeof token !== "string" || !token) {
     const detail = field(body, "error_description") ?? field(body, "error") ?? "no detail"
-    throw new PlayError(`Google refused the service account token (HTTP ${response.status}): ${typeof detail === "string" ? detail : JSON.stringify(detail)}`)
+    throw new PlayError(
+      `Google refused the service account token (HTTP ${response.status}): ${typeof detail === "string" ? detail : JSON.stringify(detail)}`,
+    )
   }
   return token
 }
@@ -148,17 +171,27 @@ export function playClient({ packageName, token, fetchImpl = fetch }) {
    * @param {string} url
    * @param {{ json?: unknown, body?: RequestInit["body"], headers?: Record<string, string>, timeout?: number }} [options]
    */
-  async function call(method, url, { json, body, headers = {}, timeout = REQUEST_TIMEOUT_MS } = {}) {
+  async function call(
+    method,
+    url,
+    { json, body, headers = {}, timeout = REQUEST_TIMEOUT_MS } = {},
+  ) {
     const response = await fetchImpl(url, {
       method,
-      headers: { authorization: `Bearer ${token}`, ...(json ? { "content-type": "application/json" } : {}), ...headers },
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(json ? { "content-type": "application/json" } : {}),
+        ...headers,
+      },
       body: json ? JSON.stringify(json) : (body ?? null),
       signal: AbortSignal.timeout(timeout),
     })
     if (!response.ok) {
       const detail = await response.text().catch(() => "")
       const message = googleErrorMessage(detail)
-      throw new PlayError(`${method} ${url.replace(/\?.*/, "")} failed (HTTP ${response.status}): ${message}`)
+      throw new PlayError(
+        `${method} ${url.replace(/\?.*/, "")} failed (HTTP ${response.status}): ${message}`,
+      )
     }
     return response
   }
@@ -179,12 +212,20 @@ export function playClient({ packageName, token, fetchImpl = fetch }) {
     },
     async uploadBundle(id, bytes) {
       // Resumable: a release bundle is tens of megabytes, beyond what a simple media upload is meant for.
-      const session = await call("POST", `${UPLOAD_API}/${encodeURIComponent(packageName)}/edits/${encodeURIComponent(id)}/bundles?uploadType=resumable`, {
-        json: {},
-        headers: { "x-upload-content-type": "application/octet-stream", "x-upload-content-length": String(bytes.length) },
-      })
+      const session = await call(
+        "POST",
+        `${UPLOAD_API}/${encodeURIComponent(packageName)}/edits/${encodeURIComponent(id)}/bundles?uploadType=resumable`,
+        {
+          json: {},
+          headers: {
+            "x-upload-content-type": "application/octet-stream",
+            "x-upload-content-length": String(bytes.length),
+          },
+        },
+      )
       const location = session.headers.get("location")
-      if (!location) throw new PlayError("Play opened no resumable upload session (no Location header)")
+      if (!location)
+        throw new PlayError("Play opened no resumable upload session (no Location header)")
       const uploaded = await call("PUT", location, {
         body: bytes,
         headers: { "content-type": "application/octet-stream" },
@@ -193,7 +234,11 @@ export function playClient({ packageName, token, fetchImpl = fetch }) {
       return /** @type {{ versionCode?: number }} */ (await uploaded.json())
     },
     async updateTrack(id, track, release) {
-      return (await call("PUT", `${edit(id)}/tracks/${encodeURIComponent(track)}`, { json: { track, releases: [release] } })).json()
+      return (
+        await call("PUT", `${edit(id)}/tracks/${encodeURIComponent(track)}`, {
+          json: { track, releases: [release] },
+        })
+      ).json()
     },
     async commit(id) {
       return (await call("POST", `${edit(id)}:commit`)).json()
@@ -206,7 +251,9 @@ export function highestVersionCode({ bundles = [], apks = [], tracks = [] }) {
   const codes = [
     ...bundles.map((bundle) => bundle.versionCode),
     ...apks.map((apk) => apk.versionCode),
-    ...tracks.flatMap((track) => (track.releases ?? []).flatMap((release) => release.versionCodes ?? [])),
+    ...tracks.flatMap((track) =>
+      (track.releases ?? []).flatMap((release) => release.versionCodes ?? []),
+    ),
   ].map(Number)
   return codes.length ? Math.max(...codes) : 0
 }
@@ -220,7 +267,9 @@ async function discardEdit(client, id) {
   try {
     await client.deleteEdit(id)
   } catch (error) {
-    console.warn(`warning: could not discard Play edit ${id}: ${error instanceof Error ? error.message : String(error)}`)
+    console.warn(
+      `warning: could not discard Play edit ${id}: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
 }
 
@@ -236,7 +285,10 @@ export async function nextVersionCode(client, floor) {
       client.list(id, "apks"),
       client.list(id, "tracks"),
     ])
-    return Math.max(highestVersionCode({ bundles: bundles.bundles, apks: apks.apks, tracks: tracks.tracks }) + 1, floor)
+    return Math.max(
+      highestVersionCode({ bundles: bundles.bundles, apks: apks.apks, tracks: tracks.tracks }) + 1,
+      floor,
+    )
   } finally {
     await discardEdit(client, id)
   }
@@ -247,20 +299,31 @@ export async function nextVersionCode(client, floor) {
  * @param {{ bytes: Buffer, track: string, name?: string | undefined }} release
  */
 export async function publishBundle(client, { bytes, track, name }) {
-  const status = Object.hasOwn(TRACK_STATUS, track) ? TRACK_STATUS[/** @type {keyof typeof TRACK_STATUS} */ (track)] : undefined
-  if (!status) throw new PlayError(`unknown track '${track}'; expected one of ${Object.keys(TRACK_STATUS).join(", ")}`)
+  const status = Object.hasOwn(TRACK_STATUS, track)
+    ? TRACK_STATUS[/** @type {keyof typeof TRACK_STATUS} */ (track)]
+    : undefined
+  if (!status)
+    throw new PlayError(
+      `unknown track '${track}'; expected one of ${Object.keys(TRACK_STATUS).join(", ")}`,
+    )
   const id = await client.insertEdit()
   try {
     const bundle = await client.uploadBundle(id, bytes)
     const versionCode = String(bundle.versionCode)
-    await client.updateTrack(id, track, { ...(name ? { name } : {}), versionCodes: [versionCode], status })
+    await client.updateTrack(id, track, {
+      ...(name ? { name } : {}),
+      versionCodes: [versionCode],
+      status,
+    })
     await client.commit(id)
     return { versionCode, track, status }
   } catch (error) {
     await discardEdit(client, id)
     const message = error instanceof Error ? error.message : String(error)
     if (/cannot be sent for review automatically/i.test(message)) {
-      throw new PlayError(`${message}\nPlay is holding earlier changes for a manual send (e.g. after a rejection); send or discard them in Play Console's Publishing overview, then retry.`)
+      throw new PlayError(
+        `${message}\nPlay is holding earlier changes for a manual send (e.g. after a rejection); send or discard them in Play Console's Publishing overview, then retry.`,
+      )
     }
     if (/only releases with status draft/i.test(message)) {
       throw new PlayError(
@@ -274,7 +337,9 @@ export async function publishBundle(client, { bytes, track, name }) {
 /** @returns {never} */
 function usage() {
   console.error("usage: node scripts/play-publish.mjs next-version-code")
-  console.error("       node scripts/play-publish.mjs upload <app.aab> --track internal|production [--name <release name>]")
+  console.error(
+    "       node scripts/play-publish.mjs upload <app.aab> --track internal|production [--name <release name>]",
+  )
   process.exit(1)
 }
 
@@ -289,7 +354,10 @@ async function main(argv) {
     throw new PlayError("app.config.js sets no android.package or android.versionCode")
   }
   const secret = process.env.PLAY_SERVICE_ACCOUNT_JSON
-  if (!secret) throw new PlayError("PLAY_SERVICE_ACCOUNT_JSON is not set (the Play Console service account's JSON key)")
+  if (!secret)
+    throw new PlayError(
+      "PLAY_SERVICE_ACCOUNT_JSON is not set (the Play Console service account's JSON key)",
+    )
   const account = parseServiceAccount(secret)
   const client = playClient({ packageName, token: await accessToken(account) })
 
@@ -309,13 +377,20 @@ async function main(argv) {
   if (!aab || !track) usage()
   if (!(await stat(aab)).isFile()) throw new PlayError(`${aab} is not a file`)
   const result = await publishBundle(client, { bytes: await readFile(aab), track, name })
-  console.log(`Uploaded ${packageName} version code ${result.versionCode} to the ${result.track} track as ${result.status}.`)
-  if (result.status === "draft") console.log("Nothing is live yet: open Play Console, review the draft release and send it for review.")
+  console.log(
+    `Uploaded ${packageName} version code ${result.versionCode} to the ${result.track} track as ${result.status}.`,
+  )
+  if (result.status === "draft")
+    console.log(
+      "Nothing is live yet: open Play Console, review the draft release and send it for review.",
+    )
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main(process.argv.slice(2)).catch((/** @type {unknown} */ error) => {
-    console.error(error instanceof PlayError ? error.message : error instanceof Error ? error.stack : error)
+    console.error(
+      error instanceof PlayError ? error.message : error instanceof Error ? error.stack : error,
+    )
     process.exit(1)
   })
 }

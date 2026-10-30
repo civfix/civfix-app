@@ -79,7 +79,9 @@ export function enqueue(
     nextAttemptAt: now,
   }
   const next = [...pruned.entries, entry]
-  return { entries: next.length > CHECKIN_OUTBOX_MAX ? next.slice(next.length - CHECKIN_OUTBOX_MAX) : next }
+  return {
+    entries: next.length > CHECKIN_OUTBOX_MAX ? next.slice(next.length - CHECKIN_OUTBOX_MAX) : next,
+  }
 }
 
 export function mergeQueued(
@@ -262,8 +264,7 @@ export function replaySubject(entry: CheckinOutboxEntry): ReplaySubject | null {
 }
 
 export type ReplayAttempt =
-  | { status: "ok"; outcome: CheckinOutcome }
-  | { status: "error"; code: string }
+  { status: "ok"; outcome: CheckinOutcome } | { status: "error"; code: string }
 
 export interface ReplayDeps {
   now: () => number
@@ -308,7 +309,9 @@ export async function runReplay(
     if (outcome.disposition === "sent") {
       sentAny = true
       events.push(
-        attempt.status === "ok" ? { kind: "settled", outcome: attempt.outcome } : { kind: "conflict" },
+        attempt.status === "ok"
+          ? { kind: "settled", outcome: attempt.outcome }
+          : { kind: "conflict" },
       )
       apply(markSent(next, entry.id))
     } else if (outcome.disposition === "drop") {

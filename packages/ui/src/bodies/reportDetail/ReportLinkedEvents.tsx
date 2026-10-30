@@ -14,7 +14,9 @@ export function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
   const shared = useReportDetailSharedStyles()
   const { t } = useT("report-detail")
   const onOpenEvent = useCallback((ev: LinkedEventRef) => {
-    useNavStore.getState().push({ kind: "cleanup", id: ev.id, title: ev.title, lat: ev.lat, lng: ev.lng })
+    useNavStore
+      .getState()
+      .push({ kind: "cleanup", id: ev.id, title: ev.title, lat: ev.lat, lng: ev.lng })
   }, [])
 
   if (events.length === 0) return null
@@ -23,7 +25,11 @@ export function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
       <Text style={shared.eyebrow}>{t("linked_events.heading")}</Text>
       <View style={styles.linkedList}>
         {events.map((ev) => (
-          <EventCard key={ev.id} cleanup={linkedEventToCleanup(ev)} onPress={() => onOpenEvent(ev)} />
+          <EventCard
+            key={ev.id}
+            cleanup={linkedEventToCleanup(ev)}
+            onPress={() => onOpenEvent(ev)}
+          />
         ))}
       </View>
     </View>

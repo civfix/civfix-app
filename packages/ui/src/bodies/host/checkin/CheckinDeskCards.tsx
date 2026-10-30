@@ -34,7 +34,9 @@ export function CheckinCounters({
       <StatTile
         label={t("counters.registered")}
         value={shown(data.registered)}
-        hint={data.capacity != null ? t("counters.of_capacity", { capacity: data.capacity }) : undefined}
+        hint={
+          data.capacity != null ? t("counters.of_capacity", { capacity: data.capacity }) : undefined
+        }
       />
       <StatTile label={t("counters.waitlist")} value={shown(data.waitlisted)} />
       <StatTile label={t("counters.no_show")} value={shown(data.noShow)} />
@@ -63,7 +65,13 @@ export function OutboxBanner({
   )
 }
 
-export function ReplayReportCard({ report, onDismiss }: { report: CheckinReplayReport; onDismiss: () => void }) {
+export function ReplayReportCard({
+  report,
+  onDismiss,
+}: {
+  report: CheckinReplayReport
+  onDismiss: () => void
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-checkin")
@@ -148,12 +156,19 @@ export function CheckinResultCard({
       <Text style={styles.resultMeta}>
         {joinParts([
           state.result.ticketTypeName ?? null,
-          state.result.partySize != null ? t("result.party", { count: state.result.partySize }) : null,
+          state.result.partySize != null
+            ? t("result.party", { count: state.result.partySize })
+            : null,
         ])}
       </Text>
       <View style={styles.resultActions}>
         {render.undoable && state.seatId ? (
-          <SecondaryButton label={t("result.undo")} size="sm" disabled={undoPending} onPress={onUndo} />
+          <SecondaryButton
+            label={t("result.undo")}
+            size="sm"
+            disabled={undoPending}
+            onPress={onUndo}
+          />
         ) : null}
         <SecondaryButton label={t("result.dismiss")} size="sm" onPress={onDismiss} />
       </View>

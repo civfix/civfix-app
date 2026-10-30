@@ -2,9 +2,22 @@ import React, { useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/contract"
 import { DELETED_USER_LABEL } from "@civfix/contract"
-import { makeThemedStyles, useTheme, webTransition, webHover, webCursorPointer, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webTransition,
+  webHover,
+  webCursorPointer,
+  focusRingProps,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, OrgAffiliationBadge, PopoverMenu, usePopoverAnchor, VerifiedBadge } from "../primitives"
+import {
+  Avatar,
+  OrgAffiliationBadge,
+  PopoverMenu,
+  usePopoverAnchor,
+  VerifiedBadge,
+} from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
 
 export interface RosterRowMenu {
@@ -86,7 +99,11 @@ export function RosterRow({
             </Text>
             {person.official ? <VerifiedBadge size="sm" /> : null}
             {person.organization ? (
-              <OrgAffiliationBadge organization={person.organization} size="sm" interactive={false} />
+              <OrgAffiliationBadge
+                organization={person.organization}
+                size="sm"
+                interactive={false}
+              />
             ) : null}
             {nameSuffix}
           </View>

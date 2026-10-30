@@ -56,7 +56,12 @@ import {
   useUndoEventCheckIn,
   useWalkupRegistration,
 } from "../hooks/host"
-import { useDeleteAccount, useReportContent, useRequestEmailCode, useRequestMyData } from "../hooks/moderation"
+import {
+  useDeleteAccount,
+  useReportContent,
+  useRequestEmailCode,
+  useRequestMyData,
+} from "../hooks/moderation"
 import {
   useMarkNotificationsRead,
   useMarkAllNotificationsRead,
@@ -110,19 +115,36 @@ const REPORT = "rep-1"
 const PERSON = "u-2"
 const ME = { id: "u-me", displayName: "Mia Me" } as unknown as UserDTO
 
-type Invalidation = { queryKey: readonly unknown[] } | { predicateMatches: readonly (readonly unknown[])[] }
+type Invalidation =
+  { queryKey: readonly unknown[] } | { predicateMatches: readonly (readonly unknown[])[] }
 
 const key = (...queryKey: unknown[]): Invalidation => ({ queryKey })
 
 // cleanupDetailFilters matches by predicate, so it is pinned by the seeded keys it selects: the id itself,
 // a refcode alias whose cached detail carries that id, and never another event or a longer sub-key.
-const CLEANUP_DETAIL: Invalidation = { predicateMatches: [["cleanup", EVENT], ["cleanup", EVENT_ALIAS]] }
-const HOST_EVENT: Invalidation[] = [key("host", EVENT), key("host", EVENT, "insights"), CLEANUP_DETAIL]
+const CLEANUP_DETAIL: Invalidation = {
+  predicateMatches: [
+    ["cleanup", EVENT],
+    ["cleanup", EVENT_ALIAS],
+  ],
+}
+const HOST_EVENT: Invalidation[] = [
+  key("host", EVENT),
+  key("host", EVENT, "insights"),
+  CLEANUP_DETAIL,
+]
 const CLEANUP_LISTS: Invalidation[] = [key("cleanups"), key("org-events")]
 const HOSTED_EVENT_LISTS: Invalidation[] = [key("hosted-events"), key("profile")]
 const NOTIFICATION_LISTS: Invalidation[] = [{ predicateMatches: [["notifications", 20]] }]
-const NOTIFICATION_LISTS_AND_DOT: Invalidation[] = [...NOTIFICATION_LISTS, key("notifications", "unread")]
-const MY_EVENT_INVITES: Invalidation[] = [key("event-invites", "mine"), key("hosted-events"), key("notifications")]
+const NOTIFICATION_LISTS_AND_DOT: Invalidation[] = [
+  ...NOTIFICATION_LISTS,
+  key("notifications", "unread"),
+]
+const MY_EVENT_INVITES: Invalidation[] = [
+  key("event-invites", "mine"),
+  key("hosted-events"),
+  key("notifications"),
+]
 
 function seededClient(): QueryClient {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -138,15 +160,22 @@ function seededClient(): QueryClient {
 function recordInvalidations(qc: QueryClient): Invalidation[] {
   const recorded: Invalidation[] = []
   const original = qc.invalidateQueries.bind(qc)
-  vi.spyOn(qc, "invalidateQueries").mockImplementation((filters?: InvalidateQueryFilters, options?) => {
-    const { predicate, ...rest } = filters ?? {}
-    recorded.push(
-      predicate
-        ? { predicateMatches: qc.getQueryCache().findAll({ predicate }).map((q) => q.queryKey) }
-        : (rest as Invalidation),
-    )
-    return original(filters, options)
-  })
+  vi.spyOn(qc, "invalidateQueries").mockImplementation(
+    (filters?: InvalidateQueryFilters, options?) => {
+      const { predicate, ...rest } = filters ?? {}
+      recorded.push(
+        predicate
+          ? {
+              predicateMatches: qc
+                .getQueryCache()
+                .findAll({ predicate })
+                .map((q) => q.queryKey),
+            }
+          : (rest as Invalidation),
+      )
+      return original(filters, options)
+    },
+  )
   return recorded
 }
 
@@ -158,7 +187,10 @@ function renderWithData<T>(
   const queryClient = seededClient()
   const invalidations = recordInvalidations(queryClient)
   const context = {
-    ...makeFakeDataContext({ api: api as unknown as ApiClient, auth: { isAuthenticated: true, user: ME } }),
+    ...makeFakeDataContext({
+      api: api as unknown as ApiClient,
+      auth: { isAuthenticated: true, user: ME },
+    }),
     ...overrides,
   }
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -202,7 +234,9 @@ describe("reports.ts mutation invalidations", () => {
 
   it("useUnlistReport invalidates the map report pins", async () => {
     const api = { unlistReport: resolves({ id: REPORT, visibility: "hidden" }) }
-    expect(await invalidationsOf(() => useUnlistReport(REPORT), true, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useUnlistReport(REPORT), true, api)).toEqual([
+      key("map", "reports"),
+    ])
   })
 
   it("useConfirmReport and useUnconfirmReport invalidate the map report pins once settled", async () => {
@@ -210,8 +244,12 @@ describe("reports.ts mutation invalidations", () => {
       confirmReport: resolves({ confirmCount: 1, confirmedByMe: true }),
       unconfirmReport: resolves({ confirmCount: 0, confirmedByMe: false }),
     }
-    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
-    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
+    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
   })
 
   it("T16: useConfirmReport, useUnconfirmReport, useMarkReportFixed, useUnmarkReportFixed and useConfirmMatch invalidate exactly the map report pins", async () => {
@@ -222,16 +260,28 @@ describe("reports.ts mutation invalidations", () => {
       markReportFixed: resolves(answer),
       unmarkReportFixed: resolves(answer),
     }
-    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
-    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([key("map", "reports")])
-    expect(await invalidationsOf(() => useMarkReportFixed(REPORT), undefined, api)).toEqual([key("map", "reports")])
-    expect(await invalidationsOf(() => useUnmarkReportFixed(REPORT), undefined, api)).toEqual([key("map", "reports")])
-    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useConfirmReport(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
+    expect(await invalidationsOf(() => useUnconfirmReport(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
+    expect(await invalidationsOf(() => useMarkReportFixed(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
+    expect(await invalidationsOf(() => useUnmarkReportFixed(REPORT), undefined, api)).toEqual([
+      key("map", "reports"),
+    ])
+    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([
+      key("map", "reports"),
+    ])
   })
 
   it("useConfirmMatch invalidates the map report pins", async () => {
     const api = { confirmReport: resolves({ confirmCount: 1, confirmedByMe: true }) }
-    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([key("map", "reports")])
+    expect(await invalidationsOf(() => useConfirmMatch(), REPORT, api)).toEqual([
+      key("map", "reports"),
+    ])
   })
 })
 
@@ -243,20 +293,42 @@ describe("social.ts mutation invalidations", () => {
 
   it("useUpdateProfile invalidates my profile, the updated profile and the people lists", async () => {
     const api = { updateProfile: resolves({ user: { id: ME.id } }) }
-    expect(await invalidationsOf(() => useUpdateProfile(), { handle: "mia", displayName: "Mia Me" }, api)).toEqual([
-      key("profile", ME.id),
-      key("people"),
-      key("profile", "me"),
-    ])
+    expect(
+      await invalidationsOf(
+        () => useUpdateProfile(),
+        { handle: "mia", displayName: "Mia Me" },
+        api,
+      ),
+    ).toEqual([key("profile", ME.id), key("people"), key("profile", "me")])
   })
 })
 
 describe("host.ts mutation invalidations", () => {
   it.each([
-    ["useMarkEventNoShows", () => useMarkEventNoShows(EVENT), undefined, { markEventNoShows: resolves({}) }],
-    ["useScanEventTicket", () => useScanEventTicket(EVENT), { token: "t" }, { scanEventTicket: resolves({}) }],
-    ["useCheckInEventSeat", () => useCheckInEventSeat(EVENT), { seatId: "s" }, { checkInEventSeat: resolves({}) }],
-    ["useUndoEventCheckIn", () => useUndoEventCheckIn(EVENT), { seatId: "s" }, { undoEventCheckIn: resolves({}) }],
+    [
+      "useMarkEventNoShows",
+      () => useMarkEventNoShows(EVENT),
+      undefined,
+      { markEventNoShows: resolves({}) },
+    ],
+    [
+      "useScanEventTicket",
+      () => useScanEventTicket(EVENT),
+      { token: "t" },
+      { scanEventTicket: resolves({}) },
+    ],
+    [
+      "useCheckInEventSeat",
+      () => useCheckInEventSeat(EVENT),
+      { seatId: "s" },
+      { checkInEventSeat: resolves({}) },
+    ],
+    [
+      "useUndoEventCheckIn",
+      () => useUndoEventCheckIn(EVENT),
+      { seatId: "s" },
+      { undoEventCheckIn: resolves({}) },
+    ],
     [
       "useWalkupRegistration",
       () => useWalkupRegistration(EVENT),
@@ -269,9 +341,14 @@ describe("host.ts mutation invalidations", () => {
       { ticketTypeId: "tt" },
       { joinEventWaitlist: resolves({ entry: {} }) },
     ],
-  ] as const)("%s invalidates the host event, its insights and every cached detail of it", async (_name, useHook, vars, api) => {
-    expect(await invalidationsOf(useHook as () => Mutating<unknown>, vars, api)).toEqual(HOST_EVENT)
-  })
+  ] as const)(
+    "%s invalidates the host event, its insights and every cached detail of it",
+    async (_name, useHook, vars, api) => {
+      expect(await invalidationsOf(useHook as () => Mutating<unknown>, vars, api)).toEqual(
+        HOST_EVENT,
+      )
+    },
+  )
 
   it("useInviteEventTeamMember and useRevokeEventTeamInvite invalidate the team, then the host event", async () => {
     expect(
@@ -282,17 +359,25 @@ describe("host.ts mutation invalidations", () => {
       ),
     ).toEqual([key("host", EVENT, "team"), ...HOST_EVENT])
     expect(
-      await invalidationsOf(() => useRevokeEventTeamInvite(EVENT), { inviteId: "i" }, {
-        revokeEventTeamInvite: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useRevokeEventTeamInvite(EVENT),
+        { inviteId: "i" },
+        {
+          revokeEventTeamInvite: resolves({}),
+        },
+      ),
     ).toEqual([key("host", EVENT, "team"), ...HOST_EVENT])
   })
 
   it("useAcceptEventTeamInvite invalidates the team, my invites and the host event", async () => {
     expect(
-      await invalidationsOf(() => useAcceptEventTeamInvite(EVENT), { token: "t" }, {
-        acceptEventTeamInvite: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useAcceptEventTeamInvite(EVENT),
+        { token: "t" },
+        {
+          acceptEventTeamInvite: resolves({}),
+        },
+      ),
     ).toEqual([key("host", EVENT, "team"), ...MY_EVENT_INVITES, ...HOST_EVENT])
   })
 
@@ -300,42 +385,62 @@ describe("host.ts mutation invalidations", () => {
     "useRegisterForEvent invalidates the host event, my ticket and the cleanup lists when %s",
     async (outcome) => {
       expect(
-        await invalidationsOf(() => useRegisterForEvent(EVENT), { idempotencyKey: "idem-key-1" } as never, {
-          registerForEvent: resolves({ outcome, registration: null, ticketTokens: [] }),
-        }),
+        await invalidationsOf(
+          () => useRegisterForEvent(EVENT),
+          { idempotencyKey: "idem-key-1" } as never,
+          {
+            registerForEvent: resolves({ outcome, registration: null, ticketTokens: [] }),
+          },
+        ),
       ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), ...CLEANUP_LISTS])
     },
   )
 
   it("useRegisterForEvent invalidates nothing for a refused registration", async () => {
     expect(
-      await invalidationsOf(() => useRegisterForEvent(EVENT), { idempotencyKey: "idem-key-1" } as never, {
-        registerForEvent: resolves({ outcome: "full", registration: null, ticketTokens: [] }),
-      }),
+      await invalidationsOf(
+        () => useRegisterForEvent(EVENT),
+        { idempotencyKey: "idem-key-1" } as never,
+        {
+          registerForEvent: resolves({ outcome: "full", registration: null, ticketTokens: [] }),
+        },
+      ),
     ).toEqual([])
   })
 
   it("useCancelEventRegistration invalidates the host event, my ticket and the cleanup lists", async () => {
     expect(
-      await invalidationsOf(() => useCancelEventRegistration(EVENT), { registrationId: "r" }, {
-        cancelEventRegistration: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useCancelEventRegistration(EVENT),
+        { registrationId: "r" },
+        {
+          cancelEventRegistration: resolves({}),
+        },
+      ),
     ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), ...CLEANUP_LISTS])
   })
 
   it("useAcceptMyEventInvite invalidates my invites and the accepted event", async () => {
     expect(
-      await invalidationsOf(() => useAcceptMyEventInvite(), { inviteId: "i" }, {
-        acceptMyEventInvite: resolves({ event: { id: EVENT } }),
-      }),
+      await invalidationsOf(
+        () => useAcceptMyEventInvite(),
+        { inviteId: "i" },
+        {
+          acceptMyEventInvite: resolves({ event: { id: EVENT } }),
+        },
+      ),
     ).toEqual([...MY_EVENT_INVITES, ...HOST_EVENT])
   })
 
   it("useDeclineMyEventInvite invalidates my invites", async () => {
     expect(
-      await invalidationsOf(() => useDeclineMyEventInvite(), { inviteId: "i" }, {
-        declineMyEventInvite: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useDeclineMyEventInvite(),
+        { inviteId: "i" },
+        {
+          declineMyEventInvite: resolves({}),
+        },
+      ),
     ).toEqual(MY_EVENT_INVITES)
   })
 })
@@ -343,7 +448,9 @@ describe("host.ts mutation invalidations", () => {
 describe("cleanups.ts mutation invalidations", () => {
   it("useJoinCleanup invalidates every cached detail, the cleanup lists and the roster once settled", async () => {
     expect(
-      await invalidationsOf(() => useJoinCleanup(EVENT), false, { joinCleanup: resolves({ joined: true, going: 4 }) }),
+      await invalidationsOf(() => useJoinCleanup(EVENT), false, {
+        joinCleanup: resolves({ joined: true, going: 4 }),
+      }),
     ).toEqual([CLEANUP_DETAIL, ...CLEANUP_LISTS, key("cleanup", EVENT, "attendees")])
   })
 
@@ -363,39 +470,73 @@ describe("cleanups.ts mutation invalidations", () => {
 
   it("useUpdateCleanup invalidates every cached detail, the calendar file, the cleanup lists and the hosted-event lists", async () => {
     expect(
-      await invalidationsOf(() => useUpdateCleanup(), { id: EVENT, patch: { title: "New" } }, {
-        updateCleanup: resolves(cleanupDto(EVENT)),
-      }),
-    ).toEqual([CLEANUP_DETAIL, key("cleanup", EVENT, "ics"), ...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS])
+      await invalidationsOf(
+        () => useUpdateCleanup(),
+        { id: EVENT, patch: { title: "New" } },
+        {
+          updateCleanup: resolves(cleanupDto(EVENT)),
+        },
+      ),
+    ).toEqual([
+      CLEANUP_DETAIL,
+      key("cleanup", EVENT, "ics"),
+      ...CLEANUP_LISTS,
+      ...HOSTED_EVENT_LISTS,
+    ])
   })
 
   it("useCancelCleanup invalidates the lists, the hosted-event lists, the roster and the calendar file", async () => {
     expect(
-      await invalidationsOf(() => useCancelCleanup(), { id: EVENT }, { cancelCleanup: resolves(cleanupDto(EVENT)) }),
-    ).toEqual([...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS, key("cleanup", EVENT, "attendees"), key("cleanup", EVENT, "ics")])
+      await invalidationsOf(
+        () => useCancelCleanup(),
+        { id: EVENT },
+        { cancelCleanup: resolves(cleanupDto(EVENT)) },
+      ),
+    ).toEqual([
+      ...CLEANUP_LISTS,
+      ...HOSTED_EVENT_LISTS,
+      key("cleanup", EVENT, "attendees"),
+      key("cleanup", EVENT, "ics"),
+    ])
   })
 
   it("useClaimEventSlot invalidates the lists, the roster and the event insights", async () => {
     expect(
-      await invalidationsOf(() => useClaimEventSlot(EVENT), { slotId: "slot-1" }, {
-        claimEventSlot: resolves(cleanupDto(EVENT)),
-      }),
-    ).toEqual([...CLEANUP_LISTS, key("cleanup", EVENT, "attendees"), key("host", EVENT, "insights")])
+      await invalidationsOf(
+        () => useClaimEventSlot(EVENT),
+        { slotId: "slot-1" },
+        {
+          claimEventSlot: resolves(cleanupDto(EVENT)),
+        },
+      ),
+    ).toEqual([
+      ...CLEANUP_LISTS,
+      key("cleanup", EVENT, "attendees"),
+      key("host", EVENT, "insights"),
+    ])
   })
 
   it("useSetMemberRole invalidates the roster and every cached detail", async () => {
     expect(
-      await invalidationsOf(() => useSetMemberRole(), { id: EVENT, userId: PERSON, role: "cohost" } as never, {
-        setCleanupMemberRole: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useSetMemberRole(),
+        { id: EVENT, userId: PERSON, role: "cohost" } as never,
+        {
+          setCleanupMemberRole: resolves({}),
+        },
+      ),
     ).toEqual([key("cleanup", EVENT, "attendees"), CLEANUP_DETAIL])
   })
 
   it("useRemoveMember invalidates the roster, every cached detail and the lists", async () => {
     expect(
-      await invalidationsOf(() => useRemoveMember(), { id: EVENT, userId: PERSON }, {
-        removeCleanupMember: resolves({ going: 2 }),
-      }),
+      await invalidationsOf(
+        () => useRemoveMember(),
+        { id: EVENT, userId: PERSON },
+        {
+          removeCleanupMember: resolves({ going: 2 }),
+        },
+      ),
     ).toEqual([key("cleanup", EVENT, "attendees"), CLEANUP_DETAIL, ...CLEANUP_LISTS])
   })
 
@@ -409,9 +550,13 @@ describe("cleanups.ts mutation invalidations", () => {
 
   it("useRequestEventResources and useGuestRsvpRequest invalidate nothing", async () => {
     expect(
-      await invalidationsOf(() => useRequestEventResources(EVENT), { message: "m" }, {
-        requestEventResources: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useRequestEventResources(EVENT),
+        { message: "m" },
+        {
+          requestEventResources: resolves({}),
+        },
+      ),
     ).toEqual([])
     expect(
       await invalidationsOf(() => useGuestRsvpRequest(EVENT), { email: "a@b.co" } as never, {
@@ -424,8 +569,15 @@ describe("cleanups.ts mutation invalidations", () => {
 const ORG = "org-1"
 const GROUP = "grp-1"
 const POST = "post-1"
-const ORG_TEAM: Invalidation[] = [key("org-admin", ORG, "members"), key("org-admin", ORG, "invites")]
-const MY_ORG_INVITES: Invalidation[] = [key("org-invites", "mine"), key("orgs", "mine"), key("notifications")]
+const ORG_TEAM: Invalidation[] = [
+  key("org-admin", ORG, "members"),
+  key("org-admin", ORG, "invites"),
+]
+const MY_ORG_INVITES: Invalidation[] = [
+  key("org-invites", "mine"),
+  key("orgs", "mine"),
+  key("notifications"),
+]
 const organizationDto = (slug: string) => ({ id: ORG, slug, name: "Friends of Ballona" })
 const postDto = (id: string, viewer: Record<string, boolean> = {}) => ({
   id,
@@ -437,17 +589,25 @@ const optimisticPost = { id: "tmp-1", author: { id: ME.id } }
 describe("orgs.ts mutation invalidations", () => {
   it("useUpdateOrganization invalidates the old slug's page after a rename, then my organizations", async () => {
     expect(
-      await invalidationsOf(() => useUpdateOrganization("old-slug"), { id: ORG }, {
-        updateOrganization: resolves(organizationDto("new-slug")),
-      }),
+      await invalidationsOf(
+        () => useUpdateOrganization("old-slug"),
+        { id: ORG },
+        {
+          updateOrganization: resolves(organizationDto("new-slug")),
+        },
+      ),
     ).toEqual([key("org", "old-slug"), key("orgs", "mine")])
   })
 
   it("useUpdateOrganization invalidates only my organizations when the slug is unchanged", async () => {
     expect(
-      await invalidationsOf(() => useUpdateOrganization("same-slug"), { id: ORG }, {
-        updateOrganization: resolves(organizationDto("same-slug")),
-      }),
+      await invalidationsOf(
+        () => useUpdateOrganization("same-slug"),
+        { id: ORG },
+        {
+          updateOrganization: resolves(organizationDto("same-slug")),
+        },
+      ),
     ).toEqual([key("orgs", "mine")])
   })
 
@@ -470,32 +630,47 @@ describe("orgs.ts mutation invalidations", () => {
       { userId: PERSON, role: "admin" },
       { setOrganizationMemberRole: resolves({}) },
     ],
-  ] as const)("%s invalidates the org's members and invites, and nothing without an org id", async (_name, useHook, vars, api) => {
-    const run = (orgId: string | undefined) =>
-      invalidationsOf(() => useHook(orgId) as unknown as Mutating<unknown>, vars, api)
-    expect(await run(ORG)).toEqual(ORG_TEAM)
-    expect(await run(undefined)).toEqual([])
-  })
+  ] as const)(
+    "%s invalidates the org's members and invites, and nothing without an org id",
+    async (_name, useHook, vars, api) => {
+      const run = (orgId: string | undefined) =>
+        invalidationsOf(() => useHook(orgId) as unknown as Mutating<unknown>, vars, api)
+      expect(await run(ORG)).toEqual(ORG_TEAM)
+      expect(await run(undefined)).toEqual([])
+    },
+  )
 
   it("useRemoveOrganizationMember invalidates the org's members and invites, then my organizations", async () => {
     expect(
-      await invalidationsOf(() => useRemoveOrganizationMember(ORG), { userId: PERSON }, {
-        removeOrganizationMember: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useRemoveOrganizationMember(ORG),
+        { userId: PERSON },
+        {
+          removeOrganizationMember: resolves({}),
+        },
+      ),
     ).toEqual([...ORG_TEAM, key("orgs", "mine")])
   })
 
   it("useAcceptMyOrgInvite invalidates my org invites, my organizations, notifications and the joined org", async () => {
     expect(
-      await invalidationsOf(() => useAcceptMyOrgInvite(), { inviteId: "i" }, {
-        acceptMyOrgInvite: resolves({ organization: organizationDto("joined-org") }),
-      }),
+      await invalidationsOf(
+        () => useAcceptMyOrgInvite(),
+        { inviteId: "i" },
+        {
+          acceptMyOrgInvite: resolves({ organization: organizationDto("joined-org") }),
+        },
+      ),
     ).toEqual([...MY_ORG_INVITES, key("org", "joined-org")])
   })
 
   it("useDeclineMyOrgInvite invalidates my org invites, my organizations and notifications", async () => {
     expect(
-      await invalidationsOf(() => useDeclineMyOrgInvite(), { inviteId: "i" }, { declineMyOrgInvite: resolves({}) }),
+      await invalidationsOf(
+        () => useDeclineMyOrgInvite(),
+        { inviteId: "i" },
+        { declineMyOrgInvite: resolves({}) },
+      ),
     ).toEqual(MY_ORG_INVITES)
   })
 })
@@ -511,15 +686,21 @@ describe("groups.ts mutation invalidations", () => {
     expect(created.queryClient.getQueryData(["group", GROUP])).toEqual(group)
 
     expect(
-      await invalidationsOf(() => useUpdateGroup(), { id: GROUP, name: "Renamed" }, {
-        updateChatGroup: resolves({ ...group, name: "Renamed" }),
-      }),
+      await invalidationsOf(
+        () => useUpdateGroup(),
+        { id: GROUP, name: "Renamed" },
+        {
+          updateChatGroup: resolves({ ...group, name: "Renamed" }),
+        },
+      ),
     ).toEqual([key("threads")])
   })
 
   it("useJoinGroup invalidates the group's members and the threads, not the group info it seeds", async () => {
     expect(
-      await invalidationsOf(() => useJoinGroup(), GROUP, { joinChatGroup: resolves({ id: GROUP, myRole: "member" }) }),
+      await invalidationsOf(() => useJoinGroup(), GROUP, {
+        joinChatGroup: resolves({ id: GROUP, myRole: "member" }),
+      }),
     ).toEqual([key("group", GROUP, "members"), key("threads")])
   })
 
@@ -530,78 +711,108 @@ describe("groups.ts mutation invalidations", () => {
       }),
     ).toEqual([key("group", GROUP), key("threads")])
     expect(
-      await invalidationsOf(() => useRemoveGroupMember(), { id: GROUP, userId: PERSON }, {
-        removeGroupMember: resolves({ ok: true }),
-      }),
+      await invalidationsOf(
+        () => useRemoveGroupMember(),
+        { id: GROUP, userId: PERSON },
+        {
+          removeGroupMember: resolves({ ok: true }),
+        },
+      ),
     ).toEqual([key("group", GROUP), key("threads")])
   })
 
   it("useSetGroupMemberRole invalidates the whole group prefix only", async () => {
     expect(
-      await invalidationsOf(() => useSetGroupMemberRole(), { id: GROUP, userId: PERSON, role: "admin" }, {
-        setGroupMemberRole: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useSetGroupMemberRole(),
+        { id: GROUP, userId: PERSON, role: "admin" },
+        {
+          setGroupMemberRole: resolves({}),
+        },
+      ),
     ).toEqual([key("group", GROUP)])
   })
 })
 
 describe("reportChat.ts mutation invalidations", () => {
   it("useJoinReportChat and useLeaveReportChat invalidate the report and the threads", async () => {
-    expect(await invalidationsOf(() => useJoinReportChat(), REPORT, { joinReportChat: resolves({}) })).toEqual([
-      key("report", REPORT),
-      key("threads"),
-    ])
-    expect(await invalidationsOf(() => useLeaveReportChat(), REPORT, { leaveReportChat: resolves({}) })).toEqual([
-      key("report", REPORT),
-      key("threads"),
-    ])
+    expect(
+      await invalidationsOf(() => useJoinReportChat(), REPORT, { joinReportChat: resolves({}) }),
+    ).toEqual([key("report", REPORT), key("threads")])
+    expect(
+      await invalidationsOf(() => useLeaveReportChat(), REPORT, { leaveReportChat: resolves({}) }),
+    ).toEqual([key("report", REPORT), key("threads")])
   })
 
   it("useToggleMute, useHideConversation and useMarkThreadRead invalidate the threads", async () => {
     expect(
-      await invalidationsOf(() => useToggleMute(), { roomKind: "report", roomId: REPORT, muted: true }, {
-        toggleConversationMute: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useToggleMute(),
+        { roomKind: "report", roomId: REPORT, muted: true },
+        {
+          toggleConversationMute: resolves({}),
+        },
+      ),
     ).toEqual([key("threads")])
     expect(
-      await invalidationsOf(() => useHideConversation(), { roomKind: "report", roomId: REPORT, hidden: true }, {
-        toggleConversationHidden: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useHideConversation(),
+        { roomKind: "report", roomId: REPORT, hidden: true },
+        {
+          toggleConversationHidden: resolves({}),
+        },
+      ),
     ).toEqual([key("threads")])
     expect(
-      await invalidationsOf(() => useMarkThreadRead(), { roomKind: "report", roomId: REPORT }, {
-        markThreadRead: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useMarkThreadRead(),
+        { roomKind: "report", roomId: REPORT },
+        {
+          markThreadRead: resolves({}),
+        },
+      ),
     ).toEqual([key("threads")])
   })
 })
 
 describe("posts.ts mutation invalidations", () => {
   it("useLikePost and useRepost invalidate only the post detail", async () => {
-    expect(await invalidationsOf(() => useLikePost(POST), false, { likePost: resolves(postDto(POST, { liked: true })) })).toEqual(
-      [key("post", POST)],
-    )
     expect(
-      await invalidationsOf(() => useRepost(POST), false, { repostPost: resolves(postDto(POST, { reposted: true })) }),
+      await invalidationsOf(() => useLikePost(POST), false, {
+        likePost: resolves(postDto(POST, { liked: true })),
+      }),
+    ).toEqual([key("post", POST)])
+    expect(
+      await invalidationsOf(() => useRepost(POST), false, {
+        repostPost: resolves(postDto(POST, { reposted: true })),
+      }),
     ).toEqual([key("post", POST)])
   })
 
   it("useRepost invalidates every post list before the detail when the server answers for another post", async () => {
     expect(
-      await invalidationsOf(() => useRepost(POST), true, { unrepostPost: resolves(postDto("post-original")) }),
+      await invalidationsOf(() => useRepost(POST), true, {
+        unrepostPost: resolves(postDto("post-original")),
+      }),
     ).toEqual([key("posts"), key("post", POST)])
   })
 
   it("useSavePost invalidates the post detail and the saves list", async () => {
     expect(
-      await invalidationsOf(() => useSavePost(POST), false, { savePost: resolves(postDto(POST, { saved: true })) }),
+      await invalidationsOf(() => useSavePost(POST), false, {
+        savePost: resolves(postDto(POST, { saved: true })),
+      }),
     ).toEqual([key("post", POST), key("posts", "saves")])
   })
 
   it("useCreatePost invalidates the all-posts feed and the author's posts, plus the events feed for an event post", async () => {
     const api = { createPost: resolves(postDto("post-new")) }
     expect(
-      await invalidationsOf(() => useCreatePost(), { input: { kind: "post", body: "b" }, optimistic: optimisticPost } as never, api),
+      await invalidationsOf(
+        () => useCreatePost(),
+        { input: { kind: "post", body: "b" }, optimistic: optimisticPost } as never,
+        api,
+      ),
     ).toEqual([key("posts", "feed", "all"), key("posts", "user", ME.id)])
     expect(
       await invalidationsOf(
@@ -609,7 +820,11 @@ describe("posts.ts mutation invalidations", () => {
         { input: { kind: "post", body: "b", eventId: EVENT }, optimistic: optimisticPost } as never,
         api,
       ),
-    ).toEqual([key("posts", "feed", "all"), key("posts", "feed", "events"), key("posts", "user", ME.id)])
+    ).toEqual([
+      key("posts", "feed", "all"),
+      key("posts", "feed", "events"),
+      key("posts", "user", ME.id),
+    ])
   })
 
   it("useCreatePost for a reply also invalidates the thread, the parent and the grandparent's thread", async () => {
@@ -635,33 +850,48 @@ describe("posts.ts mutation invalidations", () => {
   })
 
   it("useDeletePost invalidates every post list", async () => {
-    expect(await invalidationsOf(() => useDeletePost(), POST, { deletePost: resolves({ ok: true }) })).toEqual([
-      key("posts"),
-    ])
+    expect(
+      await invalidationsOf(() => useDeletePost(), POST, { deletePost: resolves({ ok: true }) }),
+    ).toEqual([key("posts")])
   })
 })
 
 describe("moderation.ts mutation invalidations", () => {
   it("useReportContent, useRequestEmailCode and useRequestMyData invalidate nothing", async () => {
     expect(
-      await invalidationsOf(() => useReportContent(), { subjectType: "post", subjectId: POST, reason: "spam" } as never, {
-        reportContent: resolves({ ok: true }),
+      await invalidationsOf(
+        () => useReportContent(),
+        { subjectType: "post", subjectId: POST, reason: "spam" } as never,
+        {
+          reportContent: resolves({ ok: true }),
+        },
+      ),
+    ).toEqual([])
+    expect(
+      await invalidationsOf(
+        () => useRequestEmailCode(),
+        { email: "a@b.co" },
+        { otpRequest: resolves({}) },
+      ),
+    ).toEqual([])
+    expect(
+      await invalidationsOf(() => useRequestMyData(), undefined, {
+        requestDataExport: resolves({ ok: true }),
       }),
-    ).toEqual([])
-    expect(
-      await invalidationsOf(() => useRequestEmailCode(), { email: "a@b.co" }, { otpRequest: resolves({}) }),
-    ).toEqual([])
-    expect(
-      await invalidationsOf(() => useRequestMyData(), undefined, { requestDataExport: resolves({ ok: true }) }),
     ).toEqual([])
   })
 
   it("useDeleteAccount invalidates nothing and hands cache teardown to the host logout", async () => {
     const logout = vi.fn()
     expect(
-      await invalidationsOf(() => useDeleteAccount(), { emailOtp: "123456" }, { deleteAccount: resolves({ ok: true }) }, {
-        logout,
-      }),
+      await invalidationsOf(
+        () => useDeleteAccount(),
+        { emailOtp: "123456" },
+        { deleteAccount: resolves({ ok: true }) },
+        {
+          logout,
+        },
+      ),
     ).toEqual([])
     expect(logout).toHaveBeenCalledTimes(1)
   })
@@ -684,29 +914,31 @@ describe("direct.ts mutation invalidations", () => {
   })
 
   it("useBlockUser and useUnblockUser invalidate the threads, the block list and every profile", async () => {
-    expect(await invalidationsOf(() => useBlockUser(), PERSON, { blockUser: resolves({ ok: true }) })).toEqual([
-      key("threads"),
-      key("blocks"),
-      key("profile"),
-    ])
-    expect(await invalidationsOf(() => useUnblockUser(), PERSON, { unblockUser: resolves({ ok: true }) })).toEqual([
-      key("blocks"),
-      key("threads"),
-      key("profile"),
-    ])
+    expect(
+      await invalidationsOf(() => useBlockUser(), PERSON, { blockUser: resolves({ ok: true }) }),
+    ).toEqual([key("threads"), key("blocks"), key("profile")])
+    expect(
+      await invalidationsOf(() => useUnblockUser(), PERSON, {
+        unblockUser: resolves({ ok: true }),
+      }),
+    ).toEqual([key("blocks"), key("threads"), key("profile")])
   })
 })
 
 describe("notifications.ts mutation invalidations", () => {
   it("useMarkNotificationsRead invalidates the notification lists and the unread dot but not the prefs", async () => {
     expect(
-      await invalidationsOf(() => useMarkNotificationsRead(), ["n-1"], { markNotificationsRead: resolves({ ok: true }) }),
+      await invalidationsOf(() => useMarkNotificationsRead(), ["n-1"], {
+        markNotificationsRead: resolves({ ok: true }),
+      }),
     ).toEqual(NOTIFICATION_LISTS_AND_DOT)
   })
 
   it("currently invalidates the notification lists and the dot even when no id was marked", async () => {
     const api = { markNotificationsRead: vi.fn() }
-    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual(NOTIFICATION_LISTS_AND_DOT)
+    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual(
+      NOTIFICATION_LISTS_AND_DOT,
+    )
     expect(api.markNotificationsRead).not.toHaveBeenCalled()
   })
 
@@ -738,17 +970,31 @@ describe("notifications.ts mutation invalidations", () => {
 
   it("useUpdatePrivacySettings also invalidates every post when the primary organization changes", async () => {
     expect(
-      await invalidationsOf(() => useUpdatePrivacySettings(), { primaryOrganizationId: ORG }, {
-        updateSettings: resolves({ user: { id: ME.id, handle: null } }),
-      }),
-    ).toEqual([key("profile", "me"), key("profile", ME.id), key("posts"), key("post"), key("session")])
+      await invalidationsOf(
+        () => useUpdatePrivacySettings(),
+        { primaryOrganizationId: ORG },
+        {
+          updateSettings: resolves({ user: { id: ME.id, handle: null } }),
+        },
+      ),
+    ).toEqual([
+      key("profile", "me"),
+      key("profile", ME.id),
+      key("posts"),
+      key("post"),
+      key("session"),
+    ])
   })
 })
 
 describe("volunteer.ts mutation invalidations", () => {
   it("useLogEventHours invalidates my hours, the leaderboards, the event and everything that sums its hours", async () => {
     expect(
-      await invalidationsOf(() => useLogEventHours(), { id: EVENT, entries: [] }, { logEventHours: resolves({}) }),
+      await invalidationsOf(
+        () => useLogEventHours(),
+        { id: EVENT, entries: [] },
+        { logEventHours: resolves({}) },
+      ),
     ).toEqual([
       key("volunteer", "me"),
       key("volunteer", "me", "entries"),
@@ -768,25 +1014,38 @@ describe("volunteer.ts mutation invalidations", () => {
       }),
     ).toEqual([key("certificates", "mine")])
     expect(
-      await invalidationsOf(() => useRevokeServiceHoursCertificate(), { code: "CODE" }, {
-        revokeServiceHoursCertificate: resolves({}),
-      }),
+      await invalidationsOf(
+        () => useRevokeServiceHoursCertificate(),
+        { code: "CODE" },
+        {
+          revokeServiceHoursCertificate: resolves({}),
+        },
+      ),
     ).toEqual([key("certificates", "mine")])
   })
 })
 
 describe("announcements.ts mutation invalidations", () => {
   it("useCreateAnnouncement seeds the new announcement and invalidates the event's announcements", async () => {
-    const { result, queryClient, invalidations } = renderWithData(() => useCreateAnnouncement(EVENT), {
-      createEventAnnouncement: resolves({ id: "ann-1" }),
-    })
+    const { result, queryClient, invalidations } = renderWithData(
+      () => useCreateAnnouncement(EVENT),
+      {
+        createEventAnnouncement: resolves({ id: "ann-1" }),
+      },
+    )
 
     await act(async () => {
-      await result.current.mutateAsync({ title: null, bodyMd: "b", audience: { kind: "all" } as never })
+      await result.current.mutateAsync({
+        title: null,
+        bodyMd: "b",
+        audience: { kind: "all" } as never,
+      })
     })
 
     expect(invalidations).toEqual([key("host", EVENT, "announcements")])
-    expect(queryClient.getQueryData(["host", EVENT, "announcements", "one", "ann-1"])).toEqual({ id: "ann-1" })
+    expect(queryClient.getQueryData(["host", EVENT, "announcements", "one", "ann-1"])).toEqual({
+      id: "ann-1",
+    })
   })
 })
 
@@ -802,7 +1061,13 @@ describe("report/submit.ts invalidations", () => {
     store.setMedia({ uri: "file:///a.jpg", kind: "image", mime: "image/jpeg", uploadId: "up-1" })
     const api = {
       myProfile: resolves({ profile: { id: ME.id } }),
-      createReport: resolves({ id: REPORT, lat: 34.05, lng: -118.25, category: "graffiti", status: "published" }),
+      createReport: resolves({
+        id: REPORT,
+        lat: 34.05,
+        lng: -118.25,
+        category: "graffiti",
+        status: "published",
+      }),
     }
     const { result, invalidations } = renderWithData(() => useReportSubmit(), api)
 
@@ -823,7 +1088,9 @@ describe("literal query keys the key consolidation will move into queryKeys", ()
     )
 
     await waitFor(() => expect(result.current.data).toBe("Los Angeles, CA"))
-    expect(queryClient.getQueryState(["reverse-label", 34.05223, -118.24369])?.data).toBe("Los Angeles, CA")
+    expect(queryClient.getQueryState(["reverse-label", 34.05223, -118.24369])?.data).toBe(
+      "Los Angeles, CA",
+    )
     expect(invalidations).toEqual([])
   })
 
@@ -831,26 +1098,37 @@ describe("literal query keys the key consolidation will move into queryKeys", ()
     const api = { reverseLabel: vi.fn() }
     const { queryClient } = renderWithData(() => useReverseLabel(null), api)
 
-    expect(queryClient.getQueryCache().find({ queryKey: ["reverse-label", null, null], exact: true })).toBeDefined()
+    expect(
+      queryClient.getQueryCache().find({ queryKey: ["reverse-label", null, null], exact: true }),
+    ).toBeDefined()
     expect(api.reverseLabel).not.toHaveBeenCalled()
   })
 
   it("currently keys handle availability by the handle exactly as typed, case included", async () => {
-    const checkHandle = vi.fn(async (_req: { handle: string }, _opts?: { signal?: AbortSignal }) => ({
-      available: true,
-    }))
-    const { result, queryClient } = renderWithData(() => useHandleAvailability("Maya_1", null), { checkHandle })
+    const checkHandle = vi.fn(
+      async (_req: { handle: string }, _opts?: { signal?: AbortSignal }) => ({
+        available: true,
+      }),
+    )
+    const { result, queryClient } = renderWithData(() => useHandleAvailability("Maya_1", null), {
+      checkHandle,
+    })
 
     await waitFor(() => expect(result.current.data).toEqual({ available: true }))
     expect(checkHandle.mock.calls[0]?.[0]).toEqual({ handle: "Maya_1" })
     expect(checkHandle.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
-    expect(queryClient.getQueryCache().find({ queryKey: ["handle-available", "Maya_1"], exact: true })).toBeDefined()
+    expect(
+      queryClient.getQueryCache().find({ queryKey: ["handle-available", "Maya_1"], exact: true }),
+    ).toBeDefined()
   })
 })
 
-const HOOK_MODULES = import.meta.glob<Record<string, unknown>>(["../hooks/*.ts", "!../hooks/index.ts", "!../hooks/chat[A-Z]*.ts"], {
-  eager: true,
-})
+const HOOK_MODULES = import.meta.glob<Record<string, unknown>>(
+  ["../hooks/*.ts", "!../hooks/index.ts", "!../hooks/chat[A-Z]*.ts"],
+  {
+    eager: true,
+  },
+)
 
 // Hooks that cannot render without arguments; the guard needs every export to render so a mutation
 // built after an argument dereference is still seen.
@@ -891,9 +1169,12 @@ function exportedMutationHooks(): { mutating: string[]; unrenderable: string[] }
         </QueryClientProvider>
       )
       try {
-        renderHook(() => (hook as (...args: readonly unknown[]) => unknown)(...(PROBE_ARGS[name] ?? [])), {
-          wrapper,
-        }).unmount()
+        renderHook(
+          () => (hook as (...args: readonly unknown[]) => unknown)(...(PROBE_ARGS[name] ?? [])),
+          {
+            wrapper,
+          },
+        ).unmount()
       } catch {
         unrenderable.push(name)
       }
@@ -904,7 +1185,9 @@ function exportedMutationHooks(): { mutating: string[]; unrenderable: string[] }
 }
 
 describe("mutation hook coverage", () => {
-  it("pins every mutation hook exported from data/hooks, and names no other hook in a pinning test", ({ task }) => {
+  it("pins every mutation hook exported from data/hooks, and names no other hook in a pinning test", ({
+    task,
+  }) => {
     const { mutating, unrenderable } = exportedMutationHooks()
     expect(unrenderable).toEqual([])
 

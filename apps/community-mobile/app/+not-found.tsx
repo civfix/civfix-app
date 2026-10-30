@@ -46,7 +46,12 @@ export default function NotFoundScreen() {
       style={styles.page}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top, paddingBottom: insets.bottom, paddingLeft: insets.left, paddingRight: insets.right },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
       ]}
     >
       <View style={styles.top}>
@@ -62,14 +67,23 @@ export default function NotFoundScreen() {
       </View>
       {/* The stage mounts once the motion preference is known, so it starts in the right mode. */}
       <View style={[styles.body, reduced === null ? styles.pending : null]}>
-        <View style={styles.stage} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View
+          style={styles.stage}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {reduced === null ? null : <Stage live={!reduced} />}
         </View>
         <View style={styles.copy}>
           <Text style={styles.eyebrow} color={theme.colors.textSubtle}>
             {t("eyebrow")}
           </Text>
-          <Text variant="display" accessibilityRole="header" textBreakStrategy="balanced" style={styles.headline}>
+          <Text
+            variant="display"
+            accessibilityRole="header"
+            textBreakStrategy="balanced"
+            style={styles.headline}
+          >
             {t(`variants.${variant}.headline`)}
           </Text>
           <Text style={styles.supporting} color={theme.colors.textMuted}>

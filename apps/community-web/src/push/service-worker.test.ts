@@ -39,12 +39,19 @@ const REPORT_PUSH = {
   },
 }
 
-const clickData = (link: string | null) => ({ notificationId: "n1", category: "reportUpdates", link })
+const clickData = (link: string | null) => ({
+  notificationId: "n1",
+  category: "reportUpdates",
+  link,
+})
 
 describe("the service worker's edge headers", () => {
   it("T1: /sw.js drops the site-wide Cache-Control, then sets no-cache; the /* rule is unchanged", () => {
     expect(ruleLines(headersFile, "/sw.js")).toEqual(["! Cache-Control", "Cache-Control: no-cache"])
-    expect(parseHeaderBlock(headersFile, "/*")).toEqual({ headers: { ...PERVASIVE_HEADERS }, drops: [] })
+    expect(parseHeaderBlock(headersFile, "/*")).toEqual({
+      headers: { ...PERVASIVE_HEADERS },
+      drops: [],
+    })
     expect(PERVASIVE_HEADERS["Cache-Control"]).toBe("public, max-age=0, must-revalidate")
   })
 })
@@ -123,7 +130,12 @@ describe("public/sw.js", () => {
     expect(target.pathname).toBe("/reports/r1")
   })
 
-  const UNSAFE_LINKS = ["https://evil.example/x", "//evil.example/x", "/\\evil.example", "javascript:alert(1)"]
+  const UNSAFE_LINKS = [
+    "https://evil.example/x",
+    "//evil.example/x",
+    "/\\evil.example",
+    "javascript:alert(1)",
+  ]
 
   function expectNoNavigation(link: string | null) {
     return async () => {
@@ -143,7 +155,11 @@ describe("public/sw.js", () => {
       expect(opened.search).toBe("?readNotification=n1")
 
       if (link !== null) {
-        const targets = [...tab.navigate.mock.calls, ...withTab.openWindow.mock.calls, ...withoutTab.openWindow.mock.calls]
+        const targets = [
+          ...tab.navigate.mock.calls,
+          ...withTab.openWindow.mock.calls,
+          ...withoutTab.openWindow.mock.calls,
+        ]
         for (const [target] of targets) expect(String(target)).not.toContain(link)
       }
     }
@@ -153,5 +169,8 @@ describe("public/sw.js", () => {
     it(`T8: a click never opens the unsafe link ${link}`, expectNoNavigation(link))
   }
 
-  it("T9: a click on a notification with no link focuses a tab without navigating, or opens / carrying its id", expectNoNavigation(null))
+  it(
+    "T9: a click on a notification with no link focuses a tab without navigating, or opens / carrying its id",
+    expectNoNavigation(null),
+  )
 })

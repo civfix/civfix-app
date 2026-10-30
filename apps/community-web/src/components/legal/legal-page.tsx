@@ -8,7 +8,10 @@ import { Wordmark } from "@/components/brand"
 import { LEGAL_ENTITY } from "./legal-entity"
 import { SOURCE } from "@/lib/source"
 
-export type LegalDocId = Extract<LegalDocumentType, "terms" | "privacy" | "cookies" | "subprocessors">
+export type LegalDocId = Extract<
+  LegalDocumentType,
+  "terms" | "privacy" | "cookies" | "subprocessors"
+>
 
 const DOCS: { id: LegalDocId; href: string; label: string }[] = [
   { id: "terms", href: "/legal/terms", label: "Terms of Service" },

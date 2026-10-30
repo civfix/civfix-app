@@ -94,7 +94,10 @@ describe("optionList", () => {
 
 describe("questionDraftsDiffer", () => {
   it("reads drafts built straight from the server list as unedited", () => {
-    const saved = [question(), question({ id: OTHER_ID, kind: "checkbox", options: [], showIf: null })]
+    const saved = [
+      question(),
+      question({ id: OTHER_ID, kind: "checkbox", options: [], showIf: null }),
+    ]
     expect(questionDraftsDiffer(saved.map(toDraft), saved)).toBe(false)
   })
 
@@ -104,8 +107,8 @@ describe("questionDraftsDiffer", () => {
     const drafts = saved.map(toDraft)
     expect(questionDraftsDiffer([{ ...drafts[0]!, prompt: "Size" }, drafts[1]!], saved)).toBe(true)
     expect(questionDraftsDiffer([drafts[1]!, drafts[0]!], saved)).toBe(true)
-    expect(questionDraftsDiffer([...drafts, { ...drafts[1]!, key: "q-new", id: undefined }], saved)).toBe(
-      true,
-    )
+    expect(
+      questionDraftsDiffer([...drafts, { ...drafts[1]!, key: "q-new", id: undefined }], saved),
+    ).toBe(true)
   })
 })

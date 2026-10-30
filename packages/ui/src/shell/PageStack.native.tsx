@@ -12,7 +12,10 @@ import { isFlowKind, useNavStore, type DetailEntry, type View as NavView } from 
 import { makeThemedStyles, motion } from "../theme"
 import { detailLeadingAffordance } from "./backAffordance"
 import { pageBottomReserve } from "./bodyLayout"
-import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
+import {
+  ContentBottomReserveProvider,
+  contentBottomReserveScrollHost,
+} from "./ContentBottomReserve"
 import {
   pagePopConfig,
   pagePushConfig,
@@ -101,7 +104,8 @@ export function PageStack({
     const prevKeys = prevKeysRef.current
     // The snapshot moves only with the layer keys: a re-render that keeps them must neither animate
     // nor replace the entries the retained leaving layer will render.
-    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return
+    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i]))
+      return
     const prevEntries = prevEntriesRef.current
     const prevStack = prevStackRef.current
     prevKeysRef.current = layerKeys
@@ -204,7 +208,10 @@ export function PageStack({
           front.value = raw < 0 ? 0 : raw > 1 ? 1 : raw
         })
         .onEnd((e, success) => {
-          if (!success || swipeBackDecision(e.translationX, e.velocityX, width, SWIPE_TOKENS) === "cancel") {
+          if (
+            !success ||
+            swipeBackDecision(e.translationX, e.velocityX, width, SWIPE_TOKENS) === "cancel"
+          ) {
             front.value = withTiming(0, CANCEL_CFG, (finished) => {
               if (finished) dragging.value = 0
             })
@@ -327,7 +334,8 @@ const PageLayer = memo(function PageLayer({
   const reserve = pageBottomReserve(entry.kind)
   const boxReserve = (reserve === "box" ? paddingBottom : 0) + keyboardReserve
   const contentReserve = reserve === "content" ? paddingBottom : 0
-  const bodyScrollHost = reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
+  const bodyScrollHost =
+    reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
 
   const layerStyle = useAnimatedStyle(() => {
     const ownProgress = own === "exit" ? exit.value : own === "front" ? front.value : 0
@@ -368,7 +376,9 @@ const PageLayer = memo(function PageLayer({
           </ContentBottomReserveProvider>
         </IosKeyboardAvoidingView>
       </View>
-      {above === "one" ? null : <Animated.View style={[styles.scrim, scrimStyle]} pointerEvents="none" />}
+      {above === "one" ? null : (
+        <Animated.View style={[styles.scrim, scrimStyle]} pointerEvents="none" />
+      )}
     </Animated.View>
   )
 })

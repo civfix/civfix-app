@@ -16,7 +16,9 @@ const PROFILE_ACTIONS: readonly DetailTrailingAction[] = [
   { icon: "Settings", a11yKey: "a11y.settings", push: { kind: "settings" } },
 ]
 
-export function detailTrailingActionFor(active: DetailEntry | null): readonly DetailTrailingAction[] {
+export function detailTrailingActionFor(
+  active: DetailEntry | null,
+): readonly DetailTrailingAction[] {
   if (active === null) return NO_ACTIONS
   switch (active.kind) {
     case "profile":

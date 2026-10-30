@@ -56,7 +56,9 @@ function readEntryValue(
   if (type === 2) {
     // ASCII: inline when <= 4 bytes, otherwise at the pointer. We only need the first letter.
     const inline = count <= 4
-    const dataOffset = inline ? valueOffsetField : tiffStart + view.getUint32(valueOffsetField, little)
+    const dataOffset = inline
+      ? valueOffsetField
+      : tiffStart + view.getUint32(valueOffsetField, little)
     let s = ""
     for (let i = 0; i < count; i++) {
       if (!inBounds(view, dataOffset + i, 1)) break

@@ -45,7 +45,9 @@ export function useAddressSearch({
 
   const resolveProximity = useCallback((): Promise<LatLng | null> => {
     return (proximityRef.current ??= (async () => {
-      const pos = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
+      const pos = geo.isAvailable()
+        ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)
+        : null
       if (pos) return { lat: pos.latitude, lng: pos.longitude }
       const approximate = await fetchApproximateLocation(api, qc)
       if (approximate) return approximate
@@ -172,7 +174,13 @@ export function useAddressSearch({
     setOpen(false)
   }, [cancelPending, onChangeText])
 
-  const status = addressSearchStatus({ open, loading, failed, resultCount: results.length, query: value })
+  const status = addressSearchStatus({
+    open,
+    loading,
+    failed,
+    resultCount: results.length,
+    query: value,
+  })
 
   return { loading, results, status, runSearch, onChange, reopen, choose, clear }
 }

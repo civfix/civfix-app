@@ -15,7 +15,10 @@ function mediaIdsOf(entry: OutboxEntry): string[] {
   return (entry.message.attachments ?? []).map((m) => m.id)
 }
 
-export function markResending(outbox: OutboxEntry[], clientIds: ReadonlySet<string>): OutboxEntry[] {
+export function markResending(
+  outbox: OutboxEntry[],
+  clientIds: ReadonlySet<string>,
+): OutboxEntry[] {
   if (clientIds.size === 0) return outbox
   return outbox.map((e) =>
     e.status === "failed" && clientIds.has(e.clientId) ? { ...e, status: "sending" } : e,
@@ -121,7 +124,13 @@ export function useChatOutbox({
   )
 
   const dispatch = useCallback(
-    (clientId: string, body: string, mentionedUserIds?: string[], mediaUploadIds?: string[], replyToId?: string) => {
+    (
+      clientId: string,
+      body: string,
+      mentionedUserIds?: string[],
+      mediaUploadIds?: string[],
+      replyToId?: string,
+    ) => {
       if (coreQueuedRef.current.has(clientId)) {
         armSendTimeout(clientId, QUEUED_SEND_TIMEOUT_MS)
         return
@@ -229,9 +238,24 @@ export function useChatOutbox({
       if (mentionedUserIds && mentionedUserIds.length > 0) {
         outboxMentionsRef.current.set(clientId, mentionedUserIds)
       }
-      dispatch(clientId, body, mentionedUserIds, mediaList.map((m) => m.uploadId), replyToId)
+      dispatch(
+        clientId,
+        body,
+        mentionedUserIds,
+        mediaList.map((m) => m.uploadId),
+        replyToId,
+      )
     },
-    [enabled, roomId, myUserId, user?.displayName, dispatch, findMessage, setOutbox, setTransientError],
+    [
+      enabled,
+      roomId,
+      myUserId,
+      user?.displayName,
+      dispatch,
+      findMessage,
+      setOutbox,
+      setTransientError,
+    ],
   )
 
   const retry = useCallback(

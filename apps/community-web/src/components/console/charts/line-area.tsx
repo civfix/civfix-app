@@ -54,8 +54,7 @@ export function LineArea({
   )
   const axis = integerYAxis(maxValue, TICK_COUNT, PLOT_PAD, height)
   const { plotH, yAt } = axis
-  const xAt = (i: number) =>
-    PLOT_PAD.left + (count <= 1 ? plotW / 2 : (i / (count - 1)) * plotW)
+  const xAt = (i: number) => PLOT_PAD.left + (count <= 1 ? plotW / 2 : (i / (count - 1)) * plotW)
 
   const handleMove = (event: MouseEvent<SVGSVGElement>) => {
     if (count === 0 || plotW <= 0) return
@@ -77,9 +76,10 @@ export function LineArea({
           title: labels[hover] ?? "",
           rows: series.map((s, si) => ({
             label: s.label,
-            value: s.values[hover] === null || s.values[hover] === undefined
-              ? suppressedLabel
-              : formatCount(s.values[hover], locale, { compact: true }),
+            value:
+              s.values[hover] === null || s.values[hover] === undefined
+                ? suppressedLabel
+                : formatCount(s.values[hover], locale, { compact: true }),
             color: s.color ?? palette.seriesColor(si),
           })),
         }
@@ -106,7 +106,9 @@ export function LineArea({
         return (
           <g key={s.id}>
             {valueRuns(s.values).map((run) => {
-              const line = linePath(run.map(({ index, value }) => ({ x: xAt(index), y: yAt(value) })))
+              const line = linePath(
+                run.map(({ index, value }) => ({ x: xAt(index), y: yAt(value) })),
+              )
               const first = run[0]
               const last = run[run.length - 1]
               const areaPath =

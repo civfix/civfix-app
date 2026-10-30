@@ -51,8 +51,7 @@ export function SettingsBody() {
     [openExternal, toast, t],
   )
 
-  const localeName =
-    supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
+  const localeName = supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
   const appearanceName = tAppearance(`option.${appearance}`)
   const signedOut = !isAuthenticated && !isPending
 

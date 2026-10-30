@@ -45,6 +45,7 @@ jobs:
           online-audits: false
           advanced-security: false
       - run: node scripts/check-tokens-version.mjs
+      - run: pnpm format:check
       - run: pnpm turbo run build typecheck lint test:coverage --filter="./packages/*"
       - run: pnpm turbo run typecheck:scripts lint:scripts
       - run: pnpm --filter @civfix/ui i18n:check

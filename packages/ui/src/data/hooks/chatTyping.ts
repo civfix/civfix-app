@@ -16,7 +16,13 @@ export interface ChatTypingDeps {
 }
 
 /** Who else is typing (each indicator expires on its own timer), and the throttled outgoing signal. */
-export function useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled }: ChatTypingDeps) {
+export function useChatTyping({
+  socket,
+  roomId,
+  roomKind,
+  stampRoomKind,
+  enabled,
+}: ChatTypingDeps) {
   const [typingUserIds, setTypingUserIds] = useState<string[]>([])
   const typingTimers = useRef<TimerMap>(new Map())
   const lastTypingSentRef = useRef(0)

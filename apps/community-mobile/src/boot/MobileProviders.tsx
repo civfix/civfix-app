@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo } from "react"
-import { ApiProvider, normalizeAuthState, type AuthState, type DataContextValue } from "@civfix/ui/data"
+import {
+  ApiProvider,
+  normalizeAuthState,
+  type AuthState,
+  type DataContextValue,
+} from "@civfix/ui/data"
 import { I18nProvider } from "@civfix/ui/i18n"
 import { CARTO_API_KEY } from "@/config"
 import { api } from "@/api/client"

@@ -33,7 +33,9 @@ describe("post-thread navigation seam: every push-capable tap routes through onO
       expect(src.match(/\bpush\(\{/g)).toBeNull()
     }
     for (const src of [focal, replyRow]) {
-      expect(src).toMatch(/\{ openEntry, openPerson,[^}]*\}\s*=\s*usePostRowActions\(\{ post, identity, onOpenEntry \}\)/)
+      expect(src).toMatch(
+        /\{ openEntry, openPerson,[^}]*\}\s*=\s*usePostRowActions\(\{ post, identity, onOpenEntry \}\)/,
+      )
       expect(src).not.toMatch(/useNavStore/)
     }
   })

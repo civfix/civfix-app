@@ -12,7 +12,9 @@ const BUBBLE = code(read("../conversation/MessageBubble.tsx"))
 const COMPOSER = code(read("../conversation/ConversationComposer.tsx"))
 const STYLES = code(read("../conversation/composerStyles.ts"))
 const COMPOSER_ATTACHMENTS = code(read("../../primitives/useComposerAttachments.ts"))
-const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"].map((file) => code(read(file))).join("\n")
+const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"]
+  .map((file) => code(read(file)))
+  .join("\n")
 const TYPING = code(read("../conversation/TypingBubble.tsx"))
 
 describe("the message list's virtualization", () => {
@@ -27,7 +29,9 @@ describe("the message list's virtualization", () => {
   })
 
   it("installs ONE module-constant scroll anchor, never a per-render literal", () => {
-    expect(CONVERSATION).toMatch(/maintainVisibleContentPosition=\{MAINTAIN_VISIBLE_CONTENT_POSITION\}/)
+    expect(CONVERSATION).toMatch(
+      /maintainVisibleContentPosition=\{MAINTAIN_VISIBLE_CONTENT_POSITION\}/,
+    )
     expect(CONVERSATION).toMatch(
       /const MAINTAIN_VISIBLE_CONTENT_POSITION = \{\s*minIndexForVisible: 0,\s*autoscrollToTopThreshold:/,
     )
@@ -42,7 +46,9 @@ describe("poll voting is a LIVE gate, not the composer's", () => {
   })
 
   it("the body derives all three gates from liveGates and passes canVote down", () => {
-    expect(CONVERSATION).toMatch(/import \{ canReactIn, canReplyIn, canVoteIn \} from "\.\/conversation\/liveGates"/)
+    expect(CONVERSATION).toMatch(
+      /import \{ canReactIn, canReplyIn, canVoteIn \} from "\.\/conversation\/liveGates"/,
+    )
     expect(CONVERSATION).toMatch(/const canVote = canVoteIn\(gateSignals\)/)
     expect(CONVERSATION).toMatch(/canVote=\{canVote\}/)
   })
@@ -51,12 +57,16 @@ describe("poll voting is a LIVE gate, not the composer's", () => {
 describe("the row memo can actually skip", () => {
   it("Bubble is memoized with the explicit comparator", () => {
     expect(BUBBLE).toMatch(/\}, bubblePropsEqual\)/)
-    expect(BUBBLE).toMatch(/function bubblePropsEqual\(prev: BubbleProps, next: BubbleProps\): boolean/)
-    expect(BUBBLE).toMatch(/a\.message !== b\.message \|\| a\.mine !== b\.mine/)
+    expect(BUBBLE).toMatch(
+      /function bubblePropsEqual\(prev: BubbleProps, next: BubbleProps\): boolean/,
+    )
+    expect(BUBBLE).toMatch(/a\.message !== b\.message \|\|\s+a\.mine !== b\.mine/)
   })
 
   it("renderItem depends on a stable retry, not on chat.retry", () => {
-    expect(CONVERSATION).toMatch(/const onRetry = useCallback\(\(clientId: string\) => chatRef\.current\.retry\(clientId\), \[\]\)/)
+    expect(CONVERSATION).toMatch(
+      /const onRetry = useCallback\(\(clientId: string\) => chatRef\.current\.retry\(clientId\), \[\]\)/,
+    )
     expect(CONVERSATION).toMatch(/onRetry=\{onRetry\}/)
     expect(CONVERSATION).not.toMatch(/onRetry=\{chat\.retry\}/)
   })
@@ -65,10 +75,14 @@ describe("the row memo can actually skip", () => {
 describe("failures are surfaced, not swallowed", () => {
   it("a failed delete toasts like its pin/vote siblings", () => {
     expect(CONVERSATION).not.toMatch(/chat\.delete\(messageId\)\.catch\(\(\) => \{\}\)/)
-    expect(CONVERSATION).toContain("useChatMessageActions({ createPoll, votePoll, closePoll, setPinned, deleteMessage })")
+    expect(CONVERSATION).toContain(
+      "useChatMessageActions({ createPoll, votePoll, closePoll, setPinned, deleteMessage })",
+    )
     expect(CONVERSATION).toContain("onDelete={onDeleteMessage}")
     expect(MESSAGE_ACTIONS).not.toMatch(/deleteMessage\(messageId\)\.catch\(\(\) => \{\}\)/)
-    expect(MESSAGE_ACTIONS).toMatch(/deleteMessage\(messageId\)\.catch\(\(\) => \{\s*toast\.show\(t\("menu\.delete_failed"\)/)
+    expect(MESSAGE_ACTIONS).toMatch(
+      /deleteMessage\(messageId\)\.catch\(\(\) => \{\s*toast\.show\(t\("menu\.delete_failed"\)/,
+    )
   })
 
   it("a blocked attachment pick says why instead of returning silently", () => {
@@ -76,21 +90,27 @@ describe("failures are surfaced, not swallowed", () => {
       /if \(!\(camera\.isAvailable\(\) && attachments\.length < maxAttachments\) \|\| uploading\) return/,
     )
     expect(COMPOSER_ATTACHMENTS).toMatch(/if \(uploading\) \{\s*setAttachError\(/)
-    expect(COMPOSER_ATTACHMENTS).toMatch(/if \(attachments\.length >= maxAttachments\) \{\s*setAttachError\(/)
+    expect(COMPOSER_ATTACHMENTS).toMatch(
+      /if \(attachments\.length >= maxAttachments\) \{\s*setAttachError\(/,
+    )
   })
 
   it("an attachment error is shown in full, never clamped", () => {
     const caption = COMPOSER.match(/<Text[^>]*>\s*\{att\.attachError\}/)
     expect(caption, "the attach-error caption").not.toBeNull()
     expect(caption![0]).not.toMatch(/numberOfLines/)
-    expect(caption![0], "native measures a row child at the full row width").toMatch(/style=\{styles\.composerAttachErrorText\}/)
+    expect(caption![0], "native measures a row child at the full row width").toMatch(
+      /style=\{styles\.composerAttachErrorText\}/,
+    )
     expect(STYLES).toMatch(/composerAttachErrorText: \{ flexShrink: 1 \}/)
   })
 })
 
 describe("the keyboard is avoided on BOTH platforms, by ONE owner each", () => {
   it("gives iOS the KeyboardAvoidingView and Android the reserve, never both at once", () => {
-    expect(CONVERSATION).toMatch(/<IosKeyboardAvoidingView style=\{styles\.flex\} keyboardVerticalOffset=\{0\}>/)
+    expect(CONVERSATION).toMatch(
+      /<IosKeyboardAvoidingView style=\{styles\.flex\} keyboardVerticalOffset=\{0\}>/,
+    )
     expect(CONVERSATION).not.toMatch(/behavior=/)
     expect(CONVERSATION).toMatch(/const kbReserve = useKeyboardReserve\(\)/)
     expect(CONVERSATION).toMatch(/marginBottom: kbReserve/)
@@ -99,14 +119,18 @@ describe("the keyboard is avoided on BOTH platforms, by ONE owner each", () => {
 
 describe("the inbox list", () => {
   it("memoizes its data array on the query data", () => {
-    expect(INBOX).toMatch(/const threads = useMemo\(\(\) => \(query\.data\?\.pages \?\? \[\]\)\.flatMap\(\(p\) => p\.items\), \[query\.data\]\)/)
+    expect(INBOX).toMatch(
+      /const threads = useMemo\(\(\) => \(query\.data\?\.pages \?\? \[\]\)\.flatMap\(\(p\) => p\.items\), \[query\.data\]\)/,
+    )
   })
 })
 describe("the typing indicator", () => {
   it("is rendered from the live WS typing state, never from a room subscription the inbox lacks", () => {
     expect(CONVERSATION).toContain("chat.typingUserIds.length === 0")
     expect(CONVERSATION).toContain("<TypingBubble name={item.name} color={item.color} />")
-    expect(INBOX, "an inbox row holds no room subscription to learn typing from").not.toContain("typing")
+    expect(INBOX, "an inbox row holds no room subscription to learn typing from").not.toContain(
+      "typing",
+    )
   })
 
   it("names the typer(s) through the catalog, with the package's plural conventions", () => {

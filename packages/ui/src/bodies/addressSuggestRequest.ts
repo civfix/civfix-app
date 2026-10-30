@@ -14,7 +14,10 @@ export interface AddressSuggestBias {
 /** How many suggestions one keystroke asks for (the dropdown shows them all). */
 export const ADDRESS_SUGGEST_LIMIT = 6
 
-export function buildSuggestRequest(query: string, bias: AddressSuggestBias = {}): SuggestPlacesRequest {
+export function buildSuggestRequest(
+  query: string,
+  bias: AddressSuggestBias = {},
+): SuggestPlacesRequest {
   return {
     q: query,
     limit: ADDRESS_SUGGEST_LIMIT,

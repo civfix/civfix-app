@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest"
 import { AppError, ErrorCode, toAppError } from "@civfix/contract"
 import { createApiClient } from "@civfix/contract/client"
 
-
 function clientRespondingWith(status: number, body: unknown) {
   return createApiClient({
     baseURL: "http://api.test",

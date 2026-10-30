@@ -28,7 +28,8 @@ const LOCALES = LocaleEnum.options
 // Must equal FALLBACK_LOCALE in src/i18n/resolveLocale.ts: the web bundles it statically so a key never
 // renders raw while another locale's chunk is in flight.
 const STATIC_LOCALE = "en"
-if (!LOCALES.includes(STATIC_LOCALE)) throw new Error(`LocaleEnum no longer contains ${STATIC_LOCALE}`)
+if (!LOCALES.includes(STATIC_LOCALE))
+  throw new Error(`LocaleEnum no longer contains ${STATIC_LOCALE}`)
 
 /** @param {string} dir */
 const jsonNames = (dir) =>
@@ -125,5 +126,8 @@ ${LOCALES.map((lng) => `  ${lng},`).join("\n")}
 `,
   )
 
-  return { modules, summary: { locales: LOCALES, staticLocale: STATIC_LOCALE, namespaces, importCount } }
+  return {
+    modules,
+    summary: { locales: LOCALES, staticLocale: STATIC_LOCALE, namespaces, importCount },
+  }
 }

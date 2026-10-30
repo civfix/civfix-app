@@ -35,7 +35,9 @@ function SearchPill({
         onChangeText={onChangeText}
         onFocus={onFocus}
       />
-      {mode === "people" ? <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} /> : null}
+      {mode === "people" ? (
+        <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} />
+      ) : null}
     </View>
   )
 }
@@ -113,10 +115,26 @@ export function SearchHeader(props: SearchHeaderProps) {
   const { t } = useT("common-search")
   const { t: tn } = useT("notifications")
   const unread = useHasUnreadNotifications()
-  const { value, placeholder, mode, onChangeText, onFocus, userName, userPhotoUrl, onOpenProfile, onSignIn } = props
+  const {
+    value,
+    placeholder,
+    mode,
+    onChangeText,
+    onFocus,
+    userName,
+    userPhotoUrl,
+    onOpenProfile,
+    onSignIn,
+  } = props
   return (
     <View style={styles.row}>
-      <SearchPill value={value} placeholder={placeholder} mode={mode} onChangeText={onChangeText} onFocus={onFocus} />
+      <SearchPill
+        value={value}
+        placeholder={placeholder}
+        mode={mode}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+      />
       {onSignIn ? (
         <Pressable
           onPress={onSignIn}
@@ -131,7 +149,11 @@ export function SearchHeader(props: SearchHeaderProps) {
         <Pressable
           onPress={onOpenProfile}
           accessibilityRole="button"
-          accessibilityLabel={unread ? tn("row.unreadSuffix", { title: t("a11y.open_profile") }) : t("a11y.open_profile")}
+          accessibilityLabel={
+            unread
+              ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
+              : t("a11y.open_profile")
+          }
           hitSlop={8}
           style={({ pressed }) => (pressed ? styles.buttonPressed : null)}
         >

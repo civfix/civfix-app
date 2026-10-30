@@ -51,7 +51,9 @@ describe("QuestionsEditor server refresh", () => {
       expect(screen.getByLabelText("questions.prompt")).toHaveProperty("value", "Need a shirt?"),
     )
     act(() => {
-      qc.setQueryData(queryKeys.hostQuestions(EVENT_ID), [{ ...QUESTION, prompt: "Need a T-shirt?" }])
+      qc.setQueryData(queryKeys.hostQuestions(EVENT_ID), [
+        { ...QUESTION, prompt: "Need a T-shirt?" },
+      ])
     })
     await waitFor(() =>
       expect(screen.getByLabelText("questions.prompt")).toHaveProperty("value", "Need a T-shirt?"),

@@ -13,7 +13,15 @@ import type { OtpEntry } from "./use-otp-entry"
 
 export type AuthStep = "choices" | "email" | "code"
 
-export function AuthStepHeading({ step, email, t }: { step: AuthStep; email: string; t: Translate }) {
+export function AuthStepHeading({
+  step,
+  email,
+  t,
+}: {
+  step: AuthStep
+  email: string
+  t: Translate
+}) {
   if (step === "choices") {
     return (
       <>
@@ -40,7 +48,12 @@ export function AuthStepHeading({ step, email, t }: { step: AuthStep; email: str
         {t("code.title")}
       </h3>
       <p className="cf-auth-sub">
-        <Trans t={t} i18nKey="code.subtitle" values={{ email }} components={[<strong key="email" />]} />
+        <Trans
+          t={t}
+          i18nKey="code.subtitle"
+          values={{ email }}
+          components={[<strong key="email" />]}
+        />
       </p>
     </>
   )
@@ -98,7 +111,14 @@ interface EmailStepProps {
   onSubmit: (event: React.FormEvent) => void
 }
 
-export function EmailStep({ t, email, onEmailChange, submitting, error, onSubmit }: EmailStepProps) {
+export function EmailStep({
+  t,
+  email,
+  onEmailChange,
+  submitting,
+  error,
+  onSubmit,
+}: EmailStepProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
   // The step replaces the button that opened it, so its field takes the focus that button held.
   React.useEffect(() => {
@@ -167,7 +187,10 @@ export function CodeStep({
   React.useEffect(() => {
     cellRefs.current[0]?.focus()
   }, [cellRefs])
-  const cellIds = React.useMemo(() => Array.from({ length }, (_unused, n) => `digit-${n + 1}`), [length])
+  const cellIds = React.useMemo(
+    () => Array.from({ length }, (_unused, n) => `digit-${n + 1}`),
+    [length],
+  )
   return (
     <>
       <div
@@ -220,9 +243,7 @@ export function CodeStep({
       <div className="cf-auth-resend">
         {t("code.resend_prompt")}{" "}
         <button type="button" disabled={resendAfter > 0 || submitting} onClick={onResend}>
-          {resendAfter > 0
-            ? t("code.resend_countdown", { count: resendAfter })
-            : t("code.resend")}
+          {resendAfter > 0 ? t("code.resend_countdown", { count: resendAfter }) : t("code.resend")}
         </button>
       </div>
       <button type="button" className="btn ghost block" onClick={onUseDifferentEmail}>

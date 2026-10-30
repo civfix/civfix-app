@@ -49,7 +49,10 @@ const REPORT: ReportDTO = {
 
 // The csrf tests call createReport (POST /reports) and listMyReports (GET /reports); each gets a body its
 // response schema accepts, so the client never falls back to the raw body.
-async function reportsResponse(_url: string | URL | Request, init?: RequestInit): Promise<Response> {
+async function reportsResponse(
+  _url: string | URL | Request,
+  init?: RequestInit,
+): Promise<Response> {
   const body = init?.method === "GET" ? { items: [REPORT], nextCursor: null } : REPORT
   return new Response(JSON.stringify(body), {
     status: 200,

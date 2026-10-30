@@ -9,7 +9,11 @@ interface TicketWhen {
   timezone?: string | null | undefined
 }
 
-const TICKET_DAY_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
+const TICKET_DAY_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+}
 const TICKET_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
   hour: "numeric",
   minute: "2-digit",
@@ -46,8 +50,7 @@ export function ticketAddressView(
 ): TicketAddressView {
   const address = ticketWhere(ticket) ?? (event ? ticketWhere(event) : null)
   if (!event) return { address, point: null, verified: false }
-  const point =
-    event.lat != null && event.lng != null ? { lat: event.lat, lng: event.lng } : null
+  const point = event.lat != null && event.lng != null ? { lat: event.lat, lng: event.lng } : null
   return { address, point, verified: isVerifiedEventAddress(event.addressSource, address) }
 }
 
@@ -70,7 +73,10 @@ export function ticketPageIndex(offsetX: number, pageWidth: number, seatCount: n
   return Math.min(Math.max(index, 0), seatCount - 1)
 }
 
-export function ticketSeatIndex(seats: readonly { id: string }[], seatId: string | undefined): number {
+export function ticketSeatIndex(
+  seats: readonly { id: string }[],
+  seatId: string | undefined,
+): number {
   if (!seatId) return 0
   const index = seats.findIndex((seat) => seat.id === seatId)
   return index > 0 ? index : 0

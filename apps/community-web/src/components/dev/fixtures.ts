@@ -11,7 +11,12 @@ import type {
   UserDTO,
   UserProfileDTO,
 } from "@civfix/contract"
-import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, NOTIFICATION_CATEGORY_DEFAULTS } from "@civfix/contract"
+import {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  NOTIFICATION_CATEGORY_DEFAULTS,
+} from "@civfix/contract"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
 
@@ -161,9 +166,33 @@ export function galleryChatHistory(roomId: string): ChatHistoryResponse {
 }
 
 export const GALLERY_LEADERBOARD_PODIUM: readonly LeaderboardEntryDTO[] = [
-  { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
-  { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
-  { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
+  {
+    rank: 1,
+    userId: "p-ann",
+    name: "Ann Rivera",
+    handle: "annrivera",
+    avatar: null,
+    avatarUrl: null,
+    hours: 61.5,
+  },
+  {
+    rank: 2,
+    userId: "p-lee",
+    name: "Lee Tran",
+    handle: "leetran",
+    avatar: null,
+    avatarUrl: null,
+    hours: 48,
+  },
+  {
+    rank: 3,
+    userId: "p-mei",
+    name: "Mei Wong",
+    handle: "meiwong",
+    avatar: null,
+    avatarUrl: null,
+    hours: 39.25,
+  },
 ]
 
 export type FakeEndpoint = (args?: unknown) => Promise<unknown>

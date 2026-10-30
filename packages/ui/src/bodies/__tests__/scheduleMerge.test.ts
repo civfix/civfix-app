@@ -29,9 +29,12 @@ describe("mergeDateTime (this file pins process.env.TZ=America/Los_Angeles befor
     const time = timeOn(new Date(2026, 0, 15), 14, 30)
     const merged = mergeDateTime(date, time)
     expect([merged.getFullYear(), merged.getMonth(), merged.getDate()]).toEqual([2026, 6, 24])
-    expect([merged.getHours(), merged.getMinutes(), merged.getSeconds(), merged.getMilliseconds()]).toEqual([
-      14, 30, 0, 0,
-    ])
+    expect([
+      merged.getHours(),
+      merged.getMinutes(),
+      merged.getSeconds(),
+      merged.getMilliseconds(),
+    ]).toEqual([14, 30, 0, 0])
   })
 
   it("does not mutate either input", () => {
@@ -115,16 +118,22 @@ describe("isScheduleInFutureInZone (publish gate)", () => {
   const ZONE = "America/Los_Angeles"
 
   it("rejects a past instant", () => {
-    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 9, 0), ZONE, NOW.getTime())).toBe(false)
+    expect(
+      isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 9, 0), ZONE, NOW.getTime()),
+    ).toBe(false)
   })
 
   it("accepts a future instant", () => {
-    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 30), ZONE, NOW.getTime())).toBe(true)
+    expect(
+      isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 30), ZONE, NOW.getTime()),
+    ).toBe(true)
   })
 
   it("accepts an instant inside the grace window so a pick seconds before the minute rolls does not flap", () => {
     const now = timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS - 1_000
-    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 0), ZONE, now)).toBe(true)
+    expect(isScheduleInFutureInZone(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 0), ZONE, now)).toBe(
+      true,
+    )
   })
 })
 

@@ -31,7 +31,11 @@ export type SearchResultRow<E, R, P> =
   | { kind: "person"; key: string; person: P; gapBefore: boolean }
 
 /** Keys carry the kind because an event, a report and a person can share an id once they sit in one list. */
-export function searchResultRows<E extends { id: string }, R extends { id: string }, P extends { id: string }>(
+export function searchResultRows<
+  E extends { id: string },
+  R extends { id: string },
+  P extends { id: string },
+>(
   hits: { events: readonly E[]; reports: readonly R[]; people: readonly P[] },
   moreReports: { show: boolean; loading: boolean },
 ): SearchResultRow<E, R, P>[] {
@@ -47,7 +51,8 @@ export function searchResultRows<E extends { id: string }, R extends { id: strin
     hits.reports.forEach((report, index) =>
       rows.push({ kind: "report", key: `report:${report.id}`, report, gapBefore: index > 0 }),
     )
-    if (moreReports.show) rows.push({ kind: "more-reports", key: "more:reports", loading: moreReports.loading })
+    if (moreReports.show)
+      rows.push({ kind: "more-reports", key: "more:reports", loading: moreReports.loading })
   }
   if (hits.people.length > 0) {
     rows.push({ kind: "header", key: "header:people", group: "people" })

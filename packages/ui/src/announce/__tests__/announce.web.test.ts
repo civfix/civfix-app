@@ -112,7 +112,10 @@ describe("announce (web)", () => {
   })
 
   it("mounts both regions when the module loads, before anything is announced", () => {
-    expect(doc.children.map((c) => c.id)).toEqual(["civfix-aria-live-polite", "civfix-aria-live-assertive"])
+    expect(doc.children.map((c) => c.id)).toEqual([
+      "civfix-aria-live-polite",
+      "civfix-aria-live-assertive",
+    ])
     expect(doc.children.map((c) => c.attrs["aria-live"])).toEqual(["polite", "assertive"])
     expect(doc.children.map((c) => c.textContent)).toEqual(["", ""])
   })

@@ -31,11 +31,7 @@ export function shellHostsEntries(route: NativeRoute | null | undefined): boolea
   return !!route?.name && SHELL_HOST_ROUTE_NAMES.includes(normalizeRouteName(route.name))
 }
 
-export type InternalHrefAction =
-  | "none"
-  | "navigate"
-  | "navigate-and-dismiss"
-  | "push-route"
+export type InternalHrefAction = "none" | "navigate" | "navigate-and-dismiss" | "push-route"
 
 export interface InternalHrefInput {
   entryKey: string | null

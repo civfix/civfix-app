@@ -46,8 +46,7 @@ export function useAttendeeDrawerActions({
   })
 
   const checkIn = useMutation({
-    mutationFn: (seatId: string) =>
-      api.checkInEventSeat({ id: eventId, seatId, method: "manual" }),
+    mutationFn: (seatId: string) => api.checkInEventSeat({ id: eventId, seatId, method: "manual" }),
     onSuccess: () => succeed("drawer.checked_in"),
     onError: toastFailure,
   })

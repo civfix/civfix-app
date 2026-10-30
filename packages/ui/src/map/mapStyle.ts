@@ -5,7 +5,8 @@ const CARTO_SHARDS = ["a", "b", "c"]
 
 function cartoTiles(styleId: string): string[] {
   return CARTO_SHARDS.map(
-    (shard) => `https://${shard}.basemaps.cartocdn.com/rastertiles/${styleId}/{z}/{x}/{y}{ratio}.png`,
+    (shard) =>
+      `https://${shard}.basemaps.cartocdn.com/rastertiles/${styleId}/{z}/{x}/{y}{ratio}.png`,
   )
 }
 

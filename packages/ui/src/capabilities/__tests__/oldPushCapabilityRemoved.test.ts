@@ -30,7 +30,16 @@ describe("T24: the old push capability and NotificationPrefsBody are gone", () =
   it("leaves none of their identifiers in packages/ or apps/", () => {
     const grep = spawnSync(
       "git",
-      ["grep", "-n", "-w", ...REMOVED.flatMap((id) => ["-e", id]), "--", "packages", "apps", `:!${THIS_FILE}`],
+      [
+        "grep",
+        "-n",
+        "-w",
+        ...REMOVED.flatMap((id) => ["-e", id]),
+        "--",
+        "packages",
+        "apps",
+        `:!${THIS_FILE}`,
+      ],
       { cwd: REPO, encoding: "utf8" },
     )
     // git grep exits 1 when nothing matches and 2 or more when it could not search.

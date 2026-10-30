@@ -49,7 +49,9 @@ export const MAP_ACTIONS_RIGHT = space["3"]
 export const MAP_SIGN_IN_PAD_H = space["4"]
 export const MAP_SIGN_IN_FONT = 14
 export const MAP_SIGN_IN_LABEL_EM = 6
-export const MAP_SIGN_IN_W = Math.ceil(MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT * MAP_SIGN_IN_LABEL_EM)
+export const MAP_SIGN_IN_W = Math.ceil(
+  MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT * MAP_SIGN_IN_LABEL_EM,
+)
 export const MAP_PROFILE_EXTRA = Math.max(MAP_SIGN_IN_W - MAP_ACTION_SIZE, 0)
 
 export const EXPANDED_LEFT_CLUSTER_W =
@@ -89,7 +91,11 @@ export interface ExpandedFrame {
   occlusionLeft: number
 }
 
-export function expandedFramePlan({ view, stackLength, sidebarWidth }: ExpandedFrameInput): ExpandedFrame {
+export function expandedFramePlan({
+  view,
+  stackLength,
+  sidebarWidth,
+}: ExpandedFrameInput): ExpandedFrame {
   const cardVisible = view !== "map" || stackLength > 0
   return {
     cardVisible,

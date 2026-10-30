@@ -71,9 +71,7 @@ describe("FeedBody hands the FlatList stable props", () => {
 
   it("memoizes every element slot and every composed style array", () => {
     for (const slot of ["header", "empty", "footer"]) {
-      expect(SRC, `${slot} is rebuilt per render`).toMatch(
-        new RegExp(`const ${slot} = useMemo\\(`),
-      )
+      expect(SRC, `${slot} is rebuilt per render`).toMatch(new RegExp(`const ${slot} = useMemo\\(`))
     }
     expect(SRC).toContain("contentContainerStyle={contentStyle}")
     expect(SRC).toContain("refreshControl={refresh}")
@@ -119,11 +117,17 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
   })
 
   it("renders no RSVP pill and no attendee footer unless the host opts in", () => {
-    const mount = SRC.slice(SRC.indexOf("{showControls ? ("), SRC.indexOf("if (!onRemove) return card"))
+    const mount = SRC.slice(
+      SRC.indexOf("{showControls ? ("),
+      SRC.indexOf("if (!onRemove) return card"),
+    )
     expect(mount).toContain("<EventCardFooter")
     expect(mount).not.toContain("<RsvpPill")
 
-    const footer = SRC.slice(SRC.indexOf("function EventCardFooter("), SRC.indexOf("export function LinkedEventCard("))
+    const footer = SRC.slice(
+      SRC.indexOf("function EventCardFooter("),
+      SRC.indexOf("export function LinkedEventCard("),
+    )
     expect(footer).toContain("useJoinCleanup(eventId)")
     expect(footer).toContain("<AttendeeStack")
     expect(footer).toContain("<RsvpPill")
@@ -146,7 +150,9 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
 
   it("the THREAD's single focal card opts in - one roster per screen, not one per row", () => {
     const focal = code(read("../thread/ThreadFocalPost.tsx"))
-    expect(focal).toMatch(/<LinkedEventCard\s+event=\{linkedEvent\}\s+layout="list"\s+variant="detail"/)
+    expect(focal).toMatch(
+      /<LinkedEventCard\s+event=\{linkedEvent\}\s+layout="list"\s+variant="detail"/,
+    )
   })
 
   it("the list-scale rows stay on the default feed variant", () => {
@@ -164,8 +170,8 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
     expect(card).toContain("...t.shadows.s1")
     expect(card).toContain("borderRadius: t.radius.lg")
     expect(card).not.toContain("overflow")
-    expect(SRC).not.toContain('backgroundColor: t.colors.sun')
-    expect(SRC).not.toContain('borderColor: t.colors.sun')
+    expect(SRC).not.toContain("backgroundColor: t.colors.sun")
+    expect(SRC).not.toContain("borderColor: t.colors.sun")
   })
 })
 
@@ -229,14 +235,18 @@ describe("the thumbnail contexts spend the 400px rendition, and the lightbox get
     expect(SRC).toContain("const thumbUri = m.thumbUrl ?? m.url")
     expect(SRC).not.toContain('m.kind === "video" ? (m.thumbUrl ?? m.url) : m.url')
     expect(SRC).toContain("const lightboxItems = toLightboxItems(ready)")
-    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
+    expect(LIGHTBOX_ITEMS).toMatch(
+      /thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/,
+    )
   })
 
   it("MessageBubble's 220pt attachment decodes the thumb, and its lightbox keeps full resolution", () => {
     const SRC = code(read("../conversation/BubbleAttachments.tsx"))
     expect(SRC).toContain("thumbUri={m.thumbUrl ?? null}")
     expect(SRC).toContain("const lightboxItems = toLightboxItems(attachments)")
-    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
+    expect(LIGHTBOX_ITEMS).toMatch(
+      /thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/,
+    )
     expect(LIGHTBOX_ITEMS).toContain("url: item.url")
   })
 })
@@ -254,7 +264,9 @@ describe("slot board rows repaint only when their own props change", () => {
   })
 
   it("depends on the mutations' stable mutate and the query's refetch", () => {
-    expect(BLOCK).toContain("[boardBusy, mutateClaim, cleanupId, general, mutateJoin, onError, requireAuth, slots, t, toast]")
+    expect(BLOCK).toContain(
+      "[boardBusy, mutateClaim, cleanupId, general, mutateJoin, onError, requireAuth, slots, t, toast]",
+    )
     expect(BLOCK).toContain("[refetchAttendees]")
   })
 })
@@ -263,7 +275,9 @@ describe("member lists do not rebuild per render", () => {
   it("MemberPicker memoizes its rows and reads selection from a Set", () => {
     const SRC = code(read("../MemberPicker.tsx"))
     expect(SRC).toMatch(/const rows = useMemo\(/)
-    expect(SRC).toContain("const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])")
+    expect(SRC).toContain(
+      "const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])",
+    )
     expect(SRC).toContain("selected={selectedIds.has(item.id)}")
   })
 
@@ -291,7 +305,9 @@ describe("animated styles and component types are built once, not per render", (
 
   it("the dashboard scope avatar keeps one component type while the scope is unchanged", () => {
     const SRC = code(read("../host/dashboard/DashboardHeader.tsx"))
-    expect(SRC).toMatch(/const scopeIcon = useMemo\(\s*\(\) => avatarIcon\(avatarName, avatarSeed, avatarPhoto\),\s*\[avatarName, avatarSeed, avatarPhoto\],/)
+    expect(SRC).toMatch(
+      /const scopeIcon = useMemo\(\s*\(\) => avatarIcon\(avatarName, avatarSeed, avatarPhoto\),\s*\[avatarName, avatarSeed, avatarPhoto\],/,
+    )
   })
 
   it("address URLs are keyed on the coordinates, not the caller's point literal", () => {

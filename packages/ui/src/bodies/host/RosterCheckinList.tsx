@@ -130,7 +130,13 @@ export interface RosterRowOptions {
   onUndo: (seatId: string) => void
 }
 
-function rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
+function rosterItemRenderer({
+  timeZone,
+  canCheckIn,
+  pending,
+  onCheckIn,
+  onUndo,
+}: RosterRowOptions) {
   return function renderRosterItem({ item }: { item: RosterCheckinItem }) {
     if (item.kind === "slot-header") {
       return (
@@ -159,7 +165,13 @@ function rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }
   }
 }
 
-export function useRosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
+export function useRosterItemRenderer({
+  timeZone,
+  canCheckIn,
+  pending,
+  onCheckIn,
+  onUndo,
+}: RosterRowOptions) {
   return useMemo(
     () => rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }),
     [timeZone, canCheckIn, pending, onCheckIn, onUndo],

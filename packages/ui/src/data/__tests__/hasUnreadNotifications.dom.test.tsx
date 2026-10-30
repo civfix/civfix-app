@@ -32,7 +32,8 @@ function renderUnread({
   return { ...hook, queryClient }
 }
 
-const answer = (hasUnread: boolean) => vi.fn(async (): Promise<NotificationUnreadResponse> => ({ hasUnread }))
+const answer = (hasUnread: boolean) =>
+  vi.fn(async (): Promise<NotificationUnreadResponse> => ({ hasUnread }))
 
 describe("GH#226 useHasUnreadNotifications", () => {
   it("T4: reads the server's hasUnread when signed in, and never asks while signed out", async () => {
@@ -56,7 +57,9 @@ describe("GH#226 useHasUnreadNotifications", () => {
 
   it("T5: follows the notifications signal's invalidation without remounting", async () => {
     let hasUnread = true
-    const getNotificationUnread = vi.fn(async (): Promise<NotificationUnreadResponse> => ({ hasUnread }))
+    const getNotificationUnread = vi.fn(async (): Promise<NotificationUnreadResponse> => ({
+      hasUnread,
+    }))
     const { result, queryClient } = renderUnread({ getNotificationUnread })
     await waitFor(() => expect(result.current).toBe(true))
 

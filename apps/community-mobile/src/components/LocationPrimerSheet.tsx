@@ -30,7 +30,11 @@ export function LocationPrimerSheet({
       dismissLabel={t("location.a11y_dismiss")}
       actions={
         <View style={styles.stack}>
-          <PrimaryButton label={t("location.use")} icon={iconMap.Navigation} onPress={onUseLocation} />
+          <PrimaryButton
+            label={t("location.use")}
+            icon={iconMap.Navigation}
+            onPress={onUseLocation}
+          />
           <Pressable
             onPress={onApproximate}
             accessibilityRole="button"

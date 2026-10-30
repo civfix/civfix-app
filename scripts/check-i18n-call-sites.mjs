@@ -92,7 +92,9 @@ function sourceFiles(dir) {
     if (SKIPPED_DIRS.has(entry.name)) return []
     const full = join(dir, entry.name)
     if (entry.isDirectory()) return sourceFiles(full)
-    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) && !entry.name.endsWith(".d.ts")
+    return /\.tsx?$/.test(entry.name) &&
+      !/\.test\.tsx?$/.test(entry.name) &&
+      !entry.name.endsWith(".d.ts")
       ? [full]
       : []
   })
@@ -111,7 +113,8 @@ function stripComments(text) {
       while (i < text.length && text[i] !== "\n") i++
     } else if (c === "/" && n === "*") {
       i += 2
-      while (i < text.length && !(text[i] === "*" && text[i + 1] === "/")) out += text[i++] === "\n" ? "\n" : ""
+      while (i < text.length && !(text[i] === "*" && text[i + 1] === "/"))
+        out += text[i++] === "\n" ? "\n" : ""
       i += 2
     } else if (c === '"' || c === "'" || c === "`") {
       out += text.charAt(i++)
@@ -136,7 +139,8 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
  * @param {string | undefined} value
  */
 function captured(value) {
-  if (value === undefined) throw new Error("i18n call-site check: a required capture group did not match")
+  if (value === undefined)
+    throw new Error("i18n call-site check: a required capture group did not match")
   return value
 }
 
@@ -150,16 +154,28 @@ function bindings(text) {
     namespaces.add(ns)
     bound.set(id, namespaces)
   }
-  for (const m of text.matchAll(new RegExp(`\\{([^{}]*)\\}\\s*=\\s*useT\\(\\s*(?:${STR})?\\s*\\)`, "g"))) {
+  for (const m of text.matchAll(
+    new RegExp(`\\{([^{}]*)\\}\\s*=\\s*useT\\(\\s*(?:${STR})?\\s*\\)`, "g"),
+  )) {
     const ns = m[2] ?? m[3] ?? DEFAULT_NS
     for (const part of captured(m[1]).split(",")) {
       const renamed = part.trim().match(/^t(?:\s*:\s*([A-Za-z_$][\w$]*))?$/)
       if (renamed) bind(renamed[1] ?? "t", ns)
     }
   }
-  for (const m of text.matchAll(new RegExp(`(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*useT\\(\\s*(?:${STR})?\\s*\\)\\.t\\b`, "g")))
+  for (const m of text.matchAll(
+    new RegExp(
+      `(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*useT\\(\\s*(?:${STR})?\\s*\\)\\.t\\b`,
+      "g",
+    ),
+  ))
     bind(captured(m[1]), m[2] ?? m[3] ?? DEFAULT_NS)
-  for (const m of text.matchAll(new RegExp(`(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*[^;\\n]*getFixedT\\(\\s*null\\s*,\\s*${STR}\\s*\\)`, "g")))
+  for (const m of text.matchAll(
+    new RegExp(
+      `(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*[^;\\n]*getFixedT\\(\\s*null\\s*,\\s*${STR}\\s*\\)`,
+      "g",
+    ),
+  ))
     bind(captured(m[1]), captured(m[2] ?? m[3]))
   return bound
 }
@@ -203,7 +219,8 @@ for (const [workspace, dirs] of SCANNED) {
         const candidates = scope ?? [...leaves.keys()]
         if (candidates.some((ns) => hasLeaf(ns, key))) continue
         if (candidates.some((ns) => nodes.get(ns)?.has(key))) {
-          if (!/returnObjects/.test(options)) failures.push(`${where}: names an object, not a string (needs returnObjects)`)
+          if (!/returnObjects/.test(options))
+            failures.push(`${where}: names an object, not a string (needs returnObjects)`)
           continue
         }
         const elsewhere = namespacesWith(key)
@@ -217,7 +234,11 @@ for (const [workspace, dirs] of SCANNED) {
 }
 
 if (failures.length) {
-  console.error(`i18n call sites that render a raw key (${failures.length}):\n  ${failures.join("\n  ")}`)
+  console.error(
+    `i18n call sites that render a raw key (${failures.length}):\n  ${failures.join("\n  ")}`,
+  )
   process.exit(1)
 }
-console.log(`i18n call-site check OK: ${checked} literal keys resolve against en in their namespace.`)
+console.log(
+  `i18n call-site check OK: ${checked} literal keys resolve against en in their namespace.`,
+)

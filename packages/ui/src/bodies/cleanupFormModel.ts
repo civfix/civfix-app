@@ -118,7 +118,9 @@ function slotsFollowingStart(
 export function dateChangePatch(value: CleanupFormValue, date: Date): Partial<CleanupFormValue> {
   const before =
     value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
-  const time = value.time ? timeCarrier(date, value.time.getHours(), value.time.getMinutes()) : value.time
+  const time = value.time
+    ? timeCarrier(date, value.time.getHours(), value.time.getMinutes())
+    : value.time
   const endTime = value.endTime
     ? timeCarrier(date, value.endTime.getHours(), value.endTime.getMinutes())
     : value.endTime
@@ -127,12 +129,17 @@ export function dateChangePatch(value: CleanupFormValue, date: Date): Partial<Cl
 }
 
 /** A new start keeps the event's current length, or the wizard default before an end exists. */
-export function startTimeChangePatch(value: CleanupFormValue, time: Date): Partial<CleanupFormValue> {
+export function startTimeChangePatch(
+  value: CleanupFormValue,
+  time: Date,
+): Partial<CleanupFormValue> {
   const before =
     value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
   const after = value.date ? formInstantMs(value.date, time, value.timezone) : null
   const offset =
-    value.time && value.endTime ? endOffsetMs(value.time, value.endTime) : DEFAULT_WIZARD_DURATION_MS
+    value.time && value.endTime
+      ? endOffsetMs(value.time, value.endTime)
+      : DEFAULT_WIZARD_DURATION_MS
   const endTime = endTimeAfter(time, time, offset)
   return { time, endTime, ...slotsFollowingStart(value.slots, before, after) }
 }

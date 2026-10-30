@@ -48,7 +48,11 @@ export const DEMO_EVENT_LNG = TOGETHER_EVENT_SPOT.lng
 
 export const DEMO_REPORT_ID = "onboarding-report"
 
-export const REPORT_STAGE_TYPES = ["dump", "graffiti", "pavement"] as const satisfies readonly ReportType[]
+export const REPORT_STAGE_TYPES = [
+  "dump",
+  "graffiti",
+  "pavement",
+] as const satisfies readonly ReportType[]
 export const REPORT_STAGE_SELECTED_INDEX = 1
 
 export const TRACK_CLUSTER_MEMBERS: readonly number[] = [5, 6]

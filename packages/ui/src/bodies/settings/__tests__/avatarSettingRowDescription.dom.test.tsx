@@ -20,17 +20,26 @@ vi.mock("../../../typography", async () => {
 vi.mock("../../../primitives", async () => ({
   Avatar: () => null,
   LIST_TILE: (await vi.importActual<typeof ListRow>("../../../primitives/ListRow")).LIST_TILE,
-  SETTINGS_ROW_MIN_HEIGHT: (await vi.importActual<typeof SettingsRow>("../../../primitives/SettingsRow"))
-    .SETTINGS_ROW_MIN_HEIGHT,
+  SETTINGS_ROW_MIN_HEIGHT: (
+    await vi.importActual<typeof SettingsRow>("../../../primitives/SettingsRow")
+  ).SETTINGS_ROW_MIN_HEIGHT,
 }))
 
-const profile = { id: "u1", name: "Ada", avatarUrl: null, avatar: null } as unknown as UserProfileDTO
+const profile = {
+  id: "u1",
+  name: "Ada",
+  avatarUrl: null,
+  avatar: null,
+} as unknown as UserProfileDTO
 
 const catalogs = { en, de, es, ko }
-const descriptions = Object.entries(catalogs).flatMap(([lng, c]) => [
-  [lng as SupportedLocale, "avatar.sub", c.avatar.sub, false],
-  [lng as SupportedLocale, "avatar.uploading", c.avatar.uploading, true],
-] as const)
+const descriptions = Object.entries(catalogs).flatMap(
+  ([lng, c]) =>
+    [
+      [lng as SupportedLocale, "avatar.sub", c.avatar.sub, false],
+      [lng as SupportedLocale, "avatar.uploading", c.avatar.uploading, true],
+    ] as const,
+)
 
 // react-native-web turns `numberOfLines` into a clipped, ellipsized -webkit-box.
 function expectUnclamped(el: HTMLElement) {
@@ -61,6 +70,8 @@ describe("the Profile photo row shows its whole description", () => {
         <AvatarSettingRow profile={profile} onPress={() => {}} />
       </I18nProvider>,
     )
-    expect(getComputedStyle(await screen.findByText(de.avatar.change)).textOverflow).toBe("ellipsis")
+    expect(getComputedStyle(await screen.findByText(de.avatar.change)).textOverflow).toBe(
+      "ellipsis",
+    )
   })
 })

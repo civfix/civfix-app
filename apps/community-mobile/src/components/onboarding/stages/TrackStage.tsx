@@ -125,8 +125,7 @@ function TrackPin({
       transform: [
         { translateX: merge * mergeX },
         {
-          translateY:
-            (d - 1) * distance + merge * mergeY + (PIN_HEIGHT * (1 - scaleY)) / 2,
+          translateY: (d - 1) * distance + merge * mergeY + (PIN_HEIGHT * (1 - scaleY)) / 2,
         },
         { scaleX: (1 + bounce * 0.08) * (1 - merge * 0.4) },
         { scaleY: scaleY * (1 - merge * 0.4) },
@@ -153,7 +152,14 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
     return {
       opacity: interpolate(s, [0, 0.15], [0, 1], Extrapolation.CLAMP),
       transform: [
-        { scale: interpolate(s, [0, 0.55, 1], [POP.from, POP.overshoot, POP.to], Extrapolation.CLAMP) },
+        {
+          scale: interpolate(
+            s,
+            [0, 0.55, 1],
+            [POP.from, POP.overshoot, POP.to],
+            Extrapolation.CLAMP,
+          ),
+        },
       ],
     }
   })

@@ -29,16 +29,26 @@ export function useReportMeToo(report: ReportDTO) {
   const next = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })
   const vote = useCallback(
     (send: typeof confirm) => {
-      requireAuth(() => send(undefined, { onError: () => toast.show(t("confirm.error"), { variant: "error" }) }), {
-        next,
-      })
+      requireAuth(
+        () =>
+          send(undefined, { onError: () => toast.show(t("confirm.error"), { variant: "error" }) }),
+        {
+          next,
+        },
+      )
     },
     [requireAuth, toast, t, next],
   )
   const confirmed = report.confirmedByMe
   const fixed = report.fixedByMe
-  const onSeen = useCallback(() => vote(confirmed ? unconfirm : confirm), [vote, confirmed, confirm, unconfirm])
-  const onFixed = useCallback(() => vote(fixed ? unmarkFixed : markFixed), [vote, fixed, markFixed, unmarkFixed])
+  const onSeen = useCallback(
+    () => vote(confirmed ? unconfirm : confirm),
+    [vote, confirmed, confirm, unconfirm],
+  )
+  const onFixed = useCallback(
+    () => vote(fixed ? unmarkFixed : markFixed),
+    [vote, fixed, markFixed, unmarkFixed],
+  )
   return {
     visible: canMeToo(report),
     confirmCount: report.confirmCount,

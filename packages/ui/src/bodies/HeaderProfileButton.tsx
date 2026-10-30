@@ -68,10 +68,18 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
     <View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={unread ? tn("row.unreadSuffix", { title: t("a11y.open_profile") }) : t("a11y.open_profile")}
+        accessibilityLabel={
+          unread
+            ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
+            : t("a11y.open_profile")
+        }
         onPress={openProfile}
         {...focusRingProps}
-        style={({ pressed }) => [styles.target, styles.avatarButton, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.target,
+          styles.avatarButton,
+          pressed ? styles.pressed : null,
+        ]}
       >
         {surface === "solid" ? (
           <View style={[styles.signInBadge, styles.solid]}>{avatar}</View>

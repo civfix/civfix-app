@@ -119,7 +119,15 @@ export function buildOptimisticPost(args: OptimisticPostArgs): PostDTO {
     viewer: { liked: false, reposted: false, saved: false },
     media: (args.media ?? []).flatMap((item) =>
       item.uploadId
-        ? [{ id: item.uploadId, kind: item.kind, url: item.uri, thumbUrl: item.posterUri, status: "ready" as const }]
+        ? [
+            {
+              id: item.uploadId,
+              kind: item.kind,
+              url: item.uri,
+              thumbUrl: item.posterUri,
+              status: "ready" as const,
+            },
+          ]
         : [],
     ),
     mentions: args.mentions ?? [],

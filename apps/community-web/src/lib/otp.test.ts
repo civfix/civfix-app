@@ -6,7 +6,8 @@ const LEN = 6
 
 const cellsOf = (code: string): string[] => {
   const cells = emptyOtpCells(LEN)
-  for (let i = 0; i < code.length && i < LEN; i += 1) cells[i] = code[i] === "_" ? "" : (code[i] as string)
+  for (let i = 0; i < code.length && i < LEN; i += 1)
+    cells[i] = code[i] === "_" ? "" : (code[i] as string)
   return cells
 }
 

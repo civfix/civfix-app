@@ -29,7 +29,8 @@ function received(notificationId: string): void {
 
 function onMessage(event: MessageEvent<unknown>): void {
   const data = event.data as { type?: unknown; notificationId?: unknown } | null
-  if (data?.type === CLICK_MESSAGE && typeof data.notificationId === "string") received(data.notificationId)
+  if (data?.type === CLICK_MESSAGE && typeof data.notificationId === "string")
+    received(data.notificationId)
 }
 
 // Read when the providers import this module, before anything renders: the shell's first URL write

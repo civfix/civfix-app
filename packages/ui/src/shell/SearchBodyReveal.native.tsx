@@ -23,35 +23,39 @@ const DockClearanceFallbackContext = createContext(0)
 DockClearanceFallbackContext.displayName = "DockClearanceFallbackContext"
 
 function makeDockClearanceScroll(Base: ScrollHostComponent): ScrollHostComponent {
-  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(function DockClearanceScroll(
-    { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
-    ref,
-  ) {
-    const footprint = useTabBarStore((s) => s.tabBarHeight)
-    const keyboardReserve = useSearchBarStore((s) => s.keyboardReserve)
-    const fallback = useContext(DockClearanceFallbackContext)
-    const clearance = horizontal ? 0 : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
+  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(
+    function DockClearanceScroll(
+      { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
+      ref,
+    ) {
+      const footprint = useTabBarStore((s) => s.tabBarHeight)
+      const keyboardReserve = useSearchBarStore((s) => s.keyboardReserve)
+      const fallback = useContext(DockClearanceFallbackContext)
+      const clearance = horizontal
+        ? 0
+        : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
 
-    const mergedContentStyle = useMemo(
-      () => withExtraBottomPadding(contentContainerStyle, clearance),
-      [contentContainerStyle, clearance],
-    )
+      const mergedContentStyle = useMemo(
+        () => withExtraBottomPadding(contentContainerStyle, clearance),
+        [contentContainerStyle, clearance],
+      )
 
-    const indicatorInsets = useMemo(
-      () => scrollIndicatorInsets ?? { bottom: clearance },
-      [scrollIndicatorInsets, clearance],
-    )
+      const indicatorInsets = useMemo(
+        () => scrollIndicatorInsets ?? { bottom: clearance },
+        [scrollIndicatorInsets, clearance],
+      )
 
-    return (
-      <Base
-        ref={ref}
-        contentContainerStyle={mergedContentStyle}
-        horizontal={horizontal}
-        scrollIndicatorInsets={indicatorInsets}
-        {...rest}
-      />
-    )
-  })
+      return (
+        <Base
+          ref={ref}
+          contentContainerStyle={mergedContentStyle}
+          horizontal={horizontal}
+          scrollIndicatorInsets={indicatorInsets}
+          {...rest}
+        />
+      )
+    },
+  )
   DockClearanceScroll.displayName = "DockClearanceScroll"
   return DockClearanceScroll
 }
@@ -67,7 +71,12 @@ const PORTRAIT_SCROLL_HOST = makeDockClearanceScrollHost(
   }),
 )
 
-export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: SearchBodyRevealProps) {
+export function SearchBodyReveal({
+  active,
+  renderBody,
+  topInset,
+  bottomInset,
+}: SearchBodyRevealProps) {
   const styles = useStyles()
   const [mounted, setMounted] = useState(active)
   useEffect(() => {
@@ -95,9 +104,7 @@ export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: 
       pointerEvents={active ? "auto" : "none"}
     >
       <DockClearanceFallbackContext.Provider value={bottomInset}>
-        <ScrollHostProvider value={PORTRAIT_SCROLL_HOST}>
-          {body}
-        </ScrollHostProvider>
+        <ScrollHostProvider value={PORTRAIT_SCROLL_HOST}>{body}</ScrollHostProvider>
       </DockClearanceFallbackContext.Provider>
     </Animated.View>
   )

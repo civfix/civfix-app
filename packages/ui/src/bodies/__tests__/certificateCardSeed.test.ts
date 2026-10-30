@@ -22,7 +22,10 @@ import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const card = surfaceSource("certificateCard")
 
-const row = (code: string, extra: Partial<ServiceHoursCertificateDTO> = {}): ServiceHoursCertificateDTO =>
+const row = (
+  code: string,
+  extra: Partial<ServiceHoursCertificateDTO> = {},
+): ServiceHoursCertificateDTO =>
   ({ code, status: "valid", revokedAt: null, ...extra }) as unknown as ServiceHoursCertificateDTO
 
 /** Strip comments so the assertions read CODE only - the header prose names these symbols too. */
@@ -43,7 +46,10 @@ describe("ServiceHoursCertificateCard seeds from the certificate list", () => {
     const none = new Set<string>()
     expect(latestLiveCertificate([row("a"), row("b")], none)?.code).toBe("a")
     expect(latestLiveCertificate([row("a", { status: "revoked" }), row("b")], none)?.code).toBe("b")
-    expect(latestLiveCertificate([row("a", { revokedAt: "2026-07-01T00:00:00.000Z" }), row("b")], none)?.code).toBe("b")
+    expect(
+      latestLiveCertificate([row("a", { revokedAt: "2026-07-01T00:00:00.000Z" }), row("b")], none)
+        ?.code,
+    ).toBe("b")
     expect(latestLiveCertificate([row("a", { status: "revoked" })], none)).toBeNull()
     expect(latestLiveCertificate([], none)).toBeNull()
     expect(body).toContain(

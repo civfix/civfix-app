@@ -28,7 +28,11 @@ export interface LightboxMediaWidthInput {
   windowHeight: number
 }
 
-export function lightboxMediaWidth({ ratio, windowWidth, windowHeight }: LightboxMediaWidthInput): number {
+export function lightboxMediaWidth({
+  ratio,
+  windowWidth,
+  windowHeight,
+}: LightboxMediaWidthInput): number {
   const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : LIGHTBOX_FALLBACK_ASPECT_RATIO
   const byWidth = Math.min(windowWidth, LIGHTBOX_STAGE_MAX_WIDTH) - LIGHTBOX_STAGE_PADDING_X * 2
   const byHeight = (windowHeight - LIGHTBOX_STAGE_PADDING_Y * 2) * safeRatio

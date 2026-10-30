@@ -4,8 +4,10 @@ import * as React from "react"
 
 import { navigateConsole } from "@/components/console/url-state"
 
-export interface ConsoleLinkProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
+export interface ConsoleLinkProps extends Omit<
+  React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  "href"
+> {
   href: string
 }
 

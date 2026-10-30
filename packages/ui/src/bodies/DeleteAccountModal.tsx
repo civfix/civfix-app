@@ -1,12 +1,24 @@
 import { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle, MIN_TOUCH_TARGET } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  focusRingProps,
+  inputFocusedStyle,
+  MIN_TOUCH_TARGET,
+} from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
+import {
+  EMAIL_OTP_CODE_LENGTH,
+  ErrorCode,
+  errorCopyKey,
+  type ErrorCodeTable,
+} from "@civfix/contract"
 import { useT } from "../i18n"
 
 type TFn = { (key: string): string; (key: string, opts: Record<string, unknown>): string }
@@ -164,7 +176,9 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
           <TextInput
             ref={codeRef}
             value={code}
-            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_CODE_LENGTH))}
+            onChangeText={(txt) =>
+              setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_CODE_LENGTH))
+            }
             editable={!del.isPending}
             keyboardType="number-pad"
             inputMode="numeric"

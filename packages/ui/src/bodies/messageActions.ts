@@ -114,13 +114,16 @@ export function buildMessageActions(input: MessageActionsInput): MessageActionDe
     const reduced: MessageActionDescriptor[] = []
     if (!input.isSystem && input.hasMessageId) reduced.push({ key: "jump", destructive: false })
     if (input.hasBody && input.hasClipboard) reduced.push({ key: "copy", destructive: false })
-    if (!input.isSystem && input.canPin && input.hasMessageId) reduced.push({ key: "unpin", destructive: false })
+    if (!input.isSystem && input.canPin && input.hasMessageId)
+      reduced.push({ key: "unpin", destructive: false })
     return reduced
   }
 
   const actions: MessageActionDescriptor[] = []
-  if (!input.isSystem && input.canReply && input.hasMessageId) actions.push({ key: "reply", destructive: false })
-  if (!input.isPoll && input.hasBody && input.hasClipboard) actions.push({ key: "copy", destructive: false })
+  if (!input.isSystem && input.canReply && input.hasMessageId)
+    actions.push({ key: "reply", destructive: false })
+  if (!input.isPoll && input.hasBody && input.hasClipboard)
+    actions.push({ key: "copy", destructive: false })
   if (input.isSystem) return actions
 
   // Both poll rows need a server id: they call the poll endpoints.
@@ -144,7 +147,8 @@ export function buildMessageActions(input: MessageActionsInput): MessageActionDe
     // Moderator delete: the wiring routes it through the SAME confirm popover as own-message delete.
     if (input.canDeleteOthers) actions.push({ key: "delete", destructive: true })
     if (input.hasMessageId) actions.push({ key: "report", destructive: false })
-    if (input.isGroupRoom && input.authorBlockable) actions.push({ key: "block", destructive: true })
+    if (input.isGroupRoom && input.authorBlockable)
+      actions.push({ key: "block", destructive: true })
   }
   return actions
 }

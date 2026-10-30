@@ -1,5 +1,12 @@
 import { Pressable, View } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { Icon, iconMap } from "../typography"
 import { UnreadDot } from "../primitives/UnreadDot"
 import { useHasUnreadNotifications } from "../data"

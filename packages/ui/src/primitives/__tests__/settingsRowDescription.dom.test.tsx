@@ -30,7 +30,9 @@ function expectUnclamped(el: HTMLElement) {
 
 describe("a settings row shows its whole description", () => {
   it.each(helpers)("toggle row, %s %s", (_lng, _key, helper) => {
-    render(<SettingsRow label="Label" sub={helper} toggle={{ value: false, onValueChange: () => {} }} />)
+    render(
+      <SettingsRow label="Label" sub={helper} toggle={{ value: false, onValueChange: () => {} }} />,
+    )
     expectUnclamped(screen.getByText(helper))
   })
 
@@ -59,7 +61,14 @@ describe("a settings row shows its whole description", () => {
   })
 
   it("clamps a value preview that asks for it", () => {
-    render(<SettingsRow label="Label" sub={en.showHours.helper} subNumberOfLines={2} onPress={() => {}} />)
+    render(
+      <SettingsRow
+        label="Label"
+        sub={en.showHours.helper}
+        subNumberOfLines={2}
+        onPress={() => {}}
+      />,
+    )
     expect(getComputedStyle(screen.getByText(en.showHours.helper)).textOverflow).toBe("ellipsis")
   })
 })

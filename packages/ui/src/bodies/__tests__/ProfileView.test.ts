@@ -22,7 +22,9 @@ describe("the own profile's tabs", () => {
 
   it("honours a deep link into the Hours tab", () => {
     expect(buildProfileTabsModel("hours", OWN_FULL).active).toBe("hours")
-    expect(SOURCE).toMatch(/useNavStore\.getState\(\)\.active\?\.profileTab \?\? PROFILE_DEFAULT_TAB/)
+    expect(SOURCE).toMatch(
+      /useNavStore\.getState\(\)\.active\?\.profileTab \?\? PROFILE_DEFAULT_TAB/,
+    )
   })
 
   it("degrades a requested tab whose slot the host did not supply", () => {
@@ -89,20 +91,28 @@ describe("the hero's trailing affordance", () => {
     expect(SOURCE).not.toContain("heroSignOut")
     for (const lng of ["en", "es", "de", "ko"]) {
       const catalog = JSON.parse(
-        readFileSync(new URL(`../../i18n/locales/${lng}/profile-view.json`, import.meta.url), "utf8"),
+        readFileSync(
+          new URL(`../../i18n/locales/${lng}/profile-view.json`, import.meta.url),
+          "utf8",
+        ),
       ) as { hero?: unknown }
       expect(catalog.hero, `${lng}/profile-view keeps orphaned hero copy`).toBeUndefined()
     }
   })
 
   it("leaves ProfileBody with no settings list of its own - Saved posts lives in the Posts tab", () => {
-    const POSTS = readFileSync(new URL("../profile/ProfilePostsSection.tsx", import.meta.url), "utf8")
+    const POSTS = readFileSync(
+      new URL("../profile/ProfilePostsSection.tsx", import.meta.url),
+      "utf8",
+    )
     expect(BODY).not.toContain("SettingsSection")
     expect(BODY).not.toContain('label={t("nav.settings.label")}')
     expect(BODY).not.toContain("useLogout")
     expect(SOURCE).not.toContain("settings?: React.ReactNode")
     expect(BODY).toContain("onOpenSaved={onOpenSaved}")
-    expect(BODY).toMatch(/const onOpenSaved = useCallback\(\(\) => pushKind\("saves"\), \[pushKind\]\)/)
+    expect(BODY).toMatch(
+      /const onOpenSaved = useCallback\(\(\) => pushKind\("saves"\), \[pushKind\]\)/,
+    )
     expect(POSTS).toContain('t("posts.saved")')
     expect(POSTS).toContain("onOpenSaved ? (")
   })
@@ -181,6 +191,8 @@ describe("a profileTab merged into the ALREADY-ACTIVE entry", () => {
   })
 
   it("keeps the PROFILE_DEFAULT_TAB fallback for the first mount", () => {
-    expect(SOURCE).toMatch(/useNavStore\.getState\(\)\.active\?\.profileTab \?\? PROFILE_DEFAULT_TAB/)
+    expect(SOURCE).toMatch(
+      /useNavStore\.getState\(\)\.active\?\.profileTab \?\? PROFILE_DEFAULT_TAB/,
+    )
   })
 })

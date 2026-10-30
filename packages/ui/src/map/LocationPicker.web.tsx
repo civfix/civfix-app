@@ -163,7 +163,6 @@ function InlineLocationPicker({
     }
   }, [value, ensureMarker])
 
-
   if (!cameraSeed) {
     if (pickerSurface(cameraSeed, centerSettled) === "search") {
       return (
@@ -181,12 +180,7 @@ function InlineLocationPicker({
 
   return (
     <div style={{ ...styles.wrap, height }}>
-      <div
-        ref={containerRef}
-        style={styles.canvas}
-        role="region"
-        aria-label={t("a11y.picker")}
-      />
+      <div ref={containerRef} style={styles.canvas} role="region" aria-label={t("a11y.picker")} />
       <div style={styles.hint}>{placed ? t("hint.move") : t("hint.place")}</div>
     </div>
   )
@@ -204,7 +198,10 @@ function InlinePickerUnavailable({ height = PICKER_HEIGHT }: Pick<LocationPicker
 }
 
 function samePickPoint(a: LatLng, b: LatLng): boolean {
-  return Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG && Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
+  return (
+    Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG &&
+    Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
+  )
 }
 
 function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
@@ -288,9 +285,7 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
           {t("actions.reset")}
         </button>
       </div>
-      <div style={styles.overlayCoord}>
-        {point ? coordsLabel(point) : t("hint.empty")}
-      </div>
+      <div style={styles.overlayCoord}>{point ? coordsLabel(point) : t("hint.empty")}</div>
     </div>
   )
 }
@@ -309,7 +304,6 @@ export function LocationPicker(props: LocationPickerProps) {
 
 function makeStyles(t: Theme): Record<string, React.CSSProperties> {
   return {
-
     wrap: {
       position: "relative",
       width: "100%",
@@ -403,7 +397,9 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
       font: `700 13.5px/1 ${t.fontFamily.bodyBold}, system-ui, sans-serif`,
       cursor: "pointer",
-      transition: RESET_TRANSITION_PROPS.map((prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`).join(", "),
+      transition: RESET_TRANSITION_PROPS.map(
+        (prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`,
+      ).join(", "),
     },
     overlayResetHovered: {
       backgroundColor: t.colors.surfaceTint,

@@ -14,12 +14,7 @@ export function cameraSessionRunning(i: CameraSessionInputs): boolean {
 }
 
 export type CameraSessionVeto =
-  | "none"
-  | "left-surface"
-  | "transient-inactive"
-  | "backgrounded"
-  | "no-permission"
-  | "no-device"
+  "none" | "left-surface" | "transient-inactive" | "backgrounded" | "no-permission" | "no-device"
 
 export function cameraSessionVeto(i: CameraSessionInputs): CameraSessionVeto {
   if (!i.hostActive) return "left-surface"
@@ -29,7 +24,6 @@ export function cameraSessionVeto(i: CameraSessionInputs): CameraSessionVeto {
   if (!i.hasDevice) return "no-device"
   return "none"
 }
-
 
 export const SESSION_RESUME_GRACE_MS = 10_000
 
@@ -55,7 +49,6 @@ export function cancelsResumeGrace(hostActive: boolean, appState: AppLifecycleSt
   return hostActive || appState !== "active"
 }
 
-
 export type ViewfinderCaptureMode = "photo" | "video"
 
 export interface ViewfinderOutputInputs {
@@ -73,7 +66,6 @@ export function viewfinderVideoOutputEnabled(i: ViewfinderOutputInputs): boolean
   return i.mode === "video" && i.hostActive
 }
 
-
 export type MicDeferralAction = "record-now" | "defer-until-audio-commits" | "record-without-audio"
 
 export interface MicDeferralInputs {
@@ -86,7 +78,11 @@ export function micDeferralAction({ audioEnabled, granted }: MicDeferralInputs):
   return granted ? "defer-until-audio-commits" : "record-without-audio"
 }
 
-export function startsDeferredRecording(pending: boolean, sessionRunning: boolean, audioCommitted: boolean): boolean {
+export function startsDeferredRecording(
+  pending: boolean,
+  sessionRunning: boolean,
+  audioCommitted: boolean,
+): boolean {
   return pending && sessionRunning && audioCommitted
 }
 
@@ -101,7 +97,6 @@ export function dropsParkedRecording(veto: CameraSessionVeto, msSinceParked: num
 export function parkIsStale(msSinceParked: number): boolean {
   return msSinceParked >= BACKGROUNDED_PARK_GRACE_MS
 }
-
 
 export const SCAN_DEBOUNCE_MS = 1500
 

@@ -65,7 +65,10 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
     setNoteRaw("")
   }, [visible])
 
-  const setNote = useCallback((next: string) => setNoteRaw(clampShareNote(next, noteMax)), [noteMax])
+  const setNote = useCallback(
+    (next: string) => setNoteRaw(clampShareNote(next, noteMax)),
+    [noteMax],
+  )
 
   const onChangeRecipients = useCallback(
     (next: PersonDTO[]) => {

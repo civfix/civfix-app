@@ -57,14 +57,21 @@ export function ReportLinkRow({
 
   const resolved: LinkedReportCardEntry | undefined = known ?? fetched ?? undefined
   const card = useMemo(
-    () => (resolved ? { ...resolved, thumbUrl: resolved.thumbUrl ?? localReportThumb(resolved.id) } : undefined),
+    () =>
+      resolved
+        ? { ...resolved, thumbUrl: resolved.thumbUrl ?? localReportThumb(resolved.id) }
+        : undefined,
     [resolved],
   )
 
   const view = useMemo(() => {
     if (!card) return null
     const categoryLabel = tEnums(`category.${card.category}`)
-    const { title, distance, subtitle } = reportHitRowModel({ report: card, categoryLabel, viewer: center })
+    const { title, distance, subtitle } = reportHitRowModel({
+      report: card,
+      categoryLabel,
+      viewer: center,
+    })
     const code = reportShortCode(card)
     return {
       title,
@@ -77,7 +84,8 @@ export function ReportLinkRow({
   }, [card, center, tEnums, tLinked])
 
   if (!card || !view) {
-    if (query.isLoading) return <SkeletonBlock width="100%" height={ROW_SKELETON_HEIGHT} radius={th.radius.lg} />
+    if (query.isLoading)
+      return <SkeletonBlock width="100%" height={ROW_SKELETON_HEIGHT} radius={th.radius.lg} />
     const unavailable = t("linkedReports.unavailable_row")
     return (
       <LinkedReportCard
@@ -109,7 +117,11 @@ export function ReportLinkRow({
   )
 
   if (!POP_ENABLED) return content
-  return <Animated.View style={[styles.pop, { transform: [{ scale: popScale }] }]}>{content}</Animated.View>
+  return (
+    <Animated.View style={[styles.pop, { transform: [{ scale: popScale }] }]}>
+      {content}
+    </Animated.View>
+  )
 }
 
 const styles = StyleSheet.create({

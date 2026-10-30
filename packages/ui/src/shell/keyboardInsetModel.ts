@@ -159,14 +159,25 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
   switch (s.type) {
     case "will-show":
       if (!s.enabled) return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
-      return { phase: "engaged", target: s.overlap, duration: s.duration, reserveOverlap: s.overlap }
+      return {
+        phase: "engaged",
+        target: s.overlap,
+        duration: s.duration,
+        reserveOverlap: s.overlap,
+      }
     case "will-hide":
       if (phase !== "engaged") return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
       // Dropping reserveOverlap here would collapse the content box a frame after blur, while the bar
       // and keyboard are still travelling down.
-      return { phase: "engaged", target: 0, duration: s.duration, reserveOverlap: s.reserveHint ?? 0 }
+      return {
+        phase: "engaged",
+        target: 0,
+        duration: s.duration,
+        reserveOverlap: s.reserveHint ?? 0,
+      }
     case "did-settle":
-      if (s.overlap <= 0 || !s.enabled) return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
+      if (s.overlap <= 0 || !s.enabled)
+        return { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }
       return { phase: "engaged", target: s.overlap, duration: 0, reserveOverlap: s.overlap }
     case "ownership":
       if (s.enabled) {
@@ -191,7 +202,12 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
       // descending, so carry it as will-hide does, and stay "engaged" so a duplicate will-hide or re-focus
       // takes the instant-snap branch instead of the animated handoff.
       if (s.closing) {
-        return { phase: "engaged", target: 0, duration: s.handoffMs, reserveOverlap: s.reserveHint ?? 0 }
+        return {
+          phase: "engaged",
+          target: 0,
+          duration: s.handoffMs,
+          reserveOverlap: s.reserveHint ?? 0,
+        }
       }
       return { phase: "idle", target: 0, duration: s.handoffMs, reserveOverlap: 0 }
   }

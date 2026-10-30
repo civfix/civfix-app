@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react"
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from "react-native"
+import { Platform, Pressable, StyleSheet, View, type ViewStyle } from "react-native"
 import {
   motion,
   coloredShadow,
@@ -23,11 +17,7 @@ import { BlurSurface } from "../surface"
 import { Brand, openBrandAbout } from "../primitives"
 import { useT } from "../i18n"
 import { useNavStore } from "../nav"
-import {
-  TABS,
-  useTabBarModel,
-  type TabDef,
-} from "./TabBar.shared"
+import { TABS, useTabBarModel, type TabDef } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
 import {
@@ -106,10 +96,7 @@ export function Rail() {
   }
 
   return (
-    <View
-      style={styles.rail}
-      {...({ dataSet: { civfixRail: "" } } as object)}
-    >
+    <View style={styles.rail} {...({ dataSet: { civfixRail: "" } } as object)}>
       <View
         style={[
           styles.cluster,
@@ -145,12 +132,7 @@ export function Rail() {
           <BlurSurface kind="dock" style={[StyleSheet.absoluteFill, styles.noPointer]} />
           <View style={[styles.lozenge, lozengeStyle, styles.noPointer]} />
           {TABS.map((tab, i) => (
-            <RailTab
-              key={tab.id}
-              tab={tab}
-              selected={i === index}
-              onPress={() => onTab(tab)}
-            />
+            <RailTab key={tab.id} tab={tab} selected={i === index} onPress={() => onTab(tab)} />
           ))}
         </View>
 
@@ -177,7 +159,12 @@ export function Rail() {
                 <View style={[styles.hoverLozenge, styles.orbHoverLozenge, styles.noPointer]} />
               ) : null}
               <View style={styles.noPointer}>
-                <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={th.colors.textMuted} strokeWidth={TAB_ICON_STROKE_WIDTH} />
+                <Icon
+                  icon={iconMap.Search}
+                  size={DOCK_ORB_GLYPH_SIZE}
+                  color={th.colors.textMuted}
+                  strokeWidth={TAB_ICON_STROKE_WIDTH}
+                />
               </View>
             </>
           )}
@@ -216,7 +203,9 @@ function RailTab({
     >
       {(state) => (
         <>
-          {webHover(state) && !selected ? <View style={[styles.hoverLozenge, styles.noPointer]} /> : null}
+          {webHover(state) && !selected ? (
+            <View style={[styles.hoverLozenge, styles.noPointer]} />
+          ) : null}
           <Icon
             icon={tab.icon}
             size={DOCK_TAB_GLYPH_SIZE}

@@ -14,5 +14,8 @@ export function useMergedRef<T extends I, I>(
   inner: RefObject<I | null>,
   forwarded: ForwardedRef<T>,
 ): (node: T | null) => void {
-  return useCallback((node: T | null) => assignMergedRef(inner, forwarded, node), [inner, forwarded])
+  return useCallback(
+    (node: T | null) => assignMergedRef(inner, forwarded, node),
+    [inner, forwarded],
+  )
 }

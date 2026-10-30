@@ -3,12 +3,7 @@ import type { DetailEntry, DetailKind, LayoutMode, NavState, Snap, View } from "
 import { entryIdentity, parentViewForEntry, seedFor } from "./routes"
 import { isFlowKind } from "./flowKinds"
 import { stackTransition, type NavTransition } from "./navTransition"
-import {
-  persistableCount,
-  persistableStack,
-  type NavReturn,
-  type NavSnapshot,
-} from "./navSnapshot"
+import { persistableCount, persistableStack, type NavReturn, type NavSnapshot } from "./navSnapshot"
 
 const PAGE_SEED_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
   "cleanup",
@@ -56,7 +51,11 @@ function lastIndexOfIdentity(stack: readonly DetailEntry[], identity: string): n
   return -1
 }
 
-function assignChanged<K extends keyof DetailEntry>(target: DetailEntry, source: DetailEntry, key: K): boolean {
+function assignChanged<K extends keyof DetailEntry>(
+  target: DetailEntry,
+  source: DetailEntry,
+  key: K,
+): boolean {
   const value = source[key]
   if (value === undefined || Object.is(target[key], value)) return false
   target[key] = value

@@ -127,13 +127,18 @@ describe("PostActionBar model", () => {
       { key: "repost", label: "Repost" },
       { key: "quote", label: "Quote post" },
     ])
-    expect(buildPostActionMenuModel(true, labels)[0]).toEqual({ key: "repost", label: "Undo repost" })
+    expect(buildPostActionMenuModel(true, labels)[0]).toEqual({
+      key: "repost",
+      label: "Undo repost",
+    })
   })
 
   it("disables decorative motion when requested", () => {
     expect(POST_ACTION_POP_MS).toBe(280)
     const bar = readFileSync(new URL("../../primitives/PostActionBar.tsx", import.meta.url), "utf8")
-    expect(bar).toMatch(/const animate = useCallback\(\(\) => \{\s*if \(reducedMotion\) return\s*scale\.stopAnimation\(\)/)
+    expect(bar).toMatch(
+      /const animate = useCallback\(\(\) => \{\s*if \(reducedMotion\) return\s*scale\.stopAnimation\(\)/,
+    )
     expect(bar.match(/duration: POST_ACTION_POP_MS,/g)).toHaveLength(2)
   })
 
@@ -143,8 +148,9 @@ describe("PostActionBar model", () => {
     expect(model.map((action) => action.key)).toEqual(["like", "repost", "comment", "share"])
     expect(model.find((action) => action.key === "save")).toBeUndefined()
     // An empty or absent omit list yields the full five-action array.
-    expect(buildPostActionModel({ postId: "post-1", counts, viewer }, {}, { omit: [] }))
-      .toEqual(buildPostActionModel({ postId: "post-1", counts, viewer }))
+    expect(buildPostActionModel({ postId: "post-1", counts, viewer }, {}, { omit: [] })).toEqual(
+      buildPostActionModel({ postId: "post-1", counts, viewer }),
+    )
   })
 
   it("keeps the card density identical and gives the thread its two extra densities", () => {
@@ -336,7 +342,10 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
   /** Text between two markers, so a grep can be scoped to one style block or one JSX subtree. */
   const between = (source: string, from: string, to: string): string => {
     const start = source.indexOf(from)
-    expect(start, `marker "${from}" is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
+    expect(
+      start,
+      `marker "${from}" is gone - re-scope the guard, do not delete it`,
+    ).toBeGreaterThan(-1)
     const end = source.indexOf(to, start + from.length)
     expect(end, `marker "${to}" is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
     return source.slice(start, end)
@@ -346,7 +355,7 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     const box = between(BAR, "function buildBoxStyles", "const BOX_STYLES")
     expect(box).toContain("paddingLeft: postActionGlyphInset(layout)")
     expect(box).toContain("gap: postActionCountGap(layout)")
-    expect(box).toContain("position: \"absolute\"")
+    expect(box).toContain('position: "absolute"')
     // Either would put the 34pt disc back into the flex basis.
     expect(box).not.toContain("paddingHorizontal")
     expect(box).not.toContain("paddingRight")
@@ -356,7 +365,7 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     // The shared `webTransition` lists `opacity, background-color, transform`; on web useNativeDriver is
     // false, so RNW writes an inline transform every frame and a 120ms transform transition low-passes the
     // 280ms pop AND animates the repost's `turn.setValue(0)` reset into a visible counter-rotation.
-    expect(BAR).toContain("transitionProperty: \"background-color\"")
+    expect(BAR).toContain('transitionProperty: "background-color"')
     const children = between(BAR, "{(state) => (", "</Pressable>")
     expect(children).toContain("HALO_TRANSITION")
     expect(children).not.toContain("webTransition")
@@ -386,10 +395,12 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     expect(timeline).toContain("marginLeft: -TIMELINE_GLYPH_INSET")
     expect(timeline).toContain("marginRight: -TIMELINE_GLYPH_INSET")
     // The thread's two call sites derive their margins too; hard-coded ones drift inside the paragraph above.
-    expect(src("../thread/ThreadFocalPost.tsx"))
-      .toContain("marginHorizontal: -postActionGlyphInset(postActionLayout(\"focal\"))")
-    expect(src("../thread/ThreadReplyRow.tsx"))
-      .toContain("marginLeft: -postActionGlyphInset(postActionLayout(\"reply\"))")
+    expect(src("../thread/ThreadFocalPost.tsx")).toContain(
+      'marginHorizontal: -postActionGlyphInset(postActionLayout("focal"))',
+    )
+    expect(src("../thread/ThreadReplyRow.tsx")).toContain(
+      'marginLeft: -postActionGlyphInset(postActionLayout("reply"))',
+    )
   })
 
   it("gives the count a shrink path, so an over-constrained row truncates instead of colliding", () => {
@@ -465,7 +476,9 @@ describe("a viewer cannot repost their own post, and the row says so", () => {
   })
 
   it("withholds the handler on an own post rather than hiding the affordance", () => {
-    expect(BAR).toContain("const isOwnPost = authorId != null && viewerId != null && authorId === viewerId")
+    expect(BAR).toContain(
+      "const isOwnPost = authorId != null && viewerId != null && authorId === viewerId",
+    )
     expect(BAR).toMatch(/onRepost: isOwnPost\s*\?\s*undefined/)
   })
 

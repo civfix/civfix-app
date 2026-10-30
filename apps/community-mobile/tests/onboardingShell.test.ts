@@ -12,8 +12,8 @@ const store = readFileSync(new URL("../src/store/onboardingStore.ts", import.met
 const keys = readFileSync(new URL("../src/lib/mmkvKeys.ts", import.meta.url), "utf8")
 
 test("the tour mounts BELOW the registration gate, so the two never share the screen", () => {
-  const tour = layout.indexOf(
-    "<OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />",
+  const tour = layout.search(
+    /<OnboardingGate\s+gateActive=\{gateActive\}\s+loadingGateMounted=\{gateMounted\}\s+\/>/,
   )
   const firstRun = layout.indexOf("<FirstRunGate />")
   assert.ok(tour > -1)
@@ -43,7 +43,10 @@ test("the persisted completion flag is versioned and keyed by the shared storage
   assert.match(keys, /export const ONBOARDING_KEY = "civfix\.onboarding"/)
   assert.match(store, /export const ONBOARDING_VERSION = 1/)
   assert.match(store, /name: ONBOARDING_KEY/)
-  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/)
+  assert.match(
+    store,
+    /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/,
+  )
 })
 
 test("the location primer's storage key is single-sourced with the other MMKV keys", () => {
@@ -108,7 +111,10 @@ test("the theme step sits between the community page and the sign-in page", () =
   const ready = pager.indexOf("<ReadyPage")
   assert.ok(together > -1 && themeStep > together && ready > themeStep)
   assert.match(pager, /<ThemePage \{\.\.\.pageProps\} index=\{3\} active=\{index === 3\} \/>/)
-  assert.match(pager, /<ReadyPage \{\.\.\.pageProps\} index=\{4\} active=\{index === 4\} onComplete=\{onComplete\} \/>/)
+  assert.match(
+    pager,
+    /<ReadyPage \{\.\.\.pageProps\} index=\{4\} active=\{index === 4\} onComplete=\{onComplete\} \/>/,
+  )
 })
 
 test("the theme step reuses the settings option list rather than a second picker", () => {
@@ -123,7 +129,7 @@ test("the email path hands the screen back before pushing the OTP card above the
   assert.match(authFlow, /enabled: providers\.data \?\? ALL_OAUTH_PROVIDERS,/)
   assert.match(
     readyPage,
-    /<AuthOptions\n\s+enabled=\{enabled\}\n\s+onHandoff=\{onHandoff\}\n\s+next=\{resumeHref\}\n\s+\/>/,
+    /<AuthOptions\s+enabled=\{enabled\}\s+onHandoff=\{onHandoff\}\s+next=\{resumeHref\}\s+\/>/,
   )
   const handoff = authOptions.indexOf("onHandoff?.()")
   const push = authOptions.indexOf('pathname: "/auth/otp"')
@@ -163,8 +169,14 @@ test("a signed-in viewer gets a done button instead of the sign-in stack", () =>
 
 test("the legal links are real links with a localized label and a 44pt target", () => {
   assert.match(readyPage, /const \{ t: tLegal \} = useT\("onboarding-terms"\)/)
-  assert.match(readyPage, /accessibilityRole="link"\n\s+accessibilityLabel=\{tLegal\("a11y\.terms_link"\)\}/)
-  assert.match(readyPage, /accessibilityRole="link"\n\s+accessibilityLabel=\{tLegal\("a11y\.privacy_link"\)\}/)
+  assert.match(
+    readyPage,
+    /accessibilityRole="link"\n\s+accessibilityLabel=\{tLegal\("a11y\.terms_link"\)\}/,
+  )
+  assert.match(
+    readyPage,
+    /accessibilityRole="link"\n\s+accessibilityLabel=\{tLegal\("a11y\.privacy_link"\)\}/,
+  )
   assert.match(readyPage, /hitSlop=\{LINK_HIT_SLOP\}/)
   assert.match(readyPage, /legalLink: \{\n\s+minHeight: 44,/)
 })
@@ -182,13 +194,19 @@ test("skip disappears on the last page, and firing it there is a no-op", () => {
 test("the tour reports that it is on screen, exit animation included", () => {
   assert.match(store, /presenting: boolean/)
   assert.match(store, /setPresenting: \(value\) => set\(\{ presenting: value \}\)/)
-  assert.match(store, /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/)
+  assert.match(
+    store,
+    /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/,
+  )
   assert.match(gate, /setPresenting\(mounted\)\n\s+return \(\) => setPresenting\(false\)/)
 })
 
 test("the primer waits for the tour, registration and the focused route", () => {
   assert.match(home, /const tourPresenting = useOnboardingStore\(\(s\) => s\.presenting\)/)
-  assert.match(home, /const profileIncomplete = useAuthStore\(\(s\) => s\.user\?\.profileComplete === false\)/)
+  assert.match(
+    home,
+    /const profileIncomplete = useAuthStore\(\(s\) => s\.user\?\.profileComplete === false\)/,
+  )
   assert.match(home, /useFocusEffect\(\n\s+useCallback\(\(\) => \{\n\s+setRouteFocused\(true\)/)
   assert.match(home, /tourPresenting,\n\s+profileIncomplete,\n\s+routeFocused,/)
 })
@@ -209,7 +227,10 @@ test("the initial camera center is the resolved centre, never a hardcoded point"
     home,
     /resolveMapCenter\(\{\n\s+precise: location\.coords,\n\s+approximate: approximatePoint,\n\s+remembered: rememberedCenter,\n\s+\}\)/,
   )
-  assert.match(home, /const \[rememberedCenter\] = useState<RememberedCenter \| null>\(readLastCenter\)/)
+  assert.match(
+    home,
+    /const \[rememberedCenter\] = useState<RememberedCenter \| null>\(readLastCenter\)/,
+  )
   assert.doesNotMatch(home, /DEFAULT_CENTER|NEUTRAL_CENTER/)
 })
 
@@ -236,7 +257,10 @@ test("the primer offers precise or approximate, and dismissing IS the approximat
     /const answerPrimer = useCallback\(\(\) => \{\n\s+setPrimerVisible\(false\)\n\s+markPrimerShown\(\)/,
   )
   for (const handler of ["onPrimerUseLocation", "onPrimerApproximate"]) {
-    assert.match(home, new RegExp(`const ${handler} = useCallback\\(\\(\\) => \\{\\n\\s+answerPrimer\\(\\)`))
+    assert.match(
+      home,
+      new RegExp(`const ${handler} = useCallback\\(\\(\\) => \\{\\n\\s+answerPrimer\\(\\)`),
+    )
   }
   assert.match(home, /setLocationChoice\("precise"\)/)
   assert.match(home, /setLocationChoice\("approximate"\)/)
@@ -252,10 +276,7 @@ test("the approximate point comes from the server, not from a third-party IP loo
     home,
     /const approximate = useApproximateLocation\(\{\n\s+enabled: location\.permissionResolved && location\.permission !== "granted",\n\s+\}\)/,
   )
-  assert.match(
-    home,
-    /const nearPoint = location\.coords \?\? approximatePoint/,
-  )
+  assert.match(home, /const nearPoint = location\.coords \?\? approximatePoint/)
   assert.doesNotMatch(hook, /ipLocate/)
   assert.doesNotMatch(hook, /precise/)
 })
@@ -300,9 +321,12 @@ test("a replay is a session request, not an unwritten completion flag", () => {
 test("the tour takes over the loading gate without a second fade", () => {
   assert.match(
     layout,
-    /<OnboardingGate gateActive=\{gateActive\} loadingGateMounted=\{gateMounted\} \/>/,
+    /<OnboardingGate\s+gateActive=\{gateActive\}\s+loadingGateMounted=\{gateMounted\}\s+\/>/,
   )
-  assert.match(gate, /loadingGateMounted,\n\}: \{\n\s+gateActive: boolean\n\s+loadingGateMounted: boolean\n\}/)
+  assert.match(
+    gate,
+    /loadingGateMounted,\n\}: \{\n\s+gateActive: boolean\n\s+loadingGateMounted: boolean\n\}/,
+  )
   assert.match(
     gate,
     /if \(onboardingEnterPlan\(\{ loadingGateMounted, reduceMotion \}\) === "instant"\) \{\n\s+cancelAnimation\(fade\)\n\s+fade\.value = 1/,
@@ -320,9 +344,15 @@ test("the back handler subscribes once per visibility, reading the page from a r
 })
 
 test("the typing bubble's loops exist only inside its own window", () => {
-  assert.match(togetherStage, /const STEP_STOPS = stageStops\(TOTAL_MS, 1300, 1880, TYPING_IN_MS, TYPING_OUT_MS\)/)
+  assert.match(
+    togetherStage,
+    /const STEP_STOPS = stageStops\(TOTAL_MS, 1300, 1880, TYPING_IN_MS, TYPING_OUT_MS\)/,
+  )
   assert.match(togetherStage, /const typingVisible = active && step === TYPING_STEP/)
-  assert.match(togetherStage, /\{typingVisible \? \(\n\s+<Animated\.View style=\{\[StyleSheet\.absoluteFill, typingStyle\]\}>\n\s+<TypingBubble /)
+  assert.match(
+    togetherStage,
+    /\{typingVisible \? \(\n\s+<Animated\.View style=\{\[StyleSheet\.absoluteFill, typingStyle\]\}>\n\s+<TypingBubble /,
+  )
 })
 
 test("the header reads the locale through the shared i18n seam", () => {

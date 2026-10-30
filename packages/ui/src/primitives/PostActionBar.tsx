@@ -64,7 +64,6 @@ export interface PostActionBarProps {
   style?: StyleProp<ViewStyle>
 }
 
-
 const REPOST_MENU_ICONS: Record<"repost" | "quote", IconName> = {
   repost: "Repeat2",
   quote: "MessageCircle",
@@ -95,10 +94,7 @@ function layoutFor(variant: PostActionVariant): PostActionLayout {
 
 const TIMELINE_GLYPH_INSET = postActionGlyphInset(TIMELINE_LAYOUT)
 
-function haloTints(
-  family: PostActionHaloFamily,
-  t: Theme,
-): { hover: ViewStyle; press: ViewStyle } {
+function haloTints(family: PostActionHaloFamily, t: Theme): { hover: ViewStyle; press: ViewStyle } {
   switch (family) {
     case "moss":
       return {
@@ -171,7 +167,15 @@ function actionColor(action: PostActionModel, t: Theme): string {
   return t.colors.text
 }
 
-function ActionGlyph({ action, color, size }: { action: PostActionModel; color: string; size: number }) {
+function ActionGlyph({
+  action,
+  color,
+  size,
+}: {
+  action: PostActionModel
+  color: string
+  size: number
+}) {
   const common = { size, color, strokeWidth: ACTION_GLYPH_STROKE }
   switch (action.key) {
     case "like":
@@ -359,20 +363,38 @@ export function PostActionBar({
           onRepost: isOwnPost
             ? undefined
             : (currently) =>
-                requireAuth(() => {
-                  if (!onQuote) {
-                    repostMutate(currently)
-                    return
-                  }
-                  openRepostMenu()
-                }, { next: authNext }),
+                requireAuth(
+                  () => {
+                    if (!onQuote) {
+                      repostMutate(currently)
+                      return
+                    }
+                    openRepostMenu()
+                  },
+                  { next: authNext },
+                ),
           onComment,
           onSave: (currently) => requireAuth(() => saveMutate(currently), { next: authNext }),
           onShare,
         },
         variant === "reply" ? REPLY_MODEL_OPTIONS : undefined,
       ),
-    [postId, counts, viewer, isOwnPost, requireAuth, authNext, likeMutate, repostMutate, saveMutate, onComment, onQuote, openRepostMenu, onShare, variant],
+    [
+      postId,
+      counts,
+      viewer,
+      isOwnPost,
+      requireAuth,
+      authNext,
+      likeMutate,
+      repostMutate,
+      saveMutate,
+      onComment,
+      onQuote,
+      openRepostMenu,
+      onShare,
+      variant,
+    ],
   )
 
   const reposted = viewer.reposted

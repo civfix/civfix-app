@@ -13,7 +13,9 @@ export interface StepOrderOptions {
 
 export function stepOrderFor(mode: LayoutMode, opts?: StepOrderOptions): Step[] {
   if (mode !== "compact") return STEP_ORDER_EXPANDED
-  return opts?.skipLocation ? STEP_ORDER_COMPACT.filter((s) => s !== "location") : STEP_ORDER_COMPACT
+  return opts?.skipLocation
+    ? STEP_ORDER_COMPACT.filter((s) => s !== "location")
+    : STEP_ORDER_COMPACT
 }
 
 export function resumeStep(
@@ -36,7 +38,7 @@ export function stepAfterCapture(
   const resumed = resumeStep(draft, mode)
   if (resumed !== "capture" && order.includes(resumed)) return resumed
   const i = order.indexOf("capture")
-  return (order[i + 1]) ?? "capture"
+  return order[i + 1] ?? "capture"
 }
 
 export interface StepReadiness {
@@ -93,7 +95,11 @@ export function showsCaptureCard(
   hasViewfinder: boolean,
   mode: LayoutMode,
 ): boolean {
-  return step === "capture" && !hasMedia && !rendersEmbeddedViewfinder(step, hasMedia, hasViewfinder, mode)
+  return (
+    step === "capture" &&
+    !hasMedia &&
+    !rendersEmbeddedViewfinder(step, hasMedia, hasViewfinder, mode)
+  )
 }
 
 export function viewfinderSessionActive(

@@ -85,7 +85,11 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
       <View style={[styles.topBar, { top }]}>
         <View style={styles.topActions}>
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
+            <Icon
+              icon={iconMap.Navigation}
+              size={HEADER_GLYPH_SIZE}
+              color={th.colors.neutral.ink2}
+            />
           </GlassButton>
           {layersButton}
           <MapThemeToggle variant="glass" />
@@ -110,7 +114,11 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
           {brandPill}
 
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
+            <Icon
+              icon={iconMap.Navigation}
+              size={HEADER_GLYPH_SIZE}
+              color={th.colors.neutral.ink2}
+            />
           </GlassButton>
 
           {layersButton}
@@ -166,7 +174,9 @@ function ProfileEntry() {
       <Pressable
         onPress={() => useNavStore.getState().push({ kind: "profile" })}
         accessibilityRole="button"
-        accessibilityLabel={unread ? tn("row.unreadSuffix", { title: t("profile.open") }) : t("profile.open")}
+        accessibilityLabel={
+          unread ? tn("row.unreadSuffix", { title: t("profile.open") }) : t("profile.open")
+        }
         hitSlop={6}
         {...focusRingProps}
         style={(state) => [

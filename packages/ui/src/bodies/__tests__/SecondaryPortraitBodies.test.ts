@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { CleanupDTO } from "@civfix/contract"
-import {
-  buildComposerEventRef,
-  resolveComposerEvent,
-} from "../postComposerModel"
-import {
-  PROFILE_DEFAULT_TAB,
-  PROFILE_TAB_ORDER,
-  buildProfileTabsModel,
-} from "../profileTabsModel"
+import { buildComposerEventRef, resolveComposerEvent } from "../postComposerModel"
+import { PROFILE_DEFAULT_TAB, PROFILE_TAB_ORDER, buildProfileTabsModel } from "../profileTabsModel"
 import { SEARCH_RESULT_CARD_LAYOUT } from "../search/searchResultsModel"
 
 const repostedEvent = {

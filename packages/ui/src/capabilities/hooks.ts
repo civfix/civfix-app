@@ -38,12 +38,15 @@ export function usePushPermission(): PushPermissionState {
   const latest = useRef(0)
   const mounted = useRef(false)
 
-  const settle = useCallback(async (read: Promise<PushPermissionStatus>): Promise<PushPermissionStatus> => {
-    const ticket = ++latest.current
-    const next = await read
-    if (mounted.current && ticket === latest.current) setStatus(next)
-    return next
-  }, [])
+  const settle = useCallback(
+    async (read: Promise<PushPermissionStatus>): Promise<PushPermissionStatus> => {
+      const ticket = ++latest.current
+      const next = await read
+      if (mounted.current && ticket === latest.current) setStatus(next)
+      return next
+    },
+    [],
+  )
 
   useEffect(() => {
     mounted.current = true

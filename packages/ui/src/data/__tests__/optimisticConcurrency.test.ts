@@ -75,7 +75,9 @@ describe("optimisticListPatch: targeted per-item rollback", () => {
   }
 
   function rows(qc: QueryClient): PersonDTO[] {
-    return qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(PEOPLE_KEY)!.pages.flatMap((p) => p.items)
+    return qc
+      .getQueryData<InfiniteData<{ items: PersonDTO[] }>>(PEOPLE_KEY)!
+      .pages.flatMap((p) => p.items)
   }
 
   it("A's rollback leaves a concurrent B's optimistic patch intact", async () => {
@@ -109,7 +111,10 @@ describe("optimisticListPatch: targeted per-item rollback", () => {
   it("rolls back across pages, matching items in page order", async () => {
     const qc = new QueryClient()
     qc.setQueryData<InfiniteData<{ items: PersonDTO[] }>>(PEOPLE_KEY, {
-      pages: [{ items: [person("a", false, 4)] }, { items: [person("b", false, 9), person("a", false, 4)] }],
+      pages: [
+        { items: [person("a", false, 4)] },
+        { items: [person("b", false, 9), person("a", false, 4)] },
+      ],
       pageParams: [undefined, "c1"],
     })
 
@@ -132,7 +137,10 @@ describe("buildFollowMutation: targeted side-cache rollback", () => {
     const qc = new QueryClient()
     qc.setQueryData<GetProfileResponse>(queryKeys.profile("a"), profileResponse("a", false, 4))
     qc.setQueryData<GetProfileResponse>(queryKeys.profile("b"), profileResponse("b", false, 9))
-    qc.setQueryData<PersonDTO[]>(queryKeys.followSuggestions, [person("a", false, 4), person("b", false, 9)])
+    qc.setQueryData<PersonDTO[]>(queryKeys.followSuggestions, [
+      person("a", false, 4),
+      person("b", false, 9),
+    ])
 
     const a = buildFollowMutation(qc, "a", server) as unknown as LooseOptions
     const b = buildFollowMutation(qc, "b", server) as unknown as LooseOptions
@@ -201,12 +209,14 @@ describe("buildFollowMutation: targeted side-cache rollback", () => {
     const a = buildFollowMutation(qc, "a", server) as unknown as LooseOptions
     const ctx = await a.onMutate?.(true) // unfollow: 10 -> 9
     expect(
-      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following("viewer"))!.pages[0]!.items[0],
+      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following("viewer"))!
+        .pages[0]!.items[0],
     ).toMatchObject({ isFollowing: false, followers: 9 })
 
     a.onError?.(new Error("offline"), true, ctx)
     expect(
-      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following("viewer"))!.pages[0]!.items[0],
+      qc.getQueryData<InfiniteData<{ items: PersonDTO[] }>>(queryKeys.following("viewer"))!
+        .pages[0]!.items[0],
     ).toMatchObject({ isFollowing: true, followers: 10 })
   })
 })

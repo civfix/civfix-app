@@ -42,7 +42,9 @@ describe("searching your reports reaches past the first page", () => {
   })
 
   it("drives fetchNextPage from the backfill state and names a partial search", () => {
-    expect(body).toMatch(/useEffect\(\(\) => \{\s*if \(backfill === "fetch"\) void fetchNextPage\(\)\s*\}, \[backfill, fetchNextPage\]\)/)
+    expect(body).toMatch(
+      /useEffect\(\(\) => \{\s*if \(backfill === "fetch"\) void fetchNextPage\(\)\s*\}, \[backfill, fetchNextPage\]\)/,
+    )
     expect(body).toContain('t("search.partial", { count: all.length })')
   })
 })
@@ -52,7 +54,8 @@ describe("the search clear button", () => {
     expect(body).toContain('clearA11yLabel={t("search.clear_a11y")}')
     expect(body).not.toContain('clearTarget="slop"')
     expect(field).toContain('clearTarget = "box"')
-    const clear = /accessibilityLabel=\{clearA11yLabel\}[\s\S]*?<\/Pressable>/.exec(field)?.[0] ?? ""
+    const clear =
+      /accessibilityLabel=\{clearA11yLabel\}[\s\S]*?<\/Pressable>/.exec(field)?.[0] ?? ""
     expect(clear).not.toContain("hitSlop")
     expect(clear).toContain("style={styles.clearTarget}")
     expect(field).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)

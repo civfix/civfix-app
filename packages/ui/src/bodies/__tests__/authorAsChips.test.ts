@@ -50,7 +50,9 @@ describe("the author pickers are wired to the stored selection", () => {
     // would publish an event under an organization the viewer can no longer host as, and say otherwise
     // on screen. CreateCleanupBody/EditCleanupBody submit `form.organizationId`, so the guard has to
     // land on the draft, not only on what the picker paints.
-    expect(form).toContain("if (value.organizationId === null || hostOrganizationId !== null) return")
+    expect(form).toContain(
+      "if (value.organizationId === null || hostOrganizationId !== null) return",
+    )
     expect(form).toContain("commitForm.current({ ...latestForm.current, organizationId: null })")
   })
 

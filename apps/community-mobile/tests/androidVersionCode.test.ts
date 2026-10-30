@@ -21,6 +21,9 @@ test("CIVFIX_ANDROID_VERSION_CODE sets the version code a release build carries"
 test("a version code Play has already consumed, or one that is not a whole number, is refused", () => {
   for (const bad of ["7", "8.5", "seven", "-1"]) {
     process.env.CIVFIX_ANDROID_VERSION_CODE = bad
-    assert.throws(() => appConfigFactory({ config: {} }), /CIVFIX_ANDROID_VERSION_CODE must be a whole number >= 8/)
+    assert.throws(
+      () => appConfigFactory({ config: {} }),
+      /CIVFIX_ANDROID_VERSION_CODE must be a whole number >= 8/,
+    )
   }
 })

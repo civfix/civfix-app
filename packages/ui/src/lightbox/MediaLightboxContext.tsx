@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { MediaLightboxView } from "./MediaLightbox"
 import type { LightboxItem, MediaLightboxContextValue } from "./MediaLightbox.types"
 

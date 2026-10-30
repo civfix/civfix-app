@@ -1,7 +1,5 @@
 export type IncomingLink =
-  | { type: "internal"; path: string }
-  | { type: "external"; url: string }
-  | { type: "home" }
+  { type: "internal"; path: string } | { type: "external"; url: string } | { type: "home" }
 
 const WEB_ORIGIN = "https://civfix.org"
 
@@ -40,7 +38,10 @@ export interface ResolveOptions {
   isDev?: boolean
 }
 
-export function resolveIncomingPath(raw: unknown, { isDev = false }: ResolveOptions = {}): IncomingLink {
+export function resolveIncomingPath(
+  raw: unknown,
+  { isDev = false }: ResolveOptions = {},
+): IncomingLink {
   if (typeof raw !== "string" || raw === "") return { type: "home" }
 
   const web = WEB_URL.exec(raw)
@@ -130,15 +131,22 @@ function fromPath(raw: string, originalUrl: string | null): IncomingLink {
  * reach the router. Dev-client launcher and Metro (`exp://`) URLs pass through verbatim in dev builds
  * only; a release build has no dev client to receive them.
  */
-function fromAppSchemeUrl(raw: string, scheme: string, afterScheme: string, isDev: boolean): IncomingLink {
+function fromAppSchemeUrl(
+  raw: string,
+  scheme: string,
+  afterScheme: string,
+  isDev: boolean,
+): IncomingLink {
   const body = afterScheme.startsWith("//") ? afterScheme.slice(2) : afterScheme
   const { parts, query } = splitPath(body)
 
-  if (parts[0] === DEV_CLIENT_SEGMENT) return isDev ? { type: "internal", path: raw } : { type: "home" }
+  if (parts[0] === DEV_CLIENT_SEGMENT)
+    return isDev ? { type: "internal", path: raw } : { type: "home" }
   if (BROWSER_ONLY_ROOTS.has(parts[0] ?? "")) return { type: "home" }
 
   const path = internalPathFor(parts)
-  if (path === null) return isDev && scheme === "exp" ? { type: "internal", path: raw } : { type: "home" }
+  if (path === null)
+    return isDev && scheme === "exp" ? { type: "internal", path: raw } : { type: "home" }
   if (path === "/") return { type: "home" }
   return { type: "internal", path: `${path}${internalQuery(path, query)}` }
 }
@@ -208,11 +216,7 @@ const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team", "hours", "a
 
 const CLEANUP_COLLECTIONS = new Set(["ticket", "announcements"])
 
-function cleanupPathFor(
-  id: string,
-  sub: string | undefined,
-  childId: string | undefined,
-): string {
+function cleanupPathFor(id: string, sub: string | undefined, childId: string | undefined): string {
   if (!sub) return `/cleanups/${id}`
   if (CLEANUP_CHILDREN.has(sub)) return `/cleanups/${id}/${sub}`
   if (CLEANUP_COLLECTIONS.has(sub)) {
@@ -228,7 +232,8 @@ function messagesPathFor(
 ): string | null {
   if (!a) return "/messages"
   if (a === "dm" || a === "report" || a === "group") return b ? `/messages/${a}/${b}` : "/messages"
-  if (a === "members") return b && c && ROOM_KINDS.has(b) ? `/messages/members/${b}/${c}` : "/messages"
+  if (a === "members")
+    return b && c && ROOM_KINDS.has(b) ? `/messages/members/${b}/${c}` : "/messages"
   if (a === "pins") return b && c && ROOM_KINDS.has(b) ? threadPathFor(b, c) : "/messages"
   return b ? null : `/messages/${a}`
 }

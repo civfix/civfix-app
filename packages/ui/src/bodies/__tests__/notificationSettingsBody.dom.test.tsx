@@ -32,7 +32,9 @@ vi.mock("../../typography", async () => {
 })
 vi.mock("../../primitives", async () => {
   const { Pressable, Text, View } = await vi.importActual<typeof ReactNative>("react-native")
-  const { useToast } = await vi.importActual<typeof ToastContextModule>("../../primitives/toastContext")
+  const { useToast } = await vi.importActual<typeof ToastContextModule>(
+    "../../primitives/toastContext",
+  )
   const Copy = ({ title, body }: { title: string; body: string }) => (
     <View>
       <Text>{title}</Text>
@@ -47,7 +49,9 @@ vi.mock("../../primitives", async () => {
         <Text>{label}</Text>
       </Pressable>
     ),
-    SkeletonGroup: ({ children }: { children: React.ReactNode }) => <View testID="skeleton">{children}</View>,
+    SkeletonGroup: ({ children }: { children: React.ReactNode }) => (
+      <View testID="skeleton">{children}</View>
+    ),
     SkeletonList: () => null,
     SkeletonText: () => null,
     useToast,
@@ -161,11 +165,13 @@ function renderBody({
   return { api, request, openSettings: openSettingsSpy, toast, queryClient }
 }
 
-const categorySwitch = (category: NotificationCategory) => screen.getByRole("switch", { name: LABELS[category] })
+const categorySwitch = (category: NotificationCategory) =>
+  screen.getByRole("switch", { name: LABELS[category] })
 const box = (channel: "Push" | "Email", category: NotificationCategory) =>
   screen.queryByRole("checkbox", { name: `${channel}, ${LABELS[category]}` })
 // "Organizations" is both a section and a category, so a label is looked up outside the headings.
-const label = (category: NotificationCategory) => screen.getByText(LABELS[category], { ignore: '[role="heading"]' })
+const label = (category: NotificationCategory) =>
+  screen.getByText(LABELS[category], { ignore: '[role="heading"]' })
 const checked = (el: HTMLElement | null) => el?.getAttribute("aria-checked") === "true"
 const disabled = (el: HTMLElement | null) => el?.getAttribute("aria-disabled") === "true"
 
@@ -248,8 +254,12 @@ describe("GH#223 NotificationSettingsBody", () => {
     fireEvent.click(box("Push", "reportDiscussions")!)
     await waitFor(() => expect(checked(box("Push", "reportDiscussions"))).toBe(true))
     expect(updateNotificationSettings).toHaveBeenCalledTimes(1)
-    expect(updateNotificationSettings).toHaveBeenCalledWith({ categories: { reportDiscussions: { push: true } } })
-    pending.resolve(settingsWith({ reportDiscussions: { enabled: true, push: true, email: false } }))
+    expect(updateNotificationSettings).toHaveBeenCalledWith({
+      categories: { reportDiscussions: { push: true } },
+    })
+    pending.resolve(
+      settingsWith({ reportDiscussions: { enabled: true, push: true, email: false } }),
+    )
   })
 
   it("T5: turning a category off saves enabled:false and hides its checkboxes before the server answers", async () => {
@@ -261,7 +271,9 @@ describe("GH#223 NotificationSettingsBody", () => {
     await waitFor(() => expect(box("Push", "groupChats")).toBeNull())
     expect(box("Email", "groupChats")).toBeNull()
     expect(updateNotificationSettings).toHaveBeenCalledTimes(1)
-    expect(updateNotificationSettings).toHaveBeenCalledWith({ categories: { groupChats: { enabled: false } } })
+    expect(updateNotificationSettings).toHaveBeenCalledWith({
+      categories: { groupChats: { enabled: false } },
+    })
     pending.resolve(settingsWith({ groupChats: { enabled: false, push: false, email: false } }))
   })
 
@@ -272,13 +284,19 @@ describe("GH#223 NotificationSettingsBody", () => {
     const { toast } = renderBody({ updateNotificationSettings })
     await loaded()
     fireEvent.click(box("Email", "reportUpdates")!)
-    await waitFor(() => expect(toast.show).toHaveBeenCalledWith("Couldn't save that change. Try again.", { variant: "error" }))
+    await waitFor(() =>
+      expect(toast.show).toHaveBeenCalledWith("Couldn't save that change. Try again.", {
+        variant: "error",
+      }),
+    )
     expect(checked(box("Email", "reportUpdates"))).toBe(false)
   })
 
   it("T7: Events you're going to warns while it is Off, and only then", async () => {
     renderBody({
-      getNotificationSettings: vi.fn(async () => settingsWith({ events: { enabled: false, push: true, email: true } })),
+      getNotificationSettings: vi.fn(async () =>
+        settingsWith({ events: { enabled: false, push: true, email: true } }),
+      ),
     })
     await loaded()
     expect(screen.getByText(EVENTS_OFF_WARNING)).toBeTruthy()
@@ -286,7 +304,9 @@ describe("GH#223 NotificationSettingsBody", () => {
 
   it("T7: no Events warning while Events you're going to is On", async () => {
     renderBody({
-      getNotificationSettings: vi.fn(async () => settingsWith({ events: { enabled: true, push: true, email: true } })),
+      getNotificationSettings: vi.fn(async () =>
+        settingsWith({ events: { enabled: true, push: true, email: true } }),
+      ),
     })
     await loaded()
     expect(screen.queryByText(EVENTS_OFF_WARNING)).toBeNull()
@@ -314,7 +334,9 @@ describe("GH#223 NotificationSettingsBody", () => {
     const { request } = renderBody({ status: "denied", openSettings: false })
     await loaded()
     fireEvent.click(await screen.findByRole("button", { name: "Turn on" }))
-    expect(await screen.findByText("Allow notifications for civfix in your browser's site settings.")).toBeTruthy()
+    expect(
+      await screen.findByText("Allow notifications for civfix in your browser's site settings."),
+    ).toBeTruthy()
     expect(request).not.toHaveBeenCalled()
   })
 
@@ -356,7 +378,8 @@ describe("GH#223 NotificationSettingsBody", () => {
     renderBody({ getNotificationSettings })
     await waitFor(() => expect(getNotificationSettings).toHaveBeenCalled())
     expect(screen.getAllByTestId("skeleton").length).toBeGreaterThan(0)
-    for (const category of IN_ORDER) expect(screen.queryByText(LABELS[category], { ignore: '[role="heading"]' })).toBeNull()
+    for (const category of IN_ORDER)
+      expect(screen.queryByText(LABELS[category], { ignore: '[role="heading"]' })).toBeNull()
   })
 
   it("T16: shows the error state when the settings fail to load", async () => {
@@ -366,8 +389,11 @@ describe("GH#223 NotificationSettingsBody", () => {
       }),
     })
     expect(await screen.findByText("Could not load preferences")).toBeTruthy()
-    expect(screen.getByText("We could not reach civfix. Check your connection and try again.")).toBeTruthy()
-    for (const category of IN_ORDER) expect(screen.queryByText(LABELS[category], { ignore: '[role="heading"]' })).toBeNull()
+    expect(
+      screen.getByText("We could not reach civfix. Check your connection and try again."),
+    ).toBeTruthy()
+    for (const category of IN_ORDER)
+      expect(screen.queryByText(LABELS[category], { ignore: '[role="heading"]' })).toBeNull()
   })
 
   it("T17: signed out asks to sign in and never reads the settings", () => {
@@ -393,7 +419,9 @@ describe("GH#223 NotificationSettingsBody", () => {
 
     first.reject(new Error("503"))
     await waitFor(() => expect(checked(box("Push", "reportDiscussions"))).toBe(false))
-    expect(toast.show).toHaveBeenCalledWith("Couldn't save that change. Try again.", { variant: "error" })
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save that change. Try again.", {
+      variant: "error",
+    })
     expect(checked(box("Email", "groupChats"))).toBe(true)
 
     second.resolve(settingsWith({ groupChats: { enabled: true, push: false, email: true } }))

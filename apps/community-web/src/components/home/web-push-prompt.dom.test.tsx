@@ -11,12 +11,16 @@ vi.mock("react-native", async () => {
 
 vi.mock("lucide-react-native/icons", () => {
   const Glyph = () => null
-  return new Proxy({}, { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) })
+  return new Proxy(
+    {},
+    { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) },
+  )
 })
 
 // The root barrel reaches the map and the shell; the prompt needs only its card.
 vi.mock("@civfix/ui", async () => ({
-  PushPromptCard: (await import("../../../../../packages/ui/src/promo/PushPromptCard")).PushPromptCard,
+  PushPromptCard: (await import("../../../../../packages/ui/src/promo/PushPromptCard"))
+    .PushPromptCard,
 }))
 
 const authState = { isAuthenticated: true }

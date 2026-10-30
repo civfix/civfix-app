@@ -14,7 +14,10 @@ export function invalidationKeysForTopic(
   return additional && additional.length > 0 ? [...base, ...additional] : base
 }
 
-function baseKeysForTopic(topic: SignalTopic, id: string | null): ReadonlyArray<readonly unknown[]> {
+function baseKeysForTopic(
+  topic: SignalTopic,
+  id: string | null,
+): ReadonlyArray<readonly unknown[]> {
   switch (topic) {
     case "notifications":
       return [queryKeys.notificationsRoot]

@@ -26,7 +26,9 @@ export const CARTO_API_KEY: string = extra.cartoApiKey ?? ""
 export const SOURCE_COMMIT: string = extra.sourceCommit ?? ""
 
 export const APP_ID: string | undefined =
-  Platform.OS === "ios" ? Constants.expoConfig?.ios?.bundleIdentifier : Constants.expoConfig?.android?.package
+  Platform.OS === "ios"
+    ? Constants.expoConfig?.ios?.bundleIdentifier
+    : Constants.expoConfig?.android?.package
 
 export const DONATE_BROWSER_MODE: DonateBrowserMode = resolveDonateBrowserMode(
   process.env.EXPO_PUBLIC_DONATE_BROWSER_MODE,

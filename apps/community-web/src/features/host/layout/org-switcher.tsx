@@ -82,7 +82,9 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
               </ConsoleLink>
             </li>
           ))}
-          <li className={cn(rows.length > 0 && "mt-token-1 border-t border-console-line pt-token-1")}>
+          <li
+            className={cn(rows.length > 0 && "mt-token-1 border-t border-console-line pt-token-1")}
+          >
             <ConsoleLink
               href={hrefForRoute({ kind: "org-new" })}
               onClick={() => setOpen(false)}

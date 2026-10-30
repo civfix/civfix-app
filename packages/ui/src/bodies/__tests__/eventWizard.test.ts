@@ -131,8 +131,7 @@ describe("per-step gating", () => {
       startsAt: new Date(start.getTime() + 3 * 3_600_000),
       endsAt: new Date(start.getTime() + 5 * 3_600_000),
     })
-    const late = (slots: SlotDraft[]) =>
-      draft({ date: lateDay, time: lateStart, endTime, slots })
+    const late = (slots: SlotDraft[]) => draft({ date: lateDay, time: lateStart, endTime, slots })
     expect(eventStepSatisfied("details", late([afterMidnight]), NOW)).toBe(true)
     expect(eventStepSatisfied("details", late([past]), NOW)).toBe(false)
   })
@@ -205,16 +204,18 @@ describe("per-step gating", () => {
     expect(eventStepSatisfied("details", draft({ slots: [slot()] }), NOW)).toBe(true)
     expect(eventStepSatisfied("details", draft({ slots: [blank, slot()] }), NOW)).toBe(true)
     expect(eventStepSatisfied("details", draft({ slots: [slot({ title: "" })] }), NOW)).toBe(false)
-    expect(
-      eventStepSatisfied("details", draft({ slots: [slot({ capacity: "-3" })] }), NOW),
-    ).toBe(false)
+    expect(eventStepSatisfied("details", draft({ slots: [slot({ capacity: "-3" })] }), NOW)).toBe(
+      false,
+    )
   })
 
   it("review is satisfied only when every earlier step is", () => {
     expect(eventStepSatisfied("review", draft(), NOW)).toBe(true)
     expect(eventStepSatisfied("review", draft({ coords: null }), NOW)).toBe(false)
     expect(eventStepSatisfied("review", draft({ title: "" }), NOW)).toBe(false)
-    expect(eventStepSatisfied("review", draft({ date: PAST_DAY, time: PAST_TIME }), NOW)).toBe(false)
+    expect(eventStepSatisfied("review", draft({ date: PAST_DAY, time: PAST_TIME }), NOW)).toBe(
+      false,
+    )
     expect(eventStepSatisfied("review", draft({ endTime: null }), NOW)).toBe(false)
   })
 })
@@ -230,9 +231,9 @@ describe("the hint under a step that cannot advance", () => {
   it("falls back to the step's generic line before that", () => {
     expect(eventStepErrorKey("when", draft({ date: null }))).toBe("wizard.when.error")
     expect(eventStepErrorKey("where", draft({ coords: null }))).toBe("wizard.where.error")
-    expect(eventStepErrorKey("details", draft({ slots: [slot({ title: "", capacity: "" })] }))).toBe(
-      "wizard.details.error",
-    )
+    expect(
+      eventStepErrorKey("details", draft({ slots: [slot({ title: "", capacity: "" })] })),
+    ).toBe("wizard.details.error")
     expect(eventStepErrorKey("basics", draft())).toBe("wizard.basics.error")
   })
 

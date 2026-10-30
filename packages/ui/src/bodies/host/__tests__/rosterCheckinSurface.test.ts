@@ -12,7 +12,9 @@ const code = (src: string): string =>
 const list = code(read("../RosterCheckinList.tsx"))
 const block = code(read("../EventRosterBlock.tsx"))
 const checkin = code(read("../HostCheckinBody.tsx"))
-const checkinRoster = code(["../checkin/CheckinRosterSection.tsx", "../checkin/useCheckinRoster.ts"].map(read).join("\n"))
+const checkinRoster = code(
+  ["../checkin/CheckinRosterSection.tsx", "../checkin/useCheckinRoster.ts"].map(read).join("\n"),
+)
 const listModel = code(read("../rosterListModel.ts"))
 const manualEntry = code(read("../checkin/CheckinManualEntry.tsx"))
 const paged = code(read("../RosterPagedList.tsx"))
@@ -23,7 +25,10 @@ const slotsBlock = code(read("../../EventSlotsBlock.tsx"))
 const slot = (id: string): EventSlotDTO => ({ id, title: `Slot ${id}`, claimed: 0, sortOrder: 0 })
 
 const signup = (id: string, slotId?: string): EventRegistrationDTO =>
-  ({ id, slot: slotId ? { id: slotId, title: `Slot ${slotId}` } : null }) as unknown as EventRegistrationDTO
+  ({
+    id,
+    slot: slotId ? { id: slotId, title: `Slot ${slotId}` } : null,
+  }) as unknown as EventRegistrationDTO
 
 describe("visibleRosterFilters", () => {
   it("offers every filter on a ticketed event", () => {
@@ -49,7 +54,9 @@ describe("there is ONE check-in row in the package", () => {
     expect(paged).toContain("<RosterCheckinList {...list} />")
     expect(block).toContain("<RosterPagedList")
     expect(list.match(/<RosterCheckinRow\b/g) ?? []).toHaveLength(1)
-    expect(checkin).toContain('import { useRosterItemRenderer, useRosterListItems } from "./RosterCheckinList"')
+    expect(checkin).toContain(
+      'import { useRosterItemRenderer, useRosterListItems } from "./RosterCheckinList"',
+    )
     expect(checkin).toContain("const renderRosterItem = useRosterItemRenderer({")
     expect(checkin).toContain("renderItem={renderRosterItem}")
     expect(checkin).toContain("<CheckinRosterSection")
@@ -108,7 +115,12 @@ describe("both roster surfaces group by slot through the shared model", () => {
   it("groups by the event's slots, with the unassigned rows last under the caller's title", () => {
     const rows = [signup("r1"), signup("r2", "s1")]
     const items = rosterCheckinItems(rows, [slot("s1")], "No slot")
-    expect(items.map((item) => item.kind)).toEqual(["slot-header", "member", "slot-header", "member"])
+    expect(items.map((item) => item.kind)).toEqual([
+      "slot-header",
+      "member",
+      "slot-header",
+      "member",
+    ])
     expect(items[2]).toMatchObject({ kind: "slot-header", slotId: null, title: "No slot" })
     expect(items[3]).toEqual({ kind: "member", person: rows[0] })
   })
@@ -116,7 +128,9 @@ describe("both roster surfaces group by slot through the shared model", () => {
   it("feeds it the event's own slots and zone, never the device's", () => {
     expect(block).toContain("cleanup.data?.slots ?? NO_SLOTS")
     expect(block).toContain("cleanup.data?.timezone ?? undefined")
-    expect(checkin).toContain("useRosterListItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)")
+    expect(checkin).toContain(
+      "useRosterListItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)",
+    )
     expect(checkin).toContain("timeZone: cleanup.data?.timezone ?? undefined,")
     expect(list).toContain("timeZone={timeZone}")
   })
@@ -144,7 +158,9 @@ describe("the check-in screen shows who is still waiting", () => {
   it("keeps the scan and manual-code actions ABOVE the list", () => {
     expect(checkin.indexOf('t("action.scan")')).toBeGreaterThan(-1)
     expect(checkin.indexOf('t("action.scan")')).toBeLessThan(checkin.indexOf("<ManualCodeEntry"))
-    expect(checkin.indexOf("<ManualCodeEntry")).toBeLessThan(checkin.indexOf("<CheckinRosterSection"))
+    expect(checkin.indexOf("<ManualCodeEntry")).toBeLessThan(
+      checkin.indexOf("<CheckinRosterSection"),
+    )
     expect(manualEntry).toContain('t("manual.submit")')
     expect(checkinRoster).toContain('t("roster.title")')
   })
@@ -160,7 +176,9 @@ describe("the check-in screen shows who is still waiting", () => {
     expect(checkin).toContain("<RosterLoadMore paging={rosterState.roster} />")
     expect(paged).toContain("<RosterLoadMore paging={paging} />")
     expect(paged).toContain("if (!hasNextPage) return null")
-    expect(paged).toContain("requestNextRosterPage({ fetchNextPage, hasNextPage, isFetchingNextPage })")
+    expect(paged).toContain(
+      "requestNextRosterPage({ fetchNextPage, hasNextPage, isFetchingNextPage })",
+    )
     expect(listModel).toContain("if (!paging.hasNextPage || paging.isFetchingNextPage) return")
     expect(listModel).toContain("void paging.fetchNextPage()")
     for (const surface of [block, checkin, checkinRoster, list]) {
@@ -224,10 +242,14 @@ describe("a member of a NON-ticketed event can still open their ticket", () => {
   })
 
   it("leaves a registered viewer inert on the slot board of a non-ticketed event", () => {
-    expect(slotsBlock).toContain("const showPill = !ticketed || viewer.registered || viewer.actsAsHost")
+    expect(slotsBlock).toContain(
+      "const showPill = !ticketed || viewer.registered || viewer.actsAsHost",
+    )
     expect(slotsBlock).toContain('const ticketed = mode === "registration"')
     const registeredReads = slotsBlock.match(/viewer\.registered/g) ?? []
     expect(registeredReads).toHaveLength(2)
-    expect(slotsBlock).toContain('viewerState === "going_no_slot" && (!ticketed || viewer.registered)')
+    expect(slotsBlock).toContain(
+      'viewerState === "going_no_slot" && (!ticketed || viewer.registered)',
+    )
   })
 })

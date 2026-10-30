@@ -71,9 +71,7 @@ export type RegionFetchState = {
  * a far-away region is in flight, so the map repaints instantly instead of swapping in the wrong pins.
  */
 export type RegionFetchDecision =
-  | { action: "keep" }
-  | { action: "revert"; region: BBox }
-  | { action: "request"; region: BBox }
+  { action: "keep" } | { action: "revert"; region: BBox } | { action: "request"; region: BBox }
 
 /**
  * `requested` is checked before `loaded` because its points are the ones that will land; checking

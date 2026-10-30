@@ -61,7 +61,7 @@ describe("entryIdentity", () => {
       entryIdentity({ kind: "leaderboard", geoid: "0644000" }),
     )
     expect(entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p1" })).not.toBe(
-      entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p2" })
+      entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p2" }),
     )
     expect(entryIdentity({ kind: "composer" })).toBe(
       entryIdentity({ kind: "composer", composerMode: "post" }),

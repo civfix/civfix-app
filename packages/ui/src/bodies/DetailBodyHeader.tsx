@@ -1,5 +1,14 @@
 import { Platform, Pressable, StyleSheet, View } from "react-native"
-import { focusRingProps, headingLevel, makeThemedStyles, wash, useLayoutMode, useTheme, MIN_TOUCH_TARGET, pointerEventStyles } from "../theme"
+import {
+  focusRingProps,
+  headingLevel,
+  makeThemedStyles,
+  wash,
+  useLayoutMode,
+  useTheme,
+  MIN_TOUCH_TARGET,
+  pointerEventStyles,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   DETAIL_BACK_SIZE,
@@ -24,7 +33,12 @@ export interface DetailBodyHeaderProps {
   compactTitle: DetailBodyCompactTitle
 }
 
-export function DetailBodyHeader({ title, backLabel, onBack, compactTitle }: DetailBodyHeaderProps) {
+export function DetailBodyHeader({
+  title,
+  backLabel,
+  onBack,
+  compactTitle,
+}: DetailBodyHeaderProps) {
   const styles = useStyles()
   const th = useTheme()
   const expanded = useLayoutMode() === "expanded"
@@ -68,7 +82,9 @@ export function DetailBodyHeader({ title, backLabel, onBack, compactTitle }: Det
           </Text>
         </View>
       ) : (
-        <View style={[styles.headerTitleWrap, styles.headerTitleWrapInset, pointerEventStyles.none]}>
+        <View
+          style={[styles.headerTitleWrap, styles.headerTitleWrapInset, pointerEventStyles.none]}
+        >
           <Text variant="heading" numberOfLines={1}>
             {title}
           </Text>

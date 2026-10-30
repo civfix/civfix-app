@@ -9,7 +9,8 @@ const api = {
   getPushWebConfig: vi.fn<() => Promise<{ vapidPublicKey: string | null }>>(),
   registerPush: vi.fn<(body: { platform: string; token: string }) => Promise<{ ok: true }>>(),
   pushUnregister: vi.fn<(body: { platform: string; token: string }) => Promise<{ ok: true }>>(),
-  listNotifications: vi.fn<(query: { limit?: number }) => Promise<{ items: NotificationDTO[]; nextCursor: null }>>(),
+  listNotifications:
+    vi.fn<(query: { limit?: number }) => Promise<{ items: NotificationDTO[]; nextCursor: null }>>(),
   markNotificationsRead: vi.fn<(body: { ids: string[] }) => Promise<{ ok: true }>>(),
 }
 
@@ -65,10 +66,12 @@ const browser = {
 
 const pushManager = {
   getSubscription: vi.fn(async () => browser.subscription),
-  subscribe: vi.fn(async (_options: { userVisibleOnly: boolean; applicationServerKey: Uint8Array }) => {
-    browser.subscription = fakeSubscription()
-    return browser.subscription
-  }),
+  subscribe: vi.fn(
+    async (_options: { userVisibleOnly: boolean; applicationServerKey: Uint8Array }) => {
+      browser.subscription = fakeSubscription()
+      return browser.subscription
+    },
+  ),
 }
 
 const registration = {
@@ -100,7 +103,15 @@ function delivered(id: string, category: string | null): FakeNotification {
 }
 
 function row(id: string, read: boolean): NotificationDTO {
-  return { id, type: "report_update", title: id, body: null, read, createdAt: "2026-10-01T00:00:00.000Z", link: null }
+  return {
+    id,
+    type: "report_update",
+    title: id,
+    body: null,
+    read,
+    createdAt: "2026-10-01T00:00:00.000Z",
+    link: null,
+  }
 }
 
 type AuthStore = typeof AuthStoreModule.useAuthStore
@@ -224,7 +235,9 @@ describe("a clicked notification's page, with the real shell mounted", () => {
     const worker = loadServiceWorker(window.location.origin, [tab])
     await worker.click({ notificationId: "n1", category: "reportUpdates", link: "/reports/r1" })
 
-    await loadThroughShell(new URL(tab.navigate.mock.calls[0]![0] as string, window.location.origin))
+    await loadThroughShell(
+      new URL(tab.navigate.mock.calls[0]![0] as string, window.location.origin),
+    )
     for (const [message] of tab.postMessage.mock.calls) {
       container.dispatchEvent(new MessageEvent("message", { data: message }))
     }
@@ -247,7 +260,10 @@ describe("the web push sync", () => {
     expect(options.userVisibleOnly).toBe(true)
     expect(new Uint8Array(options.applicationServerKey)).toEqual(VAPID_KEY_BYTES)
     expect(api.registerPush).toHaveBeenCalledTimes(1)
-    expect(api.registerPush).toHaveBeenCalledWith({ platform: "web", token: JSON.stringify(browser.subscription) })
+    expect(api.registerPush).toHaveBeenCalledWith({
+      platform: "web",
+      token: JSON.stringify(browser.subscription),
+    })
   })
 
   for (const [label, permission, key] of [
@@ -272,7 +288,10 @@ describe("the web push sync", () => {
     const tokens: string[] = []
     api.registerPush.mockImplementation(async ({ token }) => {
       tokens.push(token)
-      if (tokens.length === 1) throw new AppError(ErrorCode.CONFLICT, "token owned by another account", { httpStatus: 409 })
+      if (tokens.length === 1)
+        throw new AppError(ErrorCode.CONFLICT, "token owned by another account", {
+          httpStatus: 409,
+        })
       return { ok: true }
     })
     uninstall = await startSignedIn()
@@ -292,7 +311,9 @@ describe("the web push sync", () => {
 
   it("T16: a second CONFLICT stops: no third subscribe or register", async () => {
     stubBrowser("granted")
-    api.registerPush.mockRejectedValue(new AppError(ErrorCode.CONFLICT, "token owned by another account", { httpStatus: 409 }))
+    api.registerPush.mockRejectedValue(
+      new AppError(ErrorCode.CONFLICT, "token owned by another account", { httpStatus: 409 }),
+    )
     uninstall = await startSignedIn()
 
     await vi.waitFor(() => expect(api.registerPush).toHaveBeenCalledTimes(2))
@@ -338,7 +359,10 @@ describe("closing read notifications when the tab gains focus", () => {
     stubBrowser("granted")
     await startAndSettle()
     deliverT21()
-    api.listNotifications.mockResolvedValue({ items: [row("n1", true), row("n2", false), row("n3", true)], nextCursor: null })
+    api.listNotifications.mockResolvedValue({
+      items: [row("n1", true), row("n2", false), row("n3", true)],
+      nextCursor: null,
+    })
 
     window.dispatchEvent(new Event("focus"))
 

@@ -20,10 +20,12 @@ function lucideBarrelExports(barrelFile) {
   for (const line of fs.readFileSync(barrelFile, "utf8").split("\n")) {
     if (!line.startsWith("export")) continue
     const match = REEXPORT.exec(line)
-    if (match === null) throw new Error(`lucide-react-native: unrecognized export in ${barrelFile}: ${line}`)
+    if (match === null)
+      throw new Error(`lucide-react-native: unrecognized export in ${barrelFile}: ${line}`)
     for (const entry of match[1].split(",")) {
       const names = /^(\w+)(?: as (\w+))?$/.exec(entry.trim())
-      if (names === null) throw new Error(`lucide-react-native: unrecognized export in ${barrelFile}: ${line}`)
+      if (names === null)
+        throw new Error(`lucide-react-native: unrecognized export in ${barrelFile}: ${line}`)
       table.set(names[2] ?? names[1], { file: path.join(dir, match[2]), imported: names[1] })
     }
   }
@@ -44,7 +46,10 @@ function specifierName(t, node) {
  */
 function lucideDirectImports({ types: t }, { esmDir }) {
   const barrels = new Map(
-    Object.entries(LUCIDE_BARRELS).map(([source, file]) => [source, lucideBarrelExports(path.join(esmDir, file))]),
+    Object.entries(LUCIDE_BARRELS).map(([source, file]) => [
+      source,
+      lucideBarrelExports(path.join(esmDir, file)),
+    ]),
   )
   const target = (p, source, name) => {
     const found = barrels.get(source).get(name)
@@ -103,7 +108,8 @@ function lucideDirectImports({ types: t }, { esmDir }) {
       },
       ExportNamedDeclaration(p) {
         const { node } = p
-        if (node.source == null || !barrels.has(node.source.value) || node.exportKind === "type") return
+        if (node.source == null || !barrels.has(node.source.value) || node.exportKind === "type")
+          return
         const source = node.source.value
         if (node.specifiers.some((spec) => t.isExportNamespaceSpecifier(spec))) return
         const direct = []

@@ -80,7 +80,8 @@ export function sniffMediaContentType(bytes: Uint8Array): string | null {
   if (ascii(bytes, 4, 4) === "ftyp") {
     const brand = ascii(bytes, 8, 4)
     if (brand === "qt  ") return "video/quicktime"
-    if (brand.startsWith("hei") || brand.startsWith("mif") || brand.startsWith("msf")) return "image/heic"
+    if (brand.startsWith("hei") || brand.startsWith("mif") || brand.startsWith("msf"))
+      return "image/heic"
     return "video/mp4"
   }
   return null

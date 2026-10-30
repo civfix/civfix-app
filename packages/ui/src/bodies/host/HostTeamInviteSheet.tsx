@@ -90,7 +90,11 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
       />
 
       <Text variant="label">{t("invite.role")}</Text>
-      <View style={styles.tiers} accessibilityRole="radiogroup" accessibilityLabel={t("invite.role")}>
+      <View
+        style={styles.tiers}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t("invite.role")}
+      >
         {tiers.map((tier) => {
           const selected = tier.role === role
           return (

@@ -20,7 +20,11 @@ vi.mock("@civfix/ui", () => ({
     <input type="checkbox" aria-label="age" onChange={(e) => onConfirmedChange(e.target.checked)} />
   ),
   TermsConfirmation: ({ onConfirmedChange }: { onConfirmedChange: (v: boolean) => void }) => (
-    <input type="checkbox" aria-label="terms" onChange={(e) => onConfirmedChange(e.target.checked)} />
+    <input
+      type="checkbox"
+      aria-label="terms"
+      onChange={(e) => onConfirmedChange(e.target.checked)}
+    />
   ),
 }))
 vi.mock("@/hooks/use-profile-registration", () => ({
@@ -147,7 +151,9 @@ describe("a failed sign-out from the first-run gate", () => {
     expect(notice.className).toContain("z-session-alert")
     expect(Z_SESSION_ALERT).toBeGreaterThan(Number(gate.style.zIndex))
 
-    const retry = within(notice).getByRole<HTMLButtonElement>("button", { name: "sign_out_failed.retry" })
+    const retry = within(notice).getByRole<HTMLButtonElement>("button", {
+      name: "sign_out_failed.retry",
+    })
     expect(retry.disabled).toBe(false)
     await act(async () => {
       fireEvent.click(retry)
@@ -167,7 +173,9 @@ describe("a failed sign-out from the first-run gate", () => {
     })
 
     const notice = await screen.findByRole("alert")
-    const retry = within(notice).getByRole<HTMLButtonElement>("button", { name: "sign_out_failed.retry" })
+    const retry = within(notice).getByRole<HTMLButtonElement>("button", {
+      name: "sign_out_failed.retry",
+    })
     const close = within(notice).getByRole("button", { name: "close" })
     expect(document.activeElement).toBe(retry)
 

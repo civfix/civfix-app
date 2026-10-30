@@ -60,7 +60,10 @@ function AttendeeStack({
           {ATTENDEE_SEATS.slice(0, visibleCount).map((seat, index) => {
             const attendee = model.attendeePreview[index]
             return attendee ? (
-              <View key={attendee.id} style={[styles.avatarShell, index > 0 ? styles.avatarOverlap : null]}>
+              <View
+                key={attendee.id}
+                style={[styles.avatarShell, index > 0 ? styles.avatarOverlap : null]}
+              >
                 <Avatar
                   name={attendee.name}
                   seed={attendee.id}
@@ -83,12 +86,7 @@ function AttendeeStack({
           })}
         </View>
       ) : null}
-      <Text
-        variant="caption"
-        color={t.colors.textMuted}
-        numberOfLines={1}
-        style={styles.goingText}
-      >
+      <Text variant="caption" color={t.colors.textMuted} numberOfLines={1} style={styles.goingText}>
         {model.goingLabel}
       </Text>
     </View>
@@ -171,7 +169,18 @@ export function LinkedEventCard({
         attendees,
         showAttendance: showControls,
       }),
-    [event, t, locale, timeZone, viewerTimeZone, address, liveGoing, joined, attendees, showControls],
+    [
+      event,
+      t,
+      locale,
+      timeZone,
+      viewerTimeZone,
+      address,
+      liveGoing,
+      joined,
+      attendees,
+      showControls,
+    ],
   )
   const isList = layout === "list"
   const targets = buildLinkedEventCardTargetPlan()
@@ -249,7 +258,11 @@ export function LinkedEventCard({
         accessibilityRole="button"
         accessibilityLabel={model.removeAccessibilityLabel}
         {...focusRingProps}
-        style={({ pressed }) => [styles.removeButton, targets.removeTarget, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.removeButton,
+          targets.removeTarget,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <View style={[styles.removeVisual, targets.removeVisual]}>
           <Icon icon={iconMap.Close} size={13} color={th.colors.neutral.card} />

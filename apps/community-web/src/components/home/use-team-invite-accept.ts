@@ -45,7 +45,10 @@ export function useTeamInviteAccept(): void {
 
   React.useEffect(() => {
     if (link === null || !isAuthenticated || attempted.current) return
-    if (!AcceptEventTeamInviteRequestSchema.safeParse({ id: link.cleanupId, token: link.token }).success) {
+    if (
+      !AcceptEventTeamInviteRequestSchema.safeParse({ id: link.cleanupId, token: link.token })
+        .success
+    ) {
       clearStashedTeamInvite()
       return
     }

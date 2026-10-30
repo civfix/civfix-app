@@ -35,7 +35,9 @@ const { ScrollView: OtpScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_H
 const MAX_ATTEMPTS = 3
 
 function isCodeIncomplete(code: string, reviewer: boolean): boolean {
-  return reviewer ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH : code.length !== EMAIL_OTP_CODE_LENGTH
+  return reviewer
+    ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH
+    : code.length !== EMAIL_OTP_CODE_LENGTH
 }
 
 export default function OtpScreen() {
@@ -233,7 +235,9 @@ export default function OtpScreen() {
               accessibilityLabel={t("resend.action")}
               accessibilityState={{ disabled: cooldown > 0 || resending }}
               hitSlop={8}
-              style={({ pressed }) => (pressed && !(cooldown > 0 || resending) ? styles.resendPressed : null)}
+              style={({ pressed }) =>
+                pressed && !(cooldown > 0 || resending) ? styles.resendPressed : null
+              }
             >
               <Text
                 variant="caption"

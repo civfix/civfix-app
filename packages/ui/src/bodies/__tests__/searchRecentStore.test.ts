@@ -33,7 +33,10 @@ describe("searchRecentStore", () => {
     }
 
     expect(useSearchRecentStore.getState().recent).toEqual(
-      Array.from({ length: SEARCH_RECENT_LIMIT }, (_, index) => `Search ${SEARCH_RECENT_LIMIT + 1 - index}`),
+      Array.from(
+        { length: SEARCH_RECENT_LIMIT },
+        (_, index) => `Search ${SEARCH_RECENT_LIMIT + 1 - index}`,
+      ),
     )
   })
 
