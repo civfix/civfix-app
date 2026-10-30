@@ -13,6 +13,7 @@
   "loading": "Cargando…",
   "error_generic": "Algo salió mal",
   "dismiss_menu": "Cerrar menú",
+  "dismiss_announcement": "Cerrar aviso",
   "media": {
     "photo": "Foto",
     "video": "Video",

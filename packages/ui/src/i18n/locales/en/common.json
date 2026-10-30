@@ -13,6 +13,7 @@
   "loading": "Loading…",
   "error_generic": "Something went wrong",
   "dismiss_menu": "Dismiss menu",
+  "dismiss_announcement": "Dismiss announcement",
   "media": {
     "photo": "Photo",
     "video": "Video",

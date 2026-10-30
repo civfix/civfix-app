@@ -105,3 +105,13 @@ export function expandedFramePlan({ view, stackLength, sidebarWidth }: ExpandedF
 export function railActiveView(view: View, active: DetailEntry | null): View | null {
   return active ? parentViewForEntry(active) : view
 }
+
+export interface ExpandedTopOffsets {
+  railTop: number
+  cardTop: number
+}
+
+/** The rail and the card (with its resize handle) move down together under a fixed top bar of `topInset`. */
+export function expandedTopOffsets(topInset: number): ExpandedTopOffsets {
+  return { railTop: NAV_TOP + topInset, cardTop: NAV_FOOTPRINT + topInset }
+}

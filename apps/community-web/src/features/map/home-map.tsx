@@ -11,7 +11,7 @@ import {
   useLayoutMode,
   enabledCategoriesArray,
   shellOcclusionLeft,
-  useAppPromoStore,
+  topBarsHeight,
   openDropPinMenu,
   dropPinCameraTarget,
   captureDropPinCamera,
@@ -253,9 +253,9 @@ export function HomeMap() {
         // No safe-area API on web: the reserve is the floating gutter token CompactShell.web's detents use.
         windowHeight: typeof window === "undefined" ? 0 : window.innerHeight,
         sheetTopReserve: space["8"],
-        // The fixed app-download banner occludes the top of the map like a notch; its measured height is 0
-        // whenever no banner shows.
-        topInset: useAppPromoStore.getState().bannerHeight,
+        // The fixed top bars (the system notice and the app-download banner) occlude the top of the map like a
+        // notch; their measured heights are 0 whenever nothing shows.
+        topInset: topBarsHeight(),
         // Read after openDropPinMenu, which moves the sheet to MID; the camera offsets for the settled detent.
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,

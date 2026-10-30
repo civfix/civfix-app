@@ -49,9 +49,19 @@ const WebBrandAbout = dynamic(
 )
 
 /**
+ * The founders' system notice, the topmost fixed bar at every width. Client-only like the shell: it reads the
+ * app config, which the static export cannot know. Everything under it clears the height it publishes.
+ */
+const WebSystemNoticeBanner = dynamic(
+  () => import("@/components/home/system-notice-banner").then((m) => m.WebSystemNoticeBanner),
+  { ssr: false },
+)
+
+/**
  * Client-only because it decides what to show from the live user agent, which the static export cannot
  * know at build time. It renders outside <AppShell/> as a fixed strip at z-index 100 (above the shell's
- * z0-71 layers); the map controls clear it via the height it publishes into the shared promo store.
+ * z0-71 layers), under the system notice; the map controls clear it via the height it publishes into the
+ * shared promo store.
  */
 const AppDownloadBanner = dynamic(
   () => import("@/components/promo/app-download-banner").then((m) => m.AppDownloadBanner),
@@ -165,8 +175,9 @@ export function AppShellFrame() {
         {t("a11y.skip_to_content")}
       </a>
       <main id="main" tabIndex={-1}>
-        {/* The fixed banner comes before the app shell in DOM order, while the skip link targets this
+        {/* The fixed banners come before the app shell in DOM order, while the skip link targets this
             stable landmark in both map and non-map compact views. */}
+        <WebSystemNoticeBanner />
         <AppDownloadBanner />
         <SafeAreaProvider initialMetrics={NO_SAFE_AREA} style={SHELL_FILL}>
           <AppShell

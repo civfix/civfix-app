@@ -117,6 +117,7 @@ test("T15: then every local store is empty except the device id, and the app is 
     "civfix.ui.app-promo",
     "civfix.ui.filters",
     "civfix.ui.sidebar",
+    "civfix.ui.system-notice",
   ])
   for (const id of UI_STORAGE_IDS) assert.deepEqual(keysIn(id), [], id)
   assert.equal(keychain.get(DEVICE_ID_KEY), "dev-1")

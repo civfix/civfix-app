@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react"
-import { View, Pressable, Modal, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
+import { FullWindowModal } from "../primitives/FullWindowModal"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, webScrimProps, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -543,7 +544,7 @@ export function MembersBody({
         )
       }
     />
-    <Modal
+    <FullWindowModal
       visible={leaveOpen}
       transparent
       animationType="fade"
@@ -580,7 +581,7 @@ export function MembersBody({
           </View>
         </View>
       </View>
-    </Modal>
+    </FullWindowModal>
     </>
   )
 }

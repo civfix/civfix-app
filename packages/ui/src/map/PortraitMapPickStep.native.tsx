@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { BackHandler, Modal, View, StyleSheet } from "react-native"
+import { BackHandler, View, StyleSheet } from "react-native"
+import { FullWindowModal } from "../primitives/FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { space, makeThemedStyles } from "../theme"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
@@ -28,7 +30,7 @@ export function PortraitMapPickStep({
   inert = false,
 }: PortraitMapPickStepProps) {
   const styles = useStyles()
-  const insets = useSafeAreaInsets()
+  const insets = useFullWindowInsets(useSafeAreaInsets())
   const layered = presentation === "layer"
 
   const [session, setSession] = useState<{ open: boolean; point: LatLng | null }>(() => ({
@@ -117,9 +119,9 @@ export function PortraitMapPickStep({
     )
 
   return (
-    <Modal visible transparent statusBarTranslucent animationType="fade" onRequestClose={cancel}>
+    <FullWindowModal visible transparent statusBarTranslucent animationType="fade" onRequestClose={cancel}>
       {content}
-    </Modal>
+    </FullWindowModal>
   )
 }
 
