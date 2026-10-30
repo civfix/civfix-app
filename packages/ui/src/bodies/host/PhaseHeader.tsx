@@ -30,8 +30,8 @@ export interface PhaseHeaderProps {
   title: string
   when: string
   relative: string | null
-  cta?: PhaseHeaderAction
-  secondary?: PhaseHeaderAction
+  cta?: PhaseHeaderAction | undefined
+  secondary?: PhaseHeaderAction | undefined
   wide?: boolean
 }
 

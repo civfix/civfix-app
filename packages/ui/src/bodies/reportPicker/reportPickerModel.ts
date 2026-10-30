@@ -193,7 +193,7 @@ export function reportLookupKey(query: string): string | null {
   return null
 }
 
-export function reportShortCode(report: { id: string; referenceCode?: string | null }): string {
+export function reportShortCode(report: { id: string; referenceCode?: string | null | undefined }): string {
   const reference = report.referenceCode?.trim()
   return `#${reference || report.id.slice(0, SHORT_ID_LENGTH)}`
 }

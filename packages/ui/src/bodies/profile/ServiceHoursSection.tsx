@@ -21,7 +21,7 @@ const SKELETON_ROWS = [0, 1, 2]
 export interface ServiceHoursSectionProps {
   variant: "own" | "public"
   userId?: string
-  totalHours?: number
+  totalHours?: number | undefined
 }
 
 export function ServiceHoursSection({ variant, userId, totalHours }: ServiceHoursSectionProps) {
@@ -32,7 +32,7 @@ export function ServiceHoursSection({ variant, userId, totalHours }: ServiceHour
   )
 }
 
-function OwnServiceHours({ totalHours }: { totalHours?: number }) {
+function OwnServiceHours({ totalHours }: { totalHours?: number | undefined }) {
   const { t } = useT("volunteer-hours")
   const hoursQuery = useMyHours()
   const entriesQuery = useMyHoursEntries()
@@ -69,7 +69,7 @@ function OwnServiceHours({ totalHours }: { totalHours?: number }) {
   )
 }
 
-function PublicServiceHours({ userId, totalHours }: { userId?: string; totalHours?: number }) {
+function PublicServiceHours({ userId, totalHours }: { userId?: string | undefined; totalHours?: number | undefined }) {
   const th = useTheme()
   const { t } = useT("volunteer-hours")
   const query = usePublicHoursEntries(userId)

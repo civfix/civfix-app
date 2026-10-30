@@ -13,6 +13,8 @@ import { visibleValue } from "@civfix/contract/host"
 import { hasHostCapability } from "../../data/hooks/host"
 import { dedupeById } from "../../primitives/listKeys"
 
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
+
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
 export type SummaryPanelKey = (typeof SUMMARY_PANELS)[number]
@@ -166,7 +168,7 @@ export function ratePercent(rate: SuppressedRate | undefined): number | null {
 }
 
 export function checkInRingA11y(
-  t: (key: string, options?: Record<string, unknown>) => string,
+  t: Translate,
   rate: number | null,
 ): string {
   return rate === null ? t("card.checkins_ring_unknown_a11y") : t("card.checkins_ring_a11y", { rate })
@@ -174,7 +176,7 @@ export function checkInRingA11y(
 
 /** The visible empty mark reads as "minus" or nothing, so an unknown count is spoken as a word. */
 export function byEventRowA11y(
-  t: (key: string, options?: Record<string, unknown>) => string,
+  t: Translate,
   name: string,
   value: number | null,
 ): string {

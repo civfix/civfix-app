@@ -39,7 +39,7 @@ export interface HostInsightsPanelsProps {
   now: number
   stale: boolean
   /** The EVENT's IANA zone; the live "as of" clock renders in it. Absent = the viewer's zone. */
-  timeZone?: string
+  timeZone?: string | undefined
 }
 
 function useTileText(insights: EventInsights) {
