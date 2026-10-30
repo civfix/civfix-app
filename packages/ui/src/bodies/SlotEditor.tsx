@@ -248,7 +248,9 @@ function CapacityStepper({
         ]}
       >
         {(state) => (
-          <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+          <View
+            style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}
+          >
             <Icon icon={iconMap.Minus} size={14} color={th.colors.textMuted} />
           </View>
         )}
@@ -264,7 +266,11 @@ function CapacityStepper({
         maxLength={CAPACITY_MAX_DIGITS}
         onFocus={() => setFocusedField("capacity")}
         onBlur={() => setFocusedField(null)}
-        style={[styles.capacityInput, webInputReset, focusedField === "capacity" ? WEB_FIELD_RING : null]}
+        style={[
+          styles.capacityInput,
+          webInputReset,
+          focusedField === "capacity" ? WEB_FIELD_RING : null,
+        ]}
       />
       <Pressable
         onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, 1) })}
@@ -278,7 +284,9 @@ function CapacityStepper({
         ]}
       >
         {(state) => (
-          <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+          <View
+            style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}
+          >
             <Icon icon={iconMap.Plus} size={14} color={th.colors.textMuted} />
           </View>
         )}
@@ -391,7 +399,10 @@ function SlotCard({
   const position = index + 1
   const error = slotDraftError(draft, claimed, window)
   const eventEnd = window?.end ?? null
-  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale, timeZone) : ""
+  const eventRange =
+    window && eventEnd
+      ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale, timeZone)
+      : ""
 
   return (
     <View style={styles.card}>
@@ -511,13 +522,7 @@ export function SlotEditor({
   const onSplit = useCallback(
     (count: ShiftSplitCount) => {
       if (!eventWindow) return
-      const drafts = generateShiftDrafts(
-        eventWindow,
-        count,
-        shiftTitle,
-        () => makeSlotKey(),
-        value,
-      )
+      const drafts = generateShiftDrafts(eventWindow, count, shiftTitle, () => makeSlotKey(), value)
       if (drafts.length === 0) return
       onChange([...value, ...drafts])
     },

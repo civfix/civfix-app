@@ -38,7 +38,9 @@
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: var(--bg-card);
-  transition: color 120ms ease, border-color 120ms ease;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
 }
 .legal-back:hover {
   color: var(--fg-1);
@@ -61,7 +63,10 @@
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: var(--bg-card);
-  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+  transition:
+    color 120ms ease,
+    background 120ms ease,
+    border-color 120ms ease;
 }
 .legal-nav a:hover {
   color: var(--fg-1);

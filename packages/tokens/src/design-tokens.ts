@@ -1,4 +1,3 @@
-
 const lightNeutral = {
   paper: "#F4EFE6",
   paper2: "#EAE3D6",
@@ -259,7 +258,11 @@ export const tokens = {
 export type Tokens = typeof tokens
 
 type WidenLeaves<T> = {
-  readonly [K in keyof T]: T[K] extends string ? string : T[K] extends number ? number : WidenLeaves<T[K]>
+  readonly [K in keyof T]: T[K] extends string
+    ? string
+    : T[K] extends number
+      ? number
+      : WidenLeaves<T[K]>
 }
 
 export type ColorPalette = WidenLeaves<typeof tokens.color>

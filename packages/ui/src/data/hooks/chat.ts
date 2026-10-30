@@ -96,7 +96,12 @@ export interface UseChatResult {
   liveDisabled: boolean
   roomError: ChatRoomError | null
   transientError: ChatRoomError | null
-  send: (body: string, mentionedUserIds?: string[], media?: ComposerMedia[], replyToId?: string) => void
+  send: (
+    body: string,
+    mentionedUserIds?: string[],
+    media?: ComposerMedia[],
+    replyToId?: string,
+  ) => void
   edit: (messageId: string, body: string, mentionedUserIds?: string[]) => Promise<void>
   delete: (messageId: string) => Promise<void>
   setPinned: (messageId: string, pinned: boolean) => Promise<void>
@@ -123,7 +128,11 @@ export interface UseChatOptions {
   suppressReadAcks?: boolean
 }
 
-export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?: UseChatOptions): UseChatResult {
+export function useChat(
+  roomId: string,
+  roomKind: RoomKind = "cleanup",
+  options?: UseChatOptions,
+): UseChatResult {
   const api = useApi()
   const socket = useChatSocket()
   const { isAuthenticated, user } = useAuthState()
@@ -169,7 +178,8 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setAroundWindow,
     pruneLiveMessages,
   })
-  const { findMessage, patchMessage, drainCacheOps, refreshNewestPage, resetHistoryJournal } = historyCache
+  const { findMessage, patchMessage, drainCacheOps, refreshNewestPage, resetHistoryJournal } =
+    historyCache
   const outboxActions = useChatOutbox({
     socket,
     roomId,
@@ -275,7 +285,14 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   }, [history.isFetching, drainCacheOps])
 
   const { toggleReaction, edit, deleteMessage, setPinned, createPoll, votePoll, closePoll } =
-    useChatMessageActions({ api, roomId, roomKind, findMessage, patchMessage, reconcile: inbound.reconcile })
+    useChatMessageActions({
+      api,
+      roomId,
+      roomKind,
+      findMessage,
+      patchMessage,
+      reconcile: inbound.reconcile,
+    })
 
   const items = useMemo<ChatItem[]>(() => {
     const historyItems: ChatMessageDTO[] = (history.data?.pages ?? [])

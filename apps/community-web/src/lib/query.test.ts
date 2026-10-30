@@ -39,7 +39,12 @@ describe("the web query client retries only transient failures", () => {
   })
 
   it("never retries a foreign-realm 4xx error (a second @civfix/contract copy)", () => {
-    const foreign = { name: "AppError", code: ErrorCode.NOT_FOUND, message: "gone", httpStatus: 404 }
+    const foreign = {
+      name: "AppError",
+      code: ErrorCode.NOT_FOUND,
+      message: "gone",
+      httpStatus: 404,
+    }
     expect(retry(0, foreign)).toBe(false)
   })
 

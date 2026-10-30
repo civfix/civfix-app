@@ -17,7 +17,8 @@ installModuleStubs({
 
 const { calls, control, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
 const { useAuthStore } = await import("../store/authStore.ts")
-const { requestEmailOtp, signInWithApple, signInWithGoogle, verifyEmailOtp } = await import("./signIn.ts")
+const { requestEmailOtp, signInWithApple, signInWithGoogle, verifyEmailOtp } =
+  await import("./signIn.ts")
 
 const USER = { id: "u-1", name: "Ada" }
 
@@ -38,7 +39,10 @@ test("each sign-in exchange stores the returned bearer and signs the user in", a
     control.endpoint = async () => ({ token: `bearer-${name}`, user: USER })
     await run()
     assert.equal(calls[0]?.startsWith(`api.${name}:`), true, name)
-    assert.equal(calls.filter((call) => !call.startsWith("queryClient.invalidate:")).at(-1), `setToken:bearer-${name}`)
+    assert.equal(
+      calls.filter((call) => !call.startsWith("queryClient.invalidate:")).at(-1),
+      `setToken:bearer-${name}`,
+    )
     assert.equal(useAuthStore.getState().status, "authed")
     assert.deepEqual(useAuthStore.getState().user, USER)
   }
@@ -53,7 +57,10 @@ test("an exchange that returns no bearer fails with an internal error and stores
       code: "INTERNAL",
       message: "Sign-in did not return a token. Please try again.",
     })
-    assert.equal(calls.some((call) => call.startsWith("setToken")), false)
+    assert.equal(
+      calls.some((call) => call.startsWith("setToken")),
+      false,
+    )
     assert.equal(useAuthStore.getState().status, "unauthed")
   }
 })

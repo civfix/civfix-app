@@ -154,7 +154,8 @@ export function usePostComposerAttach({
       softenLayoutChange()
       setReportsExpanded(true)
     }
-    if (!revealsLoaded && reports.hasNextPage && !reports.isFetchingNextPage) void reports.fetchNextPage()
+    if (!revealsLoaded && reports.hasNextPage && !reports.isFetchingNextPage)
+      void reports.fetchNextPage()
   }
   const showFewerReports = () => {
     softenLayoutChange()

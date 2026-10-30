@@ -1,15 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  BadgeCheck,
-  Copy,
-  Loader2,
-  Printer,
-  SearchX,
-  ShieldCheck,
-  ShieldX,
-} from "lucide-react"
+import { BadgeCheck, Copy, Loader2, Printer, SearchX, ShieldCheck, ShieldX } from "lucide-react"
 import {
   ErrorCode,
   formatCertificateCode,
@@ -218,7 +210,8 @@ function RecordVerdict({
 }) {
   const { t } = useT("web-service-record")
   const revoked = record.status === "revoked"
-  const holder = record.holderName?.trim() || (record.holderHandle ? `@${record.holderHandle}` : null)
+  const holder =
+    record.holderName?.trim() || (record.holderHandle ? `@${record.holderHandle}` : null)
 
   return (
     <div>
@@ -339,7 +332,9 @@ function Fingerprint({ sha256 }: { sha256: string }) {
         {t("fingerprint")}
       </p>
       <div className="mt-1.5 flex items-start gap-2">
-        <code className="min-w-0 flex-1 break-all font-mono text-token-13 text-ink-2">{sha256}</code>
+        <code className="min-w-0 flex-1 break-all font-mono text-token-13 text-ink-2">
+          {sha256}
+        </code>
         <button
           type="button"
           onClick={copy}
@@ -350,7 +345,10 @@ function Fingerprint({ sha256 }: { sha256: string }) {
         </button>
         {/* Outside the button: its accessible name is fixed by aria-label, so text inside it is never
             announced. The region stays mounted so screen readers pick up the change. */}
-        <span role="status" className="sr-no-print shrink-0 py-1 text-token-13 font-semibold text-ink-2">
+        <span
+          role="status"
+          className="sr-no-print shrink-0 py-1 text-token-13 font-semibold text-ink-2"
+        >
           {copied ? t("copied") : ""}
         </span>
       </div>

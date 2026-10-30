@@ -25,10 +25,16 @@ function AttachPanel({
   const styles = usePostComposerStyles()
   const group = kind === "events" ? attach.attachPlan.events : attach.attachPlan.reports
   return (
-    <ScrollView style={styles.panel} nestedScrollEnabled contentContainerStyle={styles.pickerContent}>
+    <ScrollView
+      style={styles.panel}
+      nestedScrollEnabled
+      contentContainerStyle={styles.pickerContent}
+    >
       {group.state === "loading" ? <View style={styles.groupPlaceholder} /> : null}
       {group.state === "empty" ? (
-        <Text style={styles.emptyPicker}>{kind === "events" ? t("empty_events") : t("empty_reports")}</Text>
+        <Text style={styles.emptyPicker}>
+          {kind === "events" ? t("empty_events") : t("empty_reports")}
+        </Text>
       ) : null}
       {group.state === "list" && kind === "events"
         ? attach.eventCandidates.map((event) => (
@@ -92,7 +98,11 @@ function AttachPill({
       accessibilityState={{ expanded: open }}
       onPress={onPress}
       {...focusRingProps}
-      style={({ pressed }) => [styles.pill, open ? styles.pillOpen : null, pressed ? styles.listActionPressed : null]}
+      style={({ pressed }) => [
+        styles.pill,
+        open ? styles.pillOpen : null,
+        pressed ? styles.listActionPressed : null,
+      ]}
     >
       <Icon icon={icon} size={16} color={th.colors.accent} />
       <Text style={styles.pillText}>{label}</Text>
@@ -101,7 +111,15 @@ function AttachPill({
 }
 
 /** Reply and quote composers tuck the attach lists behind two pills, one open panel at a time. */
-export function AttachPills({ attach, draft, t }: { attach: PostComposerAttach; draft: PostComposerDraft; t: TFunction }) {
+export function AttachPills({
+  attach,
+  draft,
+  t,
+}: {
+  attach: PostComposerAttach
+  draft: PostComposerDraft
+  t: TFunction
+}) {
   const styles = usePostComposerStyles()
   const { attachPlan } = attach
   const previewsVisible = attach.attachedEvent != null || attach.attachedReport != null
@@ -113,8 +131,12 @@ export function AttachPills({ attach, draft, t }: { attach: PostComposerAttach; 
           <AttachedReportCard attach={attach} />
         </View>
       ) : null}
-      {attachPlan.eventPanelVisible ? <AttachPanel kind="events" attach={attach} draft={draft} t={t} /> : null}
-      {attachPlan.reportPanelVisible ? <AttachPanel kind="reports" attach={attach} draft={draft} t={t} /> : null}
+      {attachPlan.eventPanelVisible ? (
+        <AttachPanel kind="events" attach={attach} draft={draft} t={t} />
+      ) : null}
+      {attachPlan.reportPanelVisible ? (
+        <AttachPanel kind="reports" attach={attach} draft={draft} t={t} />
+      ) : null}
       <View style={styles.pillsRow}>
         <AttachPill
           label={t("pills.event")}

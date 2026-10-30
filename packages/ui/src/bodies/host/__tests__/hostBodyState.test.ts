@@ -35,8 +35,8 @@ describe("HostBodyState", () => {
   })
 
   it("renders error and denied as full-screen notices with their own icons", () => {
-    expect(state).toContain(
-      '<HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />',
+    expect(state).toMatch(
+      /<HostStateNotice\s+icon="CloudOff"\s+title=\{t\("state\.error_title"\)\}\s+body=\{t\("state\.error_body"\)\}\s+\/>/,
     )
     expect(state).toContain(
       '<HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />',

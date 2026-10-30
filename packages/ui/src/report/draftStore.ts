@@ -23,7 +23,8 @@ export interface DraftFlags {
   safetyHazard: boolean
 }
 
-export type DraftCategory = "trash" | "recycling" | "graffiti" | "hazard" | "encampment" | "water" | "other"
+export type DraftCategory =
+  "trash" | "recycling" | "graffiti" | "hazard" | "encampment" | "water" | "other"
 
 export interface DraftReport {
   idempotencyKey: string | null
@@ -146,7 +147,15 @@ function draftMediaFromCapture(media: CapturedMedia): DraftMedia {
 export function captureSeedsNewReport(
   draft: Pick<
     DraftReport,
-    "media" | "category" | "reportTypeId" | "title" | "description" | "flags" | "lat" | "locationPrefilled" | "addrEdited"
+    | "media"
+    | "category"
+    | "reportTypeId"
+    | "title"
+    | "description"
+    | "flags"
+    | "lat"
+    | "locationPrefilled"
+    | "addrEdited"
   >,
 ): boolean {
   if (draft.media.length > 0) return false
@@ -165,7 +174,9 @@ export function captureSeedsNewReport(
 
 // Compared by value and only against the last checked point, so moving the pin away and back after a
 // check in between checks again (GH#159).
-export function needsDuplicateCheck(draft: Pick<DraftReport, "lat" | "lng" | "duplicateCheckedPoint">): boolean {
+export function needsDuplicateCheck(
+  draft: Pick<DraftReport, "lat" | "lng" | "duplicateCheckedPoint">,
+): boolean {
   if (draft.lat == null || draft.lng == null) return false
   const checked = draft.duplicateCheckedPoint
   return checked === null || checked.lat !== draft.lat || checked.lng !== draft.lng
@@ -209,7 +220,14 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     })),
   setPrefilledLocation: (lat, lng) =>
     set((s) => ({
-      draft: { ...s.draft, lat, lng, geomSource: "manual", locationPrefilled: true, locationMediaId: null },
+      draft: {
+        ...s.draft,
+        lat,
+        lng,
+        geomSource: "manual",
+        locationPrefilled: true,
+        locationMediaId: null,
+      },
       freshSeeds: s.freshSeeds + 1,
     })),
   clearLocation: () =>
@@ -219,7 +237,8 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   setAddress: (addr) => set((s) => ({ draft: { ...s.draft, addr, addrEdited: true } })),
   setPrefilledAddress: (addr) =>
     set((s) => (s.draft.addrEdited ? s : { draft: { ...s.draft, addr } })),
-  setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomId(), ...media }] } })),
+  setMedia: (media) =>
+    set((s) => ({ draft: { ...s.draft, media: [{ id: randomId(), ...media }] } })),
 
   startFromCapture: (media) => {
     const capturedAt = new Date().toISOString()
@@ -261,7 +280,8 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   addCapture: (media) => {
     const added = draftMediaFromCapture(media)
     set((s) => {
-      const becomesLocationSource = s.draft.media.length === 0 && s.draft.lat == null && media.location != null
+      const becomesLocationSource =
+        s.draft.media.length === 0 && s.draft.lat == null && media.location != null
       return {
         draft: {
           ...s.draft,
@@ -277,7 +297,10 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
         },
       }
     })
-    holdRelease(media, get().draft.media.some((m) => m.id === added.id))
+    holdRelease(
+      media,
+      get().draft.media.some((m) => m.id === added.id),
+    )
   },
   addMedia: (media) =>
     set((s) => ({
@@ -293,7 +316,8 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       if (at < 0) return s
       const removed = s.draft.media[at]
       const media = s.draft.media.filter((_, j) => j !== at)
-      if (removed === undefined || removed.id !== s.draft.locationMediaId) return { draft: { ...s.draft, media } }
+      if (removed === undefined || removed.id !== s.draft.locationMediaId)
+        return { draft: { ...s.draft, media } }
       return { draft: { ...s.draft, media, lat: null, lng: null, locationMediaId: null } }
     }),
   setMediaUploadId: (id, uploadId) =>
@@ -311,7 +335,9 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
   setFeedCaption: (feedCaption) => set((s) => ({ draft: { ...s.draft, feedCaption } })),
   setFeedPostId: (feedPostId) => set((s) => ({ draft: { ...s.draft, feedPostId } })),
   setDuplicateCheckedPoint: (point) =>
-    set((s) => ({ draft: { ...s.draft, duplicateCheckedPoint: { lat: point.lat, lng: point.lng } } })),
+    set((s) => ({
+      draft: { ...s.draft, duplicateCheckedPoint: { lat: point.lat, lng: point.lng } },
+    })),
   reset: () =>
     set((s) => ({
       draft: { ...EMPTY, flags: { ...EMPTY_FLAGS }, media: [] },
@@ -319,6 +345,10 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     })),
 }))
 
-useDraftReportStore.subscribe((state, previous) => releaseDroppedMedia(state.draft.media, previous.draft.media))
+useDraftReportStore.subscribe((state, previous) =>
+  releaseDroppedMedia(state.draft.media, previous.draft.media),
+)
 
-registerViewerScopedDrafts(useDraftReportStore, { discard: () => useDraftReportStore.getState().reset() })
+registerViewerScopedDrafts(useDraftReportStore, {
+  discard: () => useDraftReportStore.getState().reset(),
+})

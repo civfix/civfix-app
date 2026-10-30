@@ -33,7 +33,10 @@ const TAB_VISUALS: Record<TabId, Pick<TabDef, "icon" | "labelKey">> = {
   report: { icon: iconMap.Camera, labelKey: "tab.report" },
 }
 
-export const TABS: readonly TabDef[] = TAB_SPECS.map((spec) => ({ ...spec, ...TAB_VISUALS[spec.id] }))
+export const TABS: readonly TabDef[] = TAB_SPECS.map((spec) => ({
+  ...spec,
+  ...TAB_VISUALS[spec.id],
+}))
 
 export const TAB_COUNT = TABS.length
 
@@ -138,7 +141,11 @@ export function SearchOrb({ active, onPress }: { active: boolean; onPress: () =>
     >
       <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
       <View style={styles.orbIcon}>
-        <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={active ? th.colors.accent : th.colors.textMuted} />
+        <Icon
+          icon={iconMap.Search}
+          size={DOCK_ORB_GLYPH_SIZE}
+          color={active ? th.colors.accent : th.colors.textMuted}
+        />
       </View>
     </Pressable>
   )
@@ -211,4 +218,3 @@ export function BarGlass() {
   const styles = useTabBarStyles()
   return <BlurSurface kind="button" style={[StyleSheet.absoluteFill, styles.noPointer]} />
 }
-

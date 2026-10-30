@@ -11,7 +11,12 @@ import { PageStack } from "./PageStack"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "./ScrollHost"
 import { SearchBodyReveal } from "./SearchBodyReveal"
 import { TabBar } from "./TabBar"
-import { portraitDockVisible, portraitFramePlan, reportDraftStartsFresh, type PortraitShellPlan } from "./bodyLayout"
+import {
+  portraitDockVisible,
+  portraitFramePlan,
+  reportDraftStartsFresh,
+  type PortraitShellPlan,
+} from "./bodyLayout"
 import { useTabBarStore } from "./tabBarStore"
 import type { AppShellProps } from "./types"
 import { useStackDirection } from "./useStackDirection"
@@ -138,7 +143,8 @@ export function PortraitShellFrame({
     REPORT_PREWARM_DELAY_MS,
   )
   const homeSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "home"
-  const messagingSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "messaging"
+  const messagingSlotVisible =
+    RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "messaging"
   const homeSlotMounted = useKeepAliveSlotMounted(
     homeSlotVisible,
     RETAIN_TAB_BODIES,

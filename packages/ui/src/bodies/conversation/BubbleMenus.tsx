@@ -128,7 +128,10 @@ export function BubbleMenus({
       },
     },
   })
-  const menuReactions = buildReactionChipModel(reactions).map((c) => ({ emoji: c.emoji, mine: c.mine }))
+  const menuReactions = buildReactionChipModel(reactions).map((c) => ({
+    emoji: c.emoji,
+    mine: c.mine,
+  }))
   return (
     <>
       <MessageContextMenu

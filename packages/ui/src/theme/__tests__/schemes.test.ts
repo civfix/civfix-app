@@ -129,7 +129,10 @@ describe("theme color schemes", () => {
     const lightGlass = makeGlass("light")
     const darkGlass = makeGlass("dark")
     expect(leafPaths(darkGlass).sort()).toEqual(leafPaths(lightGlass).sort())
-    expect(lightGlass.active).toEqual({ fill: tokens.color.neutral.ink, icon: tokens.color.neutral.card })
+    expect(lightGlass.active).toEqual({
+      fill: tokens.color.neutral.ink,
+      icon: tokens.color.neutral.card,
+    })
     expect(darkGlass.active).toEqual({ fill: darkColor.neutral.ink, icon: darkColor.neutral.card })
     for (const glass of [lightGlass, darkGlass]) {
       for (const geometry of ["height", "orbSize", "radius"]) {

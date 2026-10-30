@@ -27,14 +27,24 @@ const SAFE = 0.66 // Android adaptive safe-zone fraction
 // edges over cream. Returns an opaque RGBA PNG buffer the emitters fit/center on a cream canvas.
 /** @param {string} srcPath */
 async function normalizeToCream(srcPath) {
-  const { data, info } = await sharp(srcPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { data, info } = await sharp(srcPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
   const ch = info.channels // 4
   for (let i = 0; i < data.length; i += ch) {
-    const r = data.readUInt8(i), g = data.readUInt8(i + 1), b = data.readUInt8(i + 2), a = data.readUInt8(i + 3)
-    const lo = Math.min(r, g, b), hi = Math.max(r, g, b)
+    const r = data.readUInt8(i),
+      g = data.readUInt8(i + 1),
+      b = data.readUInt8(i + 2),
+      a = data.readUInt8(i + 3)
+    const lo = Math.min(r, g, b),
+      hi = Math.max(r, g, b)
     if (a < 16 || (hi - lo <= 16 && lo >= 218)) {
       // transparent OR low-chroma very-light = background -> cream
-      data[i] = CR; data[i + 1] = CG; data[i + 2] = CB; data[i + 3] = 255
+      data[i] = CR
+      data[i + 1] = CG
+      data[i + 2] = CB
+      data[i + 3] = 255
     } else if (a < 255) {
       // semi-transparent edge -> composite over cream
       const af = a / 255
@@ -44,14 +54,18 @@ async function normalizeToCream(srcPath) {
       data[i + 3] = 255
     }
   }
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: ch } }).png().toBuffer()
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: ch } })
+    .png()
+    .toBuffer()
 }
 
 // (1) iOS marketing icon: contained + centered on cream, FLATTENED no-alpha (channels 3).
 /** @param {Buffer} srcBuf */
 async function genIcon(srcBuf) {
   const inner = Math.round(ICON * ICON_PAD)
-  const fitted = await sharp(srcBuf).resize(inner, inner, { fit: "contain", background: CREAM }).toBuffer()
+  const fitted = await sharp(srcBuf)
+    .resize(inner, inner, { fit: "contain", background: CREAM })
+    .toBuffer()
   await sharp({ create: { width: ICON, height: ICON, channels: 3, background: CREAM } })
     .composite([{ input: fitted, gravity: "center" }])
     .flatten({ background: CREAM })
@@ -66,7 +80,9 @@ async function genIcon(srcBuf) {
 /** @param {Buffer} srcBuf */
 async function genAdaptive(srcBuf) {
   const safe = Math.round(ICON * SAFE)
-  const fitted = await sharp(srcBuf).resize(safe, safe, { fit: "contain", background: CREAM }).toBuffer()
+  const fitted = await sharp(srcBuf)
+    .resize(safe, safe, { fit: "contain", background: CREAM })
+    .toBuffer()
   await sharp({ create: { width: ICON, height: ICON, channels: 4, background: CREAM } })
     .composite([{ input: fitted, gravity: "center" }])
     .png()

@@ -91,7 +91,10 @@ export function useNotificationPrefs() {
 // The optimistic write spreads the patch over the cached prefs, so an explicit `undefined` would blank a
 // field the server leaves unchanged.
 type NotificationPrefsPatch = {
-  [K in keyof UpdateNotificationPrefsRequest]?: Exclude<UpdateNotificationPrefsRequest[K], undefined>
+  [K in keyof UpdateNotificationPrefsRequest]?: Exclude<
+    UpdateNotificationPrefsRequest[K],
+    undefined
+  >
 }
 
 export function useUpdateNotificationPrefs() {
@@ -138,7 +141,8 @@ export function useUpdatePrivacySettings() {
 
   return useMutation<UpdateSettingsResponse, unknown, PrivacySettingsVars, PrivacySettingsCtx>({
     scope: { id: "me-settings" },
-    mutationFn: (next) => api.updateSettings(privacySettingsPatch(next) satisfies UpdateSettingsRequest),
+    mutationFn: (next) =>
+      api.updateSettings(privacySettingsPatch(next) satisfies UpdateSettingsRequest),
     onMutate: (next) => {
       const current = userRef.current
       if (!current || !onUserUpdated) return {}
@@ -166,12 +170,16 @@ export function useUpdatePrivacySettings() {
       onUserUpdated?.(res.user)
       qc.setQueryData<GetProfileResponse>(queryKeys.myProfile, (prev) =>
         prev
-          ? { ...prev, profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours } }
+          ? {
+              ...prev,
+              profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours },
+            }
           : prev,
       )
       void qc.invalidateQueries({ queryKey: queryKeys.myProfile })
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
-      if (res.user.handle) void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
+      if (res.user.handle)
+        void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
       if (privacySettingsPatch(next).primaryOrganizationId !== undefined) {
         void qc.invalidateQueries({ queryKey: queryKeys.postsRoot })
         void qc.invalidateQueries({ queryKey: queryKeys.postRoot })

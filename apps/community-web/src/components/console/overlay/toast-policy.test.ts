@@ -24,7 +24,8 @@ describe("toast policy", () => {
 
   it("never grows past the cap", () => {
     let items: Item[] = []
-    for (let i = 0; i < MAX_TOASTS * 3; i += 1) items = withinCap(items, { id: `t${i}` }, MAX_TOASTS)
+    for (let i = 0; i < MAX_TOASTS * 3; i += 1)
+      items = withinCap(items, { id: `t${i}` }, MAX_TOASTS)
     expect(items).toHaveLength(MAX_TOASTS)
     expect(items[items.length - 1]?.id).toBe(`t${MAX_TOASTS * 3 - 1}`)
   })

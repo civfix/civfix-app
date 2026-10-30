@@ -40,9 +40,16 @@ export function flyToTargetOffMap(
   return nodes.some((node) => markerNodeIsActive(node, pinId, cleanupId)) ? null : highlight
 }
 
-export type MarkerLabelT = { (key: string): string; (key: string, options: Record<string, unknown>): string }
+export type MarkerLabelT = {
+  (key: string): string
+  (key: string, options: Record<string, unknown>): string
+}
 
-function reportMarkerLabel(category: string, title: string | null | undefined, t: MarkerLabelT): string {
+function reportMarkerLabel(
+  category: string,
+  title: string | null | undefined,
+  t: MarkerLabelT,
+): string {
   const categoryLabel = t(`enums:category.${category}`)
   const named = title?.trim()
   return named
@@ -50,7 +57,11 @@ function reportMarkerLabel(category: string, title: string | null | undefined, t
     : t("a11y.reportPinUntitled", { category: categoryLabel })
 }
 
-function eventMarkerLabel(eventKind: EventKind, title: string | null | undefined, t: MarkerLabelT): string {
+function eventMarkerLabel(
+  eventKind: EventKind,
+  title: string | null | undefined,
+  t: MarkerLabelT,
+): string {
   const kindLabel = t(`enums:eventKind.${eventKind}`)
   const named = title?.trim()
   return named

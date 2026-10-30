@@ -23,7 +23,9 @@ const analytics = read("../analytics/FunnelSection.tsx")
 describe("the audience picker's radios", () => {
   it("announce checked, like every other radio in the package", () => {
     expect(announce).toContain('accessibilityRole="radio"')
-    expect(announce).toContain("accessibilityState={{ checked: selected, disabled: create.isPending }}")
+    expect(announce).toContain(
+      "accessibilityState={{ checked: selected, disabled: create.isPending }}",
+    )
     expect(announce).not.toContain("accessibilityState={{ selected, disabled: create.isPending }}")
   })
 })
@@ -59,8 +61,12 @@ describe("the terms consent row", () => {
   })
 
   it("puts Terms and Privacy Policy in focusable links beside it", () => {
-    expect(consent).toContain('<TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>')
-    expect(consent).toContain('<TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>')
+    expect(consent).toContain(
+      '<TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>',
+    )
+    expect(consent).toContain(
+      '<TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>',
+    )
   })
 })
 
@@ -72,7 +78,9 @@ describe("registration questions", () => {
   })
 
   it("label the multi-select options as one group, as the single-select radiogroup is", () => {
-    expect(questions).toContain('<View style={styles.options} role="group" accessibilityLabel={promptA11y}>')
+    expect(questions).toContain(
+      '<View style={styles.options} role="group" accessibilityLabel={promptA11y}>',
+    )
   })
 })
 
@@ -85,6 +93,8 @@ describe("the ticket-type capacity bar", () => {
 
 describe("the analytics funnel", () => {
   it("labels a group rather than a plain view no platform announces", () => {
-    expect(analytics).toContain('<View style={styles.block} role="group" accessibilityLabel={t("funnel.a11y")}>')
+    expect(analytics).toContain(
+      '<View style={styles.block} role="group" accessibilityLabel={t("funnel.a11y")}>',
+    )
   })
 })

@@ -96,14 +96,21 @@ const BODY_RENDERERS: Record<BodyId, BodyRenderer> = {
       {...(entry?.jumpToMessageId ? { jumpToMessageId: entry.jumpToMessageId } : {})}
     />
   ),
-  pinnedMessages: (entry) => <ConversationBody id={idOf(entry)} roomKind={roomKindOf(entry)} pinnedOnly />,
+  pinnedMessages: (entry) => (
+    <ConversationBody id={idOf(entry)} roomKind={roomKindOf(entry)} pinnedOnly />
+  ),
   newGroup: () => <NewGroupBody />,
   newChannel: () => <NewChannelBody />,
   groupInfo: (entry) => <GroupInfoBody id={idOf(entry)} />,
   reportFlow: () => <ReportFlowBody />,
-  clusterReports: (entry) => <ClusterReportsBody reports={entry?.reports ?? []} event={entry?.event ?? null} />,
+  clusterReports: (entry) => (
+    <ClusterReportsBody reports={entry?.reports ?? []} event={entry?.event ?? null} />
+  ),
   connections: (entry) => (
-    <ConnectionsBody id={idOf(entry)} mode={entry?.kind === "following" ? "following" : "followers"} />
+    <ConnectionsBody
+      id={idOf(entry)}
+      mode={entry?.kind === "following" ? "following" : "followers"}
+    />
   ),
   leaderboard: (entry) => <LeaderboardBody geoid={entry?.geoid ?? ""} />,
   members: (entry) => <MembersBody id={idOf(entry)} roomKind={roomKindOf(entry)} />,
@@ -119,21 +126,29 @@ const BODY_RENDERERS: Record<BodyId, BodyRenderer> = {
   post: (entry) => <PostDetailBody id={idOf(entry)} />,
   saves: () => <SavedPostsBody />,
   postThread: (entry) => <PostThreadBody id={idOf(entry)} />,
-  postComposer: (entry) => <PostComposer mode={entry?.composerMode ?? "post"} targetPostId={entry?.targetPostId} />,
+  postComposer: (entry) => (
+    <PostComposer mode={entry?.composerMode ?? "post"} targetPostId={entry?.targetPostId} />
+  ),
   dropPin: (entry) => <DropPinBody lat={entry?.lat ?? null} lng={entry?.lng ?? null} />,
   hostMode: (entry) => <HostModeBody id={idOf(entry)} />,
   hostCheckin: (entry) => <HostCheckinBody id={idOf(entry)} />,
   hostAnnounce: (entry) => <HostAnnounceBody id={idOf(entry)} />,
   hostTeam: (entry) => <HostTeamBody id={idOf(entry)} />,
   hostLogHours: (entry) => <HostLogHoursBody id={idOf(entry)} />,
-  myTicket: (entry) => <MyTicketBody id={idOf(entry)} {...(entry?.seatId ? { seatId: entry.seatId } : {})} />,
+  myTicket: (entry) => (
+    <MyTicketBody id={idOf(entry)} {...(entry?.seatId ? { seatId: entry.seatId } : {})} />
+  ),
   orgPage: (entry) => <OrgPageBody slug={entry?.slug ?? ""} />,
   orgManage: (entry) => <OrgManageBody slug={entry?.slug ?? ""} />,
   eventDashboard: () => <EventDashboardBody />,
   eventAnalytics: (entry) => <EventAnalyticsBody id={idOf(entry)} />,
   announcements: (entry) => <AnnouncementsBody id={idOf(entry)} />,
-  announcement: (entry) => <AnnouncementBody id={idOf(entry)} announcementId={entry?.announcementId ?? ""} />,
-  stub: (entry) => <Stub label={entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"} />,
+  announcement: (entry) => (
+    <AnnouncementBody id={idOf(entry)} announcementId={entry?.announcementId ?? ""} />
+  ),
+  stub: (entry) => (
+    <Stub label={entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"} />
+  ),
 }
 
 export interface BodyRouterProps {

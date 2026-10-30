@@ -1,15 +1,15 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, focusRingProps, webScrimProps, pointerEventStyles } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
 import {
-  EmptyState,
-  LoadingState,
-  PrimaryButton,
-  SecondaryButton,
-  useToast,
-} from "../primitives"
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webScrimProps,
+  pointerEventStyles,
+} from "../theme"
+import { Text, Icon, iconMap } from "../typography"
+import { EmptyState, LoadingState, PrimaryButton, SecondaryButton, useToast } from "../primitives"
 import {
   useCleanup,
   useCleanupAttendees,
@@ -34,10 +34,7 @@ import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSur
 import { chatInfoRosterView } from "./chatInfoVisibility"
 import { FeedNotice } from "./FeedNotice"
 import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
-import {
-  settableRolesOtherThan,
-  type SettableEventMemberRole,
-} from "../data/eventTeamTiers"
+import { settableRolesOtherThan, type SettableEventMemberRole } from "../data/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
 import { SlotGroupHeader } from "./SlotGroupHeader"
 
@@ -252,7 +249,7 @@ export function MembersBody({
         ? (groupPages?.pages ?? []).flatMap((p) => p.members.map((m) => m.user))
         : roomKind === "report"
           ? (reportRoster?.participants ?? []).map((p) => p.user)
-          : attendeeRoster?.attendees ?? [],
+          : (attendeeRoster?.attendees ?? []),
     [roomKind, groupPages, reportRoster, attendeeRoster],
   )
   const viewerId = useAuthState().user?.id ?? null
@@ -446,14 +443,14 @@ export function MembersBody({
   const infoHeader = isInfoSurface ? (
     <View>
       <ChatInfoHero
-        imageUrl={roomKind === "report" ? report?.media?.[0]?.url ?? null : null}
+        imageUrl={roomKind === "report" ? (report?.media?.[0]?.url ?? null) : null}
         glyph={roomKind === "report" ? "MapPin" : "Calendar"}
         title={
           roomKind === "report"
             ? report?.title?.trim() || t("hero.report_fallback")
-            : cleanup?.title ?? ""
+            : (cleanup?.title ?? "")
         }
-        subtitle={roomKind === "report" ? report?.addr ?? null : cleanup?.address ?? null}
+        subtitle={roomKind === "report" ? (report?.addr ?? null) : (cleanup?.address ?? null)}
         subtitleLines={2}
         memberLine={
           roster.access === "followed-only"
@@ -493,94 +490,94 @@ export function MembersBody({
 
   return (
     <>
-    <FlatList
-      data={data}
-      keyExtractor={rosterItemKey}
-      style={styles.list}
-      contentContainerStyle={
-        data.length === 0 && !isInfoSurface ? styles.listEmpty : styles.listContent
-      }
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      onEndReachedThreshold={0.4}
-      onEndReached={() => {
-        if (roomKind === "group" && groupQuery.hasNextPage && !groupQuery.isFetchingNextPage) {
-          void groupQuery.fetchNextPage()
+      <FlatList
+        data={data}
+        keyExtractor={rosterItemKey}
+        style={styles.list}
+        contentContainerStyle={
+          data.length === 0 && !isInfoSurface ? styles.listEmpty : styles.listContent
         }
-      }}
-      renderItem={renderItem}
-      ListHeaderComponent={infoHeader}
-      ListEmptyComponent={
-        query.isLoading ? (
-          <LoadingState skeleton="person" rows={8} />
-        ) : query.isError ? (
-          <EmptyState
-            variant="detail"
-            tone="neutral"
-            icon={iconMap.CloudOff}
-            iconColor={th.colors.textSubtle}
-            iconSize={30}
-            title={t("error.title")}
-            body={t("error.body")}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.4}
+        onEndReached={() => {
+          if (roomKind === "group" && groupQuery.hasNextPage && !groupQuery.isFetchingNextPage) {
+            void groupQuery.fetchNextPage()
+          }
+        }}
+        renderItem={renderItem}
+        ListHeaderComponent={infoHeader}
+        ListEmptyComponent={
+          query.isLoading ? (
+            <LoadingState skeleton="person" rows={8} />
+          ) : query.isError ? (
+            <EmptyState
+              variant="detail"
+              tone="neutral"
+              icon={iconMap.CloudOff}
+              iconColor={th.colors.textSubtle}
+              iconSize={30}
+              title={t("error.title")}
+              body={t("error.body")}
+            />
+          ) : roster.access === "followed-only" ? (
+            <EmptyState
+              variant="detail"
+              tone="neutral"
+              icon={iconMap.Lock}
+              iconColor={th.colors.textSubtle}
+              iconSize={30}
+              title={t("restricted.title")}
+              body={t("restricted.empty_body")}
+            />
+          ) : (
+            <EmptyState
+              variant="detail"
+              icon={iconMap.Users}
+              title={t("empty.title")}
+              body={t("empty.body")}
+            />
+          )
+        }
+      />
+      <Modal
+        visible={leaveOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLeaveOpen(false)}
+      >
+        <View style={styles.modalRoot}>
+          <Pressable
+            style={styles.backdrop}
+            accessibilityRole="button"
+            accessibilityLabel={t("leave.dismiss")}
+            onPress={() => setLeaveOpen(false)}
+            {...webScrimProps}
           />
-        ) : roster.access === "followed-only" ? (
-          <EmptyState
-            variant="detail"
-            tone="neutral"
-            icon={iconMap.Lock}
-            iconColor={th.colors.textSubtle}
-            iconSize={30}
-            title={t("restricted.title")}
-            body={t("restricted.empty_body")}
-          />
-        ) : (
-          <EmptyState
-            variant="detail"
-            icon={iconMap.Users}
-            title={t("empty.title")}
-            body={t("empty.body")}
-          />
-        )
-      }
-    />
-    <Modal
-      visible={leaveOpen}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setLeaveOpen(false)}
-    >
-      <View style={styles.modalRoot}>
-        <Pressable
-          style={styles.backdrop}
-          accessibilityRole="button"
-          accessibilityLabel={t("leave.dismiss")}
-          onPress={() => setLeaveOpen(false)}
-          {...webScrimProps}
-        />
-        <View style={[styles.modalCenter, pointerEventStyles["box-none"]]}>
-          <View style={styles.card}>
-            <Text variant="bodyStrong" color={th.colors.text}>
-              {t("action.leave")}
-            </Text>
-            <Text style={styles.confirmBody}>{t("leave.confirm")}</Text>
-            <View style={styles.cardActions}>
-              <SecondaryButton
-                label={t("leave.cancel")}
-                onPress={() => setLeaveOpen(false)}
-                size="sm"
-              />
-              <PrimaryButton
-                label={t("leave.action")}
-                variant="destructive"
-                onPress={onConfirmLeave}
-                loading={leaveReportChat.isPending}
-                disabled={leaveReportChat.isPending}
-              />
+          <View style={[styles.modalCenter, pointerEventStyles["box-none"]]}>
+            <View style={styles.card}>
+              <Text variant="bodyStrong" color={th.colors.text}>
+                {t("action.leave")}
+              </Text>
+              <Text style={styles.confirmBody}>{t("leave.confirm")}</Text>
+              <View style={styles.cardActions}>
+                <SecondaryButton
+                  label={t("leave.cancel")}
+                  onPress={() => setLeaveOpen(false)}
+                  size="sm"
+                />
+                <PrimaryButton
+                  label={t("leave.action")}
+                  variant="destructive"
+                  onPress={onConfirmLeave}
+                  loading={leaveReportChat.isPending}
+                  disabled={leaveReportChat.isPending}
+                />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
     </>
   )
 }

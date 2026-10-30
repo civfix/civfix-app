@@ -1,10 +1,13 @@
 import type { Snap, View } from "../nav"
 import { MOTION } from "../theme/motion"
 import { clamp01 } from "../math/clamp"
-import { DOCK_H, DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../surface/liquidGlass/liquidGlassModel"
+import {
+  DOCK_H,
+  DOCK_MORPH_SHRINK,
+  DOCK_MORPH_TOP_OFFSET,
+} from "../surface/liquidGlass/liquidGlassModel"
 
 export type TabId = "home" | "map" | "messages" | "report"
-
 
 export const DOCK_MOUNT_MS = MOTION.dockMount.duration
 export const DOCK_MOUNT_SCALE_FROM = 0.92
@@ -101,10 +104,7 @@ export function compactBottomChrome(view: View): "tabs" | "docked-search" {
   return view === "search" ? "docked-search" : "tabs"
 }
 
-export function initialTabBarFootprint(
-  platform: "native" | "web",
-  safeAreaBottom = 0,
-): number {
+export function initialTabBarFootprint(platform: "native" | "web", safeAreaBottom = 0): number {
   const bottomPadding =
     platform === "native"
       ? TAB_BAR_NATIVE_BOTTOM_PADDING + Math.max(0, safeAreaBottom)
@@ -134,14 +134,12 @@ export function windowProgress(progress: number, start: number, end: number): nu
   return clamp01((progress - start) / (end - start))
 }
 
-
 export const SCHEDULE = {
   tabIcon: [0, 0.4] as const,
   travel: [0.2, 0.95] as const,
   placeholder: [0.85, 1.0] as const,
   clear: [0.7, 1.0] as const,
 } as const
-
 
 export function tabIconMorph(progress: number): { opacity: number; blur: number } {
   "worklet"
@@ -195,7 +193,10 @@ export const SHEET_REF_PEEK = 96
 export const SHEET_REF_MID = 470
 export const SHEET_REF_FULL = 786
 
-export function sheetSnapPoints(windowHeight: number, topReserve: number): [number, number, number] {
+export function sheetSnapPoints(
+  windowHeight: number,
+  topReserve: number,
+): [number, number, number] {
   const scale = windowHeight / SHEET_REF_SCREEN
   const maxFull = windowHeight - topReserve
   const peek = Math.round(SHEET_REF_PEEK)
@@ -267,5 +268,7 @@ export function searchRiseTransition({
   coarsePointer: boolean
   reduceMotion: boolean
 }): string {
-  return coarsePointer || reduceMotion ? "none" : `transform ${TAB_ANIMATION_MS}ms ${TAB_EASING_CSS}`
+  return coarsePointer || reduceMotion
+    ? "none"
+    : `transform ${TAB_ANIMATION_MS}ms ${TAB_EASING_CSS}`
 }

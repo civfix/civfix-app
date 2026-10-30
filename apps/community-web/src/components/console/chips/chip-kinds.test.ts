@@ -1,4 +1,9 @@
-import { CHIP_HUE_NAMES, chipHuePairs, contrastRatio, MIN_CHIP_RATIO } from "@civfix/tokens/chip-contrast"
+import {
+  CHIP_HUE_NAMES,
+  chipHuePairs,
+  contrastRatio,
+  MIN_CHIP_RATIO,
+} from "@civfix/tokens/chip-contrast"
 import { colorSchemes } from "@civfix/tokens"
 import type { ColorSchemeName } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
@@ -61,9 +66,7 @@ describe("console chip registry", () => {
         expect(pair.text.toUpperCase(), `${scheme} ${fixture.name} text`).toBe(
           fixture.text.toUpperCase(),
         )
-        expect(pair.bg.toUpperCase(), `${scheme} ${fixture.name} bg`).toBe(
-          fixture.bg.toUpperCase(),
-        )
+        expect(pair.bg.toUpperCase(), `${scheme} ${fixture.name} bg`).toBe(fixture.bg.toUpperCase())
       }
     }
   })
@@ -93,7 +96,10 @@ describe("console chip registry", () => {
       for (const [value, entry] of Object.entries(family as Record<string, ChipKindEntry>)) {
         const signature = `${entry.hue}|${entry.icon.displayName ?? entry.icon.name}`
         const previous = seen.get(signature)
-        expect(previous, `${kind}.${value} duplicates ${kind}.${previous ?? "nothing"}`).toBeUndefined()
+        expect(
+          previous,
+          `${kind}.${value} duplicates ${kind}.${previous ?? "nothing"}`,
+        ).toBeUndefined()
         seen.set(signature, value)
       }
     }

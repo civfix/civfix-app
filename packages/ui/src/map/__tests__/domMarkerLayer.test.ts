@@ -91,7 +91,14 @@ const { syncMarkers } = await import("../domMarkerLayer.web")
 const map = {} as never
 
 function want(signature: string, extra: Partial<Desired> = {}): Desired {
-  return { signature, anchor: "bottom", lngLat: [1, 2], node: signature, label: `pin ${signature}`, ...extra }
+  return {
+    signature,
+    anchor: "bottom",
+    lngLat: [1, 2],
+    node: signature,
+    label: `pin ${signature}`,
+    ...extra,
+  }
 }
 
 beforeEach(() => {
@@ -120,12 +127,26 @@ async function flushMicrotasks() {
 describe("syncMarkers", () => {
   it("re-renders a changed signature into the same element, root and marker", async () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["r:1", want("a|light")], ["r:2", want("b|light")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|light")],
+        ["r:2", want("b|light")],
+      ]),
+    )
     expect(created).toEqual({ elements: 2, roots: 2, markers: 2 })
     const first = current.get("r:1")
     const el = first?.marker.getElement() as unknown as FakeEl
 
-    syncMarkers(map, current, new Map([["r:1", want("a|dark")], ["r:2", want("b|dark")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|dark")],
+        ["r:2", want("b|dark")],
+      ]),
+    )
     await flushMicrotasks()
     expect(created).toEqual({ elements: 2, roots: 2, markers: 2 })
     expect(unmounted).toEqual([])
@@ -140,7 +161,11 @@ describe("syncMarkers", () => {
     const pressB = vi.fn()
     syncMarkers(map, current, new Map([["r:1", want("a", { onClick: pressA })]]))
     const entry = current.get("r:1")
-    syncMarkers(map, current, new Map([["r:1", want("a", { onClick: pressB, lngLat: [3, 4], label: "moved" })]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([["r:1", want("a", { onClick: pressB, lngLat: [3, 4], label: "moved" })]]),
+    )
     expect(renders).toHaveLength(1)
     expect(entry?.onClick.fn).toBe(pressB)
     expect((entry?.marker.getElement() as unknown as FakeEl).attrs.get("aria-label")).toBe("moved")
@@ -168,19 +193,45 @@ describe("syncMarkers", () => {
 
   it("moves a re-rendered marker to the top of the stack, where a rebuilt one used to land", () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["r:1", want("a|0")], ["r:2", want("b|0")], ["r:3", want("c|0")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|0")],
+        ["r:2", want("b|0")],
+        ["r:3", want("c|0")],
+      ]),
+    )
     const elOf = (key: string) => current.get(key)?.marker.getElement() as unknown as FakeEl
-    const order = () => container.children.map((el) => [...current].find(([, e]) => e.marker.getElement() === (el as never))?.[0])
+    const order = () =>
+      container.children.map(
+        (el) => [...current].find(([, e]) => e.marker.getElement() === (el as never))?.[0],
+      )
     expect(order()).toEqual(["r:1", "r:2", "r:3"])
 
-    syncMarkers(map, current, new Map([["r:1", want("a|1")], ["r:2", want("b|0")], ["r:3", want("c|0")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|1")],
+        ["r:2", want("b|0")],
+        ["r:3", want("c|0")],
+      ]),
+    )
     expect(order()).toEqual(["r:2", "r:3", "r:1"])
     expect(elOf("r:1").parentNode).toBe(container)
   })
 
   it("rebuilds a marker whose anchor changed and drops one no longer wanted", async () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["k", want("a")], ["gone", want("g")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["k", want("a")],
+        ["gone", want("g")],
+      ]),
+    )
     const before = current.get("k")
     syncMarkers(map, current, new Map([["k", want("a", { anchor: "center" })]]))
     await flushMicrotasks()

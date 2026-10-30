@@ -4,7 +4,8 @@ import { DEFAULT_ATTRIBUTION } from "../mapStyle"
 
 // Map seams and RN surfaces cannot render in node, so these fixes are pinned by source.
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
-const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
+const code = (src: string) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1")
 
 const webPicker = code(read("../LocationPicker.web.tsx"))
 const nativePicker = code(read("../LocationPicker.native.tsx"))
@@ -29,7 +30,10 @@ describe("the main-map picker mirrors an external value instead of reverting it"
 
 describe("the native picker's value effect has no side effects inside a state updater", () => {
   it("decides and flies in the effect body, then sets plain state", () => {
-    const effect = /useEffect\(\(\) => \{\n\s+if \(!value\) \{[\s\S]*?\}, \[value, cameraSeed\]\)/.exec(nativePicker)?.[0] ?? ""
+    const effect =
+      /useEffect\(\(\) => \{\n\s+if \(!value\) \{[\s\S]*?\}, \[value, cameraSeed\]\)/.exec(
+        nativePicker,
+      )?.[0] ?? ""
     expect(effect).not.toBe("")
     expect(effect).not.toContain("setPicked((")
     expect(effect).toContain("const prev = pickedRef.current")
@@ -42,7 +46,9 @@ describe("the report picker's native pins do not wait for a camera move after ge
   it("falls back to a seed-zoom query instead of swallowing the rejection", () => {
     expect(reportPickNative).not.toContain(".catch(() => undefined)")
     expect(reportPickNative).toContain(".catch(() => runner.request())")
-    expect(reportPickNative).toContain("if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))")
+    expect(reportPickNative).toContain(
+      "if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))",
+    )
   })
 })
 
@@ -80,7 +86,9 @@ describe("the expanded map header's profile entry", () => {
 
   it("continues to the profile after sign-in, like the compact header's button", () => {
     expect(controls).not.toContain("requireAuth(() => {})")
-    expect(controls).toContain('requireAuth(() => useNavStore.getState().push({ kind: "profile" }))')
+    expect(controls).toContain(
+      'requireAuth(() => useNavStore.getState().push({ kind: "profile" }))',
+    )
   })
 
   it("uses the translated fallback name", () => {

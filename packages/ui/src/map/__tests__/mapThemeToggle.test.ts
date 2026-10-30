@@ -33,7 +33,9 @@ describe("MapThemeToggle", () => {
   })
 
   it("reuses the shared AppearanceOptionList so the options and the copy have ONE source", () => {
-    expect(source).toContain('import { AppearanceOptionList } from "../bodies/AppearanceOptionList"')
+    expect(source).toContain(
+      'import { AppearanceOptionList } from "../bodies/AppearanceOptionList"',
+    )
     expect(source).toContain("<AppearanceOptionList />")
     expect(source).not.toContain("setAppearancePreference(")
     expect(source).not.toMatch(/APPEARANCE_PREFERENCES/)

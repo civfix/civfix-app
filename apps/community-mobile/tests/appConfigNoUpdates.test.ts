@@ -7,7 +7,9 @@ const appConfig = appConfigFactory({ config: {} })
 test("T5: the app config declares no OTA updates and no expo-updates plugin", () => {
   assert.equal("updates" in appConfig, false)
   assert.equal("runtimeVersion" in appConfig, false)
-  const names = appConfig.plugins.map((entry): unknown => (Array.isArray(entry) ? (entry as unknown[])[0] : entry))
+  const names = appConfig.plugins.map((entry): unknown =>
+    Array.isArray(entry) ? (entry as unknown[])[0] : entry,
+  )
   assert.equal(names.includes("expo-updates"), false)
 })
 

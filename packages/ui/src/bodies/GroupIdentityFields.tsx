@@ -60,7 +60,11 @@ export function GroupIdentityFields({
           {picked ? (
             <Image source={{ uri: picked.uri }} style={styles.avatarImage} resizeMode="cover" />
           ) : fallbackAvatarUrl ? (
-            <Image source={{ uri: fallbackAvatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+            <Image
+              source={{ uri: fallbackAvatarUrl }}
+              style={styles.avatarImage}
+              resizeMode="cover"
+            />
           ) : (
             <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={th.colors.onAccent} />
           )}

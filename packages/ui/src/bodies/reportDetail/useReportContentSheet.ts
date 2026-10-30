@@ -10,12 +10,15 @@ export function useReportContentSheet(reportId: string) {
   const sheet = useContentReportSheet({ submittedToast: t("content_report.submitted_toast") })
   const { open } = sheet
   const onReportPhoto = useCallback(
-    (mediaId: string) => open({ subjectType: "photo", subjectId: mediaId, label: t("subject_label.photo") }),
+    (mediaId: string) =>
+      open({ subjectType: "photo", subjectId: mediaId, label: t("subject_label.photo") }),
     [open, t],
   )
   const onReportGalleryPhoto = useCallback(
     (mediaId: string) =>
-      requireAuth(() => onReportPhoto(mediaId), { next: pathForEntry({ kind: "pin", id: reportId }) }),
+      requireAuth(() => onReportPhoto(mediaId), {
+        next: pathForEntry({ kind: "pin", id: reportId }),
+      }),
     [onReportPhoto, requireAuth, reportId],
   )
 

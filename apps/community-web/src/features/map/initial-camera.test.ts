@@ -63,7 +63,9 @@ describe("the resolved centre is the only centre", () => {
 
 describe("the camera adoption effect", () => {
   it("reads the published focus and gives the camera up to it", () => {
-    expect(adoptEffect).toContain("if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return")
+    expect(adoptEffect).toContain(
+      "if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return",
+    )
     expect(code).toContain("useMapFocus,")
   })
 
@@ -92,7 +94,9 @@ describe("the camera adoption effect", () => {
   })
 
   it("resolves the centre together with its prompt answer, and latches the answer before the centre lands", () => {
-    const mount = code.slice(code.indexOf("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()"))
+    const mount = code.slice(
+      code.indexOf("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()"),
+    )
     const latch = mount.indexOf("promptGrantRef.current = prompted")
     const land = mount.indexOf("setPreciseCenter(precise)")
     expect(code).toContain("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()")
@@ -148,7 +152,10 @@ describe("the persisted boot camera", () => {
   it("persists every settled region (before the fetch decision) so the next boot lands there", () => {
     const settle = code.slice(
       code.indexOf("const onRegionChange = React.useCallback("),
-      code.indexOf("React.useEffect(() => {", code.indexOf("const onRegionChange = React.useCallback(")),
+      code.indexOf(
+        "React.useEffect(() => {",
+        code.indexOf("const onRegionChange = React.useCallback("),
+      ),
     )
     const write = settle.indexOf("writeCameraSnapshot(viewport, zoom)")
     const decide = settle.indexOf("decideRegionFetch(")

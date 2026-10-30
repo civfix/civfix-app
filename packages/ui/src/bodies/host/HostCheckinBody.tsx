@@ -9,7 +9,12 @@ import { cleanupHostStanding, hasHostCapability, useHostCounters } from "../../d
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { rosterListKey } from "../rosterSlotGroups"
-import { CheckinCounters, CheckinResultCard, OutboxBanner, ReplayReportCard } from "./checkin/CheckinDeskCards"
+import {
+  CheckinCounters,
+  CheckinResultCard,
+  OutboxBanner,
+  ReplayReportCard,
+} from "./checkin/CheckinDeskCards"
 import { ManualCodeEntry } from "./checkin/CheckinManualEntry"
 import { HostBodyState } from "./HostBodyState"
 import { CheckinRosterSection } from "./checkin/CheckinRosterSection"
@@ -81,7 +86,9 @@ export function HostCheckinBody({ id }: { id: string }) {
             />
           ) : null}
 
-          {outbox.report ? <ReplayReportCard report={outbox.report} onDismiss={outbox.dismissReport} /> : null}
+          {outbox.report ? (
+            <ReplayReportCard report={outbox.report} onDismiss={outbox.dismissReport} />
+          ) : null}
 
           {desk.state ? (
             <CheckinResultCard

@@ -17,7 +17,9 @@ describe("the public signup page's add-to-calendar", () => {
   })
 
   it("carries the fields that make a shared uid safe - it can say CANCELLED, which a ticket-only build cannot", () => {
-    expect(source).toContain('status: page.event.status === "cancelled" ? "CANCELLED" : "CONFIRMED"')
+    expect(source).toContain(
+      'status: page.event.status === "cancelled" ? "CANCELLED" : "CONFIRMED"',
+    )
     expect(source).toContain("description: page.event.description")
   })
 

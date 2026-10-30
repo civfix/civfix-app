@@ -1,7 +1,15 @@
 import { memo, useCallback, useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { NotificationDTO, NotificationType } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webHover, webTransition, type Theme } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useLayoutMode,
+  useTheme,
+  webHover,
+  webTransition,
+  type Theme,
+} from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
 import { useNotifications, useMarkNotificationsRead, useAuthState, useRequireAuth } from "../data"
@@ -12,7 +20,10 @@ import { useT } from "../i18n"
 import { idKeyExtractor } from "../primitives/listKeys"
 import { useListTimeAgo } from "./useListTimeAgo"
 
-function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: string; tint: string } {
+function typeMeta(
+  type: NotificationType,
+  t: Theme,
+): { glyph: IconName; color: string; tint: string } {
   switch (type) {
     case "report_update":
       return { glyph: "MapPin", color: t.colors.brand.sky, tint: t.colors.sky["50"] }
@@ -63,9 +74,11 @@ const NotificationRow = memo(function NotificationRow({
     <Pressable
       onPress={press}
       accessibilityRole="button"
-      accessibilityLabel={item.read
-        ? [item.title, ...a11yDetails].join(", ")
-        : [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")}
+      accessibilityLabel={
+        item.read
+          ? [item.title, ...a11yDetails].join(", ")
+          : [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")
+      }
       {...focusRingProps}
       style={(state) => [
         styles.row,

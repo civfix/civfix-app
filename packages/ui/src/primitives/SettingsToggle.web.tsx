@@ -1,5 +1,13 @@
 import { Pressable, View } from "react-native"
-import { makeThemedStyles, motion, useReducedMotion, useTheme, webCursor, focusRingProps, webStyle } from "../theme"
+import {
+  makeThemedStyles,
+  motion,
+  useReducedMotion,
+  useTheme,
+  webCursor,
+  focusRingProps,
+  webStyle,
+} from "../theme"
 import { alpha } from "../theme/alpha"
 import type { SettingsToggleProps } from "./SettingsToggle.types"
 import {

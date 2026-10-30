@@ -50,14 +50,23 @@ function mountPage({ fetchImpl, solveTurnstile }) {
 
   for (const field of doc.querySelectorAll("#coach-form [required]")) {
     if (field instanceof window.HTMLSelectElement) field.selectedIndex = 1
-    else if (field instanceof window.HTMLInputElement || field instanceof window.HTMLTextAreaElement) {
-      field.value = field.type === "email" ? "coach@example.com" : field.type === "tel" ? "5555550100" : "Filled"
+    else if (
+      field instanceof window.HTMLInputElement ||
+      field instanceof window.HTMLTextAreaElement
+    ) {
+      field.value =
+        field.type === "email"
+          ? "coach@example.com"
+          : field.type === "tel"
+            ? "5555550100"
+            : "Filled"
     }
   }
 
   const form = byId(doc, "coach-form")
   const button = form.querySelector("button[type=submit]")
-  if (!(button instanceof window.HTMLButtonElement)) throw new Error("the coach form has no submit button")
+  if (!(button instanceof window.HTMLButtonElement))
+    throw new Error("the coach form has no submit button")
   const submit = () => form.dispatchEvent(new window.Event("submit", { cancelable: true }))
   return {
     status: byId(doc, "form-status"),

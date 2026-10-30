@@ -45,19 +45,22 @@ export function PinBadge({ badge }: { badge: PinBadge }) {
   const fill = badge === "check" ? t.colors.brand.moss : t.colors.brand.bloom
   return (
     <View
-      style={[{
-        position: "absolute",
-        top: -2,
-        right: -2,
-        width: BADGE_SIZE,
-        height: BADGE_SIZE,
-        borderRadius: BADGE_SIZE / 2,
-        backgroundColor: fill,
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1.5,
-        borderColor: t.colors.onAccent,
-      }, pointerEventStyles.none]}
+      style={[
+        {
+          position: "absolute",
+          top: -2,
+          right: -2,
+          width: BADGE_SIZE,
+          height: BADGE_SIZE,
+          borderRadius: BADGE_SIZE / 2,
+          backgroundColor: fill,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1.5,
+          borderColor: t.colors.onAccent,
+        },
+        pointerEventStyles.none,
+      ]}
     >
       <Icon
         icon={badge === "check" ? iconMap.Check : iconMap.Plus}

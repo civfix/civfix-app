@@ -3,10 +3,7 @@ import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import { URL } from "node:url"
 
-const source = readFileSync(
-  new URL("../src/lib/nativeGeolocation.ts", import.meta.url),
-  "utf8",
-)
+const source = readFileSync(new URL("../src/lib/nativeGeolocation.ts", import.meta.url), "utf8")
 
 function memberBody(header: string): string {
   const start = source.indexOf(header)

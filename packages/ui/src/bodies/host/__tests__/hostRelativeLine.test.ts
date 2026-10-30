@@ -37,9 +37,15 @@ describe("the host surfaces never render a relative phrase with nothing in it", 
 
   it("hostRelativeLine routes each relative phrase through the helper", () => {
     const copy = read("../hostModeCopy.ts")
-    expect(copy).toContain("relativeLineFor(relativeUntil(relative, input.startsAt, now), (when) =>")
-    expect(copy).toContain('relativeLineFor(relative(input.scheduledAt, now), (when) => t("phase.started", { when }))')
-    expect(copy).toContain("relativeLineFor(relative(input.endsAt ?? input.scheduledAt, now), (when) =>")
+    expect(copy).toContain(
+      "relativeLineFor(relativeUntil(relative, input.startsAt, now), (when) =>",
+    )
+    expect(copy).toContain(
+      'relativeLineFor(relative(input.scheduledAt, now), (when) => t("phase.started", { when }))',
+    )
+    expect(copy).toContain(
+      "relativeLineFor(relative(input.endsAt ?? input.scheduledAt, now), (when) =>",
+    )
     expect(copy).not.toMatch(/t\("phase\.(starts|started|ended_on)", \{ when: relative/)
   })
 
@@ -58,8 +64,12 @@ describe("the host surfaces never render a relative phrase with nothing in it", 
   it("NextUpCard omits the when line rather than 'in ' with no time", () => {
     const card = read("../dashboard/NextUpCard.tsx")
     expect(card).toContain("relativeLineFor(")
-    expect(card).toContain("relativeLineFor(relativeUntil(relative, Date.parse(event.startsAt), now), (rel) =>")
-    expect(card).not.toMatch(/relative: relativeUntil\(relative, Date\.parse\(event\.startsAt\), now\)/)
+    expect(card).toContain(
+      "relativeLineFor(relativeUntil(relative, Date.parse(event.startsAt), now), (rel) =>",
+    )
+    expect(card).not.toMatch(
+      /relative: relativeUntil\(relative, Date\.parse\(event\.startsAt\), now\)/,
+    )
     expect(card).toMatch(/whenLine !== null \? \(/)
   })
 })

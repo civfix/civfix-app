@@ -237,7 +237,8 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
       },
     })),
 
-  setMedia: (media) => set(replaceDraft((draft) => ({ ...draft, media: media.map(serializeMedia) }))),
+  setMedia: (media) =>
+    set(replaceDraft((draft) => ({ ...draft, media: media.map(serializeMedia) }))),
 
   setMode: (mode) => set(replaceRoute((draft) => ({ ...draft, mode }))),
 
@@ -248,7 +249,8 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
 
   setReplyToPostId: (replyToPostId) => set(replaceRoute((draft) => ({ ...draft, replyToPostId }))),
 
-  restore: (draft) => set((state) => (draft.ownerId === state.viewerId ? { draft: { ...draft } } : state)),
+  restore: (draft) =>
+    set((state) => (draft.ownerId === state.viewerId ? { draft: { ...draft } } : state)),
 
   adoptViewer: (viewerId) =>
     set((state) => {
@@ -258,7 +260,8 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
       return { viewerId, claimedCreate: null, draft: routeOnly(state.draft) }
     }),
 
-  discardViewerDraft: () => set((state) => ({ claimedCreate: null, draft: routeOnly(state.draft) })),
+  discardViewerDraft: () =>
+    set((state) => ({ claimedCreate: null, draft: routeOnly(state.draft) })),
 
   reset: (keep) =>
     set((state) => ({
@@ -311,7 +314,9 @@ export const selectPostComposerDraftHidden = (state: PostComposerState): boolean
   state.draft.ownerId !== null && state.draft.ownerId !== state.viewerId
 
 export const selectPostComposerHasPendingMedia = (state: PostComposerState): boolean =>
-  selectPostComposerDraft(state).media.some((media) => media.status === "pending" || media.status === "uploading")
+  selectPostComposerDraft(state).media.some(
+    (media) => media.status === "pending" || media.status === "uploading",
+  )
 
 /**
  * Whether `draft` is still the cleared slot a submit of `staged` left behind: nothing typed or attached

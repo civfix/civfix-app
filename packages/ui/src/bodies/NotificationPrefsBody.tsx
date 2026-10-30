@@ -120,44 +120,44 @@ export function NotificationPrefsBody() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-        <SectionLabel>{t("push.section")}</SectionLabel>
-        <Toggle
-          label={t("push.label")}
-          helper={t("push.helper")}
-          value={prefs.push}
-          onValueChange={onTogglePush}
-        />
+      <SectionLabel>{t("push.section")}</SectionLabel>
+      <Toggle
+        label={t("push.label")}
+        helper={t("push.helper")}
+        value={prefs.push}
+        onValueChange={onTogglePush}
+      />
 
-        <View style={styles.sectionGap}>
-          <SectionLabel>{t("categories.section")}</SectionLabel>
-          <View style={styles.group}>
-            <Toggle
-              label={t("categories.reportUpdates.label")}
-              helper={t("categories.reportUpdates.helper")}
-              value={prefs.reportUpdates}
-              onValueChange={(v) => onToggle("reportUpdates", v)}
-            />
-            <Toggle
-              label={t("categories.eventChat.label")}
-              helper={t("categories.eventChat.helper")}
-              value={prefs.cleanupChat}
-              onValueChange={(v) => onToggle("cleanupChat", v)}
-            />
-            <Toggle
-              label={t("categories.mentions.label")}
-              helper={t("categories.mentions.helper")}
-              value={prefs.mentions ?? true}
-              onValueChange={(v) => onToggle("mentions", v)}
-            />
-            <Toggle
-              label={t("categories.follows.label")}
-              helper={t("categories.follows.helper")}
-              value={prefs.follows}
-              onValueChange={(v) => onToggle("follows", v)}
-            />
-          </View>
+      <View style={styles.sectionGap}>
+        <SectionLabel>{t("categories.section")}</SectionLabel>
+        <View style={styles.group}>
+          <Toggle
+            label={t("categories.reportUpdates.label")}
+            helper={t("categories.reportUpdates.helper")}
+            value={prefs.reportUpdates}
+            onValueChange={(v) => onToggle("reportUpdates", v)}
+          />
+          <Toggle
+            label={t("categories.eventChat.label")}
+            helper={t("categories.eventChat.helper")}
+            value={prefs.cleanupChat}
+            onValueChange={(v) => onToggle("cleanupChat", v)}
+          />
+          <Toggle
+            label={t("categories.mentions.label")}
+            helper={t("categories.mentions.helper")}
+            value={prefs.mentions ?? true}
+            onValueChange={(v) => onToggle("mentions", v)}
+          />
+          <Toggle
+            label={t("categories.follows.label")}
+            helper={t("categories.follows.helper")}
+            value={prefs.follows}
+            onValueChange={(v) => onToggle("follows", v)}
+          />
         </View>
-      </ScrollView>
+      </View>
+    </ScrollView>
   )
 }
 
@@ -189,5 +189,4 @@ const useStyles = makeThemedStyles((t) => ({
   group: {
     gap: t.space["3"],
   },
-
 }))

@@ -119,8 +119,7 @@ export function EmptyState({
   const { t } = useT("host-common")
   const resolvedTitle =
     title ?? (variant === "filtered" ? t("state.empty_filtered_title") : t("state.empty_title"))
-  const resolvedBody =
-    body ?? (variant === "filtered" ? t("state.empty_filtered_body") : undefined)
+  const resolvedBody = body ?? (variant === "filtered" ? t("state.empty_filtered_body") : undefined)
   return (
     <div
       className={cn(

@@ -79,7 +79,9 @@ describe("clampSidebarWidth", () => {
 
 describe("persist v1 -> v2 migration", () => {
   it("rewrites ONLY the exact old default", () => {
-    expect(migrateSidebarWidth({ width: LEGACY_DEFAULT_WIDTH })).toEqual({ width: SIDEBAR_DEFAULT_WIDTH })
+    expect(migrateSidebarWidth({ width: LEGACY_DEFAULT_WIDTH })).toEqual({
+      width: SIDEBAR_DEFAULT_WIDTH,
+    })
     expect(LEGACY_DEFAULT_WIDTH).toBe(384)
   })
 

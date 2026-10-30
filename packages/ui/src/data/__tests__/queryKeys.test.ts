@@ -32,7 +32,9 @@ describe("queryKeys.myReports", () => {
 describe("queryKeys.profileRoot", () => {
   it("is a prefix of every handle-keyed, uuid-keyed and viewer profile entry", () => {
     expect(isPrefixOf(queryKeys.profileRoot, queryKeys.profile("@ada"))).toBe(true)
-    expect(isPrefixOf(queryKeys.profileRoot, queryKeys.profile("11111111-2222-3333-4444-555555555555"))).toBe(true)
+    expect(
+      isPrefixOf(queryKeys.profileRoot, queryKeys.profile("11111111-2222-3333-4444-555555555555")),
+    ).toBe(true)
     expect(isPrefixOf(queryKeys.profileRoot, queryKeys.myProfile)).toBe(true)
   })
 })
@@ -62,7 +64,9 @@ describe("queryKeys.cleanups", () => {
 
   it("every list variant sits under the bare ['cleanups'] RSVP-patch prefix", () => {
     expect(isPrefixOf(["cleanups"], queryKeys.cleanups("upcoming", 50))).toBe(true)
-    expect(isPrefixOf(["cleanups"], queryKeys.cleanupsNearby("upcoming", 20, 1.234, -5.678))).toBe(true)
+    expect(isPrefixOf(["cleanups"], queryKeys.cleanupsNearby("upcoming", 20, 1.234, -5.678))).toBe(
+      true,
+    )
   })
 })
 
@@ -162,7 +166,9 @@ describe("queryKeys.jurisdiction (rounded coords)", () => {
 describe("family roots for prefix invalidation", () => {
   it("mapReportsRoot prefixes every map pin variant", () => {
     expect(queryKeys.mapReportsRoot).toEqual(["map", "reports"])
-    expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.mapReports({ w: 1 }, ["graffiti"]))).toBe(true)
+    expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.mapReports({ w: 1 }, ["graffiti"]))).toBe(
+      true,
+    )
     expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.nearbyReportPins(1, 2))).toBe(true)
     expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.nearbyReports(1, 2, 3))).toBe(true)
   })
@@ -182,7 +188,11 @@ describe("family roots for prefix invalidation", () => {
 
 describe("factories that replaced raw key literals keep the exact arrays", () => {
   it("reverseLabel keys by the rounded point, and by nulls when there is no point", () => {
-    expect(queryKeys.reverseLabel(37.7749, -122.4194)).toEqual(["reverse-label", 37.7749, -122.4194])
+    expect(queryKeys.reverseLabel(37.7749, -122.4194)).toEqual([
+      "reverse-label",
+      37.7749,
+      -122.4194,
+    ])
     expect(queryKeys.reverseLabel(null, null)).toEqual(["reverse-label", null, null])
   })
 

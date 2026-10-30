@@ -28,7 +28,15 @@ interface TileLine {
   color?: string
 }
 
-function Tile({ frame, top, bottom }: { frame: StyleProp<ViewStyle>; top: TileLine; bottom: TileLine }) {
+function Tile({
+  frame,
+  top,
+  bottom,
+}: {
+  frame: StyleProp<ViewStyle>
+  top: TileLine
+  bottom: TileLine
+}) {
   return (
     <View style={frame}>
       <Text color={top.color} style={top.style}>
@@ -76,12 +84,7 @@ export function DateBadge({
  * them is a one-file change. `profileEvent` is the only tinted one: it paints in the caller's `color`.
  */
 export type DateTileVariant =
-  | "personEvent"
-  | "ledger"
-  | "profileEvent"
-  | "searchHit"
-  | "eventCard"
-  | "linkedEvent"
+  "personEvent" | "ledger" | "profileEvent" | "searchHit" | "eventCard" | "linkedEvent"
 
 interface DateTileText {
   day: string

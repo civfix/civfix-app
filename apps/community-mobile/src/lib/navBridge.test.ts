@@ -220,7 +220,10 @@ test("every bridged route reads its own name back as the key that produced it", 
   for (const entry of [thread("A"), postThread("P"), composer("reply", "P1"), composer()]) {
     const route = bridgeRoute(entry)
     assert.ok(route)
-    assert.equal(nativeBridgeKey({ name: route.pathname.slice(1), params: route.params }), bridgeKey(entry))
+    assert.equal(
+      nativeBridgeKey({ name: route.pathname.slice(1), params: route.params }),
+      bridgeKey(entry),
+    )
   }
 })
 
@@ -263,9 +266,7 @@ test("the same notification long after the repeat window still bridges when that
 })
 
 test("a notification for a DIFFERENT room still pushes while the first room is on screen", () => {
-  const { actions } = run([
-    { active: thread("B"), now: 30_000, focused: "thread:A" },
-  ])
+  const { actions } = run([{ active: thread("B"), now: 30_000, focused: "thread:A" }])
   assert.equal(actions[0]?.type, "bridge")
   assert.equal((actions[0] as { key: string }).key, "thread:B")
 })
@@ -308,7 +309,11 @@ test("every host surface the shell can reach stays in the shell, exactly like an
   ]) {
     assert.equal(bridgeKey(entry), null, entry.kind)
     assert.equal(bridgeRoute(entry), null, entry.kind)
-    assert.equal(bridgeDecision(entry, INITIAL_BRIDGE_GUARD, 0, null).action.type, "none", entry.kind)
+    assert.equal(
+      bridgeDecision(entry, INITIAL_BRIDGE_GUARD, 0, null).action.type,
+      "none",
+      entry.kind,
+    )
   }
 })
 
@@ -323,7 +328,11 @@ test("their cold deep-link route names carry no native bridge key either", () =>
     "orgs/[slug]",
     "dashboard",
   ]) {
-    assert.equal(nativeBridgeKey({ name, params: { id: "c1", seatId: "s2", slug: "acme" } }), null, name)
+    assert.equal(
+      nativeBridgeKey({ name, params: { id: "c1", seatId: "s2", slug: "acme" } }),
+      null,
+      name,
+    )
   }
 })
 
@@ -347,7 +356,10 @@ test("a cold-start bridge waits until the root layout's Stack is in the navigati
   assert.equal(shellNavigatorMounted({ routes: [{}] }), false)
   assert.equal(shellNavigatorMounted({ index: 0, routes: [{ state: undefined }] }), false)
   assert.equal(
-    shellNavigatorMounted({ index: 0, routes: [{ state: { index: 0, routes: [{ name: "index" }] } }] }),
+    shellNavigatorMounted({
+      index: 0,
+      routes: [{ state: { index: 0, routes: [{ name: "index" }] } }],
+    }),
     true,
   )
 })

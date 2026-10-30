@@ -54,15 +54,20 @@ describe("FeedBody feed model", () => {
       "export const FEED_ROW_ENTER_MS = tokens.motion.dur.d2",
     )
     const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
-    const timings = feed.match(/duration: FEED_ROW_ENTER_MS,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/g) ?? []
+    const timings =
+      feed.match(/duration: FEED_ROW_ENTER_MS,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/g) ?? []
     expect(timings).toHaveLength(1)
     expect(feed).toMatch(
       /useEntranceAnimation\(\{\s*\n\s*from: \{ translateY: HEADER_ENTER_RISE \},\s*\n\s*duration: FEED_ROW_ENTER_MS,/,
     )
     const entrance = readFileSync(new URL("../useEntranceAnimation.ts", import.meta.url), "utf8")
     expect(entrance).toMatch(/duration,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/)
-    expect(entrance).toMatch(/if \(reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/)
-    expect(feed).toMatch(/if \(!plan\.animate \|\| reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/)
+    expect(entrance).toMatch(
+      /if \(reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/,
+    )
+    expect(feed).toMatch(
+      /if \(!plan\.animate \|\| reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/,
+    )
   })
 
   it("assembles a whole batch inside the ~350ms 'this list is here' threshold", () => {
@@ -149,7 +154,10 @@ describe("the feed header's compose control", () => {
   })
 
   it("draws the one 52pt control the profile button and every other top row use", () => {
-    const controls = readFileSync(new URL("../../primitives/headerControls.ts", import.meta.url), "utf8")
+    const controls = readFileSync(
+      new URL("../../primitives/headerControls.ts", import.meta.url),
+      "utf8",
+    )
     expect(controls).toContain("export const HEADER_CONTROL_SIZE = 52")
     expect(controls).toContain("export const HEADER_GLYPH_SIZE = 26")
     expect(controls).toContain("export const HEADER_AVATAR_SIZE = 52")
@@ -186,7 +194,10 @@ describe("the feed's timeline is unfiltered", () => {
   it("carries no orphaned filter copy in any of the four catalogs", () => {
     for (const locale of ["en", "es", "de", "ko"]) {
       const catalog = JSON.parse(
-        readFileSync(new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url), "utf8"),
+        readFileSync(
+          new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url),
+          "utf8",
+        ),
       ) as { feed: { title: string; filter?: unknown } }
       expect(catalog.feed.filter, `${locale} still ships feed.filter`).toBeUndefined()
       expect(typeof catalog.feed.title).toBe("string")
@@ -216,7 +227,7 @@ describe("the card's timeline has no scrollbar, and a fade instead", () => {
     expect(SRC).toMatch(/const fadeStyle = useMemo\(\s*\(\) => \[styles\.scrollFade/)
     expect(SRC).toContain("{ bottom: promoHeight }")
     expect(SRC).toContain(
-      '{isExpanded && IS_WEB ? <View style={[fadeStyle, pointerEventStyles.none]} /> : null}',
+      "{isExpanded && IS_WEB ? <View style={[fadeStyle, pointerEventStyles.none]} /> : null}",
     )
     expect(SRC).not.toContain("if (!isExpanded || !IS_WEB) return list")
   })
@@ -253,17 +264,26 @@ describe("the new-posts pill overlays the list on every surface", () => {
 })
 
 describe("the feed footer after a failed page", () => {
-  const loaded = { state: "loaded" as const, isFetchingNextPage: false, isFetchNextPageError: false, hasNextPage: true }
+  const loaded = {
+    state: "loaded" as const,
+    isFetchingNextPage: false,
+    isFetchNextPageError: false,
+    hasNextPage: true,
+  }
 
   it("offers a retry when the next page failed, instead of rendering nothing", () => {
     expect(feedFooterState({ ...loaded, isFetchNextPageError: true })).toBe("load-more-failed")
   })
 
   it("shows the skeleton while a retry is in flight and the caught-up line only at the end", () => {
-    expect(feedFooterState({ ...loaded, isFetchNextPageError: true, isFetchingNextPage: true })).toBe("loading-more")
+    expect(
+      feedFooterState({ ...loaded, isFetchNextPageError: true, isFetchingNextPage: true }),
+    ).toBe("loading-more")
     expect(feedFooterState({ ...loaded, hasNextPage: false })).toBe("caught-up")
     expect(feedFooterState(loaded)).toBe("idle")
-    expect(feedFooterState({ ...loaded, state: "loading", isFetchNextPageError: true })).toBe("idle")
+    expect(feedFooterState({ ...loaded, state: "loading", isFetchNextPageError: true })).toBe(
+      "idle",
+    )
   })
 
   it("wires the retry to the same in-flight-safe pager the list uses", () => {

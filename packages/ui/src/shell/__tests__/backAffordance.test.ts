@@ -80,7 +80,9 @@ describe("showBackAffordance - portrait pull-ups", () => {
     useNavStore.getState().push({ kind: "settings-account" })
     expect(useNavStore.getState().stack).toHaveLength(3)
     expect(gateFromStore()).toBe(true)
-    expect(detailLeadingAffordance({ stack: useNavStore.getState().stack, mode: "compact" })).toBe("back")
+    expect(detailLeadingAffordance({ stack: useNavStore.getState().stack, mode: "compact" })).toBe(
+      "back",
+    )
 
     useNavStore.getState().collapseToParent()
     expect(useNavStore.getState().active).toBeNull()
@@ -151,7 +153,7 @@ describe("detailLeadingAffordance - chevron vs close X vs nothing", () => {
     return detailLeadingAffordance({ stack, mode: "compact" })
   }
 
-  it('gives a CLOSE X at the root of the two flow sheets - a chevron there promises a parent that does not exist', () => {
+  it("gives a CLOSE X at the root of the two flow sheets - a chevron there promises a parent that does not exist", () => {
     for (const kind of ["create-cleanup", "edit-cleanup"] as const) {
       resetCompact()
       useNavStore.getState().selectView("events")
@@ -172,8 +174,12 @@ describe("detailLeadingAffordance - chevron vs close X vs nothing", () => {
   it("keeps a BACK chevron in LANDSCAPE even at the stack root - the view under it IS the parent", () => {
     // ExpandedShell is one persistent card that always shows something, so both root shapes have a real
     // destination. One entry: back() pops to the view's own body (the feed on home).
-    expect(detailLeadingAffordance({ stack: [{ kind: "create-cleanup" }], mode: "expanded" })).toBe("back")
-    expect(detailLeadingAffordance({ stack: [{ kind: "pin", id: "a" }], mode: "expanded" })).toBe("back")
+    expect(detailLeadingAffordance({ stack: [{ kind: "create-cleanup" }], mode: "expanded" })).toBe(
+      "back",
+    )
+    expect(detailLeadingAffordance({ stack: [{ kind: "pin", id: "a" }], mode: "expanded" })).toBe(
+      "back",
+    )
     // Empty stack: the report wizard's step-1 Back swaps the home surface into the same card, a surface
     // swap rather than a dismissal. An X would claim the landscape card can be closed, and it cannot.
     expect(detailLeadingAffordance({ stack: [], mode: "expanded", stepIndex: 0 })).toBe("back")
@@ -278,7 +284,13 @@ describe("showBackAffordance - landscape", () => {
   it("always shows back wherever the panel header renders (the persistent sidebar has no dismiss)", () => {
     expect(showBackAffordance({ stack: [{ kind: "pin", id: "a" }], mode: "expanded" })).toBe(true)
     expect(
-      showBackAffordance({ stack: [{ kind: "pin", id: "a" }, { kind: "post", id: "b" }], mode: "expanded" }),
+      showBackAffordance({
+        stack: [
+          { kind: "pin", id: "a" },
+          { kind: "post", id: "b" },
+        ],
+        mode: "expanded",
+      }),
     ).toBe(true)
   })
 })
@@ -298,7 +310,9 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
   it("draws a CHEVRON there, not an X: Back pops to the view underneath, which is a real destination", () => {
     // The store guarantees a non-empty stack has an origin view to return to, so Back navigates.
     expect(detailLeadingAffordance({ stack: root, mode: "compact" })).toBe("none")
-    expect(detailLeadingAffordance({ stack: root, mode: "compact", dismissGesture: false })).toBe("back")
+    expect(detailLeadingAffordance({ stack: root, mode: "compact", dismissGesture: false })).toBe(
+      "back",
+    )
   })
 
   it("SHOWS back at a page root for EVERY non-flow kind - the whole conversion set", () => {
@@ -318,7 +332,9 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
       useNavStore.getState().openDetail({ kind, id: "x" })
       const { stack } = useNavStore.getState()
       expect(showBackAffordance({ stack, mode: "compact", dismissGesture: false }), kind).toBe(true)
-      expect(detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false }), kind).toBe("back")
+      expect(detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false }), kind).toBe(
+        "back",
+      )
     }
   })
 
@@ -327,7 +343,9 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
       resetCompact()
       useNavStore.getState().openDetail({ kind, id: "x" })
       const { stack } = useNavStore.getState()
-      expect(detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false }), kind).toBe("close")
+      expect(detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false }), kind).toBe(
+        "close",
+      )
       expect(detailLeadingAffordance({ stack, mode: "compact" }), kind).toBe("close")
     }
   })
@@ -336,8 +354,12 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
     const deep = [{ kind: "profile" } as const, { kind: "settings" } as const]
     for (const dismissGesture of [true, false]) {
       expect(detailLeadingAffordance({ stack: deep, mode: "compact", dismissGesture })).toBe("back")
-      expect(detailLeadingAffordance({ stack: root, mode: "compact", stepIndex: 2, dismissGesture })).toBe("back")
-      expect(detailLeadingAffordance({ stack: root, mode: "expanded", dismissGesture })).toBe("back")
+      expect(
+        detailLeadingAffordance({ stack: root, mode: "compact", stepIndex: 2, dismissGesture }),
+      ).toBe("back")
+      expect(detailLeadingAffordance({ stack: root, mode: "expanded", dismissGesture })).toBe(
+        "back",
+      )
       expect(detailLeadingAffordance({ stack: [], mode: "expanded", dismissGesture })).toBe("back")
     }
   })
@@ -438,8 +460,12 @@ describe("the gate is decided in ONE place", () => {
     // 2. RN is border-box on both platforms, so on the wizard's padded row a bare
     // `minHeight: DETAIL_BACK_SIZE` leaves 36 - 6 - 12 = 18pt for content and never binds.
     const wizard = read("../../bodies/ReportFlowBody.tsx")
-    expect(wizard).toContain("minHeight: HEADER_PAD_COMPACT.top + DETAIL_BACK_SIZE + HEADER_PAD_COMPACT.bottom")
-    expect(wizard).toContain("minHeight: HEADER_PAD_EXPANDED.top + DETAIL_BACK_SIZE + HEADER_PAD_EXPANDED.bottom")
+    expect(wizard).toContain(
+      "minHeight: HEADER_PAD_COMPACT.top + DETAIL_BACK_SIZE + HEADER_PAD_COMPACT.bottom",
+    )
+    expect(wizard).toContain(
+      "minHeight: HEADER_PAD_EXPANDED.top + DETAIL_BACK_SIZE + HEADER_PAD_EXPANDED.bottom",
+    )
     // DetailBar carries no vertical padding of its own (CompactShell's headerHost owns it).
     const bar = read("../DetailBar.tsx")
     expect(bar).toContain("minHeight: DETAIL_BACK_SIZE")
@@ -449,8 +475,12 @@ describe("the gate is decided in ONE place", () => {
   it("keeps the flow-kind list in ONE module, shared with the store's collapse guard", () => {
     // Both guards scan the whole stack: a collapse clears every entry and `openDetail` replaces every
     // entry, so a flow with a child pushed on top is exactly as abandoned as one on top.
-    expect(read("../../nav/useNavStore.ts")).toContain("s.stack.some((entry) => isFlowKind(entry.kind))")
-    expect(read("../../map/dropPinFlow.ts")).toMatch(/stack\.some\(\(entry\) => isFlowKind\(entry\.kind\)\)/)
+    expect(read("../../nav/useNavStore.ts")).toContain(
+      "s.stack.some((entry) => isFlowKind(entry.kind))",
+    )
+    expect(read("../../map/dropPinFlow.ts")).toMatch(
+      /stack\.some\(\(entry\) => isFlowKind\(entry\.kind\)\)/,
+    )
     // Only the root: `stack.length > 1` has already returned above that line.
     expect(read("../backAffordance.ts")).toContain("isFlowKind(root.kind)")
   })

@@ -1,7 +1,13 @@
 "use client"
 
 import * as React from "react"
-import type { BBox, CleanupDTO, ReportCategory, ReportClusterDTO, ReportPinDTO } from "@civfix/contract"
+import type {
+  BBox,
+  CleanupDTO,
+  ReportCategory,
+  ReportClusterDTO,
+  ReportPinDTO,
+} from "@civfix/contract"
 import {
   Map as SharedMap,
   space,
@@ -213,19 +219,38 @@ export function HomeMap() {
     if (nav.mode === "expanded") nav.push(entry)
     else nav.openDetail(entry)
   }, [])
-  const onPressPin = React.useCallback((id: string) => {
-    selectMapDetail({ kind: "pin", id })
-  }, [selectMapDetail])
-  const onPressCleanup = React.useCallback((id: string) => {
-    selectMapDetail({ kind: "cleanup", id })
-  }, [selectMapDetail])
-  const onPressCluster = React.useCallback((clusterReports: ReportPinDTO[]) => {
-    selectMapDetail({ kind: "cluster", reports: clusterReports })
-  }, [selectMapDetail])
+  const onPressPin = React.useCallback(
+    (id: string) => {
+      selectMapDetail({ kind: "pin", id })
+    },
+    [selectMapDetail],
+  )
+  const onPressCleanup = React.useCallback(
+    (id: string) => {
+      selectMapDetail({ kind: "cleanup", id })
+    },
+    [selectMapDetail],
+  )
+  const onPressCluster = React.useCallback(
+    (clusterReports: ReportPinDTO[]) => {
+      selectMapDetail({ kind: "cluster", reports: clusterReports })
+    },
+    [selectMapDetail],
+  )
   // The event rides on the entry so the merged list can render its header.
-  const onPressBlend = React.useCallback((event: CleanupDTO, blendReports: ReportPinDTO[]) => {
-    selectMapDetail({ kind: "blend", event, reports: blendReports, title: event.title, lat: event.lat, lng: event.lng })
-  }, [selectMapDetail])
+  const onPressBlend = React.useCallback(
+    (event: CleanupDTO, blendReports: ReportPinDTO[]) => {
+      selectMapDetail({
+        kind: "blend",
+        event,
+        reports: blendReports,
+        title: event.title,
+        lat: event.lat,
+        lng: event.lng,
+      })
+    },
+    [selectMapDetail],
+  )
 
   const onPressMap = React.useCallback(() => {
     useReportFilterStore.getState().setLayersOpen(false)

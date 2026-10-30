@@ -7,11 +7,7 @@ import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl, toAppError } from "@c
 import type { OrganizationDTO, SocialPlatform } from "@civfix/contract"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
-import {
-  SOCIAL_GLYPH_PATHS,
-  SOCIAL_GLYPH_VIEWBOX,
-  presentSocialPlatforms,
-} from "@civfix/ui/social"
+import { SOCIAL_GLYPH_PATHS, SOCIAL_GLYPH_VIEWBOX, presentSocialPlatforms } from "@civfix/ui/social"
 
 import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
 import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
@@ -177,12 +173,7 @@ function OrgDocument({ slug }: { slug: string }) {
         </header>
 
         {donate ? (
-          <a
-            className="orgpage-donate"
-            href={donate}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="orgpage-donate" href={donate} target="_blank" rel="noopener noreferrer">
             <HeartHandshake aria-hidden="true" size={18} />
             {t("public.donate", { name: org.name })}
           </a>
@@ -199,7 +190,12 @@ function OrgDocument({ slug }: { slug: string }) {
             {website ? (
               <ul className="orgpage-links">
                 <li>
-                  <a href={website} target="_blank" rel="noopener noreferrer" className="orgpage-link">
+                  <a
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="orgpage-link"
+                  >
                     <Globe aria-hidden="true" size={16} />
                     {websiteLabel(website)}
                   </a>

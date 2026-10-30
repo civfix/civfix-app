@@ -29,5 +29,7 @@ export function orgSlugFromPath(pathname: string | null | undefined): OrgSlugSou
   if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }
 
   const parsed = OrgSlugSchema.safeParse(segment.value)
-  return parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: segment.value }
+  return parsed.success
+    ? { kind: "slug", slug: parsed.data }
+    : { kind: "invalid", raw: segment.value }
 }

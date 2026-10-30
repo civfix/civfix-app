@@ -5,7 +5,13 @@ import type { StyleProp, ViewStyle } from "react-native"
 import { MESSAGE_BODY_MAX } from "@civfix/contract"
 import { focusRingProps, useTheme, webInputReset } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { ComposerModeBar, MentionAutocomplete, ComposerAttachSheet, PollCreateSheet, usePopoverAnchor } from "../../primitives"
+import {
+  ComposerModeBar,
+  MentionAutocomplete,
+  ComposerAttachSheet,
+  PollCreateSheet,
+  usePopoverAnchor,
+} from "../../primitives"
 import type { AnchorRect, PollCreateInput } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useT } from "../../i18n"
@@ -83,7 +89,11 @@ export function ConversationComposer({
       {att.attachError && !disabled ? (
         <View style={styles.composerAttachError} accessibilityRole="alert">
           <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.bloom["600"]} />
-          <Text variant="caption" color={th.colors.bloom["600"]} style={styles.composerAttachErrorText}>
+          <Text
+            variant="caption"
+            color={th.colors.bloom["600"]}
+            style={styles.composerAttachErrorText}
+          >
             {att.attachError}
           </Text>
         </View>
@@ -146,7 +156,9 @@ export function ConversationComposer({
           onPress={composer.onSend}
           disabled={!canSend}
           accessibilityRole="button"
-          accessibilityLabel={composerMode?.kind === "edit" ? t("composer.edit_title") : t("composer.send")}
+          accessibilityLabel={
+            composerMode?.kind === "edit" ? t("composer.edit_title") : t("composer.send")
+          }
           accessibilityState={{ disabled: !canSend }}
           {...focusRingProps}
           style={({ pressed }) => [
@@ -155,7 +167,11 @@ export function ConversationComposer({
             pressed && canSend ? styles.sendBtnPressed : null,
           ]}
         >
-          <Icon icon={composerMode?.kind === "edit" ? iconMap.Check : iconMap.ArrowUp} size={19} color={th.colors.onAccent} />
+          <Icon
+            icon={composerMode?.kind === "edit" ? iconMap.Check : iconMap.ArrowUp}
+            size={19}
+            color={th.colors.onAccent}
+          />
         </Pressable>
       </View>
 
@@ -194,12 +210,21 @@ function ComposerModeStrip({
   const target = composerMode.message
   const excerptBody = (target.body ?? "").replace(/\s+/g, " ").trim()
   if (composerMode.kind === "edit") {
-    return <ComposerModeBar mode="edit" title={t("composer.edit_title")} excerpt={excerptBody} onCancel={onCancel} />
+    return (
+      <ComposerModeBar
+        mode="edit"
+        title={t("composer.edit_title")}
+        excerpt={excerptBody}
+        onCancel={onCancel}
+      />
+    )
   }
   return (
     <ComposerModeBar
       mode="reply"
-      title={t("composer.reply_title", { name: target.from?.name ?? t("bubble.reply_unknown_author") })}
+      title={t("composer.reply_title", {
+        name: target.from?.name ?? t("bubble.reply_unknown_author"),
+      })}
       excerpt={excerptBody || t("bubble.reply_media")}
       accentColor={target.from ? senderColor(target.from.id) : undefined}
       onCancel={onCancel}
@@ -263,7 +288,9 @@ export function ChannelPillBar({
             ]}
           >
             <Icon icon={iconMap[muted ? "Bell" : "BellOff"]} size={16} color={th.colors.text} />
-            <Text style={styles.channelPillText}>{muted ? t("channel.unmute") : t("channel.mute")}</Text>
+            <Text style={styles.channelPillText}>
+              {muted ? t("channel.unmute") : t("channel.mute")}
+            </Text>
           </Pressable>
         </>
       )}

@@ -6,6 +6,10 @@ export function threadRoomId(thread: Pick<MessageThreadDTO, "id" | "refId">): st
 }
 
 /** Room ids are unique per kind only, so a lookup matches on both. */
-export function threadMatchesRoom(thread: MessageThreadDTO, roomKind: RoomKind, roomId: string): boolean {
+export function threadMatchesRoom(
+  thread: MessageThreadDTO,
+  roomKind: RoomKind,
+  roomId: string,
+): boolean {
   return thread.kind === roomKind && threadRoomId(thread) === roomId
 }

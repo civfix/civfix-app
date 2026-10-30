@@ -128,7 +128,11 @@ export function StackedBars({
                       y: y1,
                       title: label,
                       rows: [
-                        { label: s.label, value: formatCount(value, locale, { compact: true }), color },
+                        {
+                          label: s.label,
+                          value: formatCount(value, locale, { compact: true }),
+                          color,
+                        },
                       ],
                     })
                   }

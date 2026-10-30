@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  Animated,
-  Easing,
-  Platform,
-  RefreshControl,
-  View,
-} from "react-native"
+import { Animated, Easing, Platform, RefreshControl, View } from "react-native"
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/contract"
-import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme, webStyle, pointerEventStyles } from "../theme"
+import {
+  POST_SURFACE,
+  makeThemedStyles,
+  useLayoutMode,
+  type Theme,
+  webStyle,
+  pointerEventStyles,
+} from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -88,8 +89,18 @@ function FeedPostRow({
       style={{
         opacity: progress,
         transform: [
-          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_RISE, 0] }) },
-          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_SCALE_FROM, 1] }) },
+          {
+            translateY: progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [ROW_ENTER_RISE, 0],
+            }),
+          },
+          {
+            scale: progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [ROW_ENTER_SCALE_FROM, 1],
+            }),
+          },
         ],
       }}
     >
@@ -318,9 +329,7 @@ export function FeedBody() {
   )
 
   const refresh = useMemo(
-    () => (
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />
-    ),
+    () => <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />,
     [refreshing, onRefresh, refreshSpinner],
   )
 
@@ -375,7 +384,13 @@ const webScrollFade = (t: Theme): ViewStyle =>
 const useStyles = makeThemedStyles((t) => ({
   scroll: { flex: 1, backgroundColor: t.colors.bg },
   scrollHost: { flex: 1 },
-  scrollFade: { position: "absolute", left: 0, right: 0, height: FEED_SCROLL_FADE_HEIGHT, ...webScrollFade(t) },
+  scrollFade: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: FEED_SCROLL_FADE_HEIGHT,
+    ...webScrollFade(t),
+  },
   content: {
     flexGrow: 1,
     paddingHorizontal: POST_SURFACE === "flat" ? 0 : 14,
@@ -384,13 +399,28 @@ const useStyles = makeThemedStyles((t) => ({
   },
   contentExpanded: { paddingTop: 14 },
   headerInset: { paddingHorizontal: POST_SURFACE === "flat" ? POST_CARD_RHYTHM.rowPaddingH : 0 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: HEADER_CONTROL_SIZE,
+    marginBottom: t.space["3"],
+  },
   heading: tabRootTitleStyle(t),
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
   list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] },
   emptyFill: { flexGrow: 1, minHeight: EMPTY_FILL_MIN_HEIGHT },
-  skeletonCard: { flexDirection: "row", gap: POST_CARD_RHYTHM.gutterGap, paddingVertical: POST_CARD_RHYTHM.rowPaddingTop },
-  skeletonAvatar: { width: POST_CARD_RHYTHM.avatar, height: POST_CARD_RHYTHM.avatar, borderRadius: POST_CARD_RHYTHM.avatar / 2, backgroundColor: t.colors.bgAlt },
+  skeletonCard: {
+    flexDirection: "row",
+    gap: POST_CARD_RHYTHM.gutterGap,
+    paddingVertical: POST_CARD_RHYTHM.rowPaddingTop,
+  },
+  skeletonAvatar: {
+    width: POST_CARD_RHYTHM.avatar,
+    height: POST_CARD_RHYTHM.avatar,
+    borderRadius: POST_CARD_RHYTHM.avatar / 2,
+    backgroundColor: t.colors.bgAlt,
+  },
   skeletonCopy: { flex: 1, gap: t.space["2"], paddingTop: t.space["1"] },
   skeletonLine: { height: 10, borderRadius: 5, backgroundColor: t.colors.bgAlt },
   skeletonLineWide: { width: "88%" },
@@ -398,7 +428,12 @@ const useStyles = makeThemedStyles((t) => ({
   rowSeparator: { height: t.space["3"] },
   footer: { gap: t.space["3"] },
   caughtUp: { alignItems: "center", paddingVertical: t.space["4"] },
-  caughtUpText: { fontFamily: t.fontFamily.bodyBold, fontSize: 11.5, lineHeight: 16, color: t.colors.textSubtle },
+  caughtUpText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: t.colors.textSubtle,
+  },
   bottomPad: { height: t.space["8"] },
 }))
 

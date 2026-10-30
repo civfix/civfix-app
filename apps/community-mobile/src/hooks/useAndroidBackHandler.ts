@@ -15,7 +15,9 @@ export function useAndroidBackHandler(): void {
       const onBackPress = (): boolean => {
         const filter = useReportFilterStore.getState()
         const nav = useNavStore.getState()
-        switch (androidBackPlan({ layersOpen: filter.layersOpen, active: nav.active, view: nav.view })) {
+        switch (
+          androidBackPlan({ layersOpen: filter.layersOpen, active: nav.active, view: nav.view })
+        ) {
           case "close-layers":
             filter.setLayersOpen(false)
             return true

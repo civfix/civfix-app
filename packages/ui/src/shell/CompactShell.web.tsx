@@ -38,7 +38,6 @@ const SHEET_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   onKeyboardShow: () => useNavStore.getState().setSnap(2, false),
 })
 
-
 const SETTLE_TRANSITION = cssTransition(
   ["height", "left", "right", "border-radius"],
   motion.sheetMove,
@@ -72,7 +71,11 @@ function WebSheetHeader({
   )
 }
 
-export function CompactShell({ renderBody = defaultRenderBody, closing = false, onClosed }: CompactShellProps) {
+export function CompactShell({
+  renderBody = defaultRenderBody,
+  closing = false,
+  onClosed,
+}: CompactShellProps) {
   const styles = useStyles()
   const { t: tNav } = useT("nav")
   const { height: winH } = useWindowDimensions()
@@ -123,7 +126,8 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
+        onMoveShouldSetPanResponder: (_e, g) =>
+          Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
         onPanResponderGrant: () => {
           startHeightRef.current = snapPxRef.current[snapRef.current]
         },
@@ -137,11 +141,11 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
           const moved = Math.abs(g.dy) + Math.abs(g.dx)
           let next: Snap
           if (moved < TAP_SLOP) {
-            next = (((cur + 1) % 3) as Snap)
+            next = ((cur + 1) % 3) as Snap
           } else if (g.vy < -FLING_VELOCITY) {
-            next = (Math.min(cur + 1, 2) as Snap)
+            next = Math.min(cur + 1, 2) as Snap
           } else if (g.vy > FLING_VELOCITY) {
-            next = (Math.max(cur - 1, 0) as Snap)
+            next = Math.max(cur - 1, 0) as Snap
           } else {
             const h = clamp(startHeightRef.current - g.dy, px[0], px[2])
             let best: Snap = 0

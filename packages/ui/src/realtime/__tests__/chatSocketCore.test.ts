@@ -261,7 +261,10 @@ describe("send", () => {
     socket.connect()
     const second = latest()
     second.fireOpen()
-    expect(second.parsedSent()).toEqual([{ type: "join", cleanupId: ROOM_A }, sendFrame(ROOM_A, "c1")])
+    expect(second.parsedSent()).toEqual([
+      { type: "join", cleanupId: ROOM_A },
+      sendFrame(ROOM_A, "c1"),
+    ])
   })
 
   it("eager teardown (last release) WIPES the queue: queued frames do not resurface on a later open", () => {

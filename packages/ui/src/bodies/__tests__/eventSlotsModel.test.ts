@@ -63,7 +63,9 @@ describe("slotRowState", () => {
   })
 
   it("is mine for the viewer's own slot, even when that slot is full", () => {
-    expect(slotRowState(slot("a", { capacity: 2, claimed: 2, mine: true }), "a", false)).toBe("mine")
+    expect(slotRowState(slot("a", { capacity: 2, claimed: 2, mine: true }), "a", false)).toBe(
+      "mine",
+    )
   })
 
   it("is switch for another open slot while the viewer holds one", () => {
@@ -290,9 +292,9 @@ describe("slotViewerState", () => {
 
   it("says nothing actionable about a read-only board", () => {
     expect(slotViewerState({ ...base, readonly: true })).toBe("ended")
-    expect(
-      slotViewerState({ ...base, readonly: true, slots: [slot("a", { mine: true })] }),
-    ).toBe("ended")
+    expect(slotViewerState({ ...base, readonly: true, slots: [slot("a", { mine: true })] })).toBe(
+      "ended",
+    )
   })
 
   it("puts holding a slot above every role", () => {
@@ -313,7 +315,9 @@ describe("slotViewerState", () => {
     expect(slotViewerState({ ...base, isAuthenticated: false, authPending: false })).toBe(
       "signed_out",
     )
-    expect(slotViewerState({ ...base, isAuthenticated: false, authPending: true })).toBe("not_going")
+    expect(slotViewerState({ ...base, isAuthenticated: false, authPending: true })).toBe(
+      "not_going",
+    )
   })
 
   it("treats a signed-in non-member as simply not going yet", () => {

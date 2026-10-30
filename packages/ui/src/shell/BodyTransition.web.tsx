@@ -148,14 +148,17 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
       const outgoingNode = (activeSlot === "a" ? slotBRef : slotARef).current
       forceReflow([activeNode, outgoingNode], true)
     },
-    flip: () => setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur)),
+    flip: () =>
+      setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur)),
     settle,
   })
 
   useLayoutEffect(() => {
     if (phaseNav === null) return
     const outDrop = setTimeout(() => {
-      setState((cur) => (cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur))
+      setState((cur) =>
+        cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur,
+      )
     }, OUT_DURATION)
     return () => clearTimeout(outDrop)
   }, [phaseNav])
@@ -175,7 +178,8 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
     if (!phase || !flipped) return
     if (slot !== activeSlot) return
     if (event?.target !== event?.currentTarget) return
-    const wants = phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
+    const wants =
+      phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
     if (event?.propertyName && event.propertyName !== wants) return
     settle()
   }

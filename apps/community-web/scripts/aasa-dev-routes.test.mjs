@@ -8,19 +8,28 @@ import { DEV_ONLY_ROUTES } from "./postbuild-gates.mjs"
 const parsed = /** @type {unknown} */ (
   JSON.parse(
     readFileSync(
-      join(fileURLToPath(new URL(".", import.meta.url)), "..", "public", ".well-known", "apple-app-site-association"),
+      join(
+        fileURLToPath(new URL(".", import.meta.url)),
+        "..",
+        "public",
+        ".well-known",
+        "apple-app-site-association",
+      ),
       "utf8",
     ),
   )
 )
-const association = /** @type {{ applinks: { details: { components: { "/": string, exclude?: boolean }[] }[] } }} */ (
-  parsed
-)
+const association =
+  /** @type {{ applinks: { details: { components: { "/": string, exclude?: boolean }[] }[] } }} */ (
+    parsed
+  )
 
 describe("AASA and the dev galleries", () => {
   // The galleries never reach a production export, so an exclude for them only advertises their names.
   it("carries no exclude for a dev-only route", () => {
-    const paths = association.applinks.details.flatMap((detail) => detail.components.map((c) => c["/"]))
+    const paths = association.applinks.details.flatMap((detail) =>
+      detail.components.map((c) => c["/"]),
+    )
     for (const route of DEV_ONLY_ROUTES) {
       expect(paths.filter((path) => path.startsWith(`/${route}`))).toEqual([])
     }

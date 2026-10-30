@@ -91,11 +91,17 @@ describe("the host surface spends its coral once", () => {
 
   it("keeps every brand fill out of the host surface's own source", () => {
     for (const [name, source] of Object.entries(HOST_SOURCES)) {
-      expect(source.match(/colors\.brand\.bloom/g) ?? [], `${name} still fills with the brand hue`)
-        .toHaveLength(0)
-      expect(source.match(/"#[0-9a-fA-F]{3,8}"/g) ?? [], `${name} hardcodes a colour`).toHaveLength(0)
-      expect(source.match(/colors\.bloom\["700"\]/g) ?? [], `${name} uses the old danger hue`)
-        .toHaveLength(0)
+      expect(
+        source.match(/colors\.brand\.bloom/g) ?? [],
+        `${name} still fills with the brand hue`,
+      ).toHaveLength(0)
+      expect(source.match(/"#[0-9a-fA-F]{3,8}"/g) ?? [], `${name} hardcodes a colour`).toHaveLength(
+        0,
+      )
+      expect(
+        source.match(/colors\.bloom\["700"\]/g) ?? [],
+        `${name} uses the old danger hue`,
+      ).toHaveLength(0)
     }
   })
 
@@ -205,7 +211,7 @@ describe("insights wiring", () => {
 
   it("says so in the hero caption when the kept frame is a failed refresh, not fresh numbers", () => {
     expect(body).toContain("stale={failed}")
-    expect(panels).toContain("const caption = stale ? t(\"hero.stale\") : fresh")
+    expect(panels).toContain('const caption = stale ? t("hero.stale") : fresh')
     expect(panels).toContain("stale={stale}")
   })
 
@@ -216,7 +222,9 @@ describe("insights wiring", () => {
 
   it("refreshes the hero whenever anything about the event changes", () => {
     expect(keys).toContain('eventInsights: (id: string) => ["host", id, "insights"] as const')
-    expect(hooks).toContain("void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })")
+    expect(hooks).toContain(
+      "void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })",
+    )
   })
 
   it("refreshes it after a shift claim too, so the hero and the shift board agree", () => {
@@ -350,9 +358,17 @@ describe("every t(...) key the surface uses exists in en/host-mode.json", () => 
     return leaf in obj || `${leaf}_one` in obj || `${leaf}_other` in obj
   }
 
-  it.each(["HostModeBody.tsx", "HostModeSheets.tsx", "useHostSheetActions.ts", "hostModeCopy.ts", "HostInsightsPanels.tsx"])("%s", (name) => {
+  it.each([
+    "HostModeBody.tsx",
+    "HostModeSheets.tsx",
+    "useHostSheetActions.ts",
+    "hostModeCopy.ts",
+    "HostInsightsPanels.tsx",
+  ])("%s", (name) => {
     const source = HOST_SOURCES[name] as string
-    const keys = [...source.matchAll(/\bt\("([a-z][a-z0-9_]*\.[a-z0-9_.]+)"/g)].map((m) => m[1] ?? "")
+    const keys = [...source.matchAll(/\bt\("([a-z][a-z0-9_]*\.[a-z0-9_.]+)"/g)].map(
+      (m) => m[1] ?? "",
+    )
     expect(keys.length).toBeGreaterThan(0)
     expect(keys.filter((key) => !key.includes(":") && !has(key))).toEqual([])
   })

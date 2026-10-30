@@ -16,10 +16,7 @@ const base: LocationPrimerInput = {
 
 test("waits until the stored permission has settled, whatever else is true", () => {
   for (const permission of ["undetermined", "granted", "denied"] as const) {
-    assert.equal(
-      locationPrimerDecision({ ...base, permission, permissionResolved: false }),
-      "wait",
-    )
+    assert.equal(locationPrimerDecision({ ...base, permission, permissionResolved: false }), "wait")
   }
 })
 
@@ -83,10 +80,7 @@ test("no input combination asks for GPS while the permission is undetermined", (
 
 test("the tour overlay outlasts its completion flag, so the primer waits for the exit too", () => {
   assert.equal(locationPrimerDecision({ ...base, tourPresenting: true }), "wait")
-  assert.equal(
-    locationPrimerDecision({ ...base, tourPresenting: true, primerShown: true }),
-    "wait",
-  )
+  assert.equal(locationPrimerDecision({ ...base, tourPresenting: true, primerShown: true }), "wait")
 })
 
 test("the boot gate outranks every settled permission, so nothing runs behind the splash", () => {

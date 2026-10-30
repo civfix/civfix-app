@@ -24,7 +24,7 @@ describe("the post composers guard against a double submit", () => {
     it(`${name} checks the ref before it does any work`, () => {
       const check = source.indexOf("if (submittingRef.current) return")
       const claim = source.indexOf("submittingRef.current = true")
-      const mutate = source.search(/create\.mutate(Async)?\(/)
+      const mutate = source.search(/create\s*\.mutate(Async)?\(/)
       expect(check).toBeGreaterThan(-1)
       expect(claim).toBeGreaterThan(check)
       expect(mutate).toBeGreaterThan(claim)
@@ -34,8 +34,12 @@ describe("the post composers guard against a double submit", () => {
 
 describe("the post composers take their double-submit guard from the shared submit hook", () => {
   it("PostComposer and InlineComposer both submit through useSubmitPost", () => {
-    expect(code(surfaceSource("postComposer"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
-    expect(code(read("../feed/InlineComposer.tsx"))).toContain("const { create, submit: submitPost } = useSubmitPost()")
+    expect(code(surfaceSource("postComposer"))).toContain(
+      "const { create, submit: submitPost } = useSubmitPost()",
+    )
+    expect(code(read("../feed/InlineComposer.tsx"))).toContain(
+      "const { create, submit: submitPost } = useSubmitPost()",
+    )
   })
 })
 
@@ -62,7 +66,16 @@ describe("PostOverflowMenu mounts on demand", () => {
     expect(gateAt).toBeGreaterThan(-1)
     expect(contentAt).toBeGreaterThan(gateAt)
     const gate = source.slice(gateAt, contentAt)
-    for (const hook of ["useAuthState", "useMyProfile", "useDeletePost", "useToast", "useClipboard", "useReportContent", "useRequireAuth", "useT"]) {
+    for (const hook of [
+      "useAuthState",
+      "useMyProfile",
+      "useDeletePost",
+      "useToast",
+      "useClipboard",
+      "useReportContent",
+      "useRequireAuth",
+      "useT",
+    ]) {
       expect(gate, `${hook} runs in the always-mounted gate`).not.toMatch(new RegExp(`${hook}\\(`))
     }
   })
@@ -80,7 +93,9 @@ describe("PostOverflowMenu mounts on demand", () => {
   it("stays mounted while the delete mutation is outstanding", () => {
     // The confirm menu closes the moment the row fires, so without the busy flag the 400ms retention
     // timer would unmount this subtree mid-request and drop the success/failure toast.
-    expect(source).toMatch(/const active = props\.visible \|\| reportOpen \|\| busy \|\| confirmingDelete/)
+    expect(source).toMatch(
+      /const active = props\.visible \|\| reportOpen \|\| busy \|\| confirmingDelete/,
+    )
     expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*deletePost\(subjectId\)/)
     expect(source).toMatch(/\.finally\(\(\) => onBusyChange\(false\)\)/)
   })

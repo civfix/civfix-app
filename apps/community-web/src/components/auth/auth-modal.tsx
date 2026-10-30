@@ -16,7 +16,13 @@ import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
 import { useAuthStore } from "@/store/auth-store"
 import { useUiStore } from "@/store/ui-store"
 
-import { AuthStepHeading, ChoicesStep, CodeStep, EmailStep, type AuthStep } from "./auth-modal-steps"
+import {
+  AuthStepHeading,
+  ChoicesStep,
+  CodeStep,
+  EmailStep,
+  type AuthStep,
+} from "./auth-modal-steps"
 import { useOtpEntry } from "./use-otp-entry"
 
 /**

@@ -11,7 +11,15 @@ import {
 } from "react-native-vision-camera"
 import * as ImagePicker from "expo-image-picker"
 import * as Location from "expo-location"
-import { CAMERA_CHROME_THEME, fontFamily, fontSize, makeThemedStyles, radius, space, useTheme } from "@/theme"
+import {
+  CAMERA_CHROME_THEME,
+  fontFamily,
+  fontSize,
+  makeThemedStyles,
+  radius,
+  space,
+  useTheme,
+} from "@/theme"
 import { tokens } from "@civfix/tokens"
 import { Text, PrimaryButton, useToast } from "@civfix/ui"
 import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
@@ -62,7 +70,9 @@ function RecordingBadge() {
   return (
     <View style={cameraStyles.recBadge}>
       <View style={cameraStyles.recDot} />
-      <Text style={cameraStyles.recText}>{t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}</Text>
+      <Text style={cameraStyles.recText}>
+        {t("timer.elapsed", { elapsed: elapsed.toFixed(1) })}
+      </Text>
     </View>
   )
 }
@@ -77,7 +87,9 @@ async function readShutterLocation(): Promise<{ lat: number; lng: number } | nul
         Location.PermissionStatus.GRANTED
     }
     if (!granted) return null
-    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(() => null)
+    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(
+      () => null,
+    )
     const pos =
       last ??
       (await withTimeout(
@@ -196,13 +208,16 @@ export function ReportViewfinder({
         flash: "off",
         enableShutterSound: false,
       })
-      emitCapture({
-        uri: fileUri(photo.path),
-        kind: "image",
-        mime: "image/jpeg",
-        width: photo.width,
-        height: photo.height,
-      }, "camera")
+      emitCapture(
+        {
+          uri: fileUri(photo.path),
+          kind: "image",
+          mime: "image/jpeg",
+          width: photo.width,
+          height: photo.height,
+        },
+        "camera",
+      )
     } catch {
       reportCaptureFailure("error.photo")
     }
@@ -217,14 +232,17 @@ export function ReportViewfinder({
       onRecordingFinished: (video: VideoFile) => {
         if (!mountedRef.current) return
         setRecordingState(false)
-        emitCapture({
-          uri: fileUri(video.path),
-          kind: "video",
-          mime: "video/mp4",
-          width: video.width,
-          height: video.height,
-          durationSec: video.duration,
-        }, "camera")
+        emitCapture(
+          {
+            uri: fileUri(video.path),
+            kind: "video",
+            mime: "video/mp4",
+            width: video.width,
+            height: video.height,
+            durationSec: video.duration,
+          },
+          "camera",
+        )
       },
       onRecordingError: () => {
         if (!mountedRef.current) return
@@ -379,7 +397,10 @@ export function ReportViewfinder({
             accessibilityRole="button"
             accessibilityLabel={t("gate.choose_library")}
             hitSlop={8}
-            style={({ pressed }) => [styles.sideBtn, pressed && !(busy || recording) ? styles.pressed : null]}
+            style={({ pressed }) => [
+              styles.sideBtn,
+              pressed && !(busy || recording) ? styles.pressed : null,
+            ]}
           >
             <Ionicons name="images" size={22} color={th.colors.text} />
           </Pressable>
@@ -440,7 +461,13 @@ const useStyles = makeThemedStyles((t) => ({
     width: "100%",
     maxWidth: 320,
   },
-  sideBtn: { width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center" },
+  sideBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 }))
 
 const cameraStyles = StyleSheet.create({
@@ -486,5 +513,10 @@ const cameraStyles = StyleSheet.create({
   },
   shutterRec: { backgroundColor: tokens.camera.recording },
   shutterPressed: { transform: [{ scale: 0.94 }] },
-  stopSquare: { width: 24, height: 24, borderRadius: 5, backgroundColor: stage.colors.neutral.card },
+  stopSquare: {
+    width: 24,
+    height: 24,
+    borderRadius: 5,
+    backgroundColor: stage.colors.neutral.card,
+  },
 })

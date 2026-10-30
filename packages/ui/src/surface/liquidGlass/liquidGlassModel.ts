@@ -133,7 +133,9 @@ export function morphUniforms(shapes: DockShapes, radius: number, k: number): Mo
 /** Unknown formats fall back to transparent white, so a bad theme value draws nothing. */
 export function parseRgba(color: string): [number, number, number, number] {
   "worklet"
-  const rgba = color.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)/)
+  const rgba = color.match(
+    /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)/,
+  )
   if (rgba) {
     return [
       Number(rgba[1]) / 255,

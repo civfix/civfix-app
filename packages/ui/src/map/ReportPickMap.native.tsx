@@ -101,8 +101,7 @@ export const ReportPickMap = memo(
     const mapStyle = useMemo(
       () =>
         rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme: th.scheme }) as
-          | string
-          | StyleSpecification,
+          string | StyleSpecification,
       [cartoApiKey, th.scheme],
     )
 
@@ -208,7 +207,8 @@ export const ReportPickMap = memo(
       if (!node || node.type !== "cluster") return
       hapticsRef.current.selection()
       const currentZoom = lastRegionRef.current?.zoom ?? seedRef.current.zoom
-      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
+      const target =
+        clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       cameraRef.current?.flyTo({
         center: [node.lng, node.lat],
         zoom: target,
@@ -282,8 +282,17 @@ export const ReportPickMap = memo(
           {markerNodes.rendered.map(({ node, markerId }) => {
             if (node.type === "cluster") {
               return (
-                <Marker key={node.key} id={markerId} lngLat={[node.lng, node.lat]} onPress={handlePressCluster}>
-                  <View accessible accessibilityRole="button" accessibilityLabel={clusterLabel(node.count)}>
+                <Marker
+                  key={node.key}
+                  id={markerId}
+                  lngLat={[node.lng, node.lat]}
+                  onPress={handlePressCluster}
+                >
+                  <View
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel={clusterLabel(node.count)}
+                  >
                     <ClusterBubble count={node.count} />
                   </View>
                 </Marker>
@@ -293,7 +302,13 @@ export const ReportPickMap = memo(
             const state = stateOf(node.id)
             const look = lookFor(state, focusedId === node.id)
             return (
-              <Marker key={node.key} id={markerId} lngLat={[node.lng, node.lat]} anchor="bottom" onPress={handlePressPin}>
+              <Marker
+                key={node.key}
+                id={markerId}
+                lngLat={[node.lng, node.lat]}
+                anchor="bottom"
+                onPress={handlePressPin}
+              >
                 <View
                   accessible
                   accessibilityRole="button"

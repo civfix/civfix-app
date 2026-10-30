@@ -158,14 +158,21 @@ export default function RootLayout() {
                       <SharePostProvider>
                         <BottomSheetModalProvider>
                           <RootStack launchGate={gateMounted} />
-                          <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
+                          <OnboardingGate
+                            gateActive={gateActive}
+                            loadingGateMounted={gateMounted}
+                          />
                           <FirstRunGate />
                           {gateMounted ? (
                             <Animated.View
                               pointerEvents={gateActive ? "auto" : "none"}
                               style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
                             >
-                              {boot.phase === "offline" ? <BootOfflineGate /> : <AuthGate mode="loading" />}
+                              {boot.phase === "offline" ? (
+                                <BootOfflineGate />
+                              ) : (
+                                <AuthGate mode="loading" />
+                              )}
                             </Animated.View>
                           ) : null}
                         </BottomSheetModalProvider>

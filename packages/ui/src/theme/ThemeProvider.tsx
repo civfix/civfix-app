@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react"
 import { useColorScheme } from "react-native"
 import { useAppearancePreference } from "./appearance"
-import {
-  resolveColorScheme,
-  type AppearancePreference,
-  type ColorSchemeName,
-} from "./schemes"
+import { resolveColorScheme, type AppearancePreference, type ColorSchemeName } from "./schemes"
 
 export interface ThemeContextValue {
   scheme: ColorSchemeName

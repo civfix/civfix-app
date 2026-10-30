@@ -87,7 +87,11 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
       <View style={[styles.topBar, { top }]}>
         <View style={styles.topActions}>
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
+            <Icon
+              icon={iconMap.Navigation}
+              size={HEADER_GLYPH_SIZE}
+              color={th.colors.neutral.ink2}
+            />
           </GlassButton>
           {layersButton}
           <ActivityBell onPress={onActivity} />
@@ -113,7 +117,11 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
           {brandPill}
 
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
+            <Icon
+              icon={iconMap.Navigation}
+              size={HEADER_GLYPH_SIZE}
+              color={th.colors.neutral.ink2}
+            />
           </GlassButton>
 
           {layersButton}

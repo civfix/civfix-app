@@ -70,7 +70,11 @@ describe("useEventWhen", () => {
   })
 
   it("reports no event zone for a legacy row and never names one", () => {
-    const when = useEventWhen({ scheduledAt: EVENT.scheduledAt, endsAt: EVENT.endsAt, timezone: null })
+    const when = useEventWhen({
+      scheduledAt: EVENT.scheduledAt,
+      endsAt: EVENT.endsAt,
+      timezone: null,
+    })
     expect(when.timeZone).toBeUndefined()
     expect(when.zone).toBeNull()
     expect(when.timeWithZone).toBe(when.time)

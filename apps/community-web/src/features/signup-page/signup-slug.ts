@@ -17,7 +17,9 @@ export function signupSlugFromPath(pathname: string | null | undefined): SignupS
   if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }
 
   const parsed = PageSlugSchema.safeParse(segment.value)
-  return parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: segment.value }
+  return parsed.success
+    ? { kind: "slug", slug: parsed.data }
+    : { kind: "invalid", raw: segment.value }
 }
 
 export function signupPath(slug: string): string {

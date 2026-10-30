@@ -1,7 +1,11 @@
 import React, { useCallback, useMemo } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from "react-native-reanimated"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { shadowSchemes } from "@civfix/tokens"
@@ -153,7 +157,10 @@ function Tile({ index, digit }: { index: number; digit: string }) {
       style={[
         styles.tile,
         theme.shadows.s3,
-        { backgroundColor: tileColor(index, theme), boxShadow: shadowSchemes[theme.scheme].sheenTop },
+        {
+          backgroundColor: tileColor(index, theme),
+          boxShadow: shadowSchemes[theme.scheme].sheenTop,
+        },
       ]}
     >
       <Text style={styles.digit} color={theme.colors.onAccent}>
@@ -163,14 +170,26 @@ function Tile({ index, digit }: { index: number; digit: string }) {
   )
 }
 
-function LiveTile({ index, digit, bodies }: { index: number; digit: string; bodies: SharedValue<TileBody[]> }) {
+function LiveTile({
+  index,
+  digit,
+  bodies,
+}: {
+  index: number
+  digit: string
+  bodies: SharedValue<TileBody[]>
+}) {
   const placed = useAnimatedStyle(() => {
     const b = bodies.value[index]
     // Hidden until the first step has dropped the tiles above the stage.
     if (!b) return { opacity: 0 }
     return {
       opacity: 1,
-      transform: [{ translateX: b.x - TILE / 2 }, { translateY: b.y - TILE / 2 }, { rotate: `${b.angle}deg` }],
+      transform: [
+        { translateX: b.x - TILE / 2 },
+        { translateY: b.y - TILE / 2 },
+        { rotate: `${b.angle}deg` },
+      ],
     }
   })
   return (

@@ -14,7 +14,9 @@ function chipWith(source: string, marker: string): string {
   expect(at, `${marker} is gone - re-scope the guard`).toBeGreaterThan(-1)
   const start = source.lastIndexOf("<FilterChip", at)
   expect(start, `no <FilterChip opens before ${marker}`).toBeGreaterThan(-1)
-  expect(source.slice(start, at), `${marker} is not inside the nearest FilterChip`).not.toContain("/>")
+  expect(source.slice(start, at), `${marker} is not inside the nearest FilterChip`).not.toContain(
+    "/>",
+  )
   const end = source.indexOf("/>", at)
   expect(end).toBeGreaterThan(at)
   return source.slice(start, end)
@@ -22,7 +24,10 @@ function chipWith(source: string, marker: string): string {
 
 describe("FilterChip callers declare their selection semantics", () => {
   it("announce slot picker is a multi-select", () => {
-    const chip = chipWith(read("../host/HostAnnounceBody.tsx"), "onPress={() => toggleSlot(slot.id)}")
+    const chip = chipWith(
+      read("../host/HostAnnounceBody.tsx"),
+      "onPress={() => toggleSlot(slot.id)}",
+    )
     expect(chip).toContain('selection="multiple"')
   })
 

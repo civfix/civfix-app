@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react"
 import {
   createEmbedLoadQueue,
   createEmbedViewport,
@@ -53,6 +61,9 @@ export function useEmbedGate(rowKey: string, embedKey: string): EmbedGate {
     queue.request(embedKey)
     return () => queue.drop(embedKey)
   }, [queue, embedKey, visible])
-  const onSettled = useCallback((cached: boolean) => queue.settle(embedKey, cached), [queue, embedKey])
+  const onSettled = useCallback(
+    (cached: boolean) => queue.settle(embedKey, cached),
+    [queue, embedKey],
+  )
   return { ready: visible && admitted, onSettled }
 }

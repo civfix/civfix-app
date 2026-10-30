@@ -70,11 +70,7 @@ export function InvitationsCard({
   if (slice.total === 0) return null
 
   return (
-    <SectionCard
-      label={t("invites.section")}
-      variant="list"
-      dividerInset={LIST_DIVIDER_INSET}
-    >
+    <SectionCard label={t("invites.section")} variant="list" dividerInset={LIST_DIVIDER_INSET}>
       {slice.events.map((invite) => (
         <EventInviteRow
           key={invite.id}

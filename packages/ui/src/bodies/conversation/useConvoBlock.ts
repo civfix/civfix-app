@@ -37,9 +37,23 @@ export function useConvoBlock({
     if (!peerId) return
     setBlockTarget({ id: peerId, name: title, isDm: true })
   }, [closeMenu, peerId, title])
-  const onBlockAuthor = useCallback((author: { id: string; name?: string | null }) => {
-    setBlockTarget({ id: author.id, name: author.name ?? t("block_confirm.this_person"), isDm: false })
-  }, [t])
+  const onBlockAuthor = useCallback(
+    (author: { id: string; name?: string | null }) => {
+      setBlockTarget({
+        id: author.id,
+        name: author.name ?? t("block_confirm.this_person"),
+        isDm: false,
+      })
+    },
+    [t],
+  )
   const cancelBlock = useCallback(() => setBlockTarget(null), [])
-  return { blockTarget, blockPending: blockUser.isPending, confirmBlock, startBlock, onBlockAuthor, cancelBlock }
+  return {
+    blockTarget,
+    blockPending: blockUser.isPending,
+    confirmBlock,
+    startBlock,
+    onBlockAuthor,
+    cancelBlock,
+  }
 }

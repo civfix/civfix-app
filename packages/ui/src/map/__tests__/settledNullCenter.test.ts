@@ -46,7 +46,7 @@ describe("the seams and the report flow carry the settled flag", () => {
 
   it("the report flow passes its resolution state to both pickers", () => {
     const flow = reportFlowSource()
-    expect(flow).toMatch(/<LocationPicker [^>]*centerSettled=\{initialCenter\.settled\}/)
+    expect(flow).toMatch(/<LocationPicker\s[^>]*centerSettled=\{initialCenter\.settled\}/)
     expect(flow).toMatch(/<PortraitMapPickStep[\s\S]*?centerSettled=\{pickCenter\.settled\}/)
   })
 })

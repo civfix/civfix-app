@@ -47,7 +47,13 @@ let openAuthModal: Mock<() => void>
 
 beforeEach(() => {
   vi.stubGlobal("window", { localStorage: makeStorage() })
-  useAuthStore.setState({ status: "idle", user: null, csrfToken: null, roles: [], optimistic: false })
+  useAuthStore.setState({
+    status: "idle",
+    user: null,
+    csrfToken: null,
+    roles: [],
+    optimistic: false,
+  })
   action = vi.fn()
   openAuthModal = vi.fn()
 })

@@ -9,7 +9,10 @@
  */
 import type { ReactionSummaryDTO } from "@civfix/contract"
 
-export function toggleReactionBucket(reactions: ReactionSummaryDTO[], emoji: string): ReactionSummaryDTO[] {
+export function toggleReactionBucket(
+  reactions: ReactionSummaryDTO[],
+  emoji: string,
+): ReactionSummaryDTO[] {
   const existing = reactions.find((r) => r.emoji === emoji)
   if (!existing) return [...reactions, { emoji, count: 1, mine: true }]
   if (existing.mine) {

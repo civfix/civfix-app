@@ -9,9 +9,11 @@ import type { api } from "@/lib/api"
 
 import { signupPage, ticket } from "./__fixtures__"
 
-const registerForEvent = vi.fn<(body: Parameters<typeof api.registerForEvent>[0], ...rest: unknown[]) => unknown>()
+const registerForEvent =
+  vi.fn<(body: Parameters<typeof api.registerForEvent>[0], ...rest: unknown[]) => unknown>()
 const guestRsvpRequest = vi.fn<(...args: unknown[]) => unknown>()
-const guestRsvpVerify = vi.fn<(body: Parameters<typeof api.guestRsvpVerify>[0], ...rest: unknown[]) => unknown>()
+const guestRsvpVerify =
+  vi.fn<(body: Parameters<typeof api.guestRsvpVerify>[0], ...rest: unknown[]) => unknown>()
 const joinEventWaitlist = vi.fn<(...args: unknown[]) => unknown>()
 const runTurnstile = vi.fn<(...args: unknown[]) => unknown>()
 
@@ -169,7 +171,9 @@ describe("member one-tap registration", () => {
     renderWidget(page())
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
-    expect((await screen.findByRole("alert")).textContent).toContain("host-ticket:outcome.access_code_invalid")
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "host-ticket:outcome.access_code_invalid",
+    )
   })
 
   it("mints a NEW idempotency key after a refusal, so a retry is a new attempt", async () => {
@@ -451,7 +455,9 @@ describe("guest code step", () => {
     await user.click(screen.getByRole("button", { name: /code\.submit/ }))
     expect(screen.getByText("code.title")).toBeTruthy()
     expect(screen.queryByLabelText("form.name_label")).toBe(null)
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: /code\.submit/ }).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /code\.submit/ }).disabled).toBe(
+      true,
+    )
 
     await act(async () => {
       fail({ code: "VALIDATION", message: "bad code" })

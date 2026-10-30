@@ -29,7 +29,12 @@ function held<T>() {
   return { promise, resolve, reject }
 }
 
-const votes = ([confirmCount, confirmedByMe, fixedCount, fixedByMe]: Votes): ReportConfirmResponse => ({
+const votes = ([
+  confirmCount,
+  confirmedByMe,
+  fixedCount,
+  fixedByMe,
+]: Votes): ReportConfirmResponse => ({
   confirmCount,
   confirmedByMe,
   fixedCount,
@@ -61,9 +66,17 @@ function renderWithApi<T>(useHook: () => T, api: Record<string, unknown>, cached
   return { ...renderHook(useHook, { wrapper }), queryClient }
 }
 
-function stateOf(qc: QueryClient, key: readonly unknown[] = queryKeys.report("r1")): ReportConfirmResponse {
+function stateOf(
+  qc: QueryClient,
+  key: readonly unknown[] = queryKeys.report("r1"),
+): ReportConfirmResponse {
   const r = qc.getQueryData<ReportDTO>(key)
-  return { confirmCount: r!.confirmCount, confirmedByMe: r!.confirmedByMe, fixedCount: r!.fixedCount, fixedByMe: r!.fixedByMe }
+  return {
+    confirmCount: r!.confirmCount,
+    confirmedByMe: r!.confirmedByMe,
+    fixedCount: r!.fixedCount,
+    fixedByMe: r!.fixedByMe,
+  }
 }
 
 // Every vote endpoint, each holding its call open, so a test sees the pending state and counts the calls.
@@ -85,7 +98,11 @@ function callsMade(api: Record<string, ReturnType<typeof vi.fn>>): number {
 describe("GH#203 vote hooks", () => {
   it("T7: useConfirmReport moves a fixed vote to a confirmation at once, in one call", async () => {
     const { api } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useConfirmReport("r1"), api, report([3, false, 1, true]))
+    const { result, queryClient } = renderWithApi(
+      () => useConfirmReport("r1"),
+      api,
+      report([3, false, 1, true]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
     expect(stateOf(queryClient)).toEqual(votes([4, true, 0, false]))
@@ -96,7 +113,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T8: useMarkReportFixed moves a confirmation to a fixed vote at once, in one call", async () => {
     const { api } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useMarkReportFixed("r1"), api, report([3, true, 1, false]))
+    const { result, queryClient } = renderWithApi(
+      () => useMarkReportFixed("r1"),
+      api,
+      report([3, true, 1, false]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.markReportFixed).toHaveBeenCalledTimes(1))
     expect(stateOf(queryClient)).toEqual(votes([2, false, 2, true]))
@@ -107,7 +128,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T9: useMarkReportFixed adds a fixed vote at once when there was no vote", async () => {
     const { api } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useMarkReportFixed("r1"), api, report([3, false, 1, false]))
+    const { result, queryClient } = renderWithApi(
+      () => useMarkReportFixed("r1"),
+      api,
+      report([3, false, 1, false]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.markReportFixed).toHaveBeenCalledTimes(1))
     expect(stateOf(queryClient)).toEqual(votes([3, false, 2, true]))
@@ -115,7 +140,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T10: useUnmarkReportFixed removes the fixed vote at once, in one call", async () => {
     const { api } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useUnmarkReportFixed("r1"), api, report([3, false, 2, true]))
+    const { result, queryClient } = renderWithApi(
+      () => useUnmarkReportFixed("r1"),
+      api,
+      report([3, false, 2, true]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.unmarkReportFixed).toHaveBeenCalledTimes(1))
     expect(stateOf(queryClient)).toEqual(votes([3, false, 1, false]))
@@ -125,7 +154,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T11: useUnconfirmReport removes the confirmation at once", async () => {
     const { api } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useUnconfirmReport("r1"), api, report([3, true, 1, false]))
+    const { result, queryClient } = renderWithApi(
+      () => useUnconfirmReport("r1"),
+      api,
+      report([3, true, 1, false]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
     expect(stateOf(queryClient)).toEqual(votes([2, false, 1, false]))
@@ -139,12 +172,19 @@ describe("GH#203 vote hooks", () => {
     await waitFor(() => expect(api.markReportFixed).toHaveBeenCalledTimes(1))
     await act(async () => call.resolve(votes([5, false, 2, true])))
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual({ ...before, ...votes([5, false, 2, true]) })
+    expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual({
+      ...before,
+      ...votes([5, false, 2, true]),
+    })
   })
 
   it("T13: useMarkReportFixed rolls back when the API fails", async () => {
     const { api, call } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useMarkReportFixed("r1"), api, report([3, true, 1, false]))
+    const { result, queryClient } = renderWithApi(
+      () => useMarkReportFixed("r1"),
+      api,
+      report([3, true, 1, false]),
+    )
     act(() => result.current.mutate())
     await waitFor(() => expect(api.markReportFixed).toHaveBeenCalledTimes(1))
     await act(async () => call.reject(new TypeError("Network request failed")))
@@ -154,7 +194,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T14: useMarkReportFixed presses and rolls back the report cached under its reference code", async () => {
     const { api, call } = pendingApi()
-    const { result, queryClient } = renderWithApi(() => useMarkReportFixed("r1"), api, report([3, true, 1, false]))
+    const { result, queryClient } = renderWithApi(
+      () => useMarkReportFixed("r1"),
+      api,
+      report([3, true, 1, false]),
+    )
     queryClient.setQueryData(CODE, report([3, true, 1, false]))
     act(() => result.current.mutate())
     await waitFor(() => expect(api.markReportFixed).toHaveBeenCalledTimes(1))
@@ -201,7 +245,11 @@ describe("GH#203 vote hooks", () => {
 
   it("T17: useConfirmMatch takes the four fields the API answers", async () => {
     const api = { confirmReport: vi.fn(async () => votes([4, true, 0, false])) }
-    const { result, queryClient } = renderWithApi(() => useConfirmMatch(), api, report([3, false, 1, true]))
+    const { result, queryClient } = renderWithApi(
+      () => useConfirmMatch(),
+      api,
+      report([3, false, 1, true]),
+    )
     await act(async () => {
       await result.current.mutateAsync("r1")
     })

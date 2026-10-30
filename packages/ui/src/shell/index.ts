@@ -83,7 +83,10 @@ export type { KeyboardRevealGroupProps } from "./keyboardRevealGroup"
 export { KeyboardAnchorView } from "./KeyboardAnchorView"
 export type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
 export { useKeyboardReserve } from "./useKeyboardReserve"
-export type { KeyboardReserveOptions, WebOnlyKeyboardReserveOptions } from "./useKeyboardReserve.types"
+export type {
+  KeyboardReserveOptions,
+  WebOnlyKeyboardReserveOptions,
+} from "./useKeyboardReserve.types"
 export {
   KEYBOARD_SURFACE_GAP,
   keyboardLift,

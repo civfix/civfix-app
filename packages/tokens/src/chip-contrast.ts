@@ -17,7 +17,8 @@ const HEX_COLOR = /^#?([0-9a-fA-F]{6})$/
 
 function channels(hex: string): [number, number, number] {
   const raw = HEX_COLOR.exec(hex)?.[1]
-  if (raw === undefined) throw new RangeError(`chip-contrast expects a 6-digit hex color, got "${hex}"`)
+  if (raw === undefined)
+    throw new RangeError(`chip-contrast expects a 6-digit hex color, got "${hex}"`)
   const [r, g, b] = [0, 2, 4].map((i) => parseInt(raw.slice(i, i + 2), 16))
   return [r ?? 0, g ?? 0, b ?? 0]
 }

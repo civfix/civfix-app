@@ -9,7 +9,11 @@
  *   2. "identity" - avatar / name / description. Create is gated on a non-blank name within the
  *                   contract's name cap (the description cap is enforced by maxLength + here).
  */
-import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX, type ChatGroupDTO } from "@civfix/contract"
+import {
+  CHAT_GROUP_DESCRIPTION_MAX,
+  CHAT_GROUP_NAME_MAX,
+  type ChatGroupDTO,
+} from "@civfix/contract"
 import type { DetailEntry } from "../nav"
 
 export type GroupWizardStep = "members" | "identity"
@@ -44,5 +48,8 @@ export function stackOpeningGroup(
   stack: readonly DetailEntry[],
   group: Pick<ChatGroupDTO, "id" | "name">,
 ): DetailEntry[] {
-  return [...stack.slice(0, -1), { kind: "thread", id: group.id, roomKind: "group", title: group.name }]
+  return [
+    ...stack.slice(0, -1),
+    { kind: "thread", id: group.id, roomKind: "group", title: group.name },
+  ]
 }

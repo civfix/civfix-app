@@ -36,10 +36,21 @@ export interface ConvoMeta {
 
 export type RenderItem =
   | { type: "sep"; id: string; label: string }
-  | { type: "row"; id: string; item: ChatItem; showName: boolean; groupStart: boolean; groupEnd: boolean }
+  | {
+      type: "row"
+      id: string
+      item: ChatItem
+      showName: boolean
+      groupStart: boolean
+      groupEnd: boolean
+    }
   | { type: "typing"; id: string; name: string | null; color: string }
 
-export function pinnedRenderRows(pins: readonly ChatMessageDTO[], viewerId: string | null, isGroup: boolean): RenderItem[] {
+export function pinnedRenderRows(
+  pins: readonly ChatMessageDTO[],
+  viewerId: string | null,
+  isGroup: boolean,
+): RenderItem[] {
   return pins.map((m) => {
     const mine = viewerId !== null && m.from?.id === viewerId
     return {
@@ -53,7 +64,11 @@ export function pinnedRenderRows(pins: readonly ChatMessageDTO[], viewerId: stri
   })
 }
 
-export function typingNames(typingUserIds: string[], names: Map<string, string>, t: TFunction): string {
+export function typingNames(
+  typingUserIds: string[],
+  names: Map<string, string>,
+  t: TFunction,
+): string {
   if (typingUserIds.length > 2) return t("typing.names_several")
   const labels = typingUserIds.map((id) => names.get(id) ?? t("typing.someone"))
   return labels.length === 1
@@ -103,10 +118,16 @@ export function transientErrorCopyKey(code: string): string {
 
 /** The edit-save failure toast. Never the error's own message: AppError text is English-only. */
 export function editErrorCopyKey(err: unknown): string {
-  return appErrorCode(err) === ErrorCode.NOT_FOUND ? "composer.edit_unavailable" : "composer.save_error"
+  return appErrorCode(err) === ErrorCode.NOT_FOUND
+    ? "composer.edit_unavailable"
+    : "composer.save_error"
 }
 
-export function roomErrorCopy(error: ChatRoomError | null, meta: ConvoMeta, t: TFunction): string | null {
+export function roomErrorCopy(
+  error: ChatRoomError | null,
+  meta: ConvoMeta,
+  t: TFunction,
+): string | null {
   if (!error) return null
   switch (error.code) {
     case "FORBIDDEN":
@@ -118,9 +139,7 @@ export function roomErrorCopy(error: ChatRoomError | null, meta: ConvoMeta, t: T
         ? t("room_error.dm_unavailable", { name: meta.title })
         : t("room_error.group_unavailable")
     default:
-      return error.message && error.message.length < 160
-        ? error.message
-        : t("room_error.generic")
+      return error.message && error.message.length < 160 ? error.message : t("room_error.generic")
   }
 }
 
@@ -145,7 +164,14 @@ export function buildRenderItems(
     const author = item.message.from?.id ?? null
     const groupStart = dayChanged || author !== lastAuthor
     const showName = isGroup && !item.mine && groupStart && item.message.kind !== "system"
-    rows.push({ type: "row", id: item.message.clientId ?? item.message.id, item, showName, groupStart, groupEnd: false })
+    rows.push({
+      type: "row",
+      id: item.message.clientId ?? item.message.id,
+      item,
+      showName,
+      groupStart,
+      groupEnd: false,
+    })
     lastAuthor = author
   }
   for (const [i, row] of rows.entries()) {

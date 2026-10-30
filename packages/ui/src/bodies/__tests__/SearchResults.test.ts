@@ -48,7 +48,10 @@ describe("SearchResults groups", () => {
  * call site (a new third call site that forgets `viewer` reds on the length assertion, not just on tsc).
  */
 describe("report hits render through the shared ReportRowView", () => {
-  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+  const searchResults = readFileSync(
+    new URL("../search/SearchResults.tsx", import.meta.url),
+    "utf8",
+  )
   const searchBody = surfaceSource("search")
   const reportRow = readFileSync(new URL("../ReportRow.tsx", import.meta.url), "utf8")
 
@@ -114,7 +117,10 @@ describe("report hits render through the shared ReportRowView", () => {
  * geometry every other list row in the app uses.
  */
 describe("the leaderboard row lives in its own module", () => {
-  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+  const searchResults = readFileSync(
+    new URL("../search/SearchResults.tsx", import.meta.url),
+    "utf8",
+  )
   const leaderboardRow = readFileSync(new URL("../LeaderboardRow.tsx", import.meta.url), "utf8")
   const row = leaderboardRow.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
 

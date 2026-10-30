@@ -25,7 +25,9 @@ function ticketedWsUrl(apiUrl: string, ticket: string): string {
  * CDN access logs, so the long-lived session bearer never goes there. Without a ticket this returns
  * null and the socket core retries on its backoff schedule.
  */
-export async function openTicketedSocket<S>(deps: WsTransportDeps<S>): Promise<OpenedSocket<S> | null> {
+export async function openTicketedSocket<S>(
+  deps: WsTransportDeps<S>,
+): Promise<OpenedSocket<S> | null> {
   const token = await deps.readToken()
   if (!token) return null
 

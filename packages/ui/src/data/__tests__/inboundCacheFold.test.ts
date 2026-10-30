@@ -66,7 +66,12 @@ describe("foldInboundIntoPages", () => {
     expect(next[0]?.items.map((m) => m.id)).toEqual(["m1", "m2"])
     expect(next[0]?.nextCursor).toBe("older")
 
-    const remounted = mergeChatItems(next.flatMap((p) => p.items), [], [], ME)
+    const remounted = mergeChatItems(
+      next.flatMap((p) => p.items),
+      [],
+      [],
+      ME,
+    )
     expect(remounted.map((i) => i.message.id)).toEqual(["m1", "m2"])
   })
 
@@ -76,13 +81,23 @@ describe("foldInboundIntoPages", () => {
     const pendingEntry: OutboxEntry = {
       clientId: "cid-1",
       status: "sending",
-      message: msg({ id: "cid-1", createdAt: "2026-01-01T00:00:01.000Z", fromId: "me", clientId: "cid-1" }),
+      message: msg({
+        id: "cid-1",
+        createdAt: "2026-01-01T00:00:01.000Z",
+        fromId: "me",
+        clientId: "cid-1",
+      }),
     }
 
     const next = foldInboundIntoPages(pages, [{ message: ackMessage, explicitClientId: "cid-1" }])
 
     expect(next[0]?.items[0]?.clientId).toBe("cid-1")
-    const merged = mergeChatItems(next.flatMap((p) => p.items), [], [pendingEntry], ME)
+    const merged = mergeChatItems(
+      next.flatMap((p) => p.items),
+      [],
+      [pendingEntry],
+      ME,
+    )
     expect(merged).toHaveLength(1)
     expect(merged[0]?.message.id).toBe("server-1")
     expect(merged[0]?.pending).toBe(false)
@@ -149,7 +164,9 @@ describe("foldInboundIntoPages", () => {
     const pages = [page([msg({ id: "m1", createdAt: "t" })])]
     expect(foldInboundIntoPages(pages, [])).toBe(pages)
     const empty: ChatHistoryResponse[] = []
-    expect(foldInboundIntoPages(empty, [{ message: msg({ id: "m2", createdAt: "t" }) }])).toBe(empty)
+    expect(foldInboundIntoPages(empty, [{ message: msg({ id: "m2", createdAt: "t" }) }])).toBe(
+      empty,
+    )
   })
 
   it("drops an update for an UNKNOWN id older than the loaded window (no false adjacency at the top)", () => {

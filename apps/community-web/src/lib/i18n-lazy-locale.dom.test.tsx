@@ -27,28 +27,45 @@ function renderAt(locale: SupportedLocale, seen: string[]) {
 }
 
 describe("a non-English locale on web", () => {
-  it("renders English until the German catalog arrives, then German, and never a raw key", async () => {
-    const seen: string[] = []
-    renderAt("de", seen)
-    expect(screen.getByTestId("probe").textContent).toBe("en:Save")
+  it(
+    "renders English until the German catalog arrives, then German, and never a raw key",
+    async () => {
+      const seen: string[] = []
+      renderAt("de", seen)
+      expect(screen.getByTestId("probe").textContent).toBe("en:Save")
 
-    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("de:Speichern"), CATALOG_ARRIVAL)
-    expect(new Set(seen)).toEqual(new Set(["en:Save", "de:Speichern"]))
-  }, TEST_TIMEOUT)
+      await waitFor(
+        () => expect(screen.getByTestId("probe").textContent).toBe("de:Speichern"),
+        CATALOG_ARRIVAL,
+      )
+      expect(new Set(seen)).toEqual(new Set(["en:Save", "de:Speichern"]))
+    },
+    TEST_TIMEOUT,
+  )
 
-  it("keeps the current language while the next one loads, then switches", async () => {
-    const seen: string[] = []
-    const view = renderAt("de", seen)
-    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("de:Speichern"), CATALOG_ARRIVAL)
+  it(
+    "keeps the current language while the next one loads, then switches",
+    async () => {
+      const seen: string[] = []
+      const view = renderAt("de", seen)
+      await waitFor(
+        () => expect(screen.getByTestId("probe").textContent).toBe("de:Speichern"),
+        CATALOG_ARRIVAL,
+      )
 
-    const afterGerman = seen.length
-    view.rerender(
-      <I18nProvider locale="es">
-        <Probe seen={seen} />
-      </I18nProvider>,
-    )
-    expect(screen.getByTestId("probe").textContent).toBe("de:Speichern")
-    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("es:Guardar"), CATALOG_ARRIVAL)
-    expect(new Set(seen.slice(afterGerman))).toEqual(new Set(["de:Speichern", "es:Guardar"]))
-  }, TEST_TIMEOUT)
+      const afterGerman = seen.length
+      view.rerender(
+        <I18nProvider locale="es">
+          <Probe seen={seen} />
+        </I18nProvider>,
+      )
+      expect(screen.getByTestId("probe").textContent).toBe("de:Speichern")
+      await waitFor(
+        () => expect(screen.getByTestId("probe").textContent).toBe("es:Guardar"),
+        CATALOG_ARRIVAL,
+      )
+      expect(new Set(seen.slice(afterGerman))).toEqual(new Set(["de:Speichern", "es:Guardar"]))
+    },
+    TEST_TIMEOUT,
+  )
 })

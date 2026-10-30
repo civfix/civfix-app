@@ -135,7 +135,10 @@ describe("AnalyticsScreen", () => {
     const exportButton = screen.getByRole("button", { name: "export_csv" })
     await waitFor(() => expect(exportButton).toHaveProperty("disabled", false))
     await user.click(exportButton)
-    expect(downloads.rows[0]).toEqual(["csv.source", "csv.title(event=River day,tab=tab.messaging)"])
+    expect(downloads.rows[0]).toEqual([
+      "csv.source",
+      "csv.title(event=River day,tab=tab.messaging)",
+    ])
   })
 
   it("says why arrival bins are missing when some are suppressed", async () => {
