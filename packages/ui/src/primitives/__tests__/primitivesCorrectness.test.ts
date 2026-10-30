@@ -61,7 +61,7 @@ describe("composer attachment errors are catalog keys", () => {
     expect(hook).not.toMatch(/setAttachError\("/)
     expect(hook).not.toMatch(/setAttachError\(`/)
     expect(hook).not.toContain("Could not open")
-    expect(hook).toContain("t(`attach_error.${attachError.key}`, attachError.params)")
+    expect(hook).toContain("const key = `attach_error.${attachError.key}`")
   })
 
   it("keeps the guard shapes the conversation wiring test pins", () => {

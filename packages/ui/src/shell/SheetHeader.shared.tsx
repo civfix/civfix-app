@@ -19,7 +19,7 @@ export interface SheetHeaderProps {
 
 export interface DetailHeaderProps {
   active: DetailEntry | null
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
   dismissGesture?: boolean
 }
 

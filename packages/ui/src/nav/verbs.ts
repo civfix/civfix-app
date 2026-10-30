@@ -3,7 +3,7 @@ import { useNavStore } from "./useNavStore"
 import { threadRoomId } from "../data/threadRoom"
 
 export function isTopEntry(
-  stack: ReadonlyArray<{ kind: string; id?: string }>,
+  stack: ReadonlyArray<{ kind: string; id?: string | undefined }>,
   kind: string,
   id: string,
 ): boolean {

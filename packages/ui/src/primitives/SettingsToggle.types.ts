@@ -3,5 +3,5 @@ export interface SettingsToggleProps {
   onValueChange: (next: boolean) => void
   onColor?: string
   accessibilityLabel?: string
-  accessibilityHint?: string
+  accessibilityHint?: string | undefined
 }

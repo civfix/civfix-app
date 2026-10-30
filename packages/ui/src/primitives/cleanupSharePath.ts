@@ -1,6 +1,6 @@
 export interface CleanupShareRef {
-  pageSlug?: string | null
-  referenceCode?: string | null
+  pageSlug?: string | null | undefined
+  referenceCode?: string | null | undefined
   id: string
 }
 

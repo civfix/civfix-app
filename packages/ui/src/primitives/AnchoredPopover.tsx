@@ -32,14 +32,14 @@ export interface AnchoredPopoverProps {
   motion: MenuMotion
   origin: MenuOrigin
   onClose: () => void
-  onDismiss?: () => void
+  onDismiss?: (() => void) | undefined
   dismissLabel: string
   centered?: boolean
   cardStyle?: StyleProp<ViewStyle>
-  onCardLayout?: (event: LayoutChangeEvent) => void
+  onCardLayout?: ((event: LayoutChangeEvent) => void) | undefined
   accessibilityRole?: AccessibilityRole
-  accessibilityLabel?: string
-  returnFocusRef?: React.RefObject<NativeView | null>
+  accessibilityLabel?: string | undefined
+  returnFocusRef?: React.RefObject<NativeView | null> | undefined
   children: React.ReactNode
 }
 
