@@ -191,6 +191,9 @@ jobs:
         with:
           # Pinned to what the developer laptops run, so CI and local builds resolve the same CLI.
           eas-version: 24.3.0
+          # The CLI that runs the signed build is installed fresh, never restored from a cache.
+          eas-cache: false
+          expo-cache: false
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build the ipa

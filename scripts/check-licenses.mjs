@@ -223,7 +223,6 @@ export const parseLicenseReport = (value) => {
   return report
 }
 
-
 /**
  * @param {LicenseReport} report
  * @param {AllowedPackages} [allowedPackages]
