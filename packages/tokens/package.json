@@ -51,7 +51,7 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
-    "@civfix/contract": "0.66.0-b-chore-city-filing-sync-main.g120c1a2",
+    "@civfix/contract": "0.68.0-b-integration-city-filing.g48a6446",
     "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",

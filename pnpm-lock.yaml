@@ -71,8 +71,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
-        version: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
+        specifier: 0.68.0-b-integration-city-filing.g48a6446
+        version: 0.68.0-b-integration-city-filing.g48a6446
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -273,8 +273,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
-        version: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
+        specifier: 0.68.0-b-integration-city-filing.g48a6446
+        version: 0.68.0-b-integration-city-filing.g48a6446
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -457,8 +457,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
-        version: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
+        specifier: 0.68.0-b-integration-city-filing.g48a6446
+        version: 0.68.0-b-integration-city-filing.g48a6446
       '@civfix/testing':
         specifier: workspace:*
         version: link:../testing
@@ -496,8 +496,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
-        version: 0.66.0-b-chore-city-filing-sync-main.g120c1a2
+        specifier: 0.68.0-b-integration-city-filing.g48a6446
+        version: 0.68.0-b-integration-city-filing.g48a6446
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1235,8 +1235,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.66.0-b-chore-city-filing-sync-main.g120c1a2':
-    resolution: {integrity: sha512-opoP77BPCA7VvTHE7Ijf7JcHSPJ8JdUFfOch6prIPS5OQS63B0y20rTMenWR+jqOM5ZNXwpRBUEeE6cCdJyCbw==}
+  '@civfix/contract@0.68.0-b-integration-city-filing.g48a6446':
+    resolution: {integrity: sha512-HAfxqUCMB2hnJRXZ9DKUunFvzfJlx+u8IkDXc4no0Dim2sZ73mdmnYDiHsazHq+qokYimdI4rJQtjIUV9mmBcA==}
     engines: {node: '>=20'}
 
   '@cloudflare/kv-asset-handler@0.5.0':
@@ -8276,7 +8276,7 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.66.0-b-chore-city-filing-sync-main.g120c1a2':
+  '@civfix/contract@0.68.0-b-integration-city-filing.g48a6446':
     dependencies:
       zod: 4.6.7
 

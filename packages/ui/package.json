@@ -151,7 +151,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "0.66.0-b-chore-city-filing-sync-main.g120c1a2",
+    "@civfix/contract": "0.68.0-b-integration-city-filing.g48a6446",
     "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",
