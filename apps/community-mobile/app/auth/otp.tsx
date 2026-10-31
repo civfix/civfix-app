@@ -6,9 +6,9 @@ import Ionicons from "@expo/vector-icons/Ionicons"
 import {
   EMAIL_OTP_CODE_LENGTH,
   REVIEWER_OTP_CODE_MAX_LENGTH,
-  REVIEWER_OTP_CODE_MIN_LENGTH,
   REVIEWER_OTP_EMAIL,
 } from "@civfix/contract"
+import { API_URL } from "@/config"
 import { makeThemedStyles, useTheme } from "@/theme"
 import {
   IosKeyboardAvoidingView,
@@ -24,19 +24,17 @@ import {
 import { useT } from "@civfix/ui/i18n"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
 import { requestEmailOtp, verifyEmailOtp } from "@/auth/signIn"
+import { testCodeOffered } from "@/lib/developerScreen"
 import { codeRejectionReason, friendlyError, isRateLimited } from "@/lib/errors"
 import { HOME_HREF, goHome } from "@/lib/goHome"
 import { toResumeHref } from "@/lib/links"
 import { DEFAULT_RESEND_COOLDOWN_SEC, canResend, parseResendAfterSec } from "@/lib/otpCooldown"
+import { isOtpCodeIncomplete, type OtpEntryMode } from "@/lib/otpEntry"
 import { useResendCooldown } from "@/hooks/useResendCooldown"
 
 const { ScrollView: OtpScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const MAX_ATTEMPTS = 3
-
-function isCodeIncomplete(code: string, reviewer: boolean): boolean {
-  return reviewer ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH : code.length !== EMAIL_OTP_CODE_LENGTH
-}
 
 export default function OtpScreen() {
   const { t } = useT("mobile-auth-otp")
@@ -50,9 +48,13 @@ export default function OtpScreen() {
   const email = params.email ?? ""
   const next = toResumeHref(params.next) ?? HOME_HREF
   const reviewer = email.trim().toLowerCase() === REVIEWER_OTP_EMAIL
+  const testCodeAvailable = testCodeOffered(email, API_URL, __DEV__)
 
   const initialCooldown = parseResendAfterSec(params.resendAfterSec)
 
+  const [testCodeEntry, setTestCodeEntry] = useState(false)
+  const mode: OtpEntryMode = reviewer ? "reviewer" : testCodeEntry ? "test_code" : "digits"
+  const longCode = mode !== "digits"
   const [code, setCode] = useState("")
   const [verifying, setVerifying] = useState(false)
   const [resending, setResending] = useState(false)
@@ -78,9 +80,17 @@ export default function OtpScreen() {
   const onVerify = useCallback(
     async (submitted: string) => {
       if (locked || verifying) return
-      const submittedCode = reviewer ? submitted.trim() : submitted
-      if (isCodeIncomplete(submittedCode, reviewer)) {
-        setError(t(reviewer ? "verify.too_short" : "verify.incomplete"))
+      const submittedCode = longCode ? submitted.trim() : submitted
+      if (isOtpCodeIncomplete(submittedCode, mode)) {
+        setError(
+          t(
+            mode === "test_code"
+              ? "test_code.too_short"
+              : mode === "reviewer"
+                ? "verify.too_short"
+                : "verify.incomplete",
+          ),
+        )
         return
       }
       setError(null)
@@ -112,8 +122,14 @@ export default function OtpScreen() {
         setVerifying(false)
       }
     },
-    [attempts, email, locked, next, reviewer, router, t, verifying],
+    [attempts, email, locked, longCode, mode, next, router, t, verifying],
   )
+
+  const onSwitchEntry = useCallback(() => {
+    setCode("")
+    setError(null)
+    setTestCodeEntry((on) => !on)
+  }, [])
 
   const onResend = useCallback(async () => {
     if (!canResend(availableAt, Date.now()) || resending) return
@@ -153,7 +169,11 @@ export default function OtpScreen() {
             {t("title")}
           </Text>
           <Text variant="body" color={th.colors.textMuted} style={styles.subtitle}>
-            {reviewer ? t("reviewer.subtitle") : t("subtitle")}
+            {mode === "reviewer"
+              ? t("reviewer.subtitle")
+              : mode === "test_code"
+                ? t("test_code.subtitle")
+                : t("subtitle")}
           </Text>
           <Text variant="bodyStrong" style={styles.email}>
             {email}
@@ -163,14 +183,16 @@ export default function OtpScreen() {
             style={[
               styles.codeWrap,
               landscape && styles.codeWrapLandscape,
-              reviewer && styles.codeWrapReviewer,
+              longCode && styles.codeWrapLongCode,
             ]}
           >
-            {reviewer ? (
+            {longCode ? (
               <TextField
-                label={t("reviewer.label")}
-                placeholder={t("reviewer.placeholder")}
-                helper={t("reviewer.helper")}
+                label={mode === "test_code" ? t("test_code.label") : t("reviewer.label")}
+                placeholder={
+                  mode === "test_code" ? t("test_code.placeholder") : t("reviewer.placeholder")
+                }
+                helper={mode === "test_code" ? t("test_code.helper") : t("reviewer.helper")}
                 value={code}
                 onChangeText={(next) => {
                   setError(null)
@@ -201,6 +223,30 @@ export default function OtpScreen() {
             )}
           </View>
 
+          {testCodeAvailable ? (
+            <Pressable
+              onPress={onSwitchEntry}
+              disabled={locked || verifying}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: locked || verifying }}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.entrySwitch,
+                pressed && !(locked || verifying) ? styles.resendPressed : null,
+              ]}
+            >
+              <Text
+                variant="caption"
+                color={locked || verifying ? th.colors.textSubtle : th.colors.brand.bloom}
+                style={styles.resendText}
+              >
+                {mode === "test_code"
+                  ? t("test_code.use_emailed_code")
+                  : t("test_code.use_test_code")}
+              </Text>
+            </Pressable>
+          ) : null}
+
           {error ? (
             <View style={styles.errorRow}>
               <Ionicons name="alert-circle" size={16} color={th.colors.dangerInk} />
@@ -217,7 +263,7 @@ export default function OtpScreen() {
           <PrimaryButton
             label={t("verify.label")}
             loading={verifying}
-            disabled={locked || isCodeIncomplete(code, reviewer)}
+            disabled={locked || isOtpCodeIncomplete(code, mode)}
             onPress={() => void onVerify(code)}
             style={styles.verifyBtn}
           />
@@ -300,8 +346,11 @@ const useStyles = makeThemedStyles((t) => ({
   codeWrapLandscape: {
     marginTop: t.space["5"],
   },
-  codeWrapReviewer: {
+  codeWrapLongCode: {
     width: "100%",
+  },
+  entrySwitch: {
+    marginTop: t.space["4"],
   },
   errorRow: {
     flexDirection: "row",

@@ -7,6 +7,15 @@
     "placeholder": "Pega el código de acceso",
     "helper": "Se proporciona con esta versión para la revisión de la app."
   },
+  "test_code": {
+    "subtitle": "Introduce el código de la cuenta de prueba para",
+    "label": "Código de la cuenta de prueba",
+    "placeholder": "Pega el código de prueba",
+    "helper": "El código compartido para las cuentas de prueba de staging.",
+    "too_short": "Introduce el código de la cuenta de prueba completo.",
+    "use_test_code": "Usar un código de prueba",
+    "use_emailed_code": "Usar el código del correo"
+  },
   "verify": {
     "label": "Verificar",
     "incomplete": "Introduce los 6 dígitos.",

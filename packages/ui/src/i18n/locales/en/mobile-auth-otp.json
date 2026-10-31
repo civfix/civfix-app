@@ -7,6 +7,15 @@
     "placeholder": "Paste the access code",
     "helper": "Provided with this build for app review."
   },
+  "test_code": {
+    "subtitle": "Enter the test account code for",
+    "label": "Test account code",
+    "placeholder": "Paste the test code",
+    "helper": "The shared code for staging test accounts.",
+    "too_short": "Enter the full test account code.",
+    "use_test_code": "Use a test code",
+    "use_emailed_code": "Use the emailed code"
+  },
   "verify": {
     "label": "Verify",
     "incomplete": "Enter all 6 digits.",
