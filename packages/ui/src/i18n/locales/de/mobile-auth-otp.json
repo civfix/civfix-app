@@ -7,6 +7,15 @@
     "placeholder": "Zugangscode einfügen",
     "helper": "Wird mit diesem Build für die App-Prüfung bereitgestellt."
   },
+  "test_code": {
+    "subtitle": "Testkonto-Code eingeben für",
+    "label": "Testkonto-Code",
+    "placeholder": "Testcode einfügen",
+    "helper": "Der gemeinsame Code für Staging-Testkonten.",
+    "too_short": "Vollständigen Testkonto-Code eingeben.",
+    "use_test_code": "Testcode verwenden",
+    "use_emailed_code": "Code aus der E-Mail verwenden"
+  },
   "verify": {
     "label": "Bestätigen",
     "incomplete": "Alle 6 Ziffern eingeben.",
