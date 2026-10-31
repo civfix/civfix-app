@@ -47,7 +47,8 @@ allowBuilds:
 # two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the
 # generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the
 # iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7
-# exactly and jsdom wants 8. Drop each entry once its parent ships the fixed range itself.
+# exactly and jsdom wants 8. node-forge floors at 1.4.2, not 1.4.1, because 1.4.1's PEM fix broke Buffer input to
+# pem.decode(). Drop each entry once its parent ships the fixed range itself.
 overrides:
   react: "19.1.0"
   react-dom: "19.1.0"
@@ -75,16 +76,20 @@ overrides:
   source-map-js@1: ">=1.2.2 <2"
   sharp: ">=0.35.5 <0.36"
   zod@4: ">=4.6.6 <5"
+  node-forge: ">=1.4.2 <2"
 
 # No untrusted input reaches any ignored advisory; each entry says when it can go.
 auditConfig:
   ignoreGhsas:
-    # node-forge RSA signature verification. @expo/cli uses node-forge to parse the developer's own keychain
-    # certificates in expo run:ios and, through @expo/code-signing-certificates, to sign and verify expo-updates
-    # manifests, which the app never configures (no updates block in app.config.js, expo-updates not installed), so
-    # no untrusted signature is ever verified. Remove once the lockfile resolves node-forge above 1.4.0 or @expo/cli
-    # drops it.
-    - GHSA-86w9-cpqp-85rv
+    # minimatch pattern-amplification DoS and glob's AbortSignal cancellation bypass, fixed only in the new majors
+    # (minimatch 11.0.1, glob 14.0.2) that no parent accepts yet. They arrive only through build and dev tooling
+    # (the Expo CLI, config, fingerprint and metro-config packages, React Native's codegen and CLI scripts, eslint
+    # and its plugins, jest coverage), none of which ships in the app bundle or the static export, and every pattern
+    # comes from this repo or those tools. The one signal-bounded walk is the Expo CLI's TypeScript prerequisite
+    # check, a 5-second-capped scan of the developer's own checkout. Remove once the lockfile holds no glob
+    # 9.0.0-14.0.1 and no minimatch below 11.0.1.
+    - GHSA-g3hv-75wg-m249
+    - GHSA-3g3m-2fjr-6pw4
     # image-size 1 in the metro 0.83.3 that @expo/metro 54 pins exactly; 2.x drops the file-path input metro passes,
     # and metro only measures image assets from this repo and lockfile-pinned packages at build time. Remove with
     # Expo SDK 55 (@expo/metro 55.1 runs metro 0.83.8, which has no image-size).
