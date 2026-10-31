@@ -39,18 +39,18 @@ function latFromMercatorY(y: number): number {
 export interface DropPinCameraInput {
   lat: number
   lng: number
-  currentZoom?: number | null
+  currentZoom?: number | null | undefined
   windowHeight: number
   sheetTopReserve: number
   /**
    * Native: `useSafeAreaInsets().top`; web: the app-download banner's measured height. Clamped into the
    * strip, so an oversized value sits the pin on the sheet's top edge and a non-finite one degrades to 0.
    */
-  topInset?: number
+  topInset?: number | undefined
   /**
    * `useNavStore.getState().snap` read after `openDropPinMenu`, which can move the sheet. Defaults to MID.
    */
-  sheetDetent?: Snap
+  sheetDetent?: Snap | undefined
   /**
    * `expandedFramePlan(...).occlusionLeft`, never the card width or a literal: the card floats in from the
    * window edge and is user-resizable, and in map mode only the shell inset remains.
@@ -66,7 +66,10 @@ export type DropPinCameraTarget = CameraTarget
  * An explicit three-way rather than `detents[detent]`: hosts feed this from the nav store at runtime, so a
  * stale or absent value must land on MID instead of reading past the tuple and offsetting by NaN.
  */
-function occludedHeight(detents: readonly [number, number, number], detent: Snap | undefined): number {
+function occludedHeight(
+  detents: readonly [number, number, number],
+  detent: Snap | undefined,
+): number {
   const [peek, mid, full] = detents
   if (detent === 0) return peek
   if (detent === 2) return full

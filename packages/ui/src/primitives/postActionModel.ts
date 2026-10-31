@@ -12,14 +12,14 @@ export interface PostActionModel {
   key: PostActionKey
   countLabel: string | null
   active: boolean
-  onPress?: () => void
+  onPress?: (() => void) | undefined
   sharePath?: string
 }
 
 export interface PostActionCallbacks {
   onLike?: (currentlyLiked: boolean) => void
-  onRepost?: (currentlyReposted: boolean) => void
-  onComment?: () => void
+  onRepost?: ((currentlyReposted: boolean) => void) | undefined
+  onComment?: (() => void) | undefined
   onSave?: (currentlySaved: boolean) => void
   onShare?: (path: string) => void
 }
@@ -135,9 +135,7 @@ export function postActionRowAvailableWidth(
   layout: PostActionLayout,
   row: { screenWidth: number; rowPaddingH: number; gutterWidth: number },
 ): number {
-  return (
-    row.screenWidth - 2 * row.rowPaddingH - row.gutterWidth + 2 * postActionGlyphInset(layout)
-  )
+  return row.screenWidth - 2 * row.rowPaddingH - row.gutterWidth + 2 * postActionGlyphInset(layout)
 }
 
 export type PostActionHaloFamily = "bloom" | "moss" | "sky"
@@ -173,11 +171,12 @@ export function positionPostActionMenu(
   const margin = space["2"]
   const gap = space["1"]
   const below = anchor.y + anchor.height + gap
-  const preferredTop = below + menu.height <= viewport.height - margin
-    ? below
-    : anchor.y - menu.height - gap
+  const preferredTop =
+    below + menu.height <= viewport.height - margin ? below : anchor.y - menu.height - gap
   return {
-    left: resolveBandLeft(anchor, viewport.width, menu.width, align === "right", { edgeMargin: margin }),
+    left: resolveBandLeft(anchor, viewport.width, menu.width, align === "right", {
+      edgeMargin: margin,
+    }),
     top: Math.min(
       Math.max(preferredTop, margin),
       Math.max(margin, viewport.height - menu.height - margin),
@@ -202,18 +201,39 @@ export function buildPostActionModel(
   options?: { omit?: readonly PostActionKey[] },
 ): PostActionModel[] {
   const sharePath = postDetailPath(input.postId)
-  const countLabel = (value: number) => value > 0 ? formatPostActionCount(value) : null
+  const countLabel = (value: number) => (value > 0 ? formatPostActionCount(value) : null)
   const all: PostActionModel[] = [
-    { key: "like", countLabel: countLabel(input.counts.likes), active: input.viewer.liked,
-      onPress: callbacks.onLike ? () => callbacks.onLike?.(input.viewer.liked) : undefined },
-    { key: "repost", countLabel: countLabel(input.counts.reposts), active: input.viewer.reposted,
-      onPress: callbacks.onRepost ? () => callbacks.onRepost?.(input.viewer.reposted) : undefined },
-    { key: "comment", countLabel: countLabel(input.counts.replies), active: false,
-      onPress: callbacks.onComment },
-    { key: "save", countLabel: countLabel(input.counts.saves), active: input.viewer.saved,
-      onPress: callbacks.onSave ? () => callbacks.onSave?.(input.viewer.saved) : undefined },
-    { key: "share", countLabel: null, active: false, sharePath,
-      onPress: callbacks.onShare ? () => callbacks.onShare?.(sharePath) : undefined },
+    {
+      key: "like",
+      countLabel: countLabel(input.counts.likes),
+      active: input.viewer.liked,
+      onPress: callbacks.onLike ? () => callbacks.onLike?.(input.viewer.liked) : undefined,
+    },
+    {
+      key: "repost",
+      countLabel: countLabel(input.counts.reposts),
+      active: input.viewer.reposted,
+      onPress: callbacks.onRepost ? () => callbacks.onRepost?.(input.viewer.reposted) : undefined,
+    },
+    {
+      key: "comment",
+      countLabel: countLabel(input.counts.replies),
+      active: false,
+      onPress: callbacks.onComment,
+    },
+    {
+      key: "save",
+      countLabel: countLabel(input.counts.saves),
+      active: input.viewer.saved,
+      onPress: callbacks.onSave ? () => callbacks.onSave?.(input.viewer.saved) : undefined,
+    },
+    {
+      key: "share",
+      countLabel: null,
+      active: false,
+      sharePath,
+      onPress: callbacks.onShare ? () => callbacks.onShare?.(sharePath) : undefined,
+    },
   ]
   const omit = options?.omit
   if (omit == null || omit.length === 0) return all

@@ -14,9 +14,9 @@ const edit = strip(read("../EditCleanupBody.tsx"))
 describe("eventCoverChanged", () => {
   it("sends a freshly uploaded cover", () => {
     expect(eventCoverChanged({ coverMediaId: "m1", coverPreviewUrl: "file:///a" }, null)).toBe(true)
-    expect(eventCoverChanged({ coverMediaId: "m1", coverPreviewUrl: "file:///a" }, "https://x")).toBe(
-      true,
-    )
+    expect(
+      eventCoverChanged({ coverMediaId: "m1", coverPreviewUrl: "file:///a" }, "https://x"),
+    ).toBe(true)
   })
 
   it("sends an explicit null when the host clears a cover the event already had", () => {
@@ -24,9 +24,9 @@ describe("eventCoverChanged", () => {
   })
 
   it("stays OUT of the patch when the host never touched the field", () => {
-    expect(eventCoverChanged({ coverMediaId: null, coverPreviewUrl: "https://x" }, "https://x")).toBe(
-      false,
-    )
+    expect(
+      eventCoverChanged({ coverMediaId: null, coverPreviewUrl: "https://x" }, "https://x"),
+    ).toBe(false)
     expect(eventCoverChanged({ coverMediaId: null, coverPreviewUrl: null }, null)).toBe(false)
     expect(eventCoverChanged({ coverMediaId: null, coverPreviewUrl: null }, undefined)).toBe(false)
   })
@@ -64,7 +64,9 @@ describe("the cover picker rides the shared upload seam", () => {
   it("keeps the uploaded id and the preview uri as two separate fields", () => {
     expect(formModel).toContain("coverMediaId: string | null")
     expect(formModel).toContain("coverPreviewUrl: string | null")
-    expect(form).toContain("mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
+    expect(form).toContain(
+      "mergeIntoCurrent({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })",
+    )
     expect(form).toContain("patchRendered({ coverMediaId: null, coverPreviewUrl: null })")
   })
 

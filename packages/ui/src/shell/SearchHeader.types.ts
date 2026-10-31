@@ -14,12 +14,12 @@ export interface SearchHeaderProps {
   onFocus: () => void
 
   /** The avatar renders only when set. */
-  userName?: string
+  userName?: string | undefined
   /** Falls back to the monogram. */
-  userPhotoUrl?: string | null
+  userPhotoUrl?: string | null | undefined
   onOpenProfile?: () => void
   /** When set, the trailing slot is a sign-in icon that opens auth directly; takes priority over `userName`. */
-  onSignIn?: () => void
+  onSignIn?: (() => void) | undefined
 
   /**
    * Renders the bottom-docked search bar (leading exit circle, search pill, trailing clear button) that

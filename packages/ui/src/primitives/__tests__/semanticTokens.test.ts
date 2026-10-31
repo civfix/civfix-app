@@ -27,7 +27,9 @@ describe("the new host surfaces are token-only", () => {
 
   it.each(NEW_SURFACES)("reads the scheme at render time in %s, never the static theme", (rel) => {
     const src = strip(read(rel))
-    expect(src).not.toMatch(/import \{[^}]*\b(theme|colors|glass|shadows)\b[^}]*\} from "(\.\.\/)+theme"/)
+    expect(src).not.toMatch(
+      /import \{[^}]*\b(theme|colors|glass|shadows)\b[^}]*\} from "(\.\.\/)+theme"/,
+    )
   })
 })
 
@@ -108,9 +110,10 @@ describe("selection is neutral", () => {
   it("keeps the pickers that became segmented gated on their in-flight request", () => {
     const fields = strip(read("../../bodies/host/InviteIdentifierFields.tsx"))
     const control = fields.slice(fields.indexOf("<SegmentedControl"))
-    expect(control.slice(0, control.indexOf("/>")), "the identifier picker lost its busy gate").toContain(
-      "disabled={disabled}",
-    )
+    expect(
+      control.slice(0, control.indexOf("/>")),
+      "the identifier picker lost its busy gate",
+    ).toContain("disabled={disabled}")
     const sites = [
       "../../bodies/host/HostTeamInviteSheet.tsx",
       "../../bodies/host/dashboard/OrgInviteSheet.tsx",

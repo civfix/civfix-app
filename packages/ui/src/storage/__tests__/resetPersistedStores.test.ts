@@ -73,7 +73,9 @@ describe("resetPersistedStores", () => {
     useSidebarStore.setState({})
     useAppPromoStore.setState({})
 
-    expect([...useReportFilterStore.getState().enabled].sort()).toEqual([...FILTER_CATEGORIES].sort())
+    expect([...useReportFilterStore.getState().enabled].sort()).toEqual(
+      [...FILTER_CATEGORIES].sort(),
+    )
     expect(useReportFilterStore.getState().eventsEnabled).toBe(true)
     expect(useSearchRecentStore.getState().recent).toEqual([])
     expect(useSidebarStore.getState().width).toBe(SIDEBAR_DEFAULT_WIDTH)

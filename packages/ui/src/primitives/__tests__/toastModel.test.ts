@@ -169,8 +169,8 @@ describe("Toast over an open sheet", () => {
 describe("Toast card layout", () => {
   it("breaks an unbreakable message inside the card on web", () => {
     expect(TOAST_SOURCE).toContain("style={[styles.message, webBreakAnywhere]}")
-    expect(read("../../theme/webAffordances.ts")).toContain(
-      'export const webBreakAnywhere: TextStyle = isWeb\n  ? webStyle({ overflowWrap: "anywhere" })\n  : {}',
+    expect(read("../../theme/webAffordances.ts")).toMatch(
+      /export const webBreakAnywhere: TextStyle = isWeb\s+\? webStyle\(\{ overflowWrap: "anywhere" \}\)\s+: \{\}/,
     )
   })
 

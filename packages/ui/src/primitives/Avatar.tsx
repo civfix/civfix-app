@@ -1,5 +1,12 @@
 import { useCallback, useMemo, useState } from "react"
-import { View, Image, StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native"
+import {
+  View,
+  Image,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+  type TextStyle,
+} from "react-native"
 import { avatarColor, monogram } from "@civfix/contract"
 import { makeThemedStyles, fontFamily, useTheme } from "../theme"
 import { Text } from "../typography"
@@ -15,9 +22,9 @@ export function Avatar({
   decorative,
 }: {
   name: string
-  photoUrl?: string | null
-  seed?: string
-  gradient?: readonly [string, string] | null
+  photoUrl?: string | null | undefined
+  seed?: string | undefined
+  gradient?: readonly [string, string] | null | undefined
   size?: number
   style?: StyleProp<ViewStyle>
   accessibilityLabel?: string

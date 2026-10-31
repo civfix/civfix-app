@@ -5,7 +5,10 @@ import { domElement } from "../primitives/domElement"
 import { domProps, makeThemedStyles, webStyle, pointerEventStyles } from "../theme"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 import { pageBottomReserve } from "./bodyLayout"
-import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
+import {
+  ContentBottomReserveProvider,
+  contentBottomReserveScrollHost,
+} from "./ContentBottomReserve"
 import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import { PageActiveProvider } from "./pageActive"
 import type { PageStackProps, PageStackRenderBody } from "./PageStack.types"
@@ -166,7 +169,11 @@ export function PageStack({
             opacity={css.opacity}
             paddingBottom={insets.paddingBottom}
             paddingTop={insets.paddingTop}
-            pointer={pageLayerPointerEvents({ active, isLeaving: hasLeaving && topmost, hasLeaving })}
+            pointer={pageLayerPointerEvents({
+              active,
+              isLeaving: hasLeaving && topmost,
+              hasLeaving,
+            })}
             renderBody={renderBody}
             scrimOpacity={topmost ? null : css.scrimOpacity}
             scrollHost={scrollHost}

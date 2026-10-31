@@ -225,7 +225,9 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
           title={t("thread.signed_out_title")}
           body={t("thread.signed_out_body")}
           variant="detail"
-          onSignIn={() => requireAuth(() => undefined, { next: pathForEntry({ kind: "post-thread", id }) })}
+          onSignIn={() =>
+            requireAuth(() => undefined, { next: pathForEntry({ kind: "post-thread", id }) })
+          }
         />
       </View>
     )

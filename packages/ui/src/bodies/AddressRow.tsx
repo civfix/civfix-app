@@ -181,13 +181,24 @@ export function AddressRow({
   const line = resolved.length > 0 ? applyNearPrefix(resolved, precision, near) : null
   const display = line ?? fallbackLabel?.trim() ?? null
 
-  const { affordances, sheetOpen, sheetOptions, onCopy, onExternal, onFocusMap, chooseOption, closeSheet } =
-    useAddressActions({ resolved, point, focusTarget, verified, title, variant })
+  const {
+    affordances,
+    sheetOpen,
+    sheetOptions,
+    onCopy,
+    onExternal,
+    onFocusMap,
+    chooseOption,
+    closeSheet,
+  } = useAddressActions({ resolved, point, focusTarget, verified, title, variant })
 
   if (!display) return null
 
   const text = (
-    <Text style={variant === "compact" ? styles.compactText : styles.text} numberOfLines={numberOfLines}>
+    <Text
+      style={variant === "compact" ? styles.compactText : styles.text}
+      numberOfLines={numberOfLines}
+    >
       {display}
     </Text>
   )
@@ -204,7 +215,11 @@ export function AddressRow({
 
   const body = (
     <View style={styles.main}>
-      <View style={styles.label} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
+      <View
+        style={styles.label}
+        accessible
+        accessibilityLabel={t("row.static_a11y", { address: display })}
+      >
         <Icon icon={iconMap.MapPin} size={LABEL_ICON_SIZE} color={th.colors.textSubtle} />
         {text}
       </View>

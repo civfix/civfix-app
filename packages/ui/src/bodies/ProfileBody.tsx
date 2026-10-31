@@ -4,12 +4,7 @@ import type { CleanupDTO, ReportDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { EmptyState, SignInPrompt } from "../primitives"
-import {
-  useMyProfile,
-  useAuthState,
-  useRequireAuth,
-  useMyReports,
-} from "../data"
+import { useMyProfile, useAuthState, useRequireAuth, useMyReports } from "../data"
 import { useUserPosts } from "../data/hooks/posts"
 import { useNavStore, type DetailKind } from "../nav"
 import { useT } from "../i18n"
@@ -81,7 +76,13 @@ export function ProfileBody() {
 
   const onOpenReport = useCallback((report: ReportDTO) => {
     const nav = useNavStore.getState()
-    nav.push({ kind: "pin", id: report.id, title: report.title ?? undefined, lat: report.lat, lng: report.lng })
+    nav.push({
+      kind: "pin",
+      id: report.id,
+      title: report.title ?? undefined,
+      lat: report.lat,
+      lng: report.lng,
+    })
   }, [])
 
   const pushKind = useCallback((kind: DetailKind) => {
@@ -96,7 +97,9 @@ export function ProfileBody() {
 
   const profileReports: ProfileReports = useMemo(
     () => ({
-      items: (reportsQuery.data?.pages ?? []).flatMap((page) => page.items).slice(0, REPORTS_PREVIEW_LIMIT),
+      items: (reportsQuery.data?.pages ?? [])
+        .flatMap((page) => page.items)
+        .slice(0, REPORTS_PREVIEW_LIMIT),
       isLoading: reportsQuery.isLoading,
       isError: reportsQuery.isError,
       onOpen: onOpenReport,
@@ -166,7 +169,11 @@ export function ProfileBody() {
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
       <ProfileView
         profile={profile}
         onOpenEvent={onOpenEvent}

@@ -29,7 +29,11 @@ export const FOCUS_SETTLE_P_EPSILON = 0.01
  * a fast tap-into-Search-then-exit can leave p well below 1, and there this falls back to the animated
  * dockFocus retarget, which is smooth at any p.
  */
-export function focusSettleCommand(pinned: boolean, searchActive: boolean, p: number): FocusSettleCommand {
+export function focusSettleCommand(
+  pinned: boolean,
+  searchActive: boolean,
+  p: number,
+): FocusSettleCommand {
   if (!searchActive) return { target: 0, animated: !(p >= 1 - FOCUS_SETTLE_P_EPSILON) }
   return { target: pinned ? 1 : 0, animated: true }
 }

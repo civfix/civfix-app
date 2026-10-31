@@ -24,7 +24,11 @@ export interface EventRosterBlockProps {
   enabled?: boolean
 }
 
-export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true }: EventRosterBlockProps) {
+export function EventRosterBlock({
+  cleanupId,
+  canCheckIn = false,
+  enabled = true,
+}: EventRosterBlockProps) {
   const styles = useStyles()
   const { t } = useT("host-common")
   const toast = useToast()
@@ -71,7 +75,11 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
         onFocusChange={setSearchFocused}
       />
 
-      <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t("roster.filter_a11y")}>
+      <View
+        style={styles.chips}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t("roster.filter_a11y")}
+      >
         {filters.map((value) => (
           <FilterChip
             key={value}

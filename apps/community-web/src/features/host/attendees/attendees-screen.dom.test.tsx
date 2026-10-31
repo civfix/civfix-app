@@ -111,7 +111,9 @@ describe("AttendeesScreen", () => {
     expect(await screen.findByRole("dialog", { name: "Ada" })).toBeTruthy()
 
     await user.click(screen.getByRole("button", { name: "filter.checked_in" }))
-    await waitFor(() => expect(new URLSearchParams(window.location.search).get("attendee")).toBeNull())
+    await waitFor(() =>
+      expect(new URLSearchParams(window.location.search).get("attendee")).toBeNull(),
+    )
 
     await user.click(screen.getByRole("button", { name: "filter.all" }))
     await screen.findByRole("button", { name: "table.open_row(name=Ada)" })
@@ -166,9 +168,7 @@ describe("AttendeesScreen", () => {
       "sr-only",
     )
     const answer = (await within(drawer).findByText("Dietary needs")).nextElementSibling
-    expect(within(answer as HTMLElement).getByText("state.no_value").className).toContain(
-      "sr-only",
-    )
+    expect(within(answer as HTMLElement).getByText("state.no_value").className).toContain("sr-only")
   })
 
   it("heads the waitlist's party column with a real label", async () => {

@@ -324,8 +324,7 @@ export class ChatSocketCore implements ChatSocketLike {
       this.ensureOpen()
     }
     if (isPromise(current)) {
-      current.then(compare, () => {
-      })
+      current.then(compare, () => {})
       return
     }
     compare(current)

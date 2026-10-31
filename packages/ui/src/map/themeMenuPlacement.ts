@@ -4,7 +4,7 @@ export interface ThemeMenuPlacementInput {
   anchorRight: number | null
   viewportWidth: number
   margin: number
-  maxWidth?: number
+  maxWidth?: number | undefined
 }
 
 export interface ThemeMenuPlacement {

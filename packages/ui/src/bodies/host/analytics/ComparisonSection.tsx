@@ -47,7 +47,9 @@ export function ComparisonSection({ data }: { data: GetEventAnalyticsResponse })
   return (
     <SectionCard label={t("page.comparison_section")}>
       <View style={styles.block}>
-        <Text variant="caption">{t("page.comparison_caption", { events: comparison.sampleSize })}</Text>
+        <Text variant="caption">
+          {t("page.comparison_caption", { events: comparison.sampleSize })}
+        </Text>
         {rows.map((row) => (
           <View key={row.key} style={styles.comparisonRow}>
             <Text variant="caption" numberOfLines={1} style={styles.comparisonLabel}>

@@ -14,7 +14,7 @@ import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const HANDLE_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.RATE_LIMITED]: "handle.error.rate_limited",
@@ -96,7 +96,8 @@ export function ChangeUsernameEditor({
             : t("handle.availability.taken")
       return { text, tone: "error" as const }
     }
-    if (availability.data?.available) return { text: t("handle.hint.available"), tone: "ok" as const }
+    if (availability.data?.available)
+      return { text: t("handle.hint.available"), tone: "ok" as const }
     return { text: "", tone: "muted" as const }
   })()
 

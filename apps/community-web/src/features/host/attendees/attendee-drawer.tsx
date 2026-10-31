@@ -101,11 +101,7 @@ export function AttendeeDrawer({
         footer={
           canManage ? (
             <div className="flex flex-wrap items-center justify-end gap-token-2">
-              <ConsoleButton
-                variant="destructive"
-                size="sm"
-                onClick={() => setConfirmRemove(true)}
-              >
+              <ConsoleButton variant="destructive" size="sm" onClick={() => setConfirmRemove(true)}>
                 {t("drawer.remove")}
               </ConsoleButton>
             </div>

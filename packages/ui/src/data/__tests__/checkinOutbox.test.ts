@@ -53,7 +53,12 @@ describe("enqueue", () => {
   it("appends an entry that is ready to send immediately", () => {
     const state = enqueue(EMPTY_CHECKIN_OUTBOX, scan("tok-1"), T0)
     expect(state.entries).toHaveLength(1)
-    expect(state.entries[0]).toMatchObject({ cleanupId: "e1", method: "scan", token: "tok-1", attempts: 0 })
+    expect(state.entries[0]).toMatchObject({
+      cleanupId: "e1",
+      method: "scan",
+      token: "tok-1",
+      attempts: 0,
+    })
     expect(dequeueReady(state, T0)).toHaveLength(1)
   })
 
@@ -144,7 +149,9 @@ describe("event scoping", () => {
     for (let i = 0; i < 5; i++) state = enqueue(state, scan(`t-${i}`), T0)
     expect(dequeueReady(state, T0, { cleanupId: "e1", limit: 2 })).toHaveLength(2)
     const backedOff = markFailed(state, state.entries[0]!.id, T0, { retryable: true })
-    expect(dequeueReady(backedOff, T0, { cleanupId: "e1" }).map((e) => e.token)).not.toContain("t-0")
+    expect(dequeueReady(backedOff, T0, { cleanupId: "e1" }).map((e) => e.token)).not.toContain(
+      "t-0",
+    )
   })
 })
 
@@ -308,10 +315,15 @@ describe("runReplay", () => {
     state = enqueue(state, scan("tok-5"), T0)
     const batch = dequeueReady(state, T0, { cleanupId: "e1", limit: 2 })
     expect(batch).toHaveLength(2)
-    const run = await runReplay(state, batch, answering([{ status: "error", code: "UNAUTHORIZED" }]), {
-      ...deps,
-      scope: { cleanupId: "e1" },
-    })
+    const run = await runReplay(
+      state,
+      batch,
+      answering([{ status: "error", code: "UNAUTHORIZED" }]),
+      {
+        ...deps,
+        scope: { cleanupId: "e1" },
+      },
+    )
     expect(run.report.held).toBe(5)
     expect(run.state.entries).toHaveLength(5)
   })
@@ -400,12 +412,10 @@ describe("runReplay", () => {
   it("persists the progress of a batch after every entry, not only at the end", async () => {
     const state = three()
     const seen: number[] = []
-    await runReplay(
-      state,
-      dequeueReady(state, T0, { cleanupId: "e1" }),
-      answering([]),
-      { now: () => T0, onState: (next) => seen.push(next.entries.length) },
-    )
+    await runReplay(state, dequeueReady(state, T0, { cleanupId: "e1" }), answering([]), {
+      now: () => T0,
+      onState: (next) => seen.push(next.entries.length),
+    })
     expect(seen).toEqual([2, 1, 0])
   })
 })
@@ -458,7 +468,9 @@ describe("per-account scoping", () => {
     const store = makeStore()
     await saveOutbox(store, enqueue(EMPTY_CHECKIN_OUTBOX, scan("tok-a"), T0), USER_A)
     await saveOutbox(store, enqueue(EMPTY_CHECKIN_OUTBOX, scan("tok-b"), T0), USER_B)
-    expect(new Set(store.keys())).toEqual(new Set([checkinOutboxKey(USER_A), checkinOutboxKey(USER_B)]))
+    expect(new Set(store.keys())).toEqual(
+      new Set([checkinOutboxKey(USER_A), checkinOutboxKey(USER_B)]),
+    )
   })
 
   it("deletes the pre-namespace blob instead of migrating it onto whoever reads next", async () => {

@@ -45,7 +45,11 @@ export function CameraPermissionGate({
         {copy.body}
       </Text>
       {denied ? (
-        <PrimaryButton label={copy.continueLabel} onPress={onRequestPermission} style={styles.gateBtn} />
+        <PrimaryButton
+          label={copy.continueLabel}
+          onPress={onRequestPermission}
+          style={styles.gateBtn}
+        />
       ) : null}
       {secondaryAction}
       {denied ? (

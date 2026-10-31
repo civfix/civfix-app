@@ -110,9 +110,9 @@ describe("the fold-vs-in-flight-fetch race (journal + drain)", () => {
       pages: [page([msg({ id: "m1", createdAt: at(1) })])],
       pageParams: [undefined],
     }
-    expect(applyHistoryCacheOps(data, [{ kind: "patch", messageId: "missing", patch: { body: "x" } }])).toBe(
-      data,
-    )
+    expect(
+      applyHistoryCacheOps(data, [{ kind: "patch", messageId: "missing", patch: { body: "x" } }]),
+    ).toBe(data)
   })
 })
 
@@ -129,7 +129,9 @@ describe("prunableFrameIds", () => {
       },
       { kind: "patch", messageId: "m9", patch: { body: "x" } },
     ]
-    const finalPages = [page([msg({ id: "m1", createdAt: at(1) }), msg({ id: "m2", createdAt: at(2) })])]
+    const finalPages = [
+      page([msg({ id: "m1", createdAt: at(1) }), msg({ id: "m2", createdAt: at(2) })]),
+    ]
     expect(prunableFrameIds(ops, finalPages)).toEqual(new Set(["m1", "m2", "cid-2"]))
   })
 
@@ -177,7 +179,11 @@ describe("journalFrames (bounded journal)", () => {
 
   it("drops the OLDEST frames beyond the cap and never touches patch ops", () => {
     let ops: HistoryCacheOp[] = [{ kind: "patch", messageId: "m0", patch: { body: "x" } }]
-    ops = journalFrames(ops, Array.from({ length: 4 }, (_, i) => frame(i + 1)), 3)
+    ops = journalFrames(
+      ops,
+      Array.from({ length: 4 }, (_, i) => frame(i + 1)),
+      3,
+    )
     const framesOp = ops.find((o) => o.kind === "frames")
     expect(ops[0]?.kind).toBe("patch")
     expect(framesOp?.kind === "frames" && framesOp.frames.map((f) => f.message.id)).toEqual([
@@ -246,9 +252,9 @@ describe("shouldResetToNewestPage (gap-fill beyond one page)", () => {
   })
 
   it("resets an all-empty cache onto a full fetched page so its cursor becomes the pagination root", () => {
-    expect(shouldResetToNewestPage([page([])], page([msg({ id: "m9", createdAt: at(9) })], "c"))).toBe(
-      true,
-    )
+    expect(
+      shouldResetToNewestPage([page([])], page([msg({ id: "m9", createdAt: at(9) })], "c")),
+    ).toBe(true)
   })
 })
 

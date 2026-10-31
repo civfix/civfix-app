@@ -51,15 +51,21 @@ describe("convoHeaderTargets", () => {
   })
 
   it("each target is decided INDEPENDENTLY - one handler never enables a sibling", () => {
-    expect(
-      convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasOpenMembers: true }),
-    ).toEqual({ pinnedList: false, members: true, groupInfo: false, viewReport: false })
+    expect(convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasOpenMembers: true })).toEqual({
+      pinnedList: false,
+      members: true,
+      groupInfo: false,
+      viewReport: false,
+    })
     expect(
       convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasOpenGroupInfo: true }),
     ).toEqual({ pinnedList: false, members: false, groupInfo: true, viewReport: false })
-    expect(
-      convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasViewReport: true }),
-    ).toEqual({ pinnedList: false, members: false, groupInfo: false, viewReport: true })
+    expect(convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasViewReport: true })).toEqual({
+      pinnedList: false,
+      members: false,
+      groupInfo: false,
+      viewReport: true,
+    })
     expect(
       convoHeaderTargets({ fullScreen: true, ...NO_HANDLERS, hasOpenPinnedList: true }),
     ).toEqual({ pinnedList: true, members: false, groupInfo: false, viewReport: false })

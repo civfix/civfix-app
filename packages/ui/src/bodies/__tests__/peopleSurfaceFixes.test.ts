@@ -16,7 +16,9 @@ describe("followers / following list", () => {
   })
 
   it("lets a filter reach people on pages not loaded yet, and says so when nothing loaded matches", () => {
-    expect(connections).toMatch(/filtering && hasNextPage \? \(\s*<Pressable\s*onPress=\{onSearchMore\}/)
+    expect(connections).toMatch(
+      /filtering && hasNextPage \? \(\s*<Pressable\s*onPress=\{onSearchMore\}/,
+    )
     expect(connections).toContain('t(hasNextPage ? "no_matches.body_partial" : "no_matches.body"')
   })
 

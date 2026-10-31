@@ -27,7 +27,10 @@ const DISMISS_ICON_SIZE = 15
 export function useVisibleSystemNotice(): SystemNotice | null {
   const announcement = useAppConfig().data?.announcement
   const dismissedHash = useSystemNoticeStore((s) => s.dismissedHash)
-  return useMemo(() => visibleSystemNotice(announcement, dismissedHash), [announcement, dismissedHash])
+  return useMemo(
+    () => visibleSystemNotice(announcement, dismissedHash),
+    [announcement, dismissedHash],
+  )
 }
 
 export interface SystemNoticeBarProps {

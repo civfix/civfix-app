@@ -5,10 +5,22 @@ describe("toLightboxItems", () => {
   it("keeps the full-resolution url and passes the thumb and real dimensions on", () => {
     expect(
       toLightboxItems([
-        { url: "https://cdn/a.jpg", kind: "image", thumbUrl: "https://cdn/a-400.jpg", width: 1200, height: 800 },
+        {
+          url: "https://cdn/a.jpg",
+          kind: "image",
+          thumbUrl: "https://cdn/a-400.jpg",
+          width: 1200,
+          height: 800,
+        },
       ]),
     ).toEqual([
-      { url: "https://cdn/a.jpg", kind: "image", thumbUrl: "https://cdn/a-400.jpg", width: 1200, height: 800 },
+      {
+        url: "https://cdn/a.jpg",
+        kind: "image",
+        thumbUrl: "https://cdn/a-400.jpg",
+        width: 1200,
+        height: 800,
+      },
     ])
   })
 

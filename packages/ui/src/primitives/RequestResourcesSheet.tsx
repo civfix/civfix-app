@@ -57,7 +57,12 @@ export function RequestResourcesSheet({
       actions={
         <>
           <SecondaryButton label={t("cancel")} onPress={onClose} size="sm" />
-          <PrimaryButton label={t("submit")} onPress={commit} loading={pending} disabled={!canSubmit} />
+          <PrimaryButton
+            label={t("submit")}
+            onPress={commit}
+            loading={pending}
+            disabled={!canSubmit}
+          />
         </>
       }
     >

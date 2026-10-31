@@ -6,9 +6,16 @@ import { View } from "react-native"
 import { pointerEventStyles } from "../theme"
 import type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
 
-export function KeyboardAnchorView({ anchor, style, children, pointerEvents }: KeyboardAnchorViewProps) {
+export function KeyboardAnchorView({
+  anchor,
+  style,
+  children,
+  pointerEvents,
+}: KeyboardAnchorViewProps) {
   return (
-    <View style={[style, anchor.liftStyle, pointerEvents ? pointerEventStyles[pointerEvents] : null]}>
+    <View
+      style={[style, anchor.liftStyle, pointerEvents ? pointerEventStyles[pointerEvents] : null]}
+    >
       {children}
     </View>
   )

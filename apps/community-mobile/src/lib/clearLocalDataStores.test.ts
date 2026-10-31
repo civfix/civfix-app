@@ -28,8 +28,11 @@ installModuleStubs({
 })
 
 const { calls, control, memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { DEFAULT_APPEARANCE_PREFERENCE } = (await import(UI_SCHEMES.href)) as { DEFAULT_APPEARANCE_PREFERENCE: string }
-const { APPEARANCE_KEY, LOCALE_KEY, LOCATION_PRIMER_KEY, ONBOARDING_KEY } = await import("./mmkvKeys.ts")
+const { DEFAULT_APPEARANCE_PREFERENCE } = (await import(UI_SCHEMES.href)) as {
+  DEFAULT_APPEARANCE_PREFERENCE: string
+}
+const { APPEARANCE_KEY, LOCALE_KEY, LOCATION_PRIMER_KEY, ONBOARDING_KEY } =
+  await import("./mmkvKeys.ts")
 const { useAuthStore } = await import("../store/authStore.ts")
 const { useOnboardingStore } = await import("../store/onboardingStore.ts")
 const { useLocationPrimerStore } = await import("../store/locationPrimerStore.ts")
@@ -54,7 +57,10 @@ before(async () => {
 test("each app store is back at a fresh install's values, except the tour, which waits for the next launch", () => {
   assert.equal(useOnboardingStore.getState().completedVersion, 1)
   assert.deepEqual(
-    { shown: useLocationPrimerStore.getState().shown, choice: useLocationPrimerStore.getState().choice },
+    {
+      shown: useLocationPrimerStore.getState().shown,
+      choice: useLocationPrimerStore.getState().choice,
+    },
     { shown: false, choice: null },
   )
   assert.equal(useAppearanceStore.getState().preference, DEFAULT_APPEARANCE_PREFERENCE)
@@ -68,8 +74,14 @@ test("a store write after the clear stores none of the cleared data", () => {
   useLocationPrimerStore.setState({})
   useAppearanceStore.setState({})
 
-  assert.equal(memory.get(ONBOARDING_KEY), JSON.stringify({ state: { completedVersion: 0 }, version: 1 }))
-  assert.equal(memory.get(LOCATION_PRIMER_KEY), JSON.stringify({ state: { shown: false, choice: null }, version: 2 }))
+  assert.equal(
+    memory.get(ONBOARDING_KEY),
+    JSON.stringify({ state: { completedVersion: 0 }, version: 1 }),
+  )
+  assert.equal(
+    memory.get(LOCATION_PRIMER_KEY),
+    JSON.stringify({ state: { shown: false, choice: null }, version: 2 }),
+  )
   assert.equal(
     memory.get(APPEARANCE_KEY),
     JSON.stringify({ state: { preference: DEFAULT_APPEARANCE_PREFERENCE }, version: 1 }),

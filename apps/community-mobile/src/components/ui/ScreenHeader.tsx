@@ -29,9 +29,7 @@ export function ScreenHeader({ title, closeIcon = false, onBack }: ScreenHeaderP
   const glyphColor = th.colors.text
 
   return (
-    <View
-      style={[styles.header, styles.solid, { paddingTop: insets.top + th.space["2"] }]}
-    >
+    <View style={[styles.header, styles.solid, { paddingTop: insets.top + th.space["2"] }]}>
       <Pressable
         onPress={handleBack}
         accessibilityRole="button"

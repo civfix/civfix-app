@@ -45,7 +45,11 @@ const SESSION_FIELDS = [
 // can never be silently dropped from history and report-return snapshots.
 const PERSISTED_KEYS = [...ENTRY_IDENTITY_FIELDS, ...SESSION_FIELDS] as const
 
-function copyDefined<K extends keyof DetailEntry>(target: DetailEntry, source: DetailEntry, key: K): void {
+function copyDefined<K extends keyof DetailEntry>(
+  target: DetailEntry,
+  source: DetailEntry,
+  key: K,
+): void {
   const value = source[key]
   if (value !== undefined) target[key] = value
 }

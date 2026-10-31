@@ -23,7 +23,9 @@ export function buildLocalReplyTo(message: ChatMessageDTO): ReplyToDTO {
     from: message.from ? { id: message.from.id, displayName: message.from.name } : null,
     // Code-point slice (Array.from iterates by code point), so the cap never splits a surrogate
     // pair; a plain String.slice at 120 UTF-16 units could end the excerpt on a lone surrogate.
-    excerpt: Array.from(message.body ?? "").slice(0, REPLY_EXCERPT_MAX).join(""),
+    excerpt: Array.from(message.body ?? "")
+      .slice(0, REPLY_EXCERPT_MAX)
+      .join(""),
     kind: message.kind,
     deleted: false,
   }

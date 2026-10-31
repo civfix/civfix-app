@@ -38,7 +38,10 @@ export interface ReverseLabelPoint {
  * (`string | null | undefined`): a non-empty string is the address; `null` (no coverage) / `undefined` (still
  * loading) fall back to coords so the UI never shows a blank.
  */
-export function reverseLabelText(label: string | null | undefined, point: ReverseLabelPoint | null): string {
+export function reverseLabelText(
+  label: string | null | undefined,
+  point: ReverseLabelPoint | null,
+): string {
   if (label && label.trim().length > 0) return label.trim()
   return point ? coordsLabel(point) : ""
 }

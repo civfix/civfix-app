@@ -21,13 +21,7 @@ export const CONSOLE_REPLACE_PARAM_KEYS = [
   "next",
 ] as const
 
-export const CONSOLE_PUSH_PARAM_KEYS = [
-  "attendee",
-  "tt",
-  "member",
-  "delivery",
-  "confirm",
-] as const
+export const CONSOLE_PUSH_PARAM_KEYS = ["attendee", "tt", "member", "delivery", "confirm"] as const
 
 export const CONSOLE_PARAM_KEYS = [
   ...CONSOLE_REPLACE_PARAM_KEYS,
@@ -70,10 +64,7 @@ export function serializeConsoleParams(params: ConsoleParams): string {
   return out === "" ? "" : `?${out}`
 }
 
-export function applyConsolePatch(
-  params: ConsoleParams,
-  patch: ConsoleParamPatch,
-): ConsoleParams {
+export function applyConsolePatch(params: ConsoleParams, patch: ConsoleParamPatch): ConsoleParams {
   let next: ConsoleParams = { ...params }
   for (const [key, value] of Object.entries(patch) as [
     ConsoleParamKey,

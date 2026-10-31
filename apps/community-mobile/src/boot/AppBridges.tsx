@@ -22,7 +22,9 @@ function RealtimeChannel(): null {
 function CameraNavigatorBridge(): null {
   const router = useRouter()
   useEffect(() => {
-    setCameraNavigator((captureId) => router.push({ pathname: "/report/camera", params: { captureId } }))
+    setCameraNavigator((captureId) =>
+      router.push({ pathname: "/report/camera", params: { captureId } }),
+    )
     return () => setCameraNavigator(null)
   }, [router])
   return null

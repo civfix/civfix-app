@@ -26,7 +26,8 @@ vi.mock("@civfix/ui", async () => {
 })
 vi.mock("@civfix/ui/data", () => ({ useTotalUnread: () => 0 }))
 
-const { useSystemNoticeStore } = await import("../../../../../packages/ui/src/shell/systemNoticeStore")
+const { useSystemNoticeStore } =
+  await import("../../../../../packages/ui/src/shell/systemNoticeStore")
 const { useAppPromoStore } = await import("../../../../../packages/ui/src/promo/appPromoStore")
 const { WebMapControls } = await import("./web-map-controls")
 

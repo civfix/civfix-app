@@ -56,9 +56,7 @@ const IS_WEB = Platform.OS === "web"
 const RSVP_PILL_RESERVE = 88
 
 const CARD_RING_INSET = space["4"] + StyleSheet.hairlineWidth
-const WEB_CARD_RING: ViewStyle = IS_WEB
-  ? { outlineOffset: CARD_RING_INSET }
-  : {}
+const WEB_CARD_RING: ViewStyle = IS_WEB ? { outlineOffset: CARD_RING_INSET } : {}
 
 const SheetEventCard = React.memo(function SheetEventCard({
   cleanup,
@@ -101,7 +99,11 @@ const SheetEventCard = React.memo(function SheetEventCard({
               {cleanup.title}
             </Text>
             {cleanup.organization ? (
-              <OrgAffiliationBadge organization={cleanup.organization} size="sm" interactive={false} />
+              <OrgAffiliationBadge
+                organization={cleanup.organization}
+                size="sm"
+                interactive={false}
+              />
             ) : null}
           </View>
 
@@ -213,7 +215,9 @@ export function EventsBody() {
     const inYourArea = events
       .filter((c) => !attendingIds.has(c.id))
       .map((c) => {
-        const meters = location ? (c.dist ?? haversineMeters(location, { lat: c.lat, lng: c.lng })) : null
+        const meters = location
+          ? (c.dist ?? haversineMeters(location, { lat: c.lat, lng: c.lng }))
+          : null
         return { c, score: eventBlendScore(meters, c.scheduledAt, now) }
       })
       .sort((a, b) => a.score - b.score)
@@ -223,7 +227,12 @@ export function EventsBody() {
     if (attending.length) {
       out.push({ kind: "header", key: "h-attending", title: t("section.attending"), topGap: 0 })
       attending.forEach((c, i) =>
-        out.push({ kind: "event", key: `a-${c.id}`, cleanup: c, topGap: i === 0 ? HEADER_TO_CARD : CARD_GAP }),
+        out.push({
+          kind: "event",
+          key: `a-${c.id}`,
+          cleanup: c,
+          topGap: i === 0 ? HEADER_TO_CARD : CARD_GAP,
+        }),
       )
     }
     if (inYourArea.length) {
@@ -234,7 +243,12 @@ export function EventsBody() {
         topGap: out.length ? SECTION_GAP : 0,
       })
       inYourArea.forEach((c, i) =>
-        out.push({ kind: "event", key: `e-${c.id}`, cleanup: c, topGap: i === 0 ? HEADER_TO_CARD : CARD_GAP }),
+        out.push({
+          kind: "event",
+          key: `e-${c.id}`,
+          cleanup: c,
+          topGap: i === 0 ? HEADER_TO_CARD : CARD_GAP,
+        }),
       )
     }
     return out

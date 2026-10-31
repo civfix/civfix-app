@@ -129,13 +129,16 @@ describe("installCachePersistence writer", () => {
     // ...but NOT the certificate list. Each ServiceHoursCertificateDTO carries a PRESIGNED url with a
     // 15-minute TTL; the persister's max age is 24h, so persisting this would leave live capability
     // URLs in localStorage for ~96x their intended lifetime. It is keyed off the safelist on purpose.
-    qc.setQueryData(["certificates", "mine"], [
-      {
-        code: "A1B2C3D4E5F6",
-        status: "valid",
-        url: "https://r2.example.com/certificates/service-hours/2026/07/x.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=deadbeefdeadbeef",
-      },
-    ])
+    qc.setQueryData(
+      ["certificates", "mine"],
+      [
+        {
+          code: "A1B2C3D4E5F6",
+          status: "valid",
+          url: "https://r2.example.com/certificates/service-hours/2026/07/x.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=deadbeefdeadbeef",
+        },
+      ],
+    )
 
     const teardown = installCachePersistence(qc)
     qc.setQueryData(["volunteer", "me"], { totalHours: 13 })
@@ -404,7 +407,10 @@ describe("installCachePersistence only persists a server-confirmed viewer", () =
 describe("hasPersistedCache / clearPersistedCache", () => {
   it("reports presence and clears the persisted entry", () => {
     expect(hasPersistedCache()).toBe(false)
-    storage.setItem(STORAGE_KEY, JSON.stringify({ buster: "v1", timestamp: Date.now(), clientState: {} }))
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ buster: "v1", timestamp: Date.now(), clientState: {} }),
+    )
     expect(hasPersistedCache()).toBe(true)
     clearPersistedCache()
     expect(hasPersistedCache()).toBe(false)

@@ -172,7 +172,9 @@ describe("BodyTransition.web - one stable React identity per body", () => {
   })
 
   it("keys the CONTENT of a slot by its screen, so one entity never inherits another's instance", () => {
-    expect(WEB_SEAM).toContain("const activeContent = <Fragment key={state.key}>{children}</Fragment>")
+    expect(WEB_SEAM).toContain(
+      "const activeContent = <Fragment key={state.key}>{children}</Fragment>",
+    )
     expect(WEB_SEAM).toContain("<Fragment key={anim.outgoingKey}>{anim.outgoing}</Fragment>")
     expect(WEB_SEAM).toContain("outgoingKey: state.key")
   })
@@ -189,7 +191,9 @@ describe("BodyTransition.web - one stable React identity per body", () => {
     expect(derivation).toBeGreaterThan(-1)
     expect(firstEffect).toBeGreaterThan(-1)
     expect(derivation).toBeLessThan(firstEffect)
-    expect(WEB_SEAM).toContain("activeSlot: instant ? state.activeSlot : OTHER_SLOT[state.activeSlot]")
+    expect(WEB_SEAM).toContain(
+      "activeSlot: instant ? state.activeSlot : OTHER_SLOT[state.activeSlot]",
+    )
   })
 
   it("routes the outgoing tree to the slot it already occupies and vacates it on settle", () => {
@@ -202,13 +206,19 @@ describe("BodyTransition.web - one stable React identity per body", () => {
     expect(WEB_SEAM).toContain('const IDLE: LayerStyle = { transform: "none", opacity: 1 }')
     expect(WEB_SEAM).toContain('const VACANT: LayerStyle = { transform: "none", opacity: 0 }')
     expect(WEB_SEAM).toContain("const zIndex = anim ? (active ? 1 : 0) : undefined")
-    expect(WEB_SEAM).toContain('const activeTransition = phase && flipped ? phase.incomingTransition : "none"')
+    expect(WEB_SEAM).toContain(
+      'const activeTransition = phase && flipped ? phase.incomingTransition : "none"',
+    )
   })
 
   it("still runs the incoming/outgoing animation, the reduced-motion swap and the settle fallback", () => {
     expect(WEB_SEAM).toContain("incomingTo: ARRIVED")
-    expect(WEB_SEAM).toContain("const ARRIVED: LayerStyle = { transform: translateRatio(0), opacity: 1 }")
-    expect(WEB_SEAM).toContain("const outgoingTransition = phase && flipped ? phase.outgoingTransition")
+    expect(WEB_SEAM).toContain(
+      "const ARRIVED: LayerStyle = { transform: translateRatio(0), opacity: 1 }",
+    )
+    expect(WEB_SEAM).toContain(
+      "const outgoingTransition = phase && flipped ? phase.outgoingTransition",
+    )
     expect(WEB_SEAM).toContain("const instant = prefersReducedMotion()")
     expect(WEB_SEAM).toContain("const SETTLE_FALLBACK_MS = IN_DURATION + 60")
     expect(WEB_SEAM).toContain("fallbackMs: SETTLE_FALLBACK_MS,")

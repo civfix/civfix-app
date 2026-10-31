@@ -10,9 +10,14 @@ import { useSystemNoticeStore } from "../shell/systemNoticeStore"
  */
 export function resetPersistedStores(): void {
   const filters = useReportFilterStore.getInitialState()
-  useReportFilterStore.setState({ enabled: new Set(filters.enabled), eventsEnabled: filters.eventsEnabled })
+  useReportFilterStore.setState({
+    enabled: new Set(filters.enabled),
+    eventsEnabled: filters.eventsEnabled,
+  })
   useSearchRecentStore.setState({ recent: useSearchRecentStore.getInitialState().recent })
   useSidebarStore.setState({ width: useSidebarStore.getInitialState().width })
   useAppPromoStore.setState({ dismissed: useAppPromoStore.getInitialState().dismissed })
-  useSystemNoticeStore.setState({ dismissedHash: useSystemNoticeStore.getInitialState().dismissedHash })
+  useSystemNoticeStore.setState({
+    dismissedHash: useSystemNoticeStore.getInitialState().dismissedHash,
+  })
 }

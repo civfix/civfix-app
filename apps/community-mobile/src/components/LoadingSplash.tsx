@@ -79,11 +79,7 @@ function Letter({
       [0, 0.2, 0.32, 0.42, 0.6, 1],
       [0, -fontSize * 0.22, 0, 0, 0, 0],
     )
-    const scaleY = interpolate(
-      bounce.value,
-      [0, 0.2, 0.32, 0.42, 0.6, 1],
-      [1, 1.04, 0.92, 1, 1, 1],
-    )
+    const scaleY = interpolate(bounce.value, [0, 0.2, 0.32, 0.42, 0.6, 1], [1, 1.04, 0.92, 1, 1, 1])
     return {
       opacity,
       transform: [{ translateY: enterY + bounceY }, { scaleY }],
@@ -175,11 +171,7 @@ export function LoadingSplash() {
 
   return (
     <View style={styles.root}>
-      <View
-        style={styles.row}
-        accessibilityRole="header"
-        accessibilityLabel={t("a11y.brand_logo")}
-      >
+      <View style={styles.row} accessibilityRole="header" accessibilityLabel={t("a11y.brand_logo")}>
         {WORDMARK_GLYPHS.map((glyph, i) => (
           <Letter
             key={glyph.slot}

@@ -56,11 +56,23 @@ export function AreaLineChart({
   const geometry = lineGeometry(series, width, height, { max, xMin, xMax })
 
   if (width <= 0 || height <= 0) {
-    return <View style={{ width, height }} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} />
+    return (
+      <View
+        style={{ width, height }}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={accessibilityLabel}
+      />
+    )
   }
 
   return (
-    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.root}>
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+      style={styles.root}
+    >
       <Svg width={width} height={height}>
         <Line x1={0} y1={height} x2={width} y2={height} stroke={gridColor} strokeWidth={1} />
         {refLineY !== undefined && refLineColor ? (

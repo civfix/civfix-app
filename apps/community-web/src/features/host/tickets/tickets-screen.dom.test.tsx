@@ -83,7 +83,9 @@ describe("TicketTypeDrawer sales window", () => {
     expect(screen.getByLabelText(/field\.sales_opens/)).toHaveProperty("value", "2026-09-12T10:00")
 
     await user.type(screen.getByLabelText("field.name"), "s")
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }))
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }),
+    )
     await waitFor(() => expect(client.updateEventTicketType).toHaveBeenCalledTimes(1))
     const body = client.updateEventTicketType.mock.calls[0]![0] as Record<string, unknown>
     expect(body.name).toBe("Volunteers")
@@ -97,7 +99,9 @@ describe("TicketTypeDrawer sales window", () => {
     await user.click(await findEdit())
     const closes = screen.getByLabelText(/field\.sales_closes/)
     await user.type(closes, "2026-09-20T09:00")
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }))
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }),
+    )
     await waitFor(() => expect(client.updateEventTicketType).toHaveBeenCalledTimes(1))
     const body = client.updateEventTicketType.mock.calls[0]![0] as Record<string, unknown>
     expect(body.salesClosesAt).toBe("2026-09-20T16:00:00.000Z")
@@ -111,9 +115,13 @@ describe("TicketsScreen drawer lifecycle", () => {
     renderTickets([ticketType()])
     await user.click(await findEdit())
     await user.clear(screen.getByLabelText("field.name"))
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }))
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "action.save" }),
+    )
     expect(screen.getByText("form.error_summary_title")).toBeTruthy()
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "action.cancel" }))
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "action.cancel" }),
+    )
 
     await user.click(screen.getAllByRole("button", { name: "types.add" })[0]!)
     expect(screen.getByLabelText("field.name")).toHaveProperty("value", "")
@@ -122,8 +130,9 @@ describe("TicketsScreen drawer lifecycle", () => {
 
   it("names the ticket type in each row action", async () => {
     renderTickets([ticketType()])
-    expect(await screen.findByRole("button", { name: "types.delete_named(name=Volunteer)" }))
-      .toBeTruthy()
+    expect(
+      await screen.findByRole("button", { name: "types.delete_named(name=Volunteer)" }),
+    ).toBeTruthy()
     expect(screen.getByRole("button", { name: "types.move_up_named(name=Volunteer)" })).toBeTruthy()
   })
 })

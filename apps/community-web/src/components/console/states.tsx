@@ -45,7 +45,7 @@ export function LoadingState({
 }: {
   shape?: SkeletonShape
   count?: number
-  className?: string
+  className?: string | undefined
 }) {
   const { t } = useT("host-common")
   return (
@@ -71,7 +71,7 @@ function StateHeading({
   iconTone: string
   title: string
   titleSize: "text-token-15" | "text-token-16"
-  body?: string
+  body?: string | undefined
 }) {
   return (
     <>
@@ -119,8 +119,7 @@ export function EmptyState({
   const { t } = useT("host-common")
   const resolvedTitle =
     title ?? (variant === "filtered" ? t("state.empty_filtered_title") : t("state.empty_title"))
-  const resolvedBody =
-    body ?? (variant === "filtered" ? t("state.empty_filtered_body") : undefined)
+  const resolvedBody = body ?? (variant === "filtered" ? t("state.empty_filtered_body") : undefined)
   return (
     <div
       className={cn(
@@ -161,7 +160,7 @@ export function ErrorRegion({
 }: {
   title?: string
   body?: string
-  onRetry?: () => void
+  onRetry?: (() => void) | undefined
   className?: string
 }) {
   const { t } = useT("host-common")
@@ -272,7 +271,7 @@ function OfflineState({
 }: {
   title?: string
   body?: string
-  onRetry?: () => void
+  onRetry?: (() => void) | undefined
   retryLabel?: string
   className?: string
 }) {

@@ -19,7 +19,10 @@ export function readWebKeyPress(e: TextInputKeyPressEvent): WebKeyPress {
     key: "key" in e && typeof e.key === "string" ? e.key : undefined,
     shiftKey: "shiftKey" in e && e.shiftKey === true,
     isComposing:
-      typeof native === "object" && native !== null && "isComposing" in native && native.isComposing === true,
+      typeof native === "object" &&
+      native !== null &&
+      "isComposing" in native &&
+      native.isComposing === true,
   }
 }
 

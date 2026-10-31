@@ -13,7 +13,7 @@ export interface SwitcherOverlayProps {
   setOpen: Dispatch<SetStateAction<boolean>>
   label: string
   leading?: ReactNode
-  className?: string
+  className?: string | undefined
   children: ReactNode
 }
 

@@ -184,7 +184,13 @@ export interface DropPinMarkerOptions {
   t: MarkerLabelT
 }
 
-export function useDropPinMarker({ mapRef, mapReady, droppedPin, scheme, t }: DropPinMarkerOptions): void {
+export function useDropPinMarker({
+  mapRef,
+  mapReady,
+  droppedPin,
+  scheme,
+  t,
+}: DropPinMarkerOptions): void {
   const dropMarkerRef = React.useRef<Marker | null>(null)
   const dropRootRef = React.useRef<Root | null>(null)
   React.useEffect(() => {

@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET, pointerEventStyles } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  MIN_TOUCH_TARGET,
+  pointerEventStyles,
+} from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { useT } from "../i18n"
 import { Text, Icon, iconMap } from "../typography"
@@ -23,7 +29,7 @@ export interface FeedShareBlockProps {
   nowLabel: string
   attachment: React.ReactNode | null
   attachmentPlaceholder?: string
-  onRequestReveal?: (y: number) => void
+  onRequestReveal?: ((y: number) => void) | undefined
   busy?: boolean
 }
 
@@ -88,7 +94,7 @@ export function FeedShareBlock({
 
 export interface FeedSharePreviewProps {
   authorName: string
-  authorId?: string
+  authorId?: string | undefined
   authorPhotoUrl?: string | null
   authorAvatar?: readonly [string, string] | null
   nowLabel: string
@@ -97,7 +103,7 @@ export interface FeedSharePreviewProps {
   placeholder?: string
   captionA11yLabel?: string
   attachment: React.ReactNode | null
-  attachmentPlaceholder?: string
+  attachmentPlaceholder?: string | undefined
   onPress?: () => void
   footnote?: string
 }
@@ -141,7 +147,10 @@ export function FeedSharePreview({
   // One interpolation node for the preview's life; building it in render re-attached a fresh node to the
   // native driver on every caption keystroke.
   const enterStyle = useMemo(
-    () => ({ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] }),
+    () => ({
+      opacity: enter,
+      transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }],
+    }),
     [enter],
   )
 
@@ -191,7 +200,9 @@ export function FeedSharePreview({
       {!readOnly && caption.length >= FEED_CAPTION_COUNTER_AT ? (
         <Text
           style={[styles.counter, overCap ? styles.counterMax : null]}
-          accessibilityLabel={tc("caption_remaining_a11y", { count: FEED_CAPTION_MAX - caption.length })}
+          accessibilityLabel={tc("caption_remaining_a11y", {
+            count: FEED_CAPTION_MAX - caption.length,
+          })}
         >
           {FEED_CAPTION_MAX - caption.length}
         </Text>
@@ -210,12 +221,7 @@ export function FeedSharePreview({
   )
 
   return (
-    <Animated.View
-      style={[
-        styles.preview,
-        enterStyle,
-      ]}
-    >
+    <Animated.View style={[styles.preview, enterStyle]}>
       {onPress ? (
         <Pressable
           onPress={onPress}

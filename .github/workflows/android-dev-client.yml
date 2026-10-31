@@ -30,7 +30,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: android-dev-client-${{ github.ref }}
@@ -41,15 +40,19 @@ jobs:
     name: Android dev client (arm64)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    permissions:
+      contents: read
+      # The fingerprint step lists this repository's artifacts to skip a build that already exists.
+      actions: read
     env:
       CI: "true"
       EXPO_NO_DOTENV: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          version: 9.12.0
-      - uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: pnpm
@@ -70,12 +73,15 @@ jobs:
           echo "fingerprint $hash, live artifacts: $live"
 
       - if: steps.fingerprint.outputs.live == '0'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: "17"
       - if: steps.fingerprint.outputs.live == '0'
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # v6 defaults to the closed-source "enhanced" cache; the basic one is the open-source GitHub cache.
+          cache-provider: basic
 
       - name: Build the debug dev client
         if: steps.fingerprint.outputs.live == '0'
@@ -86,7 +92,7 @@ jobs:
           (cd android && ./gradlew --no-daemon :app:assembleDebug -PreactNativeArchitectures=arm64-v8a)
 
       - if: steps.fingerprint.outputs.live == '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.fingerprint.outputs.name }}
           path: apps/community-mobile/android/app/build/outputs/apk/debug/app-debug.apk

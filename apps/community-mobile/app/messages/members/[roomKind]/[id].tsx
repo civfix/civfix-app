@@ -25,7 +25,9 @@ export default function RoomMembersScreen() {
   return (
     <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <RouteHeader
-        title={t(roomKind === "report" || roomKind === "cleanup" ? "title.chat_info" : "title.members")}
+        title={t(
+          roomKind === "report" || roomKind === "cleanup" ? "title.chat_info" : "title.members",
+        )}
         onBack={onBack}
       />
       <MembersBody

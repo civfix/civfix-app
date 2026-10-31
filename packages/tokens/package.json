@@ -51,7 +51,7 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
-    "@civfix/contract": "0.67.0-b-feat-dev-console-contract.gee137fa",
+    "@civfix/contract": "0.67.0-b-integration-dev-console.g2105680",
     "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",

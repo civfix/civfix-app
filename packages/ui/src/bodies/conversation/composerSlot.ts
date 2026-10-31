@@ -26,15 +26,25 @@ export interface ComposerSlot {
 
 export function resolveComposerSlot(signals: ComposerSlotSignals): ComposerSlot {
   // A group room keeps the normal composer until GET /groups/:id says whether it is a channel.
-  const mode = signals.roomKind === "group" && !signals.hasGroupInfo ? "composer" : signals.channelMode
-  const disabled = signals.hasRoomError || signals.showJoinBanner || signals.groupInfoGate !== "open"
+  const mode =
+    signals.roomKind === "group" && !signals.hasGroupInfo ? "composer" : signals.channelMode
+  const disabled =
+    signals.hasRoomError || signals.showJoinBanner || signals.groupInfoGate !== "open"
   return {
     mode,
     disabled,
     canCreatePoll: signals.roomKind !== "dm" && mode === "composer",
     showForwardNotice:
-      signals.isReport && mode === "composer" && !signals.pinnedOnly && !disabled && signals.hasCityMention,
+      signals.isReport &&
+      mode === "composer" &&
+      !signals.pinnedOnly &&
+      !disabled &&
+      signals.hasCityMention,
     placeholder:
-      signals.hasRoomError || signals.groupInfoGate === "blocked" ? "unavailable" : signals.isGroup ? "group" : "dm",
+      signals.hasRoomError || signals.groupInfoGate === "blocked"
+        ? "unavailable"
+        : signals.isGroup
+          ? "group"
+          : "dm",
   }
 }

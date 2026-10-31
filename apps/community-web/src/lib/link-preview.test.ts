@@ -1,5 +1,11 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
-import type { CleanupDTO, OrganizationDTO, PostDTO, ReportDTO, UserProfileDTO } from "@civfix/contract"
+import type {
+  CleanupDTO,
+  OrganizationDTO,
+  PostDTO,
+  ReportDTO,
+  UserProfileDTO,
+} from "@civfix/contract"
 
 import {
   defaultPreview,
@@ -73,7 +79,9 @@ describe("escaping and clamping", () => {
     const emoji = String.fromCodePoint(0x1f600)
     const clamped = bio(`${"a".repeat(199)}${emoji}${emoji}`)
     expect(clamped).toBe(`${"a".repeat(199)}${emoji}…`)
-    expect(clamped).not.toMatch(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/)
+    expect(clamped).not.toMatch(
+      /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/,
+    )
 
     const han = "漢字".repeat(150)
     expect(bio(han)).toBe(`${han.slice(0, 200)}…`)
@@ -169,7 +177,8 @@ describe("previewForReport", () => {
   })
 
   it("uses the FIRST ready slide of the carousel: a thumbnail, a full image only when it has no thumbnail, and the brand image when that slide is not shareable", () => {
-    const withMedia = (media: ReportPreviewInput["media"]) => previewForReport({ ...base, media }, ctx)!
+    const withMedia = (media: ReportPreviewInput["media"]) =>
+      previewForReport({ ...base, media }, ctx)!
     expect(previewForReport(base, ctx)?.image).toBe(BRAND_IMAGE)
 
     expect(
@@ -179,19 +188,22 @@ describe("previewForReport", () => {
       ]).image,
     ).toBe("https://cdn.x/b.jpg")
 
-    const thumbed = withMedia([
-      SIZED_THUMBED,
-    ])
+    const thumbed = withMedia([SIZED_THUMBED])
     expect(thumbed.image).toBe("https://cdn.x/a_t.jpg")
     expect(thumbed.imageIsBrand).toBe(false)
 
-    const full = withMedia([
-      SIZED_IMAGE,
-    ])
+    const full = withMedia([SIZED_IMAGE])
     expect(full.image).toBe("https://cdn.x/a.jpg")
 
     expect(
-      withMedia([{ kind: "video", status: "ready", url: "https://cdn.x/v.mp4", thumbUrl: "https://cdn.x/v_t.jpg" }]).image,
+      withMedia([
+        {
+          kind: "video",
+          status: "ready",
+          url: "https://cdn.x/v.mp4",
+          thumbUrl: "https://cdn.x/v_t.jpg",
+        },
+      ]).image,
     ).toBe("https://cdn.x/v_t.jpg")
     expect(withMedia([{ kind: "video", status: "ready", url: "https://cdn.x/v.mp4" }]).image).toBe(
       BRAND_IMAGE,
@@ -266,14 +278,20 @@ describe("previewForEvent", () => {
     expect(withCover?.imageIsBrand).toBe(false)
     expect(previewForEvent({ ...base, galleryUrls: gallery }, ctx)?.image).toBe(gallery[0])
     expect(
-      previewForEvent({ ...base, galleryUrls: ["https://cdn.civfix.org/g/1.jpg?sig=1"] }, ctx)?.image,
+      previewForEvent({ ...base, galleryUrls: ["https://cdn.civfix.org/g/1.jpg?sig=1"] }, ctx)
+        ?.image,
     ).toBe(BRAND_IMAGE)
     expect(previewForEvent(base, ctx)?.imageIsBrand).toBe(true)
   })
 
   it("refuses a cover that is not a plain https media url", () => {
-    expect(previewForEvent({ ...base, coverUrl: "http://cdn.civfix.org/c/1.jpg" }, ctx)?.imageIsBrand).toBe(true)
-    expect(previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)?.imageIsBrand).toBe(true)
+    expect(
+      previewForEvent({ ...base, coverUrl: "http://cdn.civfix.org/c/1.jpg" }, ctx)?.imageIsBrand,
+    ).toBe(true)
+    expect(
+      previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)
+        ?.imageIsBrand,
+    ).toBe(true)
   })
 
   it("keeps an unlisted event shareable by link with a title + schedule card, no cover, no host text and noindex, and refuses a private one", () => {
@@ -334,7 +352,11 @@ describe("previewForEvent", () => {
   it("names the host: the organization when there is one, else the organizer", () => {
     expect(
       previewForEvent(
-        { ...base, organization: { name: "Reach Out LA" }, organizer: { name: "Ada", handle: "ada" } },
+        {
+          ...base,
+          organization: { name: "Reach Out LA" },
+          organizer: { name: "Ada", handle: "ada" },
+        },
         ctx,
       )?.description,
     ).toBe("Sat, Sep 12, 10:00 AM PDT · Reach Out LA · A volunteer event on civfix")
@@ -437,30 +459,29 @@ describe("previewForPost", () => {
     const thumbed = previewForPost(
       {
         ...base,
-        media: [
-          SIZED_THUMBED,
-        ],
+        media: [SIZED_THUMBED],
       },
       ctx,
     )!
     expect(thumbed.image).toBe("https://cdn.x/a_t.jpg")
 
-    const full = previewForPost(
-      { ...base, media: [SIZED_IMAGE] },
-      ctx,
-    )!
+    const full = previewForPost({ ...base, media: [SIZED_IMAGE] }, ctx)!
     expect(full.image).toBe("https://cdn.x/a.jpg")
     expect(metaTagsHtml(full)).not.toContain("1600")
   })
 
   it("falls back to the attached report's thumbnail when the post carries no media", () => {
     expect(
-      previewForPost({ ...base, report: { title: "Graffiti", thumbUrl: "https://cdn.x/r.jpg" } }, ctx)
-        ?.image,
+      previewForPost(
+        { ...base, report: { title: "Graffiti", thumbUrl: "https://cdn.x/r.jpg" } },
+        ctx,
+      )?.image,
     ).toBe("https://cdn.x/r.jpg")
     expect(
-      previewForPost({ ...base, report: { title: "Graffiti", thumbUrl: "https://cdn.x/r.jpg?sig=1" } }, ctx)
-        ?.image,
+      previewForPost(
+        { ...base, report: { title: "Graffiti", thumbUrl: "https://cdn.x/r.jpg?sig=1" } },
+        ctx,
+      )?.image,
     ).toBe(BRAND_IMAGE)
   })
 
@@ -469,7 +490,14 @@ describe("previewForPost", () => {
       kind: "post",
       body: "Fresh mural on the underpass.",
       author: { name: "Bo Kim", handle: "bo" },
-      media: [{ kind: "image", status: "ready", thumbUrl: "https://cdn.x/o_t.jpg", url: "https://cdn.x/o.jpg" }],
+      media: [
+        {
+          kind: "image",
+          status: "ready",
+          thumbUrl: "https://cdn.x/o_t.jpg",
+          url: "https://cdn.x/o.jpg",
+        },
+      ],
     }
     for (const input of [
       { ...base, kind: "repost", body: null, repostOf: original },
@@ -487,9 +515,19 @@ describe("previewForPost", () => {
       kind: "post",
       body: "Original text.",
       author: { name: "Bo Kim", handle: "bo" },
-      media: [{ kind: "image", status: "ready", thumbUrl: "https://cdn.x/q_t.jpg", url: "https://cdn.x/q.jpg" }],
+      media: [
+        {
+          kind: "image",
+          status: "ready",
+          thumbUrl: "https://cdn.x/q_t.jpg",
+          url: "https://cdn.x/q.jpg",
+        },
+      ],
     }
-    const borrowing = previewForPost({ ...base, kind: "quote", body: "This!", repostOf: quoted }, ctx)
+    const borrowing = previewForPost(
+      { ...base, kind: "quote", body: "This!", repostOf: quoted },
+      ctx,
+    )
     expect(borrowing?.title).toBe("Ada Rivera (@ada) on civfix")
     expect(borrowing?.description).toBe("This!")
     expect(borrowing?.image).toBe("https://cdn.x/q_t.jpg")
@@ -520,10 +558,17 @@ describe("previewForPost", () => {
   })
 
   it("refuses a deleted author, a deleted original and a repost of nothing", () => {
-    expect(previewForPost({ ...base, author: { name: "Ada", handle: "ada", deleted: true } }, ctx)).toBeNull()
+    expect(
+      previewForPost({ ...base, author: { name: "Ada", handle: "ada", deleted: true } }, ctx),
+    ).toBeNull()
     expect(
       previewForPost(
-        { ...base, kind: "repost", body: null, repostOf: { deleted: true, author: { name: "Bo" } } },
+        {
+          ...base,
+          kind: "repost",
+          body: null,
+          repostOf: { deleted: true, author: { name: "Bo" } },
+        },
         ctx,
       ),
     ).toBeNull()
@@ -629,7 +674,9 @@ describe("metaTagsHtml", () => {
     expect(html).toContain('<meta name="twitter:image" content="https://civfix.dev/og.png">')
     expect(html).toContain('<link rel="canonical" href="https://civfix.dev/people/ada-id">')
     expect(html).toContain('<link rel="icon" href="https://civfix.dev/favicon.svg"')
-    expect(html).toContain('<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png"')
+    expect(html).toContain(
+      '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png"',
+    )
     expect(html).not.toContain("civfix.org")
   })
 
@@ -648,12 +695,7 @@ describe("metaTagsHtml", () => {
 describe("metaTagsHtml image dimensions", () => {
   it("emits width and height only for the brand image, never for entity media, whose stored size may predate its rotation", () => {
     const post: PostPreviewInput = { body: "Hi", author: { name: "Ada", handle: "ada" } }
-    const full = metaTagsHtml(
-      previewForPost(
-        { ...post, media: [SIZED_IMAGE] },
-        ctx,
-      )!,
-    )
+    const full = metaTagsHtml(previewForPost({ ...post, media: [SIZED_IMAGE] }, ctx)!)
     expect(full).toContain('<meta property="og:image" content="https://cdn.x/a.jpg">')
     expect(full).not.toContain("og:image:width")
     expect(full).not.toContain("og:image:height")
@@ -732,30 +774,44 @@ describe("robots is a managed meta tag", () => {
 
 describe("documentTitle", () => {
   it("suffixes the og:title with the site name", () => {
-    expect(
-      documentTitle(previewForSignupPage({ event: { title: "Beach cleanup" } }, ctx)!),
-    ).toBe("Beach cleanup · civfix")
+    expect(documentTitle(previewForSignupPage({ event: { title: "Beach cleanup" } }, ctx)!)).toBe(
+      "Beach cleanup · civfix",
+    )
   })
 
-  it("leaves a title that already ends with \" on civfix\" alone", () => {
-    expect(documentTitle(previewForPost({ body: "Hi", author: { name: "Ada", handle: "ada" } }, ctx)!)).toBe(
-      "Ada (@ada) on civfix",
-    )
+  it('leaves a title that already ends with " on civfix" alone', () => {
+    expect(
+      documentTitle(previewForPost({ body: "Hi", author: { name: "Ada", handle: "ada" } }, ctx)!),
+    ).toBe("Ada (@ada) on civfix")
   })
 
   it("never doubles a title that already ends with the site name", () => {
-    expect(documentTitle(previewForSignupPage({ event: { title: "Cleanup · civfix" } }, ctx)!)).toBe(
-      "Cleanup · civfix",
-    )
+    expect(
+      documentTitle(previewForSignupPage({ event: { title: "Cleanup · civfix" } }, ctx)!),
+    ).toBe("Cleanup · civfix")
   })
 })
 
 describe("isManagedLink", () => {
   it("owns exactly the head links the preview replaces", () => {
-    for (const rel of ["canonical", "icon", "Apple-Touch-Icon", " shortcut icon ", "icon shortcut"]) {
+    for (const rel of [
+      "canonical",
+      "icon",
+      "Apple-Touch-Icon",
+      " shortcut icon ",
+      "icon shortcut",
+    ]) {
       expect(isManagedLink(rel)).toBe(true)
     }
-    for (const rel of ["stylesheet", "preload", "modulepreload", "manifest", "shortcut", "", null]) {
+    for (const rel of [
+      "stylesheet",
+      "preload",
+      "modulepreload",
+      "manifest",
+      "shortcut",
+      "",
+      null,
+    ]) {
       expect(isManagedLink(rel)).toBe(false)
     }
   })

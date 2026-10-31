@@ -31,9 +31,9 @@ describe("calendarFile seam", () => {
 
   it("native hands the document to the writer and reports what happened", async () => {
     const save = vi.fn().mockResolvedValue(true)
-    expect(await native.saveCalendarFile({ filename: "e1.ics", ics: "BEGIN", writer: { save } })).toBe(
-      "downloaded",
-    )
+    expect(
+      await native.saveCalendarFile({ filename: "e1.ics", ics: "BEGIN", writer: { save } }),
+    ).toBe("downloaded")
     expect(save).toHaveBeenCalledWith({ filename: "e1.ics", ics: "BEGIN" })
   })
 

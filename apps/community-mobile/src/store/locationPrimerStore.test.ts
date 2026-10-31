@@ -13,7 +13,9 @@ let instance = 0
 
 async function freshStore() {
   instance += 1
-  const module = (await import(`./locationPrimerStore.ts?instance=${instance}`)) as typeof LocationPrimerModule
+  const module = (await import(
+    `./locationPrimerStore.ts?instance=${instance}`
+  )) as typeof LocationPrimerModule
   return module.useLocationPrimerStore
 }
 
@@ -48,7 +50,11 @@ test("a version-1 record keeps only whether the primer was shown and rewrites it
 test("a migrated record counts as shown only for a literal true", async () => {
   for (const state of [{ shown: "yes" }, { shown: 1 }, {}, null]) {
     memory.set(LOCATION_PRIMER_KEY, persisted(state, 1))
-    assert.deepEqual(primer(await freshStore()), { shown: false, choice: null }, JSON.stringify(state))
+    assert.deepEqual(
+      primer(await freshStore()),
+      { shown: false, choice: null },
+      JSON.stringify(state),
+    )
   }
 })
 

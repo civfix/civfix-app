@@ -30,18 +30,21 @@ test("a conflict settles the session, so no foreground edge ever re-attempts it"
 })
 
 test("a fresh authed session attempts registration", () => {
-  assert.equal(
-    shouldAttemptPushRegistration({ ...freshPushAttemptState() }),
-    true,
-  )
+  assert.equal(shouldAttemptPushRegistration({ ...freshPushAttemptState() }), true)
 })
 
 test("a settled session never re-registers, however many foregrounds follow", () => {
-  assert.equal(shouldAttemptPushRegistration({ ...freshPushAttemptState(), attempts: 1, settled: true }), false)
+  assert.equal(
+    shouldAttemptPushRegistration({ ...freshPushAttemptState(), attempts: 1, settled: true }),
+    false,
+  )
 })
 
 test("an attempt already in flight is not duplicated by a foreground event", () => {
-  assert.equal(shouldAttemptPushRegistration({ ...freshPushAttemptState(), attempts: 1, inFlight: true }), false)
+  assert.equal(
+    shouldAttemptPushRegistration({ ...freshPushAttemptState(), attempts: 1, inFlight: true }),
+    false,
+  )
 })
 
 test("retries are bounded, so a permanently failing device cannot hot-loop", () => {

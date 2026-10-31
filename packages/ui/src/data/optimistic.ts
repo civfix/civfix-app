@@ -14,12 +14,7 @@
  * the primary key is handled. The `also` snapshot it returns from onMutate is carried in the per-call mutation context
  * (NOT a closure), so concurrent mutations on the same hook each roll back their own snapshot.
  */
-import type {
-  QueryClient,
-  QueryKey,
-  UseMutationOptions,
-  InfiniteData,
-} from "@tanstack/react-query"
+import type { QueryClient, QueryKey, UseMutationOptions, InfiniteData } from "@tanstack/react-query"
 
 /**
  * Side patches that run alongside the primary key within the same mutation phases. `onMutate` may
@@ -45,8 +40,8 @@ export interface OptimisticAlso<TVars, TRes, TAlsoCtx> {
  * package that emits declarations (@civfix/ui) needs the name to be importable (TS4058).
  */
 export interface OptimisticContext<TPrevious, TAlsoCtx> {
-  previous?: TPrevious
-  alsoCtx?: TAlsoCtx
+  previous?: TPrevious | undefined
+  alsoCtx?: TAlsoCtx | undefined
 }
 
 export interface OptimisticPatchOptions<TData, TVars, TRes, TAlsoCtx = unknown> {
@@ -194,7 +189,9 @@ export function optimisticListPatch<TItem, TVars, TRes, TAlsoCtx = unknown>(
           const queue = [...originals]
           qc.setQueryData<InfiniteData<{ items: TItem[] }>>(
             key,
-            mapInfinitePages(current, (item) => (matches(item, vars) ? queue.shift() ?? item : item)),
+            mapInfinitePages(current, (item) =>
+              matches(item, vars) ? (queue.shift() ?? item) : item,
+            ),
           )
         }
       }

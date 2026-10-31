@@ -15,7 +15,7 @@ export type RunAfterDismiss = (action: () => void) => void
 export interface AnchoredActionSheetProps {
   visible: boolean
   onClose: () => void
-  anchor?: AnchorRect | null
+  anchor?: AnchorRect | null | undefined
   cardWidth: number
   cardMaxWidth: number
   dismissLabel: string

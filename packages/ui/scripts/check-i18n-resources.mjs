@@ -9,6 +9,7 @@ import { join } from "node:path"
 import { CATALOGS_DIR, i18nDir, renderI18nModules } from "./i18n-modules.mjs"
 
 const { modules } = renderI18nModules()
+/** @type {string[]} */
 const stale = []
 for (const [path, body] of modules) {
   const file = join(i18nDir, path)
@@ -16,7 +17,8 @@ for (const [path, body] of modules) {
   else if (readFileSync(file, "utf8") !== body) stale.push(`differs: src/i18n/${path}`)
 }
 for (const name of readdirSync(join(i18nDir, CATALOGS_DIR))) {
-  if (!modules.has(`${CATALOGS_DIR}/${name}`)) stale.push(`not generated: src/i18n/${CATALOGS_DIR}/${name}`)
+  if (!modules.has(`${CATALOGS_DIR}/${name}`))
+    stale.push(`not generated: src/i18n/${CATALOGS_DIR}/${name}`)
 }
 
 if (stale.length) {

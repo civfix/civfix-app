@@ -48,9 +48,16 @@ export function PinnedBar({ pins, activeIndex, onTap, onOpenList }: PinnedBarPro
           state.pressed ? styles.pressed : null,
         ]}
       >
-        <View style={styles.segments} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View
+          style={styles.segments}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {Array.from({ length: segments }, (_, i) => (
-            <View key={i} style={[styles.segment, i === highlighted ? styles.segmentActive : null]} />
+            <View
+              key={i}
+              style={[styles.segment, i === highlighted ? styles.segmentActive : null]}
+            />
           ))}
         </View>
         <View style={styles.textCol}>

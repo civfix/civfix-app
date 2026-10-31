@@ -11,8 +11,7 @@ import {
 import * as composerCreateFlow from "../composerCreateFlow"
 import { usePostComposerStore } from "../postComposerStore"
 
-const readSource = (relative: string) =>
-  readFileSync(new URL(relative, import.meta.url), "utf8")
+const readSource = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8")
 
 const hostForm: DetailEntry = { kind: "create-cleanup" }
 
@@ -178,7 +177,9 @@ describe("the standalone host form's wiring (source-pinned)", () => {
     const hostDecl = text.indexOf("const STANDALONE_SCROLL_HOST")
     expect(hostDecl).toBeLessThan(text.indexOf("function HostForm("))
     // And it is actually PROVIDED to the form.
-    expect(text).toMatch(/const scrollHost = isStandalone \? STANDALONE_SCROLL_HOST : inheritedScrollHost/)
+    expect(text).toMatch(
+      /const scrollHost = isStandalone \? STANDALONE_SCROLL_HOST : inheritedScrollHost/,
+    )
     expect(text).toMatch(/<ScrollHostProvider value=\{scrollHost\}>/)
   })
 

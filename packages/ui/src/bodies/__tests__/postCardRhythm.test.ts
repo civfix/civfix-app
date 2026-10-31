@@ -82,7 +82,9 @@ describe("PostCard row rhythm", () => {
    * source because it is a JSX condition, not a number.
    */
   it("mounts the media attachment wrapper only when there IS media", () => {
-    expect(POST_CARD_SOURCE).toMatch(/media\.length > 0 \? \(\s*<View style=\{styles\.attachment\}>\s*<PostMediaGrid/)
+    expect(POST_CARD_SOURCE).toMatch(
+      /media\.length > 0 \? \(\s*<View style=\{styles\.attachment\}>\s*<PostMediaGrid/,
+    )
   })
 
   // The overflow button is the only thing in the meta row that ever wanted to be taller than the text, so
@@ -112,7 +114,7 @@ describe("PostCard row rhythm", () => {
     // button would extend past its parent, where Android dispatches the tap to the row.
     const button = styleBlock("moreButton: {", OVERFLOW_BUTTON_SOURCE)
     expect(button).toContain("height: RHYTHM.overflowBoxHeight")
-    expect(button).not.toContain("position: \"absolute\"")
+    expect(button).not.toContain('position: "absolute"')
     expect(button).not.toMatch(/margin(Top|Bottom|Vertical):\s*-/)
   })
 
@@ -213,7 +215,9 @@ describe("the timeline action row fits the narrowest supported screen", () => {
   it("measures the column the row actually has, negative margins included", () => {
     // 375 - 2x16 inset - 52 gutter = 291 of content column, plus the 13pt the row's own negative margins
     // hand back on each side. If this ever stops being the real geometry the assertions below are fiction.
-    expect(available).toBe(SCREEN - 2 * r.rowPaddingH - (r.avatar + r.gutterGap) + 2 * r.actionGlyphInset)
+    expect(available).toBe(
+      SCREEN - 2 * r.rowPaddingH - (r.avatar + r.gutterGap) + 2 * r.actionGlyphInset,
+    )
     expect(available).toBe(317)
   })
 
@@ -241,7 +245,10 @@ describe("the timeline action row fits the narrowest supported screen", () => {
     // Four simultaneous four-character counts cannot fit, so the guarantee is that the boxes can still reach
     // their 44pt floor, which leaves the overflow inside a shrinkable `<Text>` instead of on the row.
     const worst = postActionRowWidth(timeline, {
-      comment: label("9.9K"), repost: label("9.9K"), like: label("9.9K"), save: label("9.9K"),
+      comment: label("9.9K"),
+      repost: label("9.9K"),
+      like: label("9.9K"),
+      save: label("9.9K"),
     })
     const floor = 5 * timeline.target.minWidth + 5 * timeline.gap
     expect(worst).toBeGreaterThan(available)

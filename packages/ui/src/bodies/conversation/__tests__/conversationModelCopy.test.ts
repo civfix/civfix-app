@@ -46,13 +46,15 @@ describe("sender name colour", () => {
 
 describe("edit-save failure copy", () => {
   it("says the message is gone when the edit target no longer exists", () => {
-    expect(editErrorCopyKey(new AppError(ErrorCode.NOT_FOUND, "That message is no longer available."))).toBe(
-      "composer.edit_unavailable",
-    )
+    expect(
+      editErrorCopyKey(new AppError(ErrorCode.NOT_FOUND, "That message is no longer available.")),
+    ).toBe("composer.edit_unavailable")
   })
 
   it("falls back to the localized save error for every other failure", () => {
-    expect(editErrorCopyKey(new AppError(ErrorCode.FORBIDDEN, "raw server text"))).toBe("composer.save_error")
+    expect(editErrorCopyKey(new AppError(ErrorCode.FORBIDDEN, "raw server text"))).toBe(
+      "composer.save_error",
+    )
     expect(editErrorCopyKey(new Error("Network request failed"))).toBe("composer.save_error")
     expect(editErrorCopyKey(undefined)).toBe("composer.save_error")
   })

@@ -64,7 +64,7 @@ export interface MapProps {
    * There is no fallback centre anywhere in the map stack: a host that does not yet know where the viewer
    * is renders no map. Read only at mount, so a host that remounts the map passes the last-known viewport.
    */
-  initialCenter: MapLatLng & { zoom?: number }
+  initialCenter: MapLatLng & { zoom?: number | undefined }
 }
 
 export interface MapHandle {

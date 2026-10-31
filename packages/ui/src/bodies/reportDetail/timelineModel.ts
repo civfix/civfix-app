@@ -1,6 +1,10 @@
 import type { ReportDTO, ReportStatus } from "@civfix/contract"
 import type { TFunction } from "i18next"
-import { type NodeKind, kindForStatus, citizenStatusLabel } from "../../primitives/reportTimelineLabels"
+import {
+  type NodeKind,
+  kindForStatus,
+  citizenStatusLabel,
+} from "../../primitives/reportTimelineLabels"
 import { timelineEntryRender } from "../../primitives/reportTimelineModel"
 
 export interface TimelineNode {
@@ -8,7 +12,7 @@ export interface TimelineNode {
   kind: NodeKind
   when: string
   text: string
-  detail?: string
+  detail?: string | undefined
   pending?: boolean
   note?: string
   body?: string
@@ -56,7 +60,12 @@ export function buildTimeline(
       return
     }
     if (render === "unhidden") {
-      nodes.push({ key, kind: "unhidden", when: rel(entry.at), text: t("timeline.shown_on_map_again") })
+      nodes.push({
+        key,
+        kind: "unhidden",
+        when: rel(entry.at),
+        text: t("timeline.shown_on_map_again"),
+      })
       return
     }
     if (render === "reopened") {

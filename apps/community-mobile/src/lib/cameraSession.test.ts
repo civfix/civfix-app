@@ -49,7 +49,10 @@ test("a shutter tap with audio already committed records immediately", () => {
 })
 
 test("a FRESH mic grant DEFERS the clip until the audio prop has committed", () => {
-  assert.equal(micDeferralAction({ audioEnabled: false, granted: true }), "defer-until-audio-commits")
+  assert.equal(
+    micDeferralAction({ audioEnabled: false, granted: true }),
+    "defer-until-audio-commits",
+  )
 })
 
 test("a DECLINED mic permission still records - just without audio", () => {
@@ -104,9 +107,15 @@ test("the exact reachable sequence: leaving the Report tab drops the park instea
 
 test("backgrounding the app (not just a transient blip) also drops the park, once the grace has elapsed", () => {
   const backgrounded: CameraSessionInputs = { ...ready, appState: "background" }
-  assert.equal(dropsParkedRecording(cameraSessionVeto(backgrounded), BACKGROUNDED_PARK_GRACE_MS), true)
+  assert.equal(
+    dropsParkedRecording(cameraSessionVeto(backgrounded), BACKGROUNDED_PARK_GRACE_MS),
+    true,
+  )
   const transientBlip: CameraSessionInputs = { ...ready, appState: "inactive" }
-  assert.equal(dropsParkedRecording(cameraSessionVeto(transientBlip), BACKGROUNDED_PARK_GRACE_MS + 1000), false)
+  assert.equal(
+    dropsParkedRecording(cameraSessionVeto(transientBlip), BACKGROUNDED_PARK_GRACE_MS + 1000),
+    false,
+  )
 })
 
 test("a park just after the timestamp still waits on 'backgrounded', not an instant drop", () => {
@@ -165,7 +174,6 @@ test("MAX_VIDEO_SECONDS is pinned to the design's 10s cap", () => {
   assert.equal(MAX_VIDEO_SECONDS, 10)
 })
 
-
 const glance: ResumeGraceInputs = {
   hostActive: false,
   graceEligible: true,
@@ -218,7 +226,6 @@ test("the output-detach defer outlasts the body entrance and stays far inside th
   assert.ok(OUTPUT_DETACH_DEFER_MS >= 250 && OUTPUT_DETACH_DEFER_MS <= 1_000)
   assert.ok(OUTPUT_DETACH_DEFER_MS < SESSION_RESUME_GRACE_MS / 10)
 })
-
 
 const lookingVideo: ViewfinderOutputInputs = {
   hostActive: true,

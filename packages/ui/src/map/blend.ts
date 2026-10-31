@@ -38,10 +38,7 @@ function linkedReportToPin(r: CleanupDTO["linkedReports"][number]): ReportPinDTO
  * Only `cleanup`-kind events carry links, so the kind guard is defensive. When nothing blends the inputs
  * are returned by identity so the memoized supercluster index does not churn.
  */
-export function computeMapBlends(
-  reports: ReportPinDTO[],
-  cleanups: CleanupDTO[],
-): BlendResult {
+export function computeMapBlends(reports: ReportPinDTO[], cleanups: CleanupDTO[]): BlendResult {
   const blends: MapBlend[] = []
   const absorbed = new Set<string>()
   for (const c of cleanups) {

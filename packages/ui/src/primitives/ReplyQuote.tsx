@@ -1,7 +1,14 @@
 import { View, Pressable } from "react-native"
 import { avatarGradient, type ReplyToDTO } from "@civfix/contract"
 import { alpha } from "../theme/alpha"
-import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps, PRESSED_OPACITY, type Theme } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  focusRingProps,
+  PRESSED_OPACITY,
+  type Theme,
+} from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { QUOTE_ACCENT_LINE, excerptOf } from "./quoteStrip"
@@ -9,7 +16,7 @@ import { QUOTE_ACCENT_LINE, excerptOf } from "./quoteStrip"
 export interface ReplyQuoteProps {
   replyTo: ReplyToDTO
   mine: boolean
-  onPress?: () => void
+  onPress?: (() => void) | undefined
   loading?: boolean
 }
 
@@ -55,7 +62,11 @@ export function ReplyQuote({ replyTo, mine, onPress, loading = false }: ReplyQuo
         accessible
         accessibilityRole="text"
         accessibilityLabel={a11yLabel}
-        style={[styles.root, mine ? styles.rootMine : styles.rootTheirs, loading ? styles.loading : null]}
+        style={[
+          styles.root,
+          mine ? styles.rootMine : styles.rootTheirs,
+          loading ? styles.loading : null,
+        ]}
       >
         {inner}
       </View>

@@ -1,9 +1,6 @@
 export const FEED_TOP_CLEAR_OFFSET = 1
 
-export function addPendingNewPost(
-  ids: readonly string[],
-  id: string,
-): readonly string[] {
+export function addPendingNewPost(ids: readonly string[], id: string): readonly string[] {
   return ids.includes(id) ? ids : [...ids, id]
 }
 

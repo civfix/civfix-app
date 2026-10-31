@@ -133,7 +133,12 @@ function analyticsCsvBody(tab: AnalyticsTab, data: AnalyticsTabData, t: Translat
       if (!data.messaging) return []
       return [
         [t("csv.channel"), t("csv.sent"), t("csv.failed"), t("csv.suppressed")],
-        ...data.messaging.byChannel.map((row) => [row.channel, row.sent, row.failed, row.suppressed]),
+        ...data.messaging.byChannel.map((row) => [
+          row.channel,
+          row.sent,
+          row.failed,
+          row.suppressed,
+        ]),
       ]
     case "page":
       if (!data.page) return []
@@ -153,7 +158,11 @@ function AnalyticsTabGate<T>({
 }) {
   const gate = useGate(query)
   return (
-    <StateGate {...gate} onRetry={() => void query.refetch()} skeleton={<LoadingState shape="chart" count={2} />}>
+    <StateGate
+      {...gate}
+      onRetry={() => void query.refetch()}
+      skeleton={<LoadingState shape="chart" count={2} />}
+    >
       {query.data ? children(query.data) : null}
     </StateGate>
   )
@@ -239,12 +248,16 @@ export function AnalyticsScreen() {
       labels,
     })
 
-    const body = analyticsCsvBody(tab, {
-      registration: registrations.data,
-      attendance: checkins.data,
-      messaging: broadcasts.data,
-      page: sources.data,
-    }, t)
+    const body = analyticsCsvBody(
+      tab,
+      {
+        registration: registrations.data,
+        attendance: checkins.data,
+        messaging: broadcasts.data,
+        page: sources.data,
+      },
+      t,
+    )
 
     downloadCsv(csvFilename([event.title ?? "event", tab], new Date()), [...head, ...body])
   }
@@ -299,9 +312,7 @@ export function AnalyticsScreen() {
               />
               <KpiCell
                 label={t("kpi.check_in_rate")}
-                value={
-                  <AnalyticsValue value={overview.data.checkInRate.value} kind="rate" k={k} />
-                }
+                value={<AnalyticsValue value={overview.data.checkInRate.value} kind="rate" k={k} />}
               />
               <KpiCell
                 label={t("kpi.page_views")}
@@ -315,7 +326,12 @@ export function AnalyticsScreen() {
                   id: step.step,
                   label: step.label,
                   value: step.value === null ? EMPTY_VALUE : format.number(step.value),
-                  tone: index === 0 ? "sky" : index === overview.data.funnel.length - 1 ? "moss" : "neutral",
+                  tone:
+                    index === 0
+                      ? "sky"
+                      : index === overview.data.funnel.length - 1
+                        ? "moss"
+                        : "neutral",
                 }))}
               />
             ) : null}
@@ -435,7 +451,9 @@ function AttendanceTab({
           <Card title={t("attendance.rates")}>
             <dl className="grid grid-cols-2 gap-token-4">
               <div>
-                <dt className="text-token-12 text-console-ink-3">{t("attendance.check_in_rate")}</dt>
+                <dt className="text-token-12 text-console-ink-3">
+                  {t("attendance.check_in_rate")}
+                </dt>
                 <dd className="text-token-20 font-bold text-console-ink">
                   <AnalyticsValue value={data.checkInRate.value} kind="rate" k={k} />
                 </dd>

@@ -20,11 +20,7 @@ import {
   type PushUnregisterDeps,
 } from "@/lib/pushRegistration"
 import { queryClient } from "@/query/client"
-import {
-  clearPersistedCache,
-  purgeQueryCache,
-  resumeCachePersistence,
-} from "@/query/mmkvPersister"
+import { clearPersistedCache, purgeQueryCache, resumeCachePersistence } from "@/query/mmkvPersister"
 
 export type HydrateMode = "boot" | "foreground"
 

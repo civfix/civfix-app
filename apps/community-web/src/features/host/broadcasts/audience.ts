@@ -96,9 +96,12 @@ export function composerReady(readiness: ComposerReadiness): boolean {
   return readiness.subject && readiness.body && readiness.audience && readiness.channels
 }
 
-export function broadcastCan(
-  status: string,
-): { edit: boolean; send: boolean; schedule: boolean; cancel: boolean } {
+export function broadcastCan(status: string): {
+  edit: boolean
+  send: boolean
+  schedule: boolean
+  cancel: boolean
+} {
   switch (status) {
     case "draft":
       return { edit: true, send: true, schedule: true, cancel: false }

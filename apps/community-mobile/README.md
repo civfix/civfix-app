@@ -12,8 +12,8 @@ civfix-app/
   apps/community-web/       the public web app (shares @civfix/ui with this app)
   packages/tokens/          @civfix/tokens - the design tokens + chip-contrast helpers
   packages/ui/              @civfix/ui - the shared React Native UI (+ the app-only helpers)
-  pnpm-workspace.yaml       packages: ["apps/*", "packages/*"]
-  .npmrc                    node-linker=hoisted (Metro-friendly) + @civfix:registry (for the contract)
+  pnpm-workspace.yaml       packages + every pnpm setting (nodeLinker: hoisted, overrides, allowBuilds)
+  .npmrc                    node-linker=hoisted (guard repeat) + @civfix:registry
 ```
 
 `@civfix/tokens` and `@civfix/ui` are workspace packages (`"workspace:*"` in this app's
@@ -22,8 +22,8 @@ install by caret range, published from `civfix-contract`. See "pnpm + Expo + the
 below.
 
 `apps/community-mobile/.npmrc` mirrors the workspace root's: EAS Build and `expo install` read npm
-config from this app directory, and `node-linker=hoisted` is the layout Metro, the config plugins and
-CocoaPods are proven on.
+config from this app directory. Its `node-linker=hoisted` is a guard repeat of `nodeLinker` in
+`pnpm-workspace.yaml` (which wins): the layout Metro, the config plugins and CocoaPods are proven on.
 
 ## Key versions
 
@@ -427,7 +427,8 @@ Three manual generators produce the committed images (run from `apps/community-m
 
 ## pnpm + Expo + the shared packages
 
-- `.npmrc` (root and this app's mirror) sets `node-linker=hoisted` so the store is a flat
+- `nodeLinker: hoisted` in `pnpm-workspace.yaml`, repeated as a guard in `.npmrc` (root and this
+  app's mirror), makes the store a flat
   `node_modules` layout - Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still
   scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`), which is where
   `@civfix/contract` comes from; `@civfix/tokens` and `@civfix/ui` resolve from the workspace.
@@ -445,7 +446,7 @@ Three manual generators produce the committed images (run from `apps/community-m
 - `metro.config.js` is plain `getDefaultConfig(__dirname)` from `expo/metro-config`. Expo's default
   config already discovers the pnpm workspace root (watch folders + `nodeModulesPaths`) and enables
   package exports, so no custom monorepo wiring is needed.
-- `eas.json` pins `"pnpm": "9.12.0"` on the build profiles so EAS installs with the same package
+- `eas.json` pins `"pnpm": "10.34.9"` on the build profiles so EAS installs with the same package
   manager as `packageManager` at the workspace root.
 
 Contract changes are made in `civfix-contract` and published there; this app picks one up only

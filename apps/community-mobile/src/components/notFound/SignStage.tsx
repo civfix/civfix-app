@@ -4,7 +4,14 @@ import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanima
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { fontFamily, makeThemedStyles, useTheme } from "@/theme"
-import { SIGN_SAG, hangSign, leftChain, stepSign, type SignSize, type SignSwing } from "@/lib/notFoundSign"
+import {
+  SIGN_SAG,
+  hangSign,
+  leftChain,
+  stepSign,
+  type SignSize,
+  type SignSwing,
+} from "@/lib/notFoundSign"
 import { useStageLoop } from "./useStageLoop"
 
 // The phone geometry of community-web's not-found.css.

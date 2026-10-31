@@ -43,7 +43,11 @@ export function SingleEventMode({
         <FunnelSection data={data} />
       </SectionCard>
 
-      <SourcesSection panel={data.signups.bySource} pageViews={data.kpis.pageViews} rate={data.rates.viewToSignup} />
+      <SourcesSection
+        panel={data.signups.bySource}
+        pageViews={data.kpis.pageViews}
+        rate={data.rates.viewToSignup}
+      />
 
       <SlotsSection data={data} />
 
@@ -81,9 +85,7 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
         value={signups === null ? null : String(signups)}
         hint={signups === null ? t("kpi.not_enough") : t("range.whole_event")}
       />
-      {views > 0 ? (
-        <StatTile label={t("kpi.page_views")} value={String(views)} />
-      ) : null}
+      {views > 0 ? <StatTile label={t("kpi.page_views")} value={String(views)} /> : null}
       <StatTile
         label={t("kpi.check_in_rate")}
         value={pre || checkIn === null ? null : `${checkIn}%`}

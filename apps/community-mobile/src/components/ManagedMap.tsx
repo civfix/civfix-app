@@ -15,11 +15,7 @@ export type ManagedMapProps = Omit<MapProps, "onRegionChange"> & {
   onInstanceRegionChange: (generation: number, bbox: BBox, zoom: number) => void
 }
 
-export function ManagedMap({
-  onMapHandle,
-  onInstanceRegionChange,
-  ...mapProps
-}: ManagedMapProps) {
+export function ManagedMap({ onMapHandle, onInstanceRegionChange, ...mapProps }: ManagedMapProps) {
   const [generation] = useState(claimMapMountGeneration)
 
   const setMapHandle = useCallback(

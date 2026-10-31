@@ -30,7 +30,12 @@ afterEach(() => {
 describe("personFromAuthUser", () => {
   it("projects the signed-in user onto a zero-count person", () => {
     expect(
-      personFromAuthUser({ id: "u1", displayName: "Maria", handle: "maria", avatarUrl: "https://x/a.jpg" }),
+      personFromAuthUser({
+        id: "u1",
+        displayName: "Maria",
+        handle: "maria",
+        avatarUrl: "https://x/a.jpg",
+      }),
     ).toEqual({
       id: "u1",
       name: "Maria",
@@ -55,7 +60,9 @@ describe("personFromAuthUser", () => {
 describe("buildFeedShareInput edges", () => {
   it("trims before slicing, so leading space never costs caption characters", () => {
     const caption = `   ${"a".repeat(FEED_CAPTION_MAX)}`
-    expect(buildFeedShareInput({ enabled: true, caption }, { reportId: "r" })?.body).toBe("a".repeat(FEED_CAPTION_MAX))
+    expect(buildFeedShareInput({ enabled: true, caption }, { reportId: "r" })?.body).toBe(
+      "a".repeat(FEED_CAPTION_MAX),
+    )
   })
 
   it("always sends empty media and mention lists", () => {
@@ -88,7 +95,13 @@ describe("buildReportPreviewCard edges", () => {
 
   it("uses the first capture as the thumb", () => {
     const card = buildReportPreviewCard(
-      { category: "trash", reportTypeId: "dump", title: "", addr: "1 Main", media: [{ uri: "a" }, { uri: "b" }] },
+      {
+        category: "trash",
+        reportTypeId: "dump",
+        title: "",
+        addr: "1 Main",
+        media: [{ uri: "a" }, { uri: "b" }],
+      },
       "Untitled",
     )
     expect(card).toMatchObject({ thumbUrl: "a", title: "Untitled", type: "dump", addr: "1 Main" })
@@ -101,7 +114,14 @@ describe("buildEventPreviewCard edges", () => {
 
   it("merges the chosen day with the chosen clock and counts the organizer as going", () => {
     const card = buildEventPreviewCard(
-      { title: "Beach", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time, timezone: "UTC" },
+      {
+        title: "Beach",
+        eventKind: "cleanup",
+        coords: { lat: 1, lng: 2 },
+        date,
+        time,
+        timezone: "UTC",
+      },
       me,
       "now",
     )
@@ -110,12 +130,20 @@ describe("buildEventPreviewCard edges", () => {
   })
 
   it("places a location-less draft at 0,0", () => {
-    const card = buildEventPreviewCard({ title: "Beach", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" }, me)
+    const card = buildEventPreviewCard(
+      { title: "Beach", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" },
+      me,
+    )
     expect(card).toMatchObject({ lat: 0, lng: 0 })
   })
 
   it("rejects a whitespace-only title", () => {
-    expect(buildEventPreviewCard({ title: "   ", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" }, me)).toBeNull()
+    expect(
+      buildEventPreviewCard(
+        { title: "   ", eventKind: "cleanup", coords: null, date, time, timezone: "UTC" },
+        me,
+      ),
+    ).toBeNull()
   })
 })
 
@@ -144,7 +172,10 @@ describe("buildOptimisticFeedSharePost shape", () => {
   })
 
   it("slices the caption to the feed cap", () => {
-    const post = buildOptimisticFeedSharePost({ author: me, caption: "b".repeat(FEED_CAPTION_MAX + 20) })
+    const post = buildOptimisticFeedSharePost({
+      author: me,
+      caption: "b".repeat(FEED_CAPTION_MAX + 20),
+    })
     expect(post.body).toHaveLength(FEED_CAPTION_MAX)
   })
 
@@ -194,7 +225,9 @@ describe("buildOptimisticFeedSharePost shape", () => {
 
 describe("classifyFeedShareFailure edges", () => {
   it("classifies a cross-realm AppError clone by its code", () => {
-    expect(classifyFeedShareFailure({ name: "AppError", code: "VALIDATION", message: "x" })).toEqual({
+    expect(
+      classifyFeedShareFailure({ name: "AppError", code: "VALIDATION", message: "x" }),
+    ).toEqual({
       reason: "rejected",
       retryable: false,
     })
@@ -210,7 +243,9 @@ describe("findExistingFeedPost edges", () => {
   it("returns the first matching post and skips null or author-less items", () => {
     const hit = { id: "p2", author: me, report: { id: "r" }, event: null }
     const later = { id: "p3", author: me, report: { id: "r" }, event: null }
-    const page = { items: [null, { id: "p1", author: null, report: { id: "r" } }, hit, later] } as never
+    const page = {
+      items: [null, { id: "p1", author: null, report: { id: "r" } }, hit, later],
+    } as never
     expect(findExistingFeedPost(page, { reportId: "r" }, me.id)).toBe("p2")
   })
 

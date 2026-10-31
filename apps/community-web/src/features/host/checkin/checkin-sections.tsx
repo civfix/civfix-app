@@ -152,10 +152,7 @@ export function ManualCheckinForm({
             />
           )}
         </Field>
-        <ConsoleButton
-          type="submit"
-          disabled={scan.isPending || !ticketCodeReady(code)}
-        >
+        <ConsoleButton type="submit" disabled={scan.isPending || !ticketCodeReady(code)}>
           {t("manual.submit")}
         </ConsoleButton>
         <ConsoleButton variant="outline" onClick={onOpenWalkup}>
@@ -312,7 +309,11 @@ export function CheckinCharts({
         {arrivals.length === 0 ? (
           <p className="text-token-13 text-console-ink-3">{t("arrivals.empty")}</p>
         ) : (
-          <Histogram bins={arrivals} summary={t("arrivals.a11y")} valueLabel={t("arrivals.value")} />
+          <Histogram
+            bins={arrivals}
+            summary={t("arrivals.a11y")}
+            valueLabel={t("arrivals.value")}
+          />
         )}
         <p className="mt-token-2 text-token-12 text-console-ink-3">{t("arrivals.buckets")}</p>
       </div>

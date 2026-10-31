@@ -60,7 +60,9 @@ export function PickerList({
         return (
           <Text style={styles.sectionHeader} onLayout={(e) => onItemLayout(item.key, e)}>
             {t(
-              item.place === "linked" && mode === "draft" ? "section_added" : `section_${item.place}`,
+              item.place === "linked" && mode === "draft"
+                ? "section_added"
+                : `section_${item.place}`,
               { count: item.count },
             )}
           </Text>
@@ -119,7 +121,12 @@ export function PickerList({
           <SkeletonList kind="report" rows={LOADING_SKELETON_ROWS} />
         </SkeletonGroup>
       ) : listState === "error" ? (
-        <FeedNotice icon="CloudOff" title={t("load_error")} actionLabel={t("retry")} onAction={onRetry} />
+        <FeedNotice
+          icon="CloudOff"
+          title={t("load_error")}
+          actionLabel={t("retry")}
+          onAction={onRetry}
+        />
       ) : (
         <Text style={styles.stateText}>{stateCopy(listState, query, t)}</Text>
       )}

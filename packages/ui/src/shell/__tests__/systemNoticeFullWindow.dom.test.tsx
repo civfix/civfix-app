@@ -74,7 +74,10 @@ const STATUS_BAR: EdgeInsets = { top: 24, right: 0, bottom: 34, left: 0 }
 function config(text: string | null): AppConfigResponse {
   return {
     minAppVersion: { ios: null, android: null },
-    storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+    storeUrl: {
+      ios: null,
+      android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+    },
     announcement: text === null ? null : { text, level: "info" },
   }
 }
@@ -93,7 +96,9 @@ function Probe({ id }: { id: string }) {
 function renderRoot(announcement: string | null, children: React.ReactNode) {
   useSystemNoticeStore.setState({ dismissedHash: null, height: 0 })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const context = makeFakeDataContext({ api: { getAppConfig: async () => config(announcement) } as unknown as ApiClient })
+  const context = makeFakeDataContext({
+    api: { getAppConfig: async () => config(announcement) } as unknown as ApiClient,
+  })
   return render(
     <QueryClientProvider client={client}>
       <ApiProvider value={context}>
@@ -111,7 +116,9 @@ function renderRoot(announcement: string | null, children: React.ReactNode) {
 
 // react-native-web's onLayout measures the node's offset box.
 function measureBar() {
-  vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
+  vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
     return this.getAttribute("data-testid") === "system-notice" ? BAR_HEIGHT : 0
   })
 }
@@ -139,7 +146,16 @@ describe("a full-window surface opened below the notice", () => {
   })
 
   it("places the lightbox's close button below the status bar, as without a notice", async () => {
-    renderRoot(TEXT, <MediaLightboxBase visible items={[]} index={0} onIndexChange={() => {}} onClose={() => {}} />)
+    renderRoot(
+      TEXT,
+      <MediaLightboxBase
+        visible
+        items={[]}
+        index={0}
+        onIndexChange={() => {}}
+        onClose={() => {}}
+      />,
+    )
     await screen.findByText(TEXT)
     const close = screen.getByRole("button", { name: "Close" })
     expect(getComputedStyle(close).top).toBe(`${lightboxControlOffsets(STATUS_BAR).close.top}px`)
@@ -169,7 +185,9 @@ describe("a layout sized from the window, below the notice", () => {
     measureBar()
     renderRoot(null, <Probe id="screen" />)
     await settle()
-    expect(screen.getByTestId("screen-height").textContent).toBe(String(Dimensions.get("window").height))
+    expect(screen.getByTestId("screen-height").textContent).toBe(
+      String(Dimensions.get("window").height),
+    )
     expect(screen.getByTestId("screen-top").textContent).toBe("24")
   })
 

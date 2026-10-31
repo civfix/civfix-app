@@ -32,7 +32,16 @@ import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
 import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO } from "@civfix/contract"
 import { POST_BODY_MAX } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, inputFocusedStyle, MIN_TOUCH_TARGET } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  wash,
+  useLayoutMode,
+  useTheme,
+  webInputReset,
+  inputFocusedStyle,
+  MIN_TOUCH_TARGET,
+} from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"
@@ -116,8 +125,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
   // anywhere saying why. The auth store is populated whenever `isAuthenticated` is, and the server's
   // response carries the authoritative author, so the projection only ever fills a gap.
   const { isAuthenticated, user } = useAuthState()
-  const profile =
-    useMyProfile().data?.profile ?? (user ? personFromAuthUser(user) : undefined)
+  const profile = useMyProfile().data?.profile ?? (user ? personFromAuthUser(user) : undefined)
   const create = useCreatePost()
   const dock = useReplyDockInset()
   // Unanswered (null) keeps the swap animated until the setting is known.
@@ -219,12 +227,16 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
     if (prevExpanded.current === expanded) return
     prevExpanded.current = expanded
     if (Platform.OS === "ios" && !reducedMotion) {
-      LayoutAnimation.configureNext({ ...LayoutAnimation.Presets.easeInEaseOut, duration: EXPAND_ANIM_MS })
+      LayoutAnimation.configureNext({
+        ...LayoutAnimation.Presets.easeInEaseOut,
+        duration: EXPAND_ANIM_MS,
+      })
     }
   }, [expanded, reducedMotion])
 
   const onChromeTop = (event: LayoutChangeEvent) => setChromeTop(event.nativeEvent.layout.height)
-  const onChromeBottom = (event: LayoutChangeEvent) => setChromeBottom(event.nativeEvent.layout.height)
+  const onChromeBottom = (event: LayoutChangeEvent) =>
+    setChromeBottom(event.nativeEvent.layout.height)
 
   const activeMentions = React.useMemo(
     () => activePostMentions(draft.body, draft.mentionedUsers),
@@ -323,7 +335,8 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
   }
 
   const canAttachMedia = attachments.canAttach && media.length < POST_COMPOSER_MEDIA_CAP
-  const canAttachAnything = canAttachMedia || draft.attachedEventId == null || draft.attachedReportId == null
+  const canAttachAnything =
+    canAttachMedia || draft.attachedEventId == null || draft.attachedReportId == null
 
   // Signed out, the whole surface is one sign-in pill: both thread queries are auth-gated, so a
   // signed-out reader would otherwise get a permanently disabled grey Reply button on a dead screen.
@@ -332,7 +345,9 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
       <SignedOutReplyPill
         restPad={dock.restPad}
         onSignIn={() =>
-          requireAuth(() => undefined, { next: pathForEntry({ kind: "post-thread", id: focalPost.id }) })
+          requireAuth(() => undefined, {
+            next: pathForEntry({ kind: "post-thread", id: focalPost.id }),
+          })
         }
       />
     )
@@ -554,7 +569,9 @@ function ReplyToolsRow({
       </Pressable>
       <View style={styles.toolsSpacer} />
       {remaining <= COUNTER_VISIBLE_AT ? (
-        <Text style={[styles.counter, remaining <= COUNTER_URGENT_AT ? styles.counterUrgent : null]}>
+        <Text
+          style={[styles.counter, remaining <= COUNTER_URGENT_AT ? styles.counterUrgent : null]}
+        >
           {t("reply.chars_left", { count: remaining })}
         </Text>
       ) : null}

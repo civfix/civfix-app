@@ -1,6 +1,13 @@
 import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT, useEventWhen } from "../i18n"
 import { Avatar } from "./Avatar"
@@ -16,7 +23,10 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
   const affiliation = cleanup.organization ?? cleanup.organizer.organization
   const a11yLabel = t("a11y.card_detail", {
     title: cleanup.title,
-    when: when.time === "" ? t("linked.schedule_unavailable") : `${when.dow}, ${when.date}, ${when.timeWithZone}`,
+    when:
+      when.time === ""
+        ? t("linked.schedule_unavailable")
+        : `${when.dow}, ${when.date}, ${when.timeWithZone}`,
     location: where || t("linked.location_fallback"),
     going: t("going", { count: cleanup.going }),
     organizer: `${t("organizer.by_prefix")} ${cleanup.organizer.name}`,
@@ -82,7 +92,12 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
             gradient={cleanup.organizer.avatar ?? null}
             size={22}
           />
-          <Text variant="caption" color={th.colors.textMuted} numberOfLines={1} style={styles.organizerText}>
+          <Text
+            variant="caption"
+            color={th.colors.textMuted}
+            numberOfLines={1}
+            style={styles.organizerText}
+          >
             {t("organizer.by_prefix")}{" "}
             <Text variant="caption" color={th.colors.text} style={styles.organizerName}>
               {cleanup.organizer.name}

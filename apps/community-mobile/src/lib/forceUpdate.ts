@@ -36,6 +36,7 @@ export function forceUpdateFor(
   platform: AppPlatform,
   ownVersion: string | null | undefined,
 ): ForceUpdateDecision {
-  if (!config || !isBelowMinimum(ownVersion, config.minAppVersion[platform])) return { blocked: false }
+  if (!config || !isBelowMinimum(ownVersion, config.minAppVersion[platform]))
+    return { blocked: false }
   return { blocked: true, storeUrl: usableStoreUrl(config.storeUrl[platform]) }
 }

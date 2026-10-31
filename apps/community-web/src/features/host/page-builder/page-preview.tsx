@@ -86,19 +86,21 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <ol className="flex flex-col gap-token-1">
-                    {keyedByValue(block.items, (item) => `${item.time ?? ""} ${item.title}`).map(({ entry: item, key }) => (
-                      <li key={key} className="flex gap-token-2 text-token-13">
-                        <span className="w-20 shrink-0 font-mono text-console-ink-3">
-                          {item.time ?? ""}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="font-semibold text-console-ink">{item.title}</span>
-                          {item.description ? (
-                            <span className="block text-console-ink-2">{item.description}</span>
-                          ) : null}
-                        </span>
-                      </li>
-                    ))}
+                    {keyedByValue(block.items, (item) => `${item.time ?? ""} ${item.title}`).map(
+                      ({ entry: item, key }) => (
+                        <li key={key} className="flex gap-token-2 text-token-13">
+                          <span className="w-20 shrink-0 font-mono text-console-ink-3">
+                            {item.time ?? ""}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="font-semibold text-console-ink">{item.title}</span>
+                            {item.description ? (
+                              <span className="block text-console-ink-2">{item.description}</span>
+                            ) : null}
+                          </span>
+                        </li>
+                      ),
+                    )}
                   </ol>
                 </PreviewSection>
               )
@@ -124,12 +126,14 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
               return (
                 <PreviewSection key={block.id} block={block}>
                   <dl className="flex flex-col gap-token-2 text-token-13">
-                    {keyedByValue(block.items, (item) => item.question).map(({ entry: item, key }) => (
-                      <div key={key}>
-                        <dt className="font-semibold text-console-ink">{item.question}</dt>
-                        <dd className="text-console-ink-2">{item.answer}</dd>
-                      </div>
-                    ))}
+                    {keyedByValue(block.items, (item) => item.question).map(
+                      ({ entry: item, key }) => (
+                        <div key={key}>
+                          <dt className="font-semibold text-console-ink">{item.question}</dt>
+                          <dd className="text-console-ink-2">{item.answer}</dd>
+                        </div>
+                      ),
+                    )}
                   </dl>
                 </PreviewSection>
               )

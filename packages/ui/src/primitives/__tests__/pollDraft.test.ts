@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/contract"
+import {
+  POLL_MAX_OPTIONS,
+  POLL_MIN_OPTIONS,
+  POLL_OPTION_MAX,
+  POLL_QUESTION_MAX,
+} from "@civfix/contract"
 import {
   emptyPollDraft,
   setQuestion,

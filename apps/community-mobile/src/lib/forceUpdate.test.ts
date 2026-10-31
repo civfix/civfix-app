@@ -71,13 +71,20 @@ test("T9: anything that does not start with a store's exact https prefix is not 
 })
 
 test("T10: an Android build below the Android minimum is blocked with the Play URL", () => {
-  const decision = forceUpdateFor(config({ minAppVersion: { ios: null, android: "1.5.0" } }), "android", "1.4.0")
+  const decision = forceUpdateFor(
+    config({ minAppVersion: { ios: null, android: "1.5.0" } }),
+    "android",
+    "1.4.0",
+  )
   assert.deepEqual(decision, { blocked: true, storeUrl: PLAY_URL })
 })
 
 test("T11: an iOS build below the iOS minimum with no App Store URL is blocked without a URL", () => {
   const decision = forceUpdateFor(
-    config({ minAppVersion: { ios: "1.5.0", android: null }, storeUrl: { ios: null, android: PLAY_URL } }),
+    config({
+      minAppVersion: { ios: "1.5.0", android: null },
+      storeUrl: { ios: null, android: PLAY_URL },
+    }),
     "ios",
     "1.4.0",
   )
@@ -85,7 +92,11 @@ test("T11: an iOS build below the iOS minimum with no App Store URL is blocked w
 })
 
 test("T12: only the build's own platform minimum counts", () => {
-  const decision = forceUpdateFor(config({ minAppVersion: { ios: null, android: "9.0.0" } }), "ios", "1.4.0")
+  const decision = forceUpdateFor(
+    config({ minAppVersion: { ios: null, android: "9.0.0" } }),
+    "ios",
+    "1.4.0",
+  )
   assert.deepEqual(decision, { blocked: false })
 })
 
@@ -95,7 +106,11 @@ test("T13: no config (pending, failed or unparsable) never blocks", () => {
 })
 
 test("T14: a cleared minimum unblocks", () => {
-  const decision = forceUpdateFor(config({ minAppVersion: { ios: null, android: null } }), "android", "1.4.0")
+  const decision = forceUpdateFor(
+    config({ minAppVersion: { ios: null, android: null } }),
+    "android",
+    "1.4.0",
+  )
   assert.deepEqual(decision, { blocked: false })
 })
 

@@ -14,7 +14,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/__tests__/**", "src/**/__testing__/**", "src/**/*.test.{ts,tsx}", "src/**/*.d.ts"],
+      exclude: [
+        "src/**/__tests__/**",
+        "src/**/__testing__/**",
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+      ],
       reporter: ["text-summary"],
       // The measured baseline rounded down; raise these as coverage grows, never lower them.
       thresholds: { lines: 37, functions: 37, branches: 34, statements: 37 },

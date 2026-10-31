@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MIN_TOUCH_TARGET as CANONICAL_MIN_TOUCH_TARGET } from "../../theme/touchTarget"
-import { expectThemeHitSlop, expectThemeTouchTarget, surfacePart, surfaceSource } from "../../__tests__/sourceGuards"
+import {
+  expectThemeHitSlop,
+  expectThemeTouchTarget,
+  surfacePart,
+  surfaceSource,
+} from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -16,13 +21,7 @@ const num = (source: string, name: string): number => {
 const operand = (source: string, name: string): number =>
   name === "MIN_TOUCH_TARGET" ? expectThemeTouchTarget(source) : num(source, name)
 
-const grown = (
-  source: string,
-  slopName: string,
-  a: string,
-  b: string,
-  size: number,
-): number => {
+const grown = (source: string, slopName: string, a: string, b: string, size: number): number => {
   const block = new RegExp(`const ${slopName} = \\{([\\s\\S]*?)\\n\\}`).exec(source)
   expect(block, `${slopName} is not an object literal - re-scope the guard`).not.toBeNull()
   const side = (name: string): number => {
@@ -78,7 +77,7 @@ describe("SearchBody: the field clear chip and the link actions clear 44pt", () 
   })
 
   it("gives the text link a 44pt BOX rather than slop its header would clip", () => {
-    expect(SRC).toContain("clear: { minHeight: MIN_TOUCH_TARGET, justifyContent: \"center\"")
+    expect(SRC).toContain('clear: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center"')
     const linkAction = surfacePart("search", "LinkAction.tsx")
     expect(linkAction).toContain("export function LinkAction(")
     expect(linkAction, "the box IS the target now - no slop to clip").not.toContain("hitSlop")

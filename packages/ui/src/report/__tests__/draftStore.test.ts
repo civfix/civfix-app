@@ -33,7 +33,10 @@ describe("draftStore media", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("first"))
     s.addCapture(cap("second", { kind: "video", mime: "video/mp4" }))
-    expect(useDraftReportStore.getState().draft.media.map((m) => m.uri)).toEqual(["first", "second"])
+    expect(useDraftReportStore.getState().draft.media.map((m) => m.uri)).toEqual([
+      "first",
+      "second",
+    ])
     // The idempotency key minted by the first capture survives the append (no draft reset).
     expect(useDraftReportStore.getState().draft.idempotencyKey).toBeTruthy()
   })

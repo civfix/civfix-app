@@ -25,8 +25,14 @@ test("a failed capture tells the user, with an error toast and an error haptic",
 })
 
 test("every capture path that can fail reports it instead of only clearing the spinner", () => {
-  assert.match(callbackBody("onTakePhoto"), /catch \{\s*reportCaptureFailure\("error\.photo"\)\s*\}/)
-  assert.match(callbackBody("onPickFromLibrary"), /catch \{\s*reportCaptureFailure\("error\.library"\)\s*\}/)
+  assert.match(
+    callbackBody("onTakePhoto"),
+    /catch \{\s*reportCaptureFailure\("error\.photo"\)\s*\}/,
+  )
+  assert.match(
+    callbackBody("onPickFromLibrary"),
+    /catch \{\s*reportCaptureFailure\("error\.library"\)\s*\}/,
+  )
 
   const onError = viewfinder.slice(viewfinder.indexOf("onRecordingError: () => {"))
   assert.match(
@@ -43,7 +49,10 @@ test("a user stop that races the hard stop never shows a false failure", () => {
   const end = toggle.indexOf("return", start)
   assert.ok(end > start)
   const stopBranch = toggle.slice(start, end)
-  assert.match(stopBranch, /clearHardStop\(\)\s*setBusy\(true\)\s*stopRecordingQuietly\(cameraRef\.current\)/)
+  assert.match(
+    stopBranch,
+    /clearHardStop\(\)\s*setBusy\(true\)\s*stopRecordingQuietly\(cameraRef\.current\)/,
+  )
   assert.doesNotMatch(stopBranch, /reportCaptureFailure/)
   assert.doesNotMatch(toggle, /await cameraRef\.current\.stopRecording\(\)/)
 })
@@ -57,7 +66,11 @@ test("cleanup stops share one justified quiet-stop helper instead of anonymous n
 })
 
 test("the shutter exposes its disabled and busy state to screen readers", () => {
-  const shutter = viewfinder.slice(viewfinder.indexOf("onPress={() => void (mode === \"photo\" ? onTakePhoto() : onToggleRecord())}"))
+  const shutter = viewfinder.slice(
+    viewfinder.indexOf(
+      'onPress={() => void (mode === "photo" ? onTakePhoto() : onToggleRecord())}',
+    ),
+  )
   const props = shutter.slice(0, shutter.indexOf("style="))
   assert.match(props, /disabled=\{busy && !recording\}/)
   assert.match(props, /accessibilityState=\{\{ disabled: busy && !recording, busy \}\}/)

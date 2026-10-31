@@ -1,5 +1,11 @@
 import { Platform, StyleSheet } from "react-native"
-import { makeThemedStyles, wash, hitSlopToTarget, MIN_TOUCH_TARGET, inputFocusedStyle } from "../../theme"
+import {
+  makeThemedStyles,
+  wash,
+  hitSlopToTarget,
+  MIN_TOUCH_TARGET,
+  inputFocusedStyle,
+} from "../../theme"
 import { HEADER_CONTROL_SIZE } from "../../primitives/headerControls"
 import { tabRootTitleStyle } from "../../shell/detailHeader"
 import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"

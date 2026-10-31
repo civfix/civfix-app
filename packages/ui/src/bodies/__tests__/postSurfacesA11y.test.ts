@@ -10,7 +10,8 @@ import { expectThemeTouchTarget, surfaceSource } from "../../__tests__/sourceGua
 const strip = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 
-const code = (relative: string): string => strip(readFileSync(new URL(relative, import.meta.url), "utf8"))
+const code = (relative: string): string =>
+  strip(readFileSync(new URL(relative, import.meta.url), "utf8"))
 
 const between = (source: string, from: string, to: string): string => {
   const start = source.indexOf(from)
@@ -40,7 +41,11 @@ describe("the post row is a pointer convenience, not an accessibility element", 
   })
 
   it("leaves keyboard and screen-reader users the timestamp permalink to open the thread", () => {
-    const permalink = between(card, 'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}', "style=")
+    const permalink = between(
+      card,
+      'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}',
+      "style=",
+    )
     expect(permalink).toContain("linkKeyProps(onOpenPost)")
   })
 
@@ -77,11 +82,19 @@ describe("a repost's comment and quote target the original", () => {
 
   it("routes both through the same target as the row and the menu, falling back when it is deleted", () => {
     const view = code("../postCardModel.ts")
-    expect(view).toContain("const liveOriginal = isRepost && embedded && !embedded.deleted ? embedded : null")
+    expect(view).toContain(
+      "const liveOriginal = isRepost && embedded && !embedded.deleted ? embedded : null",
+    )
     expect(view).toContain("actionTargetId: liveOriginal ? liveOriginal.id : post.id,")
-    expect(card).toContain("const { isRepost, embedded, rowPostId, actionTargetId, openableOriginalId, media } = view")
-    expect(card).toContain("const onComment = React.useCallback(() => openPost(actionTargetId), [openPost, actionTargetId])")
-    expect(card).toContain('push({ kind: "composer", composerMode: "quote", targetPostId: actionTargetId })')
+    expect(card).toContain(
+      "const { isRepost, embedded, rowPostId, actionTargetId, openableOriginalId, media } = view",
+    )
+    expect(card).toContain(
+      "const onComment = React.useCallback(() => openPost(actionTargetId), [openPost, actionTargetId])",
+    )
+    expect(card).toContain(
+      'push({ kind: "composer", composerMode: "quote", targetPostId: actionTargetId })',
+    )
   })
 
   it("keeps like/save/counts on the wrapper id, which the server resolves to the original", () => {
@@ -109,15 +122,17 @@ describe("loading states have a name", () => {
 
 describe("screen titles are headings", () => {
   it("the composer's centered title", () => {
-    expect(strip(surfaceSource("postComposer"))).toContain(
-      '<Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>',
+    expect(strip(surfaceSource("postComposer"))).toMatch(
+      /<Text accessibilityRole="header" style=\{styles\.headerTitle\}>\s*\{presentation\.title\}\s*<\/Text>/,
     )
   })
 
   it("the thread's compact title, levelled so the two branches stay one page title", () => {
     const thread = code("../PostThreadBody.tsx")
     const header = code("../DetailBodyHeader.tsx")
-    expect(thread).toMatch(/<DetailBodyHeader\s+title=\{t\("thread\.title"\)\}[^>]*compactTitle="heading"/)
+    expect(thread).toMatch(
+      /<DetailBodyHeader\s+title=\{t\("thread\.title"\)\}[^>]*compactTitle="heading"/,
+    )
     expect(header).toMatch(
       /compactTitle === "heading" \? \(\s*<View[^>]*>\s*<Text variant="heading" accessibilityRole="header" \{\.\.\.headingLevel\(1\)\}>\s*\{title\}/,
     )
@@ -129,7 +144,9 @@ describe("the feed-share caption counter", () => {
 
   it("announces the same number it shows, translated", () => {
     const counter = between(share, "styles.counter,", "</Text>")
-    expect(counter).toContain('accessibilityLabel={tc("caption_remaining_a11y", { count: FEED_CAPTION_MAX - caption.length })}')
+    expect(counter).toMatch(
+      /accessibilityLabel=\{tc\("caption_remaining_a11y", \{\s*count: FEED_CAPTION_MAX - caption\.length,?\s*\}\)\}/,
+    )
     expect(counter).not.toContain("${caption.length} / ${FEED_CAPTION_MAX}")
   })
 
@@ -137,7 +154,9 @@ describe("the feed-share caption counter", () => {
     const entrance = between(share, "const [enter]", "const readOnly")
     expect(entrance).toContain('useNativeDriver: Platform.OS !== "web"')
     expect(entrance).not.toContain("useNativeDriver: true")
-    expect(entrance).toMatch(/if \(reducedMotion\) \{\s*enter\.stopAnimation\(\)\s*enter\.setValue\(1\)/)
+    expect(entrance).toMatch(
+      /if \(reducedMotion\) \{\s*enter\.stopAnimation\(\)\s*enter\.setValue\(1\)/,
+    )
   })
 })
 
@@ -151,7 +170,9 @@ describe("the composer entrance reads the shared reduced-motion hook", () => {
     expect(composer).toContain("const entranceStyle = useEntranceAnimation(COMPOSER_ENTRANCE)")
     const entrance = code("../useEntranceAnimation.ts")
     expect(entrance).not.toContain("isReduceMotionEnabled")
-    expect(between(entrance, "export function useEntranceAnimation(", "return useMemo")).toContain("const reducedMotion = useReducedMotion()")
+    expect(between(entrance, "export function useEntranceAnimation(", "return useMemo")).toContain(
+      "const reducedMotion = useReducedMotion()",
+    )
   })
 })
 
@@ -159,7 +180,9 @@ describe("the composer's author row is translated", () => {
   it("falls back to the catalog's own 'You', never an English literal", () => {
     const composer = strip(surfaceSource("postComposer"))
     expect(composer).not.toContain('"You"')
-    expect(composer).toContain('{postAsOrganization?.name ?? profile?.name ?? t("post_as.personal")}')
+    expect(composer).toContain(
+      '{postAsOrganization?.name ?? profile?.name ?? t("post_as.personal")}',
+    )
   })
 })
 
@@ -167,14 +190,18 @@ describe("composer controls meet the 44pt target", () => {
   it("InlineComposer's add-media, close and Post controls", () => {
     const inline = code("../feed/InlineComposer.tsx")
     expectThemeTouchTarget(inline)
-    expect(between(inline, "  addMedia: {", "}")).toMatch(/width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET/)
-    expect(between(inline, "  close: {", "}")).toMatch(/width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET/)
+    expect(between(inline, "  addMedia: {", "}")).toMatch(
+      /width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET/,
+    )
+    expect(between(inline, "  close: {", "}")).toMatch(
+      /width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET/,
+    )
     expect(between(inline, "  postButton: {", "}")).toContain("minHeight: MIN_TOUCH_TARGET")
   })
 
   it("PostComposer's add-media control, with the 36pt disc drawn inside", () => {
     const composer = strip(surfaceSource("postComposer"))
-    expect(composer).toMatch(/addMedia: \{ width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET,/)
-    expect(composer).toMatch(/addMediaDisc: \{ width: 36, height: 36,/)
+    expect(composer).toMatch(/addMedia: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(composer).toMatch(/addMediaDisc: \{\s*width: 36,\s*height: 36,/)
   })
 })

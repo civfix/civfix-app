@@ -36,7 +36,11 @@ describe("portrait frame wiring", () => {
     (kind, keyboardAvoidance) => {
       const before = renderPlan("home", null)
       const active: DetailEntry =
-        kind === "post-thread" ? { kind, id: "post-1" } : kind === "person" ? { kind, id: "p" } : { kind }
+        kind === "post-thread"
+          ? { kind, id: "post-1" }
+          : kind === "person"
+            ? { kind, id: "p" }
+            : { kind }
       const during = renderPlan("home", active)
 
       expect(during.base).toMatchObject({
@@ -165,16 +169,16 @@ describe("portrait frame wiring", () => {
     expect(renderPlan("map", null)).toEqual(renderStackPlan("map", []))
   })
 
-  it.each([
-    { kind: "profile" as const },
-    { kind: "cleanup" as const, id: "event-1" },
-  ])("hides the dock under a $kind detail sheet (the sheet covers it) but keeps the base footprint", (active) => {
-    const frame = renderPlan("home", active)
+  it.each([{ kind: "profile" as const }, { kind: "cleanup" as const, id: "event-1" }])(
+    "hides the dock under a $kind detail sheet (the sheet covers it) but keeps the base footprint",
+    (active) => {
+      const frame = renderPlan("home", active)
 
-    // The base surface behind the modal sheet still reserves the nonzero chrome footprint.
-    expect(frame.sheet.visible).toBe(true)
-    expect(frame.bottomChrome.visible).toBe(false)
-    expect(frame.bottomChrome.footprint).toBe(80)
-    expect(frame.base.bottomInset).toBe(80)
-  })
+      // The base surface behind the modal sheet still reserves the nonzero chrome footprint.
+      expect(frame.sheet.visible).toBe(true)
+      expect(frame.bottomChrome.visible).toBe(false)
+      expect(frame.bottomChrome.footprint).toBe(80)
+      expect(frame.base.bottomInset).toBe(80)
+    },
+  )
 })

@@ -1,12 +1,7 @@
 import type { CleanupDTO, EventInsights } from "@civfix/contract"
 import { useTheme } from "../../theme"
 import { Text } from "../../typography"
-import {
-  CancelEventSheet,
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-} from "../../primitives"
+import { CancelEventSheet, ModalCardSheet, PrimaryButton, SecondaryButton } from "../../primitives"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
 import { ErrorCode, appErrorCode } from "@civfix/contract"
 import { useT } from "../../i18n"

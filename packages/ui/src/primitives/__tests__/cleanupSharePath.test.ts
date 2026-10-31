@@ -9,7 +9,9 @@ describe("cleanupSharePath", () => {
   })
 
   it("falls through a null slug or reference code", () => {
-    expect(cleanupSharePath({ id: "d", pageSlug: null, referenceCode: "CF-9" })).toBe("/cleanups/CF-9")
+    expect(cleanupSharePath({ id: "d", pageSlug: null, referenceCode: "CF-9" })).toBe(
+      "/cleanups/CF-9",
+    )
     expect(cleanupSharePath({ id: "e", pageSlug: null, referenceCode: null })).toBe("/cleanups/e")
   })
 })

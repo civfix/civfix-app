@@ -13,5 +13,7 @@ export const useTabBarStore = create<TabBarState>((set) => ({
   setTabBarHeight: (height) => set({ tabBarHeight: Math.max(0, Math.round(height)) }),
   lastNonSearchView: "home",
   noteView: (view) =>
-    set((s) => (view === "search" || s.lastNonSearchView === view ? s : { lastNonSearchView: view })),
+    set((s) =>
+      view === "search" || s.lastNonSearchView === view ? s : { lastNonSearchView: view },
+    ),
 }))

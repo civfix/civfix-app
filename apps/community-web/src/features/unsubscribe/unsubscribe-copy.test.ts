@@ -11,7 +11,10 @@ const TOKEN_STATE_WORDS: Record<string, RegExp> = {
 }
 
 function catalogStrings(locale: string): string[] {
-  const url = new URL(`../../../../../packages/ui/src/i18n/locales/${locale}/web-unsubscribe.json`, import.meta.url)
+  const url = new URL(
+    `../../../../../packages/ui/src/i18n/locales/${locale}/web-unsubscribe.json`,
+    import.meta.url,
+  )
   const walk = (node: unknown): string[] =>
     typeof node === "string" ? [node] : Object.values(node as Record<string, unknown>).flatMap(walk)
   return walk(JSON.parse(readFileSync(url, "utf8")))
@@ -25,12 +28,20 @@ function renderedKeys(): string[] {
 describe("UnsubscribeView copy", () => {
   it("renders only keys that exist in the catalog the privacy check reads", () => {
     const en = JSON.parse(
-      readFileSync(new URL("../../../../../packages/ui/src/i18n/locales/en/web-unsubscribe.json", import.meta.url), "utf8"),
+      readFileSync(
+        new URL(
+          "../../../../../packages/ui/src/i18n/locales/en/web-unsubscribe.json",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
     ) as Record<string, unknown>
     const keys = renderedKeys()
     expect(keys.length).toBeGreaterThan(0)
     for (const key of keys) {
-      const value = key.split(".").reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], en)
+      const value = key
+        .split(".")
+        .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], en)
       expect(typeof value, key).toBe("string")
     }
   })

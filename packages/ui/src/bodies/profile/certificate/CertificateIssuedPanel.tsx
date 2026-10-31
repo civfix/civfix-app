@@ -58,9 +58,7 @@ export function CertificateIssuedPanel({
         <View style={styles.summaryRow}>
           {summaryParts.map((part, i) => (
             <React.Fragment key={part}>
-              {i > 0 ? (
-                <MetaDot color={th.colors.textSubtle} style={styles.summaryDot} />
-              ) : null}
+              {i > 0 ? <MetaDot color={th.colors.textSubtle} style={styles.summaryDot} /> : null}
               <Text style={styles.summaryText}>{part}</Text>
             </React.Fragment>
           ))}
