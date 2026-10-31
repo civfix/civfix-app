@@ -8,7 +8,7 @@ export function CountBadge({
   className,
 }: {
   count: number
-  hot?: boolean
+  hot?: boolean | undefined
   className?: string
 }) {
   if (count <= 0) return null

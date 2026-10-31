@@ -38,7 +38,8 @@ function contrast(a: string, b: string): number {
 }
 
 function basemapSource(style: MapStyleInput): { tiles: string[]; attribution: string } {
-  return (style as { sources: { basemap: { tiles: string[]; attribution: string } } }).sources.basemap
+  return (style as { sources: { basemap: { tiles: string[]; attribution: string } } }).sources
+    .basemap
 }
 
 function tilesOf(style: MapStyleInput): string[] {
@@ -100,7 +101,9 @@ describe("rasterMapStyle", () => {
   })
 
   it("keeps the whole keyless style identical to the attribution-only call", () => {
-    expect(rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey: undefined })).toEqual(rasterMapStyle())
+    expect(rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey: undefined })).toEqual(
+      rasterMapStyle(),
+    )
   })
 
   it("appends the key to every subdomain shard", () => {
@@ -146,7 +149,9 @@ describe("rasterMapStyle", () => {
 
   it("serves the voyager tiles in light and the dark-matter tiles in dark", () => {
     expect(tilesOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "light" }))).toEqual(KEYLESS_TILES)
-    expect(tilesOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }))).toEqual(KEYLESS_DARK_TILES)
+    expect(tilesOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }))).toEqual(
+      KEYLESS_DARK_TILES,
+    )
     expect(BASEMAP_TILES.light).toEqual(KEYLESS_TILES)
     expect(BASEMAP_TILES.dark).toEqual(KEYLESS_DARK_TILES)
   })
@@ -161,7 +166,9 @@ describe("rasterMapStyle", () => {
   })
 
   it("appends the key to every dark subdomain shard too", () => {
-    const tiles = tilesOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark", cartoApiKey: "cb1_abc" }))
+    const tiles = tilesOf(
+      rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark", cartoApiKey: "cb1_abc" }),
+    )
     expect(tiles).toEqual(KEYLESS_DARK_TILES.map((url) => `${url}?key=cb1_abc`))
   })
 })

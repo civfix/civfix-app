@@ -61,7 +61,7 @@ function useOpenDm() {
 export interface DmTarget {
   id: string
   name?: string | null
-  handle?: string | null
+  handle?: string | null | undefined
 }
 
 export interface ResolvedDm {

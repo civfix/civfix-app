@@ -40,7 +40,10 @@ type Announcement = NonNullable<AppConfigResponse["announcement"]>
 function config(announcement: Announcement | null): AppConfigResponse {
   return {
     minAppVersion: { ios: null, android: null },
-    storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+    storeUrl: {
+      ios: null,
+      android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+    },
     announcement,
   }
 }
@@ -57,7 +60,13 @@ interface Harness {
   ThemeProvider: typeof ThemeProvider
 }
 
-const STATIC: Harness = { SystemNoticeBanner, ApiProvider, makeFakeDataContext, I18nProvider, ThemeProvider }
+const STATIC: Harness = {
+  SystemNoticeBanner,
+  ApiProvider,
+  makeFakeDataContext,
+  I18nProvider,
+  ThemeProvider,
+}
 
 /** A fresh module graph, as a restart sees it: the store hydrates from whatever storage already holds. */
 async function freshModules() {
@@ -166,23 +175,29 @@ describe("SystemNoticeBanner: showing the notice", () => {
     expect(Array.from(pressable)).toEqual([screen.getByRole("button", { name: DISMISS })])
   })
 
-  it.each<ColorSchemeName>(["light", "dark"])("T3: info wears the sky chip pair (%s)", async (scheme) => {
-    renderBanner(async () => config({ text: TEXT, level: "info" }), { scheme })
-    const bar = await screen.findByTestId(BAR)
-    const sky = pair(scheme, "sky")
-    expect(getComputedStyle(bar).backgroundColor).toBe(rgb(sky.bg))
-    expect(getComputedStyle(screen.getByText(TEXT)).color).toBe(rgb(sky.text))
-    expect(screen.getByTestId("notice-icon").getAttribute("data-color")).toBe(sky.text)
-  })
+  it.each<ColorSchemeName>(["light", "dark"])(
+    "T3: info wears the sky chip pair (%s)",
+    async (scheme) => {
+      renderBanner(async () => config({ text: TEXT, level: "info" }), { scheme })
+      const bar = await screen.findByTestId(BAR)
+      const sky = pair(scheme, "sky")
+      expect(getComputedStyle(bar).backgroundColor).toBe(rgb(sky.bg))
+      expect(getComputedStyle(screen.getByText(TEXT)).color).toBe(rgb(sky.text))
+      expect(screen.getByTestId("notice-icon").getAttribute("data-color")).toBe(sky.text)
+    },
+  )
 
-  it.each<ColorSchemeName>(["light", "dark"])("T4: warning wears the sun chip pair (%s)", async (scheme) => {
-    renderBanner(async () => config({ text: TEXT, level: "warning" }), { scheme })
-    const bar = await screen.findByTestId(BAR)
-    const sun = pair(scheme, "sun")
-    expect(getComputedStyle(bar).backgroundColor).toBe(rgb(sun.bg))
-    expect(getComputedStyle(screen.getByText(TEXT)).color).toBe(rgb(sun.text))
-    expect(screen.getByTestId("notice-icon").getAttribute("data-color")).toBe(sun.text)
-  })
+  it.each<ColorSchemeName>(["light", "dark"])(
+    "T4: warning wears the sun chip pair (%s)",
+    async (scheme) => {
+      renderBanner(async () => config({ text: TEXT, level: "warning" }), { scheme })
+      const bar = await screen.findByTestId(BAR)
+      const sun = pair(scheme, "sun")
+      expect(getComputedStyle(bar).backgroundColor).toBe(rgb(sun.bg))
+      expect(getComputedStyle(screen.getByText(TEXT)).color).toBe(rgb(sun.text))
+      expect(screen.getByTestId("notice-icon").getAttribute("data-color")).toBe(sun.text)
+    },
+  )
 })
 
 describe("SystemNoticeBanner: nothing to show", () => {
@@ -196,7 +211,10 @@ describe("SystemNoticeBanner: nothing to show", () => {
 
   it.each([
     ["a network TypeError", () => new TypeError("Network request failed")],
-    ["an AppError with status 503", () => new AppError(ErrorCode.INTERNAL, "unavailable", { httpStatus: 503 })],
+    [
+      "an AppError with status 503",
+      () => new AppError(ErrorCode.INTERNAL, "unavailable", { httpStatus: 503 }),
+    ],
   ])("T6: a failed request (%s) renders nothing and no error", async (_name, failure) => {
     const getAppConfig = vi.fn(async (): Promise<AppConfigResponse> => {
       throw failure()
@@ -257,7 +275,9 @@ describe("SystemNoticeBanner: dismissing", () => {
 
     const fetchedRestart = await freshModules()
     const seen: boolean[] = []
-    const observer = new MutationObserver(() => seen.push(document.querySelector(`[data-testid="${BAR}"]`) !== null))
+    const observer = new MutationObserver(() =>
+      seen.push(document.querySelector(`[data-testid="${BAR}"]`) !== null),
+    )
     observer.observe(document.body, { childList: true, subtree: true })
     const fetched = renderBanner(async () => config({ text: TEXT, level: "info" }), {
       harness: fetchedRestart.harness,
@@ -351,7 +371,8 @@ describe("systemNoticeStore: the published height", () => {
     await waitFor(() => expect(screen.queryByTestId(BAR)).toBeNull())
     expect(useSystemNoticeStore.getState().height).toBe(0)
     const saved = persisted()
-    if (saved !== null) expect(Object.keys((JSON.parse(saved) as { state: object }).state)).not.toContain("height")
+    if (saved !== null)
+      expect(Object.keys((JSON.parse(saved) as { state: object }).state)).not.toContain("height")
   })
 
   it("T16: the download banner's dismiss leaves the notice height alone", () => {

@@ -30,9 +30,8 @@ const EN: Record<string, string> = {
 
 const t = ((key: string, options: Record<string, string | number> = {}) => {
   const count = options.count
-  const resolved = typeof count === "number"
-    ? EN[`${key}${count === 1 ? "_one" : "_other"}`]
-    : EN[key]
+  const resolved =
+    typeof count === "number" ? EN[`${key}${count === 1 ? "_one" : "_other"}`] : EN[key]
   if (resolved == null) throw new Error(`missing translation: ${key}`)
   return resolved.replace(/{{(\w+)}}/g, (_m, name: string) => String(options[name] ?? ""))
 }) as unknown as TFunction
@@ -47,28 +46,76 @@ const counts = (over: Partial<PostCounts> = {}): PostCounts => ({
 
 describe("buildReplyComposerHeightPlan", () => {
   const CASES = [
-    { name: "402x874, keyboard up", rootHeight: 815, keyboardInset: 345,
-      available: 418, surfaceMax: 259, inputMax: 132, inputMaxThumbs: 95, trayMax: 151 },
-    { name: "402x874, keyboard down", rootHeight: 815, keyboardInset: 0,
-      available: 763, surfaceMax: 473, inputMax: 132, inputMaxThumbs: 132, trayMax: 168 },
-    { name: "375x667, keyboard up", rootHeight: 647, keyboardInset: 260,
-      available: 335, surfaceMax: 203, inputMax: 111, inputMaxThumbs: 40, trayMax: 124 },
-    { name: "375x667, keyboard down", rootHeight: 647, keyboardInset: 0,
-      available: 595, surfaceMax: 369, inputMax: 132, inputMaxThumbs: 132, trayMax: 168 },
-    { name: "320x568, keyboard up", rootHeight: 548, keyboardInset: 216,
-      available: 280, surfaceMax: 148, inputMax: 56, inputMaxThumbs: 40, trayMax: 124 },
+    {
+      name: "402x874, keyboard up",
+      rootHeight: 815,
+      keyboardInset: 345,
+      available: 418,
+      surfaceMax: 259,
+      inputMax: 132,
+      inputMaxThumbs: 95,
+      trayMax: 151,
+    },
+    {
+      name: "402x874, keyboard down",
+      rootHeight: 815,
+      keyboardInset: 0,
+      available: 763,
+      surfaceMax: 473,
+      inputMax: 132,
+      inputMaxThumbs: 132,
+      trayMax: 168,
+    },
+    {
+      name: "375x667, keyboard up",
+      rootHeight: 647,
+      keyboardInset: 260,
+      available: 335,
+      surfaceMax: 203,
+      inputMax: 111,
+      inputMaxThumbs: 40,
+      trayMax: 124,
+    },
+    {
+      name: "375x667, keyboard down",
+      rootHeight: 647,
+      keyboardInset: 0,
+      available: 595,
+      surfaceMax: 369,
+      inputMax: 132,
+      inputMaxThumbs: 132,
+      trayMax: 168,
+    },
+    {
+      name: "320x568, keyboard up",
+      rootHeight: 548,
+      keyboardInset: 216,
+      available: 280,
+      surfaceMax: 148,
+      inputMax: 56,
+      inputMaxThumbs: 40,
+      trayMax: 124,
+    },
   ] as const
 
   it.each(CASES)(
     "budgets $name exactly",
     ({ rootHeight, keyboardInset, available, surfaceMax, inputMax, inputMaxThumbs, trayMax }) => {
       const plain = buildReplyComposerHeightPlan({
-        rootHeight, keyboardInset, expanded: true, hasThumbs: false, measuredChrome: null,
+        rootHeight,
+        keyboardInset,
+        expanded: true,
+        hasThumbs: false,
+        measuredChrome: null,
       })
       expect(plain).toEqual({ available, surfaceMax, inputMax, trayMax })
 
       const thumbs = buildReplyComposerHeightPlan({
-        rootHeight, keyboardInset, expanded: true, hasThumbs: true, measuredChrome: null,
+        rootHeight,
+        keyboardInset,
+        expanded: true,
+        hasThumbs: true,
+        measuredChrome: null,
       })
       expect(thumbs.inputMax).toBe(inputMaxThumbs)
       expect(thumbs.surfaceMax).toBe(surfaceMax)
@@ -77,14 +124,22 @@ describe("buildReplyComposerHeightPlan", () => {
 
   it("keeps the composer at one line while collapsed", () => {
     const plan = buildReplyComposerHeightPlan({
-      rootHeight: 815, keyboardInset: 0, expanded: false, hasThumbs: false, measuredChrome: null,
+      rootHeight: 815,
+      keyboardInset: 0,
+      expanded: false,
+      hasThumbs: false,
+      measuredChrome: null,
     })
     expect(plan.inputMax).toBe(REPLY_INPUT_MIN)
   })
 
   it("leaves the reference device room for the composer AND the thread", () => {
     const plan = buildReplyComposerHeightPlan({
-      rootHeight: 815, keyboardInset: 345, expanded: true, hasThumbs: false, measuredChrome: null,
+      rootHeight: 815,
+      keyboardInset: 345,
+      expanded: true,
+      hasThumbs: false,
+      measuredChrome: null,
     })
     expect(92 + plan.inputMax).toBeLessThanOrEqual(plan.surfaceMax)
     expect(plan.available - (92 + plan.inputMax)).toBeGreaterThanOrEqual(MIN_THREAD_VISIBLE)
@@ -97,14 +152,18 @@ describe("buildReplyComposerHeightPlan", () => {
           for (const hasThumbs of [true, false]) {
             for (const expanded of [true, false]) {
               const plan = buildReplyComposerHeightPlan({
-                rootHeight, keyboardInset, expanded, hasThumbs, measuredChrome,
+                rootHeight,
+                keyboardInset,
+                expanded,
+                hasThumbs,
+                measuredChrome,
               })
               const where = `${rootHeight}/${keyboardInset}/${String(measuredChrome)}/${String(hasThumbs)}/${String(expanded)}`
               expect(plan.inputMax, where).toBeGreaterThanOrEqual(REPLY_INPUT_MIN)
               expect(plan.inputMax, where).toBeLessThanOrEqual(REPLY_INPUT_MAX_CAP)
               expect(
-                plan.surfaceMax <= plan.available - MIN_THREAD_VISIBLE
-                  || plan.surfaceMax === REPLY_SURFACE_MIN,
+                plan.surfaceMax <= plan.available - MIN_THREAD_VISIBLE ||
+                  plan.surfaceMax === REPLY_SURFACE_MIN,
                 where,
               ).toBe(true)
               expect(plan.trayMax + plan.surfaceMax, where).toBeLessThanOrEqual(plan.available)
@@ -118,8 +177,11 @@ describe("buildReplyComposerHeightPlan", () => {
 
 describe("threadItems", () => {
   it("appends locally-sent replies after the fetched ones", () => {
-    expect(threadItems([{ id: "r1" }, { id: "r2" }], [{ id: "local" }]).map((p) => p.id))
-      .toEqual(["r1", "r2", "local"])
+    expect(threadItems([{ id: "r1" }, { id: "r2" }], [{ id: "local" }]).map((p) => p.id)).toEqual([
+      "r1",
+      "r2",
+      "local",
+    ])
   })
 
   it("drops a sent reply the moment the authoritative list carries its id", () => {
@@ -129,14 +191,19 @@ describe("threadItems", () => {
   })
 
   it("never emits a duplicate key even when both sides repeat", () => {
-    const merged = threadItems([{ id: "r1" }, { id: "r1" }], [{ id: "r1" }, { id: "r2" }, { id: "r2" }])
+    const merged = threadItems(
+      [{ id: "r1" }, { id: "r1" }],
+      [{ id: "r1" }, { id: "r2" }, { id: "r2" }],
+    )
     expect(merged.map((p) => p.id)).toEqual(["r1", "r2"])
   })
 })
 
 describe("buildFocalPostStats", () => {
   it("orders replies, reposts, likes and omits every zero", () => {
-    expect(buildFocalPostStats(counts({ replies: 12, reposts: 0, likes: 41, saves: 9 }), t)).toEqual([
+    expect(
+      buildFocalPostStats(counts({ replies: 12, reposts: 0, likes: 41, saves: 9 }), t),
+    ).toEqual([
       { key: "replies", count: 12, label: "12 Replies" },
       { key: "likes", count: 41, label: "41 Likes" },
     ])
@@ -154,38 +221,55 @@ describe("buildFocalPostStats", () => {
 })
 
 describe("threadFocalExcerpt", () => {
-  const media = [{
-    id: "m1", kind: "image" as const, url: "https://example.com/a.jpg",
-    thumbUrl: null, width: 1200, height: 900, status: "ready" as const,
-  }]
+  const media = [
+    {
+      id: "m1",
+      kind: "image" as const,
+      url: "https://example.com/a.jpg",
+      thumbUrl: null,
+      width: 1200,
+      height: 900,
+      status: "ready" as const,
+    },
+  ]
 
   it("collapses whitespace so a multi-line body still fills one line", () => {
-    expect(threadFocalExcerpt(
-      { body: "Line one\n\n  Line   two ", event: null, report: null, media: [] }, t,
-    )).toBe("Line one Line two")
+    expect(
+      threadFocalExcerpt(
+        { body: "Line one\n\n  Line   two ", event: null, report: null, media: [] },
+        t,
+      ),
+    ).toBe("Line one Line two")
   })
 
   it("falls back to the linked event, then the report, then the attachment", () => {
     const event = { id: "e1", title: "Beach Cleanup" } as never
     const report = { id: "r1", title: "Pothole on Sunset" } as never
     expect(threadFocalExcerpt({ body: "", event, report, media: [] }, t)).toBe("Beach Cleanup")
-    expect(threadFocalExcerpt({ body: null, event: null, report, media: [] }, t))
-      .toBe("Pothole on Sunset")
-    expect(threadFocalExcerpt({ body: null, event: null, report: null, media }, t))
-      .toBe("Post attachment")
+    expect(threadFocalExcerpt({ body: null, event: null, report, media: [] }, t)).toBe(
+      "Pothole on Sunset",
+    )
+    expect(threadFocalExcerpt({ body: null, event: null, report: null, media }, t)).toBe(
+      "Post attachment",
+    )
     expect(threadFocalExcerpt({ body: null, event: null, report: null, media: [] }, t)).toBe("")
   })
 })
 
 describe("replyComposerState", () => {
   const base = {
-    focused: false, hasDraft: false, hasAttachments: false, signedIn: true, hasError: false,
+    focused: false,
+    hasDraft: false,
+    hasAttachments: false,
+    signedIn: true,
+    hasError: false,
   }
 
   it("shows the sign-in bar to a signed-out reader whatever else is true", () => {
     expect(replyComposerState({ ...base, signedIn: false })).toBe("signed-out")
-    expect(replyComposerState({ ...base, signedIn: false, focused: true, hasDraft: true }))
-      .toBe("signed-out")
+    expect(replyComposerState({ ...base, signedIn: false, focused: true, hasDraft: true })).toBe(
+      "signed-out",
+    )
   })
 
   it("rests collapsed", () => {
@@ -200,12 +284,12 @@ describe("replyComposerState", () => {
   })
 })
 
-const row = (
-  id: string,
-  authorId: string,
-  replies = 0,
-  replyToId: string | null = "focal",
-) => ({ id, author: { id: authorId }, counts: { replies }, replyToId })
+const row = (id: string, authorId: string, replies = 0, replyToId: string | null = "focal") => ({
+  id,
+  author: { id: authorId },
+  counts: { replies },
+  replyToId,
+})
 
 const flat = (replies: ReturnType<typeof row>[]) => buildThreadRows({ focalId: "focal", replies })
 

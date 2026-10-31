@@ -41,7 +41,9 @@ function flagNotes(flags: DraftFlags): string {
   return notes.join(" ")
 }
 
-export function composeDescription(draft: Pick<DraftReport, "description" | "flags">): string | undefined {
+export function composeDescription(
+  draft: Pick<DraftReport, "description" | "flags">,
+): string | undefined {
   const parts: string[] = []
   const desc = draft.description.trim()
   if (desc.length > 0) parts.push(desc)
@@ -67,7 +69,10 @@ export function descriptionMaxLength(flags: DraftFlags): number {
 export function invalidatesUploadIds(err: unknown): boolean {
   if (appErrorCode(err) !== ErrorCode.VALIDATION) return false
   const fields = appErrorFields(err)
-  return fields !== undefined && Object.keys(fields).some((key) => key.split(".")[0] === "mediaUploadIds")
+  return (
+    fields !== undefined &&
+    Object.keys(fields).some((key) => key.split(".")[0] === "mediaUploadIds")
+  )
 }
 
 export interface SubmitRunSlot<T> {
@@ -95,7 +100,11 @@ export function createSubmitRunSlot<T>(options: SubmitRunSlotOptions<T> = {}): S
     start(task) {
       if (current && !current.settled) return null
       const isCurrent = () => current === entry
-      const entry: Entry = { run: Promise.resolve().then(() => task(isCurrent)), settled: false, claimed: false }
+      const entry: Entry = {
+        run: Promise.resolve().then(() => task(isCurrent)),
+        settled: false,
+        claimed: false,
+      }
       entry.run.then(
         (value) => {
           entry.settled = true
@@ -194,7 +203,11 @@ async function mapWithConcurrency<T, R>(
   return results
 }
 
-async function uploadAll(api: ApiClient, camera: CameraCapability, media: DraftMedia[]): Promise<string[]> {
+async function uploadAll(
+  api: ApiClient,
+  camera: CameraCapability,
+  media: DraftMedia[],
+): Promise<string[]> {
   return mapWithConcurrency(media, UPLOAD_CONCURRENCY, async (item) => {
     if (item.uploadId) return item.uploadId
     const uploadId = await uploadOne(api, camera, item)
@@ -209,7 +222,9 @@ export interface ReportSubmitOptions {
   forComposer?: boolean
 }
 
-export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () => boolean) => Promise<ReportSubmitOutcome> {
+export function useReportSubmit(
+  options?: ReportSubmitOptions,
+): (isCurrent?: () => boolean) => Promise<ReportSubmitOutcome> {
   const forComposer = options?.forComposer === true
   const api = useApi()
   const camera = useCamera()
@@ -220,115 +235,118 @@ export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () 
   const me = useMyProfile().data?.profile ?? (user ? personFromAuthUser(user) : null)
   const createPostAsync = useCreatePost().mutateAsync
 
-  return useCallback(async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {
-    const store = useDraftReportStore.getState()
-    const draft = store.draft
+  return useCallback(
+    async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {
+      const store = useDraftReportStore.getState()
+      const draft = store.draft
 
-    if (!draft.category) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_category"), {
-        fields: { category: t("errors.no_category") },
-      })
-    }
-    if (draft.lat == null || draft.lng == null) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_location"), {
-        fields: { lat: t("errors.no_location") },
-      })
-    }
-    if (draft.media.length === 0) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_media"), {
-        fields: { media: t("errors.no_media") },
-      })
-    }
-
-    const idempotencyKey = store.ensureIdempotencyKey()
-
-    const mediaUploadIds = await uploadAll(api, camera, draft.media)
-    if (!isCurrent()) throw new SubmitRunDiscarded()
-
-    const description = composeDescription(draft)
-    const addr = submittedAddr(draft)
-    const submission: ReportSubmission = {
-      idempotencyKey,
-      category: draft.category,
-      type: (draft.reportTypeId ?? "other") as ReportType,
-      lat: draft.lat,
-      lng: draft.lng,
-      geomSource: draft.geomSource,
-      mediaUploadIds,
-      ...(draft.title.trim() ? { title: draft.title.trim() } : {}),
-      ...(addr ? { addr } : {}),
-      ...(description ? { description } : {}),
-    }
-
-    const createReport = async (): Promise<ReportSubmitResult> => {
-      if (hostSubmit) return hostSubmit(submission)
-      const report = await api.createReport(toCreateReportRequest(submission))
-      return {
-        reportId: report.id,
-        lat: report.lat,
-        lng: report.lng,
-        category: report.category,
-        status: report.status === "held" ? "held" : "published",
-      }
-    }
-
-    let result: ReportSubmitResult
-    try {
-      result = await createReport()
-    } catch (err) {
-      if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds()
-      throw err
-    }
-    if (!isCurrent()) throw new SubmitRunDiscarded()
-
-    let feedShare: FeedShareOutcome = { status: "skipped" }
-    const shareable =
-      draft.shareToFeed &&
-      isAuthenticated &&
-      !forComposer &&
-      result.claimCode === undefined &&
-      result.status !== "held"
-    if (draft.feedPostId) {
-      feedShare = { status: "posted", postId: draft.feedPostId }
-    } else if (shareable && me) {
-      const target: FeedShareTarget = { reportId: result.reportId }
-      const caption = draft.feedCaption
-      const input = buildFeedShareInput({ enabled: true, caption }, target)
-      const reportSource: FeedShareReportSource = {
-        id: result.reportId,
-        category: result.category ?? submission.category,
-        type: submission.type,
-        title: draft.title,
-        lat: result.lat,
-        lng: result.lng,
-        addr: draft.addr?.trim() ?? null,
-      }
-      const localUri = draft.media[0]?.uri
-      if (localUri) rememberLocalReportThumb(result.reportId, localUri)
-      try {
-        if (!input) throw new AppError(ErrorCode.VALIDATION, "Nothing to share.")
-        const post = await createPostAsync({
-          input,
-          optimistic: buildOptimisticFeedSharePost({ author: me, caption, report: reportSource }),
+      if (!draft.category) {
+        throw new AppError(ErrorCode.VALIDATION, t("errors.no_category"), {
+          fields: { category: t("errors.no_category") },
         })
-        store.setFeedPostId(post.id)
-        feedShare = { status: "posted", postId: post.id }
-      } catch (err) {
-        const { reason, retryable } = classifyFeedShareFailure(err)
-        feedShare = {
-          status: "failed",
-          reason,
-          retryable,
-          retry: { target, caption, report: reportSource },
+      }
+      if (draft.lat == null || draft.lng == null) {
+        throw new AppError(ErrorCode.VALIDATION, t("errors.no_location"), {
+          fields: { lat: t("errors.no_location") },
+        })
+      }
+      if (draft.media.length === 0) {
+        throw new AppError(ErrorCode.VALIDATION, t("errors.no_media"), {
+          fields: { media: t("errors.no_media") },
+        })
+      }
+
+      const idempotencyKey = store.ensureIdempotencyKey()
+
+      const mediaUploadIds = await uploadAll(api, camera, draft.media)
+      if (!isCurrent()) throw new SubmitRunDiscarded()
+
+      const description = composeDescription(draft)
+      const addr = submittedAddr(draft)
+      const submission: ReportSubmission = {
+        idempotencyKey,
+        category: draft.category,
+        type: (draft.reportTypeId ?? "other") as ReportType,
+        lat: draft.lat,
+        lng: draft.lng,
+        geomSource: draft.geomSource,
+        mediaUploadIds,
+        ...(draft.title.trim() ? { title: draft.title.trim() } : {}),
+        ...(addr ? { addr } : {}),
+        ...(description ? { description } : {}),
+      }
+
+      const createReport = async (): Promise<ReportSubmitResult> => {
+        if (hostSubmit) return hostSubmit(submission)
+        const report = await api.createReport(toCreateReportRequest(submission))
+        return {
+          reportId: report.id,
+          lat: report.lat,
+          lng: report.lng,
+          category: report.category,
+          status: report.status === "held" ? "held" : "published",
         }
       }
-    }
 
-    void queryClient.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
-    void queryClient.invalidateQueries({ queryKey: queryKeys.myReportsRoot })
+      let result: ReportSubmitResult
+      try {
+        result = await createReport()
+      } catch (err) {
+        if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds()
+        throw err
+      }
+      if (!isCurrent()) throw new SubmitRunDiscarded()
 
-    return { ...result, feedShare }
-  }, [api, camera, createPostAsync, forComposer, hostSubmit, isAuthenticated, me, queryClient, t])
+      let feedShare: FeedShareOutcome = { status: "skipped" }
+      const shareable =
+        draft.shareToFeed &&
+        isAuthenticated &&
+        !forComposer &&
+        result.claimCode === undefined &&
+        result.status !== "held"
+      if (draft.feedPostId) {
+        feedShare = { status: "posted", postId: draft.feedPostId }
+      } else if (shareable && me) {
+        const target: FeedShareTarget = { reportId: result.reportId }
+        const caption = draft.feedCaption
+        const input = buildFeedShareInput({ enabled: true, caption }, target)
+        const reportSource: FeedShareReportSource = {
+          id: result.reportId,
+          category: result.category ?? submission.category,
+          type: submission.type,
+          title: draft.title,
+          lat: result.lat,
+          lng: result.lng,
+          addr: draft.addr?.trim() ?? null,
+        }
+        const localUri = draft.media[0]?.uri
+        if (localUri) rememberLocalReportThumb(result.reportId, localUri)
+        try {
+          if (!input) throw new AppError(ErrorCode.VALIDATION, "Nothing to share.")
+          const post = await createPostAsync({
+            input,
+            optimistic: buildOptimisticFeedSharePost({ author: me, caption, report: reportSource }),
+          })
+          store.setFeedPostId(post.id)
+          feedShare = { status: "posted", postId: post.id }
+        } catch (err) {
+          const { reason, retryable } = classifyFeedShareFailure(err)
+          feedShare = {
+            status: "failed",
+            reason,
+            retryable,
+            retry: { target, caption, report: reportSource },
+          }
+        }
+      }
+
+      void queryClient.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myReportsRoot })
+
+      return { ...result, feedShare }
+    },
+    [api, camera, createPostAsync, forComposer, hostSubmit, isAuthenticated, me, queryClient, t],
+  )
 }
 
 export function useFeedShareRetry(): (retry: FeedShareRetry) => Promise<FeedShareOutcome> {

@@ -80,17 +80,18 @@ describe("the date/time picker seam stays a seam", () => {
 
   const files = sourceFiles(bodiesDir)
 
-  it("keeps the base file to the two re-export lines Metro needs", () => {
+  it("keeps the base file to the two re-export statements Metro needs", () => {
     const base = readFileSync(new URL("../InlineDateTimePicker.tsx", import.meta.url), "utf8")
-    const lines = base.trim().split("\n")
-    expect(lines).toHaveLength(2)
-    expect(lines[0]).toContain('from "./InlineDateTimePicker.web"')
-    expect(lines[1]).toContain('from "./InlineDateTimePicker.types"')
+    expect(base.trim()).toMatch(
+      /^export \{[^}]*\} from "\.\/InlineDateTimePicker\.web"\nexport type \{[^}]*\} from "\.\/InlineDateTimePicker\.types"$/,
+    )
   })
 
   it("names the optional native picker peer in the .native seam and nowhere else, so web never resolves it", () => {
     const importers = files
-      .filter((file) => readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"))
+      .filter((file) =>
+        readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"),
+      )
       .map((file) => file.slice(bodiesDir.length))
     expect(importers).toEqual(["InlineDateTimePicker.native.tsx"])
   })
@@ -195,7 +196,9 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     // A null capacity means at least one slot is unlimited, and printing a sum then would understate an
     // event that can take everyone - so those boards print the claim count, or say nobody has yet.
     expect(source).toContain("slotBoardSummary(slots)")
-    expect(source).toContain('summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0')
+    expect(source).toContain(
+      'summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0',
+    )
     expect(source).toContain('t("block.filled"')
     expect(source).toContain('t("block.signed_up"')
     expect(source).toContain('t("block.none_signed_up")')
@@ -258,7 +261,9 @@ describe("a LIVE event with no slots still has a way in", () => {
     expect(detail).toContain(
       "cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes",
     )
-    expect(detail).toContain("const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard")
+    expect(detail).toContain(
+      "const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard",
+    )
     expect(detail).toContain(
       'mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}',
     )
@@ -314,7 +319,9 @@ describe("the slot editor validates against the EVENT's window, not just the row
   it("greys the out-of-reach split chips instead of hiding them, and de-dupes a second tap", () => {
     expect(editor).toContain("const offeredSplits = splitCounts(eventWindow, value, shiftTitle)")
     expect(editor).toContain("disabled={!offeredSplits.includes(count)}")
-    expect(editor).toMatch(/generateShiftDrafts\([\s\S]*?value,\s*\)/)
+    expect(editor).toMatch(
+      /generateShiftDrafts\(\s*eventWindow,\s*count,\s*shiftTitle,\s*\(\) => makeSlotKey\(\),\s*value,?\s*\)/,
+    )
   })
 
   it("greys Set a time until the event HAS an end, rather than letting the tap do nothing", () => {
@@ -331,7 +338,9 @@ describe("the slot editor validates against the EVENT's window, not just the row
   it("offers the common first slot as a one-tap chip instead of prefilling every board alike", () => {
     expect(editor).toContain("value.every(isBlankSlotDraft)")
     expect(editor).toContain('t("editor.suggest_general")')
-    expect(editor).toContain('index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"')
+    expect(editor).toContain(
+      'index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"',
+    )
   })
 
   it("tells the host of an end-less event that timing a slot will store the end it shows", () => {

@@ -56,12 +56,15 @@ export function useDuplicateGate(resume?: () => void): DuplicateGate {
   const center = useMemo(() => (lat != null && lng != null ? { lat, lng } : null), [lat, lng])
   const nearby = useNearbyReports(needsCheck ? center : null)
   // A previous point's pins stay as placeholder data while this point's pins load.
-  const pins = nearby.isSuccess && !nearby.isPlaceholderData && !nearby.isFetching ? nearby.data : null
+  const pins =
+    nearby.isSuccess && !nearby.isPlaceholderData && !nearby.isFetching ? nearby.data : null
   const failed = nearby.isError
 
   const open = useDuplicateScreen((s) => s.open)
   const matches =
-    open && center && checked && samePoint(open.point, center) && samePoint(checked, center) ? open.rows : null
+    open && center && checked && samePoint(open.point, center) && samePoint(checked, center)
+      ? open.rows
+      : null
 
   const resetDraft = useDraftReportStore((s) => s.reset)
   const [busy, setBusy] = useState(false)
@@ -153,20 +156,25 @@ export function useDuplicateGate(resume?: () => void): DuplicateGate {
     next?.()
   }, [resume])
 
-  const openMatch = useCallback((row: NearbyReportRow) => {
-    const composer = usePostComposerStore.getState()
-    if (composer.claimedCreate !== "report") {
-      useNavStore.getState().push({ kind: "pin", id: row.pin.id, lat: row.pin.lat, lng: row.pin.lng })
-      return
-    }
-    // The same hand-back as a report filed from the composer (useReportSubmitFlow): this run ends here.
-    composer.setAttachedReport(refFromCard(pinToCardData(row.pin), new Date().toISOString()))
-    composer.releaseClaimedCreate("report")
-    continuation.current = null
-    useDuplicateScreen.setState({ open: null })
-    resetDraft()
-    useNavStore.getState().finishReportFlow({ kind: "composer" })
-  }, [resetDraft])
+  const openMatch = useCallback(
+    (row: NearbyReportRow) => {
+      const composer = usePostComposerStore.getState()
+      if (composer.claimedCreate !== "report") {
+        useNavStore
+          .getState()
+          .push({ kind: "pin", id: row.pin.id, lat: row.pin.lat, lng: row.pin.lng })
+        return
+      }
+      // The same hand-back as a report filed from the composer (useReportSubmitFlow): this run ends here.
+      composer.setAttachedReport(refFromCard(pinToCardData(row.pin), new Date().toISOString()))
+      composer.releaseClaimedCreate("report")
+      continuation.current = null
+      useDuplicateScreen.setState({ open: null })
+      resetDraft()
+      useNavStore.getState().finishReportFlow({ kind: "composer" })
+    },
+    [resetDraft],
+  )
 
   useEffect(
     () => () => {

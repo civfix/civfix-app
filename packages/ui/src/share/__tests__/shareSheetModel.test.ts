@@ -20,13 +20,20 @@ const result = (id: string): UserSearchResultDTO => ({
 
 describe("sharePeopleView", () => {
   it("shows the recents row while nothing is typed", () => {
-    const view = sharePeopleView({ query: "", suggested: [result("a"), result("b")], results: [result("z")] })
+    const view = sharePeopleView({
+      query: "",
+      suggested: [result("a"), result("b")],
+      results: [result("z")],
+    })
     expect(view.mode).toBe("recent")
     expect(view.rows.map((r) => r.id)).toEqual(["a", "b"])
   })
 
   it("prompts for a handle when there are no recents and nothing typed", () => {
-    expect(sharePeopleView({ query: "", suggested: [], results: [] })).toEqual({ mode: "prompt", rows: [] })
+    expect(sharePeopleView({ query: "", suggested: [], results: [] })).toEqual({
+      mode: "prompt",
+      rows: [],
+    })
   })
 
   it("switches to search results as soon as a handle is typed, even with recents available", () => {
@@ -37,8 +44,17 @@ describe("sharePeopleView", () => {
 
   it("never offers the viewer themselves, in either mode", () => {
     const me = ["me"]
-    expect(sharePeopleView({ query: "", suggested: [result("me"), result("a")], results: [], excludeIds: me }).rows.map((r) => r.id)).toEqual(["a"])
-    expect(sharePeopleView({ query: "m", suggested: [], results: [result("me")], excludeIds: me })).toEqual({ mode: "results", rows: [] })
+    expect(
+      sharePeopleView({
+        query: "",
+        suggested: [result("me"), result("a")],
+        results: [],
+        excludeIds: me,
+      }).rows.map((r) => r.id),
+    ).toEqual(["a"])
+    expect(
+      sharePeopleView({ query: "m", suggested: [], results: [result("me")], excludeIds: me }),
+    ).toEqual({ mode: "results", rows: [] })
   })
 })
 
@@ -65,15 +81,27 @@ describe("the copy-link tile confirms inline, since a toast would land behind th
   const labels = { idle: "Copy link", copied: "Link copied", failed: "Couldn't copy" }
 
   it("rests as the copy affordance", () => {
-    expect(shareCopyTileFace("idle", labels)).toEqual({ icon: "Copy", label: "Copy link", tone: "default" })
+    expect(shareCopyTileFace("idle", labels)).toEqual({
+      icon: "Copy",
+      label: "Copy link",
+      tone: "default",
+    })
   })
 
   it("flips to a check with the copied label after a real clipboard write", () => {
-    expect(shareCopyTileFace("copied", labels)).toEqual({ icon: "Check", label: "Link copied", tone: "success" })
+    expect(shareCopyTileFace("copied", labels)).toEqual({
+      icon: "Check",
+      label: "Link copied",
+      tone: "success",
+    })
   })
 
   it("says so, in place, when the clipboard write failed", () => {
-    expect(shareCopyTileFace("failed", labels)).toEqual({ icon: "Close", label: "Couldn't copy", tone: "danger" })
+    expect(shareCopyTileFace("failed", labels)).toEqual({
+      icon: "Close",
+      label: "Couldn't copy",
+      tone: "danger",
+    })
   })
 })
 

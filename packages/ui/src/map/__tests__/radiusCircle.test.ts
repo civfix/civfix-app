@@ -43,7 +43,8 @@ describe("radiusCircleFeature", () => {
   })
 
   it("degrades a non-finite radius or centre to a point-sized ring instead of NaN", () => {
-    const ring = radiusCircleFeature({ lat: Number.NaN, lng: Number.NaN }, Number.NaN).geometry.coordinates[0]!
+    const ring = radiusCircleFeature({ lat: Number.NaN, lng: Number.NaN }, Number.NaN).geometry
+      .coordinates[0]!
     for (const [lng, lat] of ring) {
       expect(lng).toBe(0)
       expect(lat).toBe(0)

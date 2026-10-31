@@ -4,70 +4,41 @@
   "private": true,
   "description": "civfix consumer plane: the @civfix/tokens design tokens, the @civfix/ui component set, the community web app and the community mobile app.",
   "license": "AGPL-3.0-only",
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@10.34.9+sha512.f49b5a8ea0fdedb44bb3c0c1d6575092a53c2950d95b7ad15df11f17974877a2de3a01c07e934e9b28ce716e51c09a94962c7306d09be2e1e4b18a8c8762fd32",
   "engines": {
-    "node": ">=22.15",
-    "pnpm": ">=9 <10"
+    "node": "^22.22.2 || >=24.15",
+    "pnpm": ">=10.34 <11"
   },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint lint:scripts",
+    "lint:scripts": "eslint scripts --max-warnings=0",
+    "typecheck": "turbo run typecheck typecheck:scripts",
+    "typecheck:scripts": "tsc -p scripts/tsconfig.json",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "i18n:check": "turbo run i18n:check && pnpm i18n:check:call-sites",
     "i18n:check:call-sites": "node scripts/check-i18n-call-sites.mjs",
+    "check:licenses": "node scripts/check-licenses.mjs",
     "knip": "knip",
     "jscpd": "jscpd",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "turbo run clean",
     "doctor:expo": "pnpm --filter community-mobile run doctor:expo",
     "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.16.0",
     "jscpd": "4.3.0",
     "knip": "5.88.1",
-    "turbo": "^2.3.3"
-  },
-  "pnpm": {
-    "//overrides": "The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. Drop each entry once its parent ships the fixed range itself.",
-    "overrides": {
-      "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "react-native": "0.81.5",
-      "tsup>esbuild": ">=0.28.1 <0.29",
-      "vite": ">=7.3.7 <8",
-      "js-yaml@3": ">=3.15.1 <4",
-      "js-yaml@4": ">=4.3.1 <5",
-      "brace-expansion@1": ">=1.1.21 <2",
-      "brace-expansion@2": ">=2.1.7 <3",
-      "brace-expansion@5": ">=5.0.12 <6",
-      "shell-quote": ">=1.11.0 <2",
-      "nanoid@3": ">=3.3.18 <4",
-      "postcss": ">=8.5.28 <9",
-      "postcss-selector-parser@6": ">=7.1.6 <8",
-      "browserslist": ">=4.28.9 <5",
-      "uuid": ">=11.1.1 <12",
-      "@xmldom/xmldom@0.8": ">=0.8.15 <0.9",
-      "@xmldom/xmldom@0.9": ">=0.9.12 <0.10",
-      "fast-uri": ">=3.1.9 <4",
-      "tar": ">=7.5.21 <8",
-      "undici@6": ">=6.29.1 <7",
-      "undici@7": ">=7.30.1 <8",
-      "compression": ">=1.8.2 <2",
-      "source-map-js@1": ">=1.2.2 <2",
-      "sharp": ">=0.35.5 <0.36",
-      "zod@4": ">=4.6.6 <5"
-    },
-    "//auditConfig": "Each ignore has no fix our tree can take and no untrusted input reaching it. GHSA-86w9-cpqp-85rv (node-forge RSA signature verification) has no patched release; @expo/cli uses node-forge to parse the developer's own keychain certificates in expo run:ios and, through @expo/code-signing-certificates, to sign and verify expo-updates manifests, which the app never configures (no updates block in app.config.js, expo-updates not installed), so no untrusted signature is ever verified. Remove once node-forge ships a release above 1.4.0 or @expo/cli drops it. GHSA-5p2g-fcmc-qvqq and GHSA-w3rx-r6r6-pgpr: image-size 1 in the metro 0.83.3 that @expo/metro 54 pins exactly; 2.x drops the file-path input metro passes, and metro only measures image assets from this repo and lockfile-pinned packages at build time. Remove with Expo SDK 55 (@expo/metro 55.1 runs metro 0.83.8, which has no image-size). GHSA-vcc3-ghjq-m6fr: decode-uri-component 0.5 is ESM-only while query-string 7 (react-navigation 7) require()s it as a function; expo-router always supplies its own getStateFromPath and only calls query-string stringify, never its decoder. Remove with react-navigation 8, whose core no longer depends on query-string.",
-    "auditConfig": {
-      "ignoreGhsas": [
-        "GHSA-86w9-cpqp-85rv",
-        "GHSA-5p2g-fcmc-qvqq",
-        "GHSA-w3rx-r6r6-pgpr",
-        "GHSA-vcc3-ghjq-m6fr"
-      ]
-    }
+    "prettier": "3.9.9",
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0"
   }
 }

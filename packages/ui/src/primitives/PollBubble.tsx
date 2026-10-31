@@ -55,7 +55,8 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
   }, [])
 
   const fractions = useMemo(
-    () => poll.options.map((o) => (poll.totalVoters > 0 ? Math.min(1, o.count / poll.totalVoters) : 0)),
+    () =>
+      poll.options.map((o) => (poll.totalVoters > 0 ? Math.min(1, o.count / poll.totalVoters) : 0)),
     [poll.options, poll.totalVoters],
   )
   const barsRef = useRef<Animated.Value[]>([])
@@ -72,17 +73,24 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
     }
     const run = Animated.parallel(
       barsRef.current.map((v, i) =>
-        Animated.timing(v, { toValue: fractions[i] ?? 0, duration: RESULT_BAR_GROW_MS, useNativeDriver: false }),
+        Animated.timing(v, {
+          toValue: fractions[i] ?? 0,
+          duration: RESULT_BAR_GROW_MS,
+          useNativeDriver: false,
+        }),
       ),
     )
     run.start()
     return () => run.stop()
   }, [showResults, fractions, barsStill])
 
-  const subtitleColor = mine ? alpha(th.colors.onAccent, ON_BLOOM_SUBTLE_ALPHA) : th.colors.textSubtle
+  const subtitleColor = mine
+    ? alpha(th.colors.onAccent, ON_BLOOM_SUBTLE_ALPHA)
+    : th.colors.textSubtle
   const questionColor = mine ? th.colors.onAccent : th.colors.text
   const subtitle =
-    (poll.anonymous ? t("anonymous_poll") : t("poll")) + (poll.closed ? " · " + t("final_results") : "")
+    (poll.anonymous ? t("anonymous_poll") : t("poll")) +
+    (poll.closed ? " · " + t("final_results") : "")
 
   const renderVoteRow = (opt: PollDTO["options"][number]) => {
     const isSelected = poll.allowMultiple ? selected.has(opt.idx) : false
@@ -155,7 +163,11 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
         <View style={styles.resultContent}>
           <View style={styles.resultLabelRow}>
             {opt.mine ? (
-              <Icon icon={iconMap.Check} size={14} color={mine ? th.colors.onAccent : th.colors.accent} />
+              <Icon
+                icon={iconMap.Check}
+                size={14}
+                color={mine ? th.colors.onAccent : th.colors.accent}
+              />
             ) : null}
             <Text
               variant={opt.mine ? "bodyStrong" : "body"}
@@ -196,7 +208,11 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
 
       {votable && !showResults && poll.allowMultiple ? (
         <View style={styles.voteAction}>
-          <PrimaryButton label={t("vote")} onPress={() => onVote([...selected])} disabled={!canCommitMulti} />
+          <PrimaryButton
+            label={t("vote")}
+            onPress={() => onVote([...selected])}
+            disabled={!canCommitMulti}
+          />
         </View>
       ) : null}
 

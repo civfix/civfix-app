@@ -22,7 +22,10 @@ export class FakeCamera implements CameraCapability {
   isAvailable(): boolean {
     return false
   }
-  capture(_opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null> {
+  capture(_opts?: {
+    mode?: "photo" | "video"
+    orientation?: "portrait" | "device"
+  }): Promise<CapturedMedia | null> {
     return Promise.resolve({
       uri: FAKE_CAPTURE_URI,
       kind: "image",
@@ -89,7 +92,8 @@ const FAKE_OPEN_EXTERNAL_LOG_MAX = 50
 
 function recordOpen(log: string[], url: string): void {
   log.push(url)
-  if (log.length > FAKE_OPEN_EXTERNAL_LOG_MAX) log.splice(0, log.length - FAKE_OPEN_EXTERNAL_LOG_MAX)
+  if (log.length > FAKE_OPEN_EXTERNAL_LOG_MAX)
+    log.splice(0, log.length - FAKE_OPEN_EXTERNAL_LOG_MAX)
 }
 
 export type FakeOpenExternal = OpenExternalCapability & { opened: string[]; openedInApp: string[] }

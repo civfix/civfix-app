@@ -35,7 +35,15 @@ vi.mock("maplibre-gl", () => {
 // react-native-svg resolves to its native build under vitest; no pin is drawn once the constructor throws.
 vi.mock("react-native-svg", () => {
   const Shape = () => null
-  return { default: Shape, Circle: Shape, G: Shape, Line: Shape, Path: Shape, Polyline: Shape, Rect: Shape }
+  return {
+    default: Shape,
+    Circle: Shape,
+    G: Shape,
+    Line: Shape,
+    Path: Shape,
+    Polyline: Shape,
+    Rect: Shape,
+  }
 })
 
 // The icon set pulls in native-only modules; the fallback is read by its text.
@@ -47,11 +55,7 @@ vi.mock("../../typography", async () => {
 const CENTER = { lat: 34.05, lng: -118.25 }
 
 const surfaces: [string, string, () => React.ReactElement][] = [
-  [
-    "home map",
-    en.unavailable.home,
-    () => <Map initialCenter={{ ...CENTER, zoom: 13 }} />,
-  ],
+  ["home map", en.unavailable.home, () => <Map initialCenter={{ ...CENTER, zoom: 13 }} />],
   [
     "report pick map",
     en.unavailable.reportList,
@@ -76,7 +80,14 @@ const surfaces: [string, string, () => React.ReactElement][] = [
   [
     "location picker",
     en.unavailable.picker,
-    () => <LocationPicker value={null} onChange={() => {}} initialCenter={CENTER} pin={{ kind: "report", category: null }} />,
+    () => (
+      <LocationPicker
+        value={null}
+        onChange={() => {}}
+        initialCenter={CENTER}
+        pin={{ kind: "report", category: null }}
+      />
+    ),
   ],
 ]
 
@@ -103,32 +114,39 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  if (realGetContext) Object.defineProperty(HTMLCanvasElement.prototype, "getContext", realGetContext)
+  if (realGetContext)
+    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", realGetContext)
   vi.restoreAllMocks()
 })
 
 describe("a web map surface that cannot render keeps the app up", () => {
-  it.each(surfaces)("%s shows the fallback when the map constructor throws", (_name, hint, surface) => {
-    stubWebGL2(true)
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+  it.each(surfaces)(
+    "%s shows the fallback when the map constructor throws",
+    (_name, hint, surface) => {
+      stubWebGL2(true)
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
 
-    renderSurface(surface)
+      renderSurface(surface)
 
-    expect(constructed.count).toBe(1)
-    expect(screen.getByText(en.unavailable.title)).toBeTruthy()
-    expect(screen.getByText(hint)).toBeTruthy()
-    expect(consoleError).toHaveBeenCalled()
-  })
+      expect(constructed.count).toBe(1)
+      expect(screen.getByText(en.unavailable.title)).toBeTruthy()
+      expect(screen.getByText(hint)).toBeTruthy()
+      expect(consoleError).toHaveBeenCalled()
+    },
+  )
 
-  it.each(surfaces)("%s shows the fallback without constructing a map when WebGL2 is missing", (_name, hint, surface) => {
-    stubWebGL2(false)
-    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
+  it.each(surfaces)(
+    "%s shows the fallback without constructing a map when WebGL2 is missing",
+    (_name, hint, surface) => {
+      stubWebGL2(false)
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
 
-    renderSurface(surface)
+      renderSurface(surface)
 
-    expect(constructed.count).toBe(0)
-    expect(screen.getByText(en.unavailable.title)).toBeTruthy()
-    expect(screen.getByText(hint)).toBeTruthy()
-    expect(consoleWarn.mock.calls.length).toBeLessThanOrEqual(1)
-  })
+      expect(constructed.count).toBe(0)
+      expect(screen.getByText(en.unavailable.title)).toBeTruthy()
+      expect(screen.getByText(hint)).toBeTruthy()
+      expect(consoleWarn.mock.calls.length).toBeLessThanOrEqual(1)
+    },
+  )
 })

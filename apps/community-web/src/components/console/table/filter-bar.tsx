@@ -146,7 +146,7 @@ function ActiveChipRow({
   onReset,
 }: {
   chips: readonly ActiveFilterChip[]
-  onReset?: () => void
+  onReset?: (() => void) | undefined
 }) {
   const { t } = useT("host-common")
   return (

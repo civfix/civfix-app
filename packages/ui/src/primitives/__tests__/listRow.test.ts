@@ -46,7 +46,9 @@ describe("ListRow is the one row geometry every list card shares", () => {
   })
 
   it("reads the scheme at render time, never the static theme", () => {
-    expect(src).not.toMatch(/import \{[^}]*\b(theme|colors|glass|shadows)\b[^}]*\} from "\.\.\/theme"/)
+    expect(src).not.toMatch(
+      /import \{[^}]*\b(theme|colors|glass|shadows)\b[^}]*\} from "\.\.\/theme"/,
+    )
   })
 
   it("keeps the title on one type step and lets it run to two lines by default", () => {
@@ -94,7 +96,9 @@ describe("ListRow is the one row geometry every list card shares", () => {
   })
 
   it("draws the chevron at 18 on the subtle ink, like every other row", () => {
-    expect(src).toContain("<Icon icon={iconMap.ChevronRight} size={18} color={t.colors.textSubtle} />")
+    expect(src).toContain(
+      "<Icon icon={iconMap.ChevronRight} size={18} color={t.colors.textSubtle} />",
+    )
   })
 })
 

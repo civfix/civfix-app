@@ -279,7 +279,9 @@ export default function OtpScreen() {
               accessibilityLabel={t("resend.action")}
               accessibilityState={{ disabled: cooldown > 0 || resending }}
               hitSlop={8}
-              style={({ pressed }) => (pressed && !(cooldown > 0 || resending) ? styles.resendPressed : null)}
+              style={({ pressed }) =>
+                pressed && !(cooldown > 0 || resending) ? styles.resendPressed : null
+              }
             >
               <Text
                 variant="caption"

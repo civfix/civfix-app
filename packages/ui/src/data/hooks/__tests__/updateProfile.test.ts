@@ -14,7 +14,11 @@ const SRC = readFileSync(join(__dirname, "..", "social.ts"), "utf8")
 
 describe("useUpdateProfile", () => {
   it("resolves mutateAsync only after the viewer's own profile has refetched", () => {
-    const fn = sliceBetween(SRC, "export function useUpdateProfile", "export function useHandleAvailability")
+    const fn = sliceBetween(
+      SRC,
+      "export function useUpdateProfile",
+      "export function useHandleAvailability",
+    )
     expect(fn).toContain("return qc.invalidateQueries({ queryKey: queryKeys.myProfile })")
     expect(fn).not.toContain("void qc.invalidateQueries({ queryKey: queryKeys.myProfile })")
   })

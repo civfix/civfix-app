@@ -83,9 +83,7 @@ function makeShadows(scheme: ColorSchemeName, colors: ThemeColors): ThemeShadows
 }
 
 export const noShadow: ViewStyle =
-  Platform.OS === "web"
-    ? { boxShadow: "none" }
-    : { shadowOpacity: 0, elevation: 0 }
+  Platform.OS === "web" ? { boxShadow: "none" } : { shadowOpacity: 0, elevation: 0 }
 
 export const radius = {
   xs: tokens.radius.xs,

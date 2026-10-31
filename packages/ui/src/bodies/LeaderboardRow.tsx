@@ -25,7 +25,9 @@ export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: Lead
   const name = you ? t("row.you") : entry.name
   return (
     <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "person", id: entry.handle ?? entry.userId })}
+      onPress={() =>
+        useNavStore.getState().push({ kind: "person", id: entry.handle ?? entry.userId })
+      }
       accessibilityRole="button"
       accessibilityLabel={t("row.a11y", { rank: entry.rank, name, hours })}
       accessibilityHint={t("event-dashboard:top_volunteers.open_hint")}
@@ -39,7 +41,9 @@ export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: Lead
         state.pressed ? styles.pressed : null,
       ]}
     >
-      <Text style={styles.leaderRank} numberOfLines={1}>{entry.rank}</Text>
+      <Text style={styles.leaderRank} numberOfLines={1}>
+        {entry.rank}
+      </Text>
       <Avatar
         name={entry.name}
         seed={entry.userId}
@@ -49,9 +53,15 @@ export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: Lead
       />
       <View style={styles.rowCopy}>
         <View style={styles.leaderNameRow}>
-          <Text style={styles.leaderName} numberOfLines={1}>{name}</Text>
+          <Text style={styles.leaderName} numberOfLines={1}>
+            {name}
+          </Text>
         </View>
-        {entry.handle ? <Text style={styles.leaderHandle} numberOfLines={1}>@{entry.handle}</Text> : null}
+        {entry.handle ? (
+          <Text style={styles.leaderHandle} numberOfLines={1}>
+            @{entry.handle}
+          </Text>
+        ) : null}
       </View>
       <Text
         style={[styles.leaderHours, emphasis === "ink" ? styles.leaderHoursInk : null]}

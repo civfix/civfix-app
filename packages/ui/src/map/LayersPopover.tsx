@@ -73,12 +73,7 @@ function MiniToggle({ on }: { on: boolean }) {
   const styles = useStyles()
   const t = useTheme()
   return (
-    <View
-      style={[
-        styles.toggle,
-        { backgroundColor: on ? t.colors.brand.moss : trackOffColor(t) },
-      ]}
-    >
+    <View style={[styles.toggle, { backgroundColor: on ? t.colors.brand.moss : trackOffColor(t) }]}>
       <View style={[styles.toggleKnob, { left: on ? KNOB_ON_X : KNOB_OFF_X }]} />
     </View>
   )
@@ -141,7 +136,12 @@ export function LayersPopover({ isClosing = false, onClosed }: LayersPopoverProp
         outputRange: [motion.fadeUp.distance, 0],
       }),
     },
-    { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [motion.fadeUp.scaleFrom, 1] }) },
+    {
+      scale: progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [motion.fadeUp.scaleFrom, 1],
+      }),
+    },
   ]
   const shownCount = FILTER_CATEGORIES.filter((c) => enabled.has(c)).length
   const allOn = shownCount === FILTER_CATEGORIES.length
@@ -170,7 +170,9 @@ export function LayersPopover({ isClosing = false, onClosed }: LayersPopoverProp
           </View>
           <View style={styles.meta}>
             <Text style={styles.rowTitle}>{t("layers.events")}</Text>
-            <Text style={styles.rowSub}>{eventsEnabled ? t("layers.shown") : t("layers.hidden")}</Text>
+            <Text style={styles.rowSub}>
+              {eventsEnabled ? t("layers.shown") : t("layers.hidden")}
+            </Text>
           </View>
           <MiniToggle on={eventsEnabled} />
         </Pressable>
@@ -212,7 +214,9 @@ export function LayersPopover({ isClosing = false, onClosed }: LayersPopoverProp
               <View style={[styles.check, allOn ? styles.checkOnNeutral : styles.checkOff]}>
                 {allOn ? <Icon icon={iconMap.Check} size={12} color={th.colors.onAccent} /> : null}
               </View>
-              <Text style={styles.allLabel}>{allOn ? t("layers.clearAll") : t("layers.selectAll")}</Text>
+              <Text style={styles.allLabel}>
+                {allOn ? t("layers.clearAll") : t("layers.selectAll")}
+              </Text>
             </Pressable>
 
             {FILTER_CATEGORIES.map((cat) => {
@@ -241,7 +245,11 @@ export function LayersPopover({ isClosing = false, onClosed }: LayersPopoverProp
                     ]}
                   >
                     {on ? (
-                      <Icon icon={iconMap.Check} size={12} color={inkOnFill(color, th.scheme, th.colors.onAccent)} />
+                      <Icon
+                        icon={iconMap.Check}
+                        size={12}
+                        color={inkOnFill(color, th.scheme, th.colors.onAccent)}
+                      />
                     ) : null}
                   </View>
                 </Pressable>

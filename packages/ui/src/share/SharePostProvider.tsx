@@ -32,7 +32,9 @@ export function SharePostProvider({ children }: SharePostProviderProps) {
   return (
     <SharePostContext.Provider value={value}>
       {children}
-      {target ? <SharePostSheet visible={visible} target={target} onClose={close} onClosed={release} /> : null}
+      {target ? (
+        <SharePostSheet visible={visible} target={target} onClose={close} onClosed={release} />
+      ) : null}
     </SharePostContext.Provider>
   )
 }

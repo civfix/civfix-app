@@ -56,7 +56,10 @@ export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickSte
 
   return (
     <View style={[pickStepStyles.bar, style]}>
-      <Text style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]} numberOfLines={1}>
+      <Text
+        style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]}
+        numberOfLines={1}
+      >
         {hasPoint ? coordsLabel(point) : t("pickStep.needPin")}
       </Text>
       <View style={pickStepStyles.actions}>

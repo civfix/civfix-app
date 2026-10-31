@@ -106,7 +106,10 @@ export function usePickerData({
   const pageKey = `${debounced.trim().toLowerCase()}|${[...enabled].sort().join(",")}|${nearbyOnly ? 1 : 0}`
   const visible = page.key === pageKey ? page.visible : PICKER_PAGE_FIRST
   const allItems = useMemo(() => pickerListItems(sections).items, [sections])
-  const { items, shown, total } = useMemo(() => pickerListItems(sections, visible), [sections, visible])
+  const { items, shown, total } = useMemo(
+    () => pickerListItems(sections, visible),
+    [sections, visible],
+  )
   const counts = useMemo(() => categoryCounts(pins, viewport), [pins, viewport])
   const chosenSet = useMemo(() => new Set([...linkedSet, ...idSet]), [linkedSet, idSet])
   const keepKey = useMemo(
@@ -143,7 +146,9 @@ export function usePickerData({
   const listState = pickerListState({
     hasRegion: !tooWide,
     pending:
-      region.isPending || (searching && search.isLoading) || (lookupKey !== null && lookup.isLoading),
+      region.isPending ||
+      (searching && search.isLoading) ||
+      (lookupKey !== null && lookup.isLoading),
     error: failed.region || failed.search || failed.lookup,
     searching: typed,
     pinCount: pins.length,

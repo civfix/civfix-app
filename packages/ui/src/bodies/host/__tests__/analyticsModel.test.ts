@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import type { GetEventAnalyticsResponse, HostAnalyticsSummaryActivity, SeriesPoint } from "@civfix/contract"
+import type {
+  GetEventAnalyticsResponse,
+  HostAnalyticsSummaryActivity,
+  SeriesPoint,
+} from "@civfix/contract"
 import {
   ALL_EVENTS_RANGE_PRESETS,
   ANALYTICS_RANGE_PRESETS,
@@ -150,11 +154,7 @@ describe("the range presets replace the lifecycle scrubber", () => {
 })
 
 describe("slicing a series only ever drops points", () => {
-  const series = [
-    dayPoint("2026-09-01", 1),
-    dayPoint("2026-09-08", 2),
-    dayPoint("2026-09-10", 3),
-  ]
+  const series = [dayPoint("2026-09-01", 1), dayPoint("2026-09-08", 2), dayPoint("2026-09-10", 3)]
   const now = Date.parse("2026-09-10T20:00:00.000Z")
 
   it("keeps the points inside the window and nothing older", () => {

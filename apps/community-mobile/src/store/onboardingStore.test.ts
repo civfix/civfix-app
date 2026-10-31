@@ -47,7 +47,10 @@ test("completing onboarding records the current version and persists only that",
     presenting: true,
     gateActive: true,
   })
-  assert.equal(memory.get(ONBOARDING_KEY), JSON.stringify({ state: { completedVersion: 1 }, version: 1 }))
+  assert.equal(
+    memory.get(ONBOARDING_KEY),
+    JSON.stringify({ state: { completedVersion: 1 }, version: 1 }),
+  )
 })
 
 test("a replay request, presenting and the gate are session-only", async () => {
@@ -55,7 +58,10 @@ test("a replay request, presenting and the gate are session-only", async () => {
   const { useOnboardingStore } = await freshModule()
   useOnboardingStore.getState().replay()
   useOnboardingStore.getState().setGateActive(false)
-  assert.equal(memory.get(ONBOARDING_KEY), JSON.stringify({ state: { completedVersion: 1 }, version: 1 }))
+  assert.equal(
+    memory.get(ONBOARDING_KEY),
+    JSON.stringify({ state: { completedVersion: 1 }, version: 1 }),
+  )
   const { useOnboardingStore: relaunched } = await freshModule()
   assert.deepEqual(onboarding(relaunched), {
     completedVersion: 1,
@@ -70,7 +76,9 @@ const { shouldShowOnboarding } = await import("../lib/onboardingPlan.ts")
 const COMPLETED = JSON.stringify({ state: { completedVersion: 1 }, version: 1 })
 const NOT_COMPLETED = JSON.stringify({ state: { completedVersion: 0 }, version: 1 })
 
-function eligibleToShow(store: Awaited<ReturnType<typeof freshModule>>["useOnboardingStore"]): boolean {
+function eligibleToShow(
+  store: Awaited<ReturnType<typeof freshModule>>["useOnboardingStore"],
+): boolean {
   const { completedVersion, replayRequested } = store.getState()
   return shouldShowOnboarding({
     completedVersion,

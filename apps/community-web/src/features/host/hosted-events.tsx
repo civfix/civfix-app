@@ -28,7 +28,11 @@ export interface HostedEventRowProps {
   showWaitlist?: boolean
 }
 
-export function HostedEventRow({ row, showOrg = false, showWaitlist = false }: HostedEventRowProps) {
+export function HostedEventRow({
+  row,
+  showOrg = false,
+  showWaitlist = false,
+}: HostedEventRowProps) {
   const { t } = useT("host-portfolio")
   const format = useConsoleFormat()
   const { go } = useConsoleNavigation()

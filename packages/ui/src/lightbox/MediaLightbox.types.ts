@@ -1,4 +1,3 @@
-
 export interface LightboxItem {
   url: string
   kind: "image" | "video"

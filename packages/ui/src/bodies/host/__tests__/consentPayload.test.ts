@@ -12,8 +12,12 @@ describe("consentPayload", () => {
   })
 
   it("ALWAYS carries smsOptIn from state - an express consent is never silently dropped", () => {
-    expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: true }).smsOptIn).toBe(true)
-    expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: false }).smsOptIn).toBe(false)
+    expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: true }).smsOptIn).toBe(
+      true,
+    )
+    expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: false }).smsOptIn).toBe(
+      false,
+    )
   })
 
   it("records identity sharing as an explicit OPT-IN, defaulting to off", () => {

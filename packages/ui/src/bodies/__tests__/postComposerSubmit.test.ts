@@ -30,7 +30,12 @@ describe("resolvePostSubmit", () => {
     const res = resolvePostSubmit(draft({ body: "  hello river  " }))
     expect(res.action).toBe("submit")
     if (res.action !== "submit") throw new Error("expected submit")
-    expect(res.input).toMatchObject({ kind: "post", body: "hello river", mediaUploadIds: [], mentionedUserIds: [] })
+    expect(res.input).toMatchObject({
+      kind: "post",
+      body: "hello river",
+      mediaUploadIds: [],
+      mentionedUserIds: [],
+    })
   })
 
   it("submits an event-only post (no body) via the attachment", () => {
@@ -75,12 +80,13 @@ describe("resolvePostSubmit", () => {
   })
 
   it("carries the reference fields for a reply", () => {
-    const res = resolvePostSubmit(draft({ body: "count me in", kind: "reply", replyToId: "post_1" }))
+    const res = resolvePostSubmit(
+      draft({ body: "count me in", kind: "reply", replyToId: "post_1" }),
+    )
     expect(res.action).toBe("submit")
     if (res.action !== "submit") throw new Error("expected submit")
     expect(res.input).toMatchObject({ kind: "reply", replyToId: "post_1", body: "count me in" })
   })
-
 })
 
 describe("postSubmitDestination", () => {
@@ -173,19 +179,37 @@ describe("buildOptimisticPost", () => {
   })
 
   it("sets the organization key only when the surface passes one, null included", () => {
-    expect(buildOptimisticPost({ author, kind: "post", body: null, now: NOW })).not.toHaveProperty("organization")
-    expect(buildOptimisticPost({ author, kind: "post", body: null, now: NOW, organization: null }).organization).toBeNull()
+    expect(buildOptimisticPost({ author, kind: "post", body: null, now: NOW })).not.toHaveProperty(
+      "organization",
+    )
+    expect(
+      buildOptimisticPost({ author, kind: "post", body: null, now: NOW, organization: null })
+        .organization,
+    ).toBeNull()
   })
 
   it("renders only finalized uploads, as ready media keyed by their upload id", () => {
-    const post = buildOptimisticPost({ author, kind: "post", body: null, now: NOW, media: [media("u1"), media(null)] })
+    const post = buildOptimisticPost({
+      author,
+      kind: "post",
+      body: null,
+      now: NOW,
+      media: [media("u1"), media(null)],
+    })
     expect(post.media).toEqual([
       { id: "u1", kind: "image", url: "file://u1.jpg", thumbUrl: null, status: "ready" },
     ])
   })
 
   it("carries the reply linkage it is given", () => {
-    const post = buildOptimisticPost({ author, kind: "reply", body: "yes", now: NOW, replyToId: "p1", threadRootId: "root" })
+    const post = buildOptimisticPost({
+      author,
+      kind: "reply",
+      body: "yes",
+      now: NOW,
+      replyToId: "p1",
+      threadRootId: "root",
+    })
     expect(post).toMatchObject({ kind: "reply", replyToId: "p1", threadRootId: "root" })
   })
 })

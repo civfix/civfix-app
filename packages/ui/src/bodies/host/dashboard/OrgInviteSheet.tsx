@@ -85,7 +85,11 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
       />
 
       <Text variant="label">{t("team.invite_role")}</Text>
-      <View style={styles.roles} accessibilityRole="radiogroup" accessibilityLabel={t("team.invite_role")}>
+      <View
+        style={styles.roles}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t("team.invite_role")}
+      >
         {ORG_SETTABLE_ROLES.map((option) => (
           <FilterChip
             key={option}

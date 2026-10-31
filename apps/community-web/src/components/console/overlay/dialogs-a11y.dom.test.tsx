@@ -46,22 +46,36 @@ describe("ConfirmModal", () => {
 
   it("carries no description when there is no banner or body", () => {
     renderConsole(
-      <ConfirmModal open title="Sure?" confirmLabel="Yes" onConfirm={() => {}} onCancel={() => {}} />,
+      <ConfirmModal
+        open
+        title="Sure?"
+        confirmLabel="Yes"
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
     )
-    expect(screen.getByRole("alertdialog", { name: "Sure?" }).hasAttribute("aria-describedby")).toBe(
-      false,
-    )
+    expect(
+      screen.getByRole("alertdialog", { name: "Sure?" }).hasAttribute("aria-describedby"),
+    ).toBe(false)
   })
 })
 
 describe("GuidedSheet", () => {
   it("is labelled by its heading rather than a repeated aria-label", () => {
     renderConsole(
-      <GuidedSheet open onClose={() => {}} title="Publish event" primaryLabel="Publish" onPrimary={() => {}} />,
+      <GuidedSheet
+        open
+        onClose={() => {}}
+        title="Publish event"
+        primaryLabel="Publish"
+        onPrimary={() => {}}
+      />,
     )
     const dialog = screen.getByRole("dialog", { name: "Publish event" })
     expect(dialog.hasAttribute("aria-label")).toBe(false)
-    expect(document.getElementById(dialog.getAttribute("aria-labelledby") ?? "")?.tagName).toBe("H3")
+    expect(document.getElementById(dialog.getAttribute("aria-labelledby") ?? "")?.tagName).toBe(
+      "H3",
+    )
   })
 })
 

@@ -39,7 +39,8 @@ export function toResumeHref(next: unknown): string | null {
   return RESUME_PATH.test(next) ? next : null
 }
 
-const EXTERNAL_URL = /^https:\/\/[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?([/?#]|$)/i
+const EXTERNAL_URL =
+  /^https:\/\/[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?([/?#]|$)/i
 
 export function isExternalUrl(url: unknown): url is string {
   return typeof url === "string" && EXTERNAL_URL.test(url)

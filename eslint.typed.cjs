@@ -15,8 +15,14 @@ const TYPED_RULES = {
   "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: true } }],
   // A `default` branch is a deliberate catch-all; the rule only has to catch a switch that silently
   // falls through to undefined when a union grows.
-  "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
-  "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "separate-type-imports" }],
+  "@typescript-eslint/switch-exhaustiveness-check": [
+    "error",
+    { considerDefaultExhaustiveForUnions: true },
+  ],
+  "@typescript-eslint/consistent-type-imports": [
+    "error",
+    { prefer: "type-imports", fixStyle: "separate-type-imports" },
+  ],
   "@typescript-eslint/no-import-type-side-effects": "error",
   "@typescript-eslint/no-explicit-any": "error",
   "@typescript-eslint/no-non-null-assertion": "error",
@@ -43,7 +49,10 @@ const TYPED_RULES = {
   // On a string or a boolean, `||` deliberately treats "" and false as absent (a blank title falls back,
   // `invalid || undefined` drops a false ARIA attribute), which `??` would not; every such hit measured
   // here was that idiom.
-  "@typescript-eslint/prefer-nullish-coalescing": ["error", { ignorePrimitives: { string: true, boolean: true } }],
+  "@typescript-eslint/prefer-nullish-coalescing": [
+    "error",
+    { ignorePrimitives: { string: true, boolean: true } },
+  ],
   "@typescript-eslint/prefer-promise-reject-errors": "error",
   "@typescript-eslint/only-throw-error": "error",
   "@typescript-eslint/no-base-to-string": "error",
@@ -52,7 +61,13 @@ const TYPED_RULES = {
   "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
   "@typescript-eslint/restrict-plus-operands": [
     "error",
-    { allowAny: false, allowBoolean: false, allowNullish: false, allowNumberAndString: false, allowRegExp: false },
+    {
+      allowAny: false,
+      allowBoolean: false,
+      allowNullish: false,
+      allowNumberAndString: false,
+      allowRegExp: false,
+    },
   ],
   "@typescript-eslint/restrict-template-expressions": [
     "error",
@@ -73,7 +88,8 @@ const TYPED_RULES = {
 const DOUBLE_CAST_SELECTORS = [
   {
     selector: 'TSAsExpression > TSAsExpression.expression[typeAnnotation.type="TSUnknownKeyword"]',
-    message: "No `as unknown as`: narrow with a type guard, parse at the boundary, or use webStyle() for web-only CSS.",
+    message:
+      "No `as unknown as`: narrow with a type guard, parse at the boundary, or use webStyle() for web-only CSS.",
   },
 ]
 
@@ -114,14 +130,32 @@ const VITEST_RULES = {
   "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*", "assert"] }],
 }
 
+// node:test's test()/describe() return promises the runner itself awaits.
+const NODE_TEST_TYPED_RULES = {
+  "@typescript-eslint/no-floating-promises": [
+    "error",
+    {
+      allowForKnownSafeCalls: [
+        {
+          from: "package",
+          package: "node:test",
+          name: ["test", "describe", "it", "suite", "before", "after", "beforeEach", "afterEach"],
+        },
+      ],
+    },
+  ],
+}
+
 // node:test has no lint plugin; these catch the focused-test forms the vitest rule covers elsewhere.
 const NODE_TEST_FOCUS_SELECTORS = [
   {
-    selector: 'CallExpression[callee.object.name=/^(test|it|describe|suite)$/][callee.property.name="only"]',
+    selector:
+      'CallExpression[callee.object.name=/^(test|it|describe|suite)$/][callee.property.name="only"]',
     message: "No focused tests: `.only` drops every other test from the run.",
   },
   {
-    selector: 'CallExpression[callee.name=/^(test|it|describe|suite)$/] > ObjectExpression > Property[key.name="only"]',
+    selector:
+      'CallExpression[callee.name=/^(test|it|describe|suite)$/] > ObjectExpression > Property[key.name="only"]',
     message: "No focused tests: `{ only: true }` drops every other test from the run.",
   },
 ]
@@ -151,6 +185,7 @@ module.exports = {
   TEST_RELAXED_RULES,
   VITEST_RULES,
   NODE_TEST_FOCUS_SELECTORS,
+  NODE_TEST_TYPED_RULES,
   LINTER_OPTIONS,
   escalateWarnings,
 }

@@ -10,13 +10,19 @@ import { queryKeys, useAppConfig } from "../../index"
 
 const CONFIG: AppConfigResponse = {
   minAppVersion: { ios: null, android: "1.5.0" },
-  storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+  storeUrl: {
+    ios: null,
+    android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+  },
   announcement: null,
 }
 
 const T0 = new Date("2026-10-25T12:00:00.000Z").getTime()
 
-function renderWithApi(getAppConfig: () => Promise<AppConfigResponse>, queryClient = new QueryClient()) {
+function renderWithApi(
+  getAppConfig: () => Promise<AppConfigResponse>,
+  queryClient = new QueryClient(),
+) {
   const context = makeFakeDataContext({ api: { getAppConfig } as unknown as ApiClient })
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
@@ -52,7 +58,12 @@ describe("useAppConfig", () => {
     expect(getAppConfig).toHaveBeenCalledTimes(1)
     expect(result.current.data).toEqual(CONFIG)
     expect(queryKeys.appConfig).toEqual(["app-config"])
-    expect(queryClient.getQueryCache().getAll().map((q) => q.queryKey)).toEqual([queryKeys.appConfig])
+    expect(
+      queryClient
+        .getQueryCache()
+        .getAll()
+        .map((q) => q.queryKey),
+    ).toEqual([queryKeys.appConfig])
   })
 
   it("T19: a return to the foreground within five minutes does not refetch", async () => {
@@ -76,7 +87,9 @@ describe("useAppConfig", () => {
 
   it("refetches a stale config on focus even where the host turns focus refetch off, as the phone does", async () => {
     const getAppConfig = vi.fn(async () => CONFIG)
-    const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } })
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { refetchOnWindowFocus: false } },
+    })
     const { result } = renderWithApi(getAppConfig, queryClient)
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     regainFocusAt(5 * 60_000 + 1_000)
@@ -104,7 +117,10 @@ describe("useAppConfig", () => {
   })
 
   it("T23: after queryClient.clear(), as sign-out does, the next render refetches and drops the old response", async () => {
-    const overridden: AppConfigResponse = { ...CONFIG, minAppVersion: { ios: "999.0.0", android: "999.0.0" } }
+    const overridden: AppConfigResponse = {
+      ...CONFIG,
+      minAppVersion: { ios: "999.0.0", android: "999.0.0" },
+    }
     let respond: (config: AppConfigResponse) => void = () => undefined
     const getAppConfig = vi
       .fn<() => Promise<AppConfigResponse>>()

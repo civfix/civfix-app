@@ -36,7 +36,13 @@ test("every API base URL the resolver can choose maps to a distinct namespace", 
 })
 
 test("an unrecognised or unparseable base URL never borrows the production namespace", () => {
-  for (const bogus of ["", "   ", "not a url", "https://api.evil.com", "https://api.civfix.org.evil.com"]) {
+  for (const bogus of [
+    "",
+    "   ",
+    "not a url",
+    "https://api.evil.com",
+    "https://api.civfix.org.evil.com",
+  ]) {
     assert.notEqual(storageNamespace(bogus), "")
   }
 })

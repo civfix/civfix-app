@@ -17,13 +17,22 @@ describe("checkinResultRender full table", () => {
     expect(Object.keys(TABLE).sort()).toEqual([...CheckinOutcomeSchema.options].sort())
     for (const outcome of CheckinOutcomeSchema.options) {
       const [tone, titleKey, bodyKey, undoable] = TABLE[outcome]
-      expect(checkinResultRender(outcome, true), outcome).toEqual({ shown: outcome, tone, titleKey, bodyKey, undoable })
+      expect(checkinResultRender(outcome, true), outcome).toEqual({
+        shown: outcome,
+        tone,
+        titleKey,
+        bodyKey,
+        undoable,
+      })
     }
   })
 
   it("renders a repeat scan identically for every outcome except checked_in, which reads as already", () => {
     for (const outcome of CheckinOutcomeSchema.options) {
-      const expected = outcome === "checked_in" ? checkinResultRender("already", true) : checkinResultRender(outcome, true)
+      const expected =
+        outcome === "checked_in"
+          ? checkinResultRender("already", true)
+          : checkinResultRender(outcome, true)
       expect(checkinResultRender(outcome, false), outcome).toEqual(expected)
     }
   })

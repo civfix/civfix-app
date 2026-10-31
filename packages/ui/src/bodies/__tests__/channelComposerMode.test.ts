@@ -10,22 +10,37 @@ describe("resolveChannelComposerMode", () => {
   })
 
   it("a regular chat group keeps the composer for any member (and while its role loads)", () => {
-    expect(resolveChannelComposerMode({ isGroupRoom: true, groupKind: "group", myRole: "member" })).toBe("composer")
-    expect(resolveChannelComposerMode({ isGroupRoom: true, groupKind: "group", myRole: null })).toBe("composer")
+    expect(
+      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "group", myRole: "member" }),
+    ).toBe("composer")
+    expect(
+      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "group", myRole: null }),
+    ).toBe("composer")
   })
 
   it("a channel lets owner/admins compose", () => {
-    expect(resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "owner" })).toBe("composer")
-    expect(resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "admin" })).toBe("composer")
+    expect(
+      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "owner" }),
+    ).toBe("composer")
+    expect(
+      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "admin" }),
+    ).toBe("composer")
   })
 
   it("a channel subscriber (member) is read-only - the Mute pill", () => {
-    expect(resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "member" })).toBe("mute-pill")
+    expect(
+      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: "member" }),
+    ).toBe("mute-pill")
   })
 
   it("a signed-in non-member of a PUBLIC channel gets the Join pill", () => {
     expect(
-      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: null, visibility: "public" }),
+      resolveChannelComposerMode({
+        isGroupRoom: true,
+        groupKind: "channel",
+        myRole: null,
+        visibility: "public",
+      }),
     ).toBe("join-pill")
     expect(
       resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", visibility: "public" }),
@@ -34,7 +49,12 @@ describe("resolveChannelComposerMode", () => {
 
   it("a non-member of a PRIVATE channel has no affordance", () => {
     expect(
-      resolveChannelComposerMode({ isGroupRoom: true, groupKind: "channel", myRole: null, visibility: "private" }),
+      resolveChannelComposerMode({
+        isGroupRoom: true,
+        groupKind: "channel",
+        myRole: null,
+        visibility: "private",
+      }),
     ).toBe("none")
   })
 
@@ -71,7 +91,9 @@ describe("resolveGroupInfoGate", () => {
 
   it("blocks a failed fetch that could still be a channel (unknown room, or a known channel)", () => {
     expect(resolveGroupInfoGate({ ...base, isError: true })).toBe("blocked")
-    expect(resolveGroupInfoGate({ ...base, isError: true, cachedChannel: undefined })).toBe("blocked")
+    expect(resolveGroupInfoGate({ ...base, isError: true, cachedChannel: undefined })).toBe(
+      "blocked",
+    )
     expect(resolveGroupInfoGate({ ...base, isError: true, cachedChannel: true })).toBe("blocked")
   })
 

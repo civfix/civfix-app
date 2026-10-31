@@ -27,7 +27,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: publish-tokens
@@ -39,24 +39,30 @@ jobs:
     # Publishing `latest` is a main-only act; the environment's ref policy enforces that at admission.
     environment: staging
     runs-on: ubuntu-latest
+    permissions:
+      # check-tokens-version.mjs --release pushes the @civfix/tokens@X.Y.Z tag.
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The tag push in "Tag the release on main" authenticates with these checkout credentials.
+          persist-credentials: true
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      # No dependency cache: a cache any other run on main wrote could poison what this job publishes.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: pnpm
+          package-manager-cache: false
 
       - name: Configure git identity for release tags
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - run: pnpm install --frozen-lockfile
+      # No dependency install script runs in a job that later holds the registry token. The build needs
+      # none: esbuild resolves its platform binary from its optional dependency without its postinstall.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm --filter @civfix/tokens build
 
       - name: Append registry auth to .npmrc
@@ -70,6 +76,10 @@ jobs:
       - name: Tag the release on main
         run: node scripts/check-tokens-version.mjs --release
       - name: Publish
+        env:
+          # The package was built above, before the token existed; prepublishOnly would rebuild it next
+          # to the token. changesets passes this through to `pnpm publish`.
+          npm_config_ignore_scripts: "true"
         run: pnpm changeset publish --no-git-tag
 
       - name: Restore .npmrc

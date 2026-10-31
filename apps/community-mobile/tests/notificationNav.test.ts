@@ -7,7 +7,10 @@ import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBr
 import { shellHostsEntries } from "../src/lib/internalHref.ts"
 import { threadEntryRoute } from "../src/lib/threadEntryRoutes.ts"
 
-const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
+const adapter = readFileSync(
+  new URL("../src/components/MobileNavAdapter.tsx", import.meta.url),
+  "utf8",
+)
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 
 const NOTIFICATION_LINKS = [
@@ -65,14 +68,15 @@ test("an entity link tapped on a full-screen route is pushed on top of it, never
   const dismissed = body.indexOf('dismissToShell: action === "navigate-and-dismiss"')
   assert.ok(pushed > -1 && dismissed > pushed)
   assert.match(body, /pushDetailRoute\(detailRoute\)/)
-  assert.ok(
-    adapter.includes("router.push({ pathname: route.pathname, params: route.params })"),
-  )
+  assert.ok(adapter.includes("router.push({ pathname: route.pathname, params: route.params })"))
   assert.match(adapter, /pushDetailRoute = null/)
 })
 
 test("a tapped notification dismisses to the shell whenever the action says to", () => {
-  const hookSource = readFileSync(new URL("../src/push/useNotificationDeepLinks.ts", import.meta.url), "utf8")
+  const hookSource = readFileSync(
+    new URL("../src/push/useNotificationDeepLinks.ts", import.meta.url),
+    "utf8",
+  )
   const listener = hookSource.slice(hookSource.indexOf("function useNotificationDeepLinks"))
   const body = listener.slice(0, listener.indexOf("\n}"))
   assert.match(body, /const applied = applyInternalHref\(href as string\)/)
@@ -83,8 +87,14 @@ test("a tapped notification dismisses to the shell whenever the action says to",
 
 test("the bridge asks the router which screen is actually on top before it pushes", () => {
   assert.match(adapter, /useNavigationContainerRef/)
-  assert.match(adapter, /shellMounted\(\) \? \(navigationRef\.getCurrentRoute\(\) \?\? null\) : null/)
-  assert.match(adapter, /const focusedKey = \(\): string \| null => nativeBridgeKey\(focusedRoute\(\)\)/)
+  assert.match(
+    adapter,
+    /shellMounted\(\) \? \(navigationRef\.getCurrentRoute\(\) \?\? null\) : null/,
+  )
+  assert.match(
+    adapter,
+    /const focusedKey = \(\): string \| null => nativeBridgeKey\(focusedRoute\(\)\)/,
+  )
   assert.match(adapter, /readFocusedRoute = focusedRoute/)
   assert.match(adapter, /readFocusedRoute = \(\) => null/)
   assert.match(adapter, /bridgeDecision\(active, bridgeGuard, Date\.now\(\), focusedKey\(\)\)/)
@@ -96,14 +106,23 @@ test("a cold-start bridge waits for the root layout's Stack instead of pushing a
     /navigationRef\.isReady\(\) && shellNavigatorMounted\(navigationRef\.getRootState\(\)\)/,
   )
   const decide = adapter.slice(adapter.indexOf("const decide ="))
-  assert.match(decide.slice(0, decide.indexOf("bridgeDecision(")), /if \(!shellMounted\(\)\) return/)
+  assert.match(
+    decide.slice(0, decide.indexOf("bridgeDecision(")),
+    /if \(!shellMounted\(\)\) return/,
+  )
   const waiting = adapter.slice(adapter.indexOf('navigationRef.addListener("state"'))
-  assert.match(waiting.slice(0, waiting.indexOf("})")), /decide\(useNavStore\.getState\(\)\.active\)/)
+  assert.match(
+    waiting.slice(0, waiting.indexOf("})")),
+    /decide\(useNavStore\.getState\(\)\.active\)/,
+  )
   assert.match(adapter, /stopWaiting\(\)\n\s+unsubscribe\(\)/)
 })
 
 test("the strip and the push stay synchronous inside the store notification", () => {
-  const decide = adapter.slice(adapter.indexOf("const decide ="), adapter.indexOf("decide(useNavStore.getState().active)"))
+  const decide = adapter.slice(
+    adapter.indexOf("const decide ="),
+    adapter.indexOf("decide(useNavStore.getState().active)"),
+  )
   assert.doesNotMatch(decide, /queueMicrotask|setTimeout|Promise\.resolve|requestAnimationFrame/)
   const strip = decide.indexOf("setStack(stack)")
   const push = decide.indexOf("router.push(route)")
@@ -131,7 +150,10 @@ test("an event push that names a host surface lands in a shell, not on a native 
     { entry: { kind: "host-checkin", id: "c1" } as const, route: "cleanups/[id]/checkin" },
     { entry: { kind: "host-team", id: "c1" } as const, route: "cleanups/[id]/team" },
     { entry: { kind: "host-log-hours", id: "c1" } as const, route: "cleanups/[id]/hours" },
-    { entry: { kind: "my-ticket", id: "c1", seatId: "s1" } as const, route: "cleanups/[id]/ticket/[seatId]" },
+    {
+      entry: { kind: "my-ticket", id: "c1", seatId: "s1" } as const,
+      route: "cleanups/[id]/ticket/[seatId]",
+    },
     { entry: { kind: "event-analytics", id: "c1" } as const, route: "cleanups/[id]/analytics" },
     { entry: { kind: "announcements", id: "c1" } as const, route: "cleanups/[id]/announcements" },
     {
@@ -157,7 +179,10 @@ test("an event push that names a host surface lands in a shell, not on a native 
 
 test("those same shell surfaces are push-capable, so a tap from inside a thread stacks", () => {
   const PUSHABLE = [
-    { entry: { kind: "announcements", id: "c1" } as const, pathname: "/cleanups/[id]/announcements" },
+    {
+      entry: { kind: "announcements", id: "c1" } as const,
+      pathname: "/cleanups/[id]/announcements",
+    },
     {
       entry: { kind: "announcement", id: "c1", announcementId: "a1" } as const,
       pathname: "/cleanups/[id]/announcements/[announcementId]",

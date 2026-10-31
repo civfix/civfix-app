@@ -195,7 +195,10 @@ function orgPath(suffix: string): EntryText {
 }
 
 function roomPath(section: "pins" | "members"): EntryText {
-  return idPath((id, entry) => `/messages/${section}/${entry.roomKind ?? "cleanup"}/${id}`, "/messages")
+  return idPath(
+    (id, entry) => `/messages/${section}/${entry.roomKind ?? "cleanup"}/${id}`,
+    "/messages",
+  )
 }
 
 const threadPath = idPath(
@@ -209,12 +212,31 @@ const threadPath = idPath(
 const KIND_ROUTES: Record<DetailKind, KindRoute> = {
   pin: { path: idPath((id) => `/pin/${id}`, "/"), title: "title.pin", parentView: "reports" },
   cleanup: { path: cleanupPath(""), title: "title.cleanup", parentView: "events" },
-  person: { path: idPath((id) => `/people/${id}`, "/people"), title: BODY_OWNS_HEADER, parentView: "social" },
+  person: {
+    path: idPath((id) => `/people/${id}`, "/people"),
+    title: BODY_OWNS_HEADER,
+    parentView: "social",
+  },
   thread: { path: threadPath, title: BODY_OWNS_HEADER, parentView: "messaging" },
-  myreports: { path: "/reports", title: "title.myreports", parentView: "reports", listView: "reports" },
-  cleanups: { path: "/cleanups", title: "title.cleanups", parentView: "events", listView: "events" },
+  myreports: {
+    path: "/reports",
+    title: "title.myreports",
+    parentView: "reports",
+    listView: "reports",
+  },
+  cleanups: {
+    path: "/cleanups",
+    title: "title.cleanups",
+    parentView: "events",
+    listView: "events",
+  },
   people: { path: "/people", title: "title.people", parentView: "social", listView: "social" },
-  messages: { path: "/messages", title: "title.messages", parentView: "messaging", listView: "messaging" },
+  messages: {
+    path: "/messages",
+    title: "title.messages",
+    parentView: "messaging",
+    listView: "messaging",
+  },
   "new-msg": { path: "/messages", title: "title.new_msg" },
   activity: { path: "/notifications", title: "title.activity" },
   "notification-prefs": { path: "/notifications/prefs", title: "title.notification_prefs" },
@@ -223,8 +245,14 @@ const KIND_ROUTES: Record<DetailKind, KindRoute> = {
   "edit-cleanup": { path: cleanupPath("/edit"), title: "title.edit_cleanup" },
   cluster: { path: "/", title: "title.cluster" },
   blend: { path: "/", title: (entry) => entry.event?.title || "title.cleanup" },
-  followers: { path: idPath((id) => `/people/${id}/followers`, "/people"), title: "title.followers" },
-  following: { path: idPath((id) => `/people/${id}/following`, "/people"), title: "title.following" },
+  followers: {
+    path: idPath((id) => `/people/${id}/followers`, "/people"),
+    title: "title.followers",
+  },
+  following: {
+    path: idPath((id) => `/people/${id}/following`, "/people"),
+    title: "title.following",
+  },
   leaderboard: {
     path: (entry) => (entry.geoid ? `/leaderboard/${entry.geoid}` : "/"),
     title: "title.leaderboard",
@@ -233,7 +261,9 @@ const KIND_ROUTES: Record<DetailKind, KindRoute> = {
   members: {
     path: roomPath("members"),
     title: (entry) =>
-      entry.roomKind === "report" || entry.roomKind === "cleanup" ? "title.chat_info" : "title.members",
+      entry.roomKind === "report" || entry.roomKind === "cleanup"
+        ? "title.chat_info"
+        : "title.members",
   },
   "language-settings": { path: "/settings/language", title: "title.language_settings" },
   "appearance-settings": { path: "/settings/appearance", title: "title.appearance_settings" },
@@ -249,20 +279,42 @@ const KIND_ROUTES: Record<DetailKind, KindRoute> = {
     parentView: "messaging",
   },
   post: { path: idPath((id) => `/post/${id}`, "/"), title: "title.post", parentView: "home" },
-  "post-thread": { path: idPath((id) => `/post/${id}/thread`, "/"), title: BODY_OWNS_HEADER, parentView: "home" },
+  "post-thread": {
+    path: idPath((id) => `/post/${id}/thread`, "/"),
+    title: BODY_OWNS_HEADER,
+    parentView: "home",
+  },
   composer: {
     path: (entry) =>
-      entry.composerMode === "quote" && entry.targetPostId ? `/compose/quote/${entry.targetPostId}` : "/compose",
+      entry.composerMode === "quote" && entry.targetPostId
+        ? `/compose/quote/${entry.targetPostId}`
+        : "/compose",
     title: BODY_OWNS_HEADER,
   },
   saves: { path: "/saves", title: "title.saves", parentView: "home" },
   "drop-pin": { path: VIEW_PATHS.map, title: "title.drop_pin", parentView: "map" },
   "host-mode": { path: cleanupPath("/host"), title: "title.host_mode", parentView: "events" },
-  "host-checkin": { path: cleanupPath("/checkin"), title: "title.host_checkin", parentView: "events" },
-  "host-announce": { path: cleanupPath("/announce"), title: "title.host_announce", parentView: "events" },
+  "host-checkin": {
+    path: cleanupPath("/checkin"),
+    title: "title.host_checkin",
+    parentView: "events",
+  },
+  "host-announce": {
+    path: cleanupPath("/announce"),
+    title: "title.host_announce",
+    parentView: "events",
+  },
   "host-team": { path: cleanupPath("/team"), title: "title.host_team", parentView: "events" },
-  "host-log-hours": { path: cleanupPath("/hours"), title: "title.host_log_hours", parentView: "events" },
-  "my-ticket": { path: cleanupPath("/ticket", "seatId"), title: "title.my_ticket", parentView: "events" },
+  "host-log-hours": {
+    path: cleanupPath("/hours"),
+    title: "title.host_log_hours",
+    parentView: "events",
+  },
+  "my-ticket": {
+    path: cleanupPath("/ticket", "seatId"),
+    title: "title.my_ticket",
+    parentView: "events",
+  },
   org: { path: orgPath(""), title: "title.org", parentView: "events" },
   "event-dashboard": { path: "/dashboard", title: "title.event_dashboard", parentView: "events" },
   announcement: {
@@ -270,9 +322,21 @@ const KIND_ROUTES: Record<DetailKind, KindRoute> = {
     title: "title.announcement",
     parentView: "events",
   },
-  announcements: { path: cleanupPath("/announcements"), title: "title.announcements", parentView: "events" },
-  "event-analytics": { path: cleanupPath("/analytics"), title: "title.event_analytics", parentView: "events" },
-  "host-analytics": { path: "/host/analytics", title: "title.host_analytics", parentView: "events" },
+  announcements: {
+    path: cleanupPath("/announcements"),
+    title: "title.announcements",
+    parentView: "events",
+  },
+  "event-analytics": {
+    path: cleanupPath("/analytics"),
+    title: "title.event_analytics",
+    parentView: "events",
+  },
+  "host-analytics": {
+    path: "/host/analytics",
+    title: "title.host_analytics",
+    parentView: "events",
+  },
   "org-manage": { path: orgPath("/manage"), title: "title.org_manage", parentView: "events" },
 }
 
@@ -288,7 +352,7 @@ function entryText(text: EntryText | undefined, entry: DetailEntry, fallback: st
 
 export function pathForEntry(entry: DetailEntry | null): string {
   if (!entry) return "/"
-  if (entry.kind === "view") return entry.view ? pathForView(entry.view) ?? "/" : "/"
+  if (entry.kind === "view") return entry.view ? (pathForView(entry.view) ?? "/") : "/"
   return entryText(kindRoute(entry)?.path, entry, "/")
 }
 
@@ -297,7 +361,10 @@ export type NavPlatform = "web" | "native"
 // On web a shared /post link opens straight into its thread, and the thread is written back at that short
 // address; native keeps /post as the post card. Each entry maps an aliased kind to the kind whose address
 // it borrows.
-const PLATFORM_ADDRESS_ALIASES: Record<NavPlatform, ReadonlyMap<DetailEntry["kind"], DetailKind>> = {
+const PLATFORM_ADDRESS_ALIASES: Record<
+  NavPlatform,
+  ReadonlyMap<DetailEntry["kind"], DetailKind>
+> = {
   native: new Map(),
   web: new Map([["post-thread", "post"]]),
 }
@@ -355,7 +422,10 @@ export function searchModeFor(view: View, active: DetailEntry | null): SearchSpe
   return { mode: "search", placeholder: k.placeholder, kind: k.kind }
 }
 
-function placeholderKind(view: View): { placeholder: string; kind: "places" | "people" | "reports" } {
+function placeholderKind(view: View): {
+  placeholder: string
+  kind: "places" | "people" | "reports"
+} {
   switch (view) {
     case "messaging":
     case "social":

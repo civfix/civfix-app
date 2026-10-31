@@ -42,11 +42,7 @@ export default function ScanScreen() {
 
   return (
     <View style={[styles.root, { paddingBottom: insets.bottom }]}>
-      <ScreenHeader
-        closeIcon
-        onBack={onCancel}
-        title={t("scan.title")}
-      />
+      <ScreenHeader closeIcon onBack={onCancel} title={t("scan.title")} />
       <TicketScanner active={active} onScanned={onScanned} />
     </View>
   )

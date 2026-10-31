@@ -25,10 +25,11 @@ stay separate and install `@civfix/contract` and `@civfix/tokens` from the priva
 
 ## Toolchain
 
-pnpm 9.12.0 (pinned via `packageManager`), Node 22 (`.nvmrc`), Turbo 2. `.npmrc` sets
-`node-linker=hoisted` (Metro and the config plugins need a flat `node_modules`),
-`prefer-workspace-packages` / `link-workspace-packages`, and scopes `@civfix` to
-`https://repo.civfix.org/`.
+pnpm 10.34.9 (pinned via `packageManager`), Node 22 (`.nvmrc`), Turbo 2. Every pnpm setting lives in
+`pnpm-workspace.yaml`: `nodeLinker: hoisted` (Metro and the config plugins need a flat `node_modules`),
+the dependency overrides, the audit ignores, the allowed install scripts and the supply-chain gates.
+`.npmrc` keeps only the `@civfix` scope routed to `https://repo.civfix.org/` and a guard repeat of
+`node-linker=hoisted` (EAS builds were proven with it there; the yaml setting wins).
 
 ## Commands
 

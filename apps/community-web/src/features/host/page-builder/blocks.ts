@@ -59,10 +59,7 @@ export function replaceBlock(
   )
 }
 
-export function canAddBlock(
-  blocks: readonly EventPageBlock[],
-  kind: EventPageBlockKind,
-): boolean {
+export function canAddBlock(blocks: readonly EventPageBlock[], kind: EventPageBlockKind): boolean {
   if (kind !== "hero" && kind !== "registration") return true
   return !blocks.some((block) => block.kind === kind)
 }
@@ -141,9 +138,13 @@ function withBlockRowKeys(block: EventPageBlock): EventPageBlock {
     case "faq":
       return Array.isArray(block.items) ? { ...block, items: block.items.map(withRowKey) } : block
     case "hosts":
-      return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
+      return Array.isArray(block.entries)
+        ? { ...block, entries: block.entries.map(withRowKey) }
+        : block
     case "sponsors":
-      return Array.isArray(block.entries) ? { ...block, entries: block.entries.map(withRowKey) } : block
+      return Array.isArray(block.entries)
+        ? { ...block, entries: block.entries.map(withRowKey) }
+        : block
     case "hero":
     case "about":
     case "location":

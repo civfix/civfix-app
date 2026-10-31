@@ -36,18 +36,28 @@ export interface ChatRoomEndpoints {
 }
 
 /** Each room kind has its own history, reaction and delete routes; group reactions use the generic route. */
-export function roomEndpoints(api: ApiClient, roomKind: RoomKind, roomId: string): ChatRoomEndpoints {
+export function roomEndpoints(
+  api: ApiClient,
+  roomKind: RoomKind,
+  roomId: string,
+): ChatRoomEndpoints {
   return {
     page: (cursor = {}) => {
-      if (roomKind === "dm") return api.dmMessages({ threadId: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
-      if (roomKind === "report") return api.reportMessages({ id: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
-      if (roomKind === "group") return api.groupMessages({ id: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
+      if (roomKind === "dm")
+        return api.dmMessages({ threadId: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
+      if (roomKind === "report")
+        return api.reportMessages({ id: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
+      if (roomKind === "group")
+        return api.groupMessages({ id: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
       return api.cleanupMessages({ cleanupId: roomId, ...cursor, limit: CHAT_PAGE_SIZE })
     },
     toggleReaction: (messageId, emoji) => {
-      if (roomKind === "group") return api.toggleMessageReaction({ roomKind: "group", roomId, messageId, emoji })
-      if (roomKind === "dm") return api.toggleDmMessageReaction({ threadId: roomId, messageId, emoji })
-      if (roomKind === "report") return api.toggleReportMessageReaction({ id: roomId, messageId, emoji })
+      if (roomKind === "group")
+        return api.toggleMessageReaction({ roomKind: "group", roomId, messageId, emoji })
+      if (roomKind === "dm")
+        return api.toggleDmMessageReaction({ threadId: roomId, messageId, emoji })
+      if (roomKind === "report")
+        return api.toggleReportMessageReaction({ id: roomId, messageId, emoji })
       return api.toggleCleanupMessageReaction({ cleanupId: roomId, messageId, emoji })
     },
     deleteMessage: (messageId) => {

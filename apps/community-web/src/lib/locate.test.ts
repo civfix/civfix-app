@@ -6,12 +6,18 @@ import { DEVICE_FIX_TIMEOUT_MS } from "@civfix/contract"
  * and a dynamic import.
  */
 
-type SuccessCb = (pos: { coords: { latitude: number; longitude: number; accuracy: number | null } }) => void
+type SuccessCb = (pos: {
+  coords: { latitude: number; longitude: number; accuracy: number | null }
+}) => void
 type ErrorCb = (err: unknown) => void
 
 /** A controllable `navigator.geolocation` stub that records every getCurrentPosition call. */
 function makeGeoStub() {
-  const calls: { options?: PositionOptions; resolve: (lat: number, lng: number) => void; reject: (err?: unknown) => void }[] = []
+  const calls: {
+    options?: PositionOptions | undefined
+    resolve: (lat: number, lng: number) => void
+    reject: (err?: unknown) => void
+  }[] = []
   const geolocation = {
     getCurrentPosition: (onOk: SuccessCb, onErr?: ErrorCb, options?: PositionOptions) => {
       calls.push({
@@ -152,7 +158,10 @@ describe("resolvePreciseCenterAfterPrompt counts a grant as prompted only on a p
   it("is prompted when the state was prompt before the request and granted after the fix", async () => {
     const query = sequence("prompt", "granted")
     stubPermissions(query)
-    await expect(settle(true)).resolves.toEqual({ precise: { lat: 34.05, lng: -118.24 }, prompted: true })
+    await expect(settle(true)).resolves.toEqual({
+      precise: { lat: 34.05, lng: -118.24 },
+      prompted: true,
+    })
     expect(query).toHaveBeenCalledTimes(2)
     expect(query).toHaveBeenCalledWith({ name: "geolocation" })
   })
@@ -175,7 +184,10 @@ describe("resolvePreciseCenterAfterPrompt counts a grant as prompted only on a p
   })
 
   it("is not prompted when the second query rejects", async () => {
-    const query = vi.fn().mockResolvedValueOnce({ state: "prompt" }).mockRejectedValueOnce(new TypeError("nope"))
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({ state: "prompt" })
+      .mockRejectedValueOnce(new TypeError("nope"))
     stubPermissions(query)
     await expect(settle(true)).resolves.toMatchObject({ prompted: false })
   })

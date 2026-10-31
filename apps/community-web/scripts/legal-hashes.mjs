@@ -18,14 +18,11 @@ if (!existsSync(legalOutDir)) {
   process.exit(1)
 }
 
-const rows = renderedLegalDocuments(outDir)
-  .filter(({ type, hashed }) => type !== null && hashed !== null)
-  .map(({ route, type, hashed }) => ({
-    type,
-    route: `/legal/${route}`,
-    version: hashed.version,
-    sha256: hashed.sha256,
-  }))
+const rows = renderedLegalDocuments(outDir).flatMap(({ route, type, hashed }) =>
+  type !== null && hashed !== null
+    ? [{ type, route: `/legal/${route}`, version: hashed.version, sha256: hashed.sha256 }]
+    : [],
+)
 
 rows.sort((a, b) => a.type.localeCompare(b.type))
 
@@ -62,7 +59,7 @@ if (outPath) {
     `${JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
-        note: "sha256 over the canonical plain text of each rendered <article class=\"legal-prose\">; version + effectiveAt + sha256 must be updated as ONE edit in src/legal/documents.ts in civfix-contract, published, and adopted by civfix-app and civfix-backend",
+        note: 'sha256 over the canonical plain text of each rendered <article class="legal-prose">; version + effectiveAt + sha256 must be updated as ONE edit in src/legal/documents.ts in civfix-contract, published, and adopted by civfix-app and civfix-backend',
         documents: rows,
         unrendered,
       },

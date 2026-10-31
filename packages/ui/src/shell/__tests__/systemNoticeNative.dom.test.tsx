@@ -66,7 +66,8 @@ vi.mock("../../typography", async () => {
 
 const { Text } = await import("react-native")
 const { SafeAreaInsetsContext, useSafeAreaInsets } = await import("react-native-safe-area-context")
-const { PERSISTENT_STORAGE_IDS, SYSTEM_NOTICE_STORAGE_ID } = await import("../../storage/storageIds")
+const { PERSISTENT_STORAGE_IDS, SYSTEM_NOTICE_STORAGE_ID } =
+  await import("../../storage/storageIds")
 const { clearPersistentStorage } = await import("../../storage/persistentStorage.native")
 const { resetPersistedStores } = await import("../../storage/resetPersistedStores")
 const { SYSTEM_NOTICE_PERSIST_NAME, useSystemNoticeStore } = await import("../systemNoticeStore")
@@ -85,7 +86,10 @@ const STATUS_BAR: EdgeInsets = { top: 24, right: 0, bottom: 34, left: 0 }
 function config(text: string | null): AppConfigResponse {
   return {
     minAppVersion: { ios: null, android: null },
-    storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+    storeUrl: {
+      ios: null,
+      android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+    },
     announcement: text === null ? null : { text, level: "info" },
   }
 }
@@ -97,7 +101,9 @@ function InsetProbe() {
 
 function renderRoot(announcement: string | null) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const context = makeFakeDataContext({ api: { getAppConfig: async () => config(announcement) } as unknown as ApiClient })
+  const context = makeFakeDataContext({
+    api: { getAppConfig: async () => config(announcement) } as unknown as ApiClient,
+  })
   const view = render(
     <QueryClientProvider client={client}>
       <ApiProvider value={context}>
@@ -124,7 +130,11 @@ beforeEach(() => {
 describe("systemNoticeStore on the phone", () => {
   it("T13: dismissals live in MMKV under one new storage id, beside the three existing ones", () => {
     expect(PERSISTENT_STORAGE_IDS).toHaveLength(4)
-    expect(PERSISTENT_STORAGE_IDS.slice(0, 3)).toEqual(["civfix.ui.filters", "civfix.ui.sidebar", "civfix.ui.app-promo"])
+    expect(PERSISTENT_STORAGE_IDS.slice(0, 3)).toEqual([
+      "civfix.ui.filters",
+      "civfix.ui.sidebar",
+      "civfix.ui.app-promo",
+    ])
     expect(PERSISTENT_STORAGE_IDS).toContain(SYSTEM_NOTICE_STORAGE_ID)
     expect(new Set(PERSISTENT_STORAGE_IDS).size).toBe(4)
 
@@ -141,7 +151,9 @@ describe("systemNoticeStore on the phone", () => {
     resetPersistedStores()
     clearPersistentStorage()
 
-    expect(useSystemNoticeStore.getState().dismissedHash).toBe(useSystemNoticeStore.getInitialState().dismissedHash)
+    expect(useSystemNoticeStore.getState().dismissedHash).toBe(
+      useSystemNoticeStore.getInitialState().dismissedHash,
+    )
     expect(useSystemNoticeStore.getState().dismissedHash).toBeNull()
     expect(files.get(SYSTEM_NOTICE_STORAGE_ID)?.size ?? 0).toBe(0)
     renderRoot(TEXT)

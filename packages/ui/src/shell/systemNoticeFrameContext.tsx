@@ -39,7 +39,9 @@ export function FullWindowInsets({ children }: { children: React.ReactNode }) {
   if (!frame) return <>{children}</>
   return (
     <SystemNoticeFrameContext.Provider value={null}>
-      <SafeAreaInsetsContext.Provider value={frame.windowInsets}>{children}</SafeAreaInsetsContext.Provider>
+      <SafeAreaInsetsContext.Provider value={frame.windowInsets}>
+        {children}
+      </SafeAreaInsetsContext.Provider>
     </SystemNoticeFrameContext.Provider>
   )
 }

@@ -8,10 +8,7 @@ export function shouldRevalidateOnState(state: AppLifecycleState | null | undefi
   return state === "active"
 }
 
-export function isSignOutTransition(
-  previous: AuthStatus,
-  next: AuthStatus,
-): boolean {
+export function isSignOutTransition(previous: AuthStatus, next: AuthStatus): boolean {
   return previous === "authed" && next === "unauthed"
 }
 

@@ -9,18 +9,22 @@ import { cn } from "@/lib/utils"
 
 export type RichTextCommand = "bold" | "italic" | "link" | "bullet" | "ordered"
 
-const COMMANDS: readonly { id: RichTextCommand; icon: LucideIcon; labelKey: string; key?: string }[] =
-  [
-    { id: "bold", icon: Bold, labelKey: "editor.bold", key: "B" },
-    { id: "italic", icon: Italic, labelKey: "editor.italic", key: "I" },
-    { id: "link", icon: LinkIcon, labelKey: "editor.link", key: "K" },
-    { id: "bullet", icon: List, labelKey: "editor.bullet_list" },
-    { id: "ordered", icon: ListOrdered, labelKey: "editor.ordered_list" },
-  ]
+const COMMANDS: readonly {
+  id: RichTextCommand
+  icon: LucideIcon
+  labelKey: string
+  key?: string
+}[] = [
+  { id: "bold", icon: Bold, labelKey: "editor.bold", key: "B" },
+  { id: "italic", icon: Italic, labelKey: "editor.italic", key: "I" },
+  { id: "link", icon: LinkIcon, labelKey: "editor.link", key: "K" },
+  { id: "bullet", icon: List, labelKey: "editor.bullet_list" },
+  { id: "ordered", icon: ListOrdered, labelKey: "editor.ordered_list" },
+]
 
 export interface RichTextToolbarProps {
   onCommand: (command: RichTextCommand) => void
-  disabled?: boolean
+  disabled?: boolean | undefined
   className?: string
 }
 

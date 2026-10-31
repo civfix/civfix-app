@@ -18,40 +18,26 @@ import {
   DOUBLE_CAST_SELECTORS,
   LINTER_OPTIONS,
   NODE_TEST_FOCUS_SELECTORS,
+  NODE_TEST_TYPED_RULES,
   TEST_FILES,
   TEST_RELAXED_RULES,
   TYPED_RULES,
   escalateWarnings,
 } from "../../eslint.typed.cjs"
 
-const MOBILE_TYPED_RULES = {
-  ...TYPED_RULES,
-  // node:test's test()/describe() return promises the runner itself awaits.
-  "@typescript-eslint/no-floating-promises": [
-    "error",
-    {
-      allowForKnownSafeCalls: [
-        {
-          from: "package",
-          package: "node:test",
-          name: ["test", "describe", "it", "suite", "before", "after", "beforeEach", "afterEach"],
-        },
-      ],
-    },
-  ],
-}
+const MOBILE_TYPED_RULES = { ...TYPED_RULES, ...NODE_TEST_TYPED_RULES }
 
 const expoConfigs = escalateWarnings(withoutReactHooks([expoConfig].flat()))
 const expoTypeScript = expoConfigs.find((config) => config.plugins?.["@typescript-eslint"])
 
 export default defineConfig([
   ...expoConfigs,
-  // The preset parses only .ts and .tsx; the test runner's setup module is .mts.
-  { ...expoTypeScript, files: ["**/*.mts"] },
+  // The preset parses only .ts and .tsx; the test runner's setup module is .mts and the Node build scripts
+  // are .mjs under checkJs.
+  { ...expoTypeScript, files: ["**/*.mts", "scripts/**/*.mjs"] },
   { linterOptions: LINTER_OPTIONS },
   {
-    // `scripts/*` are Node ESM dev tools, not RN app source.
-    ignores: ["dist/*", ".expo/*", "node_modules/*", "expo-env.d.ts", "scripts/*"],
+    ignores: ["dist/*", ".expo/*", "node_modules/*", "expo-env.d.ts"],
   },
   {
     plugins: { "react-hooks": reactHooks, "react-native": reactNative },
@@ -62,7 +48,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "scripts/**/*.mjs"],
     languageOptions: {
       parserOptions: {
         projectService: true,

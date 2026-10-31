@@ -90,10 +90,7 @@ describe("DataTable", () => {
   it("publishes aria-sort only on sortable column headers and marks the active one", () => {
     renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} onSortChange={() => {}} />)
     const headers = screen.getAllByRole("columnheader")
-    expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual([
-      "ascending",
-      null,
-    ])
+    expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual(["ascending", null])
   })
 
   it("marks an inactive sortable column as unsorted", () => {

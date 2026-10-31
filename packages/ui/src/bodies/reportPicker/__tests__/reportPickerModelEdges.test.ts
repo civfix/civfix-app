@@ -24,7 +24,16 @@ import {
 const LA = { lat: 34.0522, lng: -118.2437 }
 
 function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
-  return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, confirmCount: 0, fixedCount: 0, ...over }
+  return {
+    id,
+    category: "trash",
+    status: "published",
+    lat: LA.lat,
+    lng: LA.lng,
+    confirmCount: 0,
+    fixedCount: 0,
+    ...over,
+  }
 }
 
 describe("pickerFetchRegion edges", () => {
@@ -35,7 +44,9 @@ describe("pickerFetchRegion edges", () => {
   })
 
   it("refuses a viewport whose height alone exceeds the cap", () => {
-    expect(pickerFetchRegion({ west: 0, east: 0.01, south: 0, north: PICKER_MAX_FETCH_SPAN_DEG + 0.01 })).toBeNull()
+    expect(
+      pickerFetchRegion({ west: 0, east: 0.01, south: 0, north: PICKER_MAX_FETCH_SPAN_DEG + 0.01 }),
+    ).toBeNull()
   })
 
   it("refuses an inverted or non-finite viewport", () => {
@@ -51,12 +62,14 @@ describe("pickerFetchRegion edges", () => {
       south: 89.855,
       north: 90,
     })
-    expect(pickerFetchRegion({ west: -179.99, east: -179.9, south: -89.99, north: -89.9 })).toEqual({
-      west: -180,
-      east: -179.855,
-      south: -90,
-      north: -89.855,
-    })
+    expect(pickerFetchRegion({ west: -179.99, east: -179.9, south: -89.99, north: -89.9 })).toEqual(
+      {
+        west: -180,
+        east: -179.855,
+        south: -90,
+        north: -89.855,
+      },
+    )
   })
 })
 
@@ -66,8 +79,12 @@ describe("queryRank edges", () => {
   })
 
   it("ranks an exact reference code as an exact id hit, case-insensitively", () => {
-    expect(queryRank(pin("a", { referenceCode: "DU-42-000123" }), "du-42-000123")).toBe(QUERY_RANK.exactId)
-    expect(queryRank(pin("a", { referenceCode: "DU-42-000123" }), "DU-42")).toBe(QUERY_RANK.idPrefix)
+    expect(queryRank(pin("a", { referenceCode: "DU-42-000123" }), "du-42-000123")).toBe(
+      QUERY_RANK.exactId,
+    )
+    expect(queryRank(pin("a", { referenceCode: "DU-42-000123" }), "DU-42")).toBe(
+      QUERY_RANK.idPrefix,
+    )
   })
 
   it("never matches an empty reference code as a prefix", () => {
@@ -75,11 +92,15 @@ describe("queryRank edges", () => {
   })
 
   it("scores a multi-word query that starts words in any order as a title-word hit", () => {
-    expect(queryRank(pin("a", { title: "Broken streetlight on Main" }), "main street")).toBe(QUERY_RANK.titleWord)
+    expect(queryRank(pin("a", { title: "Broken streetlight on Main" }), "main street")).toBe(
+      QUERY_RANK.titleWord,
+    )
   })
 
   it("falls back to other fields when one token hits the title and the other the address", () => {
-    expect(queryRank(pin("a", { title: "Couch", addr: "5th Street" }), "couch 5th")).toBe(QUERY_RANK.otherFields)
+    expect(queryRank(pin("a", { title: "Couch", addr: "5th Street" }), "couch 5th")).toBe(
+      QUERY_RANK.otherFields,
+    )
   })
 
   it("trims the query before comparing against the id", () => {
@@ -97,7 +118,9 @@ describe("reportLookupKey and reportShortCode edges", () => {
   it("falls back to the uuid prefix when the reference is blank", () => {
     expect(reportShortCode({ id: "0f9a1e2c-1111", referenceCode: "   " })).toBe("#0f9a1e2c")
     expect(reportShortCode({ id: "0f9a1e2c-1111", referenceCode: null })).toBe("#0f9a1e2c")
-    expect(reportShortCode({ id: "0f9a1e2c-1111", referenceCode: " DU-1-000001 " })).toBe("#DU-1-000001")
+    expect(reportShortCode({ id: "0f9a1e2c-1111", referenceCode: " DU-1-000001 " })).toBe(
+      "#DU-1-000001",
+    )
   })
 })
 
@@ -141,7 +164,12 @@ describe("refFromCard and optimisticLinkedRefs", () => {
       lng: 4,
       linkedAt: "2020-01-01T00:00:00.000Z",
     }
-    const refs = optimisticLinkedRefs(["x", "c"], [existing], { c: card, x: { ...card, id: "x" } }, "now")
+    const refs = optimisticLinkedRefs(
+      ["x", "c"],
+      [existing],
+      { c: card, x: { ...card, id: "x" } },
+      "now",
+    )
     expect(refs.map((ref) => [ref.id, ref.linkedAt])).toEqual([
       ["x", "now"],
       ["c", "2020-01-01T00:00:00.000Z"],
@@ -188,7 +216,12 @@ describe("list item lookups", () => {
 
 describe("selection edges", () => {
   it("counts a cleared baseline as removals only", () => {
-    expect(selectionDiff([], new Set(["a", "b"]))).toEqual({ selected: 0, added: 0, removed: 2, dirty: true })
+    expect(selectionDiff([], new Set(["a", "b"]))).toEqual({
+      selected: 0,
+      added: 0,
+      removed: 2,
+      dirty: true,
+    })
   })
 
   it("honours a custom cap and never mutates the input", () => {

@@ -61,7 +61,11 @@ function englishCompact(value: number): string {
  * A count in the viewer's locale: whole numbers ("12,400"), or with `compact` the locale's short
  * scale ("12K", "1,3 Mio.", "1.2만"), which rounds to two significant digits below ten units.
  */
-export function formatCount(value: number, locale: string, options: FormatCountOptions = {}): string {
+export function formatCount(
+  value: number,
+  locale: string,
+  options: FormatCountOptions = {},
+): string {
   const compact = options.compact === true
   const formatter = countFormatter(locale, compact)
   if (compact && !formatter.compactHonoured) return englishCompact(value)

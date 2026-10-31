@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, Easing, PanResponder, Platform, type GestureResponderHandlers } from "react-native"
+import {
+  Animated,
+  Easing,
+  PanResponder,
+  Platform,
+  type GestureResponderHandlers,
+} from "react-native"
 import { useHaptics } from "../capabilities"
 import { motion } from "../theme"
 import {

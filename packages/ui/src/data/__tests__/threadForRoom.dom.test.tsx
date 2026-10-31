@@ -33,7 +33,10 @@ function renderLookup(roomKind: RoomKind) {
     </QueryClientProvider>
   )
   return renderHook(
-    () => ({ thread: useThreadForRoom(roomKind, SHARED_ID), loaded: useThreads().data !== undefined }),
+    () => ({
+      thread: useThreadForRoom(roomKind, SHARED_ID),
+      loaded: useThreads().data !== undefined,
+    }),
     { wrapper },
   )
 }

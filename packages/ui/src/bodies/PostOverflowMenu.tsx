@@ -16,8 +16,8 @@ export interface PostOverflowMenuProps {
   onClose: () => void
   onOpenPerson: (personId: string) => void
   anchorRect?: AnchorRect | null
-  onOpenOriginal?: () => void
-  onDeleted?: () => void
+  onOpenOriginal?: (() => void) | undefined
+  onDeleted?: (() => void) | undefined
 }
 
 const noop = () => {}
@@ -90,7 +90,8 @@ function PostOverflowMenuContent({
   const repost = subject.repost
   const isOwn = isAuthenticated && viewerId != null && viewerId === subject.authorId
   const canDelete = isOwn && repost === null
-  const isOwnRepost = isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId
+  const isOwnRepost =
+    isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId
   const undoRepost = useRepost(subjectId)
 
   const submitReport = useCallback(

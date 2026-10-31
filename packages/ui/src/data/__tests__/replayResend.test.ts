@@ -10,8 +10,11 @@ import type { ChatMessageDTO } from "@civfix/contract"
 import type { OutboxEntry } from "../../helpers"
 import { markResending } from "../hooks/chat"
 
-const entry = (clientId: string, status: OutboxEntry["status"]): OutboxEntry =>
-  ({ clientId, status, message: { id: clientId } as ChatMessageDTO })
+const entry = (clientId: string, status: OutboxEntry["status"]): OutboxEntry => ({
+  clientId,
+  status,
+  message: { id: clientId } as ChatMessageDTO,
+})
 
 describe("markResending", () => {
   it("flips exactly the captured failed entries back to sending", () => {
@@ -32,7 +35,11 @@ describe("markResending", () => {
 
 describe("useChat reconnect replay", () => {
   const outbox = readFileSync(new URL("../hooks/chatOutbox.ts", import.meta.url), "utf8")
-  const reconnect = sliceBetween(outbox, "const replay = replayableEntries(", "for (const entry of replay)")
+  const reconnect = sliceBetween(
+    outbox,
+    "const replay = replayableEntries(",
+    "for (const entry of replay)",
+  )
 
   it("captures the ids to flip before dispatch clears offlineFailedRef", () => {
     expect(reconnect).toContain("markResending(prev, resend)")

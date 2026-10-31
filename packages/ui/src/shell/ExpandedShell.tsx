@@ -10,10 +10,27 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { domProps, motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps, webStyle, pointerEventStyles } from "../theme"
+import {
+  domProps,
+  motion,
+  wash,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webCursorColResize,
+  focusRingProps,
+  webStyle,
+  pointerEventStyles,
+} from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
-import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
+import {
+  useNavStore,
+  titleForEntry,
+  titleParamsForEntry,
+  type DetailEntry,
+  type View as NavView,
+} from "../nav"
 import { AppPromoCard } from "../promo"
 import { defaultRenderBody } from "./BodyRouter"
 import { Rail } from "./Rail"
@@ -21,7 +38,12 @@ import { BodyTransition, type BodyTransitionDirection } from "./BodyTransition"
 import { useStackDirection } from "./useStackDirection"
 import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
-import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
+import {
+  DETAIL_BACK_SIZE,
+  DETAIL_BACK_RADIUS,
+  DETAIL_BACK_ICON_SIZE,
+  detailTitleStyle,
+} from "./detailHeader"
 import { showBackAffordance } from "./backAffordance"
 import { hasDetailHeader } from "./SheetHeader.shared"
 import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrailingAction"
@@ -78,7 +100,7 @@ const PANEL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export interface ExpandedShellProps {
   renderBody?: RenderBody
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
 }
 
 export function ExpandedShell({

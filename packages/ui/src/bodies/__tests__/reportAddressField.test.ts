@@ -78,8 +78,8 @@ describe("reportAddressPrefill", () => {
 
   it("clamps to the report wire maximum of 300, not 200", () => {
     const long = "x".repeat(400)
-    expect(
-      reportAddressPrefill({ ...base, resolution: resolved({ address: long }) })?.length,
-    ).toBe(300)
+    expect(reportAddressPrefill({ ...base, resolution: resolved({ address: long }) })?.length).toBe(
+      300,
+    )
   })
 })

@@ -15,7 +15,10 @@ function functionBody(name: string): string {
 
 test("every identity change reaches the @civfix/ui draft registry, so no draft outlives its account", () => {
   assert.match(store, /import \{ adoptViewer, discardViewerDrafts \} from "@civfix\/ui"/)
-  assert.match(store, /useAuthStore\.subscribe\(\(state\) => adoptViewer\(state\.user\?\.id \?\? null\)\)/)
+  assert.match(
+    store,
+    /useAuthStore\.subscribe\(\(state\) => adoptViewer\(state\.user\?\.id \?\? null\)\)/,
+  )
   assert.doesNotMatch(store, /PostComposer/)
 })
 

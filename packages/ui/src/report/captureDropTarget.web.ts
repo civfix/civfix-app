@@ -3,7 +3,11 @@ import type { ViewStyle } from "react-native"
 import { shadowSchemes } from "@civfix/tokens"
 import type { Theme } from "../theme"
 import { EASE_STANDARD_CSS } from "../theme/motion"
-import { isDroppableType, type CaptureDropTarget, type DroppedItem } from "./captureDropTarget.shared"
+import {
+  isDroppableType,
+  type CaptureDropTarget,
+  type DroppedItem,
+} from "./captureDropTarget.shared"
 
 function carriesDroppableFile(dt: DataTransfer | null): boolean {
   if (!dt) return false
@@ -86,4 +90,3 @@ export function captureDropActiveStyleFor(theme: Theme): ViewStyle {
     ].join(", "),
   }
 }
-

@@ -80,9 +80,9 @@ describe("profilePastEventsAction", () => {
   })
 
   it("pages once a fetched page reports a cursor", () => {
-    expect(profilePastEventsAction(state({ armed: true, isSuccess: true, hasNextPage: true }))).toBe(
-      "next",
-    )
+    expect(
+      profilePastEventsAction(state({ armed: true, isSuccess: true, hasNextPage: true })),
+    ).toBe("next")
   })
 
   it("retries the FAILED PAGE (not the whole chain) when a next-page fetch failed", () => {

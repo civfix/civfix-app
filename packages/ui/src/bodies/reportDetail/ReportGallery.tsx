@@ -24,7 +24,10 @@ export function ReportGallery({
   const th = useTheme()
   const { t } = useT("report-detail")
   const pending = report.mediaPending ?? 0
-  const { ready, ownerPending, ownerFailed, tileCount } = partitionGalleryMedia(report.media, pending)
+  const { ready, ownerPending, ownerFailed, tileCount } = partitionGalleryMedia(
+    report.media,
+    pending,
+  )
   const refused = refusedGalleryTiles({
     ready: ready.length,
     processing: ownerPending.length + pending,
@@ -59,7 +62,9 @@ export function ReportGallery({
           <View style={styles.processingBlock}>
             <Icon icon={iconMap.Clock} size={26} color={th.colors.textSubtle} />
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
-            <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
+            <Text style={styles.processingBody}>
+              {t("gallery.processing_body", { count: total })}
+            </Text>
           </View>
           {refusedStrip}
         </View>
@@ -69,7 +74,10 @@ export function ReportGallery({
     if (firstFailed) {
       return (
         <View style={styles.gallery}>
-          <StatusTile kind={firstFailed.status === "rejected" ? "rejected" : "held"} variant="hero" />
+          <StatusTile
+            kind={firstFailed.status === "rejected" ? "rejected" : "held"}
+            variant="hero"
+          />
         </View>
       )
     }

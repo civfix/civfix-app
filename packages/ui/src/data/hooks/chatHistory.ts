@@ -17,7 +17,12 @@ import { roomEndpoints, type ChatHistoryData } from "./chatRoom"
 const CHAT_HISTORY_STALE_MS = 10_000
 const CHAT_HISTORY_GC_MS = 5 * 60_000
 
-export function useChatHistoryQuery(api: ApiClient, roomId: string, roomKind: RoomKind, canReadHistory: boolean) {
+export function useChatHistoryQuery(
+  api: ApiClient,
+  roomId: string,
+  roomKind: RoomKind,
+  canReadHistory: boolean,
+) {
   return useInfiniteQuery<ChatHistoryResponse>({
     queryKey: queryKeys.chatHistory(roomId, roomKind),
     enabled: canReadHistory,
@@ -95,10 +100,7 @@ export function useChatHistoryCache({
     const key = queryKeys.chatHistory(roomId, roomKind)
     const data = queryClient.getQueryData<ChatHistoryData>(key)
     if (!data || data.pages.length === 0) return
-    const next = applyHistoryCacheOps(
-      { pages: data.pages, pageParams: data.pageParams },
-      ops,
-    )
+    const next = applyHistoryCacheOps({ pages: data.pages, pageParams: data.pageParams }, ops)
     if (next.pages !== data.pages || next.pageParams !== data.pageParams) {
       queryClient.setQueryData<ChatHistoryData>(key, {
         ...data,

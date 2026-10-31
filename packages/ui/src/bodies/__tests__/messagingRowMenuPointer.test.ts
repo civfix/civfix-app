@@ -28,14 +28,24 @@ describe("the row menu chip reads the pointer kind once per list render", () => 
   it("subscribes in the list body, not in each row", () => {
     expect(source.match(/useCoarsePointer\(\)/g)).toHaveLength(1)
     expect(rowSource).not.toContain("useCoarsePointer(")
-    const list = sliceBetween(source, "export function MessagingListBody(", "const renderItem = useCallback(")
+    const list = sliceBetween(
+      source,
+      "export function MessagingListBody(",
+      "const renderItem = useCallback(",
+    )
     expect(list).toContain("const coarsePointer = useCoarsePointer()")
   })
 
   it("hands the value to every row and re-renders the rows when it changes", () => {
-    const renderItem = sliceBetween(source, "const renderItem = useCallback(", "const threads = useMemo(")
+    const renderItem = sliceBetween(
+      source,
+      "const renderItem = useCallback(",
+      "const threads = useMemo(",
+    )
     expect(renderItem).toContain("coarsePointer={coarsePointer}")
-    expect(renderItem).toMatch(/\[onPressItem, toggleMute, markRead, hideConversation, coarsePointer\]/)
+    expect(renderItem).toMatch(
+      /\[onPressItem, toggleMute, markRead, hideConversation, coarsePointer\]/,
+    )
     const row = sliceBetween(rowSource, "export const ThreadRow = React.memo(", "}) {")
     expect(row).toContain("coarsePointer: boolean")
   })

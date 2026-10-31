@@ -48,5 +48,7 @@ export function SystemNoticeBanner({ style, onLayout }: SystemNoticeBannerProps)
   }, [visible, setHeight])
 
   if (!notice) return null
-  return <SystemNoticeBar ref={ref} notice={notice} style={[FIXED_TOP, style]} onLayout={onLayout} />
+  return (
+    <SystemNoticeBar ref={ref} notice={notice} style={[FIXED_TOP, style]} onLayout={onLayout} />
+  )
 }

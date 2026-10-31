@@ -6,7 +6,13 @@ import { useSectionStyles } from "./sectionStyles"
 // Heading levels (see `theme/webAffordances.headingLevel`): the profile panel's own title ("You" / the
 // person's name) is level 1, an eyebrow ("POSTS", "ACTIVITY") introduces a section of it, and a
 // "Hosting (3)" subhead sits inside a section. Without explicit levels RNW renders them all as peer <h1>s.
-export function SectionEyebrow({ children, inline = false }: { children: string; inline?: boolean }) {
+export function SectionEyebrow({
+  children,
+  inline = false,
+}: {
+  children: string
+  inline?: boolean
+}) {
   const sectionStyles = useSectionStyles()
   return (
     <Text
@@ -19,7 +25,7 @@ export function SectionEyebrow({ children, inline = false }: { children: string;
   )
 }
 
-export function SubHead({ label, count }: { label: string; count?: number }) {
+export function SubHead({ label, count }: { label: string; count?: number | undefined }) {
   const sectionStyles = useSectionStyles()
   return (
     <View style={sectionStyles.subhead}>

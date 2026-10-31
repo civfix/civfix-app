@@ -7,7 +7,13 @@ type Catalog = { [key: string]: string | Catalog }
 
 const catalog = (locale: string): Catalog =>
   JSON.parse(
-    readFileSync(new URL(`../../../packages/ui/src/i18n/locales/${locale}/mobile-update.json`, import.meta.url), "utf8"),
+    readFileSync(
+      new URL(
+        `../../../packages/ui/src/i18n/locales/${locale}/mobile-update.json`,
+        import.meta.url,
+      ),
+      "utf8",
+    ),
   ) as Catalog
 
 function entries(node: Catalog, prefix = ""): [string, string][] {
@@ -30,6 +36,12 @@ test("T26: the en mobile-update catalog holds the update screen's words, and eve
   }
   const keys = en.map(([key]) => key).sort()
   for (const locale of ["de", "es", "ko"]) {
-    assert.deepEqual(entries(catalog(locale)).map(([key]) => key).sort(), keys, locale)
+    assert.deepEqual(
+      entries(catalog(locale))
+        .map(([key]) => key)
+        .sort(),
+      keys,
+      locale,
+    )
   }
 })

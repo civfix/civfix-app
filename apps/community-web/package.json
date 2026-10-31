@@ -11,7 +11,7 @@
     "predev": "node scripts/copy-contract-fonts.mjs",
     "build": "next build && node scripts/cf-pages-postbuild.mjs",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p ./functions/tsconfig.json && tsc --noEmit -p ./functions/tsconfig.test.json && tsc -p ./scripts/tsconfig.json && tsc -p ./scripts/tsconfig.test.json",
     "og-image": "node scripts/generate-og-image.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -19,7 +19,7 @@
     "legal-hashes": "node scripts/legal-hashes.mjs"
   },
   "dependencies": {
-    "@civfix/contract": "0.67.0-b-feat-dev-console-contract.gee137fa",
+    "@civfix/contract": "0.67.0-b-integration-dev-console.g2105680",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
@@ -52,6 +52,7 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^22.10.2",
     "@types/react": "~19.1.0",
     "@types/react-dom": "~19.1.0",

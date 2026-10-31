@@ -24,11 +24,11 @@ export function ConvoBar({
   onlineCount: number
   mode: LayoutMode
   onBack: () => void
-  onMenu?: () => void
+  onMenu?: (() => void) | undefined
   menuOpen?: boolean
   menuAnchorRef?: React.RefObject<RNView | null>
-  onMembers?: () => void
-  onTitlePress?: () => void
+  onMembers?: (() => void) | undefined
+  onTitlePress?: (() => void) | undefined
 }) {
   const styles = useConvoHeaderStyles()
   const th = useTheme()
@@ -49,7 +49,9 @@ export function ConvoBar({
         ? t("header.members_with_online", { count: meta.members, online: onlineCount })
         : t("header.members", { count: meta.members })
     } else {
-      sub = online ? t("header.crew_chat_with_online", { online: onlineCount }) : t("header.crew_chat")
+      sub = online
+        ? t("header.crew_chat_with_online", { online: onlineCount })
+        : t("header.crew_chat")
     }
   } else {
     sub = online ? t("header.online") : null
@@ -60,7 +62,12 @@ export function ConvoBar({
     title: meta.title,
     refId: meta.roomId,
     peer: meta.peerId
-      ? { id: meta.peerId, name: meta.peerName ?? meta.title, avatarUrl: meta.peerAvatarUrl ?? null, avatar: meta.peerAvatar ?? null }
+      ? {
+          id: meta.peerId,
+          name: meta.peerName ?? meta.title,
+          avatarUrl: meta.peerAvatarUrl ?? null,
+          avatar: meta.peerAvatar ?? null,
+        }
       : null,
   }
   return (

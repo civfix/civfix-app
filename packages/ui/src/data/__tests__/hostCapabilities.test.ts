@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  actsAsHost,
-  cleanupHostStanding,
-  hasHostCapability,
-  managesEvent,
-} from "../hooks/host"
+import { actsAsHost, cleanupHostStanding, hasHostCapability, managesEvent } from "../hooks/host"
 
 describe("hasHostCapability", () => {
   it("reads the server-computed set", () => {
@@ -77,7 +72,9 @@ describe("hasHostCapability", () => {
 describe("managesEvent", () => {
   it("reads the server's capability set, not the role string", () => {
     expect(managesEvent({ myCapabilities: ["manage_event"], myRole: null })).toBe(true)
-    expect(managesEvent({ myCapabilities: ["check_in", "view_roster"], myRole: "staff" })).toBe(false)
+    expect(managesEvent({ myCapabilities: ["check_in", "view_roster"], myRole: "staff" })).toBe(
+      false,
+    )
   })
 
   it("does NOT re-grant a demoted organizer the manage affordances", () => {
@@ -97,9 +94,7 @@ describe("managesEvent", () => {
   it("is exactly hasHostCapability(manage_event) - one predicate, no second legacy rule", () => {
     for (const role of ["organizer", "cohost", "coordinator", "staff", "member", null] as const) {
       const standing = { myCapabilities: [] as const, myRole: role }
-      expect(managesEvent(standing), String(role)).toBe(
-        hasHostCapability(standing, "manage_event"),
-      )
+      expect(managesEvent(standing), String(role)).toBe(hasHostCapability(standing, "manage_event"))
     }
   })
 

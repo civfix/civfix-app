@@ -72,7 +72,15 @@ const STATUSES: ReportStatus[] = [
   "rejected",
 ]
 
-const CATEGORIES: ReportCategory[] = ["trash", "recycling", "graffiti", "hazard", "encampment", "water", "other"]
+const CATEGORIES: ReportCategory[] = [
+  "trash",
+  "recycling",
+  "graffiti",
+  "hazard",
+  "encampment",
+  "water",
+  "other",
+]
 
 // Relative to today so the DateBadge stays representative over time.
 const NEAR_FUTURE_ISO = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -366,7 +374,12 @@ function HostDashboardPanel({ scheme }: { scheme: ColorSchemeName }) {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <PrimaryButton label="Share event" icon={iconMap.Share} onPress={noop} />
-          <PrimaryButton label="Cancel event" variant="destructive" icon={iconMap.Ban} onPress={noop} />
+          <PrimaryButton
+            label="Cancel event"
+            variant="destructive"
+            icon={iconMap.Ban}
+            onPress={noop}
+          />
           <SecondaryButton label="Edit event" icon={iconMap.Pencil} onPress={noop} />
         </div>
 

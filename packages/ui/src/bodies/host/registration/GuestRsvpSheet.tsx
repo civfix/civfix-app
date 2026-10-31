@@ -19,7 +19,13 @@ import {
   visibleQuestions,
   type AnswerMap,
 } from "@civfix/contract/host"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../../../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  focusRingProps,
+  inputFocusedStyle,
+} from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import {
@@ -33,12 +39,7 @@ import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
 import { ConsentChecks } from "./ConsentChecks"
-import {
-  EMPTY_CONSENT,
-  consentAccepted,
-  consentPayload,
-  type ConsentState,
-} from "./consentModel"
+import { EMPTY_CONSENT, consentAccepted, consentPayload, type ConsentState } from "./consentModel"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
@@ -79,7 +80,7 @@ export interface GuestRsvpSheetProps {
   nextPath: string
   onClose: () => void
   ticketTypes?: readonly TicketTypeDTO[]
-  questions?: readonly EventQuestionDTO[]
+  questions?: readonly EventQuestionDTO[] | undefined
 }
 
 export function GuestRsvpSheet({
@@ -117,7 +118,10 @@ export function GuestRsvpSheet({
   const ticketTypeId = effectiveTicketTypeId(types, chosenTicketTypeId)
   const [partySize, setPartySize] = useState(1)
   const [typedAnswers, setAnswers] = useState<AnswerMap>({})
-  const answers = useMemo(() => answersWithDefaults(questions, typedAnswers), [questions, typedAnswers])
+  const answers = useMemo(
+    () => answersWithDefaults(questions, typedAnswers),
+    [questions, typedAnswers],
+  )
   const [consent, setConsent] = useState<ConsentState>(EMPTY_CONSENT)
   const [invalidQuestions, setInvalidQuestions] = useState<ReadonlySet<string>>(() => new Set())
   const selectedType = useMemo(
@@ -201,9 +205,7 @@ export function GuestRsvpSheet({
         try {
           let token = ""
           try {
-            token = getTurnstileToken
-              ? await getTurnstileToken(GUEST_RSVP_TURNSTILE_ACTION)
-              : ""
+            token = getTurnstileToken ? await getTurnstileToken(GUEST_RSVP_TURNSTILE_ACTION) : ""
           } catch {
             token = ""
           }
@@ -311,7 +313,8 @@ export function GuestRsvpSheet({
       return t(guestRequestErrorKey(appErrorCode(request.error), appErrorFields(request.error)))
     }
     if (step === "code") {
-      if (request.isError) return t(guestRequestErrorKey(appErrorCode(request.error), appErrorFields(request.error)))
+      if (request.isError)
+        return t(guestRequestErrorKey(appErrorCode(request.error), appErrorFields(request.error)))
       if (verify.isError) {
         return t(guestVerifyErrorKey(appErrorCode(verify.error), appErrorFields(verify.error)))
       }

@@ -4,7 +4,16 @@ import type { CleanupDTO, LatLng, ReportPinDTO, UserSearchResultDTO } from "@civ
 import { eventChip } from "@civfix/contract/datetime"
 import { eventEndsAtMs } from "@civfix/contract/host"
 import { announce } from "../../announce"
-import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  useLayoutMode,
+  webHover,
+  webTransition,
+  headingLevel,
+  MIN_TOUCH_TARGET,
+} from "../../theme"
 import {
   Avatar,
   EmptyState,
@@ -53,7 +62,9 @@ function SectionHeader({ title }: { title: string }) {
   const styles = useStyles()
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>{title}</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
+        {title}
+      </Text>
     </View>
   )
 }
@@ -64,7 +75,9 @@ function PersonHitRow({ person }: { person: UserSearchResultDTO }) {
   const { t } = useT("home-sidebar")
   return (
     <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })}
+      onPress={() =>
+        useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })
+      }
       accessibilityRole="button"
       accessibilityLabel={t("person.view_profile_a11y", { name: person.displayName })}
       {...focusRingProps}
@@ -75,10 +88,22 @@ function PersonHitRow({ person }: { person: UserSearchResultDTO }) {
         state.pressed ? styles.pressed : null,
       ]}
     >
-      <Avatar name={person.displayName} seed={person.id} photoUrl={person.avatarUrl ?? null} gradient={person.avatar ?? null} size={40} />
+      <Avatar
+        name={person.displayName}
+        seed={person.id}
+        photoUrl={person.avatarUrl ?? null}
+        gradient={person.avatar ?? null}
+        size={40}
+      />
       <View style={styles.rowCopy}>
-        <Text style={styles.rowTitle} numberOfLines={1}>{person.displayName}</Text>
-        {person.handle ? <Text style={styles.rowDetail} numberOfLines={1}>@{person.handle}</Text> : null}
+        <Text style={styles.rowTitle} numberOfLines={1}>
+          {person.displayName}
+        </Text>
+        {person.handle ? (
+          <Text style={styles.rowDetail} numberOfLines={1}>
+            @{person.handle}
+          </Text>
+        ) : null}
       </View>
       <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textSubtle} />
     </Pressable>
@@ -108,8 +133,12 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
       >
         <DateTile variant="searchHit" day={day} month={month} />
         <View style={styles.rowCopy}>
-          <Text style={styles.rowTitle} numberOfLines={1}>{cleanup.title}</Text>
-          <Text style={styles.rowDetail} numberOfLines={expanded ? 1 : 2}>{eventMeta}</Text>
+          <Text style={styles.rowTitle} numberOfLines={1}>
+            {cleanup.title}
+          </Text>
+          <Text style={styles.rowDetail} numberOfLines={expanded ? 1 : 2}>
+            {eventMeta}
+          </Text>
         </View>
       </Pressable>
       <RsvpPill
@@ -395,7 +424,14 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: { flex: 1 },
   content: { paddingHorizontal: t.space["4"], paddingBottom: t.space["10"] },
   sectionHeader: { paddingTop: t.space["3"], paddingBottom: t.space["2"] },
-  sectionTitle: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 11.5, lineHeight: 16, letterSpacing: 1.2, textTransform: "uppercase", color: t.colors.textMuted },
+  sectionTitle: {
+    fontFamily: t.fontFamily.bodyExtraBold,
+    fontSize: 11.5,
+    lineHeight: 16,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    color: t.colors.textMuted,
+  },
   group: { gap: SEARCH_RESULT_CARD_LAYOUT.gap },
   hitGap: { marginTop: SEARCH_RESULT_CARD_LAYOUT.gap },
   row: {
@@ -421,11 +457,36 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.md,
   },
   rowCopy: { flex: 1, minWidth: 0 },
-  rowTitle: { fontFamily: t.fontFamily.bodyBold, fontSize: 14.5, lineHeight: 20, color: t.colors.text },
-  rowDetail: { marginTop: 2, fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 17, color: t.colors.textMuted },
+  rowTitle: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 14.5,
+    lineHeight: 20,
+    color: t.colors.text,
+  },
+  rowDetail: {
+    marginTop: 2,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: t.colors.textMuted,
+  },
   pressed: { opacity: 0.65 },
-  notice: { flexDirection: "row", alignItems: "center", gap: t.space["3"], borderRadius: t.radius.md, backgroundColor: t.colors.bgAlt, padding: t.space["4"], marginBottom: t.space["2"] },
-  noticeText: { flex: 1, fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 17, color: t.colors.textMuted },
+  notice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors.bgAlt,
+    padding: t.space["4"],
+    marginBottom: t.space["2"],
+  },
+  noticeText: {
+    flex: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: t.colors.textMuted,
+  },
   retryPill: {
     flexShrink: 0,
     minHeight: 32,
@@ -445,6 +506,11 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
   },
-  retryText: { color: t.colors.textMuted, fontFamily: t.fontFamily.bodyBold, fontSize: t.fontSize["13"], lineHeight: 18 },
+  retryText: {
+    color: t.colors.textMuted,
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["13"],
+    lineHeight: 18,
+  },
   bottomPad: { height: t.space["8"] },
 }))

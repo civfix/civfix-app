@@ -1,6 +1,14 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs"
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from "node:fs"
 import { createRequire } from "node:module"
 import { tmpdir } from "node:os"
 import { dirname, join, relative } from "node:path"
@@ -25,7 +33,8 @@ interface BabelCore {
 }
 
 const require = createRequire(import.meta.url)
-const { lucideDirectImports, lucideBarrelExports } = require("../babel.config.js") as BabelConfigExports
+const { lucideDirectImports, lucideBarrelExports } =
+  require("../babel.config.js") as BabelConfigExports
 // community-mobile declares no @babel/core; resolve the one Metro transforms with (expo -> babel-preset-expo).
 const presetRequire = createRequire(
   createRequire(require.resolve("expo/package.json")).resolve("babel-preset-expo/package.json"),
@@ -52,7 +61,10 @@ function fakeLucide(): string {
   )
   writeFileSync(
     join(esmDir, "icons", "index.mjs"),
-    ["export { default as Check } from './check.mjs';", "export { default as House } from './house.mjs';"].join("\n"),
+    [
+      "export { default as Check } from './check.mjs';",
+      "export { default as House } from './house.mjs';",
+    ].join("\n"),
   )
   return esmDir
 }
@@ -149,9 +161,18 @@ test("any other value import that would land on a barrel fails the build", () =>
         /"Home" is not a value export of lucide-react-native\/icons/,
       ],
       ['import { Icon } from "lucide-react-native/icons"', /"Icon" is not a value export/],
-      ['import Lucide from "lucide-react-native"', /A default import of lucide-react-native would bundle every/],
-      ['import "lucide-react-native/icons"', /A side-effect import of lucide-react-native\/icons would bundle every/],
-      ['export * from "lucide-react-native"', /`export \*` from lucide-react-native would bundle every/],
+      [
+        'import Lucide from "lucide-react-native"',
+        /A default import of lucide-react-native would bundle every/,
+      ],
+      [
+        'import "lucide-react-native/icons"',
+        /A side-effect import of lucide-react-native\/icons would bundle every/,
+      ],
+      [
+        'export * from "lucide-react-native"',
+        /`export \*` from lucide-react-native would bundle every/,
+      ],
       ['export { Nope } from "lucide-react-native/icons"', /"Nope" is not a value export/],
     ]
     for (const [code, message] of cases) assert.throws(() => transform(code, esmDir), message, code)
@@ -162,11 +183,20 @@ test("a barrel the parser cannot fully read fails the build instead of silently 
   const esmDir = mkdtempSync(join(tmpdir(), "lucide-odd-"))
   try {
     mkdirSync(join(esmDir, "icons"))
-    writeFileSync(join(esmDir, "icons", "index.mjs"), "export { default as Check } from './check.mjs';\n")
+    writeFileSync(
+      join(esmDir, "icons", "index.mjs"),
+      "export { default as Check } from './check.mjs';\n",
+    )
     writeFileSync(join(esmDir, "lucide-react-native.mjs"), "\n")
-    assert.throws(() => transform('import { Check } from "lucide-react-native"', esmDir), /no exports found/)
+    assert.throws(
+      () => transform('import { Check } from "lucide-react-native"', esmDir),
+      /no exports found/,
+    )
     writeFileSync(join(esmDir, "lucide-react-native.mjs"), "export * from './icons/index.mjs';\n")
-    assert.throws(() => transform('import { Check } from "lucide-react-native"', esmDir), /unrecognized export/)
+    assert.throws(
+      () => transform('import { Check } from "lucide-react-native"', esmDir),
+      /unrecognized export/,
+    )
   } finally {
     rmSync(esmDir, { recursive: true })
   }
@@ -180,25 +210,47 @@ test("the installed barrels map every export to a module that exists, covering e
     const exports = lucideBarrelExports(join(installedEsmDir, barrel))
     const targets = new Set([...exports.values()].map(({ file }) => file))
     for (const file of targets) assert.ok(existsSync(file), file)
-    for (const icon of iconFiles) assert.ok(targets.has(join(installedEsmDir, "icons", icon)), `${barrel}: ${icon}`)
+    for (const icon of iconFiles)
+      assert.ok(targets.has(join(installedEsmDir, "icons", icon)), `${barrel}: ${icon}`)
   }
-  const root: Map<string, unknown> = lucideBarrelExports(join(installedEsmDir, "lucide-react-native.mjs"))
-  for (const name of ["Icon", "createLucideIcon", "LucideProvider", "useLucideContext", "Home", "House"]) {
+  const root: Map<string, unknown> = lucideBarrelExports(
+    join(installedEsmDir, "lucide-react-native.mjs"),
+  )
+  for (const name of [
+    "Icon",
+    "createLucideIcon",
+    "LucideProvider",
+    "useLucideContext",
+    "Home",
+    "House",
+  ]) {
     assert.ok(root.has(name), name)
   }
 })
 
 const mobileRoot = join(dirname(fileURLToPath(import.meta.url)), "..")
 const uiSrc = join(dirname(require.resolve("@civfix/ui/package.json")), "src")
-const SKIP_DIRS = new Set(["node_modules", "ios", "android", "dist", "dist-types", ".expo", "tests"])
-const LUCIDE_IMPORT = /\bfrom\s+["']lucide-react-native(?:\/icons)?["']|\bimport\s+["']lucide-react-native/
+const SKIP_DIRS = new Set([
+  "node_modules",
+  "ios",
+  "android",
+  "dist",
+  "dist-types",
+  ".expo",
+  "tests",
+])
+const LUCIDE_IMPORT =
+  /\bfrom\s+["']lucide-react-native(?:\/icons)?["']|\bimport\s+["']lucide-react-native/
 
 function lucideImportSites(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       if (!SKIP_DIRS.has(entry.name)) lucideImportSites(path, found)
-    } else if (/\.(?:[cm]?js|jsx|tsx?)$/.test(entry.name) && LUCIDE_IMPORT.test(readFileSync(path, "utf8"))) {
+    } else if (
+      /\.(?:[cm]?js|jsx|tsx?)$/.test(entry.name) &&
+      LUCIDE_IMPORT.test(readFileSync(path, "utf8"))
+    ) {
       found.push(path)
     }
   }
@@ -239,7 +291,8 @@ test("every lucide import site in the app and @civfix/ui transforms to direct im
     for (const node of moduleNodes(out, file)) {
       const source = node.source?.value ?? ""
       if (BARRELS.has(source)) {
-        const typeOnly = node.importKind === "type" || node.specifiers?.every((spec) => spec.importKind === "type")
+        const typeOnly =
+          node.importKind === "type" || node.specifiers?.every((spec) => spec.importKind === "type")
         assert.ok(typeOnly, `${relative(mobileRoot, file)} still imports a value from ${source}`)
       } else if (node.type === "ImportDeclaration" && source.startsWith(installedEsmDir)) {
         assert.ok(existsSync(source), source)

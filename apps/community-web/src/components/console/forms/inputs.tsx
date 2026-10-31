@@ -76,8 +76,10 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-export interface SelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
+export interface SelectProps extends Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "children"
+> {
   options: readonly SelectOption[]
   placeholder?: string
   invalid?: boolean

@@ -25,25 +25,46 @@ describe("report gallery: the reporter's refused items", () => {
   const SRC = reportDetailSource().replace(/\/\*[\s\S]*?\*\//g, "")
 
   it("puts the refused tile in the hero, alone, when one item was refused and nothing is ready or processing", () => {
-    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 1 })).toEqual({ hero: true, strip: 0 })
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 1 })).toEqual({
+      hero: true,
+      strip: 0,
+    })
   })
 
   it("adds a strip tile per refused item under the hero when several were refused and nothing else", () => {
-    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 3 })).toEqual({ hero: true, strip: 3 })
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 3 })).toEqual({
+      hero: true,
+      strip: 3,
+    })
   })
 
   it("gives each refused item a strip tile when something is ready", () => {
-    expect(refusedGalleryTiles({ ready: 2, processing: 0, refused: 2 })).toEqual({ hero: false, strip: 2 })
+    expect(refusedGalleryTiles({ ready: 2, processing: 0, refused: 2 })).toEqual({
+      hero: false,
+      strip: 2,
+    })
   })
 
   it("gives each refused item a strip tile when something is still processing", () => {
-    expect(refusedGalleryTiles({ ready: 0, processing: 1, refused: 1 })).toEqual({ hero: false, strip: 1 })
-    expect(refusedGalleryTiles({ ready: 1, processing: 1, refused: 2 })).toEqual({ hero: false, strip: 2 })
+    expect(refusedGalleryTiles({ ready: 0, processing: 1, refused: 1 })).toEqual({
+      hero: false,
+      strip: 1,
+    })
+    expect(refusedGalleryTiles({ ready: 1, processing: 1, refused: 2 })).toEqual({
+      hero: false,
+      strip: 2,
+    })
   })
 
   it("adds nothing for everyone else, whose count is 0", () => {
-    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 0 })).toEqual({ hero: false, strip: 0 })
-    expect(refusedGalleryTiles({ ready: 3, processing: 1, refused: 0 })).toEqual({ hero: false, strip: 0 })
+    expect(refusedGalleryTiles({ ready: 0, processing: 0, refused: 0 })).toEqual({
+      hero: false,
+      strip: 0,
+    })
+    expect(refusedGalleryTiles({ ready: 3, processing: 1, refused: 0 })).toEqual({
+      hero: false,
+      strip: 0,
+    })
   })
 
   it("builds the tiles from the report's count with the existing rejected StatusTile", () => {
@@ -58,7 +79,9 @@ describe("report gallery: the reporter's refused items", () => {
 
   it("counts the strip tiles toward showing the strip and renders them after the other tiles", () => {
     expect(SRC).toContain("{tileCount + refused.strip > 1 ? (")
-    expect(SRC).toMatch(/<StatusTile key=\{`pending-\$\{i\}`\} kind="processing" variant="thumb" \/>\s*\)\)\}\s*\{refusedTiles\}/)
+    expect(SRC).toMatch(
+      /<StatusTile key=\{`pending-\$\{i\}`\} kind="processing" variant="thumb" \/>\s*\)\)\}\s*\{refusedTiles\}/,
+    )
   })
 
   it("shows the refused strip under the processing block when nothing is ready yet", () => {
@@ -146,7 +169,7 @@ describe("report detail: share and host-an-event live in the overflow menu", () 
 
   it("carries both as PopoverMenu items with the house icons, ahead of the report-content item", () => {
     expect(SRC).toContain("const titleMenuItems: PopoverMenuItem[] = [")
-    expect(SRC).toContain('items={titleMenu.titleMenuItems}')
+    expect(SRC).toContain("items={titleMenu.titleMenuItems}")
     expect(SRC).toMatch(/key: "share",[\s\S]*?icon: "Share",[\s\S]*?onPress: onShare,/)
     expect(SRC).toMatch(/key: "host-event",[\s\S]*?icon: "Megaphone",[\s\S]*?onPress: onHostEvent,/)
     expect(SRC.indexOf('key: "share"')).toBeLessThan(SRC.indexOf('key: "host-event"'))
@@ -163,7 +186,9 @@ describe("report detail: share and host-an-event live in the overflow menu", () 
   })
 
   it("keeps each action's behaviour: the same share target, and requireAuth on hosting", () => {
-    expect(SRC).toContain('const sharePath = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })')
+    expect(SRC).toContain(
+      'const sharePath = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })',
+    )
     expect(pathForEntry({ kind: "pin", id: "CFX-12" })).toBe("/pin/CFX-12")
     expect(SRC).toMatch(/shareLink\(\{\s*title,\s*path: sharePath,/)
     expect(SRC).toMatch(

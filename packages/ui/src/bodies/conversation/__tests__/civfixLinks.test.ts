@@ -20,12 +20,28 @@ describe("classifyCivfixUrl recognises every entity shape on every civfix host",
     const at = (path: string) => classifyCivfixUrl(`https://${host}${path}`)
     expect(at("/pin/rep-1")).toMatchObject({ kind: "report", id: "rep-1", path: "/pin/rep-1" })
     expect(at("/reports/rep-1")).toMatchObject({ kind: "report", id: "rep-1", path: "/pin/rep-1" })
-    expect(at("/cleanups/evt-1")).toMatchObject({ kind: "event", id: "evt-1", path: "/cleanups/evt-1" })
+    expect(at("/cleanups/evt-1")).toMatchObject({
+      kind: "event",
+      id: "evt-1",
+      path: "/cleanups/evt-1",
+    })
     expect(at("/cleanups/CU-42-000001")).toMatchObject({ kind: "event", id: "CU-42-000001" })
-    expect(at("/e/beach-day")).toMatchObject({ kind: "event", id: "beach-day", path: "/cleanups/beach-day" })
+    expect(at("/e/beach-day")).toMatchObject({
+      kind: "event",
+      id: "beach-day",
+      path: "/cleanups/beach-day",
+    })
     expect(at("/post/post-1")).toMatchObject({ kind: "post", id: "post-1", path: "/post/post-1" })
-    expect(at("/post/post-1/thread")).toMatchObject({ kind: "post", id: "post-1", path: "/post/post-1" })
-    expect(at("/people/jane_doe")).toMatchObject({ kind: "person", id: "jane_doe", path: "/people/jane_doe" })
+    expect(at("/post/post-1/thread")).toMatchObject({
+      kind: "post",
+      id: "post-1",
+      path: "/post/post-1",
+    })
+    expect(at("/people/jane_doe")).toMatchObject({
+      kind: "person",
+      id: "jane_doe",
+      path: "/people/jane_doe",
+    })
     expect(at("/orgs/friends-of-ballona")).toMatchObject({
       kind: "org",
       id: "friends-of-ballona",
@@ -45,17 +61,25 @@ describe("classifyCivfixUrl recognises every entity shape on every civfix host",
   it("is case-insensitive on the host and tolerates the default port, a query and a hash", () => {
     expect(classifyCivfixUrl("HTTPS://WWW.CivFix.ORG/pin/rep-1")?.kind).toBe("report")
     expect(classifyCivfixUrl("https://civfix.org:443/cleanups/evt-1")?.kind).toBe("event")
-    expect(classifyCivfixUrl("https://civfix.org/cleanups/evt-1?teamInvite=abc#top")).toMatchObject({
-      kind: "event",
-      id: "evt-1",
-    })
+    expect(classifyCivfixUrl("https://civfix.org/cleanups/evt-1?teamInvite=abc#top")).toMatchObject(
+      {
+        kind: "event",
+        id: "evt-1",
+      },
+    )
     expect(classifyCivfixUrl("https://civfix.org/pin/rep-1/")?.id).toBe("rep-1")
   })
 
   it("accepts the app's own civfix:// scheme, including the triple-slash form", () => {
     expect(classifyCivfixUrl("civfix://pin/rep-1")).toMatchObject({ kind: "report", id: "rep-1" })
-    expect(classifyCivfixUrl("civfix:///cleanups/evt-1")).toMatchObject({ kind: "event", id: "evt-1" })
-    expect(classifyCivfixUrl("civfix://post/post-1/thread")).toMatchObject({ kind: "post", id: "post-1" })
+    expect(classifyCivfixUrl("civfix:///cleanups/evt-1")).toMatchObject({
+      kind: "event",
+      id: "evt-1",
+    })
+    expect(classifyCivfixUrl("civfix://post/post-1/thread")).toMatchObject({
+      kind: "post",
+      id: "post-1",
+    })
   })
 })
 
@@ -100,11 +124,18 @@ describe("classifyCivfixUrl refuses everything that is not a civfix entity page"
     expect(classifyCivfixUrl("https://civfix.org/pin/<script>")).toBeNull()
     expect(classifyCivfixUrl("https://civfix.org/pin/a b")).toBeNull()
     expect(classifyCivfixUrl(`https://civfix.org/pin/${"a".repeat(101)}`)).toBeNull()
-    expect(classifyCivfixUrl("https://civfix.org//pin//rep-1")).toMatchObject({ kind: "report", id: "rep-1" })
+    expect(classifyCivfixUrl("https://civfix.org//pin//rep-1")).toMatchObject({
+      kind: "report",
+      id: "rep-1",
+    })
   })
 
   it("civfixLinkFromPath is the same decision on a bare path", () => {
-    expect(civfixLinkFromPath("/orgs/acme")).toMatchObject({ kind: "org", id: "acme", url: "/orgs/acme" })
+    expect(civfixLinkFromPath("/orgs/acme")).toMatchObject({
+      kind: "org",
+      id: "acme",
+      url: "/orgs/acme",
+    })
     expect(civfixLinkFromPath("/orgs")).toBeNull()
     expect(civfixLinkFromPath("/nope/acme")).toBeNull()
   })
@@ -132,7 +163,9 @@ describe("planChatEmbeds decides which links in a message become cards", () => {
   })
 
   it("recognises the staging host even when the build's own origin is production", () => {
-    expect(plan("https://civfix.dev/cleanups/evt-1").refs).toMatchObject([{ kind: "event", id: "evt-1" }])
+    expect(plan("https://civfix.dev/cleanups/evt-1").refs).toMatchObject([
+      { kind: "event", id: "evt-1" },
+    ])
   })
 
   it("shows the card alone when the message is nothing but one civfix link", () => {
@@ -156,7 +189,9 @@ describe("planChatEmbeds decides which links in a message become cards", () => {
   it("keeps the text when a note, a mention, a second link or a foreign link accompanies it", () => {
     expect(plan("check this out\nhttps://civfix.org/post/post-1").linkOnly).toBe(false)
     expect(plan("https://civfix.org/post/post-1 https://civfix.org/pin/rep-1").linkOnly).toBe(false)
-    expect(plan("https://civfix.org/post/post-1 https://civfix.org/post/post-1").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/post/post-1 https://civfix.org/post/post-1").linkOnly).toBe(
+      false,
+    )
     expect(plan("https://civfix.org/post/post-1 https://example.com").linkOnly).toBe(false)
     expect(
       planChatEmbeds(
@@ -181,7 +216,9 @@ describe("planChatEmbeds decides which links in a message become cards", () => {
       ].join(" "),
     )
     expect(many.refs.map((ref) => ref.key)).toEqual(["report:rep-1", "event:evt-1"])
-    expect(plan("https://civfix.org/pin/rep-1 https://civfix.org/cleanups/evt-1", 1).refs).toHaveLength(1)
+    expect(
+      plan("https://civfix.org/pin/rep-1 https://civfix.org/cleanups/evt-1", 1).refs,
+    ).toHaveLength(1)
   })
 
   it("returns the same frozen empty plan for every embed-less message", () => {

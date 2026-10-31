@@ -35,10 +35,10 @@ export function PortraitMapPickStep({
 
   const [session, setSession] = useState<{ open: boolean; point: LatLng | null }>(() => ({
     open: visible,
-    point: visible ? value ?? null : null,
+    point: visible ? (value ?? null) : null,
   }))
   if (session.open !== visible) {
-    setSession({ open: visible, point: visible ? value ?? null : null })
+    setSession({ open: visible, point: visible ? (value ?? null) : null })
   }
   const localPoint = session.open ? session.point : null
   const setLocalPoint = useCallback(
@@ -61,7 +61,10 @@ export function PortraitMapPickStep({
     (place: AddressPick) => setLocalPoint({ lat: place.lat, lng: place.lng }),
     [setLocalPoint],
   )
-  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [setLocalPoint])
+  const onMapDrop = useCallback(
+    (lat: number, lng: number) => setLocalPoint({ lat, lng }),
+    [setLocalPoint],
+  )
 
   const confirm = useCallback(() => {
     if (!localPoint) return
@@ -119,7 +122,13 @@ export function PortraitMapPickStep({
     )
 
   return (
-    <FullWindowModal visible transparent statusBarTranslucent animationType="fade" onRequestClose={cancel}>
+    <FullWindowModal
+      visible
+      transparent
+      statusBarTranslucent
+      animationType="fade"
+      onRequestClose={cancel}
+    >
       {content}
     </FullWindowModal>
   )

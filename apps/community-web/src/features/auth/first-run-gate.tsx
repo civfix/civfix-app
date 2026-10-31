@@ -42,7 +42,12 @@ function inertOutside(el: HTMLElement): () => void {
     const parent: HTMLElement | null = node.parentElement
     if (!parent) break
     for (const sibling of Array.from(parent.children)) {
-      if (sibling === node || sibling.hasAttribute("inert") || sibling.hasAttribute(SESSION_ALERT_ATTR)) continue
+      if (
+        sibling === node ||
+        sibling.hasAttribute("inert") ||
+        sibling.hasAttribute(SESSION_ALERT_ATTR)
+      )
+        continue
       sibling.setAttribute("inert", "")
       changed.push(sibling)
     }
@@ -66,17 +71,25 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
   const [termsConfirmed, setTermsConfirmed] = React.useState(false)
 
   const { availability, checkedHandle } = useHandleAvailabilityCheck(handle, null)
-  const { trimmedHandle, handleValid, displayName, previewName, checking, available, taken, canSubmit } =
-    firstRunModel({
-      first,
-      last,
-      handle,
-      checkedHandle,
-      availability,
-      ageConfirmed,
-      termsConfirmed,
-      submitting: update.isPending,
-    })
+  const {
+    trimmedHandle,
+    handleValid,
+    displayName,
+    previewName,
+    checking,
+    available,
+    taken,
+    canSubmit,
+  } = firstRunModel({
+    first,
+    last,
+    handle,
+    checkedHandle,
+    availability,
+    ageConfirmed,
+    termsConfirmed,
+    submitting: update.isPending,
+  })
 
   const onSubmit = React.useCallback(() => {
     if (!canSubmit) return
@@ -126,9 +139,19 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
           transform: vvShift ? `translateY(${vvShift}px)` : undefined,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
           <Avatar name={previewName} seed={user.id} photoUrl={user.avatarUrl} size={72} />
-          <h2 id="first-run-title" style={{ marginTop: 14, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>
+          <h2
+            id="first-run-title"
+            style={{ marginTop: 14, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}
+          >
             {t("title")}
           </h2>
           <p className="help" style={{ marginTop: space["1"], maxWidth: 320 }}>
@@ -139,7 +162,9 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
         <div style={{ marginTop: 18 }}>
           <div className="cf-host-row">
             <div className="field">
-              <label className="input-label" htmlFor="fr-first">{t("first_name_label")}</label>
+              <label className="input-label" htmlFor="fr-first">
+                {t("first_name_label")}
+              </label>
               <input
                 id="fr-first"
                 className="input"
@@ -151,7 +176,9 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
               />
             </div>
             <div className="field">
-              <label className="input-label" htmlFor="fr-last">{t("last_name_label")}</label>
+              <label className="input-label" htmlFor="fr-last">
+                {t("last_name_label")}
+              </label>
               <input
                 id="fr-last"
                 className="input"
@@ -165,7 +192,9 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
           </div>
 
           <div className="field">
-            <label className="input-label" htmlFor="fr-handle">{t("username_label")}</label>
+            <label className="input-label" htmlFor="fr-handle">
+              {t("username_label")}
+            </label>
             <input
               id="fr-handle"
               className="input"
@@ -194,17 +223,28 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
             </p>
           </div>
 
-          <div style={{ marginBottom: space["3"], display: "flex", flexDirection: "column", gap: space["2"] }}>
+          <div
+            style={{
+              marginBottom: space["3"],
+              display: "flex",
+              flexDirection: "column",
+              gap: space["2"],
+            }}
+          >
             <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
             <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
           </div>
 
           {update.isError && (
             <p role="alert" className="cf-clean-error" style={{ marginBottom: space["2"] }}>
-              {errorMessage(update.error, {
-                VALIDATION: t("error.validation"),
-                CONFLICT: t("error.conflict"),
-              }, { fallback: t("error.fallback") })}
+              {errorMessage(
+                update.error,
+                {
+                  VALIDATION: t("error.validation"),
+                  CONFLICT: t("error.conflict"),
+                },
+                { fallback: t("error.fallback") },
+              )}
             </p>
           )}
 
@@ -216,7 +256,8 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
           >
             {update.isPending ? (
               <>
-                <Loader2 width={16} height={16} className="cf-spin" aria-hidden="true" /> {t("saving")}
+                <Loader2 width={16} height={16} className="cf-spin" aria-hidden="true" />{" "}
+                {t("saving")}
               </>
             ) : (
               t("continue")
@@ -228,7 +269,14 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
             <button
               type="button"
               onClick={() => void logout()}
-              style={{ color: "var(--bloom)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              style={{
+                color: "var(--bloom)",
+                fontWeight: 700,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
             >
               {t("sign_out")}
             </button>
@@ -255,8 +303,26 @@ function HandleHint({
   const { t } = useT("web-registration")
   if (!handle) return <>{t("handle.rule")}</>
   if (!valid) return <span style={{ color: "var(--bloom)" }}>{t("handle.invalid")}</span>
-  if (checking) return (<><Loader2 width={13} height={13} className="cf-spin" aria-hidden="true" /> {t("handle.checking")}</>)
-  if (available) return (<span style={{ color: "var(--moss-700)", display: "inline-flex", alignItems: "center", gap: 6 }}><Check width={13} height={13} aria-hidden="true" /> {t("handle.available", { handle })}</span>)
-  if (taken) return (<span style={{ color: "var(--bloom)", display: "inline-flex", alignItems: "center", gap: 6 }}><X width={13} height={13} aria-hidden="true" /> {t("handle.taken", { handle })}</span>)
+  if (checking)
+    return (
+      <>
+        <Loader2 width={13} height={13} className="cf-spin" aria-hidden="true" />{" "}
+        {t("handle.checking")}
+      </>
+    )
+  if (available)
+    return (
+      <span
+        style={{ color: "var(--moss-700)", display: "inline-flex", alignItems: "center", gap: 6 }}
+      >
+        <Check width={13} height={13} aria-hidden="true" /> {t("handle.available", { handle })}
+      </span>
+    )
+  if (taken)
+    return (
+      <span style={{ color: "var(--bloom)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <X width={13} height={13} aria-hidden="true" /> {t("handle.taken", { handle })}
+      </span>
+    )
   return <>{t("handle.rule")}</>
 }

@@ -3,7 +3,15 @@ import type { CleanupDTO, LinkedReportRef, ReportPinDTO } from "@civfix/contract
 import { computeMapBlends } from "../blend"
 
 function pin(id: string, category: ReportPinDTO["category"] = "trash"): ReportPinDTO {
-  return { id, category, lat: 34.05, lng: -118.25, status: "published", confirmCount: 0, fixedCount: 0 }
+  return {
+    id,
+    category,
+    lat: 34.05,
+    lng: -118.25,
+    status: "published",
+    confirmCount: 0,
+    fixedCount: 0,
+  }
 }
 
 function linkedRef(id: string): LinkedReportRef {
@@ -18,10 +26,7 @@ function linkedRef(id: string): LinkedReportRef {
   }
 }
 
-function cleanup(
-  id: string,
-  over: Partial<CleanupDTO> = {},
-): CleanupDTO {
+function cleanup(id: string, over: Partial<CleanupDTO> = {}): CleanupDTO {
   return {
     id,
     title: `Event ${id}`,
@@ -31,7 +36,14 @@ function cleanup(
     lng: -118.25,
     scheduledAt: "2026-06-10T00:00:00.000Z",
     status: "upcoming",
-    organizer: { id: "u1", name: "Org", followers: 0, following: 0, isFollowing: false, avatar: null },
+    organizer: {
+      id: "u1",
+      name: "Org",
+      followers: 0,
+      following: 0,
+      isFollowing: false,
+      avatar: null,
+    },
     going: 0,
     joined: false,
     bring: [],
@@ -101,6 +113,11 @@ describe("computeMapBlends", () => {
     ]
     const { blends } = computeMapBlends([], events)
     const p = blends[0]!.reports[0]!
-    expect(p).toMatchObject({ id: "r1", category: "graffiti", status: "in_progress", title: "Tagged wall" })
+    expect(p).toMatchObject({
+      id: "r1",
+      category: "graffiti",
+      status: "in_progress",
+      title: "Tagged wall",
+    })
   })
 })

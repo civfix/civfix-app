@@ -39,21 +39,33 @@ describe("readNavHistory", () => {
     expect(readNavHistory(null)).toBeNull()
     expect(readNavHistory({})).toBeNull()
     expect(readNavHistory({ civfixNav: "nope" })).toBeNull()
-    expect(readNavHistory({ civfixNav: { v: 3, seq: 1, depth: 0, beneath: null, snapshot: snapshot() } })).toBeNull()
+    expect(
+      readNavHistory({
+        civfixNav: { v: 3, seq: 1, depth: 0, beneath: null, snapshot: snapshot() },
+      }),
+    ).toBeNull()
     expect(readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 0, beneath: null } })).toBeNull()
     expect(
-      readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 0, beneath: null, snapshot: { view: "home" } } }),
+      readNavHistory({
+        civfixNav: { v: 2, seq: 1, depth: 0, beneath: null, snapshot: { view: "home" } },
+      }),
     ).toBeNull()
   })
 
   it("rejects a stamp written before the entry carried the surface beneath it", () => {
-    expect(readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 1, snapshot: snapshot() } })).toBeNull()
+    expect(
+      readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 1, snapshot: snapshot() } }),
+    ).toBeNull()
   })
 
   it("rejects an entry whose beneath is neither a restorable snapshot nor null", () => {
-    expect(readNavHistory(stampNavHistory(null, entry({ beneath: snapshot({ view: "map" }) })))).not.toBeNull()
     expect(
-      readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 1, beneath: { view: "map" }, snapshot: snapshot() } }),
+      readNavHistory(stampNavHistory(null, entry({ beneath: snapshot({ view: "map" }) }))),
+    ).not.toBeNull()
+    expect(
+      readNavHistory({
+        civfixNav: { v: 2, seq: 1, depth: 1, beneath: { view: "map" }, snapshot: snapshot() },
+      }),
     ).toBeNull()
     expect(
       readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 1, snapshot: snapshot() } }),
@@ -72,21 +84,32 @@ describe("readNavHistory", () => {
       readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: good }) }))),
     ).not.toBeNull()
     expect(
-      readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: {} as never }) }))),
-    ).toBeNull()
-    expect(
       readNavHistory(
-        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, stack: "nope" } as never }) })),
+        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: {} as never }) })),
       ),
     ).toBeNull()
     expect(
       readNavHistory(
-        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, view: "nonsense" } as never }) })),
+        stampNavHistory(
+          null,
+          entry({ snapshot: snapshot({ reportReturn: { ...good, stack: "nope" } as never }) }),
+        ),
       ),
     ).toBeNull()
     expect(
       readNavHistory(
-        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, token: "1" } as never }) })),
+        stampNavHistory(
+          null,
+          entry({ snapshot: snapshot({ reportReturn: { ...good, view: "nonsense" } as never }) }),
+        ),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(
+          null,
+          entry({ snapshot: snapshot({ reportReturn: { ...good, token: "1" } as never }) }),
+        ),
       ),
     ).toBeNull()
   })
@@ -106,11 +129,16 @@ describe("readNavHistory", () => {
 
   it("rejects a snapshot carrying a view or an entry kind the app cannot render", () => {
     expect(
-      readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ view: "nonsense" as never }) }))),
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ view: "nonsense" as never }) })),
+      ),
     ).toBeNull()
     expect(
       readNavHistory(
-        stampNavHistory(null, entry({ snapshot: snapshot({ stack: [{ kind: "nonsense" as never }] }) })),
+        stampNavHistory(
+          null,
+          entry({ snapshot: snapshot({ stack: [{ kind: "nonsense" as never }] }) }),
+        ),
       ),
     ).toBeNull()
     expect(
@@ -142,18 +170,18 @@ describe("stampNavHistory", () => {
 describe("snapshotEquals", () => {
   it("compares the view and the stack identities", () => {
     const a = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
-    expect(snapshotEquals(a, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] }))).toBe(
-      true,
-    )
+    expect(
+      snapshotEquals(a, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })),
+    ).toBe(true)
     expect(
       snapshotEquals(
         a,
         snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1", title: "t" }] }),
       ),
     ).toBe(true)
-    expect(snapshotEquals(a, snapshot({ view: "home", stack: [{ kind: "cleanup", id: "c1" }] }))).toBe(
-      false,
-    )
+    expect(
+      snapshotEquals(a, snapshot({ view: "home", stack: [{ kind: "cleanup", id: "c1" }] })),
+    ).toBe(false)
     expect(snapshotEquals(a, snapshot({ view: "events", stack: [] }))).toBe(false)
   })
 
@@ -182,7 +210,10 @@ describe("reconcilePlan", () => {
     const landed = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
     const live = snapshot({
       view: "events",
-      stack: [{ kind: "cleanup", id: "c1" }, { kind: "person", id: "p1" }],
+      stack: [
+        { kind: "cleanup", id: "c1" },
+        { kind: "person", id: "p1" },
+      ],
     })
     expect(reconcilePlan(landed, live)).toEqual({ type: "push", count: 1 })
   })
@@ -204,14 +235,18 @@ describe("reconcilePlan", () => {
     const landed = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
     expect(reconcilePlan(landed, snapshot({ view: "home", stack: [] })).type).toBe("replace")
     expect(
-      reconcilePlan(landed, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c2" }] })).type,
+      reconcilePlan(landed, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c2" }] }))
+        .type,
     ).toBe("replace")
     expect(
       reconcilePlan(
         landed,
         snapshot({
           view: "events",
-          stack: [{ kind: "person", id: "p1" }, { kind: "cleanup", id: "c1" }],
+          stack: [
+            { kind: "person", id: "p1" },
+            { kind: "cleanup", id: "c1" },
+          ],
         }),
       ).type,
     ).toBe("replace")
@@ -259,7 +294,11 @@ describe("writePlan", () => {
 
   it("traverses a pop, and overwrites in place only when there is nothing beneath to traverse to", () => {
     expect(
-      writePlan({ type: "pop", count: 1 }, entry({ depth: 2, snapshot: MAP_PIN, beneath: MAP }), MAP),
+      writePlan(
+        { type: "pop", count: 1 },
+        entry({ depth: 2, snapshot: MAP_PIN, beneath: MAP }),
+        MAP,
+      ),
     ).toEqual({ type: "traverse", steps: 1 })
     expect(
       writePlan({ type: "pop", count: 1 }, entry({ depth: 0, snapshot: MAP_PIN }), MAP),
@@ -267,9 +306,18 @@ describe("writePlan", () => {
   })
 
   it("pushes a forward transition onto a surface the entry beneath does not hold", () => {
-    for (const transition of [{ type: "push" }, { type: "select" }, { type: "reset" }, { type: "seed" }] as const) {
+    for (const transition of [
+      { type: "push" },
+      { type: "select" },
+      { type: "reset" },
+      { type: "seed" },
+    ] as const) {
       expect(
-        writePlan(transition, entry({ depth: 1, snapshot: MAP, beneath: ROOT_NAV_SNAPSHOT }), MAP_PIN),
+        writePlan(
+          transition,
+          entry({ depth: 1, snapshot: MAP, beneath: ROOT_NAV_SNAPSHOT }),
+          MAP_PIN,
+        ),
       ).toEqual({ type: "push" })
     }
   })
@@ -336,17 +384,26 @@ describe("traversalFor", () => {
 
   it("unwinds a report run all the way to the surface it was launched from", () => {
     expect(
-      traversalFor({ type: "pop", count: 1, unwind: "report" }, entry({ depth: 3, returnDepth: 0 })),
+      traversalFor(
+        { type: "pop", count: 1, unwind: "report" },
+        entry({ depth: 3, returnDepth: 0 }),
+      ),
     ).toBe(3)
     expect(
-      traversalFor({ type: "pop", count: 1, unwind: "report" }, entry({ depth: 4, returnDepth: 2 })),
+      traversalFor(
+        { type: "pop", count: 1, unwind: "report" },
+        entry({ depth: 4, returnDepth: 2 }),
+      ),
     ).toBe(2)
   })
 
   it("falls back to one step when the run has no recorded launch depth", () => {
     expect(traversalFor({ type: "pop", count: 1, unwind: "report" }, entry({ depth: 1 }))).toBe(1)
     expect(
-      traversalFor({ type: "pop", count: 1, unwind: "report" }, entry({ depth: 2, returnDepth: 2 })),
+      traversalFor(
+        { type: "pop", count: 1, unwind: "report" },
+        entry({ depth: 2, returnDepth: 2 }),
+      ),
     ).toBe(1)
   })
 })
@@ -369,9 +426,9 @@ describe("pathForSnapshot", () => {
   })
 
   it("never addresses the transient drop-pin affordance", () => {
-    expect(pathForSnapshot(snapshot({ view: "map", stack: [{ kind: "drop-pin", lat: 1, lng: 2 }] }))).toBe(
-      "/map/",
-    )
+    expect(
+      pathForSnapshot(snapshot({ view: "map", stack: [{ kind: "drop-pin", lat: 1, lng: 2 }] })),
+    ).toBe("/map/")
   })
 
   it("writes export-canonical paths, so a reload is served instead of redirected", () => {
@@ -417,7 +474,9 @@ describe("pathForSnapshot", () => {
 
 describe("web post addresses", () => {
   it("writes a post thread at the short shared address, never the /thread form", () => {
-    expect(pathForSnapshot(snapshot({ stack: [{ kind: "post-thread", id: "p1" }] }))).toBe("/post/p1/")
+    expect(pathForSnapshot(snapshot({ stack: [{ kind: "post-thread", id: "p1" }] }))).toBe(
+      "/post/p1/",
+    )
   })
 
   it("reads a shared post link as its thread on web while the shared parser keeps it a post", () => {
@@ -468,13 +527,15 @@ describe("web post aliases resolve exactly as the pre-table web copy did", () =>
   const paths = [...aliasPaths, ...entries.map(pathForEntry)]
 
   it("reads every path to the same entry", () => {
-    for (const path of paths) expect(entryFromWebPath(path), String(path)).toEqual(legacyEntryFromWebPath(path))
+    for (const path of paths)
+      expect(entryFromWebPath(path), String(path)).toEqual(legacyEntryFromWebPath(path))
   })
 
   it("writes every entry to the same address", () => {
     for (const source of entries) {
       const written = pathForSnapshot(snapshot({ stack: [source] }))
-      const legacy = source.kind === "drop-pin" ? pathForSnapshot(snapshot()) : legacyWebPathForEntry(source)
+      const legacy =
+        source.kind === "drop-pin" ? pathForSnapshot(snapshot()) : legacyWebPathForEntry(source)
       const exported = legacy.endsWith("/") ? legacy : `${legacy}/`
       expect(written, JSON.stringify(source)).toBe(exported)
     }

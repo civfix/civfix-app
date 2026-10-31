@@ -11,11 +11,8 @@ function mediaAspect(media: PostDTO["media"][number]): number {
   return media.width && media.height ? media.width / media.height : 4 / 3
 }
 
-function postMediaGridThumbUri(
-  media: PostDTO["media"][number],
-  split: boolean,
-): string | null {
-  return split ? media.thumbUrl ?? null : null
+function postMediaGridThumbUri(media: PostDTO["media"][number], split: boolean): string | null {
+  return split ? (media.thumbUrl ?? null) : null
 }
 
 export interface PostMediaGridProps {

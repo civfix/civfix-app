@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type * as ReactNative from "react-native"
-import { AppError, ErrorCode, type ReportConfirmResponse, type ReportDTO, type UserDTO } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  type ReportConfirmResponse,
+  type ReportDTO,
+  type UserDTO,
+} from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider } from "../../../data/context"
 import { makeFakeDataContext } from "../../../data/fakes"
@@ -21,7 +27,9 @@ vi.mock("../../../typography", async () => {
   return { Text, Icon: () => null, iconMap: {} }
 })
 vi.mock("../../../primitives", async () => {
-  const { useToast } = await vi.importActual<typeof ToastContextModule>("../../../primitives/toastContext")
+  const { useToast } = await vi.importActual<typeof ToastContextModule>(
+    "../../../primitives/toastContext",
+  )
   return { CATEGORY_ICONS: {}, MetaDot: () => null, useToast }
 })
 
@@ -31,7 +39,16 @@ const ME_TOO_ERROR = "Couldn't save your vote. Try again."
 
 function match(id: string, title: string): NearbyReportRow {
   return {
-    pin: { id, category: "trash", status: "published", lat: 34.1, lng: -118.3, confirmCount: 0, fixedCount: 0, title },
+    pin: {
+      id,
+      category: "trash",
+      status: "published",
+      lat: 34.1,
+      lng: -118.3,
+      confirmCount: 0,
+      fixedCount: 0,
+      title,
+    },
     distanceM: 8,
   }
 }
@@ -136,7 +153,12 @@ describe("DuplicateGate", () => {
     const call = held<ReportConfirmResponse>()
     const api = { confirmReport: vi.fn(() => call.promise) }
     const { onOpen, queryClient, toast } = renderGate({ api })
-    const cached = { id: "r1", status: "published", confirmCount: 4, confirmedByMe: false } as unknown as ReportDTO
+    const cached = {
+      id: "r1",
+      status: "published",
+      confirmCount: 4,
+      confirmedByMe: false,
+    } as unknown as ReportDTO
     queryClient.setQueryData(queryKeys.report("r1"), cached)
     const map = queryKeys.mapReports({ west: -118.4, south: 34, east: -118.2, north: 34.2 }, [])
     queryClient.setQueryData(map, { pins: [] })
@@ -145,7 +167,9 @@ describe("DuplicateGate", () => {
     fireEvent.click(meTooButtons()[0]!)
     fireEvent.click(meTooButtons()[0]!)
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await act(async () => call.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      call.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }),
+    )
 
     await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1))
     expect(onOpen).toHaveBeenCalledWith(r1)
@@ -159,7 +183,9 @@ describe("DuplicateGate", () => {
   })
 
   it("T14: shows an error and keeps the draft when the API fails, and lets the reporter try again", async () => {
-    const api = { confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))) }
+    const api = {
+      confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))),
+    }
     const { onOpen, toast } = renderGate({ api })
     const draftBefore = draft()
 
@@ -175,7 +201,9 @@ describe("DuplicateGate", () => {
   })
 
   it("T15: opens the report like a card tap when the reporter filed it", async () => {
-    const api = { confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.FORBIDDEN, "yours"))) }
+    const api = {
+      confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.FORBIDDEN, "yours"))),
+    }
     const { onOpen, toast } = renderGate({ api })
     fireEvent.click(meTooButtons()[0]!)
     await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1))
@@ -198,12 +226,16 @@ describe("DuplicateGate", () => {
 
 describe("GH#203 DuplicateGate", () => {
   it("T25: a failed I see this too shows the vote error once, keeps the draft and stays on the screen", async () => {
-    const api = { confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))) }
+    const api = {
+      confirmReport: vi.fn(async () => Promise.reject(new AppError(ErrorCode.INTERNAL, "boom"))),
+    }
     const { onOpen, toast } = renderGate({ api })
     const draftBefore = draft()
     fireEvent.click(screen.getAllByRole("button", { name: "I see this problem too" })[0]!)
     await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
-    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", {
+      variant: "error",
+    })
     await act(async () => {})
     expect(toast.show).toHaveBeenCalledTimes(1)
     expect(draft()).toBe(draftBefore)

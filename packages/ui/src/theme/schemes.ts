@@ -60,7 +60,10 @@ interface SchemeExtras {
 }
 
 /** Also the web focus ring's ink (webAffordances), so the ring and accent text cannot drift apart. */
-export const ACCENT_TEXT: Readonly<Record<ColorSchemeName, string>> = { light: "#B03A2C", dark: "#F79185" }
+export const ACCENT_TEXT: Readonly<Record<ColorSchemeName, string>> = {
+  light: "#B03A2C",
+  dark: "#F79185",
+}
 
 const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
   light: {

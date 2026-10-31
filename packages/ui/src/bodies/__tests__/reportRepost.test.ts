@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { ReportStatusSchema, type LinkedEventRef, type ReportDTO, type ReportStatus } from "@civfix/contract"
+import {
+  ReportStatusSchema,
+  type LinkedEventRef,
+  type ReportDTO,
+  type ReportStatus,
+} from "@civfix/contract"
 import { canRepostReport } from "../reportDetail/useReportRepost"
 import { usePostComposerStore } from "../postComposerStore"
 import { buildComposerReportRef, shouldClearStaleAttachedReport } from "../postComposerModel"
@@ -24,7 +29,11 @@ function report(over: Partial<ReportDTO>): ReportDTO {
 }
 
 const reportA = report({ id: "report-a", title: "Sofa on the curb" })
-const reportB = report({ id: "report-b", title: "Broken streetlight", category: "streetlight" as ReportDTO["category"] })
+const reportB = report({
+  id: "report-b",
+  title: "Broken streetlight",
+  category: "streetlight" as ReportDTO["category"],
+})
 
 const eventE: LinkedEventRef = {
   id: "event-e",
@@ -52,13 +61,19 @@ describe("canRepostReport", () => {
     },
   )
 
-  it.each<ReportStatus>(["submitted", "held", "rejected"])("T2: a public %s report cannot be reposted", (status) => {
-    expect(canRepostReport({ visibility: "public", status })).toBe(false)
-  })
+  it.each<ReportStatus>(["submitted", "held", "rejected"])(
+    "T2: a public %s report cannot be reposted",
+    (status) => {
+      expect(canRepostReport({ visibility: "public", status })).toBe(false)
+    },
+  )
 
-  it.each<ReportStatus>(ReportStatusSchema.options)("T3: a hidden %s report cannot be reposted", (status) => {
-    expect(canRepostReport({ visibility: "hidden", status })).toBe(false)
-  })
+  it.each<ReportStatus>(ReportStatusSchema.options)(
+    "T3: a hidden %s report cannot be reposted",
+    (status) => {
+      expect(canRepostReport({ visibility: "hidden", status })).toBe(false)
+    },
+  )
 
   it("T3: covers all 7 report statuses", () => {
     expect(ReportStatusSchema.options).toHaveLength(7)

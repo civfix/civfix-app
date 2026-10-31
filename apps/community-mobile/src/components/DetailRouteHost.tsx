@@ -139,7 +139,10 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
   useFocusEffect(
     useCallback(() => {
       const onBackPress = (): boolean => {
-        const action = secondaryShellBackAction(useNavStore.getState().stack.length, router.canGoBack())
+        const action = secondaryShellBackAction(
+          useNavStore.getState().stack.length,
+          router.canGoBack(),
+        )
         if (action !== "pop-detail") return false
         useNavStore.getState().back()
         return true

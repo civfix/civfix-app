@@ -49,7 +49,10 @@ describe("resolveTicketTypeId", () => {
   })
 
   it("keeps a pick when nothing else is open either, rather than hopping between sold-out types", () => {
-    const closed = [{ ...GENERAL, soldOut: true }, { ...VIP, soldOut: true }]
+    const closed = [
+      { ...GENERAL, soldOut: true },
+      { ...VIP, soldOut: true },
+    ]
     expect(resolveTicketTypeId(closed, "vip")).toBe("vip")
   })
 

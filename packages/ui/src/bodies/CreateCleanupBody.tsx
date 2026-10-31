@@ -223,7 +223,12 @@ function ReviewSummary({
         )
       : null
   const verified = value.address.trim()
-  const addr = verified.length > 0 ? verified : value.coords ? reverseLabelText(label.data, value.coords) : null
+  const addr =
+    verified.length > 0
+      ? verified
+      : value.coords
+        ? reverseLabelText(label.data, value.coords)
+        : null
   const spot = value.spot.trim()
   const bring = value.bring.join(", ")
   const slots = value.slots
@@ -283,9 +288,9 @@ function ReviewSummary({
 }
 
 interface HostSeed {
-  seedReportId?: string
-  seedPoint?: HostSeedPoint
-  seedOrganizationId?: string
+  seedReportId?: string | undefined
+  seedPoint?: HostSeedPoint | undefined
+  seedOrganizationId?: string | undefined
 }
 
 /**
@@ -301,7 +306,13 @@ function useHostDraft({ seedReportId, seedPoint, seedOrganizationId }: HostSeed)
         }
       : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
-    return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
+    return planHostDraftMount(
+      { active, value },
+      seedReportId,
+      draftSeedReportId,
+      initial,
+      seedPoint,
+    )
   })
   const startedFresh = mountPlan.startedFresh
   const [draftCommitted, setDraftCommitted] = useState(false)
@@ -330,7 +341,10 @@ function useHostDraft({ seedReportId, seedPoint, seedOrganizationId }: HostSeed)
   return { mountPlan, startedFresh, draftCommitted, form }
 }
 
-function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStandaloneHost | undefined) {
+function usePublishEvent(
+  form: CleanupFormValue,
+  standalone: CreateCleanupStandaloneHost | undefined,
+) {
   const { t } = useT("event-create")
   const { t: tShare } = useT("event-form")
   const create = useCreateCleanup()
@@ -377,7 +391,9 @@ function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStanda
     })
     if (!verifiedAddress) return
     const linkedReportIds =
-      form.eventKind === "cleanup" && form.linkedReportIds.length > 0 ? form.linkedReportIds : undefined
+      form.eventKind === "cleanup" && form.linkedReportIds.length > 0
+        ? form.linkedReportIds
+        : undefined
     const slots = buildSlotInputs(form.slots)
     const { idempotencyKey } = useCleanupDraft.getState()
     publishing.current = true
@@ -408,7 +424,10 @@ function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStanda
         onSuccess: (cleanup) => {
           haptics.success()
           const shareInput = form.shareToFeed
-            ? buildFeedShareInput({ enabled: true, caption: form.feedCaption }, { eventId: cleanup.id })
+            ? buildFeedShareInput(
+                { enabled: true, caption: form.feedCaption },
+                { eventId: cleanup.id },
+              )
             : null
           if (shareInput) {
             void createPostAsync({
@@ -456,7 +475,19 @@ function usePublishEvent(form: CleanupFormValue, standalone: CreateCleanupStanda
         },
       },
     )
-  }, [canPublish, create, createPostAsync, endsAt, form, haptics, scheduledAt, standalone, t, tShare, toast])
+  }, [
+    canPublish,
+    create,
+    createPostAsync,
+    endsAt,
+    form,
+    haptics,
+    scheduledAt,
+    standalone,
+    t,
+    tShare,
+    toast,
+  ])
 
   return { create, submitError, canPublish, onPublish }
 }
@@ -476,7 +507,9 @@ function useEventWizard({
 }) {
   const { t } = useT("event-create")
   const haptics = useHaptics()
-  const [step, setStep] = useState<EventWizardStep>(() => firstIncompleteEventStep(wizardDraftOf(initial)))
+  const [step, setStep] = useState<EventWizardStep>(() =>
+    firstIncompleteEventStep(wizardDraftOf(initial)),
+  )
   const stepIndex = eventStepIndex(step)
   const stepDirection = useStackDirection(stepIndex)
   const isReview = isFinalEventStep(step)
@@ -666,7 +699,9 @@ function HostForm({
   const wizard = useEventWizard({ form, initial: mountPlan.value, standalone })
   const { step, stepIndex, isReview } = wizard
 
-  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
+  const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(
+    null,
+  )
   const revealShareBlock = useCallback((y: number) => {
     scrollRef.current?.scrollTo?.({ y, animated: true })
   }, [])

@@ -61,7 +61,11 @@ export function SlideUpSheet({
   const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const homeIndicatorPad = insets?.bottom ?? 0
   const [sheetHeight, setSheetHeight] = useState<number | null>(null)
-  const sheetMotion = useMenuMotion({ visible, ready: sheetHeight !== null, recipes: SHEET_RECIPES })
+  const sheetMotion = useMenuMotion({
+    visible,
+    ready: sheetHeight !== null,
+    recipes: SHEET_RECIPES,
+  })
   const { rendered, progress, useNativeDriver } = sheetMotion
   const onModalDismiss = useModalClosed(rendered, onClosed)
   const anchor = useKeyboardAnchor({ enabled: rendered, restOffset: homeIndicatorPad, gap: 0 })
@@ -94,7 +98,8 @@ export function SlideUpSheet({
       }).start()
     }
     return PanResponder.create({
-      onMoveShouldSetPanResponder: (_event, gesture) => slideUpShouldCapture(gesture.dx, gesture.dy),
+      onMoveShouldSetPanResponder: (_event, gesture) =>
+        slideUpShouldCapture(gesture.dx, gesture.dy),
       onPanResponderMove: (_event, gesture) => dragY.setValue(slideUpDragOffset(gesture.dy)),
       onPanResponderRelease: (_event, gesture) => {
         if (slideUpDragOutcome(gesture.dy, gesture.vy, sheetHeightRef.current) === "dismiss") {
@@ -129,7 +134,9 @@ export function SlideUpSheet({
         accessibilityViewIsModal
         onAccessibilityEscape={onClose}
       >
-        <Animated.View style={[styles.scrim, menuScrimStyle(sheetMotion), pointerEventStyles.none]} />
+        <Animated.View
+          style={[styles.scrim, menuScrimStyle(sheetMotion), pointerEventStyles.none]}
+        />
         <Pressable
           style={styles.scrimTouch}
           accessibilityRole="button"

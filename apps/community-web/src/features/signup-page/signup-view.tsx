@@ -57,7 +57,11 @@ export function SignupView() {
       })
       .catch((error: unknown) => {
         if (cancelled) return
-        setState(toAppError(error).code === ErrorCode.NOT_FOUND ? { kind: "not_found" } : { kind: "offline" })
+        setState(
+          toAppError(error).code === ErrorCode.NOT_FOUND
+            ? { kind: "not_found" }
+            : { kind: "offline" },
+        )
       })
     return () => {
       cancelled = true

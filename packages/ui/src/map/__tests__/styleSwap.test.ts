@@ -16,19 +16,32 @@ function lightStyleWithRadius(): StyleSpecification {
     },
     layers: [
       ...base.layers,
-      { id: `${RADIUS}-fill`, type: "fill", source: RADIUS, paint: { "fill-color": "rgba(0,0,0,0.1)" } },
-      { id: `${RADIUS}-line`, type: "line", source: RADIUS, paint: { "line-color": "rgba(0,0,0,0.5)" } },
+      {
+        id: `${RADIUS}-fill`,
+        type: "fill",
+        source: RADIUS,
+        paint: { "fill-color": "rgba(0,0,0,0.1)" },
+      },
+      {
+        id: `${RADIUS}-line`,
+        type: "line",
+        source: RADIUS,
+        paint: { "line-color": "rgba(0,0,0,0.5)" },
+      },
     ],
   }
 }
 
-const darkBasemap = () => rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }) as StyleSpecification
+const darkBasemap = () =>
+  rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }) as StyleSpecification
 
 const dropsRadius = (ops: ReturnType<typeof diff>) =>
   ops.some(
     (op) =>
       (op.command === "removeSource" && op.args[0] === RADIUS) ||
-      (op.command === "removeLayer" && typeof op.args[0] === "string" && op.args[0].startsWith(RADIUS)),
+      (op.command === "removeLayer" &&
+        typeof op.args[0] === "string" &&
+        op.args[0].startsWith(RADIUS)),
   )
 
 describe("a scheme swap keeps the report picker's radius overlay", () => {
@@ -74,6 +87,8 @@ describe("the inline web LocationPicker follows the colour scheme", () => {
       )?.[0] ?? ""
     expect(effect).toContain("map.setStyle(")
     expect(effect).toContain("scheme: th.scheme")
-    expect(src).toContain("styleSchemeRef.current = themeRef.current.scheme\n    const map = new maplibregl.Map({")
+    expect(src).toContain(
+      "styleSchemeRef.current = themeRef.current.scheme\n    const map = new maplibregl.Map({",
+    )
   })
 })

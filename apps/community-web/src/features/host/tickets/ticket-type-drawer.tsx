@@ -29,11 +29,7 @@ import { useConsoleErrors } from "../error-copy"
 import { firstIssueByPath } from "../form-issues"
 import { invalidateEvent } from "../console-invalidate"
 import { useConsoleEvent } from "../console-context"
-import {
-  useConsoleInputZone,
-  useInputZoneNames,
-  zonedFieldPatch,
-} from "../format"
+import { useConsoleInputZone, useInputZoneNames, zonedFieldPatch } from "../format"
 
 interface TicketDraft {
   name: string
@@ -202,7 +198,14 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
       }
     >
       <div className="flex flex-col gap-token-4 p-token-4">
-        {restored ? <DraftRestoredBar onDiscard={() => { clear(); dismissRestored() }} /> : null}
+        {restored ? (
+          <DraftRestoredBar
+            onDiscard={() => {
+              clear()
+              dismissRestored()
+            }}
+          />
+        ) : null}
         <ErrorSummary errors={submitCount > 0 ? summary : []} submitCount={submitCount} />
 
         <Field
@@ -292,9 +295,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
           <Select
             id="ticket-visibility"
             value={draft.visibility}
-            onChange={(event) =>
-              patch({ visibility: event.target.value as TicketTypeVisibility })
-            }
+            onChange={(event) => patch({ visibility: event.target.value as TicketTypeVisibility })}
             options={[
               { value: "public", label: t("visibility.public") },
               { value: "hidden", label: t("visibility.hidden") },
@@ -308,7 +309,9 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
             announceError={false}
             label={t("field.access_code")}
             htmlFor="ticket-access-code"
-            hint={ticketType?.accessCodeSet ? t("field.access_code_set") : t("field.access_code_hint")}
+            hint={
+              ticketType?.accessCodeSet ? t("field.access_code_set") : t("field.access_code_hint")
+            }
             error={submitCount > 0 ? fieldErrors.accessCode : undefined}
           >
             <TextInput

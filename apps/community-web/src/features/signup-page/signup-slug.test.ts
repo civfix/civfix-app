@@ -56,7 +56,10 @@ describe("signupSlugFromPath", () => {
         parsed.success ? { kind: "slug", slug: parsed.data } : { kind: "invalid", raw: candidate },
       )
     }
-    expect(signupSlugFromPath("/e/%20beach-cleanup%20/")).toEqual({ kind: "slug", slug: "beach-cleanup" })
+    expect(signupSlugFromPath("/e/%20beach-cleanup%20/")).toEqual({
+      kind: "slug",
+      slug: "beach-cleanup",
+    })
   })
 
   it("lowercases a hand-typed slug", () => {

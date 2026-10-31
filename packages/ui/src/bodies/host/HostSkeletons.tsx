@@ -70,11 +70,7 @@ export function RowsSkeleton({ rows = 3, leading = true }: RowsSkeletonProps) {
             <SkeletonText width="56%" height={12} />
             <SkeletonText width="40%" height={10} />
           </View>
-          <SkeletonBlock
-            width={TRAILING_PILL}
-            height={TRAILING_PILL}
-            radius={radiusScale.pill}
-          />
+          <SkeletonBlock width={TRAILING_PILL} height={TRAILING_PILL} radius={radiusScale.pill} />
         </SkeletonGroup>
       ))}
     </SectionCard>

@@ -49,7 +49,12 @@ export function useComposerMode({
   sendTyping,
   scrollToBottom,
 }: {
-  send: (body: string, mentionedUserIds?: string[], media?: ComposerMedia[], replyToId?: string) => void
+  send: (
+    body: string,
+    mentionedUserIds?: string[],
+    media?: ComposerMedia[],
+    replyToId?: string,
+  ) => void
   edit: (messageId: string, body: string, mentionedUserIds?: string[]) => Promise<void>
   sendTyping: () => void
   scrollToBottom: () => void
@@ -66,10 +71,16 @@ export function useComposerMode({
   // Mirror of the live draft state for callbacks that must stay referentially STABLE (onOpenEdit feeds
   // every rendered Bubble via renderItem - depending on `draft` directly would re-render the whole list
   // per keystroke). Assigned on every commit (never during render), so handler reads are always fresh.
-  const draftStateRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] }>({ draft: "", mentioned: [] })
+  const draftStateRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] }>({
+    draft: "",
+    mentioned: [],
+  })
   // Same stability trick for the composer mode: onOpenReply is fed to every Bubble via renderItem and
   // must not churn when the mode or an edit save toggles.
-  const composerModeStateRef = useRef<{ mode: ComposerModeValue; editPending: boolean }>({ mode: null, editPending: false })
+  const composerModeStateRef = useRef<{ mode: ComposerModeValue; editPending: boolean }>({
+    mode: null,
+    editPending: false,
+  })
   useLayoutEffect(() => {
     draftStateRef.current = { draft, mentioned }
     composerModeStateRef.current = { mode: composerMode, editPending }
@@ -79,7 +90,11 @@ export function useComposerMode({
   const submitMode = useMemo<ComposerSubmitMode | null>(
     () =>
       composerMode
-        ? { kind: composerMode.kind, messageId: composerMode.message.id, originalBody: composerMode.message.body ?? "" }
+        ? {
+            kind: composerMode.kind,
+            messageId: composerMode.message.id,
+            originalBody: composerMode.message.body ?? "",
+          }
         : null,
     [composerMode],
   )
@@ -105,11 +120,21 @@ export function useComposerMode({
     // Edits are text-only: staged attachments stay parked in `att` (strip hidden, attach disabled
     // while editing) and are never sent with an edit; they come back when the mode ends. Gated on
     // the EDIT kind specifically: a reply is a send with a reference, media and all.
-    const media: ComposerMedia[] = submitMode?.kind === "edit"
-      ? []
-      : att.attachments.flatMap((a) =>
-          a.uploadId ? [{ uploadId: a.uploadId, kind: a.kind, localUri: a.uri, posterUri: a.posterUri ?? null }] : [],
-        )
+    const media: ComposerMedia[] =
+      submitMode?.kind === "edit"
+        ? []
+        : att.attachments.flatMap((a) =>
+            a.uploadId
+              ? [
+                  {
+                    uploadId: a.uploadId,
+                    kind: a.kind,
+                    localUri: a.uri,
+                    posterUri: a.posterUri ?? null,
+                  },
+                ]
+              : [],
+          )
     const resolved = resolveComposerSubmit(submitMode, draft, media.length > 0)
     if (resolved.action === "noop") return
     // Same mention grammar the bubble renderer tints with (mentionMatch), so a mention that reads as
@@ -136,13 +161,30 @@ export function useComposerMode({
     }
     if (att.uploading) return
     // A reply parked no draft, so its mode drops with the rest of the composer state.
-    send(resolved.body, mentionedUserIds, media, submitMode?.kind === "reply" ? submitMode.messageId : undefined)
+    send(
+      resolved.body,
+      mentionedUserIds,
+      media,
+      submitMode?.kind === "reply" ? submitMode.messageId : undefined,
+    )
     setComposerMode(null)
     setDraft("")
     att.reset()
     setMentioned([])
     scrollToBottom()
-  }, [submitMode, draft, mentioned, att, send, edit, editPending, restoreSavedDraft, toast, t, scrollToBottom])
+  }, [
+    submitMode,
+    draft,
+    mentioned,
+    att,
+    send,
+    edit,
+    editPending,
+    restoreSavedDraft,
+    toast,
+    t,
+    scrollToBottom,
+  ])
 
   // ESCAPE, the field's half of the shell ladder (`conversationFieldEscape` - see shellKeyModel's header for
   // why this rung is the FIELD's and not `ESCAPE_BLURS_FIELD`'s). One press spends the composer's own state:
@@ -154,7 +196,8 @@ export function useComposerMode({
       Platform.OS === "web"
         ? (e: TextInputKeyPressEvent) => {
             if (isComposerCancelKey(e)) {
-              if (conversationFieldEscape(composerMode !== null) === "cancel-mode") cancelComposerMode()
+              if (conversationFieldEscape(composerMode !== null) === "cancel-mode")
+                cancelComposerMode()
               else grow.ref.current?.blur()
               return
             }
@@ -166,39 +209,45 @@ export function useComposerMode({
 
   // The mention list is seeded from the message's existing mentions so the submit-time re-filter keeps
   // the ones the edited text still contains.
-  const onOpenEdit = useCallback((message: ChatMessageDTO) => {
-    // Re-entrant guard: picking Edit on message B while already editing A must NOT re-park A's
-    // in-progress edit text over the user's ORIGINAL draft - only the first entry parks.
-    savedDraftRef.current ??= { ...draftStateRef.current }
-    setComposerMode({ kind: "edit", message })
-    setDraft((message.body ?? "").slice(0, MESSAGE_BODY_MAX))
-    setMentioned(
-      (message.mentions ?? []).map((m) => ({
-        id: m.id,
-        handle: m.handle,
-        displayName: m.displayName,
-        avatar: null,
-        avatarUrl: null,
-      })),
-    )
-    // Deferred: the context-menu Modal is dismissing right now, and its teardown can swallow a
-    // synchronous focus on native - focus once it is gone.
-    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
-  }, [grow.ref])
+  const onOpenEdit = useCallback(
+    (message: ChatMessageDTO) => {
+      // Re-entrant guard: picking Edit on message B while already editing A must NOT re-park A's
+      // in-progress edit text over the user's ORIGINAL draft - only the first entry parks.
+      savedDraftRef.current ??= { ...draftStateRef.current }
+      setComposerMode({ kind: "edit", message })
+      setDraft((message.body ?? "").slice(0, MESSAGE_BODY_MAX))
+      setMentioned(
+        (message.mentions ?? []).map((m) => ({
+          id: m.id,
+          handle: m.handle,
+          displayName: m.displayName,
+          avatar: null,
+          avatarUrl: null,
+        })),
+      )
+      // Deferred: the context-menu Modal is dismissing right now, and its teardown can swallow a
+      // synchronous focus on native - focus once it is gone.
+      setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
+    },
+    [grow.ref],
+  )
 
   // Context-menu "Reply": aim the composer at the quoted message. The draft is untouched - the user
   // types alongside the quote strip, and reply NEVER parks/restores drafts. Mutual exclusivity:
   // entering reply while editing cancels the edit first (parked pre-edit draft comes back, replacing
   // the abandoned edit text); entering edit while replying just replaces the mode (onOpenEdit above).
-  const onOpenReply = useCallback((message: ChatMessageDTO) => {
-    const { mode, editPending: pending } = composerModeStateRef.current
-    // An in-flight edit save owns the composer; ignore Reply until it settles (mirrors cancel's guard).
-    if (pending) return
-    if (mode?.kind === "edit") restoreSavedDraft()
-    setComposerMode({ kind: "reply", message })
-    // Same deferred focus as edit: the context-menu Modal is tearing down right now.
-    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
-  }, [restoreSavedDraft, grow.ref])
+  const onOpenReply = useCallback(
+    (message: ChatMessageDTO) => {
+      const { mode, editPending: pending } = composerModeStateRef.current
+      // An in-flight edit save owns the composer; ignore Reply until it settles (mirrors cancel's guard).
+      if (pending) return
+      if (mode?.kind === "edit") restoreSavedDraft()
+      setComposerMode({ kind: "reply", message })
+      // Same deferred focus as edit: the context-menu Modal is tearing down right now.
+      setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
+    },
+    [restoreSavedDraft, grow.ref],
+  )
 
   const onChangeDraft = useCallback(
     (text: string) => {

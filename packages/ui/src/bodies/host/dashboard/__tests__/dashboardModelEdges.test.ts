@@ -36,7 +36,11 @@ function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
   }
 }
 
-function member(id: string, role: OrganizationMemberDTO["role"], over: Partial<OrganizationMemberDTO> = {}) {
+function member(
+  id: string,
+  role: OrganizationMemberDTO["role"],
+  over: Partial<OrganizationMemberDTO> = {},
+) {
   return {
     person: { id, name: id, handle: id, deleted: false },
     role,
@@ -49,7 +53,9 @@ function member(id: string, role: OrganizationMemberDTO["role"], over: Partial<O
 describe("dashboard error key tables", () => {
   it("maps every duplicate error code to its own key", () => {
     expect(
-      ["FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "VALIDATION", "CONFLICT", undefined].map(duplicateErrorKey),
+      ["FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "VALIDATION", "CONFLICT", undefined].map(
+        duplicateErrorKey,
+      ),
     ).toEqual([
       "events.duplicate_error_forbidden",
       "events.duplicate_error_gone",
@@ -61,7 +67,9 @@ describe("dashboard error key tables", () => {
   })
 
   it("maps every collaborator error code to its own key, with CONFLICT on the conflict line", () => {
-    expect(["CONFLICT", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", undefined].map(collaboratorErrorKey)).toEqual([
+    expect(
+      ["CONFLICT", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", undefined].map(collaboratorErrorKey),
+    ).toEqual([
       "team.error_conflict",
       "team.error_forbidden",
       "team.error_gone",
@@ -76,7 +84,9 @@ describe("dashboard error key tables", () => {
 
   it("maps every org invite error code to its own key", () => {
     expect(
-      ["NOT_FOUND", "CONFLICT", "FORBIDDEN", "RATE_LIMITED", "VALIDATION", "INTERNAL"].map(orgInviteErrorKey),
+      ["NOT_FOUND", "CONFLICT", "FORBIDDEN", "RATE_LIMITED", "VALIDATION", "INTERNAL"].map(
+        orgInviteErrorKey,
+      ),
     ).toEqual([
       "team.invite_error_no_account",
       "team.invite_error_conflict",
@@ -99,7 +109,9 @@ describe("dashboard scope edges", () => {
 
 describe("hosted event capabilities", () => {
   it("derives the legacy organizer's capabilities from the role when the server sends none", () => {
-    expect(hasHostCapability(hosted({ myCapabilities: [], myRole: "organizer" }), "manage_event")).toBe(true)
+    expect(
+      hasHostCapability(hosted({ myCapabilities: [], myRole: "organizer" }), "manage_event"),
+    ).toBe(true)
   })
 
   it("grants nothing to a row with no capabilities and no role", () => {
@@ -109,7 +121,13 @@ describe("hosted event capabilities", () => {
   })
 
   it("has no actions only when every flag is off", () => {
-    const none: HostedEventActions = { hostTools: false, chat: false, announce: false, duplicate: false, edit: false }
+    const none: HostedEventActions = {
+      hostTools: false,
+      chat: false,
+      announce: false,
+      duplicate: false,
+      edit: false,
+    }
     expect(hostedEventHasActions(none)).toBe(false)
     for (const key of Object.keys(none) as (keyof HostedEventActions)[]) {
       expect(hostedEventHasActions({ ...none, [key]: true }), key).toBe(true)
@@ -123,7 +141,10 @@ describe("hosted event capabilities", () => {
       endsAt: "2026-09-20T21:00:00.000Z",
       timezone: "America/Los_Angeles",
     })
-    expect(hostedEventWhen(hosted({ endsAt: undefined }))).toMatchObject({ endsAt: null, timezone: null })
+    expect(hostedEventWhen(hosted({ endsAt: undefined }))).toMatchObject({
+      endsAt: null,
+      timezone: null,
+    })
   })
 })
 
@@ -140,7 +161,12 @@ describe("nextUpEvent edges", () => {
 
   it("skips a cancelled row even when it is the soonest", () => {
     const rows = [
-      hosted({ id: "gone", status: "cancelled", startsAt: "2026-09-11T17:00:00.000Z", endsAt: null }),
+      hosted({
+        id: "gone",
+        status: "cancelled",
+        startsAt: "2026-09-11T17:00:00.000Z",
+        endsAt: null,
+      }),
       hosted({ id: "later", startsAt: "2026-09-15T17:00:00.000Z", endsAt: null }),
     ]
     expect(nextUpEvent(rows, now)?.event.id).toBe("later")
@@ -158,9 +184,7 @@ describe("portfolio and past-row edges", () => {
   })
 
   it("prefers credited hours over the not-logged hint", () => {
-    expect(pastRowMeta(hosted({ hoursCredited: 3, checkedInCount: 5 })).hoursToken).toBe(
-      "hours",
-    )
+    expect(pastRowMeta(hosted({ hoursCredited: 3, checkedInCount: 5 })).hoursToken).toBe("hours")
   })
 
   it("reports no turnout for a finished event with no registrations", () => {
@@ -174,7 +198,12 @@ describe("portfolio and past-row edges", () => {
 
 describe("org member edges", () => {
   it("ranks owners, admins and members, and an unknown role last", () => {
-    const rows = [member("z", "future" as never), member("m", "member"), member("a", "admin"), member("o", "owner")]
+    const rows = [
+      member("z", "future" as never),
+      member("m", "member"),
+      member("a", "admin"),
+      member("o", "owner"),
+    ]
     expect(orderedOrgMembers(rows).map((m) => m.person.id)).toEqual(["o", "a", "m", "z"])
   })
 
@@ -186,15 +215,29 @@ describe("org member edges", () => {
   })
 
   it("offers nothing on a deleted account", () => {
-    const deleted = member("d", "member", { person: { id: "d", name: "d", handle: null, deleted: true } } as never)
+    const deleted = member("d", "member", {
+      person: { id: "d", name: "d", handle: null, deleted: true },
+    } as never)
     expect(
-      orgMemberActions({ member: deleted, viewerId: null, canManage: true, canSetRole: true, lastAdmin: false }),
+      orgMemberActions({
+        member: deleted,
+        viewerId: null,
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: false,
+      }),
     ).toEqual({ roles: [], canRemove: false })
   })
 
   it("offers a promotion to admin for a member when the viewer is unknown", () => {
     expect(
-      orgMemberActions({ member: member("m", "member"), viewerId: null, canManage: true, canSetRole: true, lastAdmin: true }),
+      orgMemberActions({
+        member: member("m", "member"),
+        viewerId: null,
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: true,
+      }),
     ).toEqual({ roles: ["admin"], canRemove: true })
   })
 })

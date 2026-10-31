@@ -38,7 +38,9 @@ describe("resolveThreadAvatar", () => {
   })
 
   it("falls back to the peer's solid color + single-letter monogram when there is no photo", () => {
-    const r = resolveThreadAvatar(thread({ peer: person({ name: "Alex Rivera", avatarUrl: null }) }))
+    const r = resolveThreadAvatar(
+      thread({ peer: person({ name: "Alex Rivera", avatarUrl: null }) }),
+    )
     expect(r.photoUrl).toBeNull()
     // The seed is the peer id and the color is the peer's server avatar pair's first stop (exact match
     // to how the SAME person renders in connections/feed/profile).
@@ -50,7 +52,9 @@ describe("resolveThreadAvatar", () => {
   })
 
   it("uses avatarColor(peer id) when the peer has no server avatar pair - matching the rest of the app", () => {
-    const r = resolveThreadAvatar(thread({ peer: person({ avatar: null as never, avatarUrl: null }) }))
+    const r = resolveThreadAvatar(
+      thread({ peer: person({ avatar: null as never, avatarUrl: null }) }),
+    )
     expect(r.color).toBe(avatarColor("11111111-1111-1111-1111-111111111111"))
   })
 
