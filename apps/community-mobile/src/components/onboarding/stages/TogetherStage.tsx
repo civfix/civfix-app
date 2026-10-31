@@ -28,7 +28,11 @@ import {
   demoChatItems,
   demoCleanup,
 } from "../demoWorld"
-import { ONBOARDING_MAP_SCENES, TOGETHER_EVENT_SPOT, sceneAspectRatio } from "../onboardingMapScenes"
+import {
+  ONBOARDING_MAP_SCENES,
+  TOGETHER_EVENT_SPOT,
+  sceneAspectRatio,
+} from "../onboardingMapScenes"
 import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
@@ -121,7 +125,10 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
 
   const askBody = t("together.stage.chat_1")
   const replyBody = t("together.stage.chat_2")
-  const chat = useMemo(() => demoChatItems(askBody, replyBody, sentAt), [askBody, replyBody, sentAt])
+  const chat = useMemo(
+    () => demoChatItems(askBody, replyBody, sentAt),
+    [askBody, replyBody, sentAt],
+  )
 
   const pinStyle = useAnimatedStyle(() => {
     const drop = GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
@@ -194,7 +201,10 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
         <MapStill stage="together" style={styles.mapStrip} attributionInset={ATTRIBUTION_INSET}>
           {(frame) => (
             <Animated.View
-              style={[spotStyle(frame.at(TOGETHER_EVENT_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT), pinStyle]}
+              style={[
+                spotStyle(frame.at(TOGETHER_EVENT_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT),
+                pinStyle,
+              ]}
             >
               <EventPin size={PIN_SIZE} />
             </Animated.View>

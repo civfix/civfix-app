@@ -45,7 +45,11 @@ export function TilesStage({ live }: { live: boolean }) {
     const firstTile = tileRefs.current[0]
     if (!stage || !firstTile) return null
     const measure = () => {
-      size.current = { width: stage.clientWidth, height: stage.clientHeight, tile: firstTile.offsetWidth }
+      size.current = {
+        width: stage.clientWidth,
+        height: stage.clientHeight,
+        tile: firstTile.offsetWidth,
+      }
     }
     measure()
     const { width, tile } = size.current
@@ -154,7 +158,11 @@ export function TilesStage({ live }: { live: boolean }) {
   )
 }
 
-export function step(bodies: Body[], box: { width: number; height: number; tile: number }, dt: number) {
+export function step(
+  bodies: Body[],
+  box: { width: number; height: number; tile: number },
+  dt: number,
+) {
   const half = box.tile / 2
   const floor = box.height - half
   for (const b of bodies) {

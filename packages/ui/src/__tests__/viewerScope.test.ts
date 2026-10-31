@@ -49,19 +49,29 @@ function zustandStores(): { stores: StoreDeclaration[]; problems: string[] } {
   for (const file of sourceFiles(SRC)) {
     const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\/|(^|\s)\/\/[^\n]*/g, "$1")
     const path = relative(SRC, file)
-    for (const [, clause, module] of text.matchAll(/^import\s+((?:(?!\bfrom\b)[\s\S])*?)\s+from\s+"(zustand[^"]*)"/gm)) {
+    for (const [, clause, module] of text.matchAll(
+      /^import\s+((?:(?!\bfrom\b)[\s\S])*?)\s+from\s+"(zustand[^"]*)"/gm,
+    )) {
       if (clause!.startsWith("type ")) continue
       const named = /^\{([^}]*)\}$/.exec(clause!)
       const allowed = ZUSTAND_VALUE_IMPORTS[module!]
-      const names = named ? named[1]!.split(",").map((part) => part.trim()).filter(Boolean) : []
+      const names = named
+        ? named[1]!
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean)
+        : []
       if (!named || !allowed || names.some((name) => !allowed.includes(name))) {
         problems.push(`${path}: unrecognised zustand import \`${clause!}\` from "${module!}"`)
       }
     }
     if (!/import\s+\{[^}]*\bcreate\b[^}]*\}\s+from\s+"zustand"/.test(text)) continue
-    const bound = [...text.matchAll(/\b(?:const|let|var)\s+(\w+)\s*=\s*create\s*[<(]/g)].map((m) => m[1]!)
+    const bound = [...text.matchAll(/\b(?:const|let|var)\s+(\w+)\s*=\s*create\s*[<(]/g)].map(
+      (m) => m[1]!,
+    )
     const calls = [...text.matchAll(/(?<![\w.])create\s*[<(]/g)].length
-    if (calls !== bound.length) problems.push(`${path}: ${calls} create calls but ${bound.length} named stores`)
+    if (calls !== bound.length)
+      problems.push(`${path}: ${calls} create calls but ${bound.length} named stores`)
     for (const name of bound) stores.push({ key: `${path}:${name}`, file, name })
   }
   return { stores, problems }
@@ -88,7 +98,8 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
     "new-post ids, scoped by its own adoptViewer from the feed realtime hook",
   "bodies/linkedReportCards.ts:useLinkedReportCards":
     "public report card data, cleared when the event form closes; the linked ids live in the registered cleanup draft",
-  "bodies/reportPicker/reportPickerFilterStore.ts:useReportPickerFilters": "report picker category filters",
+  "bodies/reportPicker/reportPickerFilterStore.ts:useReportPickerFilters":
+    "report picker category filters",
   "bodies/reportFlow/useDuplicateGate.ts:useDuplicateScreen":
     "public report pins on the Possible duplicate screen, shown only while the registered report draft's checked point is theirs",
   "bodies/host/dashboard/dashboardStore.ts:useDashboardStore":
@@ -98,7 +109,8 @@ const NOT_VIEWER_SCOPED: Record<string, string> = {
   "map/mapViewportStore.ts:useMapViewport": "map viewport",
   "map/mapFocusStore.ts:useMapFocus": "focused map pin",
   "map/droppedPinStore.ts:useDroppedPin": "transient long-press pin",
-  "map/locationPickStore.ts:useLocationPick": "in-progress map location pick, reset when the picker closes",
+  "map/locationPickStore.ts:useLocationPick":
+    "in-progress map location pick, reset when the picker closes",
   // Known gap: recent searches are per-viewer but not registered, so they persist across sign-out.
   "bodies/search/searchRecentStore.ts:useSearchRecentStore": "recent searches",
 }
@@ -160,7 +172,9 @@ function expectEveryDraftWiped(): void {
 function expectEveryDraftKept(): void {
   expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("post draft")
   expect(useReplyDraftStore.getState().drafts["post-1"]?.body).toBe("reply draft")
-  expect(useReplyDraftStore.getState().drafts["post-1"]?.media.map((m) => m.uploadId)).toEqual(["upload-a"])
+  expect(useReplyDraftStore.getState().drafts["post-1"]?.media.map((m) => m.uploadId)).toEqual([
+    "upload-a",
+  ])
   const report = useDraftReportStore.getState().draft
   expect(report.description).toBe("Needle on the path by my house")
   expect(report.lat).toBe(34.0522)
@@ -179,7 +193,10 @@ describe("viewer-scoped drafts registry", () => {
     expect(problems).toEqual([])
 
     const keys = stores.map(({ key }) => key)
-    expect(Object.keys(NOT_VIEWER_SCOPED).filter((key) => !keys.includes(key)), "stale allowlist entries").toEqual([])
+    expect(
+      Object.keys(NOT_VIEWER_SCOPED).filter((key) => !keys.includes(key)),
+      "stale allowlist entries",
+    ).toEqual([])
 
     const registered: string[] = []
     for (const { key, file, name } of stores) {
@@ -190,11 +207,19 @@ describe("viewer-scoped drafts registry", () => {
         expect(isRegistered, `${key} is registered, so drop it from the allowlist`).toBe(false)
         continue
       }
-      expect(isRegistered, `${key} is neither registered with the viewer scope nor allowlisted`).toBe(true)
+      expect(
+        isRegistered,
+        `${key} is neither registered with the viewer scope nor allowlisted`,
+      ).toBe(true)
       registered.push(name)
     }
     expect(registered).toEqual(
-      expect.arrayContaining(["useCleanupDraft", "useDraftReportStore", "usePostComposerStore", "useReplyDraftStore"]),
+      expect.arrayContaining([
+        "useCleanupDraft",
+        "useDraftReportStore",
+        "usePostComposerStore",
+        "useReplyDraftStore",
+      ]),
     )
   })
 
@@ -258,7 +283,10 @@ describe("viewer-scoped drafts registry", () => {
 
     adoptViewer("user-a")
 
-    expect(useDraftReportStore.getState().draft).toMatchObject({ description: "Started as a guest", lat: 34.0522 })
+    expect(useDraftReportStore.getState().draft).toMatchObject({
+      description: "Started as a guest",
+      lat: 34.0522,
+    })
   })
 
   it("a guest report survives a later sign-in after a confirmed sign-out", () => {

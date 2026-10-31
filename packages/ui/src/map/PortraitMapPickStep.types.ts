@@ -5,7 +5,7 @@ export interface PortraitMapPickStepProps {
   visible: boolean
   value: LatLng | null
   initialCenter?: LatLng | null
-  centerSettled?: boolean
+  centerSettled?: boolean | undefined
   onConfirm: (lat: number, lng: number) => void
   onCancel: () => void
   pin: PinTarget

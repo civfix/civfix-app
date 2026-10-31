@@ -9,7 +9,12 @@ import {
 
 describe("isAttachableReport", () => {
   it("accepts the still-live report statuses", () => {
-    for (const status of ["submitted", "published", "acknowledged", "in_progress"] as ReportStatus[]) {
+    for (const status of [
+      "submitted",
+      "published",
+      "acknowledged",
+      "in_progress",
+    ] as ReportStatus[]) {
       expect(isAttachableReport({ status })).toBe(true)
     }
   })
@@ -24,7 +29,13 @@ describe("isAttachableReport", () => {
 const NOW = Date.parse("2026-09-13T18:00:00.000Z")
 const HOUR = 3_600_000
 
-const event = (over: { status?: "upcoming" | "active" | "done" | "cancelled"; startsAt?: number; endsAt?: number } = {}) => ({
+const event = (
+  over: {
+    status?: "upcoming" | "active" | "done" | "cancelled"
+    startsAt?: number
+    endsAt?: number
+  } = {},
+) => ({
   status: over.status ?? "upcoming",
   scheduledAt: new Date(over.startsAt ?? NOW + 24 * HOUR).toISOString(),
   endsAt: new Date(over.endsAt ?? (over.startsAt ?? NOW + 24 * HOUR) + 4 * HOUR).toISOString(),

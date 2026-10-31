@@ -87,7 +87,10 @@ function evict(drafts: Record<string, ReplyDraft>): Record<string, ReplyDraft> {
     for (const [key, draft] of next) {
       const empty = isEmptyDraft(draft)
       // An empty draft always beats a non-empty one; between two of the same kind, the older loses.
-      const better = victim === null || (empty && !victimEmpty) || (empty === victimEmpty && draft.updatedAt < victimAt)
+      const better =
+        victim === null ||
+        (empty && !victimEmpty) ||
+        (empty === victimEmpty && draft.updatedAt < victimAt)
       if (better) {
         victim = key
         victimAt = draft.updatedAt

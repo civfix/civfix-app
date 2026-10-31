@@ -1,7 +1,13 @@
 import { View } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import { SecondaryButton } from "../../../primitives"
-import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
+import {
+  MIN_TOUCH_TARGET,
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  inputFocusedStyle,
+} from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"
 import { TICKET_TOKEN_MAX } from "@civfix/contract"

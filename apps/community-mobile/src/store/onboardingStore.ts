@@ -39,7 +39,9 @@ export const useOnboardingStore = create<OnboardingState>()(
       storage: createJSONStorage(() => mmkvStateStorage),
       // The gate reads completedVersion live, so a reset changes only what the next launch reads; this
       // session keeps its completion, and every later write keeps storing the reset until a tour finishes.
-      partialize: (state) => ({ completedVersion: state.resetPending ? 0 : state.completedVersion }),
+      partialize: (state) => ({
+        completedVersion: state.resetPending ? 0 : state.completedVersion,
+      }),
     },
   ),
 )

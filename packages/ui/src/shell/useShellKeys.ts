@@ -31,7 +31,8 @@ export function useShellKeys(): void {
         key: event.key,
         // Both probes, so a retargeted event (a shadow root, a synthetic dispatch) cannot slip past.
         editable:
-          isEditableTarget(event.target as Element | null) || isEditableTarget(document.activeElement),
+          isEditableTarget(event.target as Element | null) ||
+          isEditableTarget(document.activeElement),
         view: nav.view,
         stackLength: nav.stack.length,
         chord: event.ctrlKey || event.metaKey || event.altKey,

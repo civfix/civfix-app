@@ -6,7 +6,10 @@
 import { useLayoutEffect, useRef } from "react"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
 
-export function directionForStackLengths(prevLen: number, nextLen: number): BodyTransitionDirection {
+export function directionForStackLengths(
+  prevLen: number,
+  nextLen: number,
+): BodyTransitionDirection {
   if (nextLen > prevLen) return "push"
   if (nextLen < prevLen) return "pop"
   return "replace"

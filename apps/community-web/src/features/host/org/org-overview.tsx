@@ -1,7 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { BadgeCheck, CalendarDays, Circle, CircleCheck, ExternalLink, Sparkles, UserPlus, Users } from "lucide-react"
+import {
+  BadgeCheck,
+  CalendarDays,
+  Circle,
+  CircleCheck,
+  ExternalLink,
+  Sparkles,
+  UserPlus,
+  Users,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useT } from "@civfix/ui/i18n"
 
@@ -125,7 +134,10 @@ export function OrgOverview() {
         >
           <div className="mb-token-3 flex flex-wrap items-start justify-between gap-token-2">
             <div>
-              <h2 id="org-next-steps" className="font-display text-token-16 font-bold text-console-ink">
+              <h2
+                id="org-next-steps"
+                className="font-display text-token-16 font-bold text-console-ink"
+              >
                 {welcome
                   ? t("next.welcome_title", {
                       name: org.name,
@@ -176,7 +188,9 @@ export function OrgOverview() {
                         <step.icon aria-hidden className="h-4 w-4 text-console-ink-3" />
                         {step.title}
                       </span>
-                      <span className="mt-0.5 block text-token-12 text-console-ink-3">{step.body}</span>
+                      <span className="mt-0.5 block text-token-12 text-console-ink-3">
+                        {step.body}
+                      </span>
                     </span>
                     {step.done ? (
                       <span className="sr-only">{t("next.done", { defaultValue: "Done" })}</span>
@@ -201,7 +215,9 @@ export function OrgOverview() {
             value={
               <span className="flex flex-wrap items-center gap-token-1">
                 <Chip kind="org-verification" value={status} size="sm" />
-                {org.verifiedKind ? <Chip kind="org-kind" value={org.verifiedKind} size="sm" /> : null}
+                {org.verifiedKind ? (
+                  <Chip kind="org-kind" value={org.verifiedKind} size="sm" />
+                ) : null}
               </span>
             }
             sub={org.verifiedAt ? format.date(org.verifiedAt) : undefined}
@@ -268,7 +284,9 @@ export function OrgOverview() {
             ) : null}
             <div className="min-w-0 flex-1">
               {org.description ? (
-                <p className="whitespace-pre-line text-token-13 text-console-ink-2">{org.description}</p>
+                <p className="whitespace-pre-line text-token-13 text-console-ink-2">
+                  {org.description}
+                </p>
               ) : (
                 <p className="text-token-13 text-console-ink-3">
                   {t("overview.no_description", {
@@ -320,7 +338,11 @@ export function OrgOverview() {
                 {t("overview.your_role", { defaultValue: "Your role" })}
               </dt>
               <dd>
-                {org.myRole ? <Chip kind="org-role" value={org.myRole} size="sm" /> : <EmptyValue />}
+                {org.myRole ? (
+                  <Chip kind="org-role" value={org.myRole} size="sm" />
+                ) : (
+                  <EmptyValue />
+                )}
               </dd>
             </div>
           </dl>

@@ -1,8 +1,21 @@
 import React, { useCallback, useEffect, useMemo } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
-import type { CleanupDTO, LinkedEventRef, OrganizationDTO, PostDTO, UserProfileDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../../theme"
+import type {
+  CleanupDTO,
+  LinkedEventRef,
+  OrganizationDTO,
+  PostDTO,
+  UserProfileDTO,
+} from "@civfix/contract"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../theme"
 import { Text } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
@@ -76,7 +89,11 @@ function EmbedFallback({ link, linkOnly, linkStyle, onOpen }: EmbedCardProps) {
   const styles = useStyles()
   if (!linkOnly) return null
   return (
-    <Text style={[styles.fallbackLink, linkStyle]} accessibilityRole="link" onPress={() => onOpen(link)}>
+    <Text
+      style={[styles.fallbackLink, linkStyle]}
+      accessibilityRole="link"
+      onPress={() => onOpen(link)}
+    >
       {link.url}
     </Text>
   )
@@ -113,7 +130,12 @@ function ReportEmbed(props: EmbedProps) {
       query={query}
       data={query.data}
       render={(report) => (
-        <LinkedReportCard report={reportToCardData(report)} layout="list" headline="title" onPress={onPress} />
+        <LinkedReportCard
+          report={reportToCardData(report)}
+          layout="list"
+          headline="title"
+          onPress={onPress}
+        />
       )}
     />
   )
@@ -140,7 +162,10 @@ function EventEmbed(props: EmbedProps) {
   const { link, onOpen } = props
   const query = useCleanup(link.id)
   const onPress = useCallback(() => onOpen(link), [onOpen, link])
-  const event = useMemo(() => (query.data ? eventRefFromCleanup(query.data) : undefined), [query.data])
+  const event = useMemo(
+    () => (query.data ? eventRefFromCleanup(query.data) : undefined),
+    [query.data],
+  )
   return (
     <EmbedShell
       {...props}
@@ -186,15 +211,10 @@ function PostEmbedCard({
   const linkedEvent = post.event ?? post.repostOf?.event ?? null
   const linkedReport = post.report ?? post.repostOf?.report ?? null
   const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null
-  const reportCard = linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null
-  const openEvent = useCallback(
-    (id: string) => onOpen(civfixEntityRef("event", id)),
-    [onOpen],
-  )
-  const openReport = useCallback(
-    (id: string) => onOpen(civfixEntityRef("report", id)),
-    [onOpen],
-  )
+  const reportCard =
+    linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null
+  const openEvent = useCallback((id: string) => onOpen(civfixEntityRef("event", id)), [onOpen])
+  const openReport = useCallback((id: string) => onOpen(civfixEntityRef("report", id)), [onOpen])
   return (
     <Pressable
       onPress={onPress}
@@ -226,7 +246,11 @@ function PostEmbedCard({
             </Text>
             {identity.official ? <VerifiedBadge size="sm" /> : null}
             {identity.affiliation ? (
-              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+              <OrgAffiliationBadge
+                organization={identity.affiliation}
+                size="sm"
+                interactive={false}
+              />
             ) : null}
           </View>
           <View style={styles.headerRow}>
@@ -245,7 +269,11 @@ function PostEmbedCard({
         </Text>
       ) : null}
       {media.length > 0 ? (
-        <PostMediaGrid media={media} radius={th.radius.md} maxHeight={POST_EMBED_MEDIA_MAX_HEIGHT} />
+        <PostMediaGrid
+          media={media}
+          radius={th.radius.md}
+          maxHeight={POST_EMBED_MEDIA_MAX_HEIGHT}
+        />
       ) : null}
       {eventCard ? (
         <LinkedEventCard
@@ -322,7 +350,11 @@ function PersonEmbedCard({ profile, onPress }: { profile: UserProfileDTO; onPres
             </Text>
             {profile.official ? <VerifiedBadge size="sm" /> : null}
             {profile.organization ? (
-              <OrgAffiliationBadge organization={profile.organization} size="sm" interactive={false} />
+              <OrgAffiliationBadge
+                organization={profile.organization}
+                size="sm"
+                interactive={false}
+              />
             ) : null}
           </View>
           <Text variant="caption" color={th.colors.textMuted} numberOfLines={1}>
@@ -375,7 +407,14 @@ function OrgEmbedCard({ org, onPress }: { org: OrganizationDTO; onPress: () => v
       ]}
     >
       <View style={styles.identityRow}>
-        <Avatar name={org.name} seed={org.id} photoUrl={org.logoUrl} size={40} style={styles.orgAvatar} decorative />
+        <Avatar
+          name={org.name}
+          seed={org.id}
+          photoUrl={org.logoUrl}
+          size={40}
+          style={styles.orgAvatar}
+          decorative
+        />
         <View style={styles.identityCol}>
           <Text variant="bodyStrong" numberOfLines={1} style={styles.name}>
             {org.name}

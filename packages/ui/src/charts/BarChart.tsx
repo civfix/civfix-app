@@ -22,7 +22,7 @@ export interface ChartBar {
   label?: string
   value: number | null
   color: string
-  stackValue?: number
+  stackValue?: number | undefined
   stackColor?: string
   valueLabel?: string
 }
@@ -60,11 +60,7 @@ export function BarChart({
   if (horizontal) {
     const measured = width > 0 ? width : null
     return (
-      <View
-        accessibilityRole="image"
-        accessibilityLabel={accessibilityLabel}
-        style={styles.rows}
-      >
+      <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.rows}>
         {bars.map((bar) => (
           <View key={bar.key} style={styles.row}>
             <View style={[styles.rowHead, measured ? { width: measured } : null]}>
@@ -118,7 +114,12 @@ export function BarChart({
   )
 
   return (
-    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.column}>
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+      style={styles.column}
+    >
       <Svg width={width} height={height}>
         {rects.map((rect, index) => {
           const bar = bars[index] as ChartBar
@@ -156,11 +157,7 @@ export function BarChart({
                 key={`${label.index}`}
                 variant="caption"
                 numberOfLines={1}
-                style={[
-                  styles.xLabel,
-                  { color: labelColor },
-                  axisLabelPlacement(position, width),
-                ]}
+                style={[styles.xLabel, { color: labelColor }, axisLabelPlacement(position, width)]}
               >
                 {label.text}
               </Text>

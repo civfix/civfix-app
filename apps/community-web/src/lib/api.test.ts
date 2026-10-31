@@ -2,7 +2,6 @@ import { describe, it, expect, afterEach, vi } from "vitest"
 import { AppError, ErrorCode, toAppError } from "@civfix/contract"
 import { createApiClient } from "@civfix/contract/client"
 
-
 function clientRespondingWith(status: number, body: unknown) {
   return createApiClient({
     baseURL: "http://api.test",
@@ -75,7 +74,10 @@ describe("the web api client's headers", () => {
         new Response(
           JSON.stringify({
             minAppVersion: { ios: null, android: null },
-            storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+            storeUrl: {
+              ios: null,
+              android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+            },
             announcement: null,
           }),
           { status: 200, headers: { "content-type": "application/json" } },
@@ -90,6 +92,8 @@ describe("the web api client's headers", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const headers = new Headers(fetchMock.mock.calls[0]![1]?.headers)
     expect(headers.get("x-client")).toBe("web")
-    expect([...headers.keys()].some((name) => name.toLowerCase() === "x-civfix-app-version")).toBe(false)
+    expect([...headers.keys()].some((name) => name.toLowerCase() === "x-civfix-app-version")).toBe(
+      false,
+    )
   })
 })

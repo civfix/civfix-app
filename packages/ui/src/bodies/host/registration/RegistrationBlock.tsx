@@ -17,9 +17,7 @@ import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "..
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
-import {
-  ModalCardSheet,
-} from "../../../primitives/ModalCardSheet"
+import { ModalCardSheet } from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
 import { joinParts } from "../../../primitives/joinParts"
 import { useAuthState, useNow, useRequireAuth } from "../../../data"
@@ -36,12 +34,7 @@ import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
 import { ConsentChecks } from "./ConsentChecks"
-import {
-  EMPTY_CONSENT,
-  consentAccepted,
-  consentPayload,
-  type ConsentState,
-} from "./consentModel"
+import { EMPTY_CONSENT, consentAccepted, consentPayload, type ConsentState } from "./consentModel"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { seedAnswers } from "./questionModel"
@@ -165,10 +158,9 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
             return
           }
           setIdempotencyKey(randomId())
-          toast.show(
-            res.outcome === "waitlisted" ? t("toast.waitlisted") : t("toast.registered"),
-            { variant: "success" },
-          )
+          toast.show(res.outcome === "waitlisted" ? t("toast.waitlisted") : t("toast.registered"), {
+            variant: "success",
+          })
         },
         onError: (err) => setErrorText(t(registerErrorKey(appErrorCode(err)))),
       },
@@ -249,7 +241,11 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
         ) : null}
         <View style={styles.actions}>
           {waitlisted ? null : (
-            <PrimaryButton label={t("mine.view_ticket")} onPress={openTicket} icon={iconMap.QrCode} />
+            <PrimaryButton
+              label={t("mine.view_ticket")}
+              onPress={openTicket}
+              icon={iconMap.QrCode}
+            />
           )}
           {mine?.canCancel === false ? null : (
             <SecondaryButton

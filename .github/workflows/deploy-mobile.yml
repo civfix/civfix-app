@@ -42,8 +42,9 @@ name: Deploy mobile (TestFlight)
 # store-build.sh checks Apple's public lookup for the live version before it builds, so a missed
 # bump fails in seconds rather than after a half-hour build.
 #
-# Every build is cold: EAS local builds do no caching, and the generated ios/ tree is regenerated
-# from a clean copy each run. Only the CocoaPods download cache is worth restoring.
+# Every build is cold: EAS local builds do no caching, the generated ios/ tree is regenerated from a
+# clean copy each run, and no dependency cache (pnpm store, CocoaPods) is restored, since a cache any
+# other run on main wrote could poison the signed build.
 
 on:
   push:
@@ -115,8 +116,9 @@ jobs:
             [ -n "${!var}" ] || { echo "::error::repository secret $var is not set; the upload to App Store Connect needs it."; exit 1; }
           done
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # Full history: the tag gate below proves the tag is an ancestor of main.
           fetch-depth: 0
 
@@ -140,13 +142,11 @@ jobs:
           fi
           echo "$tag is a release tag merged into main"
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: pnpm
+          package-manager-cache: false
       # eas-cli evaluates app.config.js in THIS checkout before it makes its own copy, and that file
       # requires @civfix/tokens from the workspace. The mobile app's postinstall builds
       # packages/tokens' dist, which that require resolves to.
@@ -185,19 +185,14 @@ jobs:
           NODE
           echo "TARGET=$target" >> "$GITHUB_ENV"
 
-      - uses: expo/expo-github-action@v9
+      - uses: expo/expo-github-action@9da89d3617bb88139671bad31b09c65714c2ee06 # 9.0.1
         with:
           # Pinned to what the developer laptops run, so CI and local builds resolve the same CLI.
           eas-version: 24.3.0
+          # The CLI that runs the signed build is installed fresh, never restored from a cache.
+          eas-cache: false
+          expo-cache: false
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Restore the CocoaPods download cache
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-cocoapods-
 
       - name: Build the ipa
         # No artifact is kept: on a public repository anyone could download it, and an App Store

@@ -14,6 +14,7 @@ export const NOINDEX_BLOCK = [
   `  ${NOINDEX_RULE}`,
 ].join("\n")
 
+/** @param {string | undefined} value */
 export function normalizeSiteOrigin(value) {
   const raw = value?.trim()
   if (!raw) return PRODUCTION_SITE_URL
@@ -27,10 +28,15 @@ export function normalizeSiteOrigin(value) {
   return parsed.origin
 }
 
+/** @param {string} siteOrigin */
 export function isProductionOrigin(siteOrigin) {
   return siteOrigin === PRODUCTION_SITE_URL
 }
 
+/**
+ * @param {string} headers
+ * @param {string} siteOrigin
+ */
 export function withNoindexRule(headers, siteOrigin) {
   if (isProductionOrigin(siteOrigin)) return headers
   if (headers.includes(NOINDEX_RULE)) return headers

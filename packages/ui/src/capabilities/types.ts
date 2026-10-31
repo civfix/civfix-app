@@ -35,7 +35,10 @@ export interface CameraViewfinderProps {
 export interface CameraCapability {
   Viewfinder?: ComponentType<CameraViewfinderProps>
   isAvailable(): boolean
-  capture(opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null>
+  capture(opts?: {
+    mode?: "photo" | "video"
+    orientation?: "portrait" | "device"
+  }): Promise<CapturedMedia | null>
   pickFromLibrary(): Promise<CapturedMedia | null>
   acceptFile?(item: unknown): Promise<CapturedMedia | null>
   // Screens a picked video against the worker's limits before it is compressed or uploaded, resolving false
@@ -48,7 +51,7 @@ export interface CameraCapability {
 export interface GeoPosition {
   latitude: number
   longitude: number
-  accuracy?: number
+  accuracy?: number | undefined
 }
 
 export interface GeolocationCapability {

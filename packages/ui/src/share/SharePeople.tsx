@@ -136,16 +136,19 @@ const PersonRow = memo(function PersonRow({
           </Text>
         ) : null}
       </View>
-      {selected ? (
-        <SelectedBadge size={ROW_CHECK_SIZE} />
-      ) : (
-        <View style={styles.rowCheckEmpty} />
-      )}
+      {selected ? <SelectedBadge size={ROW_CHECK_SIZE} /> : <View style={styles.rowCheckEmpty} />}
     </Pressable>
   )
 })
 
-export function SharePeople({ view, selected, query, searchPending, searchFailed, onToggle }: SharePeopleProps) {
+export function SharePeople({
+  view,
+  selected,
+  query,
+  searchPending,
+  searchFailed,
+  onToggle,
+}: SharePeopleProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("share-post")
@@ -153,7 +156,11 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
 
   const renderTile = useCallback(
     ({ item }: { item: UserSearchResultDTO }) => (
-      <PersonTile person={item} selected={isShareRecipient(selected, item.id)} onToggle={onToggle} />
+      <PersonTile
+        person={item}
+        selected={isShareRecipient(selected, item.id)}
+        onToggle={onToggle}
+      />
     ),
     [selected, onToggle],
   )
@@ -198,7 +205,9 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
           <ActivityIndicator color={th.colors.textSubtle} />
         ) : (
           <Text variant="caption" color={th.colors.textMuted}>
-            {searchFailed ? t("recipients.search_failed") : t("recipients.no_results", { handle: query })}
+            {searchFailed
+              ? t("recipients.search_failed")
+              : t("recipients.no_results", { handle: query })}
           </Text>
         )}
       </View>

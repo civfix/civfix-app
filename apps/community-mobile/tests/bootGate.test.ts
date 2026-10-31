@@ -21,12 +21,12 @@ import {
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 const store = readFileSync(new URL("../src/store/authStore.ts", import.meta.url), "utf8")
-const sessionCheckSource = readFileSync(new URL("../src/api/sessionCheck.ts", import.meta.url), "utf8")
-const authFlow = readFileSync(new URL("../src/hooks/useAuthFlow.ts", import.meta.url), "utf8")
-const splash = readFileSync(
-  new URL("../src/components/LoadingSplash.tsx", import.meta.url),
+const sessionCheckSource = readFileSync(
+  new URL("../src/api/sessionCheck.ts", import.meta.url),
   "utf8",
 )
+const authFlow = readFileSync(new URL("../src/hooks/useAuthFlow.ts", import.meta.url), "utf8")
+const splash = readFileSync(new URL("../src/components/LoadingSplash.tsx", import.meta.url), "utf8")
 
 function gate(over: Partial<BootGateInput>) {
   return bootGateState({
@@ -148,7 +148,14 @@ test("an elapsed time reads as the largest threshold it has reached", () => {
 })
 
 test("the gate reads the same at any elapsed time as at the threshold it has reached", () => {
-  const elapsed = [0, 1, BOOT_NOTICE_MS - 1, BOOT_NOTICE_MS, BOOT_NOTICE_MS + 1, BOOT_DEADLINE_MS - 1]
+  const elapsed = [
+    0,
+    1,
+    BOOT_NOTICE_MS - 1,
+    BOOT_NOTICE_MS,
+    BOOT_NOTICE_MS + 1,
+    BOOT_DEADLINE_MS - 1,
+  ]
   elapsed.push(BOOT_DEADLINE_MS, BOOT_DEADLINE_MS + 1, 60_000)
   for (let ms = 0; ms <= 2 * BOOT_DEADLINE_MS; ms += 250) elapsed.push(ms)
   for (const sessionPresent of [true, false, null]) {
@@ -161,7 +168,8 @@ test("the gate reads the same at any elapsed time as at the threshold it has rea
             gate({ ...input, elapsedMs }),
           )
           assert.equal(
-            gate({ ...input, elapsedMs: reachedThreshold(elapsedMs, BOOT_PHASE_THRESHOLDS_MS) }).phase,
+            gate({ ...input, elapsedMs: reachedThreshold(elapsedMs, BOOT_PHASE_THRESHOLDS_MS) })
+              .phase,
             gate({ ...input, elapsedMs }).phase,
           )
         }
@@ -287,7 +295,10 @@ test("the session restore deadline is shorter than the boot gate's own deadline"
 
 test("the session restore is bounded by that deadline, never a bare api.session()", () => {
   assert.match(store, /return sessionCheck\(SESSION_RESTORE_DEADLINE_MS\)/)
-  assert.match(sessionCheckSource, /sharedDeadlineRequest\(\(signal\) => api\.session\(\{ signal \}\), tokenGeneration\)/)
+  assert.match(
+    sessionCheckSource,
+    /sharedDeadlineRequest\(\(signal\) => api\.session\(\{ signal \}\), tokenGeneration\)/,
+  )
   assert.doesNotMatch(store, /api\.session\(/)
   assert.doesNotMatch(store, /await api\.session\(\)/)
   assert.doesNotMatch(store, /api\n?\s*\.session\(\)/)
@@ -300,7 +311,10 @@ test("a session restore that cannot reach the server records how it failed", () 
 
 test("the loading gate is bounded by the boot model, never by an open-ended auth status", () => {
   const launchGate = readFileSync(new URL("../src/boot/useLaunchGate.ts", import.meta.url), "utf8")
-  const body = launchGate.slice(launchGate.indexOf("const gateActive ="), launchGate.indexOf("const setGateActive"))
+  const body = launchGate.slice(
+    launchGate.indexOf("const gateActive ="),
+    launchGate.indexOf("const setGateActive"),
+  )
   assert.ok(body.length > 0)
   assert.match(body, /\bphase === "connecting"/)
   assert.match(launchGate, /const phase = useBootPhase\(\)/)
@@ -309,7 +323,10 @@ test("the loading gate is bounded by the boot model, never by an open-ended auth
 })
 
 test("the offline gate is what the user sees when the server cannot be reached at boot", () => {
-  assert.match(layout, /boot\.phase === "offline" \? <BootOfflineGate \/> : <AuthGate mode="loading" \/>/)
+  assert.match(
+    layout,
+    /boot\.phase === "offline" \? \(?\s*<BootOfflineGate \/>\s*\)? : \(?\s*<AuthGate mode="loading" \/>/,
+  )
 })
 
 test("the splash offers the connecting line and the retry the model asks for", () => {

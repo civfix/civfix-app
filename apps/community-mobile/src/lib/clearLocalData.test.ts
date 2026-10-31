@@ -34,14 +34,17 @@ const { keychain } = await import("../../tests/helpers/secureSessionStubs.ts")
 const { mmkvFile, mmkvFiles } = await import("../../tests/helpers/mmkvStub.ts")
 const { persistentStorage } = await import("../../tests/helpers/uiStorageStubs.ts")
 const storageIds = await import("../../../../packages/ui/src/storage/storageIds.ts")
-const { APPEARANCE_KEY, CACHED_USER_KEY, LOCALE_KEY, ONBOARDING_KEY } = await import("./mmkvKeys.ts")
+const { APPEARANCE_KEY, CACHED_USER_KEY, LOCALE_KEY, ONBOARDING_KEY } =
+  await import("./mmkvKeys.ts")
 const { PUSH_REGISTRATION_KEY } = await import("./pushRegistration.ts")
 const { DEVICE_ID_KEY } = await import("./deviceId.ts")
 const { useAuthStore } = await import("../store/authStore.ts")
 const { clearAllLocalDataAndSignOut } = await import("./clearLocalData.ts")
 
 const USER = { id: "u-1", name: "Ada" }
-const UI_STORAGE_IDS = Object.values(storageIds).flatMap((value) => (typeof value === "string" ? [value] : []))
+const UI_STORAGE_IDS = Object.values(storageIds).flatMap((value) =>
+  typeof value === "string" ? [value] : [],
+)
 
 async function settle(): Promise<void> {
   for (let i = 0; i < 10; i += 1) await new Promise((resolve) => setImmediate(resolve))
@@ -105,9 +108,18 @@ test("T14: the normal sign-out runs once, with push still registered, and finish
   assert.equal(flow.runs, 1)
   assert.equal(flow.runsAfter, 1)
   assert.equal(flow.pushStoredAtStart, true)
-  assert.ok(flow.callsBeforeRelease.includes("api.pushUnregister:t:Bearer tok"), flow.callsBeforeRelease.join("\n"))
-  assert.ok(flow.callsBeforeRelease.includes("api.logout:Bearer tok"), flow.callsBeforeRelease.join("\n"))
-  assert.ok(flow.appStorageBeforeRelease.includes(ONBOARDING_KEY), "the app storage waits for the sign-out")
+  assert.ok(
+    flow.callsBeforeRelease.includes("api.pushUnregister:t:Bearer tok"),
+    flow.callsBeforeRelease.join("\n"),
+  )
+  assert.ok(
+    flow.callsBeforeRelease.includes("api.logout:Bearer tok"),
+    flow.callsBeforeRelease.join("\n"),
+  )
+  assert.ok(
+    flow.appStorageBeforeRelease.includes(ONBOARDING_KEY),
+    "the app storage waits for the sign-out",
+  )
   assert.deepEqual(flow.filtersBeforeRelease, ["civfix.map-filters"])
 })
 

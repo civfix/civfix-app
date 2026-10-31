@@ -21,7 +21,9 @@ const OPEN = { loading: false, failed: false, manages: true, ended: true }
 
 describe("what the Log hours screen may show", () => {
   it("waits for both queries before deciding anything", () => {
-    expect(hostLogHoursGate({ ...OPEN, loading: true, manages: false, ended: false })).toBe("loading")
+    expect(hostLogHoursGate({ ...OPEN, loading: true, manages: false, ended: false })).toBe(
+      "loading",
+    )
   })
 
   it("shows an error state rather than an editor seeded from nothing", () => {
@@ -41,8 +43,7 @@ describe("what the Log hours screen may show", () => {
 
   it("opens at the very instant the shared clock calls the event over", () => {
     const event = window(NOW - 4 * HOUR, NOW)
-    const gateAt = (now: number) =>
-      hostLogHoursGate({ ...OPEN, ended: hasEventEnded(event, now) })
+    const gateAt = (now: number) => hostLogHoursGate({ ...OPEN, ended: hasEventEnded(event, now) })
     expect(gateAt(NOW - 1)).toBe("not-yet")
     expect(gateAt(NOW)).toBe("editor")
   })
@@ -56,7 +57,9 @@ describe("what the Log hours screen may show", () => {
 describe("the screen wires that gate to the shared clock", () => {
   it("derives the window from the clock rather than the stored status", () => {
     expect(body).toContain("hasEventEnded(event, now)")
-    expect(body).toContain("boundaryAt: (at) => (event === null ? null : nextEventBoundaryMs(event, at)),")
+    expect(body).toContain(
+      "boundaryAt: (at) => (event === null ? null : nextEventBoundaryMs(event, at)),",
+    )
     expect(body).toContain("idleAfterLastBoundary: true,")
     expect(body).not.toContain("Date.now()")
     expect(body).not.toMatch(/status === "done"/)
@@ -71,9 +74,9 @@ describe("the screen wires that gate to the shared clock", () => {
 
   it("renders the not-yet copy from keys that exist in every locale", () => {
     for (const locale of ["en", "es", "de", "ko"]) {
-      const catalog = JSON.parse(
-        read(`../../../i18n/locales/${locale}/host-common.json`),
-      ) as { hours?: Record<string, string> }
+      const catalog = JSON.parse(read(`../../../i18n/locales/${locale}/host-common.json`)) as {
+        hours?: Record<string, string>
+      }
       expect(catalog.hours?.not_yet_title, locale).toBeTruthy()
       expect(catalog.hours?.not_yet_body, locale).toBeTruthy()
     }

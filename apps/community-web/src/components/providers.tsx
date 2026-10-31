@@ -6,11 +6,7 @@ import { AppError } from "@civfix/contract"
 import { colorSchemes } from "@civfix/tokens"
 import { ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
-import {
-  ThemeProvider,
-  setAppearancePreferenceStore,
-  useColorSchemeName,
-} from "@civfix/ui/theme"
+import { ThemeProvider, setAppearancePreferenceStore, useColorSchemeName } from "@civfix/ui/theme"
 import {
   CapabilitiesProvider,
   makeFakeCapabilities,

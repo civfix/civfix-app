@@ -64,7 +64,7 @@ export interface PostComposerStandaloneHost {
 
 export interface PostComposerProps {
   mode?: PostComposerMode
-  targetPostId?: string
+  targetPostId?: string | undefined
   onPosted?: (post: PostDTO) => void
   standalone?: PostComposerStandaloneHost
 }
@@ -89,7 +89,12 @@ export function PostComposer(props: PostComposerProps) {
   return <PostComposerForOwner key={draftOwner ?? ""} {...props} />
 }
 
-function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalone }: PostComposerProps) {
+function PostComposerForOwner({
+  mode = "post",
+  targetPostId,
+  onPosted,
+  standalone,
+}: PostComposerProps) {
   const styles = usePostComposerStyles()
   const back = useNavStore((state) => state.back)
   const push = useNavStore((state) => state.push)
@@ -121,10 +126,10 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   const setQuotePostId = usePostComposerStore((state) => state.setQuotePostId)
   const hasPendingMedia = usePostComposerStore(selectPostComposerHasPendingMedia)
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
-  const [carriedSnapshot] = useState(() =>
-    snapshotCarriedMedia(draft.media),
+  const [carriedSnapshot] = useState(() => snapshotCarriedMedia(draft.media))
+  const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(
+    () => carriedSnapshot.carried,
   )
-  const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(() => carriedSnapshot.carried)
   const [droppedMedia, setDroppedMedia] = useState(() => carriedSnapshot.dropped)
 
   useEffect(() => {
@@ -186,18 +191,21 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
     draft,
     setOrganizationId,
   )
-  const resolution = resolvePostSubmit({
-    body: draft.body,
-    eventId: draft.attachedEventId,
-    reportId: draft.attachedReportId,
-    mediaCount: draft.media.length,
-    mediaUploadIds,
-    kind: draft.mode,
-    replyToId: draft.replyToPostId,
-    repostOfId: draft.quotePostId,
-    mentionedUserIds: activeMentions.map((user) => user.id),
-    organizationId: postAsOrganizationId,
-  }, draft.media.length === 0 || (!hasPendingMedia && mediaUploadIds.length === draft.media.length))
+  const resolution = resolvePostSubmit(
+    {
+      body: draft.body,
+      eventId: draft.attachedEventId,
+      reportId: draft.attachedReportId,
+      mediaCount: draft.media.length,
+      mediaUploadIds,
+      kind: draft.mode,
+      replyToId: draft.replyToPostId,
+      repostOfId: draft.quotePostId,
+      mentionedUserIds: activeMentions.map((user) => user.id),
+      organizationId: postAsOrganizationId,
+    },
+    draft.media.length === 0 || (!hasPendingMedia && mediaUploadIds.length === draft.media.length),
+  )
 
   const submit = () =>
     submitPost(
@@ -231,7 +239,8 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
         onPosted?.(post)
         if (onBack) onBack()
         else back()
-        if (postSubmitDestination(input.kind) === "thread") push({ kind: "post-thread", id: post.id })
+        if (postSubmitDestination(input.kind) === "thread")
+          push({ kind: "post-thread", id: post.id })
         else useFeedScrollTopStore.getState().requestScrollTop()
       },
     )
@@ -301,9 +310,17 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
             onAttachMedia={() => void attachments.onAttach()}
           />
           {quoteTargetId ? (
-            <QuotedPreview quotedRef={quotedRef} failed={quotedPost.isError} t={t} tf={tf} timeAgo={timeAgo} />
+            <QuotedPreview
+              quotedRef={quotedRef}
+              failed={quotedPost.isError}
+              t={t}
+              tf={tf}
+              timeAgo={timeAgo}
+            />
           ) : null}
-          {attachments.attachError ? <Text style={styles.error}>{attachments.attachError}</Text> : null}
+          {attachments.attachError ? (
+            <Text style={styles.error}>{attachments.attachError}</Text>
+          ) : null}
           {droppedMedia > 0 ? <Text style={styles.error}>{t("media_dropped")}</Text> : null}
           {create.isError ? <Text style={styles.error}>{t("submit_error")}</Text> : null}
 

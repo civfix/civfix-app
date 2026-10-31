@@ -2,7 +2,13 @@ import { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webInputReset,
+  focusRingProps,
+  inputFocusedStyle,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useUserSearch, normalizeUserSearchTerm } from "../data"
@@ -121,10 +127,14 @@ export function MemberPicker({
   const hasQuery = typed.length > 0
   const searchPending = search.isLoading || search.term !== typed
   // Memoized so a keystroke that has not changed the results hands the list the same `data`.
-  const suggestions = useMemo(() => filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds), [suggested, excludeIds])
+  const suggestions = useMemo(
+    () => filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds),
+    [suggested, excludeIds],
+  )
   const showSuggestions = !hasQuery && suggestions.length > 0
   const rows = useMemo(
-    () => (showSuggestions ? suggestions : filterExcluded(searchResults ?? NO_SUGGESTIONS, excludeIds)),
+    () =>
+      showSuggestions ? suggestions : filterExcluded(searchResults ?? NO_SUGGESTIONS, excludeIds),
     [showSuggestions, suggestions, searchResults, excludeIds],
   )
   const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected])
@@ -143,11 +153,7 @@ export function MemberPicker({
 
   const renderItem = useCallback(
     ({ item }: { item: UserSearchResultDTO }) => (
-      <ResultRow
-        person={item}
-        selected={selectedIds.has(item.id)}
-        onToggle={onToggle}
-      />
+      <ResultRow person={item} selected={selectedIds.has(item.id)} onToggle={onToggle} />
     ),
     [selectedIds, onToggle],
   )

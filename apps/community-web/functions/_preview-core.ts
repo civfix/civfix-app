@@ -8,11 +8,7 @@ import {
 } from "@civfix/contract"
 
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
-import {
-  PRODUCTION_SITE_URL,
-  STAGING_HOSTNAMES,
-  resolveSiteOrigin,
-} from "../src/lib/site-meta"
+import { PRODUCTION_SITE_URL, STAGING_HOSTNAMES, resolveSiteOrigin } from "../src/lib/site-meta"
 import {
   defaultPreview,
   withNoindex,
@@ -117,9 +113,7 @@ const API_PREFIX: Record<PreviewKind, string> = {
 export type PreviewOutcome = "found" | "missing" | "transient"
 
 export type PreviewRoute =
-  | { action: "browse" }
-  | { action: "shell" }
-  | { action: "preview"; id: string }
+  { action: "browse" } | { action: "shell" } | { action: "preview"; id: string }
 
 export function isValidPreviewId(kind: PreviewKind, id: string): boolean {
   return ID_PATTERNS[kind].some((pattern) => pattern.test(id))
@@ -255,11 +249,7 @@ function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: string):
   return typeof raw === "string" && isValidPreviewId(kind, raw) ? raw : fallback
 }
 
-function previewContextFor(
-  kind: PreviewKind,
-  id: string,
-  origin: string,
-): PreviewContext {
+function previewContextFor(kind: PreviewKind, id: string, origin: string): PreviewContext {
   return { url: `${origin}${CANONICAL_PREFIX[kind]}${id}`, origin }
 }
 
@@ -282,8 +272,7 @@ export function buildPreview(
 }
 
 type UpstreamBody =
-  | { body: string; outcome: "found" }
-  | { body: null; outcome: "missing" | "transient" }
+  { body: string; outcome: "found" } | { body: null; outcome: "missing" | "transient" }
 
 async function fetchUpstreamBody(
   kind: PreviewKind,
@@ -359,7 +348,13 @@ export async function runPreview(
   if (route.action === "shell" || !shell.ok) return htmlResponse(shell)
 
   const origin = resolveSiteOrigin(request.url)
-  const { payload, outcome } = await loadPayload(kind, route.id, request.url, env, context.waitUntil)
+  const { payload, outcome } = await loadPayload(
+    kind,
+    route.id,
+    request.url,
+    env,
+    context.waitUntil,
+  )
   const built =
     buildPreview(kind, payload, route.id, origin) ??
     defaultPreview(previewContextFor(kind, route.id, origin))

@@ -10,11 +10,7 @@ import Animated, {
 } from "react-native-reanimated"
 import { makeThemedStyles, space, useTheme } from "@/theme"
 import { useT } from "@civfix/ui/i18n"
-import {
-  ONBOARDING_PAGES,
-  ONBOARDING_PAGE_COUNT,
-  railSegmentState,
-} from "@/lib/onboardingPlan"
+import { ONBOARDING_PAGES, ONBOARDING_PAGE_COUNT, railSegmentState } from "@/lib/onboardingPlan"
 
 const SEGMENT_HEIGHT = space["1"]
 const SEGMENT_REST_WIDTH = space["5"]
@@ -32,9 +28,7 @@ function Segment({
   const th = useTheme()
   const styles = useStyles()
   const restColor =
-    railSegmentState(index, current) === "done"
-      ? th.colors.brand.moss
-      : th.colors.borderStrong
+    railSegmentState(index, current) === "done" ? th.colors.brand.moss : th.colors.borderStrong
   const activeColor = th.colors.brand.bloom
   const style = useAnimatedStyle(() => {
     const nearness = interpolate(

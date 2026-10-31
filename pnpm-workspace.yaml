@@ -1,3 +1,97 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Metro, the Expo config plugins and CocoaPods are proven on a flat node_modules. Both .npmrc files repeat it as
+# node-linker=hoisted, a guard this setting overrides; keep them in step.
+nodeLinker: hoisted
+autoInstallPeers: true
+strictPeerDependencies: false
+preferWorkspacePackages: true
+linkWorkspacePackages: true
+
+# A dependency that declares it cannot run on our Node must stop the install, not print a warning CI ignores.
+engineStrict: true
+
+# Supply-chain gates (civfix/issue-tracker#259 D11). A version must be a day old before it can resolve, so a
+# hijacked publish is usually caught and pulled first. @civfix/* is exempt: it is our own registry, and a fresh
+# contract or tokens publish has to be adoptable the same day. An urgent same-day security fix gets its own
+# per-package entry in minimumReleaseAgeExclude; never lower the global age.
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@civfix/*"
+# Refuse a version published with weaker provenance than the versions before it (a stolen token, not CI).
+trustPolicy: no-downgrade
+# Exact versions that fail that check only because one earlier release happened to carry provenance, each checked to
+# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one
+# attested stable release before 0.8.2). Drop each entry once the tree leaves that version. Never exclude a package
+# name without a version.
+trustPolicyExclude:
+  - react-native-worklets@0.5.1
+# A git or tarball-URL subdependency carries no publish time or provenance, so it would slip past both checks above.
+blockExoticSubdeps: true
+# A new install script must stop the install for review: skipped silently, it can also break a native binary unnoticed.
+strictDepBuilds: true
+
+# The only dependencies whose install scripts run. esbuild, unrs-resolver and workerd each check or fetch their
+# native binary; every other dependency installs without running code. The workspace's own postinstall
+# (community-mobile builds packages/tokens) is not a dependency script and still runs. Add a package here only after
+# reading its script.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+  workerd: true
+
+# The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a
+# transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with
+# two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the
+# generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the
+# iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7
+# exactly and jsdom wants 8. Drop each entry once its parent ships the fixed range itself.
+overrides:
+  react: "19.1.0"
+  react-dom: "19.1.0"
+  react-native: "0.81.5"
+  tsup>esbuild: ">=0.28.1 <0.29"
+  vite: ">=7.3.7 <8"
+  js-yaml@3: ">=3.15.1 <4"
+  js-yaml@4: ">=4.3.1 <5"
+  brace-expansion@1: ">=1.1.21 <2"
+  brace-expansion@2: ">=2.1.7 <3"
+  brace-expansion@5: ">=5.0.12 <6"
+  shell-quote: ">=1.11.0 <2"
+  nanoid@3: ">=3.3.18 <4"
+  postcss: ">=8.5.28 <9"
+  postcss-selector-parser@6: ">=7.1.6 <8"
+  browserslist: ">=4.28.9 <5"
+  uuid: ">=11.1.1 <12"
+  "@xmldom/xmldom@0.8": ">=0.8.15 <0.9"
+  "@xmldom/xmldom@0.9": ">=0.9.12 <0.10"
+  fast-uri: ">=3.1.9 <4"
+  tar: ">=7.5.21 <8"
+  undici@6: ">=6.29.1 <7"
+  undici@7: ">=7.30.1 <8"
+  compression: ">=1.8.2 <2"
+  source-map-js@1: ">=1.2.2 <2"
+  sharp: ">=0.35.5 <0.36"
+  zod@4: ">=4.6.6 <5"
+
+# No untrusted input reaches any ignored advisory; each entry says when it can go.
+auditConfig:
+  ignoreGhsas:
+    # node-forge RSA signature verification. @expo/cli uses node-forge to parse the developer's own keychain
+    # certificates in expo run:ios and, through @expo/code-signing-certificates, to sign and verify expo-updates
+    # manifests, which the app never configures (no updates block in app.config.js, expo-updates not installed), so
+    # no untrusted signature is ever verified. Remove once the lockfile resolves node-forge above 1.4.0 or @expo/cli
+    # drops it.
+    - GHSA-86w9-cpqp-85rv
+    # image-size 1 in the metro 0.83.3 that @expo/metro 54 pins exactly; 2.x drops the file-path input metro passes,
+    # and metro only measures image assets from this repo and lockfile-pinned packages at build time. Remove with
+    # Expo SDK 55 (@expo/metro 55.1 runs metro 0.83.8, which has no image-size).
+    - GHSA-5p2g-fcmc-qvqq
+    - GHSA-w3rx-r6r6-pgpr
+    # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (react-navigation 7)
+    # require()s it as a function; expo-router always supplies its own getStateFromPath and only calls query-string
+    # stringify, never its decoder. Remove with react-navigation 8, whose core no longer depends on query-string.
+    - GHSA-vcc3-ghjq-m6fr
+    - GHSA-qr28-fpjm-wq7f

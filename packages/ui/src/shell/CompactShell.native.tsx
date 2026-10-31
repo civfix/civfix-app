@@ -25,7 +25,12 @@ import { SearchHeader } from "./SearchHeader.native"
 import { SheetHeader } from "./SheetHeader.shared"
 import { COLLAPSE_SWAP_AT } from "./dragCollapse"
 import { SheetGrabHandle, makeBackground } from "./CompactSheetChrome.native"
-import { SHEET_FLOAT_SIDE, SHEET_HANDLE_HEIGHT, SHEET_HEADER_SIDE_PAD, sheetHeaderPad } from "./sheetChrome"
+import {
+  SHEET_FLOAT_SIDE,
+  SHEET_HANDLE_HEIGHT,
+  SHEET_HEADER_SIDE_PAD,
+  sheetHeaderPad,
+} from "./sheetChrome"
 import { useSheetCollapse } from "./useSheetCollapse.native"
 import { useSheetExitFreeze } from "./useSheetExitFreeze"
 import { defaultRenderBody } from "./BodyRouter"
@@ -137,7 +142,11 @@ function NativeSheetHeader({
   )
 }
 
-export function CompactShell({ renderBody = defaultRenderBody, closing = false, onClosed }: CompactShellProps) {
+export function CompactShell({
+  renderBody = defaultRenderBody,
+  closing = false,
+  onClosed,
+}: CompactShellProps) {
   const styles = useStyles()
   const { t } = useT("nav")
   // The sheet's container: the window, less what a system notice above the app takes.
@@ -177,7 +186,10 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // fresh configs because useImperativeHandle republishes `close` in a layout effect of the same commit
   // that flips `closing`, and that flushes before this component's useEffect. On Android gorhom's default
   // is already a 250ms timing, so this only changes the curve there.
-  const animationConfigs = useMemo(() => (closing ? sheetDismissConfig() : sheetMoveConfig()), [closing])
+  const animationConfigs = useMemo(
+    () => (closing ? sheetDismissConfig() : sheetMoveConfig()),
+    [closing],
+  )
 
   const { onChange, onAnimate, currentIndexRef, reportedSnapRef } = useSheetCollapse(animatedIndex)
 
@@ -265,7 +277,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // `renderBody` being referentially stable, which the module-level default is.
   const body = useMemo(() => renderBody(active, view), [renderBody, active, view])
   const showSheetHeader = active !== null || compactBottomChrome(view) !== "docked-search"
-  const bodyLayoutKey = active?.kind === "view" ? "home-view" : active?.kind ?? "home-view"
+  const bodyLayoutKey = active?.kind === "view" ? "home-view" : (active?.kind ?? "home-view")
   // Resolved through the same seam the shell uses so the two never disagree about a kind's layout; reading
   // the table raw would give a converted kind the wrong scroll host.
   const sheetBodyLayout = resolveBodyLayout(bodyLayoutKey, DETAILS_ARE_FULL_PAGE)
@@ -281,7 +293,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
       animatedIndex={animatedIndex}
       animatedPosition={animatedPosition}
       animationConfigs={animationConfigs}
-      onClose={onClosed}
+      {...(onClosed ? { onClose: onClosed } : {})}
       enableDynamicSizing={false}
       // Any inset lifts the card off the screen bottom; home-indicator clearance is content padding instead.
       bottomInset={0}
@@ -300,7 +312,9 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     >
       {/* A plain RN View, never gorhom's BottomSheetView, whose focus effect interfered with scrollable
           registration. */}
-      <View style={[styles.contentHost, { height: sheetContentHeight, marginHorizontal: CONTENT_SIDE }]}>
+      <View
+        style={[styles.contentHost, { height: sheetContentHeight, marginHorizontal: CONTENT_SIDE }]}
+      >
         {showSheetHeader ? (
           <Animated.View style={[styles.headerHost, headerVPad, headerFloatStyle]}>
             <NativeSheetHeader view={view} active={active} stack={headerStack} />

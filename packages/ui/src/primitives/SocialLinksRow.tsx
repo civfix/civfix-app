@@ -48,7 +48,9 @@ export function SocialLinksRow({ links, style }: SocialLinksRowProps) {
               void openExternal.open(url).catch(failed)
             }}
             accessibilityRole="link"
-            accessibilityLabel={t("social.link_a11y", { platform: SOCIAL_PLATFORM_LABELS[platform] })}
+            accessibilityLabel={t("social.link_a11y", {
+              platform: SOCIAL_PLATFORM_LABELS[platform],
+            })}
             hitSlop={SOCIAL_LINK_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [

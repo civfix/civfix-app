@@ -3,7 +3,11 @@ import { SWIPE_CAPTURE_SLOP_PX, startsInBackSwipeEdge } from "./backSwipeEdge"
 export const SWIPE_TRIGGER_PX = 48
 export const SWIPE_MAX_TRANSLATE_PX = 64
 
-export function shouldCaptureSwipe(dx: number, dy: number, startX = Number.POSITIVE_INFINITY): boolean {
+export function shouldCaptureSwipe(
+  dx: number,
+  dy: number,
+  startX = Number.POSITIVE_INFINITY,
+): boolean {
   if (startsInBackSwipeEdge(startX)) return false
   return dx > SWIPE_CAPTURE_SLOP_PX && dx > Math.abs(dy)
 }

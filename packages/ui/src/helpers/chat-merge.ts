@@ -76,7 +76,7 @@ export function reconcileInbound(
   message: ChatMessageDTO,
   explicitClientId?: string,
   viewerTruth = false,
-): { outbox: OutboxEntry[]; liveMessages: ChatMessageDTO[]; matchedClientId?: string } {
+): { outbox: OutboxEntry[]; liveMessages: ChatMessageDTO[]; matchedClientId?: string | undefined } {
   const cid = effectiveClientId(message, explicitClientId)
   const stamped: ChatMessageDTO =
     cid && message.clientId !== cid ? { ...message, clientId: cid } : message

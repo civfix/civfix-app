@@ -53,7 +53,10 @@ type XhrLike = {
   abort(): void
   status: number
   timeout: number
-  upload: { onprogress: ((event: { lengthComputable: boolean; loaded: number; total: number }) => void) | null } | null
+  upload: {
+    onprogress:
+      ((event: { lengthComputable: boolean; loaded: number; total: number }) => void) | null
+  } | null
   onload: (() => void) | null
   onerror: (() => void) | null
   ontimeout: (() => void) | null
@@ -134,7 +137,9 @@ function putUploadWithProgress(
     for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value)
     if (xhr.upload) {
       xhr.upload.onprogress = (event) => {
-        onProgress(progress("uploading", event.loaded, event.lengthComputable ? event.total : byteSize))
+        onProgress(
+          progress("uploading", event.loaded, event.lengthComputable ? event.total : byteSize),
+        )
       }
     }
     xhr.onload = () =>

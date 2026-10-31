@@ -10,7 +10,10 @@ const external = (url: string) => ({ type: "external", url }) as const
 const home = { type: "home" } as const
 
 test("a shared https link keeps its query and loses its trailing slash", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/abc/"), internal("/cleanups/abc"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/abc/"),
+    internal("/cleanups/abc"),
+  )
   assert.deepEqual(
     resolveIncomingPath("https://civfix.org/reports/?tab=mine"),
     internal("/reports?tab=mine"),
@@ -22,7 +25,10 @@ test("a shared https link keeps its query and loses its trailing slash", () => {
 })
 
 test("the www host is the same app", () => {
-  assert.deepEqual(resolveIncomingPath("https://www.civfix.org/people/jane/"), internal("/people/jane"))
+  assert.deepEqual(
+    resolveIncomingPath("https://www.civfix.org/people/jane/"),
+    internal("/people/jane"),
+  )
   assert.deepEqual(resolveIncomingPath("https://WWW.CIVFIX.ORG/messages/"), internal("/messages"))
 })
 
@@ -70,7 +76,10 @@ test("the event dashboard is a first-class app route", () => {
 })
 
 test("followers and following fall back to the profile that owns them", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/people/jane/followers/"), internal("/people/jane"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/people/jane/followers/"),
+    internal("/people/jane"),
+  )
   assert.deepEqual(resolveIncomingPath("/people/jane/following"), internal("/people/jane"))
   assert.deepEqual(resolveIncomingPath("/people"), internal("/people"))
   assert.deepEqual(resolveIncomingPath("/people/jane"), internal("/people/jane"))
@@ -78,7 +87,10 @@ test("followers and following fall back to the profile that owns them", () => {
 
 test("pinned messages fall back to the room they belong to", () => {
   assert.deepEqual(resolveIncomingPath("/messages/pins/dm/abc"), internal("/messages/dm/abc"))
-  assert.deepEqual(resolveIncomingPath("/messages/pins/report/abc"), internal("/messages/report/abc"))
+  assert.deepEqual(
+    resolveIncomingPath("/messages/pins/report/abc"),
+    internal("/messages/report/abc"),
+  )
   assert.deepEqual(resolveIncomingPath("/messages/pins/group/abc"), internal("/messages/group/abc"))
   assert.deepEqual(resolveIncomingPath("/messages/pins/cleanup/abc"), internal("/messages/abc"))
   assert.deepEqual(resolveIncomingPath("/messages/pins/bogus/abc"), internal("/messages"))
@@ -96,7 +108,10 @@ test("every real message room keeps its own route", () => {
 })
 
 test("a post thread permalink lands on the mobile thread screen", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/post/abc/thread/"), internal("/post/abc"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/post/abc/thread/"),
+    internal("/post/abc"),
+  )
   assert.deepEqual(resolveIncomingPath("/post/abc"), internal("/post/abc"))
 })
 
@@ -118,8 +133,17 @@ test("the saved-posts and settings surfaces are addressable", () => {
 })
 
 test("browser-only pages open in the browser with their original URL", () => {
-  for (const path of ["/guest", "/claim", "/service-record/ABC123", "/legal/terms", "/.well-known/x"]) {
-    assert.deepEqual(resolveIncomingPath(`https://civfix.org${path}/`), external(`https://civfix.org${path}/`))
+  for (const path of [
+    "/guest",
+    "/claim",
+    "/service-record/ABC123",
+    "/legal/terms",
+    "/.well-known/x",
+  ]) {
+    assert.deepEqual(
+      resolveIncomingPath(`https://civfix.org${path}/`),
+      external(`https://civfix.org${path}/`),
+    )
   }
   assert.deepEqual(
     resolveIncomingPath("https://www.civfix.org/legal/privacy/?lang=es"),
@@ -147,7 +171,10 @@ test("a scheme link gets the SAME alias table as a web link", () => {
   assert.deepEqual(resolveIncomingPath("civfix://host"), internal("/host-event"))
   assert.deepEqual(resolveIncomingPath("civfix://post/abc/thread"), internal("/post/abc"))
   assert.deepEqual(resolveIncomingPath("civfix://people/jane/followers"), internal("/people/jane"))
-  assert.deepEqual(resolveIncomingPath("civfix://messages/pins/dm/abc"), internal("/messages/dm/abc"))
+  assert.deepEqual(
+    resolveIncomingPath("civfix://messages/pins/dm/abc"),
+    internal("/messages/dm/abc"),
+  )
   assert.deepEqual(resolveIncomingPath("civfix://compose/quote/abc"), internal("/compose"))
 })
 
@@ -167,7 +194,10 @@ test("both scheme URL shapes yield the same path", () => {
   assert.deepEqual(resolveIncomingPath("civfix:///cleanups/abc"), internal("/cleanups/abc"))
   assert.deepEqual(resolveIncomingPath("civfix://cleanups/abc/"), internal("/cleanups/abc"))
   assert.deepEqual(resolveIncomingPath("CIVFIX://pin/abc"), internal("/pin/abc"))
-  assert.deepEqual(resolveIncomingPath("civfix://reports/abc/?from=push"), internal("/pin/abc?from=push"))
+  assert.deepEqual(
+    resolveIncomingPath("civfix://reports/abc/?from=push"),
+    internal("/pin/abc?from=push"),
+  )
 })
 
 test("a scheme link to the app root is the map-home", () => {
@@ -182,16 +212,22 @@ test("a browser-only root reached over a scheme goes home, never to a browser", 
 })
 
 test("the dev-client launcher URL is never rewritten in a dev build", () => {
-  const launcher = "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+  const launcher =
+    "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
   assert.deepEqual(resolveIncomingPath(launcher, { isDev: true }), internal(launcher))
   assert.deepEqual(
-    resolveIncomingPath("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081", { isDev: true }),
+    resolveIncomingPath("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081", {
+      isDev: true,
+    }),
     internal("civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"),
   )
 })
 
 test("an unrecognized scheme path goes home; only a dev build keeps a Metro URL verbatim", () => {
-  assert.deepEqual(resolveIncomingPath("exp://127.0.0.1:8081", { isDev: true }), internal("exp://127.0.0.1:8081"))
+  assert.deepEqual(
+    resolveIncomingPath("exp://127.0.0.1:8081", { isDev: true }),
+    internal("exp://127.0.0.1:8081"),
+  )
   assert.deepEqual(resolveIncomingPath("exp://127.0.0.1:8081"), home)
   assert.deepEqual(resolveIncomingPath("org.civfix.community://oauth?code=abc"), home)
 })
@@ -229,12 +265,18 @@ test("the host console and unsubscribe belong to the browser, not the app", () =
       external(`https://civfix.org${path}`),
     )
   }
-  assert.deepEqual(resolveIncomingPath("/manage/events/e1"), external("https://civfix.org/manage/events/e1"))
+  assert.deepEqual(
+    resolveIncomingPath("/manage/events/e1"),
+    external("https://civfix.org/manage/events/e1"),
+  )
   assert.deepEqual(resolveIncomingPath("civfix://manage/events/e1"), home)
 })
 
 test("an event's host surfaces each keep their own in-app route", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/host"), internal("/cleanups/c1/host"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/host"),
+    internal("/cleanups/c1/host"),
+  )
   assert.deepEqual(
     resolveIncomingPath("https://civfix.org/cleanups/c1/checkin"),
     internal("/cleanups/c1/checkin"),
@@ -243,12 +285,21 @@ test("an event's host surfaces each keep their own in-app route", () => {
     resolveIncomingPath("https://civfix.org/cleanups/c1/team"),
     internal("/cleanups/c1/team"),
   )
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/edit"), internal("/cleanups/c1/edit"))
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/nope"), internal("/cleanups/c1"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/edit"),
+    internal("/cleanups/c1/edit"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/nope"),
+    internal("/cleanups/c1"),
+  )
 })
 
 test("a ticket link keeps its seat as a PATH segment, the only form entryFromPath reads", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/ticket"), internal("/cleanups/c1/ticket"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/ticket"),
+    internal("/cleanups/c1/ticket"),
+  )
   assert.deepEqual(
     resolveIncomingPath("https://civfix.org/cleanups/c1/ticket/s2"),
     internal("/cleanups/c1/ticket/s2"),
@@ -260,7 +311,10 @@ test("a ticket link keeps its seat as a PATH segment, the only form entryFromPat
 })
 
 test("a shared signup page opens the event it belongs to, in the app's own route", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/e/beach-day"), internal("/cleanups/beach-day"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/e/beach-day"),
+    internal("/cleanups/beach-day"),
+  )
   assert.deepEqual(resolveIncomingPath("civfix://e/beach-day"), internal("/cleanups/beach-day"))
   assert.deepEqual(resolveIncomingPath("https://civfix.org/e"), home)
 })
@@ -299,7 +353,10 @@ test("an emailed team-invite link opens the event and never carries the token in
 
 test("an unrecognized app-scheme root never carries an invite token into the route", () => {
   const token = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
-  assert.deepEqual(resolveIncomingPath(`org.civfix.community://oauth?code=abc&teamInvite=${token}`), home)
+  assert.deepEqual(
+    resolveIncomingPath(`org.civfix.community://oauth?code=abc&teamInvite=${token}`),
+    home,
+  )
   assert.deepEqual(resolveIncomingPath(`civfix://oauth?teamInvite=${token}`), home)
   assert.deepEqual(resolveIncomingPath(`civfix://oauth?teamInvite=${token}#top`), home)
   assert.deepEqual(resolveIncomingPath("org.civfix.community://oauth?code=abc"), home)
@@ -425,7 +482,8 @@ test("an Object.prototype name as the root misses the route table like any unkno
 })
 
 test("dev-client launcher and Metro URLs pass through only in a dev build", () => {
-  const launcher = "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+  const launcher =
+    "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
   const lanLauncher = "civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"
   const metro = "exp://127.0.0.1:8081"
   for (const link of [launcher, lanLauncher, metro]) {
@@ -451,11 +509,20 @@ test("an outside link can never name the peer of a conversation", () => {
 })
 
 test("each route keeps only the query parameters it allows", () => {
-  assert.deepEqual(resolveIncomingPath("/pin/r1?from=share&peerName=x&next=/y"), internal("/pin/r1?from=share"))
+  assert.deepEqual(
+    resolveIncomingPath("/pin/r1?from=share&peerName=x&next=/y"),
+    internal("/pin/r1?from=share"),
+  )
   assert.deepEqual(resolveIncomingPath("/pin/r1?roomKind=dm"), internal("/pin/r1"))
-  assert.deepEqual(resolveIncomingPath("/cleanups/c1?next=/pin/x&session=s"), internal("/cleanups/c1"))
+  assert.deepEqual(
+    resolveIncomingPath("/cleanups/c1?next=/pin/x&session=s"),
+    internal("/cleanups/c1"),
+  )
   assert.deepEqual(resolveIncomingPath("/cleanups/c1?tab=mine"), internal("/cleanups/c1"))
-  assert.deepEqual(resolveIncomingPath("/reports?tab=mine&email=a@b.c"), internal("/reports?tab=mine"))
+  assert.deepEqual(
+    resolveIncomingPath("/reports?tab=mine&email=a@b.c"),
+    internal("/reports?tab=mine"),
+  )
   assert.deepEqual(resolveIncomingPath("civfix://settings?email=a@b.c"), internal("/settings"))
 })
 
@@ -479,14 +546,26 @@ test("an event's announcements and analytics and an org's manage page open their
     resolveIncomingPath("https://civfix.org/cleanups/c1/announcements/"),
     internal("/cleanups/c1/announcements"),
   )
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/analytics"), internal("/cleanups/c1/analytics"))
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/manage"), internal("/orgs/acme/manage"))
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/host/analytics"), internal("/host/analytics"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/analytics"),
+    internal("/cleanups/c1/analytics"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/orgs/acme/manage"),
+    internal("/orgs/acme/manage"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/host/analytics"),
+    internal("/host/analytics"),
+  )
   assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/nope"), internal("/orgs/acme"))
 })
 
 test("the web-only announce composer falls back to the event, since mobile has no route for it", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/announce"), internal("/cleanups/c1"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/announce"),
+    internal("/cleanups/c1"),
+  )
 })
 
 const APP_DIR = fileURLToPath(new URL("../../app/", import.meta.url))
@@ -495,7 +574,9 @@ function routeFileExists(dir: string, segments: readonly string[]): boolean {
   const entries = readdirSync(dir)
   if (segments.length === 0) return entries.includes("index.tsx")
   const [head, ...rest] = segments
-  const dynamic = entries.filter((entry) => /^\[[^\]]+\](\.tsx)?$/.test(entry)).map((entry) => entry.replace(/\.tsx$/, ""))
+  const dynamic = entries
+    .filter((entry) => /^\[[^\]]+\](\.tsx)?$/.test(entry))
+    .map((entry) => entry.replace(/\.tsx$/, ""))
   return [head!, ...dynamic].some((name) => {
     if (rest.length === 0 && entries.includes(`${name}.tsx`)) return true
     const child = join(dir, name)
@@ -509,6 +590,9 @@ test("every in-app link lands on a route file that exists", () => {
     assert.equal(resolved.type, "internal", link)
     if (resolved.type !== "internal") continue
     const pathname = resolved.path.split("?")[0]!
-    assert.ok(routeFileExists(APP_DIR, pathname.split("/").filter(Boolean)), `${link} -> ${pathname}`)
+    assert.ok(
+      routeFileExists(APP_DIR, pathname.split("/").filter(Boolean)),
+      `${link} -> ${pathname}`,
+    )
   }
 })

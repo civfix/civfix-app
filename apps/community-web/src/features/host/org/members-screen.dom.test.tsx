@@ -130,8 +130,11 @@ describe("SETTABLE_ORG_ROLES", () => {
       ).toBe(true)
     }
     expect(
-      SetOrganizationMemberRoleRequestSchema.safeParse({ id: ORG_ID, userId: MEMBER_ID, role: "owner" })
-        .success,
+      SetOrganizationMemberRoleRequestSchema.safeParse({
+        id: ORG_ID,
+        userId: MEMBER_ID,
+        role: "owner",
+      }).success,
     ).toBe(false)
   })
 })
@@ -185,7 +188,10 @@ describe("MembersScreen removal", () => {
     const { client } = renderMembers([
       OWNER_ROW,
       member(),
-      member({ person: person({ id: "55555555-5555-4555-8555-555555555555", name: "Sam" }), canRemove: false }),
+      member({
+        person: person({ id: "55555555-5555-4555-8555-555555555555", name: "Sam" }),
+        canRemove: false,
+      }),
     ])
     await screen.findByText("Sam")
     expect(screen.queryByRole("button", { name: "remove.a11y(name=Sam)" })).toBeNull()
@@ -198,7 +204,10 @@ describe("MembersScreen removal", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "remove.action" }))
     await waitFor(() =>
-      expect(client.removeOrganizationMember).toHaveBeenCalledWith({ id: ORG_ID, userId: MEMBER_ID }),
+      expect(client.removeOrganizationMember).toHaveBeenCalledWith({
+        id: ORG_ID,
+        userId: MEMBER_ID,
+      }),
     )
   })
 })
@@ -279,7 +288,11 @@ describe("MembersScreen pending invites", () => {
           status: "expired",
           expiresAt: new Date(Date.now() - DAY_MS).toISOString(),
         }),
-        invite({ id: "77777777-7777-4777-8777-777777777777", email: "gone@example.org", status: "revoked" }),
+        invite({
+          id: "77777777-7777-4777-8777-777777777777",
+          email: "gone@example.org",
+          status: "revoked",
+        }),
       ],
     })
 
@@ -296,8 +309,12 @@ describe("MembersScreen pending invites", () => {
     expect(within(section).getByText("invites.status_expired")).toBeTruthy()
     expect(within(section).queryByText("gone@example.org")).toBeNull()
     // Only the pending row can be revoked.
-    expect(within(section).getByRole("button", { name: "invites.revoke_a11y(name=rosa@example.org)" })).toBeTruthy()
-    expect(within(section).queryByRole("button", { name: "invites.revoke_a11y(name=Sam)" })).toBeNull()
+    expect(
+      within(section).getByRole("button", { name: "invites.revoke_a11y(name=rosa@example.org)" }),
+    ).toBeTruthy()
+    expect(
+      within(section).queryByRole("button", { name: "invites.revoke_a11y(name=Sam)" }),
+    ).toBeNull()
   })
 
   it("hides the section entirely when there is nothing pending", async () => {
@@ -347,7 +364,9 @@ describe("MembersScreen suspended org", () => {
     const roleSelect = screen.getByLabelText<HTMLSelectElement>("role.change_a11y(name=Rosa)")
     expect(roleSelect.disabled).toBe(true)
     expect(roleSelect.title).toBe("suspended.error_forbidden")
-    const removeButton = screen.getByRole<HTMLButtonElement>("button", { name: "remove.a11y(name=Rosa)" })
+    const removeButton = screen.getByRole<HTMLButtonElement>("button", {
+      name: "remove.a11y(name=Rosa)",
+    })
     expect(removeButton.disabled).toBe(true)
     const section = await screen.findByRole("region", { name: "invites.title" })
     const revoke = within(section).getByRole<HTMLButtonElement>("button", {

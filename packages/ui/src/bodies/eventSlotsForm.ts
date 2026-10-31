@@ -80,7 +80,11 @@ export function removeSlotDraft(list: readonly SlotDraft[], key: string): SlotDr
  * reference, so the caller's `onChange` can skip a pointless re-render and the disabled chevron at the
  * end of the list cannot silently reorder anything.
  */
-export function moveSlotDraft(list: readonly SlotDraft[], key: string, direction: -1 | 1): SlotDraft[] {
+export function moveSlotDraft(
+  list: readonly SlotDraft[],
+  key: string,
+  direction: -1 | 1,
+): SlotDraft[] {
   const from = list.findIndex((d) => d.key === key)
   if (from < 0) return list as SlotDraft[]
   const to = from + direction
@@ -161,7 +165,8 @@ export function slotDraftError(
   if (title.length > MAX_SLOT_TITLE) return "title-too-long"
   const capacity = parseCapacity(d.capacity)
   if (capacity !== null && Number.isNaN(capacity)) return "capacity-invalid"
-  if (capacity !== null && claimed !== undefined && capacity < claimed) return "capacity-below-claimed"
+  if (capacity !== null && claimed !== undefined && capacity < claimed)
+    return "capacity-below-claimed"
   const slotWindow = slotDraftWindow(d)
   if (slotWindow === null) return null
   if (slotWindow.end.getTime() - slotWindow.start.getTime() < MIN_SLOT_DURATION_MS) {
@@ -270,9 +275,9 @@ function roundToMinute(ms: number): number {
 
 export type ShiftSplitCount = 2 | 3 | 4
 
-export const SHIFT_SPLIT_COUNTS: readonly ShiftSplitCount[] = (
-  [2, 3, 4] as const
-).filter((count) => count <= MAX_GENERATED_SHIFTS)
+export const SHIFT_SPLIT_COUNTS: readonly ShiftSplitCount[] = ([2, 3, 4] as const).filter(
+  (count) => count <= MAX_GENERATED_SHIFTS,
+)
 
 export type ShiftTitle = (position: number) => string
 
@@ -281,10 +286,7 @@ export interface ShiftWindow {
   end: number
 }
 
-function shiftWindows(
-  window: { start: Date; end: Date },
-  count: ShiftSplitCount,
-): ShiftWindow[] {
+function shiftWindows(window: { start: Date; end: Date }, count: ShiftSplitCount): ShiftWindow[] {
   const from = window.start.getTime()
   const to = window.end.getTime()
   if (to <= from) return []

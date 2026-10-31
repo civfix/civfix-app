@@ -83,7 +83,9 @@ export function useReplyDockInset(): ReplyDockInset {
       // WILL_show/hide, not DID: iOS posts them at the START of the ~0.25s keyboard animation, so the
       // dock is already in place by the time the keyboard arrives instead of jumping after it lands.
       subs.push(
-        Keyboard.addListener("keyboardWillShow", (event: KeyboardEvent) => setOwn(overlapOf(event))),
+        Keyboard.addListener("keyboardWillShow", (event: KeyboardEvent) =>
+          setOwn(overlapOf(event)),
+        ),
       )
       subs.push(Keyboard.addListener("keyboardWillHide", () => setOwn(0)))
     } else {

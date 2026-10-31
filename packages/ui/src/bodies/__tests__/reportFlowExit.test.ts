@@ -25,7 +25,7 @@ describe("every exit from the report wizard returns to the surface it was launch
 
   it("labels the last success action Done and leaves through leaveReportFlow", () => {
     expect(body).toContain('t("submit.done")')
-    expect(body).toContain('onPress={() => useNavStore.getState().leaveReportFlow()}')
+    expect(body).toContain("onPress={() => useNavStore.getState().leaveReportFlow()}")
   })
 
   it("carries no back_to_map copy in any locale", () => {

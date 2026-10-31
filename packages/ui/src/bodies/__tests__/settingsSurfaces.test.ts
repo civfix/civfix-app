@@ -88,7 +88,10 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
 
   it("keeps the handle cooldown a DISABLED ROW - a locked field has no dialog to open", () => {
     const src = read("../settings/ChangeUsernameEditor.tsx")
-    const locked = src.slice(src.indexOf("if (locked) {"), src.indexOf("return (\n    <SettingsEditorSheet"))
+    const locked = src.slice(
+      src.indexOf("if (locked) {"),
+      src.indexOf("return (\n    <SettingsEditorSheet"),
+    )
     expect(locked).toContain("<SettingsRow")
     expect(locked).toContain("disabled")
     expect(locked).toContain('t("handle.cooldown_locked"')
@@ -151,7 +154,10 @@ describe("the profile is display-only - the bio is edited in Settings > Account"
   it("leaves no orphaned bio copy in any of the four profile-view catalogs", () => {
     for (const lng of ["en", "es", "de", "ko"]) {
       const catalog = JSON.parse(
-        readFileSync(new URL(`../../i18n/locales/${lng}/profile-view.json`, import.meta.url), "utf8"),
+        readFileSync(
+          new URL(`../../i18n/locales/${lng}/profile-view.json`, import.meta.url),
+          "utf8",
+        ),
       ) as Record<string, unknown>
       expect(catalog.bio, `${lng}/profile-view still carries the bio editor copy`).toBeUndefined()
       const account = JSON.parse(
@@ -160,7 +166,10 @@ describe("the profile is display-only - the bio is edited in Settings > Account"
           "utf8",
         ),
       ) as Record<string, Record<string, unknown>>
-      expect(account.bio?.label, `${lng}/settings-account is missing the bio editor copy`).toBeTruthy()
+      expect(
+        account.bio?.label,
+        `${lng}/settings-account is missing the bio editor copy`,
+      ).toBeTruthy()
     }
   })
 })

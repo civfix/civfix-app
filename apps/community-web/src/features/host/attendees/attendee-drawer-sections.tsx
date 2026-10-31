@@ -158,7 +158,8 @@ function AnswerValue({ answer }: { answer: Answer }) {
   const { t: tc } = useT("host-common")
   if (answer.scrubbedAt) return <>{t("drawer.answer_scrubbed")}</>
   if (Array.isArray(answer.value)) return <>{answer.value.join(", ")}</>
-  if (typeof answer.value === "boolean") return <>{answer.value ? tc("common.yes") : tc("common.no")}</>
+  if (typeof answer.value === "boolean")
+    return <>{answer.value ? tc("common.yes") : tc("common.no")}</>
   return <>{answer.value ?? <EmptyValue />}</>
 }
 

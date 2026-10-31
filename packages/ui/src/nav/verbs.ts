@@ -3,7 +3,7 @@ import { useNavStore } from "./useNavStore"
 import { threadRoomId } from "../data/threadRoom"
 
 export function isTopEntry(
-  stack: ReadonlyArray<{ kind: string; id?: string }>,
+  stack: ReadonlyArray<{ kind: string; id?: string | undefined }>,
   kind: string,
   id: string,
 ): boolean {
@@ -28,7 +28,9 @@ export function openThread(thread: MessageThreadDTO): void {
     return
   }
   if (thread.kind === "group") {
-    useNavStore.getState().push({ kind: "thread", id: roomId, roomKind: "group", title: thread.title })
+    useNavStore
+      .getState()
+      .push({ kind: "thread", id: roomId, roomKind: "group", title: thread.title })
     return
   }
   useNavStore.getState().push({ kind: "thread", id: roomId, roomKind: "cleanup" })
@@ -54,7 +56,8 @@ export function clearThreadJumpParam(roomId: string): void {
   const nav = useNavStore.getState()
   let changed = false
   const stack = nav.stack.map((entry) => {
-    if (entry.kind !== "thread" || entry.id !== roomId || entry.jumpToMessageId === undefined) return entry
+    if (entry.kind !== "thread" || entry.id !== roomId || entry.jumpToMessageId === undefined)
+      return entry
     changed = true
     const { jumpToMessageId: _consumed, ...rest } = entry
     void _consumed

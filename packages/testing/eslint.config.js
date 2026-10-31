@@ -1,7 +1,13 @@
 import eslint from "@eslint/js"
 import vitest from "@vitest/eslint-plugin"
 import tseslint from "typescript-eslint"
-import { LINTER_OPTIONS, TEST_FILES, TEST_RELAXED_RULES, TYPED_RULES, VITEST_RULES } from "../../eslint.typed.cjs"
+import {
+  LINTER_OPTIONS,
+  TEST_FILES,
+  TEST_RELAXED_RULES,
+  TYPED_RULES,
+  VITEST_RULES,
+} from "../../eslint.typed.cjs"
 
 export default tseslint.config(
   {

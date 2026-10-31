@@ -33,7 +33,14 @@ vi.mock("@civfix/ui", async () => {
     useAppPromoStore: promo.useAppPromoStore,
     useAppPromo: () => ({
       surface: "banner",
-      links: [{ store: "google-play", href: "https://play.google.com/store", labelKey: "app_promo.google_play", badgeSrc: "/badge.svg" }],
+      links: [
+        {
+          store: "google-play",
+          href: "https://play.google.com/store",
+          labelKey: "app_promo.google_play",
+          badgeSrc: "/badge.svg",
+        },
+      ],
       dismiss: () => promo.useAppPromoStore.getState().dismiss(),
     }),
   }
@@ -43,7 +50,8 @@ const { ApiProvider } = await import("../../../../../packages/ui/src/data/contex
 const { makeFakeDataContext } = await import("../../../../../packages/ui/src/data/fakes")
 const { I18nProvider } = await import("../../../../../packages/ui/src/i18n")
 const { ThemeProvider } = await import("../../../../../packages/ui/src/theme")
-const { useSystemNoticeStore } = await import("../../../../../packages/ui/src/shell/systemNoticeStore")
+const { useSystemNoticeStore } =
+  await import("../../../../../packages/ui/src/shell/systemNoticeStore")
 const { useAppPromoStore } = await import("../../../../../packages/ui/src/promo/appPromoStore")
 const { AppDownloadBanner } = await import("@/components/promo/app-download-banner")
 const { WebSystemNoticeBanner } = await import("./system-notice-banner")
@@ -54,7 +62,10 @@ const TEXT = "Water service paused on Main St tonight"
 function config(text: string | null): AppConfigResponse {
   return {
     minAppVersion: { ios: null, android: null },
-    storeUrl: { ios: null, android: "https://play.google.com/store/apps/details?id=org.civfix.community" },
+    storeUrl: {
+      ios: null,
+      android: "https://play.google.com/store/apps/details?id=org.civfix.community",
+    },
     announcement: text === null ? null : { text, level: "info" },
   }
 }
@@ -65,7 +76,9 @@ function downloadBanner(): HTMLElement {
 
 function renderBars() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const context = makeFakeDataContext({ api: { getAppConfig: async () => config(TEXT) } as unknown as ApiClient })
+  const context = makeFakeDataContext({
+    api: { getAppConfig: async () => config(TEXT) } as unknown as ApiClient,
+  })
   return render(
     <QueryClientProvider client={client}>
       <ApiProvider value={context}>

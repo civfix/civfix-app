@@ -2,7 +2,11 @@
 
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH, MAX_EVENT_REMINDER_OFFSETS } from "@civfix/contract"
+import {
+  EMAIL_MAX_LENGTH,
+  HTTPS_URL_MAX_LENGTH,
+  MAX_EVENT_REMINDER_OFFSETS,
+} from "@civfix/contract"
 import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/contract"
 import { datetimeLocalFromIso } from "@civfix/contract/datetime"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
@@ -22,11 +26,7 @@ import { ConsoleLink } from "../layout/console-link"
 import { hrefForRoute } from "@/components/console/route"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
-import {
-  useConsoleInputZone,
-  useInputZoneNames,
-  zonedFieldPatch,
-} from "../format"
+import { useConsoleInputZone, useInputZoneNames, zonedFieldPatch } from "../format"
 import type { ZonedFieldPatch } from "../format"
 
 const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const

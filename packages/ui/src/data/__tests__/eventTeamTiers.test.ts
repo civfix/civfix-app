@@ -26,8 +26,14 @@ describe("the invitable tiers", () => {
       expect(tier.labelKey).toBe(`enums:cleanupMemberRole.${tier.role}`)
       expect(tier.hintKey).toBe(`host-team:role.hint_${tier.role}`)
       for (const lng of ["en", "es", "de", "ko"]) {
-        expect(catalog(lng, "enums").cleanupMemberRole?.[tier.role], `${lng} ${tier.role}`).toBeTruthy()
-        expect(catalog(lng, "host-team").role?.[`hint_${tier.role}`], `${lng} ${tier.role}`).toBeTruthy()
+        expect(
+          catalog(lng, "enums").cleanupMemberRole?.[tier.role],
+          `${lng} ${tier.role}`,
+        ).toBeTruthy()
+        expect(
+          catalog(lng, "host-team").role?.[`hint_${tier.role}`],
+          `${lng} ${tier.role}`,
+        ).toBeTruthy()
       }
     }
   })

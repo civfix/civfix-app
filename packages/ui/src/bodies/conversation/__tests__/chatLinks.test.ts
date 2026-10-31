@@ -103,13 +103,15 @@ describe("resolveChatLinkTarget", () => {
 
   it("accepts a second origin (the page's own, on web) and normalizes what it is handed", () => {
     const origins = ["https://civfix.org", "https://staging.civfix.org:8443"]
-    expect(resolveChatLinkTarget("https://staging.civfix.org:8443/post/p1", origins)).toMatchObject({
-      kind: "internal",
-      path: "/post/p1",
-    })
-    expect(resolveChatLinkTarget("https://CIVFIX.ORG:443/post/p1", ["https://civfix.org/"])).toMatchObject(
-      { kind: "internal", path: "/post/p1" },
+    expect(resolveChatLinkTarget("https://staging.civfix.org:8443/post/p1", origins)).toMatchObject(
+      {
+        kind: "internal",
+        path: "/post/p1",
+      },
     )
+    expect(
+      resolveChatLinkTarget("https://CIVFIX.ORG:443/post/p1", ["https://civfix.org/"]),
+    ).toMatchObject({ kind: "internal", path: "/post/p1" })
   })
 
   it("leaves an http own-host link external, because the hosts refuse non-https targets", () => {
@@ -153,7 +155,9 @@ describe("tokenizeChatBody", () => {
 
   it("does NOT invent a link out of a bare domain", () => {
     for (const body of ["foo.bar", "see foo.bar/baz", "mail me at a@foo.bar"]) {
-      expect(tokenizeChatBody(body, { origins: APP }).every((token) => token.kind === "text")).toBe(true)
+      expect(tokenizeChatBody(body, { origins: APP }).every((token) => token.kind === "text")).toBe(
+        true,
+      )
     }
   })
 
@@ -168,7 +172,10 @@ describe("tokenizeChatBody", () => {
       origins: APP,
     })
     expect(texts(tokens)).toEqual(["look at ", "https://civfix.org/post/p1", ", it's bad."])
-    expect(tokens[1]).toMatchObject({ kind: "link", target: { kind: "internal", path: "/post/p1" } })
+    expect(tokens[1]).toMatchObject({
+      kind: "link",
+      target: { kind: "internal", path: "/post/p1" },
+    })
   })
 
   it("does not tokenize an http URL at all, so a dead tap is impossible", () => {

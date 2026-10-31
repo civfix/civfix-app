@@ -29,9 +29,7 @@ describe("csvString", () => {
     expect(csvString([["+cmd"]])).toBe("'+cmd")
     expect(csvString([["-2"]])).toBe("'-2")
     expect(csvString([["@SUM(A1)"]])).toBe("'@SUM(A1)")
-    expect(csvString([["=HYPERLINK(\"x\",\"y\")"]])).toBe(
-      '"\'=HYPERLINK(""x"",""y"")"',
-    )
+    expect(csvString([['=HYPERLINK("x","y")']])).toBe('"\'=HYPERLINK(""x"",""y"")"')
   })
 
   it("leaves numbers and booleans unguarded because they cannot carry a formula", () => {
@@ -79,25 +77,29 @@ describe("provenanceRows", () => {
   })
 
   it("states no filters explicitly rather than leaving the row blank", () => {
-    const flat = csvString(provenanceRows({
-      title: "t",
-      generatedAt: "2026-03-04T12:00:00.000Z",
-      generatedAtLabel: "x",
-      labels: LABELS,
-    }))
+    const flat = csvString(
+      provenanceRows({
+        title: "t",
+        generatedAt: "2026-03-04T12:00:00.000Z",
+        generatedAtLabel: "x",
+        labels: LABELS,
+      }),
+    )
     expect(flat).toContain("Filters,None")
   })
 
   it("records the k-anonymity note when the source was suppressed", () => {
-    const flat = csvString(provenanceRows({
-      title: "t",
-      generatedAt: "2026-03-04T12:00:00.000Z",
-      generatedAtLabel: "x",
-      suppressed: true,
-      suppressionK: 5,
-      notes: ["Blank cells are suppressed, not zero."],
-      labels: LABELS,
-    }))
+    const flat = csvString(
+      provenanceRows({
+        title: "t",
+        generatedAt: "2026-03-04T12:00:00.000Z",
+        generatedAtLabel: "x",
+        suppressed: true,
+        suppressionK: 5,
+        notes: ["Blank cells are suppressed, not zero."],
+        labels: LABELS,
+      }),
+    )
     expect(flat).toContain("Suppression k,5")
     expect(flat).toContain('Note,"Blank cells are suppressed, not zero."')
   })

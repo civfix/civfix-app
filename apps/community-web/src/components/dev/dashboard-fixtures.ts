@@ -4,7 +4,12 @@ import {
   fakeHostedEvents,
   fakeHostedEventsAnalytics,
 } from "@/components/dev/host-dashboard.fake"
-import { MAX_PORTFOLIO_TOP_VOLUNTEERS, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
+import {
+  MAX_PORTFOLIO_TOP_VOLUNTEERS,
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+} from "@civfix/contract"
 import type {
   CleanupDTO,
   EventCheckinCountersDTO,
@@ -187,8 +192,18 @@ const ORG_INVITES: ListMyOrgInvitesResponse = {
 
 const ORG_MEMBERS: ListOrganizationMembersResponse = {
   items: [
-    { person: HOST, role: "owner", joinedAt: new Date(FIXTURE_NOW - 500 * MS_PER_DAY).toISOString(), canRemove: false },
-    { person: COHOST, role: "admin", joinedAt: new Date(FIXTURE_NOW - 300 * MS_PER_DAY).toISOString(), canRemove: true },
+    {
+      person: HOST,
+      role: "owner",
+      joinedAt: new Date(FIXTURE_NOW - 500 * MS_PER_DAY).toISOString(),
+      canRemove: false,
+    },
+    {
+      person: COHOST,
+      role: "admin",
+      joinedAt: new Date(FIXTURE_NOW - 300 * MS_PER_DAY).toISOString(),
+      canRemove: true,
+    },
     {
       person: person("p-lee", "Lee Tran", "leetran"),
       role: "member",
@@ -415,9 +430,7 @@ function phaseRoster(id: string, phase: EventPhase): ListEventRegistrationsRespo
       source: i === 3 ? "walkup" : "self",
       registeredAt: new Date(startsAt - (14 - i) * MS_PER_DAY).toISOString(),
       cancelledAt:
-        i === ROSTER_PEOPLE.length - 1
-          ? new Date(startsAt - 2 * MS_PER_DAY).toISOString()
-          : null,
+        i === ROSTER_PEOPLE.length - 1 ? new Date(startsAt - 2 * MS_PER_DAY).toISOString() : null,
       checkedInAt: checkedIn ? new Date(startsAt + i * 6 * MS_PER_MINUTE).toISOString() : null,
       checkedInBy: checkedIn ? HOST : null,
       slot: null,
@@ -498,9 +511,7 @@ const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
   declineMyOrgInvite: async () => ({ ok: true }),
 }
 
-export function makeDashboardFakeApi(
-  overrides: Record<string, FakeEndpoint> = {},
-): ApiClient {
+export function makeDashboardFakeApi(overrides: Record<string, FakeEndpoint> = {}): ApiClient {
   return makeCannedApi(
     { ...DASHBOARD_FAKE_ENDPOINTS, ...overrides },
     (name) => (): Promise<never> =>

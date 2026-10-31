@@ -1,7 +1,18 @@
 import { memo, useCallback } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/contract"
-import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webTransition, headingLevel, hitSlopToTarget, MIN_TOUCH_TARGET } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  space,
+  useTheme,
+  useLayoutMode,
+  webHover,
+  webTransition,
+  headingLevel,
+  hitSlopToTarget,
+  MIN_TOUCH_TARGET,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
@@ -179,7 +190,7 @@ export function SocialBody() {
   const suggested = suggestions.data ?? []
   const listData: Array<UserSearchResultDTO | PersonDTO> = hasQuery ? results : suggested
 
-  const onOpenPerson = useCallback((person: { id: string; handle?: string | null }) => {
+  const onOpenPerson = useCallback((person: { id: string; handle?: string | null | undefined }) => {
     useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })
   }, [])
 
@@ -357,12 +368,10 @@ function SearchResultsHeader({ count }: { count: number }) {
   const { t } = useT("search")
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>{t("results.title")}</Text>
-      {count > 0 ? (
-        <Text style={styles.sectionLink}>
-          {t("results.count", { count })}
-        </Text>
-      ) : null}
+      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
+        {t("results.title")}
+      </Text>
+      {count > 0 ? <Text style={styles.sectionLink}>{t("results.count", { count })}</Text> : null}
     </View>
   )
 }

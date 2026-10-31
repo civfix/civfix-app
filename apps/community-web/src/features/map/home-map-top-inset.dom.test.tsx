@@ -11,7 +11,9 @@ interface MapProps {
 }
 
 const captured = vi.hoisted(() => ({ map: null as MapProps | null }))
-const dropPinCameraTarget = vi.hoisted(() => vi.fn((input: { lat: number; lng: number }) => ({ ...input, zoom: 16 })))
+const dropPinCameraTarget = vi.hoisted(() =>
+  vi.fn((input: { lat: number; lng: number }) => ({ ...input, zoom: 16 })),
+)
 
 vi.mock("@civfix/ui", async () => {
   const [{ forwardRef }, bars, notice, promo] = await Promise.all([
@@ -20,7 +22,12 @@ vi.mock("@civfix/ui", async () => {
     import("../../../../../packages/ui/src/shell/systemNoticeStore"),
     import("../../../../../packages/ui/src/promo/appPromoStore"),
   ])
-  const filters = { enabled: new Set<string>(), eventsEnabled: false, setCounts: () => {}, setLayersOpen: () => {} }
+  const filters = {
+    enabled: new Set<string>(),
+    eventsEnabled: false,
+    setCounts: () => {},
+    setLayersOpen: () => {},
+  }
   const nav = { stack: [], view: "map", snap: "mid", mode: "compact" }
   return {
     ...bars,
@@ -48,7 +55,10 @@ vi.mock("@civfix/ui", async () => {
     captureDropPinCamera: () => {},
     setDropPinCameraRestorer: () => {},
     decideRegionFetch: () => ({ action: "keep" }),
-    resolveMapCenter: () => ({ center: { lat: 34.05, lng: -118.25, zoom: 12 }, source: "remembered" }),
+    resolveMapCenter: () => ({
+      center: { lat: 34.05, lng: -118.25, zoom: 12 },
+      source: "remembered",
+    }),
     shouldAdoptCenter: () => false,
     holdsRememberedCamera: () => true,
     PRECISE_ZOOM: 16,
@@ -58,15 +68,24 @@ vi.mock("@civfix/ui", async () => {
 vi.mock("@civfix/ui/data", () => ({
   useApproximateLocation: () => ({ data: undefined }),
   useCleanups: () => ({ data: [] }),
-  useMapReports: () => ({ data: undefined, isError: false, isSuccess: false, isPlaceholderData: false }),
+  useMapReports: () => ({
+    data: undefined,
+    isError: false,
+    isSuccess: false,
+    isPlaceholderData: false,
+  }),
 }))
-vi.mock("@/features/map/camera-snapshot", () => ({ readCameraSnapshot: () => null, writeCameraSnapshot: () => {} }))
+vi.mock("@/features/map/camera-snapshot", () => ({
+  readCameraSnapshot: () => null,
+  writeCameraSnapshot: () => {},
+}))
 vi.mock("@/lib/locate", () => ({
   resolvePreciseCenterAfterPrompt: async () => ({ precise: null, prompted: false }),
   getBrowserPosition: async () => null,
 }))
 
-const { useSystemNoticeStore } = await import("../../../../../packages/ui/src/shell/systemNoticeStore")
+const { useSystemNoticeStore } =
+  await import("../../../../../packages/ui/src/shell/systemNoticeStore")
 const { useAppPromoStore } = await import("../../../../../packages/ui/src/promo/appPromoStore")
 const { HomeMap } = await import("./home-map")
 

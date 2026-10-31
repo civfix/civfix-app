@@ -40,11 +40,7 @@ export function SubmitState({
   }, [phase, error, t])
   useEffect(() => {
     if (phase === "done") {
-      announce(
-        result?.status === "held"
-          ? t("submit.announce_held")
-          : t("submit.announce_live"),
-      )
+      announce(result?.status === "held" ? t("submit.announce_held") : t("submit.announce_live"))
     }
   }, [phase, result, t])
 
@@ -76,7 +72,11 @@ export function SubmitState({
         </Text>
         <View style={styles.errorActions}>
           {retryable ? (
-            <PrimaryButton label={t("submit.try_again")} icon={iconMap.RefreshCw} onPress={onRetry} />
+            <PrimaryButton
+              label={t("submit.try_again")}
+              icon={iconMap.RefreshCw}
+              onPress={onRetry}
+            />
           ) : null}
           <PrimaryButton
             label={t("submit.edit_report")}
@@ -94,9 +94,7 @@ export function SubmitState({
         <SuccessCheck announce={t("submit.success_title")} />
       </View>
       <Text variant="body" color={th.colors.textMuted} style={styles.stateBody}>
-        {result?.status === "held"
-          ? t("submit.success_body_held")
-          : t("submit.success_body_live")}
+        {result?.status === "held" ? t("submit.success_body_held") : t("submit.success_body_live")}
       </Text>
       {result && share ? (
         <FeedShareOutcomeRow key={result.reportId} outcome={result.feedShare} share={share} />
@@ -121,7 +119,10 @@ export function SubmitState({
             }}
           />
         ) : null}
-        <PrimaryButton label={t("submit.done")} onPress={() => useNavStore.getState().leaveReportFlow()} />
+        <PrimaryButton
+          label={t("submit.done")}
+          onPress={() => useNavStore.getState().leaveReportFlow()}
+        />
       </View>
     </View>
   )

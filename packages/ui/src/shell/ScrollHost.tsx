@@ -51,7 +51,7 @@ export interface ScrollHostListHandle {
 }
 
 export type ScrollHostListProps = Record<string, unknown> & {
-  ref?: React.Ref<ScrollHostListHandle>
+  ref?: React.Ref<ScrollHostListHandle> | undefined
 }
 
 /**

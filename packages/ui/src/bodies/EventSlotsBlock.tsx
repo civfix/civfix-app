@@ -57,7 +57,7 @@ export interface EventSlotsBlockProps {
   /** Cancelled events say so in the header already, so the board stays silent above the rows. */
   cancelled?: boolean
   /** The EVENT's IANA zone; shift windows render in it. Absent (legacy row) = the viewer's zone. */
-  timeZone?: string
+  timeZone?: string | undefined
   /**
    * `registration` - a ticketed event commits through `RegistrationBlock`, so the board offers no second
    * primary CTA to a viewer who has not registered. `general` - the slot-less fallback: `slots` carries
@@ -67,7 +67,7 @@ export interface EventSlotsBlockProps {
   mode: "claim" | "registration" | "general"
   viewer: { actsAsHost: boolean; registered: boolean }
   /** Opens the host's guest-RSVP sheet. Absent when the host cannot mint a Turnstile token. */
-  onGuestRsvp?: () => void
+  onGuestRsvp?: (() => void) | undefined
   onViewAll: () => void
 }
 
@@ -267,7 +267,9 @@ export function EventSlotsBlock({
       const only = slots[0]
       return only ? new Map([[only.id, [...roster]]]) : new Map<string, AttendeeDTO[]>()
     }
-    return claimantsBySlot(groupRosterBySlot(roster, slots, { unassignedTitle: t("roster.unassigned") }))
+    return claimantsBySlot(
+      groupRosterBySlot(roster, slots, { unassignedTitle: t("roster.unassigned") }),
+    )
   }, [attendees.data, general, slots, t])
 
   const viewerState = slotViewerState({
@@ -281,8 +283,7 @@ export function EventSlotsBlock({
   const peopleLoading = attendees.isLoading && attendees.data === undefined
   const peopleErrored = attendees.isError && attendees.data === undefined
   const showPill = !ticketed || viewer.registered || viewer.actsAsHost
-  const canSignUpHere =
-    showPill && (viewerState === "not_going" || viewerState === "signed_out")
+  const canSignUpHere = showPill && (viewerState === "not_going" || viewerState === "signed_out")
   const hostLabel = t("event-members:role.host")
 
   return (

@@ -80,7 +80,9 @@ export function reduceScrollKeyboard(
     }
     case "hide":
       if (state.reserve <= 0) {
-        return state.overlap === 0 && !state.holding ? state : { ...state, overlap: 0, holding: false }
+        return state.overlap === 0 && !state.holding
+          ? state
+          : { ...state, overlap: 0, holding: false }
       }
       return { ...state, overlap: 0, holding: true }
     case "hold-expired":

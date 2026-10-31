@@ -130,12 +130,13 @@ if (!existsSync(aasaOut)) {
   process.exit(1)
 }
 
+/** @type {unknown} */
 let association
 try {
   association = JSON.parse(readFileSync(aasaOut, "utf8"))
 } catch (error) {
   console.error(
-    `[cf-pages] ERROR: ${AASA_RELATIVE} is not valid JSON (${error.message}). iOS rejects a ` +
+    `[cf-pages] ERROR: ${AASA_RELATIVE} is not valid JSON (${error instanceof Error ? error.message : String(error)}). iOS rejects a ` +
       `malformed association file outright, disabling Universal Links site-wide.`,
   )
   process.exit(1)
@@ -180,7 +181,8 @@ if (!existsSync(routesPath)) {
   process.exit(1)
 }
 
-const routes = JSON.parse(readFileSync(routesPath, "utf8"))
+const parsedRoutes = /** @type {unknown} */ (JSON.parse(readFileSync(routesPath, "utf8")))
+const routes = /** @type {{ include?: string[], exclude?: string[] }} */ (parsedRoutes)
 const functionsDir = join(appDir, "functions")
 
 for (const include of routes.include ?? []) {
@@ -429,6 +431,10 @@ const APP_ERROR_IDENTITY_MARKER = /\.name\s*=\s*(["'])AppError\1/g
 const SCRIPT_EXTENSIONS = [".js", ".mjs", ".cjs"]
 const chunksDir = join(outDir, "_next", "static", "chunks")
 
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
 function scriptFilesUnder(dir) {
   if (!existsSync(dir)) return []
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -493,4 +499,6 @@ if (appErrorCopies === 0) {
   process.exit(1)
 }
 
-console.log(`[cf-pages] AppError single-instance check OK (1 copy, in ${appErrorSites[0].file}).`)
+console.log(
+  `[cf-pages] AppError single-instance check OK (1 copy, in ${appErrorSites.map((site) => site.file).join(", ")}).`,
+)

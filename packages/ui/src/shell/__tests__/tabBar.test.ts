@@ -88,7 +88,7 @@ describe("map-first tab bar model", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).not.toContain("withSpring")
     expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphInConfig\(\)/)
-    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphOutConfig\(\)/)
+    expect(native).toMatch(/withTiming\(\s*target,\s*\{ \.\.\.dockMorphOutConfig\(\)/)
     const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
     expect(configs).toContain(
       "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(motion.dockMorphIn)",
@@ -143,7 +143,13 @@ describe("map-first tab bar model", () => {
     const dir = fileURLToPath(new URL("..", import.meta.url))
     const left = readdirSync(dir).filter((name) => name.toLowerCase().startsWith("createmenu"))
     expect(left, "a CreateMenu module survived the revert").toEqual([])
-    for (const file of ["../TabBar.shared.tsx", "../TabBar.web.tsx", "../TabBar.native.tsx", "../Rail.tsx", "../AppShell.tsx"]) {
+    for (const file of [
+      "../TabBar.shared.tsx",
+      "../TabBar.web.tsx",
+      "../TabBar.native.tsx",
+      "../Rail.tsx",
+      "../AppShell.tsx",
+    ]) {
       const source = readFileSync(new URL(file, import.meta.url), "utf8")
       expect(source, file).not.toContain("CreateMenu")
       expect(source, file).not.toContain("useTabAnchors")
@@ -165,11 +171,13 @@ describe("map-first tab bar model", () => {
     expect(header).toMatch(/setKeyboardReserve\(anchor\.reserved\)/)
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
     expect(native).toMatch(
-      /useDockedSearchRise\(riseRef, dockedSearch\.value, dockKeyboardRestOffset\(insets\.bottom, DOCK_PLATFORM\), searchActive, p\)/,
+      /useDockedSearchRise\(\s*riseRef,\s*dockedSearch\.value,\s*dockKeyboardRestOffset\(insets\.bottom, DOCK_PLATFORM\),\s*searchActive,\s*p,?\s*\)/,
     )
     expect(header).toMatch(/focusSettleCommand\(pinned, searchActive, p\.value\)/)
     const web = readFileSync(new URL("../SearchHeader.web.tsx", import.meta.url), "utf8")
-    expect(web).toMatch(/useKeyboardAnchor\(\{ enabled: focused, restOffset: WEB_DOCK_REST_OFFSET \}\)/)
+    expect(web).toMatch(
+      /useKeyboardAnchor\(\{ enabled: focused, restOffset: WEB_DOCK_REST_OFFSET \}\)/,
+    )
     expect(web).toMatch(/const WEB_DOCK_REST_OFFSET = space\["3"\] \+ 10/)
   })
 
@@ -195,7 +203,9 @@ describe("map-first tab bar model", () => {
   it("disables search rise animation for touch or reduced-motion users", () => {
     expect(searchRiseTransition({ coarsePointer: true, reduceMotion: false })).toBe("none")
     expect(searchRiseTransition({ coarsePointer: false, reduceMotion: true })).toBe("none")
-    expect(searchRiseTransition({ coarsePointer: false, reduceMotion: false })).toContain(`${TAB_ANIMATION_MS}ms`)
+    expect(searchRiseTransition({ coarsePointer: false, reduceMotion: false })).toContain(
+      `${TAB_ANIMATION_MS}ms`,
+    )
   })
 
   it("releases the search body's exit freeze from the dockMorphOut timing, never from a config factory", () => {
@@ -237,7 +247,10 @@ describe("dock-morph chrome schedules (each element rides ONE window off p; no c
 
   it("anchors the magnifier to the live field rect (not a p-scheduled travel to the final rect)", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
-    const magBlock = native.slice(native.indexOf("const magStyle"), native.indexOf("const dockedFieldLeft"))
+    const magBlock = native.slice(
+      native.indexOf("const magStyle"),
+      native.indexOf("const dockedFieldLeft"),
+    )
     expect(magBlock).toMatch(/shapes\.value\.right/)
     expect(magBlock).toMatch(/right\.x/)
     expect(magBlock).toMatch(/right\.y \+ right\.height \/ 2/)
@@ -246,7 +259,10 @@ describe("dock-morph chrome schedules (each element rides ONE window off p; no c
 
   it("anchors the persisted-tab glyph travel to the LIVE leading-shape center (not the stale H/2 circle center)", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
-    const wrapBlock = native.slice(native.indexOf("const wrapStyle"), native.indexOf("const m = tabIconMorph"))
+    const wrapBlock = native.slice(
+      native.indexOf("const wrapStyle"),
+      native.indexOf("const m = tabIconMorph"),
+    )
     expect(wrapBlock).toMatch(/shapes\.value\.left/)
     expect(wrapBlock).toMatch(/\.left/)
     expect(wrapBlock).toMatch(/left\.x \+ left\.width \/ 2/)
@@ -270,16 +286,24 @@ describe("dock-morph chrome schedules (each element rides ONE window off p; no c
 
   it("the ✕ CLEARS back to the resting search page (onClearSearch); only the LEADING circle exits Search", () => {
     const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
-    const clearBlock = native.slice(native.indexOf("<Animated.View style={[styles.clear"))
+    const clearAt = native.search(/<Animated\.View\s+style=\{\[styles\.clear,/)
+    expect(clearAt).toBeGreaterThan(-1)
+    const clearBlock = native.slice(clearAt)
     expect(clearBlock).toMatch(/onPress=\{onClearSearch\}/)
     expect(clearBlock).toMatch(/tSearch\("a11y\.clear"\)/)
     expect(clearBlock).not.toMatch(/onExitSearch/)
     expect(clearBlock).not.toMatch(/a11y\.dismiss/)
-    const handler = native.slice(native.indexOf("const onClearSearch"), native.indexOf("const minimizedActive"))
+    const handler = native.slice(
+      native.indexOf("const onClearSearch"),
+      native.indexOf("const minimizedActive"),
+    )
     expect(handler).toMatch(/dockedSearch\.onClear\(\)/)
     expect(handler).toMatch(/Keyboard\.dismiss\(\)/)
     expect(handler).not.toMatch(/selectView/)
-    const exitHandler = native.slice(native.indexOf("const onExitSearch"), native.indexOf("const onClearSearch"))
+    const exitHandler = native.slice(
+      native.indexOf("const onExitSearch"),
+      native.indexOf("const onClearSearch"),
+    )
     expect(exitHandler).toMatch(/selectView\(prevView\)/)
   })
 
@@ -382,7 +406,9 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
 
   it("keeps the WEB dock off the Android branch: the measured safe area through the iOS rule, floored at today's gap", () => {
     const web = readFileSync(new URL("../TabBar.web.tsx", import.meta.url), "utf8")
-    expect(web).toMatch(/paddingBottom: Math\.max\(space\["3"\], dockBottomGap\(insets\?\.bottom \?\? 0\)\)/)
+    expect(web).toMatch(
+      /paddingBottom: Math\.max\(space\["3"\], dockBottomGap\(insets\?\.bottom \?\? 0\)\)/,
+    )
     expect(web).not.toMatch(/dockKeyboardRestOffset|useSafeAreaInsets|Platform\.OS|"android"/)
     expect(Math.max(tokens.space["3"], dockBottomGap(0))).toBe(tokens.space["3"])
     expect(dockBottomGap(34)).toBeGreaterThan(tokens.space["3"])
@@ -391,7 +417,11 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
 
 describe("sheetSnapPoints (the compact sheet's three snap heights, shared by both seams)", () => {
   it("returns the design anchors on the reference screen (peek fixed, mid/full scaled)", () => {
-    expect(sheetSnapPoints(SHEET_REF_SCREEN, 24)).toEqual([SHEET_REF_PEEK, SHEET_REF_MID, SHEET_REF_FULL])
+    expect(sheetSnapPoints(SHEET_REF_SCREEN, 24)).toEqual([
+      SHEET_REF_PEEK,
+      SHEET_REF_MID,
+      SHEET_REF_FULL,
+    ])
   })
 
   it("scales mid/full with the window while peek stays the fixed header anchor", () => {
@@ -607,7 +637,9 @@ describe("dock + sheet animation cost", () => {
 
   it("composes the sheet scroll host innermost-first: handoff -> keyboard-aware -> minimize", () => {
     const shell = readFileSync(new URL("../CompactShell.native.tsx", import.meta.url), "utf8")
-    expect(shell).toMatch(/import \{ makeSheetHandoffScrollHost \} from "\.\/SheetHandoffScroll\.native"/)
+    expect(shell).toMatch(
+      /import \{ makeSheetHandoffScrollHost \} from "\.\/SheetHandoffScroll\.native"/,
+    )
     const composition =
       /makeMinimizeAwareScrollHost\(\s*makeKeyboardAwareScrollHost\(\s*makeSheetHandoffScrollHost\(/
     expect(shell).toMatch(composition)
@@ -623,8 +655,13 @@ describe("dock + sheet animation cost", () => {
     expect(portrait).toMatch(/const baseScrollHost = PORTRAIT_BASE_SCROLL_HOST\b/)
     expect(portrait).toMatch(/ownsFocusedInput: \(\) => !baseSurfaceUnderSearchOverlay\(\)/)
     expect(portrait).toMatch(/reserveKeyboardPadding: \(\) => !baseSurfaceUnderSearchOverlay\(\)/)
-    expect(portrait).toMatch(/Platform\.OS !== "web" && useNavStore\.getState\(\)\.view === "search"/)
-    const kbNative = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
+    expect(portrait).toMatch(
+      /Platform\.OS !== "web" && useNavStore\.getState\(\)\.view === "search"/,
+    )
+    const kbNative = readFileSync(
+      new URL("../KeyboardAwareScroll.native.tsx", import.meta.url),
+      "utf8",
+    )
     expect(kbNative).toMatch(/\|\| !ownsFocusedInput\(\)\) return/)
     expect(kbNative).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
     const thread = readFileSync(new URL("../../bodies/PostThreadBody.tsx", import.meta.url), "utf8")
@@ -677,7 +714,8 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
 })
 
 describe("the keyboard-aware scroll seam measures the keyboard instead of trusting the window", () => {
-  const seam = () => readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
+  const seam = () =>
+    readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
 
   it("never reads endCoordinates.screenY: on Android it is the window bottom, not the keyboard top", () => {
     expect(seam()).not.toMatch(/screenY/)
@@ -720,7 +758,9 @@ describe("ONE overlap model: every keyboard measurement in the package goes thro
 
   it("routes the anchor's UI-thread mirror through keyboardMirrorOverlap, never through its own arithmetic", () => {
     const anchor = read("../useKeyboardAnchor.native.ts")
-    expect(anchor).toMatch(/const systemBarInset = KEYBOARD_PLATFORM === "android" \? safeAreaBottom : 0/)
+    expect(anchor).toMatch(
+      /const systemBarInset = KEYBOARD_PLATFORM === "android" \? safeAreaBottom : 0/,
+    )
     expect(anchor).toMatch(/import \{ isEdgeToEdge \} from "react-native-is-edge-to-edge"/)
     expect(anchor).toMatch(/^const EDGE_TO_EDGE = isEdgeToEdge\(\)$/m)
     expect(anchor).toMatch(
@@ -733,7 +773,9 @@ describe("ONE overlap model: every keyboard measurement in the package goes thro
     const helper = read("../useRestingWindowHeight.ts")
     expect(helper).toMatch(/Dimensions\.addEventListener\("change"/)
     expect(helper).toMatch(/Keyboard\.isVisible\(\)/)
-    expect(helper).toMatch(/import \{ shouldRecaptureRestingHeight \} from "\.\/keyboardInsetModel"/)
+    expect(helper).toMatch(
+      /import \{ shouldRecaptureRestingHeight \} from "\.\/keyboardInsetModel"/,
+    )
     expect(helper).toMatch(/prevWidth: restingWindowWidth\.current/)
     expect(helper).toMatch(/nextWidth: window\.width/)
     for (const rel of [
@@ -816,7 +858,9 @@ describe("hostReserved is a WEB-only option the native seam never forwards", () 
       /export interface WebOnlyKeyboardReserveOptions extends KeyboardReserveOptions \{\s*\n\s*hostReserved\?: boolean\s*\n\s*\}/,
     )
     expect(types).not.toMatch(/interface KeyboardReserveOptions \{[^}]*hostReserved/)
-    expect(read("../useKeyboardReserve.web.ts")).toMatch(/\}: WebOnlyKeyboardReserveOptions = \{\}\): number/)
+    expect(read("../useKeyboardReserve.web.ts")).toMatch(
+      /\}: WebOnlyKeyboardReserveOptions = \{\}\): number/,
+    )
   })
 
   it("never reaches the native anchor, which has no ancestor to double-count", () => {

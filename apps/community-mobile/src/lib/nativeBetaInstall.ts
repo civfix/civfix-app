@@ -20,7 +20,10 @@ const PROBE_UNAVAILABLE: StoreKitProbe = {
 function statReceipt(file: { exists: boolean; modificationTime: number | null }): ReceiptStat {
   if (!file.exists) return RECEIPT_ABSENT
   const modificationTime = file.modificationTime
-  return { present: true, modifiedAt: typeof modificationTime === "number" ? modificationTime : null }
+  return {
+    present: true,
+    modifiedAt: typeof modificationTime === "number" ? modificationTime : null,
+  }
 }
 
 function probeStoreKit(): StoreKitProbe {

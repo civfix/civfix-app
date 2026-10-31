@@ -1,7 +1,15 @@
 import { useState } from "react"
 import { Image, Pressable, ScrollView as RNScrollView, StyleSheet, View } from "react-native"
 import type { LatLng, ReportPinDTO } from "@civfix/contract"
-import { categoryColor, focusRingProps, makeThemedStyles, useTheme, wash, webHover, webTransition } from "../../theme"
+import {
+  categoryColor,
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  wash,
+  webHover,
+  webTransition,
+} from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
 import { CATEGORY_ICONS, MetaDot } from "../../primitives"
 import { useNavStore } from "../../nav"
@@ -24,17 +32,33 @@ function railCardWidth(railWidth: number, gap: number, inset: number, count: num
   return (usable - gap * whole) / (whole + PEEK)
 }
 
-function PressingCard({ report, viewer, width }: { report: ReportPinDTO; viewer: LatLng | null; width: number }) {
+function PressingCard({
+  report,
+  viewer,
+  width,
+}: {
+  report: ReportPinDTO
+  viewer: LatLng | null
+  width: number
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-sidebar")
   const category = t(`enums:category.${report.category}`)
-  const { title, distance, thumbUrl } = reportHitRowModel({ report, categoryLabel: category, viewer })
+  const { title, distance, thumbUrl } = reportHitRowModel({
+    report,
+    categoryLabel: category,
+    viewer,
+  })
   const cat = categoryColor(report.category, th.scheme)
   const counts = reportCountsLine(t, report)
   return (
     <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "pin", id: report.id, lat: report.lat, lng: report.lng })}
+      onPress={() =>
+        useNavStore
+          .getState()
+          .push({ kind: "pin", id: report.id, lat: report.lat, lng: report.lng })
+      }
       accessibilityRole="button"
       accessibilityLabel={counts ? `${title}, ${counts}` : title}
       {...focusRingProps}
@@ -85,7 +109,13 @@ function PressingCard({ report, viewer, width }: { report: ReportPinDTO; viewer:
 }
 
 /** "Most pressing nearby" as a horizontal rail of cards, so ten reports cost one card's height. */
-export function PressingRail({ reports, viewer }: { reports: readonly ReportPinDTO[]; viewer: LatLng | null }) {
+export function PressingRail({
+  reports,
+  viewer,
+}: {
+  reports: readonly ReportPinDTO[]
+  viewer: LatLng | null
+}) {
   const search = useSearchStyles()
   const styles = useStyles()
   const th = useTheme()
@@ -100,7 +130,9 @@ export function PressingRail({ reports, viewer }: { reports: readonly ReportPinD
       contentContainerStyle={styles.railContent}
     >
       {railWidth > 0
-        ? reports.map((report) => <PressingCard key={report.id} report={report} viewer={viewer} width={width} />)
+        ? reports.map((report) => (
+            <PressingCard key={report.id} report={report} viewer={viewer} width={width} />
+          ))
         : null}
     </RNScrollView>
   )

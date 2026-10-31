@@ -14,7 +14,14 @@ import {
   useListEndReached,
 } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
-import { useThreads, useAuthState, useRequireAuth, useToggleMute, useMarkThreadRead, useHideConversation } from "../data"
+import {
+  useThreads,
+  useAuthState,
+  useRequireAuth,
+  useToggleMute,
+  useMarkThreadRead,
+  useHideConversation,
+} from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -30,7 +37,11 @@ import { useCoarsePointer } from "../shell/useCoarsePointer"
 import { ThreadRow } from "./inbox/ThreadRow"
 import { IS_WEB, ROW_GUTTER, SEPARATOR_INSET } from "./inbox/inboxLayout"
 
-const COMPOSE_MENU_ITEMS: ReadonlyArray<{ key: "message" | "group" | "channel"; icon: IconName; labelKey: string }> = [
+const COMPOSE_MENU_ITEMS: ReadonlyArray<{
+  key: "message" | "group" | "channel"
+  icon: IconName
+  labelKey: string
+}> = [
   { key: "message", icon: "MessageCircle", labelKey: "new_menu.message" },
   { key: "group", icon: "Users", labelKey: "new_menu.group" },
   { key: "channel", icon: "Megaphone", labelKey: "new_menu.channel" },
@@ -87,7 +98,12 @@ function ComposeButton() {
           setOpen(true)
         }}
       />
-      <PopoverMenu visible={open} onClose={() => setOpen(false)} anchorRect={anchorRect} items={items} />
+      <PopoverMenu
+        visible={open}
+        onClose={() => setOpen(false)}
+        anchorRect={anchorRect}
+        items={items}
+      />
     </View>
   )
 }
@@ -215,9 +231,7 @@ export function MessagingListBody() {
     void Promise.resolve(refetch()).finally(() => setRefreshing(false))
   }, [refetch])
   const refresh = useMemo(
-    () => (
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />
-    ),
+    () => <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />,
     [refreshing, onRefresh, refreshSpinner],
   )
 

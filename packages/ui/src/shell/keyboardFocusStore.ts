@@ -1,9 +1,7 @@
 import { createListenerSet } from "./listenerSet"
 
 export interface KeyboardFocusNode {
-  measureInWindow: (
-    callback: (x: number, y: number, width: number, height: number) => void,
-  ) => void
+  measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void
 }
 
 export interface KeyboardFocusState {

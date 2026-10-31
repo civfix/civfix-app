@@ -41,7 +41,15 @@ describe("MeTooButton on web", () => {
     const { unmount } = render(button({}))
     expect(getComputedStyle(screen.getByRole("button")).flexGrow).toBe("1")
     unmount()
-    render(<MeTooButton size="sm" label="I see this too" accessibilityLabel="I see this problem too" pressed={false} onPress={() => {}} />)
+    render(
+      <MeTooButton
+        size="sm"
+        label="I see this too"
+        accessibilityLabel="I see this problem too"
+        pressed={false}
+        onPress={() => {}}
+      />,
+    )
     expect(getComputedStyle(screen.getByRole("button")).flexGrow).not.toBe("1")
   })
 })
@@ -64,32 +72,54 @@ describe.each<ColorSchemeName>(["light", "dark"])("MeTooButton shading (%s)", (s
     fixed: { solid: c.brand.moss, ramp: c.moss, ink: c.chipInk.moss },
   }
 
-  function renderVote(tone: MeTooTone, { pressed = false, size = "md" }: { pressed?: boolean; size?: "sm" | "md" }) {
+  function renderVote(
+    tone: MeTooTone,
+    { pressed = false, size = "md" }: { pressed?: boolean; size?: "sm" | "md" },
+  ) {
     render(
       <ThemeProvider preference={scheme}>
-        <MeTooButton tone={tone} size={size} label="Vote" accessibilityLabel="Vote" pressed={pressed} onPress={() => {}} />
+        <MeTooButton
+          tone={tone}
+          size={size}
+          label="Vote"
+          accessibilityLabel="Vote"
+          pressed={pressed}
+          onPress={() => {}}
+        />
       </ThemeProvider>,
     )
     return screen.getByRole("button")
   }
 
-  it.each<MeTooTone>(["seen", "fixed"])("%s, not voted: the surface fill with the tone's 300 border", (tone) => {
-    expect(shading(renderVote(tone, {}))).toEqual({ fill: rgb(c.surface), border: rgb(toned[tone].ramp["300"]) })
-  })
+  it.each<MeTooTone>(["seen", "fixed"])(
+    "%s, not voted: the surface fill with the tone's 300 border",
+    (tone) => {
+      expect(shading(renderVote(tone, {}))).toEqual({
+        fill: rgb(c.surface),
+        border: rgb(toned[tone].ramp["300"]),
+      })
+    },
+  )
 
-  it.each<MeTooTone>(["seen", "fixed"])("%s, voted: the tone's 50 wash with its solid border", (tone) => {
-    expect(shading(renderVote(tone, { pressed: true }))).toEqual({
-      fill: rgb(toned[tone].ramp["50"]),
-      border: rgb(toned[tone].solid),
-    })
-  })
+  it.each<MeTooTone>(["seen", "fixed"])(
+    "%s, voted: the tone's 50 wash with its solid border",
+    (tone) => {
+      expect(shading(renderVote(tone, { pressed: true }))).toEqual({
+        fill: rgb(toned[tone].ramp["50"]),
+        border: rgb(toned[tone].solid),
+      })
+    },
+  )
 
-  it.each<MeTooTone>(["seen", "fixed"])("%s, small: the tone's 50 wash with its 300 border", (tone) => {
-    expect(shading(renderVote(tone, { size: "sm" }))).toEqual({
-      fill: rgb(toned[tone].ramp["50"]),
-      border: rgb(toned[tone].ramp["300"]),
-    })
-  })
+  it.each<MeTooTone>(["seen", "fixed"])(
+    "%s, small: the tone's 50 wash with its 300 border",
+    (tone) => {
+      expect(shading(renderVote(tone, { size: "sm" }))).toEqual({
+        fill: rgb(toned[tone].ramp["50"]),
+        border: rgb(toned[tone].ramp["300"]),
+      })
+    },
+  )
 
   it.each([
     { state: "not voted", pressed: false, size: "md" as const, hover: "50" as const },

@@ -10,7 +10,11 @@ const APP_ROOT = new URL("../", import.meta.url).href
 registerHooks({
   load(url, context, nextLoad) {
     const { pathname } = new URL(url)
-    if (url.startsWith(APP_ROOT) && pathname.endsWith(".ts") && !pathname.includes("/node_modules/")) {
+    if (
+      url.startsWith(APP_ROOT) &&
+      pathname.endsWith(".ts") &&
+      !pathname.includes("/node_modules/")
+    ) {
       return nextLoad(url, { ...context, format: "module-typescript" })
     }
     return nextLoad(url, context)

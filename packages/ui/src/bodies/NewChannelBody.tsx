@@ -98,7 +98,9 @@ export function NewChannelBody() {
               {...focusRingProps}
               style={({ pressed }) => [styles.skipBtn, pressed ? headerStyles.backPressed : null]}
             >
-              <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>{t("skip")}</Text>
+              <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>
+                {t("skip")}
+              </Text>
             </Pressable>
           ) : null
         }
@@ -129,7 +131,11 @@ export function NewChannelBody() {
             />
           </ScrollView>
           <KeyboardPinnedFooter style={styles.footer}>
-            <PrimaryButton label={t("next")} onPress={onNextIdentity} disabled={identityNextDisabled} />
+            <PrimaryButton
+              label={t("next")}
+              onPress={onNextIdentity}
+              disabled={identityNextDisabled}
+            />
           </KeyboardPinnedFooter>
         </>
       ) : step === "visibility" ? (

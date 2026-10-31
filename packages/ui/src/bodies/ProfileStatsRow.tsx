@@ -1,6 +1,13 @@
 import { Pressable, View } from "react-native"
 import type { UserProfileDTO } from "@civfix/contract"
-import { makeThemedStyles, focusRingProps, webCursor, webNoSelect, webTransition, MIN_TOUCH_TARGET } from "../theme"
+import {
+  makeThemedStyles,
+  focusRingProps,
+  webCursor,
+  webNoSelect,
+  webTransition,
+  MIN_TOUCH_TARGET,
+} from "../theme"
 import { Text, TextLink } from "../typography"
 import { useT } from "../i18n"
 import { formatPostActionCount } from "../primitives/postActionModel"
@@ -22,8 +29,18 @@ export interface ProfileStatsSource {
 
 export function buildProfileStats(source: ProfileStatsSource): ProfileStatItem[] {
   return [
-    { key: "following", value: source.following, labelKey: "stats.following", connection: "following" },
-    { key: "followers", value: source.followers, labelKey: "stats.followers", connection: "followers" },
+    {
+      key: "following",
+      value: source.following,
+      labelKey: "stats.following",
+      connection: "following",
+    },
+    {
+      key: "followers",
+      value: source.followers,
+      labelKey: "stats.followers",
+      connection: "followers",
+    },
     { key: "reports", value: source.stats.reports, labelKey: "stats.reports", connection: null },
     { key: "fixed", value: source.stats.fixed, labelKey: "stats.fixed", connection: null },
     { key: "cleanups", value: source.stats.cleanups, labelKey: "stats.cleanups", connection: null },
@@ -31,7 +48,7 @@ export function buildProfileStats(source: ProfileStatsSource): ProfileStatItem[]
 }
 
 export interface ProfileStatsRowProps extends ProfileStatsSource {
-  onOpenConnections?: (which: ProfileConnectionKey) => void
+  onOpenConnections?: ((which: ProfileConnectionKey) => void) | undefined
 }
 
 export function ProfileStatsRow({
@@ -48,7 +65,8 @@ export function ProfileStatsRow({
     const label = t(item.labelKey, { count: item.value })
     const count = formatPostActionCount(item.value)
     const which = item.connection
-    const onPress = which != null && onOpenConnections != null ? () => onOpenConnections(which) : null
+    const onPress =
+      which != null && onOpenConnections != null ? () => onOpenConnections(which) : null
     const pressable = onPress != null
     const content = (
       <>

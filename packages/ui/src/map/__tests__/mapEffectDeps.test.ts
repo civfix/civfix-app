@@ -32,27 +32,40 @@ function expectNoRenderPhaseRefWrites(component: string, refs: readonly string[]
 }
 
 function expectLatestValueRefs(component: string, refs: Record<string, string>): void {
-  for (const [ref, value] of Object.entries(refs)) expectWrittenInLayoutEffect(component, `${ref}.current = ${value}`)
+  for (const [ref, value] of Object.entries(refs))
+    expectWrittenInLayoutEffect(component, `${ref}.current = ${value}`)
   expectNoRenderPhaseRefWrites(component, Object.keys(refs))
 }
 
 describe("LocationPicker.web", () => {
   const src = read("../LocationPicker.web.tsx")
   const inline = sliceBetween(src, "function InlineLocationPicker(", "function samePickPoint(")
-  const mainMap = sliceBetween(src, "function MainMapLocationPicker(", "export function LocationPicker(")
+  const mainMap = sliceBetween(
+    src,
+    "function MainMapLocationPicker(",
+    "export function LocationPicker(",
+  )
 
   it("builds the inline map once per seed, placing the first marker from the committed value", () => {
-    expect(sliceBetween(inline, "const ensureMarker = React.useCallback(", "React.useEffect(")).toContain(
-      "    [],\n  )",
+    expect(
+      sliceBetween(inline, "const ensureMarker = React.useCallback(", "React.useEffect("),
+    ).toContain("    [],\n  )")
+    const build = sliceBetween(
+      inline,
+      "if (mapRef.current || !containerRef.current || !cameraSeed) return",
+      "React.useEffect(",
     )
-    const build = sliceBetween(inline, "if (mapRef.current || !containerRef.current || !cameraSeed) return", "React.useEffect(")
     expect(build).toContain("if (valueRef.current) ensureMarker(map, start)")
     expect(build).toContain("}, [cameraSeed, ensureMarker])")
     expectWrittenInLayoutEffect(inline, "valueRef.current = value")
   })
 
   it("starts the main-map pick session once, from the committed value", () => {
-    const start = sliceBetween(mainMap, "useLocationPick.getState().start(valueRef", "React.useEffect(")
+    const start = sliceBetween(
+      mainMap,
+      "useLocationPick.getState().start(valueRef",
+      "React.useEffect(",
+    )
     expect(start).toContain("}, [])")
     expectWrittenInLayoutEffect(mainMap, "valueRef.current = value")
   })
@@ -63,12 +76,20 @@ describe("Map.web", () => {
 
   it("keeps the idle runner for the life of the component, so listing it never rebuilds the map", () => {
     expect(src).toContain("const runner = (runnerRef.current ??= createIdleRunner(")
-    const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useEffect(")
+    const build = sliceBetween(
+      src,
+      "if (mapRef.current || !containerRef.current) return",
+      "React.useEffect(",
+    )
     expect(build).toContain("}, [runner])")
   })
 
   it("reads the initial basemap from the last committed render", () => {
-    const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useEffect(")
+    const build = sliceBetween(
+      src,
+      "if (mapRef.current || !containerRef.current) return",
+      "React.useEffect(",
+    )
     expect(build).toContain("cartoApiKey: cartoApiKeyRef.current,")
     expectWrittenInLayoutEffect(src, "cartoApiKeyRef.current = cartoApiKey")
   })
@@ -79,7 +100,11 @@ describe("ReportPickMap.web", () => {
 
   it("builds its map once and reads the CARTO key from the last committed render", () => {
     expect(src).toContain("const runner = (runnerRef.current ??= createIdleRunner(")
-    const build = sliceBetween(src, "if (mapRef.current || !containerRef.current) return", "React.useMemo(")
+    const build = sliceBetween(
+      src,
+      "if (mapRef.current || !containerRef.current) return",
+      "React.useMemo(",
+    )
     expect(build).toContain("cartoApiKey: cartoApiKeyRef.current,")
     expect(build).toContain("}, [runner])")
     expectWrittenInLayoutEffect(src, "cartoApiKeyRef.current = cartoApiKey")
@@ -103,9 +128,13 @@ describe("PortraitMapPickStep", () => {
 
   it("native drop and address handlers list the stable point setter", () => {
     const src = read("../PortraitMapPickStep.native.tsx")
-    expect(sliceBetween(src, "const setLocalPoint = useCallback(", "const onConfirmRef")).toContain("    [],\n  )")
-    expect(sliceBetween(src, "const onPickPlace = useCallback(", "const onMapDrop")).toContain("[setLocalPoint],")
-    expect(src).toContain("setLocalPoint({ lat, lng }), [setLocalPoint])")
+    expect(sliceBetween(src, "const setLocalPoint = useCallback(", "const onConfirmRef")).toContain(
+      "    [],\n  )",
+    )
+    expect(sliceBetween(src, "const onPickPlace = useCallback(", "const onMapDrop")).toContain(
+      "[setLocalPoint],",
+    )
+    expect(src).toMatch(/setLocalPoint\(\{ lat, lng \}\),\s*\[setLocalPoint\],?\s*\)/)
   })
 })
 
@@ -128,8 +157,16 @@ describe("latest-value refs are written after commit, never during render", () =
 
   it("LocationPicker.web main-map picker", () => {
     const src = read("../LocationPicker.web.tsx")
-    const mainMap = sliceBetween(src, "function MainMapLocationPicker(", "export function LocationPicker(")
-    expectLatestValueRefs(mainMap, { onChangeRef: "onChange", onClearRef: "onClear", pinRef: "pin" })
+    const mainMap = sliceBetween(
+      src,
+      "function MainMapLocationPicker(",
+      "export function LocationPicker(",
+    )
+    expectLatestValueRefs(mainMap, {
+      onChangeRef: "onChange",
+      onClearRef: "onClear",
+      pinRef: "pin",
+    })
   })
 
   it("Map.web", () => {
@@ -158,7 +195,10 @@ describe("latest-value refs are written after commit, never during render", () =
   })
 
   it("ReportPickMap.web", () => {
-    const component = sliceFrom(read("../ReportPickMap.web.tsx"), "export const ReportPickMap = React.forwardRef")
+    const component = sliceFrom(
+      read("../ReportPickMap.web.tsx"),
+      "export const ReportPickMap = React.forwardRef",
+    )
     expectLatestValueRefs(component, {
       themeRef: "th",
       onRegionChangeRef: "onRegionChange",
@@ -173,14 +213,24 @@ describe("latest-value refs are written after commit, never during render", () =
   })
 
   it("ReportPickMap.web publishes its reconcile closure after commit", () => {
-    const component = sliceFrom(read("../ReportPickMap.web.tsx"), "export const ReportPickMap = React.forwardRef")
+    const component = sliceFrom(
+      read("../ReportPickMap.web.tsx"),
+      "export const ReportPickMap = React.forwardRef",
+    )
     expectWrittenInLayoutEffect(component, "reconcileRef.current = () => {")
     expectNoRenderPhaseRefWrites(component, ["reconcileRef"])
   })
 
   it("PortraitMapPickStep.web", () => {
-    const component = sliceFrom(read("../PortraitMapPickStep.web.tsx"), "export function PortraitMapPickStep(")
-    expectLatestValueRefs(component, { pinRef: "pin", onConfirmRef: "onConfirm", onCancelRef: "onCancel" })
+    const component = sliceFrom(
+      read("../PortraitMapPickStep.web.tsx"),
+      "export function PortraitMapPickStep(",
+    )
+    expectLatestValueRefs(component, {
+      pinRef: "pin",
+      onConfirmRef: "onConfirm",
+      onCancelRef: "onCancel",
+    })
   })
 
   it("Map.native", () => {
@@ -207,7 +257,10 @@ describe("latest-value refs are written after commit, never during render", () =
   })
 
   it("ReportPickMap.native", () => {
-    const component = sliceFrom(read("../ReportPickMap.native.tsx"), "export const ReportPickMap = memo(")
+    const component = sliceFrom(
+      read("../ReportPickMap.native.tsx"),
+      "export const ReportPickMap = memo(",
+    )
     expectLatestValueRefs(component, {
       hapticsRef: "haptics",
       onRegionChangeRef: "onRegionChange",
@@ -217,13 +270,19 @@ describe("latest-value refs are written after commit, never during render", () =
   })
 
   it("ReportPickMap.native publishes its recompute closure after commit", () => {
-    const component = sliceFrom(read("../ReportPickMap.native.tsx"), "export const ReportPickMap = memo(")
+    const component = sliceFrom(
+      read("../ReportPickMap.native.tsx"),
+      "export const ReportPickMap = memo(",
+    )
     expectWrittenInLayoutEffect(component, "recomputeRef.current = () => {")
     expectNoRenderPhaseRefWrites(component, ["recomputeRef"])
   })
 
   it("PortraitMapPickStep.native", () => {
-    const component = sliceFrom(read("../PortraitMapPickStep.native.tsx"), "export function PortraitMapPickStep(")
+    const component = sliceFrom(
+      read("../PortraitMapPickStep.native.tsx"),
+      "export function PortraitMapPickStep(",
+    )
     expectLatestValueRefs(component, { onConfirmRef: "onConfirm", onCancelRef: "onCancel" })
   })
 })

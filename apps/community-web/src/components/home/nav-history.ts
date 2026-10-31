@@ -117,10 +117,7 @@ export function snapshotEquals(a: NavSnapshot, b: NavSnapshot): boolean {
 }
 
 export type ReconcilePlan =
-  | { type: "none" }
-  | { type: "restamp" }
-  | { type: "push"; count: number }
-  | { type: "replace" }
+  { type: "none" } | { type: "restamp" } | { type: "push"; count: number } | { type: "replace" }
 
 function samePlacePlan(
   a: NavSnapshot,
@@ -136,7 +133,10 @@ export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): Reconcile
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)
-  if (liveIds.length > landedIds.length && sameIdentities(landedIds, liveIds.slice(0, landedIds.length)))
+  if (
+    liveIds.length > landedIds.length &&
+    sameIdentities(landedIds, liveIds.slice(0, landedIds.length))
+  )
     return { type: "push", count: liveIds.length - landedIds.length }
   return { type: "replace" }
 }

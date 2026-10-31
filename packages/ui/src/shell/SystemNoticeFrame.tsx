@@ -16,7 +16,10 @@ export function SystemNoticeFrame({ children }: { children: React.ReactNode }) {
   const notice = useVisibleSystemNotice()
   const insets = useSafeAreaInsets()
   const [barHeight, setBarHeight] = useState(0)
-  const onBarLayout = useCallback((e: LayoutChangeEvent) => setBarHeight(e.nativeEvent.layout.height), [])
+  const onBarLayout = useCallback(
+    (e: LayoutChangeEvent) => setBarHeight(e.nativeEvent.layout.height),
+    [],
+  )
   const takenTop = notice ? barHeight : 0
   const below = useMemo(() => (notice ? { ...insets, top: 0 } : insets), [notice, insets])
   const frame = useMemo(() => ({ windowInsets: insets, takenTop }), [insets, takenTop])

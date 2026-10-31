@@ -81,19 +81,27 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     const ctx = await opts.onMutate?.(false, fnCtx(qc))
 
     // Detail flipped + count bumped.
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
     // The c1 row in the list flipped; c2 untouched.
     const list = qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))!
     expect(list.find((c) => c.id === "c1")).toMatchObject({ joined: true, going: 5 })
     expect(list.find((c) => c.id === "c2")).toMatchObject({ joined: false, going: 9 })
     // Roster count bumped to match.
-    expect(qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"))).toMatchObject({
+    expect(
+      qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1")),
+    ).toMatchObject({
       going: 5,
     })
 
     // Server confirms -> reconcile (idempotent here).
     opts.onSuccess?.({ joined: true, going: 5 }, false, ctx!, fnCtx(qc))
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
   })
 
   it("rolls the detail, the list row, and the roster count back on error", async () => {
@@ -108,23 +116,33 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     })
     const ctx = await opts.onMutate?.(true, fnCtx(qc))
     // Optimistically left (detail + list + roster dropped to 4).
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: false, going: 4 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: false,
+      going: 4,
+    })
     expect(qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))![0]).toMatchObject({
       joined: false,
       going: 4,
     })
-    expect(qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"))).toMatchObject({
+    expect(
+      qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1")),
+    ).toMatchObject({
       going: 4,
     })
 
     // Error -> rollback all three to the pre-tap (joined, going=5).
     opts.onError?.(new Error("offline"), true, ctx, fnCtx(qc))
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
     expect(qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))![0]).toMatchObject({
       joined: true,
       going: 5,
     })
-    expect(qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"))).toMatchObject({
+    expect(
+      qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1")),
+    ).toMatchObject({
       going: 5,
     })
   })
@@ -153,7 +171,9 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     expect(
       qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))!.find((c) => c.id === "c1"),
     ).toMatchObject({ joined: true, going: 5 })
-    expect(qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"))).toMatchObject({
+    expect(
+      qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1")),
+    ).toMatchObject({
       going: 5,
     })
     // No phantom UUID entry was seeded (the page renders the refcode key; nothing reads ["cleanup","c1"]).
@@ -206,8 +226,14 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
 
     const opts = joinOptions(qc, "c1", async () => ({ joined: true, going: 5 }))
     const ctx = await opts.onMutate?.(false, fnCtx(qc))
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup(REFCODE))).toMatchObject({ joined: true, going: 5 })
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup(REFCODE))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
 
     opts.onSettled?.({ joined: true, going: 5 }, null, false, ctx, fnCtx(qc))
     expect(qc.getQueryState(queryKeys.cleanup(REFCODE))?.isInvalidated).toBe(true)
@@ -230,7 +256,9 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     const list = qc.getQueryData<CleanupDTO[]>(queryKeys.cleanups("upcoming", 50))!
     expect(list.find((c) => c.id === "c1")).toMatchObject({ joined: true, going: 13 })
     expect(list.find((c) => c.id === "c2")).toMatchObject({ joined: false, going: 9 })
-    expect(qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1"))).toMatchObject({
+    expect(
+      qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees("c1")),
+    ).toMatchObject({
       going: 13,
     })
 
@@ -268,7 +296,10 @@ describe("cleanup RSVP toggle cache reconciliation (real hook options)", () => {
     // refetch can, so both alias entries must come out of settle invalidated.
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup(REFCODE),
-      cleanup("c1", true, 5, { referenceCode: REFCODE, slots: [claimedSlot] } as Partial<CleanupDTO>),
+      cleanup("c1", true, 5, {
+        referenceCode: REFCODE,
+        slots: [claimedSlot],
+      } as Partial<CleanupDTO>),
     )
     qc.setQueryData<CleanupDTO>(
       queryKeys.cleanup("c1"),
@@ -309,7 +340,9 @@ describe("event slot claim cache reconciliation (real hook options)", () => {
     // Claiming auto-RSVPs: the server returns the full refreshed DTO (slots with `mine`, joined, going).
     const res = cleanup("c1", true, 5, {
       referenceCode: REFCODE,
-      slots: [{ id: "s1", title: "Truck driver", description: null, capacity: 2, claimed: 1, mine: true }],
+      slots: [
+        { id: "s1", title: "Truck driver", description: null, capacity: 2, claimed: 1, mine: true },
+      ],
     } as Partial<CleanupDTO>)
     const opts = claimEventSlotMutationOptions(qc, "c1", async () => res)
     opts.onSuccess?.(res, { slotId: "s1" }, undefined, fnCtx(qc))
@@ -336,7 +369,10 @@ describe("event slot claim cache reconciliation (real hook options)", () => {
     const opts = claimEventSlotMutationOptions(qc, "c1", async () => res)
     opts.onSuccess?.(res, { slotId: "s1" }, undefined, fnCtx(qc))
 
-    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({ joined: true, going: 5 })
+    expect(qc.getQueryData<CleanupDTO>(queryKeys.cleanup("c1"))).toMatchObject({
+      joined: true,
+      going: 5,
+    })
   })
 })
 
@@ -349,7 +385,9 @@ describe("rsvpErrorKey (the join/leave failure toast copy)", () => {
   })
 
   it("tells an ENDED event apart from a closed one by the field the server names", () => {
-    expect(rsvpErrorKey("CONFLICT", { [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON })).toBe("error.ended")
+    expect(rsvpErrorKey("CONFLICT", { [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON })).toBe(
+      "error.ended",
+    )
     expect(rsvpErrorKey("CONFLICT", {})).toBe("error.closed")
     expect(rsvpErrorKey("CONFLICT", undefined)).toBe("error.closed")
   })

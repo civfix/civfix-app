@@ -77,7 +77,9 @@ describe("AcceptInviteScreen", () => {
         vi.fn().mockResolvedValue({ ok: true, organization: org({ myRole: role }), role }),
       )
       await user.click(await screen.findByRole("button", { name: "accept.action" }))
-      expect(await screen.findAllByText(new RegExp(`accept\\.joined_as_${role}`))).not.toHaveLength(0)
+      expect(await screen.findAllByText(new RegExp(`accept\\.joined_as_${role}`))).not.toHaveLength(
+        0,
+      )
       view.unmount()
     }
   })
@@ -128,7 +130,9 @@ describe("AcceptInviteScreen", () => {
       vi.fn().mockRejectedValue(new AppError(ErrorCode.CONFLICT, "expired")),
     )
     await user.click(await screen.findByRole("button", { name: "accept.action" }))
-    expect((await screen.findByTestId("org-invite-problem")).textContent).toContain("accept.error_expired_title")
+    expect((await screen.findByTestId("org-invite-problem")).textContent).toContain(
+      "accept.error_expired_title",
+    )
     expired.unmount()
 
     renderAccept(TOKEN, vi.fn().mockRejectedValue(new AppError(ErrorCode.FORBIDDEN, "nope")))
@@ -140,7 +144,9 @@ describe("AcceptInviteScreen", () => {
 
   it("never calls the API for a missing or malformed token", async () => {
     const { client } = renderAccept("short")
-    expect((await screen.findByTestId("org-invite-problem")).textContent).toContain("accept.error_invalid_title")
+    expect((await screen.findByTestId("org-invite-problem")).textContent).toContain(
+      "accept.error_invalid_title",
+    )
     expect(screen.queryByRole("button", { name: "accept.action" })).toBeNull()
     expect(client.acceptOrganizationInvite).not.toHaveBeenCalled()
   })

@@ -155,7 +155,11 @@ export function ReplyAttachSheet({
       dismissLabel={t("attach.dismiss")}
     >
       {(runAfterDismiss) =>
-        level === "menu" ? <>{rows.map((key) => renderMenuRow(key, runAfterDismiss))}</> : pickerBody()
+        level === "menu" ? (
+          <>{rows.map((key) => renderMenuRow(key, runAfterDismiss))}</>
+        ) : (
+          pickerBody()
+        )
       }
     </AnchoredActionSheet>
   )

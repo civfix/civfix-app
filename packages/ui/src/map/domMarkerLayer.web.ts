@@ -8,7 +8,7 @@ export interface MarkerEntry {
   root: Root
   signature: string
   anchor: DesiredMarker["anchor"]
-  onClick: { fn?: () => void }
+  onClick: { fn?: (() => void) | undefined }
 }
 
 export interface DesiredMarker {
@@ -76,7 +76,7 @@ export function syncMarkers(
     el.setAttribute("role", "button")
     el.setAttribute("tabindex", "0")
     if (want.pressed !== undefined) el.setAttribute("aria-pressed", String(want.pressed))
-    const onClick: { fn?: () => void } = { fn: want.onClick }
+    const onClick: { fn?: (() => void) | undefined } = { fn: want.onClick }
     const press = () => {
       beforePress?.()
       onClick.fn?.()

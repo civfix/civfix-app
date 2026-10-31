@@ -69,135 +69,144 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
 
   return (
     <View style={styles.detailRoot}>
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    >
-      <HostDraftBar reportId={report.id} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <HostDraftBar reportId={report.id} />
 
-      <View style={styles.titleRow}>
-        <Text style={styles.title} numberOfLines={2} accessibilityRole="header" {...headingLevel(2)}>
-          {title}
-        </Text>
-        <View style={styles.titleOverflow}>
-          <Pressable
-            ref={titleMenu.titleMenuAnchorRef}
-            onPress={titleMenu.openTitleMenu}
-            accessibilityRole="button"
-            accessibilityLabel={t("title_menu.options_a11y")}
-            accessibilityState={{ expanded: titleMenu.titleMenuOpen }}
-            hitSlop={6}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.titleOverflowBtn, pressed ? shared.pressed : null]}
-          >
-            <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.textMuted} />
-          </Pressable>
-          <PopoverMenu
-            visible={titleMenu.titleMenuOpen}
-            anchorRect={titleMenu.titleMenuRect}
-            onClose={titleMenu.closeTitleMenu}
-            items={titleMenu.titleMenuItems}
-          />
-        </View>
-      </View>
-
-      {report.referenceCode ? (
-        <Text variant="mono" color={th.colors.textSubtle} style={styles.refCode}>
-          {report.referenceCode}
-        </Text>
-      ) : null}
-
-      {report.addr ? (
-        <View style={styles.locRow}>
-          <AddressRow
-            address={report.addr}
-            point={{ lat: report.lat, lng: report.lng }}
-            focusTarget={{ kind: "report", id: report.id, category: report.category }}
-            precision={report.addrPrecision ?? null}
-            verified={isVerifiedReportAddress(report.addrSource, report.addrPrecision, report.addr)}
-            title={title}
+        <View style={styles.titleRow}>
+          <Text
+            style={styles.title}
             numberOfLines={2}
-          />
-        </View>
-      ) : null}
-
-      <View style={styles.statusRow}>
-        <StatusBadge status={report.status} large />
-        {repost.visible ? (
-          <SecondaryButton
-            size="sm"
-            icon={iconMap.RefreshCw}
-            label={t("actions.repost")}
-            accessibilityLabel={t("actions.repost_a11y")}
-            onPress={repost.onRepost}
-          />
-        ) : null}
-      </View>
-
-      {meToo.visible || countsLine ? (
-        <View style={styles.meToo}>
-          {meToo.visible ? (
-            <View style={styles.meTooButtons}>
-              <View style={styles.meTooButton}>
-                <MeTooButton
-                  label={t("confirm.see_too")}
-                  accessibilityLabel={t("confirm.see_too_a11y")}
-                  pressed={meToo.seen.pressed}
-                  onPress={meToo.seen.onPress}
-                />
-              </View>
-              <View style={styles.meTooButton}>
-                <MeTooButton
-                  tone="fixed"
-                  label={t("confirm.fixed")}
-                  accessibilityLabel={t("confirm.fixed_a11y")}
-                  pressed={meToo.fixed.pressed}
-                  onPress={meToo.fixed.onPress}
-                />
-              </View>
-            </View>
-          ) : null}
-          {countsLine ? <MeTooCount text={countsLine} centered={meToo.visible} /> : null}
-        </View>
-      ) : null}
-
-      {report.mine && report.visibility === "hidden" ? (
-        <View style={styles.hiddenBanner} accessibilityRole="text">
-          <Icon icon={iconMap.Lock} size={13} color={th.colors.textMuted} />
-          <Text variant="caption" color={th.colors.textMuted} style={styles.hiddenBannerText}>
-            {t("hidden_banner")}
+            accessibilityRole="header"
+            {...headingLevel(2)}
+          >
+            {title}
           </Text>
+          <View style={styles.titleOverflow}>
+            <Pressable
+              ref={titleMenu.titleMenuAnchorRef}
+              onPress={titleMenu.openTitleMenu}
+              accessibilityRole="button"
+              accessibilityLabel={t("title_menu.options_a11y")}
+              accessibilityState={{ expanded: titleMenu.titleMenuOpen }}
+              hitSlop={6}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.titleOverflowBtn, pressed ? shared.pressed : null]}
+            >
+              <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.textMuted} />
+            </Pressable>
+            <PopoverMenu
+              visible={titleMenu.titleMenuOpen}
+              anchorRect={titleMenu.titleMenuRect}
+              onClose={titleMenu.closeTitleMenu}
+              items={titleMenu.titleMenuItems}
+            />
+          </View>
         </View>
-      ) : null}
 
-      {report.mine ? <ResolveButton report={report} /> : null}
+        {report.referenceCode ? (
+          <Text variant="mono" color={th.colors.textSubtle} style={styles.refCode}>
+            {report.referenceCode}
+          </Text>
+        ) : null}
 
-      <ReportGallery report={report} onReportPhoto={contentSheet.onReportGalleryPhoto} />
+        {report.addr ? (
+          <View style={styles.locRow}>
+            <AddressRow
+              address={report.addr}
+              point={{ lat: report.lat, lng: report.lng }}
+              focusTarget={{ kind: "report", id: report.id, category: report.category }}
+              precision={report.addrPrecision ?? null}
+              verified={isVerifiedReportAddress(
+                report.addrSource,
+                report.addrPrecision,
+                report.addr,
+              )}
+              title={title}
+              numberOfLines={2}
+            />
+          </View>
+        ) : null}
 
-      {report.description ? <Text style={styles.description}>{report.description}</Text> : null}
+        <View style={styles.statusRow}>
+          <StatusBadge status={report.status} large />
+          {repost.visible ? (
+            <SecondaryButton
+              size="sm"
+              icon={iconMap.RefreshCw}
+              label={t("actions.repost")}
+              accessibilityLabel={t("actions.repost_a11y")}
+              onPress={repost.onRepost}
+            />
+          ) : null}
+        </View>
 
-      <ReportLinkedEvents events={report.linkedEvents} />
+        {meToo.visible || countsLine ? (
+          <View style={styles.meToo}>
+            {meToo.visible ? (
+              <View style={styles.meTooButtons}>
+                <View style={styles.meTooButton}>
+                  <MeTooButton
+                    label={t("confirm.see_too")}
+                    accessibilityLabel={t("confirm.see_too_a11y")}
+                    pressed={meToo.seen.pressed}
+                    onPress={meToo.seen.onPress}
+                  />
+                </View>
+                <View style={styles.meTooButton}>
+                  <MeTooButton
+                    tone="fixed"
+                    label={t("confirm.fixed")}
+                    accessibilityLabel={t("confirm.fixed_a11y")}
+                    pressed={meToo.fixed.pressed}
+                    onPress={meToo.fixed.onPress}
+                  />
+                </View>
+              </View>
+            ) : null}
+            {countsLine ? <MeTooCount text={countsLine} centered={meToo.visible} /> : null}
+          </View>
+        ) : null}
 
-      <ViewChatRow report={report} />
+        {report.mine && report.visibility === "hidden" ? (
+          <View style={styles.hiddenBanner} accessibilityRole="text">
+            <Icon icon={iconMap.Lock} size={13} color={th.colors.textMuted} />
+            <Text variant="caption" color={th.colors.textMuted} style={styles.hiddenBannerText}>
+              {t("hidden_banner")}
+            </Text>
+          </View>
+        ) : null}
 
-      <Text style={[shared.eyebrow, styles.updatesGap]}>{t("updates_label")}</Text>
-      <View>
-        {timeline.map((node, i) => (
-          <TimelineRow key={node.key} node={node} last={i === timeline.length - 1} />
-        ))}
-      </View>
+        {report.mine ? <ResolveButton report={report} /> : null}
 
-      <ReportContentSheet
-        visible={contentSheet.target !== null}
-        subjectLabel={contentSheet.target?.label ?? t("subject_label.content")}
-        pending={contentSheet.pending}
-        error={contentSheet.failed ? t("content_report.error") : null}
-        onSubmit={contentSheet.submit}
-        onClose={contentSheet.close}
-      />
-    </ScrollView>
+        <ReportGallery report={report} onReportPhoto={contentSheet.onReportGalleryPhoto} />
+
+        {report.description ? <Text style={styles.description}>{report.description}</Text> : null}
+
+        <ReportLinkedEvents events={report.linkedEvents} />
+
+        <ViewChatRow report={report} />
+
+        <Text style={[shared.eyebrow, styles.updatesGap]}>{t("updates_label")}</Text>
+        <View>
+          {timeline.map((node, i) => (
+            <TimelineRow key={node.key} node={node} last={i === timeline.length - 1} />
+          ))}
+        </View>
+
+        <ReportContentSheet
+          visible={contentSheet.target !== null}
+          subjectLabel={contentSheet.target?.label ?? t("subject_label.content")}
+          pending={contentSheet.pending}
+          error={contentSheet.failed ? t("content_report.error") : null}
+          onSubmit={contentSheet.submit}
+          onClose={contentSheet.close}
+        />
+      </ScrollView>
     </View>
   )
 }
@@ -217,12 +226,7 @@ function ReportDetailSkeleton() {
           <SkeletonText width="34%" height={12} />
           <SkeletonText width="58%" height={12} />
         </SkeletonGroup>
-        <SkeletonBlock
-          width="100%"
-          height="auto"
-          radius={radius.lg}
-          style={styles.skeletonHero}
-        />
+        <SkeletonBlock width="100%" height="auto" radius={radius.lg} style={styles.skeletonHero} />
         <SkeletonGroup style={styles.skeletonBlocks}>
           <SkeletonBlock width="100%" height={56} radius={radius.lg} />
           <SkeletonList rows={3} kind="notification" />

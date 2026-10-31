@@ -17,7 +17,11 @@ export function PostDetailBody({ id }: { id: string }) {
   const { t } = useT("home-feed")
   const { ScrollView } = useScrollHost()
   const query = usePost(id)
-  const view = postDetailViewState({ hasId: id.length > 0, hasData: query.data != null, isError: query.isError })
+  const view = postDetailViewState({
+    hasId: id.length > 0,
+    hasData: query.data != null,
+    isError: query.isError,
+  })
   if (view !== "ready" || !query.data) {
     return (
       <ScrollView

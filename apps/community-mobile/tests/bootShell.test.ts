@@ -4,9 +4,15 @@ import { test } from "node:test"
 import { URL } from "node:url"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
-const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
+const crashScreen = readFileSync(
+  new URL("../src/components/CrashScreen.tsx", import.meta.url),
+  "utf8",
+)
 const launchGate = readFileSync(new URL("../src/boot/useLaunchGate.ts", import.meta.url), "utf8")
-const pushOnSignIn = readFileSync(new URL("../src/push/usePushOnSignIn.ts", import.meta.url), "utf8")
+const pushOnSignIn = readFileSync(
+  new URL("../src/push/usePushOnSignIn.ts", import.meta.url),
+  "utf8",
+)
 const appBridges = readFileSync(new URL("../src/boot/AppBridges.tsx", import.meta.url), "utf8")
 const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
@@ -16,7 +22,10 @@ const betaInstallModule = readFileSync(
   new URL("../src/lib/nativeBetaInstall.ts", import.meta.url),
   "utf8",
 )
-const storeKitModule = readFileSync(new URL("../src/lib/storeKitReceipt.ts", import.meta.url), "utf8")
+const storeKitModule = readFileSync(
+  new URL("../src/lib/storeKitReceipt.ts", import.meta.url),
+  "utf8",
+)
 const mmkvModule = readFileSync(new URL("../src/lib/mmkv.ts", import.meta.url), "utf8")
 const secureStoreModule = readFileSync(
   new URL("../src/lib/nativeSecureStore.ts", import.meta.url),
@@ -27,7 +36,10 @@ const appConfig = readFileSync(new URL("../app.config.js", import.meta.url), "ut
 
 test("the root layout exports an ErrorBoundary so expo-router can catch a boot crash", () => {
   assert.match(layout, /^export \{ ErrorBoundary \} from "@\/components\/CrashScreen"$/m)
-  assert.match(crashScreen, /export function ErrorBoundary\(\{ error, retry \}: ErrorBoundaryProps\)/)
+  assert.match(
+    crashScreen,
+    /export function ErrorBoundary\(\{ error, retry \}: ErrorBoundaryProps\)/,
+  )
 })
 
 test("the root layout anchors every deep link under the home route", () => {
@@ -139,5 +151,8 @@ test("the About presenter is registered for the ROUTER's lifetime, not a leaf sc
 
 test("the android navigation bar glyphs follow the active scheme", () => {
   assert.match(rootStack, /import \* as NavigationBar from "expo-navigation-bar"/)
-  assert.match(rootStack, /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/)
+  assert.match(
+    rootStack,
+    /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/,
+  )
 })

@@ -1,5 +1,12 @@
 import React from "react"
-import { useNavStore, searchModeFor, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
+import {
+  useNavStore,
+  searchModeFor,
+  titleForEntry,
+  titleParamsForEntry,
+  type DetailEntry,
+  type View as NavView,
+} from "../nav"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 import { DetailBar } from "./DetailBar"
@@ -19,7 +26,7 @@ export interface SheetHeaderProps {
 
 export interface DetailHeaderProps {
   active: DetailEntry | null
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
   dismissGesture?: boolean
 }
 
@@ -32,7 +39,11 @@ export function DetailHeader({ active, stack, dismissGesture }: DetailHeaderProp
   const liveStack = useNavStore((s) => s.stack)
   const { t } = useT("nav")
   const titleKey = titleForEntry(active)
-  const leading = detailLeadingAffordance({ stack: stack ?? liveStack, mode: "compact", dismissGesture })
+  const leading = detailLeadingAffordance({
+    stack: stack ?? liveStack,
+    mode: "compact",
+    dismissGesture,
+  })
   return hasDetailHeader(active) ? (
     <DetailBar
       title={t(titleKey, titleParamsForEntry(active))}
@@ -44,7 +55,13 @@ export function DetailHeader({ active, stack, dismissGesture }: DetailHeaderProp
   ) : null
 }
 
-export function SheetHeader({ view, active, stack, SearchHeaderComponent, onSearchFocus }: SheetHeaderProps) {
+export function SheetHeader({
+  view,
+  active,
+  stack,
+  SearchHeaderComponent,
+  onSearchFocus,
+}: SheetHeaderProps) {
   const query = useNavStore((s) => s.query)
   const setQuery = useNavStore((s) => s.setQuery)
   const { user, isAuthenticated, isPending } = useAuthState()
@@ -62,10 +79,14 @@ export function SheetHeader({ view, active, stack, SearchHeaderComponent, onSear
       mode={spec.kind}
       onChangeText={setQuery}
       onFocus={onSearchFocus}
-      userName={signedOut ? undefined : user?.displayName ?? t("fallback_you")}
+      userName={signedOut ? undefined : (user?.displayName ?? t("fallback_you"))}
       userPhotoUrl={user?.avatarUrl ?? undefined}
       onOpenProfile={() => useNavStore.getState().push({ kind: "profile" })}
-      onSignIn={signedOut ? () => requireAuth(() => useNavStore.getState().push({ kind: "profile" })) : undefined}
+      onSignIn={
+        signedOut
+          ? () => requireAuth(() => useNavStore.getState().push({ kind: "profile" }))
+          : undefined
+      }
     />
   )
 }

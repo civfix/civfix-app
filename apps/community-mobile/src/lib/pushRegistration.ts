@@ -108,9 +108,7 @@ function boundedCall(
   })
 }
 
-export async function signOutUnregisteringPush(
-  deps: SignOutUnregisteringPushDeps,
-): Promise<void> {
+export async function signOutUnregisteringPush(deps: SignOutUnregisteringPushDeps): Promise<void> {
   const registration = readPushRegistration(deps.store)
 
   let bearer: string | null = null

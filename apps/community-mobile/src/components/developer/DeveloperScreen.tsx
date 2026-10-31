@@ -113,7 +113,9 @@ export function DeveloperScreen() {
           <SettingsRow
             icon="Bell"
             label={t("developer.push")}
-            sub={pushRegistered ? t("developer.push_registered") : t("developer.push_not_registered")}
+            sub={
+              pushRegistered ? t("developer.push_registered") : t("developer.push_not_registered")
+            }
           />
         </SettingsSection>
 
@@ -157,7 +159,12 @@ export function DeveloperScreen() {
         backdropDismissDisabled={running}
         actions={
           <>
-            <SecondaryButton label={t("developer.cancel")} onPress={close} size="sm" disabled={running} />
+            <SecondaryButton
+              label={t("developer.cancel")}
+              onPress={close}
+              size="sm"
+              disabled={running}
+            />
             <PrimaryButton
               label={labels[action]}
               variant="destructive"

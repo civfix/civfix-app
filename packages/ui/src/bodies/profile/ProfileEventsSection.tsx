@@ -25,7 +25,7 @@ function EventRow({
   event: CleanupDTO
   badge: string
   badgeColor: string
-  onPress?: () => void
+  onPress?: (() => void) | undefined
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -90,7 +90,7 @@ function EventBucket({
   badge: string
   badgeColor: string
   emptyText: string
-  onOpenEvent?: (event: CleanupDTO) => void
+  onOpenEvent?: ((event: CleanupDTO) => void) | undefined
 }) {
   const styles = useStyles()
   const sectionStyles = useSectionStyles()
@@ -132,7 +132,7 @@ export interface ProfileEventsSectionProps {
   split: ProfileEventSplit
   tab: ProfileEventTab
   onSelectTab: (tab: ProfileEventTab) => void
-  onOpenEvent?: (event: CleanupDTO) => void
+  onOpenEvent?: ((event: CleanupDTO) => void) | undefined
   more?: ProfileEventsMore
 }
 

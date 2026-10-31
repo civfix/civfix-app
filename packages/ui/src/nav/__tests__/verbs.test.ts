@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { useNavStore } from ".."
 import type { DetailEntry } from ".."
-import { openPinnedMessages, clearThreadJumpParam, openThread, openNewGroup, openGroupInfo, isTopEntry } from "../verbs"
+import {
+  openPinnedMessages,
+  clearThreadJumpParam,
+  openThread,
+  openNewGroup,
+  openGroupInfo,
+  isTopEntry,
+} from "../verbs"
 
 function resetStore(): void {
   useNavStore.setState({
@@ -54,8 +61,20 @@ describe("openThread (group threads)", () => {
   })
 
   it("falls back to the thread id when refId is absent", () => {
-    openThread({ id: "t2", kind: "group", title: "G", unread: 0, members: 2, lastFromMe: false, muted: false })
-    expect(useNavStore.getState().active).toMatchObject({ kind: "thread", id: "t2", roomKind: "group" })
+    openThread({
+      id: "t2",
+      kind: "group",
+      title: "G",
+      unread: 0,
+      members: 2,
+      lastFromMe: false,
+      muted: false,
+    })
+    expect(useNavStore.getState().active).toMatchObject({
+      kind: "thread",
+      id: "t2",
+      roomKind: "group",
+    })
   })
 })
 
@@ -116,7 +135,12 @@ describe("isTopEntry", () => {
 
 describe("openGroupInfo", () => {
   it("pushes the group-info detail as a drill-down (the conversation stays beneath for Back)", () => {
-    const thread: DetailEntry = { kind: "thread", id: "room-g1", roomKind: "group", title: "Block crew" }
+    const thread: DetailEntry = {
+      kind: "thread",
+      id: "room-g1",
+      roomKind: "group",
+      title: "Block crew",
+    }
     useNavStore.getState().push(thread)
     openGroupInfo("room-g1")
     const s = useNavStore.getState()
@@ -129,7 +153,9 @@ describe("openGroupInfo", () => {
 
 describe("clearThreadJumpParam", () => {
   it("strips a consumed jumpToMessageId off the room's thread entry (active recomputed)", () => {
-    useNavStore.getState().setStack([{ kind: "thread", id: "room1", roomKind: "cleanup", jumpToMessageId: "m9" }])
+    useNavStore
+      .getState()
+      .setStack([{ kind: "thread", id: "room1", roomKind: "cleanup", jumpToMessageId: "m9" }])
     clearThreadJumpParam("room1")
     const s = useNavStore.getState()
     expect(s.stack).toEqual([{ kind: "thread", id: "room1", roomKind: "cleanup" }])
@@ -150,12 +176,26 @@ describe("clearThreadJumpParam", () => {
   })
 
   it("leaves other rooms' thread entries and non-thread entries untouched", () => {
-    const other: DetailEntry = { kind: "thread", id: "other", roomKind: "cleanup", jumpToMessageId: "keep" }
+    const other: DetailEntry = {
+      kind: "thread",
+      id: "other",
+      roomKind: "cleanup",
+      jumpToMessageId: "keep",
+    }
     const person: DetailEntry = { kind: "person", id: "p1" }
-    const mine: DetailEntry = { kind: "thread", id: "room1", roomKind: "cleanup", jumpToMessageId: "gone" }
+    const mine: DetailEntry = {
+      kind: "thread",
+      id: "room1",
+      roomKind: "cleanup",
+      jumpToMessageId: "gone",
+    }
     useNavStore.getState().setStack([other, person, mine])
     clearThreadJumpParam("room1")
-    expect(useNavStore.getState().stack).toEqual([other, person, { kind: "thread", id: "room1", roomKind: "cleanup" }])
+    expect(useNavStore.getState().stack).toEqual([
+      other,
+      person,
+      { kind: "thread", id: "room1", roomKind: "cleanup" },
+    ])
   })
 
   it("is a pure no-op (no store write) when nothing carries the param", () => {

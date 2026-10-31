@@ -1,5 +1,12 @@
 import { Pressable } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"

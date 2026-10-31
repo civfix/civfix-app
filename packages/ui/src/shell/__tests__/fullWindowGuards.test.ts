@@ -17,7 +17,10 @@ function sources(dir: string): string[] {
   })
 }
 
-const files = sources(SRC).map((path) => ({ name: relative(SRC, path), text: readFileSync(path, "utf8") }))
+const files = sources(SRC).map((path) => ({
+  name: relative(SRC, path),
+  text: readFileSync(path, "utf8"),
+}))
 
 describe("full-window surfaces below the notice", () => {
   it("opens every RN Modal through FullWindowModal", () => {
@@ -32,8 +35,12 @@ describe("full-window surfaces below the notice", () => {
     const hosts = files.filter(({ text }) => text.includes("<FullWindowModal"))
     expect(hosts.length).toBeGreaterThan(0)
     for (const { name, text } of hosts) {
-      const reads = text.match(/(?:React\.)?useContext\(SafeAreaInsetsContext\)|useSafeAreaInsets\(\)/g) ?? []
-      const wrapped = text.match(/useFullWindowInsets\((?:React\.)?useContext\(SafeAreaInsetsContext\)\)|useFullWindowInsets\(useSafeAreaInsets\(\)\)/g) ?? []
+      const reads =
+        text.match(/(?:React\.)?useContext\(SafeAreaInsetsContext\)|useSafeAreaInsets\(\)/g) ?? []
+      const wrapped =
+        text.match(
+          /useFullWindowInsets\((?:React\.)?useContext\(SafeAreaInsetsContext\)\)|useFullWindowInsets\(useSafeAreaInsets\(\)\)/g,
+        ) ?? []
       expect(wrapped.length, name).toBe(reads.length)
     }
   })

@@ -48,9 +48,7 @@ export function captureDropPinCamera(
   menuAlreadyOpen: boolean,
 ): void {
   cameraSnapshot =
-    menuAlreadyOpen && cameraSnapshot
-      ? { ...cameraSnapshot, flownTo: snapshot.flownTo }
-      : snapshot
+    menuAlreadyOpen && cameraSnapshot ? { ...cameraSnapshot, flownTo: snapshot.flownTo } : snapshot
 }
 
 /**

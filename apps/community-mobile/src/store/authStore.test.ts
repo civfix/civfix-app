@@ -223,7 +223,12 @@ test("signing in as another account purges before the token is stored, then refe
   memory.set(LAST_IDENTITY_KEY, OTHER.id)
   const store = await freshStore()
   await store.getState().signIn("tok", USER as never)
-  assert.deepEqual(calls, ["purgeQueryCache", "clearSecureBlobs", "setToken:tok", ...VIEWER_REFETCH])
+  assert.deepEqual(calls, [
+    "purgeQueryCache",
+    "clearSecureBlobs",
+    "setToken:tok",
+    ...VIEWER_REFETCH,
+  ])
   assert.equal(store.getState().status, "authed")
   assert.equal(memory.get(LAST_IDENTITY_KEY), USER.id)
 })
@@ -231,7 +236,10 @@ test("signing in as another account purges before the token is stored, then refe
 test("sign-out unregisters push, revokes the session, tears down, forgets the identity, clears blobs, then the token", async () => {
   control.token = { ok: true, token: "tok" }
   memory.set(LAST_IDENTITY_KEY, USER.id)
-  memory.set(PUSH_REGISTRATION_KEY, JSON.stringify({ platform: "ios", token: "ExponentPushToken[x]" }))
+  memory.set(
+    PUSH_REGISTRATION_KEY,
+    JSON.stringify({ platform: "ios", token: "ExponentPushToken[x]" }),
+  )
   control.session = signedInSession(USER)
   const store = await freshStore()
   await store.getState().hydrate()
@@ -257,7 +265,13 @@ test("sign-out still completes locally when the revoke fails and when there is n
   }
   const store = await freshStore()
   await store.getState().signOut()
-  assert.deepEqual(calls, ["readToken", "api.logout:Bearer tok", ...TEARDOWN, "clearSecureBlobs", "clearToken"])
+  assert.deepEqual(calls, [
+    "readToken",
+    "api.logout:Bearer tok",
+    ...TEARDOWN,
+    "clearSecureBlobs",
+    "clearToken",
+  ])
 
   resetStubs()
   const signedOut = await freshStore()
@@ -320,7 +334,10 @@ test("overlapping session-restore retries run one boot hydration", async () => {
   control.token = { ok: true, token: "tok" }
   control.session = signedInSession(USER)
   const store = await freshStore()
-  await Promise.all([store.getState().retrySessionRestore(), store.getState().retrySessionRestore()])
+  await Promise.all([
+    store.getState().retrySessionRestore(),
+    store.getState().retrySessionRestore(),
+  ])
   assert.deepEqual(calls, ["readToken", "api.session"])
   assert.equal(store.getState().networkOutcome, "ok")
 })

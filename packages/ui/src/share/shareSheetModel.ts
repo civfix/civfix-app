@@ -44,7 +44,10 @@ export function shareRecipientsSizing(mode: SharePeopleMode): ShareRecipientsSiz
 
 export type ShareSheetFooter = "compose" | "actions"
 
-export function shareSheetFooter(isAuthenticated: boolean, selectedCount: number): ShareSheetFooter {
+export function shareSheetFooter(
+  isAuthenticated: boolean,
+  selectedCount: number,
+): ShareSheetFooter {
   return isAuthenticated && selectedCount > 0 ? "compose" : "actions"
 }
 

@@ -51,13 +51,21 @@ for (const route of CHAT_HEADER_ROUTES) {
     const url = pathForEntry(route.entry)
     assert.equal(url, route.url)
     assert.equal(routeFileForUrl(url, route.params), route.routeFile)
-    assert.equal(existsSync(join(APP_DIR, route.routeFile)), true, `missing route file app/${route.routeFile}`)
+    assert.equal(
+      existsSync(join(APP_DIR, route.routeFile)),
+      true,
+      `missing route file app/${route.routeFile}`,
+    )
   })
 }
 
 test("the members route is FOUR segments, so it cannot collide with app/messages/[id].tsx", () => {
   // `[id]` is a single segment, not a catch-all, so it matches "/messages/<one>" only.
-  assert.equal(pathForEntry({ kind: "members", id: "room-1", roomKind: "cleanup" }).split("/").filter(Boolean).length, 4)
+  assert.equal(
+    pathForEntry({ kind: "members", id: "room-1", roomKind: "cleanup" }).split("/").filter(Boolean)
+      .length,
+    4,
+  )
   assert.equal("/messages/room-1".split("/").filter(Boolean).length, 2)
   assert.equal(existsSync(join(APP_DIR, "messages/[id].tsx")), true)
   assert.equal(existsSync(join(APP_DIR, "messages/dm/[id].tsx")), true)

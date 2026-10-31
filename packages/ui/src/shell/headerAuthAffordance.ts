@@ -6,6 +6,8 @@ import type { AuthState } from "../data"
 
 export type HeaderAuthAffordance = "profile" | "sign-in"
 
-export function headerAuthAffordance(auth: Pick<AuthState, "isAuthenticated" | "isPending">): HeaderAuthAffordance {
+export function headerAuthAffordance(
+  auth: Pick<AuthState, "isAuthenticated" | "isPending">,
+): HeaderAuthAffordance {
   return !auth.isAuthenticated && !auth.isPending ? "sign-in" : "profile"
 }

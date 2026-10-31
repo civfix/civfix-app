@@ -6,15 +6,7 @@ import { hexWithAlpha } from "./color"
 
 export { fontFamily } from "./fontFamily"
 
-export {
-  fontSize,
-  noShadow,
-  radius,
-  space,
-  motion,
-  themes,
-  themeFor,
-} from "./themes"
+export { fontSize, noShadow, radius, space, motion, themes, themeFor } from "./themes"
 export type {
   NativeShadowStyle,
   WebShadowStyle,

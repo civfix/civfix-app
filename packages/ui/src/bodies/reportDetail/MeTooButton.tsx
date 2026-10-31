@@ -25,8 +25,20 @@ export type MeTooTone = "seen" | "fixed"
 function toneColors(tone: MeTooTone, th: Theme) {
   const c = th.colors
   return tone === "fixed"
-    ? { solid: c.brand.moss, wash: c.moss["50"], washHover: c.moss["100"], edge: c.moss["300"], ink: c.chipInk.moss }
-    : { solid: c.brand.bloom, wash: c.bloom["50"], washHover: c.bloom["100"], edge: c.bloom["300"], ink: c.chipInk.bloom }
+    ? {
+        solid: c.brand.moss,
+        wash: c.moss["50"],
+        washHover: c.moss["100"],
+        edge: c.moss["300"],
+        ink: c.chipInk.moss,
+      }
+    : {
+        solid: c.brand.bloom,
+        wash: c.bloom["50"],
+        washHover: c.bloom["100"],
+        edge: c.bloom["300"],
+        ink: c.chipInk.bloom,
+      }
 }
 
 /**
@@ -86,8 +98,14 @@ export function MeTooButton({
     >
       {/* The label stays while busy so the button keeps its size; the spinner takes the glyph's place. */}
       {busy ? (
-        <View style={{ width: glyph, height: glyph, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="small" color={tc.ink} style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }} />
+        <View
+          style={{ width: glyph, height: glyph, alignItems: "center", justifyContent: "center" }}
+        >
+          <ActivityIndicator
+            size="small"
+            color={tc.ink}
+            style={{ transform: [{ scale: glyph / SPINNER_SMALL }] }}
+          />
         </View>
       ) : (
         <Icon
@@ -96,7 +114,11 @@ export function MeTooButton({
           color={tc.ink}
         />
       )}
-      <Text variant={sm ? "label" : "bodyStrong"} color={sm ? tc.ink : th.colors.text} style={[styles.label, webNoSelect]}>
+      <Text
+        variant={sm ? "label" : "bodyStrong"}
+        color={sm ? tc.ink : th.colors.text}
+        style={[styles.label, webNoSelect]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -127,7 +149,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   // Two md buttons share a row on the report page, so a long translation wraps instead of overflowing the pill,
   // and each grows to fill its half so a one-line label's pill matches the height of a wrapped one beside it.
-  md: { flexGrow: 1, minHeight: MIN_TOUCH_TARGET, paddingHorizontal: t.space["5"], paddingVertical: t.space["2"] },
+  md: {
+    flexGrow: 1,
+    minHeight: MIN_TOUCH_TARGET,
+    paddingHorizontal: t.space["5"],
+    paddingVertical: t.space["2"],
+  },
   sm: { height: ME_TOO_HEIGHT_SM, paddingHorizontal: t.space["3"] },
   label: { flexShrink: 1, textAlign: "center" },
   down: { opacity: 0.85 },

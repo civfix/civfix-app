@@ -288,7 +288,9 @@ function EventDetailHeader({
       <View style={styles.metaRows}>
         <View style={styles.metaRow}>
           <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
-          <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
+          <Text style={styles.metaWhen}>
+            {eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}
+          </Text>
         </View>
         <AddressRow
           address={where ?? null}
@@ -325,24 +327,19 @@ function EventDetailsSection({
   const th = useTheme()
   const { t } = useT("event-detail")
 
-  const onOpenReport = useCallback(
-    (report: CleanupDTO["linkedReports"][number]) => {
-      useNavStore.getState().push({
-        kind: "pin",
-        id: report.id,
-        title: report.title,
-        lat: report.lat,
-        lng: report.lng,
-      })
-    },
-    [],
-  )
+  const onOpenReport = useCallback((report: CleanupDTO["linkedReports"][number]) => {
+    useNavStore.getState().push({
+      kind: "pin",
+      id: report.id,
+      title: report.title,
+      lat: report.lat,
+      lng: report.lng,
+    })
+  }, [])
 
   return (
     <View style={[styles.section, styles.sectionFlush]}>
-      {cleanup.description ? (
-        <Text style={styles.description}>{cleanup.description}</Text>
-      ) : null}
+      {cleanup.description ? <Text style={styles.description}>{cleanup.description}</Text> : null}
       {cleanup.bring.length > 0 ? (
         <View style={styles.subsection}>
           <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
@@ -514,8 +511,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard
 
   const showLinkedReports = cleanup.eventKind === "cleanup" && cleanup.linkedReports.length > 0
-  const showDetails =
-    !!cleanup.description || cleanup.bring.length > 0 || showLinkedReports
+  const showDetails = !!cleanup.description || cleanup.bring.length > 0 || showLinkedReports
 
   const showTicket = going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost)
   const showMessageCrew = !isCancelled
@@ -523,7 +519,11 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const showReport = !actsAsHost
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
       <EventHero cleanup={cleanup} />
 
       <EventDetailHeader
@@ -537,7 +537,12 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         <EventDetailsSection cleanup={cleanup} showLinkedReports={showLinkedReports} />
       ) : null}
 
-      <EventHostSection cleanup={cleanup} isOrganizer={isOrganizer} flush={!showDetails} next={next} />
+      <EventHostSection
+        cleanup={cleanup}
+        isOrganizer={isOrganizer}
+        flush={!showDetails}
+        next={next}
+      />
 
       {donation ? (
         <View style={styles.donate}>

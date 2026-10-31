@@ -54,7 +54,7 @@ export function LoadingState({
 }: {
   variant?: StateVariant
   skeleton?: SkeletonRowKind
-  rows?: number
+  rows?: number | undefined
 }) {
   const styles = useStyles()
   const t = useTheme()
@@ -62,7 +62,12 @@ export function LoadingState({
   const loading = tCommon("loading")
   if (skeleton) {
     return (
-      <View style={styles.skeletonList} accessible accessibilityRole="progressbar" accessibilityLabel={loading}>
+      <View
+        style={styles.skeletonList}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel={loading}
+      >
         <SkeletonList rows={rows} kind={skeleton} />
       </View>
     )
@@ -82,7 +87,7 @@ function IconBubble({
 }: {
   icon: LucideIcon
   tone: StateTone
-  iconColor?: string
+  iconColor?: string | undefined
   iconSize?: number
 }) {
   const styles = useStyles()
@@ -97,7 +102,7 @@ function IconBubble({
 export interface EmptyStateProps {
   icon?: LucideIcon
   title: string
-  body?: string
+  body?: string | undefined
   tone?: StateTone
   iconColor?: string
   iconSize?: number

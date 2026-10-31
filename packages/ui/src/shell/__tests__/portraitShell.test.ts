@@ -169,9 +169,10 @@ describe("portrait shell layer plan", () => {
     ]
     for (const view of ["home", "map", "messaging", "report", "search", "social"] as const) {
       for (const active of kinds) {
-        expect(portraitShellPlan(view, active, false), `${view} / ${active?.kind ?? "none"}`).toEqual(
-          plan(view, active),
-        )
+        expect(
+          portraitShellPlan(view, active, false),
+          `${view} / ${active?.kind ?? "none"}`,
+        ).toEqual(plan(view, active))
       }
     }
   })
@@ -209,7 +210,12 @@ describe("topmostFullEntry (the overlay layer is owned by the STACK, not the act
 
   it("resolves a person profile as the overlay - the whole reason its child navigations work", () => {
     expect(topmostFullEntry([{ kind: "person", id: "p" }])).toEqual({ kind: "person", id: "p" })
-    expect(topmostFullEntry([{ kind: "person", id: "p" }, { kind: "cleanup", id: "e1" }])).toEqual({
+    expect(
+      topmostFullEntry([
+        { kind: "person", id: "p" },
+        { kind: "cleanup", id: "e1" },
+      ]),
+    ).toEqual({
       kind: "person",
       id: "p",
     })
@@ -258,7 +264,9 @@ describe("search body sync (dock-morph rebuild, defects 4/5)", () => {
   it("mounts the map (base plan) when Search rides over the Map view, so exit reveals an already-positioned map", () => {
     expect(portraitShellPlan(effectiveBaseView("search", "map", true), null).mountMap).toBe(true)
     expect(portraitShellPlan(effectiveBaseView("search", "home", true), null).mountMap).toBe(false)
-    expect(portraitShellPlan(effectiveBaseView("search", "home", true), null).renderBaseBody).toBe(true)
+    expect(portraitShellPlan(effectiveBaseView("search", "home", true), null).renderBaseBody).toBe(
+      true,
+    )
   })
 
   it("fades + slides the search overlay in over the morph window, matched to the dock", () => {
@@ -299,9 +307,7 @@ describe("the report tab's un-Modal'd map pick layer (WS3 3b)", () => {
   })
 
   it("arms the sheet-detent capture/restore ONLY for the modal presentation", () => {
-    expect(pickStepSource).toContain(
-      'usePickStepSheetSnap(visible && presentation === "modal")',
-    )
+    expect(pickStepSource).toContain('usePickStepSheetSnap(visible && presentation === "modal")')
   })
 
   it("renders the report wizard's pick layer OUTSIDE its shared vertical ScrollView", () => {
@@ -364,7 +370,9 @@ describe("the Report tab's keep-alive slot", () => {
 
   it("serves the report body from the retained slot INSTEAD of the BodyTransition swap (never both)", () => {
     expect(portrait).toMatch(/frame\.base\.bodyMounted && !reportSlotVisible/)
-    expect(portrait).toMatch(/const reportSlotBody = useMemo\(\(\) => renderBody\(null, "report"\), \[renderBody\]\)/)
+    expect(portrait).toMatch(
+      /const reportSlotBody = useMemo\(\(\) => renderBody\(null, "report"\), \[renderBody\]\)/,
+    )
   })
 
   it("HIDES the slot with opacity, never display:none (Fabric culls display:none native views, remounting the camera)", () => {
@@ -379,9 +387,15 @@ describe("the Report tab's keep-alive slot", () => {
 
   it("keeps the slot under the ONE base scroll host (a second host would remount what it retains)", () => {
     expect(portrait).toMatch(/const baseScrollHost = PORTRAIT_BASE_SCROLL_HOST\b/)
-    const hostBlock = sliceBetween(portrait, "<ScrollHostProvider value={baseScrollHost}>", "</ScrollHostProvider>")
+    const hostBlock = sliceBetween(
+      portrait,
+      "<ScrollHostProvider value={baseScrollHost}>",
+      "</ScrollHostProvider>",
+    )
     expect(hostBlock).toMatch(/reportSlotMounted \?/)
-    expect(hostBlock.indexOf("<BodyTransition")).toBeLessThan(hostBlock.indexOf("reportSlotMounted ?"))
+    expect(hostBlock.indexOf("<BodyTransition")).toBeLessThan(
+      hostBlock.indexOf("reportSlotMounted ?"),
+    )
   })
 
   it("remounts a STALE wizard on entry only - never while the tab is on screen", () => {
@@ -393,7 +407,9 @@ describe("the Report tab's keep-alive slot", () => {
 
   it("leaves NO hardware-Back consumer armed while the slot is detached (the BackHandler regression)", () => {
     const report = reportFlowSource()
-    expect(report).toContain("const pickLayerOpen = pickLayerVisible(picking, stackNonEmpty, runActive)")
+    expect(report).toContain(
+      "const pickLayerOpen = pickLayerVisible(picking, stackNonEmpty, runActive)",
+    )
     expect(report).toContain("const stackNonEmpty = useNavStore((s) => s.stack.length > 0)")
     expect(report).toContain('const runActive = useNavStore((s) => s.view === "report")')
     expect(report).toContain("visible={pickLayerMounted}")
@@ -417,7 +433,9 @@ describe("the Report tab's keep-alive slot", () => {
     )
     expect(pickStepWeb).toContain("const live = visible && !inert")
     expect(pickStepWeb).toContain('if (!live || typeof document === "undefined") return null')
-    expect(report).toContain("viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)")
+    expect(report).toMatch(
+      /viewfinderSessionActive\(\s*activeStep,\s*viewfinderMounted,\s*stackNonEmpty,\s*runActive,?\s*\)/,
+    )
   })
 
   it("classes every fresh-start draft publication as stale, and a working draft as resumable", () => {
@@ -437,10 +455,12 @@ describe("the home + messages keep-alive slots", () => {
     expect(portrait).toContain(
       'const homeSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "home"',
     )
-    expect(portrait).toContain(
-      'const messagingSlotVisible = RETAIN_TAB_BODIES && frame.base.bodyMounted && baseView === "messaging"',
+    expect(portrait).toMatch(
+      /const messagingSlotVisible =\s+RETAIN_TAB_BODIES && frame\.base\.bodyMounted && baseView === "messaging"/,
     )
-    expect(portrait).toMatch(/const homeSlotBody = useMemo\(\(\) => renderBody\(null, "home"\), \[renderBody\]\)/)
+    expect(portrait).toMatch(
+      /const homeSlotBody = useMemo\(\(\) => renderBody\(null, "home"\), \[renderBody\]\)/,
+    )
     expect(portrait).toMatch(
       /const messagingSlotBody = useMemo\(\(\) => renderBody\(null, "messaging"\), \[renderBody\]\)/,
     )
@@ -529,7 +549,10 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
       new URL("../CompactShell.native.tsx", import.meta.url),
       "utf8",
     ),
-    "CompactShell.web.tsx": readFileSync(new URL("../CompactShell.web.tsx", import.meta.url), "utf8"),
+    "CompactShell.web.tsx": readFileSync(
+      new URL("../CompactShell.web.tsx", import.meta.url),
+      "utf8",
+    ),
     "ExpandedShell.tsx": readFileSync(new URL("../ExpandedShell.tsx", import.meta.url), "utf8"),
     "PageStack.web.tsx": readFileSync(new URL("../PageStack.web.tsx", import.meta.url), "utf8"),
   }
@@ -579,14 +602,19 @@ describe("PortraitShell.web: the top inset counts the notch once", () => {
 })
 
 describe("web bottom safe area: the page box reserve owns it, the reply dock does not add it again", () => {
-  const dock = readFileSync(new URL("../../bodies/thread/useReplyDockInset.ts", import.meta.url), "utf8")
+  const dock = readFileSync(
+    new URL("../../bodies/thread/useReplyDockInset.ts", import.meta.url),
+    "utf8",
+  )
   const shell = readFileSync(new URL("../PortraitShell.web.tsx", import.meta.url), "utf8")
   const pages = readFileSync(new URL("../PageStack.web.tsx", import.meta.url), "utf8")
 
   it("reserves the inset on the pinned-footer page box and rests the dock at zero on web", () => {
     expect(shell).toContain("bottomSafeArea={insets.bottom}")
     expect(pages).toContain('const boxReserve = reserve === "box" ? paddingBottom : 0')
-    expect(dock).toContain('const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)')
+    expect(dock).toContain(
+      'const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)',
+    )
     expect(dock).toContain("restPad: inset > 0 ? 0 : restingSafeArea")
   })
 })

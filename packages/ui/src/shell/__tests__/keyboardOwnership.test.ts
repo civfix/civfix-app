@@ -116,7 +116,9 @@ describe("I1 the Android reserve has exactly four owners", () => {
 
   it("keeps the reservation on the scope context alone, with no process-global counter left", () => {
     const store = readFileSync(new URL("../keyboardHostReserveStore.ts", import.meta.url), "utf8")
-    expect(store).toMatch(/export function makeKeyboardHostReserveStore\(\): KeyboardHostReserveStore/)
+    expect(store).toMatch(
+      /export function makeKeyboardHostReserveStore\(\): KeyboardHostReserveStore/,
+    )
     expect(store).not.toMatch(/^let claims/m)
     expect(named(({ src }) => /keyboardHostReserveStore\./.test(src))).toEqual([])
   })
@@ -126,7 +128,10 @@ describe("I1 the Android reserve has exactly four owners", () => {
     expect(pins).toContain("FirstRunGate.tsx")
     expect(pins.length).toBeGreaterThan(1)
     expect(
-      named(({ src }) => src.includes("<KeyboardPinnedFooter") && !src.includes("<KeyboardPinnedSurface")),
+      named(
+        ({ src }) =>
+          src.includes("<KeyboardPinnedFooter") && !src.includes("<KeyboardPinnedSurface"),
+      ),
     ).toEqual([])
   })
 
@@ -148,9 +153,7 @@ describe("I1 the Android reserve has exactly four owners", () => {
 
   it("gates the retained report slot on the page, so its footer stops claiming under a pushed page", () => {
     const portrait = readFileSync(new URL("../PortraitShell.shared.tsx", import.meta.url), "utf8")
-    expect(portrait).toMatch(
-      /const reportSlotActive = reportSlotVisible && stack\.length === 0/,
-    )
+    expect(portrait).toMatch(/const reportSlotActive = reportSlotVisible && stack\.length === 0/)
     expect(portrait).toMatch(
       /<PageActiveProvider value=\{reportSlotActive\}>\{reportSlotBody\}<\/PageActiveProvider>/,
     )
@@ -165,7 +168,10 @@ describe("I2 KeyboardAvoidingView lives in ONE file", () => {
   })
 
   it("gives that seam the iOS-only behavior and the web sibling a plain View", () => {
-    const native = readFileSync(new URL("../IosKeyboardAvoidingView.native.tsx", import.meta.url), "utf8")
+    const native = readFileSync(
+      new URL("../IosKeyboardAvoidingView.native.tsx", import.meta.url),
+      "utf8",
+    )
     expect(native).toMatch(/behavior=\{Platform\.OS === "ios" \? "padding" : undefined\}/)
     const web = readFileSync(new URL("../IosKeyboardAvoidingView.web.tsx", import.meta.url), "utf8")
     expect(web).toMatch(/<View style=\{style\}>\{children\}<\/View>/)
@@ -183,7 +189,10 @@ describe("I3 every text field is the primitive that registers its focus", () => 
   })
 
   it("registers focus, blur and content growth with the scope it renders in", () => {
-    const native = readFileSync(new URL("../../primitives/TextInput.native.tsx", import.meta.url), "utf8")
+    const native = readFileSync(
+      new URL("../../primitives/TextInput.native.tsx", import.meta.url),
+      "utf8",
+    )
     expect(native).toMatch(/const scope = useKeyboardScrollScope\(\)/)
     expect(native).toMatch(
       /keyboardFocusStore\.setFocused\(nodeRef\.current, scope, revealGroup\?\.current \?\? null\)/,
@@ -193,7 +202,10 @@ describe("I3 every text field is the primitive that registers its focus", () => 
   })
 
   it("clears its registration from a node the ref teardown cannot null", () => {
-    const native = readFileSync(new URL("../../primitives/TextInput.native.tsx", import.meta.url), "utf8")
+    const native = readFileSync(
+      new URL("../../primitives/TextInput.native.tsx", import.meta.url),
+      "utf8",
+    )
     expect(native).toMatch(/registeredRef\.current = nodeRef\.current/)
     expect(native).toMatch(
       /\(\) => \(\) => \{\s*\n\s*keyboardFocusStore\.clearFocused\(registeredRef\.current\)\s*\n\s*\},/,
@@ -222,11 +234,16 @@ describe("I4 a raw Modal never holds a text field", () => {
   })
 
   it("gives the member picker a scroll host of its own through the sheet's fill mode", () => {
-    const sheet = readFileSync(new URL("../../primitives/ModalCardSheet.tsx", import.meta.url), "utf8")
+    const sheet = readFileSync(
+      new URL("../../primitives/ModalCardSheet.tsx", import.meta.url),
+      "utf8",
+    )
     expect(sheet).toMatch(
       /const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost\(PLAIN_SCROLL_HOST, \{\s*\n\s*reserveKeyboardPadding: false,\s*\n\}\)/,
     )
-    expect(sheet).toMatch(/<ScrollHostProvider value=\{MODAL_SCROLL_HOST\}>\{children\}<\/ScrollHostProvider>/)
+    expect(sheet).toMatch(
+      /<ScrollHostProvider value=\{MODAL_SCROLL_HOST\}>\{children\}<\/ScrollHostProvider>/,
+    )
   })
 })
 
@@ -241,8 +258,7 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
     const body = src
       .split("\n")
       .filter(
-        (line) =>
-          !/^\s*(import|export)\b/.test(line) && !/^\s*PLAIN_SCROLL_HOST,\s*$/.test(line),
+        (line) => !/^\s*(import|export)\b/.test(line) && !/^\s*PLAIN_SCROLL_HOST,\s*$/.test(line),
       )
       .join("\n")
     for (const match of body.matchAll(/PLAIN_SCROLL_HOST/g)) {
@@ -260,7 +276,9 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
 
   it("reveals only for a focus that landed in ITS OWN scope", () => {
     const seam = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
-    expect(seam).toMatch(/const reveals = scrollKeyboardReveals\(state\)\n[\s\S]*?if \(!reveals\) return/)
+    expect(seam).toMatch(
+      /const reveals = scrollKeyboardReveals\(state\)\n[\s\S]*?if \(!reveals\) return/,
+    )
     expect(seam).toMatch(
       /\}, \[reveals, state\.focusedScope, state\.overlap, state\.reserve, state\.revealVersion\]\)/,
     )
@@ -269,7 +287,9 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
   it("leaves a HORIZONTAL list undecorated, the way the minimize seam does", () => {
     const seam = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(seam).toMatch(/if \(horizontal\) return scrollable/)
-    expect(seam.match(/useEffect\(\(\) => \{\s*\n\s*if \(horizontal\) return\s*\n/g)).toHaveLength(2)
+    expect(seam.match(/useEffect\(\(\) => \{\s*\n\s*if \(horizontal\) return\s*\n/g)).toHaveLength(
+      2,
+    )
     expect(seam).toMatch(/if \(horizontal\) return contentContainerStyle/)
   })
 })
@@ -282,7 +302,9 @@ describe("I6 the composer carve-out is matched by a reserve on BOTH page stacks"
     expect(portrait).toMatch(
       /const overlayScrollHost = frame\.overlay\.keyboardAvoidance\s*\n?\s*\? PLAIN_SCROLL_HOST\s*\n?\s*: PORTRAIT_SCROLL_HOST/,
     )
-    expect(read("../bodyLayout.ts")).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
+    expect(read("../bodyLayout.ts")).toMatch(
+      /surfaceKeyboardAvoidance: active\?\.kind === "composer"/,
+    )
   })
 
   it("reserves for it on web with the visual-viewport inset", () => {
@@ -299,7 +321,9 @@ describe("I6 the composer carve-out is matched by a reserve on BOTH page stacks"
     expect(native).toMatch(
       /const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance && active \}\)/,
     )
-    expect(native).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
+    expect(native).toMatch(
+      /const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/,
+    )
     expect(native).toMatch(/paddingBottom: boxReserve, paddingTop/)
   })
 })

@@ -47,7 +47,7 @@ export function useDialogWebKeys({
   onClose,
 }: {
   visible: boolean
-  onCommit?: () => void
+  onCommit?: (() => void) | undefined
   onClose: () => void
 }): void {
   const handlersRef = useRef({ onCommit, onClose })
@@ -72,14 +72,14 @@ export function useDialogWebKeys({
 export interface ModalCardSheetProps {
   visible: boolean
   onClose: () => void
-  onCommit?: () => void
-  onClosed?: () => void
+  onCommit?: (() => void) | undefined
+  onClosed?: (() => void) | undefined
   headerIcon: IconName
   headerIconColor?: string
   title: string
   dismissLabel: string
   backdropDismissDisabled?: boolean
-  error?: string | null
+  error?: string | null | undefined
   tone?: "default" | "danger"
   actions: React.ReactNode
   bodyLayout?: "scroll" | "fill"
@@ -162,12 +162,25 @@ export function ModalCardSheet({
             >
               {tone === "danger" ? (
                 <View style={styles.headerBadge}>
-                  <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
+                  <Icon
+                    icon={iconMap[headerIcon]}
+                    size={16}
+                    color={headerIconColor ?? t.colors.brand.bloom}
+                  />
                 </View>
               ) : (
-                <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+                <Icon
+                  icon={iconMap[headerIcon]}
+                  size={16}
+                  color={headerIconColor ?? t.colors.text}
+                />
               )}
-              <Text variant="bodyStrong" color={t.colors.text} style={styles.title} numberOfLines={1}>
+              <Text
+                variant="bodyStrong"
+                color={t.colors.text}
+                style={styles.title}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {fullBleed ? (

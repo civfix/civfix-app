@@ -20,7 +20,7 @@
 set -euo pipefail
 
 ipa="${1:-}"
-[ -n "$ipa" ] && [ -f "$ipa" ] || { echo "usage: scripts/store-upload.sh <path-to.ipa>" >&2; exit 1; }
+if [ -z "$ipa" ] || [ ! -f "$ipa" ]; then echo "usage: scripts/store-upload.sh <path-to.ipa>" >&2; exit 1; fi
 
 command -v fastlane >/dev/null 2>&1 || { echo "fastlane not found. Install: brew install fastlane" >&2; exit 1; }
 for var in ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do

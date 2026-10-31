@@ -1,9 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { persistentStorage as webStorage } from "../persistentStorage.web"
-import { APP_PROMO_STORAGE_ID, MAP_FILTERS_STORAGE_ID, SIDEBAR_STORAGE_ID, SYSTEM_NOTICE_STORAGE_ID } from "../storageIds"
+import {
+  APP_PROMO_STORAGE_ID,
+  MAP_FILTERS_STORAGE_ID,
+  SIDEBAR_STORAGE_ID,
+  SYSTEM_NOTICE_STORAGE_ID,
+} from "../storageIds"
 
 // Each id's map outlives its instance, as an MMKV file outlives the app session that opened it.
-const opened = vi.hoisted(() => ({ ids: [] as string[], fail: false, files: new Map<string, Map<string, string>>() }))
+const opened = vi.hoisted(() => ({
+  ids: [] as string[],
+  fail: false,
+  files: new Map<string, Map<string, string>>(),
+}))
 
 function file(id: string): Map<string, string> {
   const existing = opened.files.get(id)
@@ -110,7 +119,12 @@ describe("clearPersistentStorage on native", () => {
     clearPersistentStorage()
 
     expect([...opened.files.keys()].sort()).toEqual(
-      [APP_PROMO_STORAGE_ID, MAP_FILTERS_STORAGE_ID, SIDEBAR_STORAGE_ID, SYSTEM_NOTICE_STORAGE_ID].sort(),
+      [
+        APP_PROMO_STORAGE_ID,
+        MAP_FILTERS_STORAGE_ID,
+        SIDEBAR_STORAGE_ID,
+        SYSTEM_NOTICE_STORAGE_ID,
+      ].sort(),
     )
     for (const [id, keys] of opened.files) expect([...keys.keys()], id).toEqual([])
   })
@@ -148,7 +162,9 @@ describe("persistentStorage on web", () => {
     const blocked = () => {
       throw new Error("SecurityError")
     }
-    vi.stubGlobal("window", { localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked } })
+    vi.stubGlobal("window", {
+      localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    })
     const storage = webStorage(MAP_FILTERS_STORAGE_ID)
     expect(storage.getItem("civfix.map-filters")).toBeNull()
     expect(() => storage.setItem("civfix.map-filters", "{}")).not.toThrow()

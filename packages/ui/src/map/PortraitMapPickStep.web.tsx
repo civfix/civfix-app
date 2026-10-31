@@ -75,7 +75,7 @@ export function PortraitMapPickStep({
     useLocationPick.getState().setPin(pin)
   }, [live, mapRegistered, pin])
 
-  const point: LatLng | null = mapRegistered ? draft ?? localPoint ?? value : localPoint
+  const point: LatLng | null = mapRegistered ? (draft ?? localPoint ?? value) : localPoint
 
   const [addrQuery, setAddrQuery] = usePickStepAddressQuery(live)
 
@@ -97,7 +97,7 @@ export function PortraitMapPickStep({
   }, [])
 
   const confirm = useCallback(() => {
-    const p = mapRegistered ? useLocationPick.getState().draft ?? pointRef.current : localPoint
+    const p = mapRegistered ? (useLocationPick.getState().draft ?? pointRef.current) : localPoint
     if (!p) return
     onConfirmRef.current(p.lat, p.lng)
   }, [mapRegistered, localPoint])
@@ -157,7 +157,12 @@ export function PortraitMapPickStep({
       )}
 
       <View style={pointerEventStyles.auto}>
-        <PickStepBottomBar point={point} onConfirm={confirm} onCancel={cancel} style={styles.bottomBar} />
+        <PickStepBottomBar
+          point={point}
+          onConfirm={confirm}
+          onCancel={cancel}
+          style={styles.bottomBar}
+        />
       </View>
     </View>
   )

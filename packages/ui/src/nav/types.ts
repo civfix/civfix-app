@@ -2,7 +2,8 @@ import type { CleanupDTO, PersonDTO, ReportPinDTO } from "@civfix/contract"
 
 export type LayoutMode = "compact" | "expanded"
 
-export type View = "home" | "map" | "events" | "messaging" | "social" | "reports" | "search" | "report"
+export type View =
+  "home" | "map" | "events" | "messaging" | "social" | "reports" | "search" | "report"
 
 export const ALL_VIEWS = [
   "home",
@@ -118,7 +119,9 @@ export const ALL_DETAIL_KINDS = [
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]
 
-type AssertExhaustive<Union extends string, Arr extends readonly string[]> = [Union] extends [Arr[number]]
+type AssertExhaustive<Union extends string, Arr extends readonly string[]> = [Union] extends [
+  Arr[number],
+]
   ? [Arr[number]] extends [Union]
     ? true
     : false
@@ -132,25 +135,25 @@ void _kindsExhaustive
 
 export interface DetailEntry {
   kind: DetailKind | "view"
-  view?: Extract<View, "map" | "search" | "report">
-  id?: string
-  roomKind?: "cleanup" | "dm" | "report" | "group"
-  peer?: PersonDTO
-  title?: string
-  lat?: number
-  lng?: number
-  reportId?: string
-  reports?: ReportPinDTO[]
-  event?: CleanupDTO
-  geoid?: string
-  jumpToMessageId?: string
-  composerMode?: "post" | "quote" | "reply"
-  targetPostId?: string
-  profileTab?: "posts" | "events" | "hours" | "reports"
-  slug?: string
-  seatId?: string
-  announcementId?: string
-  organizationId?: string
+  view?: Extract<View, "map" | "search" | "report"> | undefined
+  id?: string | undefined
+  roomKind?: "cleanup" | "dm" | "report" | "group" | undefined
+  peer?: PersonDTO | undefined
+  title?: string | undefined
+  lat?: number | undefined
+  lng?: number | undefined
+  reportId?: string | undefined
+  reports?: ReportPinDTO[] | undefined
+  event?: CleanupDTO | undefined
+  geoid?: string | undefined
+  jumpToMessageId?: string | undefined
+  composerMode?: "post" | "quote" | "reply" | undefined
+  targetPostId?: string | undefined
+  profileTab?: "posts" | "events" | "hours" | "reports" | undefined
+  slug?: string | undefined
+  seatId?: string | undefined
+  announcementId?: string | undefined
+  organizationId?: string | undefined
 }
 
 export type Snap = 0 | 1 | 2

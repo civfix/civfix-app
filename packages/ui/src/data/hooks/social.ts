@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from "react"
-import type { InfiniteData, QueryClient, UseMutationOptions, UseQueryResult } from "@tanstack/react-query"
+import type {
+  InfiniteData,
+  QueryClient,
+  UseMutationOptions,
+  UseQueryResult,
+} from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   PersonDTO,
@@ -46,7 +51,9 @@ function patchPersonInFlatLists(
   qc.setQueriesData<PersonDTO[]>({ queryKey: PEOPLE_LIST_KEY }, (prev) =>
     Array.isArray(prev)
       ? prev.map((p) =>
-          p.id === personId ? { ...p, isFollowing: next.isFollowing, followers: next.followers } : p,
+          p.id === personId
+            ? { ...p, isFollowing: next.isFollowing, followers: next.followers }
+            : p,
         )
       : prev,
   )

@@ -1,4 +1,13 @@
-import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { View, StyleSheet, type NativeSyntheticEvent } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import {
@@ -50,12 +59,7 @@ import {
   type ClusterNode,
   type MapClusterIndex,
 } from "./clusterer"
-import {
-  CAMERA_EASE_MS,
-  CLUSTER_FLY_MS,
-  DEFAULT_ZOOM,
-  FOCUS_ZOOM,
-} from "./mapCamera"
+import { CAMERA_EASE_MS, CLUSTER_FLY_MS, DEFAULT_ZOOM, FOCUS_ZOOM } from "./mapCamera"
 import type { MapProps, MapHandle } from "./types"
 
 const ATTRIBUTION_CLEARANCE = 96
@@ -147,7 +151,12 @@ function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps)
     )
   }
   return (
-    <Marker id={`pin-${target.id}`} lngLat={[target.lng, target.lat]} anchor="bottom" onPress={onPressPin}>
+    <Marker
+      id={`pin-${target.id}`}
+      lngLat={[target.lng, target.lat]}
+      anchor="bottom"
+      onPress={onPressPin}
+    >
       <View {...markerButtonA11y(label, `pin-${target.id}`, onPressPin)}>
         <TeardropPin category={target.category} active />
       </View>
@@ -155,374 +164,384 @@ function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps)
   )
 }
 
-export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {
-  const {
-    reports = NO_REPORTS,
-    cleanups = NO_CLEANUPS,
-    reportAggregates = NO_AGGREGATES,
-    focusedPinId = null,
-    focusedCleanupId = null,
-    userLocation = null,
-    showUserLocation = false,
-    onRegionChange,
-    onUserCameraMove,
-    onPressPin,
-    onPressCleanup,
-    onPressCluster,
-    onPressBlend,
-    onPressMap,
-    onLongPressMap,
-    initialCenter,
-  } = props
+export const Map = memo(
+  forwardRef<MapHandle, MapProps>(function Map(props, ref) {
+    const {
+      reports = NO_REPORTS,
+      cleanups = NO_CLEANUPS,
+      reportAggregates = NO_AGGREGATES,
+      focusedPinId = null,
+      focusedCleanupId = null,
+      userLocation = null,
+      showUserLocation = false,
+      onRegionChange,
+      onUserCameraMove,
+      onPressPin,
+      onPressCleanup,
+      onPressCluster,
+      onPressBlend,
+      onPressMap,
+      onLongPressMap,
+      initialCenter,
+    } = props
 
-  const points = useMemo(
-    () => mapPointsFor({ reports, cleanups, aggregates: reportAggregates }),
-    [reports, cleanups, reportAggregates],
-  )
+    const points = useMemo(
+      () => mapPointsFor({ reports, cleanups, aggregates: reportAggregates }),
+      [reports, cleanups, reportAggregates],
+    )
 
-  const cameraRef = useRef<CameraRef>(null)
-  const mapNativeRef = useRef<MapRef>(null)
-  const insets = useSafeAreaInsets()
-  const userLocationRef = useRef(userLocation)
+    const cameraRef = useRef<CameraRef>(null)
+    const mapNativeRef = useRef<MapRef>(null)
+    const insets = useSafeAreaInsets()
+    const userLocationRef = useRef(userLocation)
 
-  const haptics = useHaptics()
-  const hapticsRef = useRef(haptics)
-  const onPressPinRef = useRef(onPressPin)
-  const onPressClusterRef = useRef(onPressCluster)
-  const onPressCleanupRef = useRef(onPressCleanup)
-  const onPressBlendRef = useRef(onPressBlend)
-  const onLongPressMapRef = useRef(onLongPressMap)
-  const onPressMapRef = useRef(onPressMap)
-  const mapSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
+    const haptics = useHaptics()
+    const hapticsRef = useRef(haptics)
+    const onPressPinRef = useRef(onPressPin)
+    const onPressClusterRef = useRef(onPressCluster)
+    const onPressCleanupRef = useRef(onPressCleanup)
+    const onPressBlendRef = useRef(onPressBlend)
+    const onLongPressMapRef = useRef(onLongPressMap)
+    const onPressMapRef = useRef(onPressMap)
+    const mapSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
 
-  const { index, query } = useClusters(points)
-  const indexRef = useRef<MapClusterIndex>(index)
-  const [nodes, setNodes] = useState<ClusterNode[]>([])
-  const nodesByMarkerRef = useRef(new globalThis.Map<string, ClusterNode>())
-  const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
-  const onRegionChangeRef = useRef(onRegionChange)
-  const onUserCameraMoveRef = useRef(onUserCameraMove)
+    const { index, query } = useClusters(points)
+    const indexRef = useRef<MapClusterIndex>(index)
+    const [nodes, setNodes] = useState<ClusterNode[]>([])
+    const nodesByMarkerRef = useRef(new globalThis.Map<string, ClusterNode>())
+    const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
+    const onRegionChangeRef = useRef(onRegionChange)
+    const onUserCameraMoveRef = useRef(onUserCameraMove)
 
-  const initialCenterRef = useRef(initialCenter)
-  const initialViewState = useMemo(
-    () => ({
-      center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
-      zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
-    }),
-    [],
-  )
+    const initialCenterRef = useRef(initialCenter)
+    const initialViewState = useMemo(
+      () => ({
+        center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
+        zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
+      }),
+      [],
+    )
 
-  const focus = useMapFocus((s) => s.focus)
-  const droppedPin = useDroppedPin((s) => s.pin)
-  const flyToRequest = useMapFlyTo((s) => s.request)
-  const flyToHighlight = useMapFlyTo((s) => s.highlight)
-  const activeIds = activeMarkerIds(focusedPinId, focusedCleanupId, flyToHighlight)
-  const [mapLoaded, setMapLoaded] = useState(false)
+    const focus = useMapFocus((s) => s.focus)
+    const droppedPin = useDroppedPin((s) => s.pin)
+    const flyToRequest = useMapFlyTo((s) => s.request)
+    const flyToHighlight = useMapFlyTo((s) => s.highlight)
+    const activeIds = activeMarkerIds(focusedPinId, focusedCleanupId, flyToHighlight)
+    const [mapLoaded, setMapLoaded] = useState(false)
 
-  const recomputeRef = useRef<() => void>(() => {})
-  React.useLayoutEffect(() => {
-    recomputeRef.current = () => {
-      const region = lastRegionRef.current
-      setNodes(
-        region
-          ? query(region.bbox, region.zoom)
-          : query(WORLD_BBOX, initialViewState.zoom),
-      )
-    }
-  })
-  const runnerRef = useRef<IdleRunner | null>(null)
-  const runner = (runnerRef.current ??= createIdleRunner(() => recomputeRef.current()))
+    const recomputeRef = useRef<() => void>(() => {})
+    React.useLayoutEffect(() => {
+      recomputeRef.current = () => {
+        const region = lastRegionRef.current
+        setNodes(
+          region ? query(region.bbox, region.zoom) : query(WORLD_BBOX, initialViewState.zoom),
+        )
+      }
+    })
+    const runnerRef = useRef<IdleRunner | null>(null)
+    const runner = (runnerRef.current ??= createIdleRunner(() => recomputeRef.current()))
 
-  useEffect(() => {
-    return () => {
-      runner.dispose()
-      useMapViewport.getState().clear()
-    }
-  }, [runner])
+    useEffect(() => {
+      return () => {
+        runner.dispose()
+        useMapViewport.getState().clear()
+      }
+    }, [runner])
 
-  const offMapTarget = useMemo(
-    () => (focus ? null : flyToTargetOffMap(nodes, flyToHighlight)),
-    [focus, nodes, flyToHighlight],
-  )
+    const offMapTarget = useMemo(
+      () => (focus ? null : flyToTargetOffMap(nodes, flyToHighlight)),
+      [focus, nodes, flyToHighlight],
+    )
 
-  const hitMarkers = useMemo<LongPressMarker[]>(() => {
-    if (focus) return [{ lat: focus.lat, lng: focus.lng }]
-    const markers: LongPressMarker[] = nodes.map((node) => ({
-      lat: node.lat,
-      lng: node.lng,
-      anchor: node.type === "cluster" ? ("center" as const) : ("bottom" as const),
-    }))
-    if (offMapTarget) markers.push({ lat: offMapTarget.lat, lng: offMapTarget.lng, anchor: "bottom" })
-    return markers
-  }, [focus, nodes, offMapTarget])
-  const hitMarkersRef = useRef(hitMarkers)
-  React.useLayoutEffect(() => {
-    userLocationRef.current = userLocation
-    hapticsRef.current = haptics
-    onPressPinRef.current = onPressPin
-    onPressClusterRef.current = onPressCluster
-    onPressCleanupRef.current = onPressCleanup
-    onPressBlendRef.current = onPressBlend
-    onLongPressMapRef.current = onLongPressMap
-    onPressMapRef.current = onPressMap
-    onRegionChangeRef.current = onRegionChange
-    onUserCameraMoveRef.current = onUserCameraMove
-    hitMarkersRef.current = hitMarkers
-  })
+    const hitMarkers = useMemo<LongPressMarker[]>(() => {
+      if (focus) return [{ lat: focus.lat, lng: focus.lng }]
+      const markers: LongPressMarker[] = nodes.map((node) => ({
+        lat: node.lat,
+        lng: node.lng,
+        anchor: node.type === "cluster" ? ("center" as const) : ("bottom" as const),
+      }))
+      if (offMapTarget)
+        markers.push({ lat: offMapTarget.lat, lng: offMapTarget.lng, anchor: "bottom" })
+      return markers
+    }, [focus, nodes, offMapTarget])
+    const hitMarkersRef = useRef(hitMarkers)
+    React.useLayoutEffect(() => {
+      userLocationRef.current = userLocation
+      hapticsRef.current = haptics
+      onPressPinRef.current = onPressPin
+      onPressClusterRef.current = onPressCluster
+      onPressCleanupRef.current = onPressCleanup
+      onPressBlendRef.current = onPressBlend
+      onLongPressMapRef.current = onLongPressMap
+      onPressMapRef.current = onPressMap
+      onRegionChangeRef.current = onRegionChange
+      onUserCameraMoveRef.current = onUserCameraMove
+      hitMarkersRef.current = hitMarkers
+    })
 
-  useImperativeHandle(
-    ref,
-    (): MapHandle => ({
-      flyTo: (lat, lng, zoom) => {
-        cameraRef.current?.flyTo({
-          center: [lng, lat],
-          zoom: zoom ?? Math.max(lastRegionRef.current?.zoom ?? DEFAULT_ZOOM, DEFAULT_ZOOM),
-          duration: CAMERA_EASE_MS,
-        })
-      },
-      recenter: () => {
-        const loc = userLocationRef.current
-        if (loc) {
+    useImperativeHandle(
+      ref,
+      (): MapHandle => ({
+        flyTo: (lat, lng, zoom) => {
           cameraRef.current?.flyTo({
-            center: [loc.lng, loc.lat],
-            zoom: DEFAULT_ZOOM,
+            center: [lng, lat],
+            zoom: zoom ?? Math.max(lastRegionRef.current?.zoom ?? DEFAULT_ZOOM, DEFAULT_ZOOM),
             duration: CAMERA_EASE_MS,
           })
-        }
+        },
+        recenter: () => {
+          const loc = userLocationRef.current
+          if (loc) {
+            cameraRef.current?.flyTo({
+              center: [loc.lng, loc.lat],
+              zoom: DEFAULT_ZOOM,
+              duration: CAMERA_EASE_MS,
+            })
+          }
+        },
+      }),
+      [],
+    )
+
+    const cartoApiKey = useCartoApiKey()
+    const scheme = useTheme().scheme
+    const resolvedStyle = useMemo(
+      () =>
+        rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme }) as string | StyleSpecification,
+      [cartoApiKey, scheme],
+    )
+
+    const commitRegion = useCallback(
+      (bbox: BBox, zoom: number) => {
+        lastRegionRef.current = { bbox, zoom }
+        onRegionChangeRef.current?.(bbox, zoom)
+        useMapViewport.getState().setRegion(bbox, zoom)
+        runner.request()
       },
-    }),
-    [],
-  )
+      [runner],
+    )
 
-  const cartoApiKey = useCartoApiKey()
-  const scheme = useTheme().scheme
-  const resolvedStyle = useMemo(
-    () => rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme }) as string | StyleSpecification,
-    [cartoApiKey, scheme],
-  )
+    const handleRegion = useCallback(
+      (event: { nativeEvent: ViewStateChangeEvent }) => {
+        const [west, south, east, north] = event.nativeEvent.bounds
+        commitRegion({ west, south, east, north }, event.nativeEvent.zoom)
+      },
+      [commitRegion],
+    )
 
-  const commitRegion = useCallback((bbox: BBox, zoom: number) => {
-    lastRegionRef.current = { bbox, zoom }
-    onRegionChangeRef.current?.(bbox, zoom)
-    useMapViewport.getState().setRegion(bbox, zoom)
-    runner.request()
-  }, [runner])
-
-  const handleRegion = useCallback(
-    (event: { nativeEvent: ViewStateChangeEvent }) => {
-      const [west, south, east, north] = event.nativeEvent.bounds
-      commitRegion({ west, south, east, north }, event.nativeEvent.zoom)
-    },
-    [commitRegion],
-  )
-
-  const handleRegionWillChange = useCallback(
-    (event: { nativeEvent: ViewStateChangeEvent }) => {
+    const handleRegionWillChange = useCallback((event: { nativeEvent: ViewStateChangeEvent }) => {
       if (!event.nativeEvent.userInteraction) return
       useMapFlyTo.getState().clear()
       onUserCameraMoveRef.current?.()
-    },
-    [],
-  )
+    }, [])
 
-  const handleMapLoad = useCallback(() => {
-    setMapLoaded(true)
-    const pending = mapNativeRef.current?.getViewState()
-    if (!pending) {
-      runner.request()
-      return
-    }
-    void pending
-      .then((view: ViewState) => {
-        const [west, south, east, north] = view.bounds
-        commitRegion({ west, south, east, north }, view.zoom)
+    const handleMapLoad = useCallback(() => {
+      setMapLoaded(true)
+      const pending = mapNativeRef.current?.getViewState()
+      if (!pending) {
+        runner.request()
+        return
+      }
+      void pending
+        .then((view: ViewState) => {
+          const [west, south, east, north] = view.bounds
+          commitRegion({ west, south, east, north }, view.zoom)
+        })
+        .catch(() => runner.request())
+    }, [commitRegion, runner])
+
+    useEffect(() => {
+      indexRef.current = index
+      runner.flush()
+    }, [index, query, runner])
+
+    useEffect(() => {
+      if (!focus) return
+      cameraRef.current?.flyTo({
+        center: [focus.lng, focus.lat],
+        zoom: FOCUS_ZOOM,
+        duration: CAMERA_EASE_MS,
       })
-      .catch(() => runner.request())
-  }, [commitRegion, runner])
+    }, [focus])
 
-  useEffect(() => {
-    indexRef.current = index
-    runner.flush()
-  }, [index, query, runner])
+    useEffect(() => {
+      if (!flyToRequest || !mapLoaded) return
+      cameraRef.current?.flyTo({
+        center: [flyToRequest.lng, flyToRequest.lat],
+        zoom: FOCUS_ZOOM,
+        duration: CAMERA_EASE_MS,
+      })
+      useMapFlyTo.getState().consume(flyToRequest.generation)
+    }, [flyToRequest, mapLoaded])
 
-  useEffect(() => {
-    if (!focus) return
-    cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: CAMERA_EASE_MS })
-  }, [focus])
+    const markerPressedAtRef = useRef(0)
+    const handleMapPress = useCallback(
+      (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
+        if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
+        onPressMapRef.current?.()
+      },
+      [],
+    )
 
-  useEffect(() => {
-    if (!flyToRequest || !mapLoaded) return
-    cameraRef.current?.flyTo({
-      center: [flyToRequest.lng, flyToRequest.lat],
-      zoom: FOCUS_ZOOM,
-      duration: CAMERA_EASE_MS,
-    })
-    useMapFlyTo.getState().consume(flyToRequest.generation)
-  }, [flyToRequest, mapLoaded])
+    const handleMapLongPress = useCallback((event: NativeSyntheticEvent<PressEvent>) => {
+      const handler = onLongPressMapRef.current
+      if (!handler) return
+      if (useLocationPick.getState().active) return
+      const [lng, lat] = event.nativeEvent.lngLat
+      if (
+        longPressHitsMarker(
+          { lat, lng },
+          hitMarkersRef.current,
+          useMapViewport.getState().viewport?.bbox ?? null,
+          mapSizeRef.current,
+        )
+      ) {
+        return
+      }
+      handler(lat, lng)
+    }, [])
 
-  const markerPressedAtRef = useRef(0)
-  const handleMapPress = useCallback(
-    (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
-      if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
-      onPressMapRef.current?.()
-    },
-    [],
-  )
+    const handlePressPin = useCallback((event: MarkerPressEvent) => {
+      markerPressedAtRef.current = Date.now()
+      useMapFlyTo.getState().clear()
+      const id = event.nativeEvent.id.slice("pin-".length)
+      hapticsRef.current.selection()
+      onPressPinRef.current?.(id)
+    }, [])
+    const handlePressCluster = useCallback((event: MarkerPressEvent) => {
+      markerPressedAtRef.current = Date.now()
+      useMapFlyTo.getState().clear()
+      const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
+      if (!node || node.type !== "cluster") return
+      hapticsRef.current.selection()
+      const currentZoom = lastRegionRef.current?.zoom ?? DEFAULT_ZOOM
+      const target = clusterPressTarget(indexRef.current, node, currentZoom)
+      const flyToCluster = (zoom: number) =>
+        cameraRef.current?.flyTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
+      if (target !== null) {
+        flyToCluster(target)
+        return
+      }
+      const handler = onPressClusterRef.current
+      const listing = clusterListReports(indexRef.current, node)
+      if (handler && listing !== null && listing.length > 0) {
+        handler(listing)
+        return
+      }
+      flyToCluster(clusterFallbackZoom(currentZoom))
+    }, [])
+    const handlePressCleanup = useCallback((event: MarkerPressEvent) => {
+      markerPressedAtRef.current = Date.now()
+      useMapFlyTo.getState().clear()
+      const id = event.nativeEvent.id.slice("cleanup-".length)
+      hapticsRef.current.selection()
+      onPressCleanupRef.current?.(id)
+    }, [])
+    const handlePressBlend = useCallback((event: MarkerPressEvent) => {
+      markerPressedAtRef.current = Date.now()
+      useMapFlyTo.getState().clear()
+      const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
+      if (!node || node.type !== "blend") return
+      hapticsRef.current.selection()
+      if (onPressBlendRef.current) onPressBlendRef.current(node.event, node.reports)
+      else onPressCleanupRef.current?.(node.event.id)
+    }, [])
 
-  const handleMapLongPress = useCallback((event: NativeSyntheticEvent<PressEvent>) => {
-    const handler = onLongPressMapRef.current
-    if (!handler) return
-    if (useLocationPick.getState().active) return
-    const [lng, lat] = event.nativeEvent.lngLat
-    if (
-      longPressHitsMarker(
-        { lat, lng },
-        hitMarkersRef.current,
-        useMapViewport.getState().viewport?.bbox ?? null,
-        mapSizeRef.current,
-      )
-    ) {
-      return
-    }
-    handler(lat, lng)
-  }, [])
+    const pressByType = useMemo<Record<ClusterNode["type"], (event: MarkerPressEvent) => void>>(
+      () => ({
+        cluster: handlePressCluster,
+        report: handlePressPin,
+        event: handlePressCleanup,
+        blend: handlePressBlend,
+      }),
+      [handlePressCluster, handlePressPin, handlePressCleanup, handlePressBlend],
+    )
 
-  const handlePressPin = useCallback((event: MarkerPressEvent) => {
-    markerPressedAtRef.current = Date.now()
-    useMapFlyTo.getState().clear()
-    const id = event.nativeEvent.id.slice("pin-".length)
-    hapticsRef.current.selection()
-    onPressPinRef.current?.(id)
-  }, [])
-  const handlePressCluster = useCallback((event: MarkerPressEvent) => {
-    markerPressedAtRef.current = Date.now()
-    useMapFlyTo.getState().clear()
-    const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
-    if (!node || node.type !== "cluster") return
-    hapticsRef.current.selection()
-    const currentZoom = lastRegionRef.current?.zoom ?? DEFAULT_ZOOM
-    const target = clusterPressTarget(indexRef.current, node, currentZoom)
-    const flyToCluster = (zoom: number) =>
-      cameraRef.current?.flyTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
-    if (target !== null) {
-      flyToCluster(target)
-      return
-    }
-    const handler = onPressClusterRef.current
-    const listing = clusterListReports(indexRef.current, node)
-    if (handler && listing !== null && listing.length > 0) {
-      handler(listing)
-      return
-    }
-    flyToCluster(clusterFallbackZoom(currentZoom))
-  }, [])
-  const handlePressCleanup = useCallback((event: MarkerPressEvent) => {
-    markerPressedAtRef.current = Date.now()
-    useMapFlyTo.getState().clear()
-    const id = event.nativeEvent.id.slice("cleanup-".length)
-    hapticsRef.current.selection()
-    onPressCleanupRef.current?.(id)
-  }, [])
-  const handlePressBlend = useCallback((event: MarkerPressEvent) => {
-    markerPressedAtRef.current = Date.now()
-    useMapFlyTo.getState().clear()
-    const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
-    if (!node || node.type !== "blend") return
-    hapticsRef.current.selection()
-    if (onPressBlendRef.current) onPressBlendRef.current(node.event, node.reports)
-    else onPressCleanupRef.current?.(node.event.id)
-  }, [])
+    const markerNodes = useMemo(() => {
+      const byMarker = new globalThis.Map<string, ClusterNode>()
+      const rendered = nodes.map((node) => {
+        const markerId = nativeMarkerId(node)
+        byMarker.set(markerId, node)
+        return { node, markerId }
+      })
+      return { rendered, byMarker }
+    }, [nodes])
 
-  const pressByType = useMemo<Record<ClusterNode["type"], (event: MarkerPressEvent) => void>>(
-    () => ({
-      cluster: handlePressCluster,
-      report: handlePressPin,
-      event: handlePressCleanup,
-      blend: handlePressBlend,
-    }),
-    [handlePressCluster, handlePressPin, handlePressCleanup, handlePressBlend],
-  )
+    useEffect(() => {
+      nodesByMarkerRef.current = markerNodes.byMarker
+    }, [markerNodes])
 
-  const markerNodes = useMemo(() => {
-    const byMarker = new globalThis.Map<string, ClusterNode>()
-    const rendered = nodes.map((node) => {
-      const markerId = nativeMarkerId(node)
-      byMarker.set(markerId, node)
-      return { node, markerId }
-    })
-    return { rendered, byMarker }
-  }, [nodes])
+    return (
+      <View
+        style={styles.container}
+        onLayout={(e) => {
+          const { width, height } = e.nativeEvent.layout
+          mapSizeRef.current = { width, height }
+        }}
+      >
+        <MlMap
+          ref={mapNativeRef}
+          style={styles.map}
+          mapStyle={resolvedStyle}
+          logo={false}
+          attributionPosition={{ bottom: insets.bottom + ATTRIBUTION_CLEARANCE, right: space["2"] }}
+          compass={false}
+          touchRotate={false}
+          touchPitch={false}
+          onDidFinishLoadingMap={handleMapLoad}
+          onRegionWillChange={handleRegionWillChange}
+          onRegionDidChange={handleRegion}
+          onPress={handleMapPress}
+          onLongPress={handleMapLongPress}
+        >
+          <Camera ref={cameraRef} initialViewState={initialViewState} />
 
-  useEffect(() => {
-    nodesByMarkerRef.current = markerNodes.byMarker
-  }, [markerNodes])
+          {showUserLocation ? <UserLocation animated accuracy /> : null}
 
-  return (
-    <View
-      style={styles.container}
-      onLayout={(e) => {
-        const { width, height } = e.nativeEvent.layout
-        mapSizeRef.current = { width, height }
-      }}
-    >
-    <MlMap
-      ref={mapNativeRef}
-      style={styles.map}
-      mapStyle={resolvedStyle}
-      logo={false}
-      attributionPosition={{ bottom: insets.bottom + ATTRIBUTION_CLEARANCE, right: space["2"] }}
-      compass={false}
-      touchRotate={false}
-      touchPitch={false}
-      onDidFinishLoadingMap={handleMapLoad}
-      onRegionWillChange={handleRegionWillChange}
-      onRegionDidChange={handleRegion}
-      onPress={handleMapPress}
-      onLongPress={handleMapLongPress}
-    >
-      <Camera ref={cameraRef} initialViewState={initialViewState} />
-
-      {showUserLocation ? <UserLocation animated accuracy /> : null}
-
-      {focus ? (
-        <TargetMarker
-          key={`${focus.kind}:${focus.id}`}
-          target={focus}
-          onPressPin={handlePressPin}
-          onPressCleanup={handlePressCleanup}
-        />
-      ) : (
-        <>
-          {markerNodes.rendered.map(({ node, markerId }) => (
-            <MarkerNode
-              key={node.key}
-              node={node}
-              markerId={markerId}
-              active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}
-              onPress={pressByType[node.type]}
-            />
-          ))}
-          {offMapTarget ? (
+          {focus ? (
             <TargetMarker
-              key={`flyto:${offMapTarget.kind}:${offMapTarget.id}`}
-              target={offMapTarget}
+              key={`${focus.kind}:${focus.id}`}
+              target={focus}
               onPressPin={handlePressPin}
               onPressCleanup={handlePressCleanup}
             />
+          ) : (
+            <>
+              {markerNodes.rendered.map(({ node, markerId }) => (
+                <MarkerNode
+                  key={node.key}
+                  node={node}
+                  markerId={markerId}
+                  active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}
+                  onPress={pressByType[node.type]}
+                />
+              ))}
+              {offMapTarget ? (
+                <TargetMarker
+                  key={`flyto:${offMapTarget.kind}:${offMapTarget.id}`}
+                  target={offMapTarget}
+                  onPressPin={handlePressPin}
+                  onPressCleanup={handlePressCleanup}
+                />
+              ) : null}
+            </>
+          )}
+
+          {droppedPin ? (
+            <Marker
+              key="drop-pin"
+              id="drop-pin"
+              lngLat={[droppedPin.lng, droppedPin.lat]}
+              anchor="bottom"
+            >
+              <DropPin />
+            </Marker>
           ) : null}
-        </>
-      )}
-
-      {droppedPin ? (
-        <Marker key="drop-pin" id="drop-pin" lngLat={[droppedPin.lng, droppedPin.lat]} anchor="bottom">
-          <DropPin />
-        </Marker>
-      ) : null}
-    </MlMap>
-
-    </View>
-  )
-}))
+        </MlMap>
+      </View>
+    )
+  }),
+)
 
 const styles = StyleSheet.create({
   container: {

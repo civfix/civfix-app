@@ -4,11 +4,16 @@ import { test } from "node:test"
 import { URL } from "node:url"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
-const forceUpdate = readFileSync(new URL("../src/components/ForceUpdateGate.tsx", import.meta.url), "utf8")
-const SHELL = "../../../packages/ui/src/shell/"
-const noticeSources = ["SystemNoticeFrame.tsx", "SystemNoticeBanner.native.tsx", "SystemNoticeBanner.shared.tsx"].map(
-  (file) => [file, readFileSync(new URL(SHELL + file, import.meta.url), "utf8")] as const,
+const forceUpdate = readFileSync(
+  new URL("../src/components/ForceUpdateGate.tsx", import.meta.url),
+  "utf8",
 )
+const SHELL = "../../../packages/ui/src/shell/"
+const noticeSources = [
+  "SystemNoticeFrame.tsx",
+  "SystemNoticeBanner.native.tsx",
+  "SystemNoticeBanner.shared.tsx",
+].map((file) => [file, readFileSync(new URL(SHELL + file, import.meta.url), "utf8")] as const)
 
 function layers(src: string, prop: "zIndex" | "elevation"): number[] {
   return [...src.matchAll(new RegExp(`\\b${prop}:\\s*(\\d+)`, "g"))].map((m) => Number(m[1]))

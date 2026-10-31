@@ -21,7 +21,9 @@ const helpers = suggest as unknown as Helpers
 describe("address search proximity bias never waits on an unanswered permission prompt", () => {
   it("caps the device fix inside AddressSearch at 4 s through the shared never-rejecting cap", () => {
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
-    expect(addressSearch).toMatch(/import \{[^}]*\bDEVICE_FIX_TIMEOUT_MS\b[^}]*\} from "@civfix\/contract"/)
+    expect(addressSearch).toMatch(
+      /import \{[^}]*\bDEVICE_FIX_TIMEOUT_MS\b[^}]*\} from "@civfix\/contract"/,
+    )
     expect(addressSearch).toMatch(/import \{[^}]*\bwithTimeout\b[^}]*\} from "\.\.\/helpers"/)
     expect(addressSearch).toContain("withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
   })
@@ -47,13 +49,17 @@ describe("address search dropdown states", () => {
     expect(addressSearch).toContain('status === "failed" ? (')
     expect(addressSearch).toContain('t("error.failed")')
     expect(addressSearch).toContain("onPress={() => void runSearch(value)}")
-    expect(addressSearch).toMatch(/if \(!ac\.signal\.aborted\) \{\s*setResults\(\[\]\)\s*setFailed\(true\)/)
+    expect(addressSearch).toMatch(
+      /if \(!ac\.signal\.aborted\) \{\s*setResults\(\[\]\)\s*setFailed\(true\)/,
+    )
   })
 })
 
 describe("address search accessibility", () => {
   it("names the input for assistive tech instead of relying on the placeholder", () => {
-    expect(addressSearch).toMatch(/placeholder=\{t\("input\.placeholder"\)\}\s*accessibilityLabel=\{t\("input\.a11y"\)\}/)
+    expect(addressSearch).toMatch(
+      /placeholder=\{t\("input\.placeholder"\)\}\s*accessibilityLabel=\{t\("input\.a11y"\)\}/,
+    )
   })
 
   it("announces the settled result count, the no-matches answer and a failure", () => {

@@ -58,7 +58,10 @@ async function cachedSession() {
     fetches += 1
     return { items: [], fetch: fetches }
   }
-  const observer = new QueryObserver(client, { queryKey: NOTIFICATIONS, queryFn: fetchNotifications })
+  const observer = new QueryObserver(client, {
+    queryKey: NOTIFICATIONS,
+    queryFn: fetchNotifications,
+  })
   unsubscribe = observer.subscribe(() => {})
   client.setQueryData(PROFILE, { id: "u1" })
   await settle()

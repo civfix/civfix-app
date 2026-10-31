@@ -1,6 +1,12 @@
 import { useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webCursorPointer, webInputReset } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  webInputReset,
+} from "../../theme"
 import { Icon, iconMap } from "../../typography"
 import { TextInput } from "../../primitives"
 import { useT } from "../../i18n"
@@ -21,7 +27,13 @@ export function PickerSearchField({
   const { t } = useT("report-picker")
   const [searchFocused, setSearchFocused] = useState(false)
   return (
-    <View style={[styles.search, searchFocused ? styles.searchFocused : null, expanded ? styles.searchPane : styles.searchFloat]}>
+    <View
+      style={[
+        styles.search,
+        searchFocused ? styles.searchFocused : null,
+        expanded ? styles.searchPane : styles.searchFloat,
+      ]}
+    >
       <Icon icon={iconMap.Search} size={16} color={th.colors.textSubtle} />
       <TextInput
         value={query}

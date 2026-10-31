@@ -76,7 +76,9 @@ describe("FilterChip announces the semantics its caller means", () => {
   })
 
   it("gives an action chip no checked state and speaks the count in the default label", () => {
-    expect(chip).toContain('{...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}')
+    expect(chip).toContain(
+      '{...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}',
+    )
     expect(a11yState({ disabled: false })).not.toHaveProperty("aria-checked")
     expect(a11yState({ checked: true, disabled: false })).toMatchObject({ "aria-checked": true })
     expect(chip).toContain("count === undefined ? label : `${label}, ${count}`")
@@ -86,7 +88,9 @@ describe("FilterChip announces the semantics its caller means", () => {
 describe("the one-time code field exposes its progress", () => {
   it("reports how many digits are entered on native", () => {
     const input = code("../SegmentedCodeInput.tsx")
-    expect(input).toContain('t("verification_code.progress", { count: value.length, total: length })')
+    expect(input).toContain(
+      't("verification_code.progress", { count: value.length, total: length })',
+    )
     expect(input).toContain("accessibilityValue={progress}")
   })
 })
@@ -96,7 +100,8 @@ describe("EventCard's label keeps the date, place and organizer", () => {
     const card = code("../EventCard.tsx")
     expect(card).not.toContain('t("a11y.card", {')
     expect(card).toContain('t("a11y.card_detail", {')
-    for (const slot of ["title:", "when:", "location:", "going:", "organizer:"]) expect(card).toContain(slot)
+    for (const slot of ["title:", "when:", "location:", "going:", "organizer:"])
+      expect(card).toContain(slot)
   })
 })
 
@@ -138,16 +143,22 @@ describe("the toggle label column is not a duplicate screen-reader stop", () => 
     expect(source).toContain("accessibilityHint={hint}")
   })
 
-  it.each(["../Toggle.tsx", "../SettingsRow.tsx"])("%s renders the shared toggle row and hints the switch", (file) => {
-    const source = code(file)
-    expect(source).toContain("<ToggleRowContent")
-    expect(source).not.toContain("<SettingsToggle")
-    expect(source).toMatch(/hint=\{(helper|sub)\}/)
-  })
+  it.each(["../Toggle.tsx", "../SettingsRow.tsx"])(
+    "%s renders the shared toggle row and hints the switch",
+    (file) => {
+      const source = code(file)
+      expect(source).toContain("<ToggleRowContent")
+      expect(source).not.toContain("<SettingsToggle")
+      expect(source).toMatch(/hint=\{(helper|sub)\}/)
+    },
+  )
 
-  it.each(["../SettingsToggle.web.tsx", "../SettingsToggle.native.tsx"])("%s forwards the hint", (file) => {
-    expect(code(file)).toContain("accessibilityHint={accessibilityHint}")
-  })
+  it.each(["../SettingsToggle.web.tsx", "../SettingsToggle.native.tsx"])(
+    "%s forwards the hint",
+    (file) => {
+      expect(code(file)).toContain("accessibilityHint={accessibilityHint}")
+    },
+  )
 })
 
 describe("StatTile is one readable element", () => {
@@ -168,8 +179,12 @@ describe("StatTile is one readable element", () => {
 describe("loading is announced", () => {
   it("labels the spinner and the skeleton path", () => {
     const view = code("../StateView.tsx")
-    expect(view).toContain("<ActivityIndicator color={t.colors.brand.bloom} accessibilityLabel={loading} />")
-    expect(view).toContain('accessible accessibilityRole="progressbar" accessibilityLabel={loading}')
+    expect(view).toContain(
+      "<ActivityIndicator color={t.colors.brand.bloom} accessibilityLabel={loading} />",
+    )
+    expect(view).toMatch(
+      /accessible\s+accessibilityRole="progressbar"\s+accessibilityLabel=\{loading\}/,
+    )
   })
 })
 
@@ -187,7 +202,9 @@ describe("the About card is modal", () => {
 describe("composer thumbs say which attachment they remove and when one is uploading", () => {
   it("numbers the remove control and labels the spinner", () => {
     const thumbs = code("../ComposerThumbs.tsx")
-    expect(thumbs).toContain('t("media.remove_attachment_n", { index: index + 1, count: attachments.length })')
+    expect(thumbs).toMatch(
+      /t\("media\.remove_attachment_n", \{\s*index: index \+ 1,\s*count: attachments\.length,?\s*\}\)/,
+    )
     expect(thumbs).toContain('accessibilityLabel={t("media.uploading")}')
   })
 })
@@ -195,13 +212,19 @@ describe("composer thumbs say which attachment they remove and when one is uploa
 describe("the reaction rows are labelled toolbars", () => {
   it("never puts a bare label on a generic view", () => {
     const menu = code("../MessageContextMenu.tsx")
-    expect(menu.match(/accessibilityRole="toolbar"\s+accessibilityLabel=\{t\("context_menu\.reactions"\)\}/g)).toHaveLength(2)
+    expect(
+      menu.match(
+        /accessibilityRole="toolbar"\s+accessibilityLabel=\{t\("context_menu\.reactions"\)\}/g,
+      ),
+    ).toHaveLength(2)
   })
 })
 
 describe("the switch knob honors reduced motion", () => {
   it("drops the overshooting transition on web", () => {
-    expect(code("../SettingsToggle.web.tsx")).toContain("transition: still ? undefined : KNOB_TRANSITION")
+    expect(code("../SettingsToggle.web.tsx")).toContain(
+      "transition: still ? undefined : KNOB_TRANSITION",
+    )
   })
 
   it("snaps instead of springing on native", () => {

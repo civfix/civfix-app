@@ -17,7 +17,8 @@ const { Pressable } = createRequire(import.meta.url)("react-native-web") as {
   Pressable: ComponentType<Record<string, unknown>>
 }
 
-const renderWeb = (props: Record<string, unknown>): string => renderToStaticMarkup(createElement(Pressable, props))
+const renderWeb = (props: Record<string, unknown>): string =>
+  renderToStaticMarkup(createElement(Pressable, props))
 
 describe("a11yState carries each state to both platforms", () => {
   it("mirrors every set state into the ARIA prop react-native-web renders", () => {
@@ -26,7 +27,10 @@ describe("a11yState carries each state to both platforms", () => {
       "aria-checked": true,
       "aria-disabled": false,
     })
-    expect(a11yState({ expanded: false })).toEqual({ accessibilityState: { expanded: false }, "aria-expanded": false })
+    expect(a11yState({ expanded: false })).toEqual({
+      accessibilityState: { expanded: false },
+      "aria-expanded": false,
+    })
     expect(a11yState({ selected: true, busy: true })).toEqual({
       accessibilityState: { selected: true, busy: true },
       "aria-selected": true,
@@ -36,14 +40,25 @@ describe("a11yState carries each state to both platforms", () => {
   })
 
   it("emits no ARIA prop for a state the caller did not set", () => {
-    expect(Object.keys(a11yState({ disabled: true }))).toEqual(["accessibilityState", "aria-disabled"])
+    expect(Object.keys(a11yState({ disabled: true }))).toEqual([
+      "accessibilityState",
+      "aria-disabled",
+    ])
   })
 
   it("reaches the DOM, where accessibilityState alone does not", () => {
-    expect(renderWeb({ accessibilityRole: "radio", accessibilityState: { checked: true } })).not.toContain("aria-checked")
-    expect(renderWeb({ accessibilityRole: "radio", ...a11yState({ checked: true }) })).toContain('aria-checked="true"')
-    expect(renderWeb({ accessibilityRole: "checkbox", ...a11yState({ checked: false }) })).toContain('aria-checked="false"')
-    expect(renderWeb({ accessibilityRole: "button", ...a11yState({ expanded: true }) })).toContain('aria-expanded="true"')
+    expect(
+      renderWeb({ accessibilityRole: "radio", accessibilityState: { checked: true } }),
+    ).not.toContain("aria-checked")
+    expect(renderWeb({ accessibilityRole: "radio", ...a11yState({ checked: true }) })).toContain(
+      'aria-checked="true"',
+    )
+    expect(
+      renderWeb({ accessibilityRole: "checkbox", ...a11yState({ checked: false }) }),
+    ).toContain('aria-checked="false"')
+    expect(renderWeb({ accessibilityRole: "button", ...a11yState({ expanded: true }) })).toContain(
+      'aria-expanded="true"',
+    )
   })
 })
 
@@ -64,14 +79,26 @@ function elementWith(source: string, marker: string): string {
 
 describe("state-bearing primitives spread a11yState, not a bare accessibilityState", () => {
   it.each([
-    ["../../primitives/ReportContentSheet.tsx", 'accessibilityRole="radio"', "{...a11yState({ checked: selected })}"],
+    [
+      "../../primitives/ReportContentSheet.tsx",
+      'accessibilityRole="radio"',
+      "{...a11yState({ checked: selected })}",
+    ],
     [
       "../../primitives/FilterChip.tsx",
       "accessibilityRole={SELECTION_ROLE[selection]}",
       '{...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}',
     ],
-    ["../../primitives/PostOverflowButton.tsx", "accessibilityLabel={label}", "{...a11yState({ expanded })}"],
-    ["../../primitives/TermsConfirmation.tsx", 'accessibilityRole="checkbox"', "{...a11yState({ checked: confirmed })}"],
+    [
+      "../../primitives/PostOverflowButton.tsx",
+      "accessibilityLabel={label}",
+      "{...a11yState({ expanded })}",
+    ],
+    [
+      "../../primitives/TermsConfirmation.tsx",
+      'accessibilityRole="checkbox"',
+      "{...a11yState({ checked: confirmed })}",
+    ],
   ])("%s", (file, marker, spread) => {
     const element = elementWith(code(file), marker)
     expect(element).toContain(spread)

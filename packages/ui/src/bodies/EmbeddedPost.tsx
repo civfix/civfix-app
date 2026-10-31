@@ -81,7 +81,12 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         {post.deleted ? t("post_card.unavailable") : post.excerpt}
       </Text>
       {post.media.length > 0 && !post.deleted ? (
-        <PostMediaGrid media={post.media} t={t} radius={MEDIA_RADIUS} maxHeight={MEDIA_MAX_HEIGHT} />
+        <PostMediaGrid
+          media={post.media}
+          t={t}
+          radius={MEDIA_RADIUS}
+          maxHeight={MEDIA_MAX_HEIGHT}
+        />
       ) : null}
     </>
   )

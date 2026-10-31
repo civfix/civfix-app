@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
-import { reportFlowPart, reportFlowSource } from "../../bodies/reportFlow/__tests__/reportFlowSource"
+import {
+  reportFlowPart,
+  reportFlowSource,
+} from "../../bodies/reportFlow/__tests__/reportFlowSource"
 import {
   STEP_ORDER_COMPACT,
   STEP_ORDER_EXPANDED,
@@ -92,7 +95,6 @@ describe("report wizard step model", () => {
       ),
     ).toBe("details")
   })
-
 })
 
 describe("stepAfterCapture (the CONTINUE jump off the capture step)", () => {
@@ -103,11 +105,15 @@ describe("stepAfterCapture (the CONTINUE jump off the capture step)", () => {
   })
 
   it("still routes to the location step when the capture carried NO fix", () => {
-    expect(stepAfterCapture(draft({ ...withMedia }), "compact", STEP_ORDER_COMPACT)).toBe("location")
+    expect(stepAfterCapture(draft({ ...withMedia }), "compact", STEP_ORDER_COMPACT)).toBe(
+      "location",
+    )
   })
 
   it("lands on category in expanded, which has no location step at all", () => {
-    expect(stepAfterCapture(draft({ ...withMedia }), "expanded", STEP_ORDER_EXPANDED)).toBe("category")
+    expect(stepAfterCapture(draft({ ...withMedia }), "expanded", STEP_ORDER_EXPANDED)).toBe(
+      "category",
+    )
     expect(stepAfterCapture(draft(located), "expanded", STEP_ORDER_EXPANDED)).toBe("category")
   })
 
@@ -158,13 +164,16 @@ describe("stepAfterCapture (the CONTINUE jump off the capture step)", () => {
     expect(wizardSource).toContain(
       "setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))",
     )
-    const advance = /const advanceFromCapture = useCallback\(\(\) => \{[\s\S]*?\}, \[[^\]]*\]\)/.exec(
-      wizardSource,
-    )?.[0]
+    const advance =
+      /const advanceFromCapture = useCallback\(\(\) => \{[\s\S]*?\}, \[[^\]]*\]\)/.exec(
+        wizardSource,
+      )?.[0]
     expect(advance).toBeTruthy()
     expect(advance).not.toContain("stepOrder[i + 1]")
 
-    const next = /const onNext = useCallback\(\(\) => \{[\s\S]*?\}, \[[^\]]*\]\)/.exec(wizardSource)?.[0]
+    const next = /const onNext = useCallback\(\(\) => \{[\s\S]*?\}, \[[^\]]*\]\)/.exec(
+      wizardSource,
+    )?.[0]
     expect(next).toBeTruthy()
     expect(next).toContain('if (activeStep === "capture") {')
     expect(next).toContain("advanceFromCapture()")
@@ -181,7 +190,9 @@ describe("stepAfterCapture (the CONTINUE jump off the capture step)", () => {
   })
 
   it("stops the location step from force-opening the map over a pin the draft already has", () => {
-    expect(wizardSource).toContain('if (activeStep === "location" && !hasLocation) setPicking(true)')
+    expect(wizardSource).toContain(
+      'if (activeStep === "location" && !hasLocation) setPicking(true)',
+    )
   })
 })
 
@@ -230,7 +241,10 @@ describe("the progress rail is gone - the header goes straight into the step bod
   it("drops the progress copy from every locale, keeping the catalogs orphan-free", () => {
     for (const locale of ["en", "es", "de", "ko"] as const) {
       const bundle = JSON.parse(
-        readFileSync(new URL(`../../i18n/locales/${locale}/report-wizard.json`, import.meta.url), "utf8"),
+        readFileSync(
+          new URL(`../../i18n/locales/${locale}/report-wizard.json`, import.meta.url),
+          "utf8",
+        ),
       ) as { header: Record<string, string>; capture: Record<string, string> }
       expect(bundle.header.progress).toBeUndefined()
       expect(bundle.capture.viewfinder_cancel_a11y).toBeUndefined()
@@ -306,7 +320,9 @@ describe("wizardHeaderMode", () => {
   it("leaves COMPACT reading `showBack` alone, whatever atViewRoot says (portrait is untouched)", () => {
     for (const showBack of [false, true]) {
       for (const atViewRoot of [false, true]) {
-        expect(wizardHeaderMode("compact", showBack, atViewRoot)).toBe(showBack ? "detail" : "tab-root")
+        expect(wizardHeaderMode("compact", showBack, atViewRoot)).toBe(
+          showBack ? "detail" : "tab-root",
+        )
       }
     }
   })
@@ -322,8 +338,8 @@ describe("wizardHeaderMode", () => {
   })
 
   it("switches on exactly the same boolean the back chevron is gated on", () => {
-    expect(wizardSource).toContain(
-      "const showBack = useNavStore((s) => showBackAffordance({ stack: s.stack, mode, stepIndex }))",
+    expect(wizardSource).toMatch(
+      /const showBack =\s+useNavStore\(\(s\) => showBackAffordance\(\{ stack: s\.stack, mode, stepIndex \}\)\)/,
     )
     expect(wizardSource).toContain('wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root"')
     expect(wizardSource).toContain("{showBack ? (")
@@ -336,8 +352,8 @@ describe("wizardHeaderMode", () => {
 
 describe("the capture step's embedded viewfinder wiring", () => {
   it("DERIVES the camera from the draft - there is no open/closed state left to go stale", () => {
-    expect(wizardSource).toContain(
-      "const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)",
+    expect(wizardSource).toMatch(
+      /const viewfinderVisible = rendersEmbeddedViewfinder\(\s*activeStep,\s*hasMedia,\s*Viewfinder != null,\s*mode,?\s*\)/,
     )
     expect(wizardCode).not.toContain("viewfinderOpen")
     expect(wizardCode).not.toContain("setViewfinderOpen")
@@ -352,13 +368,15 @@ describe("the capture step's embedded viewfinder wiring", () => {
       "const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)",
     )
     expect(wizardSource).toContain("{viewfinderVisible ? (")
-    expect(wizardSource).toContain("const viewfinderMounted = viewfinderVisible && viewfinderMountable")
+    expect(wizardSource).toContain(
+      "const viewfinderMounted = viewfinderVisible && viewfinderMountable",
+    )
     expect(wizardSource).toContain("{viewfinderMounted && Viewfinder ? (")
   })
 
   it("gates the camera SESSION on the shared predicate, not merely on being mounted", () => {
-    expect(wizardSource).toContain(
-      "viewfinderSessionActive(activeStep, viewfinderMounted, stackNonEmpty, runActive)",
+    expect(wizardSource).toMatch(
+      /viewfinderSessionActive\(\s*activeStep,\s*viewfinderMounted,\s*stackNonEmpty,\s*runActive,?\s*\)/,
     )
     expect(wizardSource).toContain("active={sessionActive}")
     expect(wizardSource).toContain('const runActive = useNavStore((s) => s.view === "report")')
@@ -395,7 +413,10 @@ describe("the capture step's embedded viewfinder wiring", () => {
 describe("the capture step keeps its header attached to its content", () => {
   const styleBlock = (name: string): string => {
     const start = wizardSource.indexOf(`  ${name}: {`)
-    expect(start, `${name} is gone from the report flow - rename the guard, do not delete it`).toBeGreaterThan(-1)
+    expect(
+      start,
+      `${name} is gone from the report flow - rename the guard, do not delete it`,
+    ).toBeGreaterThan(-1)
     const firstLine = wizardSource.slice(start, wizardSource.indexOf("\n", start))
     if (firstLine.trimEnd().endsWith("},")) return firstLine
     const end = wizardSource.indexOf("\n  },", start)
@@ -411,8 +432,8 @@ describe("the capture step keeps its header attached to its content", () => {
 
   it("still caps the coral card, so the fill cannot become a wall of colour", () => {
     expect(styleBlock("photoDropFill")).toContain("maxHeight: 520")
-    expect(wizardSource).toContain(
-      "const captureCardFills = mode === \"expanded\" && showsCaptureCard(activeStep, hasMedia, Viewfinder != null, mode)",
+    expect(wizardSource).toMatch(
+      /const captureCardFills =\s+mode === "expanded" && showsCaptureCard\(activeStep, hasMedia, Viewfinder != null, mode\)/,
     )
     expect(wizardSource).toContain("captureCardFills ? styles.contentFill : null")
     expect(wizardSource).toContain("fill ? styles.stepBlockFill : null")
@@ -423,9 +444,10 @@ describe("the capture step keeps its header attached to its content", () => {
     for (const step of steps) {
       for (const hasMedia of [false, true]) {
         for (const hasViewfinder of [false, true]) {
-          expect(showsCaptureCard(step, hasMedia, hasViewfinder, "expanded"), `${step} ${String(hasMedia)} ${String(hasViewfinder)}`).toBe(
-            step === "capture" && !hasMedia,
-          )
+          expect(
+            showsCaptureCard(step, hasMedia, hasViewfinder, "expanded"),
+            `${step} ${String(hasMedia)} ${String(hasViewfinder)}`,
+          ).toBe(step === "capture" && !hasMedia)
         }
       }
     }
@@ -623,11 +645,14 @@ describe("a landed capture lands on 'Your captures', it does not advance the wiz
   })
 
   it("has CaptureStep's landing seed or append the draft and STOP - camera and library alike", () => {
-    const land = /const land = useCallback\(\n\s*async \(produce[\s\S]*?\n {4}\[[^\]]*\],\n {2}\)/.exec(
-      wizardSource,
-    )?.[0]
+    const land =
+      /const land = useCallback\(\n\s*async \(produce[\s\S]*?\n {4}\[[^\]]*\],\n {2}\)/.exec(
+        wizardSource,
+      )?.[0]
     expect(land).toBeTruthy()
-    expect(land).toContain("if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)")
+    expect(land).toContain(
+      "if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)",
+    )
     expect(land).toContain("else addCapture(captured)")
     expect(land).not.toContain("setStep")
     expect(land).not.toContain("advance")
@@ -636,9 +661,10 @@ describe("a landed capture lands on 'Your captures', it does not advance the wiz
   })
 
   it("has the EMBEDDED viewfinder's landing do the same, so both layouts land on the review", () => {
-    const onCaptured = /const landViewfinderCapture = useCallback\(\s*async \(media: CapturedMedia\) => \{[\s\S]*?\},\s*\[[^\]]*\],?\s*\)/.exec(
-      wizardSource,
-    )?.[0]
+    const onCaptured =
+      /const landViewfinderCapture = useCallback\(\s*async \(media: CapturedMedia\) => \{[\s\S]*?\},\s*\[[^\]]*\],?\s*\)/.exec(
+        wizardSource,
+      )?.[0]
     expect(onCaptured).toBeTruthy()
     expect(onCaptured).toContain("store.startFromCapture(media)")
     expect(onCaptured).toContain("store.addCapture(media)")
@@ -674,7 +700,9 @@ describe("the capture review shows no location banner", () => {
   it("leaves the location surfaces that DO belong to the flow untouched", () => {
     expect(wizardCode).toContain("function CompactLocationField(")
     expect(wizardCode).toContain("const label = useReverseLabel(point)")
-    expect(wizardSource).toContain('<Text style={flowStyles.fieldLabel}>{t("review.where_label")}</Text>')
+    expect(wizardSource).toContain(
+      '<Text style={flowStyles.fieldLabel}>{t("review.where_label")}</Text>',
+    )
   })
 
   it("stops CaptureStep reading the draft's coordinate at all", () => {
@@ -688,17 +716,17 @@ describe("the capture review shows no location banner", () => {
 
 describe("the derived-viewfinder wiring (source-pinned)", () => {
   it("keeps the camera gate a pure render-time derivation with no state and no effect behind it", () => {
-    const gate = "const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)"
-    expect(wizardSource).toContain(gate)
+    expect(wizardSource).toMatch(
+      /const viewfinderVisible = rendersEmbeddedViewfinder\(\s*activeStep,\s*hasMedia,\s*Viewfinder != null,\s*mode,?\s*\)/,
+    )
     expect(wizardSource).not.toMatch(/useState[^\n]*rendersEmbeddedViewfinder/)
     expect(wizardCode).not.toMatch(/setViewfinder(Visible|Open)/)
   })
 
   it("keeps the deferral cancellable, mount-scoped, and on a clock that actually defers", () => {
-    const effect =
-      /useEffect\(\(\) => \{\n\s*const handle = setTimeout[\s\S]*?\}, \[\]\)/.exec(
-        wizardSource,
-      )?.[0]
+    const effect = /useEffect\(\(\) => \{\n\s*const handle = setTimeout[\s\S]*?\}, \[\]\)/.exec(
+      wizardSource,
+    )?.[0]
     expect(effect).toBeTruthy()
     expect(effect).toContain("clearTimeout(handle)")
     expect(wizardSource).toContain("const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration")
@@ -764,7 +792,9 @@ describe("the body mounts the pieces split out of it", () => {
   it("runs the claim, submit and pick-layer hooks from the body itself", () => {
     expect(body).toContain("useReportRunClaim(runActive)")
     expect(body).toContain("useReportSubmitFlow({ fromComposer, stepOrder, setStep })")
-    expect(body).toMatch(/usePickLayer\(\{\s*activeStep,\s*hasMedia,\s*hasLocation,\s*stackNonEmpty,\s*runActive,/)
+    expect(body).toMatch(
+      /usePickLayer\(\{\s*activeStep,\s*hasMedia,\s*hasLocation,\s*stackNonEmpty,\s*runActive,/,
+    )
   })
 })
 
@@ -794,7 +824,10 @@ describe("the wizard's STEP transition (source-pinned)", () => {
     new URL("../../shell/StepTransition.native.tsx", import.meta.url),
     "utf8",
   )
-  const stepWeb = readFileSync(new URL("../../shell/StepTransition.web.tsx", import.meta.url), "utf8")
+  const stepWeb = readFileSync(
+    new URL("../../shell/StepTransition.web.tsx", import.meta.url),
+    "utf8",
+  )
 
   it("derives the direction from the STEP INDEX, through the shell's shared derivation", () => {
     expect(wizardCode).toContain('import { useStackDirection } from "../shell/useStackDirection"')
@@ -806,7 +839,13 @@ describe("the wizard's STEP transition (source-pinned)", () => {
     const transition = sliceBetween(wizardSource, "<StepTransition", "</StepTransition>")
     expect(transition).toContain("transitionKey={activeStep}")
     expect(transition).toContain("direction={stepDirection}")
-    for (const step of ["CaptureStep", "LocationStep", "CategoryStep", "DetailsStep", "ReviewStep"]) {
+    for (const step of [
+      "CaptureStep",
+      "LocationStep",
+      "CategoryStep",
+      "DetailsStep",
+      "ReviewStep",
+    ]) {
       expect(transition, step).toContain(step)
     }
     expect(transition).not.toContain("Viewfinder")
@@ -839,7 +878,9 @@ describe("the wizard's STEP transition (source-pinned)", () => {
   it("short-circuits the step slide on the platform's reduce-motion signal", () => {
     expect(stepNativeSeam).toContain("useEntranceTransition(transitionKey, direction)")
     expect(stepNative).toMatch(/useReducedMotion\(\) === true/)
-    expect(stepNative).toMatch(/bodyTransitionPlan\(direction, reduceMotionRef\.current, BODY_TIMING\)/)
+    expect(stepNative).toMatch(
+      /bodyTransitionPlan\(direction, reduceMotionRef\.current, BODY_TIMING\)/,
+    )
     expect(stepWeb).toMatch(/if \(prefersReducedMotion\(\)\) \{\s*setEntrance\(null\)/)
   })
 })
