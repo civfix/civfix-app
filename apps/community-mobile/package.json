@@ -22,7 +22,7 @@
     "prep:appstore": "scripts/prep-archive.sh appstore"
   },
   "dependencies": {
-    "@civfix/contract": "0.66.0-b-chore-city-filing-sync-main.g120c1a2",
+    "@civfix/contract": "0.68.0-b-integration-city-filing.g48a6446",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@expo-google-fonts/baloo-2": "^0.4.2",
