@@ -70,8 +70,8 @@ importers:
   apps/community-mobile:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.65.0
-        version: 0.65.0
+        specifier: ^0.67.0
+        version: 0.67.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -272,8 +272,8 @@ importers:
   apps/community-web:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.65.0
-        version: 0.65.0
+        specifier: ^0.67.0
+        version: 0.67.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -456,8 +456,8 @@ importers:
   packages/tokens:
     devDependencies:
       '@civfix/contract':
-        specifier: ^0.65.0
-        version: 0.65.0
+        specifier: ^0.67.0
+        version: 0.67.0
       '@civfix/testing':
         specifier: workspace:*
         version: link:../testing
@@ -495,8 +495,8 @@ importers:
   packages/ui:
     dependencies:
       '@civfix/contract':
-        specifier: ^0.65.0
-        version: 0.65.0
+        specifier: ^0.67.0
+        version: 0.67.0
       '@civfix/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -1234,8 +1234,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@civfix/contract@0.65.0':
-    resolution: {integrity: sha512-AW2XCtjpP05I2NgzN9vdalSqGi9Rz4l78lLlqMStvy/Gf9HyY3a3U8+OSZ0uns6XRl0TSmiU79Ky/r9EouRvGw==}
+  '@civfix/contract@0.67.0':
+    resolution: {integrity: sha512-2QJ8hUkpZQIUEkBTPoOHk1nwzYAQkss2OjQL7CIOVkJiqQsTLz3PwrjekFq22J7OHgr4RuxQp5+Wc2Y5eQ5ULQ==}
     engines: {node: '>=20'}
 
   '@cloudflare/kv-asset-handler@0.5.0':
@@ -8275,7 +8275,7 @@ snapshots:
       human-id: 4.2.1
       prettier: 2.8.8
 
-  '@civfix/contract@0.65.0':
+  '@civfix/contract@0.67.0':
     dependencies:
       zod: 4.6.7
 
