@@ -153,11 +153,11 @@ describe("Toast over an open sheet", () => {
 
   it("is mounted as the last child of every open sheet's Modal", () => {
     expect(read("../ModalCardSheet.tsx")).toMatch(
-      /\{visible \? <ToastOutlet \/> : null\}\s*<\/Modal>/,
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/FullWindowModal>/,
     )
     // Inside the root, not beside it: the root is accessibilityViewIsModal, which hides its siblings.
     expect(read("../SlideUpSheet.tsx")).toMatch(
-      /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/Modal>/,
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/FullWindowModal>/,
     )
     // The block confirmation is a ModalCardSheet, so it carries the outlet above.
     expect(read("../../bodies/personDetail/PersonModerationLayer.tsx")).toMatch(

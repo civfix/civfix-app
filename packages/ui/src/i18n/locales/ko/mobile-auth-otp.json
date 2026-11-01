@@ -7,6 +7,15 @@
     "placeholder": "액세스 코드를 붙여넣으세요",
     "helper": "앱 검토를 위해 이 빌드와 함께 제공됩니다."
   },
+  "test_code": {
+    "subtitle": "테스트 계정 코드를 입력하세요",
+    "label": "테스트 계정 코드",
+    "placeholder": "테스트 코드를 붙여넣으세요",
+    "helper": "스테이징 테스트 계정용 공유 코드입니다.",
+    "too_short": "테스트 계정 코드를 모두 입력하세요.",
+    "use_test_code": "테스트 코드 사용",
+    "use_emailed_code": "이메일로 받은 코드 사용"
+  },
   "verify": {
     "label": "확인",
     "incomplete": "6자리를 모두 입력하세요.",

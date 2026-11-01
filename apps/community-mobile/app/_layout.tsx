@@ -17,6 +17,7 @@ import { ThemeProvider, setAppearancePreferenceStore, supportsBlur } from "@civf
 import {
   MediaLightboxProvider,
   SharePostProvider,
+  SystemNoticeFrame,
   ToastProvider,
   setApiHost,
   setSourceCommit,
@@ -49,6 +50,7 @@ import { useSignOutReset } from "@/hooks/useSignOutReset"
 import { AuthGate } from "@/components/AuthGate"
 import { BootOfflineGate } from "@/components/BootConnectivity"
 import { FirstRunGate } from "@/components/FirstRunGate"
+import { ForceUpdateGate } from "@/components/ForceUpdateGate"
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate"
 import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 import { useAppearanceStore } from "@/store/appearanceStore"
@@ -153,32 +155,36 @@ export default function RootLayout() {
                 <NavAdapterBridge />
                 <InternalHrefBridge />
                 <MobileI18nProvider>
-                  <ToastProvider>
-                    <MediaLightboxProvider>
-                      <SharePostProvider>
-                        <BottomSheetModalProvider>
-                          <RootStack launchGate={gateMounted} />
-                          <OnboardingGate
-                            gateActive={gateActive}
-                            loadingGateMounted={gateMounted}
-                          />
-                          <FirstRunGate />
-                          {gateMounted ? (
-                            <Animated.View
-                              pointerEvents={gateActive ? "auto" : "none"}
-                              style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
-                            >
-                              {boot.phase === "offline" ? (
-                                <BootOfflineGate />
-                              ) : (
-                                <AuthGate mode="loading" />
-                              )}
-                            </Animated.View>
-                          ) : null}
-                        </BottomSheetModalProvider>
-                      </SharePostProvider>
-                    </MediaLightboxProvider>
-                  </ToastProvider>
+                  {/* The force-update screen stays outside the notice frame, so it covers the notice too. */}
+                  <SystemNoticeFrame>
+                    <ToastProvider>
+                      <MediaLightboxProvider>
+                        <SharePostProvider>
+                          <BottomSheetModalProvider>
+                            <RootStack launchGate={gateMounted} />
+                            <OnboardingGate
+                              gateActive={gateActive}
+                              loadingGateMounted={gateMounted}
+                            />
+                            <FirstRunGate />
+                            {gateMounted ? (
+                              <Animated.View
+                                pointerEvents={gateActive ? "auto" : "none"}
+                                style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
+                              >
+                                {boot.phase === "offline" ? (
+                                  <BootOfflineGate />
+                                ) : (
+                                  <AuthGate mode="loading" />
+                                )}
+                              </Animated.View>
+                            ) : null}
+                          </BottomSheetModalProvider>
+                        </SharePostProvider>
+                      </MediaLightboxProvider>
+                    </ToastProvider>
+                  </SystemNoticeFrame>
+                  <ForceUpdateGate />
                 </MobileI18nProvider>
               </CapabilitiesProvider>
             </MobileDataProvider>
