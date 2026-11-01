@@ -190,9 +190,9 @@ export function AppShellFrame() {
               <>
                 <AuthModal />
                 <WebBrandAbout />
-                <WebPushPrompt />
               </>
             }
+            mapPrompt={<WebPushPrompt />}
           />
         </SafeAreaProvider>
       </main>
