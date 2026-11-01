@@ -29,9 +29,9 @@ export interface PushPermissionState {
 }
 
 // Re-read on every return to the foreground, since the permission can change in system or browser settings
-// while the app is away, and once openSettings resolves, since on mobile it may have asked in a dialog. focusManager is fed by visibilitychange on web and AppState on mobile. Only the
-// latest read or request may set the status, so a slow read that started first never overwrites a newer
-// answer.
+// while the app is away, and once openSettings resolves, since on mobile it may have asked in a dialog.
+// focusManager is fed by visibilitychange on web and AppState on mobile. Only the latest read or request may
+// set the status, so a slow read that started first never overwrites a newer answer.
 export function usePushPermission(): PushPermissionState {
   const pushPermission = useCapabilities().pushPermission
   const [status, setStatus] = useState<PushPermissionStatus | null>(null)
