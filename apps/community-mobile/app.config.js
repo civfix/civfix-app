@@ -216,6 +216,9 @@ module.exports = ({ config }) => ({
   },
   android: {
     package: ANDROID_PACKAGE,
+    // The Firebase app is registered for org.civfix.community only, so the .dev variant builds without it
+    // and gets no push (D13).
+    ...(DEV_VARIANT ? {} : { googleServicesFile: "./google-services.json" }),
     versionCode: androidVersionCode(),
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
@@ -269,6 +272,8 @@ module.exports = ({ config }) => ({
       {
         color: tokens.logo.bloom,
         mode: apsEnvironmentMode(),
+        // UIBackgroundModes remote-notification: iOS wakes the app for the silent clear pushes (D8).
+        enableBackgroundRemoteNotifications: true,
       },
     ],
     [

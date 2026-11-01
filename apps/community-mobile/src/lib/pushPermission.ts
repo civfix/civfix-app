@@ -10,6 +10,9 @@ export interface NativePushPermissionDeps {
   getPermissionsAsync(): Promise<{ status: `${PermissionStatus}`; canAskAgain?: boolean }>
   requestPermissionsAsync(): Promise<{ status: `${PermissionStatus}`; canAskAgain?: boolean }>
   openSettings(): Promise<void>
+  // Registers the token right after a grant, whichever surface asked (the sign-in prompt or the settings
+  // banner's Turn on).
+  onGranted?(): void
 }
 
 // Maps on status alone: a denial the OS will not ask about again (canAskAgain false) is still denied, and
@@ -21,7 +24,10 @@ export function makeNativePushPermission(deps: NativePushPermissionDeps): PushPe
       return supported ? (await deps.getPermissionsAsync()).status : "unsupported"
     },
     async request(): Promise<PushPermissionStatus> {
-      return supported ? (await deps.requestPermissionsAsync()).status : "unsupported"
+      if (!supported) return "unsupported"
+      const { status } = await deps.requestPermissionsAsync()
+      if (status === "granted") deps.onGranted?.()
+      return status
     },
     openSettings(): Promise<void> {
       return deps.openSettings()

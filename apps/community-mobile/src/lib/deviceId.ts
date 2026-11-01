@@ -1,4 +1,4 @@
-// Diagnostics only; it proves nothing to the backend. An Expo push token is the same string for every
+// Diagnostics only; it proves nothing to the backend. A device push token is the same string for every
 // account on an install, so the `push_tokens` upsert refuses a row still active under another account.
 export const DEVICE_ID_KEY = "civfix.device_id"
 

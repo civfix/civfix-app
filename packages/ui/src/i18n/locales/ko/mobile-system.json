@@ -5,8 +5,11 @@
     "body": "civfix에 예기치 않은 문제가 발생했습니다. 다시 시작하면 저장된 데이터를 지우고 재시도합니다.",
     "action": "civfix 다시 시작"
   },
-  "notification_channel_host_broadcasts": "행사 메시지",
-  "notification_channel_event_reminders": "행사 알림",
+  "notification_channel_reports": "내 신고",
+  "notification_channel_messages": "메시지",
+  "notification_channel_events": "이벤트",
+  "notification_channel_social": "소셜",
+  "notification_channel_organizations": "단체",
   "notification_action_view_ticket": "티켓 보기",
   "notification_action_open_event": "행사 열기",
   "scan": {
