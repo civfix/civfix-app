@@ -28,7 +28,7 @@ describe("the lightbox scrim", () => {
 describe("the lightbox controls sit in the safe area", () => {
   it("reads the device insets through the context form, which degrades to zero on web", () => {
     expect(base).toContain('import { SafeAreaInsetsContext } from "react-native-safe-area-context"')
-    expect(base).toContain("const insets = useContext(SafeAreaInsetsContext)")
+    expect(base).toContain("const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))")
     expect(base).toContain("const offsets = lightboxControlOffsets(insets)")
     expect(base).not.toContain("useSafeAreaInsets")
   })

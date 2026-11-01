@@ -10,6 +10,7 @@ interface LocationPrimerState {
   choice: LocationChoice | null
   markShown: () => void
   setChoice: (choice: LocationChoice) => void
+  reset: () => void
 }
 
 export const useLocationPrimerStore = create<LocationPrimerState>()(
@@ -19,6 +20,7 @@ export const useLocationPrimerStore = create<LocationPrimerState>()(
       choice: null,
       markShown: () => set({ shown: true }),
       setChoice: (choice) => set({ choice, shown: true }),
+      reset: () => set({ shown: false, choice: null }),
     }),
     {
       name: LOCATION_PRIMER_KEY,

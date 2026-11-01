@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useAppPromo, useAppPromoStore } from "@civfix/ui"
+import { useAppPromo, useAppPromoStore, useSystemNoticeStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
 import { Z_APP_BANNER } from "@/styles/z-layers"
@@ -17,6 +17,8 @@ import { Z_APP_BANNER } from "@/styles/z-layers"
 export function AppDownloadBanner() {
   const { surface, links, dismiss } = useAppPromo()
   const setBannerHeight = useAppPromoStore((s) => s.setBannerHeight)
+  // The system notice is the topmost bar: this one sits under it, and the notice owns the safe-area inset.
+  const noticeHeight = useSystemNoticeStore((s) => s.height)
   const { t } = useT("web-common")
   const ref = React.useRef<HTMLElement | null>(null)
 
@@ -52,7 +54,7 @@ export function AppDownloadBanner() {
       aria-label={t("app_promo.card_title")}
       style={{
         position: "fixed",
-        top: 0,
+        top: noticeHeight,
         left: 0,
         right: 0,
         zIndex: Z_APP_BANNER,
@@ -61,8 +63,10 @@ export function AppDownloadBanner() {
         gap: 10,
         // Safe-area padding is a no-op in a normal Safari tab (its viewport already starts below the
         // status bar) but keeps the banner clear of the notch in any edge-to-edge browser chrome.
-        padding:
-          "calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px))",
+        paddingTop: noticeHeight > 0 ? "8px" : "calc(8px + env(safe-area-inset-top, 0px))",
+        paddingRight: "calc(12px + env(safe-area-inset-right, 0px))",
+        paddingBottom: "8px",
+        paddingLeft: "calc(12px + env(safe-area-inset-left, 0px))",
         background: "var(--card)",
         borderBottom: "1px solid var(--ink-5)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",

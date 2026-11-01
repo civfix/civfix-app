@@ -15,8 +15,13 @@ type WebOnlyKey =
 
 export type WebOnlyStyle = Pick<CSSProperties, WebOnlyKey>
 
+/** Padding RN types as a number or percent, which on web may also be a CSS `calc()` or `env()` (the safe area). */
+type CssFunction = `calc(${string})` | `env(${string})`
+type WebPaddingKey = "paddingLeft" | "paddingRight" | "paddingTop"
+type WebPaddingStyle = { [K in WebPaddingKey]?: TextStyle[K] | CssFunction }
+
 /** An RN style whose web-only keys take their CSS types: `cursor: "grab"`, `position: "fixed"`. */
-export type WebStyle = Omit<TextStyle, WebOnlyKey> & WebOnlyStyle
+export type WebStyle = Omit<TextStyle, WebOnlyKey | WebPaddingKey> & WebOnlyStyle & WebPaddingStyle
 
 /**
  * Widens a style carrying web-only CSS into an RN style. RN's types describe only what native renders,

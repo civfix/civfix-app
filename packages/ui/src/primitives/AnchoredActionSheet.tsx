@@ -1,5 +1,7 @@
 import React from "react"
-import { Modal, View, Pressable, StyleSheet, Platform, useWindowDimensions } from "react-native"
+import { View, Pressable, StyleSheet, Platform, useWindowDimensions } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { makeThemedStyles, space, useTheme, webScrimProps } from "../theme"
 import type { AnchorRect } from "./PopoverMenu"
@@ -39,7 +41,7 @@ export function AnchoredActionSheet({
   const styles = useStyles()
   const th = useTheme()
   const { width: winW, height: winH } = useWindowDimensions()
-  const insets = React.useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(React.useContext(SafeAreaInsetsContext))
 
   const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)
   const onModalDismiss = useModalClosed(visible, settled)
@@ -59,7 +61,7 @@ export function AnchoredActionSheet({
       }
     }
     return (
-      <Modal
+      <FullWindowModal
         visible={visible}
         transparent
         animationType="fade"
@@ -85,12 +87,12 @@ export function AnchoredActionSheet({
             {content}
           </View>
         </View>
-      </Modal>
+      </FullWindowModal>
     )
   }
 
   return (
-    <Modal
+    <FullWindowModal
       visible={visible}
       transparent
       animationType="fade"
@@ -112,7 +114,7 @@ export function AnchoredActionSheet({
           {content}
         </View>
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

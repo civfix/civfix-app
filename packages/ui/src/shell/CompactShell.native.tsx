@@ -8,12 +8,7 @@
  * state or re-deriving the card height by interpolation both left the card edge lagging the content.
  */
 import { useMemo, useRef, useCallback, useEffect } from "react"
-import {
-  View,
-  useWindowDimensions,
-  ScrollView as RNScrollView,
-  FlatList as RNFlatList,
-} from "react-native"
+import { View, ScrollView as RNScrollView, FlatList as RNFlatList } from "react-native"
 import BottomSheet from "@gorhom/bottom-sheet"
 import Animated, {
   useSharedValue,
@@ -56,6 +51,7 @@ import {
   sheetSnapPoints,
 } from "./tabBarLogic"
 import { sheetDockOcclusion } from "./sheetDockOcclusion.native"
+import { useShellWindowHeight } from "./systemNoticeFrameContext"
 import type { CompactShellProps } from "./CompactShell.types"
 
 /**
@@ -153,7 +149,8 @@ export function CompactShell({
 }: CompactShellProps) {
   const styles = useStyles()
   const { t } = useT("nav")
-  const { height } = useWindowDimensions()
+  // The sheet's container: the window, less what a system notice above the app takes.
+  const height = useShellWindowHeight()
   const insets = useSafeAreaInsets()
   const sheetRef = useRef<BottomSheet>(null)
   const animatedIndex = useSharedValue(0)
