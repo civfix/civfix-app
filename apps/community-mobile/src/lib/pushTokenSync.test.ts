@@ -9,6 +9,7 @@ import { memoryKeyValueStore } from "./memoryKeyValueStore.ts"
 installModuleStubs({})
 
 const { PUSH_ASKED_KEY, promptForPushAtSignIn, syncPushToken } = await import("./pushTokenSync.ts")
+const { makeNativePushPermission } = await import("./pushPermission.ts")
 const { PUSH_REGISTRATION_KEY } = await import("./pushRegistration.ts")
 
 const PREVIOUS = JSON.stringify({ platform: "android", token: "fcm-token-0" })
@@ -160,4 +161,50 @@ test("T10: the .dev variant is neither prompted nor marked asked", async () => {
   assert.equal(deps.permission.request.mock.callCount(), 0)
   assert.equal(deps.store.getString(PUSH_ASKED_KEY), undefined)
   assert.equal(result, "unsupported")
+})
+
+type NativePermissionResponse = {
+  status: "granted" | "denied" | "undetermined"
+  canAskAgain?: boolean
+}
+
+// The real capability over a scripted OS, as Android 13+ answers: a never-asked POST_NOTIFICATIONS reads
+// as denied with canAskAgain true.
+function nativePromptDeps(read: NativePermissionResponse, asked: boolean) {
+  const store = memoryKeyValueStore()
+  if (asked) store.set(PUSH_ASKED_KEY, "1")
+  const os = {
+    appId: "org.civfix.community",
+    getPermissionsAsync: mock.fn(async (): Promise<NativePermissionResponse> => read),
+    requestPermissionsAsync: mock.fn(async (): Promise<NativePermissionResponse> => ({
+      status: "granted",
+    })),
+    openSettings: mock.fn(async (): Promise<void> => {}),
+    onGranted: mock.fn((): void => {}),
+  }
+  return { store, os, permission: makeNativePushPermission(os) }
+}
+
+test("F2: an Android 13+ device never asked is prompted once at sign-in", async () => {
+  const deps = nativePromptDeps({ status: "denied", canAskAgain: true }, false)
+  const result = await promptForPushAtSignIn(deps)
+  assert.equal(deps.os.requestPermissionsAsync.mock.callCount(), 1)
+  assert.notEqual(deps.store.getString(PUSH_ASKED_KEY), undefined)
+  assert.equal(result, "granted")
+  assert.equal(deps.os.onGranted.mock.callCount(), 1)
+})
+
+test("F3: an Android device asked before is not prompted again, though the OS still could", async () => {
+  const deps = nativePromptDeps({ status: "denied", canAskAgain: true }, true)
+  const result = await promptForPushAtSignIn(deps)
+  assert.equal(deps.os.requestPermissionsAsync.mock.callCount(), 0)
+  assert.equal(result, "undetermined")
+})
+
+test("F4: a denial the OS will not ask about again is not prompted, and counts as asked", async () => {
+  const deps = nativePromptDeps({ status: "denied", canAskAgain: false }, false)
+  const result = await promptForPushAtSignIn(deps)
+  assert.equal(deps.os.requestPermissionsAsync.mock.callCount(), 0)
+  assert.notEqual(deps.store.getString(PUSH_ASKED_KEY), undefined)
+  assert.equal(result, "denied")
 })

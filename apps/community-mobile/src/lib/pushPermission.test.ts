@@ -24,15 +24,17 @@ function deps(appId: string, reads: PermissionResponse[] = [], asks: PermissionR
   }
 }
 
-test("T13: the store app maps the OS status, whatever canAskAgain says, and never prompts to read it", async () => {
+test("T13: the store app reads a denial the OS can still ask about as undetermined, and never prompts to read it", async () => {
   const d = deps(STORE_APP_ID, [
     { status: "granted" },
     { status: "denied", canAskAgain: true },
     { status: "denied", canAskAgain: false },
+    { status: "denied" },
     { status: "undetermined" },
   ])
   const cap = makeNativePushPermission(d)
   assert.equal(await cap.status(), "granted")
+  assert.equal(await cap.status(), "undetermined")
   assert.equal(await cap.status(), "denied")
   assert.equal(await cap.status(), "denied")
   assert.equal(await cap.status(), "undetermined")
@@ -62,4 +64,26 @@ test("T16: openSettings() opens civfix's system settings page once", async () =>
   assert.ok(cap.openSettings)
   assert.equal(await cap.openSettings(), undefined)
   assert.equal(d.openSettings.mock.callCount(), 1)
+})
+
+test("F1: request() reads a denial the OS can still ask about as undetermined, and runs onGranted on the grant only", async () => {
+  const d = {
+    ...deps(
+      STORE_APP_ID,
+      [],
+      [
+        { status: "denied", canAskAgain: true },
+        { status: "denied", canAskAgain: false },
+        { status: "granted" },
+      ],
+    ),
+    onGranted: mock.fn((): void => {}),
+  }
+  const cap = makeNativePushPermission(d)
+  assert.equal(await cap.request(), "undetermined")
+  assert.equal(d.onGranted.mock.callCount(), 0)
+  assert.equal(await cap.request(), "denied")
+  assert.equal(d.onGranted.mock.callCount(), 0)
+  assert.equal(await cap.request(), "granted")
+  assert.equal(d.onGranted.mock.callCount(), 1)
 })
