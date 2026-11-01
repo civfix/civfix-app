@@ -10,6 +10,7 @@ export interface NativePushPermissionDeps {
   getPermissionsAsync(): Promise<{ status: `${PermissionStatus}`; canAskAgain?: boolean }>
   requestPermissionsAsync(): Promise<{ status: `${PermissionStatus}`; canAskAgain?: boolean }>
   openSettings(): Promise<void>
+  onGranted?(): void
 }
 
 // Maps on status alone: a denial the OS will not ask about again (canAskAgain false) is still denied, and

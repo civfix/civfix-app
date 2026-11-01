@@ -155,6 +155,7 @@ interface AuthState {
   sessionPresent: boolean | null
   networkOutcome: BootNetworkOutcome
   restoreStartedAt: number
+  pushPromptPending: boolean
   hydrate: (mode?: HydrateMode) => Promise<void>
   retryHydration: () => Promise<void>
   retrySessionRestore: () => Promise<void>
@@ -171,6 +172,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   sessionPresent: null,
   networkOutcome: "pending",
   restoreStartedAt: Date.now(),
+  pushPromptPending: false,
 
   hydrate: async (mode = "boot") => {
     if (mode === "boot") set({ restoreStartedAt: Date.now(), networkOutcome: "pending" })
