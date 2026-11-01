@@ -13,6 +13,7 @@ import { Icon, iconMap, Text } from "../typography"
 import { PrimaryButton } from "../primitives/PrimaryButton"
 import { useT } from "../i18n"
 import { useTabBarStore } from "../shell/tabBarStore"
+import { useTopBarsHeight } from "../shell/topBars"
 
 const CARD_MAX_WIDTH = 360
 
@@ -32,11 +33,17 @@ export function PushPromptCard({ onTurnOn, onNotNow, onClose }: PushPromptCardPr
   const { t } = useT("push-prompt")
   const expanded = useLayoutMode() === "expanded"
   const tabBarHeight = useTabBarStore((s) => s.tabBarHeight)
+  // The controls it sits under move down by the fixed top bars.
+  const topBarsHeight = useTopBarsHeight()
   return (
     <View
       style={
         expanded
-          ? [styles.anchorExpanded, pointerEventStyles["box-none"]]
+          ? [
+              styles.anchorExpanded,
+              { top: th.space["16"] + th.space["3"] + topBarsHeight },
+              pointerEventStyles["box-none"],
+            ]
           : [
               styles.anchorCompact,
               { bottom: tabBarHeight + th.space["3"] },
@@ -102,7 +109,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   anchorExpanded: {
     position: "absolute",
-    top: t.space["16"] + t.space["3"],
     right: t.space["3"],
   },
   card: {
