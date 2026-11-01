@@ -45,7 +45,7 @@ test("the persisted completion flag is versioned and keyed by the shared storage
   assert.match(store, /name: ONBOARDING_KEY/)
   assert.match(
     store,
-    /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/,
+    /partialize: \(state\) => \(\{\s*completedVersion: state\.resetPending \? 0 : state\.completedVersion,?\s*\}\)/,
   )
 })
 
@@ -196,7 +196,7 @@ test("the tour reports that it is on screen, exit animation included", () => {
   assert.match(store, /setPresenting: \(value\) => set\(\{ presenting: value \}\)/)
   assert.match(
     store,
-    /partialize: \(state\) => \(\{ completedVersion: state\.completedVersion \}\)/,
+    /partialize: \(state\) => \(\{\s*completedVersion: state\.resetPending \? 0 : state\.completedVersion,?\s*\}\)/,
   )
   assert.match(gate, /setPresenting\(mounted\)\n\s+return \(\) => setPresenting\(false\)/)
 })
@@ -310,7 +310,7 @@ test("a replay is a session request, not an unwritten completion flag", () => {
   assert.match(store, /replay: \(\) => set\(\{ replayRequested: true \}\)/)
   assert.match(
     store,
-    /complete: \(\) => set\(\{ completedVersion: ONBOARDING_VERSION, replayRequested: false \}\)/,
+    /complete: \(\) =>\n\s+set\(\{ completedVersion: ONBOARDING_VERSION, replayRequested: false, resetPending: false \}\)/,
   )
   assert.doesNotMatch(store, /set\(\{ completedVersion: 0 \}\)/)
   assert.doesNotMatch(store, /replayRequested: state\.replayRequested/)

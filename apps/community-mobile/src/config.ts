@@ -1,8 +1,10 @@
+import { Platform } from "react-native"
 import Constants from "expo-constants"
 import { resolveApiUrl } from "./lib/apiUrl"
 import { isBetaInstall } from "./lib/nativeBetaInstall"
 import { resolveDonateBrowserMode, type DonateBrowserMode } from "./lib/donateBrowser"
 import { resolveWebOrigin } from "./lib/webOrigin"
+import type { AppPlatform } from "./lib/forceUpdate"
 
 type Extra = {
   apiUrl?: unknown
@@ -15,6 +17,10 @@ type Extra = {
 }
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Extra
+
+export const APP_VERSION: string | undefined = Constants.expoConfig?.version
+
+export const APP_PLATFORM: AppPlatform = Platform.OS === "ios" ? "ios" : "android"
 
 export const API_URL: string = resolveApiUrl(extra.apiUrl, __DEV__, isBetaInstall())
 

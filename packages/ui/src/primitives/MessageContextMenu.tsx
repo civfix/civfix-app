@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import {
   Animated,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
 import { REACTION_EMOJIS, type ReactionEmoji } from "@civfix/contract"
 import {
   makeThemedStyles,
@@ -212,7 +212,7 @@ export function MessageContextMenu({
       cardPosition ? { ...cardPosition, width: WEB_CARD_WIDTH, height: cardH } : null,
     )
     return (
-      <Modal
+      <FullWindowModal
         visible={rendered}
         transparent
         animationType="none"
@@ -258,7 +258,7 @@ export function MessageContextMenu({
             </ScrollView>
           </Animated.View>
         </View>
-      </Modal>
+      </FullWindowModal>
     )
   }
 
@@ -312,7 +312,7 @@ export function MessageContextMenu({
   )
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -391,7 +391,7 @@ export function MessageContextMenu({
           </Animated.View>
         )}
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

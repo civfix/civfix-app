@@ -2,6 +2,7 @@ import type { RoomKind } from "@civfix/contract"
 
 export const queryKeys = {
   session: ["session"] as const,
+  appConfig: ["app-config"] as const,
   mapReportsRoot: ["map", "reports"] as const,
   mapReports: (bbox: unknown, categories: readonly string[]) =>
     ["map", "reports", bbox, categories] as const,

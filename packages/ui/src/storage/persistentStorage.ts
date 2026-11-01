@@ -1,1 +1,1 @@
-export { persistentStorage } from "./persistentStorage.web"
+export { clearPersistentStorage, persistentStorage } from "./persistentStorage.web"
