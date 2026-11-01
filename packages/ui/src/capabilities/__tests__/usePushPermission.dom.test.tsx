@@ -77,6 +77,33 @@ describe("usePushPermission", () => {
     expect(result.current.openSettings).toBeUndefined()
   })
 
+  it("G7: re-reads the status once openSettings() resolves, so a grant from its dialog shows without a focus change", async () => {
+    const { fake, statusSpy, wrapper } = setup()
+    fake.setStatus("denied")
+    vi.spyOn(fake, "openSettings").mockImplementation(() => {
+      fake.setStatus("granted")
+      return Promise.resolve()
+    })
+    const { result } = renderHook(() => usePushPermission(), { wrapper })
+    await waitFor(() => expect(result.current.status).toBe("denied"))
+    await act(async () => {
+      await result.current.openSettings?.()
+    })
+    expect(statusSpy).toHaveBeenCalledTimes(2)
+    expect(result.current.status).toBe("granted")
+  })
+
+  it("G8: a capability without openSettings (web) gives a state with no openSettings key", async () => {
+    const webShaped: PushPermissionCapability = {
+      status: async () => "undetermined",
+      request: async () => "undetermined",
+    }
+    const { wrapper } = setup(webShaped)
+    const { result } = renderHook(() => usePushPermission(), { wrapper })
+    await waitFor(() => expect(result.current.status).toBe("undetermined"))
+    expect(Object.keys(result.current)).not.toContain("openSettings")
+  })
+
   it("T21: an unmounted hook stops listening for the foreground", async () => {
     const consoleError = vi.spyOn(console, "error")
     const { statusSpy, wrapper } = setup()
