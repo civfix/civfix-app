@@ -163,7 +163,6 @@ interface AuthState {
   retryHydration: () => Promise<void>
   retrySessionRestore: () => Promise<void>
   signIn: (token: string, user: UserDTO) => Promise<void>
-  consumePushPrompt: () => void
   setUser: (user: UserDTO) => void
   signOut: () => Promise<void>
   markUnauthed: () => void
@@ -254,10 +253,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ pushPromptPending: true })
     adoptIdentity(user, set)
     invalidateViewerDependentQueries()
-  },
-
-  consumePushPrompt: () => {
-    set({ pushPromptPending: false })
   },
 
   setUser: (user) => {

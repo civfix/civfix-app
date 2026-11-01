@@ -42,7 +42,7 @@ export function usePushOnSignIn() {
 
   useEffect(() => {
     if (status !== "authed" || !promptPending) return
-    useAuthStore.getState().consumePushPrompt()
+    useAuthStore.setState({ pushPromptPending: false })
     void promptForNativePush()
   }, [status, promptPending])
 }
