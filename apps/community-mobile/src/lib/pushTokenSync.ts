@@ -4,7 +4,7 @@ import type { DevicePushToken } from "expo-notifications"
 import type { KeyValueStore } from "@/lib/mmkv"
 // Relative paths, not the "@/" alias: node --test loads this module without the alias hooks.
 import { isConflict } from "./errors.ts"
-import { rememberPushRegistration } from "./pushRegistration.ts"
+import { readPushRegistration, rememberPushRegistration } from "./pushRegistration.ts"
 
 // Kept beside the registration record but never cleared by sign-out: D6 asks once per device, not per
 // account.
@@ -12,6 +12,7 @@ export const PUSH_ASKED_KEY = "civfix.push.asked"
 
 export type PushRegistrationResult =
   | { status: "registered"; token: string }
+  | { status: "unchanged"; token: string }
   | { status: "denied" }
   | { status: "unsupported"; reason: string }
   | { status: "conflict"; reason: string }
@@ -29,7 +30,8 @@ export interface PushTokenSyncDeps {
 
 /**
  * Registers this device's native token (APNs hex on iOS, FCM on Android) when push is allowed. It reads
- * the permission and never asks for it: only the sign-in prompt does (D6).
+ * the permission and never asks for it: only the sign-in prompt does (D6). A fetched token is always sent,
+ * so a token the server dropped comes back; a `rotated` one only when it differs from the last one sent.
  */
 export async function syncPushToken(
   deps: PushTokenSyncDeps,
@@ -49,6 +51,13 @@ export async function syncPushToken(
     const token: unknown = native.data
     if (typeof token !== "string" || token.length === 0) {
       return { status: "error", reason: "empty push token" }
+    }
+
+    // expo-notifications reports every fetched token to addPushTokenListener too, not only a rotation, so
+    // without this each launch, return and grant would spend two of registerPush's 10 a minute.
+    const last = readPushRegistration(deps.store)
+    if (rotated && last?.platform === native.type && last.token === token) {
+      return { status: "unchanged", token }
     }
 
     const deviceId = await deps.deviceId()
