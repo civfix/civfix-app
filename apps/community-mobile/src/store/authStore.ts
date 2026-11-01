@@ -71,6 +71,7 @@ type SetAuthState = (next: {
   sessionPresent?: boolean | null
   networkOutcome?: BootNetworkOutcome
   restoreStartedAt?: number
+  pushPromptPending?: boolean
 }) => void
 
 function restoreSession(): Promise<SessionCheckResponse> {
@@ -111,7 +112,7 @@ function tearDownIdentity(set: SetAuthState): Promise<void> {
   const pushReleased = unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
   discardViewerDrafts()
-  set({ status: "unauthed", user: null, sessionPresent: false })
+  set({ status: "unauthed", user: null, sessionPresent: false, pushPromptPending: false })
   resumeCachePersistence()
   identityTornDown = true
   return pushReleased
@@ -155,11 +156,14 @@ interface AuthState {
   sessionPresent: boolean | null
   networkOutcome: BootNetworkOutcome
   restoreStartedAt: number
+  // Set only by signIn: D6 shows the push prompt after a sign-in from the sign-in screen, never after a
+  // restored session.
   pushPromptPending: boolean
   hydrate: (mode?: HydrateMode) => Promise<void>
   retryHydration: () => Promise<void>
   retrySessionRestore: () => Promise<void>
   signIn: (token: string, user: UserDTO) => Promise<void>
+  consumePushPrompt: () => void
   setUser: (user: UserDTO) => void
   signOut: () => Promise<void>
   markUnauthed: () => void
@@ -247,8 +251,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const previousIdentity = readLastIdentity() ?? readCachedUser()?.id ?? null
     if (isForeignIdentity(previousIdentity, user.id)) dropForeignIdentityState()
     await setToken(token)
+    set({ pushPromptPending: true })
     adoptIdentity(user, set)
     invalidateViewerDependentQueries()
+  },
+
+  consumePushPrompt: () => {
+    set({ pushPromptPending: false })
   },
 
   setUser: (user) => {

@@ -5,8 +5,11 @@
     "body": "civfix tuvo un problema inesperado. Al reiniciar se borran los datos guardados y se vuelve a intentar.",
     "action": "Reiniciar civfix"
   },
-  "notification_channel_host_broadcasts": "Mensajes del evento",
-  "notification_channel_event_reminders": "Recordatorios de eventos",
+  "notification_channel_reports": "Tus denuncias",
+  "notification_channel_messages": "Mensajes",
+  "notification_channel_events": "Eventos",
+  "notification_channel_social": "Social",
+  "notification_channel_organizations": "Organizaciones",
   "notification_action_view_ticket": "Ver entrada",
   "notification_action_open_event": "Abrir evento",
   "scan": {
