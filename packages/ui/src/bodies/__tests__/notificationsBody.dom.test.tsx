@@ -393,7 +393,7 @@ describe("GH#226 NotificationsBody rows", () => {
 
   it("T20: keeps its signed-out, loading, error and empty states", async () => {
     const signedOut = renderBody(makeApi({ items: [], hasUnread: false }), { signedIn: false })
-    await screen.findByText("Sign in for notifications")
+    expect(await screen.findByText("Sign in for notifications")).toBeTruthy()
     signedOut.unmountPage()
 
     const loading = renderBody(
@@ -402,7 +402,7 @@ describe("GH#226 NotificationsBody rows", () => {
         { listNotifications: vi.fn(() => new Promise(() => {})) },
       ),
     )
-    await screen.findByTestId("skeleton-notification")
+    expect(await screen.findByTestId("skeleton-notification")).toBeTruthy()
     loading.unmountPage()
 
     const failing = renderBody(
@@ -411,10 +411,10 @@ describe("GH#226 NotificationsBody rows", () => {
         { listNotifications: vi.fn(async () => Promise.reject(new Error("x"))) },
       ),
     )
-    await screen.findByText("Could not load notifications")
+    expect(await screen.findByText("Could not load notifications")).toBeTruthy()
     failing.unmountPage()
 
     renderBody(makeApi({ items: [], hasUnread: false }))
-    await screen.findByText("You are all caught up")
+    expect(await screen.findByText("You are all caught up")).toBeTruthy()
   })
 })

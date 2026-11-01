@@ -1,5 +1,6 @@
 import { cleanup, render } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { expectConsoleWarn } from "@civfix/testing/console"
 import { AppError, ErrorCode, type NotificationDTO, type UserDTO } from "@civfix/contract"
 
 import type * as AuthStoreModule from "@/store/auth-store"
@@ -310,6 +311,7 @@ describe("the web push sync", () => {
   })
 
   it("T16: a second CONFLICT stops: no third subscribe or register", async () => {
+    expectConsoleWarn("[push] subscribing failed")
     stubBrowser("granted")
     api.registerPush.mockRejectedValue(
       new AppError(ErrorCode.CONFLICT, "token owned by another account", { httpStatus: 409 }),
@@ -375,6 +377,7 @@ describe("closing read notifications when the tab gains focus", () => {
   })
 
   it("T22: closes nothing when the list cannot be read", async () => {
+    expectConsoleWarn("[push] closing read notifications failed")
     stubBrowser("granted")
     await startAndSettle()
     deliverT21()

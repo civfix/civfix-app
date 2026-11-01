@@ -2,6 +2,7 @@ import * as React from "react"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { expectConsoleWarn } from "@civfix/testing/console"
 import { AppError, ErrorCode, type UserDTO } from "@civfix/contract"
 
 import type * as ApiModule from "@/lib/api"
@@ -316,6 +317,7 @@ describe("useLogout with a browser push subscription", () => {
   })
 
   it("T25: still signs out and unsubscribes when pushUnregister fails on the network", async () => {
+    expectConsoleWarn("[push] unregistering the subscription failed")
     const subscription = subscribeBrowser()
     pushUnregister.mockRejectedValue(new TypeError("Failed to fetch"))
     logout.mockResolvedValue({ ok: true })
