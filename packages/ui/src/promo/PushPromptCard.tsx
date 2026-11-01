@@ -3,6 +3,7 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
+  pointerEventStyles,
   useLayoutMode,
   useTheme,
   webCursor,
@@ -33,11 +34,14 @@ export function PushPromptCard({ onTurnOn, onNotNow, onClose }: PushPromptCardPr
   const tabBarHeight = useTabBarStore((s) => s.tabBarHeight)
   return (
     <View
-      pointerEvents="box-none"
       style={
         expanded
-          ? styles.anchorExpanded
-          : [styles.anchorCompact, { bottom: tabBarHeight + th.space["3"] }]
+          ? [styles.anchorExpanded, pointerEventStyles["box-none"]]
+          : [
+              styles.anchorCompact,
+              { bottom: tabBarHeight + th.space["3"] },
+              pointerEventStyles["box-none"],
+            ]
       }
     >
       <View
