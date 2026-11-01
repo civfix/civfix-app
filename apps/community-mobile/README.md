@@ -105,7 +105,7 @@ from the sign-in screen; `civfix.push.asked` in MMKV remembers it across sign-ou
 Android channels are the notification-settings sections (`NOTIFICATION_SECTIONS`) plus `default`
 (`src/push/channels.ts`). The backend also sends silent `kind: "clear"` pushes naming notifications read
 on another device. `src/push/clearTask.ts` defines an `expo-task-manager` task at module scope (the
-layout imports it), so a clear removes delivered notifications in the background too
+bundle entry, `index.ts`, imports it before expo-router), so a clear removes delivered notifications in the background too
 (`enableBackgroundRemoteNotifications` on the `expo-notifications` plugin adds iOS's
 `remote-notification` background mode). iOS throttles those and never wakes a force-quit app, so every
 launch and return to the app also removes delivered notifications that are read or gone from the first
