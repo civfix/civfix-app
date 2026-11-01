@@ -15,17 +15,20 @@ export interface NativePushPermissionDeps {
   onGranted?(): void
 }
 
-// Maps on status alone: a denial the OS will not ask about again (canAskAgain false) is still denied, and
-// openSettings is the way back. D6 keeps push off the .dev variant, which is its own app beside the store one.
+// Android 13+ reports a POST_NOTIFICATIONS it has never asked about as denied with canAskAgain true, so a
+// denial the OS can still ask about reads as undetermined: the sign-in prompt and Turn on then ask instead of
+// sending the person to settings. A denial it will not ask about again (canAskAgain false, or absent) stays
+// denied, and openSettings is the way back. D6 keeps push off the .dev variant, which is its own app beside
+// the store one.
 export function makeNativePushPermission(deps: NativePushPermissionDeps): PushPermissionCapability {
   const supported = deps.appId !== DEV_VARIANT_APP_ID
   return {
     async status(): Promise<PushPermissionStatus> {
-      return supported ? (await deps.getPermissionsAsync()).status : "unsupported"
+      return supported ? capabilityStatus(await deps.getPermissionsAsync()) : "unsupported"
     },
     async request(): Promise<PushPermissionStatus> {
       if (!supported) return "unsupported"
-      const { status } = await deps.requestPermissionsAsync()
+      const status = capabilityStatus(await deps.requestPermissionsAsync())
       if (status === "granted") deps.onGranted?.()
       return status
     },
@@ -33,4 +36,10 @@ export function makeNativePushPermission(deps: NativePushPermissionDeps): PushPe
       return deps.openSettings()
     },
   }
+}
+
+function capabilityStatus(
+  os: Awaited<ReturnType<NativePushPermissionDeps["getPermissionsAsync"]>>,
+): PushPermissionStatus {
+  return os.status === "denied" && os.canAskAgain === true ? "undetermined" : os.status
 }
