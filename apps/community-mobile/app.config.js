@@ -245,6 +245,7 @@ module.exports = ({ config }) => ({
       "expo-build-properties",
       {
         ios: {
+          deploymentTarget: "15.1",
           buildReactNativeFromSource: false,
           extraPods: [
             { name: "GoogleUtilities", modular_headers: true },
@@ -253,6 +254,7 @@ module.exports = ({ config }) => ({
         },
       },
     ],
+    "./plugins/with-pod-deployment-target.js",
     "@maplibre/maplibre-react-native",
     "expo-secure-store",
     "expo-apple-authentication",
