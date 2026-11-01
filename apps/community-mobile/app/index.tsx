@@ -27,6 +27,7 @@ import {
   shouldAdoptCenter,
   PRECISE_ZOOM,
   APPROX_ZOOM,
+  useShellWindowHeight,
   type MapCenterSource,
   type MapCenterTarget,
   type MapHandle,
@@ -84,7 +85,9 @@ const LONG_PRESS_REPEAT_GUARD_MS = 400
 export default function MapHomeScreen() {
   const insets = useSafeAreaInsets()
   const layoutMode = useLayoutMode()
-  const { height: windowHeight, width: windowWidth } = useWindowDimensions()
+  const { width: windowWidth } = useWindowDimensions()
+  // The map's height: the window, less what a system notice above the app takes (its top inset is then 0).
+  const windowHeight = useShellWindowHeight()
   const haptics = useHaptics()
 
   const mapRef = useRef<{ generation: number; map: MapHandle } | null>(null)

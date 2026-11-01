@@ -65,6 +65,7 @@ export {
 } from "./hooks/reports"
 export { NEARBY_RADIUS_KM } from "./hooks/nearbyBbox"
 export { usePressingReports } from "./hooks/pressingReports"
+export { useAppConfig } from "./hooks/appConfig"
 export {
   useJoinReportChat,
   useLeaveReportChat,
