@@ -36,7 +36,7 @@ export const ConsoleButton = React.forwardRef<HTMLButtonElement, ConsoleButtonPr
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+        "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap font-semibold transition-colors duration-d1 ease-out focus-visible:outline-hidden focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,

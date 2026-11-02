@@ -136,7 +136,7 @@ export function QRow({
           onClick={onPress}
           aria-label={pressLabel}
           aria-current={current ? "true" : undefined}
-          className="flex min-w-0 flex-1 items-center gap-token-3 rounded-xs text-left focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="flex min-w-0 flex-1 items-center gap-token-3 rounded-xs text-left focus-visible:outline-hidden focus-visible:shadow-console-ring"
         >
           {titleBlock}
           <ChevronRight

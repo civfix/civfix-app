@@ -232,7 +232,7 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
               type="button"
               aria-label={t("action.dismiss")}
               onClick={() => dismiss(item.id)}
-              className="shrink-0 rounded-xs p-1 text-console-toast-ink-dim hover:text-console-toast-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+              className="shrink-0 rounded-xs p-1 text-console-toast-ink-dim hover:text-console-toast-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
             >
               <X aria-hidden className="h-3.5 w-3.5" />
             </button>

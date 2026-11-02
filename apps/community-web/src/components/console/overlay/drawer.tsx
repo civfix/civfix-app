@@ -92,7 +92,7 @@ export function Drawer({
                 href={fullPageHref}
                 aria-label={t("action.open_full_page")}
                 title={t("action.open_full_page")}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
               >
                 <ExternalLink aria-hidden className="h-4 w-4" />
               </a>

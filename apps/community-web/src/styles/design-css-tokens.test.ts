@@ -1,17 +1,30 @@
 import { readFileSync } from "node:fs"
-import { colorSchemes, tokens } from "@civfix/tokens"
+import { createRequire } from "node:module"
+import { colorSchemes } from "@civfix/tokens"
 import type { ColorSchemeName } from "@civfix/tokens"
-import { describe, expect, it } from "vitest"
-import config from "../../tailwind.config"
-import type { SchemeColor } from "../../tailwind.config"
+import { beforeAll, describe, expect, it } from "vitest"
+import type { CompiledCss } from "./compiled-css"
+import { compileGlobals, resolvedDecl } from "./compiled-css"
 
 const CSS = readFileSync(new URL("./design.css", import.meta.url), "utf8")
 const GLOBALS = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
 
+/** The built theme export, read through the package's `exports` as globals.css imports it. */
+function themeCss(): string {
+  let path: string | undefined
+  try {
+    path = createRequire(import.meta.url).resolve("@civfix/tokens/theme.css")
+  } catch {
+    path = undefined
+  }
+  expect(path, "@civfix/tokens/theme.css").toBeDefined()
+  return path === undefined ? "" : readFileSync(path, "utf8")
+}
+
 function blockFor(scheme: ColorSchemeName): string {
-  const start = CSS.indexOf(scheme === "light" ? "\n:root {" : "\n:root.dark {")
+  const start = CSS.indexOf(scheme === "light" ? "\n  :root {" : "\n  :root.dark {")
   expect(start, `${scheme} block`).toBeGreaterThan(-1)
-  const end = CSS.indexOf("\n}", start)
+  const end = CSS.indexOf("\n  }", start)
   return CSS.slice(start, end)
 }
 
@@ -121,109 +134,103 @@ describe("design.css hue ramps mirror @civfix/tokens", () => {
   })
 })
 
-describe("tailwind neutral colours stay legal without an opacity modifier", () => {
-  const colors = (config.theme?.extend?.colors ?? {}) as Record<string, unknown>
+function themeVar(name: string): string {
+  const match = themeCss().match(new RegExp(`${name}:\\s*([^;]+);`))
+  expect(match, `theme.css ${name}`).not.toBeNull()
+  return (match?.[1] ?? "").trim()
+}
 
-  function resolve(path: readonly string[]): SchemeColor {
-    let node: unknown = colors
-    for (const key of path) node = (node as Record<string, unknown>)[key]
-    expect(typeof node, path.join(".")).toBe("function")
-    return node as SchemeColor
-  }
+/** One spelling per CSS value: no whitespace, no trailing decimal zeros (Prettier writes 0.2 for 0.20). */
+const normalised = (value: string): string =>
+  value
+    .replace(/\s+/g, "")
+    .replace(/(\.\d*?)0+(?!\d)/g, "$1")
+    .replace(/\.(?!\d)/g, "")
+    .toUpperCase()
 
-  const NEUTRAL_UTILITIES = [
-    [["paper"], "--paper"],
-    [["paper2"], "--paper-2"],
-    [["cardflat"], "--card"],
-    [["cardTint"], "--card-tint"],
-    [["ink", "DEFAULT"], "--ink"],
-    [["ink", "2"], "--ink-2"],
-    [["ink", "3"], "--ink-3"],
-    [["ink", "4"], "--ink-4"],
-    [["ink", "5"], "--ink-5"],
-  ] as const
-
-  const HUE_UTILITIES = [
-    [["bloom", "500"], "--bloom"],
-    [["bloom", "50"], "--bloom-50"],
-    [["moss", "100"], "--moss-100"],
-    [["sun", "700"], "--sun-700"],
-    [["sky", "300"], "--sky-300"],
-    [["lilac", "600"], "--lilac-600"],
-    [["cat", "hazard"], "--cat-hazard"],
-    [["cleanup"], "--cat-cleanup"],
-  ] as const
-
-  for (const [path, variable] of [...NEUTRAL_UTILITIES, ...HUE_UTILITIES]) {
-    it(`${path.join(".")} resolves to a bare var(${variable})`, () => {
-      expect(resolve(path)({})).toBe(`var(${variable})`)
-    })
-  }
-
-  it("keeps the legacy opacity core plugins off so unmodified utilities stay bare", () => {
-    for (const plugin of [
-      "backgroundOpacity",
-      "textOpacity",
-      "borderOpacity",
-      "divideOpacity",
-      "ringOpacity",
-      "placeholderOpacity",
+describe("design.css token variables equal the @civfix/tokens theme", () => {
+  it("T21: the light radius, pin shadow and easing variables match theme.css", () => {
+    const block = blockFor("light")
+    for (const name of [
+      "radius-xs",
+      "radius-sm",
+      "radius-md",
+      "radius-lg",
+      "radius-xl",
+      "radius-2xl",
+      "radius-pill",
+      "shadow-pin",
+      "ease-out",
+      "ease-spring",
+      "ease-in-out",
     ]) {
-      expect((config.corePlugins as Record<string, boolean>)[plugin], plugin).toBe(false)
+      expect(normalised(readVar(block, name)), name).toBe(normalised(themeVar(`--${name}`)))
     }
   })
 
-  it("only reaches for color-mix when a modifier is present", () => {
-    expect(resolve(["paper2"])({ opacityValue: "0.6" })).toBe(
-      "color-mix(in srgb, var(--paper-2) calc(0.6 * 100%), transparent)",
+  it("T21: the dark pin shadow stays a scheme override", () => {
+    expect(normalised(readVar(blockFor("dark"), "shadow-pin"))).toBe(
+      normalised("0 6px 10px -2px rgba(244, 121, 108, 0.45), 0 2px 4px rgba(0, 0, 0, 0.5)"),
     )
   })
+})
 
-  const CONSOLE_UTILITIES = [
-    [["console", "surface"], "--console-surface"],
-    [["console", "surface-alt"], "--console-surface-alt"],
-    [["console", "tint"], "--console-tint"],
-    [["console", "canvas"], "--console-canvas"],
-    [["console", "line"], "--console-line"],
-    [["console", "line-strong"], "--console-line-strong"],
-    [["console", "accent"], "--console-accent"],
-    [["console", "scrim"], "--console-scrim"],
-    [["console", "toast-surface"], "--console-toast-surface"],
-    [["console", "toast-ink"], "--console-toast-ink"],
-    [["console", "toast-ink-dim"], "--console-toast-ink-dim"],
-    [["console", "ink", "DEFAULT"], "--console-ink"],
-    [["console", "ink", "2"], "--console-ink-2"],
-    [["console", "ink", "3"], "--console-ink-3"],
-    [["console", "bloom", "soft"], "--console-hue-bloom-soft"],
-    [["console", "bloom", "strong"], "--console-hue-bloom-strong"],
-    [["console", "moss", "soft"], "--console-hue-moss-soft"],
-    [["console", "moss", "strong"], "--console-hue-moss-strong"],
-    [["console", "sun", "soft"], "--console-hue-sun-soft"],
-    [["console", "sun", "strong"], "--console-hue-sun-strong"],
-    [["console", "sky", "soft"], "--console-hue-sky-soft"],
-    [["console", "sky", "strong"], "--console-hue-sky-strong"],
-    [["console", "lilac", "soft"], "--console-hue-lilac-soft"],
-    [["console", "lilac", "strong"], "--console-hue-lilac-strong"],
-  ] as const
+const SCHEME_UTILITIES = [
+  ["bg-paper", "background-color", "--paper"],
+  ["text-ink-2", "color", "--ink-2"],
+  ["border-console-line", "border-color", "--console-line"],
+  ["bg-paper2", "background-color", "--paper-2"],
+  ["bg-cardflat", "background-color", "--card"],
+  ["bg-cardTint", "background-color", "--card-tint"],
+  ["text-ink", "color", "--ink"],
+  ["text-ink-3", "color", "--ink-3"],
+  ["text-ink-4", "color", "--ink-4"],
+  ["border-ink-5", "border-color", "--ink-5"],
+  ["bg-bloom-500", "background-color", "--bloom"],
+  ["bg-bloom-50", "background-color", "--bloom-50"],
+  ["bg-moss-100", "background-color", "--moss-100"],
+  ["text-sun-700", "color", "--sun-700"],
+  ["bg-sky-300", "background-color", "--sky-300"],
+  ["text-lilac-600", "color", "--lilac-600"],
+  ["text-cat-hazard", "color", "--cat-hazard"],
+  ["bg-cleanup", "background-color", "--cat-cleanup"],
+  ["bg-console-surface", "background-color", "--console-surface"],
+  ["bg-console-surface-alt", "background-color", "--console-surface-alt"],
+  ["bg-console-tint", "background-color", "--console-tint"],
+  ["bg-console-canvas", "background-color", "--console-canvas"],
+  ["border-console-line-strong", "border-color", "--console-line-strong"],
+  ["bg-console-accent", "background-color", "--console-accent"],
+  ["bg-console-scrim", "background-color", "--console-scrim"],
+  ["bg-console-toast-surface", "background-color", "--console-toast-surface"],
+  ["text-console-toast-ink", "color", "--console-toast-ink"],
+  ["text-console-toast-ink-dim", "color", "--console-toast-ink-dim"],
+  ["text-console-ink", "color", "--console-ink"],
+  ["text-console-ink-2", "color", "--console-ink-2"],
+  ["text-console-ink-3", "color", "--console-ink-3"],
+  ["bg-console-bloom-soft", "background-color", "--console-hue-bloom-soft"],
+  ["text-console-bloom-strong", "color", "--console-hue-bloom-strong"],
+  ["bg-console-moss-soft", "background-color", "--console-hue-moss-soft"],
+  ["text-console-moss-strong", "color", "--console-hue-moss-strong"],
+  ["bg-console-sun-soft", "background-color", "--console-hue-sun-soft"],
+  ["text-console-sun-strong", "color", "--console-hue-sun-strong"],
+  ["bg-console-sky-soft", "background-color", "--console-hue-sky-soft"],
+  ["text-console-sky-strong", "color", "--console-hue-sky-strong"],
+  ["bg-console-lilac-soft", "background-color", "--console-hue-lilac-soft"],
+  ["text-console-lilac-strong", "color", "--console-hue-lilac-strong"],
+] as const
 
-  for (const [path, variable] of CONSOLE_UTILITIES) {
-    it(`${path.join(".")} answers an opacity modifier instead of emitting nothing`, () => {
-      expect(resolve(path)({})).toBe(`var(${variable})`)
-      expect(resolve(path)({ opacityValue: "0.4" })).toBe(
-        `color-mix(in srgb, var(${variable}) calc(0.4 * 100%), transparent)`,
-      )
+describe("scheme colour utilities stay legal without an opacity modifier", () => {
+  let css: CompiledCss
+
+  beforeAll(async () => {
+    css = await compileGlobals(SCHEME_UTILITIES.map(([utility]) => utility))
+  }, 60_000)
+
+  for (const [utility, prop, variable] of SCHEME_UTILITIES) {
+    it(`T21: ${utility} resolves to a bare var(${variable})`, () => {
+      expect(resolvedDecl(css, `.${utility}`, prop)).toBe(`var(${variable})`)
     })
   }
-
-  it("carries a time unit on every duration step, so the utility is legal CSS", () => {
-    const durations = (config.theme?.extend?.transitionDuration ?? {}) as Record<string, string>
-    expect(Object.keys(durations)).toEqual(["d1", "d2", "d3", "d4"])
-    for (const [step, value] of Object.entries(durations)) {
-      expect(value, step).toMatch(/^\d+ms$/)
-    }
-    expect(durations.d1).toBe(`${tokens.motion.dur.d1}ms`)
-    expect(durations.d4).toBe(`${tokens.motion.dur.d4}ms`)
-  })
 })
 
 function hslToHex(triplet: string): string {
@@ -242,10 +249,10 @@ function hslToHex(triplet: string): string {
 }
 
 function shadcnBlock(scheme: ColorSchemeName): string {
-  const marker = scheme === "light" ? "\n  :root {" : "\n  .dark {"
+  const marker = scheme === "light" ? "\n:root {" : "\n.dark {"
   const start = GLOBALS.indexOf(marker)
   expect(start, `globals.css ${scheme} block`).toBeGreaterThan(-1)
-  const end = GLOBALS.indexOf("\n  }", start)
+  const end = GLOBALS.indexOf("\n}", start)
   return GLOBALS.slice(start, end)
 }
 

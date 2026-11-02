@@ -63,7 +63,7 @@ export function SegmentedControl<V extends string>({
                 if (!option.disabled) onChange(option.value)
               }}
               className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xs font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
+                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xs font-semibold transition-colors duration-d1 ease-out focus-visible:outline-hidden focus-visible:shadow-console-ring",
                 SEGMENT_SIZE[size],
                 active
                   ? "bg-console-surface text-console-ink shadow-console-1"

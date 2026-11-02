@@ -31,7 +31,7 @@ import { publicOrgPath, publicOrgUrlLabel } from "./org-slug"
 import { useOrgVerification } from "./use-org-verification"
 
 const QUICK_LINK_CLASS =
-  "inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+  "inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-hidden focus-visible:shadow-console-ring"
 
 function hostnameOf(url: string): string {
   try {
@@ -172,7 +172,7 @@ export function OrgOverview() {
                   <ConsoleLink
                     href={hrefForRoute({ kind: "org", orgId, section: step.section })}
                     className={cn(
-                      "flex h-full items-start gap-token-3 rounded-sm border border-console-line bg-console-surface px-token-3 py-token-3 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring",
+                      "flex h-full items-start gap-token-3 rounded-sm border border-console-line bg-console-surface px-token-3 py-token-3 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-hidden focus-visible:shadow-console-ring",
                       step.done && "opacity-70",
                     )}
                   >
@@ -234,7 +234,7 @@ export function OrgOverview() {
                   href={donationLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-xs text-token-14 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="inline-flex items-center gap-1 rounded-xs text-token-14 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   {donationHost}
                   <ExternalLink aria-hidden className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export function OrgOverview() {
               canManage ? (
                 <ConsoleLink
                   href={hrefForRoute({ kind: "org", orgId, section: "settings" })}
-                  className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   {donationLink === null
                     ? t("overview.add_donation_link")
@@ -266,7 +266,7 @@ export function OrgOverview() {
             {canManage ? (
               <ConsoleLink
                 href={hrefForRoute({ kind: "org", orgId, section: "settings" })}
-                className="rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
               >
                 {t("overview.edit", { defaultValue: "Edit profile" })}
               </ConsoleLink>
@@ -299,7 +299,7 @@ export function OrgOverview() {
                   href={website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-token-2 inline-flex max-w-full items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="mt-token-2 inline-flex max-w-full items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   <span className="truncate">{org.websiteUrl}</span>
                   <ExternalLink aria-hidden className="h-3.5 w-3.5 shrink-0" />
@@ -323,7 +323,7 @@ export function OrgOverview() {
             href={publicOrgPath(org.slug)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-token-3 inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+            className="mt-token-3 inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
           >
             {publicOrgUrlLabel(org.slug)}
             <ExternalLink aria-hidden className="h-3.5 w-3.5" />

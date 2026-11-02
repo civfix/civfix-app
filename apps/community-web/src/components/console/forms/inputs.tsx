@@ -6,7 +6,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 export const CONSOLE_INPUT_CLASSES =
-  "h-9 w-full rounded-xs border border-console-line bg-console-surface px-token-3 text-token-14 text-console-ink placeholder:text-console-ink-3 transition-shadow duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:bg-console-surface-alt disabled:text-console-ink-3"
+  "h-9 w-full rounded-xs border border-console-line bg-console-surface px-token-3 text-token-14 text-console-ink placeholder:text-console-ink-3 transition-shadow duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:bg-console-surface-alt disabled:text-console-ink-3"
 
 export interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean

@@ -155,7 +155,7 @@ export function RichTextEditor({
           aria-describedby={describedBy ? `${describedBy} ${counterId}` : counterId}
           onKeyDown={onKeyDown}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full resize-y bg-console-surface px-token-3 py-token-2 font-mono text-token-13 leading-base text-console-ink placeholder:text-console-ink-3 focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="w-full resize-y bg-console-surface px-token-3 py-token-2 font-mono text-token-13 leading-base text-console-ink placeholder:text-console-ink-3 focus-visible:outline-hidden focus-visible:shadow-console-ring"
         />
       </div>
       {linkError ? (

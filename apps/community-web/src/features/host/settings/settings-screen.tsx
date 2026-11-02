@@ -330,7 +330,7 @@ export function SettingsScreen() {
               })}{" "}
               <ConsoleLink
                 href={hrefForRoute({ kind: "org-new" })}
-                className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
               >
                 {to("event_link.create", { defaultValue: "Create one" })}
               </ConsoleLink>

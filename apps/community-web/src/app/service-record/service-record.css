@@ -4,46 +4,49 @@
    one sheet. `.sr-page` wraps the whole route (outside DetailShell) so these rules reach the shell's
    own <header> / <main> without leaking to other routes. */
 
-@media print {
-  /* Interactive-only chrome: the shell's sticky back bar and this page's buttons. */
-  .sr-page > div > header,
-  .sr-no-print {
-    display: none !important;
-  }
+/* In Tailwind's utilities layer, after its utilities, as styles/design.css is. */
+@layer utilities {
+  @media print {
+    /* Interactive-only chrome: the shell's sticky back bar and this page's buttons. */
+    .sr-page > div > header,
+    .sr-no-print {
+      display: none !important;
+    }
 
-  .sr-page,
-  .sr-page > div,
-  .sr-page main {
-    background: #fff !important;
-    color: #000 !important;
-    min-height: 0 !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
+    .sr-page,
+    .sr-page > div,
+    .sr-page main {
+      background: #fff !important;
+      color: #000 !important;
+      min-height: 0 !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
 
-  /* Ink on white: the warm moss / paper tints turn to mud on a mono laser. */
-  .sr-card {
-    background: #fff !important;
-    border: 1px solid #000 !important;
-    box-shadow: none !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+    /* Ink on white: the warm moss / paper tints turn to mud on a mono laser. */
+    .sr-card {
+      background: #fff !important;
+      border: 1px solid #000 !important;
+      box-shadow: none !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
 
-  .sr-verdict-icon {
-    background: #fff !important;
-    border: 1px solid #000 !important;
-  }
+    .sr-verdict-icon {
+      background: #fff !important;
+      border: 1px solid #000 !important;
+    }
 
-  /* The disclaimer is the legally meaningful line; never orphan it from the verdict. */
-  .sr-disclaimer {
-    break-before: avoid;
-    page-break-before: avoid;
-  }
+    /* The disclaimer is the legally meaningful line; never orphan it from the verdict. */
+    .sr-disclaimer {
+      break-before: avoid;
+      page-break-before: avoid;
+    }
 
-  /* The code is what a verifier re-types; keep it unmistakable on paper. */
-  .sr-code {
-    letter-spacing: 0.08em;
+    /* The code is what a verifier re-types; keep it unmistakable on paper. */
+    .sr-code {
+      letter-spacing: 0.08em;
+    }
   }
 }

@@ -43,7 +43,7 @@ export function ChipMultiSelect({
             disabled={option.disabled}
             onClick={() => toggle(option.value)}
             className={cn(
-              "inline-flex h-10 items-center gap-1.5 rounded-pill border px-token-3 text-token-13 font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
+              "inline-flex h-10 items-center gap-1.5 rounded-pill border px-token-3 text-token-13 font-semibold transition-colors duration-d1 ease-out focus-visible:outline-hidden focus-visible:shadow-console-ring",
               active
                 ? "border-console-ink bg-console-ink text-console-surface"
                 : "border-console-line bg-console-surface text-console-ink-2 hover:bg-console-surface-alt",
