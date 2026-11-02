@@ -48,7 +48,7 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint . --max-warnings=0",
     "clean": "rimraf dist *.tsbuildinfo",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch --onSuccess \"node scripts/build-theme.mjs\""
   },
   "devDependencies": {
     "@civfix/contract": "^0.71.1",
