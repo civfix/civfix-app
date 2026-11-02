@@ -21,8 +21,8 @@ import {
   type MarkerEvent,
   type ViewState,
   type ViewStateChangeEvent,
+  type StyleSpecification,
 } from "@maplibre/maplibre-react-native"
-import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
 import { alpha } from "../theme/alpha"
