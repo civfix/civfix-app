@@ -14,4 +14,4 @@ export {
   clusterToneFor,
   inkOnFill,
 } from "./appearance"
-export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./appearance"
+export type { PinTarget } from "./appearance"

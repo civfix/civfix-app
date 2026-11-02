@@ -1,5 +1,4 @@
 export { BlurSurface } from "./BlurSurface"
-export type { BlurSurfaceProps, GlassKind } from "./types"
 
 export {
   LiquidGlassDock,
@@ -9,4 +8,4 @@ export {
   DOCK_GAP,
   DOCK_MORPH_SHRINK,
 } from "./liquidGlass"
-export type { LiquidGlassDockProps, DockShapes } from "./liquidGlass"
+export type { DockShapes } from "./liquidGlass"

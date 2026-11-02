@@ -3,4 +3,3 @@
  * worklet-free web seam through the explicit `.web` specifier, which never resolves back into this module.
  */
 export { PageStack } from "./PageStack.web"
-export type { PageStackProps, PageStackRenderBody } from "./PageStack.types"

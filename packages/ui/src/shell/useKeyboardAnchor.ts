@@ -3,4 +3,3 @@
  * Next puts `.web.ts` ahead of `.ts`. The explicit `.web` specifier never resolves back into this file.
  */
 export { useKeyboardAnchor } from "./useKeyboardAnchor.web"
-export type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
