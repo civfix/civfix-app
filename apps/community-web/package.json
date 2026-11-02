@@ -18,7 +18,7 @@
     "clean": "rimraf .next out *.tsbuildinfo"
   },
   "dependencies": {
-    "@civfix/contract": "0.70.0-b-integration-legal-versions.g1c363de",
+    "@civfix/contract": "^0.70.0",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
