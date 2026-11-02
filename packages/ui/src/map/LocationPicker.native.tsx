@@ -50,8 +50,8 @@ import {
   type CameraRef,
   type PressEvent,
   type PressEventWithFeatures,
+  type StyleSpecification,
 } from "@maplibre/maplibre-react-native"
-import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
