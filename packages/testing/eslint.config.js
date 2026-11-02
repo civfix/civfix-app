@@ -1,5 +1,6 @@
 import eslint from "@eslint/js"
 import vitest from "@vitest/eslint-plugin"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   LINTER_OPTIONS,
@@ -9,7 +10,7 @@ import {
   VITEST_RULES,
 } from "../../eslint.typed.cjs"
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: ["node_modules/**", "coverage/**", "*.config.js", "*.config.ts"],
   },

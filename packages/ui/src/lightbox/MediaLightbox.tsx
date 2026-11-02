@@ -4,4 +4,3 @@
  * specifier because the bare one would resolve back into this module.
  */
 export { MediaLightboxView } from "./MediaLightbox.web"
-export type { MediaLightboxViewProps } from "./MediaLightbox.web"

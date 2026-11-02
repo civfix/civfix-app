@@ -5,4 +5,4 @@
  * differently, then passes the configured instance into the shared data context as its `ChatSocketLike`.
  */
 export { ChatSocketCore } from "./chatSocketCore"
-export type { WsTransport, WsConnection, ChatSocketCoreOptions } from "./types"
+export type { WsConnection } from "./types"

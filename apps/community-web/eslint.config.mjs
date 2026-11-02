@@ -4,6 +4,7 @@ import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
 import vitest from "@vitest/eslint-plugin"
 import reactHooks from "eslint-plugin-react-hooks"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   DOUBLE_CAST_SELECTORS,
@@ -58,7 +59,7 @@ const HOST_CONSOLE_FILES = [
 const HOST_CONSOLE_UI_MESSAGE =
   "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [".next/**", "out/**", "public/**", "coverage/**", "next-env.d.ts"],
   },

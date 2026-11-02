@@ -22,7 +22,7 @@ registerHooks({
 })
 
 // Node reports process warnings through console.error, so the guard fails a test on those too. The test
-// script passes --disable-warning=ExperimentalWarning because the suite runs on what Node 22 still marks
-// experimental (type stripping, mock timers, coverage); that notice says nothing about the app.
+// script's --disable-warning=ExperimentalWarning dates from Node 22, which marked type stripping, mock timers
+// and coverage experimental; Node 24 no longer warns about them, and any such notice says nothing about the app.
 beforeEach(startConsoleGuard)
 afterEach(stopConsoleGuard)
