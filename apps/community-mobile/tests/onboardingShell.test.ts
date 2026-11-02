@@ -339,7 +339,7 @@ test("the back handler subscribes once per visibility, reading the page from a r
   assert.match(gate, /const plan = onboardingBackPlan\(indexRef\.current\)/)
   assert.match(
     gate,
-    /BackHandler\.addEventListener\("hardwareBackPress", onBackPress\)\n\s+return \(\) => subscription\.remove\(\)\n\s+\}, \[visible\]\)/,
+    /BackHandler\.addEventListener\("hardwareBackPress", onBackPress\)\n\s+return \(\) => subscription\.remove\(\)\n\s+\}, \[visible, legalOnTop\]\)/,
   )
 })
 

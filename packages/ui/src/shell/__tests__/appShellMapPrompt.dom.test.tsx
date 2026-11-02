@@ -20,6 +20,7 @@ vi.mock("react-native-safe-area-context", async () => {
 vi.mock("../ExpandedShell", () => ({ ExpandedShell: () => null }))
 vi.mock("../PortraitShell", () => ({ PortraitShell: () => null }))
 vi.mock("../BodyRouter", () => ({ defaultRenderBody: () => null }))
+vi.mock("../../bodies/LegalNoticeBanner", () => ({ LegalNoticeBanner: () => null }))
 vi.mock("../../lightbox", () => ({
   MediaLightboxProvider: ({ children }: { children: React.ReactNode }) => children,
 }))

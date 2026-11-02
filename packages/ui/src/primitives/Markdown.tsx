@@ -12,7 +12,7 @@ export interface MarkdownProps {
   maxChars?: number
 }
 
-function InlineRun({
+export function InlineRun({
   nodes,
   onOpenLink,
   keyPrefix,

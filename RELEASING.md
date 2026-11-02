@@ -192,9 +192,8 @@ Then `pnpm build && pnpm typecheck && pnpm lint && pnpm test` (plus `pnpm i18n:c
 moved) and commit the three manifests and `pnpm-lock.yaml` **together**. Keep the three ranges
 identical.
 
-The legal documents (`legal/documents.ts`: version, effective date, sha256) are part of the contract.
-An edit to their text is a contract publish plus an adoption PR here and in civfix-backend; web's
-postbuild still checks the hashes.
+The web pages and the phone app show the legal documents the API serves (`GET /legal/documents`), so
+an edit to their text needs no change or adoption here.
 
 ## Rolling civfix.org back
 

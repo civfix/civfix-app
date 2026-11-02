@@ -4,6 +4,7 @@ import { useRouter } from "expo-router"
 import {
   setBrandAboutPresenter,
   setDeveloperScreenPresenter,
+  setLegalDocumentPresenter,
   setOnboardingTourPresenter,
   setScanPresenter,
 } from "@civfix/ui"
@@ -49,6 +50,15 @@ function BrandAboutBridge(): null {
   return null
 }
 
+function LegalDocumentBridge(): null {
+  const router = useRouter()
+  useEffect(() => {
+    setLegalDocumentPresenter((type) => router.push(`/legal/${type}`))
+    return () => setLegalDocumentPresenter(null)
+  }, [router])
+  return null
+}
+
 function OnboardingTourBridge(): null {
   useEffect(() => {
     setOnboardingTourPresenter(() => useOnboardingStore.getState().replay())
@@ -74,6 +84,7 @@ export function AppBridges() {
       <CameraNavigatorBridge />
       <ScanPresenterBridge />
       <BrandAboutBridge />
+      <LegalDocumentBridge />
       <OnboardingTourBridge />
       <DeveloperScreenBridge />
     </>

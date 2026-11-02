@@ -36,6 +36,7 @@ import {
 import {
   queryKeys,
   useApproximateLocation,
+  useLegalUpdatePending,
   useMapReports,
   useNearbyCleanups,
   useTotalUnread,
@@ -316,6 +317,7 @@ export default function MapHomeScreen() {
   const gateActive = useOnboardingStore((s) => s.gateActive)
   const authStatus = useAuthStore((s) => s.status)
   const profileIncomplete = useAuthStore((s) => s.user?.profileComplete === false)
+  const legalUpdatePending = useLegalUpdatePending()
   const primerShown = useLocationPrimerStore((s) => s.shown)
   const markPrimerShown = useLocationPrimerStore((s) => s.markShown)
   const setLocationChoice = useLocationPrimerStore((s) => s.setChoice)
@@ -342,6 +344,7 @@ export default function MapHomeScreen() {
     tourPresenting,
     profileIncomplete,
     routeFocused,
+    legalUpdatePending,
   })
 
   useEffect(() => {
