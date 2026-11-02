@@ -105,6 +105,11 @@ function classDecl(className: string, prop: string): string | undefined {
   return values.at(-1)
 }
 
+/** Drops `@theme { … }` and `@theme inline { … }` blocks, where Tailwind's own theme variables live. */
+function withoutThemeBlocks(source: string): string {
+  return source.replace(/@theme\b[^{;]*\{[^}]*\}/g, "")
+}
+
 /** Multiplies out `calc(<n> * <length>)`, the form Tailwind 4 writes spacing steps in. */
 function evaluateCalc(value: string): string {
   return value.replace(
@@ -288,7 +293,7 @@ describe("Tailwind 4 compiles today's utilities", () => {
     )
     expect(read("app/globals.css")).toMatch(/--font-mono-face:\s*"JetBrainsMono_400Regular";/)
     const declaring = sourceFiles(SRC_DIR).filter((file) =>
-      /--font-mono\s*:/.test(readFileSync(file, "utf8")),
+      /--font-mono\s*:/.test(withoutThemeBlocks(readFileSync(file, "utf8"))),
     )
     expect(declaring).toEqual([])
   })
