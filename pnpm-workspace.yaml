@@ -25,8 +25,9 @@ trustPolicy: no-downgrade
 # come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one
 # attested stable release before 0.8.2). The rest are maintenance releases of an older line, published by hand after
 # the newer line had started publishing with provenance: eslint-import-resolver-typescript 3.10.1 (jounqin; after
-# 4.2.6, for eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), tailwind-merge 2.6.1 (dcas; after 3.0.0)
-# and ua-parser-js 1.0.41 (faisalman; after 2.0.0). Drop each entry once the tree leaves that version.
+# 4.2.6, for eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), tailwind-merge 2.6.1 (dcas; after 3.0.0),
+# ua-parser-js 1.0.41 (faisalman; after 2.0.0) and undici-types 6.21.0 (matteo.collina, for @types/node 22; 6.13.0 to
+# 6.19.2 attested). Drop each entry once the tree leaves that version.
 # Never exclude a package name without a version.
 trustPolicyExclude:
   - eslint-import-resolver-typescript@3.10.1
@@ -34,6 +35,7 @@ trustPolicyExclude:
   - semver@6.3.1
   - tailwind-merge@2.6.1
   - ua-parser-js@1.0.41
+  - undici-types@6.21.0
 # A git or tarball-URL subdependency carries no publish time or provenance, so it would slip past both checks above.
 blockExoticSubdeps: true
 # A new install script must stop the install for review: skipped silently, it can also break a native binary unnoticed.
