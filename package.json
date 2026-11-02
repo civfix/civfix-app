@@ -35,7 +35,7 @@
     "@types/node": "^22.10.2",
     "@typescript/native": "npm:typescript@^7",
     "eslint": "^9.16.0",
-    "jscpd": "5.4.2",
+    "jscpd": "4.3.0",
     "knip": "6.44.1",
     "prettier": "3.9.9",
     "turbo": "^2.3.3",

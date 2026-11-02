@@ -27,10 +27,12 @@ trustPolicy: no-downgrade
 # the newer line had started publishing with provenance: eslint-import-resolver-typescript 3.10.1 (jounqin; after
 # 4.2.6, for eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), tailwind-merge 2.6.1 (dcas; after 3.0.0),
 # ua-parser-js 1.0.41 (faisalman; after 2.0.0) and undici-types 6.21.0 (matteo.collina, for @types/node 22; 6.13.0 to
-# 6.19.2 attested). Drop each entry once the tree leaves that version.
+# 6.19.2 attested). jscpd 4.3.0 (apk, its only maintainer) is the last release of the 4 line, held because jscpd 5
+# reports this tree over the duplication threshold. Drop each entry once the tree leaves that version.
 # Never exclude a package name without a version.
 trustPolicyExclude:
   - eslint-import-resolver-typescript@3.10.1
+  - jscpd@4.3.0
   - react-native-worklets@0.5.1
   - semver@6.3.1
   - tailwind-merge@2.6.1
