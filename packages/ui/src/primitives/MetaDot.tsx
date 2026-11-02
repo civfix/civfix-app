@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet, type ViewStyle } from "react-native"
 import { space, useTheme } from "../theme"
 

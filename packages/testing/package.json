@@ -1,0 +1,29 @@
+{
+  "name": "@civfix/testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared test support for the civfix-app suites: the console guard that fails a test on an unexpected console.error or console.warn. Consumed as TypeScript source by each workspace's own test setup file.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./console": "./src/console.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rimraf *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/eslint-plugin": "1.6.27",
+    "eslint": "^9.16.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^4.1.12"
+  }
+}

@@ -96,7 +96,8 @@ export function useOrganizationEvents(
         limit: ORG_EVENTS_PAGE_SIZE,
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
-    getNextPageParam: (lastPage: ListOrganizationEventsResponse) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage: ListOrganizationEventsResponse) =>
+      lastPage.nextCursor ?? undefined,
     retry: false,
   })
 }
@@ -123,7 +124,10 @@ export function organizationEventRows(
 
 const ORG_MEMBERS_PAGE_SIZE = 50
 
-export function useOrganizationMembers(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
+export function useOrganizationMembers(
+  orgId: string | undefined,
+  opts: { enabled?: boolean } = {},
+) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
   return useInfiniteQuery<ListOrganizationMembersResponse>({
@@ -136,7 +140,8 @@ export function useOrganizationMembers(orgId: string | undefined, opts: { enable
         limit: ORG_MEMBERS_PAGE_SIZE,
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
-    getNextPageParam: (lastPage: ListOrganizationMembersResponse) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage: ListOrganizationMembersResponse) =>
+      lastPage.nextCursor ?? undefined,
     retry: false,
   })
 }
@@ -147,13 +152,17 @@ export function organizationMemberRows(
   return (pages ?? []).flatMap((page) => page.items)
 }
 
-export function useOrganizationInvites(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
+export function useOrganizationInvites(
+  orgId: string | undefined,
+  opts: { enabled?: boolean } = {},
+) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
   return useQuery<OrganizationInviteDTO[]>({
     queryKey: queryKeys.orgInvites(orgId ?? "unknown"),
     enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
-    queryFn: async () => listItems((await api.listOrganizationInvites({ id: orgId as string }))?.items),
+    queryFn: async () =>
+      listItems((await api.listOrganizationInvites({ id: orgId as string }))?.items),
     retry: false,
   })
 }

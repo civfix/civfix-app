@@ -105,7 +105,9 @@ function held<T>() {
 }
 
 function renderWith(ui: React.ReactElement, api: Record<string, unknown>, signedIn: boolean) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   const context = makeFakeDataContext({
     api: { listEventQuestions: async () => ({ items: [] }), ...api } as unknown as ApiClient,
     auth: signedIn ? { isAuthenticated: true } : {},
@@ -168,7 +170,10 @@ describe("RegistrationBlock legal versions", () => {
     fireEvent.click(checkbox(TERMS_BOX))
     fireEvent.click(button("Register"))
     await waitFor(() => expect(registerForEvent).toHaveBeenCalledTimes(1))
-    expect(consentOf(registerForEvent)).toMatchObject({ termsVersion: "2026-09-21", disclosureVersion: "2026-09-21" })
+    expect(consentOf(registerForEvent)).toMatchObject({
+      termsVersion: "2026-09-21",
+      disclosureVersion: "2026-09-21",
+    })
   })
 
   it("T19: an outdated answer unticks the boxes and switches to the versions it names", async () => {
@@ -216,7 +221,13 @@ describe("RegistrationBlock legal versions", () => {
 describe("GuestRsvpSheet legal versions", () => {
   function renderSheet(api: Record<string, unknown>) {
     return renderWith(
-      <GuestRsvpSheet visible cleanupId="e1" nextPath="/cleanups/e1" onClose={() => {}} ticketTypes={[TICKET]} />,
+      <GuestRsvpSheet
+        visible
+        cleanupId="e1"
+        nextPath="/cleanups/e1"
+        onClose={() => {}}
+        ticketTypes={[TICKET]}
+      />,
       api,
       false,
     )
@@ -225,7 +236,9 @@ describe("GuestRsvpSheet legal versions", () => {
   function fillForm() {
     fireEvent.click(button("Continue as guest"))
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Rosa" } })
-    fireEvent.change(screen.getByLabelText("Email address"), { target: { value: "rosa@example.com" } })
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "rosa@example.com" },
+    })
   }
 
   function requestCode() {
@@ -265,7 +278,11 @@ describe("GuestRsvpSheet legal versions", () => {
   it("T23: sends the fetched versions with the code request and the verification", async () => {
     const guestRsvpRequest = vi.fn(async () => ({ sent: true, resendAfterSec: 30 }))
     const guestRsvpVerify = vi.fn(async () => ({ joined: true, going: 1, manageToken: "x" }))
-    renderSheet({ getLegalDocuments: async () => ({ documents: DOCUMENTS }), guestRsvpRequest, guestRsvpVerify })
+    renderSheet({
+      getLegalDocuments: async () => ({ documents: DOCUMENTS }),
+      guestRsvpRequest,
+      guestRsvpVerify,
+    })
     fillForm()
     await screen.findByText("Terms version 2026-09-21")
     requestCode()
@@ -295,7 +312,10 @@ describe("GuestRsvpSheet legal versions", () => {
 
     requestCode()
     await waitFor(() => expect(guestRsvpRequest).toHaveBeenCalledTimes(2))
-    expect(consentOf(guestRsvpRequest, 1)).toMatchObject({ termsVersion: "2026-10-30", disclosureVersion: "2026-10-30" })
+    expect(consentOf(guestRsvpRequest, 1)).toMatchObject({
+      termsVersion: "2026-10-30",
+      disclosureVersion: "2026-10-30",
+    })
     expect(getLegalDocuments).toHaveBeenCalledTimes(1)
   })
 
@@ -304,7 +324,11 @@ describe("GuestRsvpSheet legal versions", () => {
     const guestRsvpVerify = vi.fn(async () => {
       throw outdatedConflict()
     })
-    renderSheet({ getLegalDocuments: async () => ({ documents: DOCUMENTS }), guestRsvpRequest, guestRsvpVerify })
+    renderSheet({
+      getLegalDocuments: async () => ({ documents: DOCUMENTS }),
+      guestRsvpRequest,
+      guestRsvpVerify,
+    })
     fillForm()
     await screen.findByText("Terms version 2026-09-21")
     requestCode()
@@ -317,6 +341,9 @@ describe("GuestRsvpSheet legal versions", () => {
 
     requestCode()
     await waitFor(() => expect(guestRsvpRequest).toHaveBeenCalledTimes(2))
-    expect(consentOf(guestRsvpRequest, 1)).toMatchObject({ termsVersion: "2026-10-30", disclosureVersion: "2026-10-30" })
+    expect(consentOf(guestRsvpRequest, 1)).toMatchObject({
+      termsVersion: "2026-10-30",
+      disclosureVersion: "2026-10-30",
+    })
   })
 })

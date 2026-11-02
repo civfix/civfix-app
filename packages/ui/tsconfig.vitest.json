@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["vitest.config.ts", "vitest.dom.setup.ts"],
+  "include": ["vitest.config.ts", "vitest.dom.setup.ts", "vitest.console-guard.ts"],
   "exclude": ["node_modules", "dist-types"]
 }

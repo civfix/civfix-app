@@ -5,8 +5,20 @@ import { useMapFocus } from "../mapFocusStore"
 import { useMapFlyTo } from "../mapFlyToStore"
 import { disarmMapLeaveRelease, showOnMap } from "../showOnMapFlow"
 
-const event = { kind: "cleanup" as const, id: "e1", lat: 34.05, lng: -118.24, eventKind: "cleanup" as const }
-const report = { kind: "report" as const, id: "r1", lat: 34.06, lng: -118.25, category: "hazard" as const }
+const event = {
+  kind: "cleanup" as const,
+  id: "e1",
+  lat: 34.05,
+  lng: -118.24,
+  eventKind: "cleanup" as const,
+}
+const report = {
+  kind: "report" as const,
+  id: "r1",
+  lat: 34.06,
+  lng: -118.25,
+  category: "hazard" as const,
+}
 
 function seedNav(view: View, stack: DetailEntry[], mode: "compact" | "expanded"): void {
   useNavStore.setState({
@@ -49,7 +61,8 @@ describe("showOnMap: compact", () => {
   it("publishes the request BEFORE the view flips, so a map mounting on the switch sees it", () => {
     let requestAtSwitch: unknown = "unset"
     const unsubscribe = useNavStore.subscribe((state, previous) => {
-      if (state.view === "map" && previous.view !== "map") requestAtSwitch = useMapFlyTo.getState().request
+      if (state.view === "map" && previous.view !== "map")
+        requestAtSwitch = useMapFlyTo.getState().request
     })
     showOnMap("compact", report)
     unsubscribe()

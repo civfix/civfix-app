@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationInviteDTO } from "@civfix/contract"
 
-import { daysUntil, inviteIsExpired, normalizeInviteIdentifier, visibleInvites } from "./org-invites"
+import {
+  daysUntil,
+  inviteIsExpired,
+  normalizeInviteIdentifier,
+  visibleInvites,
+} from "./org-invites"
 
 const NOW = Date.parse("2026-09-08T12:00:00.000Z")
 

@@ -1,17 +1,10 @@
-import React from "react"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { Avatar } from "./Avatar"
 import { resolveThreadAvatar, type ThreadAvatarInput } from "./threadAvatarResolve"
 
-export function ThreadAvatar({
-  thread,
-  size = 48,
-}: {
-  thread: ThreadAvatarInput
-  size?: number
-}) {
+export function ThreadAvatar({ thread, size = 48 }: { thread: ThreadAvatarInput; size?: number }) {
   const styles = useStyles()
   const t = useTheme()
   const a = resolveThreadAvatar(thread)

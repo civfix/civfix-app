@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from "node:url"
 import { test } from "node:test"
 import { space } from "../../../packages/tokens/src/design-tokens.ts"
 import { DEFAULT_ATTRIBUTION } from "../../../packages/ui/src/map/mapStyle.ts"
+import { defined } from "./helpers/defined.ts"
 import { readPngHeader } from "./helpers/png.ts"
 import {
   LA_BASIN_BOUNDS,
@@ -41,7 +42,9 @@ interface OnboardingArtManifest {
   files: Record<string, ManifestEntry>
 }
 
-const manifest = JSON.parse(readFileSync(new URL("manifest.json", assetsDir), "utf8")) as OnboardingArtManifest
+const manifest = JSON.parse(
+  readFileSync(new URL("manifest.json", assetsDir), "utf8"),
+) as OnboardingArtManifest
 const script = readFileSync(new URL("scripts/onboarding-map-art.mjs", appDir), "utf8")
 
 const MAX_TOTAL_BYTES = 1_500_000
@@ -108,7 +111,10 @@ test("the scene table covers exactly the three map stages of the tour", () => {
     const scene = ONBOARDING_MAP_SCENES[stage]
     assert.equal(scene.stage, stage)
     assert.ok(scene.place.length > 0)
-    assert.ok(scene.zoom >= 15 && scene.zoom <= 17, `${stage}: blocks and street names need z15-z17`)
+    assert.ok(
+      scene.zoom >= 15 && scene.zoom <= 17,
+      `${stage}: blocks and street names need z15-z17`,
+    )
     assert.ok(scene.widthPt > 0 && scene.heightPt > 0)
   }
 })
@@ -137,10 +143,16 @@ test("the track pins are one table of category, spot and rise that every consume
   assert.equal(new Set(TRACK_PINS.map((pin) => pin.category)).size, TRACK_PINS.length)
   for (const pin of TRACK_PINS) assert.ok(pin.rise > 0)
   const demo = readFileSync(new URL("demoWorld.ts", onboardingDir), "utf8")
-  assert.doesNotMatch(demo, /TRACK_PIN_CATEGORIES|TRACK_PIN_RISES|TRACK_PIN_SPOTS|export \{ TRACK_CLUSTER_SPOT \}/)
+  assert.doesNotMatch(
+    demo,
+    /TRACK_PIN_CATEGORIES|TRACK_PIN_RISES|TRACK_PIN_SPOTS|export \{ TRACK_CLUSTER_SPOT \}/,
+  )
   assert.match(demo, /DEMO_REPORT_LAT = TRACK_PINS\[TRACK_ROW_PIN_INDEX\]\.spot\.lat/)
   const track = stageSource("TrackStage.tsx")
-  assert.match(track, /import \{ TRACK_CLUSTER_SPOT, TRACK_PINS, type BoxPoint \} from "\.\.\/onboardingMapScenes"/)
+  assert.match(
+    track,
+    /import \{ TRACK_CLUSTER_SPOT, TRACK_PINS, type BoxPoint \} from "\.\.\/onboardingMapScenes"/,
+  )
   assert.doesNotMatch(track, /TRACK_PINS,\n\s+TRACK_ROW_PIN_INDEX/)
   assert.match(script, /TRACK_PINS\.map\(\(pin\) => pin\.spot\)/)
   assert.doesNotMatch(script, /TRACK_PIN_SPOTS/)
@@ -157,8 +169,14 @@ test("the report pin sits between the capture card and the success line at every
   for (const width of STAGE_WIDTHS_PT) {
     const height = (width / STAGE_ASPECT_RATIO) * REPORT_MAP_HEIGHT_OF_STAGE
     const at = pointInBox(scene, REPORT_PIN_SPOT, { width, height })
-    assert.ok(at.top - pinHeight >= height * REPORT_PIN_MIN_Y - pinHeight, `${width}: pin under the card`)
-    assert.ok(at.top <= height * REPORT_SUCCESS_TOP_IN_MAP, `${width}: pin tip under the success line`)
+    assert.ok(
+      at.top - pinHeight >= height * REPORT_PIN_MIN_Y - pinHeight,
+      `${width}: pin under the card`,
+    )
+    assert.ok(
+      at.top <= height * REPORT_SUCCESS_TOP_IN_MAP,
+      `${width}: pin tip under the success line`,
+    )
   }
 })
 
@@ -166,9 +184,15 @@ test("the report pin stays landed through the loop's reset and only lifts to re-
   const source = stageSource("ReportStage.tsx")
   assert.match(source, /const landed = useSharedValue\(false\)/)
   assert.match(source, /if \(!active\) landed\.value = false/)
-  assert.match(source, /\(\) => progress\.value >= W_PIN\[1\],\n\s+\(dropped\) => \{\n\s+if \(dropped\) landed\.value = true/)
+  assert.match(
+    source,
+    /\(\) => progress\.value >= W_PIN\[1\],\n\s+\(dropped\) => \{\n\s+if \(dropped\) landed\.value = true/,
+  )
   assert.match(source, /const resting = landed\.value && progress\.value < W_PIN\[0\]/)
-  assert.match(source, /const drop = resting \? 1 : GRAVITY_EASE\(segment\(progress\.value, W_PIN\[0\], W_PIN\[1\]\)\)/)
+  assert.match(
+    source,
+    /const drop = resting \? 1 : GRAVITY_EASE\(segment\(progress\.value, W_PIN\[0\], W_PIN\[1\]\)\)/,
+  )
 })
 
 test("track pins and the cluster stay above the report row and never overlap each other", () => {
@@ -196,12 +220,21 @@ test("track pins and the cluster stay above the report row and never overlap eac
 
 test("the together strip is a fixed-aspect box sized by its scene, not the leftover of a flex column", () => {
   const source = stageSource("TogetherStage.tsx")
-  assert.match(source, /const STRIP_ASPECT_RATIO = sceneAspectRatio\(ONBOARDING_MAP_SCENES\.together\)/)
-  assert.match(source, /mapStrip: \{\n\s+width: "100%",\n\s+aspectRatio: STRIP_ASPECT_RATIO,\n\s+\}/)
+  assert.match(
+    source,
+    /const STRIP_ASPECT_RATIO = sceneAspectRatio\(ONBOARDING_MAP_SCENES\.together\)/,
+  )
+  assert.match(
+    source,
+    /mapStrip: \{\n\s+width: "100%",\n\s+aspectRatio: STRIP_ASPECT_RATIO,\n\s+\}/,
+  )
   assert.match(source, /const CARD_OVERLAP = space\["4"\]/)
   assert.match(source, /marginTop: -CARD_OVERLAP/)
   assert.match(source, /const ATTRIBUTION_INSET = CARD_OVERLAP \+ space\["2"\]/)
-  assert.match(source, /<MapStill stage="together" style=\{styles\.mapStrip\} attributionInset=\{ATTRIBUTION_INSET\}>/)
+  assert.match(
+    source,
+    /<MapStill stage="together" style=\{styles\.mapStrip\} attributionInset=\{ATTRIBUTION_INSET\}>/,
+  )
   assert.doesNotMatch(source, /minHeight|STAGE_ASPECT_RATIO|attributionEdge/)
   assert.equal(TOGETHER_CARD_OVERLAP, 16)
   assert.equal(TOGETHER_ATTRIBUTION_INSET, 24)
@@ -218,7 +251,10 @@ test("the together pin lands mid-strip with its head inside the strip and its ti
     const height = togetherStripHeight(width)
     const at = pointInBox(scene, TOGETHER_EVENT_SPOT, { width, height })
     assert.ok(at.top - pinHeight >= 0, `${width}: pin head is clipped by the strip's top edge`)
-    assert.ok(at.left - pinSize / 2 >= 0 && at.left + pinSize / 2 <= width, `${width}: pin off the strip`)
+    assert.ok(
+      at.left - pinSize / 2 >= 0 && at.left + pinSize / 2 <= width,
+      `${width}: pin off the strip`,
+    )
     assert.ok(at.top <= height - TOGETHER_CARD_OVERLAP, `${width}: pin tip is under the event card`)
     assert.ok(
       at.top <= height - TOGETHER_ATTRIBUTION_INSET - ATTRIBUTION_PILL_HEIGHT,
@@ -245,13 +281,15 @@ test("a still exists for every stage, scheme and scale, at exactly the scaled po
 })
 
 test("the manifest matches the stills byte for byte and nothing else lives in the folder", () => {
-  const onDisk = readdirSync(fileURLToPath(assetsDir)).filter((name) => name.endsWith(".png")).sort()
+  const onDisk = readdirSync(fileURLToPath(assetsDir))
+    .filter((name) => name.endsWith(".png"))
+    .sort()
   assert.deepEqual(onDisk, stillNames().sort())
   assert.deepEqual(Object.keys(manifest.files).sort(), onDisk)
   assert.equal(manifest.attribution, DEFAULT_ATTRIBUTION)
   for (const name of onDisk) {
     const bytes = readFileSync(new URL(name, assetsDir))
-    const entry = manifest.files[name]
+    const entry = defined(manifest.files[name], `${name} in the manifest`)
     assert.equal(entry.bytes, bytes.length, `${name}: size drifted from the manifest`)
     assert.equal(
       entry.sha256,
@@ -271,7 +309,7 @@ test("every still was cut from the scene the table describes today", () => {
       for (const scale of ONBOARDING_MAP_SCALES) {
         const name = mapArtFileName(stage, scheme, scale)
         assert.deepEqual(
-          manifest.files[name].scene,
+          defined(manifest.files[name], `${name} in the manifest`).scene,
           { center, zoom, widthPt, heightPt },
           `${name}: scene drifted from the manifest; re-run scripts/onboarding-map-art.mjs`,
         )
@@ -288,8 +326,10 @@ test("the stills stay inside the weight budget and light differs from dark", () 
   assert.ok(total <= MAX_TOTAL_BYTES, `onboarding stills weigh ${total} bytes`)
   for (const stage of ONBOARDING_MAP_STAGES) {
     for (const scale of ONBOARDING_MAP_SCALES) {
-      const light = manifest.files[mapArtFileName(stage, "light", scale)]
-      const dark = manifest.files[mapArtFileName(stage, "dark", scale)]
+      const lightName = mapArtFileName(stage, "light", scale)
+      const darkName = mapArtFileName(stage, "dark", scale)
+      const light = defined(manifest.files[lightName], `${lightName} in the manifest`)
+      const dark = defined(manifest.files[darkName], `${darkName} in the manifest`)
       assert.notEqual(light.sha256, dark.sha256, `${stage}: light and dark stills are identical`)
     }
   }
@@ -344,5 +384,8 @@ test("the generator re-execs on the strip-types flag itself and never prints the
   assert.doesNotMatch(script, /process\.features\.typescript/)
   assert.match(script, /for \$\{publicTileUrl\(url\)\}/)
   assert.doesNotMatch(script, /for \$\{url\}/)
-  assert.match(script, /scene: \{\n\s+center: scene\.center,\n\s+zoom: scene\.zoom,\n\s+widthPt: scene\.widthPt,\n\s+heightPt: scene\.heightPt,/)
+  assert.match(
+    script,
+    /scene: \{\n\s+center: scene\.center,\n\s+zoom: scene\.zoom,\n\s+widthPt: scene\.widthPt,\n\s+heightPt: scene\.heightPt,/,
+  )
 })

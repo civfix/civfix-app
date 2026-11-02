@@ -53,7 +53,11 @@ describe("the focused-field recipe is ONE recipe", () => {
 
   it("no field re-states the recipe", () => {
     const restated = tsxFiles(SRC)
-      .concat(["bodies/search/searchStyles.ts", "bodies/conversation/composerStyles.ts", "bodies/postComposer/postComposerStyleParts.ts"])
+      .concat([
+        "bodies/search/searchStyles.ts",
+        "bodies/conversation/composerStyles.ts",
+        "bodies/postComposer/postComposerStyleParts.ts",
+      ])
       .filter((rel) => HOUSE.test(strip(read(rel))))
     expect(restated).toEqual([])
   })
@@ -79,11 +83,14 @@ describe("the focused-field recipe is ONE recipe", () => {
     "bodies/ReportsBody.tsx",
     "bodies/MessagingListBody.tsx",
     "bodies/ConnectionsBody.tsx",
-  ])("%s draws its list search through ListSearchField rather than re-stating the recipe", (rel) => {
-    const src = strip(read(rel))
-    expect(src).toContain("<ListSearchField")
-    expect(src).not.toContain("webInputReset")
-  })
+  ])(
+    "%s draws its list search through ListSearchField rather than re-stating the recipe",
+    (rel) => {
+      const src = strip(read(rel))
+      expect(src).toContain("<ListSearchField")
+      expect(src).not.toContain("webInputReset")
+    },
+  )
 
   it("the four dialogs take the shared style rather than re-stating it", () => {
     for (const rel of [
@@ -97,15 +104,36 @@ describe("the focused-field recipe is ONE recipe", () => {
   })
 
   it.each([
-    ["primitives/CancelEventSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
-    ["primitives/ReportContentSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
-    ["primitives/RequestResourcesSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
-    ["primitives/PollCreateSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocusedField\(null\)/],
-    ["bodies/host/HostWalkupSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
-    ["bodies/host/useInviteForm.ts", /const onClosed = useCallback\(\(\) => \{[^}]*setIdentifierFocused\(false\)/],
-  ])("%s clears its focused field on reset, since a field unmounted while focused never reports its blur", (rel, reset) => {
-    expect(strip(read(rel))).toMatch(reset)
-  })
+    [
+      "primitives/CancelEventSheet.tsx",
+      /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/,
+    ],
+    [
+      "primitives/ReportContentSheet.tsx",
+      /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/,
+    ],
+    [
+      "primitives/RequestResourcesSheet.tsx",
+      /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/,
+    ],
+    [
+      "primitives/PollCreateSheet.tsx",
+      /useResetOnOpen\(visible, \(\) => \{[^}]*setFocusedField\(null\)/,
+    ],
+    [
+      "bodies/host/HostWalkupSheet.tsx",
+      /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/,
+    ],
+    [
+      "bodies/host/useInviteForm.ts",
+      /const onClosed = useCallback\(\(\) => \{[^}]*setIdentifierFocused\(false\)/,
+    ],
+  ])(
+    "%s clears its focused field on reset, since a field unmounted while focused never reports its blur",
+    (rel, reset) => {
+      expect(strip(read(rel))).toMatch(reset)
+    },
+  )
 
   it.each(["bodies/host/HostTeamInviteSheet.tsx", "bodies/host/dashboard/OrgInviteSheet.tsx"])(
     "%s resets through the shared invite form, which clears the focused field",
@@ -128,7 +156,9 @@ describe("the focused-field recipe is ONE recipe", () => {
     const src = strip(read("bodies/EventSlotRow.tsx"))
     expect((src.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBeGreaterThanOrEqual(4)
     expect(src).toContain("accessibilityState={{ expanded }}")
-    expect(src).toContain('accessibilityHint={t(expanded ? "row.collapse_hint" : "row.expand_hint")}')
+    expect(src).toContain(
+      'accessibilityHint={t(expanded ? "row.collapse_hint" : "row.expand_hint")}',
+    )
   })
 })
 

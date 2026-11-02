@@ -5,6 +5,8 @@ import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/contract"
 import { isSafeHttpsUrl } from "@civfix/contract/markdown"
 
+import { keyedByValue } from "@/lib/list-keys"
+
 type SponsorsBlockData = Extract<EventPageBlock, { kind: "sponsors" }>
 
 export function SponsorsBlock({ block }: { block: SponsorsBlockData }) {
@@ -14,16 +16,15 @@ export function SponsorsBlock({ block }: { block: SponsorsBlockData }) {
     <section className="signup-block">
       <h2>{block.title ?? t("blocks.sponsors")}</h2>
       <ul className="signup-sponsors">
-        {block.entries.map((entry, index) => {
+        {keyedByValue(block.entries, (entry) => entry.name).map(({ entry, key }) => {
           const label = entry.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
             <img src={entry.logoUrl} alt={entry.name} />
           ) : (
             <span>{entry.name}</span>
           )
           const href = entry.url != null && isSafeHttpsUrl(entry.url) ? entry.url : null
           return (
-            <li key={`${entry.name}-${index}`}>
+            <li key={key}>
               {href === null ? (
                 label
               ) : (

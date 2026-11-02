@@ -1,6 +1,11 @@
-import React from "react"
 import { View } from "react-native"
-import { makeThemedStyles, MIN_TOUCH_TARGET, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
+import {
+  makeThemedStyles,
+  MIN_TOUCH_TARGET,
+  useTheme,
+  webInputReset,
+  inputFocusedStyle,
+} from "../../theme"
 import { Text } from "../../typography"
 import { TextInput } from "../../primitives/TextInput"
 import { useT } from "../../i18n"

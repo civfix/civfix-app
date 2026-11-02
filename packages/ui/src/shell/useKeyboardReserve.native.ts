@@ -16,4 +16,7 @@ function useWindowOverlapReserve({
 export const useKeyboardReserve: (options?: KeyboardReserveOptions) => number =
   Platform.OS === "ios" ? useZeroReserve : useWindowOverlapReserve
 
-export type { KeyboardReserveOptions, WebOnlyKeyboardReserveOptions } from "./useKeyboardReserve.types"
+export type {
+  KeyboardReserveOptions,
+  WebOnlyKeyboardReserveOptions,
+} from "./useKeyboardReserve.types"

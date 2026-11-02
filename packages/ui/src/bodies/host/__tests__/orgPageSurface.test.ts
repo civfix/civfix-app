@@ -46,7 +46,7 @@ describe("the organization page header", () => {
     expect(body).toContain("<OrgHeader org={org} onShare={onShare} />")
     expect(body).toContain("icon={iconMap.Share}")
     expect(body.match(/actions\.share_a11y/g)).toHaveLength(1)
-    expect(body).not.toContain("actions.share\"")
+    expect(body).not.toContain('actions.share"')
   })
 
   it("no longer seals an organization with a verified check", () => {

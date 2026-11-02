@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { timeRangeLabel } from "@civfix/contract/datetime"
 import { headingLevel, makeThemedStyles } from "../theme"

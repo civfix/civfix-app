@@ -18,7 +18,7 @@ function roster(): CleanupAttendeesResponse {
     attendees: [attendee("org", "organizer"), attendee("co", "cohost"), attendee("m1", "member")],
     going: 3,
     scope: "all",
-  } as CleanupAttendeesResponse
+  }
 }
 
 describe("rosterWithoutMember", () => {

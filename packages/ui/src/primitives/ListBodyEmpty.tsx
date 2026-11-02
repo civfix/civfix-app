@@ -1,4 +1,3 @@
-import React from "react"
 import { useTheme } from "../theme"
 import { iconMap, type LucideIcon } from "../typography"
 import { EmptyState, LoadingState } from "./StateView"

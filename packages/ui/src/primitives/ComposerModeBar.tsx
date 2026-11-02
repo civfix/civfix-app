@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -9,11 +8,17 @@ export interface ComposerModeBarProps {
   mode: "edit" | "reply"
   title: string
   excerpt: string
-  accentColor?: string
+  accentColor?: string | undefined
   onCancel: () => void
 }
 
-export function ComposerModeBar({ mode, title, excerpt, accentColor, onCancel }: ComposerModeBarProps) {
+export function ComposerModeBar({
+  mode,
+  title,
+  excerpt,
+  accentColor,
+  onCancel,
+}: ComposerModeBarProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
@@ -21,7 +26,11 @@ export function ComposerModeBar({ mode, title, excerpt, accentColor, onCancel }:
   return (
     <View style={styles.root}>
       <View style={[styles.accentLine, { backgroundColor: accent }]} />
-      <Icon icon={mode === "edit" ? iconMap.Pencil : iconMap.CornerUpLeft} size={15} color={accent} />
+      <Icon
+        icon={mode === "edit" ? iconMap.Pencil : iconMap.CornerUpLeft}
+        size={15}
+        color={accent}
+      />
       <View style={styles.textCol}>
         <Text style={styles.title} numberOfLines={1}>
           {title}

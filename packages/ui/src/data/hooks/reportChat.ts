@@ -49,8 +49,13 @@ export function useLeaveReportChat() {
   })
 }
 
-export function muteInvalidationKeys(roomKind: RoomKind, roomId: string): readonly (readonly unknown[])[] {
-  return roomKind === "group" ? [queryKeys.threads, queryKeys.groupInfo(roomId)] : [queryKeys.threads]
+export function muteInvalidationKeys(
+  roomKind: RoomKind,
+  roomId: string,
+): readonly (readonly unknown[])[] {
+  return roomKind === "group"
+    ? [queryKeys.threads, queryKeys.groupInfo(roomId)]
+    : [queryKeys.threads]
 }
 
 export interface ThreadRoomVars {
@@ -66,7 +71,8 @@ export function useToggleMute() {
     mutationFn: ({ roomKind, roomId, muted }: ThreadRoomVars & { muted: boolean }) =>
       api.toggleConversationMute({ roomKind, roomId, muted }),
     onSuccess: (_res, { roomKind, roomId }) => {
-      for (const queryKey of muteInvalidationKeys(roomKind, roomId)) void qc.invalidateQueries({ queryKey })
+      for (const queryKey of muteInvalidationKeys(roomKind, roomId))
+        void qc.invalidateQueries({ queryKey })
     },
   })
 }
@@ -79,8 +85,14 @@ interface HiddenThreadSlot {
 export function useHideConversation() {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation<ToggleHiddenResponse, unknown, ThreadRoomVars & { hidden: boolean }, HiddenThreadSlot[]>({
-    mutationFn: ({ roomKind, roomId, hidden }) => api.toggleConversationHidden({ roomKind, roomId, hidden }),
+  return useMutation<
+    ToggleHiddenResponse,
+    unknown,
+    ThreadRoomVars & { hidden: boolean },
+    HiddenThreadSlot[]
+  >({
+    mutationFn: ({ roomKind, roomId, hidden }) =>
+      api.toggleConversationHidden({ roomKind, roomId, hidden }),
     onMutate: async ({ roomKind, roomId, hidden }) => {
       if (!hidden) return []
       await qc.cancelQueries({ queryKey: queryKeys.threads })

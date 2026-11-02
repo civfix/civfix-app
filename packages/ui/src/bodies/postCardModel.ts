@@ -84,8 +84,7 @@ export const POST_BODY_CLAMP_LINES = 10
 const BODY_CLAMP_CHARS = 340
 
 export type PostBodySegment =
-  | { kind: "text"; text: string }
-  | { kind: "mention"; text: string; userId: string; handle: string }
+  { kind: "text"; text: string } | { kind: "mention"; text: string; userId: string; handle: string }
 
 export function splitPostBodyMentions(
   body: string,
@@ -99,8 +98,10 @@ export function splitPostBodyMentions(
   }
   if (byHandle.size === 0) return [{ kind: "text", text: body }]
   const alternatives = [...byHandle.values()]
-    .map((mention) => normalizeHandle(mention.handle).trim()).filter(Boolean)
-    .sort((a, b) => b.length - a.length).map(escapeRegExp)
+    .map((mention) => normalizeHandle(mention.handle).trim())
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp)
   // Same left boundary as chat's mentionMatch: `bob@maria.com` must not tint (or send) a mention.
   const pattern = new RegExp(`(^|[^\\w@])@(${alternatives.join("|")})(?![\\w])`, "gi")
   const segments: PostBodySegment[] = []
@@ -112,9 +113,16 @@ export function splitPostBodyMentions(
     const matchedHandle = match[2] ?? ""
     const token = body.slice(start, pattern.lastIndex)
     const mention = byHandle.get(matchedHandle.toLocaleLowerCase())
-    segments.push(mention
-      ? { kind: "mention", text: token, userId: mention.id, handle: normalizeHandle(mention.handle) }
-      : { kind: "text", text: token })
+    segments.push(
+      mention
+        ? {
+            kind: "mention",
+            text: token,
+            userId: mention.id,
+            handle: normalizeHandle(mention.handle),
+          }
+        : { kind: "text", text: token },
+    )
     cursor = pattern.lastIndex
   }
   if (cursor < body.length) segments.push({ kind: "text", text: body.slice(cursor) })
@@ -162,11 +170,17 @@ export function buildPostCardModel(
   options: PostCardModelOptions = {},
 ): PostCardModel {
   const isFix = post.report?.status === "resolved" && (post.media?.length ?? 0) > 0
-  const variant: PostCardVariant = isFix ? "fix-confirmed"
-    : post.kind === "repost" ? "repost"
-    : post.kind === "quote" ? "quote"
-    : post.kind === "reply" ? "reply"
-    : post.event ? "event" : "post"
+  const variant: PostCardVariant = isFix
+    ? "fix-confirmed"
+    : post.kind === "repost"
+      ? "repost"
+      : post.kind === "quote"
+        ? "quote"
+        : post.kind === "reply"
+          ? "reply"
+          : post.event
+            ? "event"
+            : "post"
   const timeLabel = (options.timeAgo ?? listTimeAgo)(post.createdAt)
   const identity = buildPostIdentity(
     post.author,
@@ -175,10 +189,15 @@ export function buildPostCardModel(
     t("post_card.deleted_account"),
   )
   const embedded = post.repostOf ?? null
-  const body =
-    variant === "repost" && embedded ? repostBodyText(embedded) : post.body ?? ""
+  const body = variant === "repost" && embedded ? repostBodyText(embedded) : (post.body ?? "")
   const mediaCount = post.media?.length ?? 0
-  const fixLayout: PostFixLayout = !isFix ? null : mediaCount >= 2 ? "before-after" : mediaCount === 1 ? "cleared" : null
+  const fixLayout: PostFixLayout = !isFix
+    ? null
+    : mediaCount >= 2
+      ? "before-after"
+      : mediaCount === 1
+        ? "cleared"
+        : null
   const categoryLabel = post.report
     ? post.report.type
       ? t(`enums:reportType.${post.report.type}`)
@@ -187,17 +206,17 @@ export function buildPostCardModel(
   return {
     variant,
     identity,
-    repostAttribution: post.kind === "repost"
-      ? t("post_card.repost_attribution", { name: post.author.name })
-      : null,
+    repostAttribution:
+      post.kind === "repost" ? t("post_card.repost_attribution", { name: post.author.name }) : null,
     embeddedPost: post.repostOf ?? null,
     fixLayout,
     categoryLabel,
-    resolutionLabel: isFix && post.event ? t("post_card.cleared_at", { title: post.event.title }) : null,
+    resolutionLabel:
+      isFix && post.event ? t("post_card.cleared_at", { title: post.event.title }) : null,
     handleLabel: identity.handleLabel,
     timeLabel,
-    bodyExpandable: body.length > BODY_CLAMP_CHARS
-      || (body.match(/\n/g)?.length ?? 0) >= POST_BODY_CLAMP_LINES,
+    bodyExpandable:
+      body.length > BODY_CLAMP_CHARS || (body.match(/\n/g)?.length ?? 0) >= POST_BODY_CLAMP_LINES,
     showFixShowcase: isFix && fixLayout !== null,
     replyingToLabel: replyingToLabel(post, t),
   }
@@ -232,7 +251,7 @@ export function buildPostCardView(post: PostDTO, model: PostCardModel): PostCard
     rowPostId: isRepost && embedded ? embedded.id : post.id,
     actionTargetId: liveOriginal ? liveOriginal.id : post.id,
     openableOriginalId: liveOriginal ? liveOriginal.id : null,
-    media: isRepost && embedded ? embedded.media ?? EMPTY_MEDIA : post.media ?? EMPTY_MEDIA,
+    media: isRepost && embedded ? (embedded.media ?? EMPTY_MEDIA) : (post.media ?? EMPTY_MEDIA),
     displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),
     displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),
   }

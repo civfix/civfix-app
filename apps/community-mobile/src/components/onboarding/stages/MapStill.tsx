@@ -20,7 +20,9 @@ import {
   type OnboardingMapStage,
 } from "../onboardingMapScenes"
 
-const STILLS: Readonly<Record<OnboardingMapStage, Readonly<Record<ColorSchemeName, ImageRequireSource>>>> = {
+const STILLS: Readonly<
+  Record<OnboardingMapStage, Readonly<Record<ColorSchemeName, ImageRequireSource>>>
+> = {
   report: {
     light: require("../../../../assets/onboarding/report-light.png") as ImageRequireSource,
     dark: require("../../../../assets/onboarding/report-dark.png") as ImageRequireSource,
@@ -73,9 +75,7 @@ export function MapStill({
 
   const frame = useMemo<MapStillFrame | null>(
     () =>
-      box.width > 0 && box.height > 0
-        ? { at: (point) => pointInBox(scene, point, box) }
-        : null,
+      box.width > 0 && box.height > 0 ? { at: (point) => pointInBox(scene, point, box) } : null,
     [scene, box],
   )
 

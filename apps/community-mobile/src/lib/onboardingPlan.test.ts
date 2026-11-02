@@ -49,7 +49,11 @@ test("a newer tour version shows again to someone who saw the older one", () => 
 
 test("the tour waits for the fonts and for the loading gate to clear", () => {
   const launchGate = readFileSync(new URL("../boot/useLaunchGate.ts", import.meta.url), "utf8")
-  assert.match(launchGate, /const gateActive =\n\s+!fontsReady \|\|/, "unloaded fonts hold the loading gate up")
+  assert.match(
+    launchGate,
+    /const gateActive =\n\s+!fontsReady \|\|/,
+    "unloaded fonts hold the loading gate up",
+  )
   assert.equal(shouldShowOnboarding({ ...ELIGIBLE, gateActive: true }), false)
 })
 
@@ -66,8 +70,14 @@ test("registration wins over the tour, so the two are never on screen together",
 })
 
 test("a replay from settings shows the tour again without unwriting the completion flag", () => {
-  assert.equal(shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 1, replayRequested: true }), true)
-  assert.equal(shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 9, replayRequested: true }), true)
+  assert.equal(
+    shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 1, replayRequested: true }),
+    true,
+  )
+  assert.equal(
+    shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 9, replayRequested: true }),
+    true,
+  )
 })
 
 test("a replay request still waits for the fonts, the gate, the session and registration", () => {
@@ -82,7 +92,10 @@ test("a replay request still waits for the fonts, the gate, the session and regi
 })
 
 test("a completed replay leaves a warm launch warm - the request is not persisted", () => {
-  assert.equal(shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 1, replayRequested: false }), false)
+  assert.equal(
+    shouldShowOnboarding({ ...ELIGIBLE, completedVersion: 1, replayRequested: false }),
+    false,
+  )
 })
 
 test("the settled page index is the clamped rounded offset", () => {
@@ -167,7 +180,10 @@ test("the tour's demo event is always the coming Saturday at 09:00 local, never 
       assert.ok(at.getTime() - now.getTime() <= 7 * 24 * 60 * 60_000, now.toString())
     }
   }
-  assert.ok(new Date(demoEventAt(new Date(2026, 8, 23, 12))).getTime() > Date.parse("2026-09-12T16:00:00.000Z"))
+  assert.ok(
+    new Date(demoEventAt(new Date(2026, 8, 23, 12))).getTime() >
+      Date.parse("2026-09-12T16:00:00.000Z"),
+  )
 })
 
 test("the demo chat was sent moments ago, oldest first", () => {

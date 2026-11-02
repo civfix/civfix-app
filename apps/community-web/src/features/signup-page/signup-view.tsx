@@ -8,6 +8,7 @@ import { buildIcs, eventIcsUid } from "@civfix/contract/ics"
 import { Trans, useT } from "@civfix/ui/i18n"
 
 import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
+import { SlotLink } from "@/components/ui/slot-link"
 import { api } from "@/lib/api"
 import { downloadBlob } from "@/lib/download-blob"
 import { accentVars } from "./page-theme"
@@ -56,7 +57,11 @@ export function SignupView() {
       })
       .catch((error: unknown) => {
         if (cancelled) return
-        setState(toAppError(error).code === ErrorCode.NOT_FOUND ? { kind: "not_found" } : { kind: "offline" })
+        setState(
+          toAppError(error).code === ErrorCode.NOT_FOUND
+            ? { kind: "not_found" }
+            : { kind: "offline" },
+        )
       })
     return () => {
       cancelled = true
@@ -147,8 +152,8 @@ function SignupDocument({
             i18nKey="footer"
             components={[
               <Link key="home" href="/" />,
-              <a key="terms" href="/legal/terms" />,
-              <a key="privacy" href="/legal/privacy" />,
+              <SlotLink key="terms" href="/legal/terms" />,
+              <SlotLink key="privacy" href="/legal/privacy" />,
             ]}
           />
         </footer>
@@ -160,7 +165,6 @@ function SignupDocument({
 function FallbackHero({ page }: { page: PublicEventPageDTO }) {
   return (
     <header className="signup-hero">
-      {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
       {page.coverUrl ? <img className="signup-hero-cover" src={page.coverUrl} alt="" /> : null}
       <div className="signup-hero-body">
         {page.organization ? <p className="signup-hero-org">{page.organization.name}</p> : null}

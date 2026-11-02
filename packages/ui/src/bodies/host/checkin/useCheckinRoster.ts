@@ -25,7 +25,9 @@ export function useCheckinRoster(id: string, canCheckIn: boolean, undo: UndoChec
     (seatId: string) => {
       checkIn.mutate(
         { seatId },
-        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
+        {
+          onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }),
+        },
       )
     },
     [checkIn, tRoster, toast],
@@ -34,7 +36,9 @@ export function useCheckinRoster(id: string, canCheckIn: boolean, undo: UndoChec
     (seatId: string) => {
       undo.mutate(
         { seatId },
-        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
+        {
+          onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }),
+        },
       )
     },
     [tRoster, toast, undo],

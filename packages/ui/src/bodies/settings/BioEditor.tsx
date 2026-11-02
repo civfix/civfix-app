@@ -1,4 +1,3 @@
-import React from "react"
 import { MAX_BIO_LENGTH } from "@civfix/contract"
 import { Text } from "../../typography"
 import { TextField } from "../../primitives"

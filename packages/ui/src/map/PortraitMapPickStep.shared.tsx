@@ -3,7 +3,7 @@
  * copies had already started to drift.
  */
 import { coordsLabel } from "@civfix/contract"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -56,7 +56,10 @@ export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickSte
 
   return (
     <View style={[pickStepStyles.bar, style]}>
-      <Text style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]} numberOfLines={1}>
+      <Text
+        style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]}
+        numberOfLines={1}
+      >
         {hasPoint ? coordsLabel(point) : t("pickStep.needPin")}
       </Text>
       <View style={pickStepStyles.actions}>

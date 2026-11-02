@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { View } from "react-native"
 import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, TextLink } from "../../typography"

@@ -9,7 +9,9 @@ function mkForm(seedLinkedReportId?: string): CleanupFormValue {
   return { ...emptyCleanupForm(seedLinkedReportId), timezone: "America/Los_Angeles", slots: [] }
 }
 
-beforeEach(() => useCleanupDraft.getState().clear())
+beforeEach(() => {
+  useCleanupDraft.getState().clear()
+})
 
 describe("cleanupDraftStore", () => {
   it("begins a fresh draft and marks it active", () => {
@@ -61,7 +63,11 @@ describe("cleanupDraftStore", () => {
 describe("the host form's mount step (plan + commit)", () => {
   const draft = () => useCleanupDraft.getState()
   /** Plan against the live store, commit, and assert the rendered value matched what landed. */
-  const mount = (seedReportId: string | undefined, draftSeedReportId: string | undefined, initial: CleanupFormValue) => {
+  const mount = (
+    seedReportId: string | undefined,
+    draftSeedReportId: string | undefined,
+    initial: CleanupFormValue,
+  ) => {
     const plan = planHostDraftMount(draft(), seedReportId, draftSeedReportId, initial)
     commitHostDraftMount(draft(), plan)
     expect(draft().value).toEqual(plan.value)

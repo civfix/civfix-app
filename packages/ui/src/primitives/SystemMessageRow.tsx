@@ -20,7 +20,11 @@ function systemRowLabel(
   return sys?.note ?? sys?.body ?? ""
 }
 
-export const SystemMessageRow = React.memo(function SystemMessageRow({ message }: { message: ChatMessageDTO }) {
+export const SystemMessageRow = React.memo(function SystemMessageRow({
+  message,
+}: {
+  message: ChatMessageDTO
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("report-detail")
@@ -35,7 +39,9 @@ export const SystemMessageRow = React.memo(function SystemMessageRow({ message }
         <View style={styles.reply}>
           <View style={styles.replyHead}>
             <Icon icon={iconMap[NODE_GLYPH.forwarded]} size={12} color={replyColor} />
-            <Text style={[styles.text, { color: replyColor }]}>{t("timeline.reply_from_city")}</Text>
+            <Text style={[styles.text, { color: replyColor }]}>
+              {t("timeline.reply_from_city")}
+            </Text>
           </View>
           <Text style={styles.replyBody}>{replyBody}</Text>
         </View>
@@ -82,5 +88,9 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
   },
   replyHead: { flexDirection: "row", alignItems: "center", gap: 6 },
-  replyBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: t.fontSize["13"], color: t.colors.text },
+  replyBody: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["13"],
+    color: t.colors.text,
+  },
 }))

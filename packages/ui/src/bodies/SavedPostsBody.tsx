@@ -36,7 +36,9 @@ export function SavedPostsBody() {
     <>
       {query.isLoading ? <Text style={styles.state}>{t("saved.loading")}</Text> : null}
       {query.isError ? <Text style={styles.state}>{t("saved.error")}</Text> : null}
-      {!query.isLoading && !query.isError ? <Text style={styles.state}>{t("saved.empty")}</Text> : null}
+      {!query.isLoading && !query.isError ? (
+        <Text style={styles.state}>{t("saved.empty")}</Text>
+      ) : null}
     </>
   )
 
@@ -65,7 +67,9 @@ export function SavedPostsBody() {
       data={items}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
-      ListHeaderComponent={items.length > 0 ? <ProfileTimelineLane bleed={0}>{null}</ProfileTimelineLane> : null}
+      ListHeaderComponent={
+        items.length > 0 ? <ProfileTimelineLane bleed={0}>{null}</ProfileTimelineLane> : null
+      }
       ListEmptyComponent={empty}
       ListFooterComponent={footer}
       showsVerticalScrollIndicator={false}
@@ -78,5 +82,10 @@ export function SavedPostsBody() {
 const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
   content: { flexGrow: 1, paddingBottom: t.space["4"] },
-  state: { paddingVertical: t.space["6"], paddingHorizontal: t.space["4"], textAlign: "center", color: t.colors.textSubtle },
+  state: {
+    paddingVertical: t.space["6"],
+    paddingHorizontal: t.space["4"],
+    textAlign: "center",
+    color: t.colors.textSubtle,
+  },
 }))

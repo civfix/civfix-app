@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
-import { bodyTransitionPlan, translateRatio, type BodyTransitionTiming } from "../bodyTransitionModel"
+import {
+  bodyTransitionPlan,
+  translateRatio,
+  type BodyTransitionTiming,
+} from "../bodyTransitionModel"
 
 const TIMING: BodyTransitionTiming = {
   slideDuration: 240,
@@ -118,7 +122,10 @@ describe("BODY_TIMING - one vocabulary for every seam", () => {
 })
 
 describe("the body-transition seams honour the plan", () => {
-  const native = readFileSync(new URL("../useEntranceTransition.native.ts", import.meta.url), "utf8")
+  const native = readFileSync(
+    new URL("../useEntranceTransition.native.ts", import.meta.url),
+    "utf8",
+  )
   const web = readFileSync(new URL("../BodyTransition.web.tsx", import.meta.url), "utf8")
   const bodyNative = readFileSync(new URL("../BodyTransition.native.tsx", import.meta.url), "utf8")
   const stepNative = readFileSync(new URL("../StepTransition.native.tsx", import.meta.url), "utf8")
@@ -129,8 +136,12 @@ describe("the body-transition seams honour the plan", () => {
       ["body.native", bodyNative],
       ["step.native", stepNative],
     ] as const) {
-      expect(src, name).toContain("const { onLayout, animatedStyle } = useEntranceTransition(transitionKey, direction)")
-      expect(src, name).toMatch(/<Animated\.View onLayout=\{onLayout\} style=\{\[[\w.]+, animatedStyle\]\}>/)
+      expect(src, name).toContain(
+        "const { onLayout, animatedStyle } = useEntranceTransition(transitionKey, direction)",
+      )
+      expect(src, name).toMatch(
+        /<Animated\.View onLayout=\{onLayout\} style=\{\[[\w.]+, animatedStyle\]\}>/,
+      )
     }
   })
 
@@ -168,7 +179,9 @@ describe("the body-transition seams honour the plan", () => {
   })
 
   it("slides the OUTGOING web layer too - the parallax that makes a push read as depth", () => {
-    expect(web).toMatch(/outgoingTo: \{ transform: translateRatio\(plan\.exitRatio\), opacity: 0 \}/)
+    expect(web).toMatch(
+      /outgoingTo: \{ transform: translateRatio\(plan\.exitRatio\), opacity: 0 \}/,
+    )
     expect(web).toMatch(/\["transform", plan\.exitDuration\]/)
   })
 })

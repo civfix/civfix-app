@@ -23,14 +23,18 @@ const count = (source: string, needle: string): number => source.split(needle).l
 describe("the official account's check renders wherever a name renders with a badge", () => {
   it.each(BADGED_BYLINES)("%s puts the check next to %s's name", (file, subject, sites) => {
     const src = code(read(file))
-    expect(src).toMatch(/import \{[^}]*\bVerifiedBadge\b[^}]*\} from "[./]+primitives(\/VerifiedBadge)?"/)
+    expect(src).toMatch(
+      /import \{[^}]*\bVerifiedBadge\b[^}]*\} from "[./]+primitives(\/VerifiedBadge)?"/,
+    )
     expect(count(src, `{${subject}.official ? <VerifiedBadge size="sm" /> : null}`)).toBe(sites)
   })
 
   it("the chat bubble badges the sender name from the server flag", () => {
     const src = code(read("../conversation/MessageBubble.tsx"))
     expect(src).toMatch(/if \(!from\.official\) return name/)
-    expect(src).toMatch(/<View style=\{styles\.whoRow\}>\s*\{name\}\s*<VerifiedBadge size="sm" \/>\s*<\/View>/)
+    expect(src).toMatch(
+      /<View style=\{styles\.whoRow\}>\s*\{name\}\s*<VerifiedBadge size="sm" \/>\s*<\/View>/,
+    )
   })
 
   it("the profile header badges the name from the server flag", () => {

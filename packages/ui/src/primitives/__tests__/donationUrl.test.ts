@@ -5,7 +5,9 @@ import { openDonate as openDonateNative } from "../donateTarget.native"
 
 describe("safeDonationUrl", () => {
   it("accepts a plain https link and trims it", () => {
-    expect(safeDonationUrl("  https://give.example.org/river  ")).toBe("https://give.example.org/river")
+    expect(safeDonationUrl("  https://give.example.org/river  ")).toBe(
+      "https://give.example.org/river",
+    )
   })
 
   it("refuses anything that is not a safe https link, so the card renders nothing", () => {
@@ -27,7 +29,9 @@ describe("safeDonationUrl", () => {
 
 describe("donationUrlHost", () => {
   it("shows the bare hostname, without www, port, path or query", () => {
-    expect(donationUrlHost("https://www.give.example.org:8443/river?x=1#top")).toBe("give.example.org")
+    expect(donationUrlHost("https://www.give.example.org:8443/river?x=1#top")).toBe(
+      "give.example.org",
+    )
     expect(donationUrlHost("https://opencollective.com/river-keepers")).toBe("opencollective.com")
   })
 })

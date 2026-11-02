@@ -54,9 +54,9 @@ describe("registrationWindowState", () => {
   })
 
   it("is sold out only when every sellable ticket is sold out", () => {
-    expect(
-      registrationWindowState(page({ ticketTypes: [ticket({ soldOut: true })] }), NOW),
-    ).toBe("sold_out")
+    expect(registrationWindowState(page({ ticketTypes: [ticket({ soldOut: true })] }), NOW)).toBe(
+      "sold_out",
+    )
     expect(
       registrationWindowState(
         page({ ticketTypes: [ticket({ soldOut: true }), ticket({ id: "t2" })] }),
@@ -86,9 +86,9 @@ describe("ticket selection", () => {
 
   it("falls back to the page waitlist flag when there are no ticket types", () => {
     expect(waitlistAvailable(null, page({ waitlistEnabled: true }))).toBe(true)
-    expect(waitlistAvailable(ticket({ waitlistEnabled: false }), page({ waitlistEnabled: true }))).toBe(
-      false,
-    )
+    expect(
+      waitlistAvailable(ticket({ waitlistEnabled: false }), page({ waitlistEnabled: true })),
+    ).toBe(false)
   })
 })
 

@@ -106,10 +106,7 @@ describe("buildSharePlan", () => {
   })
 
   it("dedupes by recipient id, so one person can never be sent to twice", () => {
-    const plan = buildSharePlan(
-      [person("a"), person("a"), person("b")].map(toShareRecipient),
-      ids,
-    )
+    const plan = buildSharePlan([person("a"), person("a"), person("b")].map(toShareRecipient), ids)
     expect(plan.map((entry) => entry.recipient.id)).toEqual(["a", "b"])
   })
 
@@ -195,7 +192,12 @@ describe("dmThreadIdsByPeer", () => {
   it("maps each DM peer to the room id the thread already knows, so no second openDm is needed", () => {
     const pages = [
       { items: [thread({ id: "t1", refId: "room-a", peer: person("a") })] },
-      { items: [thread({ id: "t2", peer: person("b") }), thread({ id: "t3", refId: "room-a2", peer: person("a") })] },
+      {
+        items: [
+          thread({ id: "t2", peer: person("b") }),
+          thread({ id: "t3", refId: "room-a2", peer: person("a") }),
+        ],
+      },
     ]
     const byPeer = dmThreadIdsByPeer(pages)
     expect(byPeer.get("a")).toBe("room-a")
@@ -205,7 +207,12 @@ describe("dmThreadIdsByPeer", () => {
 
   it("ignores non-DM and peerless threads, and tolerates absent pages", () => {
     const pages = [
-      { items: [thread({ id: "g", kind: "group", peer: person("g") }), thread({ id: "n", peer: null })] },
+      {
+        items: [
+          thread({ id: "g", kind: "group", peer: person("g") }),
+          thread({ id: "n", peer: null }),
+        ],
+      },
     ]
     expect(dmThreadIdsByPeer(pages).size).toBe(0)
     expect(dmThreadIdsByPeer(undefined).size).toBe(0)
@@ -236,7 +243,9 @@ describe("recentDmPeers", () => {
   })
 
   it("honours the limit and tolerates absent pages", () => {
-    const pages = [{ items: [thread({ id: "t1", peer: person("a") }), thread({ id: "t2", peer: person("b") })] }]
+    const pages = [
+      { items: [thread({ id: "t1", peer: person("a") }), thread({ id: "t2", peer: person("b") })] },
+    ]
     expect(recentDmPeers(pages, 1).map((p) => p.id)).toEqual(["a"])
     expect(recentDmPeers(undefined)).toEqual([])
     expect(recentDmPeers([{ items: null }])).toEqual([])

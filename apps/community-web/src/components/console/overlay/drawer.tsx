@@ -123,9 +123,7 @@ export function Drawer({
 
   return createPortal(
     <div className="pointer-events-none fixed inset-0 z-console-sheet">
-      {modal ? (
-        <Scrim onDismiss={onClose} className="pointer-events-auto" />
-      ) : null}
+      {modal ? <Scrim onDismiss={onClose} className="pointer-events-auto" /> : null}
       {panel}
     </div>,
     document.body,

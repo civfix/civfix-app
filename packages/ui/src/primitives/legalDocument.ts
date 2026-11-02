@@ -6,10 +6,12 @@ import {
 } from "@civfix/contract"
 import { webOrigin } from "./externalUrls"
 
-/** A version the API has text for; versions from before DECISIONS §66 have none to show. */
+/** A version the API has text for; versions from before DECISIONS §68 have none to show. */
 export type ReadableLegalDocument = LegalDocumentDTO & { title: string; blocks: LegalBlock[] }
 
-export function readableLegalDocument(document: LegalDocumentDTO | null | undefined): ReadableLegalDocument | null {
+export function readableLegalDocument(
+  document: LegalDocumentDTO | null | undefined,
+): ReadableLegalDocument | null {
   if (!document || document.title === null || document.blocks === null) return null
   return { ...document, title: document.title, blocks: document.blocks }
 }

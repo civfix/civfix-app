@@ -83,7 +83,9 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
   })
 
   it("is a real raise: the token's own 30% fill coral fails both by a factor of three", () => {
-    const spec = /^0 0 0 \d+(?:\.\d+)?px\s+rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(tokens.shadow.ring)
+    const spec = /^0 0 0 \d+(?:\.\d+)?px\s+rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(
+      tokens.shadow.ring,
+    )
     expect(spec).not.toBeNull()
     const parts = spec ?? ["", "0", "0", "0", "1"]
     const hex2 = (c: string) => Number(c).toString(16).padStart(2, "0")
@@ -102,7 +104,9 @@ describe("the ring's geometry", () => {
     expect(affordancesCode).toContain(
       "export const FOCUS_RING_WIDTH = FOCUS_RING_FOOTPRINT - FOCUS_RING_OFFSET",
     )
-    expect(affordancesCode).toMatch(/const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/)
+    expect(affordancesCode).toMatch(
+      /const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/,
+    )
     expect(tokens.shadow.ring.startsWith("0 0 0 3px")).toBe(true)
   })
 

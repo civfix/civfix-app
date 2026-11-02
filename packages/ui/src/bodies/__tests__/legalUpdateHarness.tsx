@@ -89,7 +89,11 @@ export const USER: UserDTO = {
 }
 
 const SIGNED_IN: AuthState = { isAuthenticated: true, user: USER, isPending: false }
-export const FIRST_RUN: AuthState = { isAuthenticated: true, user: { ...USER, profileComplete: false }, isPending: false }
+export const FIRST_RUN: AuthState = {
+  isAuthenticated: true,
+  user: { ...USER, profileComplete: false },
+  isPending: false,
+}
 export const GUEST: AuthState = { isAuthenticated: false, user: null, isPending: false }
 
 /** A reactive auth state, so a test can sign the person out or finish first run mid-render. */
@@ -171,14 +175,19 @@ export interface MountOptions {
 export function mountLegal(ui: React.ReactElement, { api, auth = SIGNED_IN, open }: MountOptions) {
   const store = authStore(auth)
   const logout = vi.fn()
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   const context: DataContextValue = {
     ...makeFakeDataContext({ api: api as unknown as ApiClient }),
     useAuthState: store.useAuthState,
     logout,
     onUserUpdated: (user) => store.set({ isAuthenticated: true, user, isPending: false }),
   }
-  const capabilities = { ...makeFakeCapabilities(), openExternal: { open: open ?? vi.fn(async () => {}) } }
+  const capabilities = {
+    ...makeFakeCapabilities(),
+    openExternal: { open: open ?? vi.fn(async () => {}) },
+  }
   const view = render(
     <QueryClientProvider client={queryClient}>
       <ApiProvider value={context}>

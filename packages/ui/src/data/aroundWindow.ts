@@ -25,12 +25,12 @@ export function applyUpdatesToWindow(
   let copied = false
   for (const dto of updates) {
     const idx = next.findIndex((it) => it.message.id === dto.id)
-    if (idx === -1) continue
+    const prior = next[idx]
+    if (prior === undefined) continue
     if (!copied) {
       next = next.slice()
       copied = true
     }
-    const prior = next[idx]!
     next[idx] = { ...prior, message: dto }
   }
   return next

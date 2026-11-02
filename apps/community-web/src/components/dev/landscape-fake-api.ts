@@ -22,17 +22,23 @@ import {
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
-  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_NOTIFICATION_SETTINGS,
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
+  firstFixture,
   galleryChatHistory,
   galleryThreads,
   isoFromNow,
   makeCannedApi,
 } from "./fixtures"
 
-function person(id: string, name: string, handle: string, extra: Partial<PersonDTO> = {}): PersonDTO {
+function person(
+  id: string,
+  name: string,
+  handle: string,
+  extra: Partial<PersonDTO> = {},
+): PersonDTO {
   return {
     id,
     name,
@@ -191,7 +197,10 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
 }
 
 function chatHistory(args?: Record<string, unknown>): ChatHistoryResponse {
-  return galleryChatHistory(String(args?.cleanupId ?? args?.threadId ?? args?.id ?? ""))
+  const roomId = [args?.cleanupId, args?.threadId, args?.id].find(
+    (value) => value !== undefined && value !== null,
+  )
+  return galleryChatHistory(typeof roomId === "string" ? roomId : "")
 }
 
 const THREADS = galleryThreads(ANN)
@@ -230,14 +239,17 @@ const JURISDICTION: JurisdictionDTO = {
   routable: true,
 }
 
-const sharedFake = makeFakeApiClient() as unknown as Record<string, unknown>
+const sharedFake = makeFakeApiClient()
 
 const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown>> = {
   myProfile: async (): Promise<GetProfileResponse> => ({
     profile: { ...GALLERY_MY_PROFILE, pastEvents: PAST_EVENTS },
   }),
   getProfile: async (args): Promise<GetProfileResponse> => ({
-    profile: { ...(args?.id === "me" ? GALLERY_MY_PROFILE : PERSON_PROFILE), pastEvents: PAST_EVENTS },
+    profile: {
+      ...(args?.id === "me" ? GALLERY_MY_PROFILE : PERSON_PROFILE),
+      pastEvents: PAST_EVENTS,
+    },
   }),
   searchUsers: async () => GALLERY_SEARCH_RESULTS,
   followSuggestions: async () => ({ results: [ANN, LEE, MEI] }),
@@ -246,16 +258,19 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
   updateSettings: async () => ({ user: GALLERY_VIEWER }),
 
   listCleanups: async (args) => ({
-    items: args?.when === "attending" ? UPCOMING_CLEANUPS.filter((c) => c.joined) : UPCOMING_CLEANUPS,
+    items:
+      args?.when === "attending" ? UPCOMING_CLEANUPS.filter((c) => c.joined) : UPCOMING_CLEANUPS,
     nextCursor: null,
   }),
-  getCleanup: async (args) => CLEANUPS_BY_ID[String(args?.id ?? "")] ?? UPCOMING_CLEANUPS[0]!,
+  getCleanup: async (args) =>
+    (typeof args?.id === "string" ? CLEANUPS_BY_ID[args.id] : undefined) ??
+    firstFixture(UPCOMING_CLEANUPS),
   getCleanupAttendees: async () => ATTENDEES,
   getEventHours: async () => ({ scope: "self", entries: [], anyLogged: false }),
 
   listMyReports: async () => MY_REPORTS,
   getReport: async (args) =>
-    MY_REPORTS.items.find((r) => r.id === args?.id) ?? MY_REPORTS.items[0]!,
+    MY_REPORTS.items.find((r) => r.id === args?.id) ?? firstFixture(MY_REPORTS.items),
   searchReports: async () => ({ items: pinsIn(undefined), nextCursor: null }),
   mapReports: async (args): Promise<ReportClusterResponse> => ({
     clusters: [],
@@ -272,8 +287,8 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
 
   listNotifications: async () => NOTIFICATIONS,
   markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
-  getNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
-  updateNotificationPrefs: async () => GALLERY_NOTIFICATION_PREFS,
+  getNotificationSettings: async () => GALLERY_NOTIFICATION_SETTINGS,
+  updateNotificationSettings: async () => GALLERY_NOTIFICATION_SETTINGS,
 
   getMyHours: async () => MY_HOURS,
   getMyHoursEntries: async () => ({ items: [], nextCursor: null }),
@@ -281,4 +296,6 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
   getJurisdictionLeaderboard: async () => LEADERBOARD,
 }
 
-export const landscapeFakeApi: ApiClient = makeCannedApi(canned, (name) => sharedFake[name])
+export const landscapeFakeApi: ApiClient = makeCannedApi(canned, (name): unknown =>
+  Reflect.get(sharedFake, name),
+)

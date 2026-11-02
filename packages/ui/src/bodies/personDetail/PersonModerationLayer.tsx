@@ -1,4 +1,3 @@
-import React from "react"
 import { Text } from "../../typography"
 import {
   ModalCardSheet,
@@ -39,12 +38,7 @@ export function PersonModerationLayer({
 
   return (
     <>
-      <PopoverMenu
-        visible={menuOpen}
-        anchorRect={menuRect}
-        onClose={closeMenu}
-        items={menuItems}
-      />
+      <PopoverMenu visible={menuOpen} anchorRect={menuRect} onClose={closeMenu} items={menuItems} />
 
       <ModalCardSheet
         visible={confirmingBlock}
@@ -65,9 +59,7 @@ export function PersonModerationLayer({
           </>
         }
       >
-        <Text style={styles.confirmText}>
-          {t("block.confirm_message", { name })}
-        </Text>
+        <Text style={styles.confirmText}>{t("block.confirm_message", { name })}</Text>
       </ModalCardSheet>
 
       <ReportContentSheet

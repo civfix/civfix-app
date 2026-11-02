@@ -17,7 +17,9 @@ function source(over: Partial<SearchSourceState> = {}): SearchSourceState {
 
 describe("search source settling", () => {
   it("counts a disabled source as settled so a signed-out viewer never waits on people", () => {
-    expect(isSearchSourceSettled(source({ enabled: false, matchesQuery: false, fetching: true }))).toBe(true)
+    expect(
+      isSearchSourceSettled(source({ enabled: false, matchesQuery: false, fetching: true })),
+    ).toBe(true)
   })
 
   it("is unsettled while a source still answers the PREVIOUS query", () => {
@@ -35,7 +37,9 @@ describe("search source settling", () => {
 
   it("does NOT let a failure on the PREVIOUS query count as an answer for the new one", () => {
     expect(isSearchSourceSettled(source({ errored: true, matchesQuery: false }))).toBe(false)
-    expect(isSearchSourceSettled(source({ errored: true, matchesQuery: false, fetching: true }))).toBe(false)
+    expect(
+      isSearchSourceSettled(source({ errored: true, matchesQuery: false, fetching: true })),
+    ).toBe(false)
   })
 
   it("settles only once EVERY source has settled", () => {
@@ -74,7 +78,9 @@ describe("search results phase", () => {
   })
 
   it("goes to the terminal error state only when EVERY source failed", () => {
-    expect(searchResultsView([source({ errored: true }), source({ errored: true })], 0).phase).toBe("error")
+    expect(searchResultsView([source({ errored: true }), source({ errored: true })], 0).phase).toBe(
+      "error",
+    )
   })
 
   it("never turns one source's failure into a whole-surface outage over a truthful empty", () => {
@@ -84,7 +90,9 @@ describe("search results phase", () => {
   })
 
   it("holds the error state back until every source has settled", () => {
-    expect(searchResultsView([source({ errored: true }), source({ fetching: true })], 0).phase).toBe("loading")
+    expect(
+      searchResultsView([source({ errored: true }), source({ fetching: true })], 0).phase,
+    ).toBe("loading")
   })
 
   it("keeps a partial failure visible as a notice above the results that did land", () => {
@@ -93,9 +101,9 @@ describe("search results phase", () => {
   })
 
   it("suppresses the partial-failure notice while the surface is still unsettled", () => {
-    expect(searchResultsView([source({ errored: true }), source({ fetching: true })], 2).showErrorNotice).toBe(
-      false,
-    )
+    expect(
+      searchResultsView([source({ errored: true }), source({ fetching: true })], 2).showErrorNotice,
+    ).toBe(false)
   })
 
   it("ignores a disabled source's error, which is a stale flag from a query that is not running", () => {
@@ -115,7 +123,9 @@ describe("search settle announcement", () => {
   })
 
   it("says nothing for the error phase, which speaks through its own block", () => {
-    expect(searchAnnouncement(searchResultsView([source({ errored: true })], 0), "park", 0)).toBeNull()
+    expect(
+      searchAnnouncement(searchResultsView([source({ errored: true })], 0), "park", 0),
+    ).toBeNull()
   })
 
   it("keys the results announcement on the query AND the count, so it repeats for neither", () => {
@@ -261,13 +271,18 @@ describe("SearchResults renders one coherent state at a time", () => {
     }
     expect(source).not.toMatch(/peopleLoading/)
     expect(source).not.toMatch(/anyLoading/)
-    expect(source).not.toMatch(/SectionHeader title=\{t\("results\.people"\)\} \/>\s*<View style=\{styles\.group\}>\{peopleLoading/)
+    expect(source).not.toMatch(
+      /SectionHeader title=\{t\("results\.people"\)\} \/>\s*<View style=\{styles\.group\}>\{peopleLoading/,
+    )
   })
 
   it("keeps section headers out of the DOM until the phase says results", () => {
     const sectionHeaders = [...source.matchAll(/<SectionHeader\b/g)]
     expect(sectionHeaders).toHaveLength(1)
-    const renderItem = source.slice(source.indexOf("const renderItem = useCallback("), source.indexOf("const phaseState ="))
+    const renderItem = source.slice(
+      source.indexOf("const renderItem = useCallback("),
+      source.indexOf("const phaseState ="),
+    )
     expect(renderItem).toMatch(/case "header":\s*return \(\s*<SectionHeader\b/)
     for (const key of ["results.events", "results.reports", "results.people"]) {
       expect(renderItem).toContain(`t("${key}")`)

@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet, type ViewStyle } from "react-native"
 import { BlurView } from "expo-blur"
 import { useTheme, supportsBlur } from "../theme"
@@ -26,9 +25,7 @@ export function BlurSurface({ kind, children, style, pointerEvents }: BlurSurfac
           { backgroundColor: supportsBlur ? spec.fill : spec.fillFallback },
         ]}
       />
-      {sheen ? (
-        <View style={[styles.sheen, styles.noPointer, { backgroundColor: sheen }]} />
-      ) : null}
+      {sheen ? <View style={[styles.sheen, styles.noPointer, { backgroundColor: sheen }]} /> : null}
       {children}
     </View>
   )

@@ -43,7 +43,7 @@ function renderSettings(dto: CleanupDTO) {
         <SettingsScreen />
       </ConsoleEventProvider>
     </ConsoleNavigationProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }
@@ -122,7 +122,7 @@ describe("SettingsScreen server refresh", () => {
 
   function renderRefreshing(dto: CleanupDTO) {
     renderConsole(<Refreshing initial={dto} />, {
-      api: { listMyOrganizations: vi.fn().mockResolvedValue({ items: [] }) } as never,
+      api: { listMyOrganizations: vi.fn().mockResolvedValue({ items: [] }) },
     })
   }
 

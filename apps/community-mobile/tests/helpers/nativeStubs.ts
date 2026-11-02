@@ -49,6 +49,10 @@ export const storage = {
   },
 }
 
+export function clearAppStorage(): void {
+  memory.clear()
+}
+
 export const mmkvStateStorage: StateStorage = {
   getItem: (name) => memory.get(name) ?? null,
   setItem: (name, value) => {

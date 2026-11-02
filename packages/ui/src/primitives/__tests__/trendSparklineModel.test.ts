@@ -51,13 +51,15 @@ describe("sparklineGeometry", () => {
     const wide = sparklineGeometry(points, 300, 56)
     const [first, second] = wide.bars
     expect(first?.width).toBe(SPARK_BAR_MAX_WIDTH)
-    expect(second?.x ?? 0).toBeGreaterThanOrEqual((first?.x ?? 0) + (first?.width ?? 0) + SPARK_BAR_GAP)
+    expect(second?.x ?? 0).toBeGreaterThanOrEqual(
+      (first?.x ?? 0) + (first?.width ?? 0) + SPARK_BAR_GAP,
+    )
 
     const tight = sparklineGeometry(points, 60, 56)
     expect(tight.bars[0]?.width).toBe(60 / 3 - SPARK_BAR_GAP)
-    expect((tight.bars[1]?.x ?? 0) - ((tight.bars[0]?.x ?? 0) + (tight.bars[0]?.width ?? 0))).toBeCloseTo(
-      SPARK_BAR_GAP,
-    )
+    expect(
+      (tight.bars[1]?.x ?? 0) - ((tight.bars[0]?.x ?? 0) + (tight.bars[0]?.width ?? 0)),
+    ).toBeCloseTo(SPARK_BAR_GAP)
   })
 
   it("scales the bars against the peak and grows them from the baseline", () => {

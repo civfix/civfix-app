@@ -8,7 +8,10 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 test("T32: the first-run gate submits through the shared sign-up acceptance step", () => {
   const gate = read("../src/components/FirstRunGate.tsx")
   assert.match(gate, /const completeFirstRun = useCompleteFirstRun\(\)/)
-  assert.match(gate, /await completeFirstRun\.mutateAsync\(\{ handle: trimmedHandle, displayName \}\)/)
+  assert.match(
+    gate,
+    /await completeFirstRun\.mutateAsync\(\{ handle: trimmedHandle, displayName \}\)/,
+  )
   assert.doesNotMatch(gate, /updateProfile/)
 })
 

@@ -6,7 +6,6 @@ import { readAuthSnapshot } from "@/lib/auth-snapshot"
 import { safeGet, safeRemove, safeSet, storageAvailable } from "@/lib/browser-storage"
 import { useAuthStore } from "@/store/auth-store"
 
-
 const STORAGE_KEY = "civfix.query.cache.v2"
 const LEGACY_STORAGE_KEY = "civfix.query.cache.v1"
 
@@ -143,8 +142,7 @@ function persist(queryClient: QueryClient): void {
       clientState,
     }
     safeSet("local", STORAGE_KEY, JSON.stringify(envelope))
-  } catch {
-  }
+  } catch {}
 }
 
 export function restorePersistedCache(queryClient: QueryClient): void {

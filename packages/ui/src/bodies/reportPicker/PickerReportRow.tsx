@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react"
+import { memo, useMemo } from "react"
 import { View } from "react-native"
 import { makeThemedStyles } from "../../theme"
 import { useT } from "../../i18n"
@@ -6,7 +6,13 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { pinToCardData, useLinkedReportCards } from "../linkedReportCards"
 import { localReportThumb } from "../localReportThumbs"
 import { reportHitRowModel } from "../reportHitRowModel"
-import { isChosen, reportShortCode, rowTagKey, type PickerMode, type PickerRow } from "./reportPickerModel"
+import {
+  isChosen,
+  reportShortCode,
+  rowTagKey,
+  type PickerMode,
+  type PickerRow,
+} from "./reportPickerModel"
 
 const FOCUS_BORDER_WIDTH = 2
 

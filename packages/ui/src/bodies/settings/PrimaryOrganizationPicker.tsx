@@ -16,23 +16,27 @@ import { useT } from "../../i18n"
 const PRIMARY_ORGANIZATION_AUTOMATIC = "automatic"
 const LOGO_SIZE = 28
 
-function pendingPrimaryOrgId(isPending: boolean, variables: PrivacySettingsVars | undefined): string | null {
+function pendingPrimaryOrgId(
+  isPending: boolean,
+  variables: PrivacySettingsVars | undefined,
+): string | null {
   if (!isPending || typeof variables !== "object" || variables === null) return null
   if (!("primaryOrganizationId" in variables)) return null
   return variables.primaryOrganizationId ?? PRIMARY_ORGANIZATION_AUTOMATIC
 }
 
-function OrganizationLogo({
-  name,
-  seed,
-  url,
-}: {
-  name: string
-  seed: string
-  url: string | null
-}) {
+function OrganizationLogo({ name, seed, url }: { name: string; seed: string; url: string | null }) {
   const styles = useStyles()
-  return <Avatar name={name} seed={seed} photoUrl={url} size={LOGO_SIZE} style={styles.logo} decorative />
+  return (
+    <Avatar
+      name={name}
+      seed={seed}
+      photoUrl={url}
+      size={LOGO_SIZE}
+      style={styles.logo}
+      decorative
+    />
+  )
 }
 
 function PlaceholderLogo() {
@@ -59,9 +63,12 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
   const onSelect = useCallback(
     (primaryOrganizationId: string | null) => {
       if (primaryOrganizationId === current || update.isPending) return
-      update.mutate({ primaryOrganizationId }, {
-        onError: () => toast.show(t("affiliation.error"), { variant: "error" }),
-      })
+      update.mutate(
+        { primaryOrganizationId },
+        {
+          onError: () => toast.show(t("affiliation.error"), { variant: "error" }),
+        },
+      )
     },
     [current, update, toast, t],
   )

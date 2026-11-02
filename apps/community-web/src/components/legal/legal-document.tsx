@@ -6,6 +6,8 @@ import { LegalDocumentBody } from "@civfix/ui"
 
 export function LegalDocument({ type }: { type: LegalDocumentType }) {
   // Mounted on the client only, so the query string is there to read; an export has no server to see it.
-  const [version] = React.useState(() => new URLSearchParams(window.location.search).get("version") ?? undefined)
+  const [version] = React.useState(
+    () => new URLSearchParams(window.location.search).get("version") ?? undefined,
+  )
   return <LegalDocumentBody type={type} version={version} />
 }

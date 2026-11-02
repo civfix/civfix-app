@@ -75,7 +75,10 @@ export function mergePostComposerThumbs(
   picked: readonly PendingAttachment[],
   cap: number = POST_COMPOSER_MEDIA_CAP,
 ): PendingAttachment[] {
-  return [...carried.map((item, index) => toPendingAttachment(item, index)), ...picked].slice(0, cap)
+  return [...carried.map((item, index) => toPendingAttachment(item, index)), ...picked].slice(
+    0,
+    cap,
+  )
 }
 
 /**
@@ -88,5 +91,7 @@ export function postComposerCanAttach(input: {
   picked: number
   cap?: number
 }): boolean {
-  return input.hookCanAttach && input.carried + input.picked < (input.cap ?? POST_COMPOSER_MEDIA_CAP)
+  return (
+    input.hookCanAttach && input.carried + input.picked < (input.cap ?? POST_COMPOSER_MEDIA_CAP)
+  )
 }

@@ -73,12 +73,13 @@ describe("I7 a platform seam is never shadowed by its own selector", () => {
 })
 
 describe("details present as full pages on every platform", () => {
-  it.each(["detailPresentationPlatform.ts", "detailPresentationPlatform.web.ts", "detailPresentationPlatform.native.ts"])(
-    "%s",
-    (file) => {
-      expect(readFileSync(new URL(`../${file}`, import.meta.url), "utf8")).toContain(
-        "DETAILS_ARE_FULL_PAGE = true",
-      )
-    },
-  )
+  it.each([
+    "detailPresentationPlatform.ts",
+    "detailPresentationPlatform.web.ts",
+    "detailPresentationPlatform.native.ts",
+  ])("%s", (file) => {
+    expect(readFileSync(new URL(`../${file}`, import.meta.url), "utf8")).toContain(
+      "DETAILS_ARE_FULL_PAGE = true",
+    )
+  })
 })

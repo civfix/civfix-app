@@ -22,7 +22,9 @@ export type ServiceRecordCodeSource =
 const NONE: ServiceRecordCodeSource = { kind: "none" }
 
 /** A printed code is hand-typed, so it may arrive percent-encoded as well as with or without a slash. */
-export function serviceRecordCodeFromPath(pathname: string | null | undefined): ServiceRecordCodeSource {
+export function serviceRecordCodeFromPath(
+  pathname: string | null | undefined,
+): ServiceRecordCodeSource {
   const segment = routeSegment(pathname, SERVICE_RECORD_SEGMENT)
   if (segment.kind === "none") return NONE
   if (segment.kind === "undecodable") return { kind: "invalid", raw: segment.raw }

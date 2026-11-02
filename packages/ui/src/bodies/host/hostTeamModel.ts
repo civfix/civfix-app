@@ -37,9 +37,7 @@ export function teamMemberRank(role: CleanupMemberRole): number {
   return rankIn(TEAM_MEMBER_ROLE_ORDER, role)
 }
 
-export function orderedTeamMembers(
-  members: readonly EventTeamMemberDTO[],
-): EventTeamMemberDTO[] {
+export function orderedTeamMembers(members: readonly EventTeamMemberDTO[]): EventTeamMemberDTO[] {
   return orderByRankThenName(TEAM_MEMBER_ROLE_ORDER, members)
 }
 
@@ -67,9 +65,7 @@ export function teamMemberHasActions(actions: TeamMemberActions): boolean {
   return hasActions(actions)
 }
 
-export function orderedTeamInvites(
-  invites: readonly EventTeamInviteDTO[],
-): EventTeamInviteDTO[] {
+export function orderedTeamInvites(invites: readonly EventTeamInviteDTO[]): EventTeamInviteDTO[] {
   return [...invites].sort((a, b) => {
     const byStatus = Number(b.status === "pending") - Number(a.status === "pending")
     if (byStatus !== 0) return byStatus

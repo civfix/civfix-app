@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { BackHandler, Modal, View, StyleSheet } from "react-native"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { BackHandler, View, StyleSheet } from "react-native"
+import { FullWindowModal } from "../primitives/FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { space, makeThemedStyles } from "../theme"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
@@ -28,15 +30,15 @@ export function PortraitMapPickStep({
   inert = false,
 }: PortraitMapPickStepProps) {
   const styles = useStyles()
-  const insets = useSafeAreaInsets()
+  const insets = useFullWindowInsets(useSafeAreaInsets())
   const layered = presentation === "layer"
 
   const [session, setSession] = useState<{ open: boolean; point: LatLng | null }>(() => ({
     open: visible,
-    point: visible ? value ?? null : null,
+    point: visible ? (value ?? null) : null,
   }))
   if (session.open !== visible) {
-    setSession({ open: visible, point: visible ? value ?? null : null })
+    setSession({ open: visible, point: visible ? (value ?? null) : null })
   }
   const localPoint = session.open ? session.point : null
   const setLocalPoint = useCallback(
@@ -59,7 +61,10 @@ export function PortraitMapPickStep({
     (place: AddressPick) => setLocalPoint({ lat: place.lat, lng: place.lng }),
     [setLocalPoint],
   )
-  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [setLocalPoint])
+  const onMapDrop = useCallback(
+    (lat: number, lng: number) => setLocalPoint({ lat, lng }),
+    [setLocalPoint],
+  )
 
   const confirm = useCallback(() => {
     if (!localPoint) return
@@ -117,9 +122,15 @@ export function PortraitMapPickStep({
     )
 
   return (
-    <Modal visible transparent statusBarTranslucent animationType="fade" onRequestClose={cancel}>
+    <FullWindowModal
+      visible
+      transparent
+      statusBarTranslucent
+      animationType="fade"
+      onRequestClose={cancel}
+    >
       {content}
-    </Modal>
+    </FullWindowModal>
   )
 }
 

@@ -20,11 +20,15 @@ describe("appPromoSurface: placement", () => {
   })
 
   it("shows the top banner to an Android phone in portrait", () => {
-    expect(appPromoSurface({ ...DESKTOP, layoutMode: "compact", platform: "android" })).toBe("banner")
+    expect(appPromoSurface({ ...DESKTOP, layoutMode: "compact", platform: "android" })).toBe(
+      "banner",
+    )
   })
 
   it("shows the top banner to an iPad in portrait", () => {
-    expect(appPromoSurface({ ...DESKTOP, layoutMode: "compact", platform: "ipados" })).toBe("banner")
+    expect(appPromoSurface({ ...DESKTOP, layoutMode: "compact", platform: "ipados" })).toBe(
+      "banner",
+    )
   })
 
   it("shows the side card section to an iPad in landscape", () => {

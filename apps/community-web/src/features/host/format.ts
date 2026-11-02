@@ -8,6 +8,7 @@ import {
   sameOffsetAt,
   zoneShortName,
 } from "@civfix/contract/datetime"
+import { useNow } from "@civfix/ui/data"
 import { useLocale, useViewerTimeZone } from "@civfix/ui/i18n"
 
 export interface ConsoleFormatters {
@@ -162,7 +163,8 @@ export function useInputZoneNames(
 ): { name: string; hint: string | null } {
   const { locale } = useLocale()
   const viewerTimeZone = useViewerTimeZone()
-  const instants = [Date.now()]
+  const now = useNow()
+  const instants = [now]
   const referenceMs = reference ? Date.parse(reference) : Number.NaN
   if (!Number.isNaN(referenceMs)) instants.push(referenceMs)
   for (const input of inputs) {

@@ -16,18 +16,29 @@ vi.mock("react-native-safe-area-context", async () => {
 
 vi.mock("lucide-react-native/icons", () => {
   const Glyph = () => null
-  return new Proxy({}, { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) })
+  return new Proxy(
+    {},
+    { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) },
+  )
 })
 
+import { I18nProvider } from "../../../../packages/ui/src/i18n"
 import { ModalCardSheet } from "../../../../packages/ui/src/primitives/ModalCardSheet"
-import { ToastProvider, useToast, type ToastApi } from "../../../../packages/ui/src/primitives/Toast"
+import {
+  ToastProvider,
+  useToast,
+  type ToastApi,
+} from "../../../../packages/ui/src/primitives/Toast"
 
 const MESSAGE = "Couldn't send to Ana_with_a_very_long_name_without_any_spaces"
 
-let toast: ToastApi | null = null
+const toastRef: { current: ToastApi | null } = { current: null }
 
 function Harness({ sheetOpen }: { sheetOpen: boolean }) {
-  toast = useToast()
+  const toast = useToast()
+  React.useEffect(() => {
+    toastRef.current = toast
+  })
   return (
     <ModalCardSheet
       visible={sheetOpen}
@@ -42,17 +53,26 @@ function Harness({ sheetOpen }: { sheetOpen: boolean }) {
   )
 }
 
-function mount(sheetOpen: boolean) {
-  return render(
-    <ToastProvider>
-      <Harness sheetOpen={sheetOpen} />
-    </ToastProvider>,
+function tree(sheetOpen: boolean) {
+  return (
+    <I18nProvider locale="en">
+      <ToastProvider>
+        <Harness sheetOpen={sheetOpen} />
+      </ToastProvider>
+    </I18nProvider>
   )
+}
+
+function mount(sheetOpen: boolean) {
+  return render(tree(sheetOpen))
 }
 
 function showRetryToast(retry: () => void): void {
   act(() => {
-    toast!.show(MESSAGE, { variant: "error", action: { label: "Try again", onPress: retry } })
+    toastRef.current!.show(MESSAGE, {
+      variant: "error",
+      action: { label: "Try again", onPress: retry },
+    })
   })
 }
 
@@ -62,7 +82,7 @@ function dialog(): HTMLElement {
 
 afterEach(() => {
   cleanup()
-  toast = null
+  toastRef.current = null
 })
 
 describe("a toast shown while a sheet is open", () => {
@@ -94,11 +114,7 @@ describe("a toast shown while a sheet is open", () => {
     showRetryToast(() => {})
     expect(dialog().contains(screen.getByText(MESSAGE))).toBe(true)
 
-    view.rerender(
-      <ToastProvider>
-        <Harness sheetOpen={false} />
-      </ToastProvider>,
-    )
+    view.rerender(tree(false))
 
     const messages = screen.getAllByText(MESSAGE)
     expect(messages).toHaveLength(1)
@@ -110,11 +126,7 @@ describe("a toast shown while a sheet is open", () => {
     const view = mount(false)
     showRetryToast(() => {})
 
-    view.rerender(
-      <ToastProvider>
-        <Harness sheetOpen />
-      </ToastProvider>,
-    )
+    view.rerender(tree(true))
 
     const messages = screen.getAllByText(MESSAGE)
     expect(messages).toHaveLength(1)

@@ -11,9 +11,7 @@ export interface AppearanceRowState {
 }
 
 export type AppearanceCommit =
-  | { kind: "idle" }
-  | { kind: "clear" }
-  | { kind: "apply"; preference: AppearancePreference }
+  { kind: "idle" } | { kind: "clear" } | { kind: "apply"; preference: AppearancePreference }
 
 function appearanceSelection(
   pending: AppearancePending | null,

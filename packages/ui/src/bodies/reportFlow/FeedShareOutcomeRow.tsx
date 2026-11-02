@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
@@ -13,7 +13,13 @@ import type { FeedShareOutcome } from "../feedShare"
 import type { ShareSnapshot } from "./submitFlowModel"
 import { SUBMIT_STATE_MAX_WIDTH } from "./flowStyles"
 
-export function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; share: ShareSnapshot }) {
+export function FeedShareOutcomeRow({
+  outcome,
+  share,
+}: {
+  outcome: FeedShareOutcome
+  share: ShareSnapshot
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("report-wizard")

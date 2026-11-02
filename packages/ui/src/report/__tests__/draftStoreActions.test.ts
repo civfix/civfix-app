@@ -10,7 +10,9 @@ function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
 const store = () => useDraftReportStore.getState()
 const draft = () => useDraftReportStore.getState().draft
 
-beforeEach(() => store().reset())
+beforeEach(() => {
+  store().reset()
+})
 
 describe("draftStore idempotency key", () => {
   it("mints a key once and returns the same key on every later call", () => {
@@ -193,7 +195,12 @@ describe("draftStore media helpers", () => {
     store().addCapture(cap("b"))
     store().setMedia({ uri: "c", kind: "video", mime: "video/mp4", durationSec: 3 })
     expect(draft().media).toHaveLength(1)
-    expect(draft().media[0]).toMatchObject({ uri: "c", kind: "video", mime: "video/mp4", durationSec: 3 })
+    expect(draft().media[0]).toMatchObject({
+      uri: "c",
+      kind: "video",
+      mime: "video/mp4",
+      durationSec: 3,
+    })
     expect(draft().media[0]?.id).toBeTruthy()
   })
 

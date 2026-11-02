@@ -157,7 +157,9 @@ describe("useUpdatePrivacySettings cache reflection", () => {
   it("patches the profile INSIDE the cached envelope, the shape myProfile actually holds", () => {
     const body = code(notificationsHook)
     expect(body).toContain("qc.setQueryData<GetProfileResponse>(queryKeys.myProfile")
-    expect(body).toContain("profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours }")
+    expect(body).toContain(
+      "profile: { ...prev.profile, showVolunteerHours: res.user.showVolunteerHours }",
+    )
     expect(body).not.toContain("qc.setQueryData<UserProfileDTO>")
   })
 

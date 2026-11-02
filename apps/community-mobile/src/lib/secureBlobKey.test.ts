@@ -10,8 +10,8 @@ import {
 test("the key protecting the seat-token outbox spends its whole 16-byte MMKV slot", () => {
   const key = mintSecureBlobKey((n) => new Uint8Array(randomBytes(n)))
   assert.equal(key?.length, SECURE_BLOB_KEY_CHARS)
-  assert.match(key!, /^[A-Za-z0-9\-_]{16}$/)
-  assert.equal(Buffer.byteLength(key!, "utf8"), 16)
+  assert.match(key, /^[A-Za-z0-9\-_]{16}$/)
+  assert.equal(Buffer.byteLength(key, "utf8"), 16)
 })
 
 test("every character is drawn from the random bytes, with no constant positions", () => {
@@ -24,8 +24,14 @@ test("every character is drawn from the random bytes, with no constant positions
 })
 
 test("a source that cannot produce enough randomness yields no key at all", () => {
-  assert.equal(mintSecureBlobKey(() => new Uint8Array(4)), null)
-  assert.equal(mintSecureBlobKey(() => new Uint8Array(0)), null)
+  assert.equal(
+    mintSecureBlobKey(() => new Uint8Array(4)),
+    null,
+  )
+  assert.equal(
+    mintSecureBlobKey(() => new Uint8Array(0)),
+    null,
+  )
 })
 
 test("a key already in the keychain is honoured verbatim, including the older hex shape", () => {

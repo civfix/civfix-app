@@ -24,7 +24,12 @@ describe("shareSnapshotOf", () => {
   })
 
   it("falls back to the untitled copy, a null category and no thumb", () => {
-    expect(shareSnapshotOf({ ...draft, title: "   ", category: null, addr: null, media: [] }, "Untitled")).toEqual({
+    expect(
+      shareSnapshotOf(
+        { ...draft, title: "   ", category: null, addr: null, media: [] },
+        "Untitled",
+      ),
+    ).toEqual({
       title: "Untitled",
       category: null,
       addr: null,

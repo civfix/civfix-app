@@ -69,8 +69,16 @@ function fall(piece: PotholePiece, dt: number): void {
 /** Every piece `drop` points above its rest, waiting for its delay. */
 export function dropPothole(drop: number): PotholeScene {
   "worklet"
-  const piece = (name: PotholePieceName): PotholePiece => ({ ...START[name], dy: -drop, vy: 0, squash: 0 })
-  return { elapsed: 0, pieces: { firstFour: piece("firstFour"), zero: piece("zero"), lastFour: piece("lastFour") } }
+  const piece = (name: PotholePieceName): PotholePiece => ({
+    ...START[name],
+    dy: -drop,
+    vy: 0,
+    squash: 0,
+  })
+  return {
+    elapsed: 0,
+    pieces: { firstFour: piece("firstFour"), zero: piece("zero"), lastFour: piece("lastFour") },
+  }
 }
 
 /** The landed pose: the reduced-motion still, and where the fall hands over when it stops. */
@@ -84,7 +92,10 @@ export function restingPothole(): PotholeScene {
     vy: 0,
     squash: 0,
   })
-  return { elapsed: 0, pieces: { firstFour: piece("firstFour"), zero: piece("zero"), lastFour: piece("lastFour") } }
+  return {
+    elapsed: 0,
+    pieces: { firstFour: piece("firstFour"), zero: piece("zero"), lastFour: piece("lastFour") },
+  }
 }
 
 /** Advances the fall; false once every piece is at rest, and the scene is then exactly the resting pose. */

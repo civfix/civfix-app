@@ -23,7 +23,11 @@ describe("splitProfileEvents ignores the clock entirely", () => {
   })
 
   it("files a far-future row the server sent as past under Past", () => {
-    const split = splitProfileEvents([event("a", "2099-01-01T10:00:00.000Z", "someone")], undefined, "me")
+    const split = splitProfileEvents(
+      [event("a", "2099-01-01T10:00:00.000Z", "someone")],
+      undefined,
+      "me",
+    )
     expect(split.pastAttended.map((e) => e.id)).toEqual(["a"])
     expect(split.upcomingGoing).toEqual([])
   })

@@ -34,7 +34,13 @@ export function SettingsEditorSheet<D, V>({
 }: SettingsEditorSheetProps<D, V>) {
   return (
     <>
-      <SettingsRow icon={icon} label={label} sub={sub} subNumberOfLines={subNumberOfLines} onPress={editor.begin} />
+      <SettingsRow
+        icon={icon}
+        label={label}
+        sub={sub}
+        subNumberOfLines={subNumberOfLines}
+        onPress={editor.begin}
+      />
       <ModalCardSheet
         visible={editor.editing}
         onClose={editor.cancel}

@@ -45,12 +45,17 @@ type AppShellSlots = {
 function isMainElement(
   child: React.ReactNode,
 ): child is React.ReactElement<{ id?: string; children?: React.ReactNode }> {
-  return React.isValidElement<{ id?: string; children?: React.ReactNode }>(child) && child.props.id === "main"
+  return (
+    React.isValidElement<{ id?: string; children?: React.ReactNode }>(child) &&
+    child.props.id === "main"
+  )
 }
 
 function isAppShellElement(child: React.ReactNode): child is React.ReactElement<AppShellSlots> {
   return (
-    React.isValidElement<AppShellSlots>(child) && "map" in child.props && "mapControls" in child.props
+    React.isValidElement<AppShellSlots>(child) &&
+    "map" in child.props &&
+    "mapControls" in child.props
   )
 }
 

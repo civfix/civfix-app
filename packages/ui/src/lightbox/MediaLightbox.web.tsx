@@ -3,7 +3,7 @@
  * stacking context. This seam adds the web keys (Escape, ArrowLeft, ArrowRight) and `aria-modal`; every
  * window access is guarded so the static-export build never touches `window`.
  */
-import React, { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { MediaLightboxBase } from "./MediaLightboxBase"
 import type { MediaLightboxViewProps } from "./MediaLightboxBase"
 import { stepIndex } from "./lightboxStage"

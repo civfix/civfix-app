@@ -1,11 +1,14 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap, Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
 import type { BBox } from "@civfix/contract"
 import { useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { alpha } from "../theme/alpha"
 import { useCartoApiKey } from "../data"
+import { useT } from "../i18n"
 import { rasterMapStyle, carryStyleOverlay, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import { TeardropPin, EventPin, ClusterBubble } from "./pins"
 import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
@@ -17,7 +20,14 @@ import {
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
-import { disposeMarkers, syncMarkers, type DesiredMarker, type MarkerEntry } from "./domMarkerLayer.web"
+import {
+  disposeMarkers,
+  syncMarkers,
+  type DesiredMarker,
+  type MarkerEntry,
+} from "./domMarkerLayer.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 import {
   REPORT_PICK_FLY_MS,
   REPORT_PICK_MEETING_PIN_OPACITY,
@@ -41,6 +51,17 @@ function boundsToBBox(map: MlMap): BBox {
 
 export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMapProps>(
   function ReportPickMap(props, ref) {
+    const { t } = useT("map-ui")
+    return (
+      <MapSurfaceGuard fallback={<MapUnavailable hint={t("unavailable.reportList")} />}>
+        <ReportPickMapCanvas ref={ref} {...props} />
+      </MapSurfaceGuard>
+    )
+  },
+)
+
+const ReportPickMapCanvas = React.forwardRef<ReportPickMapHandle, ReportPickMapProps>(
+  function ReportPickMapCanvas(props, ref) {
     const {
       center,
       radiusM,
@@ -105,14 +126,14 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       const map = mapRef.current
       if (!map) return
       const currentZoom = map.getZoom()
-      const target = clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
+      const target =
+        clusterPressTarget(indexRef.current, node, currentZoom) ?? clusterFallbackZoom(currentZoom)
       map.easeTo({ center: [node.lng, node.lat], zoom: target, duration: REPORT_PICK_FLY_MS })
     }, [])
 
     const reconcileRef = React.useRef<() => void>(() => {})
     const runnerRef = React.useRef<IdleRunner | null>(null)
-    if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
-    const runner = runnerRef.current
+    const runner = (runnerRef.current ??= createIdleRunner(() => reconcileRef.current()))
 
     React.useLayoutEffect(() => {
       reconcileRef.current = () => {
@@ -184,6 +205,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       if (mapRef.current || !containerRef.current) return
       const markers = markersRef.current
       const seed = seedRef.current
+      bindBundledWorker()
       styleSchemeRef.current = themeRef.current.scheme
       const map = new maplibregl.Map({
         container: containerRef.current,
@@ -212,7 +234,11 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       })
       map.on("moveend", syncViewport)
       map.on("click", (e) => {
-        if (e.originalEvent.target instanceof Element && e.originalEvent.target.closest(".maplibregl-marker")) return
+        if (
+          e.originalEvent.target instanceof Element &&
+          e.originalEvent.target.closest(".maplibregl-marker")
+        )
+          return
         onPressMapRef.current?.()
       })
 
@@ -230,7 +256,10 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       }
     }, [runner])
 
-    const radiusFeature = React.useMemo(() => radiusCircleFeature(center, radiusM), [center, radiusM])
+    const radiusFeature = React.useMemo(
+      () => radiusCircleFeature(center, radiusM),
+      [center, radiusM],
+    )
 
     React.useEffect(() => {
       const map = mapRef.current
@@ -238,9 +267,10 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       const fill = alpha(th.colors.brand.bloom, REPORT_PICK_RADIUS_FILL_ALPHA)
       const line = alpha(th.colors.brand.bloom, REPORT_PICK_RADIUS_LINE_ALPHA)
       const apply = () => {
-        const existing = map.getSource(RADIUS_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
+        const existing = map.getSource<maplibregl.GeoJSONSource>(RADIUS_SOURCE_ID)
         if (existing) {
-          existing.setData(radiusFeature)
+          // Never rejects: a worker failure is reported on the map's "error" event instead.
+          void existing.setData(radiusFeature)
         } else {
           map.addSource(RADIUS_SOURCE_ID, { type: "geojson", data: radiusFeature })
         }
@@ -306,7 +336,10 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       if (!map || !mapReady || styleSchemeRef.current === th.scheme) return
       styleSchemeRef.current = th.scheme
       map.setStyle(
-        rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme: th.scheme }) as maplibregl.StyleSpecification,
+        rasterMapStyle(DEFAULT_ATTRIBUTION, {
+          cartoApiKey,
+          scheme: th.scheme,
+        }) as maplibregl.StyleSpecification,
         { transformStyle: carryStyleOverlay(RADIUS_SOURCE_ID) },
       )
     }, [mapReady, cartoApiKey, th.scheme])

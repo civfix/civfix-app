@@ -79,7 +79,11 @@ describe("stripTeamInviteFromUrl", () => {
   })
 
   it("hands Next an unmarked entry so its router adopts the scrubbed URL", () => {
-    window.history.replaceState(NEXT_ROUTER_STATE, "", `/cleanups/${CLEANUP_ID}#teamInvite=${TOKEN}`)
+    window.history.replaceState(
+      NEXT_ROUTER_STATE,
+      "",
+      `/cleanups/${CLEANUP_ID}#teamInvite=${TOKEN}`,
+    )
     stripTeamInviteFromUrl()
     expect(url()).toBe(`/cleanups/${CLEANUP_ID}`)
     expect((window.history.state as { __NA?: unknown } | null)?.__NA).toBeUndefined()
@@ -108,7 +112,9 @@ describe("takeTeamInviteFromUrl", () => {
   })
 
   it("takes the fragment token and drops a query one riding alongside it", () => {
-    at(`/cleanups/${CLEANUP_ID}?teamInvite=query-token-value-0000000&from=email#teamInvite=${TOKEN}`)
+    at(
+      `/cleanups/${CLEANUP_ID}?teamInvite=query-token-value-0000000&from=email#teamInvite=${TOKEN}`,
+    )
     expect(takeTeamInviteFromUrl()).toEqual({ cleanupId: CLEANUP_ID, token: TOKEN })
     expect(url()).toBe(`/cleanups/${CLEANUP_ID}?from=email`)
   })

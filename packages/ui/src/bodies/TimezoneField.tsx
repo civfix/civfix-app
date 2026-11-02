@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { View, Pressable } from "react-native"
 import { COMMON_TIMEZONES, supportedTimeZones } from "@civfix/contract/datetime"
 import {

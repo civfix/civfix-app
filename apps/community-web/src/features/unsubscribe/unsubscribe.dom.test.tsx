@@ -19,7 +19,15 @@ const TOKEN = "t".repeat(40)
 
 function renderAt(search: string, { strict = false } = {}) {
   window.history.replaceState(null, "", `/unsubscribe/${search}`)
-  render(strict ? <React.StrictMode><UnsubscribeView /></React.StrictMode> : <UnsubscribeView />)
+  render(
+    strict ? (
+      <React.StrictMode>
+        <UnsubscribeView />
+      </React.StrictMode>
+    ) : (
+      <UnsubscribeView />
+    ),
+  )
 }
 
 beforeEach(() => {

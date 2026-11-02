@@ -59,7 +59,7 @@ and `react-native-is-edge-to-edge`.
 | `theme/` | the design-token -> RN adapter (fontSize/fontFamily/colors/glass/shadow/radius/space); `useLayoutMode` (orientation: landscape -> expanded, portrait -> compact); `supportsBlur`; the web affordances (cursor / focus-visible ring / hover / text-selection, native-safe no-ops) |
 | `typography/` | the shared `Text` variant component; `TextLink` (the one inline prose link); the lucide `Icon` wrapper + `LucideIcon` type; the semantic `iconMap` vocabulary |
 | `surface/` | `BlurSurface` - the glass seam (`.web` CSS backdrop-filter / `.native` expo-blur) |
-| `capabilities/` | the `PlatformCapabilities` shape + `CapabilitiesProvider` + the `useCamera()`/`useGeolocation()`/`usePush()`/`useSecureStore()`/`useHaptics()`/`useOpenExternal()` hooks + the in-memory fakes |
+| `capabilities/` | the `PlatformCapabilities` shape + `CapabilitiesProvider` + the `useCamera()`/`useGeolocation()`/`usePushPermission()`/`useSecureStore()`/`useHaptics()`/`useOpenExternal()` hooks + the in-memory fakes |
 | `data/` | the `DataContextValue` + `ApiProvider` + `useApi`/`useAuthState`/`useRequireAuth`/`useLogout`/`useChatSocket`/`useSubmitReport`; the shared React Query feature hooks; the single `queryKeys` factory; the optimistic-cache helpers; the fakes |
 | `nav/` | the unified zustand `useNavStore` (compact-replace vs expanded-append) + the pure route helpers (`pathForEntry`/`entryFromPath`/`seedFor`) + the nav types |
 | `shell/` | `AppShell` + `ExpandedShell` (sidebar) + `CompactShell` (`.native` gorhom sheet / `.web` worklet-free PanResponder sheet) + `BodyRouter` + the pure `bodyRoutes`/`bodyLayout` tables + the `ScrollHost` seam + the header seams |

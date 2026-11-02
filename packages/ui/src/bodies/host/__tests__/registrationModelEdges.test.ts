@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { RegisterOutcomeSchema, type MyEventRegistrationRef, type TicketTypeDTO } from "@civfix/contract"
+import {
+  RegisterOutcomeSchema,
+  type MyEventRegistrationRef,
+  type TicketTypeDTO,
+} from "@civfix/contract"
 import { defaultTicketTypeId, registerOutcomeKey, sortedTicketTypes } from "@civfix/contract/host"
 import { registerErrorKey, registrationSurface } from "../registration/registrationModel"
 
@@ -40,7 +44,10 @@ const base = {
 describe("defaultTicketTypeId edges", () => {
   it("skips a first type whose sales are not open", () => {
     expect(
-      defaultTicketTypeId([type({ id: "later", sortOrder: 0, salesOpen: false }), type({ id: "now", sortOrder: 1 })]),
+      defaultTicketTypeId([
+        type({ id: "later", sortOrder: 0, salesOpen: false }),
+        type({ id: "now", sortOrder: 1 }),
+      ]),
     ).toBe("now")
   })
 
@@ -84,19 +91,27 @@ describe("registrationSurface edges", () => {
 
   it("hides a cancelled registration on a cancelled event", () => {
     expect(
-      registrationSurface({ ...base, status: "cancelled", myRegistration: mine({ status: "cancelled" }) }),
+      registrationSurface({
+        ...base,
+        status: "cancelled",
+        myRegistration: mine({ status: "cancelled" }),
+      }),
     ).toBe("hidden")
   })
 
   it("treats waitlist position zero as waitlisted", () => {
-    expect(registrationSurface({ ...base, myRegistration: mine({ waitlistPosition: 0 }) })).toBe("waitlisted")
+    expect(registrationSurface({ ...base, myRegistration: mine({ waitlistPosition: 0 }) })).toBe(
+      "waitlisted",
+    )
   })
 })
 
 describe("registerOutcomeKey full table", () => {
   it("maps each refusal to outcome.<name> and each success to null", () => {
     for (const outcome of RegisterOutcomeSchema.options) {
-      const expected = ["registered", "replayed", "waitlisted"].includes(outcome) ? null : `outcome.${outcome}`
+      const expected = ["registered", "replayed", "waitlisted"].includes(outcome)
+        ? null
+        : `outcome.${outcome}`
       expect(registerOutcomeKey(outcome), outcome).toBe(expected)
     }
   })

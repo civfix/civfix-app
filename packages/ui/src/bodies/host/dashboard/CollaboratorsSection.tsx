@@ -1,10 +1,13 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
-import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/contract"
+import type {
+  OrganizationDTO,
+  OrganizationInviteDTO,
+  OrganizationMemberDTO,
+} from "@civfix/contract"
 import { DELETED_USER_LABEL, appErrorCode } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme } from "../../../theme"
 import { Text, TextLink, iconMap } from "../../../typography"
-import type { IconName } from "../../../typography"
 import {
   Avatar,
   IconActionButton,
@@ -97,7 +100,7 @@ function MemberRow({
     ...actions.roles.map((role) => ({
       key: `role-${role}`,
       label: t("team.make_role", { role: tEnums(`organizationMemberRole.${role}`) }),
-      icon: (role === "member" ? "UserMinus" : "UserPlus") as IconName,
+      icon: role === "member" ? ("UserMinus" as const) : ("UserPlus" as const),
       disabled: pending,
       onPress: () => onSetRole(person.id, role),
     })),
@@ -192,8 +195,7 @@ function PendingInviteRow({
 }) {
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
-  const name =
-    invite.user?.handle ?? invite.user?.name ?? invite.email ?? t("team.invite_unknown")
+  const name = invite.user?.handle ?? invite.user?.name ?? invite.email ?? t("team.invite_unknown")
   return (
     <ListRow
       leading={<IconTile icon="Mail" tone="attention" />}

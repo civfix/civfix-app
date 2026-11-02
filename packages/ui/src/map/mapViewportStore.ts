@@ -32,7 +32,10 @@ export interface ViewportBias {
 }
 
 /** Photon's `zoom` is a coarse radius, so the live zoom is rounded. */
-export function viewportBias(viewport: MapViewport | null, locationBiasScale: number): ViewportBias | null {
+export function viewportBias(
+  viewport: MapViewport | null,
+  locationBiasScale: number,
+): ViewportBias | null {
   if (!viewport) return null
   return { proximity: viewport.center, proximityZoom: Math.round(viewport.zoom), locationBiasScale }
 }

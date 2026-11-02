@@ -11,7 +11,14 @@ import { nearbyPinsBbox, useNearbyReportPins, usePressingReports } from "../inde
 const B: BBox = { west: -118.2665, east: -118.2215, south: 34.0295, north: 34.0745 }
 
 const pin = (id: string, confirmCount: number): ReportPinDTO =>
-  ({ id, lat: 34.05, lng: -118.24, category: "trash", status: "published", confirmCount }) as ReportPinDTO
+  ({
+    id,
+    lat: 34.05,
+    lng: -118.24,
+    category: "trash",
+    status: "published",
+    confirmCount,
+  }) as ReportPinDTO
 
 const p1 = pin("p1", 4)
 const p2 = pin("p2", 2)
@@ -30,12 +37,19 @@ function renderWithApi<T>(useHook: () => T, api: Record<string, unknown>) {
 
 describe("usePressingReports", () => {
   it("T1: asks for the bbox once, under the pressing key, and returns the items", async () => {
-    const pressingReports = vi.fn(async (_req: { bbox: BBox }, _opts?: unknown) => ({ items: [p1, p2] }))
+    const pressingReports = vi.fn(async (_req: { bbox: BBox }, _opts?: unknown) => ({
+      items: [p1, p2],
+    }))
     const { result, queryClient } = renderWithApi(() => usePressingReports(B), { pressingReports })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(pressingReports).toHaveBeenCalledTimes(1)
     expect(pressingReports.mock.calls[0]![0]).toEqual({ bbox: B })
-    expect(queryClient.getQueryCache().getAll().map((q) => q.queryKey)).toEqual([["map", "reports", "pressing", B]])
+    expect(
+      queryClient
+        .getQueryCache()
+        .getAll()
+        .map((q) => q.queryKey),
+    ).toEqual([["map", "reports", "pressing", B]])
     expect(result.current.data).toEqual([p1, p2])
   })
 

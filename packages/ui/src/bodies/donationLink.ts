@@ -6,7 +6,10 @@ export interface DonationLink {
   ownerName: string
 }
 
-export type DonationLinkSource = Pick<CleanupDTO, "title" | "donationUrl" | "organization" | "organizer">
+export type DonationLinkSource = Pick<
+  CleanupDTO,
+  "title" | "donationUrl" | "organization" | "organizer"
+>
 
 export function donationLinkFor(cleanup: DonationLinkSource): DonationLink | null {
   const orgName = cleanup.organization?.name.trim() ?? ""

@@ -65,7 +65,10 @@ export function PendingInvites() {
       api.revokeOrganizationInvite({ id: orgId, inviteId: input.inviteId }),
     onSuccess: (_result, input) => {
       toast.toast({
-        title: t("invites.revoked", { name: input.name, defaultValue: `Revoked the invite for ${input.name}` }),
+        title: t("invites.revoked", {
+          name: input.name,
+          defaultValue: `Revoked the invite for ${input.name}`,
+        }),
         tone: "success",
       })
       setPendingRevoke(null)

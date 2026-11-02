@@ -30,9 +30,9 @@ function ClusterReportRow({ pin }: { pin: ReportPinDTO }) {
       lat={pin.lat}
       lng={pin.lng}
       thumbUrl={(report ? reportThumbUrl(report) : null) ?? pin.thumbUrl ?? null}
-      subtitle={report ? report.addr ?? pin.description ?? null : pin.description ?? null}
+      subtitle={report ? (report.addr ?? pin.description ?? null) : (pin.description ?? null)}
       when={report ? timeAgo(report.createdAt) : " "}
-      note={report ? latestNote(report) ?? null : null}
+      note={report ? (latestNote(report) ?? null) : null}
     />
   )
 }
@@ -98,7 +98,9 @@ export function ClusterReportsBody({
       data={reports}
       keyExtractor={idKeyExtractor}
       style={listStyles.list}
-      contentContainerStyle={reports.length === 0 ? listStyles.listEmpty : listStyles.listContentInset}
+      contentContainerStyle={
+        reports.length === 0 ? listStyles.listEmpty : listStyles.listContentInset
+      }
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
       ListHeaderComponent={event ? <ClusterEventRow event={event} /> : undefined}
@@ -106,7 +108,9 @@ export function ClusterReportsBody({
         <View style={styles.stateFill}>
           <ListBodyEmpty
             phase="empty"
-            copy={{ empty: { icon: iconMap.MapPin, title: t("empty.title"), body: t("empty.body") } }}
+            copy={{
+              empty: { icon: iconMap.MapPin, title: t("empty.title"), body: t("empty.body") },
+            }}
           />
         </View>
       }

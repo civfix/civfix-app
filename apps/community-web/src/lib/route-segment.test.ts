@@ -7,7 +7,10 @@ describe("routeSegment", () => {
     expect(routeSegment("/orgs/acme/", "orgs")).toEqual({ kind: "raw", value: "acme" })
     expect(routeSegment("/orgs/acme", "orgs")).toEqual({ kind: "raw", value: "acme" })
     expect(routeSegment("/orgs/acme/manage/", "orgs")).toEqual({ kind: "raw", value: "acme" })
-    expect(routeSegment("/service-record/CF%2DABC/", "service-record")).toEqual({ kind: "raw", value: "CF-ABC" })
+    expect(routeSegment("/service-record/CF%2DABC/", "service-record")).toEqual({
+      kind: "raw",
+      value: "CF-ABC",
+    })
   })
 
   it("treats a missing path, another prefix, a bare visit and the export placeholder as none", () => {

@@ -7,6 +7,7 @@ import type { PublicEventPageDTO } from "@civfix/contract"
 import { Trans, useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"
 
+import { SlotLink } from "@/components/ui/slot-link"
 import { TURNSTILE_SITEKEY } from "@/lib/turnstile"
 
 import { QuestionField } from "./registration-question-field"
@@ -202,8 +203,18 @@ function RegistrationForm({ flow, t, errorMessage }: StepProps) {
             t={t}
             i18nKey="form.terms"
             components={[
-              <a key="terms" href="/legal/terms" rel="noreferrer noopener" target="_blank" />,
-              <a key="privacy" href="/legal/privacy" rel="noreferrer noopener" target="_blank" />,
+              <SlotLink
+                key="terms"
+                href="/legal/terms"
+                rel="noreferrer noopener"
+                target="_blank"
+              />,
+              <SlotLink
+                key="privacy"
+                href="/legal/privacy"
+                rel="noreferrer noopener"
+                target="_blank"
+              />,
             ]}
           />
         </label>
@@ -320,11 +331,7 @@ function GuestIdentityFields({ flow, t }: { flow: RegistrationFlow; t: Translate
 
 // The trailing space is part of the button label and renders whether or not the spinner does.
 function BusySpinner({ busy }: { busy: boolean }) {
-  return (
-    <>
-      {busy ? <Loader2 aria-hidden="true" className="signup-spin" size={16} /> : null}{" "}
-    </>
-  )
+  return <>{busy ? <Loader2 aria-hidden="true" className="signup-spin" size={16} /> : null} </>
 }
 
 interface WidgetNoticeProps {

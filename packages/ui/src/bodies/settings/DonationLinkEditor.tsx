@@ -1,4 +1,3 @@
-import React from "react"
 import { HTTPS_URL_MAX_LENGTH } from "@civfix/contract"
 import { Text, TextLink } from "../../typography"
 import { TextField } from "../../primitives"
@@ -75,7 +74,12 @@ export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkE
         <Text style={[styles.hint, styles.hintError]}>{t("editor.invalid")}</Text>
       ) : null}
       {saved !== null ? (
-        <TextLink variant="label" standalone onPress={remove} accessibilityLabel={t("editor.remove")}>
+        <TextLink
+          variant="label"
+          standalone
+          onPress={remove}
+          accessibilityLabel={t("editor.remove")}
+        >
           {t("editor.remove")}
         </TextLink>
       ) : null}

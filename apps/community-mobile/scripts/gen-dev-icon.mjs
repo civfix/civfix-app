@@ -4,10 +4,8 @@
 // Re-run it whenever assets/icon.png changes. sharp is hoisted at the civfix monorepo root.
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
-import { createRequire } from "node:module"
-const require = createRequire(import.meta.url)
-const sharp = require("sharp")
-const { tokens } = require("@civfix/tokens")
+import { tokens } from "@civfix/tokens"
+import sharp from "sharp"
 
 const assetsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "assets")
 const ICON = 1024

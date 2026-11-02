@@ -35,7 +35,10 @@ export interface CameraViewfinderProps {
 export interface CameraCapability {
   Viewfinder?: ComponentType<CameraViewfinderProps>
   isAvailable(): boolean
-  capture(opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null>
+  capture(opts?: {
+    mode?: "photo" | "video"
+    orientation?: "portrait" | "device"
+  }): Promise<CapturedMedia | null>
   pickFromLibrary(): Promise<CapturedMedia | null>
   acceptFile?(item: unknown): Promise<CapturedMedia | null>
   // Screens a picked video against the worker's limits before it is compressed or uploaded, resolving false
@@ -48,7 +51,7 @@ export interface CameraCapability {
 export interface GeoPosition {
   latitude: number
   longitude: number
-  accuracy?: number
+  accuracy?: number | undefined
 }
 
 export interface GeolocationCapability {
@@ -58,9 +61,13 @@ export interface GeolocationCapability {
   watchPosition(onChange: (pos: GeoPosition) => void): () => void
 }
 
-export interface PushCapability {
-  isAvailable(): boolean
-  registerForToken(): Promise<string | null>
+export type PushPermissionStatus = "granted" | "denied" | "undetermined" | "unsupported"
+
+// The web has no openSettings: a page cannot open the browser's site settings.
+export interface PushPermissionCapability {
+  status(): Promise<PushPermissionStatus>
+  request(): Promise<PushPermissionStatus>
+  openSettings?(): Promise<void>
 }
 
 export interface SecureStoreCapability {
@@ -107,7 +114,7 @@ export interface CalendarFileCapability {
 export interface PlatformCapabilities {
   camera: CameraCapability
   geolocation: GeolocationCapability
-  push: PushCapability
+  pushPermission: PushPermissionCapability
   secureStore: SecureStoreCapability
   persistence: PersistenceCapability
   blurSurface: BlurSurfaceCapability

@@ -11,7 +11,7 @@ import type {
   ReportDTO,
   ListMyReportsResponse,
   ListNotificationsResponse,
-  NotificationPrefsDTO,
+  NotificationSettingsDTO,
   MarkReadResponse,
   UpdateSettingsResponse,
   ListThreadsResponse,
@@ -50,7 +50,7 @@ import {
   CreateCleanupBody,
   EditCleanupBody,
   NotificationsBody,
-  NotificationPrefsBody,
+  NotificationSettingsBody,
   MessagingListBody,
   ConversationBody,
   ReportFlowBody,
@@ -81,10 +81,11 @@ import {
   GALLERY_LEADERBOARD_PODIUM,
   GALLERY_MY_PROFILE,
   GALLERY_NOTIFICATIONS,
-  GALLERY_NOTIFICATION_PREFS,
+  GALLERY_NOTIFICATION_SETTINGS,
   GALLERY_SEARCH_RESULTS,
   GALLERY_VIEWER,
   daysAgo,
+  firstFixture,
   galleryChatHistory,
   galleryThreads,
   hoursAgo,
@@ -128,7 +129,7 @@ function event(id: string, title: string, daysAgo: number, organizerId: string):
     galleryUrls: [],
     ticketTypes: [],
     myCapabilities: [],
-  } as CleanupDTO
+  }
 }
 
 const PERSON_PROFILE: UserProfileDTO = {
@@ -223,23 +224,30 @@ const MY_REPORTS: ListMyReportsResponse = {
   nextCursor: null,
 }
 
-const REPORT_DETAIL: ReportDTO = report("r-pothole", "hazard", "Deep pothole on Mission St", "in_progress", {
-  following: false,
-  media: [
-    {
-      id: "m1",
-      kind: "video",
-      url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      thumbUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
-      status: "ready",
-    },
-  ] as ReportDTO["media"],
-  discussionCount: 3,
-  cityHandle: "sfpublicworks",
-  cityName: "SF Public Works",
-  canForwardToCity: true,
-  linkedEvents: LINKED_EVENTS,
-})
+const REPORT_DETAIL: ReportDTO = report(
+  "r-pothole",
+  "hazard",
+  "Deep pothole on Mission St",
+  "in_progress",
+  {
+    following: false,
+    media: [
+      {
+        id: "m1",
+        kind: "video",
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        thumbUrl:
+          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+        status: "ready",
+      },
+    ] as ReportDTO["media"],
+    discussionCount: 3,
+    cityHandle: "sfpublicworks",
+    cityName: "SF Public Works",
+    canForwardToCity: true,
+    linkedEvents: LINKED_EVENTS,
+  },
+)
 
 const NOTIFICATIONS: ListNotificationsResponse = {
   items: [
@@ -312,6 +320,8 @@ const POST_BASE = {
   threadRootId: null,
 } satisfies Partial<PostDTO>
 
+const NEAREST_CLEANUP = firstFixture(NEARBY_CLEANUPS.items)
+
 const FEED_POSTS: PostDTO[] = [
   {
     ...POST_BASE,
@@ -325,9 +335,9 @@ const FEED_POSTS: PostDTO[] = [
       title: "Creekside litter sweep",
       eventKind: "cleanup",
       status: "upcoming",
-      scheduledAt: NEARBY_CLEANUPS.items[0]!.scheduledAt,
-      lat: NEARBY_CLEANUPS.items[0]!.lat,
-      lng: NEARBY_CLEANUPS.items[0]!.lng,
+      scheduledAt: NEAREST_CLEANUP.scheduledAt,
+      lat: NEAREST_CLEANUP.lat,
+      lng: NEAREST_CLEANUP.lng,
       going: 8,
       organizer: ORGANIZER,
       linkedAt: isoFromNow(-35 * MS_PER_MINUTE),
@@ -417,7 +427,7 @@ const CLEANUP_DETAIL: CleanupDTO = {
   bring: ["Work gloves", "Water bottle", "Sturdy shoes"],
   address: "Boathouse dock, Echo Park Lake",
   linkedReports: LINKED_REPORTS,
-} as CleanupDTO
+}
 
 const SLOTS: EventSlotDTO[] = [
   {
@@ -429,8 +439,24 @@ const SLOTS: EventSlotDTO[] = [
     sortOrder: 0,
     mine: false,
   },
-  { id: "s-sort", title: "Sorting station", description: null, capacity: 2, claimed: 2, sortOrder: 1, mine: false },
-  { id: "s-sweep", title: "Sweep crew", description: null, capacity: null, claimed: 5, sortOrder: 2, mine: true },
+  {
+    id: "s-sort",
+    title: "Sorting station",
+    description: null,
+    capacity: 2,
+    claimed: 2,
+    sortOrder: 1,
+    mine: false,
+  },
+  {
+    id: "s-sweep",
+    title: "Sweep crew",
+    description: null,
+    capacity: null,
+    claimed: 5,
+    sortOrder: 2,
+    mine: true,
+  },
 ]
 
 const EDIT_CLEANUP_DETAIL: CleanupDTO = {
@@ -446,7 +472,7 @@ const EDIT_CLEANUP_DETAIL: CleanupDTO = {
   address: "24th St & Folsom, San Francisco",
   linkedReports: LINKED_REPORTS,
   slots: SLOTS.slice(0, 2),
-} as CleanupDTO
+}
 
 const SLOT_CLEANUP: CleanupDTO = {
   ...CLEANUP_DETAIL,
@@ -722,9 +748,33 @@ const LEADERBOARD: LeaderboardResponse = {
   jurisdictionName: "Los Angeles",
   entries: [
     ...GALLERY_LEADERBOARD_PODIUM,
-    { rank: 4, userId: "p-jae", name: "Jae Park", handle: "jaepark", avatar: null, avatarUrl: null, hours: 30 },
-    { rank: 5, userId: "p-ravi", name: "Ravi Shah", handle: "ravishah", avatar: null, avatarUrl: null, hours: 22.5 },
-    { rank: 6, userId: "p-nour", name: "Nour Haddad", handle: "nourh", avatar: null, avatarUrl: null, hours: 18 },
+    {
+      rank: 4,
+      userId: "p-jae",
+      name: "Jae Park",
+      handle: "jaepark",
+      avatar: null,
+      avatarUrl: null,
+      hours: 30,
+    },
+    {
+      rank: 5,
+      userId: "p-ravi",
+      name: "Ravi Shah",
+      handle: "ravishah",
+      avatar: null,
+      avatarUrl: null,
+      hours: 22.5,
+    },
+    {
+      rank: 6,
+      userId: "p-nour",
+      name: "Nour Haddad",
+      handle: "nourh",
+      avatar: null,
+      avatarUrl: null,
+      hours: 18,
+    },
   ],
   nextOffset: null,
   participantCount: 42,
@@ -790,7 +840,8 @@ function slotCleanupWithClaim(base: CleanupDTO, slotId: string | null): CleanupD
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
-const postActionFake = async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!
+const postActionFake = async (args?: { id?: string }) =>
+  FEED_POSTS.find((post) => post.id === args?.id) ?? firstFixture(FEED_POSTS)
 
 const chatHistoryFake = async (): Promise<ChatHistoryResponse> => CHAT_HISTORY
 
@@ -803,8 +854,10 @@ const fakeApi: ApiClient = makeCannedApi(
     getReport: async (): Promise<ReportDTO> => REPORT_DETAIL,
     listNotifications: async (): Promise<ListNotificationsResponse> => NOTIFICATIONS,
     markNotificationsRead: async (): Promise<MarkReadResponse> => ({ ok: true }),
-    getNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
-    updateNotificationPrefs: async (): Promise<NotificationPrefsDTO> => GALLERY_NOTIFICATION_PREFS,
+    getNotificationSettings: async (): Promise<NotificationSettingsDTO> =>
+      GALLERY_NOTIFICATION_SETTINGS,
+    updateNotificationSettings: async (): Promise<NotificationSettingsDTO> =>
+      GALLERY_NOTIFICATION_SETTINGS,
     updateSettings: async (): Promise<UpdateSettingsResponse> => ({ user: GALLERY_VIEWER }),
     homeFeed: async (args?: { filter?: string }) => ({
       items: FEED_POSTS.filter((post) => {
@@ -818,20 +871,24 @@ const fakeApi: ApiClient = makeCannedApi(
       items: FEED_POSTS.filter((post) => !args?.id || post.author.id === args.id),
       nextCursor: null,
     }),
-    listSaves: async () => ({ items: FEED_POSTS.filter((post) => post.viewer.saved), nextCursor: null }),
+    listSaves: async () => ({
+      items: FEED_POSTS.filter((post) => post.viewer.saved),
+      nextCursor: null,
+    }),
     listReplies: async () => ({ items: [], nextCursor: null }),
-    getPost: async (args?: { id?: string }) => FEED_POSTS.find((post) => post.id === args?.id) ?? FEED_POSTS[0]!,
+    getPost: async (args?: { id?: string }) =>
+      FEED_POSTS.find((post) => post.id === args?.id) ?? firstFixture(FEED_POSTS),
     likePost: postActionFake,
     unlikePost: postActionFake,
     savePost: postActionFake,
     unsavePost: postActionFake,
     repostPost: postActionFake,
     unrepostPost: postActionFake,
-    createPost: async (): Promise<PostDTO> => FEED_POSTS[0]!,
+    createPost: async (): Promise<PostDTO> => firstFixture(FEED_POSTS),
     deletePost: async () => ({ ok: true }),
-    listCleanups: async (
-      args?: { when?: string },
-    ): Promise<{ items: CleanupDTO[]; nextCursor: string | null }> =>
+    listCleanups: async (args?: {
+      when?: string
+    }): Promise<{ items: CleanupDTO[]; nextCursor: string | null }> =>
       args?.when === "attending" ? ATTENDING_CLEANUPS : NEARBY_CLEANUPS,
     getCleanup: async (args?: { id?: string }): Promise<CleanupDTO> =>
       CLEANUPS_BY_ID[args?.id ?? ""] ?? CLEANUP_DETAIL,
@@ -848,7 +905,8 @@ const fakeApi: ApiClient = makeCannedApi(
     dmMessages: chatHistoryFake,
     getMyHours: async (): Promise<GetMyHoursResponse> => MY_HOURS,
     getMyHoursEntries: async (): Promise<MyVolunteerHoursEntriesResponse> => MY_HOURS_ENTRIES,
-    getPublicVolunteerHours: async (): Promise<PublicVolunteerHoursResponse> => PUBLIC_HOURS_ENTRIES,
+    getPublicVolunteerHours: async (): Promise<PublicVolunteerHoursResponse> =>
+      PUBLIC_HOURS_ENTRIES,
     getJurisdictionLeaderboard: async (): Promise<LeaderboardResponse> => LEADERBOARD,
     getEventHours: async (args?: { id?: string }): Promise<EventHoursResponse> => {
       if (args?.id === "e-done") return DONE_HOURS
@@ -877,8 +935,12 @@ const fakeApi: ApiClient = makeCannedApi(
         reused: false,
       }
     },
-    listMyServiceHoursCertificates: async (): Promise<ListMyCertificatesResponse> => ({ certificates: [] }),
-    revokeServiceHoursCertificate: async (args?: { code?: string }): Promise<RevokeCertificateResponse> => ({
+    listMyServiceHoursCertificates: async (): Promise<ListMyCertificatesResponse> => ({
+      certificates: [],
+    }),
+    revokeServiceHoursCertificate: async (args?: {
+      code?: string
+    }): Promise<RevokeCertificateResponse> => ({
       certificate: {
         ...CERTIFICATE,
         code: args?.code ?? CERTIFICATE.code,
@@ -896,8 +958,9 @@ const fakeApi: ApiClient = makeCannedApi(
       routable: true,
     }),
   },
-  (name) => (..._args: unknown[]): Promise<never> =>
-    Promise.reject(new Error(`bodies-gallery fake api: "${name}" not stubbed`)),
+  (name) =>
+    (..._args: unknown[]): Promise<never> =>
+      Promise.reject(new Error(`bodies-gallery fake api: "${name}" not stubbed`)),
 )
 
 const fakeData = makeFakeDataContext({
@@ -1083,10 +1146,22 @@ export default function BodiesGallery() {
               minHeight: "100vh",
             }}
           >
-            <h1 style={{ font: "700 20px/1.2 system-ui, sans-serif", color: theme.colors.text, margin: "8px 2px 0" }}>
+            <h1
+              style={{
+                font: "700 20px/1.2 system-ui, sans-serif",
+                color: theme.colors.text,
+                margin: "8px 2px 0",
+              }}
+            >
               Shared bodies
             </h1>
-            <p style={{ font: "400 13px/1.4 system-ui, sans-serif", color: theme.colors.textSubtle, margin: "4px 2px 0" }}>
+            <p
+              style={{
+                font: "400 13px/1.4 system-ui, sans-serif",
+                color: theme.colors.textSubtle,
+                margin: "4px 2px 0",
+              }}
+            >
               Shared @civfix/ui bodies rendered via react-native-web against fake data (no backend).
             </p>
 
@@ -1094,7 +1169,10 @@ export default function BodiesGallery() {
               <SocialBody />
             </BodyFrame>
 
-            <BodyFrame title="PersonDetailBody (FULL PAGE: own header, Posts default, Hours tab)" height={760}>
+            <BodyFrame
+              title="PersonDetailBody (FULL PAGE: own header, Posts default, Hours tab)"
+              height={760}
+            >
               <PersonDetailBody id="p-ann" />
             </BodyFrame>
 
@@ -1126,15 +1204,24 @@ export default function BodiesGallery() {
               <EventsBody />
             </BodyFrame>
 
-            <BodyFrame title="EventDetailBody (cleanup detail + Reports we'll handle gallery)" height={820}>
+            <BodyFrame
+              title="EventDetailBody (cleanup detail + Reports we'll handle gallery)"
+              height={820}
+            >
               <EventDetailBody id="e1" />
             </BodyFrame>
 
-            <BodyFrame title="EventDetailBody (viewer-hosted -> Edit affordance shows)" height={820}>
+            <BodyFrame
+              title="EventDetailBody (viewer-hosted -> Edit affordance shows)"
+              height={820}
+            >
               <EventDetailBody id="e-mine" />
             </BodyFrame>
 
-            <BodyFrame title="EventDetailBody (host, started -> underway, no completion affordance)" height={860}>
+            <BodyFrame
+              title="EventDetailBody (host, started -> underway, no completion affordance)"
+              height={860}
+            >
               <EventDetailBody id="e-ready" />
             </BodyFrame>
 
@@ -1142,11 +1229,17 @@ export default function BodiesGallery() {
               <EventDetailBody id="e-slots" />
             </BodyFrame>
 
-            <BodyFrame title="EventDetailBody (host, DONE, nothing logged -> hours editor)" height={860}>
+            <BodyFrame
+              title="EventDetailBody (host, DONE, nothing logged -> hours editor)"
+              height={860}
+            >
               <EventDetailBody id="e-done-new" />
             </BodyFrame>
 
-            <BodyFrame title="EventDetailBody (host, DONE, hours credited -> summary card + Edit)" height={860}>
+            <BodyFrame
+              title="EventDetailBody (host, DONE, hours credited -> summary card + Edit)"
+              height={860}
+            >
               <EventDetailBody id="e-done" />
             </BodyFrame>
 
@@ -1158,7 +1251,10 @@ export default function BodiesGallery() {
               <MembersBody id="e-slots-mine" roomKind="cleanup" />
             </BodyFrame>
 
-            <BodyFrame title="CreateCleanupBody (host form: kind selector + linked-reports picker)" height={900}>
+            <BodyFrame
+              title="CreateCleanupBody (host form: kind selector + linked-reports picker)"
+              height={900}
+            >
               <CreateCleanupBody />
             </BodyFrame>
 
@@ -1170,8 +1266,8 @@ export default function BodiesGallery() {
               <NotificationsBody />
             </BodyFrame>
 
-            <BodyFrame title="NotificationPrefsBody (notification + privacy prefs)" height={720}>
-              <NotificationPrefsBody />
+            <BodyFrame title="NotificationSettingsBody (per-category Push and Email)" height={720}>
+              <NotificationSettingsBody />
             </BodyFrame>
 
             <BodyFrame title="MessagingListBody (message inbox)">
@@ -1182,7 +1278,10 @@ export default function BodiesGallery() {
               <ConversationBody id="e1" roomKind="cleanup" />
             </BodyFrame>
 
-            <BodyFrame title="ConversationBody (direct message - peer header + composer)" height={640}>
+            <BodyFrame
+              title="ConversationBody (direct message - peer header + composer)"
+              height={640}
+            >
               <ConversationBody id="dm-ann" roomKind="dm" />
             </BodyFrame>
 
@@ -1202,23 +1301,35 @@ export default function BodiesGallery() {
               </div>
             </BodyFrame>
 
-            <BodyFrame title="ServiceHoursSection (variant='own': ledger + transcript card)" height={720}>
+            <BodyFrame
+              title="ServiceHoursSection (variant='own': ledger + transcript card)"
+              height={720}
+            >
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="own" totalHours={12.5} />
               </div>
             </BodyFrame>
 
-            <BodyFrame title="ServiceHoursSection (variant='public': another person's ledger)" height={620}>
+            <BodyFrame
+              title="ServiceHoursSection (variant='public': another person's ledger)"
+              height={620}
+            >
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="public" userId="p-ann" totalHours={8} />
               </div>
             </BodyFrame>
 
-            <BodyFrame title="ServiceHoursCertificateCard (idle / preparing / ready / expired / revoked / disabled)" height={700}>
+            <BodyFrame
+              title="ServiceHoursCertificateCard (idle / preparing / ready / expired / revoked / disabled)"
+              height={700}
+            >
               <CertificateHarness />
             </BodyFrame>
 
-            <BodyFrame title="ServiceHoursCertificateCard (no openExternal -> degraded copy-the-link)" height={520}>
+            <BodyFrame
+              title="ServiceHoursCertificateCard (no openExternal -> degraded copy-the-link)"
+              height={520}
+            >
               <CapabilitiesProvider value={CAPS_WITHOUT_OPEN_EXTERNAL}>
                 <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                   <ServiceHoursCertificateCard totalHours={12.5} />
@@ -1241,11 +1352,7 @@ export default function BodiesGallery() {
               <EventDashboardBody />
             </DashboardFrame>
 
-            <DashboardFrame
-              title="EventDashboardBody (portfolio, WIDE)"
-              height={900}
-              wide
-            >
+            <DashboardFrame title="EventDashboardBody (portfolio, WIDE)" height={900} wide>
               <EventDashboardBody />
             </DashboardFrame>
 
@@ -1301,7 +1408,10 @@ export default function BodiesGallery() {
               <HostModeBody id={DASHBOARD_EVENT_ERROR_ID} />
             </DashboardFrame>
 
-            <BodyFrame title="ReportFlowBody (report wizard - capture/category/details/review)" height={760}>
+            <BodyFrame
+              title="ReportFlowBody (report wizard - capture/category/details/review)"
+              height={760}
+            >
               <ReportFlowBody />
             </BodyFrame>
 

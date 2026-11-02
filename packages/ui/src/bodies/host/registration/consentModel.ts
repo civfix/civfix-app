@@ -32,7 +32,10 @@ export function consentVersions(
   current?: readonly LegalVersionRef[] | null,
 ): ConsentVersions | null {
   const versionOf = (type: LegalDocumentType) =>
-    (current?.find((entry) => entry.type === type) ?? documents?.find((entry) => entry.type === type))?.version
+    (
+      current?.find((entry) => entry.type === type) ??
+      documents?.find((entry) => entry.type === type)
+    )?.version
   const terms = versionOf("terms")
   const privacy = versionOf("privacy")
   return terms === undefined || privacy === undefined ? null : { terms, privacy }

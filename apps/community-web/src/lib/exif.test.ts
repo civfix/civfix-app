@@ -144,9 +144,24 @@ describe("readExifGps - malformed / absent -> null", () => {
     // Valid header + an IFD0 with a single unrelated tag and no 0x8825 pointer.
     const header = [0x49, 0x49, 0x2a, 0x00, 8, 0, 0, 0]
     const ifd0 = [
-      1, 0, // count = 1
-      0x00, 0x01, 2, 0, 1, 0, 0, 0, 65, 0, 0, 0, // tag 0x0100, type ASCII, count 1, "A"
-      0, 0, 0, 0, // next IFD = 0
+      1,
+      0, // count = 1
+      0x00,
+      0x01,
+      2,
+      0,
+      1,
+      0,
+      0,
+      0,
+      65,
+      0,
+      0,
+      0, // tag 0x0100, type ASCII, count 1, "A"
+      0,
+      0,
+      0,
+      0, // next IFD = 0
     ]
     expect(await readExifGps(fileOf(jpegWithTiff(new Uint8Array([...header, ...ifd0]))))).toBeNull()
   })
@@ -168,7 +183,7 @@ describe("readExifGps - malformed / absent -> null", () => {
 })
 
 describe("readExifGps - offset hardening (must not throw)", () => {
-    const le = (n: number, bytes: number) => {
+  const le = (n: number, bytes: number) => {
     const out: number[] = []
     for (let i = 0; i < bytes; i++) out.push((n >> (8 * i)) & 0xff)
     return out

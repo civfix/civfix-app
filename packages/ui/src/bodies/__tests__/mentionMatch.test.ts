@@ -75,7 +75,15 @@ describe("mentionScanRegex", () => {
   })
 
   it("agrees with bodyMentionsHandle on every case", () => {
-    const bodies = ["@alex", "hi @alex", "(@alex)", "hi,@alex", "bob@alex.com", "hi @alexa", "nothing"]
+    const bodies = [
+      "@alex",
+      "hi @alex",
+      "(@alex)",
+      "hi,@alex",
+      "bob@alex.com",
+      "hi @alexa",
+      "nothing",
+    ]
     for (const body of bodies) {
       expect(scan(body, ["alex"]).length > 0).toBe(bodyMentionsHandle(body, "alex"))
     }

@@ -34,7 +34,9 @@ const expectInvariant = (): void => {
   expect(s.active).toEqual(s.stack[s.stack.length - 1] ?? null)
 }
 
-beforeEach(() => resetStore())
+beforeEach(() => {
+  resetStore()
+})
 
 describe("entryIdentity", () => {
   it("is kind + the discriminating ids, so session-only fields never fork an entry", () => {
@@ -59,7 +61,7 @@ describe("entryIdentity", () => {
       entryIdentity({ kind: "leaderboard", geoid: "0644000" }),
     )
     expect(entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p1" })).not.toBe(
-      entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p2" })
+      entryIdentity({ kind: "composer", composerMode: "quote", targetPostId: "p2" }),
     )
     expect(entryIdentity({ kind: "composer" })).toBe(
       entryIdentity({ kind: "composer", composerMode: "post" }),

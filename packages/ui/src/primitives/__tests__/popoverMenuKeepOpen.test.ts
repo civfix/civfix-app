@@ -29,14 +29,17 @@ describe("pressPopoverMenuItem", () => {
     expect(onPress).toHaveBeenCalledTimes(1)
   })
 
-  it.each([true, false])("runs a keepOpen row at once and leaves the menu open (deferUntilClosed %s)", (defer) => {
-    const { gate, onClose, run } = menu(defer)
-    const onPress = vi.fn()
-    pressPopoverMenuItem({ onPress, keepOpen: true }, run)
-    expect(onPress).toHaveBeenCalledTimes(1)
-    expect(onClose).not.toHaveBeenCalled()
-    expect(gate.hasPending()).toBe(false)
-  })
+  it.each([true, false])(
+    "runs a keepOpen row at once and leaves the menu open (deferUntilClosed %s)",
+    (defer) => {
+      const { gate, onClose, run } = menu(defer)
+      const onPress = vi.fn()
+      pressPopoverMenuItem({ onPress, keepOpen: true }, run)
+      expect(onPress).toHaveBeenCalledTimes(1)
+      expect(onClose).not.toHaveBeenCalled()
+      expect(gate.hasPending()).toBe(false)
+    },
+  )
 })
 
 describe("PopoverMenu presses rows through the model", () => {

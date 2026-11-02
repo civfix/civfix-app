@@ -32,33 +32,33 @@ import { normalizeHandle } from "./mentionText"
 export interface MentionPersonInput {
   id: string
   name: string
-  handle?: string | null
-  avatar?: UserSearchResultDTO["avatar"]
-  avatarUrl?: string | null
+  handle?: string | null | undefined
+  avatar?: UserSearchResultDTO["avatar"] | undefined
+  avatarUrl?: string | null | undefined
 }
 
 /** The minimal report-detail slice the source needs (ReportDTO satisfies it). */
 export interface MentionReportInput {
-  cityHandle?: string | null
-  cityName?: string | null
-  canForwardToCity?: boolean
+  cityHandle?: string | null | undefined
+  cityName?: string | null | undefined
+  canForwardToCity?: boolean | undefined
 }
 
 export interface MentionSourceInput {
   roomKind: RoomKind
   /** The DM peer, when known (dm rooms only). */
-  peer?: MentionPersonInput | null
+  peer?: MentionPersonInput | null | undefined
   /** The cleanup attendee roster, when loaded (cleanup rooms only). */
-  attendees?: readonly MentionPersonInput[] | null
+  attendees?: readonly MentionPersonInput[] | null | undefined
   /**
    * The group member roster's first page, when loaded (group rooms only). null/undefined means
    * "not loaded yet" and falls back to the GLOBAL search (unlike cleanup, where unloaded = []).
    */
-  groupMembers?: readonly MentionPersonInput[] | null
+  groupMembers?: readonly MentionPersonInput[] | null | undefined
   /** The viewer's user id (excluded from the cleanup roster - you cannot tag yourself). */
   viewerId: string | null
   /** The report detail, when loaded (report rooms only - carries the routable jurisdiction). */
-  report?: MentionReportInput | null
+  report?: MentionReportInput | null | undefined
 }
 
 export interface MentionSource {

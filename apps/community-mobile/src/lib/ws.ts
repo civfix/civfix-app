@@ -34,8 +34,10 @@ function openNativeSocket(): Promise<WsConnection | null> {
     apiUrl: API_URL,
     readToken,
     mintTicket: async () => (await api.wsTicket()).ticket ?? null,
-    connect: (url) =>
-      new (WebSocket as unknown as RNWebSocketCtor)(url, undefined, { headers: { Origin: "" } }),
+    connect: (url) => {
+      const RNWebSocket: RNWebSocketCtor = WebSocket
+      return new RNWebSocket(url, undefined, { headers: { Origin: "" } })
+    },
   })
 }
 

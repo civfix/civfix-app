@@ -1,5 +1,7 @@
 import React, { useCallback } from "react"
-import { Modal, Platform, Pressable, StyleSheet, View } from "react-native"
+import { Platform, Pressable, StyleSheet, View } from "react-native"
+import { FullWindowModal } from "../primitives/FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { AddressPrecision } from "@civfix/contract"
 import {
@@ -56,7 +58,7 @@ function AddressActionsSheet({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("address")
-  const insets = React.useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(React.useContext(SafeAreaInsetsContext))
   const pendingRef = React.useRef<AddressMapsOption | null>(null)
 
   const choose = (option: AddressMapsOption) => {
@@ -76,7 +78,7 @@ function AddressActionsSheet({
   }
 
   return (
-    <Modal
+    <FullWindowModal
       visible={visible}
       transparent
       animationType="fade"
@@ -124,7 +126,7 @@ function AddressActionsSheet({
           ))}
         </View>
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 
@@ -179,13 +181,24 @@ export function AddressRow({
   const line = resolved.length > 0 ? applyNearPrefix(resolved, precision, near) : null
   const display = line ?? fallbackLabel?.trim() ?? null
 
-  const { affordances, sheetOpen, sheetOptions, onCopy, onExternal, onFocusMap, chooseOption, closeSheet } =
-    useAddressActions({ resolved, point, focusTarget, verified, title, variant })
+  const {
+    affordances,
+    sheetOpen,
+    sheetOptions,
+    onCopy,
+    onExternal,
+    onFocusMap,
+    chooseOption,
+    closeSheet,
+  } = useAddressActions({ resolved, point, focusTarget, verified, title, variant })
 
   if (!display) return null
 
   const text = (
-    <Text style={variant === "compact" ? styles.compactText : styles.text} numberOfLines={numberOfLines}>
+    <Text
+      style={variant === "compact" ? styles.compactText : styles.text}
+      numberOfLines={numberOfLines}
+    >
       {display}
     </Text>
   )
@@ -202,7 +215,11 @@ export function AddressRow({
 
   const body = (
     <View style={styles.main}>
-      <View style={styles.label} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
+      <View
+        style={styles.label}
+        accessible
+        accessibilityLabel={t("row.static_a11y", { address: display })}
+      >
         <Icon icon={iconMap.MapPin} size={LABEL_ICON_SIZE} color={th.colors.textSubtle} />
         {text}
       </View>

@@ -37,14 +37,19 @@ describe("the web seam bundles English and lazy-loads every other locale", () =>
     )
   })
 
-  it.each(SupportedLocaleSchema.options)("loads the same %s catalog the static resources carry", async (lng) => {
-    expect(await loadCatalog(lng)).toBe(resources[lng])
-  })
+  it.each(SupportedLocaleSchema.options)(
+    "loads the same %s catalog the static resources carry",
+    async (lng) => {
+      expect(await loadCatalog(lng)).toBe(resources[lng])
+    },
+  )
 })
 
 describe("the native seam bundles every locale", () => {
   it("starts with all of them, so mobile never waits on a catalog", () => {
     expect(nativeSeam.initialResources).toBe(resources)
-    expect(Object.keys(nativeSeam.initialResources).sort()).toEqual([...SupportedLocaleSchema.options].sort())
+    expect(Object.keys(nativeSeam.initialResources).sort()).toEqual(
+      [...SupportedLocaleSchema.options].sort(),
+    )
   })
 })

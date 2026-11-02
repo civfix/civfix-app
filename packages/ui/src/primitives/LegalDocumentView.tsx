@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { ScrollView, View, type LayoutChangeEvent } from "react-native"
 import type { LegalBlock, LegalDocumentType } from "@civfix/contract"
 import { safeDateFormat } from "@civfix/contract/datetime"
@@ -16,7 +16,11 @@ import { openLegalDocumentInPlace } from "./legalDocumentNav"
 const TABLE_CELL_MIN_WIDTH = 176
 const TABLE_BORDER_WIDTH = 1
 
-const EFFECTIVE_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }
+const EFFECTIVE_DATE: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+}
 
 export interface LegalDocumentViewProps {
   document: ReadableLegalDocument
@@ -25,12 +29,24 @@ export interface LegalDocumentViewProps {
   onOpenLegalDocument?: ((type: LegalDocumentType) => void) | undefined
 }
 
-function Inline({ text, onOpenLink, keyPrefix }: { text: string; onOpenLink: (href: string) => void; keyPrefix: string }) {
+function Inline({
+  text,
+  onOpenLink,
+  keyPrefix,
+}: {
+  text: string
+  onOpenLink: (href: string) => void
+  keyPrefix: string
+}) {
   const nodes = useMemo(() => parseMarkdownInline(text).nodes, [text])
   return <InlineRun nodes={nodes} onOpenLink={onOpenLink} keyPrefix={keyPrefix} />
 }
 
-export function LegalDocumentView({ document, current, onOpenLegalDocument }: LegalDocumentViewProps) {
+export function LegalDocumentView({
+  document,
+  current,
+  onOpenLegalDocument,
+}: LegalDocumentViewProps) {
   const styles = useStyles()
   const { t } = useT("legal")
   const { locale } = useLocale()
@@ -75,6 +91,7 @@ export function LegalDocumentView({ document, current, onOpenLegalDocument }: Le
         return (
           <View key={key} style={styles.list}>
             {block.items.map((item, itemIndex) => (
+              // eslint-disable-next-line react/no-array-index-key -- a published version's blocks never change, so position is identity
               <View key={`${key}.${itemIndex}`} style={styles.listRow}>
                 <Text style={styles.marker}>{block.ordered ? `${itemIndex + 1}.` : "•"}</Text>
                 <Text style={styles.listText}>
@@ -95,7 +112,9 @@ export function LegalDocumentView({ document, current, onOpenLegalDocument }: Le
         {document.title}
       </Text>
       <Text style={styles.meta}>{t("meta", { version: document.version, date: effective })}</Text>
-      {current ? null : <Text style={styles.earlier}>{t("earlier_version", { date: effective })}</Text>}
+      {current ? null : (
+        <Text style={styles.earlier}>{t("earlier_version", { date: effective })}</Text>
+      )}
       <View style={styles.blocks}>{document.blocks.map(renderBlock)}</View>
     </View>
   )
@@ -126,23 +145,34 @@ function LegalTable({
         <View role="row" style={[styles.row, styles.headerRow]}>
           {block.columns.map((column, columnIndex) => (
             <Text
+              // eslint-disable-next-line react/no-array-index-key -- a published version's blocks never change, so position is identity
               key={`${blockKey}.h${columnIndex}`}
               role="columnheader"
               style={[styles.cell, cellWidth, styles.headerCell]}
             >
-              <Inline text={column} onOpenLink={onOpenLink} keyPrefix={`${blockKey}.h${columnIndex}`} />
+              <Inline
+                text={column}
+                onOpenLink={onOpenLink}
+                keyPrefix={`${blockKey}.h${columnIndex}`}
+              />
             </Text>
           ))}
         </View>
         {block.rows.map((row, rowIndex) => (
+          // eslint-disable-next-line react/no-array-index-key -- a published version's blocks never change, so position is identity
           <View key={`${blockKey}.r${rowIndex}`} role="row" style={[styles.row, styles.rowDivider]}>
             {row.map((cell, cellIndex) => (
               <Text
+                // eslint-disable-next-line react/no-array-index-key -- a published version's blocks never change, so position is identity
                 key={`${blockKey}.r${rowIndex}.${cellIndex}`}
                 role="cell"
                 style={[styles.cell, cellWidth, styles.bodyCell]}
               >
-                <Inline text={cell} onOpenLink={onOpenLink} keyPrefix={`${blockKey}.r${rowIndex}.${cellIndex}`} />
+                <Inline
+                  text={cell}
+                  onOpenLink={onOpenLink}
+                  keyPrefix={`${blockKey}.r${rowIndex}.${cellIndex}`}
+                />
               </Text>
             ))}
           </View>

@@ -1,4 +1,9 @@
-import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/contract"
+import {
+  POLL_MAX_OPTIONS,
+  POLL_MIN_OPTIONS,
+  POLL_OPTION_MAX,
+  POLL_QUESTION_MAX,
+} from "@civfix/contract"
 
 /**
  * Rows carry an id because keying or focusing by position would hand a removed row's focus and native
@@ -61,7 +66,10 @@ export function normalizeOptions(options: string[]): string[] {
 }
 
 export function canCreatePoll(draft: PollDraft): boolean {
-  return draft.question.trim().length > 0 && normalizeOptions(optionTexts(draft)).length >= POLL_MIN_OPTIONS
+  return (
+    draft.question.trim().length > 0 &&
+    normalizeOptions(optionTexts(draft)).length >= POLL_MIN_OPTIONS
+  )
 }
 
 export function toCreateInput(draft: PollDraft): PollDraftInput {

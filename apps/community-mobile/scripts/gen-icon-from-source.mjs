@@ -11,31 +11,40 @@
 // so the icon reads as "wordmark perfectly centered, padded on cream" with no visible inner rectangle.
 import { fileURLToPath } from "node:url"
 import { dirname, join, resolve } from "node:path"
-import { createRequire } from "node:module"
-const require = createRequire(import.meta.url)
-const sharp = require("sharp")
+import sharp from "sharp"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const assetsDir = join(here, "..", "assets")
 const SRC = resolve(process.argv[2] ?? join(assetsDir, "icon-source.png"))
 
-const CREAM = "#FBF7F0"
-const CR = 0xfb, CG = 0xf7, CB = 0xf0 // cream as bytes
+const CREAM = { r: 0xfb, g: 0xf7, b: 0xf0, alpha: 1 }
+const { r: CR, g: CG, b: CB } = CREAM
 const ICON = 1024
 const ICON_PAD = 0.82 // wordmark occupies ~82% of the square (cream margin all around)
 const SAFE = 0.66 // Android adaptive safe-zone fraction
 
 // Repaint the near-neutral light background (and any transparency) to cream; flatten semi-transparent
 // edges over cream. Returns an opaque RGBA PNG buffer the emitters fit/center on a cream canvas.
+/** @param {string} srcPath */
 async function normalizeToCream(srcPath) {
-  const { data, info } = await sharp(srcPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { data, info } = await sharp(srcPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
   const ch = info.channels // 4
   for (let i = 0; i < data.length; i += ch) {
-    const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3]
-    const lo = Math.min(r, g, b), hi = Math.max(r, g, b)
+    const r = data.readUInt8(i),
+      g = data.readUInt8(i + 1),
+      b = data.readUInt8(i + 2),
+      a = data.readUInt8(i + 3)
+    const lo = Math.min(r, g, b),
+      hi = Math.max(r, g, b)
     if (a < 16 || (hi - lo <= 16 && lo >= 218)) {
       // transparent OR low-chroma very-light = background -> cream
-      data[i] = CR; data[i + 1] = CG; data[i + 2] = CB; data[i + 3] = 255
+      data[i] = CR
+      data[i + 1] = CG
+      data[i + 2] = CB
+      data[i + 3] = 255
     } else if (a < 255) {
       // semi-transparent edge -> composite over cream
       const af = a / 255
@@ -45,13 +54,18 @@ async function normalizeToCream(srcPath) {
       data[i + 3] = 255
     }
   }
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: ch } }).png().toBuffer()
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: ch } })
+    .png()
+    .toBuffer()
 }
 
 // (1) iOS marketing icon: contained + centered on cream, FLATTENED no-alpha (channels 3).
+/** @param {Buffer} srcBuf */
 async function genIcon(srcBuf) {
   const inner = Math.round(ICON * ICON_PAD)
-  const fitted = await sharp(srcBuf).resize(inner, inner, { fit: "contain", background: CREAM }).toBuffer()
+  const fitted = await sharp(srcBuf)
+    .resize(inner, inner, { fit: "contain", background: CREAM })
+    .toBuffer()
   await sharp({ create: { width: ICON, height: ICON, channels: 3, background: CREAM } })
     .composite([{ input: fitted, gravity: "center" }])
     .flatten({ background: CREAM })
@@ -63,9 +77,12 @@ async function genIcon(srcBuf) {
 
 // (2) Android adaptive foreground: wordmark into the ~66% safe zone, on CREAM (matches new
 // android.adaptiveIcon.backgroundColor). Kept RGBA so the launcher mask blends cleanly.
+/** @param {Buffer} srcBuf */
 async function genAdaptive(srcBuf) {
   const safe = Math.round(ICON * SAFE)
-  const fitted = await sharp(srcBuf).resize(safe, safe, { fit: "contain", background: CREAM }).toBuffer()
+  const fitted = await sharp(srcBuf)
+    .resize(safe, safe, { fit: "contain", background: CREAM })
+    .toBuffer()
   await sharp({ create: { width: ICON, height: ICON, channels: 4, background: CREAM } })
     .composite([{ input: fitted, gravity: "center" }])
     .png()

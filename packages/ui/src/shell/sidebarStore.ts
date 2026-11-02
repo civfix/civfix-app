@@ -34,7 +34,8 @@ export function clampSidebarWidth(width: number, viewportWidth: number): number 
  */
 export function migrateSidebarWidth(persisted: unknown): { width: number } {
   const stored = (persisted as { width?: unknown } | null | undefined)?.width
-  if (typeof stored !== "number" || !Number.isFinite(stored)) return { width: SIDEBAR_DEFAULT_WIDTH }
+  if (typeof stored !== "number" || !Number.isFinite(stored))
+    return { width: SIDEBAR_DEFAULT_WIDTH }
   return { width: stored === LEGACY_DEFAULT_WIDTH ? SIDEBAR_DEFAULT_WIDTH : stored }
 }
 

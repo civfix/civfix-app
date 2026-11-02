@@ -17,14 +17,18 @@ function catalog(locale: (typeof LOCALES)[number]): Record<string, unknown> {
 
 function lookup(tree: Record<string, unknown>, key: string): unknown {
   return key.split(".").reduce<unknown>((node, part) => {
-    return typeof node === "object" && node !== null ? (node as Record<string, unknown>)[part] : undefined
+    return typeof node === "object" && node !== null
+      ? (node as Record<string, unknown>)[part]
+      : undefined
   }, tree)
 }
 
 /** Every key a component can ask for: its literal `t("…")` calls and the keys its per-document tables name. */
 function keysOf(source: string): string[] {
   const calls = [...source.matchAll(/\bt\(\s*"([^"]+)"/g)].map((match) => match[1] ?? "")
-  const tables = [...source.matchAll(/"((?:update|notice)\.[a-z_.]+)"/g)].map((match) => match[1] ?? "")
+  const tables = [...source.matchAll(/"((?:update|notice)\.[a-z_.]+)"/g)].map(
+    (match) => match[1] ?? "",
+  )
   return [...new Set([...calls, ...tables])].sort()
 }
 
@@ -32,7 +36,9 @@ describe("the legal update components' copy", () => {
   it.each(Object.entries(COMPONENTS))(
     "T19: %s reads every visible string from legal.json and has no literal copy",
     (_name, source) => {
-      expect([...source.matchAll(/useT\(\s*"([^"]+)"/g)].map((match) => match[1])).toEqual(["legal"])
+      expect([...source.matchAll(/useT\(\s*"([^"]+)"/g)].map((match) => match[1])).toEqual([
+        "legal",
+      ])
       expect(source).not.toMatch(/>[^<>{}\n]*[A-Za-z][^<>{}\n]*<\//)
       expect(source).not.toMatch(/\b(?:label|accessibilityLabel|aria-label|title|placeholder)="/)
       const keys = keysOf(source)

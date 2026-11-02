@@ -28,13 +28,19 @@ const LOCALES = LocaleEnum.options
 // Must equal FALLBACK_LOCALE in src/i18n/resolveLocale.ts: the web bundles it statically so a key never
 // renders raw while another locale's chunk is in flight.
 const STATIC_LOCALE = "en"
-if (!LOCALES.includes(STATIC_LOCALE)) throw new Error(`LocaleEnum no longer contains ${STATIC_LOCALE}`)
+if (!LOCALES.includes(STATIC_LOCALE))
+  throw new Error(`LocaleEnum no longer contains ${STATIC_LOCALE}`)
 
+/** @param {string} dir */
 const jsonNames = (dir) =>
   readdirSync(dir)
     .filter((f) => f.endsWith(".json"))
     .map((f) => f.replace(/\.json$/, ""))
 
+/**
+ * @param {string} lng
+ * @param {string} ns
+ */
 function ident(lng, ns) {
   return `${lng}_${ns}`.replace(/[^A-Za-z0-9_]/g, "_")
 }
@@ -48,11 +54,13 @@ const banner = `/**
 export function renderI18nModules() {
   // Sorted for stable output.
   const namespaces = jsonNames(join(localesDir, STATIC_LOCALE)).sort()
+  /** @param {string} lng */
   const namespacesFor = (lng) => {
     const present = new Set(jsonNames(join(localesDir, lng)))
     return namespaces.filter((ns) => present.has(ns))
   }
 
+  /** @type {Map<string, string>} */
   const modules = new Map()
   modules.set(
     `${CATALOGS_DIR}/namespaces.ts`,
@@ -118,5 +126,8 @@ ${LOCALES.map((lng) => `  ${lng},`).join("\n")}
 `,
   )
 
-  return { modules, summary: { locales: LOCALES, staticLocale: STATIC_LOCALE, namespaces, importCount } }
+  return {
+    modules,
+    summary: { locales: LOCALES, staticLocale: STATIC_LOCALE, namespaces, importCount },
+  }
 }

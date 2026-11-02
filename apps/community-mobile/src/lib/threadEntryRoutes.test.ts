@@ -9,7 +9,9 @@ const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app")
 
 function routeFileExists(pathname: string): boolean {
   const relative = pathname.replace(/^\//, "")
-  return existsSync(join(APP_DIR, `${relative}.tsx`)) || existsSync(join(APP_DIR, relative, "index.tsx"))
+  return (
+    existsSync(join(APP_DIR, `${relative}.tsx`)) || existsSync(join(APP_DIR, relative, "index.tsx"))
+  )
 }
 
 test("maps every push-capable thread tap to a pushed route", () => {

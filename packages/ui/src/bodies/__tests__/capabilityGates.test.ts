@@ -62,7 +62,7 @@ describe("the host gates read capabilities, not role strings", () => {
     expect(members).toContain('hasHostCapability(viewerStanding, "manage_event")')
     expect(members).toContain("const canSetRole = manageable && viewerManagesTeam")
     expect(members).toContain(
-      "manageable && (viewerManagesTeam || (viewerManagesEvent && targetRole === \"member\"))",
+      'manageable && (viewerManagesTeam || (viewerManagesEvent && targetRole === "member"))',
     )
     expect(members).not.toContain('viewerRole === "organizer"')
     expect(members).not.toContain('viewerRole === "cohost"')
@@ -70,7 +70,9 @@ describe("the host gates read capabilities, not role strings", () => {
 
   it("MembersBody offers every settable tier from the shared list, not a cohost toggle", () => {
     expect(members).toContain("settableRolesOtherThan(targetRole).map((role) => ({")
-    expect(members).toContain("t(\"manage.make_role\", { role: tEnums(`cleanupMemberRole.${role}`) })")
+    expect(members).toContain(
+      't("manage.make_role", { role: tEnums(`cleanupMemberRole.${role}`) })',
+    )
     expect(members).not.toContain("manage.makeCohost")
     expect(members).not.toContain("manage.removeCohost")
   })

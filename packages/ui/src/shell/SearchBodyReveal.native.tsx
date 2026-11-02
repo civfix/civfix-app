@@ -1,4 +1,4 @@
-import React, { createContext, forwardRef, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, forwardRef, useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { makeThemedStyles } from "../theme"
@@ -11,6 +11,7 @@ import {
   ScrollHostProvider,
   decorateScrollHost,
   type DecoratedScrollProps,
+  type ScrollHostComponent,
   type ScrollHostValue,
 } from "./ScrollHost"
 import { useSearchBarStore } from "./searchBarStore"
@@ -21,38 +22,42 @@ import type { SearchBodyRevealProps } from "./SearchBodyReveal.types"
 const DockClearanceFallbackContext = createContext(0)
 DockClearanceFallbackContext.displayName = "DockClearanceFallbackContext"
 
-function makeDockClearanceScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
-  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(function DockClearanceScroll(
-    { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
-    ref,
-  ) {
-    const footprint = useTabBarStore((s) => s.tabBarHeight)
-    const keyboardReserve = useSearchBarStore((s) => s.keyboardReserve)
-    const fallback = useContext(DockClearanceFallbackContext)
-    const clearance = horizontal ? 0 : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
+function makeDockClearanceScroll(Base: ScrollHostComponent): ScrollHostComponent {
+  const DockClearanceScroll = forwardRef<unknown, DecoratedScrollProps>(
+    function DockClearanceScroll(
+      { contentContainerStyle, horizontal, scrollIndicatorInsets, ...rest },
+      ref,
+    ) {
+      const footprint = useTabBarStore((s) => s.tabBarHeight)
+      const keyboardReserve = useSearchBarStore((s) => s.keyboardReserve)
+      const fallback = useContext(DockClearanceFallbackContext)
+      const clearance = horizontal
+        ? 0
+        : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
 
-    const mergedContentStyle = useMemo(
-      () => withExtraBottomPadding(contentContainerStyle, clearance),
-      [contentContainerStyle, clearance],
-    )
+      const mergedContentStyle = useMemo(
+        () => withExtraBottomPadding(contentContainerStyle, clearance),
+        [contentContainerStyle, clearance],
+      )
 
-    const indicatorInsets = useMemo(
-      () => scrollIndicatorInsets ?? { bottom: clearance },
-      [scrollIndicatorInsets, clearance],
-    )
+      const indicatorInsets = useMemo(
+        () => scrollIndicatorInsets ?? { bottom: clearance },
+        [scrollIndicatorInsets, clearance],
+      )
 
-    return (
-      <Base
-        ref={ref}
-        contentContainerStyle={mergedContentStyle}
-        horizontal={horizontal}
-        scrollIndicatorInsets={indicatorInsets}
-        {...rest}
-      />
-    )
-  })
+      return (
+        <Base
+          ref={ref}
+          contentContainerStyle={mergedContentStyle}
+          horizontal={horizontal}
+          scrollIndicatorInsets={indicatorInsets}
+          {...rest}
+        />
+      )
+    },
+  )
   DockClearanceScroll.displayName = "DockClearanceScroll"
-  return DockClearanceScroll as unknown as React.ComponentType<any>
+  return DockClearanceScroll
 }
 
 function makeDockClearanceScrollHost(base: ScrollHostValue): ScrollHostValue {
@@ -66,7 +71,12 @@ const PORTRAIT_SCROLL_HOST = makeDockClearanceScrollHost(
   }),
 )
 
-export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: SearchBodyRevealProps) {
+export function SearchBodyReveal({
+  active,
+  renderBody,
+  topInset,
+  bottomInset,
+}: SearchBodyRevealProps) {
   const styles = useStyles()
   const [mounted, setMounted] = useState(active)
   useEffect(() => {
@@ -94,9 +104,7 @@ export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: 
       pointerEvents={active ? "auto" : "none"}
     >
       <DockClearanceFallbackContext.Provider value={bottomInset}>
-        <ScrollHostProvider value={PORTRAIT_SCROLL_HOST}>
-          {body}
-        </ScrollHostProvider>
+        <ScrollHostProvider value={PORTRAIT_SCROLL_HOST}>{body}</ScrollHostProvider>
       </DockClearanceFallbackContext.Provider>
     </Animated.View>
   )

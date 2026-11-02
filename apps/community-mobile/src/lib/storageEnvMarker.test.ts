@@ -68,10 +68,12 @@ test("a non-production boot never purges: it does not read the legacy ids in the
 })
 
 test("every listed legacy id is exactly what a production build resolves to", () => {
-  assert.deepEqual(
-    [...LEGACY_STORAGE_IDS].sort(),
-    ["civfix.app", "civfix.secure", "civfix.secure-blobs.key", "civfix.session.token"],
-  )
+  assert.deepEqual([...LEGACY_STORAGE_IDS].sort(), [
+    "civfix.app",
+    "civfix.secure",
+    "civfix.secure-blobs.key",
+    "civfix.session.token",
+  ])
   for (const id of LEGACY_STORAGE_IDS) {
     assert.equal(scopeStorageId(id, PROD_API_URL), id)
     assert.notEqual(scopeStorageId(id, STAGING_API_URL), id)
@@ -80,9 +82,9 @@ test("every listed legacy id is exactly what a production build resolves to", ()
 
 test("the legacy ids are exactly the ids the storage modules scope, so the list cannot drift", () => {
   const scoped = ["../auth/storage.ts", "./mmkv.ts", "./nativeSecureStore.ts"].flatMap((rel) =>
-    [...readFileSync(new URL(rel, import.meta.url), "utf8").matchAll(/scopeStorageId\("([^"]+)"/g)].map(
-      (m) => m[1],
-    ),
+    [
+      ...readFileSync(new URL(rel, import.meta.url), "utf8").matchAll(/scopeStorageId\("([^"]+)"/g),
+    ].map((m) => m[1]),
   )
   assert.deepEqual(scoped.sort(), [...LEGACY_STORAGE_IDS].sort())
 })

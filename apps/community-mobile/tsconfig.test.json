@@ -6,6 +6,6 @@
     "allowImportingTsExtensions": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"]
   },
-  "include": ["**/*.test.ts", "**/*.test.tsx", "tests/**/*.ts"],
+  "include": ["**/*.test.ts", "**/*.test.tsx", "tests/**/*.ts", "tests/**/*.mts"],
   "exclude": ["node_modules"]
 }

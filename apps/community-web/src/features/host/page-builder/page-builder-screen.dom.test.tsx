@@ -51,7 +51,7 @@ function renderBuilder(dto: EventPageDTO) {
     <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
       <PageBuilderScreen />
     </ConsoleEventProvider>,
-    { api: client as never },
+    { api: client },
   )
   return client
 }
@@ -104,9 +104,7 @@ describe("PageBuilderScreen blocks", () => {
   })
 
   it("names the block and the row in every row action", async () => {
-    renderBuilder(
-      page({ blocks: [{ id: "hosts-1", kind: "hosts", entries: [{ name: "Rosa" }] }] }),
-    )
+    renderBuilder(page({ blocks: [{ id: "hosts-1", kind: "hosts", entries: [{ name: "Rosa" }] }] }))
     expect(
       await screen.findByRole("button", {
         name: "blocks.remove_named(name=blocks.item_name(kind=block.kind.hosts,n=1))",
@@ -126,7 +124,7 @@ describe("PageBuilderScreen server refresh", () => {
     const qc = makeTestQueryClient()
     const client = { getEventPage: vi.fn().mockResolvedValue(dto) }
     render(
-      <ConsoleTestHarness options={{ api: client as never }} client={qc}>
+      <ConsoleTestHarness options={{ api: client }} client={qc}>
         <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
           <PageBuilderScreen />
         </ConsoleEventProvider>
@@ -142,7 +140,9 @@ describe("PageBuilderScreen server refresh", () => {
     act(() => {
       qc.setQueryData(consoleKeys.page(EVENT_ID), page({ slug: "river-day-2026" }))
     })
-    await waitFor(() => expect(screen.getByLabelText("slug.label")).toHaveProperty("value", "river-day-2026"))
+    await waitFor(() =>
+      expect(screen.getByLabelText("slug.label")).toHaveProperty("value", "river-day-2026"),
+    )
   })
 
   it("keeps the host's unsaved edits when the server copy changes underneath them", async () => {

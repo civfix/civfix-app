@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import {
   Animated,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
 import { REACTION_EMOJIS, type ReactionEmoji } from "@civfix/contract"
 import {
   makeThemedStyles,
@@ -20,6 +20,7 @@ import {
   webNoSelect,
   focusRingProps,
   webScrimProps,
+  pointerEventStyles,
 } from "../theme"
 import { Text } from "../typography"
 import type { LucideIcon } from "../typography"
@@ -190,7 +191,11 @@ export function MessageContextMenu({
   }
 
   if (isWeb) {
-    const { actionsMaxH, cardH, position: cardPosition } = resolveWebMenuFrame(
+    const {
+      actionsMaxH,
+      cardH,
+      position: cardPosition,
+    } = resolveWebMenuFrame(
       anchor,
       { width: winW, height: winH },
       {
@@ -207,7 +212,7 @@ export function MessageContextMenu({
       cardPosition ? { ...cardPosition, width: WEB_CARD_WIDTH, height: cardH } : null,
     )
     return (
-      <Modal
+      <FullWindowModal
         visible={rendered}
         transparent
         animationType="none"
@@ -215,8 +220,10 @@ export function MessageContextMenu({
         onDismiss={onModalDismiss}
       >
         <View
-          style={cardPosition ? styles.rootAnchored : styles.rootCentered}
-          pointerEvents={motion.exiting ? "none" : "auto"}
+          style={[
+            cardPosition ? styles.rootAnchored : styles.rootCentered,
+            pointerEventStyles[motion.exiting ? "none" : "auto"],
+          ]}
         >
           <Pressable
             style={styles.backdropWeb}
@@ -246,10 +253,12 @@ export function MessageContextMenu({
                 <View style={styles.separator} />
               </>
             ) : null}
-            <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+            <ScrollView style={{ maxHeight: actionsMaxH }}>
+              {actions.map(renderActionRow)}
+            </ScrollView>
           </Animated.View>
         </View>
-      </Modal>
+      </FullWindowModal>
     )
   }
 
@@ -293,12 +302,17 @@ export function MessageContextMenu({
   const reactionOrigin = menuOrigin(
     anchor,
     bands
-      ? { left: reactionsLeft, top: bands.reactionsTop, width: reactionRowW, height: REACTION_ROW_H }
+      ? {
+          left: reactionsLeft,
+          top: bands.reactionsTop,
+          width: reactionRowW,
+          height: REACTION_ROW_H,
+        }
       : null,
   )
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -306,10 +320,12 @@ export function MessageContextMenu({
       onDismiss={onModalDismiss}
     >
       <View
-        style={bands ? styles.rootAnchored : styles.rootCentered}
-        pointerEvents={motion.exiting ? "none" : "auto"}
+        style={[
+          bands ? styles.rootAnchored : styles.rootCentered,
+          pointerEventStyles[motion.exiting ? "none" : "auto"],
+        ]}
       >
-        <Animated.View pointerEvents="none" style={[styles.scrim, menuScrimStyle(motion)]} />
+        <Animated.View style={[styles.scrim, menuScrimStyle(motion), pointerEventStyles.none]} />
         <Pressable
           style={styles.scrimTouch}
           accessibilityRole="button"
@@ -320,7 +336,6 @@ export function MessageContextMenu({
         {bands ? (
           <>
             <Animated.View
-              pointerEvents="none"
               style={[
                 styles.bubbleHolder,
                 {
@@ -330,6 +345,7 @@ export function MessageContextMenu({
                   opacity: motion.progress,
                   transform: [{ scale }],
                 },
+                pointerEventStyles.none,
               ]}
             >
               {bubble}
@@ -355,21 +371,27 @@ export function MessageContextMenu({
               ]}
               accessibilityRole="menu"
             >
-              <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+              <ScrollView style={{ maxHeight: actionsMaxH }}>
+                {actions.map(renderActionRow)}
+              </ScrollView>
             </Animated.View>
           </>
         ) : (
           <Animated.View style={[styles.centeredColumn, menuCardStyle(motion, cardOrigin)]}>
             {showReactions ? (
-              <View style={[styles.reactionCard, styles.reactionCardCentered]}>{renderReactionRow()}</View>
+              <View style={[styles.reactionCard, styles.reactionCardCentered]}>
+                {renderReactionRow()}
+              </View>
             ) : null}
             <View style={[styles.card, styles.cardCentered]} accessibilityRole="menu">
-              <ScrollView style={{ maxHeight: actionsMaxH }}>{actions.map(renderActionRow)}</ScrollView>
+              <ScrollView style={{ maxHeight: actionsMaxH }}>
+                {actions.map(renderActionRow)}
+              </ScrollView>
             </View>
           </Animated.View>
         )}
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

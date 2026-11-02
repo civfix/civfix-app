@@ -10,7 +10,10 @@ import { REPORT_CATEGORY_LABELS, type EventQuestionDTO, type TicketTypeDTO } fro
 import { uploadAttachErrorKey } from "../composerAttachmentId"
 import { postDetailPath } from "../postActionModel"
 import { emptyPollDraft, removeOption, setOption } from "../pollDraft"
-import { answersWithDefaults, effectiveTicketTypeId } from "../../bodies/host/registration/guestRsvpModel"
+import {
+  answersWithDefaults,
+  effectiveTicketTypeId,
+} from "../../bodies/host/registration/guestRsvpModel"
 import { qrTicketPath } from "../qrMatrix"
 import { nativeShareResult } from "../shareResult"
 import { CALENDAR_BLOB_REVOKE_MS, saveCalendarFile } from "../calendarFile.web"
@@ -21,7 +24,9 @@ const code = (rel: string): string =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/(^|[^:])\/\/.*$/gm, "$1")
 
-const EN_ENUMS = JSON.parse(read("../../i18n/locales/en/enums.json")) as { category: Record<string, string> }
+const EN_ENUMS = JSON.parse(read("../../i18n/locales/en/enums.json")) as {
+  category: Record<string, string>
+}
 
 describe("CategoryChip localizes its label", () => {
   const chip = code("../CategoryChip.tsx")
@@ -61,7 +66,8 @@ describe("composer attachment errors are catalog keys", () => {
     expect(hook).not.toMatch(/setAttachError\("/)
     expect(hook).not.toMatch(/setAttachError\(`/)
     expect(hook).not.toContain("Could not open")
-    expect(hook).toContain("t(`attach_error.${attachError.key}`, attachError.params)")
+    expect(hook).toContain("const key = `attach_error.${attachError.key}`")
+    expect(hook).toContain("t(key, attachError.params)")
   })
 
   it("keeps the guard shapes the conversation wiring test pins", () => {
@@ -123,8 +129,14 @@ describe("conditional rows keep their own keys", () => {
   })
 
   it.each([
-    ["../SectionCard.tsx", "<React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>"],
-    ["../SettingsRow.tsx", "<React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>"],
+    [
+      "../SectionCard.tsx",
+      "<React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>",
+    ],
+    [
+      "../SettingsRow.tsx",
+      "<React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>",
+    ],
     ["../StatTile.tsx", "key={React.isValidElement(cell) && cell.key != null ? cell.key : index}"],
   ])("%s keys by the child's own key", (file, line) => {
     const source = code(file)
@@ -157,7 +169,8 @@ describe("a guest registration always carries a ticket type", () => {
 })
 
 describe("guest answers derive their defaults", () => {
-  const question = (id: string, kind: string): EventQuestionDTO => ({ id, kind }) as unknown as EventQuestionDTO
+  const question = (id: string, kind: string): EventQuestionDTO =>
+    ({ id, kind }) as unknown as EventQuestionDTO
 
   it("fills every question's default under what the viewer typed", () => {
     const questions = [question("opt", "checkbox"), question("name", "text")]
@@ -173,14 +186,16 @@ describe("guest answers derive their defaults", () => {
 })
 
 describe("sheets reset while rendering the open, not one commit later", () => {
-  it.each(["../CancelEventSheet.tsx", "../ReportContentSheet.tsx", "../RequestResourcesSheet.tsx", "../PollCreateSheet.tsx"])(
-    "%s resets through useResetOnOpen",
-    (file) => {
-      const sheet = code(file)
-      expect(sheet).toContain("useResetOnOpen(visible, ")
-      expect(sheet).not.toMatch(/useEffect\(\(\) => \{\s*if \(visible\)/)
-    },
-  )
+  it.each([
+    "../CancelEventSheet.tsx",
+    "../ReportContentSheet.tsx",
+    "../RequestResourcesSheet.tsx",
+    "../PollCreateSheet.tsx",
+  ])("%s resets through useResetOnOpen", (file) => {
+    const sheet = code(file)
+    expect(sheet).toContain("useResetOnOpen(visible, ")
+    expect(sheet).not.toMatch(/useEffect\(\(\) => \{\s*if \(visible\)/)
+  })
 
   it("resets inside render on the false to true edge", () => {
     const hook = code("../useModalClosed.ts")
@@ -252,7 +267,9 @@ describe("web calendar download is not cancelled by an early revoke", () => {
   })
 
   it("keeps the blob URL alive past the click, then releases it", async () => {
-    await expect(saveCalendarFile({ filename: "e.ics", ics: "BEGIN:VCALENDAR" })).resolves.toBe("downloaded")
+    await expect(saveCalendarFile({ filename: "e.ics", ics: "BEGIN:VCALENDAR" })).resolves.toBe(
+      "downloaded",
+    )
     expect(click).toHaveBeenCalled()
     vi.advanceTimersByTime(0)
     expect(revoke).not.toHaveBeenCalled()

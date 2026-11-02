@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from "react"
-import type { InfiniteData, QueryClient, UseMutationOptions, UseQueryResult } from "@tanstack/react-query"
+import type {
+  InfiniteData,
+  QueryClient,
+  UseMutationOptions,
+  UseQueryResult,
+} from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   PersonDTO,
@@ -49,7 +54,9 @@ function patchPersonInFlatLists(
   qc.setQueriesData<PersonDTO[]>({ queryKey: PEOPLE_LIST_KEY }, (prev) =>
     Array.isArray(prev)
       ? prev.map((p) =>
-          p.id === personId ? { ...p, isFollowing: next.isFollowing, followers: next.followers } : p,
+          p.id === personId
+            ? { ...p, isFollowing: next.isFollowing, followers: next.followers }
+            : p,
         )
       : prev,
   )
@@ -295,7 +302,7 @@ export function useProfileEvents(
   return useInfiniteQuery<ProfileEventsResponse>({
     queryKey: queryKeys.profileEvents(id ?? "unknown", cursor),
     enabled: !!id && enabled && cursor !== null,
-    initialPageParam: (cursor ?? undefined) as string | undefined,
+    initialPageParam: cursor ?? undefined,
     queryFn: ({ pageParam }) =>
       api.getProfileEvents({
         id: id as string,
@@ -400,7 +407,8 @@ export function useCompleteFirstRun() {
   useLegalDocuments()
   return useMutation<UpdateProfileResponse, unknown, UpdateProfileRequest>({
     mutationFn: async (body) => {
-      const shown = qc.getQueryData<GetLegalDocumentsResponse>(queryKeys.legalDocuments)?.documents ?? []
+      const shown =
+        qc.getQueryData<GetLegalDocumentsResponse>(queryKeys.legalDocuments)?.documents ?? []
       const res = await api.updateProfile(body)
       await recordSignUpAcceptance(api, qc, shown)
       return res

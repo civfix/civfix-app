@@ -8,10 +8,7 @@ const LOCALES = ["en", "es", "de", "ko"] as const
 const EVENT_FUNNEL_STEPS = ["signups", "checked_in", "logged_hours"] as const
 
 const body = surfaceSource("eventAnalytics")
-const markdown = readFileSync(
-  new URL("../../../primitives/Markdown.tsx", import.meta.url),
-  "utf8",
-)
+const markdown = readFileSync(new URL("../../../primitives/Markdown.tsx", import.meta.url), "utf8")
 
 function catalog(lng: string, ns: string): Record<string, Record<string, string>> {
   return JSON.parse(
@@ -120,7 +117,7 @@ describe("markdown emphasis survives the inline run", () => {
 
   it("spans emphasis with a variant-free RN Text that inherits the block's typography", () => {
     const source = code(markdown)
-    expect(source).toContain('import { Text as RNText, View')
+    expect(source).toContain("import { Text as RNText, View")
     expect(source).toContain("<RNText key={key} style={styles.strong}>")
     expect(source).toContain("<RNText key={key} style={styles.em}>")
     expect(source).not.toMatch(/<Text key=\{key\} style=\{styles\.(strong|em|link)\}/)

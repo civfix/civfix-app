@@ -36,7 +36,9 @@ describe("calendarModel", () => {
   it("zeroes the clock without mutating the input", () => {
     const source = new Date(2026, 6, 24, 13, 45, 30, 500)
     const day = startOfDay(source)
-    expect([day.getHours(), day.getMinutes(), day.getSeconds(), day.getMilliseconds()]).toEqual([0, 0, 0, 0])
+    expect([day.getHours(), day.getMinutes(), day.getSeconds(), day.getMilliseconds()]).toEqual([
+      0, 0, 0, 0,
+    ])
     expect(source.getHours()).toBe(13)
   })
 
@@ -46,9 +48,9 @@ describe("calendarModel", () => {
   })
 
   it("labels a draft's start as a short weekday, date and clock in the event's zone", () => {
-    expect(draftWhenLabel(new Date(Date.UTC(2026, 6, 24, 16, 5)), "en-US", "America/Los_Angeles")).toMatch(
-      /^Fri, Jul 24, 9:05\sAM$/u,
-    )
+    expect(
+      draftWhenLabel(new Date(Date.UTC(2026, 6, 24, 16, 5)), "en-US", "America/Los_Angeles"),
+    ).toMatch(/^Fri, Jul 24, 9:05\sAM$/u)
   })
 })
 
@@ -118,7 +120,9 @@ describe("the duration chips", () => {
     const lateNight = new Date(2026, 6, 24, 23, 30, 0, 0)
     for (const hours of DURATION_CHIP_HOURS) {
       const end = endTimeAfter(day, lateNight, hours * 3_600_000)
-      expect(endTimeSelectable(day, lateNight, end.getHours(), end.getMinutes(), DEVICE_ZONE)).toBe(true)
+      expect(endTimeSelectable(day, lateNight, end.getHours(), end.getMinutes(), DEVICE_ZONE)).toBe(
+        true,
+      )
       expect(durationChipFor(day, lateNight, end)).toBe(hours)
     }
   })
@@ -261,8 +265,12 @@ describe("the form's wall clocks resolve in the EVENT's zone", () => {
   })
 
   it("compares an edited schedule against the stored instant, not the device clock", () => {
-    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(13), NY)).toBe(true)
-    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(14), NY)).toBe(false)
+    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(13), NY)).toBe(
+      true,
+    )
+    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(14), NY)).toBe(
+      false,
+    )
   })
 
   it("judges an end clock against the EVENT zone's spring-forward gap", () => {

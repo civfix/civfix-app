@@ -40,7 +40,9 @@ describe("buildLinkedEventCardModel locale and zone", () => {
   })
 
   it("names the event zone in the requested locale when the viewer's offset differs", () => {
-    const model = buildLinkedEventCardModel(event, t, "fr-FR", "UTC", { viewerTimeZone: "America/New_York" })
+    const model = buildLinkedEventCardModel(event, t, "fr-FR", "UTC", {
+      viewerTimeZone: "America/New_York",
+    })
     expect(model.scheduleLabel).toBe("sam. 12:00 UTC")
   })
 
@@ -95,9 +97,9 @@ describe("buildLinkedEventCardModel attendance", () => {
   })
 
   it("previews the organizer when the attendee list is empty or absent", () => {
-    expect(buildLinkedEventCardModel(event, t, "en-US", "UTC", { attendees: [] }).attendeePreview).toEqual([
-      organizer,
-    ])
+    expect(
+      buildLinkedEventCardModel(event, t, "en-US", "UTC", { attendees: [] }).attendeePreview,
+    ).toEqual([organizer])
     expect(buildLinkedEventCardModel(event, t, "en-US", "UTC").attendeePreview).toEqual([organizer])
   })
 
@@ -115,12 +117,13 @@ describe("buildLinkedEventCardModel attendance", () => {
 
 describe("buildLinkedEventCardModel labels", () => {
   it("trims the address and falls back when it is null", () => {
-    expect(buildLinkedEventCardModel(event, t, "en-US", "UTC", { address: "  1 Main St " }).locationLabel).toBe(
-      "1 Main St",
-    )
-    expect(buildLinkedEventCardModel(event, t, "en-US", "UTC", { address: null }).locationLabel).toBe(
-      "linked.location_fallback{}",
-    )
+    expect(
+      buildLinkedEventCardModel(event, t, "en-US", "UTC", { address: "  1 Main St " })
+        .locationLabel,
+    ).toBe("1 Main St")
+    expect(
+      buildLinkedEventCardModel(event, t, "en-US", "UTC", { address: null }).locationLabel,
+    ).toBe("linked.location_fallback{}")
   })
 
   it("passes the compact slots to the compact label and the going label to the full one", () => {
@@ -128,7 +131,10 @@ describe("buildLinkedEventCardModel labels", () => {
     expect(compact.accessibilityLabel).toBe(
       'linked.a11y_card_compact{"month":"JUL","day":"25","title":"Beach Cleanup","schedule":"Sat 12:00 PM","location":"Pier"}',
     )
-    const full = buildLinkedEventCardModel(event, t, "en-US", "UTC", { address: "Pier", showAttendance: true })
+    const full = buildLinkedEventCardModel(event, t, "en-US", "UTC", {
+      address: "Pier",
+      showAttendance: true,
+    })
     expect(full.accessibilityLabel).toBe(
       'linked.a11y_card{"month":"JUL","day":"25","title":"Beach Cleanup","schedule":"Sat 12:00 PM","location":"Pier","going":"going{\\"count\\":4}"}',
     )

@@ -10,7 +10,8 @@ export default function ComposeScreen() {
   const router = useRouter()
   const th = useTheme()
   const insets = useSafeAreaInsets()
-  const { mode, targetPostId } = composerParams(useLocalSearchParams<{ mode?: string; targetPostId?: string }>())
+  const { mode, targetPostId } =
+    composerParams(useLocalSearchParams<{ mode?: string; targetPostId?: string }>())
   const [composerMounted, setComposerMounted] = useState(false)
   useEffect(() => {
     const frame = requestAnimationFrame(() => setComposerMounted(true))

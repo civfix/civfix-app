@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryResult } from "@tanstack/react-query"
+import { skipToken, useQuery, type UseQueryResult } from "@tanstack/react-query"
 import type { ResolveAddressResponse } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { ErrorCode, appErrorCode, geocodePointKey } from "@civfix/contract"
@@ -55,7 +55,7 @@ export function useResolveAddress(
   return useQuery<ResolveAddressResponse | null>({
     queryKey: queryKeys.resolvedAddress(point ? geocodePointKey(point) : "none"),
     enabled,
-    queryFn: () => fetchResolvedAddress(api, point!),
+    queryFn: point ? () => fetchResolvedAddress(api, point) : skipToken,
     retry: false,
     staleTime: RESOLVED_ADDRESS_STALE_MS,
     gcTime: RESOLVED_ADDRESS_STALE_MS,

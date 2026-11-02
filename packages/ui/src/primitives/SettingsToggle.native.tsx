@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable } from "react-native"
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated"
 import { makeThemedStyles, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"

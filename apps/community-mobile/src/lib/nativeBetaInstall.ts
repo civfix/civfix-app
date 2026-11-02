@@ -20,7 +20,10 @@ const PROBE_UNAVAILABLE: StoreKitProbe = {
 function statReceipt(file: { exists: boolean; modificationTime: number | null }): ReceiptStat {
   if (!file.exists) return RECEIPT_ABSENT
   const modificationTime = file.modificationTime
-  return { present: true, modifiedAt: typeof modificationTime === "number" ? modificationTime : null }
+  return {
+    present: true,
+    modifiedAt: typeof modificationTime === "number" ? modificationTime : null,
+  }
 }
 
 function probeStoreKit(): StoreKitProbe {
@@ -46,7 +49,7 @@ export function isBetaInstall(): boolean {
     console.log(
       `[install-source] StoreKit container ${probe.dir ?? "<unreadable>"}; ` +
         `${APP_STORE_RECEIPT}=${JSON.stringify(probe.store)}, ` +
-        `${SANDBOX_RECEIPT}=${JSON.stringify(probe.sandbox)} -> beta=${beta}`,
+        `${SANDBOX_RECEIPT}=${JSON.stringify(probe.sandbox)} -> beta=${String(beta)}`,
     )
   }
   return beta

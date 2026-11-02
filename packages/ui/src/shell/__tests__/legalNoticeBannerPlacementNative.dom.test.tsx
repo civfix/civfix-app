@@ -41,7 +41,8 @@ async function bannerLayer(): Promise<{ layer: HTMLElement; card: HTMLElement }>
   let card: HTMLElement | null = text.parentElement
   while (card !== null && getComputedStyle(card).maxWidth !== "560px") card = card.parentElement
   let layer: HTMLElement | null = card
-  while (layer !== null && getComputedStyle(layer).position !== "absolute") layer = layer.parentElement
+  while (layer !== null && getComputedStyle(layer).position !== "absolute")
+    layer = layer.parentElement
   if (card === null || layer === null) throw new Error("no banner layer")
   return { layer, card }
 }

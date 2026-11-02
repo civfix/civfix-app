@@ -46,7 +46,12 @@ export interface InviteMemberDrawerProps {
  * drawer shows in place so the host sees where it went and when it lapses before closing. The
  * pending-invite list under the roster refreshes through `invalidateOrg` either way.
  */
-export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: InviteMemberDrawerProps) {
+export function InviteMemberDrawer({
+  orgId,
+  open,
+  onClose,
+  disabled = false,
+}: InviteMemberDrawerProps) {
   const { t } = useT("host-org")
   const { t: tc } = useT("host-common")
   const api = useApi()
@@ -171,7 +176,10 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
                 setFields({})
               }}
               options={[
-                { value: "handle", label: t("invite.by_handle", { defaultValue: "civfix handle" }) },
+                {
+                  value: "handle",
+                  label: t("invite.by_handle", { defaultValue: "civfix handle" }),
+                },
                 { value: "email", label: t("invite.by_email", { defaultValue: "Email" }) },
               ]}
             />

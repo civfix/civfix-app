@@ -6,7 +6,12 @@
  * measured against is the RAW `last`, never the rendered preview.
  */
 import { describe, expect, it } from "vitest"
-import { matchesThreadQuery, threadRowActions, unreadBadgeLabel, UNREAD_BADGE_CAP } from "../messagesListModel"
+import {
+  matchesThreadQuery,
+  threadRowActions,
+  unreadBadgeLabel,
+  UNREAD_BADGE_CAP,
+} from "../messagesListModel"
 
 const thread = (title: string, last?: string | null) => ({ title, last })
 
@@ -24,7 +29,9 @@ describe("matchesThreadQuery", () => {
 
   it("matches the last message's text too, so a thread is findable by what was said in it", () => {
     expect(matchesThreadQuery(thread("Ada Lovelace", "the bin is overflowing"), "bin")).toBe(true)
-    expect(matchesThreadQuery(thread("Ada Lovelace", "the bin is overflowing"), "gutter")).toBe(false)
+    expect(matchesThreadQuery(thread("Ada Lovelace", "the bin is overflowing"), "gutter")).toBe(
+      false,
+    )
   })
 
   it("survives a thread that has no last message", () => {
@@ -55,7 +62,12 @@ describe("unreadBadgeLabel", () => {
 })
 
 describe("threadRowActions", () => {
-  const labels = { mute: "Mute", markRead: "Mark read", delete: "Delete", deleteA11y: "Delete conversation" }
+  const labels = {
+    mute: "Mute",
+    markRead: "Mark read",
+    delete: "Delete",
+    deleteA11y: "Delete conversation",
+  }
 
   it("offers mark-read ONLY where there is something to clear", () => {
     expect(threadRowActions({ unread: true, muted: false, labels }).map((a) => a.key)).toEqual([
@@ -63,7 +75,10 @@ describe("threadRowActions", () => {
       "markRead",
       "delete",
     ])
-    expect(threadRowActions({ unread: false, muted: false, labels }).map((a) => a.key)).toEqual(["mute", "delete"])
+    expect(threadRowActions({ unread: false, muted: false, labels }).map((a) => a.key)).toEqual([
+      "mute",
+      "delete",
+    ])
   })
 
   it("swaps the mute glyph with the muted state", () => {
@@ -86,6 +101,11 @@ describe("threadRowActions", () => {
   it("announces mute and mark-read by their visible labels, and nothing else is destructive", () => {
     const [mute, markRead] = threadRowActions({ unread: true, muted: false, labels })
     expect(mute).toMatchObject({ a11yLabel: "Mute", tone: "mute", destructive: false })
-    expect(markRead).toMatchObject({ a11yLabel: "Mark read", icon: "CheckCheck", tone: "read", destructive: false })
+    expect(markRead).toMatchObject({
+      a11yLabel: "Mark read",
+      icon: "CheckCheck",
+      tone: "read",
+      destructive: false,
+    })
   })
 })

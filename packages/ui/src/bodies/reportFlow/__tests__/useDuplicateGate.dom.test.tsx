@@ -114,7 +114,10 @@ describe("useDuplicateGate", () => {
 
     act(() => gate.result.current.run(onClear))
     await act(async () =>
-      api.calls[0]?.resolve([pinAt("resolved", northOf(A, 5), "resolved"), pinAt("far", northOf(A, 60))]),
+      api.calls[0]?.resolve([
+        pinAt("resolved", northOf(A, 5), "resolved"),
+        pinAt("far", northOf(A, 60)),
+      ]),
     )
     await waitFor(() => expect(onClear).toHaveBeenCalledTimes(1))
     expect(gate.result.current.matches).toBeNull()

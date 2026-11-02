@@ -72,6 +72,8 @@ describe("the store badges open through the host's external-link capability", ()
   })
 
   it("tells the reader when the store could not be opened", () => {
-    expect(SRC).toMatch(/opening\.catch\(\(\) => \{\s*toast\.show\(t\("app_promo\.open_failed"\), \{ variant: "error" \}\)/)
+    expect(SRC).toMatch(
+      /opening\.catch\(\(\) => \{\s*toast\.show\(t\("app_promo\.open_failed"\), \{ variant: "error" \}\)/,
+    )
   })
 })

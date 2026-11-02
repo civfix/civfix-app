@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { Pressable, ActivityIndicator } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
@@ -45,7 +45,10 @@ export function ResolveButton({ report }: { report: ReportDTO }) {
         />
       )}
       <Text
-        style={[styles.resolveText, isResolved ? styles.resolveTextReopen : styles.resolveTextResolve]}
+        style={[
+          styles.resolveText,
+          isResolved ? styles.resolveTextReopen : styles.resolveTextResolve,
+        ]}
         numberOfLines={1}
       >
         {isResolved ? t("actions.reopen") : t("actions.mark_resolved")}

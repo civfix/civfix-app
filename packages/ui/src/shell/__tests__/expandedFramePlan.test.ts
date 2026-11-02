@@ -87,7 +87,9 @@ describe("rail cluster geometry (horizontal: brand pill, capsule, orb, left to r
   })
 
   it("derives the capsule's width from its own padding, items and gaps", () => {
-    expect(RAIL_CAPSULE_W).toBe(RAIL_PAD_H * 2 + RAIL_ITEM * RAIL_TAB_COUNT + RAIL_ITEM_GAP * (RAIL_TAB_COUNT - 1))
+    expect(RAIL_CAPSULE_W).toBe(
+      RAIL_PAD_H * 2 + RAIL_ITEM * RAIL_TAB_COUNT + RAIL_ITEM_GAP * (RAIL_TAB_COUNT - 1),
+    )
     expect(RAIL_CAPSULE_W).toBe(274)
   })
 
@@ -165,7 +167,11 @@ describe("expandedFramePlan: the design's checkpoint table", () => {
     for (const [viewport, card, clear] of CHECKPOINTS) {
       const width = clampSidebarWidth(SIDEBAR_DEFAULT_WIDTH, viewport)
       expect(width).toBe(card)
-      const { occlusionLeft } = expandedFramePlan({ view: "home", stackLength: 0, sidebarWidth: width })
+      const { occlusionLeft } = expandedFramePlan({
+        view: "home",
+        stackLength: 0,
+        sidebarWidth: width,
+      })
       expect(viewport - occlusionLeft).toBe(clear)
       expect(viewport - occlusionLeft).toBeGreaterThanOrEqual(MAP_MIN_CLEAR)
     }
@@ -175,14 +181,22 @@ describe("expandedFramePlan: the design's checkpoint table", () => {
     for (const [viewport] of CHECKPOINTS) {
       // The widest the user can drag to at this viewport, straight through the clamp.
       const widest = clampSidebarWidth(10_000, viewport)
-      const { occlusionLeft } = expandedFramePlan({ view: "home", stackLength: 0, sidebarWidth: widest })
+      const { occlusionLeft } = expandedFramePlan({
+        view: "home",
+        stackLength: 0,
+        sidebarWidth: widest,
+      })
       expect(viewport - occlusionLeft).toBeGreaterThanOrEqual(MAP_MIN_CLEAR)
     }
   })
 
   it("hands the whole viewport minus the shell's own inset to the map in map mode", () => {
     for (const [viewport] of CHECKPOINTS) {
-      const { occlusionLeft } = expandedFramePlan({ view: "map", stackLength: 0, sidebarWidth: 640 })
+      const { occlusionLeft } = expandedFramePlan({
+        view: "map",
+        stackLength: 0,
+        sidebarWidth: 640,
+      })
       expect(occlusionLeft).toBe(NAV_LEFT)
       expect(viewport - occlusionLeft).toBe(viewport - NAV_LEFT)
     }
@@ -192,12 +206,17 @@ describe("expandedFramePlan: the design's checkpoint table", () => {
 describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may be chosen", () => {
   const rail = readFileSync(new URL("../Rail.tsx", import.meta.url), "utf8")
   const mapControls = readFileSync(new URL("../../map/MapControls.tsx", import.meta.url), "utf8")
-  const useLayoutMode = readFileSync(new URL("../../theme/useLayoutMode.ts", import.meta.url), "utf8")
+  const useLayoutMode = readFileSync(
+    new URL("../../theme/useLayoutMode.ts", import.meta.url),
+    "utf8",
+  )
 
   it("sizes the brand pill from its own inputs, never from a StyleSheet literal", () => {
     expect(RAIL_BRAND_PAD_H).toBe(space["5"])
     expect(RAIL_BRAND_SIZE).toBe(27)
-    expect(RAIL_BRAND_W).toBe(Math.ceil(RAIL_BRAND_PAD_H * 2 + RAIL_BRAND_SIZE * RAIL_BRAND_GLYPH_EM))
+    expect(RAIL_BRAND_W).toBe(
+      Math.ceil(RAIL_BRAND_PAD_H * 2 + RAIL_BRAND_SIZE * RAIL_BRAND_GLYPH_EM),
+    )
     expect(RAIL_BRAND_W).toBe(111)
     expect(rail).toContain("const BRAND_SIZE = RAIL_BRAND_SIZE")
     expect(rail).toContain("paddingHorizontal: RAIL_BRAND_PAD_H")
@@ -232,10 +251,12 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
 
   it("budgets for the row's WIDEST state - the signed-out pill, not the 52pt avatar", () => {
     expect(MAP_SIGN_IN_PAD_H).toBe(space["4"])
-    expect(MAP_SIGN_IN_W).toBe(Math.ceil(MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT * MAP_SIGN_IN_LABEL_EM))
+    expect(MAP_SIGN_IN_W).toBe(
+      Math.ceil(MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT * MAP_SIGN_IN_LABEL_EM),
+    )
     expect(MAP_SIGN_IN_W).toBeGreaterThan(MAP_ACTION_SIZE)
     expect(MAP_PROFILE_EXTRA).toBe(MAP_SIGN_IN_W - MAP_ACTION_SIZE)
-    expect(mapControls).toContain("paddingHorizontal: t.space[\"4\"]")
+    expect(mapControls).toContain('paddingHorizontal: t.space["4"]')
     expect(mapControls).toMatch(/signInText: \{[^}]*fontSize: 14/)
   })
 

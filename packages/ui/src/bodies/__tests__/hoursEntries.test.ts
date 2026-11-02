@@ -120,7 +120,12 @@ describe("seedHoursDrafts", () => {
   const ids = ["a", "b", "c"]
 
   it("produces the same 1-decimal strings formatHours does, keyed by user", () => {
-    expect(seedHoursDrafts([{ userId: "a", hours: 2 }, { userId: "b", hours: 1.25 }])).toEqual({
+    expect(
+      seedHoursDrafts([
+        { userId: "a", hours: 2 },
+        { userId: "b", hours: 1.25 },
+      ]),
+    ).toEqual({
       a: "2.0",
       b: "1.3",
     })
@@ -255,7 +260,9 @@ describe("suggestedHoursFor", () => {
   })
 
   it("suggests nothing at all for an event with no end and no timed slot", () => {
-    expect(suggestedHoursFor({ slot: { id: "s2" } }, cleanup({ endsAt: null, slots: board }))).toBeNull()
+    expect(
+      suggestedHoursFor({ slot: { id: "s2" } }, cleanup({ endsAt: null, slots: board })),
+    ).toBeNull()
     expect(suggestedHoursFor({}, cleanup({ endsAt: null }))).toBeNull()
   })
 
@@ -283,11 +290,15 @@ describe("hoursRowSubject", () => {
   })
 
   it("attributes an operator-credited non-member to CivFix rather than calling them a former attendee", () => {
-    expect(hoursRowSubject({ userId: "z", creditedByOfficial: true }, roster)).toEqual({ kind: "official" })
+    expect(hoursRowSubject({ userId: "z", creditedByOfficial: true }, roster)).toEqual({
+      kind: "official",
+    })
   })
 
   it("keeps the former-attendee label for a host-credited row whose user left the roster", () => {
-    expect(hoursRowSubject({ userId: "z", creditedByOfficial: false }, roster)).toEqual({ kind: "former" })
+    expect(hoursRowSubject({ userId: "z", creditedByOfficial: false }, roster)).toEqual({
+      kind: "former",
+    })
   })
 
   it("treats an absent flag from an older server as a host credit", () => {

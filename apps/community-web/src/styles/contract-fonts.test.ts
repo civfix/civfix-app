@@ -64,9 +64,7 @@ describe("web font contract", () => {
     expect(provenance).toContain(
       "https://fonts.gstatic.com/s/hankengrotesk/v12/ieVn2YZDLWuGJpnzaiwFXS9tYtpd59CxCis4.woff2",
     )
-    expect(provenance).toContain(
-      "1f21c6eaa0000f3329cfcfac966b43d5bebf5aa610303e33294ac31bc6f4bb59",
-    )
+    expect(provenance).toContain("1f21c6eaa0000f3329cfcfac966b43d5bebf5aa610303e33294ac31bc6f4bb59")
     expect(provenance).toContain(
       "https://github.com/marcologous/hanken-grotesk/tree/1ab416e82130b2d3ddb7710abf7ceabf07156a13",
     )

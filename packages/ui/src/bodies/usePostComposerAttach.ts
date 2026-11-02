@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { LayoutAnimation, Platform } from "react-native"
 import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
-import { useAttendingCleanups, useMyReports } from "../data"
+import { useAttendingCleanups, useMyReports, useNow } from "../data"
 import { attachableEvents, attachableReports } from "../data/composerAttachable"
 import {
   buildComposerEventRef,
@@ -59,7 +59,8 @@ export function usePostComposerAttach({
     () => resolveComposerReport(draft.attachedReportId, draft.attachedReport, reportItems),
     [draft.attachedReportId, draft.attachedReport, reportItems],
   )
-  const eventCandidates = useMemo(() => attachableEvents(eventItems, Date.now()), [eventItems])
+  const now = useNow()
+  const eventCandidates = useMemo(() => attachableEvents(eventItems, now), [eventItems, now])
   const reportCandidates = useMemo(() => attachableReports(reportItems), [reportItems])
 
   useEffect(() => {
@@ -153,7 +154,8 @@ export function usePostComposerAttach({
       softenLayoutChange()
       setReportsExpanded(true)
     }
-    if (!revealsLoaded && reports.hasNextPage && !reports.isFetchingNextPage) void reports.fetchNextPage()
+    if (!revealsLoaded && reports.hasNextPage && !reports.isFetchingNextPage)
+      void reports.fetchNextPage()
   }
   const showFewerReports = () => {
     softenLayoutChange()

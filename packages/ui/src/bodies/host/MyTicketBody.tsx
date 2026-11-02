@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   Platform,
   View,
@@ -129,7 +129,9 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
         },
         onError: (err) => {
           setConfirmingCancel(false)
-          setErrorText(appErrorCode(err) === ErrorCode.CONFLICT ? t("outcome.closed") : t("error.generic"))
+          setErrorText(
+            appErrorCode(err) === ErrorCode.CONFLICT ? t("outcome.closed") : t("error.generic"),
+          )
         },
       },
     )
@@ -198,7 +200,10 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
             style={styles.pager}
           >
             {seats.map((seat, index) => (
-              <View key={seat.id} style={[styles.page, pageWidth > 0 ? { width: pageWidth } : null]}>
+              <View
+                key={seat.id}
+                style={[styles.page, pageWidth > 0 ? { width: pageWidth } : null]}
+              >
                 <QrTicket
                   value={seat.ticketToken}
                   size={qrSize}

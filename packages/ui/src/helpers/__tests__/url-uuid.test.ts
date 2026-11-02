@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { IdSchema } from "@civfix/contract"
-import { stripTrailingSlashes } from "../url"
+import { stripTrailingSlashes, trimSlashes } from "../url"
 import { isUuid } from "../uuid"
 
 describe("isUuid", () => {
@@ -38,5 +38,31 @@ describe("stripTrailingSlashes", () => {
     expect(stripTrailingSlashes("/a//b/")).toBe("/a//b")
     expect(stripTrailingSlashes("///")).toBe("")
     expect(stripTrailingSlashes("")).toBe("")
+  })
+
+  it("stays linear on a long slash run that is not trailing", () => {
+    const hostile = `${"/".repeat(200_000)}a`
+    const started = performance.now()
+    expect(stripTrailingSlashes(hostile)).toBe(hostile)
+    expect(performance.now() - started).toBeLessThan(250)
+  })
+})
+
+describe("trimSlashes", () => {
+  it("removes every leading and trailing slash and nothing else", () => {
+    expect(trimSlashes("api.civfix.dev")).toBe("api.civfix.dev")
+    expect(trimSlashes("//api.civfix.dev/")).toBe("api.civfix.dev")
+    expect(trimSlashes("/a//b/")).toBe("a//b")
+    expect(trimSlashes("a/")).toBe("a")
+    expect(trimSlashes("/a")).toBe("a")
+    expect(trimSlashes("///")).toBe("")
+    expect(trimSlashes("")).toBe("")
+  })
+
+  it("stays linear on a long inner slash run", () => {
+    const hostile = `a${"/".repeat(200_000)}a`
+    const started = performance.now()
+    expect(trimSlashes(`/${hostile}/`)).toBe(hostile)
+    expect(performance.now() - started).toBeLessThan(250)
   })
 })

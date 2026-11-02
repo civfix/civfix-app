@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react"
 import {
   Animated,
-  Modal,
   View,
   ScrollView,
   Pressable,
@@ -10,6 +9,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
   focusRingProps,
@@ -21,6 +22,7 @@ import {
   webScrimProps,
   webTransition,
   type Theme,
+  pointerEventStyles,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -45,7 +47,7 @@ export function useDialogWebKeys({
   onClose,
 }: {
   visible: boolean
-  onCommit?: () => void
+  onCommit?: (() => void) | undefined
   onClose: () => void
 }): void {
   const handlersRef = useRef({ onCommit, onClose })
@@ -70,14 +72,14 @@ export function useDialogWebKeys({
 export interface ModalCardSheetProps {
   visible: boolean
   onClose: () => void
-  onCommit?: () => void
-  onClosed?: () => void
+  onCommit?: (() => void) | undefined
+  onClosed?: (() => void) | undefined
   headerIcon: IconName
   headerIconColor?: string
   title: string
   dismissLabel: string
   backdropDismissDisabled?: boolean
-  error?: string | null
+  error?: string | null | undefined
   tone?: "default" | "danger"
   actions: React.ReactNode
   bodyLayout?: "scroll" | "fill"
@@ -108,7 +110,7 @@ export function ModalCardSheet({
 }: ModalCardSheetProps) {
   const styles = useStyles()
   const t = useTheme()
-  const insets = useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
   const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })
@@ -121,7 +123,7 @@ export function ModalCardSheet({
   }, [visible, error])
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -129,8 +131,11 @@ export function ModalCardSheet({
       onDismiss={onDismiss}
     >
       <Animated.View
-        style={[styles.root, menuScrimStyle(cardMotion)]}
-        pointerEvents={cardMotion.exiting ? "none" : "auto"}
+        style={[
+          styles.root,
+          menuScrimStyle(cardMotion),
+          pointerEventStyles[cardMotion.exiting ? "none" : "auto"],
+        ]}
       >
         <Pressable
           style={styles.backdrop}
@@ -157,12 +162,25 @@ export function ModalCardSheet({
             >
               {tone === "danger" ? (
                 <View style={styles.headerBadge}>
-                  <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
+                  <Icon
+                    icon={iconMap[headerIcon]}
+                    size={16}
+                    color={headerIconColor ?? t.colors.brand.bloom}
+                  />
                 </View>
               ) : (
-                <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+                <Icon
+                  icon={iconMap[headerIcon]}
+                  size={16}
+                  color={headerIconColor ?? t.colors.text}
+                />
               )}
-              <Text variant="bodyStrong" color={t.colors.text} style={styles.title} numberOfLines={1}>
+              <Text
+                variant="bodyStrong"
+                color={t.colors.text}
+                style={styles.title}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {fullBleed ? (
@@ -228,7 +246,7 @@ export function ModalCardSheet({
         </IosKeyboardAvoidingView>
       </Animated.View>
       {visible ? <ToastOutlet /> : null}
-    </Modal>
+    </FullWindowModal>
   )
 }
 

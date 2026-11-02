@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { Pressable, View, StyleSheet, useWindowDimensions, type TextStyle } from "react-native"
+import { Pressable, View, StyleSheet, useWindowDimensions } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,7 +11,7 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from "react-native-reanimated"
-import { focusRingProps, makeThemedStyles, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
+import { focusRingProps, makeThemedStyles, wordmarkColors, WORDMARK_GLYPHS } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { retrySessionRestore, useBootGate } from "@/hooks/useBootGate"
@@ -43,7 +43,7 @@ function Letter({
   reduceMotion,
 }: {
   char: string
-  color: string
+  color: string | undefined
   index: number
   fontSize: number
   dropDistance: number
@@ -79,11 +79,7 @@ function Letter({
       [0, 0.2, 0.32, 0.42, 0.6, 1],
       [0, -fontSize * 0.22, 0, 0, 0, 0],
     )
-    const scaleY = interpolate(
-      bounce.value,
-      [0, 0.2, 0.32, 0.42, 0.6, 1],
-      [1, 1.04, 0.92, 1, 1, 1],
-    )
+    const scaleY = interpolate(bounce.value, [0, 0.2, 0.32, 0.42, 0.6, 1], [1, 1.04, 0.92, 1, 1, 1])
     return {
       opacity,
       transform: [{ translateY: enterY + bounceY }, { scaleY }],
@@ -175,16 +171,12 @@ export function LoadingSplash() {
 
   return (
     <View style={styles.root}>
-      <View
-        style={styles.row}
-        accessibilityRole="header"
-        accessibilityLabel={t("a11y.brand_logo")}
-      >
-        {WORDMARK_LETTERS.map((char, i) => (
+      <View style={styles.row} accessibilityRole="header" accessibilityLabel={t("a11y.brand_logo")}>
+        {WORDMARK_GLYPHS.map((glyph, i) => (
           <Letter
-            key={`${char}-${i}`}
-            char={char}
-            color={wordmarkColors[i]!}
+            key={glyph.slot}
+            char={glyph.char}
+            color={wordmarkColors[i]}
             index={i}
             fontSize={fontSize}
             dropDistance={dropDistance}
@@ -213,7 +205,7 @@ const styles = makeThemedStyles((t) => ({
   letter: {
     fontFamily: t.fontFamily.brand,
     includeFontPadding: false,
-  } as TextStyle,
+  },
   tag: {
     marginTop: t.space["6"],
     fontFamily: t.fontFamily.bodyExtraBold,

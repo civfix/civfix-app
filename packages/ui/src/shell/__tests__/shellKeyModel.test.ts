@@ -80,13 +80,17 @@ describe("shellKeyAction: the composer's first Escape gives up its own field", (
   // Escape could never dismiss it. The first press blurs; the second reaches the `back` rung.
   it("blurs the field on the FIRST Escape, and only for the kinds that opted in", () => {
     expect(
-      shellKeyAction(press({ key: "Escape", editable: true, stackLength: 1, activeKind: "composer" })),
+      shellKeyAction(
+        press({ key: "Escape", editable: true, stackLength: 1, activeKind: "composer" }),
+      ),
     ).toBe("blur-field")
   })
 
   it("pops on the SECOND Escape, once the field has given up focus", () => {
     expect(
-      shellKeyAction(press({ key: "Escape", editable: false, stackLength: 1, activeKind: "composer" })),
+      shellKeyAction(
+        press({ key: "Escape", editable: false, stackLength: 1, activeKind: "composer" }),
+      ),
     ).toBe("back")
   })
 
@@ -94,10 +98,14 @@ describe("shellKeyAction: the composer's first Escape gives up its own field", (
     // The search field owns clear-then-blur itself, and a report/event form's fields are fields the user
     // chose to focus - both must keep answering "none" so nothing is stolen from them.
     expect(
-      shellKeyAction(press({ key: "Escape", editable: true, stackLength: 1, activeKind: "thread" })),
+      shellKeyAction(
+        press({ key: "Escape", editable: true, stackLength: 1, activeKind: "thread" }),
+      ),
     ).toBe("none")
     expect(
-      shellKeyAction(press({ key: "Escape", editable: true, stackLength: 2, activeKind: "create-cleanup" })),
+      shellKeyAction(
+        press({ key: "Escape", editable: true, stackLength: 2, activeKind: "create-cleanup" }),
+      ),
     ).toBe("none")
     expect(shellKeyAction(press({ key: "Escape", editable: true, view: "search" }))).toBe("none")
   })
@@ -111,7 +119,12 @@ describe("shellKeyAction: the composer's first Escape gives up its own field", (
   it("keeps the chord / composition / modal short-circuits AHEAD of the blur rung", () => {
     // A modal over the composer owns Escape outright, and neither a chord nor an IME candidate window is
     // ever the shell's - the opt-in is a narrower guard, not a way around the wider ones.
-    const composer = { key: "Escape", editable: true, stackLength: 1, activeKind: "composer" } as const
+    const composer = {
+      key: "Escape",
+      editable: true,
+      stackLength: 1,
+      activeKind: "composer",
+    } as const
     expect(shellKeyAction(press({ ...composer, modalOpen: true }))).toBe("none")
     expect(shellKeyAction(press({ ...composer, chord: true }))).toBe("none")
     expect(shellKeyAction(press({ ...composer, composing: true }))).toBe("none")
@@ -184,7 +197,12 @@ describe("conversationFieldEscape: the chat composer's own half of the ladder", 
     // `useShellKeys` listens in CAPTURE, so a shell-side blur would land on the SAME keystroke the composer
     // uses to cancel a reply (preventDefault does not stop the event reaching the field). One press, two
     // actions. The model therefore keeps vetoing shell Escapes from inside a thread's fields.
-    const inThreadField = { key: "Escape", editable: true, stackLength: 1, activeKind: "thread" } as const
+    const inThreadField = {
+      key: "Escape",
+      editable: true,
+      stackLength: 1,
+      activeKind: "thread",
+    } as const
     expect(shellKeyAction(press(inThreadField))).toBe("none")
     expect(shellKeyAction(press({ ...inThreadField, editable: false }))).toBe("back")
   })

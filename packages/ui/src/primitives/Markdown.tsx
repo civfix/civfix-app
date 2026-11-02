@@ -79,6 +79,7 @@ export function Markdown({ source, style, maxChars }: MarkdownProps) {
   return (
     <View style={[styles.root, style]}>
       {nodes.map((node, index) => {
+        // A parsed node has no identity but its path in the document, which re-parses whole on every edit.
         const key = `b${index}`
         if (node.type === "paragraph") {
           return (
@@ -89,18 +90,17 @@ export function Markdown({ source, style, maxChars }: MarkdownProps) {
         }
         return (
           <View key={key} style={styles.list}>
-            {node.items.map((item, itemIndex) => (
-              <View key={`${key}.${itemIndex}`} style={styles.listRow}>
-                <Text style={styles.bullet}>{node.ordered ? `${itemIndex + 1}.` : "•"}</Text>
-                <Text style={styles.listText}>
-                  <InlineRun
-                    nodes={item.children}
-                    onOpenLink={onOpenLink}
-                    keyPrefix={`${key}.${itemIndex}`}
-                  />
-                </Text>
-              </View>
-            ))}
+            {node.items.map((item, itemIndex) => {
+              const itemKey = `${key}.${itemIndex}`
+              return (
+                <View key={itemKey} style={styles.listRow}>
+                  <Text style={styles.bullet}>{node.ordered ? `${itemIndex + 1}.` : "•"}</Text>
+                  <Text style={styles.listText}>
+                    <InlineRun nodes={item.children} onOpenLink={onOpenLink} keyPrefix={itemKey} />
+                  </Text>
+                </View>
+              )
+            })}
           </View>
         )
       })}

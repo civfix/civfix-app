@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useRef, useState } from "react"
+import { useCallback, useContext, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { LegalDocumentMetaDTO, LegalDocumentType } from "@civfix/contract"
@@ -23,7 +23,12 @@ const TITLE_ID = "legal-update-title"
 // Wide enough for the summaries to read as prose on a desktop screen.
 const READABLE_MAX_WIDTH = 560
 
-const DOCUMENT_ORDER: readonly LegalDocumentType[] = ["terms", "privacy", "cookies", "subprocessors"]
+const DOCUMENT_ORDER: readonly LegalDocumentType[] = [
+  "terms",
+  "privacy",
+  "cookies",
+  "subprocessors",
+]
 
 const READ_KEYS = {
   terms: "update.read.terms",
@@ -52,7 +57,13 @@ export function LegalUpdateGate() {
   if (!isAuthenticated || user?.profileComplete === false) return null
   const required = status.data?.required ?? []
   if (required.length === 0) return null
-  return <LegalUpdateScreen required={required} notices={status.data?.notices ?? []} onOutdated={onOutdated} />
+  return (
+    <LegalUpdateScreen
+      required={required}
+      notices={status.data?.notices ?? []}
+      onOutdated={onOutdated}
+    />
+  )
 }
 
 /** A document read inside the screen: the version owed, or the current one when that is missing. */
@@ -83,7 +94,9 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
   // Back always lands here: it closes a document being read and otherwise does nothing.
   useHardwareBack(true, closeReading)
 
-  const owed = [...required].sort((a, b) => DOCUMENT_ORDER.indexOf(a.type) - DOCUMENT_ORDER.indexOf(b.type))
+  const owed = [...required].sort(
+    (a, b) => DOCUMENT_ORDER.indexOf(a.type) - DOCUMENT_ORDER.indexOf(b.type),
+  )
   const owedVersion = (type: LegalDocumentType) => owed.find((item) => item.type === type)?.version
   // Every legal link inside the screen opens here: anything that navigates would leave a page behind it.
   const readOwed = (type: LegalDocumentType) => setReading({ type, current: false })
@@ -113,7 +126,9 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
       role="dialog"
       aria-modal
       accessibilityViewIsModal
-      {...(reading === null ? { "aria-labelledby": TITLE_ID } : { "aria-label": t(READ_KEYS[reading.type]) })}
+      {...(reading === null
+        ? { "aria-labelledby": TITLE_ID }
+        : { "aria-label": t(READ_KEYS[reading.type]) })}
     >
       {reading !== null ? (
         <LegalDocumentScreen
@@ -124,10 +139,20 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
           onOpenCurrentVersion={readCurrent}
         />
       ) : (
-        <View style={[styles.page, { paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }]}>
+        <View
+          style={[
+            styles.page,
+            { paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right },
+          ]}
+        >
           <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
             <View style={styles.column}>
-              <Text id={TITLE_ID} accessibilityRole="header" {...headingLevel(1)} style={styles.title}>
+              <Text
+                id={TITLE_ID}
+                accessibilityRole="header"
+                {...headingLevel(1)}
+                style={styles.title}
+              >
                 {t(titleKey(owed.map((item) => item.type)))}
               </Text>
               {owed.map((item) => (
@@ -147,8 +172,16 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
                   {t("accept_error")}
                 </Text>
               ) : null}
-              <PrimaryButton label={t("update.accept")} loading={accept.isPending} onPress={onAccept} />
-              <PrimaryButton label={t("update.sign_out")} variant="ghost" onPress={() => void logout()} />
+              <PrimaryButton
+                label={t("update.accept")}
+                loading={accept.isPending}
+                onPress={onAccept}
+              />
+              <PrimaryButton
+                label={t("update.sign_out")}
+                variant="ghost"
+                onPress={() => void logout()}
+              />
             </View>
           </View>
         </View>

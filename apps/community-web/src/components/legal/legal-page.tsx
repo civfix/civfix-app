@@ -10,7 +10,9 @@ import { LEGAL_ENTITY } from "./legal-entity"
 import { SOURCE } from "@/lib/source"
 
 // The document is React Native Web, which touches the DOM as it loads, so the static page is its shell.
-const LegalDocument = dynamic(() => import("./legal-document").then((m) => m.LegalDocument), { ssr: false })
+const LegalDocument = dynamic(() => import("./legal-document").then((m) => m.LegalDocument), {
+  ssr: false,
+})
 
 const DOCS: { id: LegalDocumentType; href: string; label: string }[] = [
   { id: "terms", href: "/legal/terms", label: "Terms of Service" },

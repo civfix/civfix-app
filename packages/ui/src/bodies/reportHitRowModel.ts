@@ -10,10 +10,10 @@ export const METERS_PER_MILE = 1609.344
 
 /** The minimal report shape this model needs; `ReportPinDTO` satisfies it. */
 export interface ReportHitLike {
-  title?: string | null
-  description?: string | null
-  addr?: string | null
-  thumbUrl?: string | null
+  title?: string | null | undefined
+  description?: string | null | undefined
+  addr?: string | null | undefined
+  thumbUrl?: string | null | undefined
   lat: number
   lng: number
 }

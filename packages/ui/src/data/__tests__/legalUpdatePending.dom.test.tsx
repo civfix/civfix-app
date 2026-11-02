@@ -25,7 +25,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {

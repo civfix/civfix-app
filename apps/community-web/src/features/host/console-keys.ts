@@ -18,13 +18,8 @@ export const consoleKeys = {
     ["host", eventId, "analytics", panel, range] as const,
   exports: (eventId: string) => ["host", eventId, "exports"] as const,
   rosterRoot: (eventId: string) => ["host", eventId, "roster"] as const,
-  roster: (
-    eventId: string,
-    filter: string,
-    sort: string,
-    q: string,
-    ticketTypeId: string | null,
-  ) => ["host", eventId, "roster", "console", filter, sort, q, ticketTypeId ?? "all"] as const,
+  roster: (eventId: string, filter: string, sort: string, q: string, ticketTypeId: string | null) =>
+    ["host", eventId, "roster", "console", filter, sort, q, ticketTypeId ?? "all"] as const,
   answers: (eventId: string, registrationId: string) =>
     ["host", eventId, "answers", registrationId] as const,
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { expectWrittenInLayoutEffect, layoutEffectBodies, sliceBetween, sliceFrom } from "./sourceGuards"
+import {
+  expectWrittenInLayoutEffect,
+  layoutEffectBodies,
+  sliceBetween,
+  sliceFrom,
+} from "./sourceGuards"
 
 describe("sliceBetween", () => {
   it("returns the region between the anchors", () => {
@@ -41,13 +46,18 @@ describe("layoutEffectBodies", () => {
 describe("expectWrittenInLayoutEffect", () => {
   it("accepts a ref written inside a dependency-free layout effect", () => {
     expect(() =>
-      expectWrittenInLayoutEffect("const r = useRef(v)\nuseLayoutEffect(() => {\n  r.current = v\n})", "r.current = v"),
+      expectWrittenInLayoutEffect(
+        "const r = useRef(v)\nuseLayoutEffect(() => {\n  r.current = v\n})",
+        "r.current = v",
+      ),
     ).not.toThrow()
   })
 
   it("rejects a render-phase write that follows a mount-only layout effect", () => {
     const src = "useLayoutEffect(() => {\n  other()\n}, [])\nr.current = v"
-    expect(() => expectWrittenInLayoutEffect(src, "r.current = v")).toThrow(/not inside a useLayoutEffect body/)
+    expect(() => expectWrittenInLayoutEffect(src, "r.current = v")).toThrow(
+      /not inside a useLayoutEffect body/,
+    )
   })
 
   it("rejects a write inside a layout effect that does not run on every commit", () => {

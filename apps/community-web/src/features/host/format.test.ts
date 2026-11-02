@@ -7,12 +7,7 @@ vi.mock("@civfix/ui/i18n", () => ({
 
 import { datetimeLocalFromIso } from "@civfix/contract/datetime"
 
-import {
-  consoleInputZone,
-  inputZoneHintName,
-  zoneGenericName,
-  zonedFieldPatch,
-} from "./format"
+import { consoleInputZone, inputZoneHintName, zoneGenericName, zonedFieldPatch } from "./format"
 
 const LA = "America/Los_Angeles"
 const OPENS = "2026-09-12T17:00:00.000Z"

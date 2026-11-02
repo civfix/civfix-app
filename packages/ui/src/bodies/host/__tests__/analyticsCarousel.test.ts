@@ -46,7 +46,9 @@ describe("the numbers behind a carousel page", () => {
 
 describe("the card reads the host's whole last 30 days, not one chosen event", () => {
   it("takes an org scope rather than an event id", () => {
-    expect(CARD).toContain("export interface AnalyticsCarouselCardProps {\n  orgId: string | null\n}")
+    expect(CARD).toContain(
+      "export interface AnalyticsCarouselCardProps {\n  orgId: string | null\n}",
+    )
     expect(CARD).toContain("useHostAnalyticsSummary(orgId)")
     expect(CARD).not.toContain("cleanupId")
     expect(CARD).not.toContain("useEventAnalytics")
@@ -79,8 +81,9 @@ describe("the card reads the host's whole last 30 days, not one chosen event", (
 
 describe("the whole card is one pressable surface, clipped to its own radius", () => {
   it("is a list card whose rows can fill edge to edge", () => {
-    expect(CARD.match(/<SectionCard label=\{heading\} trailing=\{window\} variant="list">/g) ?? [])
-      .toHaveLength(3)
+    expect(
+      CARD.match(/<SectionCard label=\{heading\} trailing=\{window\} variant="list">/g) ?? [],
+    ).toHaveLength(3)
     expect(CARD.match(/\{footer\}/g) ?? []).toHaveLength(3)
   })
 

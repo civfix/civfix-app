@@ -11,7 +11,7 @@ import { blockedAccountsOf, listBlocksQueryOptions } from "../direct"
 import { queryKeys } from "../../keys"
 
 function person(id: string): PersonDTO {
-  return { id, name: `Person ${id}`, avatar: null, followers: 0, following: 0, isFollowing: false } as unknown as PersonDTO
+  return { id, name: `Person ${id}`, avatar: null, followers: 0, following: 0, isFollowing: false }
 }
 
 function fakeApi(pages: Record<string, ListBlocksResponse>) {
@@ -32,7 +32,7 @@ describe("listBlocksQueryOptions", () => {
       c2: { blocked: [person("c")], nextCursor: null },
     })
     const qc = new QueryClient()
-    const data = await qc.fetchInfiniteQuery({ ...listBlocksQueryOptions(api), pages: 3 })
+    const data = await qc.infiniteQuery({ ...listBlocksQueryOptions(api), pages: 3 })
     expect(calls).toEqual([{}, { cursor: "c2" }])
     expect(blockedAccountsOf(data).map((p) => p.id)).toEqual(["a", "b", "c"])
   })
@@ -48,7 +48,10 @@ describe("listBlocksQueryOptions", () => {
 })
 
 describe("BlockedAccountsBody", () => {
-  const body = readFileSync(new URL("../../../bodies/BlockedAccountsBody.tsx", import.meta.url), "utf8")
+  const body = readFileSync(
+    new URL("../../../bodies/BlockedAccountsBody.tsx", import.meta.url),
+    "utf8",
+  )
   it("loads the next page at the end of the list and shows a footer spinner while it does", () => {
     expect(body).toContain("onEndReached={onEndReached}")
     expect(body).toContain("const onEndReached = useListEndReached(query)")

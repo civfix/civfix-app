@@ -161,7 +161,12 @@ describe("resolveWebMenuFrame", () => {
   })
 
   it("caps the action list to the window and never places above the edge margin", () => {
-    const tall = resolveWebMenuFrame(anchor(10, 40), { width: 1280, height: 200 }, { ...frame, actionCount: 20 }, false)
+    const tall = resolveWebMenuFrame(
+      anchor(10, 40),
+      { width: 1280, height: 200 },
+      { ...frame, actionCount: 20 },
+      false,
+    )
     expect(tall.actionsMaxH).toBe(Math.max(38 * 2, 200 - CONTEXT_MENU_EDGE_MARGIN * 2 - 48 - 8))
     expect(tall.cardH).toBe(48 + tall.actionsMaxH + 8)
     expect(tall.position?.top).toBeGreaterThanOrEqual(CONTEXT_MENU_EDGE_MARGIN)

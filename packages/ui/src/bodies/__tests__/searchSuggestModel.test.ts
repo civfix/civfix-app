@@ -320,7 +320,18 @@ describe("assembleSearchSuggestions: Most pressing nearby", () => {
     const twelve = pressingPins([12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1])
     const out = assemble({ pressing: twelve })
     expect(PRESSING_NEARBY_LIMIT).toBe(10)
-    expect(out.pressing.map((p) => p.id)).toEqual(["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"])
+    expect(out.pressing.map((p) => p.id)).toEqual([
+      "p1",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
+      "p7",
+      "p8",
+      "p9",
+      "p10",
+    ])
   })
 
   it("T9: never re-sorts by count", () => {

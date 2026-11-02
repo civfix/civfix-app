@@ -5,6 +5,7 @@ import * as React from "react"
 import { UNSUBSCRIBE_TOKEN_MAX, UNSUBSCRIBE_TOKEN_MIN } from "@civfix/contract"
 import { Trans, useT } from "@civfix/ui/i18n"
 
+import { SlotLink } from "@/components/ui/slot-link"
 import { api } from "@/lib/api"
 
 export function unsubscribeTokenFromSearch(search: string | null | undefined): string | null {
@@ -70,7 +71,7 @@ export function UnsubscribeView() {
           <Trans
             t={t}
             i18nKey="settings_prompt"
-            components={[<a key="settings" href="/notifications/prefs" />]}
+            components={[<SlotLink key="settings" href="/notifications/prefs" />]}
           />
         </p>
       </div>

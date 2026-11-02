@@ -32,6 +32,8 @@ describe("the slide-up sheet rides the canonical keyboard anchor", () => {
   })
 
   it("dismisses the keyboard the moment the sheet is asked to close", () => {
-    expect(SLIDE_UP).toMatch(/useEffect\(\(\) => \{\s*if \(!visible && rendered\) Keyboard\.dismiss\(\)\s*\}, \[visible, rendered\]\)/)
+    expect(SLIDE_UP).toMatch(
+      /useEffect\(\(\) => \{\s*if \(!visible && rendered\) Keyboard\.dismiss\(\)\s*\}, \[visible, rendered\]\)/,
+    )
   })
 })

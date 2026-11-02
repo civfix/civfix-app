@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest"
 import type { ChatMessageDTO } from "@civfix/contract"
 import { pinnedRenderRows } from "../conversationModel"
 
-function pin(id: string, fromId: string | null, kind: ChatMessageDTO["kind"] = "text"): ChatMessageDTO {
+function pin(
+  id: string,
+  fromId: string | null,
+  kind: ChatMessageDTO["kind"] = "text",
+): ChatMessageDTO {
   return {
     id,
     from: fromId ? { id: fromId, name: fromId } : null,
@@ -36,7 +40,8 @@ describe("pinnedRenderRows", () => {
   })
 
   it("names others only in group rooms, and never on a system row", () => {
-    const rows = (isGroup: boolean) => pinnedRenderRows([pin("m1", "a"), pin("m2", "a", "system")], "me", isGroup)
+    const rows = (isGroup: boolean) =>
+      pinnedRenderRows([pin("m1", "a"), pin("m2", "a", "system")], "me", isGroup)
     expect(rows(true).map((row) => row.type === "row" && row.showName)).toEqual([true, false])
     expect(rows(false).map((row) => row.type === "row" && row.showName)).toEqual([false, false])
   })

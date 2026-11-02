@@ -12,7 +12,11 @@ export function slideUpDragOffset(dy: number): number {
   return Math.max(0, dy)
 }
 
-export function slideUpDragOutcome(dy: number, vy: number, sheetHeight: number | null): SlideUpDragOutcome {
+export function slideUpDragOutcome(
+  dy: number,
+  vy: number,
+  sheetHeight: number | null,
+): SlideUpDragOutcome {
   if (dy <= 0) return "settle"
   if (vy >= SLIDE_UP_DISMISS_VELOCITY) return "dismiss"
   const threshold =

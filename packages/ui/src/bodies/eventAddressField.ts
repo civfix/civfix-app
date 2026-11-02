@@ -113,7 +113,8 @@ export function composeEventAddress(input: {
   const line = input.address.trim()
   if (line.length === 0) return null
   const spot = input.spot.trim()
-  const alreadyLeads = spot.length > 0 && leadsWithComponent(stripNearPrefix(line, input.near), spot)
+  const alreadyLeads =
+    spot.length > 0 && leadsWithComponent(stripNearPrefix(line, input.near), spot)
   const composed = spot.length > 0 && !alreadyLeads ? `${spot}, ${line}` : line
   const base: EventAddressSource = input.addressSource ?? "manual"
   const source: EventAddressSource = composed !== line && base === "resolved" ? "edited" : base

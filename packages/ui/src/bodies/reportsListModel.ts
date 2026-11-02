@@ -5,7 +5,7 @@ import type { MediaDTO, ReportDTO } from "@civfix/contract"
  * REPORT_CATEGORY_LABELS map, so a reader of any catalog can search the category name they see.
  */
 export function matchesReportQuery(
-  report: { title?: string | null; addr?: string | null },
+  report: { title?: string | null | undefined; addr?: string | null | undefined },
   categoryLabel: string,
   query: string,
 ): boolean {

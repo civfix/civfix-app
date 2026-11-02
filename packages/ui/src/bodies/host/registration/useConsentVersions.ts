@@ -18,7 +18,10 @@ export interface ConsentVersionsState {
 export function useConsentVersions(enabled: boolean): ConsentVersionsState {
   const documents = useLegalDocuments({ enabled })
   const [current, setCurrent] = useState<readonly LegalVersionRef[] | null>(null)
-  const versions = useMemo(() => consentVersions(documents.data, current), [documents.data, current])
+  const versions = useMemo(
+    () => consentVersions(documents.data, current),
+    [documents.data, current],
+  )
   const { refetch } = documents
   const retry = useCallback(() => {
     void refetch()
@@ -30,5 +33,8 @@ export function useConsentVersions(enabled: boolean): ConsentVersionsState {
     return true
   }, [])
   const failed = versions === null && !documents.isPending && !documents.isFetching
-  return useMemo(() => ({ versions, failed, retry, adoptOutdated }), [versions, failed, retry, adoptOutdated])
+  return useMemo(
+    () => ({ versions, failed, retry, adoptOutdated }),
+    [versions, failed, retry, adoptOutdated],
+  )
 }

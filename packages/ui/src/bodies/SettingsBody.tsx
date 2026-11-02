@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { View, StyleSheet } from "react-native"
 import type { LegalDocumentType } from "@civfix/contract"
 import { space, useAppearancePreference } from "../theme"
@@ -20,6 +20,7 @@ import { useNavStore, type DetailKind } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useLocale, useT, supportedLocales } from "../i18n"
 import { useOnboardingTourPresenter } from "./onboardingTour"
+import { useDeveloperScreenPresenter } from "./developerScreen"
 
 const SHORT_COMMIT_LENGTH = 7
 
@@ -35,6 +36,7 @@ export function SettingsBody() {
   const appearance = useAppearancePreference()
   const { t: tAppearance } = useT("appearance-settings")
   const presentTour = useOnboardingTourPresenter()
+  const presentDeveloper = useDeveloperScreenPresenter()
 
   const pushKind = useCallback((kind: DetailKind) => {
     useNavStore.getState().push({ kind })
@@ -59,8 +61,7 @@ export function SettingsBody() {
     [openUrl],
   )
 
-  const localeName =
-    supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
+  const localeName = supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
   const appearanceName = tAppearance(`option.${appearance}`)
   const signedOut = !isAuthenticated && !isPending
 
@@ -134,13 +135,20 @@ export function SettingsBody() {
         <SettingsRow icon="FileText" label={t("terms")} onPress={() => openLegal("terms")} />
         <SettingsRow icon="Lock" label={t("privacy_policy")} onPress={() => openLegal("privacy")} />
         <SettingsRow icon="Layers" label={t("cookies")} onPress={() => openLegal("cookies")} />
-        <SettingsRow icon="Building2" label={t("subprocessors")} onPress={() => openLegal("subprocessors")} />
+        <SettingsRow
+          icon="Building2"
+          label={t("subprocessors")}
+          onPress={() => openLegal("subprocessors")}
+        />
         <SettingsRow
           icon="ExternalLink"
           label={t("source_code")}
           value={sourceCommit().slice(0, SHORT_COMMIT_LENGTH) || undefined}
           onPress={() => openUrl(sourceUrl())}
         />
+        {presentDeveloper ? (
+          <SettingsRow icon="Wrench" label={t("developer.label")} onPress={presentDeveloper} />
+        ) : null}
       </SettingsSection>
 
       {signedOut ? null : (

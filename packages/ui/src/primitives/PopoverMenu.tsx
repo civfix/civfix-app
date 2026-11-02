@@ -39,7 +39,7 @@ export type { AnchorRect }
 export interface PopoverMenuProps {
   visible: boolean
   onClose: () => void
-  anchorRect?: AnchorRect | null
+  anchorRect?: AnchorRect | null | undefined
   items: PopoverMenuItem[]
   align?: "left" | "right"
   accessibilityLabel?: string

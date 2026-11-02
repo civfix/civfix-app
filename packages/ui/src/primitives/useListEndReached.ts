@@ -21,6 +21,7 @@ export function shouldLoadMoreOnEndReached(paging: ListPagingState, filtering: b
 export function useListEndReached(query: ListPagingQuery, filtering = false): () => void {
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
   return useCallback(() => {
-    if (shouldLoadMoreOnEndReached({ hasNextPage, isFetchingNextPage }, filtering)) void fetchNextPage()
+    if (shouldLoadMoreOnEndReached({ hasNextPage, isFetchingNextPage }, filtering))
+      void fetchNextPage()
   }, [filtering, hasNextPage, isFetchingNextPage, fetchNextPage])
 }

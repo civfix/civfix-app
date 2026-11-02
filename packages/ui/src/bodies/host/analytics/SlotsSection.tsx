@@ -1,4 +1,3 @@
-import React from "react"
 import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"

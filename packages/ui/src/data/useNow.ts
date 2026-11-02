@@ -6,7 +6,13 @@ export const NOW_TICK_MS = 60_000
 export const MAX_TIMER_DELAY_MS = 2_147_483_647
 
 export interface UseNowOptions {
-  boundaryAt?: number | null
+  /**
+   * The next instant the view changes. As a function it is read against the hook's own clock, so a
+   * caller never reads the time a second time during render to find it.
+   */
+  boundaryAt?: number | null | ((now: number) => number | null)
+  /** Stops the periodic tick once no boundary is ahead: nothing left on the clock changes the view. */
+  idleAfterLastBoundary?: boolean
 }
 
 /**
@@ -32,14 +38,16 @@ export function armBoundaryTimer(boundaryAt: number, onReached: () => void): () 
 }
 
 export function useNow(intervalMs: number = NOW_TICK_MS, opts: UseNowOptions = {}): number {
-  const boundaryAt = opts.boundaryAt ?? null
   const [now, setNow] = useState(() => Date.now())
+  const boundary = opts.boundaryAt
+  const boundaryAt = typeof boundary === "function" ? boundary(now) : (boundary ?? null)
+  const tickMs = opts.idleAfterLastBoundary === true && boundaryAt === null ? 0 : intervalMs
 
   useEffect(() => {
-    if (intervalMs <= 0) return
-    const id = setInterval(() => setNow(Date.now()), intervalMs)
+    if (tickMs <= 0) return
+    const id = setInterval(() => setNow(Date.now()), tickMs)
     return () => clearInterval(id)
-  }, [intervalMs])
+  }, [tickMs])
 
   useEffect(() => {
     if (boundaryAt === null) return

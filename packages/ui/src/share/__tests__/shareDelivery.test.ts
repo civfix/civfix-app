@@ -107,8 +107,7 @@ const plan = (count: number): SharePlanEntry[] =>
     (i) => `cid-${i}`,
   )
 
-const room = (recipientId: string): Promise<string | null> =>
-  Promise.resolve(`room-${recipientId}`)
+const room = (recipientId: string): Promise<string | null> => Promise.resolve(`room-${recipientId}`)
 
 const run = (socket: ChatSocketLike, entries: SharePlanEntry[], over = {}) =>
   runShareToDm(
@@ -308,7 +307,9 @@ describe("an abort ends the run at once, so a reopened sheet can send straight a
     vi.useFakeTimers()
     const socket = new FakeSocket("open", "silence")
     const controller = new AbortController()
-    const settled = settleState(run(socket, plan(2), { ackTimeoutMs: ACK_MS * 100, signal: controller.signal }))
+    const settled = settleState(
+      run(socket, plan(2), { ackTimeoutMs: ACK_MS * 100, signal: controller.signal }),
+    )
     await vi.advanceTimersByTimeAsync(0)
     expect(socket.sent).toHaveLength(1)
     expect(settled.done).toBe(false)
@@ -327,7 +328,9 @@ describe("an abort ends the run at once, so a reopened sheet can send straight a
     vi.useFakeTimers()
     const socket = new FakeSocket("connecting")
     const controller = new AbortController()
-    const settled = settleState(run(socket, plan(1), { openTimeoutMs: ACK_MS * 100, signal: controller.signal }))
+    const settled = settleState(
+      run(socket, plan(1), { openTimeoutMs: ACK_MS * 100, signal: controller.signal }),
+    )
     await vi.advanceTimersByTimeAsync(0)
     expect(settled.done).toBe(false)
     controller.abort()
@@ -346,7 +349,9 @@ describe("an abort ends the run at once, so a reopened sheet can send straight a
     const opening = new Promise<string | null>((_, reject) => {
       failOpen = reject
     })
-    const settled = settleState(run(socket, plan(1), { resolveRoom: () => opening, signal: controller.signal }))
+    const settled = settleState(
+      run(socket, plan(1), { resolveRoom: () => opening, signal: controller.signal }),
+    )
     await vi.advanceTimersByTimeAsync(0)
     expect(settled.done).toBe(false)
     controller.abort()

@@ -8,7 +8,10 @@ const GERMAN: ResourceLanguage = { common: { lazy_fixture: "Deutsch" } }
 const KOREAN: ResourceLanguage = { common: { lazy_fixture: "한국어" } }
 
 function deferredLoader() {
-  const pending = new Map<SupportedLocale, { resolve: (c: ResourceLanguage) => void; reject: (e: Error) => void }>()
+  const pending = new Map<
+    SupportedLocale,
+    { resolve: (c: ResourceLanguage) => void; reject: (e: Error) => void }
+  >()
   const calls: SupportedLocale[] = []
   const load: CatalogLoader = (lng) => {
     calls.push(lng)

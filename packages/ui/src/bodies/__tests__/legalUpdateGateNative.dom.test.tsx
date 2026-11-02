@@ -15,7 +15,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -60,7 +65,10 @@ describe("LegalUpdateGate on the phone", () => {
     const legal = legalApi(status({ required: [TERMS] }))
     mountLegal(<LegalUpdateGate />, { api: legal.api })
     await screen.findByRole("dialog")
-    expect(BackHandler.addEventListener).toHaveBeenCalledWith("hardwareBackPress", expect.any(Function))
+    expect(BackHandler.addEventListener).toHaveBeenCalledWith(
+      "hardwareBackPress",
+      expect.any(Function),
+    )
 
     expect(pressBack()).toBe(true)
     expect(screen.getByRole("heading", { name: "We've updated our Terms" })).toBeTruthy()

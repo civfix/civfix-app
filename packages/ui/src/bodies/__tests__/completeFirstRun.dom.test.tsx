@@ -42,7 +42,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -131,8 +136,18 @@ describe("the sign-up acceptance step", () => {
     expect(api.acceptLegal.mock.calls[0]?.[0]).toStrictEqual({
       items: [
         { type: "terms", version: TERMS_DOC.version, sha256: TERMS_DOC.sha256, action: "accepted" },
-        { type: "privacy", version: PRIVACY_DOC.version, sha256: PRIVACY_DOC.sha256, action: "accepted" },
-        { type: "cookies", version: COOKIES_DOC.version, sha256: COOKIES_DOC.sha256, action: "acknowledged" },
+        {
+          type: "privacy",
+          version: PRIVACY_DOC.version,
+          sha256: PRIVACY_DOC.sha256,
+          action: "accepted",
+        },
+        {
+          type: "cookies",
+          version: COOKIES_DOC.version,
+          sha256: COOKIES_DOC.sha256,
+          action: "acknowledged",
+        },
         {
           type: "subprocessors",
           version: SUBPROCESSORS_DOC.version,
@@ -187,7 +202,11 @@ describe("the sign-up acceptance step", () => {
     await settle()
 
     expect(firstRunClosed(store)).toBe(true)
-    expect(added().filter((node) => node.matches('[role="dialog"]') || node.querySelector('[role="dialog"]'))).toEqual([])
+    expect(
+      added().filter(
+        (node) => node.matches('[role="dialog"]') || node.querySelector('[role="dialog"]'),
+      ),
+    ).toEqual([])
     expect(added().filter((node) => node.textContent?.includes("We've updated our"))).toEqual([])
     expect(screen.queryByRole("dialog")).toBeNull()
     expect(screen.queryByText(/We've updated our/)).toBeNull()
@@ -212,23 +231,28 @@ describe("the sign-up acceptance step", () => {
     await waitFor(() => expect(firstRunClosed(store)).toBe(true))
     expect(store.get().user).toEqual(SAVED.user)
     expect(screen.queryByRole("alert")).toBeNull()
-    expect(await screen.findByRole("dialog", { name: "We've updated our Terms and Privacy notice" })).toBeTruthy()
+    expect(
+      await screen.findByRole("dialog", { name: "We've updated our Terms and Privacy notice" }),
+    ).toBeTruthy()
   })
 
   it.each<[string, () => Promise<GetLegalDocumentsResponse>]>([
     ["rejected", () => Promise.reject(new TypeError("Failed to fetch"))],
     ["still pending", () => new Promise<GetLegalDocumentsResponse>(() => {})],
-  ])("T31: documents %s when Continue is pressed: the profile is still saved and nothing is recorded", async (_name, documents) => {
-    const { api, updateProfile, store } = setup({
-      configure: (legal) => legal.getLegalDocuments.mockImplementation(documents),
-    })
-    await settle()
+  ])(
+    "T31: documents %s when Continue is pressed: the profile is still saved and nothing is recorded",
+    async (_name, documents) => {
+      const { api, updateProfile, store } = setup({
+        configure: (legal) => legal.getLegalDocuments.mockImplementation(documents),
+      })
+      await settle()
 
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }))
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith(PROFILE))
-    await waitFor(() => expect(firstRunClosed(store)).toBe(true))
-    await settle()
-    expect(api.acceptLegal).not.toHaveBeenCalled()
-    expect(screen.queryByRole("alert")).toBeNull()
-  })
+      fireEvent.click(screen.getByRole("button", { name: "Continue" }))
+      await waitFor(() => expect(updateProfile).toHaveBeenCalledWith(PROFILE))
+      await waitFor(() => expect(firstRunClosed(store)).toBe(true))
+      await settle()
+      expect(api.acceptLegal).not.toHaveBeenCalled()
+      expect(screen.queryByRole("alert")).toBeNull()
+    },
+  )
 })

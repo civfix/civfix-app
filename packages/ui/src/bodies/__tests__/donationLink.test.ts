@@ -63,7 +63,13 @@ describe("donationLinkFor", () => {
 
   it("renders nothing when no level carries a link", () => {
     expect(donationLinkFor(source())).toBeNull()
-    expect(donationLinkFor(source({ organization: { ...ORG, donationUrl: undefined } as DonationLinkSource["organization"] }))).toBeNull()
+    expect(
+      donationLinkFor(
+        source({
+          organization: { ...ORG, donationUrl: undefined } as DonationLinkSource["organization"],
+        }),
+      ),
+    ).toBeNull()
   })
 
   it("uses the event title when neither the organization nor the organizer has a name to show", () => {

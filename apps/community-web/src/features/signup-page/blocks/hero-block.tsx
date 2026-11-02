@@ -20,7 +20,11 @@ const WHEN_OPTIONS: Intl.DateTimeFormatOptions = {
  * The start in the event's own zone. An event without a usable one (a row from before events had a
  * zone) is shown in the visitor's zone, which the label still names. "" for an unreadable instant.
  */
-export function formatEventWhen(startsAt: string, timezone: string | null | undefined, locale: string): string {
+export function formatEventWhen(
+  startsAt: string,
+  timezone: string | null | undefined,
+  locale: string,
+): string {
   return safeDateFormat(startsAt, locale, WHEN_OPTIONS, timezone)
 }
 
@@ -31,13 +35,11 @@ export function HeroBlock({ block, page }: { block: HeroBlockData; page: PublicE
 
   return (
     <header className="signup-hero">
-      {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
       {image ? <img className="signup-hero-cover" src={image} alt="" /> : null}
       <div className="signup-hero-body">
         {page.organization ? (
           <p className="signup-hero-org">
             {page.organization.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
               <img src={page.organization.logoUrl} alt="" width={24} height={24} />
             ) : null}
             {page.organization.name}

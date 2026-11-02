@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ReactionEmoji, ReactionSummaryDTO } from "@civfix/contract"
 import {
@@ -43,7 +42,10 @@ export function ReactionChips({ reactions, onToggle, mine, disabled = false }: R
             disabled={disabled}
             onPress={() => onToggle(chip.emoji)}
             accessibilityRole="button"
-            accessibilityLabel={t("chip.a11y", { label: t(`label.${chip.emoji}`), count: chip.count })}
+            accessibilityLabel={t("chip.a11y", {
+              label: t(`label.${chip.emoji}`),
+              count: chip.count,
+            })}
             accessibilityState={{ selected: chip.mine, disabled }}
             hitSlop={{ top: 5, bottom: 5, left: 2, right: 2 }}
             {...focusRingProps}

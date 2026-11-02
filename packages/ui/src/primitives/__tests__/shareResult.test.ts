@@ -8,7 +8,9 @@ import { classifyWebShareRejection } from "../shareResult"
 describe("classifyWebShareRejection", () => {
   it("treats the user dismissing the share sheet as a cancel, NOT a failure to fall back from", () => {
     // What every engine throws when the user closes the sheet.
-    expect(classifyWebShareRejection({ name: "AbortError", message: "Share canceled" })).toBe("cancelled")
+    expect(classifyWebShareRejection({ name: "AbortError", message: "Share canceled" })).toBe(
+      "cancelled",
+    )
     // A real DOMException carries the same name.
     const abort = new Error("Abort due to cancellation of share.")
     abort.name = "AbortError"

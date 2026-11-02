@@ -1,12 +1,10 @@
 export function matchesThreadQuery(
-  thread: { title: string; last?: string | null },
+  thread: { title: string; last?: string | null | undefined },
   query: string,
 ): boolean {
   const q = query.trim().toLowerCase()
   if (!q) return true
-  return (
-    thread.title.toLowerCase().includes(q) || (thread.last ?? "").toLowerCase().includes(q)
-  )
+  return thread.title.toLowerCase().includes(q) || (thread.last ?? "").toLowerCase().includes(q)
 }
 
 export const UNREAD_BADGE_CAP = 99

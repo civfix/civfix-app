@@ -15,7 +15,11 @@ import { makeLocaleSwitcher } from "../../i18n/localeSwitcher"
 const body = readFileSync(new URL("../reportDetail/ViewChatRow.tsx", import.meta.url), "utf8")
 
 // Only English is bundled, so the instance is switched the way I18nProvider switches it.
-async function meta(lng: "en" | "es" | "de" | "ko", members: number, messages: number): Promise<string> {
+async function meta(
+  lng: "en" | "es" | "de" | "ko",
+  members: number,
+  messages: number,
+): Promise<string> {
   const i18n = createI18n(lng)
   expect(await makeLocaleSwitcher(i18n, loadCatalog)(lng)).toBe(true)
   const t = i18n.getFixedT(lng, "report-detail")

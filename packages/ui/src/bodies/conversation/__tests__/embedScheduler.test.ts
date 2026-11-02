@@ -163,7 +163,11 @@ describe("the embed viewport tracks which rows are on screen", () => {
     viewport.subscribe("b", listeners.b)
     viewport.subscribe("c", listeners.c)
     viewport.setVisible(["a", "b"])
-    expect([listeners.a.mock.calls.length, listeners.b.mock.calls.length, listeners.c.mock.calls.length]).toEqual([0, 0, 1])
+    expect([
+      listeners.a.mock.calls.length,
+      listeners.b.mock.calls.length,
+      listeners.c.mock.calls.length,
+    ]).toEqual([0, 0, 1])
     expect(viewport.isVisible("c")).toBe(false)
   })
 
@@ -174,11 +178,23 @@ describe("the embed viewport tracks which rows are on screen", () => {
     viewport.subscribe("b", listeners.b)
     viewport.subscribe("c", listeners.c)
     viewport.setVisible(["a", "b", "c"])
-    expect([listeners.a.mock.calls.length, listeners.b.mock.calls.length, listeners.c.mock.calls.length]).toEqual([0, 0, 0])
+    expect([
+      listeners.a.mock.calls.length,
+      listeners.b.mock.calls.length,
+      listeners.c.mock.calls.length,
+    ]).toEqual([0, 0, 0])
     viewport.setVisible(["b", "c"])
-    expect([listeners.a.mock.calls.length, listeners.b.mock.calls.length, listeners.c.mock.calls.length]).toEqual([1, 0, 0])
+    expect([
+      listeners.a.mock.calls.length,
+      listeners.b.mock.calls.length,
+      listeners.c.mock.calls.length,
+    ]).toEqual([1, 0, 0])
     viewport.setVisible(["c", "b"])
-    expect([listeners.a.mock.calls.length, listeners.b.mock.calls.length, listeners.c.mock.calls.length]).toEqual([1, 0, 0])
+    expect([
+      listeners.a.mock.calls.length,
+      listeners.b.mock.calls.length,
+      listeners.c.mock.calls.length,
+    ]).toEqual([1, 0, 0])
   })
 
   it("treats every row as visible when no list is plumbed in", () => {

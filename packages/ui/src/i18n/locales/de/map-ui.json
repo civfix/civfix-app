@@ -85,5 +85,11 @@
       "keep": "Weiter bearbeiten"
     }
   },
-  "finding_area": "Deine Gegend wird gesucht…"
+  "finding_area": "Deine Gegend wird gesucht…",
+  "unavailable": {
+    "title": "Karte nicht verfügbar",
+    "home": "Dieser Browser kann die Karte nicht anzeigen. Meldungen und Events kannst du trotzdem durchsehen.",
+    "picker": "Dieser Browser kann die Karte nicht anzeigen. Suche stattdessen nach einer Adresse, um die Markierung zu setzen.",
+    "reportList": "Dieser Browser kann die Karte nicht anzeigen. Du kannst Meldungen trotzdem aus der Liste auswählen."
+  }
 }

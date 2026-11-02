@@ -1,19 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { AppError, ErrorCode } from "@civfix/contract"
-import { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../../data/uploadMedia"
+import {
+  putUpload,
+  UPLOAD_PUT_BASE_TIMEOUT_MS,
+  UPLOAD_MIN_BYTES_PER_SEC,
+} from "../../data/uploadMedia"
 
 function okFetch(status = 200): typeof fetch {
-  return (async () => ({ ok: status >= 200 && status < 300, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: status >= 200 && status < 300, status }) as Response
 }
 
 function statusFetch(status: number): typeof fetch {
-  return (async () => ({ ok: false, status }) as Response) as unknown as typeof fetch
+  return async () => ({ ok: false, status }) as Response
 }
 
 function rejectingFetch(err: unknown): typeof fetch {
-  return (async () => {
+  return async () => {
     throw err
-  }) as unknown as typeof fetch
+  }
 }
 
 function neverSettlesFetch(): typeof fetch {
@@ -34,14 +38,20 @@ function rejection(upload: Promise<void>): Promise<AppError> {
 }
 
 describe("putUpload", () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it("(a) resolves when the PUT is ok", async () => {
-    await expect(putUpload("https://x", {}, "body" as BodyInit, 1000, okFetch())).resolves.toBeUndefined()
+    await expect(
+      putUpload("https://x", {}, "body" as BodyInit, 1000, okFetch()),
+    ).resolves.toBeUndefined()
   })
 
   it("(b) throws AppError INTERNAL with the status in the message on a non-ok response", async () => {
-    const err = await rejection(putUpload("https://x", {}, "body" as BodyInit, 1000, statusFetch(403)))
+    const err = await rejection(
+      putUpload("https://x", {}, "body" as BodyInit, 1000, statusFetch(403)),
+    )
     expect(err).toBeInstanceOf(AppError)
     expect(err.code).toBe(ErrorCode.INTERNAL)
     expect(err.message).toContain("403")
@@ -49,7 +59,9 @@ describe("putUpload", () => {
 
   it("(c) wraps a rejecting fetch in AppError INTERNAL, preserving the cause", async () => {
     const cause = new Error("network down")
-    const err = await rejection(putUpload("https://x", {}, "body" as BodyInit, 1000, rejectingFetch(cause)))
+    const err = await rejection(
+      putUpload("https://x", {}, "body" as BodyInit, 1000, rejectingFetch(cause)),
+    )
     expect(err).toBeInstanceOf(AppError)
     expect(err.code).toBe(ErrorCode.INTERNAL)
     expect(err.cause).toBe(cause)

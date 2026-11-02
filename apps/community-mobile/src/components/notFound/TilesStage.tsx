@@ -1,7 +1,11 @@
 import React, { useCallback, useMemo } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from "react-native-reanimated"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { shadowSchemes } from "@civfix/tokens"
@@ -28,7 +32,12 @@ const GROUND = 6
 // (in stepped seconds) before the loop stops.
 const REST_HOLD_S = 0.5
 
-const DIGITS = ["4", "0", "4"] as const
+// Keyed by slot, not digit: the two "4" tiles repeat but are separate bodies.
+const DIGITS = [
+  { slot: "lead", char: "4" },
+  { slot: "middle", char: "0" },
+  { slot: "trail", char: "4" },
+] as const
 
 function tileColor(i: number, t: Theme): string {
   return [t.colors.brand.bloom, t.colors.sky["600"], t.colors.brand.moss][i] ?? t.colors.brand.bloom
@@ -119,14 +128,14 @@ export function TilesStage({ live }: { live: boolean }) {
         <GestureDetector gesture={throwing}>
           <View style={styles.tiles} onLayout={onLayout}>
             {DIGITS.map((digit, i) => (
-              <LiveTile key={i} index={i} digit={digit} bodies={bodies} />
+              <LiveTile key={digit.slot} index={i} digit={digit.char} bodies={bodies} />
             ))}
           </View>
         </GestureDetector>
       ) : (
         <View style={[styles.tiles, styles.row]}>
           {DIGITS.map((digit, i) => (
-            <Tile key={i} index={i} digit={digit} />
+            <Tile key={digit.slot} index={i} digit={digit.char} />
           ))}
         </View>
       )}
@@ -148,7 +157,10 @@ function Tile({ index, digit }: { index: number; digit: string }) {
       style={[
         styles.tile,
         theme.shadows.s3,
-        { backgroundColor: tileColor(index, theme), boxShadow: shadowSchemes[theme.scheme].sheenTop },
+        {
+          backgroundColor: tileColor(index, theme),
+          boxShadow: shadowSchemes[theme.scheme].sheenTop,
+        },
       ]}
     >
       <Text style={styles.digit} color={theme.colors.onAccent}>
@@ -158,14 +170,26 @@ function Tile({ index, digit }: { index: number; digit: string }) {
   )
 }
 
-function LiveTile({ index, digit, bodies }: { index: number; digit: string; bodies: SharedValue<TileBody[]> }) {
+function LiveTile({
+  index,
+  digit,
+  bodies,
+}: {
+  index: number
+  digit: string
+  bodies: SharedValue<TileBody[]>
+}) {
   const placed = useAnimatedStyle(() => {
     const b = bodies.value[index]
     // Hidden until the first step has dropped the tiles above the stage.
     if (!b) return { opacity: 0 }
     return {
       opacity: 1,
-      transform: [{ translateX: b.x - TILE / 2 }, { translateY: b.y - TILE / 2 }, { rotate: `${b.angle}deg` }],
+      transform: [
+        { translateX: b.x - TILE / 2 },
+        { translateY: b.y - TILE / 2 },
+        { rotate: `${b.angle}deg` },
+      ],
     }
   })
   return (

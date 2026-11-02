@@ -74,6 +74,7 @@ import en_mobile_errors from "../locales/en/mobile-errors.json"
 import en_mobile_onboarding from "../locales/en/mobile-onboarding.json"
 import en_mobile_report_camera from "../locales/en/mobile-report-camera.json"
 import en_mobile_system from "../locales/en/mobile-system.json"
+import en_mobile_update from "../locales/en/mobile-update.json"
 import en_nav from "../locales/en/nav.json"
 import en_not_found from "../locales/en/not-found.json"
 import en_notifications from "../locales/en/notifications.json"
@@ -86,6 +87,7 @@ import en_profile_connections from "../locales/en/profile-connections.json"
 import en_profile_follow from "../locales/en/profile-follow.json"
 import en_profile_person from "../locales/en/profile-person.json"
 import en_profile_view from "../locales/en/profile-view.json"
+import en_push_prompt from "../locales/en/push-prompt.json"
 import en_report_cluster from "../locales/en/report-cluster.json"
 import en_report_content from "../locales/en/report-content.json"
 import en_report_detail from "../locales/en/report-detail.json"
@@ -179,6 +181,7 @@ const catalog: ResourceLanguage = {
   "mobile-onboarding": en_mobile_onboarding,
   "mobile-report-camera": en_mobile_report_camera,
   "mobile-system": en_mobile_system,
+  "mobile-update": en_mobile_update,
   "nav": en_nav,
   "not-found": en_not_found,
   "notifications": en_notifications,
@@ -191,6 +194,7 @@ const catalog: ResourceLanguage = {
   "profile-follow": en_profile_follow,
   "profile-person": en_profile_person,
   "profile-view": en_profile_view,
+  "push-prompt": en_push_prompt,
   "report-cluster": en_report_cluster,
   "report-content": en_report_content,
   "report-detail": en_report_detail,

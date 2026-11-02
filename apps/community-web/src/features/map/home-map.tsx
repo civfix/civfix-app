@@ -1,7 +1,13 @@
 "use client"
 
 import * as React from "react"
-import type { BBox, CleanupDTO, ReportCategory, ReportClusterDTO, ReportPinDTO } from "@civfix/contract"
+import type {
+  BBox,
+  CleanupDTO,
+  ReportCategory,
+  ReportClusterDTO,
+  ReportPinDTO,
+} from "@civfix/contract"
 import {
   Map as SharedMap,
   space,
@@ -11,7 +17,7 @@ import {
   useLayoutMode,
   enabledCategoriesArray,
   shellOcclusionLeft,
-  useAppPromoStore,
+  topBarsHeight,
   openDropPinMenu,
   dropPinCameraTarget,
   captureDropPinCamera,
@@ -213,19 +219,38 @@ export function HomeMap() {
     if (nav.mode === "expanded") nav.push(entry)
     else nav.openDetail(entry)
   }, [])
-  const onPressPin = React.useCallback((id: string) => {
-    selectMapDetail({ kind: "pin", id })
-  }, [selectMapDetail])
-  const onPressCleanup = React.useCallback((id: string) => {
-    selectMapDetail({ kind: "cleanup", id })
-  }, [selectMapDetail])
-  const onPressCluster = React.useCallback((clusterReports: ReportPinDTO[]) => {
-    selectMapDetail({ kind: "cluster", reports: clusterReports })
-  }, [selectMapDetail])
+  const onPressPin = React.useCallback(
+    (id: string) => {
+      selectMapDetail({ kind: "pin", id })
+    },
+    [selectMapDetail],
+  )
+  const onPressCleanup = React.useCallback(
+    (id: string) => {
+      selectMapDetail({ kind: "cleanup", id })
+    },
+    [selectMapDetail],
+  )
+  const onPressCluster = React.useCallback(
+    (clusterReports: ReportPinDTO[]) => {
+      selectMapDetail({ kind: "cluster", reports: clusterReports })
+    },
+    [selectMapDetail],
+  )
   // The event rides on the entry so the merged list can render its header.
-  const onPressBlend = React.useCallback((event: CleanupDTO, blendReports: ReportPinDTO[]) => {
-    selectMapDetail({ kind: "blend", event, reports: blendReports, title: event.title, lat: event.lat, lng: event.lng })
-  }, [selectMapDetail])
+  const onPressBlend = React.useCallback(
+    (event: CleanupDTO, blendReports: ReportPinDTO[]) => {
+      selectMapDetail({
+        kind: "blend",
+        event,
+        reports: blendReports,
+        title: event.title,
+        lat: event.lat,
+        lng: event.lng,
+      })
+    },
+    [selectMapDetail],
+  )
 
   const onPressMap = React.useCallback(() => {
     useReportFilterStore.getState().setLayersOpen(false)
@@ -253,9 +278,9 @@ export function HomeMap() {
         // No safe-area API on web: the reserve is the floating gutter token CompactShell.web's detents use.
         windowHeight: typeof window === "undefined" ? 0 : window.innerHeight,
         sheetTopReserve: space["8"],
-        // The fixed app-download banner occludes the top of the map like a notch; its measured height is 0
-        // whenever no banner shows.
-        topInset: useAppPromoStore.getState().bannerHeight,
+        // The fixed top bars (the system notice and the app-download banner) occlude the top of the map like a
+        // notch; their measured heights are 0 whenever nothing shows.
+        topInset: topBarsHeight(),
         // Read after openDropPinMenu, which moves the sheet to MID; the camera offsets for the settled detent.
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,

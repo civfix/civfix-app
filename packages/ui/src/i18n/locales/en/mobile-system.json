@@ -5,8 +5,11 @@
     "body": "civfix hit an unexpected problem. Restarting clears the data it had saved and tries again.",
     "action": "Restart civfix"
   },
-  "notification_channel_host_broadcasts": "Event messages",
-  "notification_channel_event_reminders": "Event reminders",
+  "notification_channel_reports": "Your reports",
+  "notification_channel_messages": "Messages",
+  "notification_channel_events": "Events",
+  "notification_channel_social": "Social",
+  "notification_channel_organizations": "Organizations",
   "notification_action_view_ticket": "View ticket",
   "notification_action_open_event": "Open event",
   "scan": {

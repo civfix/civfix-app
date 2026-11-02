@@ -79,6 +79,8 @@ describe("BodyRouter routing tables are total over every reachable surface", () 
     const stubViews = ALL_VIEWS.filter((v) => !isRealBody(VIEW_BODY[v]))
     const stubKinds = ALL_DETAIL_KINDS.filter((k) => !isRealBody(DETAIL_BODY[k]))
     expect(stubViews, "no list view may be a stub").toEqual([])
-    expect(stubKinds, "the only stub kinds must be the documented dead ones").toEqual([...DEAD_DETAIL_KINDS])
+    expect(stubKinds, "the only stub kinds must be the documented dead ones").toEqual([
+      ...DEAD_DETAIL_KINDS,
+    ])
   })
 })

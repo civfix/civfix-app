@@ -82,7 +82,8 @@ export function GuidedSheet({
         <header className="flex shrink-0 items-center gap-token-2 border-b border-console-line px-token-4 py-token-3">
           <h3
             id={titleId}
-            className="min-w-0 flex-1 truncate font-display text-token-15 font-bold text-console-ink">
+            className="min-w-0 flex-1 truncate font-display text-token-15 font-bold text-console-ink"
+          >
             {title}
           </h3>
           {progressLabel ? (

@@ -1,5 +1,6 @@
 import type * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
+import type { Map as MlMap, Marker } from "maplibre-gl"
 import { createRoot, type Root } from "react-dom/client"
 
 export interface MarkerEntry {
@@ -7,7 +8,7 @@ export interface MarkerEntry {
   root: Root
   signature: string
   anchor: DesiredMarker["anchor"]
-  onClick: { fn?: () => void }
+  onClick: { fn?: (() => void) | undefined }
 }
 
 export interface DesiredMarker {
@@ -75,7 +76,7 @@ export function syncMarkers(
     el.setAttribute("role", "button")
     el.setAttribute("tabindex", "0")
     if (want.pressed !== undefined) el.setAttribute("aria-pressed", String(want.pressed))
-    const onClick: { fn?: () => void } = { fn: want.onClick }
+    const onClick: { fn?: (() => void) | undefined } = { fn: want.onClick }
     const press = () => {
       beforePress?.()
       onClick.fn?.()
@@ -95,7 +96,6 @@ export function syncMarkers(
     const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
       .setLngLat(want.lngLat)
       .addTo(map)
-    // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
     el.setAttribute("aria-label", want.label)
     current.set(key, { marker, root, signature: want.signature, anchor: want.anchor, onClick })
   }

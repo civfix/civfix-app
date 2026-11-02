@@ -40,7 +40,6 @@ describe("detectAppPlatform", () => {
     expect(
       detectAppPlatform({
         userAgent: UA.desktopSafari,
-        platform: "MacIntel",
         maxTouchPoints: 5,
       }),
     ).toBe("ipados")
@@ -50,7 +49,6 @@ describe("detectAppPlatform", () => {
     expect(
       detectAppPlatform({
         userAgent: UA.desktopSafari,
-        platform: "MacIntel",
         maxTouchPoints: 0,
       }),
     ).toBe("other")

@@ -42,7 +42,7 @@ export function certificateCardState(input: {
   isPending: boolean
   isError: boolean
   totalHours: number
-  urlExpiresAt?: string | null
+  urlExpiresAt?: string | null | undefined
   now: number
 }): CertificateCardState {
   if (input.totalHours <= 0) return "disabled"

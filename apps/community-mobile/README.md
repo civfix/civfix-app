@@ -12,8 +12,8 @@ civfix-app/
   apps/community-web/       the public web app (shares @civfix/ui with this app)
   packages/tokens/          @civfix/tokens - the design tokens + chip-contrast helpers
   packages/ui/              @civfix/ui - the shared React Native UI (+ the app-only helpers)
-  pnpm-workspace.yaml       packages: ["apps/*", "packages/*"]
-  .npmrc                    node-linker=hoisted (Metro-friendly) + @civfix:registry (for the contract)
+  pnpm-workspace.yaml       packages + every pnpm setting (nodeLinker: hoisted, overrides, allowBuilds)
+  .npmrc                    node-linker=hoisted (guard repeat) + @civfix:registry
 ```
 
 `@civfix/tokens` and `@civfix/ui` are workspace packages (`"workspace:*"` in this app's
@@ -22,8 +22,8 @@ install by caret range, published from `civfix-contract`. See "pnpm + Expo + the
 below.
 
 `apps/community-mobile/.npmrc` mirrors the workspace root's: EAS Build and `expo install` read npm
-config from this app directory, and `node-linker=hoisted` is the layout Metro, the config plugins and
-CocoaPods are proven on.
+config from this app directory. Its `node-linker=hoisted` is a guard repeat of `nodeLinker` in
+`pnpm-workspace.yaml` (which wins): the layout Metro, the config plugins and CocoaPods are proven on.
 
 ## Key versions
 
@@ -90,6 +90,30 @@ prebuild with `--clean` before a Play build if you ever prebuilt the dev variant
 
 App Store and TestFlight builds share `org.civfix.community`, so those two still replace each other:
 Apple installs a TestFlight build over the store app by design.
+
+## Push notifications
+
+The app registers its native device token with `registerPush` (`src/push/register.ts`,
+`src/lib/pushTokenSync.ts`): the raw APNs token (hex) on iOS, the FCM token on Android. The backend
+sends to APNs and FCM directly; there is no Expo push service. Android gets its Firebase app from
+`google-services.json` (committed; it identifies the app and is not a secret), which `app.config.js`
+sets as `android.googleServicesFile` for the store variant only. Registration runs while signed in with
+permission granted: at launch, on every return to the app, right after a grant and whenever
+`addPushTokenListener` reports a rotated token. The system prompt shows once per device, after a sign-in
+from the sign-in screen; `civfix.push.asked` in MMKV remembers it across sign-outs.
+
+Android channels are the notification-settings sections (`NOTIFICATION_SECTIONS`) plus `default`
+(`src/push/channels.ts`). The backend also sends silent `kind: "clear"` pushes naming notifications read
+on another device. `src/push/clearTask.ts` defines an `expo-task-manager` task at module scope (the
+bundle entry, `index.ts`, imports it before expo-router), so a clear removes delivered notifications in the background too
+(`enableBackgroundRemoteNotifications` on the `expo-notifications` plugin adds iOS's
+`remote-notification` background mode). iOS throttles those and never wakes a force-quit app, so every
+launch and return to the app also removes delivered notifications that are read or gone from the first
+page of the notifications list (`src/push/clearDelivered.ts`). Chat pushes are removed only by a clear
+that names them.
+
+The `.dev` variant gets no push: Firebase and APNs are set up for `org.civfix.community` only, so it
+builds without `google-services.json` and its push permission reports `unsupported`.
 
 ## Store-distribution profiles: `testflight` vs `production`
 
@@ -427,7 +451,8 @@ Three manual generators produce the committed images (run from `apps/community-m
 
 ## pnpm + Expo + the shared packages
 
-- `.npmrc` (root and this app's mirror) sets `node-linker=hoisted` so the store is a flat
+- `nodeLinker: hoisted` in `pnpm-workspace.yaml`, repeated as a guard in `.npmrc` (root and this
+  app's mirror), makes the store a flat
   `node_modules` layout - Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still
   scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`), which is where
   `@civfix/contract` comes from; `@civfix/tokens` and `@civfix/ui` resolve from the workspace.
@@ -445,7 +470,7 @@ Three manual generators produce the committed images (run from `apps/community-m
 - `metro.config.js` is plain `getDefaultConfig(__dirname)` from `expo/metro-config`. Expo's default
   config already discovers the pnpm workspace root (watch folders + `nodeModulesPaths`) and enables
   package exports, so no custom monorepo wiring is needed.
-- `eas.json` pins `"pnpm": "9.12.0"` on the build profiles so EAS installs with the same package
+- `eas.json` pins `"pnpm": "10.34.9"` on the build profiles so EAS installs with the same package
   manager as `packageManager` at the workspace root.
 
 Contract changes are made in `civfix-contract` and published there; this app picks one up only
@@ -525,14 +550,15 @@ copies with the pin spots marked for checking the framing after moving a scene.
 ```sh
 pnpm install                                    # postinstall builds @civfix/tokens' dist
 pnpm turbo run typecheck lint test --filter=community-mobile   # what CI runs (builds the packages first)
-pnpm --filter community-mobile exec expo-doctor
+pnpm --filter community-mobile run doctor:expo
 pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no native compile)
 ```
 
 `.github/workflows/ci.yml` runs exactly that on every PR to `main` (the `community-mobile`
-job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflows/deploy-mobile.yml`
-(see "CI" above): a merge to `main` puts a staging build in TestFlight; nothing reaches a device
-before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.
+job), with the lockfile-pinned expo-doctor through the root `pnpm run doctor:expo`. Deploying is
+`.github/workflows/deploy-mobile.yml` (see "CI" above): a merge to `main` puts a staging build in
+TestFlight; nothing reaches a device before that workflow, a local `scripts/store-build.sh` run or a
+hand-driven archive runs.
 
 Launch-screen coverage splits along that line: `tests/splashConfig.test.ts` asserts the resolved
 `app.config.js` (automatic appearance for the app, the light paper background, and no `dark` block

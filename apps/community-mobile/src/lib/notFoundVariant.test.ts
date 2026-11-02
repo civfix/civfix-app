@@ -13,12 +13,30 @@ test("a pick draws from the injected random once", () => {
 })
 
 test("[0, 1) splits into three equal bands", () => {
-  assert.equal(pickNotFoundVariant(() => 0), "tiles")
-  assert.equal(pickNotFoundVariant(() => 1 / 3 - 1e-9), "tiles")
-  assert.equal(pickNotFoundVariant(() => 1 / 3), "pothole")
-  assert.equal(pickNotFoundVariant(() => 2 / 3 - 1e-9), "pothole")
-  assert.equal(pickNotFoundVariant(() => 2 / 3), "sign")
-  assert.equal(pickNotFoundVariant(() => 1 - Number.EPSILON), "sign")
+  assert.equal(
+    pickNotFoundVariant(() => 0),
+    "tiles",
+  )
+  assert.equal(
+    pickNotFoundVariant(() => 1 / 3 - 1e-9),
+    "tiles",
+  )
+  assert.equal(
+    pickNotFoundVariant(() => 1 / 3),
+    "pothole",
+  )
+  assert.equal(
+    pickNotFoundVariant(() => 2 / 3 - 1e-9),
+    "pothole",
+  )
+  assert.equal(
+    pickNotFoundVariant(() => 2 / 3),
+    "sign",
+  )
+  assert.equal(
+    pickNotFoundVariant(() => 1 - Number.EPSILON),
+    "sign",
+  )
 })
 
 test("the pick is uniform over the three variants", () => {

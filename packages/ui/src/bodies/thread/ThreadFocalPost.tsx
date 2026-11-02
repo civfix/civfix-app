@@ -21,6 +21,7 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { PostOverflowButton } from "../../primitives/PostOverflowButton"
+import { withTextOffsets } from "../../primitives/listKeys"
 import {
   buildPostCardModel,
   identityA11yLabel,
@@ -40,7 +41,7 @@ export interface ThreadFocalPostProps {
   post: PostDTO
   parent: ThreadFocalParent
   onFocusComposer: () => void
-  onOpenEntry?: (entry: DetailEntry) => void
+  onOpenEntry?: ((entry: DetailEntry) => void) | undefined
   onDeleted?: () => void
 }
 
@@ -61,7 +62,12 @@ function ReplyToLine({
   const th = useTheme()
   if (parentDeleted(parent)) {
     return (
-      <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1} style={styles.replyToLine}>
+      <Text
+        variant="caption"
+        color={th.colors.textSubtle}
+        numberOfLines={1}
+        style={styles.replyToLine}
+      >
         {t("thread.parent_unavailable")}
       </Text>
     )
@@ -102,7 +108,7 @@ export function ThreadFocalPost({
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const stats = React.useMemo(() => buildFocalPostStats(post.counts, t), [post.counts, t])
   const bodySegments = React.useMemo(
-    () => splitPostBodyMentions(post.body ?? "", post.mentions),
+    () => withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions)),
     [post.body, post.mentions],
   )
   const isFix = model.variant === "fix-confirmed"
@@ -112,6 +118,7 @@ export function ThreadFocalPost({
     usePostRowActions({ post, identity, onOpenEntry })
   const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
   const embedded = model.embeddedPost
+  const { event: linkedEvent, report: linkedReport } = post
   const openOriginal = React.useMemo(
     () =>
       isRepost && embedded && !embedded.deleted
@@ -160,7 +167,11 @@ export function ThreadFocalPost({
               </Text>
               {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
-                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+                <OrgAffiliationBadge
+                  organization={identity.affiliation}
+                  size="sm"
+                  interactive={false}
+                />
               ) : null}
             </View>
             {identity.handleLabel ? (
@@ -197,10 +208,10 @@ export function ThreadFocalPost({
 
       {!isFix && !isRepost && bodySegments.length > 0 ? (
         <Text style={styles.body}>
-          {bodySegments.map((segment, index) =>
+          {bodySegments.map((segment) =>
             segment.kind === "mention" ? (
               <Text
-                key={`${segment.userId}-${index}`}
+                key={segment.offset}
                 style={styles.bodyMention}
                 accessibilityRole="link"
                 onPress={() => openPerson(segment.userId)}
@@ -235,7 +246,12 @@ export function ThreadFocalPost({
                 { backgroundColor: wash(categoryColor(post.report.category, th.scheme), 0.82, th) },
               ]}
             >
-              <Text style={[styles.categoryPillText, { color: categoryColor(post.report.category, th.scheme) }]}>
+              <Text
+                style={[
+                  styles.categoryPillText,
+                  { color: categoryColor(post.report.category, th.scheme) },
+                ]}
+              >
                 {model.categoryLabel}
               </Text>
             </View>
@@ -244,37 +260,40 @@ export function ThreadFocalPost({
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.event ? (
+      {!isFix && !isRepost && linkedEvent ? (
         <View style={styles.block}>
           <LinkedEventCard
-            event={post.event}
+            event={linkedEvent}
             layout="list"
             variant="detail"
-            timeZone={post.event.timezone ?? undefined}
-            onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+            timeZone={linkedEvent.timezone ?? undefined}
+            onPress={() => openEntry({ kind: "cleanup", id: linkedEvent.id })}
           />
         </View>
       ) : null}
 
-      {!isFix && !isRepost && post.report ? (
+      {!isFix && !isRepost && linkedReport ? (
         <View style={styles.block}>
           <LinkedReportCard
-            report={{ ...post.report, thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id) }}
+            report={{
+              ...linkedReport,
+              thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id),
+            }}
             layout="list"
             headline="title"
-            onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+            onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
           />
         </View>
       ) : null}
 
-      {model.embeddedPost ? (
+      {embedded ? (
         <View style={styles.block}>
           <EmbeddedPost
-            post={model.embeddedPost}
+            post={embedded}
             t={t}
             timeAgo={timeAgo}
             prominent={isRepost}
-            onPress={() => openEntry({ kind: "post-thread", id: model.embeddedPost!.id })}
+            onPress={() => openEntry({ kind: "post-thread", id: embedded.id })}
           />
         </View>
       ) : null}
@@ -292,8 +311,7 @@ export function ThreadFocalPost({
           <View style={styles.statsRow}>
             {stats.map((stat) => (
               <Text key={stat.key} variant="caption">
-                <Text style={styles.statCount}>{formatPostActionCount(stat.count)}</Text>
-                {" "}
+                <Text style={styles.statCount}>{formatPostActionCount(stat.count)}</Text>{" "}
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </Text>
             ))}
@@ -332,7 +350,11 @@ export function ThreadFocalPost({
 export function ThreadFocalSkeleton() {
   const styles = useStyles()
   return (
-    <View style={styles.root} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View
+      style={styles.root}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <View style={styles.authorRow}>
         <View style={styles.skeletonAvatar} />
         <View style={styles.authorCopy}>

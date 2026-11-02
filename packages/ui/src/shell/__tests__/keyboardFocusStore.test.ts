@@ -4,7 +4,9 @@ import { keyboardFocusStore, type KeyboardFocusNode } from "../keyboardFocusStor
 const node = (): KeyboardFocusNode => ({ measureInWindow: () => {} })
 
 describe("keyboardFocusStore", () => {
-  beforeEach(() => keyboardFocusStore.reset())
+  beforeEach(() => {
+    keyboardFocusStore.reset()
+  })
 
   it("records the focused node with the scroller scope it was rendered in", () => {
     const field = node()
@@ -51,7 +53,9 @@ describe("keyboardFocusStore", () => {
   it("keeps the version monotonic across focus, growth and blur", () => {
     const field = node()
     const seen: number[] = []
-    const unsubscribe = keyboardFocusStore.subscribe(() => seen.push(keyboardFocusStore.getState().version))
+    const unsubscribe = keyboardFocusStore.subscribe(() =>
+      seen.push(keyboardFocusStore.getState().version),
+    )
     keyboardFocusStore.setFocused(field, "scope-a")
     keyboardFocusStore.bump()
     keyboardFocusStore.clearFocused(field)

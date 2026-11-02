@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react"
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, LinkedEventRef } from "@civfix/contract"
+import { eventEndsAtMs } from "@civfix/contract/host"
 import {
   MIN_TOUCH_TARGET,
   makeThemedStyles,
@@ -14,12 +15,13 @@ import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
 import { DateTile } from "../primitives/DateBadge"
-import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
+import { useCleanup, useCleanupAttendees, useJoinCleanup, useNow } from "../data"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,
   visibleAttendeeSlots,
+  ATTENDEE_SEATS,
   type LinkedEventCardModel,
 } from "./linkedEventCardModel"
 import { hasEventEnded } from "./eventLifecycle"
@@ -28,13 +30,13 @@ export type LinkedEventCardVariant = "feed" | "detail"
 
 export interface LinkedEventCardProps {
   event: LinkedEventRef
-  cleanup?: CleanupDTO
+  cleanup?: CleanupDTO | undefined
   onPress?: () => void
   layout?: "strip" | "list"
   selectable?: boolean
   selected?: boolean
   onRemove?: () => void
-  timeZone?: string
+  timeZone?: string | undefined
   variant?: LinkedEventCardVariant
 }
 
@@ -55,10 +57,13 @@ function AttendeeStack({
     <View style={styles.attendeeGroup} accessible={false}>
       {showAvatars ? (
         <View style={styles.avatarStack}>
-          {Array.from({ length: visibleCount }).map((_, index) => {
+          {ATTENDEE_SEATS.slice(0, visibleCount).map((seat, index) => {
             const attendee = model.attendeePreview[index]
             return attendee ? (
-              <View key={attendee.id} style={[styles.avatarShell, index > 0 ? styles.avatarOverlap : null]}>
+              <View
+                key={attendee.id}
+                style={[styles.avatarShell, index > 0 ? styles.avatarOverlap : null]}
+              >
                 <Avatar
                   name={attendee.name}
                   seed={attendee.id}
@@ -70,7 +75,7 @@ function AttendeeStack({
               </View>
             ) : (
               <View
-                key={`attendee-${index}`}
+                key={seat}
                 style={[
                   styles.attendeePlaceholder,
                   index > 0 ? styles.avatarOverlap : null,
@@ -81,12 +86,7 @@ function AttendeeStack({
           })}
         </View>
       ) : null}
-      <Text
-        variant="caption"
-        color={t.colors.textMuted}
-        numberOfLines={1}
-        style={styles.goingText}
-      >
+      <Text variant="caption" color={t.colors.textMuted} numberOfLines={1} style={styles.goingText}>
         {model.goingLabel}
       </Text>
     </View>
@@ -157,6 +157,8 @@ export function LinkedEventCard({
   const liveGoing = liveCleanup?.going ?? attendeeQuery.data?.going
   const joined = liveCleanup?.joined
   const attendees = attendeeQuery.data?.attendees
+  const eventWindow = liveCleanup ?? event
+  const now = useNow(0, { boundaryAt: showControls ? eventEndsAtMs(eventWindow) : null })
   const model = useMemo(
     () =>
       buildLinkedEventCardModel(event, t, locale, timeZone, {
@@ -167,7 +169,18 @@ export function LinkedEventCard({
         attendees,
         showAttendance: showControls,
       }),
-    [event, t, locale, timeZone, viewerTimeZone, address, liveGoing, joined, attendees, showControls],
+    [
+      event,
+      t,
+      locale,
+      timeZone,
+      viewerTimeZone,
+      address,
+      liveGoing,
+      joined,
+      attendees,
+      showControls,
+    ],
   )
   const isList = layout === "list"
   const targets = buildLinkedEventCardTargetPlan()
@@ -229,7 +242,7 @@ export function LinkedEventCard({
           eventId={event.id}
           model={model}
           loading={!cleanup && detail.isLoading}
-          ended={hasEventEnded(liveCleanup ?? event, Date.now())}
+          ended={hasEventEnded(eventWindow, now)}
         />
       ) : null}
     </View>
@@ -245,7 +258,11 @@ export function LinkedEventCard({
         accessibilityRole="button"
         accessibilityLabel={model.removeAccessibilityLabel}
         {...focusRingProps}
-        style={({ pressed }) => [styles.removeButton, targets.removeTarget, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.removeButton,
+          targets.removeTarget,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <View style={[styles.removeVisual, targets.removeVisual]}>
           <Icon icon={iconMap.Close} size={13} color={th.colors.neutral.card} />

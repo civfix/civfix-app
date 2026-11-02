@@ -1,4 +1,3 @@
-import React from "react"
 import { Animated } from "react-native"
 import type { StepTransitionProps } from "./StepTransition.types"
 import { useEntranceTransition } from "./useEntranceTransition.native"

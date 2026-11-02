@@ -20,7 +20,12 @@ describe("toCreateReportRequest", () => {
 
   it("sends title, addr and description when the reporter filled them", () => {
     expect(
-      toCreateReportRequest({ ...SUBMISSION, title: "Tag", addr: "1200 S Hope St", description: "On the wall" }),
+      toCreateReportRequest({
+        ...SUBMISSION,
+        title: "Tag",
+        addr: "1200 S Hope St",
+        description: "On the wall",
+      }),
     ).toEqual({ ...SUBMISSION, title: "Tag", addr: "1200 S Hope St", description: "On the wall" })
   })
 
@@ -37,7 +42,8 @@ describe("toCreateReportRequest", () => {
 
   it("builds a body the contract's strict request schema accepts", () => {
     expect(
-      CreateReportRequestSchema.safeParse(toCreateReportRequest({ ...SUBMISSION, title: "Tag" })).success,
+      CreateReportRequestSchema.safeParse(toCreateReportRequest({ ...SUBMISSION, title: "Tag" }))
+        .success,
     ).toBe(true)
   })
 })

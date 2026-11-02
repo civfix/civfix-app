@@ -47,7 +47,8 @@ export function useTranscriptScroll(items: ChatItem[], clearAround: () => void) 
     }
   }, [newestId, isAtBottom])
 
-  const oldestId = items.length > 0 ? (items[0]!.message.clientId ?? items[0]!.message.id) : null
+  const oldest = items[0]
+  const oldestId = oldest ? (oldest.message.clientId ?? oldest.message.id) : null
   const prevOldestIdRef = useRef<string | null>(oldestId)
   useLayoutEffect(() => {
     if (Platform.OS !== "web") return

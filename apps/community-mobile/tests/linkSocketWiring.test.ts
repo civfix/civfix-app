@@ -27,7 +27,7 @@ test("the native socket opens only through the ticket transport, so the bearer n
 
 test("the compose route takes its mode and target only through composerParams", () => {
   assert.match(compose, /import \{ composerParams \} from "@\/lib\/composerParams"/)
-  assert.match(compose, /= composerParams\(useLocalSearchParams</)
+  assert.match(compose, /=\s+composerParams\(useLocalSearchParams</)
   assert.equal(compose.match(/useLocalSearchParams</g)?.length, 1)
 })
 

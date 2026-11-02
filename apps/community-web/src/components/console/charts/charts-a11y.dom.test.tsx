@@ -31,13 +31,32 @@ function measureAt(width: number) {
 
 describe("chart summaries", () => {
   it.each([
-    ["Histogram", () => <Histogram bins={[{ label: "Mon", count: 2 }]} summary={SUMMARY} valueLabel="Count" />],
-    ["StackedBars", () => (
-      <StackedBars labels={["Mon"]} series={[{ id: "a", label: "A", values: [2] }]} summary={SUMMARY} suppressedLabel="-" />
-    )],
-    ["LineArea", () => (
-      <LineArea labels={["Mon", "Tue"]} series={[{ id: "a", label: "A", values: [1, 2] }]} summary={SUMMARY} suppressedLabel="-" />
-    )],
+    [
+      "Histogram",
+      () => <Histogram bins={[{ label: "Mon", count: 2 }]} summary={SUMMARY} valueLabel="Count" />,
+    ],
+    [
+      "StackedBars",
+      () => (
+        <StackedBars
+          labels={["Mon"]}
+          series={[{ id: "a", label: "A", values: [2] }]}
+          summary={SUMMARY}
+          suppressedLabel="-"
+        />
+      ),
+    ],
+    [
+      "LineArea",
+      () => (
+        <LineArea
+          labels={["Mon", "Tue"]}
+          series={[{ id: "a", label: "A", values: [1, 2] }]}
+          summary={SUMMARY}
+          suppressedLabel="-"
+        />
+      ),
+    ],
     ["Donut", () => <Donut segments={[{ id: "a", label: "A", value: 2 }]} summary={SUMMARY} />],
   ])("%s names its image once, with no duplicate sr-only copy", (_name, make) => {
     measureAt(400)
@@ -47,13 +66,32 @@ describe("chart summaries", () => {
   })
 
   it.each([
-    ["Histogram", () => <Histogram bins={[{ label: "Mon", count: 2 }]} summary={SUMMARY} valueLabel="Count" />],
-    ["StackedBars", () => (
-      <StackedBars labels={["Mon"]} series={[{ id: "a", label: "A", values: [2] }]} summary={SUMMARY} suppressedLabel="-" />
-    )],
-    ["LineArea", () => (
-      <LineArea labels={["Mon", "Tue"]} series={[{ id: "a", label: "A", values: [1, 2] }]} summary={SUMMARY} suppressedLabel="-" />
-    )],
+    [
+      "Histogram",
+      () => <Histogram bins={[{ label: "Mon", count: 2 }]} summary={SUMMARY} valueLabel="Count" />,
+    ],
+    [
+      "StackedBars",
+      () => (
+        <StackedBars
+          labels={["Mon"]}
+          series={[{ id: "a", label: "A", values: [2] }]}
+          summary={SUMMARY}
+          suppressedLabel="-"
+        />
+      ),
+    ],
+    [
+      "LineArea",
+      () => (
+        <LineArea
+          labels={["Mon", "Tue"]}
+          series={[{ id: "a", label: "A", values: [1, 2] }]}
+          summary={SUMMARY}
+          suppressedLabel="-"
+        />
+      ),
+    ],
   ])("%s still exposes its summary before it has been measured", (_name, make) => {
     measureAt(0)
     render(make())
@@ -63,9 +101,18 @@ describe("chart summaries", () => {
   it("draws distinct y-axis labels for a near-empty histogram", () => {
     measureAt(400)
     const { container } = render(
-      <Histogram bins={[{ label: "Mon", count: 0 }, { label: "Tue", count: 1 }]} summary={SUMMARY} valueLabel="Count" />,
+      <Histogram
+        bins={[
+          { label: "Mon", count: 0 },
+          { label: "Tue", count: 1 },
+        ]}
+        summary={SUMMARY}
+        valueLabel="Count"
+      />,
     )
-    const axis = [...container.querySelectorAll("text[text-anchor='end']")].map((el) => el.textContent)
+    const axis = [...container.querySelectorAll("text[text-anchor='end']")].map(
+      (el) => el.textContent,
+    )
     expect(axis).toEqual(["0", "1"])
   })
 

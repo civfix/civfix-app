@@ -1,6 +1,5 @@
-import React from "react"
 import { View, Pressable } from "react-native"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { useReverseLabel, reverseLabelText } from "../../data"
@@ -45,7 +44,11 @@ export function CompactLocationField({
             </Text>
           )}
         </View>
-        <Icon icon={point ? iconMap.ChevronRight : iconMap.Plus} size={16} color={th.colors.textMuted} />
+        <Icon
+          icon={point ? iconMap.ChevronRight : iconMap.Plus}
+          size={16}
+          color={th.colors.textMuted}
+        />
       </Pressable>
       {point && onClear ? (
         <Pressable

@@ -21,7 +21,10 @@ export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 export type GuestRsvpCommit = "submitForm" | "submitCode" | "startOver" | "close"
 
 /** The choice step has two equal answers and no default, so the commit shortcut must not pick (or dismiss). */
-export function guestRsvpCommitFor(step: GuestRsvpStep, exhausted: boolean): GuestRsvpCommit | null {
+export function guestRsvpCommitFor(
+  step: GuestRsvpStep,
+  exhausted: boolean,
+): GuestRsvpCommit | null {
   switch (step) {
     case "choice":
       return null
@@ -50,8 +53,7 @@ export interface GuestRsvpFormState {
 }
 
 export type GuestContactPayload =
-  | { channel: "email"; email: string }
-  | { channel: "sms"; phone: string }
+  { channel: "email"; email: string } | { channel: "sms"; phone: string }
 
 export function emptyGuestRsvpForm(channel: GuestContactChannel = "email"): GuestRsvpFormState {
   return { name: "", channel, email: "", phone: "" }
@@ -173,12 +175,18 @@ export function guestResendSecondsLeft(readyAtMs: number | null, nowMs: number):
  * default. Deriving it (instead of seeding state once on open) covers ticket types that load after the
  * sheet opened or drop the picked type on a refetch, so a registration never goes out without one.
  */
-export function effectiveTicketTypeId(types: readonly TicketTypeDTO[], chosen: string | null): string | null {
+export function effectiveTicketTypeId(
+  types: readonly TicketTypeDTO[],
+  chosen: string | null,
+): string | null {
   if (chosen !== null && types.some((type) => type.id === chosen)) return chosen
   return defaultTicketTypeId(types)
 }
 
 /** What the viewer answered, over every question's default (questions may arrive after the sheet opened). */
-export function answersWithDefaults(questions: readonly EventQuestionDTO[], typed: AnswerMap): AnswerMap {
+export function answersWithDefaults(
+  questions: readonly EventQuestionDTO[],
+  typed: AnswerMap,
+): AnswerMap {
   return { ...initialAnswers(questions), ...typed }
 }

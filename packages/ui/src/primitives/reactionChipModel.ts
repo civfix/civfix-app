@@ -19,7 +19,9 @@ export interface ReactionChipModel {
   mine: boolean
 }
 
-export function buildReactionChipModel(reactions: readonly ReactionSummaryDTO[]): ReactionChipModel[] {
+export function buildReactionChipModel(
+  reactions: readonly ReactionSummaryDTO[],
+): ReactionChipModel[] {
   const byName = new Map(reactions.map((r) => [r.emoji, r]))
   const chips: ReactionChipModel[] = []
   for (const name of REACTION_EMOJIS) {

@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { motion } from "../theme"
+import { domProps, motion, webStyle } from "../theme"
 import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransition.types"
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
@@ -69,13 +69,13 @@ function castLayerStyle(
   zIndex: number | undefined,
   interactive: boolean,
 ): ViewStyle {
-  return {
+  return webStyle({
     transform: layer.transform,
     opacity: layer.opacity,
     transition,
     zIndex,
     pointerEvents: interactive ? undefined : "none",
-  } as unknown as ViewStyle
+  })
 }
 
 interface Animation {
@@ -148,14 +148,17 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
       const outgoingNode = (activeSlot === "a" ? slotBRef : slotARef).current
       forceReflow([activeNode, outgoingNode], true)
     },
-    flip: () => setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur)),
+    flip: () =>
+      setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur)),
     settle,
   })
 
   useLayoutEffect(() => {
     if (phaseNav === null) return
     const outDrop = setTimeout(() => {
-      setState((cur) => (cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur))
+      setState((cur) =>
+        cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur,
+      )
     }, OUT_DURATION)
     return () => clearTimeout(outDrop)
   }, [phaseNav])
@@ -175,7 +178,8 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
     if (!phase || !flipped) return
     if (slot !== activeSlot) return
     if (event?.target !== event?.currentTarget) return
-    const wants = phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
+    const wants =
+      phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
     if (event?.propertyName && event.propertyName !== wants) return
     settle()
   }
@@ -190,9 +194,9 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
         key={slot}
         ref={slot === "a" ? slotARef : slotBRef}
         style={[styles.layer, castLayerStyle(layer, transition, zIndex, active)]}
-        {...({
+        {...domProps({
           onTransitionEnd: (event: LayerTransitionEndEvent) => onLayerTransitionEnd(slot, event),
-        } as any)}
+        })}
       >
         {active ? activeContent : outgoingContent}
       </View>

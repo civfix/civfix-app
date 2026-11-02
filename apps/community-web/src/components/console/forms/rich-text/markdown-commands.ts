@@ -47,12 +47,7 @@ function toggleWrap(sel: TextSelection, marker: string): CommandResult {
   }
 
   const next = `${marker}${inner}${marker}`
-  return replace(
-    sel,
-    next,
-    sel.start + marker.length,
-    sel.start + marker.length + inner.length,
-  )
+  return replace(sel, next, sel.start + marker.length, sel.start + marker.length + inner.length)
 }
 
 export function toggleBold(sel: TextSelection): CommandResult {

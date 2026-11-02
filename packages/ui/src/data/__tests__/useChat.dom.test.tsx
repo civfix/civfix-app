@@ -1,5 +1,10 @@
 import { act, renderHook } from "@testing-library/react"
-import { QueryClient, QueryClientProvider, notifyManager, type InfiniteData } from "@tanstack/react-query"
+import {
+  QueryClient,
+  QueryClientProvider,
+  notifyManager,
+  type InfiniteData,
+} from "@tanstack/react-query"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
@@ -243,7 +248,11 @@ async function advance(ms: number): Promise<void> {
 
 const ids = (result: UseChatResult): string[] => result.items.map((it) => it.message.id)
 
-function cachedIds(queryClient: QueryClient, roomId = ROOM_A, roomKind: RoomKind = "cleanup"): string[][] {
+function cachedIds(
+  queryClient: QueryClient,
+  roomId = ROOM_A,
+  roomKind: RoomKind = "cleanup",
+): string[][] {
   const data = queryClient.getQueryData<InfiniteData<ChatHistoryResponse>>(
     queryKeys.chatHistory(roomId, roomKind),
   )
@@ -290,7 +299,11 @@ describe("useChat history load", () => {
     await act(async () => older.resolve(page([msg("m0", 5)])))
     await settle()
 
-    expect(api.cleanupMessages).toHaveBeenLastCalledWith({ cleanupId: ROOM_A, before: "cursor-1", limit: 30 })
+    expect(api.cleanupMessages).toHaveBeenLastCalledWith({
+      cleanupId: ROOM_A,
+      before: "cursor-1",
+      limit: 30,
+    })
     expect(ids(result.current)).toEqual(["m0", "m1"])
     expect(result.current.hasMore).toBe(false)
     expect(result.current.isLoadingMore).toBe(false)
@@ -387,7 +400,10 @@ describe("useChat history load", () => {
 describe("useChat inbound frames", () => {
   it("buffers a message frame for 50 ms, then appends it to the cached newest page", async () => {
     const socket = new FakeChatSocket()
-    const { result, queryClient } = renderChat({ api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }), socket })
+    const { result, queryClient } = renderChat({
+      api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }),
+      socket,
+    })
     await settle()
 
     socket.emit({ type: "message", message: msg("m2", 20) })
@@ -439,7 +455,12 @@ describe("useChat inbound frames", () => {
     })
     expect(result.current.aroundWindow?.map((it) => it.message.body)).toEqual(["body m1"])
 
-    socket.emit({ type: "message_update", roomKind: "cleanup", roomId: ROOM_A, message: msg("m1", 10, { body: "edited" }) })
+    socket.emit({
+      type: "message_update",
+      roomKind: "cleanup",
+      roomId: ROOM_A,
+      message: msg("m1", 10, { body: "edited" }),
+    })
     expect(result.current.aroundWindow?.map((it) => it.message.body)).toEqual(["edited"])
 
     await advance(50)
@@ -451,7 +472,12 @@ describe("useChat inbound frames", () => {
     const { result } = renderChat({ api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }), socket })
     await settle()
 
-    socket.emit({ type: "message_update", roomKind: "group", roomId: ROOM_A, message: msg("m1", 10, { body: "edited" }) })
+    socket.emit({
+      type: "message_update",
+      roomKind: "group",
+      roomId: ROOM_A,
+      message: msg("m1", 10, { body: "edited" }),
+    })
     await advance(50)
 
     expect(result.current.items.map((it) => it.message.body)).toEqual(["body m1"])
@@ -469,7 +495,9 @@ describe("useChat inbound frames", () => {
       message: msg("m1", 10, { reactions: [{ emoji: "like", count: 2, mine: false }] }),
     })
 
-    expect(result.current.items[0]?.message.reactions).toEqual([{ emoji: "like", count: 2, mine: true }])
+    expect(result.current.items[0]?.message.reactions).toEqual([
+      { emoji: "like", count: 2, mine: true },
+    ])
   })
 
   it("ignores typing, presence and reaction frames whose roomKind does not match", async () => {
@@ -506,7 +534,12 @@ describe("useChat send lifecycle", () => {
     act(() => result.current.send("  hi  "))
 
     const [frame] = socket.framesOf("send")
-    expect(frame).toEqual({ type: "send", cleanupId: ROOM_A, clientId: expect.any(String) as string, body: "hi" })
+    expect(frame).toEqual({
+      type: "send",
+      cleanupId: ROOM_A,
+      clientId: expect.any(String) as string,
+      body: "hi",
+    })
     const item = result.current.items.at(-1)
     expect(item).toMatchObject({ pending: true, failed: false, mine: true })
     expect(item?.message).toMatchObject({
@@ -529,7 +562,12 @@ describe("useChat send lifecycle", () => {
     await settle()
 
     act(() =>
-      result.current.send("yo", ["u-x"], [{ uploadId: "up-1", kind: "image", localUri: "file:///a.jpg" }], "m1"),
+      result.current.send(
+        "yo",
+        ["u-x"],
+        [{ uploadId: "up-1", kind: "image", localUri: "file:///a.jpg" }],
+        "m1",
+      ),
     )
 
     const [frame] = socket.framesOf("send")
@@ -564,7 +602,12 @@ describe("useChat send lifecycle", () => {
     expect(socket.framesOf("send")).toEqual([])
 
     const guestSocket = new FakeChatSocket()
-    const guest = renderChat({ api: makeChatApi({}), socket: guestSocket, user: null, props: { roomKind: "report" } })
+    const guest = renderChat({
+      api: makeChatApi({}),
+      socket: guestSocket,
+      user: null,
+      props: { roomKind: "report" },
+    })
     await settle()
     act(() => guest.result.current.send("hi"))
     expect(guestSocket.sent).toEqual([])
@@ -573,7 +616,10 @@ describe("useChat send lifecycle", () => {
 
   it("replaces the pending bubble with the acked server message and disarms the send timeout", async () => {
     const socket = new FakeChatSocket()
-    const { result, queryClient } = renderChat({ api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }), socket })
+    const { result, queryClient } = renderChat({
+      api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }),
+      socket,
+    })
     await settle()
 
     act(() => result.current.send("hi"))
@@ -657,7 +703,11 @@ describe("useChat send lifecycle", () => {
     expect(result.current.items[0]).toMatchObject({ pending: true, failed: false })
 
     const clientId = socket.framesOf("send")[1]!.clientId
-    socket.emit({ type: "ack", clientId, message: msg("srv-1", 3600, { from: person(ME, "Mia Me"), body: "hi" }) })
+    socket.emit({
+      type: "ack",
+      clientId,
+      message: msg("srv-1", 3600, { from: person(ME, "Mia Me"), body: "hi" }),
+    })
     await advance(50)
     expect(result.current.items).toHaveLength(1)
     expect(result.current.items[0]).toMatchObject({ pending: false, failed: false, mine: true })
@@ -731,13 +781,21 @@ describe("useChat send lifecycle", () => {
     await advance(1000)
     socket.outcome = "queued"
     act(() => result.current.send("b"))
-    socket.emit({ type: "error", code: ErrorCode.RATE_LIMITED, message: "slow down", cleanupId: ROOM_A })
+    socket.emit({
+      type: "error",
+      code: ErrorCode.RATE_LIMITED,
+      message: "slow down",
+      cleanupId: ROOM_A,
+    })
 
     expect(result.current.items.map((it) => [it.message.body, it.failed])).toEqual([
       ["a", true],
       ["b", false],
     ])
-    expect(result.current.transientError).toEqual({ code: ErrorCode.RATE_LIMITED, message: "slow down" })
+    expect(result.current.transientError).toEqual({
+      code: ErrorCode.RATE_LIMITED,
+      message: "slow down",
+    })
     expect(result.current.roomError).toBeNull()
   })
 
@@ -760,7 +818,13 @@ describe("useChat send lifecycle", () => {
     const { result } = renderChat({ api: makeChatApi({}), socket })
     await settle()
 
-    socket.emit({ type: "error", code: ErrorCode.FORBIDDEN, message: "no", cleanupId: ROOM_A, roomKind: "dm" })
+    socket.emit({
+      type: "error",
+      code: ErrorCode.FORBIDDEN,
+      message: "no",
+      cleanupId: ROOM_A,
+      roomKind: "dm",
+    })
     expect(result.current.roomError).toBeNull()
 
     socket.emit({ type: "error", code: ErrorCode.FORBIDDEN, message: "no", cleanupId: ROOM_A })
@@ -812,7 +876,9 @@ describe("useChat typing and presence", () => {
 
     act(() => result.current.sendTyping())
     act(() => result.current.sendTyping())
-    expect(socket.framesOf("typing")).toEqual([{ type: "typing", cleanupId: ROOM_A, roomKind: "dm" }])
+    expect(socket.framesOf("typing")).toEqual([
+      { type: "typing", cleanupId: ROOM_A, roomKind: "dm" },
+    ])
 
     await advance(1999)
     act(() => result.current.sendTyping())
@@ -875,11 +941,17 @@ describe("useChat read acks", () => {
 
   it("stamps roomKind on acks outside cleanup rooms", async () => {
     const socket = new FakeChatSocket()
-    renderChat({ api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }), socket, props: { roomKind: "dm" } })
+    renderChat({
+      api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }),
+      socket,
+      props: { roomKind: "dm" },
+    })
     await settle()
     await advance(1200)
 
-    expect(socket.framesOf("ack")).toEqual([{ type: "ack", upToId: "m1", cleanupId: ROOM_A, roomKind: "dm" }])
+    expect(socket.framesOf("ack")).toEqual([
+      { type: "ack", upToId: "m1", cleanupId: ROOM_A, roomKind: "dm" },
+    ])
   })
 
   it("never acks while suppressReadAcks is set", async () => {
@@ -910,7 +982,10 @@ describe("useChat read acks", () => {
 
   it("flushes a pending watermark on unmount before leaving the room", async () => {
     const socket = new FakeChatSocket()
-    const { unmount } = renderChat({ api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }), socket })
+    const { unmount } = renderChat({
+      api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }),
+      socket,
+    })
     await settle()
     await advance(500)
 
@@ -953,8 +1028,9 @@ describe("useChat reconnect gap-fill", () => {
 
     expect(cachedIds(queryClient)).toEqual([["m8", "m9"]])
     expect(
-      queryClient.getQueryData<InfiniteData<ChatHistoryResponse>>(queryKeys.chatHistory(ROOM_A, "cleanup"))
-        ?.pageParams,
+      queryClient.getQueryData<InfiniteData<ChatHistoryResponse>>(
+        queryKeys.chatHistory(ROOM_A, "cleanup"),
+      )?.pageParams,
     ).toEqual([undefined])
     expect(ids(result.current)).toEqual(["m8", "m9"])
   })
@@ -999,7 +1075,9 @@ describe("useChat around window", () => {
     const { result } = renderChat({ api, socket: new FakeChatSocket() })
     await settle()
 
-    api.cleanupMessages.mockResolvedValueOnce(page([msg("m1", 10), msg("m2", 20), msg("x", 30, { cleanupId: ROOM_B })]))
+    api.cleanupMessages.mockResolvedValueOnce(
+      page([msg("m1", 10), msg("m2", 20), msg("x", 30, { cleanupId: ROOM_B })]),
+    )
     let found: boolean | undefined
     let pending!: Promise<boolean>
     act(() => {
@@ -1010,7 +1088,11 @@ describe("useChat around window", () => {
       found = await pending
     })
 
-    expect(api.cleanupMessages).toHaveBeenLastCalledWith({ cleanupId: ROOM_A, around: "m1", limit: 30 })
+    expect(api.cleanupMessages).toHaveBeenLastCalledWith({
+      cleanupId: ROOM_A,
+      around: "m1",
+      limit: 30,
+    })
     expect(found).toBe(true)
     expect(result.current.aroundLoading).toBe(false)
     expect(result.current.aroundWindow?.map((it) => it.message.id)).toEqual(["m1", "m2"])
@@ -1079,7 +1161,10 @@ describe("useChat room switch", () => {
   })
 
   it("loads the new room and resets outbox, typing, presence, errors and the around window", async () => {
-    const api = makeChatApi({ [ROOM_A]: page([msg("a1", 10)]), [ROOM_B]: page([msg("b1", 10, { cleanupId: ROOM_B })]) })
+    const api = makeChatApi({
+      [ROOM_A]: page([msg("a1", 10)]),
+      [ROOM_B]: page([msg("b1", 10, { cleanupId: ROOM_B })]),
+    })
     const socket = new FakeChatSocket()
     const { result, rerender } = renderChat({ api, socket })
     await settle()
@@ -1135,7 +1220,10 @@ describe("useChat room switch", () => {
   })
 
   it("flushes a pending read watermark to its own room before leaving it", async () => {
-    const api = makeChatApi({ [ROOM_A]: page([msg("a1", 10)]), [ROOM_B]: page([msg("b1", 10, { cleanupId: ROOM_B })]) })
+    const api = makeChatApi({
+      [ROOM_A]: page([msg("a1", 10)]),
+      [ROOM_B]: page([msg("b1", 10, { cleanupId: ROOM_B })]),
+    })
     const socket = new FakeChatSocket()
     const { rerender } = renderChat({ api, socket })
     await settle()
@@ -1188,12 +1276,22 @@ describe("useChat message actions", () => {
     await settle()
 
     act(() => result.current.toggleReaction("m1", "like"))
-    expect(api.toggleCleanupMessageReaction).toHaveBeenCalledWith({ cleanupId: ROOM_A, messageId: "m1", emoji: "like" })
-    expect(result.current.items[0]?.message.reactions).toEqual([{ emoji: "like", count: 1, mine: true }])
+    expect(api.toggleCleanupMessageReaction).toHaveBeenCalledWith({
+      cleanupId: ROOM_A,
+      messageId: "m1",
+      emoji: "like",
+    })
+    expect(result.current.items[0]?.message.reactions).toEqual([
+      { emoji: "like", count: 1, mine: true },
+    ])
 
-    await act(async () => server.resolve(msg("m1", 10, { reactions: [{ emoji: "like", count: 4, mine: true }] })))
+    await act(async () =>
+      server.resolve(msg("m1", 10, { reactions: [{ emoji: "like", count: 4, mine: true }] })),
+    )
     await settle()
-    expect(result.current.items[0]?.message.reactions).toEqual([{ emoji: "like", count: 4, mine: true }])
+    expect(result.current.items[0]?.message.reactions).toEqual([
+      { emoji: "like", count: 4, mine: true },
+    ])
   })
 
   it("rolls a reaction back when the server rejects it", async () => {
@@ -1211,7 +1309,11 @@ describe("useChat message actions", () => {
   it("routes a group reaction through the generic room endpoint", async () => {
     const api = makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) })
     api.toggleMessageReaction.mockResolvedValueOnce(msg("m1", 10))
-    const { result } = renderChat({ api, socket: new FakeChatSocket(), props: { roomKind: "group" } })
+    const { result } = renderChat({
+      api,
+      socket: new FakeChatSocket(),
+      props: { roomKind: "group" },
+    })
     await settle()
 
     act(() => result.current.toggleReaction("m1", "heart"))
@@ -1242,7 +1344,10 @@ describe("useChat message actions", () => {
       body: "new text",
       mentionedUserIds: ["u-x"],
     })
-    expect(result.current.items[0]?.message).toMatchObject({ body: "new text", editedAt: new Date(NOW).toISOString() })
+    expect(result.current.items[0]?.message).toMatchObject({
+      body: "new text",
+      editedAt: new Date(NOW).toISOString(),
+    })
 
     const failure = new AppError(ErrorCode.FORBIDDEN, "too late")
     await act(async () => {
@@ -1258,8 +1363,12 @@ describe("useChat message actions", () => {
     const { result } = renderChat({ api, socket: new FakeChatSocket() })
     await settle()
 
-    await expect(result.current.edit("m1", "   ")).rejects.toMatchObject({ code: ErrorCode.VALIDATION })
-    await expect(result.current.edit("nope", "x")).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND })
+    await expect(result.current.edit("m1", "   ")).rejects.toMatchObject({
+      code: ErrorCode.VALIDATION,
+    })
+    await expect(result.current.edit("nope", "x")).rejects.toMatchObject({
+      code: ErrorCode.NOT_FOUND,
+    })
     expect(api.editChatMessage).not.toHaveBeenCalled()
   })
 
@@ -1289,7 +1398,10 @@ describe("useChat message actions", () => {
       deleting = result.current.delete("m1")
     })
     expect(api.deleteCleanupMessage).toHaveBeenCalledWith({ cleanupId: ROOM_A, messageId: "m1" })
-    expect(result.current.items[0]?.message).toMatchObject({ body: "", deletedAt: new Date(NOW).toISOString() })
+    expect(result.current.items[0]?.message).toMatchObject({
+      body: "",
+      deletedAt: new Date(NOW).toISOString(),
+    })
 
     await act(async () => {
       server.reject(new AppError(ErrorCode.INTERNAL, "boom"))
@@ -1310,7 +1422,12 @@ describe("useChat message actions", () => {
       await result.current.setPinned("m1", true)
     })
 
-    expect(api.setMessagePinned).toHaveBeenCalledWith({ roomKind: "cleanup", roomId: ROOM_A, messageId: "m1", pinned: true })
+    expect(api.setMessagePinned).toHaveBeenCalledWith({
+      roomKind: "cleanup",
+      roomId: ROOM_A,
+      messageId: "m1",
+      pinned: true,
+    })
     expect(result.current.items[0]?.message.pinnedAt).toBe(pinnedAt)
     expect(result.current.pins.map((m) => m.id)).toEqual(["m1"])
   })
@@ -1321,7 +1438,12 @@ describe("useChat message actions", () => {
     await settle()
 
     await expect(
-      result.current.createPoll({ question: "q", options: ["a", "b"], allowMultiple: false, anonymous: false }),
+      result.current.createPoll({
+        question: "q",
+        options: ["a", "b"],
+        allowMultiple: false,
+        anonymous: false,
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.VALIDATION })
     expect(api.createPoll).not.toHaveBeenCalled()
   })
@@ -1333,7 +1455,12 @@ describe("useChat message actions", () => {
     await settle()
 
     await act(async () => {
-      await result.current.createPoll({ question: "q", options: ["a", "b"], allowMultiple: false, anonymous: true })
+      await result.current.createPoll({
+        question: "q",
+        options: ["a", "b"],
+        allowMultiple: false,
+        anonymous: true,
+      })
     })
     expect(api.createPoll).toHaveBeenCalledWith({
       roomKind: "cleanup",

@@ -7,8 +7,10 @@ import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "check-i18n-call-sites.mjs")
+/** @type {string[]} */
 const roots = []
 
+/** @param {Record<string, string>} files */
 function fixture(files) {
   const root = mkdtempSync(join(tmpdir(), "i18n-call-sites-"))
   roots.push(root)
@@ -32,8 +34,12 @@ function fixture(files) {
   return root
 }
 
+/** @param {string} root */
 function run(root) {
-  return spawnSync(process.execPath, [SCRIPT], { env: { ...process.env, I18N_CALL_SITES_ROOT: root }, encoding: "utf8" })
+  return spawnSync(process.execPath, [SCRIPT], {
+    env: { ...process.env, I18N_CALL_SITES_ROOT: root },
+    encoding: "utf8",
+  })
 }
 
 after(() => {
@@ -42,21 +48,27 @@ after(() => {
 
 test("passes when every literal key resolves in its bound namespace, plural base keys included", () => {
   const root = fixture({
-    "packages/ui/src/A.tsx": 'const { t } = useT("events")\nt("title")\nt("count", { count: 2 })\nconst c = useT()\nc.t("save")\n',
+    "packages/ui/src/A.tsx":
+      'const { t } = useT("events")\nt("title")\nt("count", { count: 2 })\nconst c = useT()\nc.t("save")\n',
   })
   const result = run(root)
   assert.equal(result.status, 0, result.stderr)
 })
 
 test("fails on a key that only exists in another namespace, and names where it lives", () => {
-  const root = fixture({ "apps/community-web/src/B.tsx": 'const { t } = useT("events")\nt("save")\n' })
+  const root = fixture({
+    "apps/community-web/src/B.tsx": 'const { t } = useT("events")\nt("save")\n',
+  })
   const result = run(root)
   assert.equal(result.status, 1)
   assert.match(result.stderr, /not in namespace events; it exists in common/)
 })
 
 test("fails on a missing key and on an unknown namespace prefix", () => {
-  const root = fixture({ "apps/community-mobile/src/C.tsx": 'const { t } = useT("events")\nt("nope")\nt("ghost:title")\n' })
+  const root = fixture({
+    "apps/community-mobile/src/C.tsx":
+      'const { t } = useT("events")\nt("nope")\nt("ghost:title")\n',
+  })
   const result = run(root)
   assert.equal(result.status, 1)
   assert.match(result.stderr, /t\("nope"\): not in namespace events, nor any en catalog/)
@@ -66,11 +78,15 @@ test("fails on a missing key and on an unknown namespace prefix", () => {
 test("fails on an object key read without returnObjects, and accepts it with returnObjects", () => {
   const bad = fixture({ "packages/ui/src/D.tsx": 'const { t } = useT("events")\nt("steps")\n' })
   assert.match(run(bad).stderr, /names an object, not a string/)
-  const good = fixture({ "packages/ui/src/E.tsx": 'const { t } = useT("events")\nt("steps", { returnObjects: true })\n' })
+  const good = fixture({
+    "packages/ui/src/E.tsx": 'const { t } = useT("events")\nt("steps", { returnObjects: true })\n',
+  })
   assert.equal(run(good).status, 0)
 })
 
 test("skips dynamic template keys", () => {
-  const root = fixture({ "packages/ui/src/F.tsx": 'const { t } = useT("events")\nt(`steps.${step}`)\n' })
+  const root = fixture({
+    "packages/ui/src/F.tsx": 'const { t } = useT("events")\nt(`steps.${step}`)\n',
+  })
   assert.equal(run(root).status, 0)
 })

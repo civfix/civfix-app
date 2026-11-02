@@ -87,7 +87,9 @@ describe("resolvedAddressValue", () => {
   })
 
   it("passes a settled answer through, and a real not-found as null", () => {
-    expect(resolvedAddressValue({ isPending: false, isError: false, data: settled })).toEqual(settled)
+    expect(resolvedAddressValue({ isPending: false, isError: false, data: settled })).toEqual(
+      settled,
+    )
     expect(resolvedAddressValue({ isPending: false, isError: false, data: null })).toBeNull()
   })
 })

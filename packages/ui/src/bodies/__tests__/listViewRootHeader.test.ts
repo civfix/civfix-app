@@ -18,7 +18,8 @@ const reports = strip(read("../ReportsBody.tsx"))
 const events = strip(read("../EventsBody.tsx"))
 const reportFlow = strip(read("../ReportFlowBody.tsx"))
 
-const DETAIL_HEADER_IMPORT = /import \{[^}]*\btabRootTitleStyle\b[^}]*\} from "[./]+\/shell\/detailHeader"/
+const DETAIL_HEADER_IMPORT =
+  /import \{[^}]*\btabRootTitleStyle\b[^}]*\} from "[./]+\/shell\/detailHeader"/
 
 describe("the tab-root title type is one recipe", () => {
   it.each([

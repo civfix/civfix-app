@@ -64,7 +64,10 @@ describe("filterCleanupsWithinRadius", () => {
   it("keeps everything for a radius large enough to cover the list (map-style opt-out)", () => {
     // The map passes `radiusM: null`, which skips `select` entirely; this is the same net contract -
     // a distant event must NEVER be dropped from a marker layer.
-    const items = [cleanup("far", 39.77, -122.4194, 220_000), cleanup("near", 37.78, -122.41, 3_000)]
+    const items = [
+      cleanup("far", 39.77, -122.4194, 220_000),
+      cleanup("near", 37.78, -122.41, 3_000),
+    ]
     expect(filterCleanupsWithinRadius(items, VIEWER, Number.POSITIVE_INFINITY)).toHaveLength(2)
   })
 })

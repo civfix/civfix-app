@@ -8,11 +8,7 @@ import {
 } from "@civfix/contract"
 
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
-import {
-  PRODUCTION_SITE_URL,
-  STAGING_HOSTNAMES,
-  resolveSiteOrigin,
-} from "../src/lib/site-meta"
+import { PRODUCTION_SITE_URL, STAGING_HOSTNAMES, resolveSiteOrigin } from "../src/lib/site-meta"
 import {
   defaultPreview,
   withNoindex,
@@ -22,15 +18,9 @@ import {
   previewForPost,
   previewForReport,
   previewForSignupPage,
-  type EventPreviewInput,
   type LinkPreview,
-  type OrganizationPreviewInput,
-  type PersonPreviewInput,
-  type PostPreviewInput,
   type PreviewContext,
   type PreviewKind,
-  type ReportPreviewInput,
-  type SignupPagePreviewInput,
 } from "../src/lib/link-preview"
 
 interface AssetFetcher {
@@ -123,9 +113,7 @@ const API_PREFIX: Record<PreviewKind, string> = {
 export type PreviewOutcome = "found" | "missing" | "transient"
 
 export type PreviewRoute =
-  | { action: "browse" }
-  | { action: "shell" }
-  | { action: "preview"; id: string }
+  { action: "browse" } | { action: "shell" } | { action: "preview"; id: string }
 
 export function isValidPreviewId(kind: PreviewKind, id: string): boolean {
   return ID_PATTERNS[kind].some((pattern) => pattern.test(id))
@@ -261,11 +249,7 @@ function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: string):
   return typeof raw === "string" && isValidPreviewId(kind, raw) ? raw : fallback
 }
 
-function previewContextFor(
-  kind: PreviewKind,
-  id: string,
-  origin: string,
-): PreviewContext {
+function previewContextFor(kind: PreviewKind, id: string, origin: string): PreviewContext {
   return { url: `${origin}${CANONICAL_PREFIX[kind]}${id}`, origin }
 }
 
@@ -277,19 +261,18 @@ export function buildPreview(
 ): LinkPreview | null {
   if (!payload || typeof payload !== "object") return null
   const context = previewContextFor(kind, resolveEntityId(kind, payload, id), origin)
-  if (kind === "report") return previewForReport(payload as ReportPreviewInput, context)
-  if (kind === "event") return previewForEvent(payload as EventPreviewInput, context)
-  if (kind === "signup") return previewForSignupPage(payload as SignupPagePreviewInput, context)
-  if (kind === "org") return previewForOrganization(payload as OrganizationPreviewInput, context)
-  if (kind === "post") return previewForPost(payload as PostPreviewInput, context)
+  if (kind === "report") return previewForReport(payload, context)
+  if (kind === "event") return previewForEvent(payload, context)
+  if (kind === "signup") return previewForSignupPage(payload, context)
+  if (kind === "org") return previewForOrganization(payload, context)
+  if (kind === "post") return previewForPost(payload, context)
   const profile = (payload as { profile?: unknown }).profile
   if (!profile || typeof profile !== "object") return null
-  return previewForPerson(profile as PersonPreviewInput, context)
+  return previewForPerson(profile, context)
 }
 
 type UpstreamBody =
-  | { body: string; outcome: "found" }
-  | { body: null; outcome: "missing" | "transient" }
+  { body: string; outcome: "found" } | { body: null; outcome: "missing" | "transient" }
 
 async function fetchUpstreamBody(
   kind: PreviewKind,
@@ -365,7 +348,13 @@ export async function runPreview(
   if (route.action === "shell" || !shell.ok) return htmlResponse(shell)
 
   const origin = resolveSiteOrigin(request.url)
-  const { payload, outcome } = await loadPayload(kind, route.id, request.url, env, context.waitUntil)
+  const { payload, outcome } = await loadPayload(
+    kind,
+    route.id,
+    request.url,
+    env,
+    context.waitUntil,
+  )
   const built =
     buildPreview(kind, payload, route.id, origin) ??
     defaultPreview(previewContextFor(kind, route.id, origin))

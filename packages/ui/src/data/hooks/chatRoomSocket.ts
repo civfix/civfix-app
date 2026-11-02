@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react"
 import { preserveViewerFields, type ChatItem } from "../../helpers"
-import { type RoomKind } from "@civfix/contract"
+import type { RoomKind } from "@civfix/contract"
 import { applyUpdatesToWindow } from "../aroundWindow"
 import { frameInRoom, isFatalRoomErrorCode, isSendRejectionErrorCode } from "../inbound"
 import type { ChatConnState, ChatSocketLike } from "../types"
@@ -111,7 +111,8 @@ export function useChatRoomSocket({
           }
           break
         case "typing":
-          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId) markTyping(frame.userId)
+          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId)
+            markTyping(frame.userId)
           break
         case "error":
           if (!frameInRoom(frame, roomId, roomKind)) break

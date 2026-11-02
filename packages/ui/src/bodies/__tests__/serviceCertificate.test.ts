@@ -43,9 +43,9 @@ describe("certificateCardState", () => {
   })
 
   it("is ready for a certificate with a live link", () => {
-    expect(
-      certificateCardState({ ...base, hasCertificate: true, urlExpiresAt: LIVE }),
-    ).toBe("ready")
+    expect(certificateCardState({ ...base, hasCertificate: true, urlExpiresAt: LIVE })).toBe(
+      "ready",
+    )
   })
 
   it("is expired when the link has lapsed, is missing, or cannot be parsed", () => {
@@ -79,7 +79,9 @@ describe("certificateErrorKey", () => {
   })
 
   it("recognises a cross-realm structurally-cloned AppError", () => {
-    expect(certificateErrorKey({ name: "AppError", code: "RATE_LIMITED", message: "slow down" })).toBe("rate_limited")
+    expect(
+      certificateErrorKey({ name: "AppError", code: "RATE_LIMITED", message: "slow down" }),
+    ).toBe("rate_limited")
   })
 })
 

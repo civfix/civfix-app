@@ -14,7 +14,9 @@ export interface KeyboardScrollScopeProviderProps {
 
 export function KeyboardScrollScopeProvider({ value, children }: KeyboardScrollScopeProviderProps) {
   return (
-    <KeyboardScrollScopeContext.Provider value={value}>{children}</KeyboardScrollScopeContext.Provider>
+    <KeyboardScrollScopeContext.Provider value={value}>
+      {children}
+    </KeyboardScrollScopeContext.Provider>
   )
 }
 

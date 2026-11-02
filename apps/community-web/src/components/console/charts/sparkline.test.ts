@@ -14,10 +14,7 @@ describe("valueRuns", () => {
   })
 
   it("breaks the line at a k-suppressed point instead of drawing through zero", () => {
-    expect(valueRuns([3, null, 4])).toEqual([
-      [{ index: 0, value: 3 }],
-      [{ index: 2, value: 4 }],
-    ])
+    expect(valueRuns([3, null, 4])).toEqual([[{ index: 0, value: 3 }], [{ index: 2, value: 4 }]])
   })
 
   it("keeps the x index of every point so a gap stays a gap", () => {

@@ -143,12 +143,33 @@ export function useAddressActions({
     showOnMap(
       mode,
       focusTarget.kind === "report"
-        ? { kind: "report", id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category }
-        : { kind: "cleanup", id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
+        ? {
+            kind: "report",
+            id: focusTarget.id,
+            lat: point.lat,
+            lng: point.lng,
+            category: focusTarget.category,
+          }
+        : {
+            kind: "cleanup",
+            id: focusTarget.id,
+            lat: point.lat,
+            lng: point.lng,
+            eventKind: focusTarget.eventKind,
+          },
     )
   }, [focusTarget, haptics, mode, point])
 
   const closeSheet = useCallback(() => setSheetOpen(false), [])
 
-  return { affordances, sheetOpen, sheetOptions, onCopy, onExternal, onFocusMap, chooseOption, closeSheet }
+  return {
+    affordances,
+    sheetOpen,
+    sheetOptions,
+    onCopy,
+    onExternal,
+    onFocusMap,
+    chooseOption,
+    closeSheet,
+  }
 }

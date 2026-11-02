@@ -1,5 +1,14 @@
 import { spawnSync } from "node:child_process"
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -47,14 +56,23 @@ function fakeApp() {
     copyFileSync(join(publicDir, file), join(out, file))
   }
   mkdirSync(join(out, ".well-known"))
-  copyFileSync(join(publicDir, ".well-known", "apple-app-site-association"), join(out, ".well-known", "apple-app-site-association"))
+  copyFileSync(
+    join(publicDir, ".well-known", "apple-app-site-association"),
+    join(out, ".well-known", "apple-app-site-association"),
+  )
   for (const page of ["index.html", "404.html"]) {
     writeFileSync(join(out, page), `<html><head>${BRANDED_HEAD}</head><body></body></html>`)
   }
-  writeFileSync(join(out, "_next", "static", "chunks", "app.js"), 'class E extends Error{constructor(){super();this.name="AppError"}}')
+  writeFileSync(
+    join(out, "_next", "static", "chunks", "app.js"),
+    'class E extends Error{constructor(){super();this.name="AppError"}}',
+  )
   for (const type of ["terms", "privacy", "cookies", "subprocessors"]) {
     mkdirSync(join(out, "legal", type), { recursive: true })
-    writeFileSync(join(out, "legal", type, "index.html"), '<html><body><div id="__next"></div></body></html>')
+    writeFileSync(
+      join(out, "legal", type, "index.html"),
+      '<html><body><div id="__next"></div></body></html>',
+    )
   }
   return root
 }
@@ -83,7 +101,12 @@ describe("the postbuild gate without its legal checks", () => {
 
 describe("the gate module", () => {
   it("T2: exports no legal hashing, and the AASA gate still keeps /legal/* in the browser", () => {
-    for (const name of ["extractLegalArticle", "legalDocumentHash", "isPlaceholderLegalHash", "renderedLegalDocuments"]) {
+    for (const name of [
+      "extractLegalArticle",
+      "legalDocumentHash",
+      "isPlaceholderLegalHash",
+      "renderedLegalDocuments",
+    ]) {
       expect(Object.keys(gates), name).not.toContain(name)
     }
     expect(gates.REQUIRED_AASA_EXCLUDES).toContain("/legal/*")
@@ -92,8 +115,7 @@ describe("the gate module", () => {
 
 describe("the legal hash script", () => {
   it("T4: is gone, with its package script", () => {
-    const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8"))
-    expect(Object.keys(pkg.scripts)).not.toContain("legal-hashes")
+    expect(readFileSync(join(appDir, "package.json"), "utf8")).not.toContain('"legal-hashes"')
     expect(existsSync(join(appDir, "scripts", "legal-hashes.mjs"))).toBe(false)
   })
 })

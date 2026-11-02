@@ -27,7 +27,8 @@ describe("hexWithAlpha", () => {
 
 describe("wash", () => {
   const surface = "#000000"
-  const themeOf = (scheme: "light" | "dark") => ({ scheme, colors: { surface } }) as unknown as Theme
+  const themeOf = (scheme: "light" | "dark") =>
+    ({ scheme, colors: { surface } }) as unknown as Theme
 
   it("tints toward white in light", () => {
     expect(wash("#808080", 0.5, themeOf("light"))).toBe(tint("#808080", 0.5))

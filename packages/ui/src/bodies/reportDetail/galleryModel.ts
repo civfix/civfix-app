@@ -9,7 +9,10 @@ export interface GalleryTiles {
   tileCount: number
 }
 
-export function partitionGalleryMedia(media: readonly ReportMedia[], pending: number): GalleryTiles {
+export function partitionGalleryMedia(
+  media: readonly ReportMedia[],
+  pending: number,
+): GalleryTiles {
   const ready = media.filter((m) => m.status === "ready")
   const ownerPending = media.filter((m) => m.status === "validating")
   const ownerFailed = media.filter((m) => m.status === "rejected" || m.status === "held")
@@ -37,12 +40,17 @@ export function clampGallerySelection(selected: number, readyCount: number): num
  * media), so this is 0 for everyone else and the gallery renders as before. The refused tile takes the hero only
  * when nothing ready or processing can. Each refused item gets one strip tile whenever the strip shows.
  */
-export function refusedGalleryTiles(counts: { ready: number; processing: number; refused: number }): {
+export function refusedGalleryTiles(counts: {
+  ready: number
+  processing: number
+  refused: number
+}): {
   hero: boolean
   strip: number
 } {
   if (counts.refused === 0) return { hero: false, strip: 0 }
   // Like the ready case, the strip lists the hero's item too and shows only when there is more than one tile.
-  if (counts.ready === 0 && counts.processing === 0) return { hero: true, strip: counts.refused > 1 ? counts.refused : 0 }
+  if (counts.ready === 0 && counts.processing === 0)
+    return { hero: true, strip: counts.refused > 1 ? counts.refused : 0 }
   return { hero: false, strip: counts.refused }
 }

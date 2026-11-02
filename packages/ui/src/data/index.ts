@@ -66,6 +66,7 @@ export {
 } from "./hooks/reports"
 export { NEARBY_RADIUS_KM } from "./hooks/nearbyBbox"
 export { usePressingReports } from "./hooks/pressingReports"
+export { useAppConfig } from "./hooks/appConfig"
 export {
   useJoinReportChat,
   useLeaveReportChat,
@@ -108,13 +109,16 @@ export {
   cleanupDetailFilters,
 } from "./hooks/cleanups"
 export {
+  INBOX_LIMIT,
   useNotifications,
   useMarkNotificationsRead,
-  useNotificationPrefs,
-  useUpdateNotificationPrefs,
+  useHasUnreadNotifications,
+  useMarkAllNotificationsRead,
+  useNotificationSettings,
+  useUpdateNotificationSettings,
   useUpdatePrivacySettings,
 } from "./hooks/notifications"
-export type { PrivacySettingsVars } from "./hooks/notifications"
+export type { PrivacySettingsVars, NotificationSettingChange } from "./hooks/notifications"
 export { useThreads, useTotalUnread, useChat } from "./hooks/chat"
 export type { UseChatResult, ChatRoomError, ComposerMedia } from "./hooks/chat"
 export {
@@ -163,5 +167,11 @@ export { fetchApproximateLocation } from "./fetchApproximateLocation"
 export { NOW_TICK_MS, useNow } from "./useNow"
 export { useDebouncedValue } from "./hooks/useDebouncedValue"
 export { useEventBoundaryRefresh } from "./useEventBoundaryRefresh"
-export { FIRST_NAME_MAX, LAST_NAME_MAX, firstRunModel, splitName, stripHandlePrefix } from "./firstRunModel"
+export {
+  FIRST_NAME_MAX,
+  LAST_NAME_MAX,
+  firstRunModel,
+  splitName,
+  stripHandlePrefix,
+} from "./firstRunModel"
 export type { FirstRunAvailability, FirstRunInput, FirstRunView } from "./firstRunModel"

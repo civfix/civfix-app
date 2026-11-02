@@ -1,7 +1,7 @@
 export interface MapCameraTarget {
   lat: number
   lng: number
-  zoom?: number
+  zoom?: number | undefined
 }
 
 export interface MapViewportSnapshot {
@@ -29,7 +29,9 @@ export interface MapLifecycleState {
   lastViewport: MapCameraTarget | null
 }
 
-export function createMapLifecycleState(seedViewport: MapCameraTarget | null = null): MapLifecycleState {
+export function createMapLifecycleState(
+  seedViewport: MapCameraTarget | null = null,
+): MapLifecycleState {
   return {
     mountedGeneration: null,
     readyGeneration: null,
@@ -101,10 +103,7 @@ export function unmountMap(state: MapLifecycleState, generation: number): MapLif
 const SETTLED_COORDINATE_EPSILON = 0.0001
 const SETTLED_ZOOM_EPSILON = 0.1
 
-function viewportMatchesTarget(
-  viewport: MapViewportSnapshot,
-  target: MapCameraTarget,
-): boolean {
+function viewportMatchesTarget(viewport: MapViewportSnapshot, target: MapCameraTarget): boolean {
   const centerMatches =
     Math.abs(viewport.center.lat - target.lat) <= SETTLED_COORDINATE_EPSILON &&
     Math.abs(viewport.center.lng - target.lng) <= SETTLED_COORDINATE_EPSILON
@@ -139,10 +138,7 @@ export function acknowledgeMapSettlement(
   }
 }
 
-export function markMapReady(
-  state: MapLifecycleState,
-  generation: number,
-): MapLifecycleState {
+export function markMapReady(state: MapLifecycleState, generation: number): MapLifecycleState {
   if (state.mountedGeneration !== generation) return state
   return { ...state, readyGeneration: generation }
 }
@@ -156,10 +152,7 @@ export function takePendingMapTarget(
   if (state.pendingTarget.generation !== state.latestRequestGeneration) {
     return { state: { ...state, pendingTarget: null }, target: null }
   }
-  if (
-    state.mountedGeneration !== generation ||
-    state.readyGeneration !== generation
-  ) {
+  if (state.mountedGeneration !== generation || state.readyGeneration !== generation) {
     return { state, target: null }
   }
   return {

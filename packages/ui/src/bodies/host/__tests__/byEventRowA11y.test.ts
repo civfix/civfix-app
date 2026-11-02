@@ -15,7 +15,9 @@ function catalog(ns: string): Record<string, unknown> {
 const en = { "host-analytics": catalog("host-analytics") }
 
 function lookup(tree: Record<string, unknown>, path: string): string {
-  const found = path.split(".").reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], tree)
+  const found = path
+    .split(".")
+    .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], tree)
   if (typeof found !== "string") throw new Error(`missing en key ${path}`)
   return found
 }
@@ -40,7 +42,9 @@ describe("the by-event row's spoken label", () => {
   })
 
   it("is the label EventAnalyticsBody gives each row", () => {
-    const body = code(readFileSync(new URL("../analytics/AllEventsMode.tsx", import.meta.url), "utf8"))
+    const body = code(
+      readFileSync(new URL("../analytics/AllEventsMode.tsx", import.meta.url), "utf8"),
+    )
     expect(body).toContain("accessibilityLabel={byEventRowA11y(t, row.label, value)}")
     expect(body).not.toMatch(/by_event_a11y[\s\S]{0,120}EMPTY_VALUE/)
   })

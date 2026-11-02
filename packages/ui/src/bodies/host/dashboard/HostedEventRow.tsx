@@ -64,7 +64,11 @@ export interface HostedEventRowProps {
   onEdit: (event: HostedEventDTO) => void
 }
 
-const PAST_DATE_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
+const PAST_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+}
 
 function MetaLine({
   parts,
@@ -118,7 +122,11 @@ function EventBadge({
   const styles = useStyles()
   if (coverThumbUrl) {
     return (
-      <Image source={{ uri: coverThumbUrl }} style={styles.cover} accessibilityIgnoresInvertColors />
+      <Image
+        source={{ uri: coverThumbUrl }}
+        style={styles.cover}
+        accessibilityIgnoresInvertColors
+      />
     )
   }
   return <DateBadge iso={startsAt} size={LIST_TILE} timeZone={timeZone} />
@@ -174,7 +182,10 @@ export const HostedEventRow = memo(function HostedEventRow({
   const metaParts: MetaPart[] =
     eventWindow === "past"
       ? [
-          { key: "when", text: safeDateFormat(event.startsAt, locale, PAST_DATE_OPTIONS, event.timezone) },
+          {
+            key: "when",
+            text: safeDateFormat(event.startsAt, locale, PAST_DATE_OPTIONS, event.timezone),
+          },
           ...(past.cancelled
             ? [{ key: "cancelled", text: t("events.meta_cancelled"), tone: "muted" as const }]
             : []),

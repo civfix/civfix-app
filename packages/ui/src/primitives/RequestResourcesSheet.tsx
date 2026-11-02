@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { MAX_EVENT_RESOURCES_MESSAGE } from "@civfix/contract"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
@@ -57,7 +57,12 @@ export function RequestResourcesSheet({
       actions={
         <>
           <SecondaryButton label={t("cancel")} onPress={onClose} size="sm" />
-          <PrimaryButton label={t("submit")} onPress={commit} loading={pending} disabled={!canSubmit} />
+          <PrimaryButton
+            label={t("submit")}
+            onPress={commit}
+            loading={pending}
+            disabled={!canSubmit}
+          />
         </>
       }
     >

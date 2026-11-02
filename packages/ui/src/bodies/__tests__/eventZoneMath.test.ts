@@ -13,7 +13,9 @@ import { buildLinkedEventCardModel } from "../linkedEventCardModel"
 // clock can never make the zone-blind code pass by accident.
 
 const code = (rel: string) =>
-  readFileSync(new URL(rel, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+  readFileSync(new URL(rel, import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "")
 
 const HOUR = 3_600_000
 
@@ -42,7 +44,13 @@ describe("changing the event's time zone carries the timed slots with the window
 
   it("moves a 9-11 LA shift to 9-11 New York when the event moves from LA to New York", () => {
     const slots = [timedSlot("a", "2026-07-24T16:00:00.000Z", "2026-07-24T18:00:00.000Z"), untimed]
-    const moved = slotsAfterZoneChange(slots, day, nineAm, "America/Los_Angeles", "America/New_York")
+    const moved = slotsAfterZoneChange(
+      slots,
+      day,
+      nineAm,
+      "America/Los_Angeles",
+      "America/New_York",
+    )
     expect(moved[0]?.startsAt?.toISOString()).toBe("2026-07-24T13:00:00.000Z")
     expect(moved[0]?.endsAt?.toISOString()).toBe("2026-07-24T15:00:00.000Z")
     expect(moved[1]).toBe(untimed)

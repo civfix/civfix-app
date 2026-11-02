@@ -3,7 +3,12 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { AppError, ErrorCode, EventConsentInputSchema, GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  EventConsentInputSchema,
+  GUEST_RSVP_TURNSTILE_ACTION,
+} from "@civfix/contract"
 import type { LegalDocumentDTO, LegalDocumentType, PublicEventPageDTO } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider, queryKeys, type DataContextValue } from "@civfix/ui/data"
@@ -12,9 +17,11 @@ import type { api } from "@/lib/api"
 
 import { signupPage, ticket } from "./__fixtures__"
 
-const registerForEvent = vi.fn<(body: Parameters<typeof api.registerForEvent>[0], ...rest: unknown[]) => unknown>()
+const registerForEvent =
+  vi.fn<(body: Parameters<typeof api.registerForEvent>[0], ...rest: unknown[]) => unknown>()
 const guestRsvpRequest = vi.fn<(...args: unknown[]) => unknown>()
-const guestRsvpVerify = vi.fn<(body: Parameters<typeof api.guestRsvpVerify>[0], ...rest: unknown[]) => unknown>()
+const guestRsvpVerify =
+  vi.fn<(body: Parameters<typeof api.guestRsvpVerify>[0], ...rest: unknown[]) => unknown>()
 const joinEventWaitlist = vi.fn<(...args: unknown[]) => unknown>()
 const runTurnstile = vi.fn<(...args: unknown[]) => unknown>()
 
@@ -71,10 +78,26 @@ function legalDocument(type: LegalDocumentType, version: string, sha256: string)
 }
 
 const DOCUMENTS = [
-  legalDocument("terms", "2026-09-21", "52fe3908a8d7aa4427239a7555a2d7b2346d7a2b9730dfb539ecd157f6195772"),
-  legalDocument("privacy", "2026-09-21", "e7bb3df8d1bae0ebf3dac45021beb1f260c3035f2bf3cabd0201e2586eb2f127"),
-  legalDocument("cookies", "2026-09-16", "4a05415bba1ef0301058815ce6d01f98eb593bd18378e7ce52555074da3064c0"),
-  legalDocument("subprocessors", "2026-09-16", "5ab722bb37cc2972ada7521b6dc239bfd85f82691d0e3e2489f5dcac9983a198"),
+  legalDocument(
+    "terms",
+    "2026-09-21",
+    "52fe3908a8d7aa4427239a7555a2d7b2346d7a2b9730dfb539ecd157f6195772",
+  ),
+  legalDocument(
+    "privacy",
+    "2026-09-21",
+    "e7bb3df8d1bae0ebf3dac45021beb1f260c3035f2bf3cabd0201e2586eb2f127",
+  ),
+  legalDocument(
+    "cookies",
+    "2026-09-16",
+    "4a05415bba1ef0301058815ce6d01f98eb593bd18378e7ce52555074da3064c0",
+  ),
+  legalDocument(
+    "subprocessors",
+    "2026-09-16",
+    "5ab722bb37cc2972ada7521b6dc239bfd85f82691d0e3e2489f5dcac9983a198",
+  ),
 ]
 
 function outdatedConflict(): AppError {
@@ -92,7 +115,10 @@ function outdatedConflict(): AppError {
 const getLegalDocuments = vi.fn<() => Promise<unknown>>()
 
 // The documents are already cached unless a test fetches them, so the form is ready on its first render.
-function renderWidget(dto: PublicEventPageDTO, { fetchDocuments = false }: { fetchDocuments?: boolean } = {}) {
+function renderWidget(
+  dto: PublicEventPageDTO,
+  { fetchDocuments = false }: { fetchDocuments?: boolean } = {},
+) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   if (!fetchDocuments) queryClient.setQueryData(queryKeys.legalDocuments, { documents: DOCUMENTS })
   const context = {
@@ -188,6 +214,25 @@ describe("member one-tap registration", () => {
     expect(registerForEvent).toHaveBeenCalledTimes(1)
   })
 
+  it("keeps the confirmation on screen after the window closes behind it", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) })
+      const closesAt = new Date(Date.now() + 30_000).toISOString()
+      renderWidget(page({ event: { ...page().event, registrationClosesAt: closesAt } }))
+      await user.click(screen.getByLabelText("form.terms"))
+      await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
+      await screen.findByText("web-signup:outcome.registered")
+      act(() => {
+        vi.advanceTimersByTime(5 * 60_000)
+      })
+      expect(screen.getByText("web-signup:outcome.registered")).toBeTruthy()
+      expect(screen.queryByText("widget.closed_title")).toBe(null)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("shows a waitlisted state when the server waitlists instead of registering", async () => {
     const user = userEvent.setup()
     registerForEvent.mockResolvedValue({ outcome: "waitlisted", registration: null })
@@ -203,7 +248,9 @@ describe("member one-tap registration", () => {
     renderWidget(page())
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
-    expect((await screen.findByRole("alert")).textContent).toContain("host-ticket:outcome.access_code_invalid")
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "host-ticket:outcome.access_code_invalid",
+    )
   })
 
   it("mints a NEW idempotency key after a refusal, so a retry is a new attempt", async () => {
@@ -258,7 +305,7 @@ describe("sold out and waitlist", () => {
     renderWidget(page({ ticketTypes: [ticket({ soldOut: true, waitlistEnabled: false })] }))
     expect(screen.getByText("form.full_none")).toBeTruthy()
     expect(screen.queryByRole("button", { name: /join_waitlist/ })).toBe(null)
-    expect((screen.getByRole("button", { name: /form\.sold_out/ }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /form\.sold_out/ }).disabled).toBe(
       true,
     )
   })
@@ -268,7 +315,7 @@ describe("sold out and waitlist", () => {
     renderWidget(page({ ticketTypes: [ticket({ soldOut: true, waitlistEnabled: true })] }))
     expect(screen.getByText("form.full_guest")).toBeTruthy()
     expect(screen.queryByRole("button", { name: /form\.join_waitlist/ })).toBe(null)
-    expect((screen.getByRole("button", { name: /form\.sold_out/ }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /form\.sold_out/ }).disabled).toBe(
       true,
     )
     expect(guestRsvpRequest).not.toHaveBeenCalled()
@@ -362,7 +409,7 @@ describe("custom registration questions", () => {
 
   it("hides a conditional question and does not require an answer to it", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     expect(screen.queryByLabelText(/Which tools/i)).toBe(null)
     await user.click(screen.getByLabelText(/^No$/i))
     await user.click(screen.getByLabelText("form.terms"))
@@ -375,7 +422,7 @@ describe("custom registration questions", () => {
 
   it("reveals and then requires the conditional question", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     await user.click(screen.getByLabelText(/^Yes$/i))
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -410,7 +457,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("does not block ticket A on a required question that belongs to ticket B", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     expect(screen.queryByLabelText(/What shift can you work/i)).toBe(null)
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -421,7 +468,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("requires ticket B's own question once ticket B is selected", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     await user.click(screen.getByLabelText(/Volunteer/i))
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
@@ -436,7 +483,7 @@ describe("questions scoped to a ticket type", () => {
 
   it("never submits an answer left over from a ticket the donor switched away from", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket as never }))
+    renderWidget(page({ ticketTypes: twoTickets, questions: perTicket }))
     await user.click(screen.getByLabelText(/Volunteer/i))
     await user.type(screen.getByLabelText(/What shift can you work/i), "Morning")
     await user.click(screen.getByLabelText(/General/i))
@@ -451,7 +498,7 @@ describe("party size entry", () => {
   it("lets a visitor clear the field and type a new number instead of snapping to 1", async () => {
     const user = userEvent.setup()
     renderWidget(page({ ticketTypes: [ticket({ maxPartySize: 4 })] }))
-    const party = screen.getByLabelText("form.party_label") as HTMLInputElement
+    const party = screen.getByLabelText<HTMLInputElement>("form.party_label")
     await user.clear(party)
     await user.type(party, "3")
     expect(party.value).toBe("3")
@@ -485,7 +532,9 @@ describe("guest code step", () => {
     await user.click(screen.getByRole("button", { name: /code\.submit/ }))
     expect(screen.getByText("code.title")).toBeTruthy()
     expect(screen.queryByLabelText("form.name_label")).toBe(null)
-    expect((screen.getByRole("button", { name: /code\.submit/ }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /code\.submit/ }).disabled).toBe(
+      true,
+    )
 
     await act(async () => {
       fail({ code: "VALIDATION", message: "bad code" })
@@ -508,10 +557,10 @@ describe("guest code step", () => {
     const user = userEvent.setup()
     await reachCodeStep(user)
     await user.click(screen.getByRole("button", { name: /code\.change_email/ }))
-    expect((screen.getByLabelText("form.email_label") as HTMLInputElement).value).toBe(
+    expect(screen.getByLabelText<HTMLInputElement>("form.email_label").value).toBe(
       "ada@example.org",
     )
-    expect((screen.getByLabelText("form.name_label") as HTMLInputElement).value).toBe("Ada")
+    expect(screen.getByLabelText<HTMLInputElement>("form.name_label").value).toBe("Ada")
   })
 })
 
@@ -554,7 +603,7 @@ describe("question accessibility", () => {
   ]
 
   it("shows and links the help text of a multi-select question", () => {
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     const help = screen.getByText("Pick all that apply.")
     const group = screen.getByRole("group", { name: /What can you help with/ })
     expect(group.getAttribute("aria-describedby")).toContain(help.id)
@@ -562,7 +611,7 @@ describe("question accessibility", () => {
 
   it("marks required questions for assistive tech and links the error to the invalid ones", async () => {
     const user = userEvent.setup()
-    renderWidget(page({ questions: questions as never }))
+    renderWidget(page({ questions }))
     const diet = screen.getByLabelText(/Dietary needs/)
     const shirt = screen.getByRole("radiogroup", { name: /Shirt size/ })
     expect(diet.getAttribute("aria-required")).toBe("true")
@@ -580,7 +629,7 @@ describe("question accessibility", () => {
 
 describe("legal versions from the API", () => {
   const OUTDATED = "host-ticket:consent.outdated"
-  const isChecked = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).checked
+  const isChecked = (label: string) => screen.getByLabelText<HTMLInputElement>(label).checked
   const memberSubmit = () => screen.getByRole("button", { name: /form\.count_me_in/ })
   const guestSubmit = () => screen.getByRole("button", { name: /form\.register$/ })
 
@@ -627,7 +676,9 @@ describe("legal versions from the API", () => {
     await fillGuest(user)
     await user.click(guestSubmit())
     await screen.findByText("code.title")
-    expect((guestRsvpRequest.mock.calls[0]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject(versions)
+    expect(
+      (guestRsvpRequest.mock.calls[0]?.[0] as { consent?: unknown } | undefined)?.consent,
+    ).toMatchObject(versions)
   })
 
   it("T29: a member's outdated answer unticks both boxes and switches to the versions it names", async () => {
@@ -672,7 +723,9 @@ describe("legal versions from the API", () => {
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(guestSubmit())
     await screen.findByText("code.title")
-    expect((guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject({
+    expect(
+      (guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent,
+    ).toMatchObject({
       termsVersion: "2026-10-30",
       disclosureVersion: "2026-10-30",
     })
@@ -699,7 +752,9 @@ describe("legal versions from the API", () => {
     await user.click(screen.getByLabelText("form.terms"))
     await user.click(guestSubmit())
     await waitFor(() => expect(guestRsvpRequest).toHaveBeenCalledTimes(2))
-    expect((guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent).toMatchObject({
+    expect(
+      (guestRsvpRequest.mock.calls[1]?.[0] as { consent?: unknown } | undefined)?.consent,
+    ).toMatchObject({
       termsVersion: "2026-10-30",
       disclosureVersion: "2026-10-30",
     })
@@ -736,8 +791,10 @@ describe("legal versions from the API", () => {
     await user.click(screen.getByRole("button", { name: /code\.submit/ }))
     await screen.findByText("web-signup:outcome.registered")
 
-    const requested = (guestRsvpRequest.mock.calls[0]?.[0] as { consent: Record<string, unknown> }).consent
-    const verified = (guestRsvpVerify.mock.calls[0]?.[0] as { consent: Record<string, unknown> }).consent
+    const requested = (guestRsvpRequest.mock.calls[0]?.[0] as { consent: Record<string, unknown> })
+      .consent
+    const verified = (guestRsvpVerify.mock.calls[0]?.[0] as { consent: Record<string, unknown> })
+      .consent
     for (const consent of [requested, verified]) {
       expect(Object.keys(consent)).toContain("smsOptIn")
       expect(consent.smsOptIn).toBe(false)

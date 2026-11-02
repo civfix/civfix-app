@@ -25,7 +25,7 @@ function EventRow({
   event: CleanupDTO
   badge: string
   badgeColor: string
-  onPress?: () => void
+  onPress?: (() => void) | undefined
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -35,7 +35,11 @@ function EventRow({
   const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   const where = event.address?.trim()
   const tint = hexWithAlpha(badgeColor, EVENT_TAG_WASH)
-  const subParts = [when.dow, when.timeWithZone, where].filter((s): s is string => !!s)
+  const subParts = [
+    { part: "day", text: when.dow },
+    { part: "time", text: when.timeWithZone },
+    { part: "place", text: where },
+  ].filter((entry): entry is { part: string; text: string } => !!entry.text)
   return (
     <Pressable
       onPress={onPress}
@@ -51,14 +55,14 @@ function EventRow({
           {event.title}
         </Text>
         <View style={styles.erowSubRow}>
-          {subParts.map((part, i) => (
-            <React.Fragment key={i}>
+          {subParts.map(({ part, text }, i) => (
+            <React.Fragment key={part}>
               {i > 0 ? <MetaDot color={th.colors.textSubtle} style={styles.erowSubDot} /> : null}
               <Text
                 style={[styles.erowSub, i === subParts.length - 1 ? styles.erowSubLast : null]}
                 numberOfLines={1}
               >
-                {part}
+                {text}
               </Text>
             </React.Fragment>
           ))}
@@ -86,7 +90,7 @@ function EventBucket({
   badge: string
   badgeColor: string
   emptyText: string
-  onOpenEvent?: (event: CleanupDTO) => void
+  onOpenEvent?: ((event: CleanupDTO) => void) | undefined
 }) {
   const styles = useStyles()
   const sectionStyles = useSectionStyles()
@@ -128,7 +132,7 @@ export interface ProfileEventsSectionProps {
   split: ProfileEventSplit
   tab: ProfileEventTab
   onSelectTab: (tab: ProfileEventTab) => void
-  onOpenEvent?: (event: CleanupDTO) => void
+  onOpenEvent?: ((event: CleanupDTO) => void) | undefined
   more?: ProfileEventsMore
 }
 
@@ -158,7 +162,7 @@ export function ProfileEventsSection({
               onPress={() => onSelectTab(id)}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
-              {...({ "aria-selected": selected } as object)}
+              aria-selected={selected}
               {...focusRingProps}
               // 34pt pill + 5pt top/bottom reaches the 44pt floor; vertical only, since the segments
               // are flex neighbours and horizontal slop would overlap the other segment.

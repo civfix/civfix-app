@@ -1,16 +1,39 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive, nativeMarkerId } from "../markerFocus"
+import {
+  activeMarkerIds,
+  flyToTargetOffMap,
+  markerNodeIsActive,
+  nativeMarkerId,
+} from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
 const mapNative = readFileSync(new URL("../Map.native.tsx", import.meta.url), "utf8")
 
-const reportNode = { type: "report", id: "r1", key: "r:r1", lat: 0, lng: 0 } as unknown as ClusterNode
+const reportNode = {
+  type: "report",
+  id: "r1",
+  key: "r:r1",
+  lat: 0,
+  lng: 0,
+} as unknown as ClusterNode
 const eventNode = { type: "event", id: "c1", key: "e:c1", lat: 0, lng: 0 } as unknown as ClusterNode
 const blendNode = { type: "blend", id: "c1", key: "b:c1", lat: 0, lng: 0 } as unknown as ClusterNode
 const clusterNode = { type: "cluster", key: "cl:1", lat: 0, lng: 0 } as unknown as ClusterNode
-const reportTarget = { kind: "report" as const, id: "r1", lat: 1, lng: 2, category: "hazard" as const }
-const eventTarget = { kind: "cleanup" as const, id: "c1", lat: 3, lng: 4, eventKind: "cleanup" as const }
+const reportTarget = {
+  kind: "report" as const,
+  id: "r1",
+  lat: 1,
+  lng: 2,
+  category: "hazard" as const,
+}
+const eventTarget = {
+  kind: "cleanup" as const,
+  id: "c1",
+  lat: 3,
+  lng: 4,
+  eventKind: "cleanup" as const,
+}
 
 describe("markerNodeIsActive", () => {
   it("lights the focused report and nothing else", () => {

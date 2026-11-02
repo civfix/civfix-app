@@ -32,7 +32,9 @@ describe("resolveThreadAvatar name", () => {
   })
 
   it("names a group after the thread title, ignoring an attached peer", () => {
-    expect(resolveThreadAvatar(input({ kind: "cleanup", title: "beach crew", peer: PEER })).name).toBe("beach crew")
+    expect(
+      resolveThreadAvatar(input({ kind: "cleanup", title: "beach crew", peer: PEER })).name,
+    ).toBe("beach crew")
   })
 })
 

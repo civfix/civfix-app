@@ -55,10 +55,10 @@ export const useSearchRecentStore = create<SearchRecentState>()(
         if (!normalized) return
 
         set((state) => ({
-          recent: [normalized, ...state.recent.filter((item) => queryKey(item) !== queryKey(normalized))].slice(
-            0,
-            SEARCH_RECENT_LIMIT,
-          ),
+          recent: [
+            normalized,
+            ...state.recent.filter((item) => queryKey(item) !== queryKey(normalized)),
+          ].slice(0, SEARCH_RECENT_LIMIT),
         }))
       },
       clear: () => set({ recent: [] }),

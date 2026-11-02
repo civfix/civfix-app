@@ -1,4 +1,3 @@
-import React from "react"
 import {
   HANDLE_MAX_LENGTH,
   ErrorCode,
@@ -8,14 +7,14 @@ import {
 } from "@civfix/contract"
 import { Text } from "../../typography"
 import { SettingsRow, TextField } from "../../primitives"
-import { useHandleAvailability } from "../../data"
+import { useHandleAvailability, useNow } from "../../data"
 import { useLocale, useT } from "../../i18n"
 import { dayLabel, todayKey, type DayLabelOptions } from "../relativeTime"
 import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const HANDLE_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.RATE_LIMITED]: "handle.error.rate_limited",
@@ -59,7 +58,8 @@ export function ChangeUsernameEditor({
   const { draft, setDraft, submitError } = editor
 
   const lockMs = lockedUntil ? new Date(lockedUntil).getTime() : NaN
-  const locked = !Number.isNaN(lockMs) && lockMs > Date.now()
+  const clock = useNow(0, { boundaryAt: Number.isNaN(lockMs) ? null : lockMs })
+  const locked = !Number.isNaN(lockMs) && lockMs > clock
 
   const trimmed = draft.trim()
   const valid = isValidHandle(trimmed)
@@ -96,7 +96,8 @@ export function ChangeUsernameEditor({
             : t("handle.availability.taken")
       return { text, tone: "error" as const }
     }
-    if (availability.data?.available) return { text: t("handle.hint.available"), tone: "ok" as const }
+    if (availability.data?.available)
+      return { text: t("handle.hint.available"), tone: "ok" as const }
     return { text: "", tone: "muted" as const }
   })()
 

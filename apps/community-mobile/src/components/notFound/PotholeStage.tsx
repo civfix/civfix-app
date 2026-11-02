@@ -1,6 +1,10 @@
 import React, { useCallback } from "react"
 import { View, useWindowDimensions } from "react-native"
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from "react-native-reanimated"
 import Svg, { ClipPath, Defs, Ellipse } from "react-native-svg"
 import { Text } from "@civfix/ui"
 import { fontFamily, makeThemedStyles, useTheme } from "@/theme"
@@ -71,10 +75,21 @@ export function PotholeStage({ live }: { live: boolean }) {
           <Svg width={HOLE_WIDTH} height={HOLE_HEIGHT} style={styles.hole}>
             <Defs>
               <ClipPath id="nf-hole">
-                <Ellipse cx={HOLE_WIDTH / 2} cy={HOLE_HEIGHT / 2} rx={HOLE_WIDTH / 2} ry={HOLE_HEIGHT / 2} />
+                <Ellipse
+                  cx={HOLE_WIDTH / 2}
+                  cy={HOLE_HEIGHT / 2}
+                  rx={HOLE_WIDTH / 2}
+                  ry={HOLE_HEIGHT / 2}
+                />
               </ClipPath>
             </Defs>
-            <Ellipse cx={HOLE_WIDTH / 2} cy={HOLE_HEIGHT / 2} rx={HOLE_WIDTH / 2} ry={HOLE_HEIGHT / 2} fill={holeRim} />
+            <Ellipse
+              cx={HOLE_WIDTH / 2}
+              cy={HOLE_HEIGHT / 2}
+              rx={HOLE_WIDTH / 2}
+              ry={HOLE_HEIGHT / 2}
+              fill={holeRim}
+            />
             <Ellipse
               cx={HOLE_WIDTH / 2}
               cy={HOLE_HEIGHT / 2 + HOLE_RIM}
@@ -95,7 +110,15 @@ export function PotholeStage({ live }: { live: boolean }) {
   )
 }
 
-function Glyph({ scene, name, char }: { scene: SharedValue<PotholeScene>; name: PotholePieceName; char: string }) {
+function Glyph({
+  scene,
+  name,
+  char,
+}: {
+  scene: SharedValue<PotholeScene>
+  name: PotholePieceName
+  char: string
+}) {
   const styles = useStyles()
   const theme = useTheme()
   const zero = name === "zero"

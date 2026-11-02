@@ -1,12 +1,5 @@
 import React from "react"
-import {
-  View,
-  Pressable,
-  Image,
-  Linking,
-  StyleSheet,
-  type LayoutChangeEvent,
-} from "react-native"
+import { View, Pressable, Image, Linking, StyleSheet, type LayoutChangeEvent } from "react-native"
 import {
   makeThemedStyles,
   useTheme,

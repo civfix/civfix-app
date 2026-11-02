@@ -27,7 +27,10 @@ describe("LiquidGlassDock shadow structure (native seam)", () => {
   })
 
   it("clips the live blur on the CHILD (clipStyle), not the shadow-casting wrapper", () => {
-    const clipStyle = source.slice(source.indexOf("function clipStyle"), source.indexOf("export function LiquidGlassDock"))
+    const clipStyle = source.slice(
+      source.indexOf("function clipStyle"),
+      source.indexOf("export function LiquidGlassDock"),
+    )
     expect(clipStyle).toMatch(/overflow:\s*"hidden"/)
   })
 
@@ -214,7 +217,9 @@ describe("dockShapes MINIMIZE (Apple-Music scroll-collapse of the left shape)", 
     }
     expect(widths[0]!).toBeCloseTo(REGION_W - DOCK_H - DOCK_GAP)
     expect(widths[widths.length - 1]!).toBeCloseTo(DOCK_H)
-    expect(dockShapes(0, REGION_W, 0, 0.5).left.width).toBeCloseTo((REGION_W - DOCK_H - DOCK_GAP + DOCK_H) / 2)
+    expect(dockShapes(0, REGION_W, 0, 0.5).left.width).toBeCloseTo(
+      (REGION_W - DOCK_H - DOCK_GAP + DOCK_H) / 2,
+    )
   })
 
   it("is a NO-OP once the search morph is underway (p=1 already collapses the left shape to H)", () => {
@@ -257,8 +262,18 @@ describe("morphUniforms (flat SkSL uniforms for the three-box union)", () => {
     const shapes = dockShapes(1, REGION_W, 1)
     const u = morphUniforms(shapes, dockRadius(), MIN_K)
     expect(u.leftBox).toEqual([shapes.left.x, shapes.left.y, shapes.left.width, shapes.left.height])
-    expect(u.rightBox).toEqual([shapes.right.x, shapes.right.y, shapes.right.width, shapes.right.height])
-    expect(u.clearBox).toEqual([shapes.clear.x, shapes.clear.y, shapes.clear.width, shapes.clear.height])
+    expect(u.rightBox).toEqual([
+      shapes.right.x,
+      shapes.right.y,
+      shapes.right.width,
+      shapes.right.height,
+    ])
+    expect(u.clearBox).toEqual([
+      shapes.clear.x,
+      shapes.clear.y,
+      shapes.clear.width,
+      shapes.clear.height,
+    ])
     expect(u.radius).toBeCloseTo(DOCK_H / 2)
     expect(u.k).toBe(MIN_K)
   })

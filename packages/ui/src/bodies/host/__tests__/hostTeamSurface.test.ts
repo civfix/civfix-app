@@ -128,6 +128,8 @@ describe("the invite sheet", () => {
     expect(identifierFields).toContain(
       "export type InviteIdentifierKind = EventTeamInviteIdentifierKind | OrgInviteIdentifierKind",
     )
-    expect(identifierFields).toContain('const IDENTIFIER_KINDS: readonly InviteIdentifierKind[] = ["handle", "email"]')
+    expect(identifierFields).toContain(
+      'const IDENTIFIER_KINDS: readonly InviteIdentifierKind[] = ["handle", "email"]',
+    )
   })
 })

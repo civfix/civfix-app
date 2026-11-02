@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { EventRegistrationDTO } from "@civfix/contract"
 import { headingLevel, makeThemedStyles } from "../../../theme"
@@ -48,7 +47,12 @@ export function CheckinRosterSection({
           {tRoster("roster.error")}
         </Text>
       ) : waiting.length === 0 ? (
-        <FeedNotice plain icon="UserCheck" title={t("roster.empty_title")} body={t("roster.empty_body")} />
+        <FeedNotice
+          plain
+          icon="UserCheck"
+          title={t("roster.empty_title")}
+          body={t("roster.empty_body")}
+        />
       ) : null}
     </View>
   )

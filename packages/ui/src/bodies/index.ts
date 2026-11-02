@@ -13,6 +13,8 @@ export { AppearanceOptionList } from "./AppearanceOptionList"
 export { SettingsBody } from "./SettingsBody"
 export { setOnboardingTourPresenter } from "./onboardingTour"
 export type { OnboardingTourPresenter } from "./onboardingTour"
+export { setDeveloperScreenPresenter } from "./developerScreen"
+export type { DeveloperScreenPresenter } from "./developerScreen"
 export { SettingsAccountBody } from "./SettingsAccountBody"
 export type { DonationLinkEditorProps } from "./settings/DonationLinkEditor"
 export type { DonationLinkFieldError } from "./settings/donationLinkField"
@@ -132,7 +134,7 @@ export type {
 } from "./feedShare"
 
 export { NotificationsBody } from "./NotificationsBody"
-export { NotificationPrefsBody } from "./NotificationPrefsBody"
+export { NotificationSettingsBody } from "./NotificationSettingsBody"
 
 export { MessagingListBody } from "./MessagingListBody"
 export { ConversationBody } from "./ConversationBody"
@@ -151,7 +153,6 @@ export { ReportFlowBody } from "./ReportFlowBody"
 
 export { DropPinBody } from "./DropPinBody"
 export type { DropPinBodyProps } from "./DropPinBody"
-
 
 export type { AddressSearchProps, AddressPick } from "./AddressSearch"
 export type { InlineDateTimePickerProps } from "./InlineDateTimePicker"

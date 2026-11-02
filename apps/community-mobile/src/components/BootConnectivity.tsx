@@ -194,3 +194,6 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.accentText,
   },
 }))
+
+// The force-update screen takes this layout too, so the two full-screen gates look alike.
+export { useStyles as useBootGateStyles }

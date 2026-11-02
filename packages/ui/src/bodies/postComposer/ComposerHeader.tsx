@@ -1,7 +1,6 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import type { TFunction } from "i18next"
-import { focusRingProps, useTheme } from "../../theme"
+import { focusRingProps, useTheme, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import type { PostComposerModel } from "../postComposerModel"
 import { usePostComposerStyles } from "./postComposerStyles"
@@ -34,8 +33,10 @@ export function ComposerHeader({
       >
         <Icon icon={iconMap.Close} size={17} color={th.colors.text} strokeWidth={2} />
       </Pressable>
-      <View pointerEvents="none" style={styles.headerTitleWrap}>
-        <Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>
+      <View style={[styles.headerTitleWrap, pointerEventStyles.none]}>
+        <Text accessibilityRole="header" style={styles.headerTitle}>
+          {presentation.title}
+        </Text>
       </View>
       <View style={styles.headerSpacer} />
       <Pressable
@@ -43,9 +44,17 @@ export function ComposerHeader({
         onPress={onSubmit}
         disabled={submitDisabled}
         {...focusRingProps}
-        style={({ pressed }) => [styles.postButton, submitDisabled ? styles.postButtonDisabled : null, pressed ? styles.buttonPressed : null]}
+        style={({ pressed }) => [
+          styles.postButton,
+          submitDisabled ? styles.postButtonDisabled : null,
+          pressed ? styles.buttonPressed : null,
+        ]}
       >
-        <Text style={[styles.postButtonText, submitDisabled ? styles.postButtonTextDisabled : null]}>{posting ? t("action.posting") : presentation.submitLabel}</Text>
+        <Text
+          style={[styles.postButtonText, submitDisabled ? styles.postButtonTextDisabled : null]}
+        >
+          {posting ? t("action.posting") : presentation.submitLabel}
+        </Text>
       </Pressable>
     </View>
   )

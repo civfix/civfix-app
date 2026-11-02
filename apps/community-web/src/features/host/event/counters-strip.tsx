@@ -48,7 +48,11 @@ function CounterKpi({
       )
     case "no_show":
       return (
-        <KpiCell size="strip" label={t("counters.no_show")} value={format.number(counters.noShow)} />
+        <KpiCell
+          size="strip"
+          label={t("counters.no_show")}
+          value={format.number(counters.noShow)}
+        />
       )
     case "capacity":
       return (

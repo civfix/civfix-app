@@ -10,15 +10,24 @@ import { MIN_TOUCH_TARGET, hitSlopToTarget } from "../theme/touchTarget"
 
 export function sliceBetween(source: string, from: string, to: string): string {
   const start = source.indexOf(from)
-  expect(start, `anchor ${JSON.stringify(from)} is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
+  expect(
+    start,
+    `anchor ${JSON.stringify(from)} is gone - re-scope the guard, do not delete it`,
+  ).toBeGreaterThan(-1)
   const end = source.indexOf(to, start + from.length)
-  expect(end, `end anchor ${JSON.stringify(to)} no longer follows ${JSON.stringify(from)}`).toBeGreaterThan(start)
+  expect(
+    end,
+    `end anchor ${JSON.stringify(to)} no longer follows ${JSON.stringify(from)}`,
+  ).toBeGreaterThan(start)
   return source.slice(start, end)
 }
 
 export function sliceFrom(source: string, from: string): string {
   const start = source.indexOf(from)
-  expect(start, `anchor ${JSON.stringify(from)} is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
+  expect(
+    start,
+    `anchor ${JSON.stringify(from)} is gone - re-scope the guard, do not delete it`,
+  ).toBeGreaterThan(-1)
   return source.slice(start)
 }
 
@@ -26,7 +35,10 @@ export function sliceFrom(source: string, from: string): string {
 export function expectInSourceOrder(source: string, anchors: readonly string[]): void {
   let previous = -1
   for (const anchor of anchors) {
-    expect(source.split(anchor).length - 1, `${JSON.stringify(anchor)} must occur exactly once`).toBe(1)
+    expect(
+      source.split(anchor).length - 1,
+      `${JSON.stringify(anchor)} must occur exactly once`,
+    ).toBe(1)
     const at = source.indexOf(anchor)
     expect(at, `${JSON.stringify(anchor)} is out of order`).toBeGreaterThan(previous)
     previous = at
@@ -60,7 +72,12 @@ export function layoutEffectBodies(source: string): LayoutEffectSource[] {
     }
     if (close === -1) break
     const after = source.slice(close + 1)
-    const deps = /^\s*\)/.test(after) ? null : after.slice(0, after.indexOf(")")).replace(/^\s*,\s*/, "").trim()
+    const deps = /^\s*\)/.test(after)
+      ? null
+      : after
+          .slice(0, after.indexOf(")"))
+          .replace(/^\s*,\s*/, "")
+          .trim()
     effects.push({ body: source.slice(open + 1, close), deps })
     from = source.indexOf(LAYOUT_EFFECT_OPEN, close)
   }
@@ -75,7 +92,10 @@ export function expectWrittenInLayoutEffect(source: string, assignment: string):
   expect(source.split(assignment).length - 1, `${assignment} must be written exactly once`).toBe(1)
   const effect = layoutEffectBodies(source).find((candidate) => candidate.body.includes(assignment))
   expect(effect, `${assignment} is not inside a useLayoutEffect body`).toBeDefined()
-  expect(effect?.deps ?? null, `the layout effect writing ${assignment} must run after every commit`).toBeNull()
+  expect(
+    effect?.deps ?? null,
+    `the layout effect writing ${assignment} must run after every commit`,
+  ).toBeNull()
 }
 
 const THEME_TOUCH_TARGET_IMPORT =
@@ -86,8 +106,12 @@ const THEME_TOUCH_TARGET_IMPORT =
  * guard can do its slop arithmetic with the value the source actually renders.
  */
 export function expectThemeTouchTarget(source: string): number {
-  expect(source, "MIN_TOUCH_TARGET must be imported from the theme").toMatch(THEME_TOUCH_TARGET_IMPORT)
-  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(/const MIN_TOUCH_TARGET =/)
+  expect(source, "MIN_TOUCH_TARGET must be imported from the theme").toMatch(
+    THEME_TOUCH_TARGET_IMPORT,
+  )
+  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(
+    /const MIN_TOUCH_TARGET =/,
+  )
   expect(MIN_TOUCH_TARGET).toBe(44)
   return MIN_TOUCH_TARGET
 }
@@ -101,8 +125,12 @@ const THEME_HIT_SLOP_IMPORT =
  */
 export function expectThemeHitSlop(source: string): (size: number) => number {
   expect(source, "hitSlopToTarget must be imported from the theme").toMatch(THEME_HIT_SLOP_IMPORT)
-  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(/const MIN_TOUCH_TARGET =/)
-  expect(source, "a re-typed slop formula bypasses the helper").not.toMatch(/\(MIN_TOUCH_TARGET - [A-Z_]+\) \/ 2/)
+  expect(source, "a local MIN_TOUCH_TARGET copy shadows the theme floor").not.toMatch(
+    /const MIN_TOUCH_TARGET =/,
+  )
+  expect(source, "a re-typed slop formula bypasses the helper").not.toMatch(
+    /\(MIN_TOUCH_TARGET - [A-Z_]+\) \/ 2/,
+  )
   return hitSlopToTarget
 }
 
@@ -131,7 +159,10 @@ const SRC = new URL("../", import.meta.url)
 const SPLIT_SURFACES = {
   personDetail: { entry: "bodies/PersonDetailBody.tsx", parts: "bodies/personDetail/" },
   search: { entry: "bodies/SearchBody.tsx", parts: "bodies/search/" },
-  certificateCard: { entry: "bodies/profile/ServiceHoursCertificateCard.tsx", parts: "bodies/profile/certificate/" },
+  certificateCard: {
+    entry: "bodies/profile/ServiceHoursCertificateCard.tsx",
+    parts: "bodies/profile/certificate/",
+  },
   eventAnalytics: { entry: "bodies/host/EventAnalyticsBody.tsx", parts: "bodies/host/analytics/" },
   postComposer: { entry: "bodies/PostComposer.tsx", parts: "bodies/postComposer/" },
 } as const

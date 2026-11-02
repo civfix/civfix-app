@@ -13,7 +13,7 @@ export interface ChipProps<K extends ChipKind> {
   kind: K
   value: ChipValue<K>
   size?: ChipSize
-  reason?: string
+  reason?: string | undefined
   className?: string
 }
 

@@ -1,8 +1,13 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import { effectiveClientId, type OutboxEntry } from "../../helpers"
-import { type ChatMessageDTO, type RoomKind } from "@civfix/contract"
-import { foldInboundBatch, foldInboundIntoPages, prunableFrameIds, type InboundFrame } from "../inbound"
+import type { ChatMessageDTO, RoomKind } from "@civfix/contract"
+import {
+  foldInboundBatch,
+  foldInboundIntoPages,
+  prunableFrameIds,
+  type InboundFrame,
+} from "../inbound"
 import { queryKeys } from "../keys"
 import { linkLocalChatAttachments } from "../localChatAttachments"
 import type { ChatHistoryData } from "./chatRoom"
@@ -77,7 +82,7 @@ export function useChatInbound({
         settleSend(cid)
       }
       inboundBuffer.current.push({ message, explicitClientId, viewerTruth })
-      if (flushTimer.current === null) flushTimer.current = setTimeout(flushInbound, INBOUND_FLUSH_MS)
+      flushTimer.current ??= setTimeout(flushInbound, INBOUND_FLUSH_MS)
     },
     [settleSend, flushInbound],
   )

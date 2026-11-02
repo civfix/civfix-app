@@ -12,7 +12,10 @@ const { entryFromPath, pathForEntry } = await loadNavRoutes<{
   entryFromPath: (path: string) => RouteEntry | null
   pathForEntry: (entry: RouteEntry) => string
 }>()
-const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
+const adapter = readFileSync(
+  new URL("../src/components/MobileNavAdapter.tsx", import.meta.url),
+  "utf8",
+)
 
 test("a /post/<id> notification or chat link opens the in-shell post page, not the bridged thread route", () => {
   assert.equal(isInternalLink("/post/p1"), true)

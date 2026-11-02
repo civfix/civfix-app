@@ -1,11 +1,17 @@
-import React, { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { View } from "react-native"
 import type { HostedEventDTO } from "@civfix/contract"
 import { nextEventBoundaryMs } from "@civfix/contract/host"
 import { makeThemedStyles } from "../../theme"
 import { iconMap } from "../../typography"
 import { SignInPrompt } from "../../primitives"
-import { NOW_TICK_MS, useAuthState, useEventBoundaryRefresh, useNow, useRequireAuth } from "../../data"
+import {
+  NOW_TICK_MS,
+  useAuthState,
+  useEventBoundaryRefresh,
+  useNow,
+  useRequireAuth,
+} from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
 import { hostedEventRows, useEventInsights, useMyHostedEvents } from "../../data/hooks/host"
 import { useCleanup } from "../../data/hooks/cleanups"
@@ -68,8 +74,7 @@ export function EventDashboardBody() {
 
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
   const pastEvents = useMemo(() => hostedEventRows(past.data?.pages), [past.data])
-  const boundaryAt = soonestBoundary(upcomingEvents, Date.now())
-  const nowMs = useNow(NOW_TICK_MS, { boundaryAt })
+  const nowMs = useNow(NOW_TICK_MS, { boundaryAt: (at) => soonestBoundary(upcomingEvents, at) })
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)

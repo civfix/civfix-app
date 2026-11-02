@@ -48,7 +48,14 @@ export function ReadyStage({ active, reduceMotion }: StageProps) {
     return {
       opacity: segment(progress.value, W_CROSSFADE[0], W_CROSSFADE[1]),
       transform: [
-        { scale: interpolate(s, [0, 0.55, 1], [POP.from, POP.overshoot, POP.to], Extrapolation.CLAMP) },
+        {
+          scale: interpolate(
+            s,
+            [0, 0.55, 1],
+            [POP.from, POP.overshoot, POP.to],
+            Extrapolation.CLAMP,
+          ),
+        },
       ],
     }
   })

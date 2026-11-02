@@ -115,7 +115,7 @@ export function useJurisdictionLeaderboard(
   return useInfiniteQuery<LeaderboardResponse>({
     queryKey: queryKeys.volunteerLeaderboard(geoid ?? "unknown", limit),
     enabled: !!geoid,
-    initialPageParam: 0 as number,
+    initialPageParam: 0,
     queryFn: ({ pageParam }) =>
       api.getJurisdictionLeaderboard({
         geoid: geoid as string,

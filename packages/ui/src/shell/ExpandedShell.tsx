@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Animated,
   PanResponder,
@@ -10,10 +10,27 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps } from "../theme"
+import {
+  domProps,
+  motion,
+  wash,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webCursorColResize,
+  focusRingProps,
+  webStyle,
+  pointerEventStyles,
+} from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
-import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
+import {
+  useNavStore,
+  titleForEntry,
+  titleParamsForEntry,
+  type DetailEntry,
+  type View as NavView,
+} from "../nav"
 import { AppPromoCard } from "../promo"
 import { defaultRenderBody } from "./BodyRouter"
 import { Rail } from "./Rail"
@@ -21,12 +38,17 @@ import { BodyTransition, type BodyTransitionDirection } from "./BodyTransition"
 import { useStackDirection } from "./useStackDirection"
 import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
-import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
+import {
+  DETAIL_BACK_SIZE,
+  DETAIL_BACK_RADIUS,
+  DETAIL_BACK_ICON_SIZE,
+  detailTitleStyle,
+} from "./detailHeader"
 import { showBackAffordance } from "./backAffordance"
 import { hasDetailHeader } from "./SheetHeader.shared"
 import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrailingAction"
-import { DetailTrailingButton } from "./DetailTrailingButton"
-import { expandedFramePlan, NAV_FOOTPRINT, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
+import { DetailTrailingButtons } from "./DetailTrailingButton"
+import { expandedFramePlan, expandedTopOffsets, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
 import { cssTransition } from "./motionCss"
 import { surfaceKey } from "./bodyLayout"
 import { clearOcclusionLeft, writeOcclusionLeft } from "./occlusionVar"
@@ -38,6 +60,7 @@ import {
   SIDEBAR_MIN_WIDTH,
   SIDEBAR_MAX_WIDTH,
 } from "./sidebarStore"
+import { useSystemNoticeStore } from "./systemNoticeStore"
 import type { AppShellProps } from "./types"
 
 type RenderBody = NonNullable<AppShellProps["renderBody"]>
@@ -59,7 +82,7 @@ function cardVisibilityStyle(visible: boolean, reduceMotion: boolean): ViewStyle
     opacity: visible ? 1 : 0,
     transform: [{ translateX: shift }],
     ...(isWeb
-      ? ({ transition: visible ? CARD_SHOW_TRANSITION : CARD_HIDE_TRANSITION } as unknown as ViewStyle)
+      ? webStyle({ transition: visible ? CARD_SHOW_TRANSITION : CARD_HIDE_TRANSITION })
       : null),
   }
 }
@@ -68,7 +91,7 @@ function handleVisibilityStyle(visible: boolean): ViewStyle {
   return {
     opacity: visible ? 1 : 0,
     ...(isWeb
-      ? ({ transition: visible ? HANDLE_SHOW_TRANSITION : HANDLE_HIDE_TRANSITION } as unknown as ViewStyle)
+      ? webStyle({ transition: visible ? HANDLE_SHOW_TRANSITION : HANDLE_HIDE_TRANSITION })
       : null),
   }
 }
@@ -77,7 +100,7 @@ const PANEL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export interface ExpandedShellProps {
   renderBody?: RenderBody
-  stack?: readonly DetailEntry[]
+  stack?: readonly DetailEntry[] | undefined
 }
 
 export function ExpandedShell({
@@ -95,6 +118,10 @@ export function ExpandedShell({
   const view = useNavStore((s) => s.view)
   const storedWidth = useSidebarStore((s) => s.width)
   const setWidth = useSidebarStore((s) => s.setWidth)
+  // The web's system notice is fixed above the whole app; in this layout it is the only top bar (the
+  // download banner is portrait-only). Native never publishes a height, so tablets keep today's offsets.
+  const noticeHeight = useSystemNoticeStore((s) => s.height)
+  const { cardTop } = expandedTopOffsets(noticeHeight)
 
   useShellKeys()
 
@@ -205,17 +232,17 @@ export function ExpandedShell({
 
   return (
     <>
-      <Rail />
+      <Rail topInset={noticeHeight} />
 
       <Animated.View
-        pointerEvents={cardVisible ? "auto" : "none"}
         accessibilityElementsHidden={!cardVisible}
         importantForAccessibility={cardVisible ? "auto" : "no-hide-descendants"}
         style={[
           styles.card,
           th.shadows.s4,
-          { width: animatedWidth },
+          { top: cardTop, width: animatedWidth },
           cardVisibilityStyle(cardVisible, reduceMotion),
+          pointerEventStyles[cardVisible ? "auto" : "none"],
         ]}
       >
         <ScrollHostProvider value={PANEL_SCROLL_HOST}>
@@ -225,7 +252,7 @@ export function ExpandedShell({
                 <PanelHeader
                   title={title}
                   showBack={showBackAffordance({ stack: held.stack, mode: "expanded" })}
-                  trailingAction={detailTrailingActionFor(held.active)}
+                  trailingActions={detailTrailingActionFor(held.active)}
                 />
               ) : null}
               <Body entry={held.active} view={held.view} renderBody={renderBody} />
@@ -238,7 +265,6 @@ export function ExpandedShell({
 
       <Animated.View
         {...resizeResponder.panHandlers}
-        pointerEvents={cardVisible ? "auto" : "none"}
         accessibilityRole="adjustable"
         accessibilityLabel={t("a11y.resize_sidebar")}
         accessibilityValue={{ min: resizeMin, max: resizeMax, now: resizeNow }}
@@ -262,11 +288,12 @@ export function ExpandedShell({
         {...focusRingProps}
         style={[
           styles.resizeHandle,
-          { transform: [{ translateX: animatedWidth }] },
+          { top: cardTop, transform: [{ translateX: animatedWidth }] },
           handleVisibilityStyle(cardVisible),
+          pointerEventStyles[cardVisible ? "auto" : "none"],
         ]}
       >
-        <View style={styles.resizeGrip} pointerEvents="none" />
+        <View style={[styles.resizeGrip, pointerEventStyles.none]} />
       </Animated.View>
     </>
   )
@@ -275,11 +302,11 @@ export function ExpandedShell({
 function PanelHeader({
   title,
   showBack,
-  trailingAction,
+  trailingActions,
 }: {
   title: string
   showBack: boolean
-  trailingAction: DetailTrailingAction | null
+  trailingActions: readonly DetailTrailingAction[]
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -302,11 +329,11 @@ function PanelHeader({
         style={styles.title}
         numberOfLines={1}
         accessibilityRole="header"
-        {...({ "data-civfix-panel-heading": "", tabIndex: -1 } as any)}
+        {...domProps({ "data-civfix-panel-heading": "", tabIndex: -1 })}
       >
         {title}
       </Text>
-      <DetailTrailingButton action={trailingAction} />
+      <DetailTrailingButtons actions={trailingActions} />
     </View>
   )
 }
@@ -328,7 +355,6 @@ function Body({
 const useStyles = makeThemedStyles((t) => ({
   card: {
     position: "absolute",
-    top: NAV_FOOTPRINT,
     left: NAV_LEFT,
     bottom: NAV_TOP,
     borderRadius: 24,
@@ -367,7 +393,6 @@ const useStyles = makeThemedStyles((t) => ({
 
   resizeHandle: {
     position: "absolute",
-    top: NAV_FOOTPRINT,
     bottom: NAV_TOP,
     left: NAV_LEFT - RESIZE_HANDLE_W / 2,
     width: RESIZE_HANDLE_W,
@@ -375,7 +400,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     ...webCursorColResize,
-    ...({ touchAction: "none", userSelect: "none" } as unknown as ViewStyle),
+    ...webStyle({ touchAction: "none", userSelect: "none" }),
   },
   resizeGrip: {
     width: 6,

@@ -14,7 +14,7 @@ const ulps = new BigInt64Array(bits.buffer)
 function stepUlps(x: number, n: number): number {
   bits[0] = x
   ulps[0] = (ulps[0] as bigint) + BigInt(n)
-  return bits[0] as number
+  return bits[0]
 }
 
 /**
@@ -31,5 +31,14 @@ export function exactlyNorthOf(center: LatLng, meters: number): LatLng {
 }
 
 export function pinAt(id: string, at: LatLng, status: ReportStatus = "published"): ReportPinDTO {
-  return { id, category: "trash", status, lat: at.lat, lng: at.lng, title: `Report ${id}`, confirmCount: 0, fixedCount: 0 }
+  return {
+    id,
+    category: "trash",
+    status,
+    lat: at.lat,
+    lng: at.lng,
+    title: `Report ${id}`,
+    confirmCount: 0,
+    fixedCount: 0,
+  }
 }

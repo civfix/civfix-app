@@ -2,6 +2,7 @@
  * A locale chunk that fails (offline, or a deploy replaced the hashed file) must leave the page in English
  * without throwing, and choosing the language again must refetch it.
  */
+import React from "react"
 import { describe, expect, it, vi } from "vitest"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { I18nProvider, useLocale, useT } from "@civfix/ui/i18n"
@@ -25,12 +26,14 @@ vi.mock("../../../../packages/ui/src/i18n/catalogs/lazy", async () => {
   }
 })
 
-let chooseLocale: (code: "de") => void = () => {}
+const chooseLocaleRef: { current: (code: "de") => void } = { current: () => {} }
 
 function Probe() {
   const { t } = useT("common")
   const { locale, setLocale } = useLocale()
-  chooseLocale = setLocale
+  React.useEffect(() => {
+    chooseLocaleRef.current = setLocale
+  })
   return <p data-testid="probe">{`${locale}:${t("save")}`}</p>
 }
 
@@ -46,7 +49,7 @@ describe("a German chunk that fails to load", () => {
     await act(async () => {})
     expect(screen.getByTestId("probe").textContent).toBe("en:Save")
 
-    act(() => chooseLocale("de"))
+    act(() => chooseLocaleRef.current("de"))
     expect(setLocale).toHaveBeenCalledWith("de")
     await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("de:Speichern"))
     expect(germanAttempts.count).toBe(2)

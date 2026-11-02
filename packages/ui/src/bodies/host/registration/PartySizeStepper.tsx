@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import { clampPartySize } from "@civfix/contract/host"
 import {
@@ -20,7 +19,12 @@ export interface PartySizeStepperProps {
   disabled?: boolean
 }
 
-export function PartySizeStepper({ value, max, onChange, disabled = false }: PartySizeStepperProps) {
+export function PartySizeStepper({
+  value,
+  max,
+  onChange,
+  disabled = false,
+}: PartySizeStepperProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-ticket")

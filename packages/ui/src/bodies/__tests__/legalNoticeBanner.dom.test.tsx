@@ -2,7 +2,12 @@ import * as React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import { AppError, ErrorCode, type LegalDocumentMetaDTO, type MyLegalStatusResponse } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  type LegalDocumentMetaDTO,
+  type MyLegalStatusResponse,
+} from "@civfix/contract"
 import { LegalNoticeBanner } from "../LegalNoticeBanner"
 import {
   COOKIES,
@@ -27,7 +32,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -68,7 +78,9 @@ describe("LegalNoticeBanner", () => {
 
   it("T20: names the document and shows its summary, with Read and Got it", async () => {
     showBanner(status({ notices: [COOKIES] }))
-    expect(await screen.findByText("We've updated our Cookies notice. Adds two providers")).toBeTruthy()
+    expect(
+      await screen.findByText("We've updated our Cookies notice. Adds two providers"),
+    ).toBeTruthy()
     expect(screen.getByRole("button", { name: "Read" })).toBeTruthy()
     expect(screen.getByRole("button", { name: "Got it" })).toBeTruthy()
   })
@@ -90,7 +102,14 @@ describe("LegalNoticeBanner", () => {
     await waitFor(() => expect(screen.queryByText(/Cookies notice/)).toBeNull())
     expect(api.acceptLegal).toHaveBeenCalledTimes(1)
     expect(api.acceptLegal.mock.calls[0]?.[0]).toStrictEqual({
-      items: [{ type: "cookies", version: COOKIES.version, sha256: COOKIES.sha256, action: "acknowledged" }],
+      items: [
+        {
+          type: "cookies",
+          version: COOKIES.version,
+          sha256: COOKIES.sha256,
+          action: "acknowledged",
+        },
+      ],
       surface: "notice",
     })
     await settle()
@@ -99,7 +118,9 @@ describe("LegalNoticeBanner", () => {
 
   it("T22: shows one notice at a time, in order", async () => {
     const { api, setStatus } = showBanner(status({ notices: [COOKIES, SUBPROCESSORS] }))
-    expect(await screen.findByText("We've updated our Cookies notice. Adds two providers")).toBeTruthy()
+    expect(
+      await screen.findByText("We've updated our Cookies notice. Adds two providers"),
+    ).toBeTruthy()
     expect(screen.getAllByRole("button", { name: "Got it" })).toHaveLength(1)
     expect(screen.queryByText(/Subprocessors list/)).toBeNull()
 
@@ -109,7 +130,9 @@ describe("LegalNoticeBanner", () => {
       return next
     })
     fireEvent.click(gotIt())
-    expect(await screen.findByText("We've updated our Subprocessors list. Adds a mail provider")).toBeTruthy()
+    expect(
+      await screen.findByText("We've updated our Subprocessors list. Adds a mail provider"),
+    ).toBeTruthy()
     expect(screen.getAllByRole("button", { name: "Got it" })).toHaveLength(1)
     expect(screen.queryByText(/Cookies notice/)).toBeNull()
   })
@@ -129,13 +152,20 @@ describe("LegalNoticeBanner", () => {
     api.acceptLegal.mockRejectedValueOnce(new TypeError("Failed to fetch"))
     await screen.findByText(/Cookies notice/)
     fireEvent.click(gotIt())
-    expect((await screen.findByRole("alert")).textContent).toBe("Something went wrong. Please try again.")
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Something went wrong. Please try again.",
+    )
     expect(screen.getByText("We've updated our Cookies notice. Adds two providers")).toBeTruthy()
     await waitFor(() => expect(gotIt().getAttribute("aria-disabled")).not.toBe("true"))
   })
 
   it("an outdated notice refetches the status and the next Got it acknowledges the new version", async () => {
-    const NEXT = { ...COOKIES, version: "2026-11-02", sha256: "d".repeat(64), summary: "Second change" }
+    const NEXT = {
+      ...COOKIES,
+      version: "2026-11-02",
+      sha256: "d".repeat(64),
+      summary: "Second change",
+    }
     const { api, setStatus } = showBanner(status({ notices: [COOKIES] }))
     api.acceptLegal.mockImplementationOnce(async () => {
       setStatus(status({ notices: [NEXT] }))
@@ -155,7 +185,9 @@ describe("LegalNoticeBanner", () => {
     fireEvent.click(gotIt())
     await waitFor(() => expect(api.acceptLegal).toHaveBeenCalledTimes(2))
     expect(api.acceptLegal.mock.calls[1]?.[0]).toStrictEqual({
-      items: [{ type: "cookies", version: NEXT.version, sha256: NEXT.sha256, action: "acknowledged" }],
+      items: [
+        { type: "cookies", version: NEXT.version, sha256: NEXT.sha256, action: "acknowledged" },
+      ],
       surface: "notice",
     })
   })

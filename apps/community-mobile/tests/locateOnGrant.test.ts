@@ -48,8 +48,11 @@ test("a rejected permission probe never counts as a prompted grant", () => {
 })
 
 test("the first-fix wait is the same fix read under the longer cap", () => {
-  assert.match(hook, /const readFix = useCallback\(async \(timeoutMs: number = GPS_TIMEOUT_MS\)/)
-  assert.match(hook, /const awaitFirstFix = useCallback\(\(\) => readFix\(FIRST_FIX_TIMEOUT_MS\), \[readFix\]\)/)
+  assert.match(hook, /const readFix = useCallback\(\s*async \(timeoutMs: number = GPS_TIMEOUT_MS\)/)
+  assert.match(
+    hook,
+    /const awaitFirstFix = useCallback\(\(\) => readFix\(FIRST_FIX_TIMEOUT_MS\), \[readFix\]\)/,
+  )
 })
 
 test("the silent launch check never raises the OS dialog", () => {
@@ -105,5 +108,8 @@ test("the one-time launch move yields to an active Show on map target and to a g
   assert.ok(owned > -1)
   assert.ok(yieldToTarget > owned)
   assert.ok(flight > yieldToTarget)
-  assert.ok(home.indexOf("const initialCenterOwnedRef = useRef(") < home.indexOf("const onUserCameraMove = useCallback("))
+  assert.ok(
+    home.indexOf("const initialCenterOwnedRef = useRef(") <
+      home.indexOf("const onUserCameraMove = useCallback("),
+  )
 })

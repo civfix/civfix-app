@@ -6,7 +6,14 @@
  * The context's `locale` is the APPLIED one: while a requested locale's catalog is still loading (web),
  * strings stay in the current language, so dates, numbers and `lang` must stay in it too.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react"
 import { I18nextProvider } from "react-i18next"
 import type { SupportedLocale } from "@civfix/contract"
 import { loadCatalog } from "./bundledCatalogs"

@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { ReportCategory } from "@civfix/contract"
 import { useT } from "../i18n"

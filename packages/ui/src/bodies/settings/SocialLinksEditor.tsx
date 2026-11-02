@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { SocialLinksSchema, SOCIAL_PLATFORMS, SOCIAL_PLATFORM_LABELS } from "@civfix/contract"
 import type { SocialLinks, SocialPlatform } from "@civfix/contract"

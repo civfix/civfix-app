@@ -8,15 +8,21 @@ const body = code(surfaceSource("eventAnalytics"))
 describe("the analytics event picker", () => {
   it("offers the next page of hosted events instead of stopping at the first", () => {
     expect(body).toContain("const moreEvents = upcoming.hasNextPage || past.hasNextPage")
-    expect(body).toContain("if (upcoming.hasNextPage && !upcoming.isFetchingNextPage) void upcoming.fetchNextPage()")
-    expect(body).toContain("if (past.hasNextPage && !past.isFetchingNextPage) void past.fetchNextPage()")
+    expect(body).toContain(
+      "if (upcoming.hasNextPage && !upcoming.isFetchingNextPage) void upcoming.fetchNextPage()",
+    )
+    expect(body).toContain(
+      "if (past.hasNextPage && !past.isFetchingNextPage) void past.fetchNextPage()",
+    )
     expect(body).toContain('key: "more",')
     expect(body).toContain("disabled: loadingMoreEvents,")
   })
 
   it("follows the route when the shell reuses the body for another event", () => {
     expect(body).toContain("if (id !== routeId) {")
-    expect(body).toMatch(/setRouteId\(id\)\n\s+setPicked\(id === "" \? null : id\)\n\s+setPickedLabel\(null\)\n\s+setPreset\(null\)/)
+    expect(body).toMatch(
+      /setRouteId\(id\)\n\s+setPicked\(id === "" \? null : id\)\n\s+setPickedLabel\(null\)\n\s+setPreset\(null\)/,
+    )
   })
 })
 

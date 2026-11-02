@@ -17,12 +17,12 @@ export interface DateTimeFieldRowProps {
   value: string
   accessibilityLabel: string
   label?: string | undefined
-  placeholder?: boolean
+  placeholder?: boolean | undefined
   valueSlot?: React.ReactNode
   trailing?: React.ReactNode
-  suffix?: string | null
-  error?: string | null
-  spaced?: boolean
+  suffix?: string | null | undefined
+  error?: string | null | undefined
+  spaced?: boolean | undefined
   onPress?: (() => void) | undefined
 }
 

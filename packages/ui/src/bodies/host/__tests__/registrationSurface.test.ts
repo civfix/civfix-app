@@ -30,13 +30,15 @@ const mine = (over: Partial<MyEventRegistrationRef> = {}): MyEventRegistrationRe
   ...over,
 })
 
-const surface = (over: {
-  status?: CleanupDTO["status"]
-  ended?: boolean
-  ticketTypes?: TicketTypeDTO[]
-  registrationState?: CleanupDTO["registrationState"]
-  myRegistration?: CleanupDTO["myRegistration"]
-} = {}) =>
+const surface = (
+  over: {
+    status?: CleanupDTO["status"]
+    ended?: boolean
+    ticketTypes?: TicketTypeDTO[]
+    registrationState?: CleanupDTO["registrationState"]
+    myRegistration?: CleanupDTO["myRegistration"]
+  } = {},
+) =>
   registrationSurface({
     status: over.status ?? "upcoming",
     ended: over.ended ?? false,
@@ -86,7 +88,9 @@ describe("registrationSurface", () => {
   it("ranks the window states ABOVE a cancelled registration - it holds no seat", () => {
     const cancelled = mine({ status: "cancelled" })
     expect(surface({ registrationState: "closed", myRegistration: cancelled })).toBe("closed")
-    expect(surface({ registrationState: "not_yet_open", myRegistration: cancelled })).toBe("not_yet_open")
+    expect(surface({ registrationState: "not_yet_open", myRegistration: cancelled })).toBe(
+      "not_yet_open",
+    )
     expect(surface({ registrationState: "waitlist", myRegistration: cancelled })).toBe("waitlist")
     expect(surface({ registrationState: "full", myRegistration: cancelled })).toBe("closed")
   })

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, screen, within } from "@testing-library/react"
+import { BackHandler } from "react-native"
 import type * as ReactNative from "react-native"
 import { AppError, ErrorCode } from "@civfix/contract"
 import { setLegalDocumentPresenter } from "../../primitives/legalDocument"
@@ -16,7 +17,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -29,7 +35,10 @@ vi.mock("react-native-safe-area-context", async () => {
 // in-app legal navigation (the presenter that opens the app's own legal screen).
 vi.mock("../reportFlow/useHardwareBack", () => import("../reportFlow/useHardwareBack.native"))
 vi.mock("../legalGateLayer", () => import("../legalGateLayer.native"))
-vi.mock("../../primitives/legalDocumentNav", () => import("../../primitives/legalDocumentNav.native"))
+vi.mock(
+  "../../primitives/legalDocumentNav",
+  () => import("../../primitives/legalDocumentNav.native"),
+)
 
 const present = vi.fn((_type: string) => true)
 const open = vi.fn(async (_url: string) => {})
@@ -41,6 +50,7 @@ beforeEach(() => {
   present.mockClear()
   open.mockClear()
   setLegalDocumentPresenter(present)
+  vi.spyOn(BackHandler, "addEventListener").mockReturnValue({ remove: vi.fn() })
 })
 
 afterEach(() => {
@@ -51,7 +61,9 @@ afterEach(() => {
 describe("LegalUpdateGate on the phone: reading inside the screen", () => {
   it("T15: the unavailable owed version and its current-version link stay inside the gate", async () => {
     const legal = legalApi(status({ required: [TERMS] }))
-    legal.api.getLegalDocument.mockRejectedValue(new AppError(ErrorCode.NOT_FOUND, "no such version"))
+    legal.api.getLegalDocument.mockRejectedValue(
+      new AppError(ErrorCode.NOT_FOUND, "no such version"),
+    )
     mountLegal(<LegalUpdateGate />, { api: legal.api, open })
     await screen.findByRole("dialog")
     fireEvent.click(screen.getByText("Read the Terms"))
@@ -60,7 +72,9 @@ describe("LegalUpdateGate on the phone: reading inside the screen", () => {
     expect(await within(dialog).findByText(UNAVAILABLE)).toBeTruthy()
     fireEvent.click(within(dialog).getByRole("link", { name: CURRENT_LINK }))
 
-    expect(await within(screen.getByRole("dialog")).findByText("1. About the Terms of Service")).toBeTruthy()
+    expect(
+      await within(screen.getByRole("dialog")).findByText("1. About the Terms of Service"),
+    ).toBeTruthy()
     expect(screen.getByRole("dialog").getAttribute("aria-modal")).toBe("true")
     expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Back" })).toBeTruthy()
     expect(present).not.toHaveBeenCalled()

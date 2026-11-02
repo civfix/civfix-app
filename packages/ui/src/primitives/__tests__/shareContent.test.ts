@@ -5,7 +5,9 @@ const url = "https://civfix.dev/post/abc"
 
 describe("nativeShareContent", () => {
   it("hands iOS the message and the url as separate items, never doubling the link", () => {
-    expect(nativeShareContent("ios", { title: "Post", message: "Check out this post on civfix!", url })).toEqual({
+    expect(
+      nativeShareContent("ios", { title: "Post", message: "Check out this post on civfix!", url }),
+    ).toEqual({
       title: "Post",
       message: "Check out this post on civfix!",
       url,
@@ -13,7 +15,13 @@ describe("nativeShareContent", () => {
   })
 
   it("folds the url into the message on Android, which ignores the url field", () => {
-    expect(nativeShareContent("android", { title: "Post", message: "Check out this post on civfix!", url })).toEqual({
+    expect(
+      nativeShareContent("android", {
+        title: "Post",
+        message: "Check out this post on civfix!",
+        url,
+      }),
+    ).toEqual({
       title: "Post",
       message: `Check out this post on civfix!\n${url}`,
       url,

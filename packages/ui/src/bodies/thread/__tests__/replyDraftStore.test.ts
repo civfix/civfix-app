@@ -5,11 +5,7 @@
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import type { PostComposerMedia } from "../../postComposerStore"
-import {
-  EMPTY_REPLY_DRAFT,
-  MAX_REPLY_DRAFTS,
-  useReplyDraftStore,
-} from "../replyDraftStore"
+import { EMPTY_REPLY_DRAFT, MAX_REPLY_DRAFTS, useReplyDraftStore } from "../replyDraftStore"
 
 const media = (uri: string, status: PostComposerMedia["status"]): PostComposerMedia => ({
   uri,
@@ -52,18 +48,22 @@ describe("replyDraftStore", () => {
   })
 
   it("filters media that has not finished uploading at WRITE time", () => {
-    useReplyDraftStore.getState().setMedia("post-1", [
-      media("a", "ready"),
-      media("b", "uploading"),
-      media("c", "pending"),
-      media("d", "failed"),
-      media("e", "ready"),
-    ])
+    useReplyDraftStore
+      .getState()
+      .setMedia("post-1", [
+        media("a", "ready"),
+        media("b", "uploading"),
+        media("c", "pending"),
+        media("d", "failed"),
+        media("e", "ready"),
+      ])
 
     const stored = useReplyDraftStore.getState().get("post-1").media
     expect(stored.map((item) => item.uri)).toEqual(["a", "e"])
     // ...so the "spinner over a permanently disabled Reply button" state is unrepresentable.
-    expect(stored.some((item) => item.status === "pending" || item.status === "uploading")).toBe(false)
+    expect(stored.some((item) => item.status === "pending" || item.status === "uploading")).toBe(
+      false,
+    )
     expect(stored.map((item) => item.uploadId)).toEqual(["upload-a", "upload-e"])
   })
 

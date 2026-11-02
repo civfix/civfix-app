@@ -115,14 +115,18 @@ export function planHostDraftMount(
   }
   // Resumed. The link is guarded by "already linked?" - re-entering through a report the host already added
   // must not UNLINK it (the store's toggle is symmetric).
-  const merges = seedReportId != null && shouldMergeSeedIntoDraft(true, draftSeedReportId, seedReportId)
+  const merges =
+    seedReportId != null && shouldMergeSeedIntoDraft(true, draftSeedReportId, seedReportId)
   const linkReportId =
-    merges && seedReportId != null && !live.linkedReportIds.includes(seedReportId) ? seedReportId : undefined
+    merges && seedReportId != null && !live.linkedReportIds.includes(seedReportId)
+      ? seedReportId
+      : undefined
   // `begin()` NO-OPS while a draft is already active, so a seed coordinate would be silently discarded for a
   // host who already had one in progress. The pressed point moves the RESUMED draft instead - every typed
   // field (title/description/bring/slots/links) stays. Same point = no move, so nothing churns.
   const movePointTo =
-    seedPoint && !(live.coords && live.coords.lat === seedPoint.lat && live.coords.lng === seedPoint.lng)
+    seedPoint &&
+    !(live.coords && live.coords.lat === seedPoint.lat && live.coords.lng === seedPoint.lng)
       ? seedPoint
       : undefined
   let value = live

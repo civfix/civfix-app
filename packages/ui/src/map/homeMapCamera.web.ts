@@ -10,7 +10,12 @@ import type { MapProps } from "./types"
 export type OcclusionLeftRef = React.RefObject<MapProps["occlusionLeft"]>
 
 /** On the expanded layout the camera centres a target in the map area the shell chrome leaves visible. */
-export function centerLngFor(lng: number, zoom: number, mode: LayoutMode, occlusionLeftRef: OcclusionLeftRef): number {
+export function centerLngFor(
+  lng: number,
+  zoom: number,
+  mode: LayoutMode,
+  occlusionLeftRef: OcclusionLeftRef,
+): number {
   return mode === "compact" ? lng : occludedCenterLng(lng, occlusionLeftRef.current?.() ?? 0, zoom)
 }
 

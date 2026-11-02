@@ -49,7 +49,10 @@ describe("console chart values", () => {
   it("updates the open tooltip when the data changes under the pointer", () => {
     measure()
     const { container, rerender, getByText, queryByText } = render(chart([3, 7]))
-    fireEvent.mouseMove(container.querySelector("svg") as Element, { clientX: WIDTH - 1, clientY: 50 })
+    fireEvent.mouseMove(container.querySelector("svg") as Element, {
+      clientX: WIDTH - 1,
+      clientY: 50,
+    })
     expect(getByText("7")).toBeTruthy()
 
     rerender(chart([3, 9]))

@@ -35,7 +35,8 @@ export function useWebNavAdapter(): void {
       if (active) {
         requestAnimationFrame(() => {
           const target =
-            lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")
+            lastFocusable("[data-civfix-panel-heading]") ??
+            lastFocusable("[data-civfix-page-layer]")
           if (target instanceof HTMLElement) target.focus({ preventScroll: true })
         })
       }

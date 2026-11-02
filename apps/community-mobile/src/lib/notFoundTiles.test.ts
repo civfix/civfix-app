@@ -54,8 +54,16 @@ test("a touch finds the topmost tile under it, through the tile's tilt", () => {
 
   const tilted: TileBody[] = [{ ...middle, x: 100, y: 100, angle: 45 }]
   const corner = BOX.tile / 2 - 2
-  assert.equal(tileAt(tilted, BOX.tile, 100 + corner, 100 + corner), -1, "an unrotated corner is outside a 45° tile")
-  assert.equal(tileAt(tilted, BOX.tile, 100, 100 + corner * Math.SQRT2 - 2), 0, "its rotated corner is inside")
+  assert.equal(
+    tileAt(tilted, BOX.tile, 100 + corner, 100 + corner),
+    -1,
+    "an unrotated corner is outside a 45° tile",
+  )
+  assert.equal(
+    tileAt(tilted, BOX.tile, 100, 100 + corner * Math.SQRT2 - 2),
+    0,
+    "its rotated corner is inside",
+  )
 })
 
 test("a thrown tile follows the finger, flies, and the row settles again", () => {

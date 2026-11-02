@@ -18,12 +18,17 @@ const KEYS: MessageActionKey[] = [
 ]
 
 function input(overrides: Partial<MessageMenuInput> = {}): MessageMenuInput {
-  const labels = Object.fromEntries(KEYS.map((key) => [key, `label:${key}`])) as Record<MessageActionKey, string>
-  const icons = Object.fromEntries(KEYS.map((key) => [key, { key } as unknown as LucideIcon])) as Record<
+  const labels = Object.fromEntries(KEYS.map((key) => [key, `label:${key}`])) as Record<
     MessageActionKey,
-    LucideIcon
+    string
   >
-  const press = Object.fromEntries(KEYS.map((key) => [key, vi.fn()])) as unknown as Record<MessageActionKey, () => void>
+  const icons = Object.fromEntries(
+    KEYS.map((key) => [key, { key } as unknown as LucideIcon]),
+  ) as Record<MessageActionKey, LucideIcon>
+  const press = Object.fromEntries(KEYS.map((key) => [key, vi.fn()])) as unknown as Record<
+    MessageActionKey,
+    () => void
+  >
   return {
     descriptors: [
       { key: "reply", destructive: false },
@@ -62,10 +67,12 @@ describe("messageMenuModel", () => {
   it("puts Cancel first and the destructive delete confirm second", () => {
     const i = input()
     const { confirmItems } = messageMenuModel(i)
-    expect(confirmItems.map((item) => [item.key, item.label, item.icon, item.destructive])).toEqual([
-      ["cancel", "Cancel", undefined, undefined],
-      ["confirm-delete", "Delete message", "Trash2", true],
-    ])
+    expect(confirmItems.map((item) => [item.key, item.label, item.icon, item.destructive])).toEqual(
+      [
+        ["cancel", "Cancel", undefined, undefined],
+        ["confirm-delete", "Delete message", "Trash2", true],
+      ],
+    )
     confirmItems[1]?.onPress()
     expect(i.confirm.onDelete).toHaveBeenCalledTimes(1)
   })
@@ -73,7 +80,9 @@ describe("messageMenuModel", () => {
   it("confirms a poll stop with a non-destructive Lock row", () => {
     const i = input()
     const { stopConfirmItems } = messageMenuModel(i)
-    expect(stopConfirmItems.map((item) => [item.key, item.label, item.icon, item.destructive])).toEqual([
+    expect(
+      stopConfirmItems.map((item) => [item.key, item.label, item.icon, item.destructive]),
+    ).toEqual([
       ["cancel", "Cancel", undefined, undefined],
       ["confirm-stop", "Stop poll", "Lock", undefined],
     ])

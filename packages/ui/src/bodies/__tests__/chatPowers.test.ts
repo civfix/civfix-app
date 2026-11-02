@@ -74,7 +74,9 @@ describe("canDeleteOthersIn", () => {
   })
 
   it("cleanup: the organizer may delete others' messages", () => {
-    expect(canDeleteOthersIn(signals({ roomKind: "cleanup", canModerateCleanupChat: true }))).toBe(true)
+    expect(canDeleteOthersIn(signals({ roomKind: "cleanup", canModerateCleanupChat: true }))).toBe(
+      true,
+    )
   })
 
   it("cleanup: an ordinary member may not", () => {

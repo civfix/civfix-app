@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
 import {
@@ -66,6 +66,7 @@ export function BringInput({ value, onChange }: BringInputProps) {
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
           returnKeyType="done"
+          submitBehavior="submit"
           blurOnSubmit={false}
           style={[styles.input, webInputReset]}
         />

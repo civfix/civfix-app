@@ -1,6 +1,5 @@
-import React from "react"
 import { View } from "react-native"
-import { type ReportStatus } from "@civfix/contract"
+import type { ReportStatus } from "@civfix/contract"
 import { makeThemedStyles, useTheme, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"

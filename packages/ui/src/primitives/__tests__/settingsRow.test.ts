@@ -34,8 +34,8 @@ describe("SettingsRow", () => {
   })
 
   it("gives every focusable stop the coral ring", () => {
-    expect(row).toContain(
-      'import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, webHover, webTransition, headingLevel } from "../theme"',
+    expect(row).toMatch(
+      /import \{\s*makeThemedStyles,\s*space,\s*useTheme,\s*focusRingProps,\s*webCursor,\s*webHover,\s*webTransition,\s*headingLevel,?\s*\} from "\.\.\/theme"/,
     )
     expect(row.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(1)
     expect(toggleRow.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(1)

@@ -1,6 +1,6 @@
 export interface NativeShareInput {
   title: string
-  message?: string
+  message?: string | undefined
   url: string
 }
 

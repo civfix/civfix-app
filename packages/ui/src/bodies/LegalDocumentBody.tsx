@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { ErrorCode, LegalVersionSchema, toAppError, type LegalDocumentType } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -25,7 +24,8 @@ export function LegalDocumentBody({
   onOpenLegalDocument,
   onOpenCurrentVersion,
 }: LegalDocumentBodyProps) {
-  const requested = version !== undefined && LegalVersionSchema.safeParse(version).success ? version : undefined
+  const requested =
+    version !== undefined && LegalVersionSchema.safeParse(version).success ? version : undefined
   const current = useLegalDocument(type)
   const pinned = useLegalDocument(type, requested)
 
@@ -36,7 +36,8 @@ export function LegalDocumentBody({
   }
 
   const query = requested === undefined ? current : pinned
-  if (query.isPending || (requested !== undefined && current.isPending)) return <LoadingState variant="detail" />
+  if (query.isPending || (requested !== undefined && current.isPending))
+    return <LoadingState variant="detail" />
   if (query.isError) {
     if (requested !== undefined && toAppError(query.error).code === ErrorCode.NOT_FOUND) {
       return <EarlierVersionUnavailable type={type} onOpenCurrent={onOpenCurrentVersion} />

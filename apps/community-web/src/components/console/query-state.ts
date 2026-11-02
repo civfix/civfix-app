@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { ErrorCode, toAppError } from "@civfix/contract"
 
-
 function useIsOffline(): boolean {
   const [offline, setOffline] = useState(false)
 

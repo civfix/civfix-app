@@ -80,10 +80,7 @@ describe("resolveJump", () => {
 })
 
 describe("useJumpToMessage room-change hygiene", () => {
-  const SRC = readFileSync(
-    join(__dirname, "..", "conversation", "useJumpToMessage.ts"),
-    "utf8",
-  )
+  const SRC = readFileSync(join(__dirname, "..", "conversation", "useJumpToMessage.ts"), "utf8")
 
   it("resets the pending jump, loading id and flash when the room changes (no cross-room 'jump failed' toast)", () => {
     expect(SRC).toContain("const activeRoomRef = useRef(roomId)")

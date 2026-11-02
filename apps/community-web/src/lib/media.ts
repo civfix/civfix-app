@@ -1,11 +1,12 @@
 import { toAppError } from "@civfix/contract"
 import type { MediaKind } from "@civfix/contract"
 
-
 export async function sha256Hex(file: Blob): Promise<string> {
   const subtle = globalThis.crypto?.subtle
   if (!subtle) {
-    throw toAppError(new Error("Secure context required to hash the photo (crypto.subtle unavailable)."))
+    throw toAppError(
+      new Error("Secure context required to hash the photo (crypto.subtle unavailable)."),
+    )
   }
   const buffer = await file.arrayBuffer()
   const digest = await subtle.digest("SHA-256", buffer)

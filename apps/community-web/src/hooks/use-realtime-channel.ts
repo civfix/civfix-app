@@ -23,7 +23,11 @@ export function useRealtimeChannel(): void {
 
     const unsubscribe = chatSocket.subscribe((frame) => {
       if (frame.type !== "signal") return
-      for (const queryKey of invalidationKeysForTopic(frame.topic, HOST_SIGNAL_EXTRA_KEYS, frame.id)) {
+      for (const queryKey of invalidationKeysForTopic(
+        frame.topic,
+        HOST_SIGNAL_EXTRA_KEYS,
+        frame.id,
+      )) {
         void queryClient.invalidateQueries({ queryKey })
       }
     })

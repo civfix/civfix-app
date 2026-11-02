@@ -15,10 +15,16 @@ import {
 
 describe("searchSurfaceState", () => {
   it("is results for a typed query, carrying the trimmed query", () => {
-    expect(searchSurfaceState("  Echo Park  ", false)).toEqual({ surface: "results", query: "Echo Park" })
+    expect(searchSurfaceState("  Echo Park  ", false)).toEqual({
+      surface: "results",
+      query: "Echo Park",
+    })
   })
   it("is results even while the bar is pinned: typing wins over focus", () => {
-    expect(searchSurfaceState("Echo Park", true)).toEqual({ surface: "results", query: "Echo Park" })
+    expect(searchSurfaceState("Echo Park", true)).toEqual({
+      surface: "results",
+      query: "Echo Park",
+    })
   })
   it("is recents when the docked bar is pinned with no query", () => {
     expect(searchSurfaceState("   ", true)).toEqual({ surface: "recents", query: "" })

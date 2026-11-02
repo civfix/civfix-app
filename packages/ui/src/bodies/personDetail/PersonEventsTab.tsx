@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable } from "react-native"
 import type { CleanupDTO } from "@civfix/contract"
 import { eventChip } from "@civfix/contract/datetime"

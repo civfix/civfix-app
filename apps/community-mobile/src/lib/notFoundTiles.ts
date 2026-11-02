@@ -69,7 +69,8 @@ export function tileAt(bodies: readonly TileBody[], tile: number, x: number, y: 
   "worklet"
   const half = tile / 2
   for (let i = bodies.length - 1; i >= 0; i--) {
-    const b = bodies[i]!
+    const b = bodies[i]
+    if (b === undefined) continue
     const rad = (-b.angle * Math.PI) / 180
     const dx = x - b.x
     const dy = y - b.y
@@ -155,9 +156,11 @@ export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): boolean
 
   const minDist = box.tile * 0.98
   for (let i = 0; i < bodies.length; i++) {
+    const a = bodies[i]
+    if (a === undefined) continue
     for (let j = i + 1; j < bodies.length; j++) {
-      const a = bodies[i]!
-      const b = bodies[j]!
+      const b = bodies[j]
+      if (b === undefined) continue
       const dx = b.x - a.x
       const dy = b.y - a.y
       const dist = Math.hypot(dx, dy)
@@ -216,8 +219,11 @@ export function stepTiles(bodies: TileBody[], box: TileBox, dt: number): boolean
     }
   }
   for (let i = 0; i < bodies.length && !moving; i++) {
-    const b = bodies[i]!
-    if (Math.hypot(b.x - before[2 * i]!, b.y - before[2 * i + 1]!) >= REST_SHIFT) moving = true
+    const b = bodies[i]
+    const beforeX = before[2 * i]
+    const beforeY = before[2 * i + 1]
+    if (b === undefined || beforeX === undefined || beforeY === undefined) continue
+    if (Math.hypot(b.x - beforeX, b.y - beforeY) >= REST_SHIFT) moving = true
   }
   return moving
 }

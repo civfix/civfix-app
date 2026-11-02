@@ -41,5 +41,5 @@
   "gitignore": true,
   "reporters": ["console"],
   "absolute": false,
-  "threshold": 0.75
+  "threshold": 0.8
 }

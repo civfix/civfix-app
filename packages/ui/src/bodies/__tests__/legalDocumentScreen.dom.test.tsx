@@ -1,4 +1,3 @@
-import * as React from "react"
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -14,7 +13,7 @@ import { LegalDocumentScreen } from "../LegalDocumentScreen"
 
 vi.mock("../../typography", async () => {
   const RN = await vi.importActual<typeof ReactNative>("react-native")
-  return { Text: RN.Text, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return { Text: RN.Text, Icon: () => null, iconMap: new Proxy({}, { get: () => () => null }) }
 })
 
 vi.mock("react-native-safe-area-context", async () => {

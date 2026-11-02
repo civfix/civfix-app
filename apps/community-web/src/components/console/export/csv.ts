@@ -24,7 +24,12 @@ export function downloadCsv(filename: string, rows: readonly CsvRow[]): void {
 export function csvFilename(parts: readonly string[], now: Date): string {
   const stamp = now.toISOString().slice(0, 10)
   const slug = parts
-    .map((part) => part.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))
+    .map((part) =>
+      part
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, ""),
+    )
     .filter((part) => part.length > 0)
     .join("-")
   return `${slug || "civfix-export"}-${stamp}.csv`

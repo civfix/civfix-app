@@ -11,7 +11,11 @@ const appDir = new URL("../", import.meta.url)
 const LIGHT = tokens.color.neutral.paper
 
 function splashPlugin(): Record<string, unknown> {
-  return pluginOptions(appConfig, "expo-splash-screen", "app.config.js declares no expo-splash-screen plugin tuple")
+  return pluginOptions(
+    appConfig,
+    "expo-splash-screen",
+    "app.config.js declares no expo-splash-screen plugin tuple",
+  )
 }
 
 test("the app itself still follows the device appearance", () => {

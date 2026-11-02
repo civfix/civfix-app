@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, type AccessibilityState } from "react-native"
 import { focusRingProps, useLayoutMode } from "../../theme"
 import { Text } from "../../typography"

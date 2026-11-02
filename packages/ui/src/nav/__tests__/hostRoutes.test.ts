@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { entryFromPath, isRootLink, pathForEntry, parentViewForEntry, titleForEntry } from "../routes"
+import {
+  entryFromPath,
+  isRootLink,
+  pathForEntry,
+  parentViewForEntry,
+  titleForEntry,
+} from "../routes"
 import { ALL_DETAIL_KINDS, type DetailEntry } from "../types"
 import { FLOW_KINDS } from "../flowKinds"
 import { DETAIL_BODY } from "../../shell/bodyRoutes"
@@ -33,7 +39,7 @@ describe("the new kinds are registered everywhere a kind must be registered", ()
   })
 
   it.each(HOST_KINDS)("%s has a header title, so a full page always has an exit", (kind) => {
-    expect(titleForEntry({ kind } as DetailEntry)).not.toBe("")
+    expect(titleForEntry({ kind })).not.toBe("")
   })
 })
 
@@ -49,10 +55,7 @@ describe("URL round trip", () => {
     ["/cleanups/e1/analytics", { kind: "event-analytics", id: "e1" }],
     ["/host/analytics", { kind: "host-analytics" }],
     ["/cleanups/e1/announcements", { kind: "announcements", id: "e1" }],
-    [
-      "/cleanups/e1/announcements/a-9",
-      { kind: "announcement", id: "e1", announcementId: "a-9" },
-    ],
+    ["/cleanups/e1/announcements/a-9", { kind: "announcement", id: "e1", announcementId: "a-9" }],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
     ["/orgs/river-keepers/manage", { kind: "org-manage", slug: "river-keepers" }],
   ]
@@ -119,7 +122,7 @@ describe("parent view + flow protection", () => {
       "host-analytics",
       "org-manage",
     ] as const) {
-      expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
+      expect(parentViewForEntry({ kind }), kind).toBe("events")
     }
   })
 

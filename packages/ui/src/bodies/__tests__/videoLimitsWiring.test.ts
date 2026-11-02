@@ -16,7 +16,9 @@ describe("an over-limit video is refused before it is used", () => {
     expect(CAPTURE_STEP).toMatch(
       /if \(await camera\.exceedsVideoLimits\?\.\(captured\)\) \{\s*setHint\(t\("common:media\.video_limits"\)\)\s*return\s*\}/,
     )
-    expect(CAPTURE_STEP.indexOf("camera.exceedsVideoLimits")).toBeLessThan(CAPTURE_STEP.indexOf("startFromCapture(captured)"))
+    expect(CAPTURE_STEP.indexOf("camera.exceedsVideoLimits")).toBeLessThan(
+      CAPTURE_STEP.indexOf("startFromCapture(captured)"),
+    )
   })
 
   it("the embedded viewfinder checks a capture before it lands in the draft", () => {
@@ -24,7 +26,9 @@ describe("an over-limit video is refused before it is used", () => {
     expect(callback).toMatch(
       /^const landViewfinderCapture = useCallback\(\s*async \(media: CapturedMedia\) => \{\s*if \(await camera\.exceedsVideoLimits\?\.\(media\)\) \{\s*toast\.show\(t\("common:media\.video_limits"\), \{ variant: "error" \}\)\s*return\s*\}/,
     )
-    expect(callback.indexOf("camera.exceedsVideoLimits")).toBeLessThan(callback.indexOf("startFromCapture(media)"))
+    expect(callback.indexOf("camera.exceedsVideoLimits")).toBeLessThan(
+      callback.indexOf("startFromCapture(media)"),
+    )
     expect(REPORT_FLOW).toMatch(
       /const onViewfinderCaptured = useCallback\(\s*\(media: CapturedMedia\) => void landViewfinderCapture\(media\),/,
     )
@@ -34,7 +38,9 @@ describe("an over-limit video is refused before it is used", () => {
     expect(COMPOSER_ATTACHMENTS).toMatch(
       /if \(await camera\.exceedsVideoLimits\?\.\(picked\)\) \{\s*setAttachError\(\{ key: "video_limits" \}\)\s*return\s*\}/,
     )
-    expect(COMPOSER_ATTACHMENTS).toContain('if (attachError.key === "video_limits") return t("media.video_limits")')
+    expect(COMPOSER_ATTACHMENTS).toContain(
+      'if (attachError.key === "video_limits") return t("media.video_limits")',
+    )
     expect(COMPOSER_ATTACHMENTS.indexOf("camera.exceedsVideoLimits")).toBeLessThan(
       COMPOSER_ATTACHMENTS.indexOf("uploadMediaId({"),
     )

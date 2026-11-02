@@ -48,8 +48,11 @@ export function makeFakeApiClient(): ApiClient {
       get(_target, prop) {
         if (prop === "then") return undefined // not a thenable; avoid await-unwrapping the proxy itself
         const key = String(prop)
-        if (key in geoMethods) return (geoMethods as unknown as Record<string, unknown>)[key]
-        if (key in postMethods) return (postMethods as unknown as Record<string, unknown>)[key]
+        const source = key in geoMethods ? geoMethods : key in postMethods ? postMethods : null
+        if (source) {
+          const method: unknown = Reflect.get(source, key)
+          return method
+        }
         return (..._args: unknown[]): Promise<never> =>
           Promise.reject(
             new Error(
@@ -117,15 +120,16 @@ const FAKE_REPORT: LinkedReportRef = {
   linkedAt: fakeIso(-2),
 }
 
-function fakeCounts(likes: number, reposts: number, replies: number, saves: number): PostDTO["counts"] {
+function fakeCounts(
+  likes: number,
+  reposts: number,
+  replies: number,
+  saves: number,
+): PostDTO["counts"] {
   return { likes, reposts, replies, saves }
 }
 
-function fakeViewer(
-  liked = false,
-  reposted = false,
-  saved = false,
-): PostDTO["viewer"] {
+function fakeViewer(liked = false, reposted = false, saved = false): PostDTO["viewer"] {
   return { liked, reposted, saved }
 }
 
@@ -202,7 +206,9 @@ const POST_REPLY: PostDTO = {
   counts: fakeCounts(2, 0, 0, 0),
   viewer: fakeViewer(true),
   media: [],
-  mentions: [{ id: FAKE_LUIS.id, handle: FAKE_LUIS.handle ?? "luisp", displayName: FAKE_LUIS.name }],
+  mentions: [
+    { id: FAKE_LUIS.id, handle: FAKE_LUIS.handle ?? "luisp", displayName: FAKE_LUIS.name },
+  ],
   event: null,
   report: null,
   repostOf: null,
@@ -239,11 +245,7 @@ function page(items: PostDTO[]): FeedPageDTO {
 }
 
 /** Return the seed post with the given field toggled on/off + its paired count nudged (fake echo). */
-function toggledSeed(
-  id: string,
-  field: "liked" | "reposted" | "saved",
-  next: boolean,
-): PostDTO {
+function toggledSeed(id: string, field: "liked" | "reposted" | "saved", next: boolean): PostDTO {
   return applyToggle({ ...(findSeed(id) ?? POST_TEXT), id }, field, next)
 }
 
@@ -259,7 +261,11 @@ type FakePageQuery = { id?: string; cursor?: string; limit?: number }
  * per-post / per-user reads. The Proxy in `makeFakeApiClient` casts the whole thing to `ApiClient`.
  */
 export interface FakePostApi {
-  homeFeed: (query: { filter?: "all" | "events" | "fixes"; cursor?: string; limit?: number }) => Promise<FeedPageDTO>
+  homeFeed: (query: {
+    filter?: "all" | "events" | "fixes"
+    cursor?: string
+    limit?: number
+  }) => Promise<FeedPageDTO>
   getPost: (args: { id: string }) => Promise<PostDTO>
   listReplies: (args: FakePageQuery) => Promise<FeedPageDTO>
   listUserPosts: (args: FakePageQuery) => Promise<FeedPageDTO>

@@ -23,7 +23,13 @@ import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { RoleChip } from "./RoleChip"
-import { FACE_CAP, FACE_NAME_CAP, facePileOverflow, slotPeopleView, type SlotPeopleView } from "./slotPeopleVisibility"
+import {
+  FACE_CAP,
+  FACE_NAME_CAP,
+  facePileOverflow,
+  slotPeopleView,
+  type SlotPeopleView,
+} from "./slotPeopleVisibility"
 import { slotRemaining, slotWindowRangeLabel, type SlotRowState } from "./eventSlotsModel"
 
 /**
@@ -35,7 +41,7 @@ const PILL_HIT_SLOP = 7
 
 const SLOT_TILE_SIZE = 34
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 /**
  * The row's capacity/status line, or null when the state has nothing to say about counts.
@@ -99,7 +105,15 @@ function MetaLine({ parts, trailing }: { parts: readonly string[]; trailing?: Re
   )
 }
 
-function PersonRow({ person, label, hostLabel }: { person: AttendeeDTO; label: string; hostLabel: string | null }) {
+function PersonRow({
+  person,
+  label,
+  hostLabel,
+}: {
+  person: AttendeeDTO
+  label: string
+  hostLabel: string | null
+}) {
   const styles = useStyles()
   const { t } = useT("event-slots")
   const onPress = useCallback(() => {
@@ -295,7 +309,9 @@ function SlotPill({
         disabled={busy}
         accessibilityRole="button"
         accessibilityState={{ busy: pending }}
-        accessibilityLabel={t(switching ? "row.switch_a11y" : "row.claim_a11y", { title: slot.title })}
+        accessibilityLabel={t(switching ? "row.switch_a11y" : "row.claim_a11y", {
+          title: slot.title,
+        })}
         // This pill is the row's commitment action and the page's primary one, so the 44pt rule is met
         // with slop rather than a taller wrapper, which would grow every slot row.
         hitSlop={PILL_HIT_SLOP}
@@ -473,11 +489,7 @@ export const SlotRow = memo(function SlotRow({
 
   return (
     <View
-      style={[
-        styles.row,
-        owned ? styles.rowMine : null,
-        state === "full" ? styles.rowFull : null,
-      ]}
+      style={[styles.row, owned ? styles.rowMine : null, state === "full" ? styles.rowFull : null]}
     >
       <View style={styles.rowMain}>
         <Pressable

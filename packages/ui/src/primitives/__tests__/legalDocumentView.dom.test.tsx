@@ -1,4 +1,3 @@
-import * as React from "react"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
@@ -22,7 +21,10 @@ const VIEW_SOURCE = readFileSync(join(__dirname, "..", "LegalDocumentView.tsx"),
 const open = vi.fn(async (_url: string) => {})
 const assign = vi.fn()
 
-function terms(blocks: LegalBlock[], overrides: Partial<ReadableLegalDocument> = {}): ReadableLegalDocument {
+function terms(
+  blocks: LegalBlock[],
+  overrides: Partial<ReadableLegalDocument> = {},
+): ReadableLegalDocument {
   const document = readableLegalDocument(legalDoc("terms", "2026-10-30", { blocks, ...overrides }))
   if (document === null) throw new Error("fixture is not readable")
   return document
@@ -48,7 +50,10 @@ const paragraph = (text: string): LegalBlock => ({ kind: "paragraph", text })
 
 // react-native-web reports onLayout through one ResizeObserver it creates on first use, measuring the
 // node's offsetWidth; the table tests lay the scroll view out at a width of their choosing.
-const layout = { notify: null as ((entries: { target: Element }[]) => void) | null, widths: new Map<Element, number>() }
+const layout = {
+  notify: null as ((entries: { target: Element }[]) => void) | null,
+  widths: new Map<Element, number>(),
+}
 
 class FakeResizeObserver {
   constructor(callback: (entries: { target: Element }[]) => void) {
@@ -60,7 +65,9 @@ class FakeResizeObserver {
 }
 
 beforeAll(() => {
-  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
     return layout.widths.get(this) ?? 0
   })
 })
@@ -83,7 +90,12 @@ afterEach(() => {
 
 describe("LegalDocumentView", () => {
   it("T5: shows the title, then the version and effective date, and no earlier-version line", () => {
-    show(terms([paragraph("Body.")], { title: "Terms of Service", effectiveAt: "2026-10-30T00:00:00.000Z" }))
+    show(
+      terms([paragraph("Body.")], {
+        title: "Terms of Service",
+        effectiveAt: "2026-10-30T00:00:00.000Z",
+      }),
+    )
     const title = screen.getByText("Terms of Service")
     const meta = screen.getByText("Version 2026-10-30 · effective October 30, 2026")
     expect(title.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -139,16 +151,19 @@ describe("LegalDocumentView", () => {
     const table = screen.getByRole("table")
     const rows = Array.from(table.querySelectorAll('[role="row"]'))
     expect(rows).toHaveLength(2)
-    expect(Array.from(rows[0]!.querySelectorAll('[role="columnheader"]')).map((cell) => cell.textContent)).toEqual([
-      "Name",
-      "Purpose",
-    ])
-    expect(Array.from(rows[1]!.querySelectorAll('[role="cell"]')).map((cell) => cell.textContent)).toEqual([
-      "Cloudflare",
-      "CDN",
-    ])
+    expect(
+      Array.from(rows[0]!.querySelectorAll('[role="columnheader"]')).map(
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(["Name", "Purpose"])
+    expect(
+      Array.from(rows[1]!.querySelectorAll('[role="cell"]')).map((cell) => cell.textContent),
+    ).toEqual(["Cloudflare", "CDN"])
     let scroller: HTMLElement | null = table.parentElement
-    while (scroller !== null && !["auto", "scroll"].includes(getComputedStyle(scroller).overflowX)) {
+    while (
+      scroller !== null &&
+      !["auto", "scroll"].includes(getComputedStyle(scroller).overflowX)
+    ) {
       scroller = scroller.parentElement
     }
     expect(scroller).not.toBeNull()
@@ -164,9 +179,15 @@ describe("LegalDocumentView", () => {
   })
 
   it("T11: an earlier version says so, with its date, above the blocks", () => {
-    show(terms([paragraph("Old body.")], { version: "2026-09-21", effectiveAt: "2026-09-21T00:00:00.000Z" }), {
-      current: false,
-    })
+    show(
+      terms([paragraph("Old body.")], {
+        version: "2026-09-21",
+        effectiveAt: "2026-09-21T00:00:00.000Z",
+      }),
+      {
+        current: false,
+      },
+    )
     const line = screen.getByText("This is an earlier version, from September 21, 2026.")
     const body = screen.getByText("Old body.")
     expect(line.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -196,31 +217,44 @@ describe("LegalDocumentView", () => {
     expect(open).not.toHaveBeenCalled()
   })
 
-  it.each(["https://civfix.org/legal/unknown", "https://civfix.org/about", "https://example.org/legal/terms"])(
-    "T14: on web %s opens in the browser",
-    (href) => {
-      show(terms([paragraph(`[Elsewhere](${href})`)]))
-      fireEvent.click(screen.getByRole("link", { name: "Elsewhere" }))
-      expect(open).toHaveBeenCalledWith(href)
-      expect(assign).not.toHaveBeenCalled()
-    },
-  )
+  it.each([
+    "https://civfix.org/legal/unknown",
+    "https://civfix.org/about",
+    "https://example.org/legal/terms",
+  ])("T14: on web %s opens in the browser", (href) => {
+    show(terms([paragraph(`[Elsewhere](${href})`)]))
+    fireEvent.click(screen.getByRole("link", { name: "Elsewhere" }))
+    expect(open).toHaveBeenCalledWith(href)
+    expect(assign).not.toHaveBeenCalled()
+  })
 
   describe("table widths", () => {
     const FOUR_COLUMNS: LegalBlock = {
       kind: "table",
       columns: ["Sub-processor", "Purpose", "Data", "Location"],
-      rows: [["Cloudflare", "CDN and edge security for every request", "IP address, request metadata", "Global"]],
+      rows: [
+        [
+          "Cloudflare",
+          "CDN and edge security for every request",
+          "IP address, request metadata",
+          "Global",
+        ],
+      ],
     }
 
     function tableParts() {
       const table = screen.getByRole("table")
       let scroller: HTMLElement | null = table.parentElement
-      while (scroller !== null && !["auto", "scroll"].includes(getComputedStyle(scroller).overflowX)) {
+      while (
+        scroller !== null &&
+        !["auto", "scroll"].includes(getComputedStyle(scroller).overflowX)
+      ) {
         scroller = scroller.parentElement
       }
       if (scroller === null) throw new Error("the table has no horizontal scroll view")
-      const cells = Array.from(table.querySelectorAll<HTMLElement>('[role="columnheader"], [role="cell"]'))
+      const cells = Array.from(
+        table.querySelectorAll<HTMLElement>('[role="columnheader"], [role="cell"]'),
+      )
       return { table, scroller, cells }
     }
 

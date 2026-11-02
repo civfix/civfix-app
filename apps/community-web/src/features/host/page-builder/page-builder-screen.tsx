@@ -83,14 +83,14 @@ export function PageBuilderScreen() {
     (accent ?? "bloom") !== data.theme.accent ||
     (cover?.mediaId ?? null) !== (data.coverMediaId ?? null) ||
     (noindex ?? false) !== data.seo.noindex ||
-    blocksDiffer(list, data.blocks as EventPageBlock[])
+    blocksDiffer(list, data.blocks)
 
   // A refetch reseeds the form only while it still matches the copy it was seeded from, so a server
   // change shows up without ever overwriting the host's unsaved edits.
   if (page.data && page.data !== seededFrom) {
     setSeededFrom(page.data)
     if (seededFrom === null || !differsFrom(seededFrom)) {
-      setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
+      setBlocks(withRowKeys(page.data.blocks))
       setSlug(page.data.slug ?? "")
       setAccent(page.data.theme.accent)
       setNoindex(page.data.seo.noindex)
@@ -184,7 +184,8 @@ export function PageBuilderScreen() {
   const slugStatus = useMemo(() => {
     if (currentSlug === "") return null
     if (!slugValid) return { tone: "error" as const, message: t("slug.invalid") }
-    if (currentSlug === (page.data?.slug ?? "")) return { tone: "ok" as const, message: t("slug.current") }
+    if (currentSlug === (page.data?.slug ?? ""))
+      return { tone: "ok" as const, message: t("slug.current") }
     if (slugCheck.isFetching) return { tone: "info" as const, message: t("slug.checking") }
     if (!slugCheck.data) return null
     if (slugCheck.data.available) return { tone: "ok" as const, message: t("slug.available") }
@@ -266,7 +267,10 @@ export function PageBuilderScreen() {
                   label={t("slug.label")}
                   htmlFor="page-slug"
                   hint={t("slug.hint")}
-                  error={serverFields.slug ?? (slugStatus?.tone === "error" ? slugStatus.message : undefined)}
+                  error={
+                    serverFields.slug ??
+                    (slugStatus?.tone === "error" ? slugStatus.message : undefined)
+                  }
                 >
                   <TextInput
                     id="page-slug"

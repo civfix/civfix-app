@@ -3,7 +3,8 @@ import { createI18n } from "../../i18n/config"
 import { reportCountsLine } from "../reportCountsLine"
 
 const { t } = createI18n("en")
-const line = (confirmCount: number, fixedCount: number) => reportCountsLine(t, { confirmCount, fixedCount })
+const line = (confirmCount: number, fixedCount: number) =>
+  reportCountsLine(t, { confirmCount, fixedCount })
 
 describe("GH#203 counts line", () => {
   it("T1: joins both counts with a comma when both are above 0", () => {
