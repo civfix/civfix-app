@@ -37,7 +37,7 @@ jobs:
       # No dependency cache: a cache another run wrote could poison what this job publishes.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           package-manager-cache: false
 
       # No dependency install script runs in a job that later holds the registry token.
