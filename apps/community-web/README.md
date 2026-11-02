@@ -1,6 +1,6 @@
 # community-web
 
-The PUBLIC civfix user web app: a Next.js 15 (App Router) + React 19 + TypeScript + Tailwind +
+The PUBLIC civfix user web app: a Next.js 16 (App Router) + React 19 + TypeScript + Tailwind +
 shadcn/ui application, built as a STATIC-EXPORTED SPA (`output: "export"`). All dynamic data is
 fetched at runtime from the civfix API via the typed `@civfix/contract` client. There is no web server
 at runtime; the export emits a static shell + JS to `out/`. The only server-side code is the
@@ -37,8 +37,8 @@ The API contract, `@civfix/contract`, is a registry dependency (caret range, pub
 Per-app (from `apps/community-web/`):
 
 ```
-pnpm dev          # next dev (http://localhost:3000)
-pnpm build        # next build -> static export in ./out, then scripts/cf-pages-postbuild.mjs
+pnpm dev          # next dev --webpack (http://localhost:3000)
+pnpm build        # next build --webpack -> static export in ./out, then scripts/cf-pages-postbuild.mjs
 pnpm og-image     # regenerate public/og.png + public/apple-touch-icon.png
 ```
 
@@ -84,7 +84,7 @@ echo "127.0.0.1 local.civfix.dev" | sudo tee -a /etc/hosts
 
 # from civfix-app/ - Next mints a local cert the first time
 NEXT_PUBLIC_API_URL=https://api.civfix.dev \
-  pnpm --filter community-web exec next dev --experimental-https -H local.civfix.dev
+  pnpm --filter community-web exec next dev --webpack --experimental-https -H local.civfix.dev
 ```
 
 Open `https://local.civfix.dev:3000` and accept the certificate once. The staging API must allow

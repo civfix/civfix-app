@@ -85,8 +85,7 @@ export default defineConfig(
         ...reactPlugin.configs.flat.recommended.rules,
         ...reactHooksRules(reactHooks),
         ...REACT_RULES,
-        ...nextPlugin.flatConfig.recommended.rules,
-        ...nextPlugin.flatConfig.coreWebVitals.rules,
+        ...nextPlugin.configs["core-web-vitals"].rules,
         ...jsxA11yPlugin.flatConfigs.strict.rules,
         "import/no-anonymous-default-export": "error",
         "react/no-unknown-property": "off",
@@ -108,6 +107,8 @@ export default defineConfig(
         ],
         // images.unoptimized is set for the static export, so next/image would render a plain <img> anyway.
         "@next/next/no-img-element": "off",
+        // New in Next 16; it would flag the deliberate full-page navigations, and the move keeps today's Next rules.
+        "@next/next/no-location-assign-relative-destination": "off",
         "react/jsx-no-target-blank": "off",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unused-vars": [

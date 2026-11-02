@@ -14,7 +14,7 @@ import { overVideoLimits, readVideoMetadata } from "@/lib/video-limits"
 
 const fileByUri = new Map<string, File>()
 
-// Engines without the file-input `cancel` event (Safari < 16.4, Chrome < 113) signal a dismissed picker
+// Supported engines without the file-input `cancel` event (Chrome 111 and 112) signal a dismissed picker
 // only by focus returning to the window, and there is no feature test for that event (`oncancel` exists
 // on every element because of <dialog>). So the focus fallback is always armed, with a grace long enough
 // that a `change` landing after the focus (a camera handing back a large photo) still wins.
