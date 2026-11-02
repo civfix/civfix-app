@@ -71,7 +71,7 @@ export function TimelineList({
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
-            className="rounded-xs text-token-12 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+            className="rounded-xs text-token-12 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
           >
             {expanded ? t("timeline.show_less") : t("timeline.show_more", { count: hidden })}
           </button>

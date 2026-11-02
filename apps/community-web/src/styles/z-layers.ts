@@ -44,7 +44,7 @@ export const Z_SESSION_ALERT = (Z_FIRST_RUN_GATE + Z_BOOT_SPLASH) / 2
  */
 export const Z_TURNSTILE_CHALLENGE = 10500
 
-/** The single z-index scale; tailwind.config.ts turns every key into a `z-<key>` utility. */
+/** The single z-index scale; globals.css defines one `z-<key>` utility per key, and z-layers.test.ts keeps them equal. */
 export const Z_LAYERS = {
   "detail-header": Z_DETAIL_HEADER,
   "console-raised": Z_CONSOLE_RAISED,

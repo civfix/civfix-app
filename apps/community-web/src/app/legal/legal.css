@@ -1,106 +1,109 @@
 /* The /legal/* page shell around the shared document view, driven by the design.css tokens. */
 
-.legal-page {
-  min-height: 100dvh;
-  background: var(--bg-1);
-  color: var(--fg-1);
-}
+/* In Tailwind's utilities layer, after its utilities, as styles/design.css is. */
+@layer utilities {
+  .legal-page {
+    min-height: 100dvh;
+    background: var(--bg-1);
+    color: var(--fg-1);
+  }
 
-.legal-shell {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-5) var(--space-16);
-}
+  .legal-shell {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5) var(--space-16);
+  }
 
-.legal-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-2) 0 var(--space-6);
-}
+  .legal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-2) 0 var(--space-6);
+  }
 
-.legal-top .cf-logo {
-  font-size: 30px;
-}
+  .legal-top .cf-logo {
+    font-size: 30px;
+  }
 
-.legal-back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-body);
-  font-size: var(--fs-14);
-  font-weight: 600;
-  color: var(--fg-2);
-  text-decoration: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  transition:
-    color 120ms ease,
-    border-color 120ms ease;
-}
-.legal-back:hover {
-  color: var(--fg-1);
-  border-color: var(--border-strong);
-}
+  .legal-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-body);
+    font-size: var(--fs-14);
+    font-weight: 600;
+    color: var(--fg-2);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+  .legal-back:hover {
+    color: var(--fg-1);
+    border-color: var(--border-strong);
+  }
 
-.legal-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-8);
-}
-.legal-nav a {
-  font-family: var(--font-body);
-  font-size: var(--fs-13);
-  font-weight: 600;
-  color: var(--fg-2);
-  text-decoration: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  transition:
-    color 120ms ease,
-    background 120ms ease,
-    border-color 120ms ease;
-}
-.legal-nav a:hover {
-  color: var(--fg-1);
-  border-color: var(--border-strong);
-}
-.legal-nav a[aria-current="page"] {
-  color: var(--accent-fg);
-  background: var(--accent);
-  border-color: transparent;
-}
+  .legal-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-8);
+  }
+  .legal-nav a {
+    font-family: var(--font-body);
+    font-size: var(--fs-13);
+    font-weight: 600;
+    color: var(--fg-2);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    transition:
+      color 120ms ease,
+      background 120ms ease,
+      border-color 120ms ease;
+  }
+  .legal-nav a:hover {
+    color: var(--fg-1);
+    border-color: var(--border-strong);
+  }
+  .legal-nav a[aria-current="page"] {
+    color: var(--accent-fg);
+    background: var(--accent);
+    border-color: transparent;
+  }
 
-.legal-foot {
-  margin-top: var(--space-12);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
-  font-family: var(--font-body);
-  font-size: var(--fs-13);
-  color: var(--fg-3);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-.legal-foot nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-.legal-foot a {
-  color: var(--fg-2);
-  text-decoration: none;
-  font-weight: 600;
-}
-.legal-foot a:hover {
-  color: var(--fg-1);
-  text-decoration: underline;
+  .legal-foot {
+    margin-top: var(--space-12);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    font-family: var(--font-body);
+    font-size: var(--fs-13);
+    color: var(--fg-3);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .legal-foot nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .legal-foot a {
+    color: var(--fg-2);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .legal-foot a:hover {
+    color: var(--fg-1);
+    text-decoration: underline;
+  }
 }

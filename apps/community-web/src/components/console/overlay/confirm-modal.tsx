@@ -151,7 +151,7 @@ function ConfirmPanel({
                 onChange={(event) => setReason(event.target.value)}
                 placeholder={reasonField.placeholder}
                 rows={2}
-                className="w-full rounded-xs border border-console-line bg-console-surface px-token-3 py-token-2 text-token-14 text-console-ink placeholder:text-console-ink-3 focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="w-full rounded-xs border border-console-line bg-console-surface px-token-3 py-token-2 text-token-14 text-console-ink placeholder:text-console-ink-3 focus-visible:outline-hidden focus-visible:shadow-console-ring"
               />
             </label>
           ) : null}

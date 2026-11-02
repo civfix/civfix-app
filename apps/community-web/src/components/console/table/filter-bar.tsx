@@ -74,7 +74,7 @@ function multiSummary(facet: MultiFacet): string {
 }
 
 const CHIP_BUTTON_BASE =
-  "inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-pill border px-token-3 text-token-13 font-semibold transition-colors duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring"
+  "inline-flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-pill border px-token-3 text-token-13 font-semibold transition-colors duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring"
 
 const CHIP_ACTIVE = "border-console-ink-2 bg-console-surface text-console-ink shadow-console-1"
 const CHIP_IDLE =
@@ -161,7 +161,7 @@ function ActiveChipRow({
             type="button"
             aria-label={t("filter.remove_chip", { label: chip.label })}
             onClick={chip.onRemove}
-            className="flex h-6 w-6 items-center justify-center rounded-pill text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+            className="flex h-6 w-6 items-center justify-center rounded-pill text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
           >
             <X aria-hidden className="h-3 w-3" />
           </button>
@@ -171,7 +171,7 @@ function ActiveChipRow({
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex h-7 shrink-0 items-center rounded-pill px-token-2 text-token-12 font-semibold text-console-ink-3 hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="inline-flex h-7 shrink-0 items-center rounded-pill px-token-2 text-token-12 font-semibold text-console-ink-3 hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
         >
           {t("filter.clear_all")}
         </button>
@@ -228,7 +228,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
             type="button"
             onClick={onReset}
             disabled={!anyActive}
-            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-pill px-token-2 text-token-13 font-semibold text-console-ink-3 transition-colors duration-d1 hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-pill px-token-2 text-token-13 font-semibold text-console-ink-3 transition-colors duration-d1 hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RotateCcw aria-hidden className="h-3.5 w-3.5" />
             {t("filter.reset")}

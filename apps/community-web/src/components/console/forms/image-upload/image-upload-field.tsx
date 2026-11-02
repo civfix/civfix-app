@@ -214,7 +214,7 @@ export function ImageUploadField({
                 <button
                   type="button"
                   onClick={() => dismiss(slot)}
-                  className="rounded-xs text-token-12 font-semibold text-console-bloom-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="rounded-xs text-token-12 font-semibold text-console-bloom-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   {t("action.dismiss")}
                 </button>
@@ -235,7 +235,7 @@ export function ImageUploadField({
           onDragLeave={() => setDragging(false)}
           onDrop={(event) => void onDrop(event)}
           className={cn(
-            "flex min-h-[88px] w-full max-w-md flex-col items-center justify-center gap-token-1 rounded-sm border border-dashed px-token-4 py-token-4 text-center transition-colors duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring",
+            "flex min-h-[88px] w-full max-w-md flex-col items-center justify-center gap-token-1 rounded-sm border border-dashed px-token-4 py-token-4 text-center transition-colors duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring",
             dragging
               ? "border-console-accent bg-console-bloom-soft/50"
               : "border-console-line bg-console-surface-alt/50 hover:bg-console-surface-alt",

@@ -62,7 +62,7 @@ export function BulkBar({ count, actions, onClear, className }: BulkBarProps) {
                 if (!action.disabled) action.onPress()
               }}
               className={cn(
-                "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm px-token-2 text-token-13 font-semibold transition-colors duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring",
+                "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm px-token-2 text-token-13 font-semibold transition-colors duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring",
                 action.destructive
                   ? "text-console-bloom-strong hover:bg-console-bloom-soft"
                   : "text-console-ink-2 hover:bg-console-surface-alt",
@@ -85,7 +85,7 @@ export function BulkBar({ count, actions, onClear, className }: BulkBarProps) {
         type="button"
         onClick={onClear}
         aria-label={t("table.clear_selection")}
-        className="ml-token-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+        className="ml-token-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-hidden focus-visible:shadow-console-ring"
       >
         <X aria-hidden className="h-4 w-4" />
       </button>

@@ -686,7 +686,7 @@ function LockedSlugField({ slug }: { slug: string }) {
           href={publicOrgPath(slug)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
         >
           {publicOrgUrlLabel(slug)}
           <ExternalLink aria-hidden className="h-3.5 w-3.5" />

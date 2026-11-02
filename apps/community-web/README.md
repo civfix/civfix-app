@@ -96,8 +96,9 @@ dev convenience.
 ## How tokens map into Tailwind
 
 `@civfix/tokens` is the single source of truth for color, type, spacing, radius, shadow, and
-motion. `tailwind.config.ts` imports the `tokens` object and maps the scales into the theme, so app
-code uses semantic utilities and never hardcodes a hex that exists in tokens:
+motion. Tailwind 4 is configured in CSS: `src/app/globals.css` imports `@civfix/tokens/theme.css`, the
+`@theme` block the tokens build generates from the same values, and maps the scheme colors with
+`@theme inline`, so app code uses semantic utilities and never hardcodes a hex that exists in tokens:
 
 - Colors: `bg-paper` `bg-paper2` `bg-cardflat` `text-ink` `text-ink-3` `border-ink-5`,
   the brand scales `bg-bloom-500` `text-moss-600` `bg-sun-500` `bg-sky-500` `bg-lilac-500`,
@@ -113,7 +114,13 @@ code uses semantic utilities and never hardcodes a hex that exists in tokens:
   `rounded-2xl` (36) `rounded-pill`; the teardrop pin shape is the `.rounded-pin` utility
   (`50% 50% 50% 6px`, mirrors `tokens.radius.pin`).
 - Shadow: `shadow-s1 .. shadow-s4`, `shadow-pin`, `shadow-ring`. Motion: `duration-d1..d4`,
-  `ease-out`/`ease-spring`/`ease-in-out`.
+  `ease-out`/`ease-spring`/`ease-in-out`. The `z-<layer>` and `duration-d*` classes are `@utility`
+  definitions in `globals.css`, kept equal to `src/styles/z-layers.ts` and the motion tokens by tests.
+
+`styles/design.css` and the page stylesheets (`signup.css`, `org-page.css`, `legal.css` and so on)
+wrap their rules in `@layer utilities`, after Tailwind's own utilities, so a tie with a utility goes
+to them as it did before Tailwind 4 moved its output into cascade layers. A new stylesheet does the
+same; `stylesheet-layers.test.ts` fails on one that doesn't.
 
 Map pin colors come from the shared `categoryColor()` / `cleanupColorFor()` helpers in
 `@civfix/tokens`, which `@civfix/ui`'s Map seam uses, so they always match the tokens.
@@ -125,7 +132,7 @@ copies the woff2 files into `public/fonts/` from the installed `@fontsource` pac
 the checksum and license of the tracked Hanken Grotesk variable font, and
 `src/styles/contract-fonts.css` declares an `@font-face` for every literal family name the shared UI
 emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css` points
-`--font-display` / `--font-body` at Hanken Grotesk and `--font-mono` at JetBrains Mono, which back the
+`--font-display` / `--font-body` at Hanken Grotesk and `--font-mono-face` at JetBrains Mono, which back the
 `font-display` / `font-body` / `font-mono` utilities. Baloo 2 is the brand wordmark face only.
 
 ## API client wiring (cookie + CSRF + X-Client)

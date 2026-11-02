@@ -7,9 +7,9 @@ import { describe, expect, it } from "vitest"
 const CSS = readFileSync(fileURLToPath(new URL("../../app/globals.css", import.meta.url)), "utf8")
 
 function blockFor(scheme: ColorSchemeName): string {
-  const start = CSS.indexOf(scheme === "light" ? "  :root {" : "  .dark {")
+  const start = CSS.indexOf(scheme === "light" ? "\n:root {" : "\n.dark {")
   expect(start, `${scheme} block`).toBeGreaterThan(-1)
-  const end = CSS.indexOf("\n  }", start)
+  const end = CSS.indexOf("\n}", start)
   return CSS.slice(start, end)
 }
 

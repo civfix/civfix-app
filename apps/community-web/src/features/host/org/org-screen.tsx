@@ -120,7 +120,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
               href={publicOrgPath(org.slug)}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-9 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring md:inline-flex"
+              className="hidden h-9 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring md:inline-flex"
             >
               <ExternalLink aria-hidden className="h-3.5 w-3.5" />
               {t("header.public_page", { defaultValue: "Public page" })}

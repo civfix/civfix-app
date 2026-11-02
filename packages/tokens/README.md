@@ -5,6 +5,11 @@ cleanup pin colours, and the type, spacing, radius and shadow scales, plus the c
 (`@civfix/tokens/chip-contrast`). Builds to ESM, CJS and `.d.ts` with tsup and has no runtime
 dependencies.
 
+The build also writes `@civfix/tokens/theme.css`, a Tailwind 4 `@theme` block generated from the same
+values by `scripts/build-theme.mjs` (radius, shadow, spacing, type, line height, tracking, easing and
+the brand colours under the website's utility names). The website imports it from `globals.css`;
+`__tests__/theme-css.test.ts` fails when it and the JS tokens disagree.
+
 It is the single styling source: civfix-app (`@civfix/ui`, web, mobile) consumes it as a workspace
 package; civfix-admin and civfix-backend (email layout) install it from
 `https://repo.civfix.org`. It must stay framework-free (lint bans React, React Native and

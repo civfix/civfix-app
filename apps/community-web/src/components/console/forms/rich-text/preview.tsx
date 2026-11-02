@@ -14,7 +14,7 @@ const CONSOLE_MARKDOWN_CLASSES: MarkdownClasses = {
   unorderedList: "list-disc pl-token-5",
   strong: "font-bold text-console-ink",
   em: "italic",
-  link: "rounded-xs text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring",
+  link: "rounded-xs text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring",
 }
 
 export interface MarkdownPreviewProps {

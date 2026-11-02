@@ -219,7 +219,7 @@ export function PageBuilderScreen() {
                 href={`/e/${page.data.slug}/`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
               >
                 {`/e/${page.data.slug}`}
               </a>
@@ -325,7 +325,7 @@ export function PageBuilderScreen() {
                     id="page-add-block"
                     value={addKind}
                     onChange={(event) => setAddKind(event.target.value as EventPageBlockKind)}
-                    className="h-8 rounded-xs border border-console-line bg-console-surface px-token-2 text-token-13 text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+                    className="h-8 rounded-xs border border-console-line bg-console-surface px-token-2 text-token-13 text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
                   >
                     {BLOCK_KINDS.map((kind) => (
                       <option key={kind} value={kind} disabled={!canAddBlock(list, kind)}>

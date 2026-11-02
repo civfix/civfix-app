@@ -23,7 +23,7 @@ export function Breadcrumbs({ items }: { items: readonly Crumb[] }) {
             {item.href ? (
               <ConsoleLink
                 href={item.href}
-                className="rounded-xs font-semibold hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="rounded-xs font-semibold hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring"
               >
                 {item.label}
               </ConsoleLink>

@@ -114,7 +114,7 @@ export function GuidedSheet({
                       <button
                         type="button"
                         onClick={blocker.onPress}
-                        className="inline-flex shrink-0 items-center gap-0.5 rounded-xs text-token-12 font-semibold text-console-sky-strong hover:underline focus-visible:outline-none focus-visible:shadow-console-ring"
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded-xs text-token-12 font-semibold text-console-sky-strong hover:underline focus-visible:outline-hidden focus-visible:shadow-console-ring"
                       >
                         {t("guided.fix")}
                         <ChevronRight aria-hidden className="h-3 w-3" />

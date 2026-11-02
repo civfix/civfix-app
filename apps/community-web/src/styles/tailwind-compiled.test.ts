@@ -209,6 +209,12 @@ describe("Tailwind 4 compiles today's utilities", () => {
     expect(placeholder?.decls.get("opacity")).toBe("1")
   })
 
+  it("keeps Tailwind 3's text-field look on search inputs", () => {
+    const search = baseRules().find((rule) => selectorList(rule).includes('[type="search"]'))
+    expect(search?.decls.get("-webkit-appearance")).toBe("textfield")
+    expect(search?.decls.get("outline-offset")).toBe("-2px")
+  })
+
   it("T14: container is centred, padded by space[4] and capped at each breakpoint", () => {
     const decl = (prop: string): string | undefined => resolvedDecl(css, ".container", prop)
     expect(decl("width")).toBe("100%")

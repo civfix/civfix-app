@@ -35,13 +35,14 @@
         "default": "./dist/chip-contrast.cjs"
       }
     },
+    "./theme.css": "./dist/theme.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/build-theme.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

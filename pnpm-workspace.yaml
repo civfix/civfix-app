@@ -22,20 +22,18 @@ minimumReleaseAgeExclude:
 # Refuse a version published with weaker provenance than the versions before it (a stolen token, not CI).
 trustPolicy: no-downgrade
 # Exact versions that fail that check only because one earlier release happened to carry provenance, each checked to
-# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one
-# attested stable release before 0.8.2). The rest are maintenance releases of an older line, published by hand after
-# the newer line had started publishing with provenance: eslint-import-resolver-typescript 3.10.1 (jounqin; after
-# 4.2.6, for eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), tailwind-merge 2.6.1 (dcas; after 3.0.0),
-# ua-parser-js 1.0.41 (faisalman; after 2.0.0) and undici-types 6.21.0 (matteo.collina, for @types/node 22; 6.13.0 to
-# 6.19.2 attested). jscpd 4.3.0 (apk, its only maintainer) is the last release of the 4 line, held because jscpd 5
-# reports this tree over the duplication threshold. Drop each entry once the tree leaves that version.
-# Never exclude a package name without a version.
+# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one attested
+# stable release before 0.8.2). The rest are maintenance releases of an older line, published by hand after the newer
+# line had started publishing with provenance: eslint-import-resolver-typescript 3.10.1 (jounqin; after 4.2.6, for
+# eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), ua-parser-js 1.0.41 (faisalman; after 2.0.0) and
+# undici-types 6.21.0 (matteo.collina, for @types/node 22; 6.13.0 to 6.19.2 attested). jscpd 4.3.0 (apk, its only
+# maintainer) is the last release of the 4 line, held because jscpd 5 reports this tree over the duplication threshold.
+# Drop each entry once the tree leaves that version. Never exclude a package name without a version.
 trustPolicyExclude:
   - eslint-import-resolver-typescript@3.10.1
   - jscpd@4.3.0
   - react-native-worklets@0.5.1
   - semver@6.3.1
-  - tailwind-merge@2.6.1
   - ua-parser-js@1.0.41
   - undici-types@6.21.0
 # A git or tarball-URL subdependency carries no publish time or provenance, so it would slip past both checks above.
@@ -53,12 +51,11 @@ allowBuilds:
   workerd: true
 
 # The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a
-# transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with
-# two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the
-# generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the
-# iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7
-# exactly and jsdom wants 8. node-forge floors at 1.4.2, not 1.4.1, because 1.4.1's PEM fix broke Buffer input to
-# pem.decode(). Drop each entry once its parent ships the fixed range itself.
+# transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with one
+# exception: uuid goes to 11 under xcode, which asks for ^7 in the iOS prebuild path and only calls v4(). undici is
+# scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. node-forge floors at 1.4.2,
+# not 1.4.1, because 1.4.1's PEM fix broke Buffer input to pem.decode(). Drop each entry once its parent ships the fixed
+# range itself.
 overrides:
   react: "19.1.0"
   react-dom: "19.1.0"
@@ -72,7 +69,6 @@ overrides:
   shell-quote: ">=1.11.0 <2"
   nanoid@3: ">=3.3.18 <4"
   postcss: ">=8.5.28 <9"
-  postcss-selector-parser@6: ">=7.1.6 <8"
   browserslist: ">=4.28.9 <5"
   uuid: ">=11.1.1 <12"
   "@xmldom/xmldom@0.8": ">=0.8.15 <0.9"
