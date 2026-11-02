@@ -451,10 +451,9 @@ Three manual generators produce the committed images (run from `apps/community-m
 
 ## pnpm + Expo + the shared packages
 
-- `nodeLinker: hoisted` in `pnpm-workspace.yaml`, repeated as a guard in `.npmrc` (root and this
-  app's mirror), makes the store a flat
-  `node_modules` layout - Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still
-  scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`), which is where
+- `nodeLinker: hoisted` in `pnpm-workspace.yaml` makes the store a flat `node_modules` layout -
+  Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still scoped to the private
+  registry (`@civfix:registry=https://repo.civfix.org/`), which is where
   `@civfix/contract` comes from; `@civfix/tokens` and `@civfix/ui` resolve from the workspace.
 - `@civfix/contract` is a registry dependency (caret range) shipped as a built `dist`. Metro resolves
   its subpath imports (`@civfix/contract/client`, `/geocode`, ...) through its `exports`
