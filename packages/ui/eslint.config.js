@@ -5,6 +5,7 @@ import vitest from "@vitest/eslint-plugin"
 import react from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
 import reactNative from "eslint-plugin-react-native"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   LEAKED_RENDER_RULES,
@@ -127,7 +128,7 @@ const RN_FREE_PATTERNS = [
   },
 ]
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       "dist-types/**",

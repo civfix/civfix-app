@@ -1,5 +1,6 @@
 import eslint from "@eslint/js"
 import vitest from "@vitest/eslint-plugin"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   LINTER_OPTIONS,
@@ -51,7 +52,7 @@ const FRAMEWORK_FREE_IMPORTS = {
   ],
 }
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       "dist/**",
