@@ -146,6 +146,7 @@ export { BringInput } from "./BringInput"
 export type { BringInputProps } from "./BringInput"
 
 export { GlassButton } from "./GlassButton"
+export { UnreadDot } from "./UnreadDot"
 export type { GlassButtonProps } from "./GlassButton"
 
 export { BrandAboutCard } from "./BrandAboutCard"

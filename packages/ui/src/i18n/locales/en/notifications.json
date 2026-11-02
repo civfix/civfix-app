@@ -2,8 +2,9 @@
   "row": {
     "unreadSuffix": "{{title}}, unread"
   },
-  "actions": {
-    "markAllRead": "Mark all read"
+  "markReadError": {
+    "generic": "Couldn't mark your notifications as read. Try again.",
+    "rate_limited": "Too many requests. Wait a moment and try again."
   },
   "signedOut": {
     "title": "Sign in for notifications",

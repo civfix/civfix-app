@@ -17,7 +17,7 @@ import {
   CreateCleanupBody,
   EditCleanupBody,
   NotificationsBody,
-  NotificationPrefsBody,
+  NotificationSettingsBody,
   MessagingListBody,
   ConversationBody,
   ReportFlowBody,
@@ -87,7 +87,7 @@ const BODY_RENDERERS: Record<BodyId, BodyRenderer> = {
   createCleanup: () => <CreateCleanupBody />,
   editCleanup: (entry) => <EditCleanupBody id={idOf(entry)} />,
   notifications: () => <NotificationsBody />,
-  notificationPrefs: () => <NotificationPrefsBody />,
+  notificationPrefs: () => <NotificationSettingsBody />,
   conversation: (entry) => (
     <ConversationBody
       id={idOf(entry)}

@@ -87,6 +87,7 @@ export const namespaces = [
   "profile-follow",
   "profile-person",
   "profile-view",
+  "push-prompt",
   "report-cluster",
   "report-content",
   "report-detail",
