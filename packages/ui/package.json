@@ -151,7 +151,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "0.70.0-b-integration-legal-versions.g1c363de",
+    "@civfix/contract": "^0.70.0",
     "@civfix/tokens": "workspace:*",
     "i18next": "^25.10.9",
     "qrcode-generator": "^2.0.4",
