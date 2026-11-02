@@ -155,9 +155,11 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
               >
                 {t(titleKey(owed.map((item) => item.type)))}
               </Text>
-              {owed.map((item) => (
+              {owed.map((item, index) => (
                 <View key={item.type} style={styles.document}>
-                  {item.summary ? <Text style={styles.summary}>{item.summary}</Text> : null}
+                  {item.summary && item.summary !== owed[index - 1]?.summary ? (
+                    <Text style={styles.summary}>{item.summary}</Text>
+                  ) : null}
                   <TextLink standalone onPress={() => readOwed(item.type)}>
                     {t(READ_KEYS[item.type])}
                   </TextLink>

@@ -150,6 +150,21 @@ describe("LegalUpdateGate", () => {
     expect(terms.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it("says a summary the Terms and Privacy notice share once, and still offers both", async () => {
+    const shared = "No change in wording"
+    showGate(
+      status({
+        required: [
+          { ...TERMS, summary: shared },
+          { ...PRIVACY, summary: shared },
+        ],
+      }),
+    )
+    expect(await screen.findAllByText(shared)).toHaveLength(1)
+    expect(screen.getByText("Read the Terms")).toBeTruthy()
+    expect(screen.getByText("Read the Privacy notice")).toBeTruthy()
+  })
+
   it("T4: leaves the summary out when the version has none", async () => {
     showGate(status({ required: [{ ...TERMS, summary: null }] }))
     const dialog = await screen.findByRole("dialog")
