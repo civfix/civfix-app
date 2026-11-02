@@ -2,8 +2,9 @@
   "row": {
     "unreadSuffix": "{{title}}, no leído"
   },
-  "actions": {
-    "markAllRead": "Marcar todo como leído"
+  "markReadError": {
+    "generic": "No se pudieron marcar tus notificaciones como leídas. Inténtalo de nuevo.",
+    "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
   },
   "signedOut": {
     "title": "Inicia sesión para ver notificaciones",

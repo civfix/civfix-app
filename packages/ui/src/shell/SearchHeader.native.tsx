@@ -4,7 +4,8 @@ import { BottomSheetTextInput } from "@gorhom/bottom-sheet"
 import { ReduceMotion, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated"
 import { useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
-import { Avatar } from "../primitives"
+import { Avatar, UnreadDot } from "../primitives"
+import { useHasUnreadNotifications } from "../data"
 import { useT } from "../i18n"
 import type { SearchHeaderProps } from "./SearchHeader.types"
 import { useSearchHeaderStyles } from "./SearchHeader.styles"
@@ -112,6 +113,8 @@ export function SearchHeader(props: SearchHeaderProps) {
   const styles = useSearchHeaderStyles()
   const th = useTheme()
   const { t } = useT("common-search")
+  const { t: tn } = useT("notifications")
+  const unread = useHasUnreadNotifications()
   const {
     value,
     placeholder,
@@ -146,11 +149,16 @@ export function SearchHeader(props: SearchHeaderProps) {
         <Pressable
           onPress={onOpenProfile}
           accessibilityRole="button"
-          accessibilityLabel={t("a11y.open_profile")}
+          accessibilityLabel={
+            unread
+              ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
+              : t("a11y.open_profile")
+          }
           hitSlop={8}
           style={({ pressed }) => (pressed ? styles.buttonPressed : null)}
         >
           <Avatar name={userName} photoUrl={userPhotoUrl ?? null} size={32} />
+          {unread ? <UnreadDot /> : null}
         </Pressable>
       ) : null}
     </View>

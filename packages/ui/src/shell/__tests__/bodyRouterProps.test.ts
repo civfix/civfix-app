@@ -155,8 +155,9 @@ const BODY_CASES = {
     { entry: { kind: "edit-cleanup" }, renders: "EditCleanupBody", props: { id: "" } },
   ],
   notifications: [{ entry: full("activity"), renders: "NotificationsBody", props: {} }],
+  // T18: the settings route keeps its nav kind and renders the per-category page.
   notificationPrefs: [
-    { entry: full("notification-prefs"), renders: "NotificationPrefsBody", props: {} },
+    { entry: full("notification-prefs"), renders: "NotificationSettingsBody", props: {} },
   ],
   conversation: [
     {

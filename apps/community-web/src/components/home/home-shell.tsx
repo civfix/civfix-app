@@ -48,6 +48,12 @@ const WebBrandAbout = dynamic(
   { ssr: false },
 )
 
+/** Client-only: it reads the browser's notification permission and its own once-per-browser flag. */
+const WebPushPrompt = dynamic(
+  () => import("@/components/home/web-push-prompt").then((m) => m.WebPushPrompt),
+  { ssr: false },
+)
+
 /**
  * The founders' system notice, the topmost fixed bar at every width. Client-only like the shell: it reads the
  * app config, which the static export cannot know. Everything under it clears the height it publishes.
@@ -197,6 +203,7 @@ export function AppShellFrame() {
                 <WebBrandAbout />
               </>
             }
+            mapPrompt={<WebPushPrompt />}
           />
         </SafeAreaProvider>
       </main>

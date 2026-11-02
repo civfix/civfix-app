@@ -33,6 +33,13 @@
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
 
+# The service worker keeps its fixed URL across deploys, so the browser must revalidate it on every update
+# check or a fixed worker would reach people late. The inherited cache from `/*` is dropped first (see
+# MERGE SEMANTICS above).
+/sw.js
+  ! Cache-Control
+  Cache-Control: no-cache
+
 # Broadcast unsubscribe pages are never indexed: the URL carries a one-click token.
 /unsubscribe*
   X-Robots-Tag: noindex

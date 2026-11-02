@@ -12,6 +12,11 @@ export interface AppShellProps {
   mapControls: React.ReactNode
   /** Drawn above the panel and controls. */
   authOverlay?: React.ReactNode
+  /**
+   * A non-modal card that floats over the map. Expanded, it draws in the controls layer under their top
+   * bar, so a panel the controls open covers it; compact, it draws with the overlay, above the tab bar.
+   */
+  mapPrompt?: React.ReactNode
   /** Called `(null, view)` for the list/home body and `(entry, view)` for a detail. */
   renderBody?: (entry: DetailEntry | null, view: View) => React.ReactNode
   stack?: readonly DetailEntry[]

@@ -16,6 +16,7 @@ import {
   type PushUnregisterDeps,
   type SignOutUnregisteringPushDeps,
 } from "./pushRegistration.ts"
+import { PUSH_ASKED_KEY } from "./pushTokenSync.ts"
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve))
 
@@ -538,4 +539,15 @@ test("the store revokes on the EXPLICIT sign-out only, never on the lapsed or fo
 
   const lapsed = source.slice(source.indexOf("  markUnauthed: () => {"))
   assert.doesNotMatch(lapsed.slice(0, lapsed.indexOf("\n  },")), /revokeSession|api\.logout/)
+})
+
+test("T11: signing out forgets the push registration but remembers that this device was asked", async () => {
+  const store = memoryStore({
+    [PUSH_REGISTRATION_KEY]: JSON.stringify({ platform: "android", token: "fcm-token-1" }),
+    [PUSH_ASKED_KEY]: "1",
+  })
+  const { deps } = signOutProbe({ store })
+  await signOutUnregisteringPush(deps)
+  assert.equal(store.getString(PUSH_REGISTRATION_KEY), undefined)
+  assert.equal(store.getString(PUSH_ASKED_KEY), "1")
 })

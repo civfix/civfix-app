@@ -357,3 +357,18 @@ test("a boot hydration resets the network outcome to pending until the server an
   await pending
   assert.equal(store.getState().networkOutcome, "ok")
 })
+
+test("T12: a sign-in from the sign-in screen leaves the push prompt pending; a restored session does not", async () => {
+  const signedIn = await freshStore()
+  await signedIn.getState().signIn("tok", USER as never)
+  assert.equal(signedIn.getState().pushPromptPending, true)
+
+  resetStubs()
+  control.token = { ok: true, token: "tok" }
+  memory.set(LAST_IDENTITY_KEY, USER.id)
+  control.session = signedInSession(USER)
+  const restored = await freshStore()
+  await restored.getState().hydrate("boot")
+  assert.equal(restored.getState().status, "authed")
+  assert.equal(restored.getState().pushPromptPending, false)
+})

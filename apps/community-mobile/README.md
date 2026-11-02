@@ -91,6 +91,30 @@ prebuild with `--clean` before a Play build if you ever prebuilt the dev variant
 App Store and TestFlight builds share `org.civfix.community`, so those two still replace each other:
 Apple installs a TestFlight build over the store app by design.
 
+## Push notifications
+
+The app registers its native device token with `registerPush` (`src/push/register.ts`,
+`src/lib/pushTokenSync.ts`): the raw APNs token (hex) on iOS, the FCM token on Android. The backend
+sends to APNs and FCM directly; there is no Expo push service. Android gets its Firebase app from
+`google-services.json` (committed; it identifies the app and is not a secret), which `app.config.js`
+sets as `android.googleServicesFile` for the store variant only. Registration runs while signed in with
+permission granted: at launch, on every return to the app, right after a grant and whenever
+`addPushTokenListener` reports a rotated token. The system prompt shows once per device, after a sign-in
+from the sign-in screen; `civfix.push.asked` in MMKV remembers it across sign-outs.
+
+Android channels are the notification-settings sections (`NOTIFICATION_SECTIONS`) plus `default`
+(`src/push/channels.ts`). The backend also sends silent `kind: "clear"` pushes naming notifications read
+on another device. `src/push/clearTask.ts` defines an `expo-task-manager` task at module scope (the
+bundle entry, `index.ts`, imports it before expo-router), so a clear removes delivered notifications in the background too
+(`enableBackgroundRemoteNotifications` on the `expo-notifications` plugin adds iOS's
+`remote-notification` background mode). iOS throttles those and never wakes a force-quit app, so every
+launch and return to the app also removes delivered notifications that are read or gone from the first
+page of the notifications list (`src/push/clearDelivered.ts`). Chat pushes are removed only by a clear
+that names them.
+
+The `.dev` variant gets no push: Firebase and APNs are set up for `org.civfix.community` only, so it
+builds without `google-services.json` and its push permission reports `unsupported`.
+
 ## Store-distribution profiles: `testflight` vs `production`
 
 Two store-distribution profiles exist in `apps/community-mobile/eas.json`, differing only in the

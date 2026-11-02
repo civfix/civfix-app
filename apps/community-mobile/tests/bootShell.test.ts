@@ -9,10 +9,6 @@ const crashScreen = readFileSync(
   "utf8",
 )
 const launchGate = readFileSync(new URL("../src/boot/useLaunchGate.ts", import.meta.url), "utf8")
-const pushOnSignIn = readFileSync(
-  new URL("../src/push/usePushOnSignIn.ts", import.meta.url),
-  "utf8",
-)
 const appBridges = readFileSync(new URL("../src/boot/AppBridges.tsx", import.meta.url), "utf8")
 const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
@@ -72,12 +68,8 @@ test("the loading gate stops hit-testing the moment it starts fading out", () =>
   assert.doesNotMatch(layout, /exiting=\{FadeOut/)
 })
 
-test("push registration latches on a terminal outcome, never before the async work", () => {
+test("push registration runs from the root layout", () => {
   assert.match(layout, /^  usePushOnSignIn\(\)$/m)
-  const hook = pushOnSignIn.slice(pushOnSignIn.indexOf("function usePushOnSignIn"))
-  assert.match(hook, /if \(!shouldAttemptPushRegistration\(state\)\) return/)
-  assert.match(hook, /if \(isPushOutcomeTerminal\(result\.status\)\) \{\n\s+state\.settled = true/)
-  assert.match(hook, /if \(isForegroundEdge\(attemptRef\.current, next\)\) attempt\(\)/)
 })
 
 test("every external URL is validated before it reaches Linking.openURL", () => {

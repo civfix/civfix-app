@@ -47,7 +47,7 @@ import {
 import { showBackAffordance } from "./backAffordance"
 import { hasDetailHeader } from "./SheetHeader.shared"
 import { detailTrailingActionFor, type DetailTrailingAction } from "./detailTrailingAction"
-import { DetailTrailingButton } from "./DetailTrailingButton"
+import { DetailTrailingButtons } from "./DetailTrailingButton"
 import { expandedFramePlan, expandedTopOffsets, NAV_LEFT, NAV_TOP } from "./expandedFramePlan"
 import { cssTransition } from "./motionCss"
 import { surfaceKey } from "./bodyLayout"
@@ -252,7 +252,7 @@ export function ExpandedShell({
                 <PanelHeader
                   title={title}
                   showBack={showBackAffordance({ stack: held.stack, mode: "expanded" })}
-                  trailingAction={detailTrailingActionFor(held.active)}
+                  trailingActions={detailTrailingActionFor(held.active)}
                 />
               ) : null}
               <Body entry={held.active} view={held.view} renderBody={renderBody} />
@@ -302,11 +302,11 @@ export function ExpandedShell({
 function PanelHeader({
   title,
   showBack,
-  trailingAction,
+  trailingActions,
 }: {
   title: string
   showBack: boolean
-  trailingAction: DetailTrailingAction | null
+  trailingActions: readonly DetailTrailingAction[]
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -333,7 +333,7 @@ function PanelHeader({
       >
         {title}
       </Text>
-      <DetailTrailingButton action={trailingAction} />
+      <DetailTrailingButtons actions={trailingActions} />
     </View>
   )
 }

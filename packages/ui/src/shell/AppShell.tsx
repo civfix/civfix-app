@@ -18,6 +18,7 @@ export function AppShell({
   map,
   mapControls,
   authOverlay,
+  mapPrompt,
   renderBody = defaultRenderBody,
   stack,
 }: AppShellProps) {
@@ -41,6 +42,10 @@ export function AppShell({
   const mapVisible = mode === "expanded" || !basePlan.renderBaseBody
   const mountMapControls =
     mode === "expanded" || portraitShellPlan(view, active, fullPageDetails).mountMapControls
+  // Expanded, the prompt sits under the controls' top bar, so a panel they open inline (Map layers) draws
+  // over it; compact, it stays in the overlay, above the sheet and the tab bar.
+  const promptInControls = mode === "expanded"
+  const overlayPrompt = promptInControls ? null : mapPrompt
 
   React.useEffect(() => {
     useNavStore.getState().setMode(mode)
@@ -59,7 +64,12 @@ export function AppShell({
               {map}
             </View>
           ) : null}
-          {mountMapControls ? <View style={styles.controls}>{mapControls}</View> : null}
+          {mountMapControls ? (
+            <View style={styles.controls}>
+              {promptInControls ? mapPrompt : null}
+              {mapControls}
+            </View>
+          ) : null}
           {mode === "expanded" ? (
             <ExpandedShell renderBody={renderBody} stack={stack} />
           ) : (
@@ -73,7 +83,12 @@ export function AppShell({
               stack={stack}
             />
           )}
-          {authOverlay ? <View style={styles.overlay}>{authOverlay}</View> : null}
+          {authOverlay || overlayPrompt ? (
+            <View style={styles.overlay}>
+              {authOverlay}
+              {overlayPrompt}
+            </View>
+          ) : null}
         </View>
       </SharePostProvider>
     </MediaLightboxProvider>

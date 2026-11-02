@@ -23,7 +23,7 @@ const section = readFileSync(new URL("../profile/ServiceHoursSection.tsx", impor
 const certificate = surfaceSource("certificateCard")
 const notifications = readFileSync(new URL("../NotificationsBody.tsx", import.meta.url), "utf8")
 const privacy = readFileSync(new URL("../SettingsPrivacyBody.tsx", import.meta.url), "utf8")
-const prefs = readFileSync(new URL("../NotificationPrefsBody.tsx", import.meta.url), "utf8")
+const prefs = readFileSync(new URL("../NotificationSettingsBody.tsx", import.meta.url), "utf8")
 
 /**
  * Strip block + line comments so the assertions read CODE only. The header comments in both files name

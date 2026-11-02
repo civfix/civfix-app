@@ -29,7 +29,6 @@ import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
 import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
-import { nativePush } from "@/lib/nativePush"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
 import { launchTheme } from "@/boot/launchTheme"
 import { AppBridges } from "@/boot/AppBridges"
@@ -56,6 +55,8 @@ import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 import { useAppearanceStore } from "@/store/appearanceStore"
 import { useNotificationDeepLinks } from "@/push/useNotificationDeepLinks"
 import { usePushOnSignIn } from "@/push/usePushOnSignIn"
+import { nativePushPermission } from "@/push/register"
+import "@/push/clearTask"
 import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"
 
 export { ErrorBoundary } from "@/components/CrashScreen"
@@ -79,7 +80,7 @@ const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: { ...nativeCamera, Viewfinder: ReportViewfinder },
   geolocation: nativeGeolocation,
-  push: nativePush,
+  pushPermission: nativePushPermission,
   secureStore: nativeSecureStore,
   blurSurface: { supported: supportsBlur },
   haptics: nativeHaptics,
