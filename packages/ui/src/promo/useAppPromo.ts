@@ -42,7 +42,6 @@ export function useAppPromo(): AppPromo {
       mounted: true,
       platform: detectAppPlatform({
         userAgent: navigator.userAgent,
-        platform: navigator.platform,
         maxTouchPoints: navigator.maxTouchPoints,
       }),
       standalone: isStandalonePWA(typeof window !== "undefined" ? window : undefined),

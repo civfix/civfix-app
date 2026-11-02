@@ -18,7 +18,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -69,7 +74,9 @@ function navNow(): { view: unknown; active: unknown } {
 }
 
 /** The owed Terms version the server no longer has: `GET /legal/documents/terms/2026-10-30` is a 404. */
-function showGateWithOwedVersionMissing(initial: MyLegalStatusResponse = status({ required: [TERMS] })) {
+function showGateWithOwedVersionMissing(
+  initial: MyLegalStatusResponse = status({ required: [TERMS] }),
+) {
   const legal = legalApi(initial)
   legal.api.getLegalDocument.mockRejectedValue(new AppError(ErrorCode.NOT_FOUND, "no such version"))
   return { ...legal, ...mountLegal(<LegalUpdateGate />, { api: legal.api, open }) }
@@ -153,7 +160,8 @@ describe("LegalUpdateGate: reading inside the screen", () => {
     const text = await screen.findByText(TERMS_TEXT)
 
     let column: HTMLElement | null = text.parentElement
-    while (column !== null && getComputedStyle(column).maxWidth !== "760px") column = column.parentElement
+    while (column !== null && getComputedStyle(column).maxWidth !== "760px")
+      column = column.parentElement
     expect(column).not.toBeNull()
     expect(getComputedStyle(column as HTMLElement).alignSelf).toBe("center")
 
@@ -170,7 +178,9 @@ describe("LegalUpdateGate: reading inside the screen", () => {
 describe("LegalDocumentBody outside the gate", () => {
   it("T16: Read the current version opens the document's own page in place, as before", async () => {
     const legal = legalApi(status({}))
-    legal.api.getLegalDocument.mockRejectedValue(new AppError(ErrorCode.NOT_FOUND, "no such version"))
+    legal.api.getLegalDocument.mockRejectedValue(
+      new AppError(ErrorCode.NOT_FOUND, "no such version"),
+    )
     mountLegal(<LegalDocumentBody type="terms" version={OWED_VERSION} />, { api: legal.api, open })
 
     fireEvent.click(await screen.findByRole("link", { name: CURRENT_LINK }))

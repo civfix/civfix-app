@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Animated, Easing, Platform, View, type LayoutChangeEvent } from "react-native"
 import { makeThemedStyles, useReducedMotion, useTheme } from "../theme"
 import { meterFill, METER_WARN_AT } from "./meterModel"

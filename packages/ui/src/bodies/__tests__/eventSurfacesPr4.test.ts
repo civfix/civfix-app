@@ -6,7 +6,9 @@ import { slotGroupHeaderA11yLabel } from "../rosterSlotGroups"
 // These bodies import react-native, which this package's node vitest cannot load, so the exact props
 // are pinned by reading the source (the house pattern, see focusRing.test.ts).
 const code = (rel: string) =>
-  readFileSync(new URL(rel, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+  readFileSync(new URL(rel, import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "")
 
 const eventsBody = code("../EventsBody.tsx")
 const slotsBlock = code("../EventSlotsBlock.tsx")
@@ -27,7 +29,9 @@ const pressableWith = (src: string, anchor: string) => {
   expect(at, `${anchor} is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
   const open = src.lastIndexOf("<Pressable", at)
   expect(open, `no <Pressable opens before ${anchor}`).toBeGreaterThan(-1)
-  expect(src.slice(open, at), `${anchor} is not inside the nearest Pressable`).not.toContain("</Pressable>")
+  expect(src.slice(open, at), `${anchor} is not inside the nearest Pressable`).not.toContain(
+    "</Pressable>",
+  )
   const close = src.indexOf("</Pressable>", at)
   expect(close).toBeGreaterThan(at)
   return src.slice(open, close)
@@ -51,7 +55,9 @@ describe("the events list", () => {
     const clear = pressableWith(listSearchField, "accessibilityLabel={clearA11yLabel}")
     expect(clear).not.toContain("hitSlop")
     expect(clear).toContain("style={styles.clearTarget}")
-    expect(listSearchField).toMatch(/clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(listSearchField).toMatch(
+      /clearTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/,
+    )
   })
 
   it("keeps the date chip's month legible", () => {
@@ -94,14 +100,18 @@ describe("the slot editor", () => {
   })
 
   it("gives the stepper and remove controls a 44pt box around their small discs", () => {
-    expect(slotEditor).toMatch(/discTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/)
+    expect(slotEditor).toMatch(
+      /discTarget: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET,/,
+    )
     expect(slotEditor.match(/styles\.discTarget,/g) ?? []).toHaveLength(3)
     expect(slotEditor).not.toContain("hitSlop={4}")
     expect(slotEditor).not.toContain("hitSlop={6}")
   })
 
   it("stacks the chevrons as two 44pt-wide halves that only spend slop on their outer edge", () => {
-    expect(slotEditor).toMatch(/reorderBtn: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET \/ 2,/)
+    expect(slotEditor).toMatch(
+      /reorderBtn: \{\s*width: MIN_TOUCH_TARGET,\s*height: MIN_TOUCH_TARGET \/ 2,/,
+    )
     expect(slotEditor).toContain("const MOVE_UP_HIT_SLOP = { top: MIN_TOUCH_TARGET / 4 }")
     expect(slotEditor).toContain("const MOVE_DOWN_HIT_SLOP = { bottom: MIN_TOUCH_TARGET / 4 }")
   })
@@ -113,8 +123,12 @@ describe("the slot editor", () => {
   })
 
   it("drops a refused-pick error once the host moves the event window", () => {
-    expect(slotWindow).toContain("const windowKey = `${eventStart.getTime()}|${eventEnd.getTime()}`")
-    expect(slotWindow).toContain("const invalidEdge = refused?.windowKey === windowKey ? refused.edge : null")
+    expect(slotWindow).toContain(
+      "const windowKey = `${eventStart.getTime()}|${eventEnd.getTime()}`",
+    )
+    expect(slotWindow).toContain(
+      "const invalidEdge = refused?.windowKey === windowKey ? refused.edge : null",
+    )
   })
 })
 
@@ -158,7 +172,11 @@ describe("the event form", () => {
 
 describe("the event detail", () => {
   it("tags every section title as a level-3 heading under the level-2 event title", () => {
-    for (const key of ['t("bring.heading")', 't("host.heading")', 'reports.length > LINKED_REPORTS_COUNT_AT']) {
+    for (const key of [
+      't("bring.heading")',
+      't("host.heading")',
+      "reports.length > LINKED_REPORTS_COUNT_AT",
+    ]) {
       const at = detail.indexOf(key)
       expect(at, key).toBeGreaterThan(-1)
       const open = detail.lastIndexOf("<Text", at)
@@ -176,7 +194,11 @@ describe("the event detail", () => {
   })
 
   it("keys the action rows by the element key, so a row appearing does not remount its siblings", async () => {
-    vi.doMock("react-native", () => ({ View: "View", Pressable: "Pressable", StyleSheet: { hairlineWidth: 1 } }))
+    vi.doMock("react-native", () => ({
+      View: "View",
+      Pressable: "Pressable",
+      StyleSheet: { hairlineWidth: 1 },
+    }))
     vi.doMock("../../theme", () => ({
       makeThemedStyles: () => () => ({}),
       useTheme: () => ({}),
@@ -188,10 +210,13 @@ describe("the event detail", () => {
     vi.doMock("../../typography", () => ({ Text: "Text", Icon: "Icon", iconMap: {} }))
     const { EventActionRows } = await import("../EventActionRow")
     const rowKeys = (children: React.ReactNode[]): Record<string, React.Key | null> => {
-      const out = EventActionRows({ children }) as React.ReactElement<{ children: React.ReactElement[] }>
+      const out = EventActionRows({ children }) as React.ReactElement<{
+        children: React.ReactElement[]
+      }>
       return Object.fromEntries(
         out.props.children.map((fragment) => {
-          const row = (fragment.props as { children: React.ReactNode[] }).children[1] as React.ReactElement
+          const row = (fragment.props as { children: React.ReactNode[] })
+            .children[1] as React.ReactElement
           return [String(row.type), fragment.key]
         }),
       )
@@ -213,7 +238,9 @@ describe("the hours controls", () => {
     const edit = pressableWith(hoursBlock, 't("log_hours.summary_edit_a11y")')
     expect(edit).not.toContain("hitSlop")
     expect(edit).toContain("styles.editTarget")
-    expect(hoursBlock).toMatch(/editTarget: \{\s*minWidth: MIN_TOUCH_TARGET,\s*minHeight: MIN_TOUCH_TARGET,/)
+    expect(hoursBlock).toMatch(
+      /editTarget: \{\s*minWidth: MIN_TOUCH_TARGET,\s*minHeight: MIN_TOUCH_TARGET,/,
+    )
   })
 })
 
@@ -234,7 +261,9 @@ describe("slotGroupHeaderA11yLabel", () => {
     expect(slotGroupHeaderA11yLabel(t, { ...base, claimed: null, capacity: null })).toBe(
       `roster.window_a11y|${JSON.stringify(base)}`,
     )
-    expect(slotGroupHeaderA11yLabel(t, { title: "Setup", range: null, claimed: 3, capacity: 5 })).toBeNull()
+    expect(
+      slotGroupHeaderA11yLabel(t, { title: "Setup", range: null, claimed: 3, capacity: 5 }),
+    ).toBeNull()
   })
 
   it("is what the header renders", () => {

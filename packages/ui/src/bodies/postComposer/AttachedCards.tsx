@@ -1,4 +1,3 @@
-import React from "react"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import type { PostComposerAttach } from "../usePostComposerAttach"
@@ -21,5 +20,12 @@ export function AttachedEventCard({ attach }: { attach: PostComposerAttach }) {
 
 export function AttachedReportCard({ attach }: { attach: PostComposerAttach }) {
   if (!attach.attachedReport) return null
-  return <LinkedReportCard report={attach.attachedReport} layout="list" headline="title" onRemove={attach.detachReport} />
+  return (
+    <LinkedReportCard
+      report={attach.attachedReport}
+      layout="list"
+      headline="title"
+      onRemove={attach.detachReport}
+    />
+  )
 }

@@ -3,7 +3,6 @@
  * web dock is two BlurSurface panes on the same `dockShapes` geometry as native, rendered statically at
  * progress 0; the SDF morph is a native-only Skia treatment.
  */
-import React from "react"
 import { View } from "react-native"
 import { BlurSurface } from "../BlurSurface"
 import { dockShapes, dockRadius } from "./liquidGlassModel"

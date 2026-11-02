@@ -5,7 +5,7 @@
   },
   "build": {
     "development": {
-      "pnpm": "9.12.0",
+      "pnpm": "10.34.9",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -16,7 +16,7 @@
       }
     },
     "preview": {
-      "pnpm": "9.12.0",
+      "pnpm": "10.34.9",
       "distribution": "internal",
       "ios": {
         "simulator": false
@@ -50,7 +50,7 @@
       }
     },
     "production": {
-      "pnpm": "9.12.0",
+      "pnpm": "10.34.9",
       "autoIncrement": true,
       "env": {
         "//api": "Deliberately sets no EXPO_PUBLIC_API_URL. On iOS ONLY, src/lib/apiUrl.ts resolves the base URL at runtime from the active StoreKit receipt, so one binary talks to https://api.civfix.dev while it is under test in TestFlight and to https://api.civfix.org once the same build is downloaded from the App Store. Every other platform resolves to https://api.civfix.org; Android's Play internal builds bake the staging API through the testflight profile instead (scripts/android-build.sh). Baking a URL here would freeze iOS to one of the two.",

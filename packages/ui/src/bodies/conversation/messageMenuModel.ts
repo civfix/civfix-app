@@ -22,7 +22,13 @@ export interface MessageMenuInput {
   }
 }
 
-export function messageMenuModel({ descriptors, labels, icons, press, confirm }: MessageMenuInput): MessageMenuModel {
+export function messageMenuModel({
+  descriptors,
+  labels,
+  icons,
+  press,
+  confirm,
+}: MessageMenuInput): MessageMenuModel {
   return {
     menuActions: descriptors.map((d) => ({
       key: d.key,

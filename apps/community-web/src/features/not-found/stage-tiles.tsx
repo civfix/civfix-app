@@ -45,7 +45,11 @@ export function TilesStage({ live }: { live: boolean }) {
     const firstTile = tileRefs.current[0]
     if (!stage || !firstTile) return null
     const measure = () => {
-      size.current = { width: stage.clientWidth, height: stage.clientHeight, tile: firstTile.offsetWidth }
+      size.current = {
+        width: stage.clientWidth,
+        height: stage.clientHeight,
+        tile: firstTile.offsetWidth,
+      }
     }
     measure()
     const { width, tile } = size.current
@@ -134,7 +138,7 @@ export function TilesStage({ live }: { live: boolean }) {
       <div ref={stageRef} className={live ? "nf-tiles is-live" : "nf-tiles"}>
         {DIGITS.map((digit, i) => (
           <div
-            key={i}
+            key={digit.tone}
             ref={(el) => {
               tileRefs.current[i] = el
             }}
@@ -154,7 +158,11 @@ export function TilesStage({ live }: { live: boolean }) {
   )
 }
 
-export function step(bodies: Body[], box: { width: number; height: number; tile: number }, dt: number) {
+export function step(
+  bodies: Body[],
+  box: { width: number; height: number; tile: number },
+  dt: number,
+) {
   const half = box.tile / 2
   const floor = box.height - half
   for (const b of bodies) {
@@ -191,10 +199,10 @@ export function step(bodies: Body[], box: { width: number; height: number; tile:
   }
 
   const minDist = box.tile * 0.98
-  for (let i = 0; i < bodies.length; i++) {
+  for (const [i, a] of bodies.entries()) {
     for (let j = i + 1; j < bodies.length; j++) {
-      const a = bodies[i]!
-      const b = bodies[j]!
+      const b = bodies[j]
+      if (b === undefined) continue
       const dx = b.x - a.x
       const dy = b.y - a.y
       const dist = Math.hypot(dx, dy)

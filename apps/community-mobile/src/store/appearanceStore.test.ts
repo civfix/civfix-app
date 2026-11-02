@@ -20,7 +20,9 @@ let instance = 0
 
 async function freshStore() {
   instance += 1
-  const module = (await import(`./appearanceStore.ts?instance=${instance}`)) as typeof AppearanceModule
+  const module = (await import(
+    `./appearanceStore.ts?instance=${instance}`
+  )) as typeof AppearanceModule
   return module.useAppearanceStore
 }
 

@@ -1,12 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler"
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated"
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { motion } from "../theme"
 import { timingConfig } from "../theme/motionTiming.native"
 import { useT } from "../i18n"
@@ -90,11 +86,11 @@ export function ZoomableMedia({
     (next: ZoomTransform) => {
       "worklet"
       const nextZoomed = isZoomed(next.scale)
-      if (nextZoomed) runOnJS(setZoomed)(true)
+      if (nextZoomed) scheduleOnRN(setZoomed, true)
       x.value = withTiming(next.x, SETTLE_CFG)
       y.value = withTiming(next.y, SETTLE_CFG)
       scale.value = withTiming(next.scale, SETTLE_CFG, (finished) => {
-        if (finished && !nextZoomed) runOnJS(setZoomed)(false)
+        if (finished && !nextZoomed) scheduleOnRN(setZoomed, false)
       })
     },
     [scale, x, y],
@@ -136,7 +132,13 @@ export function ZoomableMedia({
         if (event.numberOfTouches > 1) return
         const touch = event.allTouches[0]
         if (!touch) return
-        if (!travelExceeds(panTouchOrigin.value, { x: touch.absoluteX, y: touch.absoluteY }, PAN_ACTIVATE_TRAVEL)) {
+        if (
+          !travelExceeds(
+            panTouchOrigin.value,
+            { x: touch.absoluteX, y: touch.absoluteY },
+            PAN_ACTIVATE_TRAVEL,
+          )
+        ) {
           return
         }
         manager.activate()

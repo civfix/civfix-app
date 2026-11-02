@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { View, type StyleProp, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
@@ -8,7 +8,7 @@ import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/contract"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 const DATA_EXPORT_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.VALIDATION]: "data_export.error.no_email",

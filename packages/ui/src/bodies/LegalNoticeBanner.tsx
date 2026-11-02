@@ -1,8 +1,15 @@
-import React, { useCallback, useContext, useRef } from "react"
+import { useCallback, useContext, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { LegalDocumentMetaDTO, LegalDocumentType } from "@civfix/contract"
-import { MIN_TOUCH_TARGET, focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webCursor } from "../theme"
+import {
+  MIN_TOUCH_TARGET,
+  focusRingProps,
+  makeThemedStyles,
+  useLayoutMode,
+  useTheme,
+  webCursor,
+} from "../theme"
 import { Text } from "../typography"
 import {
   noticeAcknowledgement,
@@ -42,7 +49,13 @@ export function LegalNoticeBanner() {
   if (status.data.required.length > 0) return null
   const notice = status.data.notices[0]
   if (!notice) return null
-  return <NoticeBanner key={`${notice.type}:${notice.version}`} notice={notice} onOutdated={onOutdated} />
+  return (
+    <NoticeBanner
+      key={`${notice.type}:${notice.version}`}
+      notice={notice}
+      onOutdated={onOutdated}
+    />
+  )
 }
 
 interface NoticeBannerProps {
@@ -90,7 +103,9 @@ function NoticeBanner({ notice, onOutdated }: NoticeBannerProps) {
       ]}
     >
       <View style={styles.banner}>
-        <Text style={styles.text}>{notice.summary ? `${sentence} ${notice.summary}` : sentence}</Text>
+        <Text style={styles.text}>
+          {notice.summary ? `${sentence} ${notice.summary}` : sentence}
+        </Text>
         {failed ? (
           <Text style={styles.error} accessibilityRole="alert">
             {t("accept_error")}
@@ -102,7 +117,11 @@ function NoticeBanner({ notice, onOutdated }: NoticeBannerProps) {
             accessibilityRole="button"
             accessibilityLabel={t("notice.read")}
             {...focusRingProps}
-            style={({ pressed }) => [styles.action, webCursor(false), pressed ? styles.pressed : null]}
+            style={({ pressed }) => [
+              styles.action,
+              webCursor(false),
+              pressed ? styles.pressed : null,
+            ]}
           >
             <Text style={styles.actionText}>{t("notice.read")}</Text>
           </Pressable>

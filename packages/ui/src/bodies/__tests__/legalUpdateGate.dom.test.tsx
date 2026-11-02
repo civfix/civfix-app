@@ -33,7 +33,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -82,7 +87,10 @@ function navNow(): { view: unknown; active: unknown } {
   return { view, active }
 }
 
-function showGate(initial: MyLegalStatusResponse, auth = undefined as Parameters<typeof mountLegal>[1]["auth"]) {
+function showGate(
+  initial: MyLegalStatusResponse,
+  auth = undefined as Parameters<typeof mountLegal>[1]["auth"],
+) {
   const legal = legalApi(initial)
   const mounted = mountLegal(
     <>
@@ -123,14 +131,18 @@ describe("LegalUpdateGate", () => {
 
   it("T2: names the Privacy notice when only privacy is owed", async () => {
     showGate(status({ required: [PRIVACY] }))
-    expect(await screen.findByRole("heading", { name: "We've updated our Privacy notice" })).toBeTruthy()
+    expect(
+      await screen.findByRole("heading", { name: "We've updated our Privacy notice" }),
+    ).toBeTruthy()
     expect(screen.getByText("Read the Privacy notice")).toBeTruthy()
     expect(screen.queryByText("Read the Terms")).toBeNull()
   })
 
   it("T3: names both, shows both summaries, and offers the Terms before the Privacy notice", async () => {
     showGate(status({ required: [TERMS, PRIVACY] }))
-    expect(await screen.findByRole("heading", { name: "We've updated our Terms and Privacy notice" })).toBeTruthy()
+    expect(
+      await screen.findByRole("heading", { name: "We've updated our Terms and Privacy notice" }),
+    ).toBeTruthy()
     expect(screen.getByText("Adds a section on city filing")).toBeTruthy()
     expect(screen.getByText("Explains how long reports are kept")).toBeTruthy()
     const terms = screen.getByText("Read the Terms")
@@ -157,7 +169,12 @@ describe("LegalUpdateGate", () => {
       items: [
         { type: "terms", version: TERMS.version, sha256: TERMS.sha256, action: "accepted" },
         { type: "privacy", version: PRIVACY.version, sha256: PRIVACY.sha256, action: "accepted" },
-        { type: "cookies", version: COOKIES.version, sha256: COOKIES.sha256, action: "acknowledged" },
+        {
+          type: "cookies",
+          version: COOKIES.version,
+          sha256: COOKIES.sha256,
+          action: "acknowledged",
+        },
       ],
       surface: "prompt",
     })
@@ -201,7 +218,12 @@ describe("LegalUpdateGate", () => {
   })
 
   it("T8: an outdated version refetches the status and the next acceptance sends the new version", async () => {
-    const NEXT = { ...TERMS, version: "2026-11-02", sha256: "d".repeat(64), summary: "Second change" }
+    const NEXT = {
+      ...TERMS,
+      version: "2026-11-02",
+      sha256: "d".repeat(64),
+      summary: "Second change",
+    }
     const { api, setStatus } = showGate(status({ required: [TERMS] }))
     api.acceptLegal.mockImplementationOnce(async () => {
       setStatus(status({ required: [NEXT] }))
@@ -266,27 +288,37 @@ describe("LegalUpdateGate", () => {
     it("shows the owed version when privacy is owed too", async () => {
       const { api } = showGate(status({ required: [TERMS, PRIVACY] }))
       api.getLegalDocument.mockImplementation(async ({ type, version }) => ({
-        document: type === "terms" ? { ...LINKED_TERMS, version } : { ...TERMS_DOC, ...privacyText(), version },
+        document:
+          type === "terms"
+            ? { ...LINKED_TERMS, version }
+            : { ...TERMS_DOC, ...privacyText(), version },
       }))
       await screen.findByRole("dialog")
       fireEvent.click(screen.getByText("Read the Terms"))
       fireEvent.click(await screen.findByRole("link", { name: "the Privacy notice" }))
 
       expect(await screen.findByText("1. About the Privacy Policy")).toBeTruthy()
-      expect(api.getLegalDocument).toHaveBeenCalledWith({ type: "privacy", version: PRIVACY.version })
+      expect(api.getLegalDocument).toHaveBeenCalledWith({
+        type: "privacy",
+        version: PRIVACY.version,
+      })
       expect(screen.getByRole("dialog").getAttribute("aria-modal")).toBe("true")
       expectNothingLeftTheGate()
     })
 
     it("shows the current version when privacy isn't owed", async () => {
       const { api } = showGate(status({ required: [TERMS] }))
-      api.getLegalDocument.mockImplementation(async ({ version }) => ({ document: { ...LINKED_TERMS, version } }))
+      api.getLegalDocument.mockImplementation(async ({ version }) => ({
+        document: { ...LINKED_TERMS, version },
+      }))
       await screen.findByRole("dialog")
       fireEvent.click(screen.getByText("Read the Terms"))
       fireEvent.click(await screen.findByRole("link", { name: "the Privacy notice" }))
 
       expect(await screen.findByText("1. About the Privacy Policy")).toBeTruthy()
-      expect(api.getLegalDocument).not.toHaveBeenCalledWith(expect.objectContaining({ type: "privacy" }))
+      expect(api.getLegalDocument).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: "privacy" }),
+      )
       expect(screen.getByRole("dialog").getAttribute("aria-modal")).toBe("true")
       expectNothingLeftTheGate()
     })
@@ -295,7 +327,9 @@ describe("LegalUpdateGate", () => {
       return {
         type: "privacy" as const,
         title: "Privacy Policy",
-        blocks: [{ kind: "heading" as const, level: 2 as const, text: "1. About the Privacy Policy" }],
+        blocks: [
+          { kind: "heading" as const, level: 2 as const, text: "1. About the Privacy Policy" },
+        ],
       }
     }
 
@@ -351,25 +385,28 @@ describe("LegalUpdateGate", () => {
   it.each([
     ["a network error", () => new TypeError("Failed to fetch")],
     ["an INTERNAL error", () => new AppError(ErrorCode.INTERNAL, "boom")],
-  ])("T15: renders nothing and blocks nothing when the status fails with %s", async (_name, failure) => {
-    const legal = legalApi(status({ required: [TERMS] }))
-    legal.api.getMyLegalStatus.mockRejectedValue(failure())
-    const sibling = vi.fn()
-    mountLegal(
-      <>
-        <LegalUpdateGate />
-        <button type="button" onClick={sibling}>
-          Sibling
-        </button>
-      </>,
-      { api: legal.api },
-    )
-    await settle()
-    expect(legal.api.getMyLegalStatus).toHaveBeenCalled()
-    expect(screen.queryByRole("dialog")).toBeNull()
-    fireEvent.click(screen.getByRole("button", { name: "Sibling" }))
-    expect(sibling).toHaveBeenCalledTimes(1)
-  })
+  ])(
+    "T15: renders nothing and blocks nothing when the status fails with %s",
+    async (_name, failure) => {
+      const legal = legalApi(status({ required: [TERMS] }))
+      legal.api.getMyLegalStatus.mockRejectedValue(failure())
+      const sibling = vi.fn()
+      mountLegal(
+        <>
+          <LegalUpdateGate />
+          <button type="button" onClick={sibling}>
+            Sibling
+          </button>
+        </>,
+        { api: legal.api },
+      )
+      await settle()
+      expect(legal.api.getMyLegalStatus).toHaveBeenCalled()
+      expect(screen.queryByRole("dialog")).toBeNull()
+      fireEvent.click(screen.getByRole("button", { name: "Sibling" }))
+      expect(sibling).toHaveBeenCalledTimes(1)
+    },
+  )
 })
 
 describe("LegalUpdateGate and LegalNoticeBanner", () => {
@@ -381,7 +418,10 @@ describe("LegalUpdateGate and LegalNoticeBanner", () => {
   })
 
   it("T17: neither shows while first run is open", async () => {
-    const { api, container } = showGate(status({ required: [TERMS], notices: [COOKIES] }), FIRST_RUN)
+    const { api, container } = showGate(
+      status({ required: [TERMS], notices: [COOKIES] }),
+      FIRST_RUN,
+    )
     await settle()
     await waitFor(() => expect(api.getMyLegalStatus.mock.results[0]?.type).toBe("return"))
     await settle()

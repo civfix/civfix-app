@@ -6,11 +6,7 @@
  * media's own `release`) prunes it and revokes the object-URL. The bytes upload as-is because the server
  * strips metadata and normalizes orientation.
  */
-import type {
-  CameraCapability,
-  CapturedMedia,
-  PreparedUpload,
-} from "@civfix/ui/capabilities"
+import type { CameraCapability, CapturedMedia, PreparedUpload } from "@civfix/ui/capabilities"
 
 import { readExifGps } from "@/lib/exif"
 import { sha256Hex, mediaKindFromFile } from "@/lib/media"

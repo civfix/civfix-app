@@ -16,8 +16,8 @@ import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "./postComposerSubmit
 export interface FeedShareAuthUser {
   id: string
   displayName: string
-  handle?: string | null
-  avatarUrl?: string | null
+  handle?: string | null | undefined
+  avatarUrl?: string | null | undefined
 }
 
 export function personFromAuthUser(user: FeedShareAuthUser): PersonDTO {

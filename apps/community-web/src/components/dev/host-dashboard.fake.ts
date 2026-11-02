@@ -56,10 +56,7 @@ const FAKE_PORTFOLIO_VOLUNTEERS_CREDITED = 96
 const FAKE_PORTFOLIO_REGISTRATIONS = 412
 const FAKE_PORTFOLIO_CHECK_INS = 337
 
-function fakeTopVolunteers(
-  nextId: () => string,
-  hours: readonly number[],
-): LeaderboardEntryDTO[] {
+function fakeTopVolunteers(nextId: () => string, hours: readonly number[]): LeaderboardEntryDTO[] {
   return FAKE_VOLUNTEER_NAMES.map((volunteer, i) => {
     const userId = nextId()
     return {
@@ -74,7 +71,6 @@ function fakeTopVolunteers(
   })
 }
 
-
 export interface FakeHostedEventsAnalyticsOptions {
   now: number
   seed?: number
@@ -88,7 +84,7 @@ export interface FakeHostedEventsOptions {
 }
 
 function rngFrom(seed: number): () => number {
-  let state = (seed >>> 0) || 1
+  let state = seed >>> 0 || 1
   return () => {
     state = (state + 0x6d2b79f5) >>> 0
     let t = state
@@ -183,10 +179,7 @@ function phaseProfile(phase: EventPhase, now: number): PhaseProfile {
   }
 }
 
-function fakeTicketTypes(
-  nextId: () => string,
-  checkedIn: number,
-): InsightsTicketType[] {
+function fakeTicketTypes(nextId: () => string, checkedIn: number): InsightsTicketType[] {
   const general = Math.round((checkedIn * 30) / FAKE_REGISTERED)
   return [
     {
@@ -268,11 +261,7 @@ function fakeArrivals(checkedIn: number): ArrivalOffsetBucket[] {
   }))
 }
 
-function fakeTrend(
-  registered: number,
-  lastDayMs: number,
-  rng: () => number,
-): SeatPoint[] {
+function fakeTrend(registered: number, lastDayMs: number, rng: () => number): SeatPoint[] {
   const points = cumulative(registered, FAKE_TREND_DAYS, rng)
   return points.map((seats, i) => ({
     day: dayKey(lastDayMs - (FAKE_TREND_DAYS - 1 - i) * MS_PER_DAY),
@@ -300,7 +289,8 @@ export function fakeEventInsights(
       status: profile.status,
       startsAt: new Date(profile.startsAt).toISOString(),
       endsAt: new Date(endsAt).toISOString(),
-      completedAt: profile.completedAt === null ? null : new Date(profile.completedAt).toISOString(),
+      completedAt:
+        profile.completedAt === null ? null : new Date(profile.completedAt).toISOString(),
       registrationClosesAt: new Date(profile.startsAt - 12 * MS_PER_HOUR).toISOString(),
       timezone: options.timezone ?? FAKE_TIMEZONE,
     },

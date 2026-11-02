@@ -22,12 +22,7 @@ export interface EventHoursBlockProps {
   joined: boolean
 }
 
-export function EventHoursBlock({
-  cleanupId,
-  cleanup,
-  actsAsHost,
-  joined,
-}: EventHoursBlockProps) {
+export function EventHoursBlock({ cleanupId, cleanup, actsAsHost, joined }: EventHoursBlockProps) {
   const { user } = useAuthState()
   const hoursQuery = useEventHours(cleanupId)
   const data = hoursQuery.data
@@ -97,9 +92,7 @@ function FadeUp({ children }: { children: React.ReactNode }) {
     return () => translateY.stopAnimation()
   }, [reduceMotion, translateY])
 
-  return (
-    <Animated.View style={{ opacity, transform: [{ translateY }] }}>{children}</Animated.View>
-  )
+  return <Animated.View style={{ opacity, transform: [{ translateY }] }}>{children}</Animated.View>
 }
 
 function HostHours({
@@ -206,7 +199,9 @@ function HoursSummaryCard({
                   {name}
                 </Text>
                 <Text style={styles.personHours}>
-                  {t("volunteer-hours:ledger.hours_unit", { hours: formatHoursDisplay(entry.hours, locale) })}
+                  {t("volunteer-hours:ledger.hours_unit", {
+                    hours: formatHoursDisplay(entry.hours, locale),
+                  })}
                 </Text>
               </View>
             )
@@ -246,7 +241,10 @@ function AttendeeReceipt({
       <Pressable
         onPress={onOpenHours}
         accessibilityRole="button"
-        accessibilityLabel={t(range ? "receipt.credited_shift_a11y" : "receipt.credited_a11y", vars)}
+        accessibilityLabel={t(
+          range ? "receipt.credited_shift_a11y" : "receipt.credited_a11y",
+          vars,
+        )}
         {...focusRingProps}
         style={({ pressed }) => [styles.credited, pressed ? styles.pressed : null]}
       >

@@ -25,7 +25,9 @@ describe("wall-clock helpers", () => {
   })
 
   it("drops seconds from the typed clock", () => {
-    expect(formInstantMs(DAY, new Date(2000, 0, 1, 9, 5, 59, 999), "UTC")).toBe(Date.UTC(2026, 6, 24, 9, 5))
+    expect(formInstantMs(DAY, new Date(2000, 0, 1, 9, 5, 59, 999), "UTC")).toBe(
+      Date.UTC(2026, 6, 24, 9, 5),
+    )
   })
 })
 
@@ -39,7 +41,9 @@ describe("isScheduleInFutureInZone grace", () => {
 
   it("is false in a zone where the wall clock does not exist", () => {
     const springForward = new Date(2026, 2, 8, 12)
-    expect(isScheduleInFutureInZone(springForward, clock(2, 30), "America/Los_Angeles", 0)).toBe(false)
+    expect(isScheduleInFutureInZone(springForward, clock(2, 30), "America/Los_Angeles", 0)).toBe(
+      false,
+    )
   })
 })
 
@@ -73,9 +77,13 @@ describe("end clock arithmetic", () => {
 
   it("puts an offset end on the form day's clock, wrapping past midnight onto the same day", () => {
     const end = endTimeAfter(DAY, clock(23), 2 * 3_600_000)
-    expect([end.getFullYear(), end.getMonth(), end.getDate(), end.getHours(), end.getMinutes()]).toEqual([
-      2026, 6, 24, 1, 0,
-    ])
+    expect([
+      end.getFullYear(),
+      end.getMonth(),
+      end.getDate(),
+      end.getHours(),
+      end.getMinutes(),
+    ]).toEqual([2026, 6, 24, 1, 0])
   })
 })
 
@@ -97,8 +105,12 @@ describe("zoneDisplayName", () => {
   const JANUARY = Date.parse("2026-01-15T12:00:00.000Z")
 
   it("pairs the long name with the short one, following DST at the given instant", () => {
-    expect(zoneDisplayName("America/Los_Angeles", "en-US", JULY)).toBe("Pacific Daylight Time (PDT)")
-    expect(zoneDisplayName("America/Los_Angeles", "en-US", JANUARY)).toBe("Pacific Standard Time (PST)")
+    expect(zoneDisplayName("America/Los_Angeles", "en-US", JULY)).toBe(
+      "Pacific Daylight Time (PDT)",
+    )
+    expect(zoneDisplayName("America/Los_Angeles", "en-US", JANUARY)).toBe(
+      "Pacific Standard Time (PST)",
+    )
   })
 
   it("falls back to a GMT offset short name where no abbreviation exists", () => {

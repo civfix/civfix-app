@@ -4,7 +4,7 @@ import type { UseRelativeTime } from "../../i18n"
 import { relativeLineFor, type HostRowKey } from "./hostSurfaceModel"
 import { relativeUntil } from "./hostTime"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 export interface HostRowCounts {
   stillToCheckIn: number

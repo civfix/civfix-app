@@ -1,0 +1,38 @@
+version: 2
+registries:
+  civfix:
+    type: npm-registry
+    url: https://repo.civfix.org
+    replaces-base: false
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    registries: [civfix]
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: America/Los_Angeles }
+    cooldown: { default-days: 3 }
+    open-pull-requests-limit: 5
+    groups:
+      non-major: { update-types: [minor, patch] }
+    ignore:
+      - dependency-name: "@civfix/*"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # The Expo SDK moves as one set through `expo install --fix`, which Dependabot cannot run; react,
+      # react-dom and react-native-skia are pinned by that SDK too.
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@react-native/*"
+      - dependency-name: "@react-native-community/*"
+      - dependency-name: "metro*"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "@shopify/react-native-skia"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 3 }
+    groups:
+      actions: { patterns: ["*"] }

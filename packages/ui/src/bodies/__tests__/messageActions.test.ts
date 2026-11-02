@@ -74,7 +74,9 @@ describe("buildMessageActions", () => {
   })
 
   it("own pending/failed message: nothing", () => {
-    expect(keys(input({ mine: true, canEdit: true, canDelete: true, pendingOrFailed: true }))).toEqual([])
+    expect(
+      keys(input({ mine: true, canEdit: true, canDelete: true, pendingOrFailed: true })),
+    ).toEqual([])
   })
 
   it("deleted (tombstone) message: nothing", () => {
@@ -83,16 +85,17 @@ describe("buildMessageActions", () => {
   })
 
   it("omits copy when there is no body (attachment-only); reply stays", () => {
-    expect(keys(input({ mine: true, canDelete: true, hasBody: false }))).toEqual(["reply", "delete"])
+    expect(keys(input({ mine: true, canDelete: true, hasBody: false }))).toEqual([
+      "reply",
+      "delete",
+    ])
     expect(keys(input({ isGroupRoom: true, hasBody: false }))).toEqual(["reply", "report", "block"])
   })
 
   it("omits copy when the host has no clipboard capability", () => {
-    expect(keys(input({ mine: true, canEdit: true, canDelete: true, hasClipboard: false }))).toEqual([
-      "reply",
-      "edit",
-      "delete",
-    ])
+    expect(
+      keys(input({ mine: true, canEdit: true, canDelete: true, hasClipboard: false })),
+    ).toEqual(["reply", "edit", "delete"])
     expect(keys(input({ isSystem: true, hasClipboard: false }))).toEqual([])
   })
 
@@ -102,11 +105,19 @@ describe("buildMessageActions", () => {
   })
 
   it("omits block when the author is not blockable (deleted account)", () => {
-    expect(keys(input({ isGroupRoom: true, authorBlockable: false }))).toEqual(["reply", "copy", "report"])
+    expect(keys(input({ isGroupRoom: true, authorBlockable: false }))).toEqual([
+      "reply",
+      "copy",
+      "report",
+    ])
   })
 
   it("own non-editable message keeps delete without edit", () => {
-    expect(keys(input({ mine: true, canEdit: false, canDelete: true }))).toEqual(["reply", "copy", "delete"])
+    expect(keys(input({ mine: true, canEdit: false, canDelete: true }))).toEqual([
+      "reply",
+      "copy",
+      "delete",
+    ])
   })
 
   it("pin shown for a pin-power holder (organizer) on others' messages, after copy", () => {
@@ -187,24 +198,35 @@ describe("buildMessageActions", () => {
 
   it("poll: retractVote shows only when the viewer has voted and the poll is open", () => {
     expect(keys(input({ isPoll: true, hasBody: false, hasVoted: true }))).toContain("retractVote")
-    expect(keys(input({ isPoll: true, hasBody: false, hasVoted: true, pollClosed: true }))).not.toContain(
+    expect(
+      keys(input({ isPoll: true, hasBody: false, hasVoted: true, pollClosed: true })),
+    ).not.toContain("retractVote")
+    expect(keys(input({ isPoll: true, hasBody: false, hasVoted: false }))).not.toContain(
       "retractVote",
     )
-    expect(keys(input({ isPoll: true, hasBody: false, hasVoted: false }))).not.toContain("retractVote")
   })
 
   it("poll: stopPoll shows for the author (mine) or a room moderator, only while open", () => {
     expect(keys(input({ isPoll: true, hasBody: false, mine: true }))).toContain("stopPoll")
-    expect(keys(input({ isPoll: true, hasBody: false, canModeratePoll: true }))).toContain("stopPoll")
-    expect(keys(input({ isPoll: true, hasBody: false }))).not.toContain("stopPoll")
-    expect(keys(input({ isPoll: true, hasBody: false, mine: true, pollClosed: true }))).not.toContain(
+    expect(keys(input({ isPoll: true, hasBody: false, canModeratePoll: true }))).toContain(
       "stopPoll",
     )
+    expect(keys(input({ isPoll: true, hasBody: false }))).not.toContain("stopPoll")
+    expect(
+      keys(input({ isPoll: true, hasBody: false, mine: true, pollClosed: true })),
+    ).not.toContain("stopPoll")
   })
 
   it("poll never offers copy or edit, even with a body and edit rights", () => {
     const rows = keys(
-      input({ isPoll: true, mine: true, hasBody: true, canEdit: true, canDelete: true, hasVoted: true }),
+      input({
+        isPoll: true,
+        mine: true,
+        hasBody: true,
+        canEdit: true,
+        canDelete: true,
+        hasVoted: true,
+      }),
     )
     expect(rows).not.toContain("copy")
     expect(rows).not.toContain("edit")
@@ -212,12 +234,14 @@ describe("buildMessageActions", () => {
   })
 
   it("poll rows need a server id (they call the poll endpoints)", () => {
-    expect(keys(input({ isPoll: true, hasBody: false, hasVoted: true, mine: true, hasMessageId: false }))).not.toContain(
-      "retractVote",
-    )
-    expect(keys(input({ isPoll: true, hasBody: false, mine: true, hasMessageId: false }))).not.toContain(
-      "stopPoll",
-    )
+    expect(
+      keys(
+        input({ isPoll: true, hasBody: false, hasVoted: true, mine: true, hasMessageId: false }),
+      ),
+    ).not.toContain("retractVote")
+    expect(
+      keys(input({ isPoll: true, hasBody: false, mine: true, hasMessageId: false })),
+    ).not.toContain("stopPoll")
   })
 
   it("flags delete and block as destructive, others not", () => {
@@ -306,11 +330,14 @@ describe("isBlockableAuthor", () => {
 
   it("the server-flagged official account never offers block", () => {
     expect(isBlockableAuthor({ ...author, official: true })).toBe(false)
-    expect(keys(input({ isGroupRoom: true, authorBlockable: isBlockableAuthor({ ...author, official: true }) }))).toEqual([
-      "reply",
-      "copy",
-      "report",
-    ])
+    expect(
+      keys(
+        input({
+          isGroupRoom: true,
+          authorBlockable: isBlockableAuthor({ ...author, official: true }),
+        }),
+      ),
+    ).toEqual(["reply", "copy", "report"])
   })
 
   it("a deleted, id-less or missing author has nothing to block", () => {

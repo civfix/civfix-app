@@ -231,7 +231,11 @@ describe("keyboardMirrorOverlap: the UI-thread mirror lands in the JS thread's u
   it("lands the docked search bar KEYBOARD_SURFACE_GAP above the keyboard from EITHER source", () => {
     const restOffset = NAV_BAR + 8 + (36 - 34)
     const fromMirror = keyboardLift(
-      keyboardMirrorOverlap({ reanimatedHeight: IME_BOTTOM_INSET, systemBarInset: NAV_BAR, edgeToEdge: true }),
+      keyboardMirrorOverlap({
+        reanimatedHeight: IME_BOTTOM_INSET,
+        systemBarInset: NAV_BAR,
+        edgeToEdge: true,
+      }),
       restOffset,
       KEYBOARD_SURFACE_GAP,
     )
@@ -240,27 +244,41 @@ describe("keyboardMirrorOverlap: the UI-thread mirror lands in the JS thread's u
   })
 
   it("is zero for a closed keyboard, so the nav bar is never published as a phantom overlap", () => {
-    expect(keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: true })).toBe(0)
-    expect(keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: false })).toBe(0)
+    expect(
+      keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: true }),
+    ).toBe(0)
+    expect(
+      keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: false }),
+    ).toBe(0)
   })
 
   it("has no nav bar to add on iOS, where the mirror and the event already agree", () => {
-    expect(keyboardMirrorOverlap({ reanimatedHeight: 345, systemBarInset: 0, edgeToEdge: false })).toBe(345)
+    expect(
+      keyboardMirrorOverlap({ reanimatedHeight: 345, systemBarInset: 0, edgeToEdge: false }),
+    ).toBe(345)
   })
 })
 
 describe("shouldRecaptureRestingHeight: a rotation is not a keyboard", () => {
   it("takes any resize while the keyboard is closed", () => {
-    expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 402 })).toBe(true)
-    expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 874 })).toBe(true)
+    expect(
+      shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 402 }),
+    ).toBe(true)
+    expect(
+      shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 874 }),
+    ).toBe(true)
   })
 
   it("REFUSES the keyboard's own resize: same width, only the height moved", () => {
-    expect(shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 402 })).toBe(false)
+    expect(
+      shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 402 }),
+    ).toBe(false)
   })
 
   it("takes a rotation even with the keyboard up, or the lift stays clamped to 0 until it closes", () => {
-    expect(shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 874 })).toBe(true)
+    expect(
+      shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 874 }),
+    ).toBe(true)
   })
 })
 
@@ -342,21 +360,21 @@ describe("reduceKeyboard: the ownership matrix", () => {
   const ENGAGED: KeyboardPhase = "engaged"
 
   it("will-show while OWNED engages and reserves the overlap", () => {
-    expect(reduceKeyboard(IDLE, { type: "will-show", overlap: 345, duration: 250, enabled: true })).toEqual(
-      { phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 },
-    )
+    expect(
+      reduceKeyboard(IDLE, { type: "will-show", overlap: 345, duration: 250, enabled: true }),
+    ).toEqual({ phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 })
   })
   it("will-show while NOT owned is inert: the dock must not move for a foreign field", () => {
-    expect(reduceKeyboard(IDLE, { type: "will-show", overlap: 345, duration: 250, enabled: false })).toEqual(
-      { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 },
-    )
+    expect(
+      reduceKeyboard(IDLE, { type: "will-show", overlap: 345, duration: 250, enabled: false }),
+    ).toEqual({ phase: "idle", target: 0, duration: 0, reserveOverlap: 0 })
   })
   it("will-hide from ENGAGED animates down and HOLDS the reservation", () => {
     // Zeroing the reserve here would collapse the content box one frame after blur, while the bar and
     // the keyboard are both still travelling down.
-    expect(
-      reduceKeyboard(ENGAGED, { type: "will-hide", duration: 250, reserveHint: 345 }),
-    ).toEqual({ phase: "engaged", target: 0, duration: 250, reserveOverlap: 345 })
+    expect(reduceKeyboard(ENGAGED, { type: "will-hide", duration: 250, reserveHint: 345 })).toEqual(
+      { phase: "engaged", target: 0, duration: 250, reserveOverlap: 345 },
+    )
   })
   it("will-hide from IDLE is inert", () => {
     expect(reduceKeyboard(IDLE, { type: "will-hide", duration: 250, reserveHint: 345 })).toEqual({
@@ -402,12 +420,22 @@ describe("reduceKeyboard: the ownership matrix", () => {
   })
   it("re-asserting ownership while already engaged does not re-animate", () => {
     expect(
-      reduceKeyboard(ENGAGED, { type: "ownership", enabled: true, liveOverlap: 345, handoffMs: 220 }),
+      reduceKeyboard(ENGAGED, {
+        type: "ownership",
+        enabled: true,
+        liveOverlap: 345,
+        handoffMs: 220,
+      }),
     ).toEqual({ phase: "engaged", target: 345, duration: 0, reserveOverlap: 345 })
   })
   it("LOSING ownership while engaged rides back down over the handoff duration", () => {
     expect(
-      reduceKeyboard(ENGAGED, { type: "ownership", enabled: false, liveOverlap: 345, handoffMs: 220 }),
+      reduceKeyboard(ENGAGED, {
+        type: "ownership",
+        enabled: false,
+        liveOverlap: 345,
+        handoffMs: 220,
+      }),
     ).toEqual({ phase: "idle", target: 0, duration: 220, reserveOverlap: 0 })
   })
   it("losing ownership we never had is inert", () => {
@@ -440,13 +468,25 @@ describe("reduceKeyboard: the ownership matrix", () => {
   })
   it("carries nothing when no hint is supplied rather than inventing a reservation", () => {
     expect(
-      reduceKeyboard(ENGAGED, { type: "ownership", enabled: false, liveOverlap: 345, handoffMs: 220, closing: true }),
+      reduceKeyboard(ENGAGED, {
+        type: "ownership",
+        enabled: false,
+        liveOverlap: 345,
+        handoffMs: 220,
+        closing: true,
+      }),
     ).toEqual({ phase: "engaged", target: 0, duration: 220, reserveOverlap: 0 })
   })
   it("still releases immediately when the ownership loss is NOT a close (the foreign-keyboard handoff)", () => {
     // Another surface's field took the keyboard while it stays UP: we own nothing, so we reserve nothing.
     expect(
-      reduceKeyboard(ENGAGED, { type: "ownership", enabled: false, liveOverlap: 345, handoffMs: 220, closing: false }),
+      reduceKeyboard(ENGAGED, {
+        type: "ownership",
+        enabled: false,
+        liveOverlap: 345,
+        handoffMs: 220,
+        closing: false,
+      }),
     ).toEqual({ phase: "idle", target: 0, duration: 220, reserveOverlap: 0 })
   })
   // Only an engaged close can carry the hint.
@@ -467,7 +507,12 @@ describe("reduceKeyboard: the ownership matrix", () => {
 describe("isRedundantClose: one close, ONE curve", () => {
   // The blur's ownership command arrives with the same target while the will-hide close is running;
   // applying it would restart an ease-out mid-flight and re-accelerate the dock.
-  const BLUR_CLOSE: KeyboardCommand = { phase: "engaged", target: 0, duration: 220, reserveOverlap: 345 }
+  const BLUR_CLOSE: KeyboardCommand = {
+    phase: "engaged",
+    target: 0,
+    duration: 220,
+    reserveOverlap: 345,
+  }
 
   it("skips the blur command that lands on a still-running will-hide close", () => {
     expect(isRedundantClose(BLUR_CLOSE, 0)).toBe(true)
@@ -476,10 +521,14 @@ describe("isRedundantClose: one close, ONE curve", () => {
     expect(isRedundantClose(BLUR_CLOSE, null)).toBe(false)
   })
   it("NEVER skips the landing: a zero-duration command is what releases the carried reserve", () => {
-    expect(isRedundantClose({ phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }, 0)).toBe(false)
+    expect(isRedundantClose({ phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }, 0)).toBe(
+      false,
+    )
   })
   it("applies a command with a DIFFERENT target: a will-show retargeting mid-close must win", () => {
-    expect(isRedundantClose({ phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 }, 0)).toBe(false)
+    expect(
+      isRedundantClose({ phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 }, 0),
+    ).toBe(false)
   })
   it("treats a 0 in-flight target as a real record, not as absent", () => {
     // The close that matters targets exactly 0, so a falsy check here would disable the dedupe.

@@ -23,7 +23,12 @@ vi.mock("../../typography", async () => {
       </RN.Text>
     )
   }
-  return { Text: RN.Text, TextLink, Icon: () => null, iconMap: new Proxy({}, { get: () => "icon" }) }
+  return {
+    Text: RN.Text,
+    TextLink,
+    Icon: () => null,
+    iconMap: new Proxy({}, { get: () => "icon" }),
+  }
 })
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -54,7 +59,12 @@ function mount(children: React.ReactNode) {
 
 const CONSENT = { terms: false, hostContactOptIn: false, smsOptIn: false }
 
-const SURFACES: { name: string; element: () => React.ReactElement; terms: string; privacy: string }[] = [
+const SURFACES: {
+  name: string
+  element: () => React.ReactElement
+  terms: string
+  privacy: string
+}[] = [
   {
     name: "the About card",
     element: () => <BrandAboutCard onClose={() => {}} />,
@@ -89,14 +99,17 @@ describe("legal links in the phone app", () => {
     setLegalDocumentPresenter(present)
   })
 
-  it.each(SURFACES)("T18: $name opens Terms and Privacy in the app", ({ element, terms, privacy }) => {
-    mount(element())
-    fireEvent.click(screen.getByRole("link", { name: terms }))
-    expect(present).toHaveBeenLastCalledWith("terms")
-    fireEvent.click(screen.getByRole("link", { name: privacy }))
-    expect(present).toHaveBeenLastCalledWith("privacy")
-    expect(open).not.toHaveBeenCalled()
-  })
+  it.each(SURFACES)(
+    "T18: $name opens Terms and Privacy in the app",
+    ({ element, terms, privacy }) => {
+      mount(element())
+      fireEvent.click(screen.getByRole("link", { name: terms }))
+      expect(present).toHaveBeenLastCalledWith("terms")
+      fireEvent.click(screen.getByRole("link", { name: privacy }))
+      expect(present).toHaveBeenLastCalledWith("privacy")
+      expect(open).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe("legal links on the web", () => {
@@ -121,11 +134,14 @@ describe("legal links on the web", () => {
       vi.unstubAllGlobals()
     })
 
-    it.each(SURFACES)("T36: $name opens that site's Terms page in a new tab", ({ element, terms }) => {
-      mount(element())
-      fireEvent.click(screen.getByRole("link", { name: terms }))
-      expect(open).toHaveBeenCalledWith("http://localhost:3101/legal/terms")
-      expect(assign).not.toHaveBeenCalled()
-    })
+    it.each(SURFACES)(
+      "T36: $name opens that site's Terms page in a new tab",
+      ({ element, terms }) => {
+        mount(element())
+        fireEvent.click(screen.getByRole("link", { name: terms }))
+        expect(open).toHaveBeenCalledWith("http://localhost:3101/legal/terms")
+        expect(assign).not.toHaveBeenCalled()
+      },
+    )
   })
 })

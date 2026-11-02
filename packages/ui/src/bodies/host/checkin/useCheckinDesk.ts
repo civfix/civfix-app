@@ -42,7 +42,11 @@ export function useCheckinDesk(id: string) {
           },
           onError: (err) => {
             const codeName = appErrorCode(err)
-            if (codeName === undefined || codeName === ErrorCode.INTERNAL || codeName === ErrorCode.RATE_LIMITED) {
+            if (
+              codeName === undefined ||
+              codeName === ErrorCode.INTERNAL ||
+              codeName === ErrorCode.RATE_LIMITED
+            ) {
               outbox.queue({ method: "scan", token })
               setCode("")
               toast.show(t("outbox.queued"), { variant: "info" })

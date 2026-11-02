@@ -15,7 +15,7 @@ export type RadioOptionRowLayout = "flush" | "inset"
 
 export interface RadioOptionRowProps {
   label: string
-  sub?: string
+  sub?: string | undefined
   selected: boolean
   pending: boolean
   onPress: () => void
@@ -50,12 +50,13 @@ export const RadioOptionRow = React.memo(function RadioOptionRow({
     >
       {leading}
       <View style={styles.rowText}>
-        <Text style={[styles.rowLabel, selected ? styles.rowLabelSelected : null]} numberOfLines={1}>
+        <Text
+          style={[styles.rowLabel, selected ? styles.rowLabelSelected : null]}
+          numberOfLines={1}
+        >
           {label}
         </Text>
-        {sub ? (
-          <Text style={styles.rowSub}>{sub}</Text>
-        ) : null}
+        {sub ? <Text style={styles.rowSub}>{sub}</Text> : null}
       </View>
       <View style={styles.trailing}>
         {pending ? (

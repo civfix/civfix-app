@@ -39,28 +39,36 @@ export function useSubmitPost() {
     }
   }, [])
 
-  const submit = (prepare: () => PreparedPostSubmit | null, onPosted: (post: PostDTO, input: PostComposeInput) => void) => {
+  const submit = (
+    prepare: () => PreparedPostSubmit | null,
+    onPosted: (post: PostDTO, input: PostComposeInput) => void,
+  ) => {
     if (submittingRef.current) return
     const prepared = prepare()
     if (!prepared) return
     submittingRef.current = true
     const staged = selectPostComposerDraft(usePostComposerStore.getState())
     usePostComposerStore.getState().reset(prepared.resetTo)
-    create.mutateAsync({ input: prepared.input, optimistic: prepared.optimistic }, {
-      onSuccess: (post) => {
-        haptics.success()
-        onPosted(post, prepared.input)
-      },
-      onSettled: () => {
-        submittingRef.current = false
-      },
-    }).catch(() => {
-      haptics.error()
-      const restored = restoreFailedPostSubmit(staged)
-      if (!mountedRef.current) {
-        toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
-      }
-    })
+    create
+      .mutateAsync(
+        { input: prepared.input, optimistic: prepared.optimistic },
+        {
+          onSuccess: (post) => {
+            haptics.success()
+            onPosted(post, prepared.input)
+          },
+          onSettled: () => {
+            submittingRef.current = false
+          },
+        },
+      )
+      .catch(() => {
+        haptics.error()
+        const restored = restoreFailedPostSubmit(staged)
+        if (!mountedRef.current) {
+          toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
+        }
+      })
   }
 
   return { create, submit }

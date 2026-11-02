@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webTransition } from "../theme"
 import { Text } from "../typography"
@@ -34,7 +33,7 @@ function Chip({
   logoUrl?: string | null
   active: boolean
   a11yLabel: string
-  disabled?: boolean
+  disabled?: boolean | undefined
   onPress: () => void
 }) {
   const styles = useStyles()

@@ -11,8 +11,14 @@ test("an empty object from the baked config falls back - the shipped-outage case
 })
 
 test("a configured string wins in both environments", () => {
-  assert.equal(resolveApiUrl("https://staging.example.org", false, false), "https://staging.example.org")
-  assert.equal(resolveApiUrl("https://staging.example.org", true, false), "https://staging.example.org")
+  assert.equal(
+    resolveApiUrl("https://staging.example.org", false, false),
+    "https://staging.example.org",
+  )
+  assert.equal(
+    resolveApiUrl("https://staging.example.org", true, false),
+    "https://staging.example.org",
+  )
 })
 
 test("null and undefined fall back to the environment default", () => {

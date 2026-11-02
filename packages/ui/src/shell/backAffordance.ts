@@ -23,12 +23,12 @@ export interface BackAffordanceInput {
   stack: readonly DetailEntry[]
   mode: LayoutMode
   /** Passed only by bodies that host a multi-step flow inside one nav entry (the report wizard). */
-  stepIndex?: number
+  stepIndex?: number | undefined
   /**
    * Whether the surface has a drag-to-dismiss gesture (the compact pull-up does, a full page does not).
    * The compact-root hide branch is only safe when it does: iOS has no hardware back.
    */
-  dismissGesture?: boolean
+  dismissGesture?: boolean | undefined
 }
 
 export function showBackAffordance({

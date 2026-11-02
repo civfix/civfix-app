@@ -2,6 +2,7 @@ import * as React from "react"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { expectConsoleWarn } from "@civfix/testing/console"
 import { AppError, ErrorCode, type UserDTO } from "@civfix/contract"
 
 import type * as ApiModule from "@/lib/api"
@@ -9,12 +10,20 @@ import { queryKeys } from "@/lib/query"
 
 const logout = vi.fn<(options: { signal?: AbortSignal }) => Promise<unknown>>()
 const session = vi.fn<(...args: unknown[]) => unknown>()
+const pushUnregister =
+  vi.fn<
+    (
+      body: { platform: string; token: string },
+      options?: { signal?: AbortSignal },
+    ) => Promise<unknown>
+  >()
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   api: {
     logout: (...args: Parameters<typeof logout>) => logout(...args),
     session: (...args: unknown[]) => session(...args),
+    pushUnregister: (...args: Parameters<typeof pushUnregister>) => pushUnregister(...args),
   },
 }))
 
@@ -57,6 +66,7 @@ function expectStillSignedIn(): void {
 beforeEach(() => {
   logout.mockReset()
   session.mockReset()
+  pushUnregister.mockReset()
   window.localStorage.clear()
   queryClient = new QueryClient()
   useSignOutRetryStore.setState({ pending: false, failed: false })
@@ -69,6 +79,7 @@ afterEach(() => {
   cleanup()
   useAuthStore.getState().clear()
   vi.useRealTimers()
+  Reflect.deleteProperty(window.navigator, "serviceWorker")
 })
 
 describe("useLogout", () => {
@@ -82,9 +93,7 @@ describe("useLogout", () => {
   })
 
   it("keeps the user signed in on a server error, because the session cookie survives it", async () => {
-    logout.mockRejectedValue(
-      new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }),
-    )
+    logout.mockRejectedValue(new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }))
 
     await signOut()
 
@@ -230,6 +239,93 @@ describe("useRefreshSession", () => {
     expect(queryClient.getQueryState(queryKeys.mapReports(null, []))?.isInvalidated).toBe(false)
     expect(queryClient.getQueryState(queryKeys.report("r1"))?.isInvalidated).toBe(true)
     expect(queryClient.getQueryState(queryKeys.cleanupAttendees("c1"))?.isInvalidated).toBe(true)
-    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(
+      true,
+    )
+  })
+})
+
+describe("useLogout with a browser push subscription", () => {
+  function subscribeBrowser() {
+    const endpoint = "https://push.example/send/s"
+    const subscription = {
+      endpoint,
+      toJSON: () => ({ endpoint, expirationTime: null, keys: { p256dh: "p", auth: "a" } }),
+      unsubscribe: vi.fn(async () => true),
+    }
+    const registration = { pushManager: { getSubscription: vi.fn(async () => subscription) } }
+    Object.defineProperty(window.navigator, "serviceWorker", {
+      configurable: true,
+      value: { getRegistration: vi.fn(async () => registration) },
+    })
+    return subscription
+  }
+
+  it("T23: unregisters the subscription before POST /auth/logout, then unsubscribes the browser", async () => {
+    const subscription = subscribeBrowser()
+    pushUnregister.mockResolvedValue({ ok: true })
+    logout.mockResolvedValue({ ok: true })
+
+    await signOut()
+
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect(pushUnregister.mock.calls[0]![0]).toEqual({
+      platform: "web",
+      token: JSON.stringify(subscription),
+    })
+    expect(logout).toHaveBeenCalledTimes(1)
+    expect(pushUnregister.mock.invocationCallOrder[0]!).toBeLessThan(
+      logout.mock.invocationCallOrder[0]!,
+    )
+    expect(subscription.unsubscribe).toHaveBeenCalled()
+    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(
+      subscription.unsubscribe.mock.invocationCallOrder[0]!,
+    )
+    expect(useAuthStore.getState().user).toBeNull()
+  })
+
+  it("T24: waits at most 3 seconds for pushUnregister", async () => {
+    vi.useFakeTimers()
+    const subscription = subscribeBrowser()
+    pushUnregister.mockImplementation(() => new Promise(() => undefined))
+    logout.mockResolvedValue({ ok: true })
+
+    const { result } = renderHook(() => useLogout(), { wrapper })
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_999)
+    })
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect(logout).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(logout).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await pending
+    })
+    expect(subscription.unsubscribe).toHaveBeenCalled()
+    expect(logout.mock.invocationCallOrder[0]!).toBeLessThan(
+      subscription.unsubscribe.mock.invocationCallOrder[0]!,
+    )
+  })
+
+  it("T25: still signs out and unsubscribes when pushUnregister fails on the network", async () => {
+    expectConsoleWarn("[push] unregistering the subscription failed")
+    const subscription = subscribeBrowser()
+    pushUnregister.mockRejectedValue(new TypeError("Failed to fetch"))
+    logout.mockResolvedValue({ ok: true })
+
+    await signOut()
+
+    expect(logout).toHaveBeenCalledTimes(1)
+    expect(subscription.unsubscribe).toHaveBeenCalled()
+    expect(useAuthStore.getState().user).toBeNull()
   })
 })

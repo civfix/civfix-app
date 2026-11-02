@@ -40,10 +40,7 @@ function member(
   } as EventTeamMemberDTO
 }
 
-function invite(
-  id: string,
-  over: Partial<EventTeamInviteDTO> = {},
-): EventTeamInviteDTO {
+function invite(id: string, over: Partial<EventTeamInviteDTO> = {}): EventTeamInviteDTO {
   return {
     id,
     role: "staff",
@@ -55,7 +52,7 @@ function invite(
     expiresAt: null,
     acceptedAt: null,
     ...over,
-  } as EventTeamInviteDTO
+  }
 }
 
 describe("team ordering", () => {

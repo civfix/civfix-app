@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet, type StyleProp, type TextStyle, type ViewStyle } from "react-native"
 import { isValidTimeZone, safeDateFormat, wallClockInZone } from "@civfix/contract/datetime"
 import { makeThemedStyles, radius, useTheme } from "../theme"
@@ -29,7 +28,15 @@ interface TileLine {
   color?: string
 }
 
-function Tile({ frame, top, bottom }: { frame: StyleProp<ViewStyle>; top: TileLine; bottom: TileLine }) {
+function Tile({
+  frame,
+  top,
+  bottom,
+}: {
+  frame: StyleProp<ViewStyle>
+  top: TileLine
+  bottom: TileLine
+}) {
   return (
     <View style={frame}>
       <Text color={top.color} style={top.style}>
@@ -49,7 +56,7 @@ export function DateBadge({
 }: {
   iso: string
   size?: number
-  timeZone?: string
+  timeZone?: string | undefined
 }) {
   const styles = useStyles()
   const t = useTheme()
@@ -77,24 +84,22 @@ export function DateBadge({
  * them is a one-file change. `profileEvent` is the only tinted one: it paints in the caller's `color`.
  */
 export type DateTileVariant =
-  | "personEvent"
-  | "ledger"
-  | "profileEvent"
-  | "searchHit"
-  | "eventCard"
-  | "linkedEvent"
+  "personEvent" | "ledger" | "profileEvent" | "searchHit" | "eventCard" | "linkedEvent"
 
-export interface DateTileProps {
+interface DateTileText {
   day: string
   month: string
-  variant: DateTileVariant
-  color?: string
 }
 
-export function DateTile({ day, month, variant, color }: DateTileProps) {
+export type DateTileProps =
+  | (DateTileText & { variant: Exclude<DateTileVariant, "profileEvent"> })
+  | (DateTileText & { variant: "profileEvent"; color: string })
+
+export function DateTile(props: DateTileProps) {
+  const { day, month } = props
   const styles = useStyles()
   const t = useTheme()
-  switch (variant) {
+  switch (props.variant) {
     case "personEvent":
       return (
         <Tile
@@ -111,7 +116,8 @@ export function DateTile({ day, month, variant, color }: DateTileProps) {
           bottom={{ text: month, style: styles.sunChipMonth }}
         />
       )
-    case "profileEvent":
+    case "profileEvent": {
+      const { color } = props
       return (
         <Tile
           frame={[styles.profileEvent, { backgroundColor: `${color}${TINT_ALPHA_HEX}` }]}
@@ -119,6 +125,7 @@ export function DateTile({ day, month, variant, color }: DateTileProps) {
           bottom={{ text: month, color, style: styles.profileEventMonth }}
         />
       )
+    }
     case "searchHit":
       return (
         <Tile

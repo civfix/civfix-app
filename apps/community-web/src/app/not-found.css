@@ -101,7 +101,9 @@
   }
 }
 @keyframes nf-appear {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 .nf-copy p.nf-sub {
   margin: 0;
@@ -121,10 +123,20 @@
 }
 
 @media (max-width: 640px) {
-  .nf-top { padding: var(--space-4) var(--space-5); }
-  .nf-body { gap: var(--space-6); justify-content: flex-start; padding-top: var(--space-6); }
-  .nf-stage { height: 240px; }
-  .nf-copy h1 { font-size: var(--fs-30); }
+  .nf-top {
+    padding: var(--space-4) var(--space-5);
+  }
+  .nf-body {
+    gap: var(--space-6);
+    justify-content: flex-start;
+    padding-top: var(--space-6);
+  }
+  .nf-stage {
+    height: 240px;
+  }
+  .nf-copy h1 {
+    font-size: var(--fs-30);
+  }
 }
 
 /* A · Tumbling tiles */
@@ -150,9 +162,15 @@
   padding-top: calc(var(--nf-tile) * 0.08);
   box-shadow: var(--shadow-3), var(--sheen-top);
 }
-.nf-tile--bloom { background: var(--bloom); }
-.nf-tile--sky { background: var(--sky-600); }
-.nf-tile--moss { background: var(--moss); }
+.nf-tile--bloom {
+  background: var(--bloom);
+}
+.nf-tile--sky {
+  background: var(--sky-600);
+}
+.nf-tile--moss {
+  background: var(--moss);
+}
 .nf-tiles.is-live .nf-tile {
   position: absolute;
   left: 0;
@@ -160,7 +178,9 @@
   cursor: grab;
   will-change: transform;
 }
-.nf-tiles.is-live .nf-tile:active { cursor: grabbing; }
+.nf-tiles.is-live .nf-tile:active {
+  cursor: grabbing;
+}
 .nf-ground {
   position: absolute;
   left: 0;
@@ -181,11 +201,16 @@
   color: var(--fg-3);
 }
 @media (max-width: 640px) {
-  .nf-tiles { --nf-tile: 92px; }
+  .nf-tiles {
+    --nf-tile: 92px;
+  }
 }
 
 /* B · The pothole */
-.nf-street { --nf-glyph: 168px; overflow: visible; }
+.nf-street {
+  --nf-glyph: 168px;
+  overflow: visible;
+}
 .nf-road {
   position: absolute;
   left: 0;
@@ -203,11 +228,7 @@
   bottom: 18px;
   height: 5px;
   border-radius: var(--radius-pill);
-  background: repeating-linear-gradient(
-    90deg,
-    var(--sun-300) 0 36px,
-    transparent 36px 64px
-  );
+  background: repeating-linear-gradient(90deg, var(--sun-300) 0 36px, transparent 36px 64px);
 }
 .nf-row {
   position: absolute;
@@ -226,7 +247,9 @@
   color: var(--fg-1);
   transform-origin: 50% 100%;
 }
-.nf-street.is-live .nf-glyph { will-change: transform; }
+.nf-street.is-live .nf-glyph {
+  will-change: transform;
+}
 .nf-hole-slot {
   position: relative;
   display: inline-flex;
@@ -260,10 +283,18 @@
   transform: rotate(-9deg);
 }
 @media (max-width: 640px) {
-  .nf-street { --nf-glyph: 116px; }
-  .nf-road { height: 64px; }
-  .nf-lane { bottom: 12px; }
-  .nf-row { bottom: 40px; }
+  .nf-street {
+    --nf-glyph: 116px;
+  }
+  .nf-road {
+    height: 64px;
+  }
+  .nf-lane {
+    bottom: 12px;
+  }
+  .nf-row {
+    bottom: 40px;
+  }
 }
 
 /* C · The street sign */
@@ -294,8 +325,12 @@
   background: repeating-linear-gradient(180deg, var(--ink-3) 0 6px, transparent 6px 9px);
   transform-origin: 50% 0;
 }
-.nf-chain--left { left: calc(50% - var(--nf-sign-w) / 2 + var(--nf-bolt-inset)); }
-.nf-chain--right { left: calc(50% + var(--nf-sign-w) / 2 - var(--nf-bolt-inset)); }
+.nf-chain--left {
+  left: calc(50% - var(--nf-sign-w) / 2 + var(--nf-bolt-inset));
+}
+.nf-chain--right {
+  left: calc(50% + var(--nf-sign-w) / 2 - var(--nf-bolt-inset));
+}
 .nf-sign {
   position: absolute;
   left: calc(50% - var(--nf-sign-w) / 2);
@@ -310,7 +345,10 @@
   border-radius: var(--radius-md);
   background: var(--moss-700);
   color: var(--fg-on-color);
-  box-shadow: var(--shadow-3), inset 0 0 0 6px var(--moss-700), inset 0 0 0 9px var(--fg-on-color);
+  box-shadow:
+    var(--shadow-3),
+    inset 0 0 0 6px var(--moss-700),
+    inset 0 0 0 9px var(--fg-on-color);
   transform-origin: calc(100% - var(--nf-bolt-inset)) 0;
 }
 .nf-bolt {
@@ -321,8 +359,12 @@
   border-radius: 50%;
   background: var(--fg-on-color);
 }
-.nf-bolt--left { left: calc(var(--nf-bolt-inset) - 4px); }
-.nf-bolt--right { right: calc(var(--nf-bolt-inset) - 4px); }
+.nf-bolt--left {
+  left: calc(var(--nf-bolt-inset) - 4px);
+}
+.nf-bolt--right {
+  right: calc(var(--nf-bolt-inset) - 4px);
+}
 .nf-sign-number {
   font-size: calc(var(--nf-sign-h) * 0.56);
   /* The display face leaves empty space above its digits; pulling the number up
@@ -342,5 +384,7 @@
     --nf-sign-w: 230px;
     --nf-sign-h: 116px;
   }
-  .nf-sign-street { font-size: var(--fs-12); }
+  .nf-sign-street {
+    font-size: var(--fs-12);
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { View, StyleSheet } from "react-native"
 import { space } from "../theme"
 import { iconMap } from "../typography"

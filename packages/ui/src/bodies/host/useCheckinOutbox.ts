@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { focusManager, onlineManager, useQueryClient } from "@tanstack/react-query"
-import { useApi, useAuthState } from "../../data"
+import { useApi, useAuthState, useNow } from "../../data"
 import { invalidateHostEvent } from "../../data/hooks/host"
 import { useSecureStore } from "../../capabilities"
 import {
@@ -182,9 +182,10 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
   )
 
   const dismissReport = useCallback(() => setReport(null), [])
+  const now = useNow()
 
   return {
-    pending: pending(state, Date.now(), cleanupId),
+    pending: pending(state, now, cleanupId),
     queue,
     replay,
     replaying,

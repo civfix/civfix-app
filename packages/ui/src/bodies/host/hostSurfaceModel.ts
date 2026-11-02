@@ -28,13 +28,7 @@ export const ARRIVAL_BUCKET_MINUTES = 15
 export const MAX_ARRIVAL_SPARK_BUCKETS = 32
 
 export type HostCtaKey =
-  | "share"
-  | "announce"
-  | "check_in"
-  | "scan"
-  | "log_hours"
-  | "duplicate"
-  | "edit"
+  "share" | "announce" | "check_in" | "scan" | "log_hours" | "duplicate" | "edit"
 
 export type HostTileKey =
   | "waitlist"
@@ -221,7 +215,8 @@ export function hostPanels(phase: EventPhase): HostPanels {
 
 export function hostHero(insights: EventInsights, phase: EventPhase): HostHero {
   const { seats } = insights
-  if (phase === "live") return { key: "checked_in", value: seats.checkedIn, limit: seats.registered }
+  if (phase === "live")
+    return { key: "checked_in", value: seats.checkedIn, limit: seats.registered }
   if (phase === "ended") return { key: "attended", value: seats.checkedIn, limit: seats.registered }
   return { key: "registered", value: seats.registered, limit: seats.capacity }
 }

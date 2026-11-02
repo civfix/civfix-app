@@ -15,7 +15,7 @@ import {
   missingRequired,
   visibleQuestions as shownQuestions,
 } from "@civfix/contract/host"
-import { outdatedLegalVersions, useLegalDocuments } from "@civfix/ui/data"
+import { outdatedLegalVersions, useLegalDocuments, useNow } from "@civfix/ui/data"
 
 import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
@@ -43,10 +43,10 @@ type Step =
 
 export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode: string | null) {
   const isAuthenticated = useAuthStore((store) => store.status === "authenticated")
-  const windowState = React.useMemo(
-    () => registrationWindowState(page, Date.now()),
-    [page],
-  )
+  // Read once when the widget opens: a confirmation or a half-filled form is never swapped for "closed"
+  // just because the clock passed the close time while it was on screen.
+  const openedAt = useNow(0)
+  const windowState = React.useMemo(() => registrationWindowState(page, openedAt), [page, openedAt])
 
   const tickets = selectableTickets(page)
   const [ticketTypeId, setTicketTypeId] = React.useState<string | null>(() =>
@@ -73,9 +73,9 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   const legal = useLegalDocuments()
   // Versions an outdated answer named. They win for as long as the form is mounted and stay out of the
   // query cache, since they carry no document text.
-  const [outdatedCurrent, setOutdatedCurrent] = React.useState<LegalVersionOutdatedDetails["current"] | null>(
-    null,
-  )
+  const [outdatedCurrent, setOutdatedCurrent] = React.useState<
+    LegalVersionOutdatedDetails["current"] | null
+  >(null)
 
   React.useEffect(() => {
     if (resendAfter <= 0) return
@@ -96,8 +96,10 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   const guestWaitlistBlocked = waitlistOffered && !isAuthenticated
 
   const legalVersion = (type: LegalDocumentType) =>
-    (outdatedCurrent?.find((entry) => entry.type === type) ?? legal.data?.find((entry) => entry.type === type))
-      ?.version
+    (
+      outdatedCurrent?.find((entry) => entry.type === type) ??
+      legal.data?.find((entry) => entry.type === type)
+    )?.version
   const termsVersion = legalVersion("terms")
   const privacyVersion = legalVersion("privacy")
   const legalReady = termsVersion !== undefined && privacyVersion !== undefined

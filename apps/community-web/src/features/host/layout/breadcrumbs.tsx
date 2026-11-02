@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react"
 import { useT } from "@civfix/ui/i18n"
 
+import { keyedByValue } from "@/lib/list-keys"
 import { ConsoleLink } from "./console-link"
 
 export interface Crumb {
@@ -16,8 +17,8 @@ export function Breadcrumbs({ items }: { items: readonly Crumb[] }) {
   return (
     <nav aria-label={t("shell.breadcrumbs")}>
       <ol className="flex flex-wrap items-center gap-1 text-token-12 text-console-ink-3">
-        {items.map((item, index) => (
-          <li key={`${item.label}:${index}`} className="flex items-center gap-1">
+        {keyedByValue(items, (item) => item.label).map(({ entry: item, key }, index) => (
+          <li key={key} className="flex items-center gap-1">
             {index > 0 ? <ChevronRight aria-hidden className="h-3 w-3" /> : null}
             {item.href ? (
               <ConsoleLink

@@ -11,5 +11,11 @@
     "title": "No pudimos usar este enlace",
     "body": "No se pudo completar este enlace para darte de baja, así que no podemos confirmarte que funcionó. Algunas apps de correo acortan o parten los enlaces largos; intenta abrir de nuevo el enlace desde el correo original, o usa el enlace de ajustes de abajo."
   },
-  "settings_prompt": "Para cambiar lo que civfix te envía en general, abre los <0>ajustes de notificaciones</0>."
+  "settings_prompt": "Para cambiar lo que civfix te envía en general, abre los <0>ajustes de notificaciones</0>.",
+  "notifications": {
+    "done": "Ya no recibirás correos sobre <strong>{{category}}</strong>.",
+    "unusable": "Este enlace no funcionó. Puedes cambiar los correos en los ajustes de notificaciones.",
+    "manage": "Gestionar ajustes de notificaciones",
+    "checking": "Comprobando tu enlace"
+  }
 }

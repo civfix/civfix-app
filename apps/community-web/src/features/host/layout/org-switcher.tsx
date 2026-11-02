@@ -62,7 +62,6 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
                 )}
               >
                 {org.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize
                   <img
                     src={org.logoUrl}
                     alt=""
@@ -83,7 +82,9 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
               </ConsoleLink>
             </li>
           ))}
-          <li className={cn(rows.length > 0 && "mt-token-1 border-t border-console-line pt-token-1")}>
+          <li
+            className={cn(rows.length > 0 && "mt-token-1 border-t border-console-line pt-token-1")}
+          >
             <ConsoleLink
               href={hrefForRoute({ kind: "org-new" })}
               onClick={() => setOpen(false)}

@@ -1,104 +1,49 @@
 import { Platform, LogBox } from "react-native"
 import * as Notifications from "expo-notifications"
-import Constants from "expo-constants"
+import * as Linking from "expo-linking"
 import * as SecureStore from "expo-secure-store"
 import * as Crypto from "expo-crypto"
-import type { Href } from "expo-router"
 import { tokens } from "@civfix/tokens"
+import type { PushPermissionStatus } from "@civfix/ui/capabilities"
+import { INBOX_LIMIT } from "@civfix/ui/data"
 import { createI18n } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
-import { isConflict } from "@/lib/errors"
-import { toInternalHref } from "@/lib/links"
+import { APP_ID } from "@/config"
 import { resolveActiveLocale } from "@/lib/locale"
 import { resolveDeviceId, type DeviceIdStore } from "@/lib/deviceId"
 import { storage } from "@/lib/mmkv"
-import { rememberPushRegistration } from "@/lib/pushRegistration"
+import { makeNativePushPermission } from "@/lib/pushPermission"
+import { makeSerialPushSync, promptForPushAtSignIn, syncPushToken } from "@/lib/pushTokenSync"
+import { syncAndroidChannels } from "@/push/channels"
+import {
+  clearDelivered,
+  notificationPresentation,
+  reconcileDelivered,
+  type ClearMessage,
+  type DeliveredDeps,
+} from "@/push/clearDelivered"
+import { useAuthStore } from "@/store/authStore"
 
 function systemT(): (key: string) => string {
   return createI18n(resolveActiveLocale(null)).getFixedT(null, "mobile-system")
 }
 
-LogBox.ignoreLogs([
-  "Error reading persisted server registration info",
-  "getRegistrationInfoAsync",
-])
+LogBox.ignoreLogs(["Error reading persisted server registration info", "getRegistrationInfoAsync"])
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) =>
+    notificationPresentation(notification.request.content.data),
 })
 
-export type PushRegistrationResult =
-  | { status: "registered"; token: string }
-  | { status: "denied" }
-  | { status: "unsupported"; reason: string }
-  | { status: "conflict"; reason: string }
-  | { status: "error"; reason: string }
-
-function pushPlatform(): "ios" | "android" | "web" | null {
-  if (Platform.OS === "ios") return "ios"
-  if (Platform.OS === "android") return "android"
-  if (Platform.OS === "web") return "web"
-  return null
-}
-
-const PLACEHOLDER_PROJECT_ID = "00000000-0000-0000-0000-000000000000"
-
-function isRealProjectId(id: string | undefined): id is string {
-  return typeof id === "string" && id.length > 0 && id !== PLACEHOLDER_PROJECT_ID
-}
-
-function easProjectId(): string | undefined {
-  const fromExtra = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)
-    ?.eas?.projectId
-  const fromEas = (Constants as unknown as { easConfig?: { projectId?: string } }).easConfig
-    ?.projectId
-  if (isRealProjectId(fromEas)) return fromEas
-  if (isRealProjectId(fromExtra)) return fromExtra
-  return undefined
-}
-
-async function ensureAndroidChannels(): Promise<void> {
+export async function syncNativeAndroidChannels(): Promise<void> {
   if (Platform.OS !== "android") return
-  const t = systemT()
-  const lightColor = tokens.color.brand.bloom
-  const channels: [string, Notifications.NotificationChannelInput][] = [
-    [
-      "default",
-      {
-        name: t("notification_channel_default"),
-        importance: Notifications.AndroidImportance.DEFAULT,
-        lightColor,
-      },
-    ],
-    [
-      "host_broadcasts",
-      {
-        name: t("notification_channel_host_broadcasts"),
-        importance: Notifications.AndroidImportance.HIGH,
-        lightColor,
-      },
-    ],
-    [
-      "event_reminders",
-      {
-        name: t("notification_channel_event_reminders"),
-        importance: Notifications.AndroidImportance.DEFAULT,
-        lightColor,
-      },
-    ],
-  ]
-  for (const [id, config] of channels) {
-    try {
-      await Notifications.setNotificationChannelAsync(id, config)
-    } catch (err) {
-      console.warn(`[push] notification channel ${id} could not be created`, err)
-    }
-  }
+  await syncAndroidChannels({
+    t: systemT(),
+    defaultImportance: Notifications.AndroidImportance.DEFAULT,
+    lightColor: tokens.color.brand.bloom,
+    setChannel: (id, channel) => Notifications.setNotificationChannelAsync(id, channel),
+    deleteChannel: (id) => Notifications.deleteNotificationChannelAsync(id),
+  })
 }
 
 const NOTIFICATION_CATEGORY_TICKET = "ticket"
@@ -132,60 +77,56 @@ const secureStore: DeviceIdStore = {
   write: (key, value) => SecureStore.setItemAsync(key, value),
 }
 
-async function getDeviceId(): Promise<string | null> {
-  return resolveDeviceId(secureStore, () => Crypto.randomUUID())
-}
-
-export async function registerForPushNotifications(
-  deviceId?: string,
-): Promise<PushRegistrationResult> {
-  const platform = pushPlatform()
-  if (!platform) return { status: "unsupported", reason: "unknown platform" }
-
-  try {
-    await ensureAndroidChannels()
-
-    const existing = await Notifications.getPermissionsAsync()
-    let granted = existing.granted
-    if (!granted && existing.canAskAgain) {
-      const requested = await Notifications.requestPermissionsAsync()
-      granted = requested.granted
-    }
-    if (!granted) return { status: "denied" }
-
-    const projectId = easProjectId()
-    const tokenResponse = await Notifications.getExpoPushTokenAsync(
-      projectId ? { projectId } : undefined,
-    )
-    const token = tokenResponse.data
-    if (!token) return { status: "error", reason: "empty push token" }
-
-    const resolvedDeviceId = deviceId ?? (await getDeviceId()) ?? undefined
-
-    await api.registerPush({
-      platform,
-      token,
-      ...(resolvedDeviceId ? { deviceId: resolvedDeviceId } : {}),
-    })
-
-    rememberPushRegistration(storage, { platform, token })
-
-    return { status: "registered", token }
-  } catch (err) {
-    if (isConflict(err)) {
-      const reason = "this device's push token is still owned by another account"
-      console.warn(`[push] registration refused: ${reason}; not retrying`, err)
-      return { status: "conflict", reason }
-    }
-    const reason = err instanceof Error ? err.message : "unknown error"
-    return { status: "error", reason }
+const serialPushSync = makeSerialPushSync(async (rotated) => {
+  if (useAuthStore.getState().status !== "authed") return
+  const result = await syncPushToken(
+    {
+      permission: nativePushPermission,
+      getDevicePushToken: () => Notifications.getDevicePushTokenAsync(),
+      deviceId: () => resolveDeviceId(secureStore, () => Crypto.randomUUID()),
+      registerPush: (body) => api.registerPush(body),
+      store: storage,
+    },
+    rotated,
+  )
+  // registerPush allows 10 a minute per account, so a failure waits for the next launch, return to the
+  // app, grant or rotation instead of retrying.
+  if (result.status === "conflict" || result.status === "error") {
+    console.warn(`[push] registration not completed: ${result.status}`, result.reason)
   }
+})
+
+/** Registers this device's token while signed in with push allowed; `rotated` is a token FCM or APNs reissued. */
+export function syncNativePushToken(rotated?: Notifications.DevicePushToken): Promise<void> {
+  return serialPushSync(rotated)
 }
 
-export function linkFromNotificationResponse(
-  response: Notifications.NotificationResponse | null | undefined,
-): Href | null {
-  const data = response?.notification?.request?.content?.data
-  if (!data || typeof data !== "object") return null
-  return toInternalHref((data as { link?: unknown }).link)
+export const nativePushPermission = makeNativePushPermission({
+  appId: APP_ID,
+  getPermissionsAsync: Notifications.getPermissionsAsync,
+  requestPermissionsAsync: () => Notifications.requestPermissionsAsync(),
+  openSettings: Linking.openSettings,
+  onGranted: () => {
+    void syncNativePushToken()
+  },
+})
+
+export function promptForNativePush(): Promise<PushPermissionStatus> {
+  return promptForPushAtSignIn({ permission: nativePushPermission, store: storage })
+}
+
+// In a background task `api` reads the stored session itself; when that fails, the next foreground
+// reconcile removes what this pass could not.
+const nativeDelivered: DeliveredDeps = {
+  presented: () => Notifications.getPresentedNotificationsAsync(),
+  dismiss: (identifier) => Notifications.dismissNotificationAsync(identifier),
+  listFirstPage: async () => (await api.listNotifications({ limit: INBOX_LIMIT })).items,
+}
+
+export function clearNativeDelivered(message: ClearMessage): Promise<void> {
+  return clearDelivered(message, nativeDelivered)
+}
+
+export function reconcileNativeDelivered(): Promise<void> {
+  return reconcileDelivered(nativeDelivered)
 }

@@ -4,7 +4,10 @@ import { daysAgo, galleryChatHistory, hoursAgo, isoFromNow, makeCannedApi } from
 
 describe("makeCannedApi", () => {
   const canned = { getReport: async () => "canned" }
-  const api = makeCannedApi(canned, (name) => `fallback:${name}`) as unknown as Record<string, unknown>
+  const api = makeCannedApi(canned, (name) => `fallback:${name}`) as unknown as Record<
+    string,
+    unknown
+  >
 
   it("answers a stubbed endpoint from the canned table", () => {
     expect(api.getReport).toBe(canned.getReport)

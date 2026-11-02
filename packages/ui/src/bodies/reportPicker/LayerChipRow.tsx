@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, ScrollView, View } from "react-native"
 import type { ReportCategory } from "@civfix/contract"
 import {
@@ -110,7 +109,11 @@ function PlainChip({
       ]}
     >
       {icon ? (
-        <Icon icon={iconMap[icon]} size={14} color={selected ? th.colors.selectedInk : th.colors.textSubtle} />
+        <Icon
+          icon={iconMap[icon]}
+          size={14}
+          color={selected ? th.colors.selectedInk : th.colors.textSubtle}
+        />
       ) : null}
       <Text numberOfLines={1} style={[styles.label, selected ? styles.plainLabelOn : null]}>
         {label}

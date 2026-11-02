@@ -5,11 +5,7 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { Image as ImageCompressor, Video as VideoCompressor } from "react-native-compressor"
 import { AppError, ErrorCode } from "@civfix/contract"
 import { motion } from "@civfix/ui/theme"
-import type {
-  CameraCapability,
-  CapturedMedia,
-  PreparedUpload,
-} from "@civfix/ui/capabilities"
+import type { CameraCapability, CapturedMedia, PreparedUpload } from "@civfix/ui/capabilities"
 import { MAX_VIDEO_SECONDS } from "./cameraSession"
 import { resolveUploadContentType, stripJpegMetadata } from "./mediaBytes"
 import { capturedMediaFromPickerAsset, fileUri } from "./capturedMedia"
@@ -100,7 +96,11 @@ function sweepStaleMediaTempFiles(): void {
     const now = Date.now()
     let removed = 0
     try {
-      removed = sweepDirectory(new Directory(Paths.cache, "ImageManipulator"), now, SWEEP_DELETE_LIMIT)
+      removed = sweepDirectory(
+        new Directory(Paths.cache, "ImageManipulator"),
+        now,
+        SWEEP_DELETE_LIMIT,
+      )
     } catch {
       // The sweep is housekeeping; an unreadable directory must never fail the capture that triggered it.
     }
@@ -118,7 +118,7 @@ async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   const digest = await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, bytes)
   const view = new Uint8Array(digest)
   let out = ""
-  for (let i = 0; i < view.length; i++) out += view[i]!.toString(16).padStart(2, "0")
+  for (const byte of view) out += byte.toString(16).padStart(2, "0")
   return out
 }
 
@@ -168,7 +168,10 @@ export const nativeCamera: CameraCapability = {
     return navigateToSurface !== null
   },
 
-  capture(_opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null> {
+  capture(_opts?: {
+    mode?: "photo" | "video"
+    orientation?: "portrait" | "device"
+  }): Promise<CapturedMedia | null> {
     if (!navigateToSurface) return Promise.resolve(null)
     pendingCapture?.resolve(null)
     pendingCapture = null
@@ -187,8 +190,8 @@ export const nativeCamera: CameraCapability = {
       videoMaxDuration: MAX_VIDEO_SECONDS,
     })
     sweepStaleMediaTempFiles()
-    if (result.canceled || result.assets.length === 0) return null
-    return capturedMediaFromPickerAsset(result.assets[0]!)
+    const asset = result.canceled ? undefined : result.assets[0]
+    return asset ? capturedMediaFromPickerAsset(asset) : null
   },
 
   async exceedsVideoLimits(media: CapturedMedia): Promise<boolean> {
@@ -209,10 +212,13 @@ export const nativeCamera: CameraCapability = {
       try {
         const compressedUri = await compressMedia(media)
         track(compressedUri)
-        uploadUri = media.kind === "image" ? await reencodeImageWithoutMetadata(compressedUri) : compressedUri
+        uploadUri =
+          media.kind === "image" ? await reencodeImageWithoutMetadata(compressedUri) : compressedUri
         track(uploadUri)
       } catch (err) {
-        throw new AppError(ErrorCode.MEDIA_REJECTED, "Could not process the captured media.", { cause: err })
+        throw new AppError(ErrorCode.MEDIA_REJECTED, "Could not process the captured media.", {
+          cause: err,
+        })
       }
 
       let putBytes: Uint8Array<ArrayBuffer>
@@ -229,7 +235,9 @@ export const nativeCamera: CameraCapability = {
         sha256 = await sha256Hex(putBytes)
       } catch (err) {
         if (err instanceof AppError) throw err
-        throw new AppError(ErrorCode.MEDIA_REJECTED, "Could not read the captured media.", { cause: err })
+        throw new AppError(ErrorCode.MEDIA_REJECTED, "Could not read the captured media.", {
+          cause: err,
+        })
       }
 
       return {

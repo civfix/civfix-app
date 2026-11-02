@@ -12,7 +12,11 @@ import {
   teamMemberRank,
 } from "../hostTeamModel"
 
-function member(id: string, role: EventTeamMemberDTO["role"], over: Partial<EventTeamMemberDTO> = {}) {
+function member(
+  id: string,
+  role: EventTeamMemberDTO["role"],
+  over: Partial<EventTeamMemberDTO> = {},
+) {
   return {
     person: { id, name: id, handle: id, deleted: false },
     role,
@@ -40,24 +44,34 @@ function invite(id: string, over: Partial<EventTeamInviteDTO> = {}) {
 
 describe("teamMemberRank", () => {
   it("ranks the known roles by position", () => {
-    expect(["organizer", "cohost", "coordinator", "staff", "member"].map((r) => teamMemberRank(r as never))).toEqual([
-      0, 1, 2, 3, 4,
-    ])
+    expect(
+      ["organizer", "cohost", "coordinator", "staff", "member"].map((r) =>
+        teamMemberRank(r as never),
+      ),
+    ).toEqual([0, 1, 2, 3, 4])
   })
 })
 
 describe("teamMemberActions edges", () => {
   it("offers every other settable role for a member when the viewer is unknown", () => {
-    expect(teamMemberActions({ member: member("m", "member"), viewerId: null, canManageTeam: true })).toEqual({
+    expect(
+      teamMemberActions({ member: member("m", "member"), viewerId: null, canManageTeam: true }),
+    ).toEqual({
       roles: ["cohost", "coordinator", "staff"],
       canRemove: true,
     })
   })
 
   it("returns one shared empty value when nothing is allowed", () => {
-    const organizer = teamMemberActions({ member: member("o", "organizer"), viewerId: null, canManageTeam: true })
+    const organizer = teamMemberActions({
+      member: member("o", "organizer"),
+      viewerId: null,
+      canManageTeam: true,
+    })
     expect(organizer).toEqual({ roles: [], canRemove: false })
-    expect(teamMemberActions({ member: member("m", "member"), viewerId: null, canManageTeam: false })).toBe(organizer)
+    expect(
+      teamMemberActions({ member: member("m", "member"), viewerId: null, canManageTeam: false }),
+    ).toBe(organizer)
   })
 
   it("has actions when only removal is allowed, and none when neither is", () => {

@@ -7,11 +7,7 @@ import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl, toAppError } from "@c
 import type { OrganizationDTO, SocialPlatform } from "@civfix/contract"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
-import {
-  SOCIAL_GLYPH_PATHS,
-  SOCIAL_GLYPH_VIEWBOX,
-  presentSocialPlatforms,
-} from "@civfix/ui/social"
+import { SOCIAL_GLYPH_PATHS, SOCIAL_GLYPH_VIEWBOX, presentSocialPlatforms } from "@civfix/ui/social"
 
 import { PublicPageState, type PublicPageStateClasses } from "@/components/public-page-state"
 import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
@@ -19,7 +15,7 @@ import { isSafeHttpsUrl, parseMarkdownSubset } from "@civfix/contract/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
 
 /** The public page's copy lives in the `host-org` namespace next to its stats (`stats.*`). */
 function kindLabel(t: Translate, kind: NonNullable<OrganizationDTO["verifiedKind"]>): string {
@@ -151,7 +147,6 @@ function OrgDocument({ slug }: { slug: string }) {
       <div className="orgpage-shell">
         <header className="orgpage-header">
           {org.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
             <img className="orgpage-logo" src={org.logoUrl} alt="" width={88} height={88} />
           ) : (
             <span className="orgpage-logo orgpage-logo-fallback" aria-hidden="true">
@@ -178,12 +173,7 @@ function OrgDocument({ slug }: { slug: string }) {
         </header>
 
         {donate ? (
-          <a
-            className="orgpage-donate"
-            href={donate}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="orgpage-donate" href={donate} target="_blank" rel="noopener noreferrer">
             <HeartHandshake aria-hidden="true" size={18} />
             {t("public.donate", { name: org.name })}
           </a>
@@ -200,7 +190,12 @@ function OrgDocument({ slug }: { slug: string }) {
             {website ? (
               <ul className="orgpage-links">
                 <li>
-                  <a href={website} target="_blank" rel="noopener noreferrer" className="orgpage-link">
+                  <a
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="orgpage-link"
+                  >
                     <Globe aria-hidden="true" size={16} />
                     {websiteLabel(website)}
                   </a>

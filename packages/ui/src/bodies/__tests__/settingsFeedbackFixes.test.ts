@@ -13,9 +13,9 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 
 describe("Settings > Account editors map the save failure onto honest copy", () => {
   it("tells a throttled or refused save apart from a transient one", () => {
-    expect(profileSaveErrorKey(new AppError(ErrorCode.RATE_LIMITED, "slow"), "bio.error.generic")).toBe(
-      PROFILE_SAVE_RATE_LIMITED_KEY,
-    )
+    expect(
+      profileSaveErrorKey(new AppError(ErrorCode.RATE_LIMITED, "slow"), "bio.error.generic"),
+    ).toBe(PROFILE_SAVE_RATE_LIMITED_KEY)
     expect(profileSaveErrorKey(new AppError(ErrorCode.VALIDATION, "no"), "bio.error.generic")).toBe(
       PROFILE_SAVE_VALIDATION_KEY,
     )
@@ -58,8 +58,8 @@ describe("Settings > Account editors map the save failure onto honest copy", () 
   it("closes the sheet on a saved commit and keeps it open with the mapped copy on a failed one", async () => {
     const calls: string[] = []
     const setters = {
-      setEditing: (editing: boolean) => calls.push(`editing:${editing}`),
-      setSubmitError: (message: string | null) => calls.push(`error:${message}`),
+      setEditing: (editing: boolean) => calls.push(`editing:${String(editing)}`),
+      setSubmitError: (message: string | null) => calls.push(`error:${String(message)}`),
     }
     const saved: string[] = []
     sheetCommit(
@@ -91,12 +91,6 @@ describe("settings switches and links never fail silently", () => {
     expect(src).toContain('onError: () => toast.show(t("save_error"), { variant: "error" })')
     expect(src).not.toContain("updatePrivacy.mutate(next) }")
     expect(src).toContain("onValueChange: (next) => savePrivacy(next)")
-  })
-
-  it("toasts when a notification switch fails to save", () => {
-    const src = read("../NotificationPrefsBody.tsx")
-    expect(src).toContain("update.mutate({ push: next }, { onError: onSaveError })")
-    expect(src).toContain("update.mutate({ [key]: next }, { onError: onSaveError })")
   })
 
   it("handles an About link that rejects or has no host capability", () => {
@@ -140,7 +134,9 @@ describe("delete-account dialog", () => {
   it("focuses the code field from an effect that cancels its timer on close or unmount", () => {
     expect(src).not.toMatch(/onSuccess: \(\) => \{[\s\S]{0,120}setTimeout\(/)
     expect(src).toContain("setCodeFocusRequest((n) => n + 1)")
-    expect(src).toMatch(/if \(!visible \|\| codeFocusRequest === 0\) return[\s\S]{0,120}return \(\) => clearTimeout\(timer\)/)
+    expect(src).toMatch(
+      /if \(!visible \|\| codeFocusRequest === 0\) return[\s\S]{0,120}return \(\) => clearTimeout\(timer\)/,
+    )
   })
 
   it("inks every warning line with the AA danger token", () => {

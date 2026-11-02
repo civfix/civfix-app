@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Animated, Easing, Platform, StyleSheet, View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
 import { motion, useReducedMotion, useTheme } from "../theme"

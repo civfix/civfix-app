@@ -28,7 +28,9 @@ function slot(over: Partial<EventSlotDTO> = {}): EventSlotDTO {
 
 describe("slot ownership and room edges", () => {
   it("returns the first slot flagged mine when the server flags two", () => {
-    expect(mySlotId([slot({ id: "a" }), slot({ id: "b", mine: true }), slot({ id: "c", mine: true })])).toBe("b")
+    expect(
+      mySlotId([slot({ id: "a" }), slot({ id: "b", mine: true }), slot({ id: "c", mine: true })]),
+    ).toBe("b")
   })
 
   it("reads a zero-capacity slot as having no room", () => {
@@ -37,7 +39,9 @@ describe("slot ownership and room edges", () => {
   })
 
   it("treats the slot named by the held id as mine even when the row's own flag is false", () => {
-    expect(slotRowState(slot({ id: "x", mine: false, capacity: 1, claimed: 1 }), "x", false)).toBe("mine")
+    expect(slotRowState(slot({ id: "x", mine: false, capacity: 1, claimed: 1 }), "x", false)).toBe(
+      "mine",
+    )
   })
 
   it("offers an unlimited slot as a switch while the viewer holds another", () => {
@@ -47,7 +51,11 @@ describe("slot ownership and room edges", () => {
 
 describe("slotBoardSummary edges", () => {
   it("counts claims past a lowered capacity rather than clamping them", () => {
-    expect(slotBoardSummary([slot({ capacity: 2, claimed: 5 })])).toEqual({ kind: "capped", claimed: 5, capacity: 2 })
+    expect(slotBoardSummary([slot({ capacity: 2, claimed: 5 })])).toEqual({
+      kind: "capped",
+      claimed: 5,
+      capacity: 2,
+    })
   })
 })
 
@@ -62,7 +70,9 @@ describe("slotViewerState precedence", () => {
   }
 
   it("says ended before holds on a read-only board", () => {
-    expect(slotViewerState({ ...base, readonly: true, slots: [slot({ mine: true })] })).toBe("ended")
+    expect(slotViewerState({ ...base, readonly: true, slots: [slot({ mine: true })] })).toBe(
+      "ended",
+    )
   })
 
   it("says host before going for a joined host who holds nothing", () => {
@@ -70,21 +80,30 @@ describe("slotViewerState precedence", () => {
   })
 
   it("says going_no_slot for a joined viewer even while auth is still pending", () => {
-    expect(slotViewerState({ ...base, joined: true, isAuthenticated: false, authPending: true })).toBe(
-      "going_no_slot",
-    )
+    expect(
+      slotViewerState({ ...base, joined: true, isAuthenticated: false, authPending: true }),
+    ).toBe("going_no_slot")
   })
 })
 
 describe("slot windows and ordering edges", () => {
   it("accepts a window whose end is not after its start", () => {
-    const reversed = slot({ startsAt: "2026-09-01T12:00:00.000Z", endsAt: "2026-09-01T10:00:00.000Z" })
+    const reversed = slot({
+      startsAt: "2026-09-01T12:00:00.000Z",
+      endsAt: "2026-09-01T10:00:00.000Z",
+    })
     expect(slotWindow(reversed)).not.toBeNull()
     expect(currentShifts([reversed], new Date("2026-09-01T11:00:00.000Z"))).toEqual([])
   })
 
   it("files a slot with one unparseable end among the untimed roles", () => {
-    const broken = slot({ id: "broken", title: "A", sortOrder: 0, startsAt: "nope", endsAt: "2026-09-01T10:00:00.000Z" })
+    const broken = slot({
+      id: "broken",
+      title: "A",
+      sortOrder: 0,
+      startsAt: "nope",
+      endsAt: "2026-09-01T10:00:00.000Z",
+    })
     const timed = slot({
       id: "timed",
       title: "Z",
@@ -102,7 +121,11 @@ describe("slot windows and ordering edges", () => {
   })
 
   it("orders untimed slots of equal sortOrder by a locale-aware title compare", () => {
-    const rows = [slot({ id: "b", title: "b" }), slot({ id: "B", title: "B" }), slot({ id: "a", title: "a" })]
+    const rows = [
+      slot({ id: "b", title: "b" }),
+      slot({ id: "B", title: "B" }),
+      slot({ id: "a", title: "a" }),
+    ]
     expect(slotDisplayOrder(rows).map((s) => s.title)).toEqual(["a", "b", "B"])
   })
 })

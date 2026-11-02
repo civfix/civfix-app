@@ -3,7 +3,7 @@ export type { CapabilitiesProviderProps } from "./context"
 export {
   useCamera,
   useGeolocation,
-  usePush,
+  usePushPermission,
   useSecureStore,
   useHaptics,
   useOpenExternal,
@@ -16,7 +16,8 @@ export type {
   CameraCapability,
   CameraViewfinderProps,
   GeolocationCapability,
-  PushCapability,
+  PushPermissionCapability,
+  PushPermissionStatus,
   SecureStoreCapability,
   PersistenceCapability,
   BlurSurfaceCapability,
@@ -31,3 +32,4 @@ export type {
 } from "./types"
 export { webClipboardCapability } from "./webClipboard"
 export { makeFakeCapabilities } from "./fakes"
+export type { FakePushPermission } from "./fakes"

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { EventAnswerValue, EventQuestionDTO } from "@civfix/contract"
@@ -175,7 +175,11 @@ export function RegistrationQuestions({
 
             {question.kind === "checkbox" || question.kind === "consent" ? (
               <CheckRow
-                label={question.kind === "consent" ? (question.consentText ?? question.prompt) : question.prompt}
+                label={
+                  question.kind === "consent"
+                    ? (question.consentText ?? question.prompt)
+                    : question.prompt
+                }
                 checked={value === true}
                 disabled={disabled}
                 a11yLabel={promptA11y}

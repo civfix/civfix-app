@@ -37,15 +37,17 @@ describe("REPORT_TYPES", () => {
   })
 
   it("pins the English label and sub line, the label doubling as the draft's default title", () => {
-    expect(REPORT_TYPES.map((row) => [enums.reportType[row.id], wizard.types[row.id].sub])).toEqual([
-      ["Dump", "Illegal dumping, bulky items"],
-      ["Encampment", "Unhoused encampment"],
-      ["Graffiti", "Tags, vandalism"],
-      ["Broken infrastructure", "Traffic light, streetlamp, flooding"],
-      ["Pavement distress", "Pothole, bad sidewalk"],
-      ["Overgrown vegetation", "Brush, weeds, blocked path"],
-      ["Other", "Something else"],
-    ])
+    expect(REPORT_TYPES.map((row) => [enums.reportType[row.id], wizard.types[row.id].sub])).toEqual(
+      [
+        ["Dump", "Illegal dumping, bulky items"],
+        ["Encampment", "Unhoused encampment"],
+        ["Graffiti", "Tags, vandalism"],
+        ["Broken infrastructure", "Traffic light, streetlamp, flooding"],
+        ["Pavement distress", "Pothole, bad sidewalk"],
+        ["Overgrown vegetation", "Brush, weeds, blocked path"],
+        ["Other", "Something else"],
+      ],
+    )
   })
 
   it("marks only the Other row with the neutral glyph", () => {

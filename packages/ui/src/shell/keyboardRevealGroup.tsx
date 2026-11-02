@@ -2,7 +2,7 @@ import React, { createContext, useContext, useRef } from "react"
 import { View, type StyleProp, type ViewStyle } from "react-native"
 import type { KeyboardFocusNode } from "./keyboardFocusStore"
 
-export type KeyboardRevealGroupRef = React.MutableRefObject<KeyboardFocusNode | null>
+export type KeyboardRevealGroupRef = React.RefObject<KeyboardFocusNode | null>
 
 const KeyboardRevealGroupContext = createContext<KeyboardRevealGroupRef | null>(null)
 KeyboardRevealGroupContext.displayName = "KeyboardRevealGroupContext"
@@ -19,7 +19,7 @@ export function KeyboardRevealGroup({ style, children }: KeyboardRevealGroupProp
       <View
         style={style}
         ref={(node) => {
-          groupRef.current = node as KeyboardFocusNode | null
+          groupRef.current = node
         }}
       >
         {children}

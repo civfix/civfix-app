@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
 import type { SocialLinks, UpdateProfileRequest } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -174,21 +174,13 @@ export function SettingsAccountBody() {
       showsVerticalScrollIndicator={false}
     >
       <SettingsSection label={t("section.identity")}>
-        <AvatarSettingRow
-          profile={profile}
-          uploading={avatarUploading}
-          onPress={onChangeAvatar}
-        />
+        <AvatarSettingRow profile={profile} uploading={avatarUploading} onPress={onChangeAvatar} />
         <DisplayNameEditor
           currentName={profile.name}
           saving={updateProfile.isPending}
           onSave={onSaveName}
         />
-        <BioEditor
-          currentBio={profile.bio}
-          saving={updateProfile.isPending}
-          onSave={onSaveBio}
-        />
+        <BioEditor currentBio={profile.bio} saving={updateProfile.isPending} onSave={onSaveBio} />
         <SettingsRow icon="Mail" label={t("email.label")} sub={user?.email ?? t("email.none")} />
         <ChangeUsernameEditor
           currentHandle={profile.handle}

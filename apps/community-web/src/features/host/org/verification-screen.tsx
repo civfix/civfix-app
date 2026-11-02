@@ -118,14 +118,18 @@ function StatusPanel({
   return (
     <section className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1">
       <div className="flex items-start gap-token-3">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-pill ${presentation.tone}`}>
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-pill ${presentation.tone}`}
+        >
           <Icon aria-hidden className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-token-2">
             <h2 className="font-display text-token-16 font-bold text-console-ink">{title}</h2>
             <Chip kind="org-verification" value={status} size="sm" />
-            {verification.kind ? <Chip kind="org-kind" value={verification.kind} size="sm" /> : null}
+            {verification.kind ? (
+              <Chip kind="org-kind" value={verification.kind} size="sm" />
+            ) : null}
           </div>
           <p className="mt-token-1 text-token-13 text-console-ink-2">{body}</p>
           <dl className="mt-token-3 flex flex-wrap gap-x-token-5 gap-y-token-2 text-token-12">
@@ -278,8 +282,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
             hint={
               kind === "nonprofit"
                 ? t("verification.kind_nonprofit_hint", {
-                    defaultValue:
-                      "A registered 501(c)(3) or similar.",
+                    defaultValue: "A registered 501(c)(3) or similar.",
                   })
                 : kind === "government"
                   ? t("verification.kind_government_hint", {
@@ -402,7 +405,9 @@ export function VerificationScreen() {
   const [reapplying, setReapplying] = useState(false)
 
   const data = verification.data
-  const showForm = data ? data.status === "unverified" || (data.status === "rejected" && reapplying) : false
+  const showForm = data
+    ? data.status === "unverified" || (data.status === "rejected" && reapplying)
+    : false
 
   return (
     <StateGate

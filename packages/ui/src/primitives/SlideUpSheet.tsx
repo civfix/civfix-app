@@ -3,7 +3,6 @@ import {
   Animated,
   Easing,
   Keyboard,
-  Modal,
   PanResponder,
   Pressable,
   ScrollView,
@@ -14,8 +13,10 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { FullWindowModal } from "./FullWindowModal"
+import { useFullWindowInsets } from "../shell/systemNoticeFrameContext"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { makeThemedStyles, motion, useTheme, webScrimProps } from "../theme"
+import { makeThemedStyles, motion, useTheme, webScrimProps, pointerEventStyles } from "../theme"
 import { KeyboardAnchorView } from "../shell/KeyboardAnchorView"
 import { useKeyboardAnchor } from "../shell/useKeyboardAnchor"
 import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
@@ -57,10 +58,14 @@ export function SlideUpSheet({
   const styles = useStyles()
   const th = useTheme()
   const { height: winH } = useWindowDimensions()
-  const insets = useContext(SafeAreaInsetsContext)
+  const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))
   const homeIndicatorPad = insets?.bottom ?? 0
   const [sheetHeight, setSheetHeight] = useState<number | null>(null)
-  const sheetMotion = useMenuMotion({ visible, ready: sheetHeight !== null, recipes: SHEET_RECIPES })
+  const sheetMotion = useMenuMotion({
+    visible,
+    ready: sheetHeight !== null,
+    recipes: SHEET_RECIPES,
+  })
   const { rendered, progress, useNativeDriver } = sheetMotion
   const onModalDismiss = useModalClosed(rendered, onClosed)
   const anchor = useKeyboardAnchor({ enabled: rendered, restOffset: homeIndicatorPad, gap: 0 })
@@ -93,7 +98,8 @@ export function SlideUpSheet({
       }).start()
     }
     return PanResponder.create({
-      onMoveShouldSetPanResponder: (_event, gesture) => slideUpShouldCapture(gesture.dx, gesture.dy),
+      onMoveShouldSetPanResponder: (_event, gesture) =>
+        slideUpShouldCapture(gesture.dx, gesture.dy),
       onPanResponderMove: (_event, gesture) => dragY.setValue(slideUpDragOffset(gesture.dy)),
       onPanResponderRelease: (_event, gesture) => {
         if (slideUpDragOutcome(gesture.dy, gesture.vy, sheetHeightRef.current) === "dismiss") {
@@ -116,7 +122,7 @@ export function SlideUpSheet({
   )
 
   return (
-    <Modal
+    <FullWindowModal
       visible={rendered}
       transparent
       animationType="none"
@@ -124,12 +130,13 @@ export function SlideUpSheet({
       onDismiss={onModalDismiss}
     >
       <View
-        style={styles.root}
+        style={[styles.root, pointerEventStyles[sheetMotion.exiting ? "none" : "auto"]]}
         accessibilityViewIsModal
         onAccessibilityEscape={onClose}
-        pointerEvents={sheetMotion.exiting ? "none" : "auto"}
       >
-        <Animated.View pointerEvents="none" style={[styles.scrim, menuScrimStyle(sheetMotion)]} />
+        <Animated.View
+          style={[styles.scrim, menuScrimStyle(sheetMotion), pointerEventStyles.none]}
+        />
         <Pressable
           style={styles.scrimTouch}
           accessibilityRole="button"
@@ -191,7 +198,7 @@ export function SlideUpSheet({
         </View>
         {visible ? <ToastOutlet /> : null}
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

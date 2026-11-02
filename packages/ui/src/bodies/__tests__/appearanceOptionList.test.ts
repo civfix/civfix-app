@@ -215,7 +215,9 @@ describe("the tapped row answers before the theme commit", () => {
   it("paints the spinner with the checkmark's own token color", () => {
     expect(RADIO_ROW).toContain('<ActivityIndicator size="small" color={th.colors.brand.bloom} />')
     expect(RADIO_ROW).toContain("const CHECK_GLYPH = 18")
-    expect(RADIO_ROW).toContain("<Icon icon={iconMap.Check} size={CHECK_GLYPH} color={th.colors.brand.bloom} />")
+    expect(RADIO_ROW).toContain(
+      "<Icon icon={iconMap.Check} size={CHECK_GLYPH} color={th.colors.brand.bloom} />",
+    )
   })
 
   it("takes the spinner from react-native and pins the slot so nothing reflows", () => {

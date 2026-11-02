@@ -16,7 +16,9 @@ const blocked = () => {
   throw new Error("SecurityError")
 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe("browser storage never throws", () => {
   it("reads nothing and writes nothing during the static-export prerender, where there is no window", () => {

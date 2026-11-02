@@ -17,7 +17,9 @@ const MEMBERS = code(read("../MembersBody.tsx"))
 const NEW_GROUP = code(read("../NewGroupBody.tsx"))
 const NEW_CHANNEL = code(read("../NewChannelBody.tsx"))
 const CREATE_AND_OPEN = code(read("../useCreateGroupAndOpen.ts"))
-const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"].map((file) => code(read(file))).join("\n")
+const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"]
+  .map((file) => code(read(file)))
+  .join("\n")
 const MEMBER_PICKER = code(read("../MemberPicker.tsx"))
 const IDENTITY = code(read("../GroupIdentityFields.tsx"))
 const ROLE_CHIP = code(read("../RoleChip.tsx"))
@@ -54,7 +56,15 @@ describe("ConversationBody depends on the stable chat methods, not the per-rende
   })
 
   it("lists no chat.X member in any hook dependency array", () => {
-    for (const dep of ["createPoll", "votePoll", "closePoll", "setPinned", "clearAround", "delete", "toggleReaction"]) {
+    for (const dep of [
+      "createPoll",
+      "votePoll",
+      "closePoll",
+      "setPinned",
+      "clearAround",
+      "delete",
+      "toggleReaction",
+    ]) {
       expect(CONVERSATION).not.toContain(`chat.${dep}`)
     }
     expect(CONVERSATION).toContain("onToggleReaction={toggleReaction}")
@@ -63,8 +73,12 @@ describe("ConversationBody depends on the stable chat methods, not the per-rende
 
 describe("clipboard failures are told, not swallowed", () => {
   it("toasts an error when the copy is refused", () => {
-    expect(BUBBLE_MENUS).toContain('.catch(() => toast.show(t("context_menu.copy_failed"), { variant: "error" }))')
-    expect(GROUP_INFO).toContain('.catch(() => toast.show(t("link_copy_failed"), { variant: "error" }))')
+    expect(BUBBLE_MENUS).toContain(
+      '.catch(() => toast.show(t("context_menu.copy_failed"), { variant: "error" }))',
+    )
+    expect(GROUP_INFO).toContain(
+      '.catch(() => toast.show(t("link_copy_failed"), { variant: "error" }))',
+    )
     expect(BUBBLE).not.toContain(".catch(() => {})")
     expect(BUBBLE_MENUS).not.toContain(".catch(() => {})")
     expect(GROUP_INFO).not.toContain(".catch(() => {})")
@@ -84,7 +98,12 @@ describe("group and channel mutations claim the submit synchronously", () => {
     ["useCreateGroupAndOpen create", CREATE_AND_OPEN, "submittingRef", /createGroup\.mutate\(/],
     ["GroupInfoBody add", GROUP_INFO, "addingRef", /addMembers\.mutate\(/],
     ["GroupInfoBody edit", GROUP_INFO, "savingRef", /updateGroup\.mutate\(/],
-    ["GroupInfoBody leave", GROUP_INFO, "leavingRef", /removeMember\.mutate\(\s*\{ id, userId: viewerId \}/],
+    [
+      "GroupInfoBody leave",
+      GROUP_INFO,
+      "leavingRef",
+      /removeMember\.mutate\(\s*\{ id, userId: viewerId \}/,
+    ],
     ["MembersBody leave", MEMBERS, "leavingRef", /leaveReportChat\.mutate\(/],
   ]
   it.each([
@@ -116,10 +135,22 @@ describe("refs are written after commit, never during render", () => {
   it.each([
     ["ConversationBody chatRef", CONVERSATION, "chatRef.current = chat"],
     ["ConversationBody dataRef", CONVERSATION, "dataRef.current = data"],
-    ["useComposerMode draftStateRef", COMPOSER_MODE, "draftStateRef.current = { draft, mentioned }"],
-    ["useComposerMode composerModeStateRef", COMPOSER_MODE, "composerModeStateRef.current = { mode: composerMode, editPending }"],
+    [
+      "useComposerMode draftStateRef",
+      COMPOSER_MODE,
+      "draftStateRef.current = { draft, mentioned }",
+    ],
+    [
+      "useComposerMode composerModeStateRef",
+      COMPOSER_MODE,
+      "composerModeStateRef.current = { mode: composerMode, editPending }",
+    ],
     ["useJumpToMessage dataRef", JUMP, "dataRef.current = data"],
-    ["useReplyDockInset systemBarInsetRef", DOCK_INSET, "systemBarInsetRef.current = insets?.bottom ?? 0"],
+    [
+      "useReplyDockInset systemBarInsetRef",
+      DOCK_INSET,
+      "systemBarInsetRef.current = insets?.bottom ?? 0",
+    ],
   ])("%s", (_name, source, assignment) => {
     expectWrittenInLayoutEffect(source, assignment)
   })
@@ -128,12 +159,16 @@ describe("refs are written after commit, never during render", () => {
 describe("room switch resets the pin cycle without a stale frame", () => {
   it("adjusts during render instead of in an effect", () => {
     expect(PIN_CYCLE).not.toContain("useEffect")
-    expect(PIN_CYCLE).toMatch(/if \(cycleRoom !== roomKey\) \{\s*setCycleRoom\(roomKey\)\s*setPinActiveIndex\(0\)/)
+    expect(PIN_CYCLE).toMatch(
+      /if \(cycleRoom !== roomKey\) \{\s*setCycleRoom\(roomKey\)\s*setPinActiveIndex\(0\)/,
+    )
   })
 
   it("resets the reply attach sheet to its menu the same way", () => {
     expect(REPLY_SHEET).not.toMatch(/useEffect\(\(\) => \{\s*if \(visible\) setLevel\("menu"\)/)
-    expect(REPLY_SHEET).toMatch(/if \(visible !== shownVisible\) \{\s*setShownVisible\(visible\)\s*if \(visible\) setLevel\("menu"\)/)
+    expect(REPLY_SHEET).toMatch(
+      /if \(visible !== shownVisible\) \{\s*setShownVisible\(visible\)\s*if \(visible\) setLevel\("menu"\)/,
+    )
   })
 })
 
@@ -147,8 +182,8 @@ describe("the group edit sheet can discard a newly picked photo", () => {
 describe("the inbox row menu is reachable without hover on web", () => {
   it("always mounts the More chip on web and reveals it on hover, focus, open menu or touch", () => {
     expect(INBOX).not.toContain("{IS_WEB && (hovered || menuOpen) ? (")
-    expect(INBOX).toContain(
-      "rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed",
+    expect(INBOX).toMatch(
+      /rowMenuChipShown\(state, hovered \|\| menuOpen, coarsePointer\)\s+\? null\s+: styles\.menuChipConcealed/,
     )
     expect(INBOX).toContain("const coarsePointer = useCoarsePointer()")
     expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| coarsePointer\) return true/)
@@ -158,24 +193,34 @@ describe("the inbox row menu is reachable without hover on web", () => {
 
 describe("status and errors are announced", () => {
   it("marks the connection row as a polite live region and the room error as an alert", () => {
-    expect(CONVERSATION).toContain('<View style={styles.offlineRow} accessibilityLiveRegion="polite">')
+    expect(CONVERSATION).toContain(
+      '<View style={styles.offlineRow} accessibilityLiveRegion="polite">',
+    )
     expect(CONVERSATION).toContain('<View style={styles.errorRow} accessibilityRole="alert">')
   })
 
   it("marks every inline create, attach and send error as an alert", () => {
-    expect(NEW_GROUP).toMatch(/<Text style=\{styles\.errorText\} accessibilityRole="alert">\s*\{t\("create_error"\)\}/)
+    expect(NEW_GROUP).toMatch(
+      /<Text style=\{styles\.errorText\} accessibilityRole="alert">\s*\{t\("create_error"\)\}/,
+    )
     expect(NEW_CHANNEL).toMatch(/accessibilityRole="alert">\s*\{t\("create_error"\)\}/)
     expect(IDENTITY).toMatch(/accessibilityRole="alert">\s*\{avatar\.attachError\}/)
     expect(REPLY_COMPOSER).toMatch(/accessibilityRole="alert">\s*\{attachments\.attachError\}/)
     expect(REPLY_COMPOSER).toMatch(/accessibilityRole="alert">\s*\{t\("submit_error"\)\}/)
-    expect(CONVO_COMPOSER).toContain('<View style={styles.composerAttachError} accessibilityRole="alert">')
+    expect(CONVO_COMPOSER).toContain(
+      '<View style={styles.composerAttachError} accessibilityRole="alert">',
+    )
   })
 })
 
 describe("visibility options form a labelled radio group", () => {
   it("wraps the channel wizard and group edit options", () => {
-    expect(NEW_CHANNEL).toContain('<View accessibilityRole="radiogroup" accessibilityLabel={t("visibility_title")}>')
-    expect(GROUP_INFO).toMatch(/accessibilityRole="radiogroup"\s*accessibilityLabel=\{t\("visibility_label"\)\}/)
+    expect(NEW_CHANNEL).toContain(
+      '<View accessibilityRole="radiogroup" accessibilityLabel={t("visibility_title")}>',
+    )
+    expect(GROUP_INFO).toMatch(
+      /accessibilityRole="radiogroup"\s*accessibilityLabel=\{t\("visibility_label"\)\}/,
+    )
   })
 })
 
@@ -186,7 +231,9 @@ describe("the conversation header exposes one title control", () => {
     expect(avatarTap).toContain("focusable={false}")
     expect(avatarTap).toContain('importantForAccessibility="no-hide-descendants"')
     expect(avatarTap).not.toContain("accessibilityLabel={titlePressLabel}")
-    expect(CONVO_BAR.match(/accessibilityLabel=\{onTitlePress \? titlePressLabel : undefined\}/g)).toHaveLength(1)
+    expect(
+      CONVO_BAR.match(/accessibilityLabel=\{onTitlePress \? titlePressLabel : undefined\}/g),
+    ).toHaveLength(1)
   })
 })
 
@@ -198,7 +245,9 @@ describe("typing indicator label is exposed on native", () => {
 
 describe("the native bubble offers its long-press menu to screen readers", () => {
   it("declares a labelled longpress action that opens the context menu", () => {
-    expect(BUBBLE).toContain('menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined')
+    expect(BUBBLE).toMatch(
+      /menuAvailable\s+\? \[\{ name: "longpress", label: t\("bubble\.message_actions"\) \}\]\s+: undefined/,
+    )
     expect(BUBBLE).toMatch(/if \(e\.nativeEvent\.actionName === "longpress"\) openContextMenu\(\)/)
   })
 })
@@ -209,7 +258,8 @@ describe("a long message wraps inside its bubble", () => {
     if (!found || found[1] === undefined) throw new Error(`style "${name}" not found`)
     return found[1]
   }
-  const row = (): string => sliceBetween(BUBBLE, "<View style={[styles.bubbleRow, rowFit]}>", "<BubbleAttachments")
+  const row = (): string =>
+    sliceBetween(BUBBLE, "<View style={[styles.bubbleRow, rowFit]}>", "<BubbleAttachments")
 
   it("keeps the bubble row inside the 80% column, so a URL or a reply quote cannot widen it", () => {
     expect(style("bubbleWrap")).toContain('maxWidth: "80%"')
@@ -234,7 +284,9 @@ describe("a long message wraps inside its bubble", () => {
     expect(style("bubbleRowFitMine")).toContain('maxWidth: "100%"')
     expect(style("bubbleRowFitMine")).toContain('justifyContent: "flex-end"')
     expect(style("bubbleRowFit")).not.toContain("justifyContent")
-    expect(BUBBLE).toContain("const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit")
+    expect(BUBBLE).toContain(
+      "const rowFit = bare ? null : mine ? styles.bubbleRowFitMine : styles.bubbleRowFit",
+    )
   })
 
   it("leaves the link-only card and its row as they were, so the card keeps its fixed width beside the hover actions", () => {
@@ -267,16 +319,30 @@ describe("loading states are announced", () => {
 
   it("shows a labelled loading row while a member search is pending", () => {
     expect(MEMBER_PICKER).not.toContain("searchPending ? null")
-    expect(MEMBER_PICKER).toMatch(/searchPending \? \(\s*<View\s*accessible\s*accessibilityRole="progressbar"/)
+    expect(MEMBER_PICKER).toMatch(
+      /searchPending \? \(\s*<View\s*accessible\s*accessibilityRole="progressbar"/,
+    )
     expect(MEMBER_PICKER).toContain('<LoadingState skeleton="person" rows={3} />')
   })
 })
 
 describe("pressable mentions announce as links", () => {
   it.each([
-    ["MessageBubble", BUBBLE, /accessibilityRole="link"\s*onPress=\{\(\) => onOpenPerson\(\{ id: userId/],
-    ["ThreadFocalPost", FOCAL, /accessibilityRole="link"\s*onPress=\{\(\) => openPerson\(segment\.userId\)\}/],
-    ["ThreadReplyRow", REPLY_ROW, /accessibilityRole="link"\s*onPress=\{\(event\) => \{\s*stopPress\(event\)\s*openPerson\(segment\.userId\)/],
+    [
+      "MessageBubble",
+      BUBBLE,
+      /accessibilityRole="link"\s*onPress=\{\(\) => onOpenPerson\(\{ id: userId/,
+    ],
+    [
+      "ThreadFocalPost",
+      FOCAL,
+      /accessibilityRole="link"\s*onPress=\{\(\) => openPerson\(segment\.userId\)\}/,
+    ],
+    [
+      "ThreadReplyRow",
+      REPLY_ROW,
+      /accessibilityRole="link"\s*onPress=\{\(event\) => \{\s*stopPress\(event\)\s*openPerson\(segment\.userId\)/,
+    ],
   ])("%s", (_name, source, pattern) => {
     expect(source).toMatch(pattern)
   })

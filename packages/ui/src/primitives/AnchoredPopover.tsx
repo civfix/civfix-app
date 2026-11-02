@@ -3,7 +3,6 @@ import {
   AccessibilityInfo,
   Animated,
   findNodeHandle,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,7 +13,8 @@ import {
   type View as NativeView,
   type ViewStyle,
 } from "react-native"
-import { makeThemedStyles, webScrimProps } from "../theme"
+import { FullWindowModal } from "./FullWindowModal"
+import { makeThemedStyles, webScrimProps, pointerEventStyles } from "../theme"
 import { menuCardStyle, menuScrimStyle, type MenuMotion } from "./menuMotion"
 import type { MenuOrigin } from "./menuMotionModel"
 
@@ -32,14 +32,14 @@ export interface AnchoredPopoverProps {
   motion: MenuMotion
   origin: MenuOrigin
   onClose: () => void
-  onDismiss?: () => void
+  onDismiss?: (() => void) | undefined
   dismissLabel: string
   centered?: boolean
   cardStyle?: StyleProp<ViewStyle>
-  onCardLayout?: (event: LayoutChangeEvent) => void
+  onCardLayout?: ((event: LayoutChangeEvent) => void) | undefined
   accessibilityRole?: AccessibilityRole
-  accessibilityLabel?: string
-  returnFocusRef?: React.RefObject<NativeView | null>
+  accessibilityLabel?: string | undefined
+  returnFocusRef?: React.RefObject<NativeView | null> | undefined
   children: React.ReactNode
 }
 
@@ -111,7 +111,7 @@ export function AnchoredPopover({
   }, [rendered, returnFocus])
 
   return (
-    <Modal
+    <FullWindowModal
       visible={motion.rendered}
       transparent
       animationType="none"
@@ -120,12 +120,14 @@ export function AnchoredPopover({
       onDismiss={onDismiss}
     >
       <View
-        style={centered ? styles.rootCentered : styles.rootAnchored}
+        style={[
+          centered ? styles.rootCentered : styles.rootAnchored,
+          pointerEventStyles[motion.exiting ? "none" : "auto"],
+        ]}
         accessibilityViewIsModal
         onAccessibilityEscape={onClose}
-        pointerEvents={motion.exiting ? "none" : "auto"}
       >
-        <Animated.View pointerEvents="none" style={[styles.backdrop, menuScrimStyle(motion)]} />
+        <Animated.View style={[styles.backdrop, menuScrimStyle(motion), pointerEventStyles.none]} />
         <Pressable
           style={styles.backdropTouch}
           accessibilityRole="button"
@@ -143,7 +145,7 @@ export function AnchoredPopover({
           {children}
         </Animated.View>
       </View>
-    </Modal>
+    </FullWindowModal>
   )
 }
 

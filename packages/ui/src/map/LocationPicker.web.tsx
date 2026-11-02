@@ -1,11 +1,12 @@
 import { coordsLabel } from "@civfix/contract"
 import * as React from "react"
-import maplibregl from "maplibre-gl"
+import * as maplibregl from "maplibre-gl"
 import { shadowSchemes } from "@civfix/tokens"
 import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { bindBundledWorker } from "./maplibreWorker.web"
 import {
   PICKER_EASE_MS,
   PICKER_ZOOM,
@@ -17,6 +18,8 @@ import {
 import { useLocationPick } from "./locationPickStore"
 import { pinAppearanceFor } from "./pins"
 import { applyPinElementTheme, makePinElement } from "./pins/pinElement.web"
+import { MapSurfaceGuard } from "./MapSurfaceGuard.web"
+import { MapUnavailable } from "./MapUnavailable"
 
 /** Below this the marker already sits on the value, so an echo of the picker's own change does not ease. */
 const MARKER_MOVED_EPSILON_DEG = 1e-6
@@ -55,7 +58,7 @@ function InlineLocationPicker({
   })
 
   const seedRef = React.useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
 
   const ensureMarker = React.useCallback(
@@ -83,6 +86,7 @@ function InlineLocationPicker({
     if (mapRef.current || !containerRef.current || !cameraSeed) return
     const start: [number, number] = [cameraSeed.lng, cameraSeed.lat]
 
+    bindBundledWorker()
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -159,7 +163,6 @@ function InlineLocationPicker({
     }
   }, [value, ensureMarker])
 
-
   if (!cameraSeed) {
     if (pickerSurface(cameraSeed, centerSettled) === "search") {
       return (
@@ -177,19 +180,28 @@ function InlineLocationPicker({
 
   return (
     <div style={{ ...styles.wrap, height }}>
-      <div
-        ref={containerRef}
-        style={styles.canvas}
-        role="region"
-        aria-label={t("a11y.picker")}
-      />
+      <div ref={containerRef} style={styles.canvas} role="region" aria-label={t("a11y.picker")} />
       <div style={styles.hint}>{placed ? t("hint.move") : t("hint.place")}</div>
     </div>
   )
 }
 
+function InlinePickerUnavailable({ height = PICKER_HEIGHT }: Pick<LocationPickerProps, "height">) {
+  const { t } = useT("map-ui")
+  const th = useTheme()
+  const styles = React.useMemo(() => makeStyles(th), [th])
+  return (
+    <div style={{ ...styles.wrap, height }}>
+      <MapUnavailable hint={t("unavailable.picker")} />
+    </div>
+  )
+}
+
 function samePickPoint(a: LatLng, b: LatLng): boolean {
-  return Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG && Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
+  return (
+    Math.abs(a.lat - b.lat) < SAME_PICK_POINT_EPSILON_DEG &&
+    Math.abs(a.lng - b.lng) < SAME_PICK_POINT_EPSILON_DEG
+  )
 }
 
 function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
@@ -273,9 +285,7 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
           {t("actions.reset")}
         </button>
       </div>
-      <div style={styles.overlayCoord}>
-        {point ? coordsLabel(point) : t("hint.empty")}
-      </div>
+      <div style={styles.overlayCoord}>{point ? coordsLabel(point) : t("hint.empty")}</div>
     </div>
   )
 }
@@ -285,12 +295,15 @@ export function LocationPicker(props: LocationPickerProps) {
   if (props.mode === "main-map" && mapRegistered) {
     return <MainMapLocationPicker {...props} />
   }
-  return <InlineLocationPicker {...props} />
+  return (
+    <MapSurfaceGuard fallback={<InlinePickerUnavailable height={props.height} />}>
+      <InlineLocationPicker {...props} />
+    </MapSurfaceGuard>
+  )
 }
 
 function makeStyles(t: Theme): Record<string, React.CSSProperties> {
   return {
-
     wrap: {
       position: "relative",
       width: "100%",
@@ -384,7 +397,9 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
       color: t.colors.text,
       font: `700 13.5px/1 ${t.fontFamily.bodyBold}, system-ui, sans-serif`,
       cursor: "pointer",
-      transition: RESET_TRANSITION_PROPS.map((prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`).join(", "),
+      transition: RESET_TRANSITION_PROPS.map(
+        (prop) => `${prop} ${t.motion.dur.d1}ms ${EASE_STANDARD_CSS}`,
+      ).join(", "),
     },
     overlayResetHovered: {
       backgroundColor: t.colors.surfaceTint,

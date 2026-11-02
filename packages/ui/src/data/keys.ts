@@ -2,6 +2,7 @@ import type { LegalDocumentType, RoomKind } from "@civfix/contract"
 
 export const queryKeys = {
   session: ["session"] as const,
+  appConfig: ["app-config"] as const,
   mapReportsRoot: ["map", "reports"] as const,
   mapReports: (bbox: unknown, categories: readonly string[]) =>
     ["map", "reports", bbox, categories] as const,
@@ -36,13 +37,13 @@ export const queryKeys = {
   mentionSearch: (q: string) => ["users", "mention-search", q] as const,
   notificationsRoot: ["notifications"] as const,
   notifications: (limit: number) => ["notifications", limit] as const,
-  notificationPrefs: ["notifications", "prefs"] as const,
+  notificationSettings: ["notifications", "settings"] as const,
+  notificationsUnread: ["notifications", "unread"] as const,
   followSuggestions: ["people", "suggestions"] as const,
   profileRoot: ["profile"] as const,
   profile: (id: string) => ["profile", id] as const,
   myProfile: ["profile", "me"] as const,
-  profileEvents: (id: string, anchor: string | null) =>
-    ["profile", id, "events", anchor] as const,
+  profileEvents: (id: string, anchor: string | null) => ["profile", id, "events", anchor] as const,
   followers: (id: string) => ["connections", "followers", id] as const,
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,
@@ -52,8 +53,7 @@ export const queryKeys = {
 
   postsRoot: ["posts"] as const,
   homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,
-  homeFeed: (filter: string, scope: "me" | "public") =>
-    ["posts", "feed", filter, scope] as const,
+  homeFeed: (filter: string, scope: "me" | "public") => ["posts", "feed", filter, scope] as const,
   postReplies: (id: string) => ["posts", "replies", id] as const,
   userPosts: (id: string) => ["posts", "user", id] as const,
   saves: ["posts", "saves"] as const,
@@ -73,8 +73,7 @@ export const queryKeys = {
   hostCounters: (id: string) => ["host", id, "counters"] as const,
   eventInsights: (id: string) => ["host", id, "insights"] as const,
   eventAnalytics: (id: string, scope: string) => ["host", id, "analytics", scope] as const,
-  hostRoster: (id: string, filter: string, q: string) =>
-    ["host", id, "roster", filter, q] as const,
+  hostRoster: (id: string, filter: string, q: string) => ["host", id, "roster", filter, q] as const,
   hostTicketTypes: (id: string) => ["host", id, "ticket-types"] as const,
   hostQuestions: (id: string) => ["host", id, "questions"] as const,
   hostTeam: (id: string) => ["host", id, "team"] as const,
@@ -104,6 +103,7 @@ export const queryKeys = {
   myOrgInvites: ["org-invites", "mine"] as const,
   legalRoot: ["legal"] as const,
   legalDocuments: ["legal", "documents"] as const,
-  legalDocument: (type: LegalDocumentType, version: string) => ["legal", "documents", type, version] as const,
+  legalDocument: (type: LegalDocumentType, version: string) =>
+    ["legal", "documents", type, version] as const,
   myLegalStatus: ["legal", "me"] as const,
 }

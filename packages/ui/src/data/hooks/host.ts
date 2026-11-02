@@ -166,7 +166,8 @@ export function useHostRoster(id: string | undefined, opts: HostRosterOptions = 
         ...(q.length > 0 ? { q } : {}),
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
-    getNextPageParam: (lastPage: ListEventRegistrationsResponse) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage: ListEventRegistrationsResponse) =>
+      lastPage.nextCursor ?? undefined,
     retry: false,
   })
 }
@@ -269,7 +270,11 @@ export function useRegisterForEvent(id: string) {
   return useMutation<RegisterForEventResponse, unknown, Omit<RegisterForEventRequest, "id">>({
     mutationFn: (input) => api.registerForEvent({ ...input, id }),
     onSuccess: (res) => {
-      if (res.outcome !== "registered" && res.outcome !== "waitlisted" && res.outcome !== "replayed") {
+      if (
+        res.outcome !== "registered" &&
+        res.outcome !== "waitlisted" &&
+        res.outcome !== "replayed"
+      ) {
         return
       }
       invalidateHostEvent(qc, id)
@@ -341,7 +346,11 @@ export function useWalkupRegistration(id: string) {
 export function useJoinEventWaitlist(id: string) {
   const api = useApi()
   const qc = useQueryClient()
-  return useMutation<{ entry: EventWaitlistEntryDTO }, unknown, { ticketTypeId: string; partySize?: number }>({
+  return useMutation<
+    { entry: EventWaitlistEntryDTO },
+    unknown,
+    { ticketTypeId: string; partySize?: number }
+  >({
     mutationFn: ({ ticketTypeId, partySize }) =>
       api.joinEventWaitlist({ id, ticketTypeId, partySize: partySize ?? 1 }),
     onSuccess: () => invalidateHostEvent(qc, id),
@@ -350,7 +359,10 @@ export function useJoinEventWaitlist(id: string) {
 
 export type HostedEventsWindow = "upcoming" | "past" | "all"
 
-export function useMyHostedEvents(when: HostedEventsWindow = "upcoming", orgId: string | null = null) {
+export function useMyHostedEvents(
+  when: HostedEventsWindow = "upcoming",
+  orgId: string | null = null,
+) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
   return useInfiniteQuery<ListMyHostedEventsResponse>({

@@ -26,7 +26,10 @@ describe("focusSettleCommand: the exit is carried by ONE curve", () => {
     expect(focusSettleCommand(true, false, 1)).toEqual({ target: 0, animated: false })
     expect(focusSettleCommand(false, false, 1)).toEqual({ target: 0, animated: false })
     // The threshold boundary itself settles (inclusive).
-    expect(focusSettleCommand(true, false, 1 - FOCUS_SETTLE_P_EPSILON)).toEqual({ target: 0, animated: false })
+    expect(focusSettleCommand(true, false, 1 - FOCUS_SETTLE_P_EPSILON)).toEqual({
+      target: 0,
+      animated: false,
+    })
     // A shared value can read slightly past 1; dockShapes clamps to 1, so the settle must still fire.
     expect(focusSettleCommand(true, false, 1.05)).toEqual({ target: 0, animated: false })
   })

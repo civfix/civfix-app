@@ -40,13 +40,17 @@ describe("hooks/volunteer.ts", () => {
   })
 
   it("threads `limit` into BOTH the cache key and the request", () => {
-    expect(volunteerSource).toContain("queryKeys.volunteerLeaderboard(geoid ?? \"unknown\", limit)")
+    expect(volunteerSource).toContain('queryKeys.volunteerLeaderboard(geoid ?? "unknown", limit)')
     expect(volunteerSource).toMatch(/api\.getJurisdictionLeaderboard\(\{[\s\S]*?\blimit,/)
   })
 
   it("leaves the PUBLIC hours query auth-optional (gated on the id alone)", () => {
     // A signed-out visitor must see a public profile's hours; the server decides what is publishable.
-    const fn = sliceBetween(volunteerSource, "export function usePublicHoursEntries", "export function useEventHours")
+    const fn = sliceBetween(
+      volunteerSource,
+      "export function usePublicHoursEntries",
+      "export function useEventHours",
+    )
     expect(fn).toContain("enabled: !!userId")
     expect(fn).not.toContain("isAuthenticated")
   })
@@ -65,15 +69,21 @@ describe("hooks/volunteer.ts", () => {
     // so a jurisdiction with >550 ranked volunteers would end its list on a failed request rather than on
     // a clean end-of-list. `undefined` is what stops the infinite query (and clears `hasNextPage`).
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: 500 })).toBe(500)
-    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: 550 })).toBeUndefined()
-    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: null })).toBeUndefined()
+    expect(
+      leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: 550 }),
+    ).toBeUndefined()
+    expect(
+      leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: null }),
+    ).toBeUndefined()
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [] })).toBeUndefined()
   })
 
   it("pins that clamp to the request schema's own bound, so the two cannot drift", () => {
     const bound = MAX_LEADERBOARD_OFFSET
     expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound })).toBe(bound)
-    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound + 1 })).toBeUndefined()
+    expect(
+      leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound + 1 }),
+    ).toBeUndefined()
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound }).success).toBe(true)
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound + 1 }).success).toBe(
       false,
@@ -110,7 +120,11 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     // "going" means on the board), so every list card for this event is stale the moment the PUT
     // returns. Writing only the detail would leave the card BEHIND the sheet reading "RSVP" with the old
     // count until that list refetched. This is the same pair `useJoinCleanup` applies.
-    const fn = sliceBetween(cleanupsSource, "export function claimEventSlotMutationOptions", "export interface SetMemberRoleVars")
+    const fn = sliceBetween(
+      cleanupsSource,
+      "export function claimEventSlotMutationOptions",
+      "export interface SetMemberRoleVars",
+    )
     expect(fn).toContain(
       "patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })",
     )
@@ -122,11 +136,14 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     // An org-hosted event is listed twice: under ["cleanups"] and under the org page's own
     // ["org-events"] key. Invalidating only the first would leave an org's Upcoming/Past sections showing
     // an event that had since been edited, cancelled or duplicated.
-    const helper = sliceBetween(cleanupsSource, "function invalidateCleanupLists", "export function useCleanups")
+    const helper = sliceBetween(
+      cleanupsSource,
+      "function invalidateCleanupLists",
+      "export function useCleanups",
+    )
     expect(helper).toContain("queryKey: CLEANUPS_LIST_PREFIX")
     expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
-
 })
 
 describe("hooks/posts.ts", () => {

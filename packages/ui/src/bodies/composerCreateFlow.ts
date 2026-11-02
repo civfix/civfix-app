@@ -93,4 +93,3 @@ export function clearStaleReportIntentAtComposerMount(): void {
   if (reportRunSurvivesView(useNavStore.getState().view)) return
   dropReportCreateIntent()
 }
-

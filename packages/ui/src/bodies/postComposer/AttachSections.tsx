@@ -30,7 +30,9 @@ function AttachGroup({
   return (
     <View style={styles.group}>
       <View style={styles.groupHeader}>
-        <Text accessibilityRole="header" {...headingLevel(2)} style={styles.groupTitle}>{title}</Text>
+        <Text accessibilityRole="header" {...headingLevel(2)} style={styles.groupTitle}>
+          {title}
+        </Text>
       </View>
       {plan.state === "attached" ? attached : null}
       {plan.state === "list" ? (
@@ -60,18 +62,20 @@ export function AttachSections({ attach, t }: { attach: PostComposerAttach; t: T
           title={t("section.events")}
           plan={attachPlan.events}
           attached={<AttachedEventCard attach={attach} />}
-          candidates={attach.eventCandidates.slice(0, attachPlan.events.visibleCount).map((event) => (
-            <LinkedEventCard
-              key={event.id}
-              event={buildComposerEventRef(event)}
-              cleanup={event}
-              layout="list"
-              timeZone={event.timezone ?? undefined}
-              selectable
-              selected={false}
-              onPress={() => attach.attachEvent(event)}
-            />
-          ))}
+          candidates={attach.eventCandidates
+            .slice(0, attachPlan.events.visibleCount)
+            .map((event) => (
+              <LinkedEventCard
+                key={event.id}
+                event={buildComposerEventRef(event)}
+                cleanup={event}
+                layout="list"
+                timeZone={event.timezone ?? undefined}
+                selectable
+                selected={false}
+                onPress={() => attach.attachEvent(event)}
+              />
+            ))}
           showMore={
             <ListActionButton
               label={showMoreLabel(attachPlan.events.showMoreCount)}
@@ -94,20 +98,25 @@ export function AttachSections({ attach, t }: { attach: PostComposerAttach; t: T
           title={t("section.reports")}
           plan={attachPlan.reports}
           attached={<AttachedReportCard attach={attach} />}
-          candidates={attach.reportCandidates.slice(0, attachPlan.reports.visibleCount).map((report) => (
-            <LinkedReportCard
-              key={report.id}
-              report={report}
-              layout="list"
-              selectable
-              selected={false}
-              onPress={() => attach.attachReport(report.id)}
-            />
-          ))}
+          candidates={attach.reportCandidates
+            .slice(0, attachPlan.reports.visibleCount)
+            .map((report) => (
+              <LinkedReportCard
+                key={report.id}
+                report={report}
+                layout="list"
+                selectable
+                selected={false}
+                onPress={() => attach.attachReport(report.id)}
+              />
+            ))}
           showMore={
             <ListActionButton
               label={showMoreLabel(attachPlan.reports.showMoreCount)}
-              accessibilityState={{ expanded: attach.reportsExpanded, disabled: attach.fetchingMoreReports }}
+              accessibilityState={{
+                expanded: attach.reportsExpanded,
+                disabled: attach.fetchingMoreReports,
+              }}
               disabled={attach.fetchingMoreReports}
               onPress={attach.showMoreReports}
             />

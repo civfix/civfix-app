@@ -35,7 +35,7 @@ describe("the pill's ink separates a pager from an affordance that is not one", 
       "more.isRetry ? sectionStyles.loadMoreAccentText : sectionStyles.loadMoreText",
     )
     expect(PROFILE_EVENTS).toContain("sectionStyles.loadMoreError")
-    expect(PROFILE_EVENTS).not.toContain("sectionStyles.empty}>{t(\"events.load_more_error\")")
+    expect(PROFILE_EVENTS).not.toContain('sectionStyles.empty}>{t("events.load_more_error")')
   })
 
   it("keeps the muted pill on the surfaces that really are pagers", () => {

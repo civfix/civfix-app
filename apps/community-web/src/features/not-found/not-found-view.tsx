@@ -40,7 +40,10 @@ export function NotFoundView() {
           <Wordmark />
         </Link>
       </header>
-      <div className={variant ? "nf-body is-picked" : "nf-body"} data-variant={variant ?? undefined}>
+      <div
+        className={variant ? "nf-body is-picked" : "nf-body"}
+        data-variant={variant ?? undefined}
+      >
         <div className="nf-stage" aria-hidden="true">
           {Stage ? <Stage live={reduced === false} /> : null}
         </div>

@@ -31,6 +31,7 @@ const packageSearchRoots = [
   new URL("./node_modules/", import.meta.url),
   new URL("../../node_modules/", import.meta.url),
 ]
+/** @param {string} name */
 const appPackageDir = (name) => {
   for (const root of packageSearchRoots) {
     const candidate = fileURLToPath(new URL(`${name}/`, root))
@@ -91,6 +92,7 @@ const DEFAULT_PAGE_EXTENSIONS = ["tsx", "ts", "jsx", "js"]
  * fake signed-in shell and load third-party sample media. scripts/cf-pages-postbuild.mjs fails the
  * build if one ever reaches out/.
  */
+/** @param {string} phase */
 export function pageExtensionsFor(phase) {
   return phase === PHASE_DEVELOPMENT_SERVER
     ? ["dev.tsx", ...DEFAULT_PAGE_EXTENSIONS]
@@ -112,7 +114,9 @@ const nextConfig = (phase) => ({
     NEXT_PUBLIC_COMMIT_SHA: resolveCommitSha(),
   },
   // @civfix/ui ships untranspiled .tsx source and the React Native stack ships untranspiled too, so
-  // Next must transpile them.
+  // Next must transpile them. maplibre-gl 6 ships ES2022 (class static blocks) that Safari before 16.4
+  // cannot parse; its chunk is a hard dependency of the AppShell import, so untranspiled it would stop the
+  // whole app from starting there. The worker it emits as an asset goes through the same transpile.
   transpilePackages: [
     "@civfix/contract",
     "@civfix/ui",
@@ -124,6 +128,7 @@ const nextConfig = (phase) => ({
     "react-native-gesture-handler",
     "react-native-safe-area-context",
     "@gorhom/bottom-sheet",
+    "maplibre-gl",
   ],
   webpack: (config) => {
     // @civfix/ui is authored in RN primitives; on web they resolve to react-native-web.

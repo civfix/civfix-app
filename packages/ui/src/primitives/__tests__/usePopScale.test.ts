@@ -42,9 +42,7 @@ describe("usePopScale", () => {
   })
 
   it("pops on the false -> true confirmation only, from the motion.pop tokens", () => {
-    expect(source).toContain(
-      "if (!POP_ENABLED || !active || wasActive || reduceMotion) return",
-    )
+    expect(source).toContain("if (!POP_ENABLED || !active || wasActive || reduceMotion) return")
     expect(source).toContain("motion.pop.from")
     expect(source).toContain("motion.pop.to")
   })

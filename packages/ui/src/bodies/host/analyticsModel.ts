@@ -13,6 +13,8 @@ import { visibleValue } from "@civfix/contract/host"
 import { hasHostCapability } from "../../data/hooks/host"
 import { dedupeById } from "../../primitives/listKeys"
 
+type Translate = { (key: string): string; (key: string, options: Record<string, unknown>): string }
+
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
 export type SummaryPanelKey = (typeof SUMMARY_PANELS)[number]
@@ -130,7 +132,11 @@ export function pickerOptions(
   upcoming: readonly HostedEventDTO[],
   past: readonly HostedEventDTO[],
 ): AnalyticsPickerOption[] {
-  return [...dedupeById([...upcoming, ...past].filter((event) => hasHostCapability(event, "view_analytics")))]
+  return [
+    ...dedupeById(
+      [...upcoming, ...past].filter((event) => hasHostCapability(event, "view_analytics")),
+    ),
+  ]
     .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
     .map((event) => ({ id: event.id, title: event.title }))
 }
@@ -147,9 +153,7 @@ export function eventRowTarget(
     const known = options.find((option) => option.id === row.key)
     return { id: row.key, title: known?.title ?? row.label }
   }
-  const byTitle = options.find(
-    (option) => option.title === row.label || option.title === row.key,
-  )
+  const byTitle = options.find((option) => option.title === row.label || option.title === row.key)
   return byTitle === undefined ? null : { id: byTitle.id, title: byTitle.title }
 }
 
@@ -165,19 +169,14 @@ export function ratePercent(rate: SuppressedRate | undefined): number | null {
   return Math.round(rate.value * 100)
 }
 
-export function checkInRingA11y(
-  t: (key: string, options?: Record<string, unknown>) => string,
-  rate: number | null,
-): string {
-  return rate === null ? t("card.checkins_ring_unknown_a11y") : t("card.checkins_ring_a11y", { rate })
+export function checkInRingA11y(t: Translate, rate: number | null): string {
+  return rate === null
+    ? t("card.checkins_ring_unknown_a11y")
+    : t("card.checkins_ring_a11y", { rate })
 }
 
 /** The visible empty mark reads as "minus" or nothing, so an unknown count is spoken as a word. */
-export function byEventRowA11y(
-  t: (key: string, options?: Record<string, unknown>) => string,
-  name: string,
-  value: number | null,
-): string {
+export function byEventRowA11y(t: Translate, name: string, value: number | null): string {
   return value === null
     ? t("page.by_event_unknown_a11y", { name })
     : t("page.by_event_a11y", { name, value })
@@ -233,10 +232,7 @@ export type ComparisonVerdict = "above" | "typical" | "below" | "unknown"
 
 const COMPARISON_BAND = 0.1
 
-export function comparisonVerdict(
-  value: number | null,
-  median: number | null,
-): ComparisonVerdict {
+export function comparisonVerdict(value: number | null, median: number | null): ComparisonVerdict {
   if (value === null || median === null || median <= 0) return "unknown"
   const delta = (value - median) / median
   if (delta > COMPARISON_BAND) return "above"

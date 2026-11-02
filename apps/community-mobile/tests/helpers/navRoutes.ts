@@ -12,7 +12,12 @@ import type * as TypeScript from "typescript"
 export async function loadNavRoutes<T>(): Promise<T> {
   const require = createRequire(import.meta.url)
   // Resolved through the package specifier so it follows the same @civfix/ui the app imports.
-  const routesPath = join(dirname(require.resolve("@civfix/ui/package.json")), "src", "nav", "routes.ts")
+  const routesPath = join(
+    dirname(require.resolve("@civfix/ui/package.json")),
+    "src",
+    "nav",
+    "routes.ts",
+  )
   const ts = require("typescript") as typeof TypeScript
   const { outputText } = ts.transpileModule(readFileSync(routesPath, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },

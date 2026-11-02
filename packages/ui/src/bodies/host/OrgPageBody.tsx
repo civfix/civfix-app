@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO } from "@civfix/contract"
 import {
@@ -69,21 +69,12 @@ function OrgHeader({ org, onShare }: { org: OrganizationDTO; onShare: () => void
   )
 }
 
-function OrgEventsSection({
-  slug,
-  when,
-}: {
-  slug: string
-  when: OrganizationEventsWindow
-}) {
+function OrgEventsSection({ slug, when }: { slug: string; when: OrganizationEventsWindow }) {
   const styles = useStyles()
   const { t } = useT("host-org")
   const push = useNavStore((state) => state.push)
   const query = useOrganizationEvents(slug, when)
-  const rows = useMemo(
-    () => organizationEventRows(query.data?.pages),
-    [query.data?.pages],
-  )
+  const rows = useMemo(() => organizationEventRows(query.data?.pages), [query.data?.pages])
 
   const body = query.isLoading ? (
     <Text style={styles.muted}>{t("events.loading")}</Text>

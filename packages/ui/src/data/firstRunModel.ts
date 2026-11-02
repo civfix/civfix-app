@@ -1,4 +1,8 @@
-import { DISPLAY_NAME_MAX_LENGTH, isValidHandle, type HandleAvailableResponse } from "@civfix/contract"
+import {
+  DISPLAY_NAME_MAX_LENGTH,
+  isValidHandle,
+  type HandleAvailableResponse,
+} from "@civfix/contract"
 
 // The two fields plus the joining space must fit the display name cap, or the server rejects the save
 // with a VALIDATION error the user cannot act on.
@@ -6,9 +10,8 @@ export const FIRST_NAME_MAX = 40
 export const LAST_NAME_MAX = DISPLAY_NAME_MAX_LENGTH - FIRST_NAME_MAX - 1
 
 export function splitName(displayName: string): { first: string; last: string } {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { first: "", last: "" }
-  return { first: parts[0]!, last: parts.slice(1).join(" ") }
+  const [first = "", ...rest] = displayName.trim().split(/\s+/).filter(Boolean)
+  return { first, last: rest.join(" ") }
 }
 
 export function stripHandlePrefix(text: string): string {
@@ -16,7 +19,7 @@ export function stripHandlePrefix(text: string): string {
 }
 
 export interface FirstRunAvailability {
-  data?: HandleAvailableResponse
+  data?: HandleAvailableResponse | undefined
   isFetching: boolean
   isError: boolean
 }

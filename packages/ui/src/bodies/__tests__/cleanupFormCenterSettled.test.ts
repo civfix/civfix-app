@@ -25,7 +25,7 @@ describe("the event form's pickers learn when the centre resolution settled with
   })
 
   it("passes it to the inline LocationPicker", () => {
-    const pickers = form.split("\n").filter((line) => line.includes("<LocationPicker "))
+    const pickers = form.match(/<LocationPicker\s[\s\S]*?\/>/g) ?? []
     expect(pickers).toHaveLength(1)
     expect(pickers[0]).toContain("centerSettled={centerSettled}")
   })

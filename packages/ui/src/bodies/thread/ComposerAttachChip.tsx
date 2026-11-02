@@ -6,7 +6,6 @@
  *
  * Presentation-only: the composer owns what is attached and what removing it does.
  */
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
@@ -36,7 +35,9 @@ export function ComposerAttachChip({ kind, title, onRemove }: ComposerAttachChip
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t(kind === "event" ? "reply.remove_event_a11y" : "reply.remove_report_a11y")}
+        accessibilityLabel={t(
+          kind === "event" ? "reply.remove_event_a11y" : "reply.remove_report_a11y",
+        )}
         onPress={onRemove}
         hitSlop={8}
         {...focusRingProps}

@@ -85,5 +85,11 @@
       "keep": "Seguir editando"
     }
   },
-  "finding_area": "Buscando tu zona…"
+  "finding_area": "Buscando tu zona…",
+  "unavailable": {
+    "title": "Mapa no disponible",
+    "home": "Este navegador no puede mostrar el mapa. Aún puedes explorar reportes y eventos.",
+    "picker": "Este navegador no puede mostrar el mapa. Busca una dirección para colocar el pin.",
+    "reportList": "Este navegador no puede mostrar el mapa. Aún puedes elegir reportes de la lista."
+  }
 }

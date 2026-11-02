@@ -8,13 +8,7 @@ import { isSafeHttpsUrl } from "@civfix/contract/markdown"
 
 type DonateBlockData = Extract<EventPageBlock, { kind: "donate" }>
 
-export function DonateBlock({
-  block,
-  page,
-}: {
-  block: DonateBlockData
-  page: PublicEventPageDTO
-}) {
+export function DonateBlock({ block, page }: { block: DonateBlockData; page: PublicEventPageDTO }) {
   const { t } = useT("web-signup")
   const supplied = block.url ?? page.donationUrl ?? null
   const href = supplied !== null && isSafeHttpsUrl(supplied) ? supplied : null

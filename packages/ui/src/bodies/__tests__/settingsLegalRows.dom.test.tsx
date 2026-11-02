@@ -12,7 +12,7 @@ import { setLegalDocumentPresenter } from "../../primitives/legalDocument"
 import type * as LegalDocumentNav from "../../primitives/legalDocumentNav"
 import { SettingsBody } from "../SettingsBody"
 
-const platform = vi.hoisted(() => ({ current: "web" as "web" | "native" }))
+const platform = vi.hoisted(() => ({ current: "web" }))
 const toastShow = vi.hoisted(() => vi.fn())
 
 vi.mock("../../typography", async () => {
@@ -52,8 +52,12 @@ vi.mock("../../primitives", async () => {
 // The web bundle resolves legalDocumentNav.web and the phone app's legalDocumentNav.native; each describe
 // below runs the rows against the one its platform loads.
 vi.mock("../../primitives/legalDocumentNav", async () => {
-  const web = await vi.importActual<typeof LegalDocumentNav>("../../primitives/legalDocumentNav.web")
-  const native = await vi.importActual<typeof LegalDocumentNav>("../../primitives/legalDocumentNav.native")
+  const web = await vi.importActual<typeof LegalDocumentNav>(
+    "../../primitives/legalDocumentNav.web",
+  )
+  const native = await vi.importActual<typeof LegalDocumentNav>(
+    "../../primitives/legalDocumentNav.native",
+  )
   return {
     openLegalDocumentInPlace: (type: LegalDocumentType) =>
       (platform.current === "native" ? native : web).openLegalDocumentInPlace(type),
@@ -112,7 +116,9 @@ describe("Settings legal rows on the phone", () => {
   it("T17: lists all four documents under Privacy, each opening the in-app screen on native", () => {
     setLegalDocumentPresenter(present)
     mount()
-    const rows = Array.from(document.querySelectorAll('[role="button"]')).map((row) => row.textContent)
+    const rows = Array.from(document.querySelectorAll('[role="button"]')).map(
+      (row) => row.textContent,
+    )
     const privacy = rows.indexOf("Privacy policy")
     expect(rows.slice(privacy - 1, privacy + 3)).toEqual(ROWS.map(([label]) => label))
     for (const [label, type] of ROWS) {

@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { TFunction } from "i18next"
 import type { OrganizationDTO, PersonDTO } from "@civfix/contract"
@@ -29,9 +28,17 @@ export function ComposerAuthorRow({
           style={styles.authorOrgLogo}
         />
       ) : (
-        <Avatar name={profile?.name ?? t("post_as.personal")} seed={profile?.id} photoUrl={profile?.avatarUrl} gradient={profile?.avatar ?? null} size={AUTHOR_AVATAR} />
+        <Avatar
+          name={profile?.name ?? t("post_as.personal")}
+          seed={profile?.id}
+          photoUrl={profile?.avatarUrl}
+          gradient={profile?.avatar ?? null}
+          size={AUTHOR_AVATAR}
+        />
       )}
-      <Text style={styles.authorName}>{postAsOrganization?.name ?? profile?.name ?? t("post_as.personal")}</Text>
+      <Text style={styles.authorName}>
+        {postAsOrganization?.name ?? profile?.name ?? t("post_as.personal")}
+      </Text>
     </View>
   )
 }

@@ -28,7 +28,7 @@ export function usePostRowActions({
 }: {
   post: PostDTO
   identity: PostIdentity
-  onOpenEntry?: (entry: DetailEntry) => void
+  onOpenEntry?: ((entry: DetailEntry) => void) | undefined
 }) {
   const push = useNavStore((state) => state.push)
   const openEntry = onOpenEntry ?? push

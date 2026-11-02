@@ -30,16 +30,24 @@ const styleBlock = (src: string, name: string): string => {
 
 describe("useListEndReached: one end-of-list paging rule", () => {
   it("loads the next page when there is one and none is in flight", () => {
-    expect(shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: false }, false)).toBe(true)
+    expect(
+      shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: false }, false),
+    ).toBe(true)
   })
 
   it("holds still while a page is in flight or none is left", () => {
-    expect(shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: true }, false)).toBe(false)
-    expect(shouldLoadMoreOnEndReached({ hasNextPage: false, isFetchingNextPage: false }, false)).toBe(false)
+    expect(shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: true }, false)).toBe(
+      false,
+    )
+    expect(
+      shouldLoadMoreOnEndReached({ hasNextPage: false, isFetchingNextPage: false }, false),
+    ).toBe(false)
   })
 
   it("never pages from the end of a filtered list, which would pull every page", () => {
-    expect(shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: false }, true)).toBe(false)
+    expect(shouldLoadMoreOnEndReached({ hasNextPage: true, isFetchingNextPage: false }, true)).toBe(
+      false,
+    )
   })
 
   it.each(["ConnectionsBody", "ReportsBody", "MessagingListBody"])(
@@ -78,12 +86,15 @@ describe("ListSearchField is the one in-list search field", () => {
     ["MessagingListBody", "slop", "none"],
     ["ReportsBody", "box", null],
     ["EventsBody", "box", null],
-  ] as const)("%s keeps its own clear target (%s) and capitalisation", (name, target, capitalize) => {
-    const src = body(name)
-    expect(src).toContain("<ListSearchField")
-    expect(src.includes('clearTarget="slop"')).toBe(target === "slop")
-    expect(src.includes('autoCapitalize="none"')).toBe(capitalize === "none")
-  })
+  ] as const)(
+    "%s keeps its own clear target (%s) and capitalisation",
+    (name, target, capitalize) => {
+      const src = body(name)
+      expect(src).toContain("<ListSearchField")
+      expect(src.includes('clearTarget="slop"')).toBe(target === "slop")
+      expect(src.includes('autoCapitalize="none"')).toBe(capitalize === "none")
+    },
+  )
 
   it("the inbox field alone sits flush under its header", () => {
     expect(body("MessagingListBody")).toContain("style={SEARCH_FIELD_FLUSH}")
@@ -93,7 +104,10 @@ describe("ListSearchField is the one in-list search field", () => {
 
 describe("ListBodyEmpty draws the list states one way", () => {
   it("draws the error state as the neutral cloud at the house size", () => {
-    const error = empty.slice(empty.indexOf('phase === "error"'), empty.indexOf('phase === "noMatch"'))
+    const error = empty.slice(
+      empty.indexOf('phase === "error"'),
+      empty.indexOf('phase === "noMatch"'),
+    )
     expect(error).toContain('variant="detail"')
     expect(error).toContain('tone="neutral"')
     expect(error).toContain("icon={iconMap.CloudOff}")
@@ -108,18 +122,24 @@ describe("ListBodyEmpty draws the list states one way", () => {
   })
 
   it("draws no-match with the search glyph and the empty state with the caller's icon", () => {
-    const noMatch = empty.slice(empty.indexOf('phase === "noMatch"'), empty.indexOf('phase === "empty"'))
+    const noMatch = empty.slice(
+      empty.indexOf('phase === "noMatch"'),
+      empty.indexOf('phase === "empty"'),
+    )
     expect(noMatch).toContain("icon={iconMap.Search}")
     expect(empty).toContain("icon={copies.empty.icon}")
   })
 
-  it.each(["ConnectionsBody", "ReportsBody", "MessagingListBody", "BlockedAccountsBody", "ClusterReportsBody"])(
-    "%s renders its list states through it",
-    (name) => {
-      expect(body(name)).toContain("<ListBodyEmpty")
-      expect(body(name)).not.toContain("iconMap.CloudOff")
-    },
-  )
+  it.each([
+    "ConnectionsBody",
+    "ReportsBody",
+    "MessagingListBody",
+    "BlockedAccountsBody",
+    "ClusterReportsBody",
+  ])("%s renders its list states through it", (name) => {
+    expect(body(name)).toContain("<ListBodyEmpty")
+    expect(body(name)).not.toContain("iconMap.CloudOff")
+  })
 })
 
 describe("listBodyStyles is the one list scaffold", () => {
@@ -139,7 +159,12 @@ describe("listBodyStyles is the one list scaffold", () => {
   })
 
   it("is exported with the rest of the list primitives", () => {
-    for (const name of ["ListSearchField", "ListBodyEmpty", "useListBodyStyles", "useListEndReached"]) {
+    for (const name of [
+      "ListSearchField",
+      "ListBodyEmpty",
+      "useListBodyStyles",
+      "useListEndReached",
+    ]) {
       expect(index).toContain(name)
     }
   })

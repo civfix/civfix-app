@@ -28,21 +28,66 @@ const HANKEN = {
 
 // The destination filename is the literal family name, so the mapping is self-documenting in public/.
 const FONTS = [
-  { family: "BricolageGrotesque_400Regular", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-400-normal.woff2" },
-  { family: "BricolageGrotesque_500Medium", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-500-normal.woff2" },
-  { family: "BricolageGrotesque_600SemiBold", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-600-normal.woff2" },
-  { family: "BricolageGrotesque_700Bold", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-700-normal.woff2" },
-  { family: "Manrope_400Regular", pkg: "@fontsource/manrope", file: "manrope-latin-400-normal.woff2" },
-  { family: "Manrope_500Medium", pkg: "@fontsource/manrope", file: "manrope-latin-500-normal.woff2" },
-  { family: "Manrope_600SemiBold", pkg: "@fontsource/manrope", file: "manrope-latin-600-normal.woff2" },
+  {
+    family: "BricolageGrotesque_400Regular",
+    pkg: "@fontsource/bricolage-grotesque",
+    file: "bricolage-grotesque-latin-400-normal.woff2",
+  },
+  {
+    family: "BricolageGrotesque_500Medium",
+    pkg: "@fontsource/bricolage-grotesque",
+    file: "bricolage-grotesque-latin-500-normal.woff2",
+  },
+  {
+    family: "BricolageGrotesque_600SemiBold",
+    pkg: "@fontsource/bricolage-grotesque",
+    file: "bricolage-grotesque-latin-600-normal.woff2",
+  },
+  {
+    family: "BricolageGrotesque_700Bold",
+    pkg: "@fontsource/bricolage-grotesque",
+    file: "bricolage-grotesque-latin-700-normal.woff2",
+  },
+  {
+    family: "Manrope_400Regular",
+    pkg: "@fontsource/manrope",
+    file: "manrope-latin-400-normal.woff2",
+  },
+  {
+    family: "Manrope_500Medium",
+    pkg: "@fontsource/manrope",
+    file: "manrope-latin-500-normal.woff2",
+  },
+  {
+    family: "Manrope_600SemiBold",
+    pkg: "@fontsource/manrope",
+    file: "manrope-latin-600-normal.woff2",
+  },
   { family: "Manrope_700Bold", pkg: "@fontsource/manrope", file: "manrope-latin-700-normal.woff2" },
-  { family: "Manrope_800ExtraBold", pkg: "@fontsource/manrope", file: "manrope-latin-800-normal.woff2" },
-  { family: "JetBrainsMono_400Regular", pkg: "@fontsource/jetbrains-mono", file: "jetbrains-mono-latin-400-normal.woff2" },
-  { family: "JetBrainsMono_500Medium", pkg: "@fontsource/jetbrains-mono", file: "jetbrains-mono-latin-500-normal.woff2" },
-  { family: "Baloo2_800ExtraBold", pkg: "@fontsource/baloo-2", file: "baloo-2-latin-800-normal.woff2" },
+  {
+    family: "Manrope_800ExtraBold",
+    pkg: "@fontsource/manrope",
+    file: "manrope-latin-800-normal.woff2",
+  },
+  {
+    family: "JetBrainsMono_400Regular",
+    pkg: "@fontsource/jetbrains-mono",
+    file: "jetbrains-mono-latin-400-normal.woff2",
+  },
+  {
+    family: "JetBrainsMono_500Medium",
+    pkg: "@fontsource/jetbrains-mono",
+    file: "jetbrains-mono-latin-500-normal.woff2",
+  },
+  {
+    family: "Baloo2_800ExtraBold",
+    pkg: "@fontsource/baloo-2",
+    file: "baloo-2-latin-800-normal.woff2",
+  },
 ]
 
 // Resolved through package.json so it works under pnpm's symlinked layout.
+/** @param {string} pkg */
 function pkgFilesDir(pkg) {
   const pkgJson = require.resolve(`${pkg}/package.json`)
   return join(dirname(pkgJson), "files")
@@ -61,7 +106,9 @@ function verifyHankenGrotesk() {
 
   const digest = createHash("sha256").update(readFileSync(HANKEN.font)).digest("hex")
   if (digest !== HANKEN.sha256) {
-    throw new Error(`Hanken Grotesk checksum mismatch: expected ${HANKEN.sha256}, received ${digest}`)
+    throw new Error(
+      `Hanken Grotesk checksum mismatch: expected ${HANKEN.sha256}, received ${digest}`,
+    )
   }
 
   const license = readFileSync(HANKEN.license, "utf8")
@@ -102,4 +149,6 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log(`\ncopy-contract-fonts: copied ${copied}/${FONTS.length} contract font files into public/fonts/.`)
+console.log(
+  `\ncopy-contract-fonts: copied ${copied}/${FONTS.length} contract font files into public/fonts/.`,
+)

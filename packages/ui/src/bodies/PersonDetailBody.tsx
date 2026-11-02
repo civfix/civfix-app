@@ -79,19 +79,15 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
 
   const onMessage = useCallback(() => {
     if (!profile?.id) return
-    start(
-      { id: profile.id, name: profile.name, handle: profile.handle },
-      profilePath,
-      {
-        onResolved: ({ roomId, thread }) =>
-          useNavStore.getState().push({
-            kind: "thread",
-            id: roomId,
-            roomKind: "dm",
-            peer: thread.peer ?? undefined,
-          }),
-      },
-    )
+    start({ id: profile.id, name: profile.name, handle: profile.handle }, profilePath, {
+      onResolved: ({ roomId, thread }) =>
+        useNavStore.getState().push({
+          kind: "thread",
+          id: roomId,
+          roomKind: "dm",
+          peer: thread.peer ?? undefined,
+        }),
+    })
   }, [start, profilePath, profile?.id, profile?.name, profile?.handle])
 
   const onOpenEvent = useCallback((event: CleanupDTO) => {
@@ -221,7 +217,11 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <Text style={styles.postsState}>{t("events.empty")}</Text>
             ) : null}
             {tabsModel.active === "events" && hasEvents ? (
-              <PersonEventsTab eventSplit={eventSplit} pastEvents={pastEvents} onOpenEvent={onOpenEvent} />
+              <PersonEventsTab
+                eventSplit={eventSplit}
+                pastEvents={pastEvents}
+                onOpenEvent={onOpenEvent}
+              />
             ) : null}
 
             {tabsModel.active === "hours" ? (

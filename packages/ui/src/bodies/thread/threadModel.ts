@@ -2,7 +2,6 @@ import type { TFunction } from "i18next"
 import type { PostCounts, PostDTO } from "@civfix/contract"
 import { clamp } from "../../math/clamp"
 
-
 const THREAD_HEADER_H = 52
 export const MIN_THREAD_VISIBLE = 132
 export const REPLY_SURFACE_MIN = 96
@@ -34,15 +33,14 @@ export function buildReplyComposerHeightPlan(input: {
     REPLY_SURFACE_MIN,
     Math.max(REPLY_SURFACE_MIN, available - MIN_THREAD_VISIBLE),
   )
-  const chrome = input.measuredChrome
-    ?? (REPLY_CHROME_FALLBACK + (input.hasThumbs ? REPLY_THUMBS_H : 0))
+  const chrome =
+    input.measuredChrome ?? REPLY_CHROME_FALLBACK + (input.hasThumbs ? REPLY_THUMBS_H : 0)
   const inputMax = input.expanded
     ? clamp(surfaceMax - chrome, REPLY_INPUT_MIN, REPLY_INPUT_MAX_CAP)
     : REPLY_INPUT_MIN
   const trayMax = clamp(available - surfaceMax - 8, REPLY_TRAY_MIN, REPLY_TRAY_MAX_CAP)
   return { available, surfaceMax, inputMax, trayMax }
 }
-
 
 export interface ThreadRailSegment {
   above: boolean
@@ -72,7 +70,6 @@ export function threadItems<T extends { id: string }>(
   }
   return out
 }
-
 
 export type FocalPostStatKey = "replies" | "reposts" | "likes"
 
@@ -105,7 +102,6 @@ export function threadFocalExcerpt(
   return ""
 }
 
-
 export type ReplyComposerState = "signed-out" | "collapsed" | "expanded"
 
 export function replyComposerState(input: {
@@ -120,7 +116,6 @@ export function replyComposerState(input: {
   return "collapsed"
 }
 
-
 export type ComposerSurface = "chat" | "thread-reply"
 
 export type ComposerFocusAfterSend = "keep" | "release"
@@ -128,7 +123,6 @@ export type ComposerFocusAfterSend = "keep" | "release"
 export function composerFocusAfterSend(surface: ComposerSurface): ComposerFocusAfterSend {
   return surface === "chat" ? "keep" : "release"
 }
-
 
 export const THREAD_AVATAR_SIZE = 36
 export const THREAD_RAIL_GAP = 10
@@ -146,7 +140,7 @@ export function optimisticPostId(now: number): string {
 
 export interface ThreadRowPost {
   readonly id: string
-  readonly replyToId?: string | null
+  readonly replyToId?: string | null | undefined
 }
 
 export interface ThreadRow<T extends ThreadRowPost> {

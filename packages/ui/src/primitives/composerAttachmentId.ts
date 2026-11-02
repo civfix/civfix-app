@@ -8,7 +8,8 @@ export function nextAttachmentId(): string {
   return `att-${counter}`
 }
 
-export type AttachErrorKey = "busy" | "limit" | "library" | "camera" | "rejected" | "rate_limited" | "upload"
+export type AttachErrorKey =
+  "busy" | "limit" | "library" | "camera" | "rejected" | "rate_limited" | "upload"
 
 // The error's own `message` is never shown: it is English server or client text, not catalog copy.
 const UPLOAD_ATTACH_ERROR_KEYS: ErrorCodeTable<AttachErrorKey> = {

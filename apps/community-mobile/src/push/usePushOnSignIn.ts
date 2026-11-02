@@ -1,64 +1,51 @@
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { AppState } from "react-native"
 import { useLegalUpdatePending } from "@civfix/ui/data"
-import { api } from "@/api/client"
+import * as Notifications from "expo-notifications"
 import { useAuthStore } from "@/store/authStore"
-import {
-  freshPushAttemptState,
-  isForegroundEdge,
-  isPushOutcomeTerminal,
-  shouldAttemptPushRegistration,
-  type PushAttemptState,
-} from "@/lib/pushRegistrationRetry"
-import { registerForPushNotifications } from "@/push/register"
+import { promptForNativePush, reconcileNativeDelivered, syncNativePushToken } from "@/push/register"
 
+/**
+ * While signed in: registers the device token at launch, on every return to the app and whenever the token
+ * rotates, and removes delivered notifications read elsewhere. After a sign-in from the sign-in screen it
+ * shows the system prompt once per device (D6).
+ */
 export function usePushOnSignIn() {
   const status = useAuthStore((s) => s.status)
   const legalUpdatePending = useLegalUpdatePending()
-  const attemptRef = useRef<PushAttemptState>(freshPushAttemptState())
+  const promptPending = useAuthStore((s) => s.pushPromptPending)
 
   useEffect(() => {
-    if (status !== "authed") {
-      if (status === "unauthed") attemptRef.current = freshPushAttemptState()
-      return
-    }
-    // The system's notifications dialog would open over the legal update screen; it asks once that closes.
-    if (legalUpdatePending) return
+    if (status !== "authed") return
+    void syncNativePushToken()
+    void reconcileNativeDelivered()
 
-    const attempt = (): void => {
-      const state = attemptRef.current
-      if (!shouldAttemptPushRegistration(state)) return
-      state.attempts += 1
-      state.inFlight = true
-
-      void (async () => {
-        try {
-          const prefs = await api.getNotificationPrefs()
-          if (!prefs.push) {
-            state.settled = true
-            return
-          }
-          const result = await registerForPushNotifications()
-          if (isPushOutcomeTerminal(result.status)) {
-            state.settled = true
-            return
-          }
-          console.warn(
-            `[push] registration not completed: ${result.status}`,
-            "reason" in result ? result.reason : "",
-          )
-        } catch (err) {
-          console.warn("[push] notification prefs unreachable; retrying on next foreground", err)
-        } finally {
-          state.inFlight = false
-        }
-      })()
-    }
-
-    attempt()
-    const subscription = AppState.addEventListener("change", (next) => {
-      if (isForegroundEdge(attemptRef.current, next)) attempt()
+    // iOS passes through "inactive" for a system prompt or Control Center without leaving the app; only a
+    // return from "background" counts as coming back.
+    let backgrounded = false
+    const appState = AppState.addEventListener("change", (next) => {
+      if (next === "background") {
+        backgrounded = true
+        return
+      }
+      if (next !== "active" || !backgrounded) return
+      backgrounded = false
+      void syncNativePushToken()
+      void reconcileNativeDelivered()
     })
-    return () => subscription.remove()
-  }, [status, legalUpdatePending])
+    const rotation = Notifications.addPushTokenListener((token) => {
+      void syncNativePushToken(token)
+    })
+    return () => {
+      appState.remove()
+      rotation.remove()
+    }
+  }, [status])
+
+  useEffect(() => {
+    // The system's notifications dialog would open over the legal update screen; it asks once that closes.
+    if (status !== "authed" || !promptPending || legalUpdatePending) return
+    useAuthStore.setState({ pushPromptPending: false })
+    void promptForNativePush()
+  }, [status, promptPending, legalUpdatePending])
 }

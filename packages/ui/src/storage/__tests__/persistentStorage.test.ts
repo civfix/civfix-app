@@ -1,15 +1,34 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { persistentStorage as webStorage } from "../persistentStorage.web"
-import { APP_PROMO_STORAGE_ID, MAP_FILTERS_STORAGE_ID, SIDEBAR_STORAGE_ID } from "../storageIds"
+import {
+  APP_PROMO_STORAGE_ID,
+  MAP_FILTERS_STORAGE_ID,
+  SIDEBAR_STORAGE_ID,
+  SYSTEM_NOTICE_STORAGE_ID,
+} from "../storageIds"
 
-const opened = vi.hoisted(() => ({ ids: [] as string[], fail: false }))
+// Each id's map outlives its instance, as an MMKV file outlives the app session that opened it.
+const opened = vi.hoisted(() => ({
+  ids: [] as string[],
+  fail: false,
+  files: new Map<string, Map<string, string>>(),
+}))
+
+function file(id: string): Map<string, string> {
+  const existing = opened.files.get(id)
+  if (existing) return existing
+  const created = new Map<string, string>()
+  opened.files.set(id, created)
+  return created
+}
 
 vi.mock("react-native-mmkv", () => ({
   MMKV: class {
-    private readonly map = new Map<string, string>()
+    private readonly map: Map<string, string>
     constructor({ id }: { id: string }) {
       if (opened.fail) throw new Error("no native module")
       opened.ids.push(id)
+      this.map = file(id)
     }
     getString(key: string) {
       return this.map.get(key)
@@ -20,12 +39,22 @@ vi.mock("react-native-mmkv", () => ({
     delete(key: string) {
       this.map.delete(key)
     }
+    getAllKeys() {
+      return [...this.map.keys()]
+    }
+    clearAll() {
+      this.map.clear()
+    }
   },
 }))
 
-async function freshNative() {
+async function freshNativeModule() {
   vi.resetModules()
-  return (await import("../persistentStorage.native")).persistentStorage
+  return import("../persistentStorage.native")
+}
+
+async function freshNative() {
+  return (await freshNativeModule()).persistentStorage
 }
 
 describe("the native MMKV instance ids", () => {
@@ -33,6 +62,7 @@ describe("the native MMKV instance ids", () => {
     expect(MAP_FILTERS_STORAGE_ID).toBe("civfix.ui.filters")
     expect(SIDEBAR_STORAGE_ID).toBe("civfix.ui.sidebar")
     expect(APP_PROMO_STORAGE_ID).toBe("civfix.ui.app-promo")
+    expect(SYSTEM_NOTICE_STORAGE_ID).toBe("civfix.ui.system-notice")
   })
 })
 
@@ -40,6 +70,7 @@ describe("persistentStorage on native", () => {
   beforeEach(() => {
     opened.ids = []
     opened.fail = false
+    opened.files.clear()
   })
 
   it("opens MMKV under exactly the id it is given and round-trips a value", async () => {
@@ -70,8 +101,39 @@ describe("persistentStorage on native", () => {
   })
 })
 
+describe("clearPersistentStorage on native", () => {
+  beforeEach(() => {
+    opened.ids = []
+    opened.fail = false
+    opened.files.clear()
+  })
+
+  it("T16: empties every store id, including one never opened this session", async () => {
+    file(MAP_FILTERS_STORAGE_ID).set("civfix.map-filters", "{}")
+    file(SIDEBAR_STORAGE_ID).set("civfix.sidebar-width", "{}")
+    file(APP_PROMO_STORAGE_ID).set("civfix.app-promo-dismissed", "1")
+    const { persistentStorage, clearPersistentStorage } = await freshNativeModule()
+    persistentStorage(MAP_FILTERS_STORAGE_ID)
+    persistentStorage(SIDEBAR_STORAGE_ID)
+
+    clearPersistentStorage()
+
+    expect([...opened.files.keys()].sort()).toEqual(
+      [
+        APP_PROMO_STORAGE_ID,
+        MAP_FILTERS_STORAGE_ID,
+        SIDEBAR_STORAGE_ID,
+        SYSTEM_NOTICE_STORAGE_ID,
+      ].sort(),
+    )
+    for (const [id, keys] of opened.files) expect([...keys.keys()], id).toEqual([])
+  })
+})
+
 describe("persistentStorage on web", () => {
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
 
   it("is a no-op during the static-export build, where there is no window", () => {
     const storage = webStorage(MAP_FILTERS_STORAGE_ID)
@@ -100,7 +162,9 @@ describe("persistentStorage on web", () => {
     const blocked = () => {
       throw new Error("SecurityError")
     }
-    vi.stubGlobal("window", { localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked } })
+    vi.stubGlobal("window", {
+      localStorage: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    })
     const storage = webStorage(MAP_FILTERS_STORAGE_ID)
     expect(storage.getItem("civfix.map-filters")).toBeNull()
     expect(() => storage.setItem("civfix.map-filters", "{}")).not.toThrow()

@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react"
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from "react-native"
+import { useEffect, useState } from "react"
+import { Platform, Pressable, StyleSheet, View, type ViewStyle } from "react-native"
 import {
   motion,
   coloredShadow,
@@ -16,17 +10,14 @@ import {
   webTransition,
   focusRingProps,
   type Theme,
+  webStyle,
 } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
 import { Brand, openBrandAbout } from "../primitives"
 import { useT } from "../i18n"
 import { useNavStore } from "../nav"
-import {
-  TABS,
-  useTabBarModel,
-  type TabDef,
-} from "./TabBar.shared"
+import { TABS, useTabBarModel, type TabDef } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
 import {
@@ -40,7 +31,6 @@ import {
   NAV_GAP,
   NAV_H,
   NAV_LEFT,
-  NAV_TOP,
   RAIL_BRAND_PAD_H,
   RAIL_BRAND_SIZE,
   RAIL_CAPSULE_H,
@@ -50,6 +40,7 @@ import {
   RAIL_ITEM_GAP,
   DOCK_ORB,
   RAIL_PAD_H,
+  expandedTopOffsets,
   railActiveView,
   railItemLeft,
 } from "./expandedFramePlan"
@@ -71,7 +62,7 @@ const MOUNT_TRANSITION = cssTransition(["opacity", "transform"], motion.glassIn)
 const MOUNT_SCALE_FROM = motion.glassIn.scaleFrom
 const isWeb = Platform.OS === "web"
 
-export function Rail() {
+export function Rail({ topInset }: { topInset: number }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("nav")
@@ -101,12 +92,12 @@ export function Rail() {
   const lozengeStyle: ViewStyle = {
     opacity: lozengeVisible ? 1 : 0,
     transform: [{ translateX: railItemLeft(lozengeVisible ? index : 0) }],
-    ...(isWeb ? ({ transition: tabPillTransition(reduceMotion) } as unknown as ViewStyle) : null),
+    ...(isWeb ? webStyle({ transition: tabPillTransition(reduceMotion) }) : null),
   }
 
   return (
     <View
-      style={styles.rail}
+      style={[styles.rail, { top: expandedTopOffsets(topInset).railTop }]}
       {...({ dataSet: { civfixRail: "" } } as object)}
     >
       <View
@@ -116,7 +107,7 @@ export function Rail() {
             opacity: mounted ? 1 : 0,
             transform: [{ scale: mounted ? 1 : MOUNT_SCALE_FROM }],
           },
-          isWeb && !reduceMotion ? ({ transition: MOUNT_TRANSITION } as unknown as ViewStyle) : null,
+          isWeb && !reduceMotion ? webStyle({ transition: MOUNT_TRANSITION }) : null,
         ]}
       >
         <Pressable
@@ -144,12 +135,7 @@ export function Rail() {
           <BlurSurface kind="dock" style={[StyleSheet.absoluteFill, styles.noPointer]} />
           <View style={[styles.lozenge, lozengeStyle, styles.noPointer]} />
           {TABS.map((tab, i) => (
-            <RailTab
-              key={tab.id}
-              tab={tab}
-              selected={i === index}
-              onPress={() => onTab(tab)}
-            />
+            <RailTab key={tab.id} tab={tab} selected={i === index} onPress={() => onTab(tab)} />
           ))}
         </View>
 
@@ -176,7 +162,12 @@ export function Rail() {
                 <View style={[styles.hoverLozenge, styles.orbHoverLozenge, styles.noPointer]} />
               ) : null}
               <View style={styles.noPointer}>
-                <Icon icon={iconMap.Search} size={DOCK_ORB_GLYPH_SIZE} color={th.colors.textMuted} strokeWidth={TAB_ICON_STROKE_WIDTH} />
+                <Icon
+                  icon={iconMap.Search}
+                  size={DOCK_ORB_GLYPH_SIZE}
+                  color={th.colors.textMuted}
+                  strokeWidth={TAB_ICON_STROKE_WIDTH}
+                />
               </View>
             </>
           )}
@@ -203,7 +194,7 @@ function RailTab({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected }}
-      {...({ "aria-selected": selected } as object)}
+      aria-selected={selected}
       accessibilityLabel={t(tab.labelKey)}
       {...focusRingProps}
       style={(state) => [
@@ -215,7 +206,9 @@ function RailTab({
     >
       {(state) => (
         <>
-          {webHover(state) && !selected ? <View style={[styles.hoverLozenge, styles.noPointer]} /> : null}
+          {webHover(state) && !selected ? (
+            <View style={[styles.hoverLozenge, styles.noPointer]} />
+          ) : null}
           <Icon
             icon={tab.icon}
             size={DOCK_TAB_GLYPH_SIZE}
@@ -232,7 +225,6 @@ const useStyles = makeThemedStyles((t) => ({
   rail: {
     position: "absolute",
     left: NAV_LEFT,
-    top: NAV_TOP,
     right: 0,
     height: NAV_H,
     flexDirection: "row",

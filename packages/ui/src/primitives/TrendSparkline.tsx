@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import Svg, { Circle, G, Path, Polyline } from "react-native-svg"
 import { makeThemedStyles, useTheme } from "../theme"

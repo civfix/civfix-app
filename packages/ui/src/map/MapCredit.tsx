@@ -1,5 +1,4 @@
-import React from "react"
-import { makeThemedStyles } from "../theme"
+import { makeThemedStyles, pointerEventStyles } from "../theme"
 import { Text } from "../typography"
 import { DEFAULT_ATTRIBUTION } from "./mapStyle"
 
@@ -8,7 +7,7 @@ const CREDIT_FONT_SIZE = 9
 
 export interface MapCreditProps {
   /** Lifts the credit above host chrome that floats over the map's bottom edge. */
-  bottomInset?: number | null
+  bottomInset?: number | null | undefined
 }
 
 /**
@@ -18,7 +17,13 @@ export interface MapCreditProps {
 export function MapCredit({ bottomInset = null }: MapCreditProps) {
   const styles = useStyles()
   return (
-    <Text style={[styles.credit, bottomInset != null ? { bottom: bottomInset } : null]} pointerEvents="none">
+    <Text
+      style={[
+        styles.credit,
+        bottomInset != null ? { bottom: bottomInset } : null,
+        pointerEventStyles.none,
+      ]}
+    >
       {DEFAULT_ATTRIBUTION}
     </Text>
   )

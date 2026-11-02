@@ -112,28 +112,54 @@ const echoT = (key: string) => `<${key}>`
 
 test("a rejected code reads as the localized rejection copy, never the server's English text", async () => {
   const wire = await errorFromTheApiClientRealm(ErrorCode.UNAUTHORIZED)
-  assert.equal(codeRejectionReason(echoT, wire, "That code did not work."), "That code did not work.")
   assert.equal(
-    codeRejectionReason(echoT, new AppError(ErrorCode.UNAUTHORIZED, "Invalid or expired code."), "rejected"),
+    codeRejectionReason(echoT, wire, "That code did not work."),
+    "That code did not work.",
+  )
+  assert.equal(
+    codeRejectionReason(
+      echoT,
+      new AppError(ErrorCode.UNAUTHORIZED, "Invalid or expired code."),
+      "rejected",
+    ),
     "rejected",
   )
 })
 
 test("any other code failure reads as its localized code copy, and a transport failure as the generic one", () => {
   assert.equal(
-    codeRejectionReason(echoT, new AppError(ErrorCode.VALIDATION, "code: must be 6 digits"), "rejected"),
+    codeRejectionReason(
+      echoT,
+      new AppError(ErrorCode.VALIDATION, "code: must be 6 digits"),
+      "rejected",
+    ),
     "<mobile-errors:code.VALIDATION>",
   )
   assert.equal(
     codeRejectionReason(echoT, crossRealmAppError(ErrorCode.INTERNAL, "db down"), "rejected"),
     "<mobile-errors:code.INTERNAL>",
   )
-  assert.equal(codeRejectionReason(echoT, new TypeError("Network request failed"), "rejected"), "<mobile-errors:generic>")
+  assert.equal(
+    codeRejectionReason(echoT, new TypeError("Network request failed"), "rejected"),
+    "<mobile-errors:generic>",
+  )
 })
 
 test("a code the app has copy for reads as that copy; any other failure reads as the generic line", () => {
-  assert.equal(friendlyError(echoT, new AppError(ErrorCode.RATE_LIMITED, "raw")), "<mobile-errors:code.RATE_LIMITED>")
-  assert.equal(friendlyError(echoT, crossRealmAppError(ErrorCode.FORBIDDEN)), "<mobile-errors:code.FORBIDDEN>")
-  assert.equal(friendlyError(echoT, new AppError(ErrorCode.NOT_ROUTABLE, "raw")), "<mobile-errors:generic>")
-  assert.equal(friendlyError(echoT, new TypeError("Network request failed")), "<mobile-errors:generic>")
+  assert.equal(
+    friendlyError(echoT, new AppError(ErrorCode.RATE_LIMITED, "raw")),
+    "<mobile-errors:code.RATE_LIMITED>",
+  )
+  assert.equal(
+    friendlyError(echoT, crossRealmAppError(ErrorCode.FORBIDDEN)),
+    "<mobile-errors:code.FORBIDDEN>",
+  )
+  assert.equal(
+    friendlyError(echoT, new AppError(ErrorCode.NOT_ROUTABLE, "raw")),
+    "<mobile-errors:generic>",
+  )
+  assert.equal(
+    friendlyError(echoT, new TypeError("Network request failed")),
+    "<mobile-errors:generic>",
+  )
 })

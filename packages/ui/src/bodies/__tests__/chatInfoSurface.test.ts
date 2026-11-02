@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  canLeaveChat,
-  chatMemberCount,
-  isChatInfoRoomKind,
-} from "../chatInfoSurface"
+import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "../chatInfoSurface"
 
 describe("isChatInfoRoomKind", () => {
   it("covers report and event rooms - the two kinds MembersBody gives an info surface", () => {

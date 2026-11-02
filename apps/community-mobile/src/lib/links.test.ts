@@ -81,7 +81,10 @@ test("a resume target keeps every REAL in-app route the sign-in gate hands it", 
   assert.equal(toResumeHref("/settings"), "/settings")
   assert.equal(toResumeHref("/settings/account"), "/settings/account")
   assert.equal(toResumeHref("/settings/privacy"), "/settings/privacy")
-  assert.equal(toResumeHref("/pin/9f1c0f6e-0000-4000-8000-000000000000"), "/pin/9f1c0f6e-0000-4000-8000-000000000000")
+  assert.equal(
+    toResumeHref("/pin/9f1c0f6e-0000-4000-8000-000000000000"),
+    "/pin/9f1c0f6e-0000-4000-8000-000000000000",
+  )
   assert.equal(toResumeHref("/reports?tab=mine"), "/reports?tab=mine")
 })
 

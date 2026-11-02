@@ -9,14 +9,7 @@
  * useKeyboardAnchor.types.ts); never conflate them.
  */
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
-import {
-  Keyboard,
-  Platform,
-  useWindowDimensions,
-  type KeyboardEvent,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native"
+import { Keyboard, Platform, useWindowDimensions, type KeyboardEvent } from "react-native"
 import { isEdgeToEdge } from "react-native-is-edge-to-edge"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
@@ -27,7 +20,6 @@ import {
   useDerivedValue,
   useSharedValue,
   withTiming,
-  type SharedValue,
 } from "react-native-reanimated"
 import { motion } from "../theme"
 import {
@@ -46,7 +38,6 @@ import {
 import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
 import { KEYBOARD_PLATFORM } from "./keyboardPlatform"
-
 
 const EDGE_TO_EDGE = isEdgeToEdge()
 
@@ -139,28 +130,31 @@ export function useKeyboardAnchor({
     },
   )
 
-  const apply = useCallback((cmd: KeyboardCommand, closing: boolean) => {
-    phase.current = cmd.phase
-    setEngaged(cmd.phase === "engaged")
-    reserveOverlapRef.current = cmd.reserveOverlap
-    setReserved(keyboardLift(cmd.reserveOverlap, restOffsetRef.current, gapRef.current))
-    // The phase and reservation above still apply; only the animation is dropped, because reanimated
-    // would restart the ease-out and re-accelerate the dock while the keyboard is still decelerating.
-    if (isRedundantClose(cmd, inFlightCloseRef.current)) return
-    if (cmd.duration <= 0) {
-      inFlightCloseRef.current = null
-      owned.value = 0
-      overlap.value = cmd.target
-      return
-    }
-    inFlightCloseRef.current = closing ? cmd.target : null
-    owned.value = 1
-    overlap.value = withTiming(cmd.target, {
-      duration: cmd.duration,
-      easing: closing ? iosKeyboardCloseEasing : iosKeyboardOpenEasing,
-      reduceMotion: ReduceMotion.System,
-    })
-  }, [overlap, owned])
+  const apply = useCallback(
+    (cmd: KeyboardCommand, closing: boolean) => {
+      phase.current = cmd.phase
+      setEngaged(cmd.phase === "engaged")
+      reserveOverlapRef.current = cmd.reserveOverlap
+      setReserved(keyboardLift(cmd.reserveOverlap, restOffsetRef.current, gapRef.current))
+      // The phase and reservation above still apply; only the animation is dropped, because reanimated
+      // would restart the ease-out and re-accelerate the dock while the keyboard is still decelerating.
+      if (isRedundantClose(cmd, inFlightCloseRef.current)) return
+      if (cmd.duration <= 0) {
+        inFlightCloseRef.current = null
+        owned.value = 0
+        overlap.value = cmd.target
+        return
+      }
+      inFlightCloseRef.current = closing ? cmd.target : null
+      owned.value = 1
+      overlap.value = withTiming(cmd.target, {
+        duration: cmd.duration,
+        easing: closing ? iosKeyboardCloseEasing : iosKeyboardOpenEasing,
+        reduceMotion: ReduceMotion.System,
+      })
+    },
+    [overlap, owned],
+  )
 
   // Android is not registered for will*: its duration is documented as always 0 and its insets
   // animation is already frame-exact through the mirror above.
@@ -214,7 +208,11 @@ export function useKeyboardAnchor({
       Keyboard.addListener("keyboardDidHide", () => {
         lastWillShow.current = null
         apply(
-          reduceKeyboard(phase.current, { type: "did-settle", overlap: 0, enabled: enabledRef.current }),
+          reduceKeyboard(phase.current, {
+            type: "did-settle",
+            overlap: 0,
+            enabled: enabledRef.current,
+          }),
           true,
         )
       }),
@@ -258,11 +256,11 @@ export function useKeyboardAnchor({
 
   const lift = useDerivedValue(() => keyboardLift(overlap.value, restSv.value, gapSv.value))
   const liftStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }))
-  // Widened to the cross-platform contract: `liftStyle` must go to an Animated.View (or
-  // <KeyboardAnchorView>), never a plain View, and `lift` is read-only in practice.
+  // `liftStyle` must go to an Animated.View (or <KeyboardAnchorView>), never a plain View, and
+  // `lift` is read-only in practice.
   return {
-    liftStyle: liftStyle as unknown as StyleProp<ViewStyle>,
-    lift: lift as unknown as SharedValue<number>,
+    liftStyle,
+    lift,
     reserved,
     engaged,
   }

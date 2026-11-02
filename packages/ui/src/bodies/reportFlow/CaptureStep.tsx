@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { View, Pressable, ScrollView, ActivityIndicator } from "react-native"
 import { MAX_REPORT_MEDIA } from "@civfix/contract"
 import {
@@ -67,8 +67,7 @@ export function CaptureStep({ mode }: { mode: LayoutMode }) {
     (kind: CaptureSource) => {
       void land(
         kind === "capture"
-          ?
-            () => camera.capture({ orientation: "portrait" })
+          ? () => camera.capture({ orientation: "portrait" })
           : () => camera.pickFromLibrary(),
       )
     },
@@ -86,7 +85,8 @@ export function CaptureStep({ mode }: { mode: LayoutMode }) {
   )
   const drop = useCaptureDropTarget(mode === "expanded" && acceptFile != null, onDropFiles)
 
-  if (media.length > 0) return <CapturedMediaStrip media={media} busy={busy} hint={hint} onRun={run} />
+  if (media.length > 0)
+    return <CapturedMediaStrip media={media} busy={busy} hint={hint} onRun={run} />
   return <CaptureCard fill={mode === "expanded"} busy={busy} hint={hint} drop={drop} onRun={run} />
 }
 

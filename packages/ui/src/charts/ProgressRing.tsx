@@ -43,13 +43,7 @@ export function ProgressRing({
           strokeWidth={thickness}
         />
         {arc ? (
-          <Path
-            d={arc}
-            fill="none"
-            stroke={color}
-            strokeWidth={thickness}
-            strokeLinecap="round"
-          />
+          <Path d={arc} fill="none" stroke={color} strokeWidth={thickness} strokeLinecap="round" />
         ) : null}
       </Svg>
       {children ? <View style={styles.center}>{children}</View> : null}

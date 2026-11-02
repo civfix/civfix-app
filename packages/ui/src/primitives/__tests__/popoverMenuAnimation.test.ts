@@ -60,12 +60,15 @@ describe("anchor-origin solve", () => {
   })
 
   it("clamps the origin inside the card, so a far-off trigger never flings it", () => {
-    const origin = menuOrigin({ x: 0, y: 0, width: 10, height: 10 }, {
-      left: 300,
-      top: 400,
-      width: 200,
-      height: 100,
-    })
+    const origin = menuOrigin(
+      { x: 0, y: 0, width: 10, height: 10 },
+      {
+        left: 300,
+        top: 400,
+        width: 200,
+        height: 100,
+      },
+    )
     expect(origin.originX).toBe(0)
     expect(origin.originY).toBe(0)
   })
@@ -90,7 +93,9 @@ describe("anchor-origin solve", () => {
 
 describe("the shared menu motion hook (source-pinned)", () => {
   it("reads every duration and curve from the motion tokens, never a literal", () => {
-    expect(motionSource).toMatch(/MENU_RECIPES: MenuMotionRecipes = \{ enter: motion\.menuIn, exit: motion\.menuOut \}/)
+    expect(motionSource).toMatch(
+      /MENU_RECIPES: MenuMotionRecipes = \{ enter: motion\.menuIn, exit: motion\.menuOut \}/,
+    )
     expect(motionSource).toMatch(/recipes = MENU_RECIPES/)
     expect(motionSource).toMatch(/duration: recipes\.enter\.duration/)
     expect(motionSource).toMatch(/duration: recipes\.exit\.duration/)
@@ -152,7 +157,9 @@ describe("the shared menu motion hook (source-pinned)", () => {
       .filter((file) => file.source.includes("useMenuMotion("))
     expect(callers.length).toBeGreaterThan(0)
     for (const { name, source } of callers) {
-      for (const [, passed] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
+      for (const [, passed = ""] of source.matchAll(
+        /useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g,
+      )) {
         expect(passed, `${name} passes ${passed} as recipes`).toMatch(/^[A-Z][A-Z0-9_]*$/)
         expect(source, `${name} must hoist ${passed} to a module constant`).toMatch(
           new RegExp(`^const ${passed}: MenuMotionRecipes = `, "m"),
@@ -176,7 +183,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("blocks interaction while the menu is leaving, so a double tap cannot re-enter it", () => {
-    expect(anchoredPopover).toMatch(/pointerEvents=\{motion\.exiting \? "none" : "auto"\}/)
+    expect(anchoredPopover).toMatch(/pointerEventStyles\[motion\.exiting \? "none" : "auto"\]/)
   })
 
   it("dismisses on an outside tap and on the platform back gesture", () => {
@@ -250,7 +257,9 @@ describe("PopoverMenu owns the animation for every menu that uses it", () => {
 
   it("transforms from the anchor corner the placement solver actually chose", () => {
     expect(popover).toMatch(/const origin = menuOrigin\(\s*anchorRect,/)
-    expect(popover).toMatch(/cardPosition \? \{ \.\.\.cardPosition, \.\.\.cardSizeOrEstimate \} : null/)
+    expect(popover).toMatch(
+      /cardPosition \? \{ \.\.\.cardPosition, \.\.\.cardSizeOrEstimate \} : null/,
+    )
   })
 
   it("keeps the Modal mounted through the exit, so onDismiss still fires AFTER it", () => {
@@ -289,7 +298,7 @@ describe("every dropdown in the package rides the same motion", () => {
     expect(contextMenu).toMatch(/menuCardStyle\(motion, cardOrigin\)/)
     expect(contextMenu).toMatch(/menuCardStyle\(motion, reactionOrigin\)/)
     expect(contextMenu).toMatch(/menuCardStyle\(motion, webOrigin\)/)
-    expect(contextMenu).toMatch(/pointerEvents=\{motion\.exiting \? "none" : "auto"\}/)
+    expect(contextMenu).toMatch(/pointerEventStyles\[motion\.exiting \? "none" : "auto"\]/)
   })
 
   it("the bubble clone's spring respects reduced motion and stops with the menu", () => {

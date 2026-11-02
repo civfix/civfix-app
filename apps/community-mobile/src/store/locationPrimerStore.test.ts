@@ -13,7 +13,9 @@ let instance = 0
 
 async function freshStore() {
   instance += 1
-  const module = (await import(`./locationPrimerStore.ts?instance=${instance}`)) as typeof LocationPrimerModule
+  const module = (await import(
+    `./locationPrimerStore.ts?instance=${instance}`
+  )) as typeof LocationPrimerModule
   return module.useLocationPrimerStore
 }
 
@@ -48,7 +50,11 @@ test("a version-1 record keeps only whether the primer was shown and rewrites it
 test("a migrated record counts as shown only for a literal true", async () => {
   for (const state of [{ shown: "yes" }, { shown: 1 }, {}, null]) {
     memory.set(LOCATION_PRIMER_KEY, persisted(state, 1))
-    assert.deepEqual(primer(await freshStore()), { shown: false, choice: null }, JSON.stringify(state))
+    assert.deepEqual(
+      primer(await freshStore()),
+      { shown: false, choice: null },
+      JSON.stringify(state),
+    )
   }
 })
 
@@ -69,4 +75,13 @@ test("marking the primer shown leaves the choice unset", async () => {
   store.getState().markShown()
   assert.deepEqual(primer(store), { shown: true, choice: null })
   assert.equal(memory.get(LOCATION_PRIMER_KEY), persisted({ shown: true, choice: null }, 2))
+})
+
+test("T11: a reset forgets the primer and its choice, in memory and on the next launch", async () => {
+  memory.set(LOCATION_PRIMER_KEY, persisted({ shown: true, choice: "precise" }, 2))
+  const store = await freshStore()
+  store.getState().reset()
+  assert.deepEqual(primer(store), { shown: false, choice: null })
+  assert.equal(memory.get(LOCATION_PRIMER_KEY), persisted({ shown: false, choice: null }, 2))
+  assert.deepEqual(primer(await freshStore()), { shown: false, choice: null })
 })

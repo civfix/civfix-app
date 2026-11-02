@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    // onboarding-map-art.mjs imports app and @civfix/ui source as .ts under Node's type stripping, and that
+    // source uses extensionless type-only imports; NodeNext would also read it as CommonJS, since this
+    // package has no "type": "module".
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["*.mjs", "*.d.ts"]
+}

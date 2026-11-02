@@ -68,7 +68,9 @@ function ConsoleSignedOut() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-token-3 bg-console-canvas p-token-5">
         <NoAccessState
-          title={to("accept.signed_out_title", { defaultValue: "Sign in to accept your invitation" })}
+          title={to("accept.signed_out_title", {
+            defaultValue: "Sign in to accept your invitation",
+          })}
           body={to("accept.signed_out_body", {
             defaultValue:
               "Use the email address the invitation was sent to. You'll come straight back here once you're signed in.",

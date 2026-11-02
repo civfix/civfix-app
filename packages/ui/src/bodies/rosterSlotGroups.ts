@@ -23,7 +23,7 @@ import { slotDisplayOrder } from "./eventSlotsModel"
 /** The minimum this module needs off a roster row. `AttendeeDTO` satisfies it. */
 export interface RosterSlotPerson {
   id: string
-  slot?: { id: string; title: string } | null
+  slot?: { id: string; title: string } | null | undefined
 }
 
 export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =

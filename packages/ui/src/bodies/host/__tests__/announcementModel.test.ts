@@ -106,8 +106,9 @@ describe("delivery counts are the host projection, and their absence is the gate
   })
 
   it("reads the counts a host projection carries, defaulting the partial ones to zero", () => {
-    expect(announcementCounts(announcement({ recipientCount: 42, sentCount: 40, failedCount: 2 })))
-      .toEqual({ recipients: 42, sent: 40, failed: 2 })
+    expect(
+      announcementCounts(announcement({ recipientCount: 42, sentCount: 40, failedCount: 2 })),
+    ).toEqual({ recipients: 42, sent: 40, failed: 2 })
     expect(announcementCounts(announcement({ recipientCount: 0 }))).toEqual({
       recipients: 0,
       sent: 0,

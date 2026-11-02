@@ -75,7 +75,11 @@ export function webLayerProgress({
   if (direction === "push") {
     return { own: moving ? 1 - settled : 0, above: moving ? 1 : under ? 1 - settled : 0, fade: 1 }
   }
-  return { own: moving && hasLeaving ? settled : 0, above: moving ? 1 : under ? settled : 0, fade: 1 }
+  return {
+    own: moving && hasLeaving ? settled : 0,
+    above: moving ? 1 : under ? settled : 0,
+    fade: 1,
+  }
 }
 
 export interface WebLayerCss {

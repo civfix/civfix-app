@@ -65,7 +65,9 @@ describe("chipHuePairs", () => {
     for (const scheme of SCHEMES) {
       const palette = colorSchemes[scheme]
       for (const hue of CHIP_HUE_NAMES) {
-        expect(contrastRatio(palette.chipInk[hue], palette.neutral.card)).toBeGreaterThanOrEqual(4.5)
+        expect(contrastRatio(palette.chipInk[hue], palette.neutral.card)).toBeGreaterThanOrEqual(
+          4.5,
+        )
       }
     }
   })

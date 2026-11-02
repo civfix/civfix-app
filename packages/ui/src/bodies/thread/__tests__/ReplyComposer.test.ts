@@ -26,8 +26,10 @@ describe("one composer per thread", () => {
   it("remounts the screen when the focal post changes, so no composer state rides along", () => {
     const wrapper = sliceBetween(body, "export function PostThreadBody", "function PostThread({")
     expect(wrapper).toContain("key={props.id}")
-    expect(wrapper, "the exported wrapper must stay hook-free, or the key stops remounting state")
-      .not.toMatch(/\buse[A-Z]/)
+    expect(
+      wrapper,
+      "the exported wrapper must stay hook-free, or the key stops remounting state",
+    ).not.toMatch(/\buse[A-Z]/)
   })
 
   it("aims the composer at the focal post and nothing else", () => {
@@ -55,7 +57,9 @@ describe("a posted reply", () => {
   })
 
   it("takes the release from the shared rule rather than an inline decision", () => {
-    expect(composer).toContain('const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")')
+    expect(composer).toContain(
+      'const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")',
+    )
     expect(success).toContain('if (REPLY_FOCUS_AFTER_SEND === "release") {')
   })
 })
@@ -69,8 +73,15 @@ describe("attached-report chip", () => {
 
 describe("the reply attach sheet on iOS", () => {
   const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
-  const sheetShell = sliceBetween(sheet, "export function ReplyAttachSheet(", "function PickerHeader(")
-  const actionSheet = readFileSync(new URL("../../../primitives/AnchoredActionSheet.tsx", import.meta.url), "utf8")
+  const sheetShell = sliceBetween(
+    sheet,
+    "export function ReplyAttachSheet(",
+    "function PickerHeader(",
+  )
+  const actionSheet = readFileSync(
+    new URL("../../../primitives/AnchoredActionSheet.tsx", import.meta.url),
+    "utf8",
+  )
 
   it("stays mounted when it closes, so RN Modal can fire the onDismiss that runs Photo and Camera", () => {
     expect(composer).not.toMatch(/\{attachOpen \? \(\s*<ReplyAttachSheet/)

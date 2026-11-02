@@ -10,14 +10,14 @@ export interface LiquidGlassDockProps {
   /** 0 = tab capsule + search orb, 1 = exit circle + search field. Driven by a timing animation (MOTION.dockMorphIn/Out). */
   progress: SharedValue<number>
   /** Search focus; only meaningful at progress 1. Omit for the static web dock. */
-  focus?: SharedValue<number>
+  focus?: SharedValue<number> | undefined
   /** Scroll-down collapse of the tab capsule; only meaningful at progress 0, and kept 0 during Search. */
-  minimize?: SharedValue<number>
+  minimize?: SharedValue<number> | undefined
   /**
    * Optional: a host that also positions content off the shapes solves `dockShapes` once and passes it
    * here instead of the dock re-deriving it. It must come from the same inputs; the dock does not check.
    */
-  shapes?: DerivedValue<DockShapes>
+  shapes?: DerivedValue<DockShapes> | undefined
   children?: React.ReactNode
   style?: StyleProp<ViewStyle>
 }

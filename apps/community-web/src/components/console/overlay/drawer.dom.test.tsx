@@ -187,7 +187,7 @@ describe("a non-modal drawer on a wide screen", () => {
   })
 
   it("moves focus into the panel on open and returns it to the opener on close", async () => {
-    window.matchMedia = ((query: string) => ({
+    window.matchMedia = (query: string) => ({
       matches: query === "(min-width: 1440px)",
       media: query,
       onchange: null,
@@ -196,7 +196,7 @@ describe("a non-modal drawer on a wide screen", () => {
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
+    })
     const user = userEvent.setup()
     renderConsole(<WideDrawerHarness />)
     const opener = screen.getByRole("button", { name: "open attendee" })

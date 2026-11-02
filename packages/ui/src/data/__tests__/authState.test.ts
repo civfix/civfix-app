@@ -44,7 +44,9 @@ describe("normalizeAuthState (authed vs authenticated)", () => {
 
   it("optimistic-authed (authed + cached user, not pending) -> isAuthenticated (paints signed-in)", () => {
     // Both hosts render an optimistic authed state from a cached user; it normalizes to signed-in.
-    expect(normalizeAuthState({ authed: true, pending: false, user: USER }).isAuthenticated).toBe(true)
+    expect(normalizeAuthState({ authed: true, pending: false, user: USER }).isAuthenticated).toBe(
+      true,
+    )
   })
 
   it("degenerate authed-with-null-user -> NOT authenticated (never surface signed-in without a user)", () => {

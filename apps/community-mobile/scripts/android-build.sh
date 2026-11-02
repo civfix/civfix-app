@@ -68,7 +68,7 @@ unset EXPO_PUBLIC_API_URL
 export EXPO_NO_DOTENV=1
 profile_env="$(node scripts/eas-profile-env.mjs "$profile")"
 while IFS= read -r line; do
-  if [ -n "$line" ]; then export "$line"; fi
+  if [ -n "$line" ]; then export "${line%%=*}=${line#*=}"; fi
 done <<<"$profile_env"
 
 if [ -z "${CIVFIX_ANDROID_VERSION_CODE:-}" ]; then

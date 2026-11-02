@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, View } from "react-native"
 import type { EventPhase } from "@civfix/contract"
 import { makeThemedStyles, useReducedMotion, useTheme, type Theme } from "../../theme"
@@ -30,8 +30,8 @@ export interface PhaseHeaderProps {
   title: string
   when: string
   relative: string | null
-  cta?: PhaseHeaderAction
-  secondary?: PhaseHeaderAction
+  cta?: PhaseHeaderAction | undefined
+  secondary?: PhaseHeaderAction | undefined
   wide?: boolean
 }
 
@@ -68,7 +68,9 @@ export function PhaseDot({ phase }: PhaseDotProps) {
   }, [live, pulse, reducedMotion, t.motion])
 
   return (
-    <Animated.View style={[styles.dot, { backgroundColor: phaseDotColor(t, phase), opacity: pulse }]} />
+    <Animated.View
+      style={[styles.dot, { backgroundColor: phaseDotColor(t, phase), opacity: pulse }]}
+    />
   )
 }
 

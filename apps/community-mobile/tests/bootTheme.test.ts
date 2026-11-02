@@ -6,16 +6,19 @@ import { URL } from "node:url"
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
 const bootBackdrop = readFileSync(new URL("../src/boot/BootBackdrop.tsx", import.meta.url), "utf8")
-const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
-const appearanceTheme = readFileSync(new URL("../src/theme/appearanceTheme.ts", import.meta.url), "utf8")
+const crashScreen = readFileSync(
+  new URL("../src/components/CrashScreen.tsx", import.meta.url),
+  "utf8",
+)
+const appearanceTheme = readFileSync(
+  new URL("../src/theme/appearanceTheme.ts", import.meta.url),
+  "utf8",
+)
 const launchThemeModule = readFileSync(
   new URL("../src/boot/launchTheme.ts", import.meta.url),
   "utf8",
 )
-const splash = readFileSync(
-  new URL("../src/components/LoadingSplash.tsx", import.meta.url),
-  "utf8",
-)
+const splash = readFileSync(new URL("../src/components/LoadingSplash.tsx", import.meta.url), "utf8")
 const connectivity = readFileSync(
   new URL("../src/components/BootConnectivity.tsx", import.meta.url),
   "utf8",
@@ -83,7 +86,10 @@ test("the wordmark screen resolves its styles once, against the launch scheme", 
 test("the wordmark screen spells out its ink, so no label falls back to the live scheme", () => {
   assert.match(splash, /\n  tag: \{[^}]+\n    color: t\.colors\.textSubtle,\n  \}/)
   assert.match(splash, /\n  connectingText: \{[^}]+\n    color: t\.colors\.textSubtle,\n  \}/)
-  assert.match(splash, /\n  connectingActionLabel: \{[^}]+\n    color: t\.colors\.accentText,\n  \}/)
+  assert.match(
+    splash,
+    /\n  connectingActionLabel: \{[^}]+\n    color: t\.colors\.accentText,\n  \}/,
+  )
 })
 
 test("the offline boot gate is painted light too, while the sign-in notice stays live", () => {
@@ -93,7 +99,10 @@ test("the offline boot gate is painted light too, while the sign-in notice stays
   )
   assert.match(gate, /const th = launchTheme/)
   assert.match(gate, /const styles = useStyles\.for\(LAUNCH_SCHEME\)/)
-  assert.match(gate, /<Icon icon=\{iconMap\.CloudOff\} size=\{22\} color=\{th\.colors\.textMuted\} \/>/)
+  assert.match(
+    gate,
+    /<Icon icon=\{iconMap\.CloudOff\} size=\{22\} color=\{th\.colors\.textMuted\} \/>/,
+  )
   assert.match(gate, /<Text variant="title" color=\{th\.colors\.text\}/)
   assert.match(gate, /<Text variant="body" color=\{th\.colors\.textMuted\}/)
 
@@ -126,11 +135,20 @@ test("the offline gate's sign-out shows it is working and cannot be pressed twic
   const gate = connectivity.slice(start, end)
   // A ref, not the `signingOut` state: two taps inside one frame both read the stale state.
   assert.match(gate, /const inFlight = useRef\(false\)/)
-  assert.match(gate, /if \(inFlight\.current\) return\s*inFlight\.current = true\s*setSigningOut\(true\)\s*try \{\s*await signOut\(\)\s*\} finally \{\s*inFlight\.current = false\s*setSigningOut\(false\)\s*\}/)
+  assert.match(
+    gate,
+    /if \(inFlight\.current\) return\s*inFlight\.current = true\s*setSigningOut\(true\)\s*try \{\s*await signOut\(\)\s*\} finally \{\s*inFlight\.current = false\s*setSigningOut\(false\)\s*\}/,
+  )
   assert.doesNotMatch(gate, /if \(signingOut\) return/)
   const button = gate.slice(gate.indexOf("onPress={() => void onSignOut()}") - 300)
-  assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{\(\) => void onSignOut\(\)\}/)
-  assert.match(button, /\{signingOut \? \(\s*<ActivityIndicator color=\{th\.colors\.textMuted\} \/>/)
+  assert.match(
+    button,
+    /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{\(\) => void onSignOut\(\)\}/,
+  )
+  assert.match(
+    button,
+    /\{signingOut \? \(\s*<ActivityIndicator color=\{th\.colors\.textMuted\} \/>/,
+  )
 })
 
 test("the offline gate's sign-out keeps a translated accessible name while its label is a spinner", () => {
@@ -141,7 +159,10 @@ test("the offline gate's sign-out keeps a translated accessible name while its l
   assert.match(gate, /const \{ t \} = useT\("mobile-branding"\)/)
   const press = gate.indexOf("onPress={() => void onSignOut()}")
   assert.ok(press > -1)
-  const button = gate.slice(gate.lastIndexOf("<Pressable", press), gate.indexOf("</Pressable>", press))
+  const button = gate.slice(
+    gate.lastIndexOf("<Pressable", press),
+    gate.indexOf("</Pressable>", press),
+  )
   assert.match(button, /accessibilityLabel=\{t\("boot\.sign_out"\)\}/)
   assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}/)
   assert.match(button, /disabled=\{signingOut\}/)

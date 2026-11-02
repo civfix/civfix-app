@@ -41,13 +41,19 @@ function api(): { client: ApiClient; calls: string[] } {
   return { client, calls }
 }
 
-const okFetch = () => vi.fn(async () => new Response(null, { status: 200 })) as unknown as typeof fetch
+const okFetch = () =>
+  vi.fn(async () => new Response(null, { status: 200 })) as unknown as typeof fetch
 
 describe("uploadMedia", () => {
   it("runs prepare -> presign -> PUT -> finalize and returns both ids the finalize answered with", async () => {
     const { client, calls } = api()
     const doFetch = okFetch()
-    const result = await uploadMedia({ api: client, camera: camera(), media: MEDIA, fetchImpl: doFetch })
+    const result = await uploadMedia({
+      api: client,
+      camera: camera(),
+      media: MEDIA,
+      fetchImpl: doFetch,
+    })
     expect(result).toEqual({
       uploadId: "up-1",
       mediaId: "m-1",
@@ -63,7 +69,8 @@ describe("uploadMedia", () => {
     const { client } = api()
     const doFetch = okFetch()
     await uploadMedia({ api: client, camera: camera(), media: MEDIA, fetchImpl: doFetch })
-    const [url, init] = (doFetch as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0]!
+    const [url, init] = (doFetch as unknown as { mock: { calls: [string, RequestInit][] } }).mock
+      .calls[0]!
     expect(url).toBe("https://storage/put")
     expect(init.method).toBe("PUT")
     expect(init.headers).toEqual({ "x-amz": "1" })
@@ -90,18 +97,26 @@ describe("uploadMedia", () => {
         throw new Error("codec exploded")
       },
     }
-    const err = await uploadMedia({ api: client, camera: broken, media: MEDIA, fetchImpl: okFetch() }).catch(
-      (e: unknown) => e,
-    )
+    const err = await uploadMedia({
+      api: client,
+      camera: broken,
+      media: MEDIA,
+      fetchImpl: okFetch(),
+    }).catch((e: unknown) => e)
     expect((err as AppError).code).toBe("MEDIA_REJECTED")
   })
 
   it("does NOT finalize when the PUT is refused", async () => {
     const { client, calls } = api()
-    const doFetch = vi.fn(async () => new Response(null, { status: 403 })) as unknown as typeof fetch
-    const err = await uploadMedia({ api: client, camera: camera(), media: MEDIA, fetchImpl: doFetch }).catch(
-      (e: unknown) => e,
-    )
+    const doFetch = vi.fn(
+      async () => new Response(null, { status: 403 }),
+    ) as unknown as typeof fetch
+    const err = await uploadMedia({
+      api: client,
+      camera: camera(),
+      media: MEDIA,
+      fetchImpl: doFetch,
+    }).catch((e: unknown) => e)
     expect((err as AppError).message).toContain("403")
     expect(calls).toEqual(["presign"])
   })
@@ -134,7 +149,9 @@ describe("the web progress path (XMLHttpRequest)", () => {
     status = 200
     timeout = 0
     sent: unknown = null
-    upload: { onprogress: ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null } = {
+    upload: {
+      onprogress: ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null
+    } = {
       onprogress: null,
     }
     onload: (() => void) | null = null
@@ -165,7 +182,7 @@ describe("the web progress path (XMLHttpRequest)", () => {
   it("uploads through XHR so the web host gets real byte progress", async () => {
     const g = globalThis as { XMLHttpRequest?: unknown }
     const before = g.XMLHttpRequest
-    g.XMLHttpRequest = FakeXhr as unknown as typeof XMLHttpRequest
+    g.XMLHttpRequest = FakeXhr
     try {
       const { client, calls } = api()
       const fractions: number[] = []
@@ -198,7 +215,7 @@ describe("the web progress path (XMLHttpRequest)", () => {
     }
     const g = globalThis as { XMLHttpRequest?: unknown }
     const before = g.XMLHttpRequest
-    g.XMLHttpRequest = RefusingXhr as unknown as typeof XMLHttpRequest
+    g.XMLHttpRequest = RefusingXhr
     try {
       const { client, calls } = api()
       const err = await uploadMedia({

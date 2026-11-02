@@ -43,7 +43,12 @@ export interface PostOverflowButtonProps {
   expanded: boolean
 }
 
-export function PostOverflowButton({ label, onPress, buttonRef, expanded }: PostOverflowButtonProps) {
+export function PostOverflowButton({
+  label,
+  onPress,
+  buttonRef,
+  expanded,
+}: PostOverflowButtonProps) {
   const styles = useStyles()
   const th = useTheme()
   const buttonStyle = React.useMemo(
@@ -72,7 +77,11 @@ export function PostOverflowButton({ label, onPress, buttonRef, expanded }: Post
               styles.moreHalo,
               WEB_MORE_HALO_TOP,
               webTransition,
-              state.pressed ? styles.moreHaloPressed : webHover(state) ? styles.moreHaloHovered : null,
+              state.pressed
+                ? styles.moreHaloPressed
+                : webHover(state)
+                  ? styles.moreHaloHovered
+                  : null,
             ]}
           />
           <Icon icon={iconMap.Ellipsis} size={RHYTHM.overflowGlyph} color={th.colors.textMuted} />

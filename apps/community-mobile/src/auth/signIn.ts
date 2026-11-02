@@ -11,10 +11,7 @@ import { useAuthStore } from "@/store/authStore"
 
 async function persistSession(session: SessionResponse): Promise<void> {
   if (!session.token) {
-    throw new AppError(
-      ErrorCode.INTERNAL,
-      "Sign-in did not return a token. Please try again.",
-    )
+    throw new AppError(ErrorCode.INTERNAL, "Sign-in did not return a token. Please try again.")
   }
   await useAuthStore.getState().signIn(session.token, session.user)
 }

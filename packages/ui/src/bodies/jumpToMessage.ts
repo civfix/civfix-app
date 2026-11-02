@@ -13,9 +13,6 @@ import type { RenderItem } from "./conversation/conversationModel"
 export type JumpResolution = { type: "scroll"; index: number } | { type: "fetch" }
 
 export function resolveJump(targetId: string, rows: readonly RenderItem[]): JumpResolution {
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]!
-    if (row.type === "row" && row.item.message.id === targetId) return { type: "scroll", index: i }
-  }
-  return { type: "fetch" }
+  const index = rows.findIndex((row) => row.type === "row" && row.item.message.id === targetId)
+  return index === -1 ? { type: "fetch" } : { type: "scroll", index }
 }

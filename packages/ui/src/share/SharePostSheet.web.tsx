@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { makeThemedStyles } from "../theme"
 import { iconMap } from "../typography"
@@ -20,7 +20,10 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
   const { run, settled } = useDeferredOverlayAction(visible, onCancel, onClosed)
   const [noteFocused, setNoteFocused] = useState(false)
 
-  const onShareAnotherWay = useCallback(() => run(session.shareElsewhere), [run, session.shareElsewhere])
+  const onShareAnotherWay = useCallback(
+    () => run(session.shareElsewhere),
+    [run, session.shareElsewhere],
+  )
   const onSignIn = useCallback(() => run(session.signIn), [run, session.signIn])
 
   return (

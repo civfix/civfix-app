@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react"
+import { memo, useCallback } from "react"
 import { View, StyleSheet, ActivityIndicator } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -70,9 +70,7 @@ export function LeaderboardBody({ geoid }: LeaderboardBodyProps) {
   const entries = pages.flatMap((p) => p.entries)
   const jurisdictionName = pages[0]?.jurisdictionName
 
-  const heading = jurisdictionName
-    ? t("title", { name: jurisdictionName })
-    : t("title_generic")
+  const heading = jurisdictionName ? t("title", { name: jurisdictionName }) : t("title_generic")
 
   const onEndReached = useCallback(() => {
     if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage()

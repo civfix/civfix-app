@@ -17,7 +17,6 @@ import {
   hostCapabilities,
 } from "@civfix/contract"
 
-
 const NOW = Date.parse("2026-09-11T17:00:00.000Z")
 const PHASES = EventPhaseSchema.options
 const RANGES = PortfolioAnalyticsRangeSchema.options
@@ -68,7 +67,9 @@ describe("fakeEventInsights", () => {
 
   it("keeps the seat arithmetic consistent", () => {
     for (const phase of PHASES) {
-      const { seats, byTicketType, bySource, arrivals, hours } = fakeEventInsights(phase, { now: NOW })
+      const { seats, byTicketType, bySource, arrivals, hours } = fakeEventInsights(phase, {
+        now: NOW,
+      })
       expect(seats.checkedIn + seats.noShow + seats.unmarked).toBe(seats.registered)
       expect(byTicketType.reduce((sum, row) => sum + row.registered, 0)).toBe(seats.registered)
       expect(byTicketType.reduce((sum, row) => sum + row.waitlisted, 0)).toBe(seats.waitlisted)
@@ -194,7 +195,7 @@ describe("fakeHostedEvents", () => {
     for (const when of ["upcoming", "past"] as const) {
       for (const item of fakeHostedEvents(when, { now: NOW }).items) {
         const expected = [...hostCapabilities({ eventRole: item.myRole ?? null, orgRole: null })]
-        expect(item.myCapabilities, `${when} ${item.myRole}`).toEqual(expected)
+        expect(item.myCapabilities, `${when} ${item.myRole ?? "none"}`).toEqual(expected)
       }
     }
   })

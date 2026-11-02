@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react"
-import { View, type ViewStyle } from "react-native"
+import { useContext, useEffect, useState } from "react"
+import { View } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { space, useTheme } from "../theme"
+import { space, useTheme, webStyle } from "../theme"
 import { useTabBarStore } from "./tabBarStore"
 import { compactBottomChrome, dockBottomGap, tabPillTransition } from "./tabBarLogic"
 import { SearchHeader } from "./SearchHeader.web"
@@ -31,12 +31,12 @@ export function TabBar() {
   const visible = activeIndex >= 0
   const targetX = (visible ? activeIndex : 0) * tabW + PILL_INSET
 
-  const pillStyle = {
+  const pillStyle = webStyle({
     width: pillW,
     transform: `translateX(${targetX}px)`,
     opacity: visible ? 1 : 0,
     transition: tabPillTransition(prefersReducedMotion()),
-  } as unknown as ViewStyle
+  })
 
   useEffect(() => () => setTabBarHeight(0), [setTabBarHeight])
 
@@ -55,11 +55,11 @@ export function TabBar() {
   }
 
   return (
-    <View
-      style={containerStyle}
-      onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}
-    >
-      <View style={[styles.bar, th.shadows.s3]} onLayout={(e) => setBarW(e.nativeEvent.layout.width)}>
+    <View style={containerStyle} onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}>
+      <View
+        style={[styles.bar, th.shadows.s3]}
+        onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
+      >
         <BarGlass />
         {barW > 0 ? <View style={[styles.pill, pillStyle]} /> : null}
         <View

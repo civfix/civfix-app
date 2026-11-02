@@ -39,12 +39,16 @@ describe("a shell renders the stack it owns, not whatever the store holds", () =
   })
 
   it("keeps the search overlay's body out of every unrelated shell re-render", () => {
-    expect(searchReveal).toContain('const body = useMemo(() => renderBody(null, "search"), [renderBody])')
+    expect(searchReveal).toContain(
+      'const body = useMemo(() => renderBody(null, "search"), [renderBody])',
+    )
     expect(searchReveal).not.toMatch(/\{renderBody\(null, "search"\)\}/)
   })
 
   it("keeps the expanded panel's body out of shell re-renders that leave the entry and view alone", () => {
-    expect(expanded).toContain("const body = useMemo(() => renderBody(entry, view), [renderBody, entry, view])")
+    expect(expanded).toContain(
+      "const body = useMemo(() => renderBody(entry, view), [renderBody, entry, view])",
+    )
     expect(expanded).not.toMatch(/\{renderBody\(entry, view\)\}/)
   })
 })

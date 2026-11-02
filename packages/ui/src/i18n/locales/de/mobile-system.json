@@ -5,8 +5,11 @@
     "body": "In civfix ist ein unerwartetes Problem aufgetreten. Ein Neustart löscht die gespeicherten Daten und versucht es erneut.",
     "action": "civfix neu starten"
   },
-  "notification_channel_host_broadcasts": "Veranstaltungsnachrichten",
-  "notification_channel_event_reminders": "Veranstaltungserinnerungen",
+  "notification_channel_reports": "Deine Meldungen",
+  "notification_channel_messages": "Nachrichten",
+  "notification_channel_events": "Veranstaltungen",
+  "notification_channel_social": "Soziales",
+  "notification_channel_organizations": "Organisationen",
   "notification_action_view_ticket": "Ticket ansehen",
   "notification_action_open_event": "Veranstaltung öffnen",
   "scan": {

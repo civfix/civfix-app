@@ -26,12 +26,7 @@ export interface HBarRankedProps {
   className?: string
 }
 
-export function HBarRanked({
-  items,
-  summary,
-  max,
-  className,
-}: HBarRankedProps) {
+export function HBarRanked({ items, summary, max, className }: HBarRankedProps) {
   const palette = useChartPalette()
   const { locale } = useLocale()
   const scaleMax = max ?? Math.max(1, ...items.map((item) => item.value))

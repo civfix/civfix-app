@@ -9,11 +9,7 @@ import { useT } from "@civfix/ui/i18n"
 import { cn } from "@/lib/utils"
 import { errorMessage } from "@/lib/error-messages"
 import { releaseCaptured } from "@/lib/web-camera"
-import {
-  acceptDroppedImage,
-  pickConsoleImage,
-  uploadConsoleImage,
-} from "./upload"
+import { acceptDroppedImage, pickConsoleImage, uploadConsoleImage } from "./upload"
 
 import { ConsoleIconButton } from "../../button"
 
@@ -43,8 +39,8 @@ export interface ImageUploadFieldProps {
   onChange: (values: ConsoleImage[]) => void
   max?: number
   label: string
-  disabled?: boolean
-  className?: string
+  disabled?: boolean | undefined
+  className?: string | undefined
 }
 
 export function ImageUploadField({
@@ -90,7 +86,10 @@ export function ImageUploadField({
     [onChange],
   )
 
-  const room = Math.max(0, max - values.length - slots.filter((s) => s.state === "uploading").length)
+  const room = Math.max(
+    0,
+    max - values.length - slots.filter((s) => s.state === "uploading").length,
+  )
 
   const startUpload = useCallback(
     async (mediaUri: string, media: Parameters<typeof uploadConsoleImage>[0]["media"]) => {
@@ -170,7 +169,6 @@ export function ImageUploadField({
       <div className={cn("flex flex-wrap items-start gap-token-2")}>
         {values.map((value) => (
           <div key={value.mediaId} className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize */}
             <img
               src={value.url}
               alt=""

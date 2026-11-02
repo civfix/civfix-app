@@ -88,7 +88,9 @@ export function useNearbyCleanups(
   options?: NearbyCleanupsOptions,
 ) {
   const api = useApi()
-  const bias = near ? { lat: roundFeedCellCoord(near.lat), lng: roundFeedCellCoord(near.lng) } : null
+  const bias = near
+    ? { lat: roundFeedCellCoord(near.lat), lng: roundFeedCellCoord(near.lng) }
+    : null
   const radiusM = options?.radiusM === undefined ? NEARBY_RADIUS_M : options.radiusM
   // Memoized on PRIMITIVES: react-query recomputes `select` (and hands consumers a fresh array identity)
   // whenever the select function's identity changes, and a new marker array re-runs the shared Map's
@@ -117,7 +119,7 @@ export function useNearbyCleanups(
       (
         (await api.listCleanups({ when: "upcoming", limit, ...(near ? { near } : {}) })).items ?? []
       ).filter((c): c is CleanupDTO => c != null),
-    select,
+    ...(select ? { select } : {}),
     placeholderData: (prev) => prev,
   })
 }

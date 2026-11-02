@@ -33,6 +33,9 @@ if (typeof window !== "undefined") {
     })
   }
 
+  // jsdom has no layout: its own scrollTo only logs "Not implemented".
+  Object.defineProperty(window, "scrollTo", { writable: true, value: () => {} })
+
   if (typeof Element.prototype.scrollIntoView !== "function") {
     Element.prototype.scrollIntoView = function scrollIntoView() {}
   }

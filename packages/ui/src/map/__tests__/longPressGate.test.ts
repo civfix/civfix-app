@@ -42,12 +42,14 @@ describe("longPressGate: a bottom-anchored teardrop (tip on the coordinate)", ()
   })
 
   it("HITS a diagonal press that is inside BOTH axes", () => {
-    expect(longPressHitsMarker(
-      { lat: MARKER.lat + 20 * DEG_PER_PX, lng: MARKER.lng + 20 * DEG_PER_PX },
-      [{ ...MARKER, anchor: "bottom" }],
-      BOUNDS,
-      SIZE,
-    )).toBe(true)
+    expect(
+      longPressHitsMarker(
+        { lat: MARKER.lat + 20 * DEG_PER_PX, lng: MARKER.lng + 20 * DEG_PER_PX },
+        [{ ...MARKER, anchor: "bottom" }],
+        BOUNDS,
+        SIZE,
+      ),
+    ).toBe(true)
   })
 
   it("defaults to the bottom anchor when none is given (every teardrop plants its tip)", () => {
@@ -88,7 +90,9 @@ describe("longPressGate: multiple markers", () => {
   })
 
   it("skips a non-finite marker rather than throwing", () => {
-    expect(longPressHitsMarker(MARKER, [{ lat: Number.NaN, lng: 0 }, MARKER], BOUNDS, SIZE)).toBe(true)
+    expect(longPressHitsMarker(MARKER, [{ lat: Number.NaN, lng: 0 }, MARKER], BOUNDS, SIZE)).toBe(
+      true,
+    )
   })
 })
 
@@ -104,13 +108,19 @@ describe("longPressGate: FAILS OPEN (returns false -> the long press is accepted
   })
 
   it("on a ZERO-WIDTH or zero-height bbox", () => {
-    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, east: BOUNDS.west }, SIZE)).toBe(false)
-    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, north: BOUNDS.south }, SIZE)).toBe(false)
+    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, east: BOUNDS.west }, SIZE)).toBe(
+      false,
+    )
+    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, north: BOUNDS.south }, SIZE)).toBe(
+      false,
+    )
   })
 
   it("on a WRAPPED bbox (east west of west, across the antimeridian)", () => {
     const wrapped: LongPressBounds = { west: 179.9, east: -179.9, south: 37.771, north: 37.779 }
-    expect(longPressHitsMarker({ lat: 37.775, lng: 180 }, [{ lat: 37.775, lng: 180 }], wrapped, SIZE)).toBe(false)
+    expect(
+      longPressHitsMarker({ lat: 37.775, lng: 180 }, [{ lat: 37.775, lng: 180 }], wrapped, SIZE),
+    ).toBe(false)
   })
 
   it("on a zero-size viewport (the map has not laid out yet)", () => {
@@ -120,7 +130,9 @@ describe("longPressGate: FAILS OPEN (returns false -> the long press is accepted
 
   it("on a non-finite press or bbox", () => {
     expect(longPressHitsMarker({ lat: Number.NaN, lng: 0 }, [MARKER], BOUNDS, SIZE)).toBe(false)
-    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, north: Number.NaN }, SIZE)).toBe(false)
+    expect(longPressHitsMarker(MARKER, [MARKER], { ...BOUNDS, north: Number.NaN }, SIZE)).toBe(
+      false,
+    )
   })
 
   it("on an empty marker list", () => {

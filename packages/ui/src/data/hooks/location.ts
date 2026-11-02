@@ -72,7 +72,9 @@ export async function resolveUserLocation(
   qc: QueryClient,
 ): Promise<LatLng | null> {
   // `withTimeout` swallows the rejection too, so a denial falls through to IP exactly like a hang.
-  const fix = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
+  const fix = geo.isAvailable()
+    ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)
+    : null
   if (fix) return { lat: fix.latitude, lng: fix.longitude }
   const approximate = await fetchApproximateLocation(api, qc)
   if (approximate) return approximate

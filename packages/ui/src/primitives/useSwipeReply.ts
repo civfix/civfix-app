@@ -8,7 +8,12 @@
 import { useMemo, useRef } from "react"
 import { Animated, PanResponder, Platform, type GestureResponderHandlers } from "react-native"
 import { useHaptics } from "../capabilities"
-import { shouldCaptureSwipe, shouldTriggerReply, swipeProgress, swipeTranslate } from "./swipeReplyModel"
+import {
+  shouldCaptureSwipe,
+  shouldTriggerReply,
+  swipeProgress,
+  swipeTranslate,
+} from "./swipeReplyModel"
 import { createSwipeStartTracker } from "./swipeStartTracker"
 
 const SETTLE_SPRING = { tension: 120, friction: 12 } as const
@@ -43,7 +48,11 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
     const settle = () => {
       // Both values only drive transform and opacity, so the native driver is safe.
       Animated.spring(translateX, { toValue: 0, useNativeDriver: true, ...SETTLE_SPRING }).start()
-      Animated.timing(progress, { toValue: 0, duration: SETTLE_FADE_MS, useNativeDriver: true }).start()
+      Animated.timing(progress, {
+        toValue: 0,
+        duration: SETTLE_FADE_MS,
+        useNativeDriver: true,
+      }).start()
     }
     return PanResponder.create({
       onStartShouldSetPanResponder: () => false,

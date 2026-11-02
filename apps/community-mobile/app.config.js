@@ -41,7 +41,9 @@ function androidVersionCode() {
   if (raw === undefined || raw === "") return ANDROID_VERSION_CODE_FLOOR
   const code = Number(raw)
   if (!Number.isInteger(code) || code < ANDROID_VERSION_CODE_FLOOR) {
-    throw new Error(`CIVFIX_ANDROID_VERSION_CODE must be a whole number >= ${ANDROID_VERSION_CODE_FLOOR}, got '${raw}'`)
+    throw new Error(
+      `CIVFIX_ANDROID_VERSION_CODE must be a whole number >= ${ANDROID_VERSION_CODE_FLOOR}, got '${raw}'`,
+    )
   }
   return code
 }
@@ -117,7 +119,7 @@ module.exports = ({ config }) => ({
   name: "civfix",
   slug: "civfix-community",
   scheme: DEV_VARIANT ? "civfix-dev" : "civfix",
-  version: "1.4.0",
+  version: "1.4.1",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: DEV_VARIANT ? "./assets/icon-dev.png" : "./assets/icon.png",
@@ -214,6 +216,9 @@ module.exports = ({ config }) => ({
   },
   android: {
     package: ANDROID_PACKAGE,
+    // The Firebase app is registered for org.civfix.community only, so the .dev variant builds without it
+    // and gets no push (D13).
+    ...(DEV_VARIANT ? {} : { googleServicesFile: "./google-services.json" }),
     versionCode: androidVersionCode(),
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
@@ -243,6 +248,7 @@ module.exports = ({ config }) => ({
       "expo-build-properties",
       {
         ios: {
+          deploymentTarget: "15.1",
           buildReactNativeFromSource: false,
           extraPods: [
             { name: "GoogleUtilities", modular_headers: true },
@@ -251,6 +257,7 @@ module.exports = ({ config }) => ({
         },
       },
     ],
+    "./plugins/with-pod-deployment-target.js",
     "@maplibre/maplibre-react-native",
     "expo-secure-store",
     "expo-apple-authentication",
@@ -263,8 +270,10 @@ module.exports = ({ config }) => ({
     [
       "expo-notifications",
       {
-        color: "#FF7A6B",
+        color: tokens.logo.bloom,
         mode: apsEnvironmentMode(),
+        // UIBackgroundModes remote-notification: iOS wakes the app for the silent clear pushes (D8).
+        enableBackgroundRemoteNotifications: true,
       },
     ],
     [

@@ -12,7 +12,9 @@ function feed(ys: number[], suppressed = false): void {
   for (const y of ys) useDockMinimizeStore.getState().handleScroll(y, suppressed)
 }
 
-beforeEach(() => useDockMinimizeStore.getState().reset())
+beforeEach(() => {
+  useDockMinimizeStore.getState().reset()
+})
 
 describe("dockMinimizeStore", () => {
   it("minimizes once a threshold of downward travel accumulates, and restores on the way back up", () => {

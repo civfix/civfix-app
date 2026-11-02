@@ -165,13 +165,17 @@ export function LogHoursEditor({
         />
         <Pressable
           onPress={onApplyDefault}
-          disabled={logHours.isPending || defaultHoursDraft.trim().length === 0 || !defaultDraftValid}
+          disabled={
+            logHours.isPending || defaultHoursDraft.trim().length === 0 || !defaultDraftValid
+          }
           accessibilityRole="button"
           accessibilityLabel={t("log_hours.apply_all_a11y")}
           {...focusRingProps}
           style={({ pressed }) => [
             styles.applyBtn,
-            defaultHoursDraft.trim().length === 0 || !defaultDraftValid ? styles.saveDisabled : null,
+            defaultHoursDraft.trim().length === 0 || !defaultDraftValid
+              ? styles.saveDisabled
+              : null,
             pressed ? styles.pressed : null,
           ]}
         >

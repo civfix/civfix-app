@@ -9,8 +9,11 @@
 import { describe, expect, it } from "vitest"
 import { readAckToFlush, type PendingReadAck } from "../readAck"
 
-const pending = (roomId: string, upToId: string, roomKind: PendingReadAck["roomKind"] = "cleanup") =>
-  ({ roomId, roomKind, upToId }) satisfies PendingReadAck
+const pending = (
+  roomId: string,
+  upToId: string,
+  roomKind: PendingReadAck["roomKind"] = "cleanup",
+) => ({ roomId, roomKind, upToId }) satisfies PendingReadAck
 
 describe("readAckToFlush", () => {
   it("flushes the watermark of the room tearing down", () => {

@@ -35,7 +35,10 @@ function routeFileIn(dir: string, parts: readonly string[]): string | null {
 
 function routeFileFor(path: string): string | null {
   const pathname = path.split(/[?#]/)[0] ?? ""
-  const found = routeFileIn(APP_DIR, pathname.split("/").filter((part) => part !== ""))
+  const found = routeFileIn(
+    APP_DIR,
+    pathname.split("/").filter((part) => part !== ""),
+  )
   return found ? relative(APP_DIR, found) : null
 }
 
@@ -238,7 +241,10 @@ test("a scheme link outside the route table goes home, whatever query or hash it
   ]) {
     assert.deepEqual(resolveIncomingPath(raw), home, raw)
   }
-  assert.deepEqual(resolveIncomingPath("civfix://settings/appearance"), internal("/settings/appearance"))
+  assert.deepEqual(
+    resolveIncomingPath("civfix://settings/appearance"),
+    internal("/settings/appearance"),
+  )
 })
 
 test("a link hands the compose route none of the composer's reply parameters", () => {
@@ -260,7 +266,10 @@ test("a link keeps a message room's kind but drops caller-supplied peer identity
 })
 
 test("a link drops a resume target instead of passing it through as a query parameter", () => {
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/pin/p1?next=https://evil.com"), internal("/pin/p1"))
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/pin/p1?next=https://evil.com"),
+    internal("/pin/p1"),
+  )
   assert.deepEqual(resolveIncomingPath("civfix://pin/p1?next=//evil.com"), internal("/pin/p1"))
 })
 
@@ -403,7 +412,10 @@ const ROUND_TRIP: readonly (readonly [Record<string, unknown>, IncomingLink])[] 
   [{ kind: "saves" }, internal("/saves")],
   [{ kind: "drop-pin" }, internal("/map")],
   [{ kind: "announcements", id: "c1" }, internal("/cleanups/c1/announcements")],
-  [{ kind: "announcement", id: "c1", announcementId: "a1" }, internal("/cleanups/c1/announcements/a1")],
+  [
+    { kind: "announcement", id: "c1", announcementId: "a1" },
+    internal("/cleanups/c1/announcements/a1"),
+  ],
   [{ kind: "event-analytics", id: "c1" }, internal("/cleanups/c1/analytics")],
   [{ kind: "host-analytics" }, internal("/host/analytics")],
   [{ kind: "org-manage", slug: "acme" }, internal("/orgs/acme/manage")],
@@ -477,7 +489,10 @@ test("currently accepts push links carrying dot segments, encoded traversal or a
 })
 
 test("currently accepts caller-supplied peer identity in a message push link", () => {
-  assert.equal(toInternalHref("/messages/abc?roomKind=dm&peerName=X"), "/messages/abc?roomKind=dm&peerName=X")
+  assert.equal(
+    toInternalHref("/messages/abc?roomKind=dm&peerName=X"),
+    "/messages/abc?roomKind=dm&peerName=X",
+  )
 })
 
 const RESUME_TARGETS: readonly (readonly [string, boolean])[] = [
@@ -509,7 +524,12 @@ for (const [target, allowed] of RESUME_TARGETS) {
 }
 
 test("currently keeps a sign-in resume target that climbs out with dot segments", () => {
-  for (const target of ["/pin/../auth", "/reports/../auth", "/notifications/../../auth", "/pin/..%2Fauth"]) {
+  for (const target of [
+    "/pin/../auth",
+    "/reports/../auth",
+    "/notifications/../../auth",
+    "/pin/..%2Fauth",
+  ]) {
     assert.equal(toResumeHref(target), target)
   }
 })

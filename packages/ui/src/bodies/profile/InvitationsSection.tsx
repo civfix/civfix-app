@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import type { CleanupMemberRole, OrganizationMemberRole } from "@civfix/contract"
 import { useToast } from "../../primitives"
 import {
@@ -7,11 +7,7 @@ import {
   useDeclineMyEventInvite,
   useMyEventInvites,
 } from "../../data/hooks/host"
-import {
-  useAcceptMyOrgInvite,
-  useDeclineMyOrgInvite,
-  useMyOrgInvites,
-} from "../../data/hooks/orgs"
+import { useAcceptMyOrgInvite, useDeclineMyOrgInvite, useMyOrgInvites } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { InvitationsCard } from "./InvitationsCard"
 

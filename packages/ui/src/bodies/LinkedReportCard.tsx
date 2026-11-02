@@ -1,6 +1,16 @@
-import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import { makeThemedStyles, useTheme, categoryColor, wash, focusRingProps, webCursor, webHover, webTransition, MIN_TOUCH_TARGET } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  categoryColor,
+  wash,
+  focusRingProps,
+  webCursor,
+  webHover,
+  webTransition,
+  MIN_TOUCH_TARGET,
+  pointerEventStyles,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { CategoryChip, StatusBadge, FramedImage } from "../primitives"
 import { useT } from "../i18n"
@@ -40,9 +50,7 @@ export function LinkedReportCard({
   const cat = categoryColor(report.category, th.scheme)
   const categoryLabel = t(`enums:category.${report.category}`)
   const title = report.title?.trim() || categoryLabel
-  const typeLabel = report.type
-    ? t(`enums:reportType.${report.type}`)
-    : categoryLabel
+  const typeLabel = report.type ? t(`enums:reportType.${report.type}`) : categoryLabel
   const listTitle = linkedReportHeadline(report, headline, typeLabel, categoryLabel)
   const listSubtitle =
     subtitle?.trim() || report.addr?.trim() || report.description?.trim() || categoryLabel
@@ -94,7 +102,12 @@ export function LinkedReportCard({
               {listSubtitle}
             </Text>
             {code ? (
-              <Text variant="mono" color={th.colors.textSubtle} numberOfLines={1} style={styles.code}>
+              <Text
+                variant="mono"
+                color={th.colors.textSubtle}
+                numberOfLines={1}
+                style={styles.code}
+              >
                 {code}
               </Text>
             ) : null}
@@ -122,7 +135,7 @@ export function LinkedReportCard({
       </View>
 
       {badge ? (
-        <View style={[styles.badge, { backgroundColor: cat }]} pointerEvents="none">
+        <View style={[styles.badge, { backgroundColor: cat }, pointerEventStyles.none]}>
           <Icon
             icon={badge === "plus" ? iconMap.Plus : iconMap.Check}
             size={13}
@@ -132,7 +145,13 @@ export function LinkedReportCard({
       ) : null}
 
       {selectable ? (
-        <View style={[styles.check, isList ? styles.checkList : styles.checkStrip, selected ? styles.checkOn : null]}>
+        <View
+          style={[
+            styles.check,
+            isList ? styles.checkList : styles.checkStrip,
+            selected ? styles.checkOn : null,
+          ]}
+        >
           {selected ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
         </View>
       ) : null}
@@ -168,7 +187,13 @@ export function LinkedReportCard({
         {content}
       </Pressable>
     ) : (
-      <View style={[styles.card, isList ? styles.cardList : styles.cardStrip, disabled ? styles.disabled : null]}>
+      <View
+        style={[
+          styles.card,
+          isList ? styles.cardList : styles.cardStrip,
+          disabled ? styles.disabled : null,
+        ]}
+      >
         {content}
       </View>
     )

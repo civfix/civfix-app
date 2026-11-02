@@ -77,10 +77,10 @@ test("a teardown clears the seed this host is still showing, so it cannot ghost 
 })
 
 test("a teardown leaves a store another host has already re-seeded alone", () => {
-  assert.deepEqual(
-    detailRestorePlan({ ...base, activeKey: identity(pin), tornDown: true }),
-    { type: "skip", reason: "torn-down" },
-  )
+  assert.deepEqual(detailRestorePlan({ ...base, activeKey: identity(pin), tornDown: true }), {
+    type: "skip",
+    reason: "torn-down",
+  })
 })
 
 test("discards the snapshot when the store was emptied by something other than this host", () => {
@@ -108,9 +108,7 @@ function makeSim() {
   let stack: DetailEntry[] = []
   let active: DetailEntry | null = null
   let epoch = 0
-  const native: { name: string; params: Record<string, string> }[] = [
-    { name: "index", params: {} },
-  ]
+  const native: { name: string; params: Record<string, string> }[] = [{ name: "index", params: {} }]
   const pushes: string[] = []
   let guard: BridgeGuard = INITIAL_BRIDGE_GUARD
   const listeners: (() => void)[] = []
@@ -212,11 +210,11 @@ test("a host child opened from the event dashboard stacks in the shell and pushe
 test("no host surface is ever stripped out of the shell stack the way a thread is", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push({ kind: "host-mode", id: "c1" } as DetailEntry)
-  sim.push({ kind: "host-team", id: "c1" } as DetailEntry)
-  sim.push({ kind: "my-ticket", id: "c1" } as DetailEntry)
-  sim.push({ kind: "org", slug: "acme" } as DetailEntry)
-  sim.push({ kind: "host-log-hours", id: "c1" } as DetailEntry)
+  sim.push({ kind: "host-mode", id: "c1" })
+  sim.push({ kind: "host-team", id: "c1" })
+  sim.push({ kind: "my-ticket", id: "c1" })
+  sim.push({ kind: "org", slug: "acme" })
+  sim.push({ kind: "host-log-hours", id: "c1" })
 
   assert.equal(sim.stack.length, 6)
   assert.deepEqual(sim.pushes, [])
@@ -418,7 +416,10 @@ test("DetailRouteHost takes its snapshot through detailShellSnapshot, not a raw 
     join(dirname(fileURLToPath(import.meta.url)), "..", "components", "DetailRouteHost.tsx"),
     "utf8",
   )
-  assert.match(host, /detailShellSnapshot\(useNavStore\.getState\(\)\.stack, seedKey, entryIdentity\)/)
+  assert.match(
+    host,
+    /detailShellSnapshot\(useNavStore\.getState\(\)\.stack, seedKey, entryIdentity\)/,
+  )
   assert.doesNotMatch(host, /stack\.filter\(\(e\) => entryIdentity\(e\) !== seedKey\)/)
 })
 

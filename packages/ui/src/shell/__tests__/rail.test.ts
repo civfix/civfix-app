@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
-import { DOCK_MOUNT_MS, DOCK_MOUNT_SCALE_FROM, DOCK_TAB_GLYPH_SIZE, TAB_ICON_STROKE_WIDTH } from "../tabBarLogic"
+import {
+  DOCK_MOUNT_MS,
+  DOCK_MOUNT_SCALE_FROM,
+  DOCK_TAB_GLYPH_SIZE,
+  TAB_ICON_STROKE_WIDTH,
+} from "../tabBarLogic"
 
 const rail = readFileSync(new URL("../Rail.tsx", import.meta.url), "utf8")
 const code = rail.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -22,7 +27,7 @@ describe("the rail's material and geometry", () => {
   it("takes every dimension from the tested frame plan instead of re-typing the numbers", () => {
     for (const c of [
       "NAV_LEFT",
-      "NAV_TOP",
+      "expandedTopOffsets",
       "NAV_H",
       "NAV_GAP",
       "RAIL_ITEM",
@@ -105,7 +110,7 @@ describe("a11y", () => {
     expect(rail).toContain('"aria-orientation": "horizontal"')
     expect(rail).toContain('accessibilityRole="tab"')
     expect(rail).toContain("accessibilityState={{ selected }}")
-    expect(rail).toContain('"aria-selected": selected')
+    expect(rail).toContain("aria-selected={selected}")
     expect(rail).toContain("focusRingProps")
     expect(rail).toContain('dataSet: { civfixRail: "" }')
   })

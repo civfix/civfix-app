@@ -131,13 +131,17 @@ describe("editor row keys", () => {
     const keyed = withRowKeys(loaded)
     const agenda = keyed[0] as Extract<EventPageBlock, { kind: "agenda" }>
     const edited: EventPageBlock[] = [
-      { ...agenda, items: [...agenda.items, withRowKey({ title: "", time: null, description: null })] },
+      {
+        ...agenda,
+        items: [...agenda.items, withRowKey({ title: "", time: null, description: null })],
+      },
       ...keyed.slice(1),
     ]
     const payload = normalizeBlocksForSave(edited)
     expect(JSON.stringify(payload)).toBe(JSON.stringify(normalizeBlocksForSave(loaded)))
     for (const block of payload) {
-      const rows = (block as { items?: object[]; entries?: object[] }).items ??
+      const rows =
+        (block as { items?: object[]; entries?: object[] }).items ??
         (block as { entries?: object[] }).entries ??
         []
       for (const row of rows) expect(Object.getOwnPropertySymbols(row)).toEqual([])

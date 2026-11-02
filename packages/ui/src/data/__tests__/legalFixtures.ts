@@ -1,4 +1,9 @@
-import { AppError, ErrorCode, type LegalDocumentDTO, type LegalDocumentType } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  type LegalDocumentDTO,
+  type LegalDocumentType,
+} from "@civfix/contract"
 
 function legalDocument(type: LegalDocumentType, version: string, sha256: string): LegalDocumentDTO {
   return {

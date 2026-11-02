@@ -29,7 +29,11 @@ beforeEach(() => {
 
 test("the boot gate's retry re-runs one boot hydration however often it is tapped", async () => {
   control.token = { ok: true, token: "tok" }
-  control.session = async () => ({ authenticated: true, user: { id: "u-1" }, guestSmsEnabled: false })
+  control.session = async () => ({
+    authenticated: true,
+    user: { id: "u-1" },
+    guestSmsEnabled: false,
+  })
   retrySessionRestore()
   retrySessionRestore()
   await settle()

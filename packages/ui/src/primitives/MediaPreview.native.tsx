@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Image, StyleSheet } from "react-native"
 import Video from "react-native-video"
 import { type MediaPreviewProps, DEFAULT_ASPECT_RATIO } from "./MediaPreview.types"

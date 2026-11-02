@@ -63,7 +63,13 @@ describe("padBbox", () => {
 
   it("always yields a region that covers the viewport it was padded from", () => {
     // Without self-coverage a settle would request forever.
-    for (const viewport of [V1, V2, FAR, box(-122.5, 37.6, -122.3, 37.8), box(-0.01, 51.5, 0.01, 51.52)]) {
+    for (const viewport of [
+      V1,
+      V2,
+      FAR,
+      box(-122.5, 37.6, -122.3, 37.8),
+      box(-0.01, 51.5, 0.01, 51.52),
+    ]) {
       expect(regionCovers(padBbox(viewport, 0.6), viewport)).toBe(true)
     }
   })
@@ -102,7 +108,10 @@ describe("decideRegionFetch", () => {
   })
 
   it("requests a fresh region when neither the loaded nor the requested one covers the viewport", () => {
-    expect(decideRegionFetch(state(R1, R2), FAR)).toEqual({ action: "request", region: padBbox(FAR, 0.6) })
+    expect(decideRegionFetch(state(R1, R2), FAR)).toEqual({
+      action: "request",
+      region: padBbox(FAR, 0.6),
+    })
   })
 
   it("re-requests after a failed fetch cleared both regions, even without moving", () => {
@@ -154,7 +163,12 @@ describe("settle sequences", () => {
 describe("the server pin threshold", () => {
   /** Centered on downtown LA so the latitude term binds, as it does on a real viewport. */
   function boxAround(halfLng: number, halfLat: number): BBox {
-    return { west: -118.25 - halfLng, east: -118.25 + halfLng, south: 34.05 - halfLat, north: 34.05 + halfLat }
+    return {
+      west: -118.25 - halfLng,
+      east: -118.25 + halfLng,
+      south: 34.05 - halfLat,
+      north: 34.05 + halfLat,
+    }
   }
 
   const AGGREGATE_VIEWPORT = boxAround(1, 0.5)
@@ -185,9 +199,9 @@ describe("the server pin threshold", () => {
   })
 
   it("will not revert onto a loaded aggregate region once the viewport has earned pins", () => {
-    expect(decideRegionFetch(state(AGGREGATE_REGION, padBbox(FAR, PAD_FACTOR)), PIN_VIEWPORT).action).toBe(
-      "request",
-    )
+    expect(
+      decideRegionFetch(state(AGGREGATE_REGION, padBbox(FAR, PAD_FACTOR)), PIN_VIEWPORT).action,
+    ).toBe("request")
   })
 
   it("will not revert onto a loaded aggregate region while a different far region is in flight", () => {
@@ -197,13 +211,17 @@ describe("the server pin threshold", () => {
   })
 
   it("fires that refetch once, then settles", () => {
-    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), PIN_VIEWPORT)).toEqual({ action: "keep" })
+    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), PIN_VIEWPORT)).toEqual({
+      action: "keep",
+    })
   })
 
   it("leaves the pins-to-aggregates direction to the ordinary coverage rule", () => {
     const slightlyWider = boxAround(0.82, 0.41)
     expect(regionCovers(PIN_REGION, slightlyWider)).toBe(true)
-    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), slightlyWider)).toEqual({ action: "keep" })
+    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), slightlyWider)).toEqual({
+      action: "keep",
+    })
   })
 })
 
@@ -230,7 +248,10 @@ describe("a small viewport at the origin", () => {
   })
 
   it("settles inside the in-flight region are deduped", () => {
-    const decision = decideRegionFetch({ loaded: null, requested: REGION }, shifted(VIEWPORT, 0.005))
+    const decision = decideRegionFetch(
+      { loaded: null, requested: REGION },
+      shifted(VIEWPORT, 0.005),
+    )
     expect(decision.action).toBe("keep")
   })
 
@@ -245,7 +266,9 @@ describe("a small viewport at the origin", () => {
     const viewport = shifted(VIEWPORT, 5)
     const decision = decideRegionFetch({ loaded: REGION, requested: REGION }, viewport)
     expect(decision.action).toBe("request")
-    expect(decision.action === "request" ? decision.region : null).toEqual(padBbox(viewport, PAD_FACTOR))
+    expect(decision.action === "request" ? decision.region : null).toEqual(
+      padBbox(viewport, PAD_FACTOR),
+    )
   })
 
   it("zooming in past the loaded sample refetches a tighter region", () => {
@@ -257,7 +280,10 @@ describe("a small viewport at the origin", () => {
   it("a FAILED region fetch (both refs cleared) re-requests on the next settle", () => {
     // useMapReports sets retry:false, so a region committed as loaded at request time would report "keep"
     // forever and strand the map on empty pins.
-    const afterError = decideRegionFetch({ loaded: null, requested: null }, shifted(VIEWPORT, 0.005))
+    const afterError = decideRegionFetch(
+      { loaded: null, requested: null },
+      shifted(VIEWPORT, 0.005),
+    )
     expect(afterError.action).toBe("request")
   })
 })

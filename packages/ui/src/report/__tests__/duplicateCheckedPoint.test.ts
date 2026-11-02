@@ -8,7 +8,9 @@ const store = () => useDraftReportStore.getState()
 const needsCheck = () => needsDuplicateCheck(store().draft)
 
 describe("the draft's duplicate-checked point", () => {
-  beforeEach(() => store().reset())
+  beforeEach(() => {
+    store().reset()
+  })
 
   it("T10: a point that was never checked needs a check", () => {
     store().setLocation(A.lat, A.lng, "manual")

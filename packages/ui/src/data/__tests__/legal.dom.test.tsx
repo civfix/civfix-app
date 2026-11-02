@@ -2,7 +2,12 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider, type QueryKey } from "@tanstack/react-query"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { AppError, ErrorCode, type LegalDocumentDTO, type MyLegalStatusResponse } from "@civfix/contract"
+import {
+  AppError,
+  ErrorCode,
+  type LegalDocumentDTO,
+  type MyLegalStatusResponse,
+} from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { ApiProvider } from "../context"
 import { makeFakeDataContext } from "../fakes"
@@ -14,13 +19,21 @@ import {
   useMyLegalStatus,
 } from "../index"
 import { queryKeys } from "../keys"
-import { DOCUMENTS, OUTDATED_DETAILS, TERMS_0916, TERMS_0921, outdatedConflict } from "./legalFixtures"
+import {
+  DOCUMENTS,
+  OUTDATED_DETAILS,
+  TERMS_0916,
+  TERMS_0921,
+  outdatedConflict,
+} from "./legalFixtures"
 
 const STALE_MS = 300_000
 const STATUS: MyLegalStatusResponse = { required: [], notices: [], accepted: {} }
 
 function harness(api: Record<string, unknown>, signedIn = false) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   const context = makeFakeDataContext({
     api: api as unknown as ApiClient,
     auth: signedIn ? { isAuthenticated: true } : {},
@@ -34,7 +47,8 @@ function harness(api: Record<string, unknown>, signedIn = false) {
 }
 
 function staleTimeOf(queryClient: QueryClient, queryKey: QueryKey): unknown {
-  return queryClient.getQueryCache().find({ queryKey, exact: true })?.observers[0]?.options.staleTime
+  return queryClient.getQueryCache().find({ queryKey, exact: true })?.observers[0]?.options
+    .staleTime
 }
 
 afterEach(() => {
@@ -45,9 +59,18 @@ describe("legal query keys", () => {
   it("T2: nests every legal key under the legal root", () => {
     expect(queryKeys.legalRoot).toEqual(["legal"])
     expect(queryKeys.legalDocuments).toEqual(["legal", "documents"])
-    expect(queryKeys.legalDocument("terms", "2026-09-16")).toEqual(["legal", "documents", "terms", "2026-09-16"])
+    expect(queryKeys.legalDocument("terms", "2026-09-16")).toEqual([
+      "legal",
+      "documents",
+      "terms",
+      "2026-09-16",
+    ])
     expect(queryKeys.myLegalStatus).toEqual(["legal", "me"])
-    for (const key of [queryKeys.legalDocuments, queryKeys.legalDocument("terms", "2026-09-16"), queryKeys.myLegalStatus]) {
+    for (const key of [
+      queryKeys.legalDocuments,
+      queryKeys.legalDocument("terms", "2026-09-16"),
+      queryKeys.myLegalStatus,
+    ]) {
       expect(key.slice(0, queryKeys.legalRoot.length)).toEqual([...queryKeys.legalRoot])
     }
   })
@@ -143,7 +166,10 @@ describe("useAcceptLegal", () => {
   function renderAccept(acceptLegal: (...args: unknown[]) => Promise<unknown>) {
     const getMyLegalStatus = vi.fn(async () => STATUS)
     const { wrapper } = harness({ getMyLegalStatus, acceptLegal }, true)
-    const { result } = renderHook(() => ({ status: useMyLegalStatus(), accept: useAcceptLegal() }), { wrapper })
+    const { result } = renderHook(
+      () => ({ status: useMyLegalStatus(), accept: useAcceptLegal() }),
+      { wrapper },
+    )
     return { result, getMyLegalStatus }
   }
 
@@ -151,7 +177,10 @@ describe("useAcceptLegal", () => {
     const acceptLegal = vi.fn(async () => STATUS)
     const { result, getMyLegalStatus } = renderAccept(acceptLegal)
     await waitFor(() => expect(result.current.status.isSuccess).toBe(true))
-    const body = { items: [{ ...pick(TERMS_0921), action: "accepted" as const }], surface: "prompt" as const }
+    const body = {
+      items: [{ ...pick(TERMS_0921), action: "accepted" as const }],
+      surface: "prompt" as const,
+    }
     act(() => result.current.accept.mutate(body))
     await waitFor(() => expect(result.current.accept.isSuccess).toBe(true))
     expect(acceptLegal).toHaveBeenCalledTimes(1)
@@ -166,7 +195,10 @@ describe("useAcceptLegal", () => {
     const { result, getMyLegalStatus } = renderAccept(acceptLegal)
     await waitFor(() => expect(result.current.status.isSuccess).toBe(true))
     act(() =>
-      result.current.accept.mutate({ items: [{ ...pick(TERMS_0921), action: "accepted" }], surface: "prompt" }),
+      result.current.accept.mutate({
+        items: [{ ...pick(TERMS_0921), action: "accepted" }],
+        surface: "prompt",
+      }),
     )
     await waitFor(() => expect(result.current.accept.isError).toBe(true))
     expect((result.current.accept.error as { code?: unknown }).code).toBe("CONFLICT")
@@ -183,9 +215,9 @@ describe("outdatedLegalVersions", () => {
   })
 
   it("T12: reads them structurally, from a plain object too", () => {
-    expect(outdatedLegalVersions({ code: "CONFLICT", message: "x", details: OUTDATED_DETAILS })).toEqual(
-      OUTDATED_DETAILS.current,
-    )
+    expect(
+      outdatedLegalVersions({ code: "CONFLICT", message: "x", details: OUTDATED_DETAILS }),
+    ).toEqual(OUTDATED_DETAILS.current)
   })
 
   it("T13: is null for anything else", () => {
@@ -195,10 +227,20 @@ describe("outdatedLegalVersions", () => {
     }
     expect(outdatedLegalVersions(new AppError(ErrorCode.CONFLICT, "x"))).toBeNull()
     expect(
-      outdatedLegalVersions(new AppError(ErrorCode.CONFLICT, "x", { details: { ...OUTDATED_DETAILS, reason: "other" } })),
+      outdatedLegalVersions(
+        new AppError(ErrorCode.CONFLICT, "x", {
+          details: { ...OUTDATED_DETAILS, reason: "other" },
+        }),
+      ),
     ).toBeNull()
-    expect(outdatedLegalVersions(new AppError(ErrorCode.VALIDATION, "x", { details: { ...OUTDATED_DETAILS } }))).toBeNull()
-    expect(outdatedLegalVersions(new AppError(ErrorCode.CONFLICT, "x", { details: badSha }))).toBeNull()
+    expect(
+      outdatedLegalVersions(
+        new AppError(ErrorCode.VALIDATION, "x", { details: { ...OUTDATED_DETAILS } }),
+      ),
+    ).toBeNull()
+    expect(
+      outdatedLegalVersions(new AppError(ErrorCode.CONFLICT, "x", { details: badSha })),
+    ).toBeNull()
     expect(outdatedLegalVersions(null)).toBeNull()
   })
 })

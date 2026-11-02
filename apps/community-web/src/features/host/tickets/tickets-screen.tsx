@@ -48,8 +48,7 @@ export function TicketsScreen() {
   })
 
   const remove = useMutation({
-    mutationFn: (ticketTypeId: string) =>
-      api.deleteEventTicketType({ id: eventId, ticketTypeId }),
+    mutationFn: (ticketTypeId: string) => api.deleteEventTicketType({ id: eventId, ticketTypeId }),
     onSuccess: () => {
       toast.toast({ title: t("deleted"), tone: "success" })
       setPendingDelete(null)
@@ -66,7 +65,13 @@ export function TicketsScreen() {
   const move = (index: number, delta: number) => {
     const target = index + delta
     if (target < 0 || target >= types.length) return
-    reorder.mutate(moveItem(types.map((type) => type.id), index, delta))
+    reorder.mutate(
+      moveItem(
+        types.map((type) => type.id),
+        index,
+        delta,
+      ),
+    )
   }
 
   return (

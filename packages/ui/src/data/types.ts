@@ -47,7 +47,7 @@ export interface RawAuthSignals {
   authed: boolean
   pending: boolean
   user: UserDTO | null
-  guestSmsEnabled?: boolean
+  guestSmsEnabled?: boolean | undefined
 }
 
 export function normalizeAuthState({

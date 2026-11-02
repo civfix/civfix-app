@@ -77,7 +77,9 @@ describe("duplicateDistance", () => {
       expect(duplicateDistance(meters)).toEqual({ key: "about", meters: about })
     }
     const { t } = createI18n("en")
-    expect(t("report-wizard:wizard.duplicate.distance_about", { meters: 10 })).toBe("About 10 m away")
+    expect(t("report-wizard:wizard.duplicate.distance_about", { meters: 10 })).toBe(
+      "About 10 m away",
+    )
     expect(t("report-wizard:wizard.duplicate.distance_close")).toBe("Less than 5 m away")
   })
 })
@@ -93,7 +95,11 @@ describe("report-row:confirm_count", () => {
 describe("stepChecksDuplicates", () => {
   it("checks when leaving capture, location or review on compact, and only on review on expanded", () => {
     const steps = ["capture", "location", "category", "details", "review"] as const
-    expect(steps.filter((step) => stepChecksDuplicates(step, "compact"))).toEqual(["capture", "location", "review"])
+    expect(steps.filter((step) => stepChecksDuplicates(step, "compact"))).toEqual([
+      "capture",
+      "location",
+      "review",
+    ])
     expect(steps.filter((step) => stepChecksDuplicates(step, "expanded"))).toEqual(["review"])
   })
 })

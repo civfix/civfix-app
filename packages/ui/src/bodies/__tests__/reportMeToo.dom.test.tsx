@@ -33,7 +33,9 @@ function renderMeToo(
   api: Record<string, unknown>,
   requireAuth: (action: () => void, opts?: { next?: string }) => void = (action) => action(),
 ) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+  })
   queryClient.setQueryData(queryKeys.report(cached.id), cached)
   const context = makeFakeDataContext({ api: api as unknown as ApiClient, requireAuth })
   const toast = { show: vi.fn() }
@@ -70,28 +72,44 @@ describe("useReportMeToo", () => {
       unconfirmReport: vi.fn(async () => answer(4, false)),
     }
     const { result } = renderMeToo(report({}), api)
-    expect(result.current).toMatchObject({ visible: true, seen: { pressed: false }, confirmCount: 4 })
+    expect(result.current).toMatchObject({
+      visible: true,
+      seen: { pressed: false },
+      confirmCount: 4,
+    })
 
     act(() => result.current.seen.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }))
+    await waitFor(() =>
+      expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }),
+    )
     expect(api.confirmReport).toHaveBeenCalledWith({ id: "r1" })
 
     act(() => result.current.seen.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }))
+    await waitFor(() =>
+      expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }),
+    )
     expect(api.unconfirmReport).toHaveBeenCalledWith({ id: "r1" })
   })
 
   it("rolls back and shows the error when the call fails", async () => {
     let fail!: (err: unknown) => void
     const api = {
-      confirmReport: vi.fn(() => new Promise<ReportConfirmResponse>((_resolve, reject) => (fail = reject))),
+      confirmReport: vi.fn(
+        () => new Promise<ReportConfirmResponse>((_resolve, reject) => (fail = reject)),
+      ),
     }
     const { result, toast } = renderMeToo(report({}), api)
     act(() => result.current.seen.onPress())
-    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }))
+    await waitFor(() =>
+      expect(result.current).toMatchObject({ seen: { pressed: true }, confirmCount: 5 }),
+    )
     await act(async () => fail(new AppError(ErrorCode.INTERNAL, "boom")))
-    await waitFor(() => expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }))
-    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
+    await waitFor(() =>
+      expect(result.current).toMatchObject({ seen: { pressed: false }, confirmCount: 4 }),
+    )
+    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", {
+      variant: "error",
+    })
   })
 
   it("asks a guest to sign in and brings them back to the report, without calling the API", () => {
@@ -106,7 +124,10 @@ describe("useReportMeToo", () => {
   })
 
   it("gives the reporter and a resolved report the counts but no buttons", () => {
-    expect(renderMeToo(report({ mine: true }), {}).result.current).toMatchObject({ visible: false, confirmCount: 4 })
+    expect(renderMeToo(report({ mine: true }), {}).result.current).toMatchObject({
+      visible: false,
+      confirmCount: 4,
+    })
     expect(
       renderMeToo(report({ status: "resolved", confirmedByMe: true }), {}).result.current,
     ).toMatchObject({ visible: false, confirmCount: 4 })

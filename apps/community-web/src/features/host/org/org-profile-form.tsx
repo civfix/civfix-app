@@ -379,9 +379,7 @@ export function OrgProfileForm({
 
   const onNameChange = (name: string) => {
     patch(
-      mode === "create" && !draft.slugTouched
-        ? { name, slug: slugFromOrgName(name) }
-        : { name },
+      mode === "create" && !draft.slugTouched ? { name, slug: slugFromOrgName(name) } : { name },
     )
   }
 
@@ -552,7 +550,7 @@ export function OrgProfileForm({
               platform={platform}
               value={draft[platform]}
               error={showError(socialFieldKey(platform))}
-              onChange={(value) => patch({ [platform]: value } as Partial<OrgProfileDraft>)}
+              onChange={(value) => patch({ [platform]: value })}
             />
           ))}
         </div>
@@ -729,7 +727,11 @@ function SocialLinkField({
           inputMode={whatsapp ? "tel" : "text"}
           maxLength={whatsapp ? WHATSAPP_NUMBER_MAX_LENGTH : SOCIAL_HANDLE_MAX_LENGTH}
           aria-invalid={error ? true : undefined}
-          className={cn(CONSOLE_INPUT_CLASSES, "rounded-l-none", error && "border-console-bloom-strong")}
+          className={cn(
+            CONSOLE_INPUT_CLASSES,
+            "rounded-l-none",
+            error && "border-console-bloom-strong",
+          )}
           onChange={(event) => onChange(event.target.value)}
         />
       </InputPrefix>

@@ -14,7 +14,12 @@ import { canMeToo, useReportMeToo } from "../reportDetail/useReportMeToo"
 
 type Votes = [confirmCount: number, confirmedByMe: boolean, fixedCount: number, fixedByMe: boolean]
 
-const votes = ([confirmCount, confirmedByMe, fixedCount, fixedByMe]: Votes): ReportConfirmResponse => ({
+const votes = ([
+  confirmCount,
+  confirmedByMe,
+  fixedCount,
+  fixedByMe,
+]: Votes): ReportConfirmResponse => ({
   confirmCount,
   confirmedByMe,
   fixedCount,
@@ -35,7 +40,12 @@ function report(state: Votes, over: Partial<ReportDTO> = {}): ReportDTO {
   } as unknown as ReportDTO
 }
 
-const API_METHODS = ["confirmReport", "unconfirmReport", "markReportFixed", "unmarkReportFixed"] as const
+const API_METHODS = [
+  "confirmReport",
+  "unconfirmReport",
+  "markReportFixed",
+  "unmarkReportFixed",
+] as const
 
 // Every vote endpoint answers with `answer` (or rejects), so a test can tell which one a press called.
 function voteApi(answer: () => Promise<ReportConfirmResponse>) {
@@ -54,7 +64,9 @@ function renderVotes(
   api: Record<string, unknown>,
   requireAuth: (action: () => void, opts?: { next?: string }) => void = (action) => action(),
 ) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+  })
   queryClient.setQueryData(queryKeys.report(cached.id), cached)
   const context = makeFakeDataContext({ api: api as unknown as ApiClient, requireAuth })
   const toast = { show: vi.fn() }
@@ -118,33 +130,44 @@ describe("GH#203 the report page's two buttons", () => {
     expect(callsMade(api)).toBe(1)
   })
 
-  it.each(["seen", "fixed"] as const)("T22: a failed %s press shows the error once and rolls back", async (button) => {
-    const api = voteApi(async () => Promise.reject(new TypeError("Network request failed")))
-    const before = report([3, false, 1, false])
-    const { result, toast, queryClient } = renderVotes(before, api)
-    act(() => result.current[button].onPress())
-    await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
-    expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", { variant: "error" })
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
-    expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual(before)
-  })
+  it.each(["seen", "fixed"] as const)(
+    "T22: a failed %s press shows the error once and rolls back",
+    async (button) => {
+      const api = voteApi(async () => Promise.reject(new TypeError("Network request failed")))
+      const before = report([3, false, 1, false])
+      const { result, toast, queryClient } = renderVotes(before, api)
+      act(() => result.current[button].onPress())
+      await waitFor(() => expect(toast.show).toHaveBeenCalledTimes(1))
+      expect(toast.show).toHaveBeenCalledWith("Couldn't save your vote. Try again.", {
+        variant: "error",
+      })
+      await waitFor(() => expect(queryClient.isMutating()).toBe(0))
+      expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual(before)
+    },
+  )
 
-  it.each(["seen", "fixed"] as const)("T23: a guest's %s press asks them to sign in and back to the report", (button) => {
-    const api = voteApi(async () => votes([0, false, 0, false]))
-    const requireAuth = vi.fn()
-    const { result } = renderVotes(report([3, false, 1, false]), api, requireAuth)
-    act(() => result.current[button].onPress())
-    expect(requireAuth).toHaveBeenCalledWith(expect.any(Function), {
-      next: pathForEntry({ kind: "pin", id: "LA-7Q2K" }),
-    })
-    expect(callsMade(api)).toBe(0)
-  })
+  it.each(["seen", "fixed"] as const)(
+    "T23: a guest's %s press asks them to sign in and back to the report",
+    (button) => {
+      const api = voteApi(async () => votes([0, false, 0, false]))
+      const requireAuth = vi.fn()
+      const { result } = renderVotes(report([3, false, 1, false]), api, requireAuth)
+      act(() => result.current[button].onPress())
+      expect(requireAuth).toHaveBeenCalledWith(expect.any(Function), {
+        next: pathForEntry({ kind: "pin", id: "LA-7Q2K" }),
+      })
+      expect(callsMade(api)).toBe(0)
+    },
+  )
 })
 
 describe("GH#203 canMeToo gates both buttons", () => {
-  it.each<ReportStatus>(["published", "acknowledged", "in_progress"])("T24: true on someone else's %s report", (status) => {
-    expect(canMeToo(report([0, false, 0, false], { mine: false, status }))).toBe(true)
-  })
+  it.each<ReportStatus>(["published", "acknowledged", "in_progress"])(
+    "T24: true on someone else's %s report",
+    (status) => {
+      expect(canMeToo(report([0, false, 0, false], { mine: false, status }))).toBe(true)
+    },
+  )
 
   it("T24: false on the reporter's own report", () => {
     expect(canMeToo(report([0, false, 0, false], { mine: true, status: "published" }))).toBe(false)

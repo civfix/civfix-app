@@ -10,6 +10,7 @@ import {
   WEB_ROW_FOCUS_INSET,
   webCursor,
   webTransition,
+  pointerEventStyles,
 } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
@@ -33,6 +34,7 @@ import {
   splitPostBodyMentions,
 } from "../postCardModel"
 import { POST_CARD_RHYTHM } from "../../primitives/postCardRhythm"
+import { withTextOffsets } from "../../primitives/listKeys"
 import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
@@ -49,7 +51,7 @@ export interface ThreadReplyRowProps {
   rail: ThreadRailSegment
   hairline?: boolean
   isOptimistic?: boolean
-  onOpenEntry?: (entry: DetailEntry) => void
+  onOpenEntry?: ((entry: DetailEntry) => void) | undefined
   onDeleted?: (postId: string) => void
 }
 
@@ -65,10 +67,11 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   const { hovered, hoverProps } = useRowHover()
   const { t } = useT("home-feed")
   const segments = React.useMemo(
-    () => splitPostBodyMentions(post.body ?? "", post.mentions),
+    () => withTextOffsets(splitPostBodyMentions(post.body ?? "", post.mentions)),
     [post.body, post.mentions],
   )
   const timeAgo = useListTimeAgo()
+  const { event: linkedEvent, report: linkedReport } = post
   const identity = React.useMemo(
     () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
     [post.author, post.organization, t],
@@ -135,7 +138,11 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               </Text>
               {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
-                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+                <OrgAffiliationBadge
+                  organization={identity.affiliation}
+                  size="sm"
+                  interactive={false}
+                />
               ) : null}
               {identity.viaLabel ? (
                 <Pressable
@@ -173,10 +180,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 
             {segments.length > 0 ? (
               <Text style={styles.body}>
-                {segments.map((segment, index) =>
+                {segments.map((segment) =>
                   segment.kind === "mention" ? (
                     <Text
-                      key={`${segment.userId}-${index}`}
+                      key={segment.offset}
                       style={styles.bodyMention}
                       accessibilityRole="link"
                       onPress={(event) => {
@@ -195,36 +202,42 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 
             {media.length > 0 ? (
               <View style={styles.block}>
-                <PostMediaGrid media={media} t={t} radius={14} maxHeight={240} onPressItem={openMedia} />
-              </View>
-            ) : null}
-
-            {post.event ? (
-              <View style={styles.block}>
-                <LinkedEventCard
-                  event={post.event}
-                  layout="list"
-                  timeZone={post.event.timezone ?? undefined}
-                  onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+                <PostMediaGrid
+                  media={media}
+                  t={t}
+                  radius={14}
+                  maxHeight={240}
+                  onPressItem={openMedia}
                 />
               </View>
             ) : null}
 
-            {post.report ? (
+            {linkedEvent ? (
+              <View style={styles.block}>
+                <LinkedEventCard
+                  event={linkedEvent}
+                  layout="list"
+                  timeZone={linkedEvent.timezone ?? undefined}
+                  onPress={() => openEntry({ kind: "cleanup", id: linkedEvent.id })}
+                />
+              </View>
+            ) : null}
+
+            {linkedReport ? (
               <View style={styles.block}>
                 <LinkedReportCard
                   report={{
-                    ...post.report,
-                    thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id),
+                    ...linkedReport,
+                    thumbUrl: linkedReport.thumbUrl ?? localReportThumb(linkedReport.id),
                   }}
                   layout="list"
                   headline="title"
-                  onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+                  onPress={() => openEntry({ kind: "pin", id: linkedReport.id })}
                 />
               </View>
             ) : null}
 
-            <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
+            <View style={[styles.actionsWrap, pointerEventStyles[isOptimistic ? "none" : "auto"]]}>
               <PostActionBar
                 variant="reply"
                 postId={post.id}

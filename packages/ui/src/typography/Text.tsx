@@ -10,14 +10,7 @@ import {
 } from "../theme"
 
 type Variant =
-  | "display"
-  | "title"
-  | "heading"
-  | "body"
-  | "bodyStrong"
-  | "label"
-  | "caption"
-  | "mono"
+  "display" | "title" | "heading" | "body" | "bodyStrong" | "label" | "caption" | "mono"
 
 type VariantStyles = Record<Variant, TextStyle>
 
@@ -97,7 +90,7 @@ const VARIANT_STYLES_WITH_SELECT: Record<
 
 export interface AppTextProps extends TextProps {
   variant?: Variant
-  color?: string
+  color?: string | undefined
 }
 
 function TextImpl({ variant = "body", color, style, ...rest }: AppTextProps) {

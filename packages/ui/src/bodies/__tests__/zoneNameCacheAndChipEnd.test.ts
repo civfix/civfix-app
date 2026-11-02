@@ -11,7 +11,9 @@ describe("the timezone picker's display-name cache keeps one day only", () => {
   it("drops the previous day's names when the day changes instead of growing forever", () => {
     const cache = calendar.makeZoneDisplayNameCache()
     const day1 = Date.UTC(2026, 2, 1, 12)
-    expect(cache.get("America/Los_Angeles", "en", day1)).toBe(calendar.zoneDisplayName("America/Los_Angeles", "en", day1))
+    expect(cache.get("America/Los_Angeles", "en", day1)).toBe(
+      calendar.zoneDisplayName("America/Los_Angeles", "en", day1),
+    )
     cache.get("Europe/Berlin", "en", day1)
     cache.get("Europe/Berlin", "en", day1 + 60_000)
     expect(cache.size()).toBe(2)
@@ -31,8 +33,16 @@ describe("the timezone picker's display-name cache keeps one day only", () => {
   it("warms every zone in timer slices, none inside the call, and stops when cancelled", () => {
     vi.useFakeTimers()
     try {
-      const zones = Array.from({ length: 100 }, (_, i) => (i % 2 === 0 ? "Europe/Berlin" : "America/Chicago"))
-      const distinct = ["Asia/Tokyo", "Europe/Paris", "America/Denver", "Australia/Sydney", "Africa/Cairo"]
+      const zones = Array.from({ length: 100 }, (_, i) =>
+        i % 2 === 0 ? "Europe/Berlin" : "America/Chicago",
+      )
+      const distinct = [
+        "Asia/Tokyo",
+        "Europe/Paris",
+        "America/Denver",
+        "Australia/Sydney",
+        "Africa/Cairo",
+      ]
       const all = [...distinct, ...zones]
       const cache = calendar.makeZoneDisplayNameCache()
       calendar.warmZoneDisplayNames(cache, all, "en")

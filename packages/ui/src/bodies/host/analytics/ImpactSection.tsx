@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import type { GetEventAnalyticsResponse } from "@civfix/contract"
 import { useTheme } from "../../../theme"
@@ -36,9 +35,7 @@ export function ImpactSection({ data }: { data: GetEventAnalyticsResponse }) {
           resolved: data.kpis.reportsResolved ?? 0,
         })}
       </Text>
-      <Text variant="caption">
-        {t("page.posts_line", { count: data.kpis.postsCreated ?? 0 })}
-      </Text>
+      <Text variant="caption">{t("page.posts_line", { count: data.kpis.postsCreated ?? 0 })}</Text>
       {data.kpis.donationClicks ? (
         <Text variant="caption">
           {t("page.donations_line", { clicks: data.kpis.donationClicks })}

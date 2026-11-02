@@ -25,8 +25,7 @@ type Phase = "intro" | "claiming" | "done" | "error"
 /** A ref, so the one gate per mounted page survives every re-render. */
 function useClaimGate(): ClaimGate {
   const ref = React.useRef<ClaimGate | null>(null)
-  if (ref.current === null) ref.current = createClaimGate()
-  return ref.current
+  return (ref.current ??= createClaimGate())
 }
 
 /**

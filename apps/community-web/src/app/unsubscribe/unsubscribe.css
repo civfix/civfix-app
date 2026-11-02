@@ -37,3 +37,20 @@
 .unsub-shell a {
   color: var(--bloom-600);
 }
+
+.unsub-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.unsub-skeleton span {
+  display: block;
+  height: var(--space-6);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+}
+
+.unsub-skeleton span:last-child {
+  width: 60%;
+}

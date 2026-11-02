@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
-import { type LatLng } from "@civfix/contract/geocode"
+import type { LatLng } from "@civfix/contract/geocode"
 import { useApi, queryKeys } from "../../data"
 import { resolveUserLocation } from "../../data/hooks/location"
 import { useGeolocation } from "../../capabilities"
@@ -35,7 +35,7 @@ export function useApproxCenter(enabled: boolean, refreshIfNull: boolean): Appro
       else setSettledFor(refreshIfNull)
     }
     void qc
-      .fetchQuery<LatLng | null>({
+      .query<LatLng | null>({
         queryKey: queryKeys.userLocation,
         queryFn: () => resolveUserLocation(geo, api, qc),
         staleTime: refreshIfNull ? 0 : Infinity,

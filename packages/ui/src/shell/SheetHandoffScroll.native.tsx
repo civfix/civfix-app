@@ -14,13 +14,14 @@
  *
  * Horizontal scrollables pass through untouched.
  */
-import React, { forwardRef, useMemo } from "react"
+import { forwardRef, useMemo } from "react"
 import { View } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
-import Animated, { runOnJS, useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated"
+import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { useBottomSheetInternal, ANIMATION_SOURCE, ANIMATION_STATUS } from "@gorhom/bottom-sheet"
 import { useNavStore, type Snap } from "../nav"
-import type { DecoratedScrollProps, ScrollHostValue } from "./ScrollHost"
+import type { DecoratedScrollProps, ScrollHostComponent, ScrollHostValue } from "./ScrollHost"
 import {
   HANDOFF_SLOP,
   handoffDestinationIndex,
@@ -39,9 +40,9 @@ function settleToSnap(index: number) {
 }
 
 function makeSheetHandoffScroll(
-  Base: React.ComponentType<any>,
-  AnimatedBase: React.ComponentType<any>,
-): React.ComponentType<any> {
+  Base: ScrollHostComponent,
+  AnimatedBase: ScrollHostComponent,
+): ScrollHostComponent {
   const SheetHandoffScroll = forwardRef<unknown, DecoratedScrollProps>(function SheetHandoffScroll(
     { onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
@@ -72,7 +73,7 @@ function makeSheetHandoffScroll(
           "worklet"
           scrollY.value = e.contentOffset.y
           // gorhom's own payload shape; both consumers read only e.nativeEvent.contentOffset.y.
-          if (onScroll) runOnJS(onScroll)({ nativeEvent: e })
+          if (onScroll) scheduleOnRN(onScroll, { nativeEvent: e })
         },
       },
       [onScroll],
@@ -156,7 +157,7 @@ function makeSheetHandoffScroll(
           const dest = i >= 0 ? detents[i] : undefined
           if (dest === undefined) return
           animateToPosition(dest, ANIMATION_SOURCE.GESTURE, e.velocityY / RELEASE_VELOCITY_DIVISOR)
-          runOnJS(settleToSnap)(i)
+          scheduleOnRN(settleToSnap, i)
         })
         .onFinalize(() => {
           "worklet"
@@ -216,14 +217,14 @@ function makeSheetHandoffScroll(
     )
   })
   SheetHandoffScroll.displayName = "SheetHandoffScroll"
-  return SheetHandoffScroll as unknown as React.ComponentType<any>
+  return SheetHandoffScroll
 }
 
 /** Uses Animated.ScrollView / Animated.FlatList rather than createAnimatedComponent, which is deprecated
  *  for FlatList in reanimated 4; Animated.FlatList also supplies a CellRendererComponent. */
 export function makeSheetHandoffScrollHost(base: ScrollHostValue): ScrollHostValue {
   return {
-    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView as React.ComponentType<any>),
-    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList as React.ComponentType<any>),
+    ScrollView: makeSheetHandoffScroll(base.ScrollView, Animated.ScrollView),
+    FlatList: makeSheetHandoffScroll(base.FlatList, Animated.FlatList),
   }
 }

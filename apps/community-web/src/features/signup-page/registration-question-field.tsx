@@ -22,7 +22,14 @@ function RequiredMark({ required }: { required: boolean }) {
   return required ? <span aria-hidden="true"> *</span> : null
 }
 
-export function QuestionField({ question, value, invalid, errorId, disabled, onChange }: QuestionFieldProps) {
+export function QuestionField({
+  question,
+  value,
+  invalid,
+  errorId,
+  disabled,
+  onChange,
+}: QuestionFieldProps) {
   const id = `signup-question-${question.id}`
   const help = question.helpText ? `${id}-help` : undefined
   const describedByIds = describedBy(help, invalid && errorId)

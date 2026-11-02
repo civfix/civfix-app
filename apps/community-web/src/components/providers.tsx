@@ -4,13 +4,15 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/contract"
 import { colorSchemes } from "@civfix/tokens"
-import { LegalUpdateGate, ToastProvider, setSourceCommit, setWebOrigin, toCreateReportRequest } from "@civfix/ui"
-import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
 import {
-  ThemeProvider,
-  setAppearancePreferenceStore,
-  useColorSchemeName,
-} from "@civfix/ui/theme"
+  LegalUpdateGate,
+  ToastProvider,
+  setSourceCommit,
+  setWebOrigin,
+  toCreateReportRequest,
+} from "@civfix/ui"
+import { I18nProvider, FALLBACK_LOCALE, useLocale } from "@civfix/ui/i18n"
+import { ThemeProvider, setAppearancePreferenceStore, useColorSchemeName } from "@civfix/ui/theme"
 import {
   CapabilitiesProvider,
   makeFakeCapabilities,
@@ -33,6 +35,8 @@ import { api } from "@/lib/api"
 import { chatSocket } from "@/lib/ws"
 import { webCamera } from "@/lib/web-camera"
 import { webGeolocation } from "@/lib/web-geolocation"
+import { webPushPermission } from "@/lib/push-permission"
+import { installWebPush } from "@/push/web-push"
 import { runTurnstile, TURNSTILE_SITEKEY } from "@/lib/turnstile"
 import { CARTO_API_KEY } from "@/lib/carto"
 import { saveClaimHandoff } from "@/store/claim-handoff"
@@ -61,6 +65,7 @@ const webCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: webCamera,
   geolocation: webGeolocation,
+  pushPermission: webPushPermission,
   clipboard: webClipboardCapability,
   openExternal: {
     open: async (url: string): Promise<void> => {
@@ -208,17 +213,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
     clientRef.current = makeQueryClient()
     restorePersistedCache(clientRef.current)
   }
+  const client = clientRef.current
 
   React.useEffect(() => {
-    return installCachePersistenceWriter(clientRef.current!)
-  }, [])
+    return installCachePersistenceWriter(client)
+  }, [client])
 
   React.useEffect(() => {
-    return installViewerScope(clientRef.current!)
-  }, [])
+    return installViewerScope(client)
+  }, [client])
+
+  React.useEffect(() => installWebPush(), [])
 
   return (
-    <QueryClientProvider client={clientRef.current}>
+    <QueryClientProvider client={client}>
       <WebDataProvider>
         <CapabilitiesProvider value={webCapabilities}>
           <AuthHydrator />

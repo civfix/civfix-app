@@ -17,7 +17,13 @@ import type {
   GuestRsvpVerifyResponse,
   LinkedReportRef,
 } from "@civfix/contract"
-import { ErrorCode, appErrorCode, appErrorFields, byErrorCode, type ErrorCodeTable } from "@civfix/contract"
+import {
+  ErrorCode,
+  appErrorCode,
+  appErrorFields,
+  byErrorCode,
+  type ErrorCodeTable,
+} from "@civfix/contract"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
 import { isEventEndedRefusal } from "../errorCode"
@@ -117,7 +123,11 @@ export interface JoinCleanupCtx {
   prevAttendees: CleanupAttendeesResponse | undefined
 }
 
-function mapCleanupRows(qc: QueryClient, id: string, mapRow: (row: CleanupDTO) => CleanupDTO): void {
+function mapCleanupRows(
+  qc: QueryClient,
+  id: string,
+  mapRow: (row: CleanupDTO) => CleanupDTO,
+): void {
   qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
     Array.isArray(prev) ? prev.map((c) => (c.id === id ? mapRow(c) : c)) : prev,
   )
@@ -162,7 +172,9 @@ export function joinCleanupMutationOptions(
       ])
       const prevDetails = qc.getQueriesData<CleanupDTO>(cleanupDetailFilters(id))
       const prevLists = qc.getQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX })
-      const prevAttendees = qc.getQueryData<CleanupAttendeesResponse>(queryKeys.cleanupAttendees(id))
+      const prevAttendees = qc.getQueryData<CleanupAttendeesResponse>(
+        queryKeys.cleanupAttendees(id),
+      )
       const joined = !currentlyJoined
       patchCleanupDetails(qc, id, (prev) => ({
         ...prev,
@@ -322,8 +334,7 @@ export function useCancelCleanup() {
   const qc = useQueryClient()
 
   return useMutation<CleanupDTO, unknown, CancelCleanupVars>({
-    mutationFn: ({ id, reason }) =>
-      api.cancelCleanup({ id, ...(reason ? { reason } : {}) }),
+    mutationFn: ({ id, reason }) => api.cancelCleanup({ id, ...(reason ? { reason } : {}) }),
     onSuccess: (cleanup) => {
       reconcileCleanupDetails(qc, cleanup.id, cleanup)
       invalidateCleanupLists(qc)

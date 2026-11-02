@@ -14,7 +14,10 @@ test("the pieces fall once and stop in exactly the resting pose", () => {
   for (const name of POTHOLE_PIECES) {
     const { dy, vy, angle, spin, squash } = scene.pieces[name]
     const want = rest.pieces[name]
-    assert.deepEqual({ dy, vy, angle, spin, squash }, { dy: want.dy, vy: want.vy, angle: want.angle, spin: want.spin, squash: want.squash })
+    assert.deepEqual(
+      { dy, vy, angle, spin, squash },
+      { dy: want.dy, vy: want.vy, angle: want.angle, spin: want.spin, squash: want.squash },
+    )
   }
   assert.equal(rest.pieces.zero.angle, -9, "the 0 rests crooked in the hole")
   assert.equal(rest.pieces.firstFour.angle, 0)

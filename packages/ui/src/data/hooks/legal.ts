@@ -115,7 +115,10 @@ type LegalVersionRef = Pick<LegalDocumentMetaDTO, "type" | "version" | "sha256">
 
 type AcceptLegalItem = AcceptLegalRequest["items"][number]
 
-function legalItem({ type, version, sha256 }: LegalVersionRef, action: LegalAcceptAction): AcceptLegalItem {
+function legalItem(
+  { type, version, sha256 }: LegalVersionRef,
+  action: LegalAcceptAction,
+): AcceptLegalItem {
   return { type, version, sha256, action }
 }
 

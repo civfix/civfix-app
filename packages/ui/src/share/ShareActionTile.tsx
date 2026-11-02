@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import {
   makeThemedStyles,
@@ -20,7 +20,7 @@ export interface ShareActionTileProps {
   icon: IconName
   label: string
   name?: string
-  status?: string
+  status?: string | undefined
   onPress: () => void
   disabled?: boolean
   tone?: ShareTileTone

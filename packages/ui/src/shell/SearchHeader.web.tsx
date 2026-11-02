@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { View, Pressable, TextInput } from "react-native"
 import { focusRingProps, space, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
-import { Avatar } from "../primitives"
+import { Avatar, UnreadDot } from "../primitives"
+import { useHasUnreadNotifications } from "../data"
 import { useT } from "../i18n"
 import type { SearchHeaderProps } from "./SearchHeader.types"
 import { useSearchHeaderStyles } from "./SearchHeader.styles"
@@ -39,7 +40,9 @@ function SearchPill({
         onFocus={onFocus}
         onBlur={onBlur}
       />
-      {mode === "people" ? <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} /> : null}
+      {mode === "people" ? (
+        <Icon icon={iconMap.Users} size={17} color={th.colors.textSubtle} />
+      ) : null}
     </>
   )
   if (!docked) return <View style={styles.search}>{field}</View>
@@ -51,7 +54,15 @@ function SearchPill({
   )
 }
 
-function DockButton({ icon, label, onPress }: { icon: LucideIcon; label: string; onPress: () => void }) {
+function DockButton({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: LucideIcon
+  label: string
+  onPress: () => void
+}) {
   const styles = useSearchHeaderStyles()
   const th = useTheme()
   return (
@@ -91,7 +102,9 @@ function DockedSearchBar(props: SearchHeaderProps) {
   const anchor = useKeyboardAnchor({ enabled: focused, restOffset: WEB_DOCK_REST_OFFSET })
   return (
     <View style={[styles.dockedRow, anchor.liftStyle]}>
-      {props.onHome ? <DockButton icon={iconMap.Home} label={t("a11y.home")} onPress={props.onHome} /> : null}
+      {props.onHome ? (
+        <DockButton icon={iconMap.Home} label={t("a11y.home")} onPress={props.onHome} />
+      ) : null}
       <SearchPill
         docked
         value={props.value}
@@ -104,7 +117,9 @@ function DockedSearchBar(props: SearchHeaderProps) {
         }}
         onBlur={() => setFocused(false)}
       />
-      {props.onClear ? <DockButton icon={iconMap.Close} label={t("a11y.clear")} onPress={props.onClear} /> : null}
+      {props.onClear ? (
+        <DockButton icon={iconMap.Close} label={t("a11y.clear")} onPress={props.onClear} />
+      ) : null}
     </View>
   )
 }
@@ -113,12 +128,30 @@ export function SearchHeader(props: SearchHeaderProps) {
   const styles = useSearchHeaderStyles()
   const th = useTheme()
   const { t } = useT("common-search")
+  const { t: tn } = useT("notifications")
+  const unread = useHasUnreadNotifications()
   if (props.docked) return <DockedSearchBar {...props} />
 
-  const { value, placeholder, mode, onChangeText, onFocus, userName, userPhotoUrl, onOpenProfile, onSignIn } = props
+  const {
+    value,
+    placeholder,
+    mode,
+    onChangeText,
+    onFocus,
+    userName,
+    userPhotoUrl,
+    onOpenProfile,
+    onSignIn,
+  } = props
   return (
     <View style={styles.row}>
-      <SearchPill value={value} placeholder={placeholder} mode={mode} onChangeText={onChangeText} onFocus={onFocus} />
+      <SearchPill
+        value={value}
+        placeholder={placeholder}
+        mode={mode}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+      />
       {onSignIn ? (
         <Pressable
           onPress={onSignIn}
@@ -140,7 +173,11 @@ export function SearchHeader(props: SearchHeaderProps) {
         <Pressable
           onPress={onOpenProfile}
           accessibilityRole="button"
-          accessibilityLabel={t("a11y.open_profile")}
+          accessibilityLabel={
+            unread
+              ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
+              : t("a11y.open_profile")
+          }
           hitSlop={8}
           {...focusRingProps}
           style={(state) => [
@@ -151,6 +188,7 @@ export function SearchHeader(props: SearchHeaderProps) {
           ]}
         >
           <Avatar name={userName} photoUrl={userPhotoUrl ?? null} size={32} />
+          {unread ? <UnreadDot /> : null}
         </Pressable>
       ) : null}
     </View>

@@ -1,11 +1,6 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react"
-import {
-  View,
-  PanResponder,
-  useWindowDimensions,
-  type ViewStyle,
-} from "react-native"
-import { makeThemedStyles, space, motion, focusRingProps } from "../theme"
+import { useLayoutEffect, useMemo, useRef, useState } from "react"
+import { View, PanResponder, useWindowDimensions } from "react-native"
+import { makeThemedStyles, space, motion, focusRingProps, webStyle } from "../theme"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
 import { lerp } from "../surface/liquidGlass/liquidGlassModel"
@@ -43,7 +38,6 @@ const SHEET_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   onKeyboardShow: () => useNavStore.getState().setSnap(2, false),
 })
 
-
 const SETTLE_TRANSITION = cssTransition(
   ["height", "left", "right", "border-radius"],
   motion.sheetMove,
@@ -77,7 +71,11 @@ function WebSheetHeader({
   )
 }
 
-export function CompactShell({ renderBody = defaultRenderBody, closing = false, onClosed }: CompactShellProps) {
+export function CompactShell({
+  renderBody = defaultRenderBody,
+  closing = false,
+  onClosed,
+}: CompactShellProps) {
   const styles = useStyles()
   const { t: tNav } = useT("nav")
   const { height: winH } = useWindowDimensions()
@@ -128,7 +126,8 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
+        onMoveShouldSetPanResponder: (_e, g) =>
+          Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
         onPanResponderGrant: () => {
           startHeightRef.current = snapPxRef.current[snapRef.current]
         },
@@ -142,11 +141,11 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
           const moved = Math.abs(g.dy) + Math.abs(g.dx)
           let next: Snap
           if (moved < TAP_SLOP) {
-            next = (((cur + 1) % 3) as Snap)
+            next = ((cur + 1) % 3) as Snap
           } else if (g.vy < -FLING_VELOCITY) {
-            next = (Math.min(cur + 1, 2) as Snap)
+            next = Math.min(cur + 1, 2) as Snap
           } else if (g.vy > FLING_VELOCITY) {
-            next = (Math.max(cur - 1, 0) as Snap)
+            next = Math.max(cur - 1, 0) as Snap
           } else {
             const h = clamp(startHeightRef.current - g.dy, px[0], px[2])
             let best: Snap = 0
@@ -181,13 +180,13 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
 
   const settleTransition =
     dragging || !snapAnimated || prefersReducedMotion() ? "none" : SETTLE_TRANSITION
-  const anchorStyle = {
+  const anchorStyle = webStyle({
     height,
     bottom: 0,
     transition: settleTransition,
-  } as unknown as ViewStyle
+  })
 
-  const cardStyle = {
+  const cardStyle = webStyle({
     left: side,
     right: side,
     bottom,
@@ -196,7 +195,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     transition: settleTransition,
-  } as unknown as ViewStyle
+  })
 
   const headerVPad = sheetHeaderPad(snap)
 
@@ -263,7 +262,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     paddingTop: t.space["2"],
-    ...({ touchAction: "none", cursor: "grab", userSelect: "none" } as unknown as ViewStyle),
+    ...webStyle({ touchAction: "none", cursor: "grab", userSelect: "none" }),
   },
   handleBar: {
     ...SHEET_HANDLE_BAR,

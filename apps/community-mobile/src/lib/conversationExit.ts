@@ -1,6 +1,5 @@
 export type ConversationExitPlan =
-  | { type: "back"; seedView: "messaging" | null }
-  | { type: "home"; seedView: "messaging" }
+  { type: "back"; seedView: "messaging" | null } | { type: "home"; seedView: "messaging" }
 
 export interface ConversationExitInput {
   canGoBack: boolean

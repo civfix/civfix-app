@@ -37,7 +37,10 @@ describe("invalidationKeysForTopic", () => {
 
   it("a host can append its own extra keys for a topic without forking the mapping", () => {
     const extra = { threads: [["host", "badge"]] } as const
-    expect(invalidationKeysForTopic("threads", extra)).toEqual([queryKeys.threads, ["host", "badge"]])
+    expect(invalidationKeysForTopic("threads", extra)).toEqual([
+      queryKeys.threads,
+      ["host", "badge"],
+    ])
     // Topics the host did not extend are untouched.
     expect(invalidationKeysForTopic("reports", extra)).toEqual([queryKeys.myReportsRoot])
   })

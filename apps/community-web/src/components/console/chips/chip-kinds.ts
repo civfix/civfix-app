@@ -143,7 +143,11 @@ const pageState = {
 
 const registrationState = {
   open: { hue: "moss", icon: CircleCheck, labelKey: "enums:registrationState.open" },
-  not_yet_open: { hue: "sky", icon: CalendarClock, labelKey: "enums:registrationState.not_yet_open" },
+  not_yet_open: {
+    hue: "sky",
+    icon: CalendarClock,
+    labelKey: "enums:registrationState.not_yet_open",
+  },
   closed: { hue: "neutral", icon: CircleSlash, labelKey: "enums:registrationState.closed" },
   full: { hue: "sun", icon: Users, labelKey: "enums:registrationState.full" },
   waitlist: { hue: "sun", icon: Hourglass, labelKey: "enums:registrationState.waitlist" },
@@ -171,7 +175,11 @@ const orgRole = {
 } satisfies Record<OrganizationMemberRole, ChipKindEntry>
 
 const orgVerification = {
-  unverified: { hue: "neutral", icon: CircleDashed, labelKey: "enums:orgVerificationStatus.unverified" },
+  unverified: {
+    hue: "neutral",
+    icon: CircleDashed,
+    labelKey: "enums:orgVerificationStatus.unverified",
+  },
   pending: { hue: "sun", icon: Hourglass, labelKey: "enums:orgVerificationStatus.pending" },
   verified: { hue: "moss", icon: BadgeCheck, labelKey: "enums:orgVerificationStatus.verified" },
   rejected: { hue: "bloom", icon: Ban, labelKey: "enums:orgVerificationStatus.rejected" },
@@ -188,7 +196,12 @@ const broadcastStatus = {
   sending: { hue: "sun", icon: Send, labelKey: "enums:broadcastStatus.sending" },
   sent: { hue: "moss", icon: CheckCheck, labelKey: "enums:broadcastStatus.sent" },
   cancelled: { hue: "neutral", icon: CircleOff, labelKey: "enums:broadcastStatus.cancelled" },
-  failed: { hue: "bloom", icon: TriangleAlert, labelKey: "enums:broadcastStatus.failed", bold: true },
+  failed: {
+    hue: "bloom",
+    icon: TriangleAlert,
+    labelKey: "enums:broadcastStatus.failed",
+    bold: true,
+  },
 } satisfies Record<BroadcastStatus, ChipKindEntry>
 
 const broadcastKind = {
@@ -198,12 +211,21 @@ const broadcastKind = {
   waitlist_promoted: { hue: "sky", icon: Bell, labelKey: "enums:broadcastKind.waitlist_promoted" },
   reminder: { hue: "sun", icon: Clock, labelKey: "enums:broadcastKind.reminder" },
   event_updated: { hue: "sky", icon: RefreshCw, labelKey: "enums:broadcastKind.event_updated" },
-  event_cancelled: { hue: "bloom", icon: CalendarX, labelKey: "enums:broadcastKind.event_cancelled" },
+  event_cancelled: {
+    hue: "bloom",
+    icon: CalendarX,
+    labelKey: "enums:broadcastKind.event_cancelled",
+  },
   thank_you: { hue: "moss", icon: PartyPopper, labelKey: "enums:broadcastKind.thank_you" },
 } satisfies Record<BroadcastKind, ChipKindEntry>
 
 const channel = {
-  inapp: { hue: "sky", icon: MessageSquare, labelKey: "enums:broadcastChannel.inapp", outline: true },
+  inapp: {
+    hue: "sky",
+    icon: MessageSquare,
+    labelKey: "enums:broadcastChannel.inapp",
+    outline: true,
+  },
   push: { hue: "lilac", icon: Smartphone, labelKey: "enums:broadcastChannel.push", outline: true },
   email: { hue: "moss", icon: Mail, labelKey: "enums:broadcastChannel.email", outline: true },
   sms: { hue: "sun", icon: Smartphone, labelKey: "enums:broadcastChannel.sms", outline: true },
@@ -234,7 +256,11 @@ const orgKind = {
 
 const attendance = {
   checked_in: { hue: "moss", icon: UserCheck, labelKey: "host-attendees:chip.checked_in" },
-  not_checked_in: { hue: "neutral", icon: CircleDashed, labelKey: "host-attendees:chip.not_checked_in" },
+  not_checked_in: {
+    hue: "neutral",
+    icon: CircleDashed,
+    labelKey: "host-attendees:chip.not_checked_in",
+  },
   no_show: { hue: "bloom", icon: UserX, labelKey: "host-attendees:chip.no_show" },
 } satisfies Record<"checked_in" | "not_checked_in" | "no_show", ChipKindEntry>
 

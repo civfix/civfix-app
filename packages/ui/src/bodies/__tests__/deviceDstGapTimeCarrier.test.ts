@@ -29,7 +29,13 @@ describe("a clock inside the DEVICE's DST gap survives the event form", () => {
   it("keeps 02:30 as the picked time and saves 02:30 in the event's zone", () => {
     const time = timeCarrier(gapDay(), 2, 30)
     expect([time.getHours(), time.getMinutes()]).toEqual([2, 30])
-    expect(formWallClock(gapDay(), time)).toEqual({ year: 2026, month: 3, day: 8, hours: 2, minutes: 30 })
+    expect(formWallClock(gapDay(), time)).toEqual({
+      year: 2026,
+      month: 3,
+      day: 8,
+      hours: 2,
+      minutes: 30,
+    })
     expect(formInstantMs(gapDay(), time, PHOENIX)).toBe(PHOENIX_0230_UTC)
   })
 
@@ -40,7 +46,9 @@ describe("a clock inside the DEVICE's DST gap survives the event form", () => {
 
   it("loads a saved 02:30 event back as 02:30, on its own day", () => {
     const wallClock = { year: 2026, month: 3, day: 8, hours: 2, minutes: 30 }
-    expect(formWallClock(wallClockToFormDate(wallClock), wallClockToFormTime(wallClock))).toEqual(wallClock)
+    expect(formWallClock(wallClockToFormDate(wallClock), wallClockToFormTime(wallClock))).toEqual(
+      wallClock,
+    )
   })
 
   it("previews the share card at the event-zone instant, not the device-shifted one", () => {
@@ -79,13 +87,23 @@ describe("a clock inside the DEVICE's DST gap survives the event form", () => {
     expect(native).toContain(
       "onChange(timeCarrier(day ?? value ?? picked, picked.getHours(), picked.getMinutes()))",
     )
-    expect(native).toContain("return value ?? timeCarrier(base, base.getHours(), base.getMinutes())")
+    expect(native).toContain(
+      "return value ?? timeCarrier(base, base.getHours(), base.getMinutes())",
+    )
     expect(native).toContain("const current = timePickerSeed(value, day)")
     expect(native).toContain("value: timePickerSeed(value, day),")
-    expect(code("../cleanupFormModel.ts")).toContain("timeCarrier(date, value.time.getHours(), value.time.getMinutes())")
-    expect(code("../host/dashboard/DuplicateEventSheet.tsx")).toContain("setTime(wallClockToFormTime(wallClock))")
+    expect(code("../cleanupFormModel.ts")).toContain(
+      "timeCarrier(date, value.time.getHours(), value.time.getMinutes())",
+    )
+    expect(code("../host/dashboard/DuplicateEventSheet.tsx")).toContain(
+      "setTime(wallClockToFormTime(wallClock))",
+    )
     expect(code("../EditCleanupBody.tsx")).toContain("time: wallClockToFormTime(start)")
-    expect(code("../eventWizard.ts")).toContain("wallClockToFormTime(wallClockInZone(endMs, timeZone))")
-    expect(code("../SlotWindowPicker.tsx")).toContain("wallClockToFormTime(wallClockInZone(instant.getTime(), timeZone))")
+    expect(code("../eventWizard.ts")).toContain(
+      "wallClockToFormTime(wallClockInZone(endMs, timeZone))",
+    )
+    expect(code("../SlotWindowPicker.tsx")).toContain(
+      "wallClockToFormTime(wallClockInZone(instant.getTime(), timeZone))",
+    )
   })
 })

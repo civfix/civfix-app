@@ -1,4 +1,9 @@
-import type { CleanupMemberRole, EventTeamRole, HostCapability, SetMemberRoleRequest } from "@civfix/contract"
+import type {
+  CleanupMemberRole,
+  EventTeamRole,
+  HostCapability,
+  SetMemberRoleRequest,
+} from "@civfix/contract"
 import { hostCapabilities } from "@civfix/contract/host"
 
 export interface EventTeamTier {
@@ -8,7 +13,11 @@ export interface EventTeamTier {
   capabilities: readonly HostCapability[]
 }
 
-export const INVITABLE_EVENT_TEAM_ROLES: readonly EventTeamRole[] = ["cohost", "coordinator", "staff"]
+export const INVITABLE_EVENT_TEAM_ROLES: readonly EventTeamRole[] = [
+  "cohost",
+  "coordinator",
+  "staff",
+]
 
 export type SettableEventMemberRole = SetMemberRoleRequest["role"]
 

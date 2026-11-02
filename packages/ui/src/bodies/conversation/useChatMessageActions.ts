@@ -36,7 +36,9 @@ export function useChatMessageActions({
   )
   const onVotePoll = useCallback(
     (messageId: string, optionIdxs: number[]) => {
-      void votePoll(messageId, optionIdxs).catch(() => toast.show(tPolls("vote_error"), { variant: "error" }))
+      void votePoll(messageId, optionIdxs).catch(() =>
+        toast.show(tPolls("vote_error"), { variant: "error" }),
+      )
     },
     [votePoll, toast, tPolls],
   )
@@ -62,5 +64,13 @@ export function useChatMessageActions({
     },
     [deleteMessage, toast, t],
   )
-  return { pollCreatePending, pollCreateError, onCreatePoll, onVotePoll, onStopPoll, onSetPinned, onDeleteMessage }
+  return {
+    pollCreatePending,
+    pollCreateError,
+    onCreatePoll,
+    onVotePoll,
+    onStopPoll,
+    onSetPinned,
+    onDeleteMessage,
+  }
 }

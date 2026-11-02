@@ -1,11 +1,12 @@
-import { colorSchemes, type ColorSchemeName } from "@civfix/tokens"
+import { colorSchemes, tokens, type ColorSchemeName } from "@civfix/tokens"
 import type { MapStyleInput } from "./types"
 
 const CARTO_SHARDS = ["a", "b", "c"]
 
 function cartoTiles(styleId: string): string[] {
   return CARTO_SHARDS.map(
-    (shard) => `https://${shard}.basemaps.cartocdn.com/rastertiles/${styleId}/{z}/{x}/{y}{ratio}.png`,
+    (shard) =>
+      `https://${shard}.basemaps.cartocdn.com/rastertiles/${styleId}/{z}/{x}/{y}{ratio}.png`,
   )
 }
 
@@ -13,11 +14,6 @@ export const BASEMAP_TILES: Readonly<Record<ColorSchemeName, readonly string[]>>
   light: cartoTiles("voyager"),
   dark: cartoTiles("dark_all"),
 }
-
-// CARTO's own tile ground colours, vendor values rather than design tokens: the basemap paper has to match
-// what the raster tiles actually paint.
-const VOYAGER_GROUND = "#F5F3EE"
-const DARK_MATTER_GROUND = "#0E0E0E"
 
 export const DARK_RASTER_BRIGHTNESS_MIN = 0.18
 
@@ -43,8 +39,8 @@ function liftHex(hex: string, min: number): string {
 }
 
 const BASEMAP_PAPER: Readonly<Record<ColorSchemeName, string>> = {
-  light: VOYAGER_GROUND,
-  dark: liftHex(DARK_MATTER_GROUND, DARK_RASTER_BRIGHTNESS_MIN),
+  light: tokens.basemap.voyagerGround,
+  dark: liftHex(tokens.basemap.darkMatterGround, DARK_RASTER_BRIGHTNESS_MIN),
 }
 
 export function basemapPaper(scheme: ColorSchemeName): string {
@@ -59,7 +55,7 @@ export function withCartoKey(url: string, key?: string): string {
 }
 
 export interface RasterMapStyleOptions {
-  cartoApiKey?: string
+  cartoApiKey?: string | undefined
   scheme?: ColorSchemeName
 }
 

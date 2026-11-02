@@ -1,10 +1,15 @@
-import { MAX_EVENT_HOURS, MIN_EVENT_HOURS, type CleanupDTO, type EventHoursEntry } from "@civfix/contract"
+import {
+  MAX_EVENT_HOURS,
+  MIN_EVENT_HOURS,
+  type CleanupDTO,
+  type EventHoursEntry,
+} from "@civfix/contract"
 import { formatHours } from "./formatHours"
 
 export type HoursCleanup = Pick<CleanupDTO, "scheduledAt" | "endsAt" | "slots" | "timezone">
 
 export interface HoursAttendee {
-  slot?: { id: string } | null
+  slot?: { id: string } | null | undefined
 }
 
 function spanHours(fromIso: string, toIso: string): number | null {
@@ -74,12 +79,10 @@ export function seedHoursDrafts(
 }
 
 export type HoursRowSubject<A> =
-  | { kind: "attendee"; attendee: A }
-  | { kind: "official" }
-  | { kind: "former" }
+  { kind: "attendee"; attendee: A } | { kind: "official" } | { kind: "former" }
 
 export function hoursRowSubject<A>(
-  entry: { userId: string; creditedByOfficial?: boolean },
+  entry: { userId: string; creditedByOfficial?: boolean | undefined },
   rosterById: ReadonlyMap<string, A>,
 ): HoursRowSubject<A> {
   const attendee = rosterById.get(entry.userId)

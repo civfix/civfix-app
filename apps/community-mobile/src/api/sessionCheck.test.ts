@@ -11,7 +11,8 @@ installModuleStubs({
 })
 ;(globalThis as { __DEV__?: boolean }).__DEV__ = false
 
-const { control, keychain, pendingWrites } = await import("../../tests/helpers/secureSessionStubs.ts")
+const { control, keychain, pendingWrites } =
+  await import("../../tests/helpers/secureSessionStubs.ts")
 const { getToken, setToken, clearToken } = await import("../auth/storage.ts")
 const { sessionCheck } = await import("./sessionCheck.ts")
 

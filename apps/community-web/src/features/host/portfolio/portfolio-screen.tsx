@@ -216,7 +216,11 @@ function PortfolioKpis({ kpis }: { kpis: ListMyHostedEventsResponse["kpis"] | nu
   )
 }
 
-function PortfolioTrend({ analytics }: { analytics: UseQueryResult<HostedEventsAnalyticsResponse> }) {
+function PortfolioTrend({
+  analytics,
+}: {
+  analytics: UseQueryResult<HostedEventsAnalyticsResponse>
+}) {
   const { t } = useT("host-portfolio")
   const format = useConsoleFormat()
   const analyticsGate = useGate(analytics)
@@ -231,10 +235,7 @@ function PortfolioTrend({ analytics }: { analytics: UseQueryResult<HostedEventsA
       className="mb-token-6 rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
     >
       <div className="mb-token-3 flex flex-wrap items-baseline justify-between gap-token-2">
-        <h2
-          id="portfolio-trend"
-          className="font-display text-token-16 font-bold text-console-ink"
-        >
+        <h2 id="portfolio-trend" className="font-display text-token-16 font-bold text-console-ink">
           {t("trend.title")}
         </h2>
         <p className="text-token-12 text-console-ink-3">{t("trend.range")}</p>

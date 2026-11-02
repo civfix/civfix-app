@@ -6,7 +6,10 @@ import { AppError, ErrorCode, type LegalDocumentDTO } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 
 import { ApiProvider, type DataContextValue } from "../../../../../packages/ui/src/data"
-import { CapabilitiesProvider, makeFakeCapabilities } from "../../../../../packages/ui/src/capabilities"
+import {
+  CapabilitiesProvider,
+  makeFakeCapabilities,
+} from "../../../../../packages/ui/src/capabilities"
 import { I18nProvider } from "../../../../../packages/ui/src/i18n"
 import {
   CURRENT_DOCUMENTS,
@@ -22,11 +25,15 @@ vi.mock("react-native", async () => {
 
 vi.mock("lucide-react-native/icons", () => {
   const Glyph = () => null
-  return new Proxy({}, { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) })
+  return new Proxy(
+    {},
+    { has: () => true, get: (_target, key) => (key === "then" ? undefined : Glyph) },
+  )
 })
 
 vi.mock("@civfix/ui", async () => ({
-  LegalDocumentBody: (await import("../../../../../packages/ui/src/bodies/LegalDocumentBody")).LegalDocumentBody,
+  LegalDocumentBody: (await import("../../../../../packages/ui/src/bodies/LegalDocumentBody"))
+    .LegalDocumentBody,
 }))
 
 const { default: TermsPage } = await import("@/app/legal/terms/page")
@@ -57,7 +64,10 @@ function at(path: string) {
 
 function mount(
   Page: React.ComponentType,
-  api: { getLegalDocuments?: () => Promise<unknown>; getLegalDocument?: (body: unknown) => Promise<unknown> },
+  api: {
+    getLegalDocuments?: () => Promise<unknown>
+    getLegalDocument?: (body: unknown) => Promise<unknown>
+  },
 ) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const context = {
@@ -81,7 +91,9 @@ function mount(
 
 const current = async () => ({ documents: CURRENT_DOCUMENTS })
 const withCurrentPrivacy = (privacy: LegalDocumentDTO) => async () => ({
-  documents: CURRENT_DOCUMENTS.map((document) => (document.type === "privacy" ? privacy : document)),
+  documents: CURRENT_DOCUMENTS.map((document) =>
+    document.type === "privacy" ? privacy : document,
+  ),
 })
 
 // The page loads the document view on demand; loading its module graph once up front keeps that first
@@ -133,24 +145,29 @@ describe("/legal/terms", () => {
 })
 
 describe("/legal/<type>", () => {
-  it.each(PAGES)("T23: /legal/$type renders its current version and marks itself in the nav", async ({ type, Page, title }) => {
-    at(`/legal/${type}/`)
-    mount(Page, { getLegalDocuments: current })
-    expect(await screen.findByRole("heading", { name: title })).toBeTruthy()
-    expect(screen.getByText(`1. About the ${title}`)).toBeTruthy()
-    expect(screen.queryByText(/This is an earlier version/)).toBeNull()
-    const nav = screen.getAllByRole("navigation", { name: "Legal documents" })[0]!
-    const links = within(nav).getAllByRole("link")
-    expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/legal/terms",
-      "/legal/privacy",
-      "/legal/cookies",
-      "/legal/subprocessors",
-    ])
-    expect(links.filter((link) => link.getAttribute("aria-current") === "page").map((link) => link.getAttribute("href"))).toEqual([
-      `/legal/${type}`,
-    ])
-  })
+  it.each(PAGES)(
+    "T23: /legal/$type renders its current version and marks itself in the nav",
+    async ({ type, Page, title }) => {
+      at(`/legal/${type}/`)
+      mount(Page, { getLegalDocuments: current })
+      expect(await screen.findByRole("heading", { name: title })).toBeTruthy()
+      expect(screen.getByText(`1. About the ${title}`)).toBeTruthy()
+      expect(screen.queryByText(/This is an earlier version/)).toBeNull()
+      const nav = screen.getAllByRole("navigation", { name: "Legal documents" })[0]!
+      const links = within(nav).getAllByRole("link")
+      expect(links.map((link) => link.getAttribute("href"))).toEqual([
+        "/legal/terms",
+        "/legal/privacy",
+        "/legal/cookies",
+        "/legal/subprocessors",
+      ])
+      expect(
+        links
+          .filter((link) => link.getAttribute("aria-current") === "page")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual([`/legal/${type}`])
+    },
+  )
 })
 
 describe("/legal/privacy?version=", () => {
@@ -158,7 +175,9 @@ describe("/legal/privacy?version=", () => {
     at("/legal/privacy/?version=2026-10-01")
     const getLegalDocument = vi.fn(async () => ({ document: legalDoc("privacy", "2026-10-01") }))
     mount(PrivacyPage, { getLegalDocuments: current, getLegalDocument })
-    expect(await screen.findByText("This is an earlier version, from October 1, 2026.")).toBeTruthy()
+    expect(
+      await screen.findByText("This is an earlier version, from October 1, 2026."),
+    ).toBeTruthy()
     expect(screen.getByText("Version 2026-10-01 · effective October 1, 2026")).toBeTruthy()
     expect(getLegalDocument).toHaveBeenCalledWith({ type: "privacy", version: "2026-10-01" })
   })
@@ -167,7 +186,9 @@ describe("/legal/privacy?version=", () => {
     at("/legal/privacy/?version=2026-09-21")
     mount(PrivacyPage, {
       getLegalDocuments: current,
-      getLegalDocument: async () => ({ document: legalDoc("privacy", "2026-09-21", { title: null, blocks: null }) }),
+      getLegalDocument: async () => ({
+        document: legalDoc("privacy", "2026-09-21", { title: null, blocks: null }),
+      }),
     })
     expect(await screen.findByText("This earlier version isn't available here.")).toBeTruthy()
     fireEvent.click(screen.getByRole("link", { name: "Read the current version" }))
@@ -207,16 +228,19 @@ describe("/legal/privacy?version=", () => {
   it.each([
     ["1999-01-01", true],
     ["abc", false],
-  ])("T27: ?version=%s the server doesn't have shows the unavailable line, not an error", async (version, asks) => {
-    at(`/legal/privacy/?version=${version}`)
-    const getLegalDocument = vi.fn(async () => {
-      throw new AppError(ErrorCode.NOT_FOUND, "No such version")
-    })
-    mount(PrivacyPage, { getLegalDocuments: current, getLegalDocument })
-    expect(await screen.findByText("This earlier version isn't available here.")).toBeTruthy()
-    expect(screen.getByRole("link", { name: "Read the current version" })).toBeTruthy()
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull()
-    expect(screen.queryByText("Couldn't load this document")).toBeNull()
-    await waitFor(() => expect(getLegalDocument).toHaveBeenCalledTimes(asks ? 1 : 0))
-  })
+  ])(
+    "T27: ?version=%s the server doesn't have shows the unavailable line, not an error",
+    async (version, asks) => {
+      at(`/legal/privacy/?version=${version}`)
+      const getLegalDocument = vi.fn(async () => {
+        throw new AppError(ErrorCode.NOT_FOUND, "No such version")
+      })
+      mount(PrivacyPage, { getLegalDocuments: current, getLegalDocument })
+      expect(await screen.findByText("This earlier version isn't available here.")).toBeTruthy()
+      expect(screen.getByRole("link", { name: "Read the current version" })).toBeTruthy()
+      expect(screen.queryByRole("button", { name: "Retry" })).toBeNull()
+      expect(screen.queryByText("Couldn't load this document")).toBeNull()
+      await waitFor(() => expect(getLegalDocument).toHaveBeenCalledTimes(asks ? 1 : 0))
+    },
+  )
 })

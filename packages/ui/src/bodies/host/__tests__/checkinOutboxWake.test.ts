@@ -32,12 +32,13 @@ describe("the load effect", () => {
     expect(hook).toContain("commitRef.current(merged)")
   })
 
-  it.each(["ownerIdRef.current = ownerId", "commitRef.current = commit", "replayRef.current = replay"])(
-    "reads %s from the last committed render, never a discarded one",
-    (assignment) => {
-      expectWrittenInLayoutEffect(hook, assignment)
-    },
-  )
+  it.each([
+    "ownerIdRef.current = ownerId",
+    "commitRef.current = commit",
+    "replayRef.current = replay",
+  ])("reads %s from the last committed render, never a discarded one", (assignment) => {
+    expectWrittenInLayoutEffect(hook, assignment)
+  })
 })
 
 describe("subscribeOutboxWake: foreground on both platforms, reconnect on web", () => {

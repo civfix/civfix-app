@@ -66,12 +66,20 @@ export {
   NAV_FOOTPRINT,
   MAP_MIN_CLEAR,
   EXPANDED_MIN_WIDTH,
+  expandedTopOffsets,
 } from "./expandedFramePlan"
-export type { ExpandedFrame, ExpandedFrameInput } from "./expandedFramePlan"
+export type { ExpandedFrame, ExpandedFrameInput, ExpandedTopOffsets } from "./expandedFramePlan"
 export { shellOcclusionLeft } from "./shellOcclusion"
 export { writeOcclusionLeft, clearOcclusionLeft } from "./occlusionVar"
 export { useSearchBarStore } from "./searchBarStore"
 export type { SearchBarState } from "./searchBarStore"
+export { SystemNoticeBanner } from "./SystemNoticeBanner"
+export type { SystemNoticeBannerProps } from "./SystemNoticeBanner.types"
+export { SystemNoticeFrame } from "./SystemNoticeFrame"
+export { useShellWindowHeight } from "./systemNoticeFrameContext"
+export { useSystemNoticeStore } from "./systemNoticeStore"
+export type { SystemNoticeState } from "./systemNoticeStore"
+export { topBarsHeight, useTopBarsHeight } from "./topBars"
 export type { AppShellProps } from "./types"
 
 export { useKeyboardAnchor } from "./useKeyboardAnchor"
@@ -83,7 +91,10 @@ export type { KeyboardRevealGroupProps } from "./keyboardRevealGroup"
 export { KeyboardAnchorView } from "./KeyboardAnchorView"
 export type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
 export { useKeyboardReserve } from "./useKeyboardReserve"
-export type { KeyboardReserveOptions, WebOnlyKeyboardReserveOptions } from "./useKeyboardReserve.types"
+export type {
+  KeyboardReserveOptions,
+  WebOnlyKeyboardReserveOptions,
+} from "./useKeyboardReserve.types"
 export {
   KEYBOARD_SURFACE_GAP,
   keyboardLift,
@@ -95,7 +106,7 @@ export { showBackAffordance, detailLeadingAffordance } from "./backAffordance"
 export type { BackAffordanceInput, DetailLeadingAffordance } from "./backAffordance"
 export { detailTrailingActionFor } from "./detailTrailingAction"
 export type { DetailTrailingAction } from "./detailTrailingAction"
-export { DetailTrailingButton } from "./DetailTrailingButton"
-export type { DetailTrailingButtonProps } from "./DetailTrailingButton"
+export { DetailTrailingButtons } from "./DetailTrailingButton"
+export type { DetailTrailingButtonsProps } from "./DetailTrailingButton"
 export { WizardStepHeader } from "./WizardStepHeader"
 export type { WizardStepHeaderProps } from "./WizardStepHeader"

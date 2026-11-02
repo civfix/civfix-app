@@ -17,7 +17,8 @@ import { MutationObserver, QueryClient } from "@tanstack/react-query"
 const strip = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 
-const code = (relative: string): string => strip(readFileSync(new URL(relative, import.meta.url), "utf8"))
+const code = (relative: string): string =>
+  strip(readFileSync(new URL(relative, import.meta.url), "utf8"))
 
 describe("the TanStack behaviour these fixes rely on", () => {
   it("drops per-call callbacks after the observer unmounts, while the promise still settles", async () => {
@@ -43,8 +44,12 @@ describe("deleting from the overflow menu", () => {
     expect(runDelete).toContain("deletePost(subjectId)")
     expect(runDelete).not.toMatch(/del\.mutate\(/)
     expect(runDelete).not.toMatch(/onSuccess:|onError:|onSettled:/)
-    expect(runDelete).toMatch(/toast\.show\(t\("post_card\.menu\.deleted"\)\)\s*\n\s*onDeleted\?\.\(\)/)
-    expect(runDelete).toContain('toast.show(t("post_card.menu.delete_failed"), { variant: "error" })')
+    expect(runDelete).toMatch(
+      /toast\.show\(t\("post_card\.menu\.deleted"\)\)\s*\n\s*onDeleted\?\.\(\)/,
+    )
+    expect(runDelete).toContain(
+      'toast.show(t("post_card.menu.delete_failed"), { variant: "error" })',
+    )
   })
 
   it("always handles the rejection, so a failed delete is never an unhandled promise", () => {
@@ -73,15 +78,21 @@ describe("a failed post keeps its text after the composer is gone", () => {
     it(`${file} restores from the promise's rejection, guarded against a newer draft`, () => {
       expect(start, `${file}: const staged = is gone`).toBeGreaterThan(-1)
       expect(catchAt, `${file}: no .catch( after const staged =`).toBeGreaterThan(start)
-      expect(end, `${file}: the submit block no longer closes after .catch(`).toBeGreaterThan(catchAt)
+      expect(end, `${file}: the submit block no longer closes after .catch(`).toBeGreaterThan(
+        catchAt,
+      )
       expect(submit).toMatch(/create\s*\.mutateAsync\(/)
       expect(submit).not.toContain("onError:")
-      expect(submit).toMatch(/\.catch\(\(\) => \{\s*haptics\.error\(\)\s*const restored = restoreFailedPostSubmit\(staged\)/)
+      expect(submit).toMatch(
+        /\.catch\(\(\) => \{\s*haptics\.error\(\)\s*const restored = restoreFailedPostSubmit\(staged\)/,
+      )
       expect(source).not.toMatch(/\brestore\(staged\)/)
     })
 
     it(`${file} tells the user once the composer that would show the inline error is gone`, () => {
-      expect(submit).toMatch(/if \(!mountedRef\.current\) \{\s*toast\.show\(t\(restored \? "submit_error_restored" : "submit_error"\), \{ variant: "error" \}\)/)
+      expect(submit).toMatch(
+        /if \(!mountedRef\.current\) \{\s*toast\.show\(t\(restored \? "submit_error_restored" : "submit_error"\), \{ variant: "error" \}\)/,
+      )
       expect(source).toMatch(/return \(\) => \{\s*mountedRef\.current = false/)
     })
 

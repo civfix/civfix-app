@@ -28,10 +28,10 @@
     --primary: 4.9 83.1% 65.1%; /* bloom.500      #F0685C */
     --primary-foreground: 0 0% 100%; /* white */
 
-    --secondary: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
+    --secondary: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --secondary-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    --muted: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
+    --muted: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --muted-foreground: 38.2 8.8% 51%; /* neutral.ink3   #8D8577 */
 
     --shadcn-accent: 42.6 77.9% 47.8%; /* sun.500        #D9A21B */
@@ -40,8 +40,8 @@
     --destructive: 5.1 74% 59.2%; /* bloom.600      #E4574A */
     --destructive-foreground: 0 0% 100%; /* white */
 
-    --shadcn-border: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
-    --input: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
+    --shadcn-border: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
+    --input: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
     --ring: 4.9 83.1% 65.1%; /* bloom.500      #F0685C focus ring */
 
     /* Radius base for shadcn components; matches token radius.lg (20px). */
@@ -64,54 +64,60 @@
      * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
      * both schemes. console-tokens.test.ts asserts every value against the contract.
      */
-    --console-canvas: #F4EFE6;
-    --console-surface: #FFFDF8;
-    --console-surface-alt: #EAE3D6;
-    --console-tint: #FAF6EE;
-    --console-line: #E6DFD2;
-    --console-line-strong: #BDB5A6;
-    --console-ink: #211B13;
-    --console-ink-2: #5C5546;
-    --console-ink-3: #8D8577;
-    --console-accent: #F0685C;
+    --console-canvas: #f4efe6;
+    --console-surface: #fffdf8;
+    --console-surface-alt: #eae3d6;
+    --console-tint: #faf6ee;
+    --console-line: #e6dfd2;
+    --console-line-strong: #bdb5a6;
+    --console-ink: #211b13;
+    --console-ink-2: #5c5546;
+    --console-ink-3: #8d8577;
+    --console-accent: #f0685c;
     --console-scrim: rgba(33, 27, 19, 0.35);
-    --console-toast-surface: #211B13;
-    --console-toast-ink: #F4EFE6;
-    --console-toast-ink-dim: #8D8577;
-    --console-hue-bloom-soft: #FDEAE7;
-    --console-hue-bloom-strong: #BD4234;
-    --console-hue-moss-soft: #EAF3E8;
-    --console-hue-moss-strong: #2D7743;
-    --console-hue-sun-soft: #F8EED3;
-    --console-hue-sun-strong: #81610E;
-    --console-hue-sky-soft: #E9F1FA;
+    --console-toast-surface: #211b13;
+    --console-toast-ink: #f4efe6;
+    --console-toast-ink-dim: #8d8577;
+    --console-hue-bloom-soft: #fdeae7;
+    --console-hue-bloom-strong: #bd4234;
+    --console-hue-moss-soft: #eaf3e8;
+    --console-hue-moss-strong: #2d7743;
+    --console-hue-sun-soft: #f8eed3;
+    --console-hue-sun-strong: #81610e;
+    --console-hue-sky-soft: #e9f1fa;
     --console-hue-sky-strong: #356291;
-    --console-hue-lilac-soft: #F0EAFA;
-    --console-hue-lilac-strong: #7457B6;
-    --console-shadow-1: 0 1px 0 rgba(26,23,20,0.04), 0 1px 2px rgba(26,23,20,0.05);
-    --console-shadow-2: 0 1px 0 rgba(26,23,20,0.03), 0 2px 4px rgba(26,23,20,0.04), 0 8px 16px -6px rgba(26,23,20,0.08);
-    --console-shadow-3: 0 1px 0 rgba(26,23,20,0.03), 0 4px 8px rgba(26,23,20,0.05), 0 18px 32px -10px rgba(26,23,20,0.12);
-    --console-shadow-4: 0 2px 4px rgba(26,23,20,0.05), 0 12px 20px rgba(26,23,20,0.08), 0 32px 56px -16px rgba(26,23,20,0.18);
-    --console-shadow-ring: 0 0 0 3px rgba(240,104,92,0.30);
+    --console-hue-lilac-soft: #f0eafa;
+    --console-hue-lilac-strong: #7457b6;
+    --console-shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
+    --console-shadow-2:
+      0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
+      0 8px 16px -6px rgba(26, 23, 20, 0.08);
+    --console-shadow-3:
+      0 1px 0 rgba(26, 23, 20, 0.03), 0 4px 8px rgba(26, 23, 20, 0.05),
+      0 18px 32px -10px rgba(26, 23, 20, 0.12);
+    --console-shadow-4:
+      0 2px 4px rgba(26, 23, 20, 0.05), 0 12px 20px rgba(26, 23, 20, 0.08),
+      0 32px 56px -16px rgba(26, 23, 20, 0.18);
+    --console-shadow-ring: 0 0 0 3px rgba(240, 104, 92, 0.3);
   }
 
   .dark {
     --background: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E */
     --foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink    #F1EAE0 */
 
-    --shadcn-card: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
+    --shadcn-card: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
     --shadcn-card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
 
-    --popover: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
+    --popover: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
     --popover-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
 
-    --primary: 5.7 86.1% 69.0%; /* darkColor.bloom.500      #F4796C */
+    --primary: 5.7 86.1% 69%; /* darkColor.bloom.500      #F4796C */
     --primary-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E (6.87:1 on primary) */
 
-    --secondary: 35.0 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+    --secondary: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
     --secondary-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
 
-    --muted: 35.0 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+    --muted: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
     --muted-foreground: 37.1 8.9% 53.9%; /* darkColor.neutral.ink3   #948C7F */
 
     --shadcn-accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
@@ -125,35 +131,40 @@
     --ring: 6.3 87.7% 74.5%; /* darkColor.bloom.600 #F79185 = FOCUS_RING_COLOR_DARK */
 
     /* Host Console semantic surface layer - dark twins of the `:root` block above. */
-    --console-canvas: #17130E;
-    --console-surface: #2A241C;
-    --console-surface-alt: #211C15;
-    --console-tint: #332C22;
-    --console-line: #332D25;
-    --console-line-strong: #4F473C;
-    --console-ink: #F1EAE0;
-    --console-ink-2: #BDB4A4;
-    --console-ink-3: #948C7F;
-    --console-accent: #F4796C;
+    --console-canvas: #17130e;
+    --console-surface: #2a241c;
+    --console-surface-alt: #211c15;
+    --console-tint: #332c22;
+    --console-line: #332d25;
+    --console-line-strong: #4f473c;
+    --console-ink: #f1eae0;
+    --console-ink-2: #bdb4a4;
+    --console-ink-3: #948c7f;
+    --console-accent: #f4796c;
     --console-scrim: rgba(0, 0, 0, 0.55);
-    --console-toast-surface: #332C22;
-    --console-toast-ink: #F1EAE0;
-    --console-toast-ink-dim: #BDB4A4;
-    --console-hue-bloom-soft: #3A211E;
-    --console-hue-bloom-strong: #FAB0A7;
-    --console-hue-moss-soft: #1F2E1D;
-    --console-hue-moss-strong: #A9D6A1;
-    --console-hue-sun-soft: #332A14;
-    --console-hue-sun-strong: #F5D480;
-    --console-hue-sky-soft: #1B2733;
-    --console-hue-sky-strong: #C2DBF1;
-    --console-hue-lilac-soft: #2B2438;
-    --console-hue-lilac-strong: #D5C7F1;
-    --console-shadow-1: 0 1px 0 rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.35);
-    --console-shadow-2: 0 1px 0 rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.3), 0 8px 16px -6px rgba(0,0,0,0.45);
-    --console-shadow-3: 0 1px 0 rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.35), 0 18px 32px -10px rgba(0,0,0,0.55);
-    --console-shadow-4: 0 2px 4px rgba(0,0,0,0.35), 0 12px 20px rgba(0,0,0,0.45), 0 32px 56px -16px rgba(0,0,0,0.65);
-    --console-shadow-ring: 0 0 0 3px rgba(244,121,108,0.40);
+    --console-toast-surface: #332c22;
+    --console-toast-ink: #f1eae0;
+    --console-toast-ink-dim: #bdb4a4;
+    --console-hue-bloom-soft: #3a211e;
+    --console-hue-bloom-strong: #fab0a7;
+    --console-hue-moss-soft: #1f2e1d;
+    --console-hue-moss-strong: #a9d6a1;
+    --console-hue-sun-soft: #332a14;
+    --console-hue-sun-strong: #f5d480;
+    --console-hue-sky-soft: #1b2733;
+    --console-hue-sky-strong: #c2dbf1;
+    --console-hue-lilac-soft: #2b2438;
+    --console-hue-lilac-strong: #d5c7f1;
+    --console-shadow-1: 0 1px 0 rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
+    --console-shadow-2:
+      0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px -6px rgba(0, 0, 0, 0.45);
+    --console-shadow-3:
+      0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.35),
+      0 18px 32px -10px rgba(0, 0, 0, 0.55);
+    --console-shadow-4:
+      0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.45),
+      0 32px 56px -16px rgba(0, 0, 0, 0.65);
+    --console-shadow-ring: 0 0 0 3px rgba(244, 121, 108, 0.4);
   }
 }
 
@@ -240,7 +251,8 @@
 }
 .cf-shell .maplibregl-ctrl-group button {
   background: var(--card);
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
 }
 .dark .cf-shell .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
 .dark .cf-shell .maplibregl-ctrl-attrib-button {
@@ -272,10 +284,15 @@
   right: 56px;
 }
 /* Wrap inside the bounded strip rather than overflowing it; the credit stays fully readable. */
-.cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner {
+.cf-shell[data-cf-layout="expanded"]
+  .maplibregl-ctrl-attrib.maplibregl-compact
+  .maplibregl-ctrl-attrib-inner {
   white-space: normal;
   overflow-wrap: break-word;
 }
 /* Compact tucks the required attribution under the translucent peek sheet, matching the mobile
    design where no control badge floats over the map. */
-.cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left { left: 16px; bottom: 28px; }
+.cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left {
+  left: 16px;
+  bottom: 28px;
+}

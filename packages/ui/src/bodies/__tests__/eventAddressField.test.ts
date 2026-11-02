@@ -58,9 +58,9 @@ describe("eventAddressPrefill", () => {
   })
 
   it("requires a manual address when resolution FAILED - a 404 is never a dead end", () => {
-    expect(
-      eventAddressPrefill({ coords: COORDS, resolution: null, current: EMPTY, near }),
-    ).toEqual({ address: "", addressSource: "manual", addressPointKey: KEY })
+    expect(eventAddressPrefill({ coords: COORDS, resolution: null, current: EMPTY, near })).toEqual(
+      { address: "", addressSource: "manual", addressPointKey: KEY },
+    )
   })
 
   it("waits while the resolution is still in flight", () => {
@@ -143,13 +143,17 @@ describe("eventAddressPrefill", () => {
       addressSource: "edited",
       addressPointKey: KEY,
     }
-    expect(eventAddressPrefill({ coords: COORDS, resolution: resolved(), current: edited, near })).toBeNull()
+    expect(
+      eventAddressPrefill({ coords: COORDS, resolution: resolved(), current: edited, near }),
+    ).toBeNull()
     const manual: EventAddressValue = {
       address: "Gate 4, back lot",
       addressSource: "manual",
       addressPointKey: KEY,
     }
-    expect(eventAddressPrefill({ coords: COORDS, resolution: null, current: manual, near })).toBeNull()
+    expect(
+      eventAddressPrefill({ coords: COORDS, resolution: null, current: manual, near }),
+    ).toBeNull()
   })
 
   it("re-resolves in place when the host moves a pin whose address was never touched", () => {
@@ -227,16 +231,20 @@ describe("eventAddressPinMoved", () => {
       addressPointKey: "34.00000,-118.00000",
     }
     expect(eventAddressPinMoved({ coords: COORDS, current: edited })).toBe(true)
-    expect(eventAddressPinMoved({ coords: COORDS, current: { ...edited, addressPointKey: KEY } })).toBe(
-      false,
-    )
+    expect(
+      eventAddressPinMoved({ coords: COORDS, current: { ...edited, addressPointKey: KEY } }),
+    ).toBe(false)
   })
 
   it("stays quiet for a resolved line, which simply re-resolves", () => {
     expect(
       eventAddressPinMoved({
         coords: COORDS,
-        current: { address: "123 Main St", addressSource: "resolved", addressPointKey: "1.00000,2.00000" },
+        current: {
+          address: "123 Main St",
+          addressSource: "resolved",
+          addressPointKey: "1.00000,2.00000",
+        },
       }),
     ).toBe(false)
   })
@@ -335,7 +343,9 @@ describe("composeEventAddress", () => {
 
 describe("eventAddressStatus", () => {
   it("is idle before a pin exists", () => {
-    expect(eventAddressStatus({ hasCoords: false, isResolving: true, addressSource: null })).toBe("idle")
+    expect(eventAddressStatus({ hasCoords: false, isResolving: true, addressSource: null })).toBe(
+      "idle",
+    )
   })
 
   it("shimmers while the first resolution is in flight", () => {
@@ -364,14 +374,14 @@ describe("eventAddressStatus", () => {
   })
 
   it("reports the settled source once one exists", () => {
-    expect(eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "resolved" })).toBe(
-      "resolved",
-    )
-    expect(eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "edited" })).toBe(
-      "resolved",
-    )
-    expect(eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "manual" })).toBe(
-      "manual",
-    )
+    expect(
+      eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "resolved" }),
+    ).toBe("resolved")
+    expect(
+      eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "edited" }),
+    ).toBe("resolved")
+    expect(
+      eventAddressStatus({ hasCoords: true, isResolving: false, addressSource: "manual" }),
+    ).toBe("manual")
   })
 })

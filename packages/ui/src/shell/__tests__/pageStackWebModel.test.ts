@@ -43,7 +43,9 @@ const DIRECTIONS = ["push", "pop", "replace"] as const
 describe("webPageTransitionPlan - when a web page change animates at all", () => {
   it("is instant for a history restore in every direction, so the browser's own swipe never plays twice", () => {
     for (const direction of DIRECTIONS) {
-      expect(webPageTransitionPlan(direction, { ...LIVE, restored: true }, TIMING)).toBe(INSTANT_PAGE_PLAN)
+      expect(webPageTransitionPlan(direction, { ...LIVE, restored: true }, TIMING)).toBe(
+        INSTANT_PAGE_PLAN,
+      )
     }
   })
 
@@ -81,7 +83,9 @@ describe("isInstantPagePlan / pagePlanDuration", () => {
   })
 
   it("times a slide by its slide duration and a cross-fade by its fade duration", () => {
-    expect(pagePlanDuration(pageTransitionPlan("push", false, TIMING))).toBe(MOTION.pagePush.duration)
+    expect(pagePlanDuration(pageTransitionPlan("push", false, TIMING))).toBe(
+      MOTION.pagePush.duration,
+    )
     expect(pagePlanDuration(pageTransitionPlan("pop", false, TIMING))).toBe(MOTION.pagePop.duration)
     expect(pagePlanDuration(pageTransitionPlan("replace", false, TIMING))).toBe(
       MOTION.bodyReplace.duration,
@@ -92,11 +96,32 @@ describe("isInstantPagePlan / pagePlanDuration", () => {
 
 describe("webLayerProgress - the two poses every layer moves between", () => {
   const push = (index: number, flipped: boolean) =>
-    webLayerProgress({ index, topIndex: 2, hasLeaving: false, direction: "push", flipped, slide: true })
+    webLayerProgress({
+      index,
+      topIndex: 2,
+      hasLeaving: false,
+      direction: "push",
+      flipped,
+      slide: true,
+    })
   const pop = (index: number, flipped: boolean) =>
-    webLayerProgress({ index, topIndex: 2, hasLeaving: true, direction: "pop", flipped, slide: true })
+    webLayerProgress({
+      index,
+      topIndex: 2,
+      hasLeaving: true,
+      direction: "pop",
+      flipped,
+      slide: true,
+    })
   const fade = (index: number, flipped: boolean) =>
-    webLayerProgress({ index, topIndex: 2, hasLeaving: false, direction: "replace", flipped, slide: false })
+    webLayerProgress({
+      index,
+      topIndex: 2,
+      hasLeaving: false,
+      direction: "replace",
+      flipped,
+      slide: false,
+    })
 
   it("starts a push with the incoming page off to the right and the page beneath uncovered", () => {
     expect(push(2, false)).toEqual({ own: 1, above: 1, fade: 1 })
@@ -165,8 +190,12 @@ describe("webLayerCss", () => {
   })
 
   it("moves nothing under reduced motion", () => {
-    expect(webLayerCss({ own: 1, above: 1, fade: 1 }, WIDTH, REDUCED).transform).toBe("translateX(0px)")
-    expect(webLayerCss({ own: 0, above: 0, fade: 1 }, WIDTH, REDUCED).transform).toBe("translateX(0px)")
+    expect(webLayerCss({ own: 1, above: 1, fade: 1 }, WIDTH, REDUCED).transform).toBe(
+      "translateX(0px)",
+    )
+    expect(webLayerCss({ own: 0, above: 0, fade: 1 }, WIDTH, REDUCED).transform).toBe(
+      "translateX(0px)",
+    )
   })
 
   it("multiplies the cross-fade into the layer opacity", () => {

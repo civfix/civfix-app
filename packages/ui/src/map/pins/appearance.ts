@@ -8,8 +8,7 @@ import { DROP_PIN_GLYPH, PIN_GLYPHS, glyphForCategory } from "./glyphs"
 export const PIN_NON_TEXT_CONTRAST = 3
 
 export type PinTarget =
-  | { kind: "event"; eventKind: EventKind }
-  | { kind: "report"; category: string | null }
+  { kind: "event"; eventKind: EventKind } | { kind: "report"; category: string | null }
 
 export interface PinAppearance {
   fill: string
@@ -27,9 +26,9 @@ export function reportPinTarget(category: string | null | undefined): PinTarget 
 export function pinAppearanceFor(target: PinTarget, scheme: ColorSchemeName): PinAppearance {
   if (target.kind === "event") {
     if (target.eventKind === "other_volunteer") {
-      return { fill: colorSchemes[scheme].brand.lilac, glyph: PIN_GLYPHS.other_volunteer! }
+      return { fill: colorSchemes[scheme].brand.lilac, glyph: PIN_GLYPHS.other_volunteer }
     }
-    return { fill: cleanupColorFor(scheme), glyph: PIN_GLYPHS.cleanup! }
+    return { fill: cleanupColorFor(scheme), glyph: PIN_GLYPHS.cleanup }
   }
   if (!target.category) {
     return { fill: colorSchemes[scheme].brand.bloom, glyph: DROP_PIN_GLYPH }
@@ -86,7 +85,8 @@ export function pinOutlineFor(scheme: ColorSchemeName): string | null {
 
 function scoreOutline(scheme: ColorSchemeName): string | null {
   const ground = basemapPaper(scheme)
-  if (pinFillsOf(scheme).every((fill) => contrastRatio(fill, ground) >= PIN_NON_TEXT_CONTRAST)) return null
+  if (pinFillsOf(scheme).every((fill) => contrastRatio(fill, ground) >= PIN_NON_TEXT_CONTRAST))
+    return null
   const { ink, paper } = colorSchemes[scheme].neutral
   return contrastRatio(ink, ground) >= contrastRatio(paper, ground) ? ink : paper
 }

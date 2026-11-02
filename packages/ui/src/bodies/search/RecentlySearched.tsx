@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import { focusRingProps, headingLevel, useTheme, webHover, webTransition } from "../../theme"
 import { Icon, iconMap, Text } from "../../typography"

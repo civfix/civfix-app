@@ -10,7 +10,9 @@ const providers = readFileSync(new URL("./providers.tsx", import.meta.url), "utf
 
 describe("web providers", () => {
   it("points the shared link builders at the origin the app is served from", () => {
-    expect(providers).toContain('if (typeof window !== "undefined") setWebOrigin(window.location.origin)')
+    expect(providers).toContain(
+      'if (typeof window !== "undefined") setWebOrigin(window.location.origin)',
+    )
     expect(providers).toMatch(/import \{[^}]*\bsetWebOrigin\b[^}]*\} from "@civfix\/ui"/)
   })
 })

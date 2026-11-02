@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import type { PersonDTO } from "@civfix/contract"
 import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
@@ -53,7 +53,11 @@ const ConnectionRow = memo(function ConnectionRow({
             </Text>
             {person.official ? <VerifiedBadge size="sm" /> : null}
             {person.organization ? (
-              <OrgAffiliationBadge organization={person.organization} size="sm" interactive={false} />
+              <OrgAffiliationBadge
+                organization={person.organization}
+                size="sm"
+                interactive={false}
+              />
             ) : null}
           </View>
           {person.handle ? (
@@ -130,7 +134,13 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
     if (!isFetchingNextPage) void fetchNextPage()
   }, [isFetchingNextPage, fetchNextPage])
 
-  const phase = filtering ? "noMatch" : query.isLoading ? "loading" : query.isError ? "error" : "empty"
+  const phase = filtering
+    ? "noMatch"
+    : query.isLoading
+      ? "loading"
+      : query.isError
+        ? "error"
+        : "empty"
 
   return (
     <FlatList

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import {
   View,
   Pressable,
@@ -8,7 +8,13 @@ import {
   type ViewStyle,
 } from "react-native"
 import type { UserSearchResultDTO } from "@civfix/contract"
-import { makeThemedStyles, useTheme, webCursorPointer, webTransition, focusRingProps } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  webTransition,
+  focusRingProps,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useMentionSearch } from "../data"
 import { useT } from "../i18n"

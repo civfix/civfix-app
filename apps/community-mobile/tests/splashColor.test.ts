@@ -63,5 +63,8 @@ test("the native root view sits on the launch paper before the first paint, the 
   assert.match(layout, /import \* as SystemUI from "expo-system-ui"/)
   assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(launchTheme\.colors\.bg\)/)
   const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
-  assert.match(rootStack, /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/)
+  assert.match(
+    rootStack,
+    /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/,
+  )
 })

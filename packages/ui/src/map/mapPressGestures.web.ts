@@ -59,7 +59,8 @@ export function attachPressGestures(map: MlMap, handlers: PressGestureHandlers):
   })
   map.on("touchmove", (e) => {
     if (!pressOrigin) return
-    if (Math.hypot(e.point.x - pressOrigin.x, e.point.y - pressOrigin.y) > LONG_PRESS_SLOP_PX) cancelPress()
+    if (Math.hypot(e.point.x - pressOrigin.x, e.point.y - pressOrigin.y) > LONG_PRESS_SLOP_PX)
+      cancelPress()
   })
   map.on("touchend", cancelPress)
   map.on("touchcancel", cancelPress)

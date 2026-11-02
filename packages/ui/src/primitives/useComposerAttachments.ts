@@ -28,7 +28,8 @@ export interface ComposerAttachments {
 }
 
 // The video-limits copy is shared with the report wizard, so it lives under `media`, not `attach_error`.
-type AttachErrorState = { key: AttachErrorKey; params?: Record<string, number> } | { key: "video_limits" }
+type AttachErrorState =
+  { key: AttachErrorKey; params?: Record<string, number> } | { key: "video_limits" }
 
 export function useComposerAttachments(maxAttachments = 5): ComposerAttachments {
   const { t } = useT()
@@ -68,7 +69,12 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
         setAttachError({ key: "video_limits" })
         return
       }
-      const local: PendingAttachment = { id: nextAttachmentId(), uri: picked.uri, kind: picked.kind, posterUri: null }
+      const local: PendingAttachment = {
+        id: nextAttachmentId(),
+        uri: picked.uri,
+        kind: picked.kind,
+        posterUri: null,
+      }
       setAttachments((prev) => [...prev, local].slice(0, maxAttachments))
       setUploading(true)
       try {
@@ -119,5 +125,6 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
 function attachErrorText(attachError: AttachErrorState | null, t: Translate): string | null {
   if (!attachError) return null
   if (attachError.key === "video_limits") return t("media.video_limits")
-  return t(`attach_error.${attachError.key}`, attachError.params)
+  const key = `attach_error.${attachError.key}`
+  return attachError.params ? t(key, attachError.params) : t(key)
 }

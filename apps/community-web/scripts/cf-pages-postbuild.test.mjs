@@ -17,13 +17,27 @@ const appDir = join(fileURLToPath(new URL(".", import.meta.url)), "..")
 const publicDir = join(appDir, "public")
 
 const redirects = readFileSync(join(publicDir, "_redirects"), "utf8")
-const association = JSON.parse(
-  readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"),
+const association = /** @type {unknown} */ (
+  JSON.parse(readFileSync(join(publicDir, ".well-known", "apple-app-site-association"), "utf8"))
 )
 
 describe("SPA-fallback completeness gate", () => {
   it("passes for the committed _redirects and the routes that ship a placeholder shell", () => {
-    const shipped = ["pin", "cleanups", "people", "messages", "groups", "channels", "post", "compose", "leaderboard", "service-record", "manage", "e", "orgs"]
+    const shipped = [
+      "pin",
+      "cleanups",
+      "people",
+      "messages",
+      "groups",
+      "channels",
+      "post",
+      "compose",
+      "leaderboard",
+      "service-record",
+      "manage",
+      "e",
+      "orgs",
+    ]
     expect(spaFallbackGaps(shipped, redirects)).toEqual([])
   })
 

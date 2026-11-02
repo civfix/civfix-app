@@ -98,13 +98,19 @@ describe("camera-snapshot read is self-healing", () => {
   })
 
   it("returns null and clears the key on a hand-edited out-of-range value", () => {
-    storage.setItem(CAMERA_SNAPSHOT_KEY, JSON.stringify({ v: 1, lat: 934.05, lng: -118.25, zoom: 12 }))
+    storage.setItem(
+      CAMERA_SNAPSHOT_KEY,
+      JSON.stringify({ v: 1, lat: 934.05, lng: -118.25, zoom: 12 }),
+    )
     expect(readCameraSnapshot()).toBeNull()
     expect(storage.map.has(CAMERA_SNAPSHOT_KEY)).toBe(false)
   })
 
   it("returns null and clears the key when a field is the wrong type", () => {
-    storage.setItem(CAMERA_SNAPSHOT_KEY, JSON.stringify({ v: 1, lat: "34.05", lng: -118.25, zoom: 12 }))
+    storage.setItem(
+      CAMERA_SNAPSHOT_KEY,
+      JSON.stringify({ v: 1, lat: "34.05", lng: -118.25, zoom: 12 }),
+    )
     expect(readCameraSnapshot()).toBeNull()
     expect(storage.map.has(CAMERA_SNAPSHOT_KEY)).toBe(false)
   })

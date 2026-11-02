@@ -9,7 +9,8 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { frameInRoom } from "../inbound"
 
-const readHook = (file: string): string => readFileSync(join(__dirname, "..", "hooks", file), "utf8")
+const readHook = (file: string): string =>
+  readFileSync(join(__dirname, "..", "hooks", file), "utf8")
 const SRC = readHook("chat.ts")
 const HISTORY = readHook("chatHistory.ts")
 const SOCKET = readHook("chatRoomSocket.ts")
@@ -41,7 +42,11 @@ describe("frameInRoom", () => {
   })
 
   it("scopes reaction, presence, presence_snapshot and typing frames by kind as well as id", () => {
-    const handler = section("const offMessage = socket.subscribe", "socket.join(roomId, roomKind)", SOCKET)
+    const handler = section(
+      "const offMessage = socket.subscribe",
+      "socket.join(roomId, roomKind)",
+      SOCKET,
+    )
     for (const kind of ["reaction", "presence_snapshot", "presence", "typing"]) {
       const body = handler.slice(handler.indexOf(`case "${kind}":`))
       expect(body.slice(0, body.indexOf("break"))).toContain("frameInRoom(frame, roomId, roomKind)")
@@ -51,14 +56,15 @@ describe("frameInRoom", () => {
 
 describe("room switch scoping in useChat", () => {
   it("drops a gap-fill page that resolves after the room changed instead of journaling it into the new room", () => {
-    const refresh = section("const refreshNewestPage = useCallback", "}, [api, canReadHistory", HISTORY)
+    const refresh = section(
+      "const refreshNewestPage = useCallback",
+      "}, [api, canReadHistory",
+      HISTORY,
+    )
     const guard = refresh.indexOf("if (roomGenerationRef.current !== generation) {")
     expect(guard).toBeGreaterThan(-1)
     expect(guard).toBeLessThan(refresh.indexOf("cacheOpsRef.current.push(op)"))
-    const reset = section(
-      "setLiveMessages([])\n    setOutbox([])",
-      "  }, [",
-    )
+    const reset = section("setLiveMessages([])\n    setOutbox([])", "  }, [")
     expect(reset).toContain("resetHistoryJournal()")
     expect(section("const resetHistoryJournal = useCallback", "}, [])", HISTORY)).toContain(
       "roomGenerationRef.current++",
@@ -66,7 +72,11 @@ describe("room switch scoping in useChat", () => {
   })
 
   it("marks the room it left stale when its gap-fill is dropped, so reopening that room refetches the gap", () => {
-    const refresh = section("const refreshNewestPage = useCallback", "}, [api, canReadHistory", HISTORY)
+    const refresh = section(
+      "const refreshNewestPage = useCallback",
+      "}, [api, canReadHistory",
+      HISTORY,
+    )
     const from = refresh.indexOf("if (roomGenerationRef.current !== generation) {")
     expect(from).toBeGreaterThan(-1)
     const to = refresh.indexOf("return\n", from)
@@ -84,8 +94,14 @@ describe("room switch scoping in useChat", () => {
   })
 
   it("marks the history stale when a reconnect gap-fill fails so the next mount or focus refetches", () => {
-    const refresh = section("const refreshNewestPage = useCallback", "}, [api, canReadHistory", HISTORY)
+    const refresh = section(
+      "const refreshNewestPage = useCallback",
+      "}, [api, canReadHistory",
+      HISTORY,
+    )
     expect(refresh).not.toContain(".catch(() => {})")
-    expect(refresh).toContain('queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })')
+    expect(refresh).toContain(
+      'queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })',
+    )
   })
 })

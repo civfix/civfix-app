@@ -12,13 +12,7 @@ export const EVENT_SECTIONS = [
 
 export type EventSection = (typeof EVENT_SECTIONS)[number]
 
-export const ORG_SECTIONS = [
-  "overview",
-  "events",
-  "members",
-  "verification",
-  "settings",
-] as const
+export const ORG_SECTIONS = ["overview", "events", "members", "verification", "settings"] as const
 export type OrgSection = (typeof ORG_SECTIONS)[number]
 
 /** Org sections only an owner or admin may open; members see the rest. */
@@ -83,7 +77,9 @@ function inviteTokenFromQuery(query: string): string | null {
 /** The invite landing page is the one console route addressed by a parameter. */
 export function isOrgInviteAcceptPath(pathname: string): boolean {
   const parts = segments(pathname)
-  return parts.length === 2 && parts[0] === ORG_INVITES_SEGMENT && parts[1] === ORG_INVITE_ACCEPT_SEGMENT
+  return (
+    parts.length === 2 && parts[0] === ORG_INVITES_SEGMENT && parts[1] === ORG_INVITE_ACCEPT_SEGMENT
+  )
 }
 
 /**

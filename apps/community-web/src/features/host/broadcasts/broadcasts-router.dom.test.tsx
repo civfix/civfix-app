@@ -53,7 +53,7 @@ function renderRouter(route: ConsoleRoute, api: Record<string, unknown>) {
     defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
   })
   render(
-    <ConsoleTestHarness client={queryClient} options={{ api: api as never }}>
+    <ConsoleTestHarness client={queryClient} options={{ api }}>
       <ConsoleNavigationProvider>
         <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
           <BroadcastsRouter route={route} />

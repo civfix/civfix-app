@@ -12,7 +12,10 @@ export interface EventBoundarySnapshot {
 
 // Only the SAME event changing status is a boundary. A body reused for another event, or a window that
 // just loaded, is a new baseline, not a reason to refetch everything that was just fetched.
-export function eventBoundaryCrossed(prev: EventBoundarySnapshot, next: EventBoundarySnapshot): boolean {
+export function eventBoundaryCrossed(
+  prev: EventBoundarySnapshot,
+  next: EventBoundarySnapshot,
+): boolean {
   return (
     prev.cleanupId === next.cleanupId &&
     prev.status !== null &&

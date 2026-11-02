@@ -67,13 +67,7 @@ export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEven
 }
 
 export function hostedEventHasActions(actions: HostedEventActions): boolean {
-  return (
-    actions.hostTools ||
-    actions.chat ||
-    actions.announce ||
-    actions.duplicate ||
-    actions.edit
-  )
+  return actions.hostTools || actions.chat || actions.announce || actions.duplicate || actions.edit
 }
 
 function orgRoleCan(
@@ -122,10 +116,7 @@ export interface NextUpModel {
   phase: EventPhase
 }
 
-export function nextUpEvent(
-  events: readonly HostedEventDTO[],
-  now: Date,
-): NextUpModel | null {
+export function nextUpEvent(events: readonly HostedEventDTO[], now: Date): NextUpModel | null {
   const dated = events
     .map((event) => ({
       event,
@@ -201,8 +192,7 @@ export function pastRowMeta(event: HostedEventDTO): PastRowMeta {
   return {
     cancelled: false,
     showedUp: event.registeredCount > 0,
-    hoursToken:
-      credited > 0 ? "hours" : event.checkedInCount > 0 ? "not_logged" : null,
+    hoursToken: credited > 0 ? "hours" : event.checkedInCount > 0 ? "not_logged" : null,
   }
 }
 

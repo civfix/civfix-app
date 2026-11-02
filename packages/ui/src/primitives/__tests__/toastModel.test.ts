@@ -78,8 +78,8 @@ describe("Toast host", () => {
   })
 
   it("anchors at the bottom and lets touches through everywhere but the card", () => {
-    expect(TOAST_SOURCE).toContain('pointerEvents="box-none"')
-    expect(TOAST_SOURCE).not.toContain('pointerEvents="none"')
+    expect(TOAST_SOURCE).toContain('pointerEventStyles["box-none"]')
+    expect(TOAST_SOURCE).not.toContain("pointerEventStyles.none")
     expect(TOAST_SOURCE).toContain("{ bottom: offset }")
   })
 
@@ -153,11 +153,11 @@ describe("Toast over an open sheet", () => {
 
   it("is mounted as the last child of every open sheet's Modal", () => {
     expect(read("../ModalCardSheet.tsx")).toMatch(
-      /\{visible \? <ToastOutlet \/> : null\}\s*<\/Modal>/,
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/FullWindowModal>/,
     )
     // Inside the root, not beside it: the root is accessibilityViewIsModal, which hides its siblings.
     expect(read("../SlideUpSheet.tsx")).toMatch(
-      /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/Modal>/,
+      /\{visible \? <ToastOutlet \/> : null\}\s*<\/View>\s*<\/FullWindowModal>/,
     )
     // The block confirmation is a ModalCardSheet, so it carries the outlet above.
     expect(read("../../bodies/personDetail/PersonModerationLayer.tsx")).toMatch(
@@ -169,8 +169,8 @@ describe("Toast over an open sheet", () => {
 describe("Toast card layout", () => {
   it("breaks an unbreakable message inside the card on web", () => {
     expect(TOAST_SOURCE).toContain("style={[styles.message, webBreakAnywhere]}")
-    expect(read("../../theme/webAffordances.ts")).toContain(
-      'export const webBreakAnywhere: TextStyle = isWeb\n  ? ({ overflowWrap: "anywhere" } as unknown as TextStyle)\n  : {}',
+    expect(read("../../theme/webAffordances.ts")).toMatch(
+      /export const webBreakAnywhere: TextStyle = isWeb\s+\? webStyle\(\{ overflowWrap: "anywhere" \}\)\s+: \{\}/,
     )
   })
 

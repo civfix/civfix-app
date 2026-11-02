@@ -45,7 +45,13 @@ beforeEach(() => {
 
 describe("postComposerStore serialization", () => {
   it("keeps only id, handle and display name of each mention", () => {
-    const rich = { id: "m", handle: "maya", displayName: "Maya", avatarUrl: "x", extra: 1 } as unknown as UserMentionDTO
+    const rich = {
+      id: "m",
+      handle: "maya",
+      displayName: "Maya",
+      avatarUrl: "x",
+      extra: 1,
+    } as unknown as UserMentionDTO
     store().setMentionedUsers([rich])
     expect(draft().mentionedUsers).toEqual([{ id: "m", handle: "maya", displayName: "Maya" }])
   })
@@ -103,9 +109,15 @@ describe("postComposerStore attachments", () => {
 describe("postComposerStore media", () => {
   it("reports pending media only for pending or uploading items", () => {
     const state = () => usePostComposerStore.getState()
-    store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b", { status: "failed" })])
+    store().setMedia([
+      media("a", { status: "ready", uploadId: "u" }),
+      media("b", { status: "failed" }),
+    ])
     expect(selectPostComposerHasPendingMedia(state())).toBe(false)
-    store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b", { status: "uploading" })])
+    store().setMedia([
+      media("a", { status: "ready", uploadId: "u" }),
+      media("b", { status: "uploading" }),
+    ])
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)
     store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b")])
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)

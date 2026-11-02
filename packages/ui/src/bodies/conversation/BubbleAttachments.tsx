@@ -18,8 +18,8 @@ export const BubbleAttachments = React.memo(function BubbleAttachments({
 }: {
   attachments: readonly MediaDTO[] | null | undefined
   mine: boolean
-  onReportPhoto?: (mediaId: string) => void
-  onLongPress?: () => void
+  onReportPhoto?: ((mediaId: string) => void) | undefined
+  onLongPress?: (() => void) | undefined
 }) {
   const styles = useBubbleStyles()
   const th = useTheme()

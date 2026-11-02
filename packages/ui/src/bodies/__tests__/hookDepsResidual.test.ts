@@ -19,7 +19,11 @@ function depsOf(hookSource: string): string[] {
 
 describe("feed header re-renders on a scheme switch", () => {
   it("lists the themed styles it reads among the header memo's dependencies", () => {
-    const header = sliceBetween(read("../FeedBody.tsx"), "const header = useMemo(", "const empty = useMemo(")
+    const header = sliceBetween(
+      read("../FeedBody.tsx"),
+      "const header = useMemo(",
+      "const empty = useMemo(",
+    )
     expect(header).toContain("styles.header")
     expect(depsOf(header)).toContain("styles")
   })
@@ -47,7 +51,9 @@ describe("reply dock keyboard listeners", () => {
 
 describe("memo inputs keep their identity between renders", () => {
   it("events list: the empty fallback is memoized with the query data", () => {
-    expect(read("../EventsBody.tsx")).toContain("const all = useMemo(() => query.data ?? [], [query.data])")
+    expect(read("../EventsBody.tsx")).toContain(
+      "const all = useMemo(() => query.data ?? [], [query.data])",
+    )
   })
 
   it("native date and time rows: the Android dialog opener does not depend on a per-render date", () => {
@@ -60,7 +66,11 @@ describe("memo inputs keep their identity between renders", () => {
   })
 
   it("report review: the draft point is memoized on its coordinates", () => {
-    const review = sliceBetween(read("../reportFlow/ReviewStep.tsx"), "function ReviewStep(", "const addressResolution")
+    const review = sliceBetween(
+      read("../reportFlow/ReviewStep.tsx"),
+      "function ReviewStep(",
+      "const addressResolution",
+    )
     expect(review).toContain("const point = useMemo(")
     expect(depsOf(sliceBetween(review, "const point = useMemo(", "const setLocation"))).toEqual([
       "draft.lat",
@@ -71,7 +81,11 @@ describe("memo inputs keep their identity between renders", () => {
 
 describe("report wizard resume target", () => {
   it("is read from the draft store, so it follows every draft field resumeStep reads", () => {
-    const active = sliceBetween(read("../ReportFlowBody.tsx"), "const orphaned =", "const viewfinderVisible")
+    const active = sliceBetween(
+      read("../ReportFlowBody.tsx"),
+      "const orphaned =",
+      "const viewfinderVisible",
+    )
     expect(active).toContain("useDraftReportStore((s) => resumeStep(s.draft, mode))")
     expect(active).not.toContain("getState()")
   })
@@ -79,7 +93,11 @@ describe("report wizard resume target", () => {
 
 describe("ticking list time formatter", () => {
   it("derives a new formatter from each tick instead of listing an unread dependency", () => {
-    const hook = sliceBetween(read("../useListTimeAgo.ts"), "export function useTickingListTimeAgo()", "\n}")
+    const hook = sliceBetween(
+      read("../useListTimeAgo.ts"),
+      "export function useTickingListTimeAgo()",
+      "\n}",
+    )
     expect(hook).toContain("formatterForTick(format, tick)")
     expect(depsOf(hook)).toEqual(["format", "tick"])
   })

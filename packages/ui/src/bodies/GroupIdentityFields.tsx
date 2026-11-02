@@ -1,4 +1,3 @@
-import React from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -61,7 +60,11 @@ export function GroupIdentityFields({
           {picked ? (
             <Image source={{ uri: picked.uri }} style={styles.avatarImage} resizeMode="cover" />
           ) : fallbackAvatarUrl ? (
-            <Image source={{ uri: fallbackAvatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+            <Image
+              source={{ uri: fallbackAvatarUrl }}
+              style={styles.avatarImage}
+              resizeMode="cover"
+            />
           ) : (
             <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={th.colors.onAccent} />
           )}

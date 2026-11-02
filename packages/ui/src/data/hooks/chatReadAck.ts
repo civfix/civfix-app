@@ -16,7 +16,13 @@ export interface ChatReadAckDeps {
 }
 
 /** The room's read watermark: acked once per newest message, and flushed when the room is left. */
-export function useChatReadAck({ socket, queryClient, roomId, roomKind, stampRoomKind }: ChatReadAckDeps) {
+export function useChatReadAck({
+  socket,
+  queryClient,
+  roomId,
+  roomKind,
+  stampRoomKind,
+}: ChatReadAckDeps) {
   const readAckTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastAckedIdRef = useRef<string | null>(null)
   const pendingAckRef = useRef<PendingReadAck | null>(null)
@@ -25,7 +31,12 @@ export function useChatReadAck({ socket, queryClient, roomId, roomKind, stampRoo
     (upToId: string) => {
       lastAckedIdRef.current = upToId
       pendingAckRef.current = null
-      socket.send({ type: "ack", upToId, cleanupId: roomId, ...(stampRoomKind ? { roomKind } : {}) })
+      socket.send({
+        type: "ack",
+        upToId,
+        cleanupId: roomId,
+        ...(stampRoomKind ? { roomKind } : {}),
+      })
       void queryClient.invalidateQueries({ queryKey: queryKeys.threads })
     },
     [socket, roomId, roomKind, stampRoomKind, queryClient],

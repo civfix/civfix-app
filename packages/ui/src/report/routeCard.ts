@@ -21,7 +21,10 @@ export interface RouteLookup {
 export function routeCardState(hasPoint: boolean, lookup: RouteLookup): RouteCardState {
   if (!hasPoint) return { kind: "no_point" }
   const { data } = lookup
-  if (data) return data.routable ? { kind: "routable", name: data.name } : { kind: "new_area", cityState: data.cityStateLabel }
+  if (data)
+    return data.routable
+      ? { kind: "routable", name: data.name }
+      : { kind: "new_area", cityState: data.cityStateLabel }
   if (data === null) return { kind: "uncovered" }
   if (lookup.isError && !lookup.isFetching) return { kind: "unavailable" }
   return { kind: "resolving" }

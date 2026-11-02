@@ -40,11 +40,15 @@ describe("a hidden draft is read-only, never a sink for dropped keystrokes", () 
   it("disables the body input, the media picker and submit while the author's draft is hidden", () => {
     expect(postComposer).toContain("usePostComposerStore(selectPostComposerDraftHidden)")
     expect(postComposer).toContain("editable={!draftHidden}")
-    expect(postComposer).toMatch(/const canAttachMedia = postComposerCanAttach\(\{\s*hookCanAttach: !draftHidden &&/)
+    expect(postComposer).toMatch(
+      /const canAttachMedia = postComposerCanAttach\(\{\s*hookCanAttach: !draftHidden &&/,
+    )
     expect(postComposer).toMatch(/const submitDisabled =\s*draftHidden \|\|/)
   })
 
   it("mirrors attachments that finished while hidden once the author is back", () => {
-    expect(postComposer).toMatch(/if \(!draftHidden\) setMedia\(composerMedia\)\s*\}, \[composerMedia, draftHidden, setMedia\]\)/)
+    expect(postComposer).toMatch(
+      /if \(!draftHidden\) setMedia\(composerMedia\)\s*\}, \[composerMedia, draftHidden, setMedia\]\)/,
+    )
   })
 })

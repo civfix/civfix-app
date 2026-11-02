@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import {
   MAX_HOST_SUMMARY_EVENT_ROWS,
@@ -58,10 +57,7 @@ export function AllEventsMode({
         <StatTile label={t("kpi.events_held")} value={String(held.count)} />
         <StatTile label={t("kpi.reports_linked")} value={String(data.activity.reportsLinked)} />
         {data.activity.donationClicks > 0 ? (
-          <StatTile
-            label={t("kpi.donation_clicks")}
-            value={String(data.activity.donationClicks)}
-          />
+          <StatTile label={t("kpi.donation_clicks")} value={String(data.activity.donationClicks)} />
         ) : null}
       </StatTileRow>
 
@@ -85,13 +81,8 @@ export function AllEventsMode({
           <Text variant="caption">{t("page.by_event_empty")}</Text>
         ) : (
           <View style={styles.block}>
-            {rows.map((row, index) => (
-              <EventBarRow
-                key={`${index}:${row.key}`}
-                row={row}
-                max={rowMax}
-                onPress={() => onPickEvent(row)}
-              />
+            {rows.map((row) => (
+              <EventBarRow key={row.key} row={row} max={rowMax} onPress={() => onPickEvent(row)} />
             ))}
           </View>
         )}

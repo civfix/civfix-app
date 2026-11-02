@@ -1,5 +1,9 @@
 import * as React from "react"
-import { parseMarkdownSubset, type MarkdownInline, type MarkdownNode } from "@civfix/contract/markdown"
+import {
+  parseMarkdownSubset,
+  type MarkdownInline,
+  type MarkdownNode,
+} from "@civfix/contract/markdown"
 
 // Plain DOM on purpose: the host console renders its preview through this module, and its lint boundary
 // forbids anything that reaches React Native.
@@ -36,7 +40,13 @@ function renderInline(nodes: readonly MarkdownInline[], classes: MarkdownClasses
       )
     }
     return (
-      <a key={key} href={node.href} rel="noreferrer noopener nofollow" target="_blank" className={classes.link}>
+      <a
+        key={key}
+        href={node.href}
+        rel="noreferrer noopener nofollow"
+        target="_blank"
+        className={classes.link}
+      >
         {renderInline(node.children, classes)}
       </a>
     )
@@ -52,11 +62,15 @@ function renderBlock(node: MarkdownNode, index: number, classes: MarkdownClasses
       </p>
     )
   }
-  const items = node.items.map((item, itemIndex) => (
-    <li key={`item-${itemIndex}`} className={classes.listItem}>
-      {renderInline(item.children, classes)}
-    </li>
-  ))
+  // A parsed node has no identity but its path in the document, which re-parses whole on every edit.
+  const items = node.items.map((item, itemIndex) => {
+    const itemKey = `item-${itemIndex}`
+    return (
+      <li key={itemKey} className={classes.listItem}>
+        {renderInline(item.children, classes)}
+      </li>
+    )
+  })
   return node.ordered ? (
     <ol key={key} className={classes.orderedList}>
       {items}

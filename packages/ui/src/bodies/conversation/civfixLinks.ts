@@ -102,7 +102,8 @@ export function planChatEmbeds(
   let afterLink = false
   for (const token of tokens) {
     if (token.kind === "text") {
-      const spare = WHITESPACE_ONLY.test(token.text) || (afterLink && ATTACHED_TERMINATOR.test(token.text))
+      const spare =
+        WHITESPACE_ONLY.test(token.text) || (afterLink && ATTACHED_TERMINATOR.test(token.text))
       if (!spare) otherContent = true
       afterLink = false
       continue

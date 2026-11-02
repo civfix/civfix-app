@@ -31,7 +31,10 @@ export function useBubbleContextMenu() {
       setMode("menu")
     }
   }, [anchorRef, measure])
-  const close = useCallback(() => setMode((current) => (current === "menu" ? "closed" : current)), [])
+  const close = useCallback(
+    () => setMode((current) => (current === "menu" ? "closed" : current)),
+    [],
+  )
   return { mode, setMode, everOpened, rect, anchorRef, open, close }
 }
 

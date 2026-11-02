@@ -36,7 +36,7 @@ function profileResponse(isFollowing: boolean, followers: number): GetProfileRes
       pastEvents: [],
       stats: { reports: 0, fixed: 0, cleanups: 0 },
     },
-  } as GetProfileResponse
+  }
 }
 
 /**
@@ -128,7 +128,7 @@ describe("follow toggle patches the HANDLE-keyed profile detail (not just the UU
     const optimistic = qc.getQueryData<GetProfileResponse>(queryKeys.profile(HANDLE))!
     expect(optimistic.profile).toMatchObject({ isFollowing: true, followers: 42 })
 
-    okOpts.onSuccess?.({ isFollowing: true, followers: 100 }, false, ctx as never)
+    okOpts.onSuccess?.({ isFollowing: true, followers: 100 }, false, ctx)
     expect(qc.getQueryData<GetProfileResponse>(queryKeys.profile(HANDLE))!.profile).toMatchObject({
       isFollowing: true,
       followers: 100,
@@ -145,7 +145,7 @@ describe("follow toggle patches the HANDLE-keyed profile detail (not just the UU
       isFollowing: true,
       followers: 42,
     })
-    failOpts.onError?.(new Error("offline"), false, ctx2 as never)
+    failOpts.onError?.(new Error("offline"), false, ctx2)
     expect(qc2.getQueryData<GetProfileResponse>(queryKeys.profile(HANDLE))!.profile).toMatchObject({
       isFollowing: false,
       followers: 41,

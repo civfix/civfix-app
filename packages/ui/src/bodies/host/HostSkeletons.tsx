@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { makeThemedStyles, radius as radiusScale } from "../../theme"
 import { METER_HEIGHT } from "../../primitives/Meter"
@@ -71,11 +70,7 @@ export function RowsSkeleton({ rows = 3, leading = true }: RowsSkeletonProps) {
             <SkeletonText width="56%" height={12} />
             <SkeletonText width="40%" height={10} />
           </View>
-          <SkeletonBlock
-            width={TRAILING_PILL}
-            height={TRAILING_PILL}
-            radius={radiusScale.pill}
-          />
+          <SkeletonBlock width={TRAILING_PILL} height={TRAILING_PILL} radius={radiusScale.pill} />
         </SkeletonGroup>
       ))}
     </SectionCard>

@@ -19,7 +19,9 @@ function resetStore(mode: "compact" | "expanded" = "compact"): void {
 
 const store = () => useNavStore.getState()
 
-beforeEach(() => resetStore())
+beforeEach(() => {
+  resetStore()
+})
 
 describe("seed raises the flag for shareable content only", () => {
   it.each([

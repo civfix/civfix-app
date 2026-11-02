@@ -3,10 +3,13 @@ import { Platform } from "react-native"
 import { useRouter } from "expo-router"
 import {
   setBrandAboutPresenter,
+  setDeveloperScreenPresenter,
   setLegalDocumentPresenter,
   setOnboardingTourPresenter,
   setScanPresenter,
 } from "@civfix/ui"
+import { API_URL } from "@/config"
+import { developerScreenEnabled } from "@/lib/developerScreen"
 import { setCameraNavigator } from "@/lib/nativeCamera"
 import { codeScannerSupported } from "@/lib/scannerSupport"
 import { useOnboardingStore } from "@/store/onboardingStore"
@@ -20,7 +23,9 @@ function RealtimeChannel(): null {
 function CameraNavigatorBridge(): null {
   const router = useRouter()
   useEffect(() => {
-    setCameraNavigator((captureId) => router.push({ pathname: "/report/camera", params: { captureId } }))
+    setCameraNavigator((captureId) =>
+      router.push({ pathname: "/report/camera", params: { captureId } }),
+    )
     return () => setCameraNavigator(null)
   }, [router])
   return null
@@ -62,6 +67,16 @@ function OnboardingTourBridge(): null {
   return null
 }
 
+function DeveloperScreenBridge(): null {
+  const router = useRouter()
+  useEffect(() => {
+    if (!developerScreenEnabled(API_URL, __DEV__)) return
+    setDeveloperScreenPresenter(() => router.push("/settings/developer"))
+    return () => setDeveloperScreenPresenter(null)
+  }, [router])
+  return null
+}
+
 export function AppBridges() {
   return (
     <>
@@ -71,6 +86,7 @@ export function AppBridges() {
       <BrandAboutBridge />
       <LegalDocumentBridge />
       <OnboardingTourBridge />
+      <DeveloperScreenBridge />
     </>
   )
 }

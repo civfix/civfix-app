@@ -19,7 +19,7 @@ let cached: HTMLElement | null = null
 function hostElement(): HTMLElement | null {
   if (typeof document === "undefined") return null
   if (cached?.isConnected) return cached
-  cached = (document.querySelector(HOST_SELECTOR) as HTMLElement | null) ?? document.documentElement
+  cached = document.querySelector(HOST_SELECTOR) ?? document.documentElement
   return cached
 }
 

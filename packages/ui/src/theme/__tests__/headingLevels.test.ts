@@ -58,7 +58,7 @@ const HEADING_FILES = [
   "bodies/ProfileView.tsx",
   "bodies/profile/SectionHeadings.tsx",
   "bodies/PostComposer.tsx",
-  "bodies/NotificationPrefsBody.tsx",
+  "bodies/NotificationSettingsBody.tsx",
   "bodies/ReportDetailBody.tsx",
   "bodies/EventDetailBody.tsx",
   "bodies/GroupInfoBody.tsx",

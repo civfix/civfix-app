@@ -3,7 +3,10 @@ import { Platform } from "react-native"
 
 const MODAL_EMITS_DISMISS = Platform.OS !== "android"
 
-export function useModalClosed(shown: boolean, onClosed: (() => void) | undefined): (() => void) | undefined {
+export function useModalClosed(
+  shown: boolean,
+  onClosed: (() => void) | undefined,
+): (() => void) | undefined {
   const onClosedRef = useRef(onClosed)
   onClosedRef.current = onClosed
   const wasShown = useRef(shown)

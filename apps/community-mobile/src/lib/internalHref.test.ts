@@ -77,15 +77,35 @@ const COLD_START: InternalHrefInput = {
 }
 
 const ACTIONS: readonly [string, InternalHrefInput, InternalHrefAction][] = [
-  ["a bridged entry whose own screen is already on top", { ...IN_SHELL, bridged: true, bridgeFocused: true }, "none"],
+  [
+    "a bridged entry whose own screen is already on top",
+    { ...IN_SHELL, bridged: true, bridgeFocused: true },
+    "none",
+  ],
   ["a bridged entry opened from anywhere else", { ...IN_CONVERSATION, bridged: true }, "navigate"],
-  ["the entry the focused shell is already showing", { ...IN_SHELL, activeKey: IN_SHELL.entryKey }, "none"],
+  [
+    "the entry the focused shell is already showing",
+    { ...IN_SHELL, activeKey: IN_SHELL.entryKey },
+    "none",
+  ],
   ["another entry while a shell is focused", { ...IN_SHELL, activeKey: "pin:r1:::::" }, "navigate"],
   ["an entity link tapped inside a full-screen route", IN_CONVERSATION, "push-route"],
-  ["an entity link to the entry the root shell happens to hold", { ...IN_CONVERSATION, activeKey: IN_CONVERSATION.entryKey }, "push-route"],
-  ["a link with no detail route of its own", { ...IN_CONVERSATION, detailRoute: false }, "navigate-and-dismiss"],
+  [
+    "an entity link to the entry the root shell happens to hold",
+    { ...IN_CONVERSATION, activeKey: IN_CONVERSATION.entryKey },
+    "push-route",
+  ],
+  [
+    "a link with no detail route of its own",
+    { ...IN_CONVERSATION, detailRoute: false },
+    "navigate-and-dismiss",
+  ],
   ["a deep link that arrives before any route is focused", COLD_START, "navigate-and-dismiss"],
-  ["a cold-start deep link with no detail route either", { ...COLD_START, detailRoute: false }, "navigate-and-dismiss"],
+  [
+    "a cold-start deep link with no detail route either",
+    { ...COLD_START, detailRoute: false },
+    "navigate-and-dismiss",
+  ],
 ]
 
 test("the internal-href action table", () => {
@@ -100,7 +120,10 @@ test("a link tapped in a conversation drills down instead of dismissing the conv
 })
 
 test("only a route with nothing to push falls back to dismissing to the root shell", () => {
-  assert.equal(internalHrefAction({ ...IN_CONVERSATION, detailRoute: false }), "navigate-and-dismiss")
+  assert.equal(
+    internalHrefAction({ ...IN_CONVERSATION, detailRoute: false }),
+    "navigate-and-dismiss",
+  )
   assert.equal(internalHrefAction({ ...COLD_START, bridged: false }), "navigate-and-dismiss")
 })
 

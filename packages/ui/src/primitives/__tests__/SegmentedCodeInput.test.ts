@@ -20,7 +20,9 @@ describe("SegmentedCodeInput focus handle", () => {
   })
 
   it("keeps one focus closure shared by the press target and the handle", () => {
-    expect(source).toMatch(/const focus = useCallback\(\(\) => inputRef\.current\?\.focus\(\), \[\]\)/)
+    expect(source).toMatch(
+      /const focus = useCallback\(\(\) => inputRef\.current\?\.focus\(\), \[\]\)/,
+    )
     expect(source.match(/inputRef\.current\?\.focus\(\)/g)).toHaveLength(1)
   })
 })

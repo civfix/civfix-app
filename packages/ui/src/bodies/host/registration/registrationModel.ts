@@ -50,7 +50,8 @@ export function resolveTicketTypeId(
   pickedId: string | null,
 ): string | null {
   const picked = types.find((type) => type.id === pickedId)
-  if (picked && (ticketTypeSelectable(picked) || !types.some(ticketTypeSelectable))) return picked.id
+  if (picked && (ticketTypeSelectable(picked) || !types.some(ticketTypeSelectable)))
+    return picked.id
   return defaultTicketTypeId(types)
 }
 

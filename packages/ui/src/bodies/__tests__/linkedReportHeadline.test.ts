@@ -27,7 +27,12 @@ describe("linkedReportHeadline", () => {
   })
 
   it("prints the human title for the feed headline", () => {
-    const out = linkedReportHeadline({ id: "550e8400", title: "  Sofa on the sidewalk " }, "title", "Dump", "Trash")
+    const out = linkedReportHeadline(
+      { id: "550e8400", title: "  Sofa on the sidewalk " },
+      "title",
+      "Dump",
+      "Trash",
+    )
     expect(out).toBe("Sofa on the sidewalk")
   })
 

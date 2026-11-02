@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { View } from "react-native"
 import type { CleanupMemberRole } from "@civfix/contract"
 import { MIN_TOUCH_TARGET, makeThemedStyles } from "../../../theme"

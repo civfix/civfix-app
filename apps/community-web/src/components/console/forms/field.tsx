@@ -9,15 +9,15 @@ import { cn } from "@/lib/utils"
 export interface FieldRenderProps {
   id: string
   invalid: boolean
-  errorId?: string
-  describedBy?: string
+  errorId?: string | undefined
+  describedBy?: string | undefined
 }
 
 export interface FieldProps {
   label: string
-  optional?: boolean
-  hint?: string
-  error?: string
+  optional?: boolean | undefined
+  hint?: string | undefined
+  error?: string | undefined
   counter?: string
   htmlFor?: string
   /**

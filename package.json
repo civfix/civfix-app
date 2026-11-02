@@ -4,54 +4,41 @@
   "private": true,
   "description": "civfix consumer plane: the @civfix/tokens design tokens, the @civfix/ui component set, the community web app and the community mobile app.",
   "license": "AGPL-3.0-only",
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@10.34.9+sha512.f49b5a8ea0fdedb44bb3c0c1d6575092a53c2950d95b7ad15df11f17974877a2de3a01c07e934e9b28ce716e51c09a94962c7306d09be2e1e4b18a8c8762fd32",
   "engines": {
-    "node": ">=22",
-    "pnpm": ">=9 <10"
+    "node": "^22.22.2 || >=24.15",
+    "pnpm": ">=10.34 <11"
   },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint lint:scripts",
+    "lint:scripts": "eslint scripts --max-warnings=0",
+    "typecheck": "turbo run typecheck typecheck:scripts",
+    "typecheck:scripts": "tsc -p scripts/tsconfig.json",
     "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
     "i18n:check": "turbo run i18n:check && pnpm i18n:check:call-sites",
     "i18n:check:call-sites": "node scripts/check-i18n-call-sites.mjs",
+    "check:licenses": "node scripts/check-licenses.mjs",
     "knip": "knip",
     "jscpd": "jscpd",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "turbo run clean",
-    "doctor": "cd apps/community-mobile && npx expo-doctor",
+    "doctor:expo": "pnpm --filter community-mobile run doctor:expo",
     "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.16.0",
     "jscpd": "4.3.0",
     "knip": "5.88.1",
-    "turbo": "^2.3.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "react-native": "0.81.5",
-      "tsup>esbuild": ">=0.28.1 <0.29",
-      "vite": ">=7.3.6 <8",
-      "js-yaml@3": ">=3.15.1 <4",
-      "js-yaml@4": ">=4.3.1 <5",
-      "brace-expansion@1": ">=1.1.18 <2",
-      "brace-expansion@2": ">=2.1.4 <3",
-      "brace-expansion@5": ">=5.0.9 <6",
-      "shell-quote": ">=1.10.0 <2",
-      "nanoid@3": ">=3.3.18 <4",
-      "postcss": ">=8.5.28 <9",
-      "postcss-selector-parser@6": ">=6.1.4 <7",
-      "browserslist": ">=4.28.9 <5",
-      "uuid": ">=11.1.1 <12",
-      "@xmldom/xmldom@0.8": ">=0.8.15 <0.9",
-      "@xmldom/xmldom@0.9": ">=0.9.12 <0.10",
-      "fast-uri": ">=3.1.6 <4",
-      "tar": ">=7.5.21 <8",
-      "undici": ">=6.28.0 <7"
-    }
+    "prettier": "3.9.9",
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0"
   }
 }

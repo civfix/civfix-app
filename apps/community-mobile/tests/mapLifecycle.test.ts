@@ -112,11 +112,7 @@ test("a remount cannot resurrect an old target while a newer request is unresolv
   const oldTarget = { lat: 41.8781, lng: -87.6298, zoom: 12 }
   const newTarget = { lat: 47.6062, lng: -122.3321, zoom: 15 }
   const oldRequest = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
-  let state = lifecycle.resolveMapRequest(
-    oldRequest.state,
-    oldRequest.generation,
-    oldTarget,
-  )
+  let state = lifecycle.resolveMapRequest(oldRequest.state, oldRequest.generation, oldTarget)
 
   const newerRequest = lifecycle.beginMapRequest(state)
   state = lifecycle.mountMap(newerRequest.state, 60)
@@ -125,11 +121,7 @@ test("a remount cannot resurrect an old target while a newer request is unresolv
   let flight = lifecycle.takePendingMapTarget(state, 60)
   assert.equal(flight.target, null)
 
-  state = lifecycle.resolveMapRequest(
-    flight.state,
-    newerRequest.generation,
-    newTarget,
-  )
+  state = lifecycle.resolveMapRequest(flight.state, newerRequest.generation, newTarget)
   flight = lifecycle.takePendingMapTarget(state, 60)
   assert.deepEqual(flight.target, newTarget)
 })
@@ -224,11 +216,19 @@ test("a flight that never arrives stops freezing the settled viewport once its d
     issuedAt + lifecycle.IN_FLIGHT_TARGET_TIMEOUT_MS,
   )
   assert.equal(state.inFlightTarget, null)
-  assert.deepEqual(state.lastViewport, { lat: panned.center.lat, lng: panned.center.lng, zoom: panned.zoom })
+  assert.deepEqual(state.lastViewport, {
+    lat: panned.center.lat,
+    lng: panned.center.lng,
+    zoom: panned.zoom,
+  })
 
   const later = { center: { lat: 47.6062, lng: -122.3321 }, zoom: 14 }
   state = lifecycle.acknowledgeMapSettlement(state, 80, later, issuedAt + 20_000)
-  assert.deepEqual(state.lastViewport, { lat: later.center.lat, lng: later.center.lng, zoom: later.zoom })
+  assert.deepEqual(state.lastViewport, {
+    lat: later.center.lat,
+    lng: later.center.lng,
+    zoom: later.zoom,
+  })
 })
 
 test("a seed viewport survives a MapHomeScreen remount and replays on the next instance", () => {

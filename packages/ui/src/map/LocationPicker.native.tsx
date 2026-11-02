@@ -41,7 +41,7 @@
  * the map's own markers use, so what the user drags around IS the marker the thing will get (Ionicons are
  * banned in @civfix/ui).
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, StyleSheet, type NativeSyntheticEvent } from "react-native"
 import {
   Map,
@@ -117,11 +117,13 @@ export function LocationPicker({
   // so there is no camera to be wrong. Once adopted it is FROZEN, because the seed's only job is to place
   // the camera at mount: re-seeding it later would yank the map out from under a user who has since panned.
   const seedRef = useRef<LatLng | null>(null)
-  if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
+  seedRef.current ??= value ?? initialCenter ?? null
   const cameraSeed = seedRef.current
   const initialViewState = useMemo(
     () =>
-      cameraSeed ? { center: [cameraSeed.lng, cameraSeed.lat] as [number, number], zoom: PICKER_ZOOM } : null,
+      cameraSeed
+        ? { center: [cameraSeed.lng, cameraSeed.lat] as [number, number], zoom: PICKER_ZOOM }
+        : null,
     [cameraSeed],
   )
 
@@ -143,14 +145,19 @@ export function LocationPicker({
       return
     }
     const prev = pickedRef.current
-    if (prev && Math.abs(prev.lat - value.lat) < 1e-6 && Math.abs(prev.lng - value.lng) < 1e-6) return
+    if (prev && Math.abs(prev.lat - value.lat) < 1e-6 && Math.abs(prev.lng - value.lng) < 1e-6)
+      return
     const restatesSeed =
       cameraSeed != null &&
       Math.abs(cameraSeed.lat - value.lat) < 1e-6 &&
       Math.abs(cameraSeed.lng - value.lng) < 1e-6
     if (!restatesSeed) {
       if (mapReadyRef.current) {
-        cameraRef.current?.flyTo({ center: [value.lng, value.lat], zoom: PICKER_ZOOM, duration: 400 })
+        cameraRef.current?.flyTo({
+          center: [value.lng, value.lat],
+          zoom: PICKER_ZOOM,
+          duration: 400,
+        })
       } else {
         pendingCenterRef.current = value
       }
@@ -186,7 +193,11 @@ export function LocationPicker({
             <Text style={styles.pendingText}>{t("hint.search_address")}</Text>
           </View>
         ) : (
-          <View style={styles.pending} accessibilityRole="progressbar" accessibilityLiveRegion="polite">
+          <View
+            style={styles.pending}
+            accessibilityRole="progressbar"
+            accessibilityLiveRegion="polite"
+          >
             <ActivityIndicator color={th.colors.textSubtle} />
             <Text style={styles.pendingText}>{t("hint.pending")}</Text>
           </View>

@@ -18,6 +18,7 @@ import {
   LegalUpdateGate,
   MediaLightboxProvider,
   SharePostProvider,
+  SystemNoticeFrame,
   ToastProvider,
   setApiHost,
   setSourceCommit,
@@ -29,7 +30,6 @@ import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
 import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
-import { nativePush } from "@/lib/nativePush"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
 import { launchTheme } from "@/boot/launchTheme"
 import { AppBridges } from "@/boot/AppBridges"
@@ -50,11 +50,14 @@ import { useSignOutReset } from "@/hooks/useSignOutReset"
 import { AuthGate } from "@/components/AuthGate"
 import { BootOfflineGate } from "@/components/BootConnectivity"
 import { FirstRunGate } from "@/components/FirstRunGate"
+import { ForceUpdateGate } from "@/components/ForceUpdateGate"
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate"
 import { ReportViewfinder } from "@/components/report/ReportViewfinder"
 import { useAppearanceStore } from "@/store/appearanceStore"
 import { useNotificationDeepLinks } from "@/push/useNotificationDeepLinks"
 import { usePushOnSignIn } from "@/push/usePushOnSignIn"
+import { nativePushPermission } from "@/push/register"
+import "@/push/clearTask"
 import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"
 
 export { ErrorBoundary } from "@/components/CrashScreen"
@@ -78,7 +81,7 @@ const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: { ...nativeCamera, Viewfinder: ReportViewfinder },
   geolocation: nativeGeolocation,
-  push: nativePush,
+  pushPermission: nativePushPermission,
   secureStore: nativeSecureStore,
   blurSurface: { supported: supportsBlur },
   haptics: nativeHaptics,
@@ -160,26 +163,37 @@ export default function RootLayout() {
                 <PushOnSignInBridge />
                 <InternalHrefBridge />
                 <MobileI18nProvider>
-                  <ToastProvider>
-                    <MediaLightboxProvider>
-                      <SharePostProvider>
-                        <BottomSheetModalProvider>
-                          <RootStack launchGate={gateMounted} />
-                          <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
-                          <FirstRunGate />
-                          <LegalUpdateGate />
-                          {gateMounted ? (
-                            <Animated.View
-                              pointerEvents={gateActive ? "auto" : "none"}
-                              style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
-                            >
-                              {boot.phase === "offline" ? <BootOfflineGate /> : <AuthGate mode="loading" />}
-                            </Animated.View>
-                          ) : null}
-                        </BottomSheetModalProvider>
-                      </SharePostProvider>
-                    </MediaLightboxProvider>
-                  </ToastProvider>
+                  {/* The force-update screen stays outside the notice frame, so it covers the notice too. */}
+                  <SystemNoticeFrame>
+                    <ToastProvider>
+                      <MediaLightboxProvider>
+                        <SharePostProvider>
+                          <BottomSheetModalProvider>
+                            <RootStack launchGate={gateMounted} />
+                            <OnboardingGate
+                              gateActive={gateActive}
+                              loadingGateMounted={gateMounted}
+                            />
+                            <FirstRunGate />
+                            <LegalUpdateGate />
+                            {gateMounted ? (
+                              <Animated.View
+                                pointerEvents={gateActive ? "auto" : "none"}
+                                style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
+                              >
+                                {boot.phase === "offline" ? (
+                                  <BootOfflineGate />
+                                ) : (
+                                  <AuthGate mode="loading" />
+                                )}
+                              </Animated.View>
+                            ) : null}
+                          </BottomSheetModalProvider>
+                        </SharePostProvider>
+                      </MediaLightboxProvider>
+                    </ToastProvider>
+                  </SystemNoticeFrame>
+                  <ForceUpdateGate />
                 </MobileI18nProvider>
               </CapabilitiesProvider>
             </MobileDataProvider>

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react"
 import { mergeChatItems, type ChatItem } from "../../helpers"
-import { type RoomKind } from "@civfix/contract"
+import type { RoomKind } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
 import { restoreLocalChatAttachments } from "../localChatAttachments"
 import { roomEndpoints } from "./chatRoom"
@@ -14,7 +14,13 @@ export interface ChatAroundDeps {
 }
 
 /** The jump-to-message window: a page centred on one message, shown instead of the newest history. */
-export function useChatAroundWindow({ api, roomId, roomKind, myUserId, setAroundWindow }: ChatAroundDeps) {
+export function useChatAroundWindow({
+  api,
+  roomId,
+  roomKind,
+  myUserId,
+  setAroundWindow,
+}: ChatAroundDeps) {
   const [aroundLoading, setAroundLoading] = useState(false)
   const aroundSeqRef = useRef(0)
 

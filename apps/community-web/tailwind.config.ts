@@ -12,10 +12,10 @@ const ms = (n: number): string => `${n}ms`
 export type SchemeColor = (utils: { opacityValue?: string }) => string
 
 const schemeVar = (name: string): string =>
-  ((({ opacityValue }: { opacityValue?: string }) =>
+  (({ opacityValue }: { opacityValue?: string }) =>
     opacityValue === undefined
       ? `var(${name})`
-      : `color-mix(in srgb, var(${name}) calc(${opacityValue} * 100%), transparent)`) satisfies SchemeColor) as unknown as string
+      : `color-mix(in srgb, var(${name}) calc(${opacityValue} * 100%), transparent)`) satisfies SchemeColor as unknown as string
 
 const hueRamp = (hue: string) => ({
   50: schemeVar(`--${hue}-50`),
@@ -124,11 +124,26 @@ const config: Config = {
             2: schemeVar("--console-ink-2"),
             3: schemeVar("--console-ink-3"),
           },
-          bloom: { soft: schemeVar("--console-hue-bloom-soft"), strong: schemeVar("--console-hue-bloom-strong") },
-          moss: { soft: schemeVar("--console-hue-moss-soft"), strong: schemeVar("--console-hue-moss-strong") },
-          sun: { soft: schemeVar("--console-hue-sun-soft"), strong: schemeVar("--console-hue-sun-strong") },
-          sky: { soft: schemeVar("--console-hue-sky-soft"), strong: schemeVar("--console-hue-sky-strong") },
-          lilac: { soft: schemeVar("--console-hue-lilac-soft"), strong: schemeVar("--console-hue-lilac-strong") },
+          bloom: {
+            soft: schemeVar("--console-hue-bloom-soft"),
+            strong: schemeVar("--console-hue-bloom-strong"),
+          },
+          moss: {
+            soft: schemeVar("--console-hue-moss-soft"),
+            strong: schemeVar("--console-hue-moss-strong"),
+          },
+          sun: {
+            soft: schemeVar("--console-hue-sun-soft"),
+            strong: schemeVar("--console-hue-sun-strong"),
+          },
+          sky: {
+            soft: schemeVar("--console-hue-sky-soft"),
+            strong: schemeVar("--console-hue-sky-strong"),
+          },
+          lilac: {
+            soft: schemeVar("--console-hue-lilac-soft"),
+            strong: schemeVar("--console-hue-lilac-strong"),
+          },
         },
       },
 
@@ -139,9 +154,7 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
 
-      fontSize: Object.fromEntries(
-        Object.entries(fontSize).map(([k, v]) => [`token-${k}`, v]),
-      ),
+      fontSize: Object.fromEntries(Object.entries(fontSize).map(([k, v]) => [`token-${k}`, v])),
 
       lineHeight: {
         tight: String(tokens.lineHeight.tight),
@@ -156,9 +169,7 @@ const config: Config = {
         wider: tokens.tracking.wide,
       },
 
-      spacing: Object.fromEntries(
-        Object.entries(space).map(([k, v]) => [`token-${k}`, px(v)]),
-      ),
+      spacing: Object.fromEntries(Object.entries(space).map(([k, v]) => [`token-${k}`, px(v)])),
 
       borderRadius: {
         lg: px(radius.lg),
@@ -185,9 +196,7 @@ const config: Config = {
         "console-ring": "var(--console-shadow-ring)",
       },
 
-      zIndex: Object.fromEntries(
-        Object.entries(Z_LAYERS).map(([layer, z]) => [layer, String(z)]),
-      ),
+      zIndex: Object.fromEntries(Object.entries(Z_LAYERS).map(([layer, z]) => [layer, String(z)])),
 
       transitionTimingFunction: {
         out: tokens.motion.ease.out,

@@ -1,4 +1,3 @@
-import * as React from "react"
 import { beforeAll, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
@@ -14,17 +13,25 @@ vi.mock("../../../typography", async () => {
   return { Text, Icon: () => null, iconMap: {} }
 })
 vi.mock("../../../primitives", async () => ({
-  SettingsRow: (await vi.importActual<typeof SettingsRow>("../../../primitives/SettingsRow")).SettingsRow,
+  SettingsRow: (await vi.importActual<typeof SettingsRow>("../../../primitives/SettingsRow"))
+    .SettingsRow,
   ModalCardSheet: () => null,
   PrimaryButton: () => null,
   SecondaryButton: () => null,
   TextField: () => null,
 }))
 
-const longBio = ["First paragraph of a long bio.".repeat(6), "", "Second paragraph.", "Third paragraph."].join("\n")
+const longBio = [
+  "First paragraph of a long bio.".repeat(6),
+  "",
+  "Second paragraph.",
+  "Third paragraph.",
+].join("\n")
 
 describe("the Bio row previews the bio in two lines", () => {
-  beforeAll(() => Promise.all(Object.values(lazyCatalogs).map((load) => load())))
+  beforeAll(async () => {
+    await Promise.all(Object.values(lazyCatalogs).map((load) => load()))
+  })
 
   it("clamps a long multi-line bio", async () => {
     render(
@@ -33,7 +40,9 @@ describe("the Bio row previews the bio in two lines", () => {
       </I18nProvider>,
     )
     await screen.findByText(en.bio.label)
-    const preview = screen.getByText((_, el) => el?.textContent === longBio && el.children.length === 0)
+    const preview = screen.getByText(
+      (_, el) => el?.textContent === longBio && el.children.length === 0,
+    )
     expect(getComputedStyle(preview).textOverflow).toBe("ellipsis")
   })
 })

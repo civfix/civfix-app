@@ -14,7 +14,10 @@ test("T15: /legal/<type> renders the shared legal screen with a back control", (
   assert.match(route, /useLocalSearchParams<\{ type\?: string \| string\[\] \}>\(\)/)
   assert.match(route, /const documentType = legalDocumentTypeOf\(type\)/)
   assert.match(route, /<LegalDocumentScreen type=\{documentType\} onBack=\{back\} \/>/)
-  assert.match(route, /if \(router\.canGoBack\(\)\) router\.back\(\)\n\s+else router\.replace\("\/"\)/)
+  assert.match(
+    route,
+    /if \(router\.canGoBack\(\)\) router\.back\(\)\n\s+else router\.replace\("\/"\)/,
+  )
   assert.doesNotMatch(route, /DeepLinkHost/)
 })
 
@@ -26,7 +29,10 @@ test("T16: a type the app doesn't know renders the app's not-found screen", () =
 
 test("T17, T18: the app presents a legal document by pushing its in-app screen", () => {
   const bridges = read("../src/boot/AppBridges.tsx")
-  assert.match(bridges, /setLegalDocumentPresenter\(\(type\) => router\.push\(`\/legal\/\$\{type\}`\)\)/)
+  assert.match(
+    bridges,
+    /setLegalDocumentPresenter\(\(type\) => router\.push\(`\/legal\/\$\{type\}`\)\)/,
+  )
   assert.match(bridges, /return \(\) => setLegalDocumentPresenter\(null\)/)
   assert.match(bridges, /<LegalDocumentBridge \/>/)
 })
@@ -45,12 +51,18 @@ test("T20: both gates step aside, still mounted, while the legal screen is on to
 
   const onboarding = read("../src/components/onboarding/OnboardingGate.tsx")
   assert.match(onboarding, /const legalOnTop = useLegalScreenOnTop\(\)/)
-  assert.match(onboarding, /style=\{\[styles\.overlay, overlayStyle, legalOnTop \? styles\.stepAside : null\]\}/)
+  assert.match(
+    onboarding,
+    /style=\{\[styles\.overlay, overlayStyle, legalOnTop \? styles\.stepAside : null\]\}/,
+  )
   assert.match(onboarding, /stepAside: \{ display: "none" \}/)
 
   const firstRun = read("../src/components/FirstRunGate.tsx")
   assert.match(firstRun, /const legalOnTop = useLegalScreenOnTop\(\)/)
-  assert.match(firstRun, /<View style=\{\[styles\.overlay, legalOnTop \? styles\.stepAside : null\]\}>/)
+  assert.match(
+    firstRun,
+    /<View style=\{\[styles\.overlay, legalOnTop \? styles\.stepAside : null\]\}>/,
+  )
   assert.match(firstRun, /stepAside: \{ display: "none" \}/)
 })
 

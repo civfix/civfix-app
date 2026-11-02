@@ -50,7 +50,10 @@ export interface ConvoHeaderTargets {
  * One target's decision: a host handler always wins; without one the store fallback is only reachable
  * from an IN-SHELL mount. Exported on its own so a future fifth target reads as one call, not a new rule.
  */
-export function convoHeaderTargetEnabled(input: { fullScreen: boolean; hasHostHandler: boolean }): boolean {
+export function convoHeaderTargetEnabled(input: {
+  fullScreen: boolean
+  hasHostHandler: boolean
+}): boolean {
   return input.hasHostHandler || !input.fullScreen
 }
 

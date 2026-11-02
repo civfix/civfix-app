@@ -4,7 +4,7 @@ import type { DesiredMarker as Desired, MarkerEntry as Entry } from "../domMarke
 
 interface FakeEl {
   style: Record<string, string>
-  attrs: Record<string, string>
+  attrs: Map<string, string>
   parentNode: FakeParent | null
   setAttribute: (name: string, value: string) => void
   removeAttribute: (name: string) => void
@@ -67,19 +67,19 @@ vi.mock("maplibre-gl", () => {
       return this.el
     }
   }
-  return { default: { Marker }, Marker }
+  return { Marker }
 })
 
 function fakeElement(): FakeEl {
   const el: FakeEl = {
     style: {},
-    attrs: {},
+    attrs: new Map(),
     parentNode: null,
     setAttribute(name, value) {
-      el.attrs[name] = value
+      el.attrs.set(name, value)
     },
     removeAttribute(name) {
-      delete el.attrs[name]
+      el.attrs.delete(name)
     },
     addEventListener() {},
   }
@@ -91,7 +91,14 @@ const { syncMarkers } = await import("../domMarkerLayer.web")
 const map = {} as never
 
 function want(signature: string, extra: Partial<Desired> = {}): Desired {
-  return { signature, anchor: "bottom", lngLat: [1, 2], node: signature, label: `pin ${signature}`, ...extra }
+  return {
+    signature,
+    anchor: "bottom",
+    lngLat: [1, 2],
+    node: signature,
+    label: `pin ${signature}`,
+    ...extra,
+  }
 }
 
 beforeEach(() => {
@@ -120,12 +127,26 @@ async function flushMicrotasks() {
 describe("syncMarkers", () => {
   it("re-renders a changed signature into the same element, root and marker", async () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["r:1", want("a|light")], ["r:2", want("b|light")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|light")],
+        ["r:2", want("b|light")],
+      ]),
+    )
     expect(created).toEqual({ elements: 2, roots: 2, markers: 2 })
     const first = current.get("r:1")
     const el = first?.marker.getElement() as unknown as FakeEl
 
-    syncMarkers(map, current, new Map([["r:1", want("a|dark")], ["r:2", want("b|dark")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|dark")],
+        ["r:2", want("b|dark")],
+      ]),
+    )
     await flushMicrotasks()
     expect(created).toEqual({ elements: 2, roots: 2, markers: 2 })
     expect(unmounted).toEqual([])
@@ -140,10 +161,14 @@ describe("syncMarkers", () => {
     const pressB = vi.fn()
     syncMarkers(map, current, new Map([["r:1", want("a", { onClick: pressA })]]))
     const entry = current.get("r:1")
-    syncMarkers(map, current, new Map([["r:1", want("a", { onClick: pressB, lngLat: [3, 4], label: "moved" })]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([["r:1", want("a", { onClick: pressB, lngLat: [3, 4], label: "moved" })]]),
+    )
     expect(renders).toHaveLength(1)
     expect(entry?.onClick.fn).toBe(pressB)
-    expect((entry?.marker.getElement() as unknown as FakeEl).attrs["aria-label"]).toBe("moved")
+    expect((entry?.marker.getElement() as unknown as FakeEl).attrs.get("aria-label")).toBe("moved")
     expect((entry?.marker as unknown as { lngLat: [number, number] }).lngLat).toEqual([3, 4])
   })
 
@@ -151,36 +176,62 @@ describe("syncMarkers", () => {
     const current = new Map<string, Entry>()
     syncMarkers(map, current, new Map([["r:1", want("off", { pressed: false })]]))
     const el = current.get("r:1")?.marker.getElement() as unknown as FakeEl
-    expect(el.attrs["aria-label"]).toBe("pin off")
-    expect(el.attrs["aria-pressed"]).toBe("false")
+    expect(el.attrs.get("aria-label")).toBe("pin off")
+    expect(el.attrs.get("aria-pressed")).toBe("false")
     expect(el.style.cursor).toBe("default")
 
     syncMarkers(map, current, new Map([["r:1", want("on", { pressed: true, onClick: () => {} })]]))
-    expect(el.attrs["aria-label"]).toBe("pin on")
-    expect(el.attrs["aria-pressed"]).toBe("true")
+    expect(el.attrs.get("aria-label")).toBe("pin on")
+    expect(el.attrs.get("aria-pressed")).toBe("true")
     expect(el.style.cursor).toBe("pointer")
-    expect(el.attrs.role).toBe("button")
-    expect(el.attrs.tabindex).toBe("0")
+    expect(el.attrs.get("role")).toBe("button")
+    expect(el.attrs.get("tabindex")).toBe("0")
 
     syncMarkers(map, current, new Map([["r:1", want("plain")]]))
-    expect(el.attrs["aria-pressed"]).toBeUndefined()
+    expect(el.attrs.get("aria-pressed")).toBeUndefined()
   })
 
   it("moves a re-rendered marker to the top of the stack, where a rebuilt one used to land", () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["r:1", want("a|0")], ["r:2", want("b|0")], ["r:3", want("c|0")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|0")],
+        ["r:2", want("b|0")],
+        ["r:3", want("c|0")],
+      ]),
+    )
     const elOf = (key: string) => current.get(key)?.marker.getElement() as unknown as FakeEl
-    const order = () => container.children.map((el) => [...current].find(([, e]) => e.marker.getElement() === (el as never))?.[0])
+    const order = () =>
+      container.children.map(
+        (el) => [...current].find(([, e]) => e.marker.getElement() === (el as never))?.[0],
+      )
     expect(order()).toEqual(["r:1", "r:2", "r:3"])
 
-    syncMarkers(map, current, new Map([["r:1", want("a|1")], ["r:2", want("b|0")], ["r:3", want("c|0")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["r:1", want("a|1")],
+        ["r:2", want("b|0")],
+        ["r:3", want("c|0")],
+      ]),
+    )
     expect(order()).toEqual(["r:2", "r:3", "r:1"])
     expect(elOf("r:1").parentNode).toBe(container)
   })
 
   it("rebuilds a marker whose anchor changed and drops one no longer wanted", async () => {
     const current = new Map<string, Entry>()
-    syncMarkers(map, current, new Map([["k", want("a")], ["gone", want("g")]]))
+    syncMarkers(
+      map,
+      current,
+      new Map([
+        ["k", want("a")],
+        ["gone", want("g")],
+      ]),
+    )
     const before = current.get("k")
     syncMarkers(map, current, new Map([["k", want("a", { anchor: "center" })]]))
     await flushMicrotasks()

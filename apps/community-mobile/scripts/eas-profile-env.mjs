@@ -10,19 +10,38 @@ import { fileURLToPath } from "node:url"
 
 const ENV_KEY = /^[A-Z_][A-Z0-9_]*$/
 
+/**
+ * @typedef {{ extends?: string, env?: Record<string, string> }} BuildProfile
+ * @typedef {{ build?: Record<string, BuildProfile | undefined> }} EasJson
+ */
+
+/**
+ * @param {EasJson} eas
+ * @param {string} name
+ * @param {string[]} [seen]
+ * @returns {BuildProfile}
+ */
 export function resolveProfile(eas, name, seen = []) {
   const profile = eas.build?.[name]
   if (!profile) throw new Error(`eas.json has no build profile '${name}'`)
   if (seen.includes(name)) throw new Error(`eas.json profile '${name}' extends itself`)
+  /** @type {BuildProfile} */
   const base = profile.extends ? resolveProfile(eas, profile.extends, [...seen, name]) : {}
   return { ...base, ...profile, env: { ...base.env, ...profile.env } }
 }
 
+/**
+ * @param {EasJson} eas
+ * @param {string} name
+ */
 export function profileEnv(eas, name) {
   const profile = resolveProfile(eas, name)
-  const env = Object.fromEntries(Object.entries(profile.env ?? {}).filter(([key]) => ENV_KEY.test(key)))
+  const env = Object.fromEntries(
+    Object.entries(profile.env ?? {}).filter(([key]) => ENV_KEY.test(key)),
+  )
   for (const [key, value] of Object.entries(env)) {
-    if (/[\r\n]/.test(String(value))) throw new Error(`eas.json profile '${name}' ${key} spans lines`)
+    if (/[\r\n]/.test(String(value)))
+      throw new Error(`eas.json profile '${name}' ${key} spans lines`)
   }
   return env
 }
@@ -33,6 +52,9 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     console.error("usage: node scripts/eas-profile-env.mjs <profile>")
     process.exit(1)
   }
-  const eas = JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "utf8"))
+  const parsed = /** @type {unknown} */ (
+    JSON.parse(readFileSync(new URL("../eas.json", import.meta.url), "utf8"))
+  )
+  const eas = /** @type {EasJson} */ (parsed)
   for (const [key, value] of Object.entries(profileEnv(eas, name))) console.log(`${key}=${value}`)
 }

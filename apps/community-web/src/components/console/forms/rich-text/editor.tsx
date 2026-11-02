@@ -108,7 +108,9 @@ export function RichTextEditor({
           const ask =
             promptForLink ??
             ((current: string) =>
-              typeof window === "undefined" ? null : window.prompt(t("editor.link_prompt"), current))
+              typeof window === "undefined"
+                ? null
+                : window.prompt(t("editor.link_prompt"), current))
           const href = ask("https://")
           if (href === null) return
           if (!isInsertableLinkHref(href)) {

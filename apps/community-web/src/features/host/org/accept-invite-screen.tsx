@@ -186,7 +186,7 @@ function InviteProblem({
 }: {
   problem: Problem
   message: string
-  retry?: () => void
+  retry?: (() => void) | undefined
   onExit: () => void
 }) {
   const { t } = useT("host-org")

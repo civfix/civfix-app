@@ -24,7 +24,9 @@ describe("overVideoLimits", () => {
   })
 
   it("lets through what the browser could not read", () => {
-    expect(overVideoLimits({ durationSec: Number.POSITIVE_INFINITY, width: 1280, height: 720 })).toBe(false)
+    expect(
+      overVideoLimits({ durationSec: Number.POSITIVE_INFINITY, width: 1280, height: 720 }),
+    ).toBe(false)
     expect(overVideoLimits({ durationSec: Number.NaN, width: 0, height: 0 })).toBe(false)
   })
 })

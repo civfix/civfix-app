@@ -1,7 +1,7 @@
 export interface AuthorAsOption {
   id: string
   name: string
-  logoUrl?: string | null
+  logoUrl?: string | null | undefined
 }
 
 export function authorAsSelection(

@@ -39,13 +39,15 @@ describe("CheckinScreen walk-up", () => {
       <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
         <CheckinScreen />
       </ConsoleEventProvider>,
-      { api: client as never },
+      { api: client },
     )
 
     await user.click(await screen.findByRole("button", { name: /walkup\.open/ }))
     let sheet = screen.getByRole("dialog")
     await user.type(within(sheet).getByLabelText("walkup.name"), "Ada")
-    await waitFor(() => expect(within(sheet).getByRole("option", { name: "Volunteer" })).toBeTruthy())
+    await waitFor(() =>
+      expect(within(sheet).getByRole("option", { name: "Volunteer" })).toBeTruthy(),
+    )
     await user.selectOptions(within(sheet).getByLabelText(/walkup\.ticket_type/), TYPE_ID)
     await user.click(within(sheet).getByRole("button", { name: "walkup.submit" }))
     await waitFor(() => expect(client.createWalkupRegistration).toHaveBeenCalledTimes(1))

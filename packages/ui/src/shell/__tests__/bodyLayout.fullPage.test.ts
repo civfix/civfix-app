@@ -21,8 +21,7 @@ import {
 } from "../bodyLayout"
 
 /** Every kind's extra fields are optional on DetailEntry. */
-const entryFor = (kind: DetailKind): DetailEntry =>
-  ({ kind, id: "x", lat: 1, lng: 2 }) as DetailEntry
+const entryFor = (kind: DetailKind): DetailEntry => ({ kind, id: "x", lat: 1, lng: 2 })
 
 const SCROLL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "scroll")
 const FULL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "full")
@@ -66,7 +65,9 @@ describe("resolveBodyLayout - the sheet/page seam", () => {
 
   it("never lists a table-'full' kind as sheet-only (the set may only ever hold pull-ups)", () => {
     for (const kind of SHEET_ONLY_KINDS) {
-      expect(BODY_LAYOUT[kind], `${kind} is already a full body and cannot be sheet-only`).toBe("scroll")
+      expect(BODY_LAYOUT[kind], `${kind} is already a full body and cannot be sheet-only`).toBe(
+        "scroll",
+      )
     }
   })
 
@@ -260,7 +261,7 @@ describe("fullEntryStack - the page stack itself", () => {
       for (const kind of ALL_DETAIL_KINDS) {
         const entry = entryFor(kind)
         const expected = resolveBodyLayout(kind, flag) === "full" ? [entry] : []
-        expect(fullEntryStack([entry], flag), `${kind} @ ${flag}`).toEqual(expected)
+        expect(fullEntryStack([entry], flag), `${kind} @ ${String(flag)}`).toEqual(expected)
       }
     }
   })
@@ -273,7 +274,11 @@ describe("fullEntryStack - the page stack itself", () => {
       [{ kind: "profile" }, { kind: "followers", id: "u1" }],
       [{ kind: "composer" }, { kind: "drop-pin", lat: 1, lng: 2 }],
       [{ kind: "composer" }, { kind: "create-cleanup" }, { kind: "post-thread", id: "p" }],
-      [{ kind: "pin", id: "r1", lat: 1, lng: 2 }, { kind: "person", id: "u2" }, { kind: "profile" }],
+      [
+        { kind: "pin", id: "r1", lat: 1, lng: 2 },
+        { kind: "person", id: "u2" },
+        { kind: "profile" },
+      ],
     ]
     for (const flag of [false, true]) {
       for (const stack of stacks) {
@@ -320,7 +325,9 @@ describe("pageLayerKey - stable page identity", () => {
   it("keeps two same-kind, same-id pages at different depths APART", () => {
     // A person profile reached from a person profile. Without the depth prefix both layers key to
     // "person:u1", React reconciles them as one, and the stack collapses to a single page.
-    expect(pageLayerKey("social", person("u1"), 0)).not.toBe(pageLayerKey("social", person("u1"), 1))
+    expect(pageLayerKey("social", person("u1"), 0)).not.toBe(
+      pageLayerKey("social", person("u1"), 1),
+    )
   })
 
   it("does not change while an entry sits at the same depth (so a page is never remounted)", () => {
@@ -331,9 +338,9 @@ describe("pageLayerKey - stable page identity", () => {
 
   it("carries the same identity `portraitSurfaceTransitionKey` gives the web overlay", () => {
     expect(pageLayerKey("home", { kind: "pin", id: "r1", lat: 1, lng: 2 }, 2)).toBe("2:pin:r1:::::")
-    expect(pageLayerKey("home", { kind: "composer", composerMode: "reply", targetPostId: "p1" }, 0)).toBe(
-      "0:composer:reply:p1",
-    )
+    expect(
+      pageLayerKey("home", { kind: "composer", composerMode: "reply", targetPostId: "p1" }, 0),
+    ).toBe("0:composer:reply:p1")
   })
 
   it("is the nav store's own `entryIdentity`, depth-prefixed - ONE discriminating-field list, not two", () => {
@@ -345,7 +352,7 @@ describe("pageLayerKey - stable page identity", () => {
       { kind: "my-ticket", id: "e1", seatId: "seat-9" },
       { kind: "composer", composerMode: "quote", targetPostId: "p1" },
     ] satisfies DetailEntry[]) {
-      expect(pageLayerKey("home", entry, 3), entry.kind).toBe(`3:${entryIdentity(entry)}`)
+      expect(pageLayerKey("home", entry, 3), entry.kind).toBe(`3:${entryIdentity(entry)!}`)
     }
   })
 
@@ -361,7 +368,7 @@ describe("pageLayerKey - stable page identity", () => {
   it("reflects EVERY field `entryIdentity` discriminates on, so a new one cannot silently collide", () => {
     for (const field of ENTRY_IDENTITY_FIELDS) {
       const bare: DetailEntry = { kind: "cleanup" }
-      const set = { ...bare, [field]: "discriminator" } as DetailEntry
+      const set = { ...bare, [field]: "discriminator" }
       expect(entryIdentity(bare), field).not.toBe(entryIdentity(set))
       expect(pageLayerKey("home", bare, 0), field).not.toBe(pageLayerKey("home", set, 0))
     }
@@ -386,7 +393,9 @@ describe("pageLayerKey - stable page identity", () => {
     // old-length-2, so the prefix makes the collision impossible rather than unlikely.
     const before: DetailEntry[] = [person("u1"), person("u1")]
     const beforeKeys = before.map((entry, depth) => pageLayerKey("social", entry, depth))
-    const afterKeys = before.slice(0, -1).map((entry, depth) => pageLayerKey("social", entry, depth))
+    const afterKeys = before
+      .slice(0, -1)
+      .map((entry, depth) => pageLayerKey("social", entry, depth))
     const goneKey = beforeKeys[beforeKeys.length - 1]!
     expect(afterKeys).not.toContain(goneKey)
   })

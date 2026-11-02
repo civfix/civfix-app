@@ -11,7 +11,6 @@ import {
   type OutboxEntry,
 } from "../chat-merge"
 
-
 const ME = "user-me"
 const OTHER = "user-other"
 
@@ -39,7 +38,6 @@ function outbox(clientId: string, createdAt: string, status: OutboxEntry["status
     message: msg({ id: clientId, createdAt, fromId: "me", clientId }),
   }
 }
-
 
 describe("isMine", () => {
   it("matches by user id", () => {
@@ -248,11 +246,15 @@ describe("reconcileInbound", () => {
   })
 })
 
-
 describe("reconciledByContent", () => {
   it("matches an outbox entry to a confirmed-mine twin by body within the window", () => {
     const entry = outbox("cid-a", "2026-01-01T00:00:00.000Z", "sending")
-    entry.message = msg({ id: "cid-a", createdAt: "2026-01-01T00:00:00.000Z", fromId: "me", body: "hello" })
+    entry.message = msg({
+      id: "cid-a",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      fromId: "me",
+      body: "hello",
+    })
     const confirmed = msg({
       id: "server-a",
       createdAt: "2026-01-01T00:00:10.000Z",
@@ -265,17 +267,34 @@ describe("reconciledByContent", () => {
 
   it("does NOT match when bodies differ", () => {
     const entry = outbox("cid-b", "2026-01-01T00:00:00.000Z", "sending")
-    entry.message = msg({ id: "cid-b", createdAt: "2026-01-01T00:00:00.000Z", fromId: "me", body: "one" })
-    const confirmed = msg({ id: "server-b", createdAt: "2026-01-01T00:00:05.000Z", fromId: ME, body: "two" })
+    entry.message = msg({
+      id: "cid-b",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      fromId: "me",
+      body: "one",
+    })
+    const confirmed = msg({
+      id: "server-b",
+      createdAt: "2026-01-01T00:00:05.000Z",
+      fromId: ME,
+      body: "two",
+    })
     expect(reconciledByContent([entry], [confirmed]).size).toBe(0)
   })
 
   it("does NOT match outside the time window", () => {
     const entry = outbox("cid-c", "2026-01-01T00:00:00.000Z", "sending")
-    entry.message = msg({ id: "cid-c", createdAt: "2026-01-01T00:00:00.000Z", fromId: "me", body: "x" })
+    entry.message = msg({
+      id: "cid-c",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      fromId: "me",
+      body: "x",
+    })
     const confirmed = msg({
       id: "server-c",
-      createdAt: new Date(Date.parse("2026-01-01T00:00:00.000Z") + OUTBOX_MATCH_WINDOW_MS + 1).toISOString(),
+      createdAt: new Date(
+        Date.parse("2026-01-01T00:00:00.000Z") + OUTBOX_MATCH_WINDOW_MS + 1,
+      ).toISOString(),
       fromId: ME,
       body: "x",
     })
@@ -284,10 +303,25 @@ describe("reconciledByContent", () => {
 
   it("consumes each confirmed message at most once (two identical sends do not both collapse)", () => {
     const e1 = outbox("cid-1", "2026-01-01T00:00:00.000Z", "sending")
-    e1.message = msg({ id: "cid-1", createdAt: "2026-01-01T00:00:00.000Z", fromId: "me", body: "dup" })
+    e1.message = msg({
+      id: "cid-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      fromId: "me",
+      body: "dup",
+    })
     const e2 = outbox("cid-2", "2026-01-01T00:00:01.000Z", "sending")
-    e2.message = msg({ id: "cid-2", createdAt: "2026-01-01T00:00:01.000Z", fromId: "me", body: "dup" })
-    const confirmed = msg({ id: "server-1", createdAt: "2026-01-01T00:00:02.000Z", fromId: ME, body: "dup" })
+    e2.message = msg({
+      id: "cid-2",
+      createdAt: "2026-01-01T00:00:01.000Z",
+      fromId: "me",
+      body: "dup",
+    })
+    const confirmed = msg({
+      id: "server-1",
+      createdAt: "2026-01-01T00:00:02.000Z",
+      fromId: ME,
+      body: "dup",
+    })
     const matched = reconciledByContent([e1, e2], [confirmed])
     expect(matched.size).toBe(1)
   })
@@ -296,7 +330,12 @@ describe("reconciledByContent", () => {
 describe("mergeChatItems content-reconcile (echo dropped clientId)", () => {
   it("suppresses the optimistic bubble when a confirmed-mine message matches by content", () => {
     const pending = outbox("cid-z", "2026-01-01T00:00:00.000Z", "sending")
-    pending.message = msg({ id: "cid-z", createdAt: "2026-01-01T00:00:00.000Z", fromId: "me", body: "hi there" })
+    pending.message = msg({
+      id: "cid-z",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      fromId: "me",
+      body: "hi there",
+    })
     const echo = msg({
       id: "server-z",
       createdAt: "2026-01-01T00:00:03.000Z",
@@ -339,7 +378,9 @@ describe("mergeChatItems sort stability", () => {
     const real = msg({ id: "c", createdAt: "2026-01-01T00:00:05.000Z", fromId: OTHER })
 
     const forwards = mergeChatItems([broken, alsoBroken, real], [], [], ME).map((i) => i.message.id)
-    const backwards = mergeChatItems([real, alsoBroken, broken], [], [], ME).map((i) => i.message.id)
+    const backwards = mergeChatItems([real, alsoBroken, broken], [], [], ME).map(
+      (i) => i.message.id,
+    )
 
     expect(forwards).toEqual(["a", "b", "c"])
     expect(backwards).toEqual(forwards)
@@ -447,7 +488,12 @@ describe("preserveViewerFields", () => {
 
   it("adopts a tombstone / removed poll wholesale", () => {
     const local = msg({ id: "p1", createdAt: "t", poll: poll([0], [true], [1]) })
-    const tombstone = msg({ id: "p1", createdAt: "t", body: "", deletedAt: "2026-01-01T00:00:10.000Z" })
+    const tombstone = msg({
+      id: "p1",
+      createdAt: "t",
+      body: "",
+      deletedAt: "2026-01-01T00:00:10.000Z",
+    })
     const merged = preserveViewerFields(local, tombstone)
     expect(merged.deletedAt).toBe("2026-01-01T00:00:10.000Z")
     expect(merged.poll).toBeUndefined()

@@ -19,6 +19,7 @@ export function AppShell({
   map,
   mapControls,
   authOverlay,
+  mapPrompt,
   renderBody = defaultRenderBody,
   stack,
 }: AppShellProps) {
@@ -42,6 +43,10 @@ export function AppShell({
   const mapVisible = mode === "expanded" || !basePlan.renderBaseBody
   const mountMapControls =
     mode === "expanded" || portraitShellPlan(view, active, fullPageDetails).mountMapControls
+  // Expanded, the prompt sits under the controls' top bar, so a panel they open inline (Map layers) draws
+  // over it; compact, it stays in the overlay, above the sheet and the tab bar.
+  const promptInControls = mode === "expanded"
+  const overlayPrompt = promptInControls ? null : mapPrompt
 
   React.useEffect(() => {
     useNavStore.getState().setMode(mode)
@@ -50,37 +55,43 @@ export function AppShell({
   return (
     <MediaLightboxProvider>
       <SharePostProvider>
-      <View style={StyleSheet.absoluteFill}>
-        {mountMap ? (
-          <View
-            style={[StyleSheet.absoluteFill, styles.map, mapVisible ? null : styles.mapDetached]}
-            accessibilityElementsHidden={!mapVisible}
-            importantForAccessibility={mapVisible ? "auto" : "no-hide-descendants"}
-          >
-            {map}
-          </View>
-        ) : null}
-        {mountMapControls ? <View style={styles.controls}>{mapControls}</View> : null}
-        {mode === "expanded" ? (
-          <ExpandedShell renderBody={renderBody} stack={stack} />
-        ) : (
-          <PortraitShell
-            active={active}
-            plan={basePlan}
-            renderBody={renderBody}
-            view={view}
-            baseView={baseView}
-            fullPageDetails={fullPageDetails}
-            stack={stack}
-          />
-        )}
-        <LegalNoticeBanner />
-        {authOverlay ? (
-          <View style={styles.overlay}>
-            {authOverlay}
-          </View>
-        ) : null}
-      </View>
+        <View style={StyleSheet.absoluteFill}>
+          {mountMap ? (
+            <View
+              style={[StyleSheet.absoluteFill, styles.map, mapVisible ? null : styles.mapDetached]}
+              accessibilityElementsHidden={!mapVisible}
+              importantForAccessibility={mapVisible ? "auto" : "no-hide-descendants"}
+            >
+              {map}
+            </View>
+          ) : null}
+          {mountMapControls ? (
+            <View style={styles.controls}>
+              {promptInControls ? mapPrompt : null}
+              {mapControls}
+            </View>
+          ) : null}
+          {mode === "expanded" ? (
+            <ExpandedShell renderBody={renderBody} stack={stack} />
+          ) : (
+            <PortraitShell
+              active={active}
+              plan={basePlan}
+              renderBody={renderBody}
+              view={view}
+              baseView={baseView}
+              fullPageDetails={fullPageDetails}
+              stack={stack}
+            />
+          )}
+          <LegalNoticeBanner />
+          {authOverlay || overlayPrompt ? (
+            <View style={styles.overlay}>
+              {authOverlay}
+              {overlayPrompt}
+            </View>
+          ) : null}
+        </View>
       </SharePostProvider>
     </MediaLightboxProvider>
   )

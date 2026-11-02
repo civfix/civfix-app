@@ -63,16 +63,16 @@ export interface DataTableProps<T> {
   rowKey: (row: T) => string
   caption: string
   sort?: SortState | null
-  onSortChange?: (sort: SortState) => void
-  selection?: SelectionApi
+  onSortChange?: ((sort: SortState) => void) | undefined
+  selection?: SelectionApi | undefined
   rowSelectLabel?: (row: T) => string
-  onRowPress?: (row: T) => void
+  onRowPress?: ((row: T) => void) | undefined
   rowPressLabel?: (row: T) => string
   cursorId?: string | null
   loading?: boolean
   skeletonRows?: number
-  maxColumnPriority?: number
-  renderCard?: (row: T) => ReactNode
+  maxColumnPriority?: number | undefined
+  renderCard?: ((row: T) => ReactNode) | undefined
   emptyState?: ReactNode
   className?: string
 }

@@ -9,7 +9,7 @@
  * is still closing after the field blurs. `lift` is always null here.
  */
 import { useEffect, useState } from "react"
-import type { ViewStyle } from "react-native"
+import { webStyle } from "../theme/webStyle"
 import { KEYBOARD_SURFACE_GAP, keyboardLift } from "./keyboardInsetModel"
 import { searchRiseTransition } from "./tabBarLogic"
 import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
@@ -41,13 +41,13 @@ export function useKeyboardAnchor({
   }, [enabled, overlap, hostReserved])
 
   const lift = engaged ? keyboardLift(overlap, restOffset, gap) : 0
-  const liftStyle = {
+  const liftStyle = webStyle({
     transform: `translateY(${-lift}px)`,
     transition: searchRiseTransition({
       coarsePointer: isCoarsePointer(),
       reduceMotion: prefersReducedMotion(),
     }),
-  } as unknown as ViewStyle
+  })
 
   // The overlap changes only on visual-viewport resize events, never per frame, so `reserved` can mirror it.
   return { liftStyle, lift: null, reserved: lift, engaged }

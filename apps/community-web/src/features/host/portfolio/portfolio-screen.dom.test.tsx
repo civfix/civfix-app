@@ -37,7 +37,7 @@ function renderPortfolio() {
     <ConsoleNavigationProvider>
       <PortfolioScreen notFoundPath={null} />
     </ConsoleNavigationProvider>,
-    { api: client as never },
+    { api: client },
   )
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { Text } from "../../typography"
 import { SectionCard } from "../../primitives"
 import { announcementRows, useEventAnnouncements } from "../../data/hooks/announcements"
@@ -24,7 +24,11 @@ export function HostAnnouncementsBlock({ cleanupId }: HostAnnouncementsBlockProp
 
   const seeAll =
     rows.length > HOST_HISTORY_ANNOUNCEMENTS || query.hasNextPage ? (
-      <AnnouncementSeeAllLink cleanupId={cleanupId} loaded={rows.length} hasMore={query.hasNextPage} />
+      <AnnouncementSeeAllLink
+        cleanupId={cleanupId}
+        loaded={rows.length}
+        hasMore={query.hasNextPage}
+      />
     ) : undefined
 
   return (

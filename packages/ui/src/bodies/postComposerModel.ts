@@ -64,7 +64,11 @@ export function mergeMention(
   candidate: MentionCandidate,
 ): UserMentionDTO[] | null {
   if (candidate.kind === "jurisdiction") return null
-  const user: UserMentionDTO = { id: candidate.id, handle: candidate.handle, displayName: candidate.displayName }
+  const user: UserMentionDTO = {
+    id: candidate.id,
+    handle: candidate.handle,
+    displayName: candidate.displayName,
+  }
   return [...mentioned.filter((item) => item.id !== user.id), user]
 }
 
@@ -114,15 +118,24 @@ interface AttachGroupInput {
   attached: boolean
 }
 
-function buildGroupPlan(input: AttachGroupInput, variant: PostComposerAttachVariant): PostComposerAttachGroupPlan {
-  const none = { visibleCount: 0, showMoreVisible: false, showMoreCount: null, showFewerVisible: false }
+function buildGroupPlan(
+  input: AttachGroupInput,
+  variant: PostComposerAttachVariant,
+): PostComposerAttachGroupPlan {
+  const none = {
+    visibleCount: 0,
+    showMoreVisible: false,
+    showMoreCount: null,
+    showFewerVisible: false,
+  }
   if (input.attached && variant !== "pills") return { state: "attached", ...none }
   if (!input.loaded) return { state: "loading", ...none }
   if (input.count === 0) return { state: "empty", ...none }
 
-  const visibleCount = variant === "pills" || input.expanded
-    ? input.count
-    : Math.min(input.count, POST_COMPOSER_ATTACH_CANDIDATE_CAP)
+  const visibleCount =
+    variant === "pills" || input.expanded
+      ? input.count
+      : Math.min(input.count, POST_COMPOSER_ATTACH_CANDIDATE_CAP)
   const hasNextPage = input.hasNextPage === true
   const hiddenCount = input.count - visibleCount
   return {
@@ -130,7 +143,8 @@ function buildGroupPlan(input: AttachGroupInput, variant: PostComposerAttachVari
     visibleCount,
     showMoreVisible: hiddenCount > 0 || hasNextPage,
     showMoreCount: hiddenCount > 0 && !hasNextPage ? hiddenCount : null,
-    showFewerVisible: variant === "sections" && input.expanded && input.count > POST_COMPOSER_ATTACH_CANDIDATE_CAP,
+    showFewerVisible:
+      variant === "sections" && input.expanded && input.count > POST_COMPOSER_ATTACH_CANDIDATE_CAP,
   }
 }
 
@@ -149,7 +163,13 @@ export function buildPostComposerAttachPlan(args: {
       showMoreCount: null,
       showFewerVisible: false,
     }
-    return { variant: "hidden", events: hidden, reports: hidden, eventPanelVisible: false, reportPanelVisible: false }
+    return {
+      variant: "hidden",
+      events: hidden,
+      reports: hidden,
+      eventPanelVisible: false,
+      reportPanelVisible: false,
+    }
   }
   const variant: PostComposerAttachVariant = args.mode === "reply" ? "pills" : "sections"
   return {
@@ -195,7 +215,10 @@ export function buildComposerQuoteRef(post: PostDTO): PostRefDTO {
   }
 }
 
-export function buildComposerEventRef(event: CleanupDTO, linkedAt = event.scheduledAt): LinkedEventRef {
+export function buildComposerEventRef(
+  event: CleanupDTO,
+  linkedAt = event.scheduledAt,
+): LinkedEventRef {
   return {
     id: event.id,
     title: event.title,
@@ -225,7 +248,19 @@ export function resolveComposerEvent(
 }
 
 export function buildComposerReportRef(
-  report: Pick<ReportDTO, "id" | "category" | "type" | "status" | "lat" | "lng" | "addr" | "title" | "description" | "media">,
+  report: Pick<
+    ReportDTO,
+    | "id"
+    | "category"
+    | "type"
+    | "status"
+    | "lat"
+    | "lng"
+    | "addr"
+    | "title"
+    | "description"
+    | "media"
+  >,
   linkedAt = new Date().toISOString(),
 ): LinkedReportRef {
   return {

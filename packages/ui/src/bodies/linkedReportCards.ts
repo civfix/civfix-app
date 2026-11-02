@@ -12,13 +12,13 @@ import { reportThumbUrl } from "./reportsListModel"
 export interface LinkedReportCardData {
   id: string
   category: ReportCategory
-  type?: ReportType | null
-  title?: string | null
-  description?: string | null
+  type?: ReportType | null | undefined
+  title?: string | null | undefined
+  description?: string | null | undefined
   status: ReportStatus | null
-  thumbUrl?: string | null
-  addr?: string | null
-  referenceCode?: string | null
+  thumbUrl?: string | null | undefined
+  addr?: string | null | undefined
+  referenceCode?: string | null | undefined
 }
 
 export interface LinkedReportCardEntry extends LinkedReportCardData {

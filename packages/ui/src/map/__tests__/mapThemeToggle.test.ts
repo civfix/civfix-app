@@ -33,7 +33,9 @@ describe("MapThemeToggle", () => {
   })
 
   it("reuses the shared AppearanceOptionList so the options and the copy have ONE source", () => {
-    expect(source).toContain('import { AppearanceOptionList } from "../bodies/AppearanceOptionList"')
+    expect(source).toContain(
+      'import { AppearanceOptionList } from "../bodies/AppearanceOptionList"',
+    )
     expect(source).toContain("<AppearanceOptionList />")
     expect(source).not.toContain("setAppearancePreference(")
     expect(source).not.toMatch(/APPEARANCE_PREFERENCES/)
@@ -73,7 +75,7 @@ describe("MapThemeToggle", () => {
     expect(source).not.toMatch(/position: "fixed"/)
     expect(source).not.toMatch(/as unknown as/)
     expect(source).not.toMatch(/zIndex/)
-    expect(anchoredPopover).toMatch(/<Modal\s/)
+    expect(anchoredPopover).toMatch(/<FullWindowModal\s/)
     expect(anchoredPopover).toContain('animationType="none"')
     expect(anchoredPopover).toContain("visible={motion.rendered}")
   })

@@ -28,7 +28,9 @@ const selectedEvent: LinkedEventRef = {
   linkedAt: "2026-07-21T18:30:00.000Z",
 }
 
-beforeEach(() => usePostComposerStore.getState().reset())
+beforeEach(() => {
+  usePostComposerStore.getState().reset()
+})
 
 describe("postComposerStore", () => {
   it("keeps a serializable draft alive outside a composer mount", () => {
@@ -122,7 +124,15 @@ describe("postComposerStore", () => {
     store.setBody("Ready to publish")
     store.setMentionedUsers([maya])
     store.setAttachedEvent(selectedEvent)
-    store.setMedia([{ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" }])
+    store.setMedia([
+      {
+        uri: "file:///cleanup.jpg",
+        kind: "image",
+        posterUri: null,
+        uploadId: "upload-1",
+        status: "ready",
+      },
+    ])
     store.setQuotePostId("post-1")
     store.setMode("quote")
 
@@ -265,7 +275,10 @@ describe("postComposerStore", () => {
     usePostComposerStore.getState().adoptViewer(null)
 
     usePostComposerStore.getState().reset()
-    expect(usePostComposerStore.getState().draft).toMatchObject({ organizationId: null, ownerId: null })
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      organizationId: null,
+      ownerId: null,
+    })
 
     usePostComposerStore.getState().adoptViewer("user-a")
     usePostComposerStore.getState().setOrganizationId("org-a")
@@ -456,7 +469,15 @@ describe("postComposerStore create round trip", () => {
     store.setMentionedUsers([maya])
     store.setAttachedEvent(selectedEvent)
     store.setAttachedReport(reportRef)
-    store.setMedia([{ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" }])
+    store.setMedia([
+      {
+        uri: "file:///cleanup.jpg",
+        kind: "image",
+        posterUri: null,
+        uploadId: "upload-1",
+        status: "ready",
+      },
+    ])
     store.setMode("reply")
     store.setReplyToPostId("post-parent")
     store.setQuotePostId("post-quoted")

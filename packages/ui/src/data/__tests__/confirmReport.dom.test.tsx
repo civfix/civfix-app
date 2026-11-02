@@ -72,7 +72,9 @@ describe("useConfirmReport", () => {
     const { result, queryClient } = renderWithApi(() => useConfirmReport("r1"), api, before)
     act(() => result.current.mutate())
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await act(async () => call.resolve({ confirmCount: 7, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      call.resolve({ confirmCount: 7, confirmedByMe: true, fixedCount: 0, fixedByMe: false }),
+    )
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(queryClient.getQueryData(queryKeys.report("r1"))).toEqual({
       ...before,
@@ -93,7 +95,9 @@ describe("useConfirmReport", () => {
     )
     const onError = vi.fn()
     act(() => result.current.mutate(undefined, { onError }))
-    await waitFor(() => expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true }))
+    await waitFor(() =>
+      expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true }),
+    )
     await act(async () => call.reject(new AppError(ErrorCode.INTERNAL, "boom")))
     await waitFor(() => expect(result.current.isError).toBe(true))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
@@ -126,7 +130,9 @@ describe("useUnconfirmReport", () => {
     )
     const onError = vi.fn()
     act(() => result.current.mutate(undefined, { onError }))
-    await waitFor(() => expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false }))
+    await waitFor(() =>
+      expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false }),
+    )
     await act(async () => call.reject(new AppError(ErrorCode.INTERNAL, "boom")))
     await waitFor(() => expect(result.current.isError).toBe(true))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
@@ -138,26 +144,38 @@ describe("useConfirmReport and useUnconfirmReport", () => {
   it.each([
     ["useConfirmReport", () => useConfirmReport("r1"), false],
     ["useUnconfirmReport", () => useUnconfirmReport("r1"), true],
-  ] as const)("T6: %s invalidates the cached map and nearby queries once settled, and no post", async (_name, useHook, confirmedByMe) => {
-    const answer: ReportConfirmResponse = { confirmCount: confirmedByMe ? 4 : 5, confirmedByMe: !confirmedByMe, fixedCount: 0, fixedByMe: false }
-    const api = {
-      confirmReport: vi.fn(async () => answer),
-      unconfirmReport: vi.fn(async () => answer),
-    }
-    const { result, queryClient } = renderWithApi(useHook, api, report({ confirmCount: 4, confirmedByMe }))
-    const map = queryKeys.mapReports({ west: -118.4, south: 34, east: -118.2, north: 34.2 }, [])
-    const nearby = queryKeys.nearbyReports(34.1, -118.3, 0.25)
-    const post = ["post", "p1"] as const
-    queryClient.setQueryData(map, { pins: [] })
-    queryClient.setQueryData(nearby, { pins: [] })
-    queryClient.setQueryData(post, { id: "p1" })
-    await act(async () => {
-      await result.current.mutateAsync()
-    })
-    await waitFor(() => expect(queryClient.getQueryState(map)?.isInvalidated).toBe(true))
-    expect(queryClient.getQueryState(nearby)?.isInvalidated).toBe(true)
-    expect(queryClient.getQueryState(post)?.isInvalidated).toBe(false)
-  })
+  ] as const)(
+    "T6: %s invalidates the cached map and nearby queries once settled, and no post",
+    async (_name, useHook, confirmedByMe) => {
+      const answer: ReportConfirmResponse = {
+        confirmCount: confirmedByMe ? 4 : 5,
+        confirmedByMe: !confirmedByMe,
+        fixedCount: 0,
+        fixedByMe: false,
+      }
+      const api = {
+        confirmReport: vi.fn(async () => answer),
+        unconfirmReport: vi.fn(async () => answer),
+      }
+      const { result, queryClient } = renderWithApi(
+        useHook,
+        api,
+        report({ confirmCount: 4, confirmedByMe }),
+      )
+      const map = queryKeys.mapReports({ west: -118.4, south: 34, east: -118.2, north: 34.2 }, [])
+      const nearby = queryKeys.nearbyReports(34.1, -118.3, 0.25)
+      const post = ["post", "p1"] as const
+      queryClient.setQueryData(map, { pins: [] })
+      queryClient.setQueryData(nearby, { pins: [] })
+      queryClient.setQueryData(post, { id: "p1" })
+      await act(async () => {
+        await result.current.mutateAsync()
+      })
+      await waitFor(() => expect(queryClient.getQueryState(map)?.isInvalidated).toBe(true))
+      expect(queryClient.getQueryState(nearby)?.isInvalidated).toBe(true)
+      expect(queryClient.getQueryState(post)?.isInvalidated).toBe(false)
+    },
+  )
 })
 
 describe("Me too on a report opened by its reference code", () => {
@@ -176,7 +194,9 @@ describe("Me too on a report opened by its reference code", () => {
     act(() => result.current.mutate())
     await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(5))
     expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(true)
-    await act(async () => call.resolve({ confirmCount: 9, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      call.resolve({ confirmCount: 9, confirmedByMe: true, fixedCount: 0, fixedByMe: false }),
+    )
     await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmCount).toBe(9))
     expect(queryClient.getQueryData<ReportDTO>(["report", "LA-OTHER"])?.confirmCount).toBe(4)
   })
@@ -191,10 +211,15 @@ describe("Me too on a report opened by its reference code", () => {
     )
     queryClient.setQueryData(CODE, report({ confirmCount: 5, confirmedByMe: true }))
     act(() => result.current.mutate())
-    await waitFor(() => expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(false))
+    await waitFor(() =>
+      expect(queryClient.getQueryData<ReportDTO>(CODE)?.confirmedByMe).toBe(false),
+    )
     await act(async () => call.reject(new AppError(ErrorCode.INTERNAL, "boom")))
     await waitFor(() => expect(result.current.isError).toBe(true))
-    expect(queryClient.getQueryData<ReportDTO>(CODE)).toMatchObject({ confirmCount: 5, confirmedByMe: true })
+    expect(queryClient.getQueryData<ReportDTO>(CODE)).toMatchObject({
+      confirmCount: 5,
+      confirmedByMe: true,
+    })
   })
 })
 
@@ -232,15 +257,21 @@ describe("a fast double tap on one report", () => {
   it("T19: sends the DELETE once after the POST settles, and the POST's answer never shows", async () => {
     const { api, post, del, queryClient } = await doubleTap()
     const seen: ReturnType<typeof confirmState>[] = []
-    const unsubscribe = queryClient.getQueryCache().subscribe(() => seen.push(confirmState(queryClient)))
+    const unsubscribe = queryClient
+      .getQueryCache()
+      .subscribe(() => seen.push(confirmState(queryClient)))
 
     expect(api.unconfirmReport).not.toHaveBeenCalled()
-    await act(async () => post.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      post.resolve({ confirmCount: 5, confirmedByMe: true, fixedCount: 0, fixedByMe: false }),
+    )
     expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
     await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 4, confirmedByMe: false })
 
-    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }),
+    )
     await waitFor(() => expect(queryClient.isMutating()).toBe(0))
     unsubscribe()
 
@@ -257,7 +288,10 @@ describe("Me too taps queued behind a failing call", () => {
     const secondPost = held<ReportConfirmResponse>()
     const del = held<ReportConfirmResponse>()
     const api = {
-      confirmReport: vi.fn().mockReturnValueOnce(firstPost.promise).mockReturnValueOnce(secondPost.promise),
+      confirmReport: vi
+        .fn()
+        .mockReturnValueOnce(firstPost.promise)
+        .mockReturnValueOnce(secondPost.promise),
       unconfirmReport: vi.fn(() => del.promise),
     }
     const { result, queryClient } = renderWithApi(
@@ -271,17 +305,23 @@ describe("Me too taps queued behind a failing call", () => {
       result.current.confirm.mutate()
     })
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(1))
-    await waitFor(() => expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true }))
+    await waitFor(() =>
+      expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true }),
+    )
 
     await act(async () => firstPost.reject(new AppError(ErrorCode.INTERNAL, "boom")))
     await waitFor(() => expect(api.unconfirmReport).toHaveBeenCalledTimes(1))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
 
-    await act(async () => del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      del.resolve({ confirmCount: 4, confirmedByMe: false, fixedCount: 0, fixedByMe: false }),
+    )
     await waitFor(() => expect(api.confirmReport).toHaveBeenCalledTimes(2))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 5, confirmedByMe: true })
 
-    await act(async () => secondPost.resolve({ confirmCount: 6, confirmedByMe: true, fixedCount: 0, fixedByMe: false }))
+    await act(async () =>
+      secondPost.resolve({ confirmCount: 6, confirmedByMe: true, fixedCount: 0, fixedByMe: false }),
+    )
     await waitFor(() => expect(queryClient.isMutating()).toBe(0))
     expect(confirmState(queryClient)).toEqual({ confirmCount: 6, confirmedByMe: true })
   })

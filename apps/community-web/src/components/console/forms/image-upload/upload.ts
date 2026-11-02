@@ -20,9 +20,7 @@ export interface ConsoleUploadInput {
   signal?: AbortSignal
 }
 
-export async function uploadConsoleImage(
-  input: ConsoleUploadInput,
-): Promise<ConsoleUploadResult> {
+export async function uploadConsoleImage(input: ConsoleUploadInput): Promise<ConsoleUploadResult> {
   const uploaded = await uploadMedia({
     api: input.api,
     camera: webCamera,

@@ -14,7 +14,8 @@ type Failures = (input: {
   lookupError: boolean
   lookupErrorCode?: string
 }) => { region: boolean; search: boolean; lookup: boolean }
-const pickerQueryFailures = (model as unknown as { pickerQueryFailures?: Failures }).pickerQueryFailures
+const pickerQueryFailures = (model as unknown as { pickerQueryFailures?: Failures })
+  .pickerQueryFailures
 
 const quiet = {
   regionError: false,
@@ -42,13 +43,21 @@ describe("report picker query failures", () => {
   })
 
   it("ignores a stale search error once the query is too short to search", () => {
-    expect(pickerQueryFailures!({ ...quiet, searching: false, searchError: true }).search).toBe(false)
+    expect(pickerQueryFailures!({ ...quiet, searching: false, searchError: true }).search).toBe(
+      false,
+    )
   })
 
   it("treats a failed code lookup as a failure but NOT_FOUND as an honest no match", () => {
-    expect(pickerQueryFailures!({ ...quiet, lookupError: true, lookupErrorCode: "INTERNAL" }).lookup).toBe(true)
-    expect(pickerQueryFailures!({ ...quiet, lookupError: true, lookupErrorCode: "NOT_FOUND" }).lookup).toBe(false)
-    expect(pickerQueryFailures!({ ...quiet, lookupActive: false, lookupError: true }).lookup).toBe(false)
+    expect(
+      pickerQueryFailures!({ ...quiet, lookupError: true, lookupErrorCode: "INTERNAL" }).lookup,
+    ).toBe(true)
+    expect(
+      pickerQueryFailures!({ ...quiet, lookupError: true, lookupErrorCode: "NOT_FOUND" }).lookup,
+    ).toBe(false)
+    expect(pickerQueryFailures!({ ...quiet, lookupActive: false, lookupError: true }).lookup).toBe(
+      false,
+    )
   })
 
   it("feeds every failure into the list state and retries the queries that failed", () => {

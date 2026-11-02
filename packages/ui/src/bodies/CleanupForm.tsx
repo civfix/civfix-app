@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, Image, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
@@ -51,7 +51,7 @@ import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
 import { FeedShareBlock, FeedShareEventCard } from "./FeedShareBlock"
-import { draftWhenLabel, scheduleFieldErrors } from "./calendarModel"
+import { draftWhenLabel, scheduleFieldErrors, type ScheduleFieldErrorKey } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { ReportLinkPicker } from "./ReportLinkPicker"
 import { linkBlockState } from "./linkReportsModel"
@@ -272,14 +272,17 @@ function MeetAddressField({
     addressSource: value.addressSource,
   })
   const pinMoved = eventAddressPinMoved({ coords: value.coords, current })
-  const missing = value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
+  const missing =
+    value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
   const cityHint = resolution.data?.cityStateLabel?.trim() ?? ""
 
   return (
     <View style={styles.addressBlock}>
       <TextField
         label={t("address.label")}
-        placeholder={status === "manual" ? t("address.placeholderManual") : t("address.placeholder")}
+        placeholder={
+          status === "manual" ? t("address.placeholderManual") : t("address.placeholder")
+        }
         value={value.address}
         onChangeText={(text) =>
           commit.current(eventAddressEdit({ text, coords: value.coords, current }))
@@ -559,8 +562,20 @@ function MeetLocationField({
         />
       ) : (
         <>
-          <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-          <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
+          <AddressSearch
+            value={value.addrQuery}
+            onChangeText={(addrQuery) => patch({ addrQuery })}
+            onPick={onPickPlace}
+          />
+          <LocationPicker
+            value={value.coords}
+            onChange={onDropPin}
+            onClear={() => patch({ coords: null })}
+            initialCenter={initialCenter ?? undefined}
+            centerSettled={centerSettled}
+            mode={pickMode}
+            pin={pin}
+          />
         </>
       )}
       <TextField
@@ -586,7 +601,10 @@ function WhenSection({
   const styles = useStyles()
   const { t } = useT("event-form")
 
-  const onChangeDate = useCallback((date: Date) => patch(dateChangePatch(value, date)), [patch, value])
+  const onChangeDate = useCallback(
+    (date: Date) => patch(dateChangePatch(value, date)),
+    [patch, value],
+  )
 
   const onChangeStartTime = useCallback(
     (time: Date) => patch(startTimeChangePatch(value, time)),
@@ -600,13 +618,15 @@ function WhenSection({
 
   const scheduleErrors = useMemo(() => {
     const found = scheduleFieldErrors(value, value.timezone)
-    const stale = (key: string | undefined) =>
-      key === undefined || (scheduleUnchanged && (key === "date_past" || key === "time_past"))
     const vars = { minutes: MIN_EVENT_DURATION_MINUTES }
+    const message = (key: ScheduleFieldErrorKey | undefined) =>
+      key === undefined ? null : t(`error.${key}`, vars)
+    const stale = (key: ScheduleFieldErrorKey | undefined) =>
+      scheduleUnchanged && (key === "date_past" || key === "time_past")
     return {
-      date: stale(found.date) ? null : t(`error.${found.date}`, vars),
-      time: stale(found.time) ? null : t(`error.${found.time}`, vars),
-      endTime: found.endTime ? t(`error.${found.endTime}`, vars) : null,
+      date: stale(found.date) ? null : message(found.date),
+      time: stale(found.time) ? null : message(found.time),
+      endTime: message(found.endTime),
     }
   }, [scheduleUnchanged, t, value])
 
@@ -1004,4 +1024,3 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.85,
   },
 }))
-

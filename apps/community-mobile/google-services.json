@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "117421518461",
+    "project_id": "civfix-6402e",
+    "storage_bucket": "civfix-6402e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:117421518461:android:813c6fa36c2570e3d1cb14",
+        "android_client_info": {
+          "package_name": "org.civfix.community"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1wpTc75XEq53u90JIa_Zih9NrHS9YHg0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

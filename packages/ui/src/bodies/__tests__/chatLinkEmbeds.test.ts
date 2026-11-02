@@ -25,7 +25,9 @@ const LOCALES = ["en", "es", "de", "ko"].map((locale) => ({
 describe("a civfix link in a message becomes a card inside the bubble", () => {
   it("tokenizes the body ONCE and derives both the text and the embed plan from those tokens", () => {
     expect(BUBBLE).toMatch(/const bodyTokens = useMemo\(\s*\(\) =>\s*chatBodyTokens\(\{/)
-    expect(BUBBLE).toContain("const embedPlan = useMemo(() => planChatEmbeds(bodyTokens), [bodyTokens])")
+    expect(BUBBLE).toContain(
+      "const embedPlan = useMemo(() => planChatEmbeds(bodyTokens), [bodyTokens])",
+    )
     expect(BUBBLE).toContain("const bodyContent = renderChatTokens(bodyTokens, {")
     expect(BUBBLE.match(/tokenizeChatBody\(/g)?.length).toBe(1)
   })
@@ -37,10 +39,15 @@ describe("a civfix link in a message becomes a card inside the bubble", () => {
 
   it("mounts the embeds in the bubble body, for polls never, beneath the text otherwise", () => {
     expect(BUBBLE).toMatch(/\{!isPoll && embedPlan\.refs\.length > 0 \? \(\s*<ChatLinkEmbeds/)
-    const bubbleInner = BUBBLE.slice(BUBBLE.indexOf("const bubbleInner = ("), BUBBLE.indexOf("const bubbleClone"))
+    const bubbleInner = BUBBLE.slice(
+      BUBBLE.indexOf("const bubbleInner = ("),
+      BUBBLE.indexOf("const bubbleClone"),
+    )
     expect(bubbleInner).toContain("<ChatLinkEmbeds")
     expect(bubbleInner).toContain("<ReactionChips")
-    expect(bubbleInner.indexOf("<ChatLinkEmbeds")).toBeLessThan(bubbleInner.indexOf("<ReactionChips"))
+    expect(bubbleInner.indexOf("<ChatLinkEmbeds")).toBeLessThan(
+      bubbleInner.indexOf("<ReactionChips"),
+    )
   })
 
   it("drops the duplicated raw url when the message is nothing but that one link", () => {
@@ -70,18 +77,26 @@ describe("the embed cards reuse the house cards and the cached data hooks", () =
   it("renders reports and events with LinkedReportCard / LinkedEventCard in their list layout", () => {
     expect(EMBEDS).toContain('import { LinkedEventCard } from "../LinkedEventCard"')
     expect(EMBEDS).toContain('import { LinkedReportCard } from "../LinkedReportCard"')
-    expect(EMBEDS).toMatch(/<LinkedReportCard report=\{reportToCardData\(report\)\} layout="list" headline="title"/)
-    expect(EMBEDS).toMatch(/<LinkedEventCard\s+event=\{ref\}\s+cleanup=\{query\.data\}\s+layout="list"/)
+    expect(EMBEDS).toMatch(
+      /<LinkedReportCard\s+report=\{reportToCardData\(report\)\}\s+layout="list"\s+headline="title"/,
+    )
+    expect(EMBEDS).toMatch(
+      /<LinkedEventCard\s+event=\{ref\}\s+cleanup=\{query\.data\}\s+layout="list"/,
+    )
   })
 
   it("builds the post byline with the feed's identity model and its media with PostMediaGrid", () => {
     expect(EMBEDS).toContain('import { buildPostIdentity } from "../postCardModel"')
     expect(EMBEDS).toContain('import { PostMediaGrid } from "../PostMediaGrid"')
-    expect(EMBEDS).toContain('buildPostIdentity(post.author, post.organization, tf, tf("post_card.deleted_account"))')
+    expect(EMBEDS).toContain(
+      'buildPostIdentity(post.author, post.organization, tf, tf("post_card.deleted_account"))',
+    )
   })
 
   it("fetches through the shared @civfix/ui/data hooks, one observer per card", () => {
-    expect(EMBEDS).toContain('import { useCleanup, useOrganization, useProfile, useReport } from "../../data"')
+    expect(EMBEDS).toContain(
+      'import { useCleanup, useOrganization, useProfile, useReport } from "../../data"',
+    )
     expect(EMBEDS).toContain('import { usePost } from "../../data/hooks/posts"')
     expect(EMBEDS).toContain("const query = useReport(link.id)")
     expect(EMBEDS).toContain("const query = useCleanup(link.id)")
@@ -105,9 +120,15 @@ describe("the embed cards reuse the house cards and the cached data hooks", () =
 
 describe("the embed states never break the bubble", () => {
   it("reserves each kind's own card height while it loads and falls back to the plain link on an error", () => {
-    expect(EMBEDS).toMatch(/^const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/m)
-    expect(EMBEDS).toContain("<SkeletonBlock height={EMBED_RESERVED_HEIGHT[kind]} radius={th.radius.lg} />")
-    expect(EMBEDS).toMatch(/if \(data !== undefined\) return <>\{render\(data\)\}<\/>\s*if \(query\.isLoading\) return <EmbedSkeleton kind=\{props\.link\.kind\} \/>\s*return <EmbedFallback/)
+    expect(EMBEDS).toMatch(
+      /^const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = \{\s*report: 64,\s*event: 68,\s*post: 88,\s*person: 64,\s*org: 64,\s*\}/m,
+    )
+    expect(EMBEDS).toContain(
+      "<SkeletonBlock height={EMBED_RESERVED_HEIGHT[kind]} radius={th.radius.lg} />",
+    )
+    expect(EMBEDS).toMatch(
+      /if \(data !== undefined\) return <>\{render\(data\)\}<\/>\s*if \(query\.isLoading\) return <EmbedSkeleton kind=\{props\.link\.kind\} \/>\s*return <EmbedFallback/,
+    )
     expect(EMBEDS).toMatch(/function EmbedFallback[\s\S]*?if \(!linkOnly\) return null/)
   })
 
@@ -146,7 +167,13 @@ describe("only the cards the reader can see are allowed to fetch", () => {
     expect(EMBEDS).toContain("const { ready, onSettled } = useEmbedGate(rowKey, props.link.key)")
     expect(EMBEDS).toContain("if (!ready) return <EmbedSkeleton kind={props.link.kind} />")
     expect(EMBEDS.indexOf("useEmbedGate")).toBeLessThan(EMBEDS.indexOf("<ReportEmbed"))
-    for (const hook of ["useReport(", "useCleanup(", "usePost(", "useProfile(", "useOrganization("]) {
+    for (const hook of [
+      "useReport(",
+      "useCleanup(",
+      "usePost(",
+      "useProfile(",
+      "useOrganization(",
+    ]) {
       expect(EMBEDS.match(new RegExp(hook.replace("(", "\\("), "g"))?.length, hook).toBe(1)
     }
   })
@@ -155,7 +182,9 @@ describe("only the cards the reader can see are allowed to fetch", () => {
     expect(CONVERSATION).toContain("const embedScope = useOwnChatEmbedScope()")
     expect(CONVERSATION).toContain("viewabilityConfig={EMBED_VIEWABILITY}")
     expect(CONVERSATION).toContain("onViewableItemsChanged={onViewableItemsChanged}")
-    expect(CONVERSATION).toContain("const keys = viewportWindowKeys(dataRef.current, viewableItems)")
+    expect(CONVERSATION).toContain(
+      "const keys = viewportWindowKeys(dataRef.current, viewableItems)",
+    )
     expect(CONVERSATION).toContain("<ChatEmbedScopeProvider value={embedScope}>")
     expect(BUBBLE).toContain("const rowKey = message.clientId ?? message.id")
     expect(BUBBLE).toContain("rowKey={rowKey}")
@@ -172,7 +201,9 @@ describe("only the cards the reader can see are allowed to fetch", () => {
 
   it("falls back to the in-flight cap, never to a dead card, if the list never reports viewability", () => {
     expect(SCHEDULER).toContain("isVisible: (key) => !reported || visible.has(key)")
-    expect(SCOPE).toContain("unscoped.current ??= { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }")
+    expect(SCOPE).toContain(
+      "unscoped.current ??= { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }",
+    )
   })
 
   it("gives a provider-less bubble its OWN fallback scope, never a module-level one that outlives it", () => {
@@ -183,7 +214,9 @@ describe("only the cards the reader can see are allowed to fetch", () => {
   })
 
   it("makes an already-loaded embed take a slot again, so the in-flight cap is never exceeded", () => {
-    expect(SCHEDULER).toContain("const isAdmitted = (key: string): boolean => active.has(key) || holding.has(key)")
+    expect(SCHEDULER).toContain(
+      "const isAdmitted = (key: string): boolean => active.has(key) || holding.has(key)",
+    )
     expect(SCHEDULER).toContain("if (settledOnce.has(key)) waiting.unshift(key)")
     expect(SCHEDULER).toMatch(/if \(settledOnce\.size <= hintLimit\) break/)
   })
@@ -198,17 +231,30 @@ describe("only the cards the reader can see are allowed to fetch", () => {
 describe("a link-only message is drawn as its card, never as a tinted bubble framing it", () => {
   it("drops the bubble chrome when the body is nothing but the link and there is no quote above it", () => {
     expect(BUBBLE).toContain("const bare = embedPlan.linkOnly && !message.replyTo")
-    expect(BUBBLE).toContain("const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs")
-    expect(BUBBLE.match(/\[styles\.bubble, (?:bubbleFit, )?bubbleChrome, bubbleTint\]/g)?.length).toBe(3)
+    expect(BUBBLE).toContain(
+      "const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs",
+    )
+    expect(
+      BUBBLE.match(/\[styles\.bubble, (?:bubbleFit, )?bubbleChrome, bubbleTint\]/g)?.length,
+    ).toBe(3)
     expect(BUBBLE).not.toMatch(/styles\.bubble, mine \? styles\.bubbleMine/)
-    expect(STYLES).toMatch(/bubbleBare: \{\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*borderRadius: t\.radius\.lg,\s*\}/)
+    expect(STYLES).toMatch(
+      /bubbleBare: \{\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*borderRadius: t\.radius\.lg,\s*\}/,
+    )
   })
 
   it("styles the chips, the flash and the fallback link for the page, not the tint, once the bubble is bare", () => {
     expect(BUBBLE).toContain("const tinted = mine && !bare")
-    expect(BUBBLE).toContain("const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken")
-    expect(BUBBLE).toContain("<ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />")
-    expect(BUBBLE.match(/<FlashOverlay mine=\{tinted\} shape=\{bare \? "card" : "bubble"\} \/>/g)?.length).toBe(2)
+    expect(BUBBLE).toContain(
+      "const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken",
+    )
+    expect(BUBBLE).toMatch(
+      /<ReactionChips\s+reactions=\{reactions\}\s+onToggle=\{toggleReaction\}\s+mine=\{tinted\}\s+disabled=\{!reactable\}\s+\/>/,
+    )
+    expect(
+      BUBBLE.match(/<FlashOverlay mine=\{tinted\} shape=\{bare \? "card" : "bubble"\} \/>/g)
+        ?.length,
+    ).toBe(2)
     expect(STYLES).toMatch(/flashOverlayCard: \{\s*borderRadius: t\.radius\.lg,\s*\}/)
   })
 
@@ -216,13 +262,19 @@ describe("a link-only message is drawn as its card, never as a tinted bubble fra
     expect(EMBEDS).toMatch(
       /card: \{[^}]*borderWidth: StyleSheet\.hairlineWidth,\s*borderColor: t\.colors\.border,\s*backgroundColor: t\.colors\.surface,/,
     )
-    expect(EMBEDS).toMatch(/cardHovered: \{\s*borderColor: t\.colors\.borderStrong,\s*backgroundColor: t\.colors\.surfaceTint,\s*\}/)
+    expect(EMBEDS).toMatch(
+      /cardHovered: \{\s*borderColor: t\.colors\.borderStrong,\s*backgroundColor: t\.colors\.surfaceTint,\s*\}/,
+    )
     expect(EMBEDS).not.toMatch(/bloom|danger|accent|brand\./)
   })
 })
 
 describe("an optimistic send is drawn by the same tree the ack will confirm, so nothing snaps", () => {
-  const rowContent = () => BUBBLE.slice(BUBBLE.indexOf("const rowContent = ("), BUBBLE.indexOf("return (\n    <View\n      ref={hasBody"))
+  const rowContent = () =>
+    BUBBLE.slice(
+      BUBBLE.indexOf("const rowContent = ("),
+      BUBBLE.indexOf("return (\n    <View\n      ref={hasBody"),
+    )
 
   it("has no dedicated pending render path: one bubble tree, one ChatLinkEmbeds mount", () => {
     expect(BUBBLE).not.toMatch(/if \(mine && \(pending \|\| failed\)\) \{\s*return/)
@@ -238,22 +290,31 @@ describe("an optimistic send is drawn by the same tree the ack will confirm, so 
   it("keeps the sending state and the retry affordance beneath the bubble, where attachment-only sends already show them", () => {
     const content = rowContent()
     const attachmentsAt = content.indexOf("<BubbleAttachments")
-    const statusAt = content.indexOf("{inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}")
+    const statusAt = content.indexOf(
+      "{inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}",
+    )
     expect(attachmentsAt).toBeGreaterThan(0)
     expect(statusAt).toBeGreaterThan(attachmentsAt)
     expect(content).toContain("{(groupEnd || edited) && !inFlight ? (")
-    const status = BUBBLE.slice(BUBBLE.indexOf("function SendStatusLine("), BUBBLE.indexOf("export interface BubbleProps"))
+    const status = BUBBLE.slice(
+      BUBBLE.indexOf("function SendStatusLine("),
+      BUBBLE.indexOf("export interface BubbleProps"),
+    )
     expect(status).toMatch(/accessibilityLabel=\{t\("bubble\.retry_sending"\)\}/)
     expect(status).toMatch(/\{t\("bubble\.failed_retry"\)\}/)
     expect(status).toMatch(/\{t\("bubble\.sending"\)\}/)
-    expect(BUBBLE).toMatch(/const retrySend = \(\) => \{\s*if \(message\.clientId\) onRetry\(message\.clientId\)/)
+    expect(BUBBLE).toMatch(
+      /const retrySend = \(\) => \{\s*if \(message\.clientId\) onRetry\(message\.clientId\)/,
+    )
   })
 
   it("gates the card on the row key the ack preserves, so the optimistic row and the echoed row share one gate", () => {
     expect(BUBBLE).toContain("const rowKey = message.clientId ?? message.id")
     const model = code(read("../conversation/conversationModel.ts"))
     expect(model).toContain("id: item.message.clientId ?? item.message.id")
-    expect(SCOPE).toContain("export function useEmbedGate(rowKey: string, embedKey: string): EmbedGate")
+    expect(SCOPE).toContain(
+      "export function useEmbedGate(rowKey: string, embedKey: string): EmbedGate",
+    )
   })
 
   it("never opens a context menu or a reaction for an in-flight message", () => {
@@ -265,18 +326,28 @@ describe("an optimistic send is drawn by the same tree the ack will confirm, so 
 })
 
 describe("the post card byline gives the name the first line and moves the handle beneath it", () => {
-  const postCard = () => EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
+  const postCard = () =>
+    EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
 
   it("stacks name (+ org badge) over handle · time in the identity column the person and org cards already use", () => {
     const card = postCard()
     expect(card).toContain("const byline = identity.handleLabel ?? identity.viaLabel")
-    expect(card).toMatch(/<View style=\{styles\.identityRow\}>\s*<Avatar[\s\S]*?size=\{40\}[\s\S]*?<View style=\{styles\.identityCol\}>/)
-    const nameRow = card.slice(card.indexOf("<View style={styles.identityCol}>"), card.indexOf("{byline ? ("))
+    expect(card).toMatch(
+      /<View style=\{styles\.identityRow\}>\s*<Avatar[\s\S]*?size=\{40\}[\s\S]*?<View style=\{styles\.identityCol\}>/,
+    )
+    const nameRow = card.slice(
+      card.indexOf("<View style={styles.identityCol}>"),
+      card.indexOf("{byline ? ("),
+    )
     expect(nameRow).toContain("{identity.name}")
-    expect(nameRow).toContain('<OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />')
+    expect(nameRow).toMatch(
+      /<OrgAffiliationBadge\s+organization=\{identity\.affiliation\}\s+size="sm"\s+interactive=\{false\}\s+\/>/,
+    )
     expect(nameRow).not.toContain("byline")
     expect(nameRow).not.toContain("timeAgo")
-    expect(card).toContain("<Text style={[styles.meta, styles.metaFixed]}>{byline ? `· ${time}` : time}</Text>")
+    expect(card).toContain(
+      "<Text style={[styles.meta, styles.metaFixed]}>{byline ? `· ${time}` : time}</Text>",
+    )
   })
 
   it("lets the handle truncate but never the time", () => {
@@ -286,7 +357,12 @@ describe("the post card byline gives the name the first line and moves the handl
   })
 
   it("matches the other person-led rows in the package, which all stack name over @handle", () => {
-    for (const file of ["../search/SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
+    for (const file of [
+      "../search/SearchResults.tsx",
+      "../ConnectionsBody.tsx",
+      "../RosterRow.tsx",
+      "../LeaderboardRow.tsx",
+    ]) {
       const source = code(read(file))
       expect(source).toMatch(/numberOfLines=\{1\}>\s*@\{(person|entry)\.handle\}/)
     }
@@ -294,23 +370,34 @@ describe("the post card byline gives the name the first line and moves the handl
 })
 
 describe("a shared post still previews the event or report attached to it", () => {
-  const postCard = () => EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
+  const postCard = () =>
+    EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
 
   it("draws the attachment with the same two cards the feed row draws it with", () => {
     const card = postCard()
     expect(card).toContain("const linkedEvent = post.event ?? post.repostOf?.event ?? null")
     expect(card).toContain("const linkedReport = post.report ?? post.repostOf?.report ?? null")
-    expect(card).toMatch(/<LinkedEventCard\s+event=\{eventCard\}\s+layout="list"\s+timeZone=\{eventCard\.timezone \?\? undefined\}/)
-    expect(card).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.linkedRefToCardData\(reportCard\),/)
+    expect(card).toMatch(
+      /<LinkedEventCard\s+event=\{eventCard\}\s+layout="list"\s+timeZone=\{eventCard\.timezone \?\? undefined\}/,
+    )
+    expect(card).toMatch(
+      /<LinkedReportCard\s+report=\{\{\s*\.\.\.linkedRefToCardData\(reportCard\),/,
+    )
     expect(card).toMatch(/thumbUrl: reportCard\.thumbUrl \?\? localReportThumb\(reportCard\.id\),/)
     expect(card).toMatch(/layout="list"\s+headline="title"/)
     const view = code(read("../postCardModel.ts"))
-    expect(view).toContain("displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),")
-    expect(view).toContain("displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),")
+    expect(view).toContain(
+      "displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),",
+    )
+    expect(view).toContain(
+      "displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),",
+    )
     const feed = code(read("../PostCard.tsx"))
-    expect(feed).toContain("const { isRepost, embedded, media, displayEvent, displayReport } = view")
+    expect(feed).toContain(
+      "const { isRepost, embedded, media, displayEvent, displayReport } = view",
+    )
     expect(feed).toMatch(/<LinkedEventCard\s+event=\{displayEvent\}/)
-    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{ \.\.\.displayReport,/)
+    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.displayReport,/)
   })
 
   it("hangs the attachment below the body and the photos, never above the byline", () => {
@@ -327,9 +414,15 @@ describe("a shared post still previews the event or report attached to it", () =
 
   it("drops the nested card when the same entity is already linked in the message body", () => {
     const card = postCard()
-    expect(card).toContain("const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null")
-    expect(card).toContain("const reportCard = linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null")
-    expect(EMBEDS).toContain("const embeddedKeys = useMemo(() => new Set(refs.map((link) => link.key)), [refs])")
+    expect(card).toContain(
+      "const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null",
+    )
+    expect(card).toMatch(
+      /const reportCard =\s+linkedReport && !embeddedKeys\.has\(`report:\$\{linkedReport\.id\}`\) \? linkedReport : null/,
+    )
+    expect(EMBEDS).toContain(
+      "const embeddedKeys = useMemo(() => new Set(refs.map((link) => link.key)), [refs])",
+    )
     expect(EMBEDS).toContain("embeddedKeys={embeddedKeys}")
   })
 

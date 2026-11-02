@@ -28,13 +28,15 @@ describe("the lightbox scrim", () => {
 describe("the lightbox controls sit in the safe area", () => {
   it("reads the device insets through the context form, which degrades to zero on web", () => {
     expect(base).toContain('import { SafeAreaInsetsContext } from "react-native-safe-area-context"')
-    expect(base).toContain("const insets = useContext(SafeAreaInsetsContext)")
+    expect(base).toContain("const insets = useFullWindowInsets(useContext(SafeAreaInsetsContext))")
     expect(base).toContain("const offsets = lightboxControlOffsets(insets)")
     expect(base).not.toContain("useSafeAreaInsets")
   })
 
   it("positions the close button and both chevrons from those offsets", () => {
-    expect(base).toContain("style={(state) => [styles.controlBase, offset, webCursor(false),")
+    expect(base).toMatch(
+      /style=\{\(state\) => \[\s*styles\.controlBase,\s*offset,\s*webCursor\(false\),/,
+    )
     expect(base.match(/styles\.controlBase,/g)).toHaveLength(1)
     for (const control of ["close", "prev", "next"]) {
       expect(base).toContain(`offset={offsets.${control}}`)
@@ -49,7 +51,7 @@ describe("the zoomable stage", () => {
     expect(base).toContain('current && current.kind === "image" ? (')
     expect(base).toContain("<ZoomableMedia")
     expect(base).toContain('current && current.kind !== "image" ? (')
-    expect(base).toMatch(/<View style=\{styles\.stage\} pointerEvents="box-none">/)
+    expect(base).toMatch(/<View style=\{\[styles\.stage, pointerEventStyles\["box-none"\]\]\}>/)
   })
 
   it("hands the stage its measured content box and the window as the viewport", () => {
@@ -61,16 +63,19 @@ describe("the zoomable stage", () => {
 
   it("resets the zoom on every index change and on dismissal", () => {
     expect(base).toContain('resetToken={visible ? `${index}:${current.url}` : "closed"}')
-    expect(native).toMatch(/useEffect\(\(\) => \{[\s\S]*?setZoomed\(false\)[\s\S]*?\}, \[resetToken/)
-    expect(web).toMatch(/useEffect\(\(\) => \{\n\s*apply\(ZOOM_IDENTITY\)\n\s*\}, \[apply, resetToken\]\)/)
+    expect(native).toMatch(
+      /useEffect\(\(\) => \{[\s\S]*?setZoomed\(false\)[\s\S]*?\}, \[resetToken/,
+    )
+    expect(web).toMatch(
+      /useEffect\(\(\) => \{\n\s*apply\(ZOOM_IDENTITY\)\n\s*\}, \[apply, resetToken\]\)/,
+    )
   })
 })
 
 describe("the ZoomableMedia seam split", () => {
   it("keeps gesture-handler and reanimated inside the native seam", () => {
     expect(native).toMatch(/^import \{ Gesture, [\w, ]+\} from "react-native-gesture-handler"$/m)
-    expect(native).toMatch(/^import Animated, \{$/m)
-    expect(native).toContain('} from "react-native-reanimated"')
+    expect(native).toMatch(/^import Animated, \{[^}]*\} from "react-native-reanimated"$/m)
   })
 
   it("keeps both of them OUT of the web seam and the selector", () => {
@@ -78,7 +83,7 @@ describe("the ZoomableMedia seam split", () => {
       expect(src).not.toMatch(/react-native-gesture-handler/)
       expect(src).not.toMatch(/react-native-reanimated/)
       expect(src).not.toMatch(/Gesture\.\w/)
-      expect(src).not.toMatch(/useSharedValue|useAnimatedStyle|runOnJS/)
+      expect(src).not.toMatch(/useSharedValue|useAnimatedStyle|runOnJS|scheduleOnRN/)
     }
   })
 
@@ -119,8 +124,8 @@ describe("the native gesture set", () => {
   it("arms the pan only past a travel slop, so a double tap is never swallowed by the race", () => {
     expect(native).toMatch(/^const PAN_ACTIVATE_TRAVEL = 12$/m)
     expect(native).toContain("onTouchesDown((event) => {")
-    expect(native).toContain(
-      "if (!travelExceeds(panTouchOrigin.value, { x: touch.absoluteX, y: touch.absoluteY }, PAN_ACTIVATE_TRAVEL)) {",
+    expect(native).toMatch(
+      /if \(\s*!travelExceeds\(\s*panTouchOrigin\.value,\s*\{ x: touch\.absoluteX, y: touch\.absoluteY \},\s*PAN_ACTIVATE_TRAVEL,?\s*\)\s*\) \{/,
     )
   })
 
@@ -176,14 +181,21 @@ describe("the native gesture set", () => {
 
   it("only shrinks the full-screen pan surface once the zoom-out animation has finished", () => {
     expect(native).toMatch(/const nextZoomed = isZoomed\(next\.scale\)/)
-    expect(native).toMatch(/if \(nextZoomed\) runOnJS\(setZoomed\)\(true\)/)
-    expect(native).toMatch(/if \(finished && !nextZoomed\) runOnJS\(setZoomed\)\(false\)/)
+    expect(native).toMatch(/if \(nextZoomed\) scheduleOnRN\(setZoomed, true\)/)
+    expect(native).toMatch(/if \(finished && !nextZoomed\) scheduleOnRN\(setZoomed, false\)/)
   })
 })
 
 describe("the web pointer surface", () => {
   it("drives zoom from pointer, wheel and double-click events", () => {
-    for (const event of ["pointerdown", "pointermove", "pointerup", "pointercancel", "wheel", "dblclick"]) {
+    for (const event of [
+      "pointerdown",
+      "pointermove",
+      "pointerup",
+      "pointercancel",
+      "wheel",
+      "dblclick",
+    ]) {
       expect(web).toContain(`surface.addEventListener("${event}"`)
       expect(web).toContain(`surface.removeEventListener("${event}"`)
     }
@@ -206,7 +218,9 @@ describe("the web pointer surface", () => {
   })
 
   it("lets a trackpad accumulate small wheel steps, settling only once the stream stops", () => {
-    expect(web).toMatch(/wheelSettle = window\.setTimeout\(\(\) => \{\n\s*wheelSettle = null\n\s*settle\(\)\n\s*\}, WHEEL_SETTLE_DELAY_MS\)/)
+    expect(web).toMatch(
+      /wheelSettle = window\.setTimeout\(\(\) => \{\n\s*wheelSettle = null\n\s*settle\(\)\n\s*\}, WHEEL_SETTLE_DELAY_MS\)/,
+    )
     expect(web).not.toMatch(/apply\(\s*settleZoomTransform\(\s*focalZoomTransform/)
     expect(web).toContain("cancelWheelSettle()")
   })
@@ -243,7 +257,7 @@ describe("the web pointer surface", () => {
   })
 
   it("keeps its own gesture surface tap-transparent while unzoomed", () => {
-    expect(web).toContain('<View style={viewportStyle} pointerEvents="box-none">')
+    expect(web).toContain('<View style={[viewportStyle, pointerEventStyles["box-none"]]}>')
     expect(web).toContain("zoomed ? surfaceZoomedStyle : surfaceStyle")
   })
 })

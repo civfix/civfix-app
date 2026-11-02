@@ -15,7 +15,12 @@ import { submitErrorRecovery, type Step, type SubmitRecovery } from "../../repor
 import { useViewerDraftGeneration } from "../../viewerScope"
 import { useT } from "../../i18n"
 import { usePostComposerStore } from "../postComposerStore"
-import { shareSnapshotOf, type ShareSnapshot, type SubmitPhase, type SubmitSettled } from "./submitFlowModel"
+import {
+  shareSnapshotOf,
+  type ShareSnapshot,
+  type SubmitPhase,
+  type SubmitSettled,
+} from "./submitFlowModel"
 
 const submitRuns = createSubmitRunSlot<SubmitSettled>({
   claimsItself: (settled) => settled.kind === "composer",
@@ -90,7 +95,11 @@ export function useReportSubmitFlow({
         if (settled.kind === "error") {
           setSubmitError(submitErrorMessage(settled.error, t))
           setSubmitRecovery(
-            submitErrorRecovery(appErrorCode(settled.error), appErrorFields(settled.error), stepOrder),
+            submitErrorRecovery(
+              appErrorCode(settled.error),
+              appErrorFields(settled.error),
+              stepOrder,
+            ),
           )
           setSubmitPhase("error")
           return
@@ -108,42 +117,45 @@ export function useReportSubmitFlow({
     if (pending) followRun(pending)
   }, [followRun])
 
-  const performSubmit = useCallback(async (isCurrent: () => boolean): Promise<SubmitSettled> => {
-    try {
-      const res = await submit(isCurrent)
-      if (!isCurrent()) return { kind: "discarded" }
-      const d = useDraftReportStore.getState().draft
-      const share = shareSnapshotOf(d, t("review.untitled"))
+  const performSubmit = useCallback(
+    async (isCurrent: () => boolean): Promise<SubmitSettled> => {
+      try {
+        const res = await submit(isCurrent)
+        if (!isCurrent()) return { kind: "discarded" }
+        const d = useDraftReportStore.getState().draft
+        const share = shareSnapshotOf(d, t("review.untitled"))
 
-      haptics.success()
-      if (fromComposer) {
-        const composer = usePostComposerStore.getState()
-        composer.setAttachedReport({
-          id: res.reportId,
-          category: res.category ?? share.category ?? "other",
-          type: (d.reportTypeId as SharedReportType | undefined) ?? undefined,
-          title: share.title,
-          status: res.status ?? "published",
-          lat: res.lat,
-          lng: res.lng,
-          addr: share.addr,
-          thumbUrl: share.thumbUrl,
-          linkedAt: new Date().toISOString(),
-        })
-        composer.releaseClaimedCreate("report")
+        haptics.success()
+        if (fromComposer) {
+          const composer = usePostComposerStore.getState()
+          composer.setAttachedReport({
+            id: res.reportId,
+            category: res.category ?? share.category ?? "other",
+            type: (d.reportTypeId as SharedReportType | undefined) ?? undefined,
+            title: share.title,
+            status: res.status ?? "published",
+            lat: res.lat,
+            lng: res.lng,
+            addr: share.addr,
+            thumbUrl: share.thumbUrl,
+            linkedAt: new Date().toISOString(),
+          })
+          composer.releaseClaimedCreate("report")
+          reset()
+          useNavStore.getState().finishReportFlow({ kind: "composer" })
+          return { kind: "composer" }
+        }
+
         reset()
-        useNavStore.getState().finishReportFlow({ kind: "composer" })
-        return { kind: "composer" }
+        return { kind: "done", result: res, share }
+      } catch (err) {
+        if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }
+        haptics.error()
+        return { kind: "error", error: err }
       }
-
-      reset()
-      return { kind: "done", result: res, share }
-    } catch (err) {
-      if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }
-      haptics.error()
-      return { kind: "error", error: err }
-    }
-  }, [fromComposer, submit, reset, t, haptics])
+    },
+    [fromComposer, submit, reset, t, haptics],
+  )
 
   const runSubmit = useCallback(() => {
     const run = submitRuns.start(performSubmit)
@@ -158,5 +170,13 @@ export function useReportSubmitFlow({
     setStep(target)
   }, [setStep, submitRecovery])
 
-  return { submitPhase, submitError, submitRecovery, result, shareSnapshot, runSubmit, editAfterFailure }
+  return {
+    submitPhase,
+    submitError,
+    submitRecovery,
+    result,
+    shareSnapshot,
+    runSubmit,
+    editAfterFailure,
+  }
 }

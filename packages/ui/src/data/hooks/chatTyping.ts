@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react"
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import type { RoomKind } from "@civfix/contract"
 import type { ChatSocketLike } from "../types"
 
@@ -16,7 +16,13 @@ export interface ChatTypingDeps {
 }
 
 /** Who else is typing (each indicator expires on its own timer), and the throttled outgoing signal. */
-export function useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled }: ChatTypingDeps) {
+export function useChatTyping({
+  socket,
+  roomId,
+  roomKind,
+  stampRoomKind,
+  enabled,
+}: ChatTypingDeps) {
   const [typingUserIds, setTypingUserIds] = useState<string[]>([])
   const typingTimers = useRef<TimerMap>(new Map())
   const lastTypingSentRef = useRef(0)
@@ -59,7 +65,7 @@ export function useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled
 }
 
 /** Kept apart from `useChatTyping` so the caller can declare it after the socket lifecycle effect. */
-export function useClearTypingTimersOnUnmount(typingTimers: MutableRefObject<TimerMap>): void {
+export function useClearTypingTimersOnUnmount(typingTimers: RefObject<TimerMap>): void {
   useEffect(() => {
     const timers = typingTimers.current
     return () => {

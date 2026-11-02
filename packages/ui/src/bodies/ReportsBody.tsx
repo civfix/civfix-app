@@ -37,10 +37,7 @@ export function ReportsBody() {
   const [search, setSearch] = useState("")
   const q = search.trim().toLowerCase()
 
-  const all = useMemo(
-    () => query.data?.pages.flatMap((p) => p.items) ?? [],
-    [query.data?.pages],
-  )
+  const all = useMemo(() => query.data?.pages.flatMap((p) => p.items) ?? [], [query.data?.pages])
   const filtering = q.length > 0
   const reports = useMemo(
     () =>

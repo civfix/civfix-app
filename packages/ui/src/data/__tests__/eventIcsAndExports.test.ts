@@ -46,7 +46,9 @@ describe("a reschedule or cancel refreshes the calendar file", () => {
     qc.setQueryData(queryKeys.eventIcs("e2"), { ics: "BEGIN:VCALENDAR", filename: "e2.ics" })
     const opts = updateCleanupMutationOptions(qc, async () => {
       throw new Error("unused")
-    }) as unknown as { onSettled: (d: unknown, e: unknown, v: { id: string; patch: object }) => void }
+    }) as unknown as {
+      onSettled: (d: unknown, e: unknown, v: { id: string; patch: object }) => void
+    }
 
     opts.onSettled(undefined, null, { id: "e1", patch: {} })
 

@@ -44,7 +44,8 @@ export function useEventAnnouncements(
         limit: ANNOUNCEMENTS_PAGE_SIZE,
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
-    getNextPageParam: (lastPage: ListEventAnnouncementsResponse) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage: ListEventAnnouncementsResponse) =>
+      lastPage.nextCursor ?? undefined,
     retry: false,
   })
 }

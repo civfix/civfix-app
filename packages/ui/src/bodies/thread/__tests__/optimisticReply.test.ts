@@ -57,13 +57,22 @@ describe("buildOptimisticReply", () => {
   })
 
   it("roots a reply-to-a-reply under the focal post's own thread root", () => {
-    expect(buildOptimisticReply(input({ focalPost: { id: "reply-1", threadRootId: "root" } })).threadRootId).toBe("root")
+    expect(
+      buildOptimisticReply(input({ focalPost: { id: "reply-1", threadRootId: "root" } }))
+        .threadRootId,
+    ).toBe("root")
   })
 
   it("carries only finalized media, as ready server media", () => {
     const readyMedia: PostComposerMedia[] = [
       { uri: "file://a", kind: "image", posterUri: null, uploadId: "u1", status: "ready" },
-      { uri: "file://b", kind: "video", posterUri: "file://b.jpg", uploadId: null, status: "ready" },
+      {
+        uri: "file://b",
+        kind: "video",
+        posterUri: "file://b.jpg",
+        uploadId: null,
+        status: "ready",
+      },
     ]
     expect(buildOptimisticReply(input({ readyMedia })).media).toEqual([
       { id: "u1", kind: "image", url: "file://a", thumbUrl: null, status: "ready" },
@@ -79,7 +88,9 @@ describe("buildOptimisticReply", () => {
   })
 
   it("draws the attached report from its row, trimming the title and falling back like the server", () => {
-    const linked = buildOptimisticReply(input({ attachedReport: report(), attachedReportId: "r1" })).report
+    const linked = buildOptimisticReply(
+      input({ attachedReport: report(), attachedReportId: "r1" }),
+    ).report
     expect(linked).toEqual({
       id: "r1",
       category: "trash",
@@ -99,6 +110,8 @@ describe("buildOptimisticReply", () => {
   })
 
   it("never links a report row that belongs to a previous pick", () => {
-    expect(buildOptimisticReply(input({ attachedReport: report(), attachedReportId: "r2" })).report).toBeNull()
+    expect(
+      buildOptimisticReply(input({ attachedReport: report(), attachedReportId: "r2" })).report,
+    ).toBeNull()
   })
 })

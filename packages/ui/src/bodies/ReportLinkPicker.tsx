@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { View } from "react-native"
 import { MAX_LINKED_REPORTS } from "@civfix/contract"
 import type { LatLng } from "@civfix/contract/geocode"
@@ -78,9 +78,14 @@ export function ReportLinkPicker({
       haptics.selection()
       onChange(next.ids)
       announce(
-        t(next.outcome === "added" ? "linkedReports.added_announce" : "linkedReports.removed_announce", {
-          title,
-        }),
+        t(
+          next.outcome === "added"
+            ? "linkedReports.added_announce"
+            : "linkedReports.removed_announce",
+          {
+            title,
+          },
+        ),
       )
     },
     [haptics, onChange, t, value],
@@ -108,7 +113,9 @@ export function ReportLinkPicker({
         )}
         <View style={styles.labelSpacer} />
         {value.length > 0 ? (
-          <Text style={styles.count}>{t("linkedReports.linked_count", { count: value.length })}</Text>
+          <Text style={styles.count}>
+            {t("linkedReports.linked_count", { count: value.length })}
+          </Text>
         ) : null}
       </View>
 

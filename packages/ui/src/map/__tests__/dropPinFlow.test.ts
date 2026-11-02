@@ -22,7 +22,11 @@ import {
  * A raw setState runs no reducer, so `active` and `originView` are written by hand to preserve the store's
  * invariants.
  */
-function seedNav(stack: DetailEntry[], mode: "compact" | "expanded" = "compact", snap: 0 | 1 | 2 = 0): void {
+function seedNav(
+  stack: DetailEntry[],
+  mode: "compact" | "expanded" = "compact",
+  snap: 0 | 1 | 2 = 0,
+): void {
   useNavStore.setState({
     view: "map",
     stack,

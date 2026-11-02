@@ -108,7 +108,9 @@ export function resolveWebMenuFrame(
     screen.height - CONTEXT_MENU_EDGE_MARGIN * 2 - frame.reactionRowH - frame.cardPadV,
   )
   const cardH =
-    frame.reactionRowH + Math.min(frame.actionCount * frame.actionRowH, actionsMaxH) + frame.cardPadV
+    frame.reactionRowH +
+    Math.min(frame.actionCount * frame.actionRowH, actionsMaxH) +
+    frame.cardPadV
   if (!anchor) return { actionsMaxH, cardH, position: null }
   const fitsBelow =
     anchor.y + anchor.height + CONTEXT_MENU_GAP + cardH <= screen.height - CONTEXT_MENU_EDGE_MARGIN
@@ -118,7 +120,9 @@ export function resolveWebMenuFrame(
     position: {
       top: Math.max(
         CONTEXT_MENU_EDGE_MARGIN,
-        fitsBelow ? anchor.y + anchor.height + CONTEXT_MENU_GAP : anchor.y - CONTEXT_MENU_GAP - cardH,
+        fitsBelow
+          ? anchor.y + anchor.height + CONTEXT_MENU_GAP
+          : anchor.y - CONTEXT_MENU_GAP - cardH,
       ),
       left: resolveBandLeft(anchor, screen.width, frame.cardWidth, alignRight),
     },

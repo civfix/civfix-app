@@ -180,7 +180,13 @@ function withoutPost(
   postId: string,
 ): InfiniteData<FeedPageDTO> | undefined {
   return isInfinitePosts(prev)
-    ? { ...prev, pages: prev.pages.map((page) => ({ ...page, items: page.items.filter((it) => it.id !== postId) })) }
+    ? {
+        ...prev,
+        pages: prev.pages.map((page) => ({
+          ...page,
+          items: page.items.filter((it) => it.id !== postId),
+        })),
+      }
     : prev
 }
 
@@ -190,13 +196,17 @@ function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string
 }
 
 function removeFromAllLists(qc: QueryClient, postId: string): void {
-  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) => withoutPost(prev, postId))
+  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) =>
+    withoutPost(prev, postId),
+  )
 }
 
 /** True when a specific infinite list cache already contains the post. */
 function listHasPost(qc: QueryClient, key: readonly unknown[], postId: string): boolean {
   const data = qc.getQueryData<InfiniteData<FeedPageDTO>>(key)
-  return isInfinitePosts(data) ? data.pages.some((p) => p.items.some((it) => it.id === postId)) : false
+  return isInfinitePosts(data)
+    ? data.pages.some((p) => p.items.some((it) => it.id === postId))
+    : false
 }
 
 /** Replace the optimistic (temp-id) post with the authoritative server post in a specific list cache. */
@@ -222,7 +232,7 @@ function replaceInList(
 /** Per-call snapshot of the side caches a toggle patches besides the single `post(id)` detail. */
 interface ToggleAlsoCtx {
   /** The target post's exact pre-mutation value, for a TARGETED (concurrency-safe) list rollback. */
-  original?: PostDTO
+  original?: PostDTO | undefined
 }
 
 /**
@@ -247,20 +257,19 @@ export function buildToggleMutation(
     // A repost toggle may resolve a pure-repost wrapper to its original target. Never write a DTO
     // with a different identity under `post(id)`; the target gets its own canonical detail entry in
     // `onSuccess`, which also refetches the lists for that (and only that) identity-shift case.
-    reconcile: (prev, res) => res.id === id ? res : prev,
+    reconcile: (prev, res) => (res.id === id ? res : prev),
     // Only the authoritative single-post key (and, for save, the saves LIST whose membership changed)
     // is refetched. The lists are already correct: the `also` optimistic patch flips the post in every
     // cache holding it and `onSuccess` re-writes the server's authoritative DTO over that patch. A
     // blanket `postsRoot` invalidation would refetch EVERY active post list (all home-feed pages,
     // replies, user posts, saves) on every like tap, and could visibly reshuffle an infinite list.
-    invalidate: options.manageSaves
-      ? [queryKeys.post(id), savesKey]
-      : [queryKeys.post(id)],
+    invalidate: options.manageSaves ? [queryKeys.post(id), savesKey] : [queryKeys.post(id)],
     also: {
       cancel: (client) => client.cancelQueries({ queryKey: queryKeys.postsRoot }),
       onMutate: (client, currently): ToggleAlsoCtx => {
         const next = !currently
-        const original = findPostInLists(client, id) ?? client.getQueryData<PostDTO>(queryKeys.post(id))
+        const original =
+          findPostInLists(client, id) ?? client.getQueryData<PostDTO>(queryKeys.post(id))
         patchPostInListCaches(client, id, (p) => applyToggle(p, field, next))
         // Save also mutates the saves-list MEMBERSHIP (a structural add/remove, not just a flag flip).
         if (options.manageSaves && original) {
@@ -291,7 +300,8 @@ export function buildToggleMutation(
           void client.invalidateQueries({ queryKey: queryKeys.postsRoot })
         }
         if (options.manageSaves) {
-          if (res.viewer.saved && !listHasPost(client, savesKey, id)) prependToList(client, savesKey, res)
+          if (res.viewer.saved && !listHasPost(client, savesKey, id))
+            prependToList(client, savesKey, res)
           if (!res.viewer.saved) removeFromList(client, savesKey, id)
         }
       },
@@ -346,7 +356,8 @@ export function buildCreateMutation(
         // the reply simply arrives with the refetch. `touchedKeys` is then empty and onError/onSuccess/
         // onSettled iterate nothing, while `repliedTo` still un-bumps the count in both branches.
         const cached = qc.getQueryData<InfiniteData<FeedPageDTO>>(repliesKey)
-        const tailLoaded = cached != null && cached.pages[cached.pages.length - 1]?.nextCursor == null
+        const tailLoaded =
+          cached != null && cached.pages[cached.pages.length - 1]?.nextCursor == null
         if (tailLoaded) {
           appendToList(qc, repliesKey, optimistic)
           touchedKeys.push(repliesKey)
@@ -395,7 +406,7 @@ export function buildCreateMutation(
 /** Per-call snapshot of the caches a delete clears, for an exact rollback. */
 interface DeleteCtx {
   prevLists: ReadonlyArray<readonly [readonly unknown[], InfiniteData<FeedPageDTO> | undefined]>
-  prevDetail?: PostDTO
+  prevDetail?: PostDTO | undefined
 }
 
 /** Build the `useMutation` options for soft-deleting a post (removes it from every cache). */
@@ -408,7 +419,9 @@ export function buildDeleteMutation(
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: queryKeys.postsRoot })
       await qc.cancelQueries({ queryKey: queryKeys.post(id) })
-      const prevLists = qc.getQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot })
+      const prevLists = qc.getQueriesData<InfiniteData<FeedPageDTO>>({
+        queryKey: queryKeys.postsRoot,
+      })
       const prevDetail = qc.getQueryData<PostDTO>(queryKeys.post(id))
       removeFromAllLists(qc, id)
       // `setQueryData(key, undefined)` is a no-op in react-query (returning undefined skips the write), so
@@ -417,7 +430,8 @@ export function buildDeleteMutation(
       return { prevLists, prevDetail }
     },
     onError: (_err, id, ctx) => {
-      if (ctx?.prevLists) for (const [key, data] of ctx.prevLists) qc.setQueryData(key as unknown[], data)
+      if (ctx?.prevLists)
+        for (const [key, data] of ctx.prevLists) qc.setQueryData(key as unknown[], data)
       if (ctx?.prevDetail) qc.setQueryData(queryKeys.post(id), ctx.prevDetail)
     },
     onSettled: () => {
@@ -451,7 +465,10 @@ export function usePostReplies(id: string | undefined) {
     enabled: isAuthenticated && !!id,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) => {
-      const args = { id: id as string, ...(typeof pageParam === "string" ? { cursor: pageParam } : {}) }
+      const args = {
+        id: id as string,
+        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
+      }
       return api.listReplies(args)
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -527,7 +544,10 @@ export function useUserPosts(id: string | undefined) {
     enabled: !!id,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) => {
-      const args = { id: id as string, ...(typeof pageParam === "string" ? { cursor: pageParam } : {}) }
+      const args = {
+        id: id as string,
+        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
+      }
       return api.listUserPosts(args)
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

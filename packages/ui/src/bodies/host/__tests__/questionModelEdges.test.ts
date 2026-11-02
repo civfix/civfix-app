@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 import type { EventQuestionDTO } from "@civfix/contract"
-import { answerPayload, missingRequired, questionVisible, visibleQuestions } from "@civfix/contract/host"
+import {
+  answerPayload,
+  missingRequired,
+  questionVisible,
+  visibleQuestions,
+} from "@civfix/contract/host"
 import { seedAnswers, toggleMultiSelect } from "../registration/questionModel"
 
 const q = (over: Partial<EventQuestionDTO> & { id: string }): EventQuestionDTO => ({
@@ -18,7 +23,10 @@ describe("visibleQuestions and the gate's scope", () => {
     const gate = q({ id: "gate", kind: "checkbox", ticketTypeId: "tt-vip" })
     const dep = q({ id: "dep", sortOrder: 1, showIf: { questionId: "gate", equals: true } })
     expect(visibleQuestions([gate, dep], "tt-general", { gate: true }).map((x) => x.id)).toEqual([])
-    expect(visibleQuestions([gate, dep], "tt-vip", { gate: true }).map((x) => x.id)).toEqual(["gate", "dep"])
+    expect(visibleQuestions([gate, dep], "tt-vip", { gate: true }).map((x) => x.id)).toEqual([
+      "gate",
+      "dep",
+    ])
   })
 
   it("hides a dependent whose gate is archived", () => {
@@ -31,10 +39,9 @@ describe("visibleQuestions and the gate's scope", () => {
     const root = q({ id: "root", kind: "checkbox" })
     const mid = q({ id: "mid", sortOrder: 1, showIf: { questionId: "root", equals: true } })
     const leaf = q({ id: "leaf", sortOrder: 2, showIf: { questionId: "mid", equals: "yes" } })
-    expect(visibleQuestions([root, mid, leaf], null, { root: false, mid: "yes" }).map((x) => x.id)).toEqual([
-      "root",
-      "leaf",
-    ])
+    expect(
+      visibleQuestions([root, mid, leaf], null, { root: false, mid: "yes" }).map((x) => x.id),
+    ).toEqual(["root", "leaf"])
   })
 })
 
@@ -58,7 +65,9 @@ describe("questionVisible type mismatches", () => {
 
 describe("answers edges", () => {
   it("treats an unchecked required consent as missing", () => {
-    expect(missingRequired([q({ id: "c", kind: "consent", required: true })], { c: false })).toEqual(["c"])
+    expect(
+      missingRequired([q({ id: "c", kind: "consent", required: true })], { c: false }),
+    ).toEqual(["c"])
   })
 
   it("sends no entry for a question with no answer at all", () => {
@@ -66,7 +75,9 @@ describe("answers edges", () => {
   })
 
   it("keeps the answer value untrimmed", () => {
-    expect(answerPayload([q({ id: "a" })], { a: " hi " })).toEqual([{ questionId: "a", value: " hi " }])
+    expect(answerPayload([q({ id: "a" })], { a: " hi " })).toEqual([
+      { questionId: "a", value: " hi " },
+    ])
   })
 
   it("starts a fresh selection from a non-array current value", () => {

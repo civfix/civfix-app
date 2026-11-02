@@ -1,7 +1,6 @@
-import React from "react"
 import { View } from "react-native"
 import Svg, { Path, G } from "react-native-svg"
-import { useTheme } from "../../theme"
+import { useTheme, pointerEventStyles } from "../../theme"
 import { Icon, iconMap } from "../../typography"
 import { inkOnFill, pinOutlineFor } from "./appearance"
 
@@ -18,8 +17,8 @@ export function PinSvg({ fill, glyph, size }: { fill: string; glyph: string; siz
       <Path
         d={BODY_PATH}
         fill={fill}
-        stroke={outline ?? undefined}
-        strokeWidth={outline ? BODY_OUTLINE_WIDTH : undefined}
+        {...(outline !== null ? { stroke: outline } : {})}
+        {...(outline ? { strokeWidth: BODY_OUTLINE_WIDTH } : {})}
         strokeLinejoin="round"
       />
       <G
@@ -46,20 +45,22 @@ export function PinBadge({ badge }: { badge: PinBadge }) {
   const fill = badge === "check" ? t.colors.brand.moss : t.colors.brand.bloom
   return (
     <View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        top: -2,
-        right: -2,
-        width: BADGE_SIZE,
-        height: BADGE_SIZE,
-        borderRadius: BADGE_SIZE / 2,
-        backgroundColor: fill,
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1.5,
-        borderColor: t.colors.onAccent,
-      }}
+      style={[
+        {
+          position: "absolute",
+          top: -2,
+          right: -2,
+          width: BADGE_SIZE,
+          height: BADGE_SIZE,
+          borderRadius: BADGE_SIZE / 2,
+          backgroundColor: fill,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1.5,
+          borderColor: t.colors.onAccent,
+        },
+        pointerEventStyles.none,
+      ]}
     >
       <Icon
         icon={badge === "check" ? iconMap.Check : iconMap.Plus}

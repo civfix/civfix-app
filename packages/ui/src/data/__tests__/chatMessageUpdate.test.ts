@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest"
 import { mergeChatItems, type OutboxEntry } from "../../helpers"
-import { type ChatMessageDTO, type PersonDTO } from "@civfix/contract"
+import type { ChatMessageDTO, PersonDTO } from "@civfix/contract"
 import { foldInboundBatch } from "../inbound"
 
 const ROOM = "room-1"
@@ -14,7 +14,7 @@ const ME = "user-me"
 const OTHER = "user-other"
 
 function person(id: string): PersonDTO {
-  return { id, name: id, followers: 0, following: 0, isFollowing: false } as PersonDTO
+  return { id, name: id, followers: 0, following: 0, isFollowing: false }
 }
 
 function msg(
@@ -30,7 +30,7 @@ function msg(
     reactions: [],
     mentions: [],
     ...rest,
-  } as ChatMessageDTO
+  }
 }
 
 /** Wrap DTOs the way the hook buffers them (message_update frames carry no explicitClientId). */

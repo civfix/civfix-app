@@ -1,4 +1,3 @@
-import * as React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
@@ -21,7 +20,9 @@ const present = vi.fn()
 
 function showLink(href: string) {
   const document = readableLegalDocument(
-    legalDoc("terms", "2026-10-30", { blocks: [{ kind: "paragraph", text: `See [the link](${href}).` }] }),
+    legalDoc("terms", "2026-10-30", {
+      blocks: [{ kind: "paragraph", text: `See [the link](${href}).` }],
+    }),
   )
   if (document === null) throw new Error("fixture is not readable")
   const capabilities = { ...makeFakeCapabilities(), openExternal: { open } }
@@ -55,12 +56,13 @@ describe("LegalDocumentView in the phone app", () => {
     },
   )
 
-  it.each(["https://civfix.org/legal/unknown", "https://civfix.org/about", "https://example.org/legal/terms"])(
-    "T14: %s opens in the browser",
-    (href) => {
-      showLink(href)
-      expect(open).toHaveBeenCalledWith(href)
-      expect(present).not.toHaveBeenCalled()
-    },
-  )
+  it.each([
+    "https://civfix.org/legal/unknown",
+    "https://civfix.org/about",
+    "https://example.org/legal/terms",
+  ])("T14: %s opens in the browser", (href) => {
+    showLink(href)
+    expect(open).toHaveBeenCalledWith(href)
+    expect(present).not.toHaveBeenCalled()
+  })
 })

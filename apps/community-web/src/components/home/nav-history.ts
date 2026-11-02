@@ -78,15 +78,20 @@ function isSnapshot(value: unknown): value is NavSnapshot {
   )
 }
 
+function isNavHistoryEntry(value: unknown): value is NavHistoryEntry {
+  if (!isRecord(value)) return false
+  return (
+    value.v === 2 &&
+    typeof value.seq === "number" &&
+    typeof value.depth === "number" &&
+    (value.beneath === null || isSnapshot(value.beneath)) &&
+    isSnapshot(value.snapshot)
+  )
+}
+
 export function readNavHistory(state: unknown): NavHistoryEntry | null {
   if (!isRecord(state)) return null
-  const nav = state.civfixNav
-  if (!isRecord(nav)) return null
-  if (nav.v !== 2) return null
-  if (typeof nav.seq !== "number" || typeof nav.depth !== "number") return null
-  if (nav.beneath !== null && !isSnapshot(nav.beneath)) return null
-  if (!isSnapshot(nav.snapshot)) return null
-  return nav as unknown as NavHistoryEntry
+  return isNavHistoryEntry(state.civfixNav) ? state.civfixNav : null
 }
 
 export function stampNavHistory(
@@ -112,10 +117,7 @@ export function snapshotEquals(a: NavSnapshot, b: NavSnapshot): boolean {
 }
 
 export type ReconcilePlan =
-  | { type: "none" }
-  | { type: "restamp" }
-  | { type: "push"; count: number }
-  | { type: "replace" }
+  { type: "none" } | { type: "restamp" } | { type: "push"; count: number } | { type: "replace" }
 
 function samePlacePlan(
   a: NavSnapshot,
@@ -131,7 +133,10 @@ export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): Reconcile
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)
-  if (liveIds.length > landedIds.length && sameIdentities(landedIds, liveIds.slice(0, landedIds.length)))
+  if (
+    liveIds.length > landedIds.length &&
+    sameIdentities(landedIds, liveIds.slice(0, landedIds.length))
+  )
     return { type: "push", count: liveIds.length - landedIds.length }
   return { type: "replace" }
 }

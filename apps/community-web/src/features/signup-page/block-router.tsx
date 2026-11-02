@@ -39,9 +39,7 @@ export function BlockRouter({ block, page, initialAccessCode }: BlockRouterProps
     case "donate":
       return <DonateBlock block={block} page={page} />
     case "registration":
-      return (
-        <RegistrationBlock block={block} page={page} initialAccessCode={initialAccessCode} />
-      )
+      return <RegistrationBlock block={block} page={page} initialAccessCode={initialAccessCode} />
     case "contact":
       return <ContactBlock block={block} />
   }

@@ -38,7 +38,7 @@ export const INITIAL_BRIDGE_GUARD: BridgeGuard = { openKey: null, recentKey: nul
 
 export interface NativeNavState {
   index?: number
-  routes: readonly { state?: object }[]
+  routes: readonly { state?: object | undefined }[]
 }
 
 /**
@@ -94,7 +94,9 @@ export function bridgeRoute(entry: DetailEntry): NativeRouteTarget | null {
     }
   }
   if (entry.kind === "post-thread") {
-    return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.postThread}`, params: { id: entry.id } } : null
+    return entry.id
+      ? { pathname: `/${BRIDGE_ROUTE_NAMES.postThread}`, params: { id: entry.id } }
+      : null
   }
   if (entry.kind === "thread") {
     if (!entry.id) return null
@@ -127,7 +129,8 @@ export function bridgeDecision(
     }
   }
   if (key === guard.openKey) return { action: { type: "none" }, guard }
-  if (key === focusedKey) return { action: { type: "drop", key }, guard: { ...guard, openKey: key } }
+  if (key === focusedKey)
+    return { action: { type: "drop", key }, guard: { ...guard, openKey: key } }
   if (key === guard.recentKey && now - guard.recentAt < BRIDGE_REPEAT_WINDOW_MS) {
     return { action: { type: "drop", key }, guard: { ...guard, openKey: key } }
   }
@@ -139,10 +142,7 @@ export function bridgeDecision(
   }
 }
 
-export function stackWithoutBridged(
-  stack: DetailEntry[],
-  key: string,
-): DetailEntry[] | null {
+export function stackWithoutBridged(stack: DetailEntry[], key: string): DetailEntry[] | null {
   for (let i = stack.length - 1; i >= 0; i -= 1) {
     if (bridgeKey(stack[i]) === key) return [...stack.slice(0, i), ...stack.slice(i + 1)]
   }

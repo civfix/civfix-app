@@ -5,27 +5,41 @@ import type {
   LeaderboardEntryDTO,
   ListNotificationsResponse,
   ListThreadsResponse,
-  NotificationPrefsDTO,
+  NotificationSettingsDTO,
   PersonDTO,
   SearchUsersResponse,
   UserDTO,
   UserProfileDTO,
 } from "@civfix/contract"
-import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/contract"
+import {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  NOTIFICATION_CATEGORY_DEFAULTS,
+} from "@civfix/contract"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
+
+/** Every gallery list is authored non-empty, so an empty one is a broken fixture and fails loudly. */
+export function firstFixture<T>(items: readonly T[]): T {
+  const [first] = items
+  if (first === undefined) throw new Error("gallery fixture list is empty")
+  return first
+}
 export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)
 export const daysAgo = (d: number): string => isoFromNow(-d * MS_PER_DAY)
 
-export const GALLERY_VIEWER = {
+export const GALLERY_VIEWER: UserDTO = {
   id: "me",
   displayName: "Sam Okafor",
   handle: "samok",
   avatarUrl: null,
-  role: "user",
+  role: "citizen",
+  locale: "en",
+  createdAt: daysAgo(400),
   allowDirectMessages: true,
   showVolunteerHours: true,
-} as unknown as UserDTO
+}
 
 export const GALLERY_MY_PROFILE: UserProfileDTO = {
   id: "me",
@@ -72,15 +86,12 @@ export const GALLERY_NOTIFICATIONS: ListNotificationsResponse["items"] = [
   },
 ]
 
-export const GALLERY_NOTIFICATION_PREFS: NotificationPrefsDTO = {
-  push: true,
-  mentions: true,
-  cleanupChat: true,
-  reportUpdates: true,
-  follows: false,
-  postInteractions: true,
-  hostBroadcasts: true,
-  quietHours: { start: "22:00", end: "07:00" },
+export const GALLERY_NOTIFICATION_SETTINGS: NotificationSettingsDTO = {
+  categories: {
+    ...NOTIFICATION_CATEGORY_DEFAULTS,
+    followers: { enabled: false, push: false, email: false },
+  },
+  emailAvailable: true,
 }
 
 export function galleryThreads(dmPeer: PersonDTO): ListThreadsResponse {
@@ -155,9 +166,33 @@ export function galleryChatHistory(roomId: string): ChatHistoryResponse {
 }
 
 export const GALLERY_LEADERBOARD_PODIUM: readonly LeaderboardEntryDTO[] = [
-  { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
-  { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
-  { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
+  {
+    rank: 1,
+    userId: "p-ann",
+    name: "Ann Rivera",
+    handle: "annrivera",
+    avatar: null,
+    avatarUrl: null,
+    hours: 61.5,
+  },
+  {
+    rank: 2,
+    userId: "p-lee",
+    name: "Lee Tran",
+    handle: "leetran",
+    avatar: null,
+    avatarUrl: null,
+    hours: 48,
+  },
+  {
+    rank: 3,
+    userId: "p-mei",
+    name: "Mei Wong",
+    handle: "meiwong",
+    avatar: null,
+    avatarUrl: null,
+    hours: 39.25,
+  },
 ]
 
 export type FakeEndpoint = (args?: unknown) => Promise<unknown>

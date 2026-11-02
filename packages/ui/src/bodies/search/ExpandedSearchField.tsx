@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Platform,
   Pressable,
   View,
-  type NativeSyntheticEvent,
   type TextInput as RNTextInput,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
 } from "react-native"
+import { readWebKeyPress } from "../../primitives/composerKeyPress"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, motion, useTheme, webInputReset } from "../../theme"
 import { Icon, iconMap } from "../../typography"
@@ -52,10 +52,9 @@ export function ExpandedSearchField() {
   }, [setQuery])
 
   const onKeyPress = useCallback(
-    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      const web = event as unknown as { key?: string; preventDefault?: () => void }
-      if (web.key !== "Escape") return
-      web.preventDefault?.()
+    (event: TextInputKeyPressEvent) => {
+      if (readWebKeyPress(event).key !== "Escape") return
+      if (typeof event.preventDefault === "function") event.preventDefault()
       if (searchFieldEscape(query) === "clear") clearQuery()
       else inputRef.current?.blur()
     },

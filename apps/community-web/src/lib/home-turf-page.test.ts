@@ -15,7 +15,10 @@ const STAGING_ENDPOINT = "https://api.civfix.dev/forms/home-turf"
  */
 function endpointFor(hostname: string): string {
   const match = /var PRODUCTION_HOSTNAMES = [\s\S]*?var ENDPOINT = [^\n]*\n/.exec(html)
-  expect(match, "home-turf script no longer derives ENDPOINT from PRODUCTION_HOSTNAMES").not.toBeNull()
+  expect(
+    match,
+    "home-turf script no longer derives ENDPOINT from PRODUCTION_HOSTNAMES",
+  ).not.toBeNull()
   const run = new Function("window", `${match![0]}\nreturn ENDPOINT`) as (w: unknown) => string
   return run({ location: { hostname } })
 }

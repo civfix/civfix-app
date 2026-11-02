@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View } from "react-native"
 import { timeLabel, wallClockInZone, wallClockToInstantMs } from "@civfix/contract/datetime"
 import { makeThemedStyles } from "../theme"

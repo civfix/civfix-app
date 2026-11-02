@@ -129,7 +129,12 @@ describe("the host form's mount step carries `slots` verbatim", () => {
     // else. `begin` no-ops while active, so the typed slots simply survive.
     const live = typedForm()
     const { target, begun, toggled } = draftTarget(live)
-    const plan = planHostDraftMount({ active: true, value: live }, "report-b", "report-a", typedForm())
+    const plan = planHostDraftMount(
+      { active: true, value: live },
+      "report-b",
+      "report-a",
+      typedForm(),
+    )
     expect(plan.startedFresh).toBe(false)
     expect(plan.seedReportId).toBe("report-b")
     commitHostDraftMount(target, plan)
@@ -179,18 +184,30 @@ describe("planHostDraftMount writes nothing", () => {
 
   it("plans the pressed point onto a RESUMED draft, and nothing at all for the same point", () => {
     const live = typedForm({ coords: { lat: 10, lng: 20 } })
-    const moved = planHostDraftMount({ active: true, value: live }, undefined, undefined, typedForm(), {
-      lat: 1,
-      lng: 2,
-    })
+    const moved = planHostDraftMount(
+      { active: true, value: live },
+      undefined,
+      undefined,
+      typedForm(),
+      {
+        lat: 1,
+        lng: 2,
+      },
+    )
     expect(moved.movePointTo).toEqual({ lat: 1, lng: 2 })
     expect(moved.value.coords).toEqual({ lat: 1, lng: 2 })
     expect(moved.value.title).toBe("Beach cleanup")
 
-    const same = planHostDraftMount({ active: true, value: live }, undefined, undefined, typedForm(), {
-      lat: 10,
-      lng: 20,
-    })
+    const same = planHostDraftMount(
+      { active: true, value: live },
+      undefined,
+      undefined,
+      typedForm(),
+      {
+        lat: 10,
+        lng: 20,
+      },
+    )
     expect(same.movePointTo).toBeUndefined()
     // Same object back: an unchanged resume must not hand the form a new value to re-render against.
     expect(same.value).toBe(live)
@@ -198,7 +215,12 @@ describe("planHostDraftMount writes nothing", () => {
 
   it("never plans a link for a report the host already added from its detail", () => {
     const live = typedForm({ linkedReportIds: ["report-a", "report-b"] })
-    const plan = planHostDraftMount({ active: true, value: live }, "report-b", "report-a", typedForm())
+    const plan = planHostDraftMount(
+      { active: true, value: live },
+      "report-b",
+      "report-a",
+      typedForm(),
+    )
     // Attribution still moves to report-b (this mount was launched from it) - but nothing is toggled, or
     // the store's symmetric toggle would UNLINK it.
     expect(plan.seedReportId).toBe("report-b")
@@ -260,10 +282,15 @@ describe("planDropPinReportSeed (map long-press 'Report an issue here')", () => 
     ).toBe("confirm-reset")
     // A chosen category counts as work even with no media yet.
     expect(
-      planDropPinReportSeed(reportDraft({ reportTypeId: "pavement", lat: 5, lng: 6 }), { lat: 1, lng: 2 }),
+      planDropPinReportSeed(reportDraft({ reportTypeId: "pavement", lat: 5, lng: 6 }), {
+        lat: 1,
+        lng: 2,
+      }),
     ).toBe("confirm-reset")
     // Work with NO point at all is still work.
-    expect(planDropPinReportSeed(reportDraft({ ...oneMedia }), { lat: 1, lng: 2 })).toBe("confirm-reset")
+    expect(planDropPinReportSeed(reportDraft({ ...oneMedia }), { lat: 1, lng: 2 })).toBe(
+      "confirm-reset",
+    )
   })
 
   it("seeds (no prompt) when the work is already at the SAME spot - a re-press is not a new report", () => {

@@ -47,8 +47,7 @@ export const useCleanupDraft = create<CleanupDraftState>((set, get) => ({
 
   patch: (value) => set({ value }),
 
-  merge: (partial) =>
-    set((s) => (s.active && s.value ? { value: { ...s.value, ...partial } } : s)),
+  merge: (partial) => set((s) => (s.active && s.value ? { value: { ...s.value, ...partial } } : s)),
 
   toggleLinkedReport: (id) =>
     set((s) => {

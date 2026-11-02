@@ -4,12 +4,11 @@ import * as React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { screen } from "@testing-library/react"
 import type * as ReactNative from "react-native"
-import type { LayoutMode } from "../../nav"
 import { COOKIES, legalApi, mountLegal, status } from "../../bodies/__tests__/legalUpdateHarness"
 import { AppShell } from "../AppShell"
 import { NAV_FOOTPRINT } from "../expandedFramePlan"
 
-const layout = vi.hoisted(() => ({ mode: "expanded" as LayoutMode }))
+const layout = vi.hoisted(() => ({ mode: "expanded" }))
 
 vi.mock("../../theme/useLayoutMode", () => ({ useLayoutMode: () => layout.mode }))
 
@@ -51,7 +50,8 @@ async function bannerLayer(): Promise<{ layer: HTMLElement; card: HTMLElement }>
   let card: HTMLElement | null = text.parentElement
   while (card !== null && getComputedStyle(card).maxWidth !== "560px") card = card.parentElement
   let layer: HTMLElement | null = card
-  while (layer !== null && getComputedStyle(layer).position !== "absolute") layer = layer.parentElement
+  while (layer !== null && getComputedStyle(layer).position !== "absolute")
+    layer = layer.parentElement
   if (card === null || layer === null) throw new Error("no banner layer")
   return { layer, card }
 }

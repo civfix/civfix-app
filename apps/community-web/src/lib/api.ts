@@ -45,4 +45,3 @@ export const api: ApiClient = createApiClient({
   getCsrfToken: resolveCsrfToken,
   onUnauthorized: () => useAuthStore.getState().clear(),
 })
-

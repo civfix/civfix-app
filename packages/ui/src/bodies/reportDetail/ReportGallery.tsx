@@ -1,7 +1,7 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { View, Pressable, ScrollView, Image } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
-import { useTheme, focusRingProps } from "../../theme"
+import { useTheme, focusRingProps, pointerEventStyles } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"
 import { useLightbox } from "../../lightbox"
@@ -24,7 +24,10 @@ export function ReportGallery({
   const th = useTheme()
   const { t } = useT("report-detail")
   const pending = report.mediaPending ?? 0
-  const { ready, ownerPending, ownerFailed, tileCount } = partitionGalleryMedia(report.media, pending)
+  const { ready, ownerPending, ownerFailed, tileCount } = partitionGalleryMedia(
+    report.media,
+    pending,
+  )
   const refused = refusedGalleryTiles({
     ready: ready.length,
     processing: ownerPending.length + pending,
@@ -59,17 +62,22 @@ export function ReportGallery({
           <View style={styles.processingBlock}>
             <Icon icon={iconMap.Clock} size={26} color={th.colors.textSubtle} />
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
-            <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
+            <Text style={styles.processingBody}>
+              {t("gallery.processing_body", { count: total })}
+            </Text>
           </View>
           {refusedStrip}
         </View>
       )
     }
-    if (ownerFailed.length > 0) {
-      const first = ownerFailed[0]!
+    const firstFailed = ownerFailed[0]
+    if (firstFailed) {
       return (
         <View style={styles.gallery}>
-          <StatusTile kind={first.status === "rejected" ? "rejected" : "held"} variant="hero" />
+          <StatusTile
+            kind={firstFailed.status === "rejected" ? "rejected" : "held"}
+            variant="hero"
+          />
         </View>
       )
     }
@@ -147,7 +155,7 @@ export function ReportGallery({
               >
                 <Image source={{ uri: thumbUri }} style={styles.thumbImg} resizeMode="cover" />
                 {m.kind === "video" ? (
-                  <View style={styles.thumbVideoBadge} pointerEvents="none">
+                  <View style={[styles.thumbVideoBadge, pointerEventStyles.none]}>
                     <Icon icon={iconMap.Video} size={12} color={th.colors.onScrim} />
                   </View>
                 ) : null}

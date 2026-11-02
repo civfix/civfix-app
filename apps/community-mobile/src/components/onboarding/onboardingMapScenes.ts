@@ -83,7 +83,7 @@ export interface TrackPin {
   readonly rise: number
 }
 
-export const TRACK_PINS: readonly TrackPin[] = [
+export const TRACK_PINS = [
   { category: "trash", spot: { lat: 34.04123, lng: -118.21291 }, rise: 1.7 },
   { category: "graffiti", spot: { lat: 34.04097, lng: -118.21621 }, rise: 1.1 },
   { category: "hazard", spot: { lat: 34.04029, lng: -118.21203 }, rise: 2 },
@@ -91,7 +91,7 @@ export const TRACK_PINS: readonly TrackPin[] = [
   { category: "encampment", spot: { lat: 34.04145, lng: -118.21751 }, rise: 1.5 },
   { category: "recycling", spot: { lat: 34.04048, lng: -118.21344 }, rise: 1.2 },
   { category: "other", spot: { lat: 34.0401, lng: -118.21517 }, rise: 1.8 },
-]
+] as const satisfies readonly TrackPin[]
 
 export const TRACK_CLUSTER_SPOT: GeoPoint = { lat: 34.04029, lng: -118.21416 }
 

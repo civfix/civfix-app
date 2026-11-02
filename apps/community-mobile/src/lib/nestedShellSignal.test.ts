@@ -56,7 +56,9 @@ test("a snapshot is returned by reference, so a selector does not churn the shel
 })
 
 test("hosts are counted by identity, so a double exit cannot unfreeze a shell still covered", () => {
-  const two = withNestedShellHost(withNestedShellHost(NO_NESTED_SHELL, "h1", [cleanup]), "h2", [org])
+  const two = withNestedShellHost(withNestedShellHost(NO_NESTED_SHELL, "h1", [cleanup]), "h2", [
+    org,
+  ])
   const once = withoutNestedShellHost(two, "h2")
   assert.deepEqual(
     once.hosts.map((host) => host.id),
@@ -73,7 +75,9 @@ test("re-entering with the same host id keeps the first snapshot", () => {
 })
 
 test("the root focusing clears every host, since nothing can sit above a focused root", () => {
-  const two = withNestedShellHost(withNestedShellHost(NO_NESTED_SHELL, "h1", [cleanup]), "h2", [org])
+  const two = withNestedShellHost(withNestedShellHost(NO_NESTED_SHELL, "h1", [cleanup]), "h2", [
+    org,
+  ])
   assert.equal(withoutNestedShellHosts(two).hosts.length, 0)
   assert.equal(withoutNestedShellHosts(NO_NESTED_SHELL), NO_NESTED_SHELL)
 })
@@ -103,5 +107,8 @@ test("a detail host registers BEFORE it seeds, so the shell below never renders 
   const seed = host.indexOf("if (entry) seedEntry(entry)")
   assert.ok(register > 0, "DetailRouteHost no longer registers its snapshot")
   assert.ok(seed > register, "DetailRouteHost seeds the store before it registers its snapshot")
-  assert.match(host, /const ownedStack = useNestedShellStore\(\(s\) => shellStackBelow\(s, hostId\)\)/)
+  assert.match(
+    host,
+    /const ownedStack = useNestedShellStore\(\(s\) => shellStackBelow\(s, hostId\)\)/,
+  )
 })

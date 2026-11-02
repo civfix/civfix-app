@@ -35,9 +35,9 @@ describe("buildProfileTabsModel", () => {
       "posts",
       "events",
     ])
-    expect(
-      buildProfileTabsModel("posts", { ...ALL, events: false }).tabs.map((t) => t.id),
-    ).toEqual(["posts", "hours", "reports"])
+    expect(buildProfileTabsModel("posts", { ...ALL, events: false }).tabs.map((t) => t.id)).toEqual(
+      ["posts", "hours", "reports"],
+    )
   })
 
   it("falls back to the first available tab when the requested one is hidden", () => {

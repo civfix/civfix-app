@@ -18,9 +18,12 @@ function subtitle(locale: string): string {
 }
 
 describe("the members roles line promises only what the console does", () => {
-  it.each(Object.keys(BILLING))("%s does not mention billing, which the console has none of", (locale) => {
-    expect(subtitle(locale)).not.toMatch(BILLING[locale]!)
-  })
+  it.each(Object.keys(BILLING))(
+    "%s does not mention billing, which the console has none of",
+    (locale) => {
+      expect(subtitle(locale)).not.toMatch(BILLING[locale]!)
+    },
+  )
 
   it("keeps the in-code fallback in step with the English catalog", () => {
     const source = readFileSync(new URL("./members-screen.tsx", import.meta.url), "utf8")

@@ -14,7 +14,9 @@ test("a bare path gains the file scheme, and a file URI is left alone", () => {
 
 test("a picked image keeps its own mime and dimensions", () => {
   assert.deepEqual(
-    capturedMediaFromPickerAsset(asset({ type: "image", mimeType: "image/png", width: 640, height: 480 })),
+    capturedMediaFromPickerAsset(
+      asset({ type: "image", mimeType: "image/png", width: 640, height: 480 }),
+    ),
     { uri: "file:///picked.jpg", kind: "image", mime: "image/png", width: 640, height: 480 },
   )
 })

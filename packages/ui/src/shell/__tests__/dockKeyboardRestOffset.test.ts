@@ -4,12 +4,11 @@
  * the dead band under the slimmed glass at full morph (DOCK_MORPH_SHRINK - DOCK_MORPH_TOP_OFFSET).
  */
 import { describe, expect, it } from "vitest"
+import { DOCK_BOTTOM_MARGIN, dockBottomGap, dockKeyboardRestOffset } from "../tabBarLogic"
 import {
-  DOCK_BOTTOM_MARGIN,
-  dockBottomGap,
-  dockKeyboardRestOffset,
-} from "../tabBarLogic"
-import { DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../../surface/liquidGlass/liquidGlassModel"
+  DOCK_MORPH_SHRINK,
+  DOCK_MORPH_TOP_OFFSET,
+} from "../../surface/liquidGlass/liquidGlassModel"
 import { keyboardLift } from "../keyboardInsetModel"
 
 describe("dockKeyboardRestOffset", () => {
