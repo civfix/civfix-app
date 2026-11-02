@@ -65,6 +65,13 @@
     "hide_full_message_a11y": "Hide full message",
     "linked_to_cleanup": "Linked to cleanup '{{title}}'",
     "linked_to_cleanup_detail": "{{organizer}} is organizing a cleanup for this.",
+    "filed_with": "Filed with {{jurisdiction}}",
+    "filed_with_city": "Filed with the city",
+    "linked_existing": "Linked to an existing city request",
+    "request_number": "Request {{caseId}}",
+    "check_status": "Check status on the city site",
+    "check_status_a11y": "Open this request on the city site",
+    "open_error": "Couldn't open the city site. Try again.",
     "status": {
       "not_forwarded": "Not yet forwarded",
       "in_progress": "In progress",

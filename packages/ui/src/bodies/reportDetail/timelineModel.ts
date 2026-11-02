@@ -1,4 +1,4 @@
-import type { ReportDTO, ReportStatus } from "@civfix/contract"
+import type { ReportDTO, ReportFilingDTO, ReportStatus } from "@civfix/contract"
 import type { TFunction } from "i18next"
 import {
   type NodeKind,
@@ -13,6 +13,8 @@ export interface TimelineNode {
   when: string
   text: string
   detail?: string | undefined
+  caseId?: string
+  caseUrl?: string
   pending?: boolean
   note?: string
   body?: string
@@ -31,7 +33,10 @@ export function buildTimeline(
     text: report.mine ? t("timeline.reported_by_you") : t("timeline.reported_by_neighbor"),
   })
 
-  if (report.gov) {
+  const filing = report.filing
+  if (filing) {
+    nodes.push(filedNode(filing, t, rel))
+  } else if (report.gov) {
     nodes.push({
       key: "intake",
       kind: "forwarded",
@@ -54,6 +59,9 @@ export function buildTimeline(
     const key = `entry-${i}`
     const render = timelineEntryRender(entry, i, prevStatus)
     prevStatus = entry.status
+    // The filed node stands for every routing of the report, including the "Sent to jurisdiction"
+    // notes written before filings were recorded.
+    if (filing && entry.kind === "route") return
     if (render === "skip") return
     if (render === "hidden") {
       nodes.push({ key, kind: "hidden", when: rel(entry.at), text: t("timeline.hidden_from_map") })
@@ -122,4 +130,25 @@ export function buildTimeline(
   }
 
   return nodes
+}
+
+function filedNode(
+  filing: ReportFilingDTO,
+  t: TFunction,
+  rel: (iso: string) => string,
+): TimelineNode {
+  let text: string
+  if (filing.linkedExisting) text = t("timeline.linked_existing")
+  else if (filing.jurisdictionName)
+    text = t("timeline.filed_with", { jurisdiction: filing.jurisdictionName })
+  else text = t("timeline.filed_with_city")
+  return {
+    key: "intake",
+    kind: "forwarded",
+    when: rel(filing.filedAt),
+    text,
+    ...(filing.caseId ? { caseId: filing.caseId } : {}),
+    // The server validated the URL; the client still opens nothing but https.
+    ...(filing.caseUrl?.startsWith("https://") ? { caseUrl: filing.caseUrl } : {}),
+  }
 }
