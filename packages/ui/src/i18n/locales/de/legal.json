@@ -1,0 +1,36 @@
+{
+  "meta": "Version {{version}} · gültig ab {{date}}",
+  "earlier_version": "Dies ist eine frühere Version vom {{date}}.",
+  "unavailable": "Diese frühere Version ist hier nicht verfügbar.",
+  "current_link": "Aktuelle Version lesen",
+  "error": {
+    "title": "Dieses Dokument konnte nicht geladen werden",
+    "body": "Prüfe deine Verbindung und versuche es erneut."
+  },
+  "retry": "Erneut versuchen",
+  "back": "Zurück",
+  "update": {
+    "title": {
+      "terms": "Wir haben unsere Nutzungsbedingungen aktualisiert",
+      "privacy": "Wir haben unseren Datenschutzhinweis aktualisiert",
+      "terms_and_privacy": "Wir haben unsere Nutzungsbedingungen und unseren Datenschutzhinweis aktualisiert"
+    },
+    "read": {
+      "terms": "Nutzungsbedingungen lesen",
+      "privacy": "Datenschutzhinweis lesen",
+      "cookies": "Cookie-Hinweis lesen",
+      "subprocessors": "Liste der Unterauftragsverarbeiter lesen"
+    },
+    "accept": "Akzeptieren und fortfahren",
+    "sign_out": "Abmelden"
+  },
+  "notice": {
+    "terms": "Wir haben unsere Nutzungsbedingungen aktualisiert.",
+    "privacy": "Wir haben unseren Datenschutzhinweis aktualisiert.",
+    "cookies": "Wir haben unseren Cookie-Hinweis aktualisiert.",
+    "subprocessors": "Wir haben unsere Liste der Unterauftragsverarbeiter aktualisiert.",
+    "read": "Lesen",
+    "dismiss": "Verstanden"
+  },
+  "accept_error": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+}

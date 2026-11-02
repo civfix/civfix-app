@@ -51,7 +51,7 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
-    "@civfix/contract": "0.70.1-b-integration-city-filing.gf9c31e9",
+    "@civfix/contract": "0.71.1-b-integration-city-filing.ga6c1cdc",
     "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",

@@ -27,6 +27,7 @@ export {
   useFollowers,
   useFollowing,
   useUpdateProfile,
+  useCompleteFirstRun,
   useHandleAvailability,
   useHandleAvailabilityCheck,
   useMentionSearch,
@@ -150,6 +151,16 @@ export {
 } from "./hooks/host"
 export { useHostedEventsAnalytics } from "./hooks/dashboard"
 export { actableOrganizations, useMyOrganizations, useOrganization } from "./hooks/orgs"
+export {
+  noticeAcknowledgement,
+  outdatedLegalVersions,
+  promptAcceptance,
+  useAcceptLegal,
+  useLegalDocument,
+  useLegalDocuments,
+  useLegalUpdatePending,
+  useMyLegalStatus,
+} from "./hooks/legal"
 export { uploadMedia } from "./uploadMedia"
 export type { UploadProgress } from "./uploadMedia"
 export { fetchApproximateLocation } from "./fetchApproximateLocation"

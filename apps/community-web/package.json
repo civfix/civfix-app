@@ -15,11 +15,10 @@
     "og-image": "node scripts/generate-og-image.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rimraf .next out *.tsbuildinfo",
-    "legal-hashes": "node scripts/legal-hashes.mjs"
+    "clean": "rimraf .next out *.tsbuildinfo"
   },
   "dependencies": {
-    "@civfix/contract": "0.70.1-b-integration-city-filing.gf9c31e9",
+    "@civfix/contract": "0.71.1-b-integration-city-filing.ga6c1cdc",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",

@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { AppState } from "react-native"
+import { useLegalUpdatePending } from "@civfix/ui/data"
 import * as Notifications from "expo-notifications"
 import { useAuthStore } from "@/store/authStore"
 import { promptForNativePush, reconcileNativeDelivered, syncNativePushToken } from "@/push/register"
@@ -11,6 +12,7 @@ import { promptForNativePush, reconcileNativeDelivered, syncNativePushToken } fr
  */
 export function usePushOnSignIn() {
   const status = useAuthStore((s) => s.status)
+  const legalUpdatePending = useLegalUpdatePending()
   const promptPending = useAuthStore((s) => s.pushPromptPending)
 
   useEffect(() => {
@@ -41,8 +43,9 @@ export function usePushOnSignIn() {
   }, [status])
 
   useEffect(() => {
-    if (status !== "authed" || !promptPending) return
+    // The system's notifications dialog would open over the legal update screen; it asks once that closes.
+    if (status !== "authed" || !promptPending || legalUpdatePending) return
     useAuthStore.setState({ pushPromptPending: false })
     void promptForNativePush()
-  }, [status, promptPending])
+  }, [status, promptPending, legalUpdatePending])
 }

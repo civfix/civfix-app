@@ -2,8 +2,9 @@ import * as React from "react"
 import {
   ErrorCode,
   GUEST_RSVP_TURNSTILE_ACTION,
-  currentVersion,
   type EventAnswerValue,
+  type LegalDocumentType,
+  type LegalVersionOutdatedDetails,
   type PublicEventPageDTO,
   toAppError,
 } from "@civfix/contract"
@@ -14,7 +15,7 @@ import {
   missingRequired,
   visibleQuestions as shownQuestions,
 } from "@civfix/contract/host"
-import { useNow } from "@civfix/ui/data"
+import { outdatedLegalVersions, useLegalDocuments, useNow } from "@civfix/ui/data"
 
 import { api } from "@/lib/api"
 import { TURNSTILE_SITEKEY, runTurnstile } from "@/lib/turnstile"
@@ -69,6 +70,12 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   const [errorKey, setErrorKey] = React.useState<string | null>(null)
   const [showErrors, setShowErrors] = React.useState(false)
   const idempotencyKey = React.useRef(newIdempotencyKey())
+  const legal = useLegalDocuments()
+  // Versions an outdated answer named. They win for as long as the form is mounted and stay out of the
+  // query cache, since they carry no document text.
+  const [outdatedCurrent, setOutdatedCurrent] = React.useState<
+    LegalVersionOutdatedDetails["current"] | null
+  >(null)
 
   React.useEffect(() => {
     if (resendAfter <= 0) return
@@ -88,6 +95,19 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   const canWaitlist = waitlistOffered && isAuthenticated
   const guestWaitlistBlocked = waitlistOffered && !isAuthenticated
 
+  const legalVersion = (type: LegalDocumentType) =>
+    (
+      outdatedCurrent?.find((entry) => entry.type === type) ??
+      legal.data?.find((entry) => entry.type === type)
+    )?.version
+  const termsVersion = legalVersion("terms")
+  const privacyVersion = legalVersion("privacy")
+  const legalReady = termsVersion !== undefined && privacyVersion !== undefined
+  const legalFailed = !legalReady && !legal.isPending && !legal.isFetching
+  const retryLegal = () => {
+    void legal.refetch()
+  }
+
   const begin = (): boolean => {
     if (inFlight.current) return false
     inFlight.current = true
@@ -100,18 +120,33 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   }
 
   // Every submit path sends the same selection, in the same key order.
-  const registrationBase = () => ({
+  const registrationBase = (terms: string, privacy: string) => ({
     ...(ticketTypeId ? { ticketTypeId } : {}),
     partySize,
     ...(needsAccessCode ? { accessCode: accessCode.trim() } : {}),
     answers: answerPayload(visibleQuestions, answers),
     consent: {
-      termsVersion: currentVersion("terms"),
-      disclosureVersion: page.consentVersions.disclosureVersion,
+      termsVersion: terms,
+      disclosureVersion: privacy,
       hostContactOptIn,
+      // The page offers no SMS box, so the honest answer is no; the server stores it as a required yes/no.
+      smsOptIn: false,
       surface: REGISTRATION_CONSENT_SURFACE,
     },
   })
+
+  // The terms changed under the visitor: the form shows again with every box unticked.
+  const adoptOutdated = (cause: unknown): boolean => {
+    const current = outdatedLegalVersions(cause)
+    if (current === null) return false
+    setOutdatedCurrent(current)
+    setTermsAccepted(false)
+    setHostContactOptIn(false)
+    setOtp("")
+    setStep({ kind: "form" })
+    setErrorKey("host-ticket:consent.outdated")
+    return true
+  }
 
   const validate = (): boolean => {
     setShowErrors(true)
@@ -142,12 +177,13 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   }
 
   const registerAsMember = async () => {
+    if (termsVersion === undefined || privacyVersion === undefined) return
     if (inFlight.current || !validate() || !begin()) return
     try {
       const response = await api.registerForEvent({
         id: page.event.id,
         idempotencyKey: idempotencyKey.current,
-        ...registrationBase(),
+        ...registrationBase(termsVersion, privacyVersion),
         joinWaitlistIfFull: waitlistOffered,
       })
       if (response.outcome === "waitlisted") {
@@ -161,7 +197,7 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
       setErrorKey(outcomeMessageKey(response.outcome))
       idempotencyKey.current = newIdempotencyKey()
     } catch (cause) {
-      setErrorKey(requestErrorKey(cause))
+      if (!adoptOutdated(cause)) setErrorKey(requestErrorKey(cause))
       idempotencyKey.current = newIdempotencyKey()
     } finally {
       finish()
@@ -169,6 +205,7 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
   }
 
   const requestGuestCode = async () => {
+    if (termsVersion === undefined || privacyVersion === undefined) return
     if (inFlight.current || !validate()) return
     if (!TURNSTILE_SITEKEY) {
       setErrorKey("errors.guest_unavailable")
@@ -186,7 +223,7 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
         name: guestName.trim(),
         channel: "email",
         email: guestEmail.trim(),
-        ...registrationBase(),
+        ...registrationBase(termsVersion, privacyVersion),
         turnstileToken,
         website: "",
       })
@@ -195,26 +232,26 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
       setStep({ kind: "code" })
       setErrorKey(null)
     } catch (cause) {
-      setErrorKey(requestErrorKey(cause))
+      if (!adoptOutdated(cause)) setErrorKey(requestErrorKey(cause))
     } finally {
       finish()
     }
   }
 
   const verifyGuestCode = async () => {
-    if (!begin()) return
+    if (termsVersion === undefined || privacyVersion === undefined || !begin()) return
     try {
       await api.guestRsvpVerify({
         id: page.event.id,
         channel: "email",
         email: guestEmail.trim(),
-        ...registrationBase(),
+        ...registrationBase(termsVersion, privacyVersion),
         code: otp.trim(),
       })
       setStep({ kind: "registered", messageKey: "web-signup:outcome.registered" })
       setErrorKey(null)
     } catch (cause) {
-      setErrorKey(requestErrorKey(cause))
+      if (!adoptOutdated(cause)) setErrorKey(requestErrorKey(cause))
     } finally {
       finish()
     }
@@ -282,6 +319,9 @@ export function useRegistrationFlow(page: PublicEventPageDTO, initialAccessCode:
     setOtp,
     step,
     busy,
+    legalReady,
+    legalFailed,
+    retryLegal,
     resendAfter,
     errorKey,
     showErrors,

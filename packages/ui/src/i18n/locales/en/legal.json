@@ -1,0 +1,36 @@
+{
+  "meta": "Version {{version}} · effective {{date}}",
+  "earlier_version": "This is an earlier version, from {{date}}.",
+  "unavailable": "This earlier version isn't available here.",
+  "current_link": "Read the current version",
+  "error": {
+    "title": "Couldn't load this document",
+    "body": "Check your connection and try again."
+  },
+  "retry": "Retry",
+  "back": "Back",
+  "update": {
+    "title": {
+      "terms": "We've updated our Terms",
+      "privacy": "We've updated our Privacy notice",
+      "terms_and_privacy": "We've updated our Terms and Privacy notice"
+    },
+    "read": {
+      "terms": "Read the Terms",
+      "privacy": "Read the Privacy notice",
+      "cookies": "Read the Cookies notice",
+      "subprocessors": "Read the Subprocessors list"
+    },
+    "accept": "Accept and continue",
+    "sign_out": "Sign out"
+  },
+  "notice": {
+    "terms": "We've updated our Terms.",
+    "privacy": "We've updated our Privacy notice.",
+    "cookies": "We've updated our Cookies notice.",
+    "subprocessors": "We've updated our Subprocessors list.",
+    "read": "Read",
+    "dismiss": "Got it"
+  },
+  "accept_error": "Something went wrong. Please try again."
+}
