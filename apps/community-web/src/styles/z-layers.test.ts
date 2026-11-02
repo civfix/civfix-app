@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import postcss from "postcss"
 import { describe, expect, it } from "vitest"
-import config from "../../tailwind.config"
 import {
   Z_APP_BANNER,
   Z_BOOT_SPLASH,
@@ -70,9 +70,21 @@ describe("z-index scale", () => {
     expect(Z_TURNSTILE_CHALLENGE).toBeGreaterThan(REACT_NATIVE_WEB_MODAL_Z)
   })
 
-  it("generates one Tailwind utility per layer with the same value", () => {
-    expect(config.theme?.extend?.zIndex).toEqual(
-      Object.fromEntries(Object.entries(Z_LAYERS).map(([layer, z]) => [layer, String(z)])),
+  it("T22: globals.css defines one z-<layer> utility per layer with the same value", () => {
+    const utilities: [string, string | undefined][] = []
+    postcss
+      .parse(readFileSync(new URL("../app/globals.css", import.meta.url), "utf8"))
+      .walkAtRules("utility", (node) => {
+        const name = node.params.trim()
+        if (!name.startsWith("z-")) return
+        let zIndex: string | undefined
+        node.walkDecls("z-index", (decl) => {
+          zIndex = decl.value
+        })
+        utilities.push([name, zIndex])
+      })
+    expect(utilities).toEqual(
+      Object.entries(Z_LAYERS).map(([layer, z]) => [`z-${layer}`, String(z)]),
     )
   })
 
