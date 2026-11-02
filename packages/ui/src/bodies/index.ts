@@ -10,6 +10,8 @@ export { AppearanceOptionList } from "./AppearanceOptionList"
 
 export { SettingsBody } from "./SettingsBody"
 export { setOnboardingTourPresenter } from "./onboardingTour"
+/** A source test pins this re-export as part of the seam, so knip must not count it unused. @public */
+export type { OnboardingTourPresenter } from "./onboardingTour"
 export { setDeveloperScreenPresenter } from "./developerScreen"
 export { SettingsAccountBody } from "./SettingsAccountBody"
 export { SettingsPrivacyBody } from "./SettingsPrivacyBody"
@@ -26,6 +28,8 @@ export { MembersBody } from "./MembersBody"
 
 export { ReportsBody } from "./ReportsBody"
 export { ReportRowView } from "./ReportRow"
+/** A source test pins this re-export as part of the seam, so knip must not count it unused. @public */
+export type { ReportRowViewProps } from "./ReportRow"
 export { ReportDetailBody } from "./ReportDetailBody"
 export { FeedBody } from "./FeedBody"
 export { SearchBody } from "./SearchBody"
@@ -64,5 +68,8 @@ export { GroupInfoBody } from "./GroupInfoBody"
 export { ReportFlowBody } from "./ReportFlowBody"
 
 export { DropPinBody } from "./DropPinBody"
+
+/** A source test pins this re-export as part of the seam, so knip must not count it unused. @public */
+export type { ReportPickerProps } from "./reportPicker/ReportPicker"
 
 export * from "./host"
