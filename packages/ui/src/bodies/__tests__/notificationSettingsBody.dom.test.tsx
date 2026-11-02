@@ -25,6 +25,9 @@ import { ToastContext } from "../../primitives/toastContext"
 import type * as ToastContextModule from "../../primitives/toastContext"
 import { NotificationSettingsBody } from "../NotificationSettingsBody"
 
+// Each test renders the whole settings body; under CI's coverage run that has passed 5s on a busy runner.
+vi.setConfig({ testTimeout: 20_000 })
+
 // The icon set and the primitives barrel pull in native-only modules; the page is read by its text and roles.
 vi.mock("../../typography", async () => {
   const { Text } = await vi.importActual<typeof ReactNative>("react-native")
