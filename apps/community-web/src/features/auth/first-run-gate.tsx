@@ -12,8 +12,8 @@ import {
   firstRunModel,
   splitName,
   stripHandlePrefix,
+  useCompleteFirstRun,
   useHandleAvailabilityCheck,
-  useUpdateProfile,
 } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
@@ -61,7 +61,7 @@ function inertOutside(el: HTMLElement): () => void {
 function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrentUser>> }) {
   const { t } = useT("web-registration")
   const logout = useLogout()
-  const update = useUpdateProfile()
+  const complete = useCompleteFirstRun()
 
   const seeded = React.useMemo(() => splitName(user.displayName), [user.displayName])
   const [first, setFirst] = React.useState(seeded.first)
@@ -88,13 +88,13 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
     availability,
     ageConfirmed,
     termsConfirmed,
-    submitting: update.isPending,
+    submitting: complete.isPending,
   })
 
   const onSubmit = React.useCallback(() => {
     if (!canSubmit) return
-    update.mutate({ handle: trimmedHandle, displayName })
-  }, [canSubmit, update, trimmedHandle, displayName])
+    complete.mutate({ handle: trimmedHandle, displayName })
+  }, [canSubmit, complete, trimmedHandle, displayName])
 
   const vvShift = useVisualViewportShift()
 
@@ -235,10 +235,10 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
             <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
           </div>
 
-          {update.isError && (
+          {complete.isError && (
             <p role="alert" className="cf-clean-error" style={{ marginBottom: space["2"] }}>
               {errorMessage(
-                update.error,
+                complete.error,
                 {
                   VALIDATION: t("error.validation"),
                   CONFLICT: t("error.conflict"),
@@ -254,7 +254,7 @@ function FirstRunForm({ user }: { user: NonNullable<ReturnType<typeof useCurrent
             disabled={!canSubmit}
             onClick={onSubmit}
           >
-            {update.isPending ? (
+            {complete.isPending ? (
               <>
                 <Loader2 width={16} height={16} className="cf-spin" aria-hidden="true" />{" "}
                 {t("saving")}

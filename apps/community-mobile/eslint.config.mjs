@@ -30,12 +30,28 @@ const MOBILE_TYPED_RULES = { ...TYPED_RULES, ...NODE_TEST_TYPED_RULES }
 const expoConfigs = escalateWarnings(withoutReactHooks([expoConfig].flat()))
 const expoTypeScript = expoConfigs.find((config) => config.plugins?.["@typescript-eslint"])
 
+// Clients read legal versions from the API; the contract's helpers serve the backend (DECISIONS §68).
+const LEGAL_HELPER_NAMES = [
+  "currentVersion",
+  "legalDocument",
+  "isCurrent",
+  "currentLegalVersion",
+  "LEGAL_DOCUMENTS",
+]
+const LEGAL_HELPER_PATHS = ["@civfix/contract", "@civfix/contract/legal"].map((name) => ({
+  name,
+  importNames: LEGAL_HELPER_NAMES,
+  message:
+    "Legal versions come from the API (useLegalDocuments in @civfix/ui/data); this helper is backend only.",
+}))
+
 export default defineConfig([
   ...expoConfigs,
   // The preset parses only .ts and .tsx; the test runner's setup module is .mts and the Node build scripts
   // are .mjs under checkJs.
   { ...expoTypeScript, files: ["**/*.mts", "scripts/**/*.mjs"] },
   { linterOptions: LINTER_OPTIONS },
+  { rules: { "no-restricted-imports": ["error", { paths: LEGAL_HELPER_PATHS }] } },
   {
     ignores: ["dist/*", ".expo/*", "node_modules/*", "expo-env.d.ts"],
   },

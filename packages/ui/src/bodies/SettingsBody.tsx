@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { View, StyleSheet } from "react-native"
+import type { LegalDocumentType } from "@civfix/contract"
 import { space, useAppearancePreference } from "../theme"
 import { iconMap } from "../typography"
 import {
@@ -7,12 +8,12 @@ import {
   SettingsSection,
   SignInPrompt,
   DONATE_URL,
-  PRIVACY_URL,
-  TERMS_URL,
+  legalDocumentUrl,
   sourceCommit,
   sourceUrl,
   useToast,
 } from "../primitives"
+import { openLegalDocumentInPlace } from "../primitives/legalDocumentNav"
 import { useAuthState, useLogout, useRequireAuth } from "../data"
 import { useOpenExternal } from "../capabilities"
 import { useNavStore, type DetailKind } from "../nav"
@@ -51,6 +52,13 @@ export function SettingsBody() {
       openExternal.open(url).catch(showOpenError)
     },
     [openExternal, toast, t],
+  )
+
+  const openLegal = useCallback(
+    (type: LegalDocumentType) => {
+      if (!openLegalDocumentInPlace(type)) openUrl(legalDocumentUrl(type))
+    },
+    [openUrl],
   )
 
   const localeName = supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
@@ -124,8 +132,14 @@ export function SettingsBody() {
 
       <SettingsSection label={t("section.about")} style={styles.sectionGap}>
         <SettingsRow icon="Heart" label={t("support_civfix")} onPress={() => openUrl(DONATE_URL)} />
-        <SettingsRow icon="FileText" label={t("terms")} onPress={() => openUrl(TERMS_URL)} />
-        <SettingsRow icon="Lock" label={t("privacy_policy")} onPress={() => openUrl(PRIVACY_URL)} />
+        <SettingsRow icon="FileText" label={t("terms")} onPress={() => openLegal("terms")} />
+        <SettingsRow icon="Lock" label={t("privacy_policy")} onPress={() => openLegal("privacy")} />
+        <SettingsRow icon="Layers" label={t("cookies")} onPress={() => openLegal("cookies")} />
+        <SettingsRow
+          icon="Building2"
+          label={t("subprocessors")}
+          onPress={() => openLegal("subprocessors")}
+        />
         <SettingsRow
           icon="ExternalLink"
           label={t("source_code")}

@@ -71,6 +71,21 @@ const BANNED_PATHS = [
   },
   { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
 ]
+// Clients read legal versions from the API; the contract's helpers serve the backend (DECISIONS §68).
+const LEGAL_HELPER_NAMES = [
+  "currentVersion",
+  "legalDocument",
+  "isCurrent",
+  "currentLegalVersion",
+  "LEGAL_DOCUMENTS",
+]
+const LEGAL_HELPER_PATHS = ["@civfix/contract", "@civfix/contract/legal"].map((name) => ({
+  name,
+  importNames: LEGAL_HELPER_NAMES,
+  message:
+    "Legal versions come from the API (useLegalDocuments in @civfix/ui/data); this helper is backend only.",
+}))
+
 const BANNED_PATH_PATTERNS = [
   { group: ["next/*"], message: "next/* is web-app-only and must not leak into @civfix/ui." },
 ]
@@ -196,7 +211,7 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
-          paths: [...BANNED_PATHS],
+          paths: [...BANNED_PATHS, ...LEGAL_HELPER_PATHS],
           patterns: [...BANNED_PATTERNS, ...BANNED_PATH_PATTERNS, ...NATIVE_ONLY_PATTERNS],
         },
       ],
@@ -215,6 +230,7 @@ export default tseslint.config(
                 "Use lucide-react-native via @civfix/ui/typography instead of @expo/vector-icons.",
             },
             { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
+            ...LEGAL_HELPER_PATHS,
           ],
           patterns: [...BANNED_PATH_PATTERNS, ...NATIVE_ONLY_PATTERNS],
         },
@@ -234,6 +250,7 @@ export default tseslint.config(
                 "Use lucide-react-native via @civfix/ui/typography instead of @expo/vector-icons.",
             },
             { name: "next", message: "next/* is web-app-only and must not leak into @civfix/ui." },
+            ...LEGAL_HELPER_PATHS,
           ],
           patterns: [...BANNED_PATH_PATTERNS],
         },
@@ -270,7 +287,7 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
-          paths: [...BANNED_PATHS, ...RN_FREE_PATHS],
+          paths: [...BANNED_PATHS, ...RN_FREE_PATHS, ...LEGAL_HELPER_PATHS],
           patterns: [
             ...BANNED_PATTERNS,
             ...BANNED_PATH_PATTERNS,

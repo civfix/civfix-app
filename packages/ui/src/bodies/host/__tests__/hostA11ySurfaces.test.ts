@@ -62,10 +62,10 @@ describe("the terms consent row", () => {
 
   it("puts Terms and Privacy Policy in focusable links beside it", () => {
     expect(consent).toContain(
-      '<TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>',
+      '<TextLink variant="caption" standalone onPress={() => openLegal("terms")}>',
     )
     expect(consent).toContain(
-      '<TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>',
+      '<TextLink variant="caption" standalone onPress={() => openLegal("privacy")}>',
     )
   })
 })

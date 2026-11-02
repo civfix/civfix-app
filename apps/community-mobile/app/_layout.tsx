@@ -15,6 +15,7 @@ import {
 } from "@civfix/ui/capabilities"
 import { ThemeProvider, setAppearancePreferenceStore, supportsBlur } from "@civfix/ui/theme"
 import {
+  LegalUpdateGate,
   MediaLightboxProvider,
   SharePostProvider,
   SystemNoticeFrame,
@@ -123,6 +124,12 @@ function InternalHrefBridge(): null {
   return null
 }
 
+// Push registration reads the shared legal status, so it runs inside the query and data providers.
+function PushOnSignInBridge(): null {
+  usePushOnSignIn()
+  return null
+}
+
 function NavAdapterBridge(): null {
   useMobileNavAdapter()
   return null
@@ -136,7 +143,6 @@ export default function RootLayout() {
   useAppLifecycle()
   useSignOutReset()
   useAuthRedirect()
-  usePushOnSignIn()
   useNotificationDeepLinks(requestDismissToShell)
 
   const { fontsReady, gateActive, gateMounted, gateStyle, boot } = useLaunchGate(fonts, status)
@@ -154,6 +160,7 @@ export default function RootLayout() {
               <CapabilitiesProvider value={mobileCapabilities}>
                 <AppBridges />
                 <NavAdapterBridge />
+                <PushOnSignInBridge />
                 <InternalHrefBridge />
                 <MobileI18nProvider>
                   {/* The force-update screen stays outside the notice frame, so it covers the notice too. */}
@@ -168,6 +175,7 @@ export default function RootLayout() {
                               loadingGateMounted={gateMounted}
                             />
                             <FirstRunGate />
+                            <LegalUpdateGate />
                             {gateMounted ? (
                               <Animated.View
                                 pointerEvents={gateActive ? "auto" : "none"}

@@ -222,6 +222,17 @@ function RegistrationForm({ flow, t, errorMessage }: StepProps) {
 
       {errorMessage}
 
+      {flow.legalFailed ? (
+        <>
+          <p className="signup-error" role="alert">
+            <CircleAlert aria-hidden="true" size={16} /> {t("errors.generic")}
+          </p>
+          <button type="button" className="signup-secondary" onClick={flow.retryLegal}>
+            {t("state.retry")}
+          </button>
+        </>
+      ) : null}
+
       {flow.canWaitlist ? (
         <button
           type="button"
@@ -238,7 +249,7 @@ function RegistrationForm({ flow, t, errorMessage }: StepProps) {
         <button
           type="button"
           className="signup-submit"
-          disabled={busy || soldOut}
+          disabled={busy || soldOut || !flow.legalReady}
           onClick={() => {
             void (isAuthenticated ? flow.registerAsMember() : flow.requestGuestCode())
           }}

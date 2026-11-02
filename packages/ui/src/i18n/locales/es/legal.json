@@ -1,0 +1,36 @@
+{
+  "meta": "Versión {{version}} · vigente desde el {{date}}",
+  "earlier_version": "Esta es una versión anterior, del {{date}}.",
+  "unavailable": "Esta versión anterior no está disponible aquí.",
+  "current_link": "Leer la versión actual",
+  "error": {
+    "title": "No se pudo cargar este documento",
+    "body": "Revisa tu conexión e inténtalo de nuevo."
+  },
+  "retry": "Reintentar",
+  "back": "Atrás",
+  "update": {
+    "title": {
+      "terms": "Hemos actualizado nuestros Términos",
+      "privacy": "Hemos actualizado nuestro Aviso de privacidad",
+      "terms_and_privacy": "Hemos actualizado nuestros Términos y nuestro Aviso de privacidad"
+    },
+    "read": {
+      "terms": "Leer los Términos",
+      "privacy": "Leer el Aviso de privacidad",
+      "cookies": "Leer el Aviso de cookies",
+      "subprocessors": "Leer la Lista de subencargados"
+    },
+    "accept": "Aceptar y continuar",
+    "sign_out": "Cerrar sesión"
+  },
+  "notice": {
+    "terms": "Hemos actualizado nuestros Términos.",
+    "privacy": "Hemos actualizado nuestro Aviso de privacidad.",
+    "cookies": "Hemos actualizado nuestro Aviso de cookies.",
+    "subprocessors": "Hemos actualizado nuestra Lista de subencargados.",
+    "read": "Leer",
+    "dismiss": "Entendido"
+  },
+  "accept_error": "Algo salió mal. Inténtalo de nuevo."
+}
