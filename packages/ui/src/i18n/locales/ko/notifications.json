@@ -2,8 +2,9 @@
   "row": {
     "unreadSuffix": "{{title}}, 읽지 않음"
   },
-  "actions": {
-    "markAllRead": "모두 읽음으로 표시"
+  "markReadError": {
+    "generic": "알림을 읽음으로 표시하지 못했어요. 다시 시도해 주세요.",
+    "rate_limited": "요청이 너무 많아요. 잠시 후 다시 시도해 주세요."
   },
   "signedOut": {
     "title": "알림을 받으려면 로그인하세요",

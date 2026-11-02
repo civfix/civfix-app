@@ -93,12 +93,6 @@ describe("settings switches and links never fail silently", () => {
     expect(src).toContain("onValueChange: (next) => savePrivacy(next)")
   })
 
-  it("toasts when a notification switch fails to save", () => {
-    const src = read("../NotificationPrefsBody.tsx")
-    expect(src).toContain("update.mutate({ push: next }, { onError: onSaveError })")
-    expect(src).toContain("update.mutate({ [key]: next }, { onError: onSaveError })")
-  })
-
   it("handles an About link that rejects or has no host capability", () => {
     const src = read("../SettingsBody.tsx")
     expect(src).toContain("openExternal.open(url).catch(showOpenError)")

@@ -7,29 +7,69 @@
     "title": "설정을 불러오지 못했어요",
     "body": "civfix에 연결할 수 없어요. 인터넷 연결을 확인하고 다시 시도해 주세요."
   },
-  "push": {
-    "section": "푸시",
-    "label": "푸시 알림",
-    "helper": "civfix가 이 기기로 알림을 보낼 수 있도록 허용합니다."
+  "sections": {
+    "reports": "내 신고",
+    "messages": "메시지",
+    "events": "이벤트",
+    "social": "소셜",
+    "organizations": "단체"
   },
-  "categories": {
-    "section": "알림 받을 항목",
+  "category": {
     "reportUpdates": {
-      "label": "제보 업데이트",
-      "helper": "내가 제보하거나 팔로우한 문제의 상태 변경 알림."
+      "label": "내 신고 업데이트",
+      "helper": "상태 변경, 시의 답변, civfix 팀의 메시지"
     },
-    "eventChat": {
-      "label": "그룹 채팅",
-      "helper": "이벤트 및 그룹 채팅의 새 메시지 알림."
+    "reportDiscussions": {
+      "label": "신고 대화",
+      "helper": "참여 중인 신고 채팅의 새 메시지"
+    },
+    "directMessages": {
+      "label": "다이렉트 메시지",
+      "helper": "나에게만 보낸 메시지"
     },
     "mentions": {
-      "label": "멘션",
-      "helper": "댓글이나 채팅에서 누군가 나를 @멘션하면 알려드려요."
+      "label": "멘션 및 답글",
+      "helper": "누군가 나를 @멘션하거나, 나에게 답글을 달거나, 내 게시물을 인용할 때"
     },
-    "follows": {
-      "label": "새 팔로워",
-      "helper": "누군가 civfix에서 나를 팔로우하면 알려드려요."
+    "groupChats": {
+      "label": "그룹 채팅",
+      "helper": "참여 중인 그룹 채팅의 새 메시지"
+    },
+    "events": {
+      "label": "참석하는 이벤트",
+      "helper": "리마인더, 변경, 취소, 명단에서의 내 순서"
+    },
+    "hostAnnouncements": {
+      "label": "주최자 공지",
+      "helper": "참여한 이벤트 주최자의 소식과 감사 인사"
+    },
+    "eventTeam": {
+      "label": "이벤트 팀 및 봉사 시간",
+      "helper": "팀 초대, 역할 변경, 봉사 시간"
+    },
+    "followers": {
+      "label": "새 팔로워"
+    },
+    "likesAndReposts": {
+      "label": "좋아요 및 리포스트"
+    },
+    "organizations": {
+      "label": "단체",
+      "helper": "초대 및 인증 결과"
     }
   },
+  "channel": {
+    "push": "푸시",
+    "email": "이메일",
+    "a11y": "{{channel}}, {{category}}"
+  },
+  "events_off_warning": "참여한 이벤트가 취소되거나 시간이 바뀌어도 알림을 받지 못해요.",
+  "push_off": {
+    "title": "이 기기에서 푸시 알림이 꺼져 있어요",
+    "turn_on": "켜기",
+    "site_settings": "브라우저의 사이트 설정에서 civfix 알림을 허용해 주세요.",
+    "unsupported": "이 브라우저는 알림을 표시할 수 없어요"
+  },
+  "email_unavailable": "이메일을 받으려면 인증된 이메일을 추가하세요.",
   "save_error": "변경 사항을 저장하지 못했어요. 다시 시도해 주세요."
 }

@@ -7,29 +7,69 @@
     "title": "Could not load preferences",
     "body": "We could not reach civfix. Check your connection and try again."
   },
-  "push": {
-    "section": "Push",
-    "label": "Push notifications",
-    "helper": "Allow civfix to send notifications to this device."
+  "sections": {
+    "reports": "Your reports",
+    "messages": "Messages",
+    "events": "Events",
+    "social": "Social",
+    "organizations": "Organizations"
   },
-  "categories": {
-    "section": "What you hear about",
+  "category": {
     "reportUpdates": {
-      "label": "Report updates",
-      "helper": "Status changes on issues you reported or follow."
+      "label": "Updates on your reports",
+      "helper": "Status changes, replies from the city and messages from civfix staff"
     },
-    "eventChat": {
-      "label": "Group chats",
-      "helper": "New messages in your event and group chats."
+    "reportDiscussions": {
+      "label": "Report discussions",
+      "helper": "New messages in report chats you're part of"
+    },
+    "directMessages": {
+      "label": "Direct messages",
+      "helper": "Messages sent just to you"
     },
     "mentions": {
-      "label": "Mentions",
-      "helper": "When someone @-mentions you in a comment or chat."
+      "label": "Mentions and replies",
+      "helper": "When someone @mentions you, replies to you or quotes your post"
     },
-    "follows": {
-      "label": "New followers",
-      "helper": "When someone follows you on civfix."
+    "groupChats": {
+      "label": "Group chats",
+      "helper": "New messages in group chats you're in"
+    },
+    "events": {
+      "label": "Events you're going to",
+      "helper": "Reminders, changes, cancellations and your spot on the list"
+    },
+    "hostAnnouncements": {
+      "label": "Announcements from hosts",
+      "helper": "Updates and thank-yous from the people running events you joined"
+    },
+    "eventTeam": {
+      "label": "Event team and hours",
+      "helper": "Team invites, role changes and volunteer hours"
+    },
+    "followers": {
+      "label": "New followers"
+    },
+    "likesAndReposts": {
+      "label": "Likes and reposts"
+    },
+    "organizations": {
+      "label": "Organizations",
+      "helper": "Invites and verification decisions"
     }
   },
+  "channel": {
+    "push": "Push",
+    "email": "Email",
+    "a11y": "{{channel}}, {{category}}"
+  },
+  "events_off_warning": "You won't hear if an event you joined is cancelled or changes time.",
+  "push_off": {
+    "title": "Push notifications are off on this device",
+    "turn_on": "Turn on",
+    "site_settings": "Allow notifications for civfix in your browser's site settings.",
+    "unsupported": "This browser can't show notifications"
+  },
+  "email_unavailable": "Add a verified email to get emails.",
   "save_error": "Couldn't save that change. Try again."
 }

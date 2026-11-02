@@ -19,7 +19,7 @@ describe("query hooks keep TanStack's tracked-property subscription", () => {
     expect(direct).toContain(
       "return { data, isLoading, isPending, isError, refetch, term: trimmed }",
     )
-    expect(notifications).toContain("return { data, isLoading, isError, unreadCount }")
+    expect(notifications).toContain("return { data, isLoading, isError, isFetching }")
   })
 
   it("useReportSearch memoizes its flattened items and hands out stable callbacks", () => {
