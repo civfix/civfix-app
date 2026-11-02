@@ -132,7 +132,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
-      # Gradle 8.14.3 runs on a JDK from 17 to 24; 17 is React Native's reference JDK.
+      # 17 is React Native's reference JDK.
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
