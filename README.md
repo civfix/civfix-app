@@ -21,7 +21,7 @@ stay separate and install `@civfix/contract` and `@civfix/tokens` from the priva
 | `packages/ui` | `@civfix/ui` (private) | The shared React Native UI (theme, primitives, shells, nav store, feature bodies, the Map seam, the app-only `helpers`) rendered on web via react-native-web. Never published. [README](packages/ui/README.md) |
 | `packages/testing` | `@civfix/testing` (private) | Shared test support: the console guard every suite loads first, which fails a test on an unexpected `console.error` or `console.warn`. Consumed as TypeScript source; never published. [README](packages/testing/README.md) |
 | `apps/community-web` | `community-web` | Next.js 16 static-export SPA (React 19 + RN-web + shadcn) plus its Cloudflare Pages config and Functions. [README](apps/community-web/README.md) |
-| `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 54 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
+| `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 56 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
 
 ## Toolchain
 

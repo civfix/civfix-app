@@ -292,13 +292,13 @@ const WebPageLayer = memo(function WebPageLayer({
 const useStyles = makeThemedStyles((t) => ({
   host: { flex: 1 },
   layer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
   header: PAGE_HEADER_STYLE,
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.shadowColor,
   },
 }))

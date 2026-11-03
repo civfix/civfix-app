@@ -102,7 +102,7 @@ export function MapStill({
 
 const useStyles = makeThemedStyles((t) => ({
   surface: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
     borderRadius: t.radius.lg,
   },

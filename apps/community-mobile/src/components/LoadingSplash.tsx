@@ -192,7 +192,7 @@ export function LoadingSplash() {
 
 const styles = makeThemedStyles((t) => ({
   root: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     alignItems: "center",
     justifyContent: "center",

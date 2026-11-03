@@ -123,14 +123,14 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   backdropWeb: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   rootNative: {
     flex: 1,
     justifyContent: "flex-end",
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   card: menuSurfaceStyle(t),

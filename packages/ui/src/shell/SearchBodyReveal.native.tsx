@@ -112,7 +112,7 @@ export function SearchBodyReveal({
 
 const useStyles = makeThemedStyles((t) => ({
   layer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 55,
     overflow: "hidden",
     backgroundColor: t.colors.bg,

@@ -18,7 +18,7 @@ export function RootStack({ launchGate }: { launchGate: boolean }) {
 
   useEffect(() => {
     if (Platform.OS !== "android") return
-    void NavigationBar.setButtonStyleAsync(scheme === "dark" ? "light" : "dark")
+    NavigationBar.setStyle(scheme === "dark" ? "light" : "dark")
   }, [scheme])
 
   return (

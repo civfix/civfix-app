@@ -21,18 +21,54 @@ minimumReleaseAgeExclude:
   - "@civfix/*"
 # Refuse a version published with weaker provenance than the versions before it (a stolen token, not CI).
 trustPolicy: no-downgrade
-# Exact versions that fail that check only because one earlier release happened to carry provenance, each checked to
-# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one attested
-# stable release before 0.8.2). The rest are maintenance releases of an older line, published by hand after the newer
-# line had started publishing with provenance: eslint-import-resolver-typescript 3.10.1 (jounqin; after 4.2.6, for
-# eslint-config-expo), semver 6.3.1 (lukekarrys; after 7.5.1), ua-parser-js 1.0.41 (faisalman; after 2.0.0) and
-# undici-types 6.21.0 (matteo.collina, for @types/node 22; 6.13.0 to 6.19.2 attested). jscpd 4.3.0 (apk, its only
-# maintainer) is the last release of the 4 line, held because jscpd 5 reports this tree over the duplication threshold.
+# Exact versions that fail that check only because a newer line had started publishing with provenance before these
+# maintenance releases of an older line were published by hand, each checked to come from the package's usual
+# maintainer: eslint-import-resolver-typescript 3.10.1 (jounqin; after 4.2.6, for eslint-config-expo), semver 6.3.1
+# (lukekarrys; after 7.5.1), ua-parser-js 1.0.41 (faisalman; after 2.0.0), undici-types 6.21.0 (matteo.collina, for
+# @types/node 22; 6.13.0 to 6.19.2 attested), and every expo, expo-*, @expo/* and babel-preset-expo entry (the Expo
+# SDK 56 set, alanhughes, who publishes Expo's SDK 56 releases by hand; Expo has published its SDK 58 line and canaries
+# through trusted publishing since 2026-08-12). jscpd 4.3.0 (apk, its only maintainer) is the last release of the 4
+# line, held because jscpd 5 reports this tree over the duplication threshold.
 # Drop each entry once the tree leaves that version. Never exclude a package name without a version.
 trustPolicyExclude:
+  - "@expo/cli@56.1.27"
+  - "@expo/config-plugins@56.0.17"
+  - "@expo/config@56.0.15"
+  - "@expo/fingerprint@0.19.10"
+  - "@expo/image-utils@0.10.6"
+  - "@expo/inline-modules@0.0.16"
+  - "@expo/local-build-cache-provider@56.0.12"
+  - "@expo/metro-config@56.0.20"
+  - "@expo/metro-file-map@56.0.5"
+  - "@expo/metro-runtime@56.0.21"
+  - "@expo/prebuild-config@56.0.24"
+  - "@expo/require-utils@56.1.8"
+  - "@expo/router-server@56.0.20"
+  - "@expo/ui@56.0.26"
+  - babel-preset-expo@56.0.21
   - eslint-import-resolver-typescript@3.10.1
+  - expo-asset@56.0.25
+  - expo-build-properties@56.0.27
+  - expo-constants@56.0.27
+  - expo-crypto@56.0.5
+  - expo-dev-client@56.0.28
+  - expo-dev-launcher@56.0.29
+  - expo-dev-menu@56.0.24
+  - expo-file-system@56.0.11
+  - expo-image-manipulator@56.0.26
+  - expo-image-picker@56.0.25
+  - expo-linking@56.0.19
+  - expo-location@56.0.26
+  - expo-modules-autolinking@56.0.24
+  - expo-modules-core@56.0.27
+  - expo-modules-jsi@56.0.14
+  - expo-notifications@56.0.26
+  - expo-router@56.2.22
+  - expo-server@56.0.6
+  - expo-splash-screen@56.0.16
+  - expo-task-manager@56.0.27
+  - expo@56.0.24
   - jscpd@4.3.0
-  - react-native-worklets@0.5.1
   - semver@6.3.1
   - ua-parser-js@1.0.41
   - undici-types@6.21.0
@@ -46,6 +82,7 @@ strictDepBuilds: true
 # (community-mobile builds packages/tokens) is not a dependency script and still runs. Add a package here only after
 # reading its script.
 allowBuilds:
+  "@shopify/react-native-skia": true
   esbuild: true
   unrs-resolver: true
   workerd: true
@@ -57,9 +94,9 @@ allowBuilds:
 # not 1.4.1, because 1.4.1's PEM fix broke Buffer input to pem.decode(). Drop each entry once its parent ships the fixed
 # range itself.
 overrides:
-  react: "19.1.0"
-  react-dom: "19.1.0"
-  react-native: "0.81.5"
+  react: "19.2.3"
+  react-dom: "19.2.3"
+  react-native: "0.85.3"
   vite: ">=8.3.3 <9"
   js-yaml@3: ">=3.15.1 <4"
   js-yaml@4: ">=4.3.1 <5"
@@ -95,13 +132,9 @@ auditConfig:
     # 9.0.0-14.0.1 and no minimatch below 11.0.1.
     - GHSA-g3hv-75wg-m249
     - GHSA-3g3m-2fjr-6pw4
-    # image-size 1 in the metro 0.83.3 that @expo/metro 54 pins exactly; 2.x drops the file-path input metro passes,
-    # and metro only measures image assets from this repo and lockfile-pinned packages at build time. Remove with
-    # Expo SDK 55 (@expo/metro 55.1 runs metro 0.83.8, which has no image-size).
-    - GHSA-5p2g-fcmc-qvqq
-    - GHSA-w3rx-r6r6-pgpr
-    # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (react-navigation 7)
-    # require()s it as a function; expo-router always supplies its own getStateFromPath and only calls query-string
-    # stringify, never its decoder. Remove with react-navigation 8, whose core no longer depends on query-string.
+    # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (which expo-router 56 depends on
+    # for the react-navigation core it vendors) require()s it as a function; expo-router always supplies its own
+    # getStateFromPath and only calls query-string stringify, never its decoder. Remove once expo-router no longer
+    # depends on query-string 7.
     - GHSA-vcc3-ghjq-m6fr
     - GHSA-qr28-fpjm-wq7f

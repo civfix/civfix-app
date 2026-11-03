@@ -316,7 +316,7 @@ export function PortraitShellFrame({
 
 const useStyles = makeThemedStyles((t) => ({
   surface: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
   },
   opaqueSurface: {
@@ -332,14 +332,14 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   keepAliveSlot: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   keepAliveHidden: {
     opacity: 0,
     pointerEvents: "none",
   },
   tabBar: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     pointerEvents: "box-none",
   },
 }))

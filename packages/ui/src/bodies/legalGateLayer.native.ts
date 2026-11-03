@@ -3,7 +3,7 @@ import type { RefObject } from "react"
 
 /** The first-run gate's layer: over the app's stack, under the launch gate (60) that covers app start. */
 export const LEGAL_GATE_LAYER: ViewStyle = {
-  ...StyleSheet.absoluteFillObject,
+  ...StyleSheet.absoluteFill,
   zIndex: 50,
   elevation: 50,
 }

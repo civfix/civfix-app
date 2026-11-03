@@ -154,7 +154,7 @@ const useStyles = makeThemedStyles((t) => ({
     elevation: BAR_Z_INDEX,
   },
   layer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: LAYER_Z_INDEX,
     elevation: LAYER_Z_INDEX,
     backgroundColor: t.colors.bg,

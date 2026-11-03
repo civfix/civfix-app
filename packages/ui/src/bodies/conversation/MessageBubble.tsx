@@ -132,7 +132,7 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
   return (
     <Animated.View
       style={[
-        StyleSheet.absoluteFillObject,
+        StyleSheet.absoluteFill,
         shape === "rounded"
           ? styles.flashOverlayRounded
           : shape === "card"

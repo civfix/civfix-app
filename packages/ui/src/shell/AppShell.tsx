@@ -100,6 +100,6 @@ export function AppShell({
 const styles = StyleSheet.create({
   map: { zIndex: 0 },
   mapDetached: { opacity: 0, pointerEvents: "none" },
-  controls: { ...StyleSheet.absoluteFillObject, zIndex: 50, pointerEvents: "box-none" },
-  overlay: { ...StyleSheet.absoluteFillObject, zIndex: 70, pointerEvents: "box-none" },
+  controls: { ...StyleSheet.absoluteFill, zIndex: 50, pointerEvents: "box-none" },
+  overlay: { ...StyleSheet.absoluteFill, zIndex: 70, pointerEvents: "box-none" },
 })

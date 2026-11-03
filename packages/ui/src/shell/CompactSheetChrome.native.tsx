@@ -133,11 +133,11 @@ const useStyles = makeThemedStyles((t) => ({
     ...t.shadows.s4,
   },
   cardClip: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
   },
   cardWash: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: useBlur ? t.glass.sheet.fill : "transparent",
   },
   cardSheen: {

@@ -96,7 +96,7 @@ export function BootConnectivityNotice() {
 const useStyles = makeThemedStyles((t) => ({
   pressed: { opacity: 0.82, transform: [{ scale: 0.97 }] },
   gate: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     alignItems: "center",
     justifyContent: "center",

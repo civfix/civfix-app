@@ -111,7 +111,7 @@ export function AuthGate({
 
 const useStyles = makeThemedStyles((t) => ({
   root: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     paddingHorizontal: t.space["6"],
   },
