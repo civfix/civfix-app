@@ -481,7 +481,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
       /const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/,
     )
     expect(src).toMatch(
-      /layer: \{\s*\.\.\.StyleSheet\.absoluteFillObject,\s*backgroundColor: t\.colors\.bg,/,
+      /layer: \{\s*\.\.\.StyleSheet\.absoluteFill,\s*backgroundColor: t\.colors\.bg,/,
     )
     const portrait = readFileSync(new URL("../PortraitShell.shared.tsx", import.meta.url), "utf8")
     expect(portrait).toMatch(/insets=\{overlayInsets\}/)

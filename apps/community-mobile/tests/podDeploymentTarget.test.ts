@@ -31,9 +31,9 @@ test("a Podfile without post_install fails the prebuild", () => {
   assert.throws(() => raisePodDeploymentTargets("target 'civfix' do\nend\n"), /post_install/)
 })
 
-test("the app config registers the plugin and sets the minimum it reads", () => {
+test("T2: the app config registers the plugin and sets the minimum it reads", () => {
   const config = appConfigFactory({ config: {} })
   assert.ok(config.plugins.includes("./plugins/with-pod-deployment-target.js"))
   const buildProperties = pluginOptions(config, "expo-build-properties", "no expo-build-properties")
-  assert.equal((buildProperties.ios as { deploymentTarget: string }).deploymentTarget, "15.1")
+  assert.equal((buildProperties.ios as { deploymentTarget: string }).deploymentTarget, "16.4")
 })
