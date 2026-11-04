@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process"
 import { createRequire } from "node:module"
 import { existsSync, realpathSync } from "node:fs"
-import { dirname } from "node:path"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js"
 
@@ -138,6 +138,9 @@ const nextConfig = (phase) => ({
       // the real react-native package and fail to bundle on web. MUST come after the exact `$` rule so
       // the exact case wins first.
       "react-native": reactNativeWebDir,
+      // react-native-svg's web asset lookup imports @react-native/assets-registry, which react-native
+      // stopped depending on in 0.87; Expo's own web bundler maps it to react-native-web's registry too.
+      "@react-native/assets-registry/registry$": join(reactNativeWebDir, "asset-registry.js"),
       "@tanstack/react-query$": reactQueryDir,
       "maplibre-gl$": maplibreGlDir,
       "@civfix/contract$": contractDir,
