@@ -160,10 +160,10 @@ const useStyles = makeThemedStyles((t) => ({
     padding: t.space["4"],
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   backdropTouch: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
 }))

@@ -1,4 +1,3 @@
-import React from "react"
 import { StyleSheet, View } from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { launchTheme } from "@/boot/launchTheme"

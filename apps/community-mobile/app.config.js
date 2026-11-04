@@ -123,7 +123,6 @@ module.exports = ({ config }) => ({
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: DEV_VARIANT ? "./assets/icon-dev.png" : "./assets/icon.png",
-  newArchEnabled: true,
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
@@ -248,7 +247,7 @@ module.exports = ({ config }) => ({
       "expo-build-properties",
       {
         ios: {
-          deploymentTarget: "15.1",
+          deploymentTarget: "16.4",
           buildReactNativeFromSource: false,
           extraPods: [
             { name: "GoogleUtilities", modular_headers: true },

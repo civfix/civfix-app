@@ -10,7 +10,7 @@ export const useMediaPreviewStyles = makeThemedStyles((t) => ({
   },
   framed: t.imageFrame,
   fallback: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     gap: 6,

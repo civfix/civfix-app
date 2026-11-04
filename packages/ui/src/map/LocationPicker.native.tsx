@@ -267,7 +267,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   // Full-screen picker: fill the parent edge-to-edge, no card chrome. paper-2 shows while tiles load.
   wrapFull: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bgAlt,
     justifyContent: "flex-end",
   },
@@ -275,7 +275,7 @@ const useStyles = makeThemedStyles((t) => ({
   // the wrappers already paint while tiles load, so the placeholder -> map handoff is a fade-in of tiles
   // rather than a change of background colour.
   pending: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     gap: t.space["2"],
@@ -288,7 +288,7 @@ const useStyles = makeThemedStyles((t) => ({
     textAlign: "center",
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   pin: {
     alignItems: "center",

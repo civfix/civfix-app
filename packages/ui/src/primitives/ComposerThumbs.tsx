@@ -96,7 +96,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.md,
   },
   thumbUploading: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.md,

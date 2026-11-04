@@ -32,7 +32,9 @@ vi.mock("react-native-safe-area-context", async () => {
 // The app's bundle resolves the .native file; this one runs Android's back button as the phone app does.
 vi.mock("../reportFlow/useHardwareBack", () => import("../reportFlow/useHardwareBack.native"))
 
-type BackListener = () => boolean | null | undefined
+type BackListener = Parameters<typeof BackHandler.addEventListener>[1]
+
+const BACK_PRESS = { type: "hardwareBackPress", timeStamp: 0 }
 
 const listeners: BackListener[] = []
 const remove = vi.fn()
@@ -55,7 +57,7 @@ function pressBack(): boolean | null | undefined {
   if (!latest) throw new Error("no back handler registered")
   let consumed: boolean | null | undefined
   act(() => {
-    consumed = latest()
+    consumed = latest(BACK_PRESS)
   })
   return consumed
 }

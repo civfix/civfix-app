@@ -513,7 +513,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
   },
   emptyLabel: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: t.space["4"],

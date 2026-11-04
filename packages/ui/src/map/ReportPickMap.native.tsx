@@ -340,7 +340,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   meetingPin: {
     alignItems: "center",

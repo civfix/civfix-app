@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import type { BBox } from "@civfix/contract"
 import { Map as SharedMap, type MapHandle, type MapProps } from "@civfix/ui"
 

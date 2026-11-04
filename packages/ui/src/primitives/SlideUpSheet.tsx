@@ -207,11 +207,11 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   scrimTouch: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   dock: {
     flex: 1,

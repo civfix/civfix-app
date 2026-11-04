@@ -339,7 +339,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "flex-end",
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   sheet: {

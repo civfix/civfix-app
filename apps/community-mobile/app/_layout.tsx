@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { StyleSheet } from "react-native"
 import { useRouter } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"

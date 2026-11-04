@@ -31,9 +31,10 @@ export function resolveSchemeName(input: unknown): ColorSchemeName {
   return isColorSchemeName(input) ? input : DEFAULT_COLOR_SCHEME
 }
 
+/** `system` is the platform's report as is: React Native says "unspecified" when the OS has no preference. */
 export function resolveColorScheme(
   preference: AppearancePreference,
-  system: ColorSchemeName | null | undefined,
+  system: string | null | undefined,
 ): ColorSchemeName {
   if (preference === "system") return resolveSchemeName(system)
   return preference

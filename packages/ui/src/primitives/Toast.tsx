@@ -386,7 +386,7 @@ function ToastCard({
 
 const useStyles = makeThemedStyles((t) => ({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 80,
     pointerEvents: "box-none",
   },

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { Platform, ScrollView, View } from "react-native"
 import Constants from "expo-constants"
 import { useRouter } from "expo-router"

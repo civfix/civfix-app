@@ -97,7 +97,7 @@ export function ServiceRecordView() {
   }, [verify])
 
   const onSubmit = React.useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+    (event: React.SubmitEvent<HTMLFormElement>) => {
       event.preventDefault()
       // The same normalization as the URL path, so a typed code behaves exactly like one from a link.
       const code = normalizeCertificateCode(input)
@@ -148,7 +148,7 @@ function CodeForm({
 }: {
   value: string
   onChange: (next: string) => void
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  onSubmit: (event: React.SubmitEvent<HTMLFormElement>) => void
 }) {
   const { t } = useT("web-service-record")
   const inputId = React.useId()

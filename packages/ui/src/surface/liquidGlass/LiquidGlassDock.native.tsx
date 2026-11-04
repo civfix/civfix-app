@@ -38,7 +38,7 @@ const CLEAR_BASE = DOCK_H - DOCK_MORPH_SHRINK
 
 function clipStyle() {
   return {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: dockRadius(),
     overflow: "hidden" as const,
   }

@@ -284,7 +284,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: alpha(t.colors.onAccent, 0.24),
   },
   bar: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     right: undefined,
     borderRadius: t.radius.lg,
   },

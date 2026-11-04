@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BackHandler, StyleSheet } from "react-native"
 import Animated, {
   Easing,
@@ -152,7 +152,7 @@ export function OnboardingGate({
 
 const useStyles = makeThemedStyles((t) => ({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     zIndex: 40,
     elevation: 40,

@@ -78,7 +78,7 @@ function sweepDirectory(directory: Directory, now: number, budget: number): numb
     if (!(entry instanceof File)) continue
     if (!TEMP_OUTPUT_NAME.test(entry.name)) continue
     try {
-      const modified = entry.modificationTime
+      const modified = entry.lastModified
       if (modified === null || now - modified < STALE_TEMP_AGE_MS) continue
       entry.delete()
       removed += 1

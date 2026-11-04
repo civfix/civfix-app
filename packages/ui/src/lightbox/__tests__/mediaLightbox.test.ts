@@ -13,7 +13,7 @@ const selector = strip(read("../ZoomableMedia.tsx"))
 describe("the lightbox scrim", () => {
   it("uses the dedicated near-opaque lightbox scrim, not the shared strong scrim", () => {
     expect(base).toMatch(
-      /scrim: \{\n\s*\.\.\.StyleSheet\.absoluteFillObject,\n\s*backgroundColor: t\.colors\.scrimLightbox,/,
+      /scrim: \{\n\s*\.\.\.StyleSheet\.absoluteFill,\n\s*backgroundColor: t\.colors\.scrimLightbox,/,
     )
     expect(base).not.toContain("t.colors.scrimStrong")
     expect(base).toMatch(/controlBase: \{[\s\S]*?backgroundColor: t\.colors\.lightboxControl,/)

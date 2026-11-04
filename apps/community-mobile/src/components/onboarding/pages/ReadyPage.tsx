@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { ActivityIndicator, Pressable, View } from "react-native"
 import { useGlobalSearchParams, usePathname } from "expo-router"
 import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"

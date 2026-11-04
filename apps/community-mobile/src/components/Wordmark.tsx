@@ -1,4 +1,3 @@
-import React from "react"
 import { View, StyleSheet } from "react-native"
 import { fontFamily, wordmarkColors, WORDMARK_GLYPHS } from "@/theme"
 import { Text } from "@civfix/ui"

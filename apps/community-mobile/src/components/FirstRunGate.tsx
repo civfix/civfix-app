@@ -266,7 +266,7 @@ function HandleHint({
 
 const useStyles = makeThemedStyles((t) => ({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     zIndex: 50,
     elevation: 50,

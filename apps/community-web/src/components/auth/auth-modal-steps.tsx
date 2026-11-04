@@ -108,7 +108,7 @@ interface EmailStepProps {
   onEmailChange: (email: string) => void
   submitting: boolean
   error: string | null
-  onSubmit: (event: React.FormEvent) => void
+  onSubmit: (event: React.SubmitEvent) => void
 }
 
 export function EmailStep({

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native"
 import { Icon, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -96,7 +96,7 @@ export function BootConnectivityNotice() {
 const useStyles = makeThemedStyles((t) => ({
   pressed: { opacity: 0.82, transform: [{ scale: 0.97 }] },
   gate: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
     alignItems: "center",
     justifyContent: "center",

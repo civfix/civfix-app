@@ -1,9 +1,9 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { Platform } from "react-native"
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import * as SystemUI from "expo-system-ui"
-import * as NavigationBar from "expo-navigation-bar"
+import { NavigationBar } from "expo-navigation-bar"
 import { useColorSchemeName, useTheme } from "@civfix/ui/theme"
 import { LAUNCH_SCHEME, launchTheme } from "@/boot/launchTheme"
 
@@ -18,7 +18,7 @@ export function RootStack({ launchGate }: { launchGate: boolean }) {
 
   useEffect(() => {
     if (Platform.OS !== "android") return
-    void NavigationBar.setButtonStyleAsync(scheme === "dark" ? "light" : "dark")
+    NavigationBar.setStyle(scheme === "dark" ? "light" : "dark")
   }, [scheme])
 
   return (
