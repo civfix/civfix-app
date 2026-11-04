@@ -81,8 +81,8 @@ if [ -z "${CI:-}" ]; then
   (cd ../.. && pnpm install --frozen-lockfile)
 fi
 
-echo "Regenerating android/ from scratch (expo prebuild --clean, profile ${profile})..."
-npx expo prebuild --platform android --clean --no-install
+echo "Regenerating android/ from scratch (expo prebuild, profile ${profile})..."
+npx expo prebuild --platform android --no-install
 scripts/android-release-patches.sh
 
 echo "Building the release bundle (version code ${CIVFIX_ANDROID_VERSION_CODE})..."

@@ -120,28 +120,40 @@ fi
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-# android/local.properties is machine-local and gitignored, and ONLY `expo run:android` writes it -
-# a prebuild that recreates android/ leaves gradle with "SDK location not found". Same class as the
-# DEVELOPMENT_TEAM above: carry it across rather than making the next person rediscover it.
+# Every prebuild deletes ios/ or android/ and regenerates it from the app config (SDK 57's default;
+# --clean is a no-op), so the machine-local, gitignored files in it are read here and written back
+# after it. Same class as the DEVELOPMENT_TEAM above: carry them across rather than making
+# the next person rediscover them.
+#   android/local.properties: ONLY `expo run:android` writes it; without it gradle stops with
+#     "SDK location not found".
+#   ios/.xcode.env.local: the NODE_BINARY pin the Xcode script phases source; nothing regenerates it.
 sdk_dir=""
 if [ "$platform" = "android" ] && [ -f android/local.properties ]; then
   sdk_dir=$(sed -n 's/^sdk\.dir=//p' android/local.properties | head -1)
 fi
+xcode_env_local=""
+if [ "$platform" = "ios" ] && [ -f ios/.xcode.env.local ]; then
+  # The trailing x keeps $(...) from stripping the file's final newlines, so it is written back as is.
+  xcode_env_local=$(cat ios/.xcode.env.local; printf x)
+fi
 
-# No --clean: the config plugins re-apply over the existing project, and a wipe would also take out
-# ios/.xcode.env.local (the NODE_BINARY pin the Xcode script phases need).
 echo "Regenerating the native ${platform} project (expo prebuild)..."
 # --no-install: node_modules is already resolved by the pnpm workspace at the repo root, and prebuild's
 # own install step would run the package manager from this sub-package. It also suppresses prebuild's
 # implicit `pod install`, which we run below ourselves under the UTF-8 locale exported above.
 npx expo prebuild --platform "$platform" --no-install
 
+if [ -n "$xcode_env_local" ]; then
+  printf '%s' "${xcode_env_local%x}" > ios/.xcode.env.local
+  echo "Restored ios/.xcode.env.local - prebuild does not regenerate it."
+fi
+
 if [ "$platform" = "ios" ]; then
   echo "Installing pods..."
   (cd ios && pod install)
 fi
 
-if [ "$platform" = "android" ] && [ -n "$sdk_dir" ] && [ ! -f android/local.properties ]; then
+if [ -n "$sdk_dir" ]; then
   printf '%s\n' "sdk.dir=$sdk_dir" > android/local.properties
   echo "Restored android/local.properties (sdk.dir=$sdk_dir) - prebuild does not regenerate it."
 fi
