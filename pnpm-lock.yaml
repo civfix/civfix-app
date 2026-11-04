@@ -459,8 +459,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: ^1.66.0
-        version: 1.66.0(@types/react@19.3.0)(react@19.3.0)
+        specifier: ^0.469.0
+        version: 0.469.0(react@19.3.0)
       lucide-react-native:
         specifier: 1.17.0
         version: 1.17.0(react-native-svg@15.16.0(react-native@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
@@ -5788,14 +5788,10 @@ packages:
       react-native: 0.88.1
       react-native-svg: ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0
 
-  lucide-react@1.66.0:
-    resolution: {integrity: sha512-8zjbi/Us+ETXqfBwmXF/FHrWGIqOdE6zT1yUdRJLQVoptomSkB0zdFWVIM667t9K8djWDaXdkBkqi2qVTuDNiw==}
+  lucide-react@0.469.0:
+    resolution: {integrity: sha512-28vvUnnKQ/dBwiCQtwJw7QauYnE7yd2Cyp4tTTJpvglX4EMpbflcdBgrgToX2j71B3YvugK/NH3BGUk+E/p/Fw==}
     peerDependencies:
-      '@types/react': '*'
       react: 19.3.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -12728,11 +12724,9 @@ snapshots:
       react-native: 0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
       react-native-svg: 15.16.0(react-native@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
 
-  lucide-react@1.66.0(@types/react@19.3.0)(react@19.3.0):
+  lucide-react@0.469.0(react@19.3.0):
     dependencies:
       react: 19.3.0
-    optionalDependencies:
-      '@types/react': 19.3.0
 
   lz-string@1.5.0: {}
 
