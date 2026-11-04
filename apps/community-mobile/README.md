@@ -29,17 +29,17 @@ CocoaPods are proven on comes from `nodeLinker: hoisted` in `pnpm-workspace.yaml
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~58.0.22 | SDK 58 |
+| expo | ~58.0.23 | SDK 58 |
 | react-native | 0.88.1 | SDK 58 pin |
 | react / react-dom | 19.3.0 | SDK 58 pin |
-| expo-router | ~58.0.29 | file-based routing |
+| expo-router | ~58.0.30 | file-based routing |
 | react-native-reanimated | 4.7.1 | SDK 58 bundles v4 (see note below) |
 | react-native-worklets | 0.13.0 | worklet runtime + Babel plugin for Reanimated v4 |
 | react-native-gesture-handler | ~3.3.0 | hook API (`usePanGesture` and friends); the `Gesture` builder is deprecated |
 | @gorhom/bottom-sheet | ^5.2.14 | works with Reanimated v4 |
 | @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 58) |
 | react-native-svg | 15.16.0 | teardrop pins, avatars |
-| react-native-safe-area-context | ~5.10.1 | |
+| react-native-safe-area-context | ~5.11.1 | |
 | react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
 | react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro); see "Pinned library majors" |
 | @tanstack/react-query / zustand | ^5 / ^5 | data + state |
