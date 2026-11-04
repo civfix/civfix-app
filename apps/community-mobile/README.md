@@ -29,15 +29,15 @@ CocoaPods are proven on comes from `nodeLinker: hoisted` in `pnpm-workspace.yaml
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~56.0.24 | SDK 56 |
-| react-native | 0.85.3 | SDK 56 pin |
-| react / react-dom | 19.2.3 | SDK 56 pin |
-| expo-router | ~56.2.22 | file-based routing |
-| react-native-reanimated | 4.3.1 | SDK 56 bundles v4 (see note below) |
-| react-native-worklets | 0.8.3 | worklet runtime + Babel plugin for Reanimated v4 |
-| react-native-gesture-handler | ~2.31.2 | |
+| expo | ~57.0.31 | SDK 57 |
+| react-native | 0.86.3 | SDK 57 pin |
+| react / react-dom | 19.2.3 | SDK 57 pin |
+| expo-router | ~57.0.29 | file-based routing |
+| react-native-reanimated | 4.5.1 | SDK 57 bundles v4 (see note below) |
+| react-native-worklets | 0.10.1 | worklet runtime + Babel plugin for Reanimated v4 |
+| react-native-gesture-handler | ~2.32.0 | |
 | @gorhom/bottom-sheet | ^5.2.14 | works with Reanimated v4 |
-| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 56) |
+| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 57) |
 | react-native-svg | 15.15.4 | teardrop pins, avatars |
 | react-native-safe-area-context | ~5.7.0 | |
 | react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
@@ -46,9 +46,9 @@ CocoaPods are proven on comes from `nodeLinker: hoisted` in `pnpm-workspace.yaml
 
 ### Reanimated v4
 
-Expo SDK 56 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
+Expo SDK 57 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
 `react-native-worklets` package, so `babel.config.js` uses `react-native-worklets/plugin` (last in the
-plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 56 (RN 0.85,
+plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 57 (RN 0.86,
 new architecture only) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
 
 ## Building (REQUIRES a dev client - not Expo Go)
