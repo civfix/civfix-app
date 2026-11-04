@@ -5,7 +5,6 @@ import type { TextStyle } from "react-native"
 type WebOnlyKey =
   | "backdropFilter"
   | "WebkitBackdropFilter"
-  | "backgroundImage"
   | "cursor"
   | "outlineStyle"
   | "overflowWrap"

@@ -92,7 +92,7 @@ export function useKeyboardAnchor({
   })
 
   const measuredOverlap = useCallback(
-    (endCoordinates: { screenY?: number; height?: number } | undefined) =>
+    (endCoordinates: { screenY?: number; height?: number } | null | undefined) =>
       keyboardViewportOverlap({
         endCoordinates,
         windowHeight: winRef.current,

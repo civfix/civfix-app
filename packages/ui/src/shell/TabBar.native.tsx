@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Keyboard, Platform, Pressable, StyleSheet, TextInput } from "react-native"
-import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import { GestureDetector, usePanGesture } from "react-native-gesture-handler"
 import Animated, {
   Easing,
   ReduceMotion,
@@ -292,31 +292,28 @@ export function TabBar() {
   )
   const panLive = useSharedValue(0)
   const panArmed = visible && !searchActive && !minimized && regionW > 0
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .enabled(panArmed)
-        .activeOffsetX([-6, 6])
-        .failOffsetY([-16, 16])
-        .onStart((e) => {
-          if (sheetDockOcclusion.value > 0.01) return
-          panLive.value = 1
-          tx.value = pillDragRect(e.x, tabW, TAB_PILL_LOCK_COUNT).x
-        })
-        .onUpdate((e) => {
-          if (!panLive.value) return
-          tx.value = pillDragRect(e.x, tabW, TAB_PILL_LOCK_COUNT).x
-        })
-        .onFinalize(() => {
-          if (!panLive.value) return
-          panLive.value = 0
-          const index = lockedIndexForPillCenter(tx.value + pillW / 2, tabW, TAB_PILL_LOCK_COUNT)
-          const lockedX = selectedPillRect(index, tabW).x
-          tx.value = reduceMotion ? lockedX : withTiming(lockedX, pillCfg)
-          scheduleOnRN(lockOnTab, index)
-        }),
-    [panArmed, tabW, pillW, reduceMotion, pillCfg, lockOnTab, panLive, tx],
-  )
+  const pan = usePanGesture({
+    enabled: panArmed,
+    activeOffsetX: [-6, 6],
+    failOffsetY: [-16, 16],
+    onActivate: (e) => {
+      if (sheetDockOcclusion.value > 0.01) return
+      panLive.value = 1
+      tx.value = pillDragRect(e.x, tabW, TAB_PILL_LOCK_COUNT).x
+    },
+    onUpdate: (e) => {
+      if (!panLive.value) return
+      tx.value = pillDragRect(e.x, tabW, TAB_PILL_LOCK_COUNT).x
+    },
+    onFinalize: () => {
+      if (!panLive.value) return
+      panLive.value = 0
+      const index = lockedIndexForPillCenter(tx.value + pillW / 2, tabW, TAB_PILL_LOCK_COUNT)
+      const lockedX = selectedPillRect(index, tabW).x
+      tx.value = reduceMotion ? lockedX : withTiming(lockedX, pillCfg)
+      scheduleOnRN(lockOnTab, index)
+    },
+  })
 
   const riseRef = useRef<Animated.View>(null)
   const {

@@ -1,5 +1,5 @@
-import type { TextStyle } from "react-native"
-import { makeThemedStyles, type Theme } from "../../theme"
+import type { TextStyle, ViewStyle } from "react-native"
+import { makeThemedStyles, type Theme, type ThemedStylesHook } from "../../theme"
 
 function eyebrowType(t: Theme): TextStyle {
   return {
@@ -11,7 +11,23 @@ function eyebrowType(t: Theme): TextStyle {
   }
 }
 
-export const useSectionStyles = makeThemedStyles((t) => ({
+// Spelled out because React Native's style types can't be named in this package's emitted declarations.
+interface SectionStyles {
+  eyebrow: TextStyle
+  eyebrowText: TextStyle
+  subhead: ViewStyle
+  subheadText: TextStyle
+  subheadCt: ViewStyle
+  subheadCtText: TextStyle
+  empty: TextStyle
+  loadMore: ViewStyle
+  loadMorePressed: ViewStyle
+  loadMoreText: TextStyle
+  loadMoreAccentText: TextStyle
+  loadMoreError: TextStyle
+}
+
+export const useSectionStyles: ThemedStylesHook<SectionStyles> = makeThemedStyles((t) => ({
   eyebrow: {
     ...eyebrowType(t),
     marginTop: t.space["5"],

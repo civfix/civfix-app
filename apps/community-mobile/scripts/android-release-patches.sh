@@ -32,7 +32,7 @@
 #                                    <resources/> there, which is what deleting the stale file leaves.
 #
 # scripts/android-build.sh runs this after its clean prebuild and then builds; run it by hand only
-# before a hand-driven gradle build (JDK 17-24; the Gradle 8.14.3 wrapper refuses Temurin 25).
+# before a hand-driven gradle build (JDK 17-26, the range the Gradle 9.4.1 wrapper runs on).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

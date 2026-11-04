@@ -6,7 +6,7 @@
  * WEB_ORIGINS but allows a missing one on the cookie-less native path, and RN's WebSocket would otherwise
  * send the API's own origin, which is not allow-listed (close 1008).
  */
-import { AppState, type AppStateStatus, type NativeEventSubscription } from "react-native"
+import { AppState, type AppStateStatus, type EventSubscription } from "react-native"
 import { ChatSocketCore, type WsConnection } from "@civfix/ui/realtime"
 import { applyAppStateTransition } from "@/lib/wsAppState"
 import { openTicketedSocket } from "@/lib/wsTransport"
@@ -41,7 +41,7 @@ function openNativeSocket(): Promise<WsConnection | null> {
   })
 }
 
-let appStateSub: NativeEventSubscription | null = null
+let appStateSub: EventSubscription | null = null
 function ensureAppStateListener(): void {
   if (appStateSub) return
   appStateSub = AppState.addEventListener("change", (next: AppStateStatus) => {

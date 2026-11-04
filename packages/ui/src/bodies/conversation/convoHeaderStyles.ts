@@ -1,9 +1,33 @@
-import { StyleSheet } from "react-native"
-import { makeThemedStyles } from "../../theme"
+import { StyleSheet, type TextStyle, type ViewStyle } from "react-native"
+import { makeThemedStyles, type ThemedStylesHook } from "../../theme"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, detailTitleStyle } from "../../shell/detailHeader"
 import { pillButton } from "./styleParts"
 
-export const useConvoHeaderStyles = makeThemedStyles((t) => ({
+// Spelled out because React Native's style types can't be named in this package's emitted declarations.
+interface ConvoHeaderStyles {
+  convoBar: ViewStyle
+  back: ViewStyle
+  backPressed: ViewStyle
+  convoTitles: ViewStyle
+  convoTitle: TextStyle
+  convoTitleExpanded: TextStyle
+  avatarTap: ViewStyle
+  convoSubRow: ViewStyle
+  convoSubPressed: ViewStyle
+  convoSub: TextStyle
+  onlineDot: ViewStyle
+  menuBtn: ViewStyle
+  confirm: ViewStyle
+  confirmText: TextStyle
+  confirmRow: ViewStyle
+  confirmCancel: ViewStyle
+  confirmCancelText: TextStyle
+  confirmBlock: ViewStyle
+  confirmBlockText: TextStyle
+  pressed: ViewStyle
+}
+
+export const useConvoHeaderStyles: ThemedStylesHook<ConvoHeaderStyles> = makeThemedStyles((t) => ({
   convoBar: {
     flexDirection: "row",
     alignItems: "center",

@@ -1,6 +1,6 @@
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, StyleSheet, useWindowDimensions, View } from "react-native"
-import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import { GestureDetector, usePanGesture } from "react-native-gesture-handler"
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -193,34 +193,31 @@ export function PageStack({
     [dragging, front],
   )
 
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .enabled(swipeArmed)
-        .hitSlop({ left: 0, width: EDGE_WIDTH })
-        .activeOffsetX(ACTIVATE_X)
-        .failOffsetY([-FAIL_Y, FAIL_Y])
-        .onStart(() => {
-          dragging.value = 1
+  const pan = usePanGesture({
+    enabled: swipeArmed,
+    hitSlop: { left: 0, width: EDGE_WIDTH },
+    activeOffsetX: ACTIVATE_X,
+    failOffsetY: [-FAIL_Y, FAIL_Y],
+    onActivate: () => {
+      dragging.value = 1
+    },
+    onUpdate: (e) => {
+      const raw = width > 0 ? e.translationX / width : 0
+      front.value = raw < 0 ? 0 : raw > 1 ? 1 : raw
+    },
+    onDeactivate: (e) => {
+      if (
+        e.canceled ||
+        swipeBackDecision(e.translationX, e.velocityX, width, SWIPE_TOKENS) === "cancel"
+      ) {
+        front.value = withTiming(0, CANCEL_CFG, (finished) => {
+          if (finished) dragging.value = 0
         })
-        .onUpdate((e) => {
-          const raw = width > 0 ? e.translationX / width : 0
-          front.value = raw < 0 ? 0 : raw > 1 ? 1 : raw
-        })
-        .onEnd((e, success) => {
-          if (
-            !success ||
-            swipeBackDecision(e.translationX, e.velocityX, width, SWIPE_TOKENS) === "cancel"
-          ) {
-            front.value = withTiming(0, CANCEL_CFG, (finished) => {
-              if (finished) dragging.value = 0
-            })
-            return
-          }
-          scheduleOnRN(commitSwipeBack, front.value)
-        }),
-    [commitSwipeBack, dragging, front, swipeArmed, width],
-  )
+        return
+      }
+      scheduleOnRN(commitSwipeBack, front.value)
+    },
+  })
 
   const stackSlices = useMemo(() => stack.map((_, index) => stack.slice(0, index + 1)), [stack])
   const rendered: Array<{

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react"
-import { View, type ViewStyle } from "react-native"
+import { View, type ViewStyle, type ViewInstance } from "react-native"
 import { webStyle } from "../theme/webStyle"
 import { bodyTransitionPlan, translateRatio, type BodyTransitionPlan } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
@@ -39,7 +39,7 @@ export function StepTransition({ children, direction, style, transitionKey }: St
   const [entrance, setEntrance] = useState<Entrance | null>(null)
   const prevKeyRef = useRef(transitionKey)
   const navRef = useRef(0)
-  const nodeRef = useRef<View>(null)
+  const nodeRef = useRef<ViewInstance>(null)
 
   useLayoutEffect(() => {
     if (transitionKey === prevKeyRef.current) return

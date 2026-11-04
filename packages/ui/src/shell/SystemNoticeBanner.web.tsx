@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react"
-import type { View } from "react-native"
+import type { ViewInstance } from "react-native"
 import { domElement } from "../primitives/domElement"
 import { space, webStyle } from "../theme"
 import { SystemNoticeBar, useVisibleSystemNotice } from "./SystemNoticeBanner.shared"
@@ -27,7 +27,7 @@ const FIXED_TOP = webStyle({
 export function SystemNoticeBanner({ style, onLayout }: SystemNoticeBannerProps) {
   const notice = useVisibleSystemNotice()
   const setHeight = useSystemNoticeStore((s) => s.setHeight)
-  const ref = useRef<View>(null)
+  const ref = useRef<ViewInstance>(null)
   const visible = notice !== null
 
   // A layout effect runs before paint, so nothing is painted under the bar for a frame.

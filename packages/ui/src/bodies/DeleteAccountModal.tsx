@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
+import { View, Pressable, StyleSheet, type TextInputInstance } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import {
   makeThemedStyles,
@@ -59,7 +59,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   const [error, setError] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
   const [codeFocusRequest, setCodeFocusRequest] = useState(0)
-  const codeRef = useRef<RNTextInput>(null)
+  const codeRef = useRef<TextInputInstance>(null)
 
   useEffect(() => {
     if (visible) {

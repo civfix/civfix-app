@@ -394,7 +394,7 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
    */
   it("is NOT reported by the page host, even though a page has an edge swipe", () => {
     const native = readFileSync(new URL("../PageStack.native.tsx", import.meta.url), "utf8")
-    expect(native).toContain("Gesture.Pan()")
+    expect(native).toContain("usePanGesture({")
     expect(native).not.toContain("dismissGesture={true}")
     expect(native).not.toContain("dismissGesture />")
     // Arming runs through this module, so the swipe and the header can never disagree.

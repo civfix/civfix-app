@@ -56,7 +56,7 @@ export function iosKeyboardCloseEasing(x: number): number {
  * window already excludes the keyboard under adjustResize, so `winH - screenY` would double-count.
  */
 export function keyboardOverlapFrom(
-  endCoordinates: { screenY?: number; height?: number } | undefined,
+  endCoordinates: { screenY?: number; height?: number } | null | undefined,
   windowHeight: number,
   platform: "ios" | "android" | "other",
 ): number {
@@ -77,7 +77,7 @@ export function androidKeyboardInset(
 }
 
 export interface KeyboardViewportOverlapInput {
-  endCoordinates: { screenY?: number; height?: number } | undefined
+  endCoordinates: { screenY?: number; height?: number } | null | undefined
   windowHeight: number
   restingWindowHeight: number
   platform: "ios" | "android" | "other"

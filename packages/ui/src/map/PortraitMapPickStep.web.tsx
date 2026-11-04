@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { View, StyleSheet } from "react-native"
+import { View, StyleSheet, type ViewInstance } from "react-native"
 import { domElement } from "../primitives/domElement"
 import { makeThemedStyles, useTheme, webStyle, pointerEventStyles } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -103,7 +103,7 @@ export function PortraitMapPickStep({
   }, [mapRegistered, localPoint])
   const cancel = useCallback(() => onCancelRef.current(), [])
 
-  const topBarRef = useRef<View>(null)
+  const topBarRef = useRef<ViewInstance>(null)
 
   useEffect(() => {
     if (!live) return

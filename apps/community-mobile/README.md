@@ -29,26 +29,26 @@ CocoaPods are proven on comes from `nodeLinker: hoisted` in `pnpm-workspace.yaml
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~57.0.31 | SDK 57 |
-| react-native | 0.86.3 | SDK 57 pin |
-| react / react-dom | 19.2.3 | SDK 57 pin |
-| expo-router | ~57.0.29 | file-based routing |
-| react-native-reanimated | 4.5.1 | SDK 57 bundles v4 (see note below) |
-| react-native-worklets | 0.10.1 | worklet runtime + Babel plugin for Reanimated v4 |
-| react-native-gesture-handler | ~2.32.0 | |
+| expo | ~58.0.22 | SDK 58 |
+| react-native | 0.88.1 | SDK 58 pin |
+| react / react-dom | 19.3.0 | SDK 58 pin |
+| expo-router | ~58.0.29 | file-based routing |
+| react-native-reanimated | 4.7.1 | SDK 58 bundles v4 (see note below) |
+| react-native-worklets | 0.13.0 | worklet runtime + Babel plugin for Reanimated v4 |
+| react-native-gesture-handler | ~3.3.0 | hook API (`usePanGesture` and friends); the `Gesture` builder is deprecated |
 | @gorhom/bottom-sheet | ^5.2.14 | works with Reanimated v4 |
-| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 57) |
-| react-native-svg | 15.15.4 | teardrop pins, avatars |
-| react-native-safe-area-context | ~5.7.0 | |
+| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 58) |
+| react-native-svg | 15.16.0 | teardrop pins, avatars |
+| react-native-safe-area-context | ~5.10.1 | |
 | react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
 | react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro); see "Pinned library majors" |
 | @tanstack/react-query / zustand | ^5 / ^5 | data + state |
 
 ### Reanimated v4
 
-Expo SDK 57 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
+Expo SDK 58 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
 `react-native-worklets` package, so `babel.config.js` uses `react-native-worklets/plugin` (last in the
-plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 57 (RN 0.86,
+plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 58 (RN 0.88,
 new architecture only) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
 
 ## Building (REQUIRES a dev client - not Expo Go)
@@ -270,7 +270,7 @@ Google Cloud service account that Play Console has granted release rights on thi
 
 Signing reads the upload keystore through `scripts/android-release-patches.sh` (`CIVFIX_KEYSTORE_FILE`,
 `CIVFIX_KEYSTORE_PASSWORD_FILE`, `CIVFIX_KEY_ALIAS`; the SDK from `CIVFIX_ANDROID_SDK_DIR`, else
-`ANDROID_HOME` or `ANDROID_SDK_ROOT`, else the Homebrew cask). Gradle 8.14.3 needs a JDK from 17 to 24 (the default Temurin 25 is refused), e.g.
+`ANDROID_HOME` or `ANDROID_SDK_ROOT`, else the Homebrew cask). Gradle 9.4.1 runs on a JDK from 17 to 26, e.g.
 `export JAVA_HOME=$(/usr/libexec/java_home -v 22)` on a Mac.
 
 ### Launch screen assets are baked at prebuild
