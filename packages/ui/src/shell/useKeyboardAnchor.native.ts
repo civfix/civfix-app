@@ -50,6 +50,7 @@ export function useKeyboardAnchor({
   restOffset = 0,
   gap = KEYBOARD_SURFACE_GAP,
 }: KeyboardAnchorOptions = {}): KeyboardAnchor<NativeLiftStyle> {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- reanimated's only UI-thread keyboard height; still shipped in 4.7.1, and its replacement (react-native-keyboard-controller) is a new native library this upgrade doesn't add
   const kb = useAnimatedKeyboard()
   const windowH = useWindowDimensions().height
   const restingWindowHeight = useRestingWindowHeight()
