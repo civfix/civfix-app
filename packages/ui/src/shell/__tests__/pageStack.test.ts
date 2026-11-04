@@ -361,7 +361,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   it("switches the layer tokens off the DRAG shared value, inside the worklet", () => {
     expect(src).toMatch(/const dragging = useSharedValue\(0\)/)
     expect(src).toMatch(/const tokens = dragging\.value === 1 \? dragTokens : restTokens/)
-    expect(panChain()).toMatch(/\.onStart\(\(\) => \{\s*dragging\.value = 1\s*\}\)/)
+    expect(panChain()).toMatch(/onActivate: \(\) => \{\s*dragging\.value = 1\s*\},/)
     expect(src).toMatch(/dragging\.value = 0/)
   })
 
@@ -417,12 +417,23 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   })
 
   const panChain = () => {
-    const start = src.indexOf("Gesture.Pan()\n")
+    const start = src.indexOf("const pan = usePanGesture({\n")
     expect(start).toBeGreaterThan(-1)
-    const end = src.indexOf("[commitSwipeBack", start)
+    const end = src.indexOf("\n  })\n", start)
     expect(end).toBeGreaterThan(start)
     return src.slice(start, end).replace(/\/\/[^\n]*/g, "")
   }
+
+  it("T11: builds the edge swipe as ONE usePanGesture config, on Gesture Handler 3's callbacks", () => {
+    expect(src.split("usePanGesture(").length - 1).toBe(1)
+    const chain = panChain()
+    expect(chain).toMatch(/onActivate: \(\) => \{/)
+    expect(chain).toMatch(
+      /onDeactivate: \(e\) => \{\s*if \(\s*e\.canceled \|\|\s*swipeBackDecision\(/,
+    )
+    expect(chain).not.toMatch(/\bsuccess\b/)
+    expect(chain).not.toMatch(/\bonStart\b|\bonEnd\b/)
+  })
 
   it("calls NO config factory inside the pan chain - only the hoisted consts", () => {
     const chain = panChain()
@@ -448,10 +459,10 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
 
   it("arms only the LEFT EDGE STRIP, and yields to vertical scrolling", () => {
     const chain = panChain()
-    expect(chain).toMatch(/\.hitSlop\(\{ left: 0, width: EDGE_WIDTH \}\)/)
-    expect(chain).toMatch(/\.activeOffsetX\(ACTIVATE_X\)/)
-    expect(chain).toMatch(/\.failOffsetY\(\[-FAIL_Y, FAIL_Y\]\)/)
-    expect(chain).toMatch(/\.enabled\(swipeArmed\)/)
+    expect(chain).toMatch(/hitSlop: \{ left: 0, width: EDGE_WIDTH \},/)
+    expect(chain).toMatch(/activeOffsetX: ACTIVATE_X,/)
+    expect(chain).toMatch(/failOffsetY: \[-FAIL_Y, FAIL_Y\],/)
+    expect(chain).toMatch(/enabled: swipeArmed,/)
   })
 
   it("commits the pop through the nav store from the JS thread only", () => {
