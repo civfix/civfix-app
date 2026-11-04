@@ -83,10 +83,10 @@ CIVFIX_APP_VARIANT=development pnpm start --scheme civfix-dev
 ```
 
 Google and Apple sign-in, civfix.org universal links and push are not supported in it (their
-credentials and the site's app association are tied to `org.civfix.community`); sign in with email. A
-store iOS prebuild after a dev one rewrites the bundle ID, name, schemes, keychain group and icon, so
-nothing of the variant reaches an archive. Android adds URL schemes without removing old ones, so
-prebuild with `--clean` before a Play build if you ever prebuilt the dev variant for Android.
+credentials and the site's app association are tied to `org.civfix.community`); sign in with email.
+Every prebuild deletes `ios/` or `android/` and regenerates it, so a store prebuild after a dev one
+carries nothing of the variant (bundle ID, name, schemes, keychain group, icon) into an archive or a
+Play build.
 
 App Store and TestFlight builds share `org.civfix.community`, so those two still replace each other:
 Apple installs a TestFlight build over the store app by design.
@@ -296,10 +296,10 @@ npx expo prebuild --platform ios --clean --no-install
 (cd ios && pod install)
 ```
 
-`scripts/prep-archive.sh` runs a (non-`--clean`) prebuild + `pod install`, so a prep'd archive picks
-the change up; a hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not.
-Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
-place: it is the only way to be sure no earlier generated file survives.
+`scripts/prep-archive.sh` runs a prebuild + `pod install`, so a prep'd archive picks the change up; a
+hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not. Every prebuild
+regenerates the native project from scratch, so no earlier generated file survives one; the script
+carries the machine-local `ios/.xcode.env.local` and `android/local.properties` across it.
 
 The launch screen is light-only, by product decision (2026-09-14): the static native screen and the
 JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
