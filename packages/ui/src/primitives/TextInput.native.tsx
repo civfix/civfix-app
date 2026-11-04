@@ -1,5 +1,13 @@
-import { forwardRef, useCallback, useEffect, useRef } from "react"
-import { TextInput as RNTextInput } from "react-native"
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  type ForwardRefExoticComponent,
+  type PropsWithoutRef,
+  type RefAttributes,
+} from "react"
+import { TextInput as RNTextInput, type TextInputInstance } from "react-native"
 import { keyboardFocusStore, type KeyboardFocusNode } from "../shell/keyboardFocusStore"
 import { useKeyboardRevealGroup } from "../shell/keyboardRevealGroup"
 import { useKeyboardScrollScope } from "../shell/keyboardScrollScope"
@@ -10,7 +18,9 @@ type FocusHandler = NonNullable<TextInputProps["onFocus"]>
 type BlurHandler = NonNullable<TextInputProps["onBlur"]>
 type ContentSizeHandler = NonNullable<TextInputProps["onContentSizeChange"]>
 
-export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
+export const TextInput: ForwardRefExoticComponent<
+  PropsWithoutRef<TextInputProps> & RefAttributes<TextInputInstance>
+> = forwardRef<TextInputInstance, TextInputProps>(function TextInput(
   { onFocus, onBlur, onContentSizeChange, ...rest },
   ref,
 ) {

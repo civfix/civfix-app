@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, type RefObject } from "react"
+import type { ViewInstance } from "react-native"
 import type { ReportDTO } from "@civfix/contract"
 import { usePopoverAnchor, useToast } from "../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../primitives"
@@ -9,11 +10,20 @@ import { pathForEntry, useNavStore } from "../../nav"
 import { useT } from "../../i18n"
 import type { ContentReportTarget } from "../useContentReportSheet"
 
+export interface ReportTitleMenu {
+  titleMenuItems: PopoverMenuItem[]
+  titleMenuOpen: boolean
+  titleMenuRect: AnchorRect | null
+  titleMenuAnchorRef: RefObject<ViewInstance | null>
+  openTitleMenu: () => void
+  closeTitleMenu: () => void
+}
+
 export function useReportTitleMenu(
   report: ReportDTO,
   title: string,
   openReport: (target: ContentReportTarget) => void,
-) {
+): ReportTitleMenu {
   const { t } = useT("report-detail")
   const requireAuth = useRequireAuth()
   const toast = useToast()

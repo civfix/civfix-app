@@ -20,7 +20,7 @@
 #                                  PLAY_SERVICE_ACCOUNT_JSON (scripts/play-publish.mjs)
 #   CIVFIX_KEYSTORE_FILE, CIVFIX_KEYSTORE_PASSWORD_FILE, CIVFIX_KEY_ALIAS, CIVFIX_ANDROID_SDK_DIR
 #                                  as read by scripts/android-release-patches.sh
-# and a JDK the gradle wrapper accepts (17 through 24) as JAVA_HOME or `java` on PATH.
+# and a JDK the Gradle 9 wrapper runs on (17 through 26) as JAVA_HOME or `java` on PATH.
 #
 # Upload the result with: node scripts/play-publish.mjs upload <aab> --track internal|production
 set -euo pipefail

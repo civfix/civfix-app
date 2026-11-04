@@ -3,8 +3,8 @@ import {
   Pressable,
   type AccessibilityState,
   type StyleProp,
-  type View as RNView,
   type ViewStyle,
+  type ViewInstance,
 } from "react-native"
 import {
   focusRingProps,
@@ -28,7 +28,7 @@ export interface IconActionButtonProps {
   accessibilityLabel: string
   accessibilityState?: AccessibilityState
   style?: StyleProp<ViewStyle>
-  ref?: React.Ref<RNView>
+  ref?: React.Ref<ViewInstance>
 }
 
 /** A borderless round icon control for a row or card corner: 32pt drawn, 44pt reached on native. */

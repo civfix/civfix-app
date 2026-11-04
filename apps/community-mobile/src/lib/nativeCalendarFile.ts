@@ -14,7 +14,7 @@ export const nativeCalendarFile: CalendarFileCapability | undefined = calendarSh
         try {
           if (file.exists) file.delete()
           file.create()
-          file.write(ics)
+          await file.write(ics)
           await Share.share({ url: file.uri })
           return true
         } catch {

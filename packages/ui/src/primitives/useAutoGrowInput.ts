@@ -1,15 +1,15 @@
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react"
-import { Platform, type TextInput } from "react-native"
+import { Platform, type TextInputInstance } from "react-native"
 import { domElement } from "./domElement"
 
 export interface AutoGrowInput {
-  ref: RefObject<TextInput | null>
+  ref: RefObject<TextInputInstance | null>
   height: number
   onContentSizeChange: (e: { nativeEvent: { contentSize: { height: number } } }) => void
 }
 
 export function useAutoGrowInput(value: string, min: number, max: number): AutoGrowInput {
-  const ref = useRef<TextInput | null>(null)
+  const ref = useRef<TextInputInstance | null>(null)
   const [height, setHeight] = useState(min)
 
   const clamp = useCallback((h: number) => Math.min(Math.max(Math.round(h), min), max), [min, max])

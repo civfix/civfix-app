@@ -210,8 +210,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   it("owns the native accessibility focus handoff, so no menu hand-rolls one again", () => {
     expect(anchoredPopover).toMatch(/MOVES_ACCESSIBILITY_FOCUS = Platform\.OS !== "web"/)
     expect(anchoredPopover).toMatch(/if \(!MOVES_ACCESSIBILITY_FOCUS \|\| node == null\) return/)
-    expect(anchoredPopover).toMatch(/findNodeHandle\(node\)/)
-    expect(anchoredPopover).toMatch(/AccessibilityInfo\.setAccessibilityFocus\(handle\)/)
+    expect(anchoredPopover).toMatch(/AccessibilityInfo\.sendAccessibilityEvent\(node, "focus"\)/)
     expect(anchoredPopover).toMatch(/onShow=\{focusCard\}/)
     expect(anchoredPopover).toMatch(/focusAccessibilityNode\(cardRef\.current\)/)
     expect(anchoredPopover).toMatch(/focusAccessibilityNode\(returnFocusRef\?\.current\)/)

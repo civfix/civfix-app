@@ -1,11 +1,28 @@
-import { useCallback, useEffect, useState } from "react"
-import { Dimensions } from "react-native"
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from "react"
+import { Dimensions, type ViewInstance } from "react-native"
 import { usePopoverAnchor } from "../../primitives"
 import type { AnchorRect } from "../../primitives"
 
 export type BubbleMenuMode = "closed" | "menu" | "confirm" | "confirm-stop"
 
-export function useBubbleContextMenu() {
+export interface BubbleContextMenu {
+  mode: BubbleMenuMode
+  setMode: Dispatch<SetStateAction<BubbleMenuMode>>
+  everOpened: boolean
+  rect: AnchorRect | null
+  anchorRef: RefObject<ViewInstance | null>
+  open: () => void
+  close: () => void
+}
+
+export function useBubbleContextMenu(): BubbleContextMenu {
   const [mode, setMode] = useState<BubbleMenuMode>("closed")
   const [everOpened, setEverOpened] = useState(false)
   const [rect, setRect] = useState<AnchorRect | null>(null)
@@ -37,5 +54,3 @@ export function useBubbleContextMenu() {
   )
   return { mode, setMode, everOpened, rect, anchorRef, open, close }
 }
-
-export type BubbleContextMenu = ReturnType<typeof useBubbleContextMenu>

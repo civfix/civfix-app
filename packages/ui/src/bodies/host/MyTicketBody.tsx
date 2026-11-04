@@ -5,6 +5,7 @@ import {
   ScrollView as RNScrollView,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ScrollViewInstance,
 } from "react-native"
 import type { MyEventTicketSeat } from "@civfix/contract"
 import { formatTicketCode } from "@civfix/contract/host"
@@ -43,7 +44,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const { locale } = useLocale()
   const toast = useToast()
   const calendarWriter = useCalendarFile()
-  const pagerRef = useRef<RNScrollView | null>(null)
+  const pagerRef = useRef<ScrollViewInstance | null>(null)
 
   const query = useMyEventTicket(id)
   const cancel = useCancelEventRegistration(id)

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react"
-import { Dimensions, Keyboard } from "react-native"
+import { Dimensions, Keyboard, type DisplayMetrics } from "react-native"
 import { shouldRecaptureRestingHeight } from "./keyboardInsetModel"
 
 export function useRestingWindowHeight(): RefObject<number> {
@@ -21,7 +21,7 @@ export function useRestingWindowHeight(): RefObject<number> {
         keyboardOpen.current = false
         capture(Dimensions.get("window"))
       }),
-      Dimensions.addEventListener("change", ({ window }) => {
+      Dimensions.addEventListener("change", ({ window }: { window: DisplayMetrics }) => {
         if (
           !shouldRecaptureRestingHeight({
             keyboardOpen: keyboardIsUp(),

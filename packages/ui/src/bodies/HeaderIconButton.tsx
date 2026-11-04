@@ -1,6 +1,5 @@
 import React from "react"
-import { Pressable, StyleSheet, View } from "react-native"
-import type { View as RNView } from "react-native"
+import { Pressable, StyleSheet, View, type ViewInstance } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
 import { Icon, iconMap, type IconName } from "../typography"
 import {
@@ -15,7 +14,7 @@ export interface HeaderIconButtonProps {
   onPress: () => void
   surface?: "glass" | "solid"
   expanded?: boolean
-  ref?: React.Ref<RNView>
+  ref?: React.Ref<ViewInstance>
 }
 
 export function HeaderIconButton({

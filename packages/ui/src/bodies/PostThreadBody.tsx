@@ -203,7 +203,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
         <ThreadRepliesSkeleton />
       ) : post.data && !replies.isError ? (
         <ThreadEmptyReplies />
-      ) : null,
+      ) : undefined,
     [replies.isLoading, replies.isError, post.data],
   )
 

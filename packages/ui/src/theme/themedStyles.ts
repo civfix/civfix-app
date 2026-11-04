@@ -1,9 +1,10 @@
-import { StyleSheet } from "react-native"
+import { StyleSheet, type ImageStyle, type TextStyle, type ViewStyle } from "react-native"
 import { useColorSchemeName } from "./ThemeProvider"
 import type { ColorSchemeName } from "./schemes"
 import { themes, type Theme } from "./themes"
 
-type NamedStyles<T> = StyleSheet.NamedStyles<T>
+// React Native's strict TypeScript API dropped the StyleSheet.NamedStyles namespace type; this is its shape.
+type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle }
 
 export type ThemedStyleFactory<T> = (theme: Theme) => T & NamedStyles<T>
 

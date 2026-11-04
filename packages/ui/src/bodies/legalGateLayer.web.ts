@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from "react"
-import type { View } from "react-native"
+import type { ViewInstance } from "react-native"
 import { webStyle } from "../theme/webStyle"
 
 /**
@@ -20,7 +20,7 @@ export const LEGAL_GATE_LAYER = webStyle({
 const SESSION_ALERT_ATTR = "data-session-alert"
 
 /** aria-modal alone doesn't stop Tab reaching the page behind, so everything outside the gate goes inert. */
-export function useContainOutside(ref: RefObject<View | null>): void {
+export function useContainOutside(ref: RefObject<ViewInstance | null>): void {
   useEffect(() => {
     const gate: unknown = ref.current
     if (!(gate instanceof HTMLElement)) return

@@ -254,6 +254,16 @@ module.exports = ({ config }) => ({
             { name: "RecaptchaInterop", modular_headers: true },
           ],
         },
+        // SDK 58 shrinks release builds with R8 (the template's enableMinifyInReleaseBuilds, left unset so
+        // it stays on). These libraries reach classes through JNI and reflection that R8 cannot see.
+        android: {
+          extraProguardRules: [
+            "-keep class org.maplibre.android.** { *; }",
+            "-keep class org.maplibre.reactnative.** { *; }",
+            "-keep class com.mrousavy.camera.** { *; }",
+            "-keep class com.reactnativegooglesignin.** { *; }",
+          ].join("\n"),
+        },
       },
     ],
     "./plugins/with-pod-deployment-target.js",

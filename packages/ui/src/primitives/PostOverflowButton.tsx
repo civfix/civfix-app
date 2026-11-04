@@ -1,5 +1,5 @@
 import React from "react"
-import { Platform, Pressable, View, type View as RNView, type ViewStyle } from "react-native"
+import { Platform, Pressable, View, type ViewStyle, type ViewInstance } from "react-native"
 import {
   a11yState,
   focusRingProps,
@@ -39,7 +39,7 @@ const WEB_MORE_HALO_TOP: ViewStyle = IS_WEB
 export interface PostOverflowButtonProps {
   label: string
   onPress: () => void
-  buttonRef: React.Ref<RNView>
+  buttonRef: React.Ref<ViewInstance>
   expanded: boolean
 }
 

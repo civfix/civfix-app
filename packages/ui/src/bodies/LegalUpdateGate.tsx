@@ -1,5 +1,5 @@
 import { useCallback, useContext, useRef, useState } from "react"
-import { ScrollView, View } from "react-native"
+import { ScrollView, View, type ViewInstance } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { LegalDocumentMetaDTO, LegalDocumentType } from "@civfix/contract"
 import { headingLevel, makeThemedStyles, useTheme } from "../theme"
@@ -87,7 +87,7 @@ function LegalUpdateScreen({ required, notices, onOutdated }: LegalUpdateScreenP
   const logout = useLogout()
   const accept = useAcceptLegal()
   const [reading, setReading] = useState<Reading | null>(null)
-  const rootRef = useRef<View>(null)
+  const rootRef = useRef<ViewInstance>(null)
   useContainOutside(rootRef)
 
   const closeReading = useCallback(() => setReading(null), [])

@@ -56,6 +56,17 @@ export default defineConfig([
     ignores: ["dist/*", ".expo/*", "node_modules/*", "expo-env.d.ts"],
   },
   {
+    // expo-notifications 58's build opens its enum files with `/** … */ export var …` on one line, which
+    // eslint-plugin-import's module sniff reads as a script with no exports, so import/namespace reports
+    // `Notifications.AndroidImportance` missing. tsc still checks every name imported from it.
+    settings: {
+      "import/ignore": [
+        "node_modules[\\\\/]+@?react-native",
+        "node_modules[\\\\/]+expo-notifications[\\\\/]",
+      ],
+    },
+  },
+  {
     plugins: { "react-hooks": reactHooks, "react-native": reactNative },
     rules: {
       ...reactHooksRules(reactHooks),

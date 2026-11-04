@@ -20,7 +20,7 @@ export function KeyboardPinnedFooter({
   const lifts = pageActive && Platform.OS !== "ios"
   useKeyboardHostReserveClaim(lifts)
 
-  const flat = (StyleSheet.flatten(style) || {}) as { paddingBottom?: number }
+  const flat = (StyleSheet.flatten(style) ?? {}) as { paddingBottom?: number }
   const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
   return (
     <View
