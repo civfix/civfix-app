@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Icon, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"

@@ -21,6 +21,7 @@ describe("resolveColorScheme", () => {
     expect(resolveColorScheme("system", "light")).toBe("light")
     expect(resolveColorScheme("system", null)).toBe("light")
     expect(resolveColorScheme("system", undefined)).toBe("light")
+    expect(resolveColorScheme("system", "unspecified")).toBe("light")
     expect(resolveColorScheme("light", "dark")).toBe("light")
     expect(resolveColorScheme("dark", "light")).toBe("dark")
   })

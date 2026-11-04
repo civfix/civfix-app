@@ -132,6 +132,12 @@ auditConfig:
     # 9.0.0-14.0.1 and no minimatch below 11.0.1.
     - GHSA-g3hv-75wg-m249
     - GHSA-3g3m-2fjr-6pw4
+    # zod's memory exhaustion on oversized constrained collections, fixed only in 4.6.6 with no fixed 3.x line. It
+    # arrives only through @expo/cli 56's zod ^3.25.76, which the Expo dev server alone loads, to validate installed
+    # devtools plugins' manifests and MCP extension output (DevToolsPlugin.schema.js,
+    # createMCPDevToolsExtensionSchema.js); none of it ships in the app bundle or the static export. Remove once the
+    # lockfile holds no zod below 4.6.6.
+    - GHSA-mrhx-c7xc-m3w5
     # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (which expo-router 56 depends on
     # for the react-navigation core it vendors) require()s it as a function; expo-router always supplies its own
     # getStateFromPath and only calls query-string stringify, never its decoder. Remove once expo-router no longer

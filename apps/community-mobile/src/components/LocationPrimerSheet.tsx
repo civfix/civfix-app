@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import { ModalCardSheet, PrimaryButton, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"

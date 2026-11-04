@@ -1,4 +1,3 @@
-import React from "react"
 import { Pressable, View } from "react-native"
 import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"
 import { Text, PrimaryButton } from "@civfix/ui"

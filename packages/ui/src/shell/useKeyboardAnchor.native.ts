@@ -35,7 +35,11 @@ import {
   type KeyboardCommand,
   type KeyboardPhase,
 } from "./keyboardInsetModel"
-import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
+import type {
+  KeyboardAnchor,
+  KeyboardAnchorOptions,
+  NativeLiftStyle,
+} from "./useKeyboardAnchor.types"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
 import { KEYBOARD_PLATFORM } from "./keyboardPlatform"
 
@@ -45,7 +49,7 @@ export function useKeyboardAnchor({
   enabled = true,
   restOffset = 0,
   gap = KEYBOARD_SURFACE_GAP,
-}: KeyboardAnchorOptions = {}): KeyboardAnchor {
+}: KeyboardAnchorOptions = {}): KeyboardAnchor<NativeLiftStyle> {
   const kb = useAnimatedKeyboard()
   const windowH = useWindowDimensions().height
   const restingWindowHeight = useRestingWindowHeight()

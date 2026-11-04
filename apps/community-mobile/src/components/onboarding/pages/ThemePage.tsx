@@ -1,4 +1,3 @@
-import React from "react"
 import { View } from "react-native"
 import { AppearanceOptionList } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
