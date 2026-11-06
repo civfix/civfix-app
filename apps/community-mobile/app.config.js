@@ -123,7 +123,6 @@ module.exports = ({ config }) => ({
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: DEV_VARIANT ? "./assets/icon-dev.png" : "./assets/icon.png",
-  newArchEnabled: true,
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
@@ -248,12 +247,22 @@ module.exports = ({ config }) => ({
       "expo-build-properties",
       {
         ios: {
-          deploymentTarget: "15.1",
+          deploymentTarget: "16.4",
           buildReactNativeFromSource: false,
           extraPods: [
             { name: "GoogleUtilities", modular_headers: true },
             { name: "RecaptchaInterop", modular_headers: true },
           ],
+        },
+        // SDK 58 shrinks release builds with R8 (the template's enableMinifyInReleaseBuilds, left unset so
+        // it stays on). These libraries reach classes through JNI and reflection that R8 cannot see.
+        android: {
+          extraProguardRules: [
+            "-keep class org.maplibre.android.** { *; }",
+            "-keep class org.maplibre.reactnative.** { *; }",
+            "-keep class com.mrousavy.camera.** { *; }",
+            "-keep class com.reactnativegooglesignin.** { *; }",
+          ].join("\n"),
         },
       },
     ],

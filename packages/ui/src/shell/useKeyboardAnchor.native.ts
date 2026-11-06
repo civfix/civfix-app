@@ -35,7 +35,11 @@ import {
   type KeyboardCommand,
   type KeyboardPhase,
 } from "./keyboardInsetModel"
-import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
+import type {
+  KeyboardAnchor,
+  KeyboardAnchorOptions,
+  NativeLiftStyle,
+} from "./useKeyboardAnchor.types"
 import { useRestingWindowHeight } from "./useRestingWindowHeight"
 import { KEYBOARD_PLATFORM } from "./keyboardPlatform"
 
@@ -45,7 +49,8 @@ export function useKeyboardAnchor({
   enabled = true,
   restOffset = 0,
   gap = KEYBOARD_SURFACE_GAP,
-}: KeyboardAnchorOptions = {}): KeyboardAnchor {
+}: KeyboardAnchorOptions = {}): KeyboardAnchor<NativeLiftStyle> {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- reanimated's only UI-thread keyboard height; still shipped in 4.7.1, and its replacement (react-native-keyboard-controller) is a new native library this upgrade doesn't add
   const kb = useAnimatedKeyboard()
   const windowH = useWindowDimensions().height
   const restingWindowHeight = useRestingWindowHeight()
@@ -87,7 +92,7 @@ export function useKeyboardAnchor({
   })
 
   const measuredOverlap = useCallback(
-    (endCoordinates: { screenY?: number; height?: number } | undefined) =>
+    (endCoordinates: { screenY?: number; height?: number } | null | undefined) =>
       keyboardViewportOverlap({
         endCoordinates,
         windowHeight: winRef.current,

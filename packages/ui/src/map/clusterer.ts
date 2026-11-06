@@ -126,9 +126,9 @@ export function queryClusters(index: MapClusterIndex, bbox: BBox, zoom: number):
     clampZoom(zoom),
   )
   return features.map((f): ClusterNode => {
-    const [lng, lat] = f.geometry.coordinates as [number, number]
     const props = f.properties
     if ("cluster" in props && props.cluster === true) {
+      const [lng, lat] = f.geometry.coordinates as [number, number]
       const count = props.reportCount + props.eventCount
       return {
         type: "cluster",
@@ -141,7 +141,10 @@ export function queryClusters(index: MapClusterIndex, bbox: BBox, zoom: number):
         eventCount: props.eventCount,
       }
     }
-    return nodeOfPoint(props as MapPoint, lng, lat)
+    // supercluster 9 returns a lone point re-projected from its tile coordinates, a few ulps off the
+    // input; the point's own position keeps a marker exactly where its report or event is.
+    const point = props as MapPoint
+    return nodeOfPoint(point, point.lng, point.lat)
   })
 }
 

@@ -1,7 +1,14 @@
-import { forwardRef } from "react"
-import { TextInput as RNTextInput } from "react-native"
+import {
+  forwardRef,
+  type ForwardRefExoticComponent,
+  type PropsWithoutRef,
+  type RefAttributes,
+} from "react"
+import { TextInput as RNTextInput, type TextInputInstance } from "react-native"
 import type { TextInputProps } from "./TextInput.types"
 
-export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(props, ref) {
+export const TextInput: ForwardRefExoticComponent<
+  PropsWithoutRef<TextInputProps> & RefAttributes<TextInputInstance>
+> = forwardRef<TextInputInstance, TextInputProps>(function TextInput(props, ref) {
   return <RNTextInput {...props} ref={ref} />
 })

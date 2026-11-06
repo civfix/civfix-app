@@ -1,4 +1,5 @@
 import eslint from "@eslint/js"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   LINTER_OPTIONS,
@@ -8,7 +9,7 @@ import {
 } from "./eslint.typed.cjs"
 
 // The workspace-root build and CI scripts. Each workspace lints its own tree with its own config.
-export default tseslint.config(
+export default defineConfig(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {

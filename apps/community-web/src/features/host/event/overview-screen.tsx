@@ -16,7 +16,7 @@ import { useConsoleFormat } from "../format"
 import { CountersStrip, type CounterCell } from "./counters-strip"
 
 const QUICK_LINK_CLASS =
-  "inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+  "inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-hidden focus-visible:shadow-console-ring"
 
 const OVERVIEW_COUNTER_CELLS: readonly CounterCell[] = [
   "registered",
@@ -159,7 +159,7 @@ export function OverviewScreen() {
                   href={`/e/${event.pageSlug}/`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   {`/e/${event.pageSlug}`}
                   <ExternalLink aria-hidden className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ export function OverviewScreen() {
               {can("manage_page") ? (
                 <ConsoleLink
                   href={hrefForRoute({ kind: "event", eventId, section: "page" })}
-                  className="rounded-xs text-token-13 font-semibold text-console-ink-2 underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="rounded-xs text-token-13 font-semibold text-console-ink-2 underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
                 >
                   {t("page.edit")}
                 </ConsoleLink>

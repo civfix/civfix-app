@@ -7,6 +7,7 @@ import {
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ScrollViewInstance,
 } from "react-native"
 import type { HostAnalyticsSummaryResponse } from "@civfix/contract"
 import { visibleValue } from "@civfix/contract/host"
@@ -85,7 +86,7 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
   const { t } = useT("host-analytics")
   const { width, onLayout } = useMeasuredWidth()
   const [index, setIndex] = useState(0)
-  const scroller = React.useRef<ScrollView>(null)
+  const scroller = React.useRef<ScrollViewInstance>(null)
 
   const query = useHostAnalyticsSummary(orgId)
   const data = query.data ?? null
@@ -513,7 +514,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
   },
   emptyLabel: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: t.space["4"],

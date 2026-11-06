@@ -28,7 +28,7 @@ export function BottomTabs({ items, activeId }: BottomTabsProps) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex min-h-[60px] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-token-12 font-semibold transition-colors duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring",
+              "flex min-h-[60px] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-token-12 font-semibold transition-colors duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring",
               active ? "text-console-ink" : "text-console-ink-3",
             )}
           >

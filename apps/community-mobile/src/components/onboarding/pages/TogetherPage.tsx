@@ -1,4 +1,3 @@
-import React from "react"
 import { useT } from "@civfix/ui/i18n"
 import { TogetherStage } from "@/components/onboarding/stages/TogetherStage"
 import {

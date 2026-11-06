@@ -1,764 +1,772 @@
 /* The design system's own CSS: tokens plus the shell and component classes. Class names mirror the
    design so the ported JSX structure maps 1:1, and where the design conflicts with Tailwind or
    globals.css for the shell, this file wins. globals.css owns --font-display / --font-body /
-   --font-mono (self-hosted Hanken Grotesk), so every class reading var(--font-display) resolves to
+   --font-mono-face (self-hosted Hanken Grotesk), so every class reading var(--font-display) resolves to
    that UI family. */
 
-:root {
-  --bloom-50: #fdeae7;
-  --bloom-100: #fad0cb;
-  --bloom-300: #f5a199;
-  --bloom: #f0685c;
-  --bloom-600: #e4574a;
-  --bloom-700: #c74537;
+/* In Tailwind's utilities layer, after its own utilities: a tie with a utility still goes to this file,
+   as it did when both were unlayered, and a separate layer or no layer would change who wins. */
+@layer utilities {
+  :root {
+    --bloom-50: #fdeae7;
+    --bloom-100: #fad0cb;
+    --bloom-300: #f5a199;
+    --bloom: #f0685c;
+    --bloom-600: #e4574a;
+    --bloom-700: #c74537;
 
-  --moss-50: #eaf3e8;
-  --moss-100: #cfe5cb;
-  --moss-300: #98c790;
-  --moss: #63a45a;
-  --moss-600: #4c8a47;
-  --moss-700: #2f7d46;
+    --moss-50: #eaf3e8;
+    --moss-100: #cfe5cb;
+    --moss-300: #98c790;
+    --moss: #63a45a;
+    --moss-600: #4c8a47;
+    --moss-700: #2f7d46;
 
-  --sun-50: #f8eed3;
-  --sun-100: #eddcac;
-  --sun-300: #e7c155;
-  --sun: #d9a21b;
-  --sun-600: #b98a14;
-  --sun-700: #81610e;
+    --sun-50: #f8eed3;
+    --sun-100: #eddcac;
+    --sun-300: #e7c155;
+    --sun: #d9a21b;
+    --sun-600: #b98a14;
+    --sun-700: #81610e;
 
-  --sky-50: #e9f1fa;
-  --sky-100: #cfe0f1;
-  --sky-300: #a5c6e6;
-  --sky: #74a9d8;
-  --sky-600: #4e86be;
-  --sky-700: #356291;
+    --sky-50: #e9f1fa;
+    --sky-100: #cfe0f1;
+    --sky-300: #a5c6e6;
+    --sky: #74a9d8;
+    --sky-600: #4e86be;
+    --sky-700: #356291;
 
-  --lilac-50: #f0eafa;
-  --lilac-100: #ded2f5;
-  --lilac-300: #bfa9ec;
-  --lilac: #9b7ed9;
-  --lilac-600: #7a5cc0;
-  --lilac-700: #7457b6;
+    --lilac-50: #f0eafa;
+    --lilac-100: #ded2f5;
+    --lilac-300: #bfa9ec;
+    --lilac: #9b7ed9;
+    --lilac-600: #7a5cc0;
+    --lilac-700: #7457b6;
 
-  --paper: #f4efe6;
-  --paper-2: #eae3d6;
-  --card: #fffdf8;
-  --card-tint: #faf6ee;
+    --paper: #f4efe6;
+    --paper-2: #eae3d6;
+    --card: #fffdf8;
+    --card-tint: #faf6ee;
 
-  --ink: #211b13;
-  --ink-2: #5c5546;
-  --ink-3: #8d8577;
-  --ink-4: #bdb5a6;
-  --ink-5: #e6dfd2;
+    --ink: #211b13;
+    --ink-2: #5c5546;
+    --ink-3: #8d8577;
+    --ink-4: #bdb5a6;
+    --ink-5: #e6dfd2;
 
-  --fg-1: var(--ink);
-  --fg-2: var(--ink-2);
-  --fg-3: var(--ink-3);
-  --fg-on-color: #ffffff;
+    --fg-1: var(--ink);
+    --fg-2: var(--ink-2);
+    --fg-3: var(--ink-3);
+    --fg-on-color: #ffffff;
 
-  --bg-1: var(--paper);
-  --bg-2: var(--paper-2);
-  --bg-card: var(--card);
+    --bg-1: var(--paper);
+    --bg-2: var(--paper-2);
+    --bg-card: var(--card);
 
-  --border-soft: rgba(26, 23, 20, 0.06);
-  --border: rgba(26, 23, 20, 0.1);
-  --border-strong: rgba(26, 23, 20, 0.16);
+    --border-soft: rgba(26, 23, 20, 0.06);
+    --border: rgba(26, 23, 20, 0.1);
+    --border-strong: rgba(26, 23, 20, 0.16);
 
-  /* Surfaces that are NOT a flat token: the frosted glass pills, the media-overlay chips, the
-     modal scrim, the switch track, and the foreground that sits on an INVERTED fill (an --ink or
-     *-700 background). Each one is a var so the .dark block at the foot of this file can flip it;
-     never write one as a literal in a rule. */
-  --glass: rgba(255, 255, 255, 0.96);
-  --glass-hover: #ffffff;
-  --glass-soft: rgba(255, 255, 255, 0.7);
-  --glass-soft-hover: rgba(255, 255, 255, 0.95);
-  --glass-strong: rgba(255, 255, 255, 0.92);
-  --scrim: rgba(26, 23, 20, 0.32);
-  --track: rgba(26, 23, 20, 0.18);
-  --fg-on-inverse: #ffffff;
+    /* Surfaces that are NOT a flat token: the frosted glass pills, the media-overlay chips, the
+       modal scrim, the switch track, and the foreground that sits on an INVERTED fill (an --ink or
+       *-700 background). Each one is a var so the .dark block at the foot of this file can flip it;
+       never write one as a literal in a rule. */
+    --glass: rgba(255, 255, 255, 0.96);
+    --glass-hover: #ffffff;
+    --glass-soft: rgba(255, 255, 255, 0.7);
+    --glass-soft-hover: rgba(255, 255, 255, 0.95);
+    --glass-strong: rgba(255, 255, 255, 0.92);
+    --scrim: rgba(26, 23, 20, 0.32);
+    --track: rgba(26, 23, 20, 0.18);
+    --fg-on-inverse: #ffffff;
 
-  --accent: var(--bloom);
-  --accent-fg: #ffffff;
-  --success: var(--moss);
-  --warning: var(--sun-600);
-  --info: var(--sky);
-  --danger: var(--bloom-600);
+    --accent: var(--bloom);
+    --accent-fg: #ffffff;
+    --success: var(--moss);
+    --warning: var(--sun-600);
+    --info: var(--sky);
+    --danger: var(--bloom-600);
 
-  --cat-trash: #776c60;
-  --cat-recycling: var(--moss);
-  --cat-graffiti: var(--lilac);
-  --cat-hazard: var(--bloom-600);
-  --cat-encampment: #3e9e8e;
-  --cat-cleanup: var(--sun);
-  --cat-water: var(--sky);
-  --cat-other: #8d8577;
+    --cat-trash: #776c60;
+    --cat-recycling: var(--moss);
+    --cat-graffiti: var(--lilac);
+    --cat-hazard: var(--bloom-600);
+    --cat-encampment: #3e9e8e;
+    --cat-cleanup: var(--sun);
+    --cat-water: var(--sky);
+    --cat-other: #8d8577;
 
-  --fs-12: 0.75rem;
-  --fs-13: 0.8125rem;
-  --fs-14: 0.875rem;
-  --fs-15: 0.9375rem;
-  --fs-16: 1rem;
-  --fs-18: 1.125rem;
-  --fs-20: 1.25rem;
-  --fs-24: 1.5rem;
-  --fs-30: 1.875rem;
-  --fs-38: 2.375rem;
-  --fs-48: 3rem;
-  --fs-64: 4rem;
+    --fs-12: 0.75rem;
+    --fs-13: 0.8125rem;
+    --fs-14: 0.875rem;
+    --fs-15: 0.9375rem;
+    --fs-16: 1rem;
+    --fs-18: 1.125rem;
+    --fs-20: 1.25rem;
+    --fs-24: 1.5rem;
+    --fs-30: 1.875rem;
+    --fs-38: 2.375rem;
+    --fs-48: 3rem;
+    --fs-64: 4rem;
 
-  --lh-tight: 1.05;
-  --lh-snug: 1.2;
-  --lh-base: 1.45;
-  --lh-loose: 1.6;
+    --lh-tight: 1.05;
+    --lh-snug: 1.2;
+    --lh-base: 1.45;
+    --lh-loose: 1.6;
 
-  --tracking-tight: -0.02em;
-  --tracking-snug: -0.01em;
-  --tracking-base: 0;
-  --tracking-wide: 0.06em;
+    --tracking-tight: -0.02em;
+    --tracking-snug: -0.01em;
+    --tracking-base: 0;
+    --tracking-wide: 0.06em;
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
 
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-2xl: 36px;
-  --radius-pill: 999px;
-  --radius-pin: 50% 50% 50% 6px;
+    --radius-xs: 6px;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-2xl: 36px;
+    --radius-pill: 999px;
+    --radius-pin: 50% 50% 50% 6px;
 
-  --shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
+    --shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
 
-  --shadow-2:
-    0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
-    0 8px 16px -6px rgba(26, 23, 20, 0.08);
+    --shadow-2:
+      0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
+      0 8px 16px -6px rgba(26, 23, 20, 0.08);
 
-  --shadow-3:
-    0 1px 0 rgba(26, 23, 20, 0.03), 0 4px 8px rgba(26, 23, 20, 0.05),
-    0 18px 32px -10px rgba(26, 23, 20, 0.12);
+    --shadow-3:
+      0 1px 0 rgba(26, 23, 20, 0.03), 0 4px 8px rgba(26, 23, 20, 0.05),
+      0 18px 32px -10px rgba(26, 23, 20, 0.12);
 
-  --shadow-4:
-    0 2px 4px rgba(26, 23, 20, 0.05), 0 12px 20px rgba(26, 23, 20, 0.08),
-    0 32px 56px -16px rgba(26, 23, 20, 0.18);
+    --shadow-4:
+      0 2px 4px rgba(26, 23, 20, 0.05), 0 12px 20px rgba(26, 23, 20, 0.08),
+      0 32px 56px -16px rgba(26, 23, 20, 0.18);
 
-  --sheen-top: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --sheen-top: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
-  --shadow-pin: 0 6px 10px -2px rgba(240, 104, 92, 0.45), 0 2px 4px rgba(26, 23, 20, 0.2);
+    --shadow-pin: 0 6px 10px -2px rgba(240, 104, 92, 0.45), 0 2px 4px rgba(26, 23, 20, 0.2);
 
-  --focus-ring: 0 0 0 3px rgba(240, 104, 92, 0.3);
+    --focus-ring: 0 0 0 3px rgba(240, 104, 92, 0.3);
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --dur-1: 120ms;
-  --dur-2: 200ms;
-  --dur-3: 320ms;
-  --dur-4: 500ms;
+    --dur-1: 120ms;
+    --dur-2: 200ms;
+    --dur-3: 320ms;
+    --dur-4: 500ms;
+  }
+
+  /* These only target design classes and scoped elements, so the rest of the Tailwind app is
+     untouched. */
+  .cf-shell {
+    position: fixed;
+    inset: 0;
+    left: env(safe-area-inset-left, 0px);
+    right: env(safe-area-inset-right, 0px);
+    background: var(--paper);
+    overflow: hidden;
+    touch-action: manipulation;
+    --ios-focus-zoom-floor: 16px;
+  }
+
+  body:not(:has(.cf-shell)) {
+    height: auto;
+    min-height: 100%;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+
+  /* Skip link (WCAG 2.4.1): off-screen until it receives focus, so pointer users never see it. */
+  .cf-skip-link {
+    position: absolute;
+    top: -40px;
+    left: var(--space-2);
+    z-index: 1000;
+    padding: var(--space-2) 14px;
+    border-radius: var(--radius-pill);
+    background: var(--bloom-700);
+    color: var(--fg-on-inverse);
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--shadow-2);
+    transition: top var(--dur-1) ease;
+  }
+  .cf-skip-link:focus {
+    top: var(--space-2);
+    outline: none;
+    box-shadow: var(--focus-ring), var(--shadow-2);
+  }
+
+  .cf-map {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    background: var(--paper);
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  /* maplibre-gl needs an explicitly sized container. */
+  .cf-map-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /*
+     * iOS Safari pops its own callout/selection UI on a long press over a canvas, which would fight the
+     * long-press "drop a pin" gesture. The .web Map seam never calls preventDefault() on touchstart (that
+     * marks the handler active and resets pan/zoom), so the callout is suppressed here in CSS instead.
+     */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .cf-map-canvas canvas {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Web only: the native map draws the OS location dot. */
+  .cf-map-user-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-pill);
+    background: var(--bloom);
+    border: 3px solid var(--card);
+    box-shadow:
+      0 0 0 2px rgba(255, 90, 77, 0.35),
+      var(--shadow-2);
+  }
+
+  .cf-logo {
+    font-family: "Baloo2_800ExtraBold", var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variation-settings:
+      "wdth" 100,
+      "opsz" 24;
+    line-height: 1;
+    display: inline-flex;
+    white-space: nowrap;
+  }
+  .cf-logo .ch {
+    display: inline-block;
+  }
+  .cf-logo .ch > b {
+    display: inline-block;
+    font-weight: inherit;
+  }
+  .cf-logo .s1 {
+    color: var(--bloom);
+  }
+  .cf-logo .s2 {
+    color: var(--sun-600);
+  }
+  .cf-logo .s3 {
+    color: var(--moss);
+  }
+  .cf-logo .s4 {
+    color: var(--sky);
+  }
+  .cf-logo .s5 {
+    color: var(--lilac);
+  }
+  .cf-logo .s6 {
+    color: var(--bloom);
+  }
+
+  .cf-splash-mark {
+    font-size: 44px;
+  }
+
+  .modal-scrim {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 70;
+  }
+  .modal-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 440px;
+    max-width: calc(100vw - 28px);
+    max-height: calc(100vh - 56px);
+    background: var(--paper);
+    border-radius: 24px;
+    box-shadow: var(--shadow-4), var(--sheen-top);
+    z-index: 71;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    border: none;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 120ms var(--ease-out);
+    box-shadow: var(--shadow-1);
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .btn.primary {
+    background: var(--bloom);
+    color: var(--fg-on-color);
+    box-shadow:
+      0 4px 10px -2px rgba(240, 104, 92, 0.4),
+      var(--sheen-top);
+  }
+  .btn.primary:hover {
+    background: var(--bloom-600);
+    transform: translateY(-1px);
+  }
+  .btn.primary:active {
+    transform: scale(0.97);
+  }
+  .btn.ghost {
+    background: transparent;
+    box-shadow: none;
+    color: var(--ink-2);
+  }
+  .btn.ghost:hover {
+    background: var(--paper-2);
+  }
+  .btn.block {
+    width: 100%;
+  }
+  .btn.lg {
+    padding: 14px 26px;
+    font-size: 15px;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn:disabled:hover {
+    transform: none;
+  }
+
+  .input,
+  textarea.input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition:
+      border-color 120ms,
+      box-shadow 120ms;
+    resize: none;
+  }
+  .input:focus {
+    border-color: var(--bloom);
+    box-shadow: var(--focus-ring);
+  }
+  .input::placeholder {
+    color: var(--ink-3);
+  }
+  .input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .help {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .cf-spin {
+    animation: cf-spin 0.8s linear infinite;
+  }
+  @keyframes cf-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .cf-clean-error {
+    text-align: center;
+    font-size: 12px;
+    color: var(--bloom-700);
+    margin-top: 8px;
+  }
+  .cf-host-row {
+    display: flex;
+    gap: 10px;
+  }
+  .cf-host-row > .field {
+    flex: 1;
+  }
+
+  .cf-auth-header {
+    padding: 28px 28px 22px;
+    background: var(--paper);
+    text-align: center;
+    position: relative;
+  }
+  .cf-auth-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--glass-soft);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-2);
+    transition: background 120ms;
+  }
+  .cf-auth-close:hover {
+    background: var(--glass-soft-hover);
+    color: var(--ink);
+  }
+  .cf-auth-back {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--ink-2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition:
+      background 120ms,
+      color 120ms;
+  }
+  .cf-auth-back:hover {
+    background: var(--glass-soft);
+    color: var(--ink);
+  }
+  .cf-auth-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+  .cf-auth-sub {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.45;
+  }
+  .cf-auth-body {
+    padding: 18px 28px 22px;
+  }
+  .cf-auth-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .auth-method {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background 120ms,
+      transform 120ms;
+  }
+  .auth-method:hover {
+    background: var(--paper-2);
+    transform: translateY(-1px);
+  }
+  .auth-method:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .auth-method.apple {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+  }
+  .auth-method.apple:hover {
+    background: #1a1a1a;
+  }
+  .auth-method.email-pill {
+    background: var(--paper-2);
+  }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0;
+    color: var(--ink-3);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--ink-5);
+  }
+  .cf-auth-trust {
+    font-size: 11px;
+    color: var(--ink-3);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+  .cf-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cf-auth-email-input {
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+
+  .otp-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .otp-cell {
+    width: 44px;
+    height: 54px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    text-align: center;
+    color: var(--ink);
+    outline: none;
+  }
+  .otp-cell:focus {
+    border-color: var(--bloom);
+    box-shadow: var(--focus-ring);
+  }
+  .cf-auth-resend {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .cf-auth-resend button {
+    background: none;
+    border: none;
+    color: var(--bloom);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  .cf-auth-resend button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--ink-3);
+  }
+  .cf-auth-error {
+    font-size: 13px;
+    color: var(--bloom-700);
+    text-align: center;
+    margin: 0;
+  }
+
+  /* Narrow viewports render the shared CompactShell; the auth modal is the only DOM surface that still
+     needs a narrow rule. */
+  @media (max-width: 720px) {
+    .modal-card {
+      width: calc(100vw - 16px);
+      max-width: 100%;
+      border-radius: 22px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cf-design * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  /* Every color-bearing custom property above, re-stated for the dark scheme with the SAME hexes the
+     shared dark theme uses (@civfix/tokens `darkColor` / `darkShadow`, plus the scheme extras in
+     @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components inside it cannot
+     disagree. The tint ramps INVERT in dark (a *-700 is the LIGHTEST step), so rules that fill with
+     --ink or a *-700 read their foreground from --fg-on-inverse, which flips to near-black here.
+
+     The `.dark` class is put on <html> before first paint by the inline script in app/layout.tsx and
+     kept in sync by ThemeDomBinding (components/providers.tsx). :root.dark outranks the :root block. */
+  :root.dark {
+    --bloom-50: #3a211e;
+    --bloom-100: #4c2a26;
+    --bloom-300: #b25549;
+    --bloom: #f4796c;
+    --bloom-600: #f79185;
+    --bloom-700: #fab0a7;
+
+    --moss-50: #1f2e1d;
+    --moss-100: #2a3f27;
+    --moss-300: #5e8f57;
+    --moss: #78b56e;
+    --moss-600: #93c78a;
+    --moss-700: #a9d6a1;
+
+    --sun-50: #332a14;
+    --sun-100: #4a3c18;
+    --sun-300: #b08a28;
+    --sun: #e3b138;
+    --sun-600: #f0c455;
+    --sun-700: #f5d480;
+
+    --sky-50: #1b2733;
+    --sky-100: #243646;
+    --sky-300: #5a87b0;
+    --sky: #8bb9e2;
+    --sky-600: #a6caea;
+    --sky-700: #c2dbf1;
+
+    --lilac-50: #2b2438;
+    --lilac-100: #3a2f4c;
+    --lilac-300: #7b63b0;
+    --lilac: #ae95e2;
+    --lilac-600: #c3b0eb;
+    --lilac-700: #d5c7f1;
+
+    --paper: #17130e;
+    --paper-2: #211c15;
+    --card: #2a241c;
+    --card-tint: #332c22;
+
+    --ink: #f1eae0;
+    --ink-2: #bdb4a4;
+    --ink-3: #948c7f;
+    --ink-4: #4f473c;
+    --ink-5: #332d25;
+
+    --border-soft: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    --cat-trash: #a89c8e;
+    --cat-recycling: #78b56e;
+    --cat-graffiti: #b79fe6;
+    --cat-hazard: #f4796c;
+    --cat-encampment: #5ebbaa;
+    --cat-cleanup: #e3b138;
+    --cat-water: #8bb9e2;
+    --cat-other: #a39b8d;
+
+    --glass: rgba(42, 36, 28, 0.96);
+    --glass-hover: #352e24;
+    --glass-soft: rgba(255, 255, 255, 0.08);
+    --glass-soft-hover: rgba(255, 255, 255, 0.14);
+    --glass-strong: rgba(42, 36, 28, 0.92);
+    --scrim: rgba(0, 0, 0, 0.5);
+    --track: rgba(255, 255, 255, 0.22);
+    --fg-on-inverse: #17130e;
+    --fg-on-color: #17130e;
+    --accent-fg: #17130e;
+
+    --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
+
+    --shadow-2:
+      0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px -6px rgba(0, 0, 0, 0.45);
+
+    --shadow-3:
+      0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.35),
+      0 18px 32px -10px rgba(0, 0, 0, 0.55);
+
+    --shadow-4:
+      0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.45),
+      0 32px 56px -16px rgba(0, 0, 0, 0.65);
+
+    --sheen-top: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    --shadow-pin: 0 6px 10px -2px rgba(244, 121, 108, 0.45), 0 2px 4px rgba(0, 0, 0, 0.5);
+
+    --focus-ring: 0 0 0 3px rgba(244, 121, 108, 0.4);
+  }
+
+  /* The one fill that is a vendor mark rather than a token: Apple's sign-in pill is black-on-light and
+     white-on-dark per Apple's own guidelines, so it inverts instead of following --card. */
+  .dark .auth-method.apple {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .dark .auth-method.apple:hover {
+    background: var(--ink-2);
+  }
 }
 
-/* These only target design classes and scoped elements, so the rest of the Tailwind app is
-   untouched. */
-.cf-shell {
-  position: fixed;
-  inset: 0;
-  left: env(safe-area-inset-left, 0px);
-  right: env(safe-area-inset-right, 0px);
-  background: var(--paper);
-  overflow: hidden;
-  touch-action: manipulation;
-  --ios-focus-zoom-floor: 16px;
-}
-
-body:not(:has(.cf-shell)) {
-  height: auto;
-  min-height: 100%;
-  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
-    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-}
-
+/* Outside the layer on purpose: react-native-web's TextInput styles are unlayered, so inside
+   @layer utilities this floor would lose to a field's own smaller font size and iOS Safari would zoom
+   the page when the field takes focus. */
 @media (pointer: coarse) {
   .cf-shell input,
   .cf-shell textarea {
     font-size: var(--ios-focus-zoom-floor);
   }
-}
-
-/* Skip link (WCAG 2.4.1): off-screen until it receives focus, so pointer users never see it. */
-.cf-skip-link {
-  position: absolute;
-  top: -40px;
-  left: var(--space-2);
-  z-index: 1000;
-  padding: var(--space-2) 14px;
-  border-radius: var(--radius-pill);
-  background: var(--bloom-700);
-  color: var(--fg-on-inverse);
-  font-family: var(--font-body);
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: var(--shadow-2);
-  transition: top var(--dur-1) ease;
-}
-.cf-skip-link:focus {
-  top: var(--space-2);
-  outline: none;
-  box-shadow: var(--focus-ring), var(--shadow-2);
-}
-
-.cf-map {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  background: var(--paper);
-  z-index: 0;
-  overflow: hidden;
-}
-
-/* maplibre-gl needs an explicitly sized container. */
-.cf-map-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  /*
-   * iOS Safari pops its own callout/selection UI on a long press over a canvas, which would fight the
-   * long-press "drop a pin" gesture. The .web Map seam never calls preventDefault() on touchstart (that
-   * marks the handler active and resets pan/zoom), so the callout is suppressed here in CSS instead.
-   */
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.cf-map-canvas canvas {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Web only: the native map draws the OS location dot. */
-.cf-map-user-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: var(--radius-pill);
-  background: var(--bloom);
-  border: 3px solid var(--card);
-  box-shadow:
-    0 0 0 2px rgba(255, 90, 77, 0.35),
-    var(--shadow-2);
-}
-
-.cf-logo {
-  font-family: "Baloo2_800ExtraBold", var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-variation-settings:
-    "wdth" 100,
-    "opsz" 24;
-  line-height: 1;
-  display: inline-flex;
-  white-space: nowrap;
-}
-.cf-logo .ch {
-  display: inline-block;
-}
-.cf-logo .ch > b {
-  display: inline-block;
-  font-weight: inherit;
-}
-.cf-logo .s1 {
-  color: var(--bloom);
-}
-.cf-logo .s2 {
-  color: var(--sun-600);
-}
-.cf-logo .s3 {
-  color: var(--moss);
-}
-.cf-logo .s4 {
-  color: var(--sky);
-}
-.cf-logo .s5 {
-  color: var(--lilac);
-}
-.cf-logo .s6 {
-  color: var(--bloom);
-}
-
-.cf-splash-mark {
-  font-size: 44px;
-}
-
-.modal-scrim {
-  position: fixed;
-  inset: 0;
-  background: var(--scrim);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 70;
-}
-.modal-card {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 440px;
-  max-width: calc(100vw - 28px);
-  max-height: calc(100vh - 56px);
-  background: var(--paper);
-  border-radius: 24px;
-  box-shadow: var(--shadow-4), var(--sheen-top);
-  z-index: 71;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 11px 20px;
-  border-radius: 999px;
-  border: none;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 120ms var(--ease-out);
-  box-shadow: var(--shadow-1);
-  white-space: nowrap;
-  line-height: 1;
-}
-.btn.primary {
-  background: var(--bloom);
-  color: var(--fg-on-color);
-  box-shadow:
-    0 4px 10px -2px rgba(240, 104, 92, 0.4),
-    var(--sheen-top);
-}
-.btn.primary:hover {
-  background: var(--bloom-600);
-  transform: translateY(-1px);
-}
-.btn.primary:active {
-  transform: scale(0.97);
-}
-.btn.ghost {
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink-2);
-}
-.btn.ghost:hover {
-  background: var(--paper-2);
-}
-.btn.block {
-  width: 100%;
-}
-.btn.lg {
-  padding: 14px 26px;
-  font-size: 15px;
-}
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.btn:disabled:hover {
-  transform: none;
-}
-
-.input,
-textarea.input {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--ink);
-  outline: none;
-  transition:
-    border-color 120ms,
-    box-shadow 120ms;
-  resize: none;
-}
-.input:focus {
-  border-color: var(--bloom);
-  box-shadow: var(--focus-ring);
-}
-.input::placeholder {
-  color: var(--ink-3);
-}
-.input-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 6px;
-}
-.field {
-  margin-bottom: 14px;
-}
-.help {
-  font-size: 12px;
-  color: var(--ink-3);
-  margin-top: 4px;
-  line-height: 1.4;
-}
-.cf-spin {
-  animation: cf-spin 0.8s linear infinite;
-}
-@keyframes cf-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.cf-clean-error {
-  text-align: center;
-  font-size: 12px;
-  color: var(--bloom-700);
-  margin-top: 8px;
-}
-.cf-host-row {
-  display: flex;
-  gap: 10px;
-}
-.cf-host-row > .field {
-  flex: 1;
-}
-
-.cf-auth-header {
-  padding: 28px 28px 22px;
-  background: var(--paper);
-  text-align: center;
-  position: relative;
-}
-.cf-auth-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--glass-soft);
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-2);
-  transition: background 120ms;
-}
-.cf-auth-close:hover {
-  background: var(--glass-soft-hover);
-  color: var(--ink);
-}
-.cf-auth-back {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: var(--ink-2);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 8px;
-  transition:
-    background 120ms,
-    color 120ms;
-}
-.cf-auth-back:hover {
-  background: var(--glass-soft);
-  color: var(--ink);
-}
-.cf-auth-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  letter-spacing: -0.02em;
-  font-weight: 700;
-  margin: 0 0 6px;
-  color: var(--ink);
-}
-.cf-auth-sub {
-  font-size: 13px;
-  color: var(--ink-2);
-  margin: 0;
-  line-height: 1.45;
-}
-.cf-auth-body {
-  padding: 18px 28px 22px;
-}
-.cf-auth-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.auth-method {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
-  transition:
-    background 120ms,
-    transform 120ms;
-}
-.auth-method:hover {
-  background: var(--paper-2);
-  transform: translateY(-1px);
-}
-.auth-method:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-.auth-method.apple {
-  background: #000;
-  color: #fff;
-  border-color: #000;
-}
-.auth-method.apple:hover {
-  background: #1a1a1a;
-}
-.auth-method.email-pill {
-  background: var(--paper-2);
-}
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 14px 0;
-  color: var(--ink-3);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.auth-divider::before,
-.auth-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--ink-5);
-}
-.cf-auth-trust {
-  font-size: 11px;
-  color: var(--ink-3);
-  text-align: center;
-  margin-top: 14px;
-  line-height: 1.5;
-}
-.cf-auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.cf-auth-email-input {
-  font-size: 16px;
-  padding: 14px 16px;
-}
-
-.otp-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-.otp-cell {
-  width: 44px;
-  height: 54px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 24px;
-  text-align: center;
-  color: var(--ink);
-  outline: none;
-}
-.otp-cell:focus {
-  border-color: var(--bloom);
-  box-shadow: var(--focus-ring);
-}
-.cf-auth-resend {
-  text-align: center;
-  font-size: 12px;
-  color: var(--ink-3);
-  margin-bottom: 4px;
-}
-.cf-auth-resend button {
-  background: none;
-  border: none;
-  color: var(--bloom);
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-}
-.cf-auth-resend button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: var(--ink-3);
-}
-.cf-auth-error {
-  font-size: 13px;
-  color: var(--bloom-700);
-  text-align: center;
-  margin: 0;
-}
-
-/* Narrow viewports render the shared CompactShell; the auth modal is the only DOM surface that still
-   needs a narrow rule. */
-@media (max-width: 720px) {
-  .modal-card {
-    width: calc(100vw - 16px);
-    max-width: 100%;
-    border-radius: 22px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cf-design * {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-/* Every color-bearing custom property above, re-stated for the dark scheme with the SAME hexes the
-   shared dark theme uses (@civfix/tokens `darkColor` / `darkShadow`, plus the scheme extras in
-   @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components inside it cannot
-   disagree. The tint ramps INVERT in dark (a *-700 is the LIGHTEST step), so rules that fill with
-   --ink or a *-700 read their foreground from --fg-on-inverse, which flips to near-black here.
-
-   The `.dark` class is put on <html> before first paint by the inline script in app/layout.tsx and
-   kept in sync by ThemeDomBinding (components/providers.tsx). :root.dark outranks the :root block. */
-:root.dark {
-  --bloom-50: #3a211e;
-  --bloom-100: #4c2a26;
-  --bloom-300: #b25549;
-  --bloom: #f4796c;
-  --bloom-600: #f79185;
-  --bloom-700: #fab0a7;
-
-  --moss-50: #1f2e1d;
-  --moss-100: #2a3f27;
-  --moss-300: #5e8f57;
-  --moss: #78b56e;
-  --moss-600: #93c78a;
-  --moss-700: #a9d6a1;
-
-  --sun-50: #332a14;
-  --sun-100: #4a3c18;
-  --sun-300: #b08a28;
-  --sun: #e3b138;
-  --sun-600: #f0c455;
-  --sun-700: #f5d480;
-
-  --sky-50: #1b2733;
-  --sky-100: #243646;
-  --sky-300: #5a87b0;
-  --sky: #8bb9e2;
-  --sky-600: #a6caea;
-  --sky-700: #c2dbf1;
-
-  --lilac-50: #2b2438;
-  --lilac-100: #3a2f4c;
-  --lilac-300: #7b63b0;
-  --lilac: #ae95e2;
-  --lilac-600: #c3b0eb;
-  --lilac-700: #d5c7f1;
-
-  --paper: #17130e;
-  --paper-2: #211c15;
-  --card: #2a241c;
-  --card-tint: #332c22;
-
-  --ink: #f1eae0;
-  --ink-2: #bdb4a4;
-  --ink-3: #948c7f;
-  --ink-4: #4f473c;
-  --ink-5: #332d25;
-
-  --border-soft: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.18);
-
-  --cat-trash: #a89c8e;
-  --cat-recycling: #78b56e;
-  --cat-graffiti: #b79fe6;
-  --cat-hazard: #f4796c;
-  --cat-encampment: #5ebbaa;
-  --cat-cleanup: #e3b138;
-  --cat-water: #8bb9e2;
-  --cat-other: #a39b8d;
-
-  --glass: rgba(42, 36, 28, 0.96);
-  --glass-hover: #352e24;
-  --glass-soft: rgba(255, 255, 255, 0.08);
-  --glass-soft-hover: rgba(255, 255, 255, 0.14);
-  --glass-strong: rgba(42, 36, 28, 0.92);
-  --scrim: rgba(0, 0, 0, 0.5);
-  --track: rgba(255, 255, 255, 0.22);
-  --fg-on-inverse: #17130e;
-  --fg-on-color: #17130e;
-  --accent-fg: #17130e;
-
-  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
-
-  --shadow-2:
-    0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px -6px rgba(0, 0, 0, 0.45);
-
-  --shadow-3:
-    0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.35), 0 18px 32px -10px rgba(0, 0, 0, 0.55);
-
-  --shadow-4:
-    0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.45),
-    0 32px 56px -16px rgba(0, 0, 0, 0.65);
-
-  --sheen-top: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-  --shadow-pin: 0 6px 10px -2px rgba(244, 121, 108, 0.45), 0 2px 4px rgba(0, 0, 0, 0.5);
-
-  --focus-ring: 0 0 0 3px rgba(244, 121, 108, 0.4);
-}
-
-/* The one fill that is a vendor mark rather than a token: Apple's sign-in pill is black-on-light and
-   white-on-dark per Apple's own guidelines, so it inverts instead of following --card. */
-.dark .auth-method.apple {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-}
-.dark .auth-method.apple:hover {
-  background: var(--ink-2);
 }

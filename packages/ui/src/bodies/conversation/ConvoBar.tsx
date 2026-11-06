@@ -1,5 +1,5 @@
 import React from "react"
-import { View, Pressable, type View as RNView } from "react-native"
+import { View, Pressable, type ViewInstance } from "react-native"
 import { focusRingProps, useTheme, type LayoutMode } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { ThreadAvatar, PopoverMenu } from "../../primitives"
@@ -26,7 +26,7 @@ export function ConvoBar({
   onBack: () => void
   onMenu?: (() => void) | undefined
   menuOpen?: boolean
-  menuAnchorRef?: React.RefObject<RNView | null>
+  menuAnchorRef?: React.RefObject<ViewInstance | null>
   onMembers?: (() => void) | undefined
   onTitlePress?: (() => void) | undefined
 }) {

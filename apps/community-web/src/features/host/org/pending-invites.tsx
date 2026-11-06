@@ -147,7 +147,7 @@ export function PendingInvites() {
               <>
                 <Chip kind="org-role" value={invite.role} size="sm" />
                 {expired ? (
-                  <span className="inline-flex items-center rounded-pill border border-current/25 bg-console-surface-alt px-2 py-0.5 text-token-11 font-semibold text-console-ink-3">
+                  <span className="inline-flex items-center rounded-pill border bg-console-surface-alt px-2 py-0.5 text-token-11 font-semibold text-console-ink-3">
                     {t("invites.status_expired", { defaultValue: "Expired" })}
                   </span>
                 ) : null}

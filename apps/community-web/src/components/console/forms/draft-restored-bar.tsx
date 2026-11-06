@@ -32,7 +32,7 @@ export function DraftRestoredBar({
       <button
         type="button"
         onClick={onDiscard}
-        className="shrink-0 rounded-xs font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+        className="shrink-0 rounded-xs font-semibold underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
       >
         {discardLabel ?? t("form.draft_discard")}
       </button>

@@ -81,7 +81,7 @@ function ConsoleSignedOut() {
         <button
           type="button"
           onClick={goHome}
-          className="text-token-13 font-semibold text-console-ink-3 underline-offset-2 hover:text-console-ink hover:underline focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="text-token-13 font-semibold text-console-ink-3 underline-offset-2 hover:text-console-ink hover:underline focus-visible:outline-hidden focus-visible:shadow-console-ring"
         >
           {t("auth.go_home")}
         </button>

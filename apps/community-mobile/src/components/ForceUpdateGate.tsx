@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import * as Linking from "expo-linking"
 import { usePathname, useRouter } from "expo-router"

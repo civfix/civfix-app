@@ -687,16 +687,26 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
   const src = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
 
   const panChain = () => {
-    const start = src.indexOf("const pan = useMemo(")
+    const start = src.indexOf("const pan = usePanGesture({\n")
     expect(start).toBeGreaterThan(-1)
-    const end = src.indexOf("\n\n", start)
+    const end = src.indexOf("\n  })\n", start)
     expect(end).toBeGreaterThan(start)
     const chain = src.slice(start, end).replace(/\/\/[^\n]*/g, "")
-    expect(chain).toMatch(/Gesture\.Pan\(\)/)
-    expect(chain).toMatch(/\.onFinalize\(/)
+    expect(chain).toMatch(/onFinalize: \(\) => \{/)
     expect(chain).toMatch(/scheduleOnRN\(lockOnTab, index\)/)
     return chain
   }
+
+  it("T12: drives the strip from ONE usePanGesture config, on Gesture Handler 3's callbacks", () => {
+    expect(src.split("usePanGesture(").length - 1).toBe(1)
+    const chain = panChain()
+    expect(chain).toMatch(/enabled: panArmed,/)
+    expect(chain).toMatch(/activeOffsetX: \[-6, 6\],/)
+    expect(chain).toMatch(/failOffsetY: \[-16, 16\],/)
+    expect(chain).toMatch(/onActivate: \(e\) => \{/)
+    expect(chain).toMatch(/onUpdate: \(e\) => \{/)
+    expect(chain).not.toMatch(/\bonStart\b/)
+  })
 
   it("never invokes a motion-config factory inside the pan chain", () => {
     expect(panChain()).not.toMatch(/Config\s*\(/)

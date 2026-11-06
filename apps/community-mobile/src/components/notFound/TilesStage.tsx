@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
-import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import { GestureDetector, GestureStateManager, usePanGesture } from "react-native-gesture-handler"
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -81,46 +81,43 @@ export function TilesStage({ live }: { live: boolean }) {
     [box, wake],
   )
 
-  const throwing = useMemo(
-    () =>
-      Gesture.Pan()
-        .manualActivation(true)
-        .onTouchesDown((event, manager) => {
-          if (grabbed.value >= 0) return
-          const touch = event.allTouches[0]
-          const hit = touch ? tileAt(bodies.value, TILE, touch.x, touch.y) : -1
-          if (!touch || hit < 0) {
-            // Not on a tile: the screen scrolls as usual.
-            manager.fail()
-            return
-          }
-          grabbed.value = hit
-          bodies.modify(<T extends TileBody[]>(list: T): T => {
-            if (list[hit]) grabTile(list[hit], touch.x, touch.y)
-            return list
-          })
-          wake()
-          manager.activate()
-        })
-        .onUpdate((event) => {
-          const i = grabbed.value
-          if (i < 0) return
-          bodies.modify(<T extends TileBody[]>(list: T): T => {
-            if (list[i]) dragTile(list[i], event.x, event.y, event.velocityX, event.velocityY)
-            return list
-          })
-        })
-        .onFinalize(() => {
-          const i = grabbed.value
-          if (i < 0) return
-          grabbed.value = -1
-          bodies.modify(<T extends TileBody[]>(list: T): T => {
-            if (list[i]) releaseTile(list[i])
-            return list
-          })
-        }),
-    [bodies, grabbed, wake],
-  )
+  const throwing = usePanGesture({
+    manualActivation: true,
+    onTouchesDown: (event) => {
+      if (grabbed.value >= 0) return
+      const touch = event.allTouches[0]
+      const hit = touch ? tileAt(bodies.value, TILE, touch.x, touch.y) : -1
+      if (!touch || hit < 0) {
+        // Not on a tile: the screen scrolls as usual.
+        GestureStateManager.fail(event.handlerTag)
+        return
+      }
+      grabbed.value = hit
+      bodies.modify(<T extends TileBody[]>(list: T): T => {
+        if (list[hit]) grabTile(list[hit], touch.x, touch.y)
+        return list
+      })
+      wake()
+      GestureStateManager.activate(event.handlerTag)
+    },
+    onUpdate: (event) => {
+      const i = grabbed.value
+      if (i < 0) return
+      bodies.modify(<T extends TileBody[]>(list: T): T => {
+        if (list[i]) dragTile(list[i], event.x, event.y, event.velocityX, event.velocityY)
+        return list
+      })
+    },
+    onFinalize: () => {
+      const i = grabbed.value
+      if (i < 0) return
+      grabbed.value = -1
+      bodies.modify(<T extends TileBody[]>(list: T): T => {
+        if (list[i]) releaseTile(list[i])
+        return list
+      })
+    },
+  })
 
   return (
     <>

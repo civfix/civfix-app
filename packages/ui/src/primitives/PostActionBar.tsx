@@ -6,8 +6,8 @@ import {
   Pressable,
   View,
   type StyleProp,
-  type View as NativeView,
   type ViewStyle,
+  type ViewInstance,
 } from "react-native"
 import type { PostCounts, PostViewer } from "@civfix/contract"
 import { Bookmark, Heart, MessageCircle, Repeat2, Share2 } from "lucide-react-native/icons"
@@ -203,7 +203,7 @@ const PostActionButton = React.memo(function PostActionButton({
   label: string
   disabled: boolean
   reducedMotion: boolean
-  buttonRef?: React.Ref<NativeView> | undefined
+  buttonRef?: React.Ref<ViewInstance> | undefined
   layout: PostActionLayout
 }) {
   const styles = useStyles()

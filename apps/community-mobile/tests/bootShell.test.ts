@@ -141,10 +141,12 @@ test("the About presenter is registered for the ROUTER's lifetime, not a leaf sc
   assert.doesNotMatch(home, /setBrandAboutPresenter/)
 })
 
-test("the android navigation bar glyphs follow the active scheme", () => {
-  assert.match(rootStack, /import \* as NavigationBar from "expo-navigation-bar"/)
+test("T4: the android navigation bar glyphs follow the active scheme through setStyle", () => {
+  const stack = rootStack.slice(rootStack.indexOf("function RootStack"))
+  assert.match(rootStack, /import { NavigationBar } from "expo-navigation-bar"/)
   assert.match(
-    rootStack,
-    /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/,
+    stack,
+    /useEffect\(\(\) => \{\n\s+if \(Platform\.OS !== "android"\) return\n\s+NavigationBar\.setStyle\(scheme === "dark" \? "light" : "dark"\)\n\s+\}, \[scheme\]\)/,
   )
+  assert.doesNotMatch(rootStack, /setButtonStyleAsync/)
 })

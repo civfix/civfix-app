@@ -1,4 +1,3 @@
-import React from "react"
 import { AuthGate } from "@/components/AuthGate"
 
 export default function AuthScreen() {

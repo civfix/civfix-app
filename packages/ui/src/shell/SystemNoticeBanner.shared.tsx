@@ -1,5 +1,18 @@
-import { forwardRef, useMemo } from "react"
-import { Pressable, View, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
+import {
+  forwardRef,
+  useMemo,
+  type ForwardRefExoticComponent,
+  type PropsWithoutRef,
+  type RefAttributes,
+} from "react"
+import {
+  Pressable,
+  View,
+  type StyleProp,
+  type ViewProps,
+  type ViewStyle,
+  type ViewInstance,
+} from "react-native"
 import { useAppConfig } from "../data/hooks/appConfig"
 import { useT } from "../i18n"
 import {
@@ -42,7 +55,9 @@ export interface SystemNoticeBarProps {
 }
 
 /** The text renders as a plain string: the notice carries no links or formatting (D8). */
-export const SystemNoticeBar = forwardRef<View, SystemNoticeBarProps>(function SystemNoticeBar(
+export const SystemNoticeBar: ForwardRefExoticComponent<
+  PropsWithoutRef<SystemNoticeBarProps> & RefAttributes<ViewInstance>
+> = forwardRef<ViewInstance, SystemNoticeBarProps>(function SystemNoticeBar(
   { notice, style, contentStyle, onLayout },
   ref,
 ) {

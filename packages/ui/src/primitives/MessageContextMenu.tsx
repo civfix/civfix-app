@@ -412,14 +412,14 @@ const useStyles = makeThemedStyles((t) => ({
     maxWidth: 320,
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   scrimTouch: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   backdropWeb: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   bubbleHolder: {
     position: "absolute",

@@ -276,7 +276,7 @@ const useStyles = makeThemedStyles((t) => ({
     pointerEvents: "box-none",
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   bodyScroll: {

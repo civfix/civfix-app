@@ -77,7 +77,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.pill,
   },
   avatarBusy: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,

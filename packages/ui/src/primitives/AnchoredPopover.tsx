@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
   AccessibilityInfo,
   Animated,
-  findNodeHandle,
   Platform,
   Pressable,
   StyleSheet,
@@ -10,8 +9,8 @@ import {
   type AccessibilityRole,
   type LayoutChangeEvent,
   type StyleProp,
-  type View as NativeView,
   type ViewStyle,
+  type ViewInstance,
 } from "react-native"
 import { FullWindowModal } from "./FullWindowModal"
 import { makeThemedStyles, webScrimProps, pointerEventStyles } from "../theme"
@@ -20,12 +19,9 @@ import type { MenuOrigin } from "./menuMotionModel"
 
 const MOVES_ACCESSIBILITY_FOCUS = Platform.OS !== "web"
 
-type AccessibilityFocusTarget = Parameters<typeof findNodeHandle>[0] | undefined
-
-function focusAccessibilityNode(node: AccessibilityFocusTarget): void {
+function focusAccessibilityNode(node: ViewInstance | null | undefined): void {
   if (!MOVES_ACCESSIBILITY_FOCUS || node == null) return
-  const handle = findNodeHandle(node)
-  if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle)
+  AccessibilityInfo.sendAccessibilityEvent(node, "focus")
 }
 
 export interface AnchoredPopoverProps {
@@ -39,7 +35,7 @@ export interface AnchoredPopoverProps {
   onCardLayout?: ((event: LayoutChangeEvent) => void) | undefined
   accessibilityRole?: AccessibilityRole
   accessibilityLabel?: string | undefined
-  returnFocusRef?: React.RefObject<NativeView | null> | undefined
+  returnFocusRef?: React.RefObject<ViewInstance | null> | undefined
   children: React.ReactNode
 }
 
@@ -81,7 +77,7 @@ export function AnchoredPopover({
   children,
 }: AnchoredPopoverProps) {
   const styles = useStyles()
-  const cardRef = useRef<NativeView | null>(null)
+  const cardRef = useRef<ViewInstance | null>(null)
   const focusRequestRef = useRef<number | null>(null)
   const cancelPendingFocus = useCallback(() => {
     if (focusRequestRef.current == null) return
@@ -160,10 +156,10 @@ const useStyles = makeThemedStyles((t) => ({
     padding: t.space["4"],
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   backdropTouch: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
 }))

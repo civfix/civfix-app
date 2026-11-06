@@ -3,8 +3,8 @@ import {
   Platform,
   Pressable,
   View,
-  type TextInput as RNTextInput,
   type TextInputKeyPressEvent,
+  type TextInputInstance,
 } from "react-native"
 import { readWebKeyPress } from "../../primitives/composerKeyPress"
 import { TextInput } from "../../primitives/TextInput"
@@ -30,7 +30,7 @@ export function ExpandedSearchField() {
   const setPinned = useSearchBarStore((s) => s.setPinned)
   const focusNonce = useSearchBarStore((s) => s.focusNonce)
   const consumeSearchFocus = useSearchBarStore((s) => s.consumeSearchFocus)
-  const inputRef = useRef<RNTextInput>(null)
+  const inputRef = useRef<TextInputInstance>(null)
   const [focused, setFocused] = useState(false)
 
   const pinned = focused || query.trim().length > 0

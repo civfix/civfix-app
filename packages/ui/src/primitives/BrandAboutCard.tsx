@@ -1,5 +1,14 @@
 import { useEffect, useRef } from "react"
-import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native"
+import {
+  Animated,
+  Easing,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ViewInstance,
+} from "react-native"
 import {
   makeThemedStyles,
   useTheme,
@@ -35,7 +44,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   const { t } = useT("about")
   const offProductionHost = offProductionApiHost()
 
-  const closeRef = useRef<View>(null)
+  const closeRef = useRef<ViewInstance>(null)
   useEffect(() => {
     // Keyboard focus would otherwise stay on the control behind the scrim that opened this card.
     if (Platform.OS === "web") closeRef.current?.focus()

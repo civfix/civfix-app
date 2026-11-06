@@ -68,10 +68,7 @@ test("the system chrome and the native root background follow the launch scheme 
     stack,
     /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)\n\s+\}, \[launchGate, t\.colors\.bg\]\)/,
   )
-  assert.match(
-    stack,
-    /void NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/,
-  )
+  assert.match(stack, /\n\s+NavigationBar\.setStyle\(scheme === "dark" \? "light" : "dark"\)\n/)
   assert.match(stack, /<StatusBar style=\{scheme === "dark" \? "light" : "dark"\} \/>/)
   assert.match(layout, /<RootStack launchGate=\{gateMounted\} \/>/)
 })

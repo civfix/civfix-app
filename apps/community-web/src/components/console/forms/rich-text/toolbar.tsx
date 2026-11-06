@@ -66,7 +66,7 @@ export function RichTextToolbar({ onCommand, disabled, className }: RichTextTool
             title={hint ? `${label} (${hint})` : label}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => onCommand(command.id)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-xs text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-xs text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon aria-hidden className="h-4 w-4" />
           </button>

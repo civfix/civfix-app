@@ -6,8 +6,8 @@ import {
   View,
   type StyleProp,
   type TextStyle,
-  type View as RNView,
   type ViewStyle,
+  type ViewInstance,
 } from "react-native"
 import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/contract"
@@ -158,7 +158,7 @@ function PostMetaRow({
   onOpenPerson: () => void
   onOpenPost: () => void
   onOpenMenu: () => void
-  menuRef: React.Ref<RNView>
+  menuRef: React.Ref<ViewInstance>
   menuOpen: boolean
 }) {
   const styles = useStyles()

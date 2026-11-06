@@ -97,7 +97,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   // the inputs would sit under the keyboard. The shift re-centers the card in the visible area above it.
   const vvShift = useVisualViewportShift(open)
 
-  const requestCode = async (e?: React.FormEvent) => {
+  const requestCode = async (e?: React.SubmitEvent) => {
     e?.preventDefault()
     setError(null)
     setSubmitting(true)

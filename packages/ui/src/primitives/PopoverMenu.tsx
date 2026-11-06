@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react"
-import { Pressable, useWindowDimensions, type View as RNView } from "react-native"
+import { Pressable, useWindowDimensions, type ViewInstance } from "react-native"
 import {
   makeThemedStyles,
   space,
@@ -43,7 +43,7 @@ export interface PopoverMenuProps {
   items: PopoverMenuItem[]
   align?: "left" | "right"
   accessibilityLabel?: string
-  returnFocusRef?: React.RefObject<RNView | null>
+  returnFocusRef?: React.RefObject<ViewInstance | null>
   onClosed?: () => void
 }
 
@@ -155,10 +155,10 @@ export function PopoverMenu({
 }
 
 export function usePopoverAnchor(onMeasured: (rect: AnchorRect) => void): {
-  ref: React.RefObject<RNView | null>
+  ref: React.RefObject<ViewInstance | null>
   measure: () => boolean
 } {
-  const ref = useRef<RNView | null>(null)
+  const ref = useRef<ViewInstance | null>(null)
   const measure = useCallback(() => {
     const node = ref.current
     if (!node || typeof node.measureInWindow !== "function") return false

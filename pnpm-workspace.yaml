@@ -2,8 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Metro, the Expo config plugins and CocoaPods are proven on a flat node_modules. Both .npmrc files repeat it as
-# node-linker=hoisted, a guard this setting overrides; keep them in step.
+# Metro, the Expo config plugins and CocoaPods are proven on a flat node_modules.
 nodeLinker: hoisted
 autoInstallPeers: true
 strictPeerDependencies: false
@@ -22,12 +21,19 @@ minimumReleaseAgeExclude:
   - "@civfix/*"
 # Refuse a version published with weaker provenance than the versions before it (a stolen token, not CI).
 trustPolicy: no-downgrade
-# Exact versions that fail that check only because one earlier release happened to carry provenance, each checked to
-# come from the package's usual maintainer: react-native-worklets 0.5.1 (the Expo SDK 54 pin; 0.2.0 was its one
-# attested stable release before 0.8.2). Drop each entry once the tree leaves that version. Never exclude a package
-# name without a version.
+# Exact versions that fail that check only because a newer line had started publishing with provenance before these
+# maintenance releases of an older line were published by hand, each checked to come from the package's usual
+# maintainer: eslint-import-resolver-typescript 3.10.1 (jounqin; after 4.2.6, for eslint-config-expo), semver 6.3.1
+# (lukekarrys; after 7.5.1), ua-parser-js 1.0.41 (faisalman; after 2.0.0) and undici-types 6.21.0 (matteo.collina, for
+# @types/node 22; 6.13.0 to 6.19.2 attested). jscpd 4.3.0 (apk, its only maintainer) is the last release of the 4 line,
+# held because jscpd 5 reports this tree over the duplication threshold. Drop each entry once the tree leaves that
+# version. Never exclude a package name without a version.
 trustPolicyExclude:
-  - react-native-worklets@0.5.1
+  - eslint-import-resolver-typescript@3.10.1
+  - jscpd@4.3.0
+  - semver@6.3.1
+  - ua-parser-js@1.0.41
+  - undici-types@6.21.0
 # A git or tarball-URL subdependency carries no publish time or provenance, so it would slip past both checks above.
 blockExoticSubdeps: true
 # A new install script must stop the install for review: skipped silently, it can also break a native binary unnoticed.
@@ -38,23 +44,22 @@ strictDepBuilds: true
 # (community-mobile builds packages/tokens) is not a dependency script and still runs. Add a package here only after
 # reading its script.
 allowBuilds:
+  "@shopify/react-native-skia": true
   esbuild: true
   unrs-resolver: true
   workerd: true
 
 # The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a
-# transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with
-# two exceptions: postcss-selector-parser@6 goes to 7.1.6, the only fixed line (tailwindcss 3 and postcss-nested; the
-# generated CSS was diffed byte-identical across the move), and uuid goes to 11 under xcode, which asks for ^7 in the
-# iOS prebuild path and only calls v4(). undici is scoped per major because @expo/cli wants 6, miniflare pins 7
-# exactly and jsdom wants 8. node-forge floors at 1.4.2, not 1.4.1, because 1.4.1's PEM fix broke Buffer input to
-# pem.decode(). Drop each entry once its parent ships the fixed range itself.
+# transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with one
+# exception: uuid goes to 11 under xcode, which asks for ^7 in the iOS prebuild path and only calls v4(). undici is
+# scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. node-forge floors at 1.4.2,
+# not 1.4.1, because 1.4.1's PEM fix broke Buffer input to pem.decode(). Drop each entry once its parent ships the fixed
+# range itself.
 overrides:
-  react: "19.1.0"
-  react-dom: "19.1.0"
-  react-native: "0.81.5"
-  tsup>esbuild: ">=0.28.1 <0.29"
-  vite: ">=7.3.7 <8"
+  react: "19.3.0"
+  react-dom: "19.3.0"
+  react-native: "0.88.1"
+  vite: ">=8.3.3 <9"
   js-yaml@3: ">=3.15.1 <4"
   js-yaml@4: ">=4.3.1 <5"
   brace-expansion@1: ">=1.1.21 <2"
@@ -63,7 +68,6 @@ overrides:
   shell-quote: ">=1.11.0 <2"
   nanoid@3: ">=3.3.18 <4"
   postcss: ">=8.5.28 <9"
-  postcss-selector-parser@6: ">=7.1.6 <8"
   browserslist: ">=4.28.9 <5"
   uuid: ">=11.1.1 <12"
   "@xmldom/xmldom@0.8": ">=0.8.15 <0.9"
@@ -90,13 +94,15 @@ auditConfig:
     # 9.0.0-14.0.1 and no minimatch below 11.0.1.
     - GHSA-g3hv-75wg-m249
     - GHSA-3g3m-2fjr-6pw4
-    # image-size 1 in the metro 0.83.3 that @expo/metro 54 pins exactly; 2.x drops the file-path input metro passes,
-    # and metro only measures image assets from this repo and lockfile-pinned packages at build time. Remove with
-    # Expo SDK 55 (@expo/metro 55.1 runs metro 0.83.8, which has no image-size).
-    - GHSA-5p2g-fcmc-qvqq
-    - GHSA-w3rx-r6r6-pgpr
-    # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (react-navigation 7)
-    # require()s it as a function; expo-router always supplies its own getStateFromPath and only calls query-string
-    # stringify, never its decoder. Remove with react-navigation 8, whose core no longer depends on query-string.
+    # zod's memory exhaustion on oversized constrained collections, fixed only in 4.6.6 with no fixed 3.x line. It
+    # arrives only through @expo/cli 57's zod ^3.25.76, which the Expo dev server alone loads, to validate installed
+    # devtools plugins' manifests and MCP extension output (DevToolsPlugin.schema.js,
+    # createMCPDevToolsExtensionSchema.js); none of it ships in the app bundle or the static export. Remove once the
+    # lockfile holds no zod below 4.6.6.
+    - GHSA-mrhx-c7xc-m3w5
+    # decode-uri-component's only fixed line (0.5.x) is ESM-only while query-string 7 (which expo-router 56 depends on
+    # for the react-navigation core it vendors) require()s it as a function; expo-router always supplies its own
+    # getStateFromPath and only calls query-string stringify, never its decoder. Remove once expo-router no longer
+    # depends on query-string 7.
     - GHSA-vcc3-ghjq-m6fr
     - GHSA-qr28-fpjm-wq7f

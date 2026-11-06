@@ -624,7 +624,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimModal,
   },
   modalCenter: {

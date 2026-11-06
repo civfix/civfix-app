@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import type { ErrorBoundaryProps } from "expo-router"
 import { StatusBar } from "expo-status-bar"

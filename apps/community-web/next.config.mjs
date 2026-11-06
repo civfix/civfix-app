@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process"
 import { createRequire } from "node:module"
 import { existsSync, realpathSync } from "node:fs"
-import { dirname } from "node:path"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js"
 
@@ -114,9 +114,7 @@ const nextConfig = (phase) => ({
     NEXT_PUBLIC_COMMIT_SHA: resolveCommitSha(),
   },
   // @civfix/ui ships untranspiled .tsx source and the React Native stack ships untranspiled too, so
-  // Next must transpile them. maplibre-gl 6 ships ES2022 (class static blocks) that Safari before 16.4
-  // cannot parse; its chunk is a hard dependency of the AppShell import, so untranspiled it would stop the
-  // whole app from starting there. The worker it emits as an asset goes through the same transpile.
+  // Next must transpile them.
   transpilePackages: [
     "@civfix/contract",
     "@civfix/ui",
@@ -128,7 +126,6 @@ const nextConfig = (phase) => ({
     "react-native-gesture-handler",
     "react-native-safe-area-context",
     "@gorhom/bottom-sheet",
-    "maplibre-gl",
   ],
   webpack: (config) => {
     // @civfix/ui is authored in RN primitives; on web they resolve to react-native-web.
@@ -141,6 +138,9 @@ const nextConfig = (phase) => ({
       // the real react-native package and fail to bundle on web. MUST come after the exact `$` rule so
       // the exact case wins first.
       "react-native": reactNativeWebDir,
+      // react-native-svg's web asset lookup imports @react-native/assets-registry, which react-native
+      // stopped depending on in 0.87; Expo's own web bundler maps it to react-native-web's registry too.
+      "@react-native/assets-registry/registry$": join(reactNativeWebDir, "asset-registry.js"),
       "@tanstack/react-query$": reactQueryDir,
       "maplibre-gl$": maplibreGlDir,
       "@civfix/contract$": contractDir,

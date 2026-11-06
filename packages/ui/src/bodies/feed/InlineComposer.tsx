@@ -5,7 +5,8 @@ import {
   StyleSheet,
   View,
   type BlurEvent,
-  type TextInput as RNTextInput,
+  type TextInputInstance,
+  type ViewInstance,
 } from "react-native"
 import { POST_BODY_MAX } from "@civfix/contract"
 import { domElement } from "../../primitives/domElement"
@@ -71,8 +72,8 @@ function InlineComposerForOwner() {
   const profile = useMyProfile().data?.profile
   const { create, submit: submitPost } = useSubmitPost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
-  const inputRef = useRef<RNTextInput>(null)
-  const cardRef = useRef<View>(null)
+  const inputRef = useRef<TextInputInstance>(null)
+  const cardRef = useRef<ViewInstance>(null)
 
   const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
   const mentionedUsers = usePostComposerStore(

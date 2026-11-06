@@ -8,7 +8,7 @@
  */
 import type { StyleProp, ViewStyle } from "react-native"
 // eslint-disable-next-line no-restricted-imports -- type-only, erased at compile time, so no reanimated reaches the web bundle
-import type { SharedValue } from "react-native-reanimated"
+import type { AnimatedStyle, SharedValue } from "react-native-reanimated"
 
 export interface KeyboardAnchorOptions {
   /**
@@ -29,12 +29,16 @@ export interface KeyboardAnchorOptions {
   hostReserved?: boolean
 }
 
-export interface KeyboardAnchor {
+/** The native seam's `liftStyle`: a reanimated handle, which only an Animated component accepts. */
+export type NativeLiftStyle = AnimatedStyle<ViewStyle>
+
+export interface KeyboardAnchor<LiftStyle = StyleProp<ViewStyle>> {
   /**
-   * On native a reanimated animated style, so the element must be an Animated.View; shared files use
-   * <KeyboardAnchorView> so they never import reanimated. On web a plain CSS translateY + transition.
+   * On native a reanimated animated style (`NativeLiftStyle`), so the element must be an Animated.View;
+   * shared files use <KeyboardAnchorView> so they never import reanimated. On web a plain CSS
+   * translateY + transition.
    */
-  liftStyle: StyleProp<ViewStyle>
+  liftStyle: LiftStyle
   /** Null on web. */
   lift: SharedValue<number> | null
   /**

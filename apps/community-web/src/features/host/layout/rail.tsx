@@ -33,7 +33,7 @@ export function ConsoleRail({ items, activeId, compact }: ConsoleRailProps) {
             aria-current={active ? "page" : undefined}
             title={compact ? item.label : undefined}
             className={cn(
-              "flex min-h-11 items-center gap-token-3 rounded-sm text-token-14 font-semibold transition-colors duration-d1 focus-visible:outline-none focus-visible:shadow-console-ring",
+              "flex min-h-11 items-center gap-token-3 rounded-sm text-token-14 font-semibold transition-colors duration-d1 focus-visible:outline-hidden focus-visible:shadow-console-ring",
               compact ? "w-11 justify-center px-0" : "px-token-3",
               active
                 ? "bg-console-surface-alt text-console-ink"

@@ -2,7 +2,7 @@ import { useCallback } from "react"
 import { Platform } from "react-native"
 import DateTimePicker, {
   DateTimePickerAndroid,
-  type DateTimePickerEvent,
+  type DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker"
 import { useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
@@ -41,8 +41,7 @@ export function DateFieldRow(props: DateFieldRowProps) {
   const current = pickerSeed(value, minDate)
 
   const commit = useCallback(
-    (event: DateTimePickerEvent, picked?: Date) => {
-      if (event.type === "dismissed" || picked === undefined) return
+    (_event: DateTimePickerChangeEvent, picked: Date) => {
       onChange(new Date(picked.getFullYear(), picked.getMonth(), picked.getDate(), 12, 0, 0, 0))
     },
     [onChange],
@@ -54,7 +53,7 @@ export function DateFieldRow(props: DateFieldRowProps) {
       mode: "date",
       display: "default",
       ...(minDate ? { minimumDate: minDate } : {}),
-      onChange: commit,
+      onValueChange: commit,
     })
   }, [commit, minDate, value])
 
@@ -75,7 +74,7 @@ export function DateFieldRow(props: DateFieldRowProps) {
             {...(minDate ? { minimumDate: minDate } : {})}
             accentColor={th.colors.brand.bloom}
             themeVariant={th.scheme}
-            onChange={commit}
+            onValueChange={commit}
           />
         )
       }
@@ -90,8 +89,7 @@ export function TimeFieldRow(props: TimeFieldRowProps) {
   const current = timePickerSeed(value, day)
 
   const commit = useCallback(
-    (event: DateTimePickerEvent, picked?: Date) => {
-      if (event.type === "dismissed" || picked === undefined) return
+    (_event: DateTimePickerChangeEvent, picked: Date) => {
       onChange(timeCarrier(day ?? value ?? picked, picked.getHours(), picked.getMinutes()))
     },
     [day, onChange, value],
@@ -104,7 +102,7 @@ export function TimeFieldRow(props: TimeFieldRowProps) {
       display: "default",
       is24Hour: uses24HourClock(locale),
       minuteInterval: minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL,
-      onChange: commit,
+      onValueChange: commit,
     })
   }, [commit, day, locale, minuteInterval, value])
 
@@ -127,7 +125,7 @@ export function TimeFieldRow(props: TimeFieldRowProps) {
             minuteInterval={minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL}
             accentColor={th.colors.brand.bloom}
             themeVariant={th.scheme}
-            onChange={commit}
+            onValueChange={commit}
           />
         )
       }

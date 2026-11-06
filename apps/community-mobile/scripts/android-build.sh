@@ -20,7 +20,7 @@
 #                                  PLAY_SERVICE_ACCOUNT_JSON (scripts/play-publish.mjs)
 #   CIVFIX_KEYSTORE_FILE, CIVFIX_KEYSTORE_PASSWORD_FILE, CIVFIX_KEY_ALIAS, CIVFIX_ANDROID_SDK_DIR
 #                                  as read by scripts/android-release-patches.sh
-# and a JDK the gradle wrapper accepts (17 through 24) as JAVA_HOME or `java` on PATH.
+# and a JDK the Gradle 9 wrapper runs on (17 through 26) as JAVA_HOME or `java` on PATH.
 #
 # Upload the result with: node scripts/play-publish.mjs upload <aab> --track internal|production
 set -euo pipefail
@@ -81,8 +81,8 @@ if [ -z "${CI:-}" ]; then
   (cd ../.. && pnpm install --frozen-lockfile)
 fi
 
-echo "Regenerating android/ from scratch (expo prebuild --clean, profile ${profile})..."
-npx expo prebuild --platform android --clean --no-install
+echo "Regenerating android/ from scratch (expo prebuild, profile ${profile})..."
+npx expo prebuild --platform android --no-install
 scripts/android-release-patches.sh
 
 echo "Building the release bundle (version code ${CIVFIX_ANDROID_VERSION_CODE})..."

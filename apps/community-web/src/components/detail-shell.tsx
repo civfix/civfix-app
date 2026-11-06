@@ -47,12 +47,12 @@ export function DetailShell({
 
   return (
     <div className="min-h-[100dvh] bg-paper">
-      <header className="sticky top-0 z-detail-header border-b border-ink-5 bg-paper/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-detail-header border-b border-ink-5 bg-paper/95 backdrop-blur-xs">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
           <button
             type="button"
             onClick={handleBack}
-            className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-token-14 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-token-14 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             {backLabel ?? t("detail.back")}

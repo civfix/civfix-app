@@ -10,10 +10,19 @@ const native = strip(read("../ZoomableMedia.native.tsx"))
 const web = strip(read("../ZoomableMedia.web.tsx"))
 const selector = strip(read("../ZoomableMedia.tsx"))
 
+const gestureHandlerImports = (): string[] => {
+  const line = /^import \{([^}]*)\} from "react-native-gesture-handler"$/m.exec(native)
+  expect(line, "the native seam no longer imports react-native-gesture-handler").not.toBeNull()
+  return (line?.[1] ?? "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0)
+}
+
 describe("the lightbox scrim", () => {
   it("uses the dedicated near-opaque lightbox scrim, not the shared strong scrim", () => {
     expect(base).toMatch(
-      /scrim: \{\n\s*\.\.\.StyleSheet\.absoluteFillObject,\n\s*backgroundColor: t\.colors\.scrimLightbox,/,
+      /scrim: \{\n\s*\.\.\.StyleSheet\.absoluteFill,\n\s*backgroundColor: t\.colors\.scrimLightbox,/,
     )
     expect(base).not.toContain("t.colors.scrimStrong")
     expect(base).toMatch(/controlBase: \{[\s\S]*?backgroundColor: t\.colors\.lightboxControl,/)
@@ -74,7 +83,7 @@ describe("the zoomable stage", () => {
 
 describe("the ZoomableMedia seam split", () => {
   it("keeps gesture-handler and reanimated inside the native seam", () => {
-    expect(native).toMatch(/^import \{ Gesture, [\w, ]+\} from "react-native-gesture-handler"$/m)
+    expect(gestureHandlerImports()).toContain("GestureDetector")
     expect(native).toMatch(/^import Animated, \{[^}]*\} from "react-native-reanimated"$/m)
   })
 
@@ -100,42 +109,47 @@ describe("the ZoomableMedia seam split", () => {
 
 describe("the native gesture set", () => {
   it("composes pinch, a zoom-gated pan and a double tap", () => {
-    expect(native).toContain("Gesture.Pinch()")
-    expect(native).toContain("Gesture.Pan()")
-    expect(native).toContain("Gesture.Tap()\n      .numberOfTaps(2)")
-    expect(native).toContain("Gesture.Race(doubleTap, Gesture.Simultaneous(pinch, pan))")
+    expect(native).toContain("const pinch = usePinchGesture({")
+    expect(native).toContain("const pan = usePanGesture({")
+    expect(native).toContain("const doubleTap = useTapGesture({\n    numberOfTaps: 2,")
+    expect(native).toMatch(
+      /const (\w+) = useSimultaneousGestures\(pinch, pan\)\n[\s\S]*?useCompetingGestures\(doubleTap, \1\)/,
+    )
   })
 
   it("RACES the double tap instead of making pinch and pan wait for it to fail", () => {
-    expect(native).not.toContain("Gesture.Exclusive(")
-    expect(native).not.toContain(".maxDuration(")
+    expect(native).not.toContain("useExclusiveGestures")
+    expect(native).not.toContain("maxDuration")
   })
 
   it("opens the inter-tap window to the platform double-tap timeout, not the library's tighter default", () => {
     expect(native).toMatch(/^const DOUBLE_TAP_MAX_DELAY_MS = 300$/m)
-    expect(native).toContain(".maxDelay(DOUBLE_TAP_MAX_DELAY_MS)")
+    expect(native).toContain("maxDelay: DOUBLE_TAP_MAX_DELAY_MS,")
   })
 
   it("lets a double tap land as far apart as a human taps, and still rejects a drag", () => {
     expect(native).toMatch(/^const DOUBLE_TAP_MAX_TRAVEL = 40$/m)
-    expect(native).toContain(".maxDistance(DOUBLE_TAP_MAX_TRAVEL)")
+    expect(native).toContain("maxDistance: DOUBLE_TAP_MAX_TRAVEL,")
   })
 
   it("arms the pan only past a travel slop, so a double tap is never swallowed by the race", () => {
     expect(native).toMatch(/^const PAN_ACTIVATE_TRAVEL = 12$/m)
-    expect(native).toContain("onTouchesDown((event) => {")
+    expect(native).toContain("onTouchesDown: (event) => {")
     expect(native).toMatch(
       /if \(\s*!travelExceeds\(\s*panTouchOrigin\.value,\s*\{ x: touch\.absoluteX, y: touch\.absoluteY \},\s*PAN_ACTIVATE_TRAVEL,?\s*\)\s*\) \{/,
     )
   })
 
   it("never activates the pan until the image is actually zoomed, so a swipe at 1x stays free", () => {
-    expect(native).toContain(".manualActivation(true)")
+    expect(native).toContain("manualActivation: true,")
     expect(native).toMatch(
-      /onTouchesMove\(\(event, manager\) => \{\s*if \(!isZoomed\(scale\.value\)\) \{\s*manager\.fail\(\)/,
+      /onTouchesMove: \(event\) => \{\s*if \(!isZoomed\(scale\.value\)\) \{\s*GestureStateManager\.fail\(event\.handlerTag\)/,
     )
     expect(native).toContain("if (event.numberOfTouches > 1) return")
-    expect(native).toContain("manager.activate()")
+    expect(native).toMatch(
+      /PAN_ACTIVATE_TRAVEL,?\s*\)\s*\) \{\s*return\s*\}\s*GestureStateManager\.activate\(event\.handlerTag\)/,
+    )
+    expect(native).not.toMatch(/manager\.(fail|activate)\(/)
   })
 
   it("takes every number from the pure model, never from inline arithmetic", () => {
@@ -173,9 +187,10 @@ describe("the native gesture set", () => {
   })
 
   it("carries its own gesture root, because an RN Modal is a separate native view tree on Android", () => {
-    expect(native).toContain(
-      'import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler"',
-    )
+    const imports = gestureHandlerImports()
+    expect(imports).toContain("GestureDetector")
+    expect(imports).toContain("GestureHandlerRootView")
+    expect(imports).not.toContain("Gesture")
     expect(native).toContain("</GestureHandlerRootView>")
   })
 

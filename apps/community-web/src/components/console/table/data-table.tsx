@@ -138,14 +138,14 @@ export function DataTable<T>({
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-px left-px z-console-raised w-6 rounded-l-md bg-gradient-to-r from-console-surface to-transparent transition-opacity duration-d1",
+          "pointer-events-none absolute inset-y-px left-px z-console-raised w-6 rounded-l-md bg-linear-to-r from-console-surface to-transparent transition-opacity duration-d1",
           edges.left ? "opacity-100" : "opacity-0",
         )}
       />
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-px right-px z-console-raised w-6 rounded-r-md bg-gradient-to-l from-console-surface to-transparent transition-opacity duration-d1",
+          "pointer-events-none absolute inset-y-px right-px z-console-raised w-6 rounded-r-md bg-linear-to-l from-console-surface to-transparent transition-opacity duration-d1",
           edges.right ? "opacity-100" : "opacity-0",
         )}
       />
@@ -204,7 +204,7 @@ export function DataTable<T>({
                         }
                         title={t("table.sort_by", { column: column.label })}
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-xs uppercase tracking-wider hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring",
+                          "inline-flex items-center gap-1 rounded-xs uppercase tracking-wider hover:text-console-ink focus-visible:outline-hidden focus-visible:shadow-console-ring",
                           active && "text-console-ink",
                         )}
                       >
@@ -286,7 +286,7 @@ export function DataTable<T>({
                                   event.stopPropagation()
                                   onRowPress(row)
                                 }}
-                                className="w-full rounded-xs text-left focus-visible:outline-none focus-visible:shadow-console-ring"
+                                className="w-full rounded-xs text-left focus-visible:outline-hidden focus-visible:shadow-console-ring"
                               >
                                 {content}
                               </button>

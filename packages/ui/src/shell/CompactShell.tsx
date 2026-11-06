@@ -5,4 +5,3 @@
  * `./CompactShell.web` specifier avoids resolving back into this module.
  */
 export { CompactShell } from "./CompactShell.web"
-export type { CompactShellProps } from "./CompactShell.types"

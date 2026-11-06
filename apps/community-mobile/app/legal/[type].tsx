@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { LegalDocumentScreen, legalDocumentTypeOf } from "@civfix/ui"
 import NotFoundScreen from "../+not-found"

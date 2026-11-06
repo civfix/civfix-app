@@ -125,7 +125,7 @@ function makeKeyboardAwareScrollable(
       )
 
       const overlapOfEvent = useCallback(
-        (endCoordinates: KeyboardEvent["endCoordinates"] | undefined) =>
+        (endCoordinates: KeyboardEvent["endCoordinates"] | null | undefined) =>
           keyboardViewportOverlap({
             endCoordinates,
             windowHeight: Dimensions.get("window").height,

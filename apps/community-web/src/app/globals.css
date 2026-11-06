@@ -2,169 +2,425 @@
  * The shadcn/ui semantic theme. Every value is the HSL form of a hex in @civfix/tokens; the
  * trailing comment names the source token so the mapping stays auditable.
  *
- * styles/design.css is imported AFTER this file and unlayered, so a :root name shared with it would win
- * the cascade with a flat hex/rgba value and the Tailwind utility would emit an invalid hsl(rgba(...)).
- * That is why some names here carry a shadcn- prefix; design-css-tokens.test.ts asserts the two files'
- * :root variable names stay disjoint.
+ * styles/design.css is imported AFTER this file and also sets :root variables, so a name shared with it
+ * would win the cascade with a flat hex/rgba value and the hsl(var(...)) colours below would emit an
+ * invalid hsl(rgba(...)). That is why some names here carry a shadcn- prefix; design-css-tokens.test.ts
+ * asserts the two files' :root variable names stay disjoint.
  */
 
-@import "maplibre-gl/dist/maplibre-gl.css";
+/*
+ * maplibre-gl.css loaded before Tailwind's reset when the reset was unlayered; in the base layer ahead of
+ * the reset it keeps losing every tie to it, and every utility still overrides it.
+ */
+@layer theme, base, components, utilities;
+@import "maplibre-gl/dist/maplibre-gl.css" layer(base);
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "@civfix/tokens/theme.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Classes come from the app's own components only, never from functions/, scripts/ or docs. */
+@source "../**/*.{ts,tsx}";
 
+@custom-variant dark (&:is(.dark *));
+/* Tailwind 4 wraps hover: in @media (hover: hover); the site has always applied it on any :hover. */
+@custom-variant hover (&:hover);
+
+/*
+ * Breakpoints stay in px, as they were in Tailwind 3: a rem breakpoint would move with a visitor's
+ * browser font size.
+ */
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/*
+ * The scheme colours are CSS variables that switch with .dark, so the utilities read them through var()
+ * rather than a fixed theme value; the token scales (radius, shadow, type, spacing, motion, brand) come
+ * from @civfix/tokens/theme.css.
+ */
+@theme inline {
+  --color-border: hsl(var(--shadcn-border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--shadcn-accent));
+  --color-accent-foreground: hsl(var(--shadcn-accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--shadcn-card));
+  --color-card-foreground: hsl(var(--shadcn-card-foreground));
+
+  --color-bloom-50: var(--bloom-50);
+  --color-bloom-100: var(--bloom-100);
+  --color-bloom-300: var(--bloom-300);
+  --color-bloom-500: var(--bloom);
+  --color-bloom-600: var(--bloom-600);
+  --color-bloom-700: var(--bloom-700);
+  --color-moss-50: var(--moss-50);
+  --color-moss-100: var(--moss-100);
+  --color-moss-300: var(--moss-300);
+  --color-moss-500: var(--moss);
+  --color-moss-600: var(--moss-600);
+  --color-moss-700: var(--moss-700);
+  --color-sun-50: var(--sun-50);
+  --color-sun-100: var(--sun-100);
+  --color-sun-300: var(--sun-300);
+  --color-sun-500: var(--sun);
+  --color-sun-600: var(--sun-600);
+  --color-sun-700: var(--sun-700);
+  --color-sky-50: var(--sky-50);
+  --color-sky-100: var(--sky-100);
+  --color-sky-300: var(--sky-300);
+  --color-sky-500: var(--sky);
+  --color-sky-600: var(--sky-600);
+  --color-sky-700: var(--sky-700);
+  --color-lilac-50: var(--lilac-50);
+  --color-lilac-500: var(--lilac);
+  --color-lilac-600: var(--lilac-600);
+  --color-lilac-700: var(--lilac-700);
+
+  --color-paper: var(--paper);
+  --color-paper2: var(--paper-2);
+  --color-cardflat: var(--card);
+  --color-cardTint: var(--card-tint);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-ink-5: var(--ink-5);
+
+  --color-cat-trash: var(--cat-trash);
+  --color-cat-recycling: var(--cat-recycling);
+  --color-cat-graffiti: var(--cat-graffiti);
+  --color-cat-hazard: var(--cat-hazard);
+  --color-cat-encampment: var(--cat-encampment);
+  --color-cat-water: var(--cat-water);
+  --color-cat-other: var(--cat-other);
+  --color-cleanup: var(--cat-cleanup);
+
+  --color-console-surface: var(--console-surface);
+  --color-console-surface-alt: var(--console-surface-alt);
+  --color-console-tint: var(--console-tint);
+  --color-console-canvas: var(--console-canvas);
+  --color-console-line: var(--console-line);
+  --color-console-line-strong: var(--console-line-strong);
+  --color-console-accent: var(--console-accent);
+  --color-console-scrim: var(--console-scrim);
+  --color-console-toast-surface: var(--console-toast-surface);
+  --color-console-toast-ink: var(--console-toast-ink);
+  --color-console-toast-ink-dim: var(--console-toast-ink-dim);
+  --color-console-ink: var(--console-ink);
+  --color-console-ink-2: var(--console-ink-2);
+  --color-console-ink-3: var(--console-ink-3);
+  --color-console-bloom-soft: var(--console-hue-bloom-soft);
+  --color-console-bloom-strong: var(--console-hue-bloom-strong);
+  --color-console-moss-soft: var(--console-hue-moss-soft);
+  --color-console-moss-strong: var(--console-hue-moss-strong);
+  --color-console-sun-soft: var(--console-hue-sun-soft);
+  --color-console-sun-strong: var(--console-hue-sun-strong);
+  --color-console-sky-soft: var(--console-hue-sky-soft);
+  --color-console-sky-strong: var(--console-hue-sky-strong);
+  --color-console-lilac-soft: var(--console-hue-lilac-soft);
+  --color-console-lilac-strong: var(--console-hue-lilac-strong);
+
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-console-1: var(--console-shadow-1);
+  --shadow-console-2: var(--console-shadow-2);
+  --shadow-console-3: var(--console-shadow-3);
+  --shadow-console-4: var(--console-shadow-4);
+  --shadow-console-ring: var(--console-shadow-ring);
+}
+
+/* The z-index scale of styles/z-layers.ts, one utility per layer; z-layers.test.ts keeps them equal. */
+@utility z-detail-header {
+  z-index: 20;
+}
+@utility z-console-raised {
+  z-index: 20;
+}
+@utility z-console-topbar {
+  z-index: 20;
+}
+@utility z-console-bottom-tabs {
+  z-index: 30;
+}
+@utility z-console-popover {
+  z-index: 40;
+}
+@utility z-console-bulk-bar {
+  z-index: 40;
+}
+@utility z-console-sheet {
+  z-index: 50;
+}
+@utility z-console-dialog {
+  z-index: 60;
+}
+@utility z-console-toast {
+  z-index: 70;
+}
+@utility z-console-skip-link {
+  z-index: 80;
+}
+@utility z-app-banner {
+  z-index: 100;
+}
+@utility z-first-run-gate {
+  z-index: 200;
+}
+@utility z-session-alert {
+  z-index: 250;
+}
+@utility z-boot-splash {
+  z-index: 300;
+}
+@utility z-turnstile-challenge {
+  z-index: 10500;
+}
+
+/*
+ * The motion.dur steps of @civfix/tokens. --tw-duration is what tw-animate-css's animate-in reads, so
+ * `animate-in duration-d2` animates for d2 as it did. Tailwind registers that property only for its own
+ * duration utilities; unregistered, it would inherit, and a child's plain `transition` would take its
+ * parent's step instead of the 150ms default.
+ */
+@property --tw-duration {
+  syntax: "*";
+  inherits: false;
+}
+@utility duration-d1 {
+  --tw-duration: 120ms;
+  transition-duration: 120ms;
+}
+@utility duration-d2 {
+  --tw-duration: 200ms;
+  transition-duration: 200ms;
+}
+@utility duration-d3 {
+  --tw-duration: 320ms;
+  transition-duration: 320ms;
+}
+@utility duration-d4 {
+  --tw-duration: 500ms;
+  transition-duration: 500ms;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: var(--spacing-token-4);
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * Unlayered, so these variables outrank the theme layer: --font-display, --font-body and --font-sans
+ * there wrap the raw family names set here.
+ */
+:root {
+  --background: 38.6 38.9% 92.9%; /* neutral.paper  #F4EFE6 */
+  --foreground: 34.3 26.9% 10.2%; /* neutral.ink    #211B13 */
+
+  --shadcn-card: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
+  --shadcn-card-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
+
+  --popover: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
+  --popover-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
+
+  --primary: 4.9 83.1% 65.1%; /* bloom.500      #F0685C */
+  --primary-foreground: 0 0% 100%; /* white */
+
+  --secondary: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
+  --secondary-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
+
+  --muted: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
+  --muted-foreground: 38.2 8.8% 51%; /* neutral.ink3   #8D8577 */
+
+  --shadcn-accent: 42.6 77.9% 47.8%; /* sun.500        #D9A21B */
+  --shadcn-accent-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
+
+  --destructive: 5.1 74% 59.2%; /* bloom.600      #E4574A */
+  --destructive-foreground: 0 0% 100%; /* white */
+
+  --shadcn-border: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
+  --input: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
+  --ring: 4.9 83.1% 65.1%; /* bloom.500      #F0685C focus ring */
+
+  /* Radius base for shadcn components; matches token radius.lg (20px). */
+  --radius: 20px;
+
+  /* Hanken Grotesk is self-hosted in contract-fonts.css. Baloo 2 is reserved for the Brand primitive. */
+  --font-display: "HankenGrotesk";
+  --font-body: "HankenGrotesk";
+  --font-mono-face: "JetBrainsMono_400Regular";
+  --font-display-stack: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body-stack: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono-stack: var(--font-mono-face), ui-monospace, SFMono-Regular, monospace;
+
+  /*
+   * Host Console (`/manage/*`) semantic surface layer. The raw hue scales (bg-sun-50, text-bloom-600)
+   * are light-only literals, and the console is the one screen set that needs scheme-correct hue
+   * surfaces without a per-component branch, so it reads these through the `console.*` Tailwind group.
+   *
+   * Every value is a `colorSchemes[scheme]` entry from @civfix/tokens; the hue pairs are
+   * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
+   * both schemes. console-tokens.test.ts asserts every value against the contract.
+   */
+  --console-canvas: #f4efe6;
+  --console-surface: #fffdf8;
+  --console-surface-alt: #eae3d6;
+  --console-tint: #faf6ee;
+  --console-line: #e6dfd2;
+  --console-line-strong: #bdb5a6;
+  --console-ink: #211b13;
+  --console-ink-2: #5c5546;
+  --console-ink-3: #8d8577;
+  --console-accent: #f0685c;
+  --console-scrim: rgba(33, 27, 19, 0.35);
+  --console-toast-surface: #211b13;
+  --console-toast-ink: #f4efe6;
+  --console-toast-ink-dim: #8d8577;
+  --console-hue-bloom-soft: #fdeae7;
+  --console-hue-bloom-strong: #bd4234;
+  --console-hue-moss-soft: #eaf3e8;
+  --console-hue-moss-strong: #2d7743;
+  --console-hue-sun-soft: #f8eed3;
+  --console-hue-sun-strong: #81610e;
+  --console-hue-sky-soft: #e9f1fa;
+  --console-hue-sky-strong: #356291;
+  --console-hue-lilac-soft: #f0eafa;
+  --console-hue-lilac-strong: #7457b6;
+  --console-shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
+  --console-shadow-2:
+    0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
+    0 8px 16px -6px rgba(26, 23, 20, 0.08);
+  --console-shadow-3:
+    0 1px 0 rgba(26, 23, 20, 0.03), 0 4px 8px rgba(26, 23, 20, 0.05),
+    0 18px 32px -10px rgba(26, 23, 20, 0.12);
+  --console-shadow-4:
+    0 2px 4px rgba(26, 23, 20, 0.05), 0 12px 20px rgba(26, 23, 20, 0.08),
+    0 32px 56px -16px rgba(26, 23, 20, 0.18);
+  --console-shadow-ring: 0 0 0 3px rgba(240, 104, 92, 0.3);
+}
+
+.dark {
+  --background: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E */
+  --foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink    #F1EAE0 */
+
+  --shadcn-card: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
+  --shadcn-card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+  --popover: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
+  --popover-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+  --primary: 5.7 86.1% 69%; /* darkColor.bloom.500      #F4796C */
+  --primary-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E (6.87:1 on primary) */
+
+  --secondary: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+  --secondary-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+  --muted: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+  --muted-foreground: 37.1 8.9% 53.9%; /* darkColor.neutral.ink3   #948C7F */
+
+  --shadcn-accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
+  --shadcn-accent-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
+
+  --destructive: 6.3 87.7% 74.5%; /* darkColor.bloom.600      #F79185 */
+  --destructive-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
+
+  --shadcn-border: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 (hairlines) */
+  --input: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 */
+  --ring: 6.3 87.7% 74.5%; /* darkColor.bloom.600 #F79185 = FOCUS_RING_COLOR_DARK */
+
+  /* Host Console semantic surface layer - dark twins of the `:root` block above. */
+  --console-canvas: #17130e;
+  --console-surface: #2a241c;
+  --console-surface-alt: #211c15;
+  --console-tint: #332c22;
+  --console-line: #332d25;
+  --console-line-strong: #4f473c;
+  --console-ink: #f1eae0;
+  --console-ink-2: #bdb4a4;
+  --console-ink-3: #948c7f;
+  --console-accent: #f4796c;
+  --console-scrim: rgba(0, 0, 0, 0.55);
+  --console-toast-surface: #332c22;
+  --console-toast-ink: #f1eae0;
+  --console-toast-ink-dim: #bdb4a4;
+  --console-hue-bloom-soft: #3a211e;
+  --console-hue-bloom-strong: #fab0a7;
+  --console-hue-moss-soft: #1f2e1d;
+  --console-hue-moss-strong: #a9d6a1;
+  --console-hue-sun-soft: #332a14;
+  --console-hue-sun-strong: #f5d480;
+  --console-hue-sky-soft: #1b2733;
+  --console-hue-sky-strong: #c2dbf1;
+  --console-hue-lilac-soft: #2b2438;
+  --console-hue-lilac-strong: #d5c7f1;
+  --console-shadow-1: 0 1px 0 rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --console-shadow-2:
+    0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px -6px rgba(0, 0, 0, 0.45);
+  --console-shadow-3:
+    0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.35), 0 18px 32px -10px rgba(0, 0, 0, 0.55);
+  --console-shadow-4:
+    0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.45),
+    0 32px 56px -16px rgba(0, 0, 0, 0.65);
+  --console-shadow-ring: 0 0 0 3px rgba(244, 121, 108, 0.4);
+}
+
+/*
+ * Tailwind 3's reset, where Tailwind 4's differs in ways the site shows: buttons keep the pointer
+ * cursor, borders drawn without a colour class keep its gray (generated content too), placeholders
+ * stay opaque gray, and search inputs keep the plain text-field look Safari otherwise replaces.
+ */
 @layer base {
-  :root {
-    --background: 38.6 38.9% 92.9%; /* neutral.paper  #F4EFE6 */
-    --foreground: 34.3 26.9% 10.2%; /* neutral.ink    #211B13 */
-
-    --shadcn-card: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
-    --shadcn-card-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
-
-    --popover: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
-    --popover-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
-
-    --primary: 4.9 83.1% 65.1%; /* bloom.500      #F0685C */
-    --primary-foreground: 0 0% 100%; /* white */
-
-    --secondary: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
-    --secondary-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
-
-    --muted: 39 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
-    --muted-foreground: 38.2 8.8% 51%; /* neutral.ink3   #8D8577 */
-
-    --shadcn-accent: 42.6 77.9% 47.8%; /* sun.500        #D9A21B */
-    --shadcn-accent-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
-
-    --destructive: 5.1 74% 59.2%; /* bloom.600      #E4574A */
-    --destructive-foreground: 0 0% 100%; /* white */
-
-    --shadcn-border: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
-    --input: 39 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
-    --ring: 4.9 83.1% 65.1%; /* bloom.500      #F0685C focus ring */
-
-    /* Radius base for shadcn components; matches token radius.lg (20px). */
-    --radius: 20px;
-
-    /* Hanken Grotesk is self-hosted in contract-fonts.css. Baloo 2 is reserved for the Brand primitive. */
-    --font-display: "HankenGrotesk";
-    --font-body: "HankenGrotesk";
-    --font-mono: "JetBrainsMono_400Regular";
-    --font-display-stack: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-    --font-body-stack: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-    --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
-
-    /*
-     * Host Console (`/manage/*`) semantic surface layer. The raw hue scales (bg-sun-50, text-bloom-600)
-     * are light-only literals, and the console is the one screen set that needs scheme-correct hue
-     * surfaces without a per-component branch, so it reads these through the `console.*` Tailwind group.
-     *
-     * Every value is a `colorSchemes[scheme]` entry from @civfix/tokens; the hue pairs are
-     * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
-     * both schemes. console-tokens.test.ts asserts every value against the contract.
-     */
-    --console-canvas: #f4efe6;
-    --console-surface: #fffdf8;
-    --console-surface-alt: #eae3d6;
-    --console-tint: #faf6ee;
-    --console-line: #e6dfd2;
-    --console-line-strong: #bdb5a6;
-    --console-ink: #211b13;
-    --console-ink-2: #5c5546;
-    --console-ink-3: #8d8577;
-    --console-accent: #f0685c;
-    --console-scrim: rgba(33, 27, 19, 0.35);
-    --console-toast-surface: #211b13;
-    --console-toast-ink: #f4efe6;
-    --console-toast-ink-dim: #8d8577;
-    --console-hue-bloom-soft: #fdeae7;
-    --console-hue-bloom-strong: #bd4234;
-    --console-hue-moss-soft: #eaf3e8;
-    --console-hue-moss-strong: #2d7743;
-    --console-hue-sun-soft: #f8eed3;
-    --console-hue-sun-strong: #81610e;
-    --console-hue-sky-soft: #e9f1fa;
-    --console-hue-sky-strong: #356291;
-    --console-hue-lilac-soft: #f0eafa;
-    --console-hue-lilac-strong: #7457b6;
-    --console-shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
-    --console-shadow-2:
-      0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
-      0 8px 16px -6px rgba(26, 23, 20, 0.08);
-    --console-shadow-3:
-      0 1px 0 rgba(26, 23, 20, 0.03), 0 4px 8px rgba(26, 23, 20, 0.05),
-      0 18px 32px -10px rgba(26, 23, 20, 0.12);
-    --console-shadow-4:
-      0 2px 4px rgba(26, 23, 20, 0.05), 0 12px 20px rgba(26, 23, 20, 0.08),
-      0 32px 56px -16px rgba(26, 23, 20, 0.18);
-    --console-shadow-ring: 0 0 0 3px rgba(240, 104, 92, 0.3);
+  button,
+  [role="button"] {
+    cursor: pointer;
   }
 
-  .dark {
-    --background: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E */
-    --foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink    #F1EAE0 */
+  :disabled {
+    cursor: default;
+  }
 
-    --shadcn-card: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
-    --shadcn-card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+  *,
+  ::before,
+  ::after {
+    border-color: #e5e7eb;
+  }
 
-    --popover: 34.3 20% 13.7%; /* darkColor.neutral.card   #2A241C */
-    --popover-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+  input::placeholder,
+  textarea::placeholder {
+    opacity: 1;
+    color: #9ca3af;
+  }
 
-    --primary: 5.7 86.1% 69%; /* darkColor.bloom.500      #F4796C */
-    --primary-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E (6.87:1 on primary) */
-
-    --secondary: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
-    --secondary-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
-
-    --muted: 35 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
-    --muted-foreground: 37.1 8.9% 53.9%; /* darkColor.neutral.ink3   #948C7F */
-
-    --shadcn-accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
-    --shadcn-accent-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
-
-    --destructive: 6.3 87.7% 74.5%; /* darkColor.bloom.600      #F79185 */
-    --destructive-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
-
-    --shadcn-border: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 (hairlines) */
-    --input: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 */
-    --ring: 6.3 87.7% 74.5%; /* darkColor.bloom.600 #F79185 = FOCUS_RING_COLOR_DARK */
-
-    /* Host Console semantic surface layer - dark twins of the `:root` block above. */
-    --console-canvas: #17130e;
-    --console-surface: #2a241c;
-    --console-surface-alt: #211c15;
-    --console-tint: #332c22;
-    --console-line: #332d25;
-    --console-line-strong: #4f473c;
-    --console-ink: #f1eae0;
-    --console-ink-2: #bdb4a4;
-    --console-ink-3: #948c7f;
-    --console-accent: #f4796c;
-    --console-scrim: rgba(0, 0, 0, 0.55);
-    --console-toast-surface: #332c22;
-    --console-toast-ink: #f1eae0;
-    --console-toast-ink-dim: #bdb4a4;
-    --console-hue-bloom-soft: #3a211e;
-    --console-hue-bloom-strong: #fab0a7;
-    --console-hue-moss-soft: #1f2e1d;
-    --console-hue-moss-strong: #a9d6a1;
-    --console-hue-sun-soft: #332a14;
-    --console-hue-sun-strong: #f5d480;
-    --console-hue-sky-soft: #1b2733;
-    --console-hue-sky-strong: #c2dbf1;
-    --console-hue-lilac-soft: #2b2438;
-    --console-hue-lilac-strong: #d5c7f1;
-    --console-shadow-1: 0 1px 0 rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
-    --console-shadow-2:
-      0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px -6px rgba(0, 0, 0, 0.45);
-    --console-shadow-3:
-      0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.35),
-      0 18px 32px -10px rgba(0, 0, 0, 0.55);
-    --console-shadow-4:
-      0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.45),
-      0 32px 56px -16px rgba(0, 0, 0, 0.65);
-    --console-shadow-ring: 0 0 0 3px rgba(244, 121, 108, 0.4);
+  [type="search"] {
+    -webkit-appearance: textfield;
+    outline-offset: -2px;
   }
 }
 
@@ -212,87 +468,83 @@
   }
 }
 
+/*
+ * Below, the rules that loaded after the utilities when they were unlayered; at the end of the utilities
+ * layer they keep that order, as styles/design.css does.
+ */
 @layer utilities {
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  /*
+   * "Skip to content" focuses the card's scroll region, a container rather than a control. Chrome paints
+   * its default blue ring over programmatic focus that followed a keyboard activation, which would outline
+   * the whole card. The next Tab (and the reading position for assistive tech) already confirms the skip,
+   * so the container paints nothing, as GOV.UK's skip-link target does. Only container landings are
+   * tagged, so a real control keeps its own ring.
+   */
+  [data-cf-skip-target]:focus {
+    outline: none;
   }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+
+  /* maplibre-gl.css sets its own Helvetica font stack on the map container. */
+  .maplibregl-map {
+    font-family: var(--font-body-stack);
   }
-}
 
-/*
- * "Skip to content" focuses the card's scroll region, a container rather than a control. Chrome paints
- * its default blue ring over programmatic focus that followed a keyboard activation, which would outline
- * the whole card. The next Tab (and the reading position for assistive tech) already confirms the skip,
- * so the container paints nothing, as GOV.UK's skip-link target does. Only container landings are
- * tagged, so a real control keeps its own ring.
- */
-[data-cf-skip-target]:focus {
-  outline: none;
-}
-
-/* maplibre-gl.css sets its own Helvetica font stack on the map container. */
-.maplibregl-map {
-  font-family: var(--font-body-stack);
-}
-
-/*
- * The control styling is unconditional, but the bottom-left offset that clears the expanded card is
- * keyed on the `data-cf-layout` the shell publishes from useLayoutMode(), the same answer the JS shell
- * branches on.
- */
-.cf-shell .maplibregl-ctrl-group {
-  border: none;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-2);
-  overflow: hidden;
-}
-.cf-shell .maplibregl-ctrl-group button {
-  background: var(--card);
-  width: 32px;
-  height: 32px;
-}
-.dark .cf-shell .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
-.dark .cf-shell .maplibregl-ctrl-attrib-button {
-  filter: invert(1);
-}
-.cf-shell .maplibregl-ctrl-attrib.maplibregl-compact {
-  background: color-mix(in srgb, var(--paper) 85%, transparent);
-  border-radius: var(--radius-xs);
-}
-.cf-shell .maplibregl-ctrl-attrib,
-.cf-shell .maplibregl-ctrl-attrib a {
-  color: var(--ink-2);
-}
-/*
- * `--cf-occlusion-left` is the frame plan's `occlusionLeft` (the card's 14px inset plus its width, or
- * the bare inset when the card is hidden), rewritten per frame during a resize drag so the badge tracks
- * the card's edge live. The `+ 14px` keeps the badge off the card's edge. The 454px fallback is 14 plus
- * the 440px default card, where a first paint sits before the host writes the property.
- *
- * Deliberately not transitioned: the rule is driven per frame during a drag, so easing `left` would
- * make the badge lag the handle.
- *
- * `right` gives the container a definite width so the badge's 284px single-line credit reflows instead
- * of running into the zoom group at the smallest expanded width. 56px is the group's 32px buttons plus
- * its 10px margin plus the same 14px inset, so badge and group stay 14px apart.
- */
-.cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-bottom-left {
-  left: calc(var(--cf-occlusion-left, 454px) + 14px);
-  right: 56px;
-}
-/* Wrap inside the bounded strip rather than overflowing it; the credit stays fully readable. */
-.cf-shell[data-cf-layout="expanded"]
-  .maplibregl-ctrl-attrib.maplibregl-compact
-  .maplibregl-ctrl-attrib-inner {
-  white-space: normal;
-  overflow-wrap: break-word;
-}
-/* Compact tucks the required attribution under the translucent peek sheet, matching the mobile
-   design where no control badge floats over the map. */
-.cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left {
-  left: 16px;
-  bottom: 28px;
+  /*
+   * The control styling is unconditional, but the bottom-left offset that clears the expanded card is
+   * keyed on the `data-cf-layout` the shell publishes from useLayoutMode(), the same answer the JS shell
+   * branches on.
+   */
+  .cf-shell .maplibregl-ctrl-group {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-2);
+    overflow: hidden;
+  }
+  .cf-shell .maplibregl-ctrl-group button {
+    background: var(--card);
+    width: 32px;
+    height: 32px;
+  }
+  .dark .cf-shell .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
+  .dark .cf-shell .maplibregl-ctrl-attrib-button {
+    filter: invert(1);
+  }
+  .cf-shell .maplibregl-ctrl-attrib.maplibregl-compact {
+    background: color-mix(in srgb, var(--paper) 85%, transparent);
+    border-radius: var(--radius-xs);
+  }
+  .cf-shell .maplibregl-ctrl-attrib,
+  .cf-shell .maplibregl-ctrl-attrib a {
+    color: var(--ink-2);
+  }
+  /*
+   * `--cf-occlusion-left` is the frame plan's `occlusionLeft` (the card's 14px inset plus its width, or
+   * the bare inset when the card is hidden), rewritten per frame during a resize drag so the badge tracks
+   * the card's edge live. The `+ 14px` keeps the badge off the card's edge. The 454px fallback is 14 plus
+   * the 440px default card, where a first paint sits before the host writes the property.
+   *
+   * Deliberately not transitioned: the rule is driven per frame during a drag, so easing `left` would
+   * make the badge lag the handle.
+   *
+   * `right` gives the container a definite width so the badge's 284px single-line credit reflows instead
+   * of running into the zoom group at the smallest expanded width. 56px is the group's 32px buttons plus
+   * its 10px margin plus the same 14px inset, so badge and group stay 14px apart.
+   */
+  .cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-bottom-left {
+    left: calc(var(--cf-occlusion-left, 454px) + 14px);
+    right: 56px;
+  }
+  /* Wrap inside the bounded strip rather than overflowing it; the credit stays fully readable. */
+  .cf-shell[data-cf-layout="expanded"]
+    .maplibregl-ctrl-attrib.maplibregl-compact
+    .maplibregl-ctrl-attrib-inner {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  /* Compact tucks the required attribution under the translucent peek sheet, matching the mobile
+     design where no control badge floats over the map. */
+  .cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left {
+    left: 16px;
+    bottom: 28px;
+  }
 }

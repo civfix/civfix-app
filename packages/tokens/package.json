@@ -35,37 +35,38 @@
         "default": "./dist/chip-contrast.cjs"
       }
     },
+    "./theme.css": "./dist/theme.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "prepublishOnly": "pnpm build",
+    "build": "tsup && node scripts/build-theme.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint . --max-warnings=0",
     "clean": "rimraf dist *.tsbuildinfo",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch --onSuccess \"node scripts/build-theme.mjs\""
   },
   "devDependencies": {
     "@civfix/contract": "^0.71.1",
     "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^4.1.12",
+    "@typescript/native": "npm:typescript@^7",
+    "@vitest/coverage-v8": "^5.0.5",
     "@vitest/eslint-plugin": "1.6.27",
     "eslint": "^9.16.0",
     "rimraf": "^6.0.1",
-    "tsup": "^8.3.5",
-    "typescript": "^5.6.3",
+    "tsup": "^9.0.0",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.18.0",
-    "vitest": "^4.1.12"
+    "vitest": "^5.0.5"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^24.15"
   },
   "publishConfig": {
     "registry": "https://repo.civfix.org",

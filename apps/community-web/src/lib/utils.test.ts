@@ -20,3 +20,16 @@ describe("cn", () => {
     expect(cn("bg-console-ink", "bg-console-surface")).toBe("bg-console-surface")
   })
 })
+
+describe("cn on tailwind-merge 3", () => {
+  it("T23: keeps the token font-size group apart from the console colours", () => {
+    expect(cn("text-token-14 font-semibold", "text-console-ink")).toBe(
+      "text-token-14 font-semibold text-console-ink",
+    )
+    expect(cn("text-console-surface text-token-13")).toBe("text-console-surface text-token-13")
+    expect(cn("text-token-13", "text-token-16")).toBe("text-token-16")
+    expect(cn("text-sm", "text-token-14")).toBe("text-token-14")
+    expect(cn("text-console-ink-2", "text-console-ink")).toBe("text-console-ink")
+    expect(cn("p-2", "p-4")).toBe("p-4")
+  })
+})

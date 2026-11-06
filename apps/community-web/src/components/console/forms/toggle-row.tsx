@@ -66,7 +66,7 @@ export function ToggleRow({
         disabled={locked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "flex h-11 min-w-11 shrink-0 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:shadow-console-ring",
+          "flex h-11 min-w-11 shrink-0 items-center justify-center rounded-sm focus-visible:outline-hidden focus-visible:shadow-console-ring",
           locked && "cursor-not-allowed opacity-50",
         )}
       >

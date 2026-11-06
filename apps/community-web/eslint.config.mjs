@@ -4,6 +4,7 @@ import nextPlugin from "@next/eslint-plugin-next"
 import pluginQuery from "@tanstack/eslint-plugin-query"
 import vitest from "@vitest/eslint-plugin"
 import reactHooks from "eslint-plugin-react-hooks"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 import {
   DOUBLE_CAST_SELECTORS,
@@ -58,7 +59,7 @@ const HOST_CONSOLE_FILES = [
 const HOST_CONSOLE_UI_MESSAGE =
   "The host console is plain DOM and may import ONLY @civfix/ui/data, @civfix/ui/i18n and (type-only) @civfix/ui/capabilities. Every other subpath reaches React Native."
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [".next/**", "out/**", "public/**", "coverage/**", "next-env.d.ts"],
   },
@@ -84,8 +85,7 @@ export default tseslint.config(
         ...reactPlugin.configs.flat.recommended.rules,
         ...reactHooksRules(reactHooks),
         ...REACT_RULES,
-        ...nextPlugin.flatConfig.recommended.rules,
-        ...nextPlugin.flatConfig.coreWebVitals.rules,
+        ...nextPlugin.configs["core-web-vitals"].rules,
         ...jsxA11yPlugin.flatConfigs.strict.rules,
         "import/no-anonymous-default-export": "error",
         "react/no-unknown-property": "off",
@@ -107,6 +107,8 @@ export default tseslint.config(
         ],
         // images.unoptimized is set for the static export, so next/image would render a plain <img> anyway.
         "@next/next/no-img-element": "off",
+        // New in Next 16; it would flag the deliberate full-page navigations, and the move keeps today's Next rules.
+        "@next/next/no-location-assign-relative-destination": "off",
         "react/jsx-no-target-blank": "off",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unused-vars": [

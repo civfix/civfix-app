@@ -54,7 +54,7 @@ export function ErrorSummary({ errors, title, submitCount, className }: ErrorSum
       <p
         ref={headingRef}
         tabIndex={-1}
-        className="flex items-center gap-token-2 text-token-14 font-bold text-console-bloom-strong focus-visible:outline-none focus-visible:shadow-console-ring"
+        className="flex items-center gap-token-2 text-token-14 font-bold text-console-bloom-strong focus-visible:outline-hidden focus-visible:shadow-console-ring"
       >
         <CircleAlert aria-hidden className="h-4 w-4 shrink-0" />
         {title ?? t("form.error_summary_title")}
@@ -65,7 +65,7 @@ export function ErrorSummary({ errors, title, submitCount, className }: ErrorSum
             <button
               type="button"
               onClick={() => focusField(error.id)}
-              className="text-left text-token-13 font-medium text-console-bloom-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+              className="text-left text-token-13 font-medium text-console-bloom-strong underline underline-offset-2 focus-visible:outline-hidden focus-visible:shadow-console-ring"
             >
               {error.message}
             </button>

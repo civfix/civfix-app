@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, type RefObject } from "react"
+import type { ViewInstance } from "react-native"
 import type { ContentReportReason } from "@civfix/contract"
 import { usePopoverAnchor, useToast } from "../../primitives"
 import type { AnchorRect } from "../../primitives"
@@ -6,7 +7,30 @@ import { useBlockUser, useUnblockUser, useReportContent, useRequireAuth } from "
 import { useNavStore } from "../../nav"
 import { useT } from "../../i18n"
 
-export function usePersonModeration(profileId: string | undefined, profilePath: string) {
+export interface PersonModeration {
+  blockUser: ReturnType<typeof useBlockUser>
+  unblockUser: ReturnType<typeof useUnblockUser>
+  reportContent: ReturnType<typeof useReportContent>
+  menuOpen: boolean
+  menuRect: AnchorRect | null
+  menuAnchorRef: RefObject<ViewInstance | null>
+  openMenu: () => void
+  closeMenu: () => void
+  confirmingBlock: boolean
+  startBlock: () => void
+  closeBlockConfirm: () => void
+  confirmBlock: () => void
+  onUnblock: () => void
+  reporting: boolean
+  startReport: () => void
+  closeReport: () => void
+  onSubmitReport: (reason: ContentReportReason, details?: string) => void
+}
+
+export function usePersonModeration(
+  profileId: string | undefined,
+  profilePath: string,
+): PersonModeration {
   const { t } = useT("profile-person")
   const requireAuth = useRequireAuth()
   const blockUser = useBlockUser()
@@ -106,5 +130,3 @@ export function usePersonModeration(profileId: string | undefined, profilePath: 
     onSubmitReport,
   }
 }
-
-export type PersonModeration = ReturnType<typeof usePersonModeration>

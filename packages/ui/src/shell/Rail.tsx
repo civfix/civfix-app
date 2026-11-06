@@ -278,7 +278,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
   },
   hoverLozenge: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: RAIL_ITEM / 2,
     backgroundColor: t.glass.dock.selected,
     opacity: 0.6,
@@ -294,7 +294,7 @@ const useStyles = makeThemedStyles((t) => ({
     overflow: "hidden",
   },
   orbSelected: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: DOCK_ORB / 2,
     backgroundColor: t.glass.dock.selected,
   },

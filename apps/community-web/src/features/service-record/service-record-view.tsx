@@ -97,7 +97,7 @@ export function ServiceRecordView() {
   }, [verify])
 
   const onSubmit = React.useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+    (event: React.SubmitEvent<HTMLFormElement>) => {
       event.preventDefault()
       // The same normalization as the URL path, so a typed code behaves exactly like one from a link.
       const code = normalizeCertificateCode(input)
@@ -148,7 +148,7 @@ function CodeForm({
 }: {
   value: string
   onChange: (next: string) => void
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  onSubmit: (event: React.SubmitEvent<HTMLFormElement>) => void
 }) {
   const { t } = useT("web-service-record")
   const inputId = React.useId()
@@ -167,7 +167,7 @@ function CodeForm({
         </label>
         <input
           id={inputId}
-          className="w-full rounded-md border border-ink-5 bg-cardflat px-3 py-2 font-mono text-token-16 uppercase tracking-wider text-ink placeholder:text-ink-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full rounded-md border border-ink-5 bg-cardflat px-3 py-2 font-mono text-token-16 uppercase tracking-wider text-ink placeholder:text-ink-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={t("code_placeholder")}
@@ -339,7 +339,7 @@ function Fingerprint({ sha256 }: { sha256: string }) {
           type="button"
           onClick={copy}
           aria-label={t("fingerprint_copy_a11y")}
-          className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Copy className="h-3.5 w-3.5" aria-hidden="true" />
         </button>

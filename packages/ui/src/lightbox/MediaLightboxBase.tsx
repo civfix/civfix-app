@@ -201,7 +201,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.scrimLightbox,
   },
   stage: {

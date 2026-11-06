@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { View, Platform } from "react-native"
 import { useRouter, useLocalSearchParams, usePathname } from "expo-router"
 import Ionicons from "@expo/vector-icons/Ionicons"

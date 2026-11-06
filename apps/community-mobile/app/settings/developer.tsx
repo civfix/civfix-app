@@ -1,4 +1,3 @@
-import React from "react"
 import { Redirect } from "expo-router"
 import { API_URL } from "@/config"
 import { developerScreenEnabled } from "@/lib/developerScreen"

@@ -1,0 +1,5845 @@
+{
+  "zooms": {
+    "0": [
+      {
+        "type": "cluster",
+        "count": 266,
+        "reportCount": 242,
+        "eventCount": 24,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 a-oak-0 a-oak-1 b-la-0 b-la-1 b-oak-0 b-oak-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 2,
+        "lng": -120.25902937117377,
+        "lat": 35.946427124543675
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "1": [
+      {
+        "type": "cluster",
+        "count": 266,
+        "reportCount": 242,
+        "eventCount": 24,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 a-oak-0 a-oak-1 b-la-0 b-la-1 b-oak-0 b-oak-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 2,
+        "lng": -120.25902937117377,
+        "lat": 35.946427124543675
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "2": [
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 b-la-0 b-la-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 6,
+        "lng": -118.24660119257476,
+        "lat": 34.04766337142608
+      },
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 7,
+        "lng": -122.27145754977278,
+        "lat": 37.8006380316107
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "3": [
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 b-la-0 b-la-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 6,
+        "lng": -118.24660119257476,
+        "lat": 34.04766337142608
+      },
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 7,
+        "lng": -122.27145754977278,
+        "lat": 37.8006380316107
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "4": [
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 b-la-0 b-la-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 6,
+        "lng": -118.24660119257476,
+        "lat": 34.04766337142608
+      },
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 7,
+        "lng": -122.27145754977278,
+        "lat": 37.8006380316107
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "5": [
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-la-0 a-la-1 b-la-0 b-la-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 6,
+        "lng": -118.24660119257476,
+        "lat": 34.04766337142608
+      },
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 7,
+        "lng": -122.27145754977278,
+        "lat": 37.8006380316107
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "6": [
+      {
+        "type": "cluster",
+        "count": 116,
+        "reportCount": 104,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "b-la-0 b-la-1 e-la-104 e-la-16 e-la-27 e-la-38 e-la-49 e-la-5 e-la-60 e-la-71 e-la-82 e-la-93 r-la-0 r-la-1 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-11 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-2 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-26 r-la-28 r-la-29 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-34 r-la-35 r-la-36 r-la-37 r-la-39 r-la-4 r-la-40 r-la-41 r-la-42 r-la-43 r-la-44 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-52 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-64 r-la-65 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-74 r-la-75 r-la-76 r-la-77 r-la-78 r-la-79 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 7,
+        "lng": -118.24350042534725,
+        "lat": 34.047237379038364
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "cluster",
+        "count": 133,
+        "reportCount": 121,
+        "eventCount": 12,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-16 e-oak-27 e-oak-38 e-oak-49 e-oak-5 e-oak-60 e-oak-71 e-oak-82 e-oak-93 r-oak-0 r-oak-1 r-oak-10 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-19 r-oak-2 r-oak-20 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-28 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-4 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-44 r-oak-45 r-oak-46 r-oak-47 r-oak-48 r-oak-50 r-oak-51 r-oak-52 r-oak-53 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-67 r-oak-68 r-oak-69 r-oak-7 r-oak-70 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-89 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-98 r-oak-99",
+        "expansionZoom": 7,
+        "lng": -122.27145754977278,
+        "lat": 37.8006380316107
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "7": [
+      {
+        "type": "cluster",
+        "count": 96,
+        "reportCount": 89,
+        "eventCount": 7,
+        "clusterIdNull": false,
+        "leafIds": "b-la-0 b-la-1 e-la-27 e-la-5 e-la-60 e-la-71 e-la-93 r-la-0 r-la-10 r-la-100 r-la-101 r-la-102 r-la-103 r-la-105 r-la-106 r-la-107 r-la-108 r-la-109 r-la-12 r-la-13 r-la-14 r-la-15 r-la-17 r-la-18 r-la-19 r-la-20 r-la-21 r-la-22 r-la-23 r-la-24 r-la-25 r-la-28 r-la-3 r-la-30 r-la-31 r-la-32 r-la-33 r-la-36 r-la-39 r-la-40 r-la-41 r-la-42 r-la-43 r-la-45 r-la-46 r-la-47 r-la-48 r-la-50 r-la-51 r-la-53 r-la-54 r-la-55 r-la-56 r-la-57 r-la-58 r-la-59 r-la-6 r-la-61 r-la-62 r-la-63 r-la-66 r-la-67 r-la-68 r-la-69 r-la-7 r-la-70 r-la-72 r-la-73 r-la-75 r-la-76 r-la-77 r-la-78 r-la-8 r-la-80 r-la-81 r-la-83 r-la-84 r-la-85 r-la-86 r-la-87 r-la-88 r-la-89 r-la-9 r-la-90 r-la-91 r-la-92 r-la-94 r-la-95 r-la-96 r-la-97 r-la-98 r-la-99",
+        "expansionZoom": 8,
+        "lng": -118.25330131079839,
+        "lat": 34.056878156016964
+      },
+      {
+        "type": "cluster",
+        "count": 14,
+        "reportCount": 10,
+        "eventCount": 4,
+        "clusterIdNull": false,
+        "leafIds": "e-la-104 e-la-38 e-la-49 e-la-82 r-la-1 r-la-11 r-la-2 r-la-26 r-la-34 r-la-37 r-la-4 r-la-65 r-la-74 r-la-79",
+        "expansionZoom": 9,
+        "lng": -118.19913625717163,
+        "lat": 33.96376515465259
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 4,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-16 r-la-29 r-la-35 r-la-44 r-la-52",
+        "expansionZoom": 9,
+        "lng": -118.1693068742752,
+        "lat": 34.11770613789089
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "cluster",
+        "count": 109,
+        "reportCount": 101,
+        "eventCount": 8,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-1 b-oak-0 b-oak-1 e-oak-104 e-oak-27 e-oak-38 e-oak-60 e-oak-71 e-oak-93 r-oak-0 r-oak-1 r-oak-100 r-oak-101 r-oak-102 r-oak-103 r-oak-105 r-oak-106 r-oak-107 r-oak-108 r-oak-109 r-oak-11 r-oak-12 r-oak-13 r-oak-14 r-oak-15 r-oak-17 r-oak-18 r-oak-21 r-oak-22 r-oak-23 r-oak-24 r-oak-25 r-oak-26 r-oak-29 r-oak-3 r-oak-30 r-oak-31 r-oak-32 r-oak-33 r-oak-34 r-oak-35 r-oak-36 r-oak-37 r-oak-39 r-oak-40 r-oak-41 r-oak-42 r-oak-43 r-oak-45 r-oak-48 r-oak-50 r-oak-51 r-oak-54 r-oak-55 r-oak-56 r-oak-57 r-oak-58 r-oak-59 r-oak-6 r-oak-61 r-oak-62 r-oak-63 r-oak-64 r-oak-65 r-oak-66 r-oak-68 r-oak-69 r-oak-7 r-oak-72 r-oak-73 r-oak-74 r-oak-75 r-oak-76 r-oak-77 r-oak-78 r-oak-79 r-oak-8 r-oak-80 r-oak-81 r-oak-83 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-88 r-oak-9 r-oak-90 r-oak-91 r-oak-92 r-oak-94 r-oak-95 r-oak-96 r-oak-97 r-oak-99",
+        "expansionZoom": 8,
+        "lng": -122.26201795517132,
+        "lat": 37.796813141799845
+      },
+      {
+        "type": "cluster",
+        "count": 11,
+        "reportCount": 9,
+        "eventCount": 2,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-0 e-oak-49 e-oak-5 r-oak-2 r-oak-70 r-oak-89 r-oak-98",
+        "expansionZoom": 8,
+        "lng": -122.34618621213095,
+        "lat": 37.71124889861092
+      },
+      {
+        "type": "cluster",
+        "count": 13,
+        "reportCount": 11,
+        "eventCount": 2,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-16 e-oak-82 r-oak-10 r-oak-19 r-oak-20 r-oak-28 r-oak-4 r-oak-44 r-oak-46 r-oak-47 r-oak-52 r-oak-53 r-oak-67",
+        "expansionZoom": 8,
+        "lng": -122.2994745694674,
+        "lat": 37.876358878296955
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "8": [
+      {
+        "type": "cluster",
+        "count": 55,
+        "reportCount": 49,
+        "eventCount": 6,
+        "clusterIdNull": false,
+        "leafIds": "b-la-0 b-la-1 e-la-27 e-la-60 e-la-71 e-la-93 r-la-0 r-la-101 r-la-102 r-la-105 r-la-108 r-la-12 r-la-15 r-la-18 r-la-21 r-la-24 r-la-25 r-la-28 r-la-3 r-la-30 r-la-31 r-la-33 r-la-36 r-la-39 r-la-42 r-la-45 r-la-48 r-la-50 r-la-51 r-la-54 r-la-57 r-la-6 r-la-62 r-la-63 r-la-66 r-la-67 r-la-69 r-la-72 r-la-73 r-la-75 r-la-76 r-la-78 r-la-81 r-la-83 r-la-84 r-la-87 r-la-9 r-la-90 r-la-96 r-la-98 r-la-99",
+        "expansionZoom": 9,
+        "lng": -118.24788388083964,
+        "lat": 34.048960607590246
+      },
+      {
+        "type": "cluster",
+        "count": 14,
+        "reportCount": 10,
+        "eventCount": 4,
+        "clusterIdNull": false,
+        "leafIds": "e-la-104 e-la-38 e-la-49 e-la-82 r-la-1 r-la-11 r-la-2 r-la-26 r-la-34 r-la-37 r-la-4 r-la-65 r-la-74 r-la-79",
+        "expansionZoom": 9,
+        "lng": -118.19913625717163,
+        "lat": 33.96376515465259
+      },
+      {
+        "type": "cluster",
+        "count": 14,
+        "reportCount": 13,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-5 r-la-107 r-la-13 r-la-32 r-la-53 r-la-61 r-la-68 r-la-77 r-la-8 r-la-86 r-la-89 r-la-94 r-la-95 r-la-97",
+        "expansionZoom": 9,
+        "lng": -118.32120703799383,
+        "lat": 34.06835546673912
+      },
+      {
+        "type": "cluster",
+        "count": 8,
+        "reportCount": 8,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-20 r-la-46 r-la-55 r-la-56 r-la-7 r-la-70 r-la-85 r-la-92",
+        "expansionZoom": 9,
+        "lng": -118.27496230602264,
+        "lat": 34.11834876727383
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-10 r-la-19 r-la-47 r-la-58 r-la-91",
+        "expansionZoom": 9,
+        "lng": -118.27953600883485,
+        "lat": 33.990964485861326
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-106 r-la-17 r-la-40 r-la-43",
+        "expansionZoom": 9,
+        "lng": -118.16709995269775,
+        "lat": 34.00351963289941
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-103 r-la-109 r-la-14",
+        "expansionZoom": 9,
+        "lng": -118.21150660514832,
+        "lat": 34.13381643834178
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 4,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-16 r-la-29 r-la-35 r-la-44 r-la-52",
+        "expansionZoom": 9,
+        "lng": -118.1693068742752,
+        "lat": 34.11770613789089
+      },
+      {
+        "type": "cluster",
+        "count": 6,
+        "reportCount": 6,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-22 r-la-23 r-la-41 r-la-59 r-la-80 r-la-88",
+        "expansionZoom": 9,
+        "lng": -118.18421870470046,
+        "lat": 34.07200283769561
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-100",
+        "lng": -118.1591364398133,
+        "lat": 34.02914865543134
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "cluster",
+        "count": 65,
+        "reportCount": 59,
+        "eventCount": 6,
+        "clusterIdNull": false,
+        "leafIds": "a-oak-1 b-oak-0 b-oak-1 e-oak-27 e-oak-60 e-oak-71 e-oak-93 r-oak-0 r-oak-102 r-oak-105 r-oak-107 r-oak-108 r-oak-12 r-oak-14 r-oak-15 r-oak-18 r-oak-21 r-oak-24 r-oak-3 r-oak-30 r-oak-33 r-oak-35 r-oak-36 r-oak-39 r-oak-42 r-oak-45 r-oak-48 r-oak-50 r-oak-51 r-oak-54 r-oak-57 r-oak-6 r-oak-61 r-oak-63 r-oak-66 r-oak-68 r-oak-69 r-oak-72 r-oak-75 r-oak-77 r-oak-78 r-oak-81 r-oak-84 r-oak-85 r-oak-86 r-oak-87 r-oak-9 r-oak-90 r-oak-96 r-oak-99",
+        "expansionZoom": 9,
+        "lng": -122.26790796518326,
+        "lat": 37.802107567657046
+      },
+      {
+        "type": "cluster",
+        "count": 15,
+        "reportCount": 14,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-38 r-oak-1 r-oak-100 r-oak-109 r-oak-11 r-oak-32 r-oak-34 r-oak-41 r-oak-55 r-oak-56 r-oak-59 r-oak-64 r-oak-88 r-oak-94 r-oak-97",
+        "expansionZoom": 9,
+        "lng": -122.19910883903503,
+        "lat": 37.771688893710305
+      },
+      {
+        "type": "cluster",
+        "count": 6,
+        "reportCount": 4,
+        "eventCount": 2,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-49 e-oak-5 r-oak-2 r-oak-70 r-oak-89 r-oak-98",
+        "expansionZoom": 9,
+        "lng": -122.34222024679185,
+        "lat": 37.7206780436407
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 3,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-16 r-oak-4 r-oak-47 r-oak-52",
+        "expansionZoom": 9,
+        "lng": -122.33107388019562,
+        "lat": 37.89028836425756
+      },
+      {
+        "type": "cluster",
+        "count": 7,
+        "reportCount": 6,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-104 r-oak-22 r-oak-37 r-oak-58 r-oak-62 r-oak-7 r-oak-92",
+        "expansionZoom": 9,
+        "lng": -122.27646333830698,
+        "lat": 37.71979422593253
+      },
+      {
+        "type": "cluster",
+        "count": 11,
+        "reportCount": 11,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-103 r-oak-106 r-oak-13 r-oak-23 r-oak-25 r-oak-26 r-oak-31 r-oak-40 r-oak-43 r-oak-65 r-oak-8",
+        "expansionZoom": 9,
+        "lng": -122.28273364630613,
+        "lat": 37.85108983114476
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 4,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-82 r-oak-10 r-oak-19 r-oak-46 r-oak-53",
+        "expansionZoom": 9,
+        "lng": -122.22439384460448,
+        "lat": 37.88807207512899
+      },
+      {
+        "type": "cluster",
+        "count": 7,
+        "reportCount": 7,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-101 r-oak-17 r-oak-29 r-oak-73 r-oak-74 r-oak-79 r-oak-91",
+        "expansionZoom": 9,
+        "lng": -122.3508632183075,
+        "lat": 37.778044212522474
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-20 r-oak-28 r-oak-44 r-oak-67",
+        "expansionZoom": 9,
+        "lng": -122.36172616481781,
+        "lat": 37.847779873330936
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-76 r-oak-80 r-oak-83 r-oak-95",
+        "expansionZoom": 10,
+        "lng": -122.18657523393631,
+        "lat": 37.84305448792024
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-0",
+        "expansionZoom": null,
+        "lng": -122.36998041223734,
+        "lat": 37.65464737135917
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      }
+    ],
+    "9": [
+      {
+        "type": "cluster",
+        "count": 46,
+        "reportCount": 41,
+        "eventCount": 5,
+        "clusterIdNull": false,
+        "leafIds": "b-la-0 b-la-1 e-la-27 e-la-60 e-la-93 r-la-0 r-la-101 r-la-102 r-la-105 r-la-108 r-la-12 r-la-15 r-la-18 r-la-21 r-la-24 r-la-3 r-la-30 r-la-33 r-la-36 r-la-39 r-la-42 r-la-45 r-la-48 r-la-51 r-la-54 r-la-57 r-la-6 r-la-63 r-la-66 r-la-67 r-la-69 r-la-72 r-la-73 r-la-75 r-la-78 r-la-81 r-la-84 r-la-87 r-la-9 r-la-90 r-la-96 r-la-99",
+        "expansionZoom": 10,
+        "lng": -118.2498846735273,
+        "lat": 34.04985084556762
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-98",
+        "lng": -118.23065481982194,
+        "lat": 34.069871318247166
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-35",
+        "lng": -118.16017253478057,
+        "lat": 34.09511484764516
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-37",
+        "lng": -118.19842212088406,
+        "lat": 33.98472900846973
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-29",
+        "lng": -118.17576085017063,
+        "lat": 34.10660465811379
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-25 r-la-28 r-la-31",
+        "expansionZoom": 10,
+        "lng": -118.24211061000824,
+        "lat": 34.01307892010547
+      },
+      { "type": "report", "key": "r:r-la-23", "lng": -118.2070390554145, "lat": 34.09286547005176 },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-22 r-la-41 r-la-88",
+        "expansionZoom": 10,
+        "lng": -118.18523883819581,
+        "lat": 34.074295668586046
+      },
+      { "type": "event", "key": "e:e-la-38", "lng": -118.20897306860425, "lat": 33.99220297564752 },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-17 r-la-40 r-la-43",
+        "expansionZoom": 10,
+        "lng": -118.16892743110655,
+        "lat": 34.011454406337705
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 2,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-16 r-la-44 r-la-52",
+        "expansionZoom": 10,
+        "lng": -118.17019879817961,
+        "lat": 34.1289349430146
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-76",
+        "lng": -118.24697280870751,
+        "lat": 34.08728467477485
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-50",
+        "lng": -118.23082896904089,
+        "lat": 34.06967570120469
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-70",
+        "lng": -118.24251340874471,
+        "lat": 34.12239733380265
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-14",
+        "lng": -118.22881651325152,
+        "lat": 34.14165782597847
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-109",
+        "lng": -118.20448176329955,
+        "lat": 34.122963132057336
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-106",
+        "lng": -118.16161813451909,
+        "lat": 33.979714852664614
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-11",
+        "lng": -118.16809917665087,
+        "lat": 33.976778469886625
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-103",
+        "lng": -118.20122291347943,
+        "lat": 34.136835342133416
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-100",
+        "lng": -118.1591364398133,
+        "lat": 34.02914865543134
+      },
+      {
+        "type": "event",
+        "key": "e:e-la-71",
+        "lng": -118.22194387707859,
+        "lat": 34.029959034686904
+      },
+      { "type": "report", "key": "r:r-la-80", "lng": -118.186779538868, "lat": 34.041461263271046 },
+      {
+        "type": "report",
+        "key": "r:r-la-62",
+        "lng": -118.19870750587434,
+        "lat": 34.05004554223269
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-59",
+        "lng": -118.15577511424199,
+        "lat": 34.074798146355896
+      },
+      { "type": "report", "key": "r:r-la-4", "lng": -118.23777892151847, "lat": 33.97417124407366 },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 2,
+        "eventCount": 3,
+        "clusterIdNull": false,
+        "leafIds": "e-la-104 e-la-49 e-la-82 r-la-2 r-la-79",
+        "expansionZoom": 10,
+        "lng": -118.17322182655334,
+        "lat": 33.95446530923195
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-1 r-la-26 r-la-34 r-la-65",
+        "expansionZoom": 10,
+        "lng": -118.21194112300873,
+        "lat": 33.958418319054815
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      },
+      {
+        "type": "cluster",
+        "count": 45,
+        "reportCount": 40,
+        "eventCount": 5,
+        "clusterIdNull": false,
+        "leafIds": "b-oak-0 b-oak-1 e-oak-27 e-oak-60 e-oak-93 r-oak-0 r-oak-102 r-oak-105 r-oak-108 r-oak-12 r-oak-15 r-oak-18 r-oak-21 r-oak-24 r-oak-3 r-oak-30 r-oak-33 r-oak-35 r-oak-36 r-oak-39 r-oak-42 r-oak-45 r-oak-48 r-oak-51 r-oak-54 r-oak-57 r-oak-6 r-oak-63 r-oak-66 r-oak-69 r-oak-72 r-oak-75 r-oak-77 r-oak-78 r-oak-81 r-oak-84 r-oak-87 r-oak-9 r-oak-90 r-oak-96 r-oak-99",
+        "expansionZoom": 10,
+        "lng": -122.27013082039066,
+        "lat": 37.79945721190252
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-1",
+        "expansionZoom": null,
+        "lng": -122.29600200856105,
+        "lat": 37.78186625363305
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-0",
+        "expansionZoom": null,
+        "lng": -122.36998041223734,
+        "lat": 37.65464737135917
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-98",
+        "lng": -122.34268186295405,
+        "lat": 37.70125335231423
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-101 r-oak-79 r-oak-91",
+        "expansionZoom": 11,
+        "lng": -122.36051559448244,
+        "lat": 37.79674339525046
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-73",
+        "lng": -122.33504528932274,
+        "lat": 37.77921798462048
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-107",
+        "lng": -122.26210120295174,
+        "lat": 37.77110349233262
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-68",
+        "lng": -122.28642620922066,
+        "lat": 37.83061091313138
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-67",
+        "lng": -122.36953501862473,
+        "lat": 37.83125733076594
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-47",
+        "lng": -122.29694036732427,
+        "lat": 37.88045641570352
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-26",
+        "lng": -122.28079020579345,
+        "lat": 37.86968114804476
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-106",
+        "lng": -122.32396195962093,
+        "lat": 37.8366994720418
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-23",
+        "lng": -122.33911168666556,
+        "lat": 37.82337744175456
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 3,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-104 r-oak-22 r-oak-37 r-oak-58",
+        "expansionZoom": 10,
+        "lng": -122.26599678397179,
+        "lat": 37.731315156626536
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-20 r-oak-28 r-oak-44",
+        "expansionZoom": 10,
+        "lng": -122.359122633934,
+        "lat": 37.85328573380713
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-17 r-oak-29 r-oak-74",
+        "expansionZoom": 11,
+        "lng": -122.34648406505583,
+        "lat": 37.758948101042535
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-16",
+        "lng": -122.3588185327407,
+        "lat": 37.896428864821786
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-13 r-oak-40 r-oak-65 r-oak-8",
+        "expansionZoom": 10,
+        "lng": -122.29701921343803,
+        "lat": 37.84974957702376
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-62 r-oak-7 r-oak-92",
+        "expansionZoom": 10,
+        "lng": -122.29041874408723,
+        "lat": 37.70443019742905
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 2,
+        "eventCount": 2,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-49 e-oak-5 r-oak-70 r-oak-89",
+        "expansionZoom": 10,
+        "lng": -122.33529567718506,
+        "lat": 37.72901559909688
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-52",
+        "lng": -122.33716403872705,
+        "lat": 37.8924282268621
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-4",
+        "lng": -122.33137553062289,
+        "lat": 37.891836899239564
+      },
+      { "type": "report", "key": "r:r-oak-2", "lng": -122.369453720171, "lat": 37.70674810814671 },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-14 r-oak-50 r-oak-61 r-oak-85 r-oak-86",
+        "expansionZoom": 10,
+        "lng": -122.24611544609071,
+        "lat": 37.83336809006005
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-32 r-la-94 r-la-95",
+        "expansionZoom": 10,
+        "lng": -118.33079516887665,
+        "lat": 34.10350161242867
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-55",
+        "lng": -118.28347838539631,
+        "lat": 34.14868865683675
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-56",
+        "lng": -118.30347819956951,
+        "lat": 34.12377991168759
+      },
+      {
+        "type": "cluster",
+        "count": 7,
+        "reportCount": 6,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-5 r-la-13 r-la-53 r-la-68 r-la-77 r-la-8 r-la-97",
+        "expansionZoom": 10,
+        "lng": -118.31961418901172,
+        "lat": 34.07131302962155
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-61 r-la-86 r-la-89",
+        "expansionZoom": 10,
+        "lng": -118.3081752061844,
+        "lat": 34.030496022846904
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-20 r-la-7 r-la-85 r-la-92",
+        "expansionZoom": 10,
+        "lng": -118.27884078025818,
+        "lat": 34.113976392855704
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-109",
+        "lng": -122.22256108003668,
+        "lat": 37.755078504141416
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-91",
+        "lng": -118.31534659792669,
+        "lat": 33.99134062249213
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-94",
+        "lng": -122.22436429437249,
+        "lat": 37.76251565883867
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-83",
+        "lng": -118.29148339009843,
+        "lat": 34.05715110157616
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-10 r-la-19 r-la-58",
+        "expansionZoom": 10,
+        "lng": -118.26657772064209,
+        "lat": 34.00052963337865
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-76 r-oak-80 r-oak-83 r-oak-95",
+        "expansionZoom": 10,
+        "lng": -122.18657523393631,
+        "lat": 37.84305448792024
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-71",
+        "lng": -122.24492508529686,
+        "lat": 37.777157321013505
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-107",
+        "lng": -118.34268609434366,
+        "lat": 34.05574352373369
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 3,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-38 r-oak-100 r-oak-41 r-oak-64",
+        "expansionZoom": 10,
+        "lng": -122.21036374568939,
+        "lat": 37.79795430023506
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-1 r-oak-11 r-oak-55 r-oak-59 r-oak-88",
+        "expansionZoom": 10,
+        "lng": -122.19288647174835,
+        "lat": 37.77523317254892
+      },
+      { "type": "report", "key": "r:r-la-74", "lng": -118.2607595758047, "lat": 33.95882609491236 },
+      {
+        "type": "report",
+        "key": "r:r-la-47",
+        "lng": -118.28260385068134,
+        "lat": 33.96188836842775
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-32 r-oak-34 r-oak-56 r-oak-97",
+        "expansionZoom": 10,
+        "lng": -122.18345448374748,
+        "lat": 37.74743126845547
+      },
+      { "type": "report", "key": "r:r-la-46", "lng": -118.2548601009883, "lat": 34.09601141111925 },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 4,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-103 r-oak-25 r-oak-31 r-oak-43",
+        "expansionZoom": 10,
+        "lng": -122.24453374743462,
+        "lat": 37.858305528530735
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-19 r-oak-46 r-oak-53",
+        "expansionZoom": 10,
+        "lng": -122.2349578142166,
+        "lat": 37.88941554520626
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-10",
+        "lng": -122.19786713293753,
+        "lat": 37.88683177395723
+      },
+      { "type": "event", "key": "e:e-oak-82", "lng": -122.2192299827747, "lat": 37.8852773099672 }
+    ],
+    "10": [
+      {
+        "type": "report",
+        "key": "r:r-la-56",
+        "lng": -118.30347819956951,
+        "lat": 34.12377991168759
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-40",
+        "lng": -118.18053100272081,
+        "lat": 34.015486410260195
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-17",
+        "lng": -118.16248559644445,
+        "lat": 34.00182686587795
+      },
+      { "type": "report", "key": "r:r-la-28", "lng": -118.2430469175335, "lat": 34.01420714198611 },
+      {
+        "type": "report",
+        "key": "r:r-la-58",
+        "lng": -118.24537647250108,
+        "lat": 34.00308392154984
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-25",
+        "lng": -118.23980084592476,
+        "lat": 34.00287179755978
+      },
+      { "type": "report", "key": "r:r-la-10", "lng": -118.272184193274, "lat": 33.9995135129895 },
+      { "type": "event", "key": "e:e-la-38", "lng": -118.20897306860425, "lat": 33.99220297564752 },
+      { "type": "report", "key": "r:r-la-4", "lng": -118.23777892151847, "lat": 33.97417124407366 },
+      {
+        "type": "report",
+        "key": "r:r-la-37",
+        "lng": -118.19842212088406,
+        "lat": 33.98472900846973
+      },
+      { "type": "event", "key": "e:e-la-49", "lng": -118.18075134870597, "lat": 33.96563540366478 },
+      {
+        "type": "report",
+        "key": "r:r-la-106",
+        "lng": -118.16161813451909,
+        "lat": 33.979714852664614
+      },
+      { "type": "event", "key": "e:e-la-82", "lng": -118.17702127550729, "lat": 33.95516342432238 },
+      {
+        "type": "report",
+        "key": "r:r-la-11",
+        "lng": -118.16809917665087,
+        "lat": 33.976778469886625
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      { "type": "report", "key": "r:r-la-74", "lng": -118.2607595758047, "lat": 33.95882609491236 },
+      {
+        "type": "report",
+        "key": "r:r-la-19",
+        "lng": -118.28216996942646,
+        "lat": 33.99898443883285
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-47",
+        "lng": -118.28260385068134,
+        "lat": 33.96188836842775
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-79",
+        "lng": -118.15820066584274,
+        "lat": 33.950890368456015
+      },
+      { "type": "event", "key": "e:e-la-104", "lng": -118.16751722544431, "lat": 33.9505653867498 },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-65",
+        "lng": -118.21205777041614,
+        "lat": 33.975080822641026
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      { "type": "report", "key": "r:r-la-2", "lng": -118.1826165898703, "lat": 33.950069151865314 },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-1 r-la-26 r-la-34",
+        "expansionZoom": 11,
+        "lng": -118.21190178394316,
+        "lat": 33.95286222034177
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-70",
+        "lng": -118.24251340874471,
+        "lat": 34.12239733380265
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-55",
+        "lng": -118.28347838539631,
+        "lat": 34.14868865683675
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-14",
+        "lng": -118.22881651325152,
+        "lat": 34.14165782597847
+      },
+      { "type": "event", "key": "e:e-la-16", "lng": -118.16402709069662, "lat": 34.13582695755176 },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-la-20 r-la-85 r-la-92",
+        "expansionZoom": 11,
+        "lng": -118.27582597732544,
+        "lat": 34.117806211343165
+      },
+      { "type": "report", "key": "r:r-la-44", "lng": -118.1859101358801, "lat": 34.13666008529253 },
+      {
+        "type": "report",
+        "key": "r:r-la-52",
+        "lng": -118.16066316929646,
+        "lat": 34.11431379867717
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-109",
+        "lng": -118.20448176329955,
+        "lat": 34.122963132057336
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-103",
+        "lng": -118.20122291347943,
+        "lat": 34.136835342133416
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-29",
+        "lng": -118.17576085017063,
+        "lat": 34.10660465811379
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-76",
+        "lng": -118.24697280870751,
+        "lat": 34.08728467477485
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-88",
+        "lng": -118.1825221025385,
+        "lat": 34.095059104636306
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-83",
+        "lng": -118.29148339009843,
+        "lat": 34.05715110157616
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-8",
+        "lng": -118.29065884291194,
+        "lat": 34.075522067490965
+      },
+      { "type": "report", "key": "r:r-la-7", "lng": -118.28788433722221, "lat": 34.10248517519794 },
+      { "type": "report", "key": "r:r-la-46", "lng": -118.2548601009883, "lat": 34.09601141111925 },
+      {
+        "type": "report",
+        "key": "r:r-la-22",
+        "lng": -118.18890637494624,
+        "lat": 34.07468068464659
+      },
+      { "type": "report", "key": "r:r-la-23", "lng": -118.2070390554145, "lat": 34.09286547005176 },
+      { "type": "report", "key": "r:r-la-67", "lng": -118.22418165155686, "lat": 34.0530086399056 },
+      {
+        "type": "report",
+        "key": "r:r-la-35",
+        "lng": -118.16017253478057,
+        "lat": 34.09511484764516
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-62",
+        "lng": -118.19870750587434,
+        "lat": 34.05004554223269
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-59",
+        "lng": -118.15577511424199,
+        "lat": 34.074798146355896
+      },
+      {
+        "type": "cluster",
+        "count": 40,
+        "reportCount": 36,
+        "eventCount": 4,
+        "clusterIdNull": false,
+        "leafIds": "b-la-1 e-la-27 e-la-60 e-la-93 r-la-0 r-la-102 r-la-105 r-la-108 r-la-12 r-la-15 r-la-18 r-la-21 r-la-24 r-la-3 r-la-30 r-la-33 r-la-36 r-la-39 r-la-42 r-la-45 r-la-48 r-la-51 r-la-54 r-la-57 r-la-6 r-la-63 r-la-66 r-la-69 r-la-72 r-la-75 r-la-78 r-la-81 r-la-84 r-la-87 r-la-9 r-la-90 r-la-96 r-la-99",
+        "expansionZoom": 11,
+        "lng": -118.25074252329375,
+        "lat": 34.050784972189405
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-98",
+        "lng": -118.23065481982194,
+        "lat": 34.069871318247166
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-50",
+        "lng": -118.23082896904089,
+        "lat": 34.06967570120469
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-41",
+        "lng": -118.18428820120171,
+        "lat": 34.05313508822582
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-86",
+        "lng": -118.29832659582607,
+        "lat": 34.04473343398422
+      },
+      { "type": "blend", "key": "b:b-la-0", "lng": -118.24279365063413, "lat": 34.040113174100405 },
+      { "type": "report", "key": "r:r-la-80", "lng": -118.186779538868, "lat": 34.041461263271046 },
+      {
+        "type": "report",
+        "key": "r:r-la-73",
+        "lng": -118.25298350467347,
+        "lat": 34.03077320638113
+      },
+      { "type": "report", "key": "r:r-la-101", "lng": -118.2469835627824, "lat": 34.0400091396179 },
+      {
+        "type": "event",
+        "key": "e:e-la-71",
+        "lng": -118.22194387707859,
+        "lat": 34.029959034686904
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-100",
+        "lng": -118.1591364398133,
+        "lat": 34.02914865543134
+      },
+      { "type": "report", "key": "r:r-la-31", "lng": -118.2434843402356, "lat": 34.02215600633062 },
+      {
+        "type": "report",
+        "key": "r:r-la-43",
+        "lng": -118.16376546192915,
+        "lat": 34.01704893093556
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-11",
+        "lng": -122.18652303631417,
+        "lat": 37.779542587697506
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-73",
+        "lng": -122.33504528932274,
+        "lat": 37.77921798462048
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-94",
+        "lng": -122.22436429437249,
+        "lat": 37.76251565883867
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-107",
+        "lng": -122.26210120295174,
+        "lat": 37.77110349233262
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-17 r-oak-29 r-oak-74",
+        "expansionZoom": 11,
+        "lng": -122.34648406505583,
+        "lat": 37.758948101042535
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-59",
+        "lng": -122.20244094350375,
+        "lat": 37.76605612589046
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-55",
+        "lng": -122.18066214605234,
+        "lat": 37.76346902153455
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-109",
+        "lng": -122.22256108003668,
+        "lat": 37.755078504141416
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-97",
+        "lng": -122.17408782949671,
+        "lat": 37.75426680566743
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-32",
+        "lng": -122.17381741113961,
+        "lat": 37.75161597253754
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-71",
+        "lng": -122.24492508529686,
+        "lat": 37.777157321013505
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-56",
+        "lng": -122.19754542822949,
+        "lat": 37.74573728665709
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-5",
+        "lng": -122.33354780183173,
+        "lat": 37.730349115747956
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-58",
+        "lng": -122.25637192691676,
+        "lat": 37.74534577904269
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-70",
+        "lng": -122.3460538786184,
+        "lat": 37.73243115218356
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-34",
+        "lng": -122.18836728733032,
+        "lat": 37.738110187975686
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-62",
+        "lng": -122.28318480558693,
+        "lat": 37.7098235944286
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-89",
+        "lng": -122.30693306692875,
+        "lat": 37.72551457914523
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-37",
+        "lng": -122.26133037100546,
+        "lat": 37.71517680077813
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-104",
+        "lng": -122.27912179164588,
+        "lat": 37.73398334453813
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-22",
+        "lng": -122.2671634616144,
+        "lat": 37.73074998296797
+      },
+      { "type": "event", "key": "e:e-oak-49", "lng": -122.35465087581426, "lat": 37.7277641645167 },
+      { "type": "report", "key": "r:r-oak-2", "lng": -122.369453720171, "lat": 37.70674810814671 },
+      {
+        "type": "report",
+        "key": "r:r-oak-92",
+        "lng": -122.29206080835313,
+        "lat": 37.70305138453841
+      },
+      { "type": "report", "key": "r:r-oak-7", "lng": -122.2960111771524, "lat": 37.70041865357197 },
+      {
+        "type": "report",
+        "key": "r:r-oak-98",
+        "lng": -122.34268186295405,
+        "lat": 37.70125335231423
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-0",
+        "expansionZoom": null,
+        "lng": -122.36998041223734,
+        "lat": 37.65464737135917
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      { "type": "report", "key": "r:r-la-53", "lng": -118.34395218594, "lat": 34.07272507222369 },
+      {
+        "type": "report",
+        "key": "r:r-la-107",
+        "lng": -118.34268609434366,
+        "lat": 34.05574352373369
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-95",
+        "lng": -118.34074315349571,
+        "lat": 34.10174755351618
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-13",
+        "lng": -118.33512462824584,
+        "lat": 34.07268818509765
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-94",
+        "lng": -118.32928070300258,
+        "lat": 34.11255595413968
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-89",
+        "lng": -118.31855756570585,
+        "lat": 34.02315016463399
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-32",
+        "lng": -118.32236381941475,
+        "lat": 34.09619710370898
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-91",
+        "lng": -118.31534659792669,
+        "lat": 33.99134062249213
+      },
+      {
+        "type": "cluster",
+        "count": 4,
+        "reportCount": 3,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-5 r-la-68 r-la-77 r-la-97",
+        "expansionZoom": 11,
+        "lng": -118.31689059734344,
+        "lat": 34.06956478535305
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-61",
+        "lng": -118.3076441553887,
+        "lat": 34.023603352718055
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-25",
+        "lng": -122.24439166749828,
+        "lat": 37.86233455571346
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-80",
+        "lng": -122.17075005399994,
+        "lat": 37.83752042134292
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-47",
+        "lng": -122.29694036732427,
+        "lat": 37.88045641570352
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-50",
+        "lng": -122.26606756283901,
+        "lat": 37.83199679837562
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-101 r-oak-79 r-oak-91",
+        "expansionZoom": 11,
+        "lng": -122.36051559448244,
+        "lat": 37.79674339525046
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-67",
+        "lng": -122.36953501862473,
+        "lat": 37.83125733076594
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-28",
+        "lng": -122.35893658583983,
+        "lat": 37.84913766877725
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-20",
+        "lng": -122.36699656255543,
+        "lat": 37.85421038544737
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-16",
+        "lng": -122.3588185327407,
+        "lat": 37.896428864821786
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-53",
+        "lng": -122.24705735624768,
+        "lat": 37.883500440185884
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-23",
+        "lng": -122.33911168666556,
+        "lat": 37.82337744175456
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-44",
+        "lng": -122.35143531405366,
+        "lat": 37.85651125893928
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-46",
+        "lng": -122.22868613687343,
+        "lat": 37.88706487584859
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-19",
+        "lng": -122.2291272289399,
+        "lat": 37.897679476765916
+      },
+      { "type": "blend", "key": "b:b-oak-0", "lng": -122.2847180927801, "lat": 37.806414413603484 },
+      {
+        "type": "report",
+        "key": "r:r-oak-40",
+        "lng": -122.2845861338824,
+        "lat": 37.84531152616255
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-106",
+        "lng": -122.32396195962093,
+        "lat": 37.8366994720418
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-26",
+        "lng": -122.28079020579345,
+        "lat": 37.86968114804476
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 2,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-38 r-oak-41 r-oak-64",
+        "expansionZoom": 11,
+        "lng": -122.20570027828215,
+        "lat": 37.801680145910595
+      },
+      {
+        "type": "cluster",
+        "count": 37,
+        "reportCount": 34,
+        "eventCount": 3,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-27 e-oak-60 e-oak-93 r-oak-0 r-oak-102 r-oak-105 r-oak-108 r-oak-12 r-oak-15 r-oak-18 r-oak-21 r-oak-24 r-oak-3 r-oak-30 r-oak-33 r-oak-36 r-oak-39 r-oak-42 r-oak-45 r-oak-48 r-oak-51 r-oak-54 r-oak-57 r-oak-6 r-oak-63 r-oak-66 r-oak-69 r-oak-72 r-oak-75 r-oak-78 r-oak-81 r-oak-84 r-oak-87 r-oak-9 r-oak-90 r-oak-96 r-oak-99",
+        "expansionZoom": 11,
+        "lng": -122.27002448326833,
+        "lat": 37.79923728260738
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-95",
+        "lng": -122.20560211169533,
+        "lat": 37.835184428561476
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-13 r-oak-65 r-oak-8",
+        "expansionZoom": 11,
+        "lng": -122.3011636734009,
+        "lat": 37.851229997098585
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-61",
+        "lng": -122.23226674416102,
+        "lat": 37.84246603185311
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-4",
+        "lng": -122.33137553062289,
+        "lat": 37.891836899239564
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-103",
+        "lng": -122.23138551668264,
+        "lat": 37.852657357277344
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-52",
+        "lng": -122.33716403872705,
+        "lat": 37.8924282268621
+      },
+      { "type": "event", "key": "e:e-oak-82", "lng": -122.2192299827747, "lat": 37.8852773099672 },
+      {
+        "type": "report",
+        "key": "r:r-oak-31",
+        "lng": -122.26961081463843,
+        "lat": 37.85778738008812
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-77",
+        "lng": -122.26597984910943,
+        "lat": 37.810750604188065
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-83",
+        "lng": -122.18448505911975,
+        "lat": 37.85027222190983
+      },
+      { "type": "report", "key": "r:r-oak-76", "lng": -122.18546814963221, "lat": 37.849238044722 },
+      {
+        "type": "report",
+        "key": "r:r-oak-10",
+        "lng": -122.19786713293753,
+        "lat": 37.88683177395723
+      },
+      {
+        "type": "cluster",
+        "count": 3,
+        "reportCount": 3,
+        "eventCount": 0,
+        "clusterIdNull": false,
+        "leafIds": "r-oak-14 r-oak-85 r-oak-86",
+        "expansionZoom": 11,
+        "lng": -122.24408090114595,
+        "lat": 37.830790937025526
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-43",
+        "lng": -122.23275035352445,
+        "lat": 37.860449651954696
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-68",
+        "lng": -122.28642620922066,
+        "lat": 37.83061091313138
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-35",
+        "lng": -122.24788917091675,
+        "lat": 37.79526918157935
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-100",
+        "lng": -122.22435175709425,
+        "lat": 37.786776267504315
+      },
+      { "type": "blend", "key": "b:b-oak-1", "lng": -122.28586858034133, "lat": 37.79352972598281 },
+      {
+        "type": "report",
+        "key": "r:r-oak-88",
+        "lng": -122.20649118696339,
+        "lat": 37.78434426165185
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-1",
+        "lng": -122.18831689374521,
+        "lat": 37.782744699157774
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-1",
+        "expansionZoom": null,
+        "lng": -122.29600200856105,
+        "lat": 37.78186625363305
+      }
+    ],
+    "11": [
+      {
+        "type": "report",
+        "key": "r:r-la-91",
+        "lng": -118.31534659792669,
+        "lat": 33.99134062249213
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-61",
+        "lng": -118.3076441553887,
+        "lat": 34.023603352718055
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-25",
+        "lng": -118.23980084592476,
+        "lat": 34.00287179755978
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-43",
+        "lng": -118.16376546192915,
+        "lat": 34.01704893093556
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-58",
+        "lng": -118.24537647250108,
+        "lat": 34.00308392154984
+      },
+      { "type": "report", "key": "r:r-la-28", "lng": -118.2430469175335, "lat": 34.01420714198611 },
+      {
+        "type": "report",
+        "key": "r:r-la-40",
+        "lng": -118.18053100272081,
+        "lat": 34.015486410260195
+      },
+      { "type": "report", "key": "r:r-la-31", "lng": -118.2434843402356, "lat": 34.02215600633062 },
+      {
+        "type": "report",
+        "key": "r:r-la-17",
+        "lng": -118.16248559644445,
+        "lat": 34.00182686587795
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-19",
+        "lng": -118.28216996942646,
+        "lat": 33.99898443883285
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-37",
+        "lng": -118.19842212088406,
+        "lat": 33.98472900846973
+      },
+      { "type": "event", "key": "e:e-la-38", "lng": -118.20897306860425, "lat": 33.99220297564752 },
+      {
+        "type": "report",
+        "key": "r:r-la-65",
+        "lng": -118.21205777041614,
+        "lat": 33.975080822641026
+      },
+      { "type": "report", "key": "r:r-la-4", "lng": -118.23777892151847, "lat": 33.97417124407366 },
+      {
+        "type": "report",
+        "key": "r:r-la-11",
+        "lng": -118.16809917665087,
+        "lat": 33.976778469886625
+      },
+      { "type": "report", "key": "r:r-la-10", "lng": -118.272184193274, "lat": 33.9995135129895 },
+      {
+        "type": "report",
+        "key": "r:r-la-106",
+        "lng": -118.16161813451909,
+        "lat": 33.979714852664614
+      },
+      { "type": "event", "key": "e:e-la-49", "lng": -118.18075134870597, "lat": 33.96563540366478 },
+      { "type": "report", "key": "r:r-la-2", "lng": -118.1826165898703, "lat": 33.950069151865314 },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-34",
+        "lng": -118.20524383336306,
+        "lat": 33.95485593844205
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-79",
+        "lng": -118.15820066584274,
+        "lat": 33.950890368456015
+      },
+      { "type": "event", "key": "e:e-la-82", "lng": -118.17702127550729, "lat": 33.95516342432238 },
+      { "type": "event", "key": "e:e-la-104", "lng": -118.16751722544431, "lat": 33.9505653867498 },
+      { "type": "report", "key": "r:r-la-74", "lng": -118.2607595758047, "lat": 33.95882609491236 },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-47",
+        "lng": -118.28260385068134,
+        "lat": 33.96188836842775
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-26",
+        "lng": -118.2138281304855,
+        "lat": 33.950295177334915
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      { "type": "report", "key": "r:r-la-1", "lng": -118.21663007326424, "lat": 33.95343225984834 },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      { "type": "report", "key": "r:r-la-44", "lng": -118.1859101358801, "lat": 34.13666008529253 },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      {
+        "type": "report",
+        "key": "r:r-la-103",
+        "lng": -118.20122291347943,
+        "lat": 34.136835342133416
+      },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      { "type": "event", "key": "e:e-la-16", "lng": -118.16402709069662, "lat": 34.13582695755176 },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-la-55",
+        "lng": -118.28347838539631,
+        "lat": 34.14868865683675
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-14",
+        "lng": -118.22881651325152,
+        "lat": 34.14165782597847
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-56",
+        "lng": -118.30347819956951,
+        "lat": 34.12377991168759
+      },
+      { "type": "report", "key": "r:r-la-23", "lng": -118.2070390554145, "lat": 34.09286547005176 },
+      {
+        "type": "report",
+        "key": "r:r-la-29",
+        "lng": -118.17576085017063,
+        "lat": 34.10660465811379
+      },
+      { "type": "report", "key": "r:r-la-85", "lng": -118.2730581398122, "lat": 34.12125789094716 },
+      {
+        "type": "report",
+        "key": "r:r-la-20",
+        "lng": -118.27112622456625,
+        "lat": 34.116563729057084
+      },
+      { "type": "report", "key": "r:r-la-7", "lng": -118.28788433722221, "lat": 34.10248517519794 },
+      {
+        "type": "report",
+        "key": "r:r-la-92",
+        "lng": -118.28329508164897,
+        "lat": 34.11559991897084
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-35",
+        "lng": -118.16017253478057,
+        "lat": 34.09511484764516
+      },
+      { "type": "report", "key": "r:r-la-46", "lng": -118.2548601009883, "lat": 34.09601141111925 },
+      {
+        "type": "report",
+        "key": "r:r-la-52",
+        "lng": -118.16066316929646,
+        "lat": 34.11431379867717
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-59",
+        "lng": -118.15577511424199,
+        "lat": 34.074798146355896
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-70",
+        "lng": -118.24251340874471,
+        "lat": 34.12239733380265
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-76",
+        "lng": -118.24697280870751,
+        "lat": 34.08728467477485
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-88",
+        "lng": -118.1825221025385,
+        "lat": 34.095059104636306
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-109",
+        "lng": -118.20448176329955,
+        "lat": 34.122963132057336
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-8",
+        "lng": -118.29065884291194,
+        "lat": 34.075522067490965
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-22",
+        "lng": -118.18890637494624,
+        "lat": 34.07468068464659
+      },
+      { "type": "report", "key": "r:r-la-67", "lng": -118.22418165155686, "lat": 34.0530086399056 },
+      {
+        "type": "report",
+        "key": "r:r-la-41",
+        "lng": -118.18428820120171,
+        "lat": 34.05313508822582
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-68",
+        "lng": -118.31300435787998,
+        "lat": 34.063743782602245
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-83",
+        "lng": -118.29148339009843,
+        "lat": 34.05715110157616
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-50",
+        "lng": -118.23082896904089,
+        "lat": 34.06967570120469
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-98",
+        "lng": -118.23065481982194,
+        "lat": 34.069871318247166
+      },
+      {
+        "type": "cluster",
+        "count": 31,
+        "reportCount": 28,
+        "eventCount": 3,
+        "clusterIdNull": false,
+        "leafIds": "b-la-1 e-la-60 e-la-93 r-la-0 r-la-102 r-la-105 r-la-108 r-la-12 r-la-18 r-la-3 r-la-33 r-la-36 r-la-39 r-la-45 r-la-48 r-la-51 r-la-54 r-la-57 r-la-6 r-la-63 r-la-66 r-la-72 r-la-78 r-la-81 r-la-84 r-la-87 r-la-90 r-la-96 r-la-99",
+        "expansionZoom": 12,
+        "lng": -118.2502079215543,
+        "lat": 34.051794416507605
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-97",
+        "lng": -118.31398556968198,
+        "lat": 34.073147233901544
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-21",
+        "lng": -118.25435336265247,
+        "lat": 34.05447704765712
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-62",
+        "lng": -118.19870750587434,
+        "lat": 34.05004554223269
+      },
+      {
+        "type": "cluster",
+        "count": 8,
+        "reportCount": 7,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-la-27 r-la-15 r-la-24 r-la-30 r-la-42 r-la-69 r-la-75 r-la-9",
+        "expansionZoom": 12,
+        "lng": -118.25222924351692,
+        "lat": 34.0466646290796
+      },
+      { "type": "report", "key": "r:r-la-101", "lng": -118.2469835627824, "lat": 34.0400091396179 },
+      {
+        "type": "report",
+        "key": "r:r-la-73",
+        "lng": -118.25298350467347,
+        "lat": 34.03077320638113
+      },
+      {
+        "type": "event",
+        "key": "e:e-la-71",
+        "lng": -118.22194387707859,
+        "lat": 34.029959034686904
+      },
+      { "type": "blend", "key": "b:b-la-0", "lng": -118.24279365063413, "lat": 34.040113174100405 },
+      { "type": "report", "key": "r:r-la-80", "lng": -118.186779538868, "lat": 34.041461263271046 },
+      {
+        "type": "report",
+        "key": "r:r-la-86",
+        "lng": -118.29832659582607,
+        "lat": 34.04473343398422
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-100",
+        "lng": -118.1591364398133,
+        "lat": 34.02914865543134
+      },
+      { "type": "blend", "key": "b:b-oak-1", "lng": -122.28586858034133, "lat": 37.79352972598281 },
+      {
+        "type": "report",
+        "key": "r:r-oak-100",
+        "lng": -122.22435175709425,
+        "lat": 37.786776267504315
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-88",
+        "lng": -122.20649118696339,
+        "lat": 37.78434426165185
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-1",
+        "lng": -122.18831689374521,
+        "lat": 37.782744699157774
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-107",
+        "lng": -122.26210120295174,
+        "lat": 37.77110349233262
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-73",
+        "lng": -122.33504528932274,
+        "lat": 37.77921798462048
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-71",
+        "lng": -122.24492508529686,
+        "lat": 37.777157321013505
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-1",
+        "expansionZoom": null,
+        "lng": -122.29600200856105,
+        "lat": 37.78186625363305
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-11",
+        "lng": -122.18652303631417,
+        "lat": 37.779542587697506
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-59",
+        "lng": -122.20244094350375,
+        "lat": 37.76605612589046
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-55",
+        "lng": -122.18066214605234,
+        "lat": 37.76346902153455
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-17",
+        "lng": -122.35129452443681,
+        "lat": 37.76318772369996
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-70",
+        "lng": -122.3460538786184,
+        "lat": 37.73243115218356
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-34",
+        "lng": -122.18836728733032,
+        "lat": 37.738110187975686
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-56",
+        "lng": -122.19754542822949,
+        "lat": 37.74573728665709
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-94",
+        "lng": -122.22436429437249,
+        "lat": 37.76251565883867
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-109",
+        "lng": -122.22256108003668,
+        "lat": 37.755078504141416
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-97",
+        "lng": -122.17408782949671,
+        "lat": 37.75426680566743
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-32",
+        "lng": -122.17381741113961,
+        "lat": 37.75161597253754
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-74",
+        "lng": -122.34662161872721,
+        "lat": 37.757948432723055
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-104",
+        "lng": -122.27912179164588,
+        "lat": 37.73398334453813
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-29",
+        "lng": -122.34154085780493,
+        "lat": 37.75570188658312
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-58",
+        "lng": -122.25637192691676,
+        "lat": 37.74534577904269
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-22",
+        "lng": -122.2671634616144,
+        "lat": 37.73074998296797
+      },
+      { "type": "event", "key": "e:e-oak-49", "lng": -122.35465087581426, "lat": 37.7277641645167 },
+      {
+        "type": "report",
+        "key": "r:r-oak-37",
+        "lng": -122.26133037100546,
+        "lat": 37.71517680077813
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-5",
+        "lng": -122.33354780183173,
+        "lat": 37.730349115747956
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-89",
+        "lng": -122.30693306692875,
+        "lat": 37.72551457914523
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-62",
+        "lng": -122.28318480558693,
+        "lat": 37.7098235944286
+      },
+      { "type": "report", "key": "r:r-oak-2", "lng": -122.369453720171, "lat": 37.70674810814671 },
+      {
+        "type": "report",
+        "key": "r:r-la-77",
+        "lng": -118.31947285486385,
+        "lat": 34.074473772244524
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-95",
+        "lng": -118.34074315349571,
+        "lat": 34.10174755351618
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-94",
+        "lng": -118.32928070300258,
+        "lat": 34.11255595413968
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-89",
+        "lng": -118.31855756570585,
+        "lat": 34.02315016463399
+      },
+      { "type": "report", "key": "r:r-oak-7", "lng": -122.2960111771524, "lat": 37.70041865357197 },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-0",
+        "expansionZoom": null,
+        "lng": -122.36998041223734,
+        "lat": 37.65464737135917
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-13",
+        "lng": -118.33512462824584,
+        "lat": 34.07268818509765
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-92",
+        "lng": -122.29206080835313,
+        "lat": 37.70305138453841
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-32",
+        "lng": -118.32236381941475,
+        "lat": 34.09619710370898
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-98",
+        "lng": -122.34268186295405,
+        "lat": 37.70125335231423
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      { "type": "report", "key": "r:r-la-53", "lng": -118.34395218594, "lat": 34.07272507222369 },
+      { "type": "event", "key": "e:e-la-5", "lng": -118.32110259123147, "lat": 34.066902446839954 },
+      {
+        "type": "report",
+        "key": "r:r-la-107",
+        "lng": -118.34268609434366,
+        "lat": 34.05574352373369
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-80",
+        "lng": -122.17075005399994,
+        "lat": 37.83752042134292
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-10",
+        "lng": -122.19786713293753,
+        "lat": 37.88683177395723
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-83",
+        "lng": -122.18448505911975,
+        "lat": 37.85027222190983
+      },
+      { "type": "report", "key": "r:r-oak-76", "lng": -122.18546814963221, "lat": 37.849238044722 },
+      {
+        "type": "report",
+        "key": "r:r-oak-95",
+        "lng": -122.20560211169533,
+        "lat": 37.835184428561476
+      },
+      { "type": "event", "key": "e:e-oak-82", "lng": -122.2192299827747, "lat": 37.8852773099672 },
+      {
+        "type": "report",
+        "key": "r:r-oak-46",
+        "lng": -122.22868613687343,
+        "lat": 37.88706487584859
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-67",
+        "lng": -122.36953501862473,
+        "lat": 37.83125733076594
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-68",
+        "lng": -122.28642620922066,
+        "lat": 37.83061091313138
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-44",
+        "lng": -122.35143531405366,
+        "lat": 37.85651125893928
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-28",
+        "lng": -122.35893658583983,
+        "lat": 37.84913766877725
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-20",
+        "lng": -122.36699656255543,
+        "lat": 37.85421038544737
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-16",
+        "lng": -122.3588185327407,
+        "lat": 37.896428864821786
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-61",
+        "lng": -122.23226674416102,
+        "lat": 37.84246603185311
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-65",
+        "lng": -122.30196343099698,
+        "lat": 37.857833510497585
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-40",
+        "lng": -122.2845861338824,
+        "lat": 37.84531152616255
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-53",
+        "lng": -122.24705735624768,
+        "lat": 37.883500440185884
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-50",
+        "lng": -122.26606756283901,
+        "lat": 37.83199679837562
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-31",
+        "lng": -122.26961081463843,
+        "lat": 37.85778738008812
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-4",
+        "lng": -122.33137553062289,
+        "lat": 37.891836899239564
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-52",
+        "lng": -122.33716403872705,
+        "lat": 37.8924282268621
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-8",
+        "lng": -122.30475655689835,
+        "lat": 37.84795390353538
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-13",
+        "lng": -122.29677187286318,
+        "lat": 37.84789739800617
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-14",
+        "lng": -122.24444082084112,
+        "lat": 37.82965044807642
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-106",
+        "lng": -122.32396195962093,
+        "lat": 37.8366994720418
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-47",
+        "lng": -122.29694036732427,
+        "lat": 37.88045641570352
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-43",
+        "lng": -122.23275035352445,
+        "lat": 37.860449651954696
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-103",
+        "lng": -122.23138551668264,
+        "lat": 37.852657357277344
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-85",
+        "lng": -122.23929753217845,
+        "lat": 37.823909358587116
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-19",
+        "lng": -122.2291272289399,
+        "lat": 37.897679476765916
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-26",
+        "lng": -122.28079020579345,
+        "lat": 37.86968114804476
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-25",
+        "lng": -122.24439166749828,
+        "lat": 37.86233455571346
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-86",
+        "lng": -122.24850696621462,
+        "lat": 37.8388115493115
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-23",
+        "lng": -122.33911168666556,
+        "lat": 37.82337744175456
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-77",
+        "lng": -122.26597984910943,
+        "lat": 37.810750604188065
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-64",
+        "lng": -122.2041434533242,
+        "lat": 37.80416599330492
+      },
+      { "type": "blend", "key": "b:b-oak-0", "lng": -122.2847180927801, "lat": 37.806414413603484 },
+      {
+        "type": "event",
+        "key": "e:e-oak-38",
+        "lng": -122.20240316389128,
+        "lat": 37.80399389946833
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 11,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-93 r-oak-42 r-oak-48 r-oak-54 r-oak-57 r-oak-6 r-oak-63 r-oak-72 r-oak-84 r-oak-87 r-oak-9 r-oak-99",
+        "expansionZoom": 12,
+        "lng": -122.27076932787894,
+        "lat": 37.80247770961317
+      },
+      { "type": "event", "key": "e:e-oak-27", "lng": -122.27456302758073, "lat": 37.7989854328474 },
+      {
+        "type": "cluster",
+        "count": 24,
+        "reportCount": 23,
+        "eventCount": 1,
+        "clusterIdNull": false,
+        "leafIds": "e-oak-60 r-oak-0 r-oak-102 r-oak-105 r-oak-108 r-oak-12 r-oak-15 r-oak-18 r-oak-21 r-oak-24 r-oak-3 r-oak-30 r-oak-33 r-oak-36 r-oak-39 r-oak-45 r-oak-51 r-oak-66 r-oak-69 r-oak-75 r-oak-78 r-oak-81 r-oak-90 r-oak-96",
+        "expansionZoom": 12,
+        "lng": -122.26946286857128,
+        "lat": 37.797627555658735
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-79",
+        "lng": -122.35729578973725,
+        "lat": 37.79765405175276
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-41",
+        "lng": -122.2105550296884,
+        "lat": 37.79687784882262
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-91",
+        "lng": -122.36612102052196,
+        "lat": 37.79674758906476
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-101",
+        "lng": -122.35813244751654,
+        "lat": 37.79582860460505
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-35",
+        "lng": -122.24788917091675,
+        "lat": 37.79526918157935
+      }
+    ],
+    "12": [
+      {
+        "type": "report",
+        "key": "r:r-la-91",
+        "lng": -118.31534659792669,
+        "lat": 33.99134062249213
+      },
+      { "type": "report", "key": "r:r-la-30", "lng": -118.25358380357967, "lat": 34.0493971565878 },
+      {
+        "type": "report",
+        "key": "r:r-la-51",
+        "lng": -118.24543416790199,
+        "lat": 34.04909257127437
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-84",
+        "lng": -118.25109722788679,
+        "lat": 34.04930057402467
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-54",
+        "lng": -118.25175237881253,
+        "lat": 34.04852971411077
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-25",
+        "lng": -118.23980084592476,
+        "lat": 34.00287179755978
+      },
+      { "type": "report", "key": "r:r-la-28", "lng": -118.2430469175335, "lat": 34.01420714198611 },
+      {
+        "type": "report",
+        "key": "r:r-la-100",
+        "lng": -118.1591364398133,
+        "lat": 34.02914865543134
+      },
+      { "type": "report", "key": "r:r-la-31", "lng": -118.2434843402356, "lat": 34.02215600633062 },
+      {
+        "type": "report",
+        "key": "r:r-la-73",
+        "lng": -118.25298350467347,
+        "lat": 34.03077320638113
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-86",
+        "lng": -118.29832659582607,
+        "lat": 34.04473343398422
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-24",
+        "lng": -118.25177737866295,
+        "lat": 34.045348602624145
+      },
+      {
+        "type": "event",
+        "key": "e:e-la-71",
+        "lng": -118.22194387707859,
+        "lat": 34.029959034686904
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-43",
+        "lng": -118.16376546192915,
+        "lat": 34.01704893093556
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-61",
+        "lng": -118.3076441553887,
+        "lat": 34.023603352718055
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-17",
+        "lng": -118.16248559644445,
+        "lat": 34.00182686587795
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-40",
+        "lng": -118.18053100272081,
+        "lat": 34.015486410260195
+      },
+      { "type": "report", "key": "r:r-la-42", "lng": -118.2482252064161, "lat": 34.0459709232999 },
+      { "type": "report", "key": "r:r-la-9", "lng": -118.25256817927118, "lat": 34.04546399639221 },
+      { "type": "report", "key": "r:r-la-101", "lng": -118.2469835627824, "lat": 34.0400091396179 },
+      { "type": "report", "key": "r:r-la-80", "lng": -118.186779538868, "lat": 34.041461263271046 },
+      { "type": "report", "key": "r:r-la-10", "lng": -118.272184193274, "lat": 33.9995135129895 },
+      {
+        "type": "report",
+        "key": "r:r-la-69",
+        "lng": -118.2530673965672,
+        "lat": 34.045387657049574
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-15",
+        "lng": -118.25332953442354,
+        "lat": 34.04625366266118
+      },
+      { "type": "blend", "key": "b:b-la-0", "lng": -118.24279365063413, "lat": 34.040113174100405 },
+      { "type": "event", "key": "e:e-la-27", "lng": -118.2504550310527, "lat": 34.04553700911347 },
+      {
+        "type": "report",
+        "key": "r:r-la-58",
+        "lng": -118.24537647250108,
+        "lat": 34.00308392154984
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-19",
+        "lng": -118.28216996942646,
+        "lat": 33.99898443883285
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-106",
+        "lng": -118.16161813451909,
+        "lat": 33.979714852664614
+      },
+      { "type": "event", "key": "e:e-la-104", "lng": -118.16751722544431, "lat": 33.9505653867498 },
+      { "type": "event", "key": "e:e-la-82", "lng": -118.17702127550729, "lat": 33.95516342432238 },
+      {
+        "type": "report",
+        "key": "r:r-la-79",
+        "lng": -118.15820066584274,
+        "lat": 33.950890368456015
+      },
+      { "type": "report", "key": "r:r-la-74", "lng": -118.2607595758047, "lat": 33.95882609491236 },
+      {
+        "type": "report",
+        "key": "r:r-la-65",
+        "lng": -118.21205777041614,
+        "lat": 33.975080822641026
+      },
+      { "type": "report", "key": "r:r-la-4", "lng": -118.23777892151847, "lat": 33.97417124407366 },
+      { "type": "event", "key": "e:e-la-49", "lng": -118.18075134870597, "lat": 33.96563540366478 },
+      { "type": "report", "key": "r:r-la-1", "lng": -118.21663007326424, "lat": 33.95343225984834 },
+      {
+        "type": "report",
+        "key": "r:r-la-34",
+        "lng": -118.20524383336306,
+        "lat": 33.95485593844205
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-37",
+        "lng": -118.19842212088406,
+        "lat": 33.98472900846973
+      },
+      { "type": "event", "key": "e:e-la-38", "lng": -118.20897306860425, "lat": 33.99220297564752 },
+      {
+        "type": "report",
+        "key": "r:r-la-47",
+        "lng": -118.28260385068134,
+        "lat": 33.96188836842775
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-11",
+        "lng": -118.16809917665087,
+        "lat": 33.976778469886625
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-26",
+        "lng": -118.2138281304855,
+        "lat": 33.950295177334915
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-5",
+        "lng": 101.55043458100408,
+        "lat": -56.29008685704321
+      },
+      { "type": "event", "key": "e:e-out-4", "lng": 153.78885863348842, "lat": 30.346253835596144 },
+      {
+        "type": "report",
+        "key": "r:r-out-3",
+        "lng": -92.31769665610045,
+        "lat": -43.89372033532709
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-2",
+        "lng": -30.827493821270764,
+        "lat": -55.330185145139694
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-11",
+        "lng": 45.41643098462373,
+        "lat": -36.37093291152269
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-12",
+        "lng": -103.48388142883778,
+        "lat": 22.109794663265347
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-13",
+        "lng": -53.15950476098806,
+        "lat": -69.47175241075456
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-14",
+        "lng": 23.479773472063243,
+        "lat": -42.05241953488439
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-15",
+        "lng": 143.44681488350034,
+        "lat": -13.808022141456604
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-1",
+        "lng": -2.2878930950537324,
+        "lat": -0.7364703109487891
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-17",
+        "lng": -106.4650768507272,
+        "lat": 5.451058950275183
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-18",
+        "lng": -114.32392154820263,
+        "lat": -46.45235494710505
+      },
+      { "type": "report", "key": "r:r-la-2", "lng": -118.1826165898703, "lat": 33.950069151865314 },
+      {
+        "type": "event",
+        "key": "e:e-out-20",
+        "lng": 107.98693635500968,
+        "lat": -26.51512042619288
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-21",
+        "lng": 156.78997971117496,
+        "lat": -67.44218912906945
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-22",
+        "lng": -78.28284900635481,
+        "lat": -10.34615877084434
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-23",
+        "lng": -81.09846783801913,
+        "lat": -26.962535833008587
+      },
+      {
+        "type": "event",
+        "key": "e:e-out-24",
+        "lng": -15.496405260637403,
+        "lat": -15.19210837315768
+      },
+      { "type": "event", "key": "e:e-out-0", "lng": 162.4722283706069, "lat": -68.92305149696767 },
+      {
+        "type": "report",
+        "key": "r:r-out-26",
+        "lng": 65.33785776700824,
+        "lat": -2.7301363088190556
+      },
+      { "type": "report", "key": "r:r-out-27", "lng": 83.88982995878905, "lat": 12.89075989741832 },
+      {
+        "type": "event",
+        "key": "e:e-out-28",
+        "lng": -96.85015123803169,
+        "lat": -4.856975167058408
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-29",
+        "lng": 120.59581108856946,
+        "lat": -15.251658959314227
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-7",
+        "lng": -80.17004560679197,
+        "lat": 50.997910047881305
+      },
+      { "type": "event", "key": "e:e-out-8", "lng": -90.82818782422692, "lat": 51.568052312359214 },
+      { "type": "report", "key": "r:r-out-9", "lng": -86.77622403018177, "lat": 60.47040929552168 },
+      {
+        "type": "report",
+        "key": "r:r-la-56",
+        "lng": -118.30347819956951,
+        "lat": 34.12377991168759
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-10",
+        "lng": -54.174000369384885,
+        "lat": 49.44888450205326
+      },
+      { "type": "event", "key": "e:e-out-16", "lng": 64.64760477654636, "lat": 51.74329436849803 },
+      {
+        "type": "report",
+        "key": "r:r-la-8",
+        "lng": -118.29065884291194,
+        "lat": 34.075522067490965
+      },
+      { "type": "report", "key": "r:r-la-7", "lng": -118.28788433722221, "lat": 34.10248517519794 },
+      {
+        "type": "report",
+        "key": "r:r-la-103",
+        "lng": -118.20122291347943,
+        "lat": 34.136835342133416
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-20",
+        "lng": -118.27112622456625,
+        "lat": 34.116563729057084
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-109",
+        "lng": -118.20448176329955,
+        "lat": 34.122963132057336
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-14",
+        "lng": -118.22881651325152,
+        "lat": 34.14165782597847
+      },
+      { "type": "event", "key": "e:e-la-16", "lng": -118.16402709069662, "lat": 34.13582695755176 },
+      {
+        "type": "report",
+        "key": "r:r-la-92",
+        "lng": -118.28329508164897,
+        "lat": 34.11559991897084
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-88",
+        "lng": -118.1825221025385,
+        "lat": 34.095059104636306
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-76",
+        "lng": -118.24697280870751,
+        "lat": 34.08728467477485
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-70",
+        "lng": -118.24251340874471,
+        "lat": 34.12239733380265
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-22",
+        "lng": -118.18890637494624,
+        "lat": 34.07468068464659
+      },
+      { "type": "report", "key": "r:r-la-23", "lng": -118.2070390554145, "lat": 34.09286547005176 },
+      {
+        "type": "report",
+        "key": "r:r-la-59",
+        "lng": -118.15577511424199,
+        "lat": 34.074798146355896
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-52",
+        "lng": -118.16066316929646,
+        "lat": 34.11431379867717
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-6",
+        "lng": -40.27289374731481,
+        "lat": 35.133026079274714
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-29",
+        "lng": -118.17576085017063,
+        "lat": 34.10660465811379
+      },
+      { "type": "report", "key": "r:r-la-44", "lng": -118.1859101358801, "lat": 34.13666008529253 },
+      {
+        "type": "report",
+        "key": "r:r-la-35",
+        "lng": -118.16017253478057,
+        "lat": 34.09511484764516
+      },
+      { "type": "report", "key": "r:r-la-46", "lng": -118.2548601009883, "lat": 34.09601141111925 },
+      { "type": "report", "key": "r:r-la-85", "lng": -118.2730581398122, "lat": 34.12125789094716 },
+      {
+        "type": "report",
+        "key": "r:r-la-55",
+        "lng": -118.28347838539631,
+        "lat": 34.14868865683675
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-97",
+        "lng": -118.31398556968198,
+        "lat": 34.073147233901544
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-68",
+        "lng": -118.31300435787998,
+        "lat": 34.063743782602245
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-50",
+        "lng": -118.23082896904089,
+        "lat": 34.06967570120469
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-98",
+        "lng": -118.23065481982194,
+        "lat": 34.069871318247166
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-33",
+        "lng": -118.24581049843924,
+        "lat": 34.054590316310055
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-83",
+        "lng": -118.29148339009843,
+        "lat": 34.05715110157616
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-102",
+        "lng": -118.25146482447627,
+        "lat": 34.05456757777137
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-75",
+        "lng": -118.25483193350723,
+        "lat": 34.04995032850187
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-48",
+        "lng": -118.25200365851168,
+        "lat": 34.05245238895295
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-87",
+        "lng": -118.25185640847077,
+        "lat": 34.05404333254322
+      },
+      { "type": "blend", "key": "b:b-la-1", "lng": -118.2460791265592, "lat": 34.04970554928295 },
+      {
+        "type": "report",
+        "key": "r:r-la-45",
+        "lng": -118.25109837305965,
+        "lat": 34.054309625253076
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-12",
+        "lng": -118.24977368405787,
+        "lat": 34.05001048663631
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-99",
+        "lng": -118.25022731045262,
+        "lat": 34.051109909676015
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-66",
+        "lng": -118.25078003719915,
+        "lat": 34.05122738617006
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-36",
+        "lng": -118.2508722502063,
+        "lat": 34.052943762294014
+      },
+      { "type": "report", "key": "r:r-la-105", "lng": -118.251112148182, "lat": 34.04987750964938 },
+      {
+        "type": "report",
+        "key": "r:r-la-78",
+        "lng": -118.24677576175891,
+        "lat": 34.053484346850304
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-21",
+        "lng": -118.25435336265247,
+        "lat": 34.05447704765712
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-96",
+        "lng": -118.24808510905132,
+        "lat": 34.050981590491716
+      },
+      { "type": "report", "key": "r:r-la-0", "lng": -118.24759295161813, "lat": 34.05270587841514 },
+      {
+        "type": "report",
+        "key": "r:r-la-72",
+        "lng": -118.25367949713254,
+        "lat": 34.05282052906928
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-41",
+        "lng": -118.18428820120171,
+        "lat": 34.05313508822582
+      },
+      { "type": "event", "key": "e:e-la-60", "lng": -118.25337524395204, "lat": 34.05120411782991 },
+      { "type": "event", "key": "e:e-la-93", "lng": -118.2500699685188, "lat": 34.05376467861002 },
+      {
+        "type": "report",
+        "key": "r:r-la-63",
+        "lng": -118.25144614373102,
+        "lat": 34.04961972604505
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-57",
+        "lng": -118.25403806270566,
+        "lat": 34.05346151205012
+      },
+      { "type": "report", "key": "r:r-la-67", "lng": -118.22418165155686, "lat": 34.0530086399056 },
+      {
+        "type": "report",
+        "key": "r:r-la-81",
+        "lng": -118.25238832521019,
+        "lat": 34.05241949696559
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-39",
+        "lng": -118.25114848073106,
+        "lat": 34.05236480919411
+      },
+      { "type": "report", "key": "r:r-la-6", "lng": -118.2460422882042, "lat": 34.05413111089961 },
+      {
+        "type": "report",
+        "key": "r:r-la-90",
+        "lng": -118.25421159406193,
+        "lat": 34.051797505088615
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-3",
+        "lng": -118.25443348141853,
+        "lat": 34.052666243403216
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-62",
+        "lng": -118.19870750587434,
+        "lat": 34.05004554223269
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-108",
+        "lng": -118.24707133381162,
+        "lat": 34.04943343572086
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-18",
+        "lng": -118.24630041679134,
+        "lat": 34.04941620466066
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-79",
+        "lng": -122.35729578973725,
+        "lat": 37.79765405175276
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-108",
+        "lng": -122.26850957716582,
+        "lat": 37.79728371481644
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-41",
+        "lng": -122.2105550296884,
+        "lat": 37.79687784882262
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-78",
+        "lng": -122.27356615743133,
+        "lat": 37.79673458767123
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-91",
+        "lng": -122.36612102052196,
+        "lat": 37.79674758906476
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-90",
+        "lng": -122.26907773914746,
+        "lat": 37.796726754235564
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-3",
+        "lng": -122.26905504629248,
+        "lat": 37.79737440353492
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-75",
+        "lng": -122.26814169069053,
+        "lat": 37.79631642311113
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-45",
+        "lng": -122.27030962434131,
+        "lat": 37.79584623516537
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-101",
+        "lng": -122.35813244751654,
+        "lat": 37.79582860460505
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-60",
+        "lng": -122.26643487849971,
+        "lat": 37.796185794847545
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-0",
+        "lng": -122.26856438407674,
+        "lat": 37.79578971517971
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-62",
+        "lng": -122.28318480558693,
+        "lat": 37.7098235944286
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-70",
+        "lng": -122.3460538786184,
+        "lat": 37.73243115218356
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-71",
+        "lng": -122.24492508529686,
+        "lat": 37.777157321013505
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-12",
+        "lng": -122.27469365017954,
+        "lat": 37.79564600380137
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-73",
+        "lng": -122.33504528932274,
+        "lat": 37.77921798462048
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-74",
+        "lng": -122.34662161872721,
+        "lat": 37.757948432723055
+      },
+      { "type": "report", "key": "r:r-oak-7", "lng": -122.2960111771524, "lat": 37.70041865357197 },
+      {
+        "type": "report",
+        "key": "r:r-oak-17",
+        "lng": -122.35129452443681,
+        "lat": 37.76318772369996
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-5",
+        "lng": -122.33354780183173,
+        "lat": 37.730349115747956
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-58",
+        "lng": -122.25637192691676,
+        "lat": 37.74534577904269
+      },
+      { "type": "event", "key": "e:e-oak-49", "lng": -122.35465087581426, "lat": 37.7277641645167 },
+      { "type": "report", "key": "r:r-oak-2", "lng": -122.369453720171, "lat": 37.70674810814671 },
+      {
+        "type": "report",
+        "key": "r:r-oak-22",
+        "lng": -122.2671634616144,
+        "lat": 37.73074998296797
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-89",
+        "lng": -122.30693306692875,
+        "lat": 37.72551457914523
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-39",
+        "lng": -122.27069715314079,
+        "lat": 37.79562826294917
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-37",
+        "lng": -122.26133037100546,
+        "lat": 37.71517680077813
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-92",
+        "lng": -122.29206080835313,
+        "lat": 37.70305138453841
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-96",
+        "lng": -122.27299881782615,
+        "lat": 37.79537181337131
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-98",
+        "lng": -122.34268186295405,
+        "lat": 37.70125335231423
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-36",
+        "lng": -122.26780352637171,
+        "lat": 37.795643927112685
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-94",
+        "lng": -122.22436429437249,
+        "lat": 37.76251565883867
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-100",
+        "lng": -122.22435175709425,
+        "lat": 37.786776267504315
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-35",
+        "lng": -122.24788917091675,
+        "lat": 37.79526918157935
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-104",
+        "lng": -122.27912179164588,
+        "lat": 37.73398334453813
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-88",
+        "lng": -122.20649118696339,
+        "lat": 37.78434426165185
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-107",
+        "lng": -122.26210120295174,
+        "lat": 37.77110349233262
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-109",
+        "lng": -122.22256108003668,
+        "lat": 37.755078504141416
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-29",
+        "lng": -122.34154085780493,
+        "lat": 37.75570188658312
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-59",
+        "lng": -122.20244094350375,
+        "lat": 37.76605612589046
+      },
+      { "type": "blend", "key": "b:b-oak-1", "lng": -122.28586858034133, "lat": 37.79352972598281 },
+      {
+        "type": "report",
+        "key": "r:r-la-77",
+        "lng": -118.31947285486385,
+        "lat": 34.074473772244524
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-32",
+        "lng": -118.32236381941475,
+        "lat": 34.09619710370898
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-107",
+        "lng": -118.34268609434366,
+        "lat": 34.05574352373369
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-56",
+        "lng": -122.19754542822949,
+        "lat": 37.74573728665709
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-95",
+        "lng": -118.34074315349571,
+        "lat": 34.10174755351618
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-55",
+        "lng": -122.18066214605234,
+        "lat": 37.76346902153455
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-13",
+        "lng": -118.33512462824584,
+        "lat": 34.07268818509765
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-0",
+        "expansionZoom": null,
+        "lng": -118.42503137020394,
+        "lat": 34.246549302898345
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-la-1",
+        "expansionZoom": null,
+        "lng": -118.41545895813033,
+        "lat": 33.896124239172785
+      },
+      {
+        "type": "cluster",
+        "count": 5,
+        "reportCount": 5,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-0",
+        "expansionZoom": null,
+        "lng": -122.36998041223734,
+        "lat": 37.65464737135917
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-1",
+        "lng": -122.18831689374521,
+        "lat": 37.782744699157774
+      },
+      {
+        "type": "report",
+        "key": "r:r-la-64",
+        "lng": -118.33388461442664,
+        "lat": 33.97574842693284
+      },
+      {
+        "type": "cluster",
+        "count": 12,
+        "reportCount": 12,
+        "eventCount": 0,
+        "clusterIdNull": true,
+        "leafIds": "a-oak-1",
+        "expansionZoom": null,
+        "lng": -122.29600200856105,
+        "lat": 37.78186625363305
+      },
+      { "type": "report", "key": "r:r-la-53", "lng": -118.34395218594, "lat": 34.07272507222369 },
+      {
+        "type": "report",
+        "key": "r:r-la-94",
+        "lng": -118.32928070300258,
+        "lat": 34.11255595413968
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-32",
+        "lng": -122.17381741113961,
+        "lat": 37.75161597253754
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-34",
+        "lng": -122.18836728733032,
+        "lat": 37.738110187975686
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-19",
+        "lng": -139.0371309220791,
+        "lat": -6.106581296771765
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-97",
+        "lng": -122.17408782949671,
+        "lat": 37.75426680566743
+      },
+      {
+        "type": "report",
+        "key": "r:r-out-25",
+        "lng": -168.31975454464555,
+        "lat": 6.299356571398675
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-11",
+        "lng": -122.18652303631417,
+        "lat": 37.779542587697506
+      },
+      { "type": "event", "key": "e:e-la-5", "lng": -118.32110259123147, "lat": 34.066902446839954 },
+      {
+        "type": "report",
+        "key": "r:r-la-89",
+        "lng": -118.31855756570585,
+        "lat": 34.02315016463399
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-31",
+        "lng": -122.26961081463843,
+        "lat": 37.85778738008812
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-10",
+        "lng": -122.19786713293753,
+        "lat": 37.88683177395723
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-83",
+        "lng": -122.18448505911975,
+        "lat": 37.85027222190983
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-80",
+        "lng": -122.17075005399994,
+        "lat": 37.83752042134292
+      },
+      { "type": "report", "key": "r:r-oak-76", "lng": -122.18546814963221, "lat": 37.849238044722 },
+      {
+        "type": "event",
+        "key": "e:e-oak-38",
+        "lng": -122.20240316389128,
+        "lat": 37.80399389946833
+      },
+      { "type": "blend", "key": "b:b-oak-0", "lng": -122.2847180927801, "lat": 37.806414413603484 },
+      {
+        "type": "report",
+        "key": "r:r-oak-64",
+        "lng": -122.2041434533242,
+        "lat": 37.80416599330492
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-95",
+        "lng": -122.20560211169533,
+        "lat": 37.835184428561476
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-106",
+        "lng": -122.32396195962093,
+        "lat": 37.8366994720418
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-105",
+        "lng": -122.27259808545932,
+        "lat": 37.8000513613224
+      },
+      { "type": "event", "key": "e:e-oak-82", "lng": -122.2192299827747, "lat": 37.8852773099672 },
+      {
+        "type": "report",
+        "key": "r:r-oak-102",
+        "lng": -122.2676646619686,
+        "lat": 37.79957931260811
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-19",
+        "lng": -122.2291272289399,
+        "lat": 37.897679476765916
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-99",
+        "lng": -122.27414558004355,
+        "lat": 37.801255549606864
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-25",
+        "lng": -122.24439166749828,
+        "lat": 37.86233455571346
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-85",
+        "lng": -122.23929753217845,
+        "lat": 37.823909358587116
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-93",
+        "lng": -122.27210705960867,
+        "lat": 37.80188111948315
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-43",
+        "lng": -122.23275035352445,
+        "lat": 37.860449651954696
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-46",
+        "lng": -122.22868613687343,
+        "lat": 37.88706487584859
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-61",
+        "lng": -122.23226674416102,
+        "lat": 37.84246603185311
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-103",
+        "lng": -122.23138551668264,
+        "lat": 37.852657357277344
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-87",
+        "lng": -122.26962917227996,
+        "lat": 37.804857140991366
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-86",
+        "lng": -122.24850696621462,
+        "lat": 37.8388115493115
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-84",
+        "lng": -122.26683707943418,
+        "lat": 37.80215112105245
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-81",
+        "lng": -122.26660440541804,
+        "lat": 37.80038290405413
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-14",
+        "lng": -122.24444082084112,
+        "lat": 37.82965044807642
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-4",
+        "lng": -122.33137553062289,
+        "lat": 37.891836899239564
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-77",
+        "lng": -122.26597984910943,
+        "lat": 37.810750604188065
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-6",
+        "lng": -122.2701556439069,
+        "lat": 37.804129839797966
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-8",
+        "lng": -122.30475655689835,
+        "lat": 37.84795390353538
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-9",
+        "lng": -122.27190231096465,
+        "lat": 37.801058918961786
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-72",
+        "lng": -122.27284821125679,
+        "lat": 37.80054961657384
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-13",
+        "lng": -122.29677187286318,
+        "lat": 37.84789739800617
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-15",
+        "lng": -122.27297857822617,
+        "lat": 37.79913196114357
+      },
+      { "type": "report", "key": "r:r-oak-69", "lng": -122.26573049666825, "lat": 37.798505453635 },
+      {
+        "type": "report",
+        "key": "r:r-oak-68",
+        "lng": -122.28642620922066,
+        "lat": 37.83061091313138
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-67",
+        "lng": -122.36953501862473,
+        "lat": 37.83125733076594
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-66",
+        "lng": -122.27206440123496,
+        "lat": 37.798186672779266
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-65",
+        "lng": -122.30196343099698,
+        "lat": 37.857833510497585
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-63",
+        "lng": -122.27414706445764,
+        "lat": 37.80186334789032
+      },
+      {
+        "type": "event",
+        "key": "e:e-oak-16",
+        "lng": -122.3588185327407,
+        "lat": 37.896428864821786
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-18",
+        "lng": -122.27165537235793,
+        "lat": 37.79900014729239
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-20",
+        "lng": -122.36699656255543,
+        "lat": 37.85421038544737
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-57",
+        "lng": -122.27455479996046,
+        "lat": 37.802511932915074
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-54",
+        "lng": -122.26654266774653,
+        "lat": 37.80287044457625
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-53",
+        "lng": -122.24705735624768,
+        "lat": 37.883500440185884
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-52",
+        "lng": -122.33716403872705,
+        "lat": 37.8924282268621
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-51",
+        "lng": -122.27055254804436,
+        "lat": 37.7985876891762
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-50",
+        "lng": -122.26606756283901,
+        "lat": 37.83199679837562
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-21",
+        "lng": -122.26585952139692,
+        "lat": 37.798496125028464
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-48",
+        "lng": -122.26624377242057,
+        "lat": 37.8018018487445
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-47",
+        "lng": -122.29694036732427,
+        "lat": 37.88045641570352
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-23",
+        "lng": -122.33911168666556,
+        "lat": 37.82337744175456
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-44",
+        "lng": -122.35143531405366,
+        "lat": 37.85651125893928
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-42",
+        "lng": -122.27011398645351,
+        "lat": 37.8047881970671
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-40",
+        "lng": -122.2845861338824,
+        "lat": 37.84531152616255
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-24",
+        "lng": -122.26807497159578,
+        "lat": 37.800637954454864
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-26",
+        "lng": -122.28079020579345,
+        "lat": 37.86968114804476
+      },
+      { "type": "event", "key": "e:e-oak-27", "lng": -122.27456302758073, "lat": 37.7989854328474 },
+      {
+        "type": "report",
+        "key": "r:r-oak-28",
+        "lng": -122.35893658583983,
+        "lat": 37.84913766877725
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-33",
+        "lng": -122.26543373257387,
+        "lat": 37.79815969484625
+      },
+      {
+        "type": "report",
+        "key": "r:r-oak-30",
+        "lng": -122.26803545108763,
+        "lat": 37.797796098645776
+      }
+    ]
+  }
+}

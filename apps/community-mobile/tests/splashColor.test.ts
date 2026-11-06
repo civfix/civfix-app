@@ -56,7 +56,8 @@ test("the JS boot screen paints the flat launch background, never a wash over it
   assert.match(root, /backgroundColor: t\.colors\.bg/)
   assert.match(loadingSplash, /\}\)\)\.for\(LAUNCH_SCHEME\)/)
   assert.doesNotMatch(loadingSplash, /RadialGradient|LinearGradient|react-native-svg/)
-  assert.doesNotMatch(loadingSplash, /StyleSheet\.absoluteFill[^O]/)
+  assert.match(root, /^ {2}root: \{\n\s+\.\.\.StyleSheet\.absoluteFill,/)
+  assert.equal(loadingSplash.match(/StyleSheet\.absoluteFill\b/g)?.length, 1)
 })
 
 test("the native root view sits on the launch paper before the first paint, the app's after", () => {

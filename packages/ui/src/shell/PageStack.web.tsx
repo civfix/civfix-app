@@ -1,5 +1,5 @@
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { StyleSheet, useWindowDimensions, View } from "react-native"
+import { StyleSheet, useWindowDimensions, View, type ViewInstance } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { domElement } from "../primitives/domElement"
 import { domProps, makeThemedStyles, webStyle, pointerEventStyles } from "../theme"
@@ -76,7 +76,7 @@ export function PageStack({
 }: PageStackProps) {
   const styles = useStyles()
   const width = useWindowDimensions().width
-  const hostRef = useRef<View>(null)
+  const hostRef = useRef<ViewInstance>(null)
   const signature = layerKeys.join("|")
   const stackSlices = useMemo(() => stack.map((_, index) => stack.slice(0, index + 1)), [stack])
   const layers = useMemo<StackLayer[]>(
@@ -233,7 +233,7 @@ const WebPageLayer = memo(function WebPageLayer({
   webKeyboardInset,
 }: WebPageLayerProps) {
   const styles = useStyles()
-  const layerRef = useRef<View>(null)
+  const layerRef = useRef<ViewInstance>(null)
   const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
   const reserve = pageBottomReserve(entry.kind)
   const boxReserve = reserve === "box" ? paddingBottom : 0
@@ -292,13 +292,13 @@ const WebPageLayer = memo(function WebPageLayer({
 const useStyles = makeThemedStyles((t) => ({
   host: { flex: 1 },
   layer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.bg,
   },
   layerContent: { flex: 1 },
   header: PAGE_HEADER_STYLE,
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: t.colors.shadowColor,
   },
 }))

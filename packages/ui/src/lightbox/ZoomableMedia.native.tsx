@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { StyleSheet, View, type LayoutChangeEvent } from "react-native"
-import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler"
+import {
+  GestureDetector,
+  GestureHandlerRootView,
+  GestureStateManager,
+  useCompetingGestures,
+  usePanGesture,
+  usePinchGesture,
+  useSimultaneousGestures,
+  useTapGesture,
+} from "react-native-gesture-handler"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import { scheduleOnRN } from "react-native-worklets"
 import { motion } from "../theme"
@@ -96,104 +105,93 @@ export function ZoomableMedia({
     [scale, x, y],
   )
 
-  const gesture = useMemo(() => {
-    const pinch = Gesture.Pinch()
-      .onStart(() => {
-        pinchStart.value = { scale: scale.value, x: x.value, y: y.value }
-      })
-      .onUpdate((event) => {
-        track(
-          focalZoomTransform({
-            transform: pinchStart.value,
-            nextScale: pinchStart.value.scale * event.scale,
-            focalX: event.focalX,
-            focalY: event.focalY,
-            surfaceWidth: surfaceWidth.value,
-            surfaceHeight: surfaceHeight.value,
-            geometry,
-          }),
-        )
-      })
-      .onEnd(() => {
-        commit(settleZoomTransform({ scale: scale.value, x: x.value, y: y.value }, geometry))
-      })
+  const pinch = usePinchGesture({
+    onActivate: () => {
+      pinchStart.value = { scale: scale.value, x: x.value, y: y.value }
+    },
+    onUpdate: (event) => {
+      track(
+        focalZoomTransform({
+          transform: pinchStart.value,
+          nextScale: pinchStart.value.scale * event.scale,
+          focalX: event.focalX,
+          focalY: event.focalY,
+          surfaceWidth: surfaceWidth.value,
+          surfaceHeight: surfaceHeight.value,
+          geometry,
+        }),
+      )
+    },
+    onDeactivate: () => {
+      commit(settleZoomTransform({ scale: scale.value, x: x.value, y: y.value }, geometry))
+    },
+  })
 
-    const pan = Gesture.Pan()
-      .manualActivation(true)
-      .onTouchesDown((event) => {
-        const touch = event.allTouches[0]
-        if (touch) panTouchOrigin.value = { x: touch.absoluteX, y: touch.absoluteY }
-      })
-      .onTouchesMove((event, manager) => {
-        if (!isZoomed(scale.value)) {
-          manager.fail()
-          return
-        }
-        if (event.numberOfTouches > 1) return
-        const touch = event.allTouches[0]
-        if (!touch) return
-        if (
-          !travelExceeds(
-            panTouchOrigin.value,
-            { x: touch.absoluteX, y: touch.absoluteY },
-            PAN_ACTIVATE_TRAVEL,
-          )
-        ) {
-          return
-        }
-        manager.activate()
-      })
-      .onStart((event) => {
-        panStart.value = { scale: scale.value, x: x.value, y: y.value }
-        panOrigin.value = { x: event.translationX, y: event.translationY }
-      })
-      .onUpdate((event) => {
-        track(
-          panZoomTransform(
-            panStart.value,
-            event.translationX - panOrigin.value.x,
-            event.translationY - panOrigin.value.y,
-            geometry,
-          ),
+  const pan = usePanGesture({
+    manualActivation: true,
+    onTouchesDown: (event) => {
+      const touch = event.allTouches[0]
+      if (touch) panTouchOrigin.value = { x: touch.absoluteX, y: touch.absoluteY }
+    },
+    onTouchesMove: (event) => {
+      if (!isZoomed(scale.value)) {
+        GestureStateManager.fail(event.handlerTag)
+        return
+      }
+      if (event.numberOfTouches > 1) return
+      const touch = event.allTouches[0]
+      if (!touch) return
+      if (
+        !travelExceeds(
+          panTouchOrigin.value,
+          { x: touch.absoluteX, y: touch.absoluteY },
+          PAN_ACTIVATE_TRAVEL,
         )
-      })
-      .onEnd(() => {
-        commit(settleZoomTransform({ scale: scale.value, x: x.value, y: y.value }, geometry))
-      })
+      ) {
+        return
+      }
+      GestureStateManager.activate(event.handlerTag)
+    },
+    onActivate: (event) => {
+      panStart.value = { scale: scale.value, x: x.value, y: y.value }
+      panOrigin.value = { x: event.translationX, y: event.translationY }
+    },
+    onUpdate: (event) => {
+      track(
+        panZoomTransform(
+          panStart.value,
+          event.translationX - panOrigin.value.x,
+          event.translationY - panOrigin.value.y,
+          geometry,
+        ),
+      )
+    },
+    onDeactivate: () => {
+      commit(settleZoomTransform({ scale: scale.value, x: x.value, y: y.value }, geometry))
+    },
+  })
 
-    const doubleTap = Gesture.Tap()
-      .numberOfTaps(2)
-      .maxDistance(DOUBLE_TAP_MAX_TRAVEL)
-      .maxDelay(DOUBLE_TAP_MAX_DELAY_MS)
-      .onEnd((event, success) => {
-        if (!success) return
-        commit(
-          doubleTapZoomTransform({
-            transform: { scale: scale.value, x: x.value, y: y.value },
-            focalX: event.x,
-            focalY: event.y,
-            surfaceWidth: surfaceWidth.value,
-            surfaceHeight: surfaceHeight.value,
-            geometry,
-          }),
-        )
-      })
+  const doubleTap = useTapGesture({
+    numberOfTaps: 2,
+    maxDistance: DOUBLE_TAP_MAX_TRAVEL,
+    maxDelay: DOUBLE_TAP_MAX_DELAY_MS,
+    onDeactivate: (event) => {
+      if (event.canceled) return
+      commit(
+        doubleTapZoomTransform({
+          transform: { scale: scale.value, x: x.value, y: y.value },
+          focalX: event.x,
+          focalY: event.y,
+          surfaceWidth: surfaceWidth.value,
+          surfaceHeight: surfaceHeight.value,
+          geometry,
+        }),
+      )
+    },
+  })
 
-    return Gesture.Race(doubleTap, Gesture.Simultaneous(pinch, pan))
-  }, [
-    commit,
-    geometry,
-    panOrigin,
-    panStart,
-    panTouchOrigin,
-    pinchStart,
-    scale,
-    surfaceHeight,
-    surfaceWidth,
-    track,
-    x,
-    y,
-  ])
+  const zoom = useSimultaneousGestures(pinch, pan)
+  const gesture = useCompetingGestures(doubleTap, zoom)
 
   const onSurfaceLayout = useCallback(
     (event: LayoutChangeEvent) => {

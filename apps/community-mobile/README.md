@@ -13,7 +13,7 @@ civfix-app/
   packages/tokens/          @civfix/tokens - the design tokens + chip-contrast helpers
   packages/ui/              @civfix/ui - the shared React Native UI (+ the app-only helpers)
   pnpm-workspace.yaml       packages + every pnpm setting (nodeLinker: hoisted, overrides, allowBuilds)
-  .npmrc                    node-linker=hoisted (guard repeat) + @civfix:registry
+  .npmrc                    @civfix:registry
 ```
 
 `@civfix/tokens` and `@civfix/ui` are workspace packages (`"workspace:*"` in this app's
@@ -21,35 +21,35 @@ civfix-app/
 install by caret range, published from `civfix-contract`. See "pnpm + Expo + the shared packages"
 below.
 
-`apps/community-mobile/.npmrc` mirrors the workspace root's: EAS Build and `expo install` read npm
-config from this app directory. Its `node-linker=hoisted` is a guard repeat of `nodeLinker` in
-`pnpm-workspace.yaml` (which wins): the layout Metro, the config plugins and CocoaPods are proven on.
+`apps/community-mobile/.npmrc` mirrors the workspace root's `@civfix` registry line: EAS Build and
+`expo install` read npm config from this app directory. The flat layout Metro, the config plugins and
+CocoaPods are proven on comes from `nodeLinker: hoisted` in `pnpm-workspace.yaml`.
 
 ## Key versions
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~54.0.36 | SDK 54 |
-| react-native | 0.81.5 | SDK 54 pin |
-| react / react-dom | 19.1.0 | SDK 54 pin |
-| expo-router | ~6.0.24 | file-based routing |
-| react-native-reanimated | ~4.1.1 | SDK 54 bundles v4 (see note below) |
-| react-native-worklets | 0.5.1 | worklet runtime + Babel plugin for Reanimated v4 |
-| react-native-gesture-handler | ~2.28.0 | |
+| expo | ~58.0.23 | SDK 58 |
+| react-native | 0.88.1 | SDK 58 pin |
+| react / react-dom | 19.3.0 | SDK 58 pin |
+| expo-router | ~58.0.30 | file-based routing |
+| react-native-reanimated | 4.7.1 | SDK 58 bundles v4 (see note below) |
+| react-native-worklets | 0.13.0 | worklet runtime + Babel plugin for Reanimated v4 |
+| react-native-gesture-handler | ~3.3.0 | hook API (`usePanGesture` and friends); the `Gesture` builder is deprecated |
 | @gorhom/bottom-sheet | ^5.2.14 | works with Reanimated v4 |
-| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 54) |
-| react-native-svg | 15.12.1 | teardrop pins, avatars |
-| react-native-safe-area-context | ~5.6.0 | |
+| @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 58) |
+| react-native-svg | 15.16.0 | teardrop pins, avatars |
+| react-native-safe-area-context | ~5.11.1 | |
 | react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
 | react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro); see "Pinned library majors" |
 | @tanstack/react-query / zustand | ^5 / ^5 | data + state |
 
 ### Reanimated v4
 
-Expo SDK 54 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
+Expo SDK 58 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
 `react-native-worklets` package, so `babel.config.js` uses `react-native-worklets/plugin` (last in the
-plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 54 (RN 0.81,
-new architecture) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
+plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 58 (RN 0.88,
+new architecture only) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
 
 ## Building (REQUIRES a dev client - not Expo Go)
 
@@ -83,10 +83,10 @@ CIVFIX_APP_VARIANT=development pnpm start --scheme civfix-dev
 ```
 
 Google and Apple sign-in, civfix.org universal links and push are not supported in it (their
-credentials and the site's app association are tied to `org.civfix.community`); sign in with email. A
-store iOS prebuild after a dev one rewrites the bundle ID, name, schemes, keychain group and icon, so
-nothing of the variant reaches an archive. Android adds URL schemes without removing old ones, so
-prebuild with `--clean` before a Play build if you ever prebuilt the dev variant for Android.
+credentials and the site's app association are tied to `org.civfix.community`); sign in with email.
+Every prebuild deletes `ios/` or `android/` and regenerates it, so a store prebuild after a dev one
+carries nothing of the variant (bundle ID, name, schemes, keychain group, icon) into an archive or a
+Play build.
 
 App Store and TestFlight builds share `org.civfix.community`, so those two still replace each other:
 Apple installs a TestFlight build over the store app by design.
@@ -270,7 +270,7 @@ Google Cloud service account that Play Console has granted release rights on thi
 
 Signing reads the upload keystore through `scripts/android-release-patches.sh` (`CIVFIX_KEYSTORE_FILE`,
 `CIVFIX_KEYSTORE_PASSWORD_FILE`, `CIVFIX_KEY_ALIAS`; the SDK from `CIVFIX_ANDROID_SDK_DIR`, else
-`ANDROID_HOME` or `ANDROID_SDK_ROOT`, else the Homebrew cask). Gradle 8.14.3 needs a JDK from 17 to 24 (the default Temurin 25 is refused), e.g.
+`ANDROID_HOME` or `ANDROID_SDK_ROOT`, else the Homebrew cask). Gradle 9.4.1 runs on a JDK from 17 to 26, e.g.
 `export JAVA_HOME=$(/usr/libexec/java_home -v 22)` on a Mac.
 
 ### Launch screen assets are baked at prebuild
@@ -296,10 +296,10 @@ npx expo prebuild --platform ios --clean --no-install
 (cd ios && pod install)
 ```
 
-`scripts/prep-archive.sh` runs a (non-`--clean`) prebuild + `pod install`, so a prep'd archive picks
-the change up; a hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not.
-Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
-place: it is the only way to be sure no earlier generated file survives.
+`scripts/prep-archive.sh` runs a prebuild + `pod install`, so a prep'd archive picks the change up; a
+hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not. Every prebuild
+regenerates the native project from scratch, so no earlier generated file survives one; the script
+carries the machine-local `ios/.xcode.env.local` and `android/local.properties` across it.
 
 The launch screen is light-only, by product decision (2026-09-14): the static native screen and the
 JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
@@ -451,10 +451,9 @@ Three manual generators produce the committed images (run from `apps/community-m
 
 ## pnpm + Expo + the shared packages
 
-- `nodeLinker: hoisted` in `pnpm-workspace.yaml`, repeated as a guard in `.npmrc` (root and this
-  app's mirror), makes the store a flat
-  `node_modules` layout - Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still
-  scoped to the private registry (`@civfix:registry=https://repo.civfix.org/`), which is where
+- `nodeLinker: hoisted` in `pnpm-workspace.yaml` makes the store a flat `node_modules` layout -
+  Metro/RN do not handle pnpm's nested symlink store well. `@civfix` is still scoped to the private
+  registry (`@civfix:registry=https://repo.civfix.org/`), which is where
   `@civfix/contract` comes from; `@civfix/tokens` and `@civfix/ui` resolve from the workspace.
 - `@civfix/contract` is a registry dependency (caret range) shipped as a built `dist`. Metro resolves
   its subpath imports (`@civfix/contract/client`, `/geocode`, ...) through its `exports`
@@ -470,7 +469,7 @@ Three manual generators produce the committed images (run from `apps/community-m
 - `metro.config.js` is plain `getDefaultConfig(__dirname)` from `expo/metro-config`. Expo's default
   config already discovers the pnpm workspace root (watch folders + `nodeModulesPaths`) and enables
   package exports, so no custom monorepo wiring is needed.
-- `eas.json` pins `"pnpm": "10.34.9"` on the build profiles so EAS installs with the same package
+- `eas.json` pins `"pnpm": "12.16.1"` on the build profiles so EAS installs with the same package
   manager as `packageManager` at the workspace root.
 
 Contract changes are made in `civfix-contract` and published there; this app picks one up only

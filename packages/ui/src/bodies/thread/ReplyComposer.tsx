@@ -24,9 +24,9 @@ import {
   Pressable,
   StyleSheet,
   View,
-  type View as NativeView,
   type LayoutChangeEvent,
   type TextInputKeyPressEvent,
+  type ViewInstance,
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
@@ -151,7 +151,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
   const [attachAnchor, setAttachAnchor] = React.useState<AnchorRect | null>(null)
   const [chromeTop, setChromeTop] = React.useState<number | null>(null)
   const [chromeBottom, setChromeBottom] = React.useState<number | null>(null)
-  const plusRef = React.useRef<NativeView | null>(null)
+  const plusRef = React.useRef<ViewInstance | null>(null)
   /** Set SYNCHRONOUSLY at the top of `send`: React state is async and a fast double-tap outruns it. */
   const submittingRef = React.useRef(false)
 
@@ -530,7 +530,7 @@ function ReplyToolsRow({
   pending,
   onSend,
 }: {
-  plusRef: React.RefObject<NativeView | null>
+  plusRef: React.RefObject<ViewInstance | null>
   canAttach: boolean
   onAttach: () => void
   remaining: number
