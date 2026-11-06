@@ -189,13 +189,6 @@
       env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   }
 
-  @media (pointer: coarse) {
-    .cf-shell input,
-    .cf-shell textarea {
-      font-size: var(--ios-focus-zoom-floor);
-    }
-  }
-
   /* Skip link (WCAG 2.4.1): off-screen until it receives focus, so pointer users never see it. */
   .cf-skip-link {
     position: absolute;
@@ -765,5 +758,15 @@
   }
   .dark .auth-method.apple:hover {
     background: var(--ink-2);
+  }
+}
+
+/* Outside the layer on purpose: react-native-web's TextInput styles are unlayered, so inside
+   @layer utilities this floor would lose to a field's own smaller font size and iOS Safari would zoom
+   the page when the field takes focus. */
+@media (pointer: coarse) {
+  .cf-shell input,
+  .cf-shell textarea {
+    font-size: var(--ios-focus-zoom-floor);
   }
 }

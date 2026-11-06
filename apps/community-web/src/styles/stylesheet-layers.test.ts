@@ -12,6 +12,9 @@ const require = createRequire(import.meta.url)
 /** Tailwind's own reset and the @font-face list hold no rule that competes with a utility. */
 const EXEMPT = new Set(["app/globals.css", "styles/contract-fonts.css"])
 
+/** design.css's iOS focus-zoom floor has to beat react-native-web's unlayered TextInput styles. */
+const UNLAYERED_ON_PURPOSE = new Set(["styles/design.css: @media (pointer: coarse)"])
+
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name)
@@ -93,8 +96,15 @@ describe("every stylesheet the app imports sits in Tailwind's layers", () => {
   })
 
   it("T20: each holds all of its rules in one @layer utilities block", () => {
-    const offenders = sheets.filter((sheet) => !EXEMPT.has(sheet)).flatMap(unlayered)
+    const offenders = sheets
+      .filter((sheet) => !EXEMPT.has(sheet))
+      .flatMap(unlayered)
+      .filter((offender) => !UNLAYERED_ON_PURPOSE.has(offender))
     expect(offenders).toEqual([])
+  })
+
+  it("T20: the iOS focus-zoom floor stays outside the layers", () => {
+    expect(unlayered("styles/design.css")).toEqual([...UNLAYERED_ON_PURPOSE])
   })
 
   it("T20: maplibre-gl.css is imported into the base layer", () => {
