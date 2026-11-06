@@ -166,10 +166,24 @@ jobs:
           printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.keystore"
           printf '%s' "$ANDROID_UPLOAD_KEYSTORE_PASSWORD" > "$RUNNER_TEMP/upload.keystore.password"
 
+      # The free runner has 16 GB. Gradle (6 GB), the Kotlin daemon (4 GB) and one C++ compile per core
+      # in every native module building at once outgrow it: since Expo SDK 58, GitHub stopped the runner
+      # at the same native step on every attempt. Swap absorbs a peak instead of losing the runner.
+      - name: Add swap for the native builds
+        run: |
+          set -euo pipefail
+          sudo fallocate -l 12G /mnt/civfix.swap
+          sudo chmod 600 /mnt/civfix.swap
+          sudo mkswap /mnt/civfix.swap >/dev/null
+          sudo swapon /mnt/civfix.swap
+          free -m
+
       - name: Build the aab
         working-directory: apps/community-mobile
         env:
           CI: "true"
+          # Two Gradle workers keep at most two native modules compiling at once, within the runner's memory.
+          CIVFIX_GRADLE_MAX_WORKERS: "2"
           CIVFIX_KEYSTORE_FILE: ${{ runner.temp }}/upload.keystore
           CIVFIX_KEYSTORE_PASSWORD_FILE: ${{ runner.temp }}/upload.keystore.password
           CIVFIX_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS || 'civfix-upload' }}

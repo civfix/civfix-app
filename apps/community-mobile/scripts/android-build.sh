@@ -86,7 +86,7 @@ npx expo prebuild --platform android --no-install
 scripts/android-release-patches.sh
 
 echo "Building the release bundle (version code ${CIVFIX_ANDROID_VERSION_CODE})..."
-(cd android && ./gradlew --no-daemon :app:bundleRelease)
+(cd android && ./gradlew --no-daemon ${CIVFIX_GRADLE_MAX_WORKERS:+--max-workers="$CIVFIX_GRADLE_MAX_WORKERS"} :app:bundleRelease)
 mkdir -p "$(dirname "$aab")"
 cp android/app/build/outputs/bundle/release/app-release.aab "$aab"
 
