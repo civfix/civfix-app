@@ -1,9 +1,9 @@
 import { useCallback } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme } from "../theme"
-import { Avatar, UnreadDot } from "../primitives"
+import { Avatar } from "../primitives"
 import { Icon, iconMap } from "../typography"
-import { useAuthState, useHasUnreadNotifications, useRequireAuth } from "../data"
+import { useAuthState, useRequireAuth } from "../data"
 import { useNavStore } from "../nav"
 import { headerAuthAffordance } from "../shell/headerAuthAffordance"
 import { useT } from "../i18n"
@@ -27,8 +27,6 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
   const { user, isAuthenticated, isPending } = useAuthState()
   const requireAuth = useRequireAuth()
   const layout = useLayoutMode()
-  const unread = useHasUnreadNotifications()
-  const { t: tn } = useT("notifications")
 
   const openProfile = useCallback(() => useNavStore.getState().push({ kind: "profile" }), [])
   const signIn = useCallback(
@@ -68,11 +66,7 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
     <View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={
-          unread
-            ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
-            : t("a11y.open_profile")
-        }
+        accessibilityLabel={t("a11y.open_profile")}
         onPress={openProfile}
         {...focusRingProps}
         style={({ pressed }) => [
@@ -87,7 +81,6 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
           avatar
         )}
       </Pressable>
-      {unread ? <UnreadDot /> : null}
     </View>
   )
 }
