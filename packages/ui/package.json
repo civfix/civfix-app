@@ -151,7 +151,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "0.72.0-b-feat-notification-actor.g5365d83",
+    "@civfix/contract": "^0.72.0",
     "@civfix/tokens": "workspace:*",
     "i18next": "^26.6.0",
     "qrcode-generator": "^2.0.4",

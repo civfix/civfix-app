@@ -18,7 +18,7 @@
     "clean": "rimraf .next out *.tsbuildinfo"
   },
   "dependencies": {
-    "@civfix/contract": "0.72.0-b-feat-notification-actor.g5365d83",
+    "@civfix/contract": "^0.72.0",
     "@civfix/tokens": "workspace:*",
     "@civfix/ui": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
