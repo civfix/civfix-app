@@ -8,7 +8,7 @@ export function SeasonHat({ width }: { width: number }) {
   const hat = seasonLook?.hat?.[scheme]
   if (!hat) return null
   return (
-    <Svg width={width} height={width * 0.8} viewBox="0 0 40 32" accessibilityElementsHidden>
+    <Svg width={width} height={width * 0.8} viewBox="0 0 40 32">
       <Path d="M5 24 C8 11 18 2 31 5 C34 6 36.5 9 37 13 C31 9.5 25 12 23 24 Z" fill={hat.felt} />
       <Rect
         x={2}

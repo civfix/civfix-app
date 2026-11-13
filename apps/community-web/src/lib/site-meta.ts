@@ -1,3 +1,5 @@
+import { ACTIVE_SEASON, type SeasonName } from "@civfix/tokens"
+
 export const SITE_NAME = "civfix"
 export const PRODUCTION_SITE_URL = "https://civfix.org"
 export const STAGING_SITE_URL = "https://civfix.dev"
@@ -12,7 +14,12 @@ export const BRAND_IMAGE_WIDTH = 1200
 export const BRAND_IMAGE_HEIGHT = 630
 export const BRAND_IMAGE_TYPE = "image/png"
 
-export const ICON_PATH = "/favicon.svg"
+const SEASON_ICON_PATH: Readonly<Record<SeasonName, string>> = {
+  none: "/favicon.svg",
+  christmas: "/favicon-christmas.svg",
+}
+
+export const ICON_PATH = SEASON_ICON_PATH[ACTIVE_SEASON]
 export const ICON_TYPE = "image/svg+xml"
 export const APPLE_TOUCH_ICON_PATH = "/apple-touch-icon.png"
 const APPLE_TOUCH_ICON_SIZE = 180
