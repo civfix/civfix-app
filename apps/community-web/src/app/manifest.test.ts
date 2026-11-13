@@ -22,4 +22,17 @@ describe("the web app manifest", () => {
     expect(sources.length).toBeGreaterThan(0)
     for (const src of sources) expect([ICON_PATH, APPLE_TOUCH_ICON_PATH]).toContain(src)
   })
+
+  it("T11: leads with the christmas favicon and keeps the apple-touch icon", () => {
+    expect(value.icons?.[0]).toEqual({
+      src: "/favicon-christmas.svg",
+      sizes: "any",
+      type: "image/svg+xml",
+    })
+    expect(value.icons?.[1]).toEqual({
+      src: "/apple-touch-icon.png",
+      sizes: "180x180",
+      type: "image/png",
+    })
+  })
 })
