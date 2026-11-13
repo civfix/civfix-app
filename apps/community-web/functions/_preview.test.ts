@@ -672,7 +672,6 @@ describe("preview head on the staging host", () => {
       '<meta name="twitter:image" content="https://civfix.dev/og.png">',
       `<meta name="twitter:image:alt" content="${title}">`,
       `<link rel="canonical" href="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
-      '<link rel="icon" href="https://civfix.dev/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png" sizes="180x180">',
     ]) {
       expect(html).toContain(tag)
@@ -710,13 +709,54 @@ describe("preview head on the staging host", () => {
 })
 
 describe("head links the rewriter owns", () => {
-  it("replaces the shell's canonical and icon links and leaves the rest alone", () => {
-    for (const rel of ["canonical", "icon", "apple-touch-icon"]) {
+  it("replaces the shell's canonical and apple-touch-icon links and leaves the rest alone", () => {
+    for (const rel of ["canonical", "apple-touch-icon"]) {
       expect(isManagedLink(rel)).toBe(true)
     }
-    for (const rel of ["stylesheet", "preload", "manifest"]) {
+    for (const rel of ["icon", "stylesheet", "preload", "manifest"]) {
       expect(isManagedLink(rel)).toBe(false)
     }
+  })
+})
+
+describe("a shared link keeps the shell's tab icon", () => {
+  const EVENT_ID = "3c1e0b6a-7b5f-4a41-9d2e-0f7a1c3b5d90"
+  const ICON = '<link rel="icon" href="/favicon-christmas.svg" type="image/svg+xml">'
+  const SEASON_SHELL = `<html><head><title>civfix</title>${ICON}</head><body></body></html>`
+
+  it("T15: serves the seasonal icon link once, unchanged, beside the links the rewriter owns", async () => {
+    const h = harness({
+      url: `https://civfix.dev/cleanups/${EVENT_ID}`,
+      path: [EVENT_ID],
+      upstream: async () =>
+        new Response(
+          JSON.stringify({
+            id: EVENT_ID,
+            title: "Ballona Creek cleanup",
+            scheduledAt: "2026-09-12T17:00:00.000Z",
+            status: "upcoming",
+          }),
+          { status: 200 },
+        ),
+    })
+    h.assets.mockImplementation(
+      async () =>
+        new Response(SEASON_SHELL, { status: 200, headers: { "Content-Type": "text/html" } }),
+    )
+    // As rewriteShell does: drop the shell links the preview manages, then append its own head.
+    const rewrite = (shell: Response, preview: LinkPreview) => {
+      const html = SEASON_SHELL.replace(/<link rel="([^"]*)"[^>]*>/g, (tag, rel: string) =>
+        isManagedLink(rel) ? "" : tag,
+      ).replace("</head>", `${metaTagsHtml(preview)}</head>`)
+      return new Response(html, { status: shell.status, headers: shell.headers })
+    }
+    const html = await (await runPreview(h.context, "event", { rewrite })).text()
+    expect(html.split(ICON)).toHaveLength(2)
+    expect(html).not.toContain("https://civfix.dev/favicon.svg")
+    expect(html).toContain(`<link rel="canonical" href="https://civfix.dev/cleanups/${EVENT_ID}">`)
+    expect(html).toContain(
+      '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png" sizes="180x180">',
+    )
   })
 })
 

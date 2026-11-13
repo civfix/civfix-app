@@ -5,6 +5,7 @@ import type { ColorSchemeName } from "@civfix/tokens"
 import { beforeAll, describe, expect, it } from "vitest"
 import type { CompiledCss } from "./compiled-css"
 import { compileGlobals, resolvedDecl } from "./compiled-css"
+import { seasonLook } from "@civfix/ui/theme/season"
 
 const CSS = readFileSync(new URL("./design.css", import.meta.url), "utf8")
 const GLOBALS = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
@@ -312,4 +313,76 @@ describe("the shadcn theme and the ported handoff palette never share a variable
     const shared = [...rootNames(GLOBALS)].filter((name) => rootNames(CSS).has(name))
     expect(shared).toEqual([])
   })
+})
+
+type Season = "none" | "christmas"
+
+function ruleBodies(selector: string): string[] {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return [...CSS.matchAll(new RegExp(`(?:^|\\n)\\s*${escaped}\\s*\\{([^}]*)\\}`, "g"))].map(
+    (m) => m[1] ?? "",
+  )
+}
+
+/** The custom properties :root ends up with, applied in the order the cascade ranks the blocks. */
+function rootVars(scheme: ColorSchemeName, season: Season): Map<string, string> {
+  const selectors = [":root", ...(scheme === "dark" ? [":root.dark"] : [])]
+  if (season !== "none") {
+    selectors.push(`:root[data-season="${season}"]`)
+    if (scheme === "dark") selectors.push(`:root.dark[data-season="${season}"]`)
+  }
+  const vars = new Map<string, string>()
+  for (const selector of selectors) {
+    for (const body of ruleBodies(selector)) {
+      for (const m of body.matchAll(/(--[a-z0-9-]+):\s*([^;]+);/g)) {
+        vars.set(m[1] as string, (m[2] as string).trim())
+      }
+    }
+  }
+  return vars
+}
+
+function resolveValue(value: string, vars: Map<string, string>): string {
+  const ref = /^var\(\s*(--[a-z0-9-]+)\s*(?:,\s*([\s\S]*))?\)$/i.exec(value.trim())
+  if (!ref) return value.trim().toUpperCase()
+  const name = ref[1] as string
+  const own = vars.get(name)
+  if (own !== undefined) return resolveValue(own, vars)
+  expect(ref[2], `${name} is unset and has no fallback`).toBeDefined()
+  return resolveValue(ref[2] ?? "", vars)
+}
+
+describe("design.css season blocks", () => {
+  for (const scheme of ["light", "dark"] as const) {
+    it(`T12: the ${scheme} christmas logo and hat variables resolve to seasonLook`, () => {
+      const look = seasonLook("christmas")
+      expect(look).not.toBeNull()
+      const vars = rootVars(scheme, "christmas")
+      const letters = look?.wordmark[scheme] ?? []
+      expect(letters).toHaveLength(6)
+      letters.forEach((hex, i) => {
+        expect(resolveValue(`var(--logo-${i + 1})`, vars), `--logo-${i + 1}`).toBe(
+          hex.toUpperCase(),
+        )
+      })
+      const hat = look?.hat?.[scheme]
+      expect(hat).toBeDefined()
+      expect(resolveValue("var(--hat-felt)", vars)).toBe(hat?.felt.toUpperCase())
+      expect(resolveValue("var(--hat-trim)", vars)).toBe(hat?.trim.toUpperCase())
+      expect(resolveValue("var(--hat-edge)", vars)).toBe(hat?.edge.toUpperCase())
+    })
+
+    it(`T13: with no season the ${scheme} letters keep today's colors`, () => {
+      const vars = rootVars(scheme, "none")
+      const today = ["bloom", "sun-600", "moss", "sky", "lilac", "bloom"]
+      today.forEach((name, i) => {
+        const [body] = ruleBodies(`.cf-logo .s${i + 1}`)
+        const color = /(?:^|[\s;])color:\s*([^;]+);/.exec(body ?? "")?.[1]
+        expect(color, `.s${i + 1} color`).toBeDefined()
+        const expected = resolveValue(`var(--${name})`, vars)
+        expect(expected).toMatch(/^#[0-9A-F]{6}$/)
+        expect(resolveValue(color ?? "", vars), `.s${i + 1}`).toBe(expected)
+      })
+    })
+  }
 })

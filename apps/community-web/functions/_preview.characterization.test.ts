@@ -371,7 +371,7 @@ describe("hostile entity content through the real rewriter", () => {
     expect(parseAppendedHead(html).meta.get("description")).toContain("&amp; é 🌮 end")
   })
 
-  it("strips the shell's managed meta and links and leaves charset, viewport, stylesheet and manifest", async () => {
+  it("strips the shell's managed meta and links and leaves charset, viewport, icon, stylesheet and manifest", async () => {
     const { id, payload } = HOSTILE_PAYLOADS.report
     const run = setup({
       url: `https://civfix.org/pin/${id}`,
@@ -384,18 +384,11 @@ describe("hostile entity content through the real rewriter", () => {
     const removed = record.elements
       .filter((element) => element.removed)
       .map((element) => element.attrs.name ?? element.attrs.property ?? element.attrs.rel)
-    expect(removed).toEqual([
-      "description",
-      "og:title",
-      "twitter:card",
-      "robots",
-      "canonical",
-      "shortcut icon",
-    ])
+    expect(removed).toEqual(["description", "og:title", "twitter:card", "robots", "canonical"])
     const kept = record.elements
       .filter((element) => !element.removed && element.tag !== "title" && element.tag !== "head")
       .map((element) => element.attrs.name ?? element.attrs.rel ?? Object.keys(element.attrs)[0])
-    expect(kept).toEqual(["charset", "viewport", "stylesheet", "manifest"])
+    expect(kept).toEqual(["charset", "viewport", "shortcut icon", "stylesheet", "manifest"])
   })
 })
 

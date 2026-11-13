@@ -1,5 +1,6 @@
 export { Brand } from "./Brand"
 export type { BrandProps } from "./Brand"
+export { SeasonHat } from "./SeasonHat"
 
 export { PrimaryButton } from "./PrimaryButton"
 export type { PrimaryButtonProps, ButtonVariant } from "./PrimaryButton"

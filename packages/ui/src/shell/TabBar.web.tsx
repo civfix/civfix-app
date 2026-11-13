@@ -16,6 +16,7 @@ import {
   BarGlass,
   useTabBarStyles,
 } from "./TabBar.shared"
+import { SeasonGarland } from "../primitives/SeasonGarland"
 import { prefersReducedMotion } from "./webMedia"
 
 export function TabBar() {
@@ -78,6 +79,7 @@ export function TabBar() {
         </View>
       </View>
       <SearchOrb active={searchActive} onPress={onSearch} />
+      <SeasonGarland width={barW} style={styles.garland} />
     </View>
   )
 }

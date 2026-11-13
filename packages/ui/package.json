@@ -26,6 +26,11 @@
       "react-native": "./src/theme/schemes.ts",
       "default": "./src/theme/schemes.ts"
     },
+    "./theme/season": {
+      "types": "./dist-types/theme/season.d.ts",
+      "react-native": "./src/theme/season.ts",
+      "default": "./src/theme/season.ts"
+    },
     "./typography": {
       "types": "./dist-types/typography/index.d.ts",
       "react-native": "./src/typography/index.ts",

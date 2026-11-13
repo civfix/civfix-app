@@ -15,6 +15,7 @@ import {
 import { Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
 import { Brand, openBrandAbout } from "../primitives"
+import { SeasonGarland } from "../primitives/SeasonGarland"
 import { useT } from "../i18n"
 import { useNavStore } from "../nav"
 import { TABS, useTabBarModel, type TabDef } from "./TabBar.shared"
@@ -127,16 +128,19 @@ export function Rail({ topInset }: { topInset: number }) {
           <Brand size={BRAND_SIZE} />
         </Pressable>
 
-        <View
-          style={[styles.capsule, shadow]}
-          accessibilityRole="tablist"
-          {...({ "aria-orientation": "horizontal" } as object)}
-        >
-          <BlurSurface kind="dock" style={[StyleSheet.absoluteFill, styles.noPointer]} />
-          <View style={[styles.lozenge, lozengeStyle, styles.noPointer]} />
-          {TABS.map((tab, i) => (
-            <RailTab key={tab.id} tab={tab} selected={i === index} onPress={() => onTab(tab)} />
-          ))}
+        <View>
+          <View
+            style={[styles.capsule, shadow]}
+            accessibilityRole="tablist"
+            {...({ "aria-orientation": "horizontal" } as object)}
+          >
+            <BlurSurface kind="dock" style={[StyleSheet.absoluteFill, styles.noPointer]} />
+            <View style={[styles.lozenge, lozengeStyle, styles.noPointer]} />
+            {TABS.map((tab, i) => (
+              <RailTab key={tab.id} tab={tab} selected={i === index} onPress={() => onTab(tab)} />
+            ))}
+          </View>
+          <SeasonGarland width={RAIL_CAPSULE_W} style={styles.garland} />
         </View>
 
         <Pressable
@@ -248,6 +252,11 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
+  },
+  garland: {
+    position: "absolute",
+    left: 0,
+    top: -t.space["1"],
   },
   capsule: {
     width: RAIL_CAPSULE_W,

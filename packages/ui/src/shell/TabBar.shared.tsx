@@ -178,6 +178,11 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     height: "100%",
   },
+  garland: {
+    position: "absolute",
+    top: t.space["2"] - t.space["1"],
+    left: t.space["4"],
+  },
   tab: {
     flex: 1,
     alignItems: "center",

@@ -653,7 +653,6 @@ describe("metaTagsHtml", () => {
       '<meta name="twitter:image" content="https://civfix.org/og.png">',
       '<meta name="twitter:image:alt" content="Ada (@ada) on civfix">',
       '<link rel="canonical" href="https://civfix.org/pin/abc">',
-      '<link rel="icon" href="https://civfix.org/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.org/apple-touch-icon.png" sizes="180x180">',
     ]) {
       expect(html).toContain(tag)
@@ -673,11 +672,11 @@ describe("metaTagsHtml", () => {
     )
     expect(html).toContain('<meta name="twitter:image" content="https://civfix.dev/og.png">')
     expect(html).toContain('<link rel="canonical" href="https://civfix.dev/people/ada-id">')
-    expect(html).toContain('<link rel="icon" href="https://civfix.dev/favicon.svg"')
     expect(html).toContain(
       '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png"',
     )
     expect(html).not.toContain("civfix.org")
+    expect(html).not.toContain('rel="icon"')
   })
 
   it("emits a summary card for an avatar and omits the brand dimensions and type", () => {
@@ -794,16 +793,13 @@ describe("documentTitle", () => {
 
 describe("isManagedLink", () => {
   it("owns exactly the head links the preview replaces", () => {
-    for (const rel of [
-      "canonical",
-      "icon",
-      "Apple-Touch-Icon",
-      " shortcut icon ",
-      "icon shortcut",
-    ]) {
+    for (const rel of ["canonical", "Apple-Touch-Icon", " apple-touch-icon-precomposed "]) {
       expect(isManagedLink(rel)).toBe(true)
     }
     for (const rel of [
+      "icon",
+      " shortcut icon ",
+      "icon shortcut",
       "stylesheet",
       "preload",
       "modulepreload",
@@ -814,6 +810,15 @@ describe("isManagedLink", () => {
     ]) {
       expect(isManagedLink(rel)).toBe(false)
     }
+  })
+})
+
+describe("the tab icon is the shell's", () => {
+  it("T14: leaves icon links to the page and still owns canonical and apple-touch-icon", () => {
+    expect(isManagedLink("icon")).toBe(false)
+    expect(isManagedLink("shortcut icon")).toBe(false)
+    expect(isManagedLink("canonical")).toBe(true)
+    expect(isManagedLink("apple-touch-icon")).toBe(true)
   })
 })
 

@@ -17,8 +17,6 @@ import {
   BRAND_IMAGE_WIDTH,
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
-  ICON_PATH,
-  ICON_TYPE,
   SITE_LOCALE,
   SITE_NAME,
 } from "./site-meta"
@@ -486,14 +484,13 @@ const MANAGED_META_PROPERTIES: readonly string[] = [
   "og:image:alt",
 ]
 
+// No "icon": the shell's own tab icon follows the season switch, and client-side navigation never
+// reloads the head, so a preview that replaced it would keep a shared link's visitor on the wrong icon.
 const MANAGED_LINK_RELS: readonly string[] = [
   "canonical",
-  "icon",
   "apple-touch-icon",
   "apple-touch-icon-precomposed",
 ]
-
-const MANAGED_LINK_MODIFIERS: readonly string[] = ["shortcut"]
 
 export function isManagedMeta(
   name: string | null | undefined,
@@ -509,11 +506,7 @@ export function isManagedMeta(
 
 export function isManagedLink(rel: string | null | undefined): boolean {
   const tokens = rel ? oneLine(rel).toLowerCase().split(" ").filter(Boolean) : []
-  if (tokens.length === 0) return false
-  if (!tokens.some((token) => MANAGED_LINK_RELS.includes(token))) return false
-  return tokens.every(
-    (token) => MANAGED_LINK_RELS.includes(token) || MANAGED_LINK_MODIFIERS.includes(token),
-  )
+  return tokens.length > 0 && tokens.every((token) => MANAGED_LINK_RELS.includes(token))
 }
 
 export function documentTitle(preview: LinkPreview): string {
@@ -572,7 +565,6 @@ export function metaTagsHtml(preview: LinkPreview): string {
     meta("name", "twitter:image", preview.image),
     meta("name", "twitter:image:alt", preview.title),
     link("canonical", preview.url),
-    link("icon", `${preview.origin}${ICON_PATH}`, { type: ICON_TYPE }),
     link("apple-touch-icon", `${preview.origin}${APPLE_TOUCH_ICON_PATH}`, {
       sizes: APPLE_TOUCH_ICON_SIZES,
     }),
