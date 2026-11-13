@@ -672,7 +672,6 @@ describe("preview head on the staging host", () => {
       '<meta name="twitter:image" content="https://civfix.dev/og.png">',
       `<meta name="twitter:image:alt" content="${title}">`,
       `<link rel="canonical" href="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
-      '<link rel="icon" href="https://civfix.dev/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png" sizes="180x180">',
     ]) {
       expect(html).toContain(tag)
@@ -710,11 +709,11 @@ describe("preview head on the staging host", () => {
 })
 
 describe("head links the rewriter owns", () => {
-  it("replaces the shell's canonical and icon links and leaves the rest alone", () => {
-    for (const rel of ["canonical", "icon", "apple-touch-icon"]) {
+  it("replaces the shell's canonical and apple-touch-icon links and leaves the rest alone", () => {
+    for (const rel of ["canonical", "apple-touch-icon"]) {
       expect(isManagedLink(rel)).toBe(true)
     }
-    for (const rel of ["stylesheet", "preload", "manifest"]) {
+    for (const rel of ["icon", "stylesheet", "preload", "manifest"]) {
       expect(isManagedLink(rel)).toBe(false)
     }
   })
