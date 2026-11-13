@@ -54,28 +54,22 @@ const MESSAGE_HEIGHT = 30
 const MESSAGE_HIT_SLOP = hitSlopToTarget(MESSAGE_HEIGHT)
 
 /**
- * A new follower's action. An actor the viewer follows offers Message; otherwise Follow back, which reads
- * Following once tapped. Once the reader follows or unfollows from the row, it stays that toggle for the rest
- * of the visit, even after a refetch reports the follow, so the button never turns into Message under them.
+ * A new follower's action. An actor the viewer followed when the row was first shown offers Message; otherwise
+ * Follow back, which reads Following once tapped. The cached row records the follow, so the next visit offers
+ * Message, but this visit keeps the toggle, so the button never turns into Message under the reader's finger.
  */
 function FollowerAction({
   actor,
-  followedThisVisit,
-  onFollowChange,
+  followedWhenShown,
   onMessage,
 }: {
   actor: NotificationActorDTO
-  followedThisVisit: boolean | undefined
-  onFollowChange: (actorId: string, following: boolean) => void
+  followedWhenShown: boolean | undefined
   onMessage: (actor: NotificationActorDTO) => void
 }) {
   const styles = useStyles()
   const { t } = useT("notifications")
-  const followChange = useCallback(
-    (following: boolean) => onFollowChange(actor.id, following),
-    [onFollowChange, actor.id],
-  )
-  if (actor.isFollowing && followedThisVisit === undefined) {
+  if (actor.isFollowing && followedWhenShown !== false) {
     return (
       <Pressable
         onPress={() => onMessage(actor)}
@@ -97,11 +91,10 @@ function FollowerAction({
   return (
     <FollowButton
       personId={actor.id}
-      isFollowing={followedThisVisit ?? actor.isFollowing}
+      isFollowing={actor.isFollowing}
       nextPath={personPath(actor)}
       size="sm"
       idleLabel={t("row.follow_back")}
-      onFollowChange={followChange}
     />
   )
 }
@@ -156,16 +149,14 @@ const NotificationRow = memo(function NotificationRow({
   unread,
   timeAgo,
   onPress,
-  followedThisVisit,
-  onFollowChange,
+  followedWhenShown,
   onMessage,
 }: {
   item: NotificationDTO
   unread: boolean
   timeAgo: (iso: string) => string
   onPress: (item: NotificationDTO) => void
-  followedThisVisit: boolean | undefined
-  onFollowChange: (actorId: string, following: boolean) => void
+  followedWhenShown: boolean | undefined
   onMessage: (actor: NotificationActorDTO) => void
 }) {
   const styles = useStyles()
@@ -231,12 +222,7 @@ const NotificationRow = memo(function NotificationRow({
         </View>
       </Pressable>
       {actor && item.type === "new_follower" ? (
-        <FollowerAction
-          actor={actor}
-          followedThisVisit={followedThisVisit}
-          onFollowChange={onFollowChange}
-          onMessage={onMessage}
-        />
+        <FollowerAction actor={actor} followedWhenShown={followedWhenShown} onMessage={onMessage} />
       ) : null}
     </View>
   )
@@ -276,12 +262,19 @@ export function NotificationsBody() {
     [start],
   )
 
-  // Who the reader followed or unfollowed from a row this visit, so the row keeps its Follow toggle.
-  const [followedThisVisit, setFollowedThisVisit] =
+  // Whether the viewer followed each person when their row was first shown this visit.
+  const [followedWhenShown, setFollowedWhenShown] =
     useState<ReadonlyMap<string, boolean>>(NO_FOLLOWS)
-  const onFollowChange = useCallback((actorId: string, following: boolean) => {
-    setFollowedThisVisit((prev) => new Map(prev).set(actorId, following))
-  }, [])
+  useEffect(() => {
+    const fresh = notifications.filter((n) => n.actor && !followedWhenShown.has(n.actor.id))
+    if (fresh.length === 0) return
+    setFollowedWhenShown((prev) => {
+      const next = new Map(prev)
+      for (const { actor } of fresh)
+        if (actor && !next.has(actor.id)) next.set(actor.id, actor.isFollowing)
+      return next
+    })
+  }, [notifications, followedWhenShown])
 
   const openPrefs = useCallback(() => {
     useNavStore.getState().push({ kind: "notification-prefs" })
@@ -324,12 +317,11 @@ export function NotificationsBody() {
         unread={looksUnread(item)}
         timeAgo={timeAgo}
         onPress={onPressItem}
-        followedThisVisit={item.actor ? followedThisVisit.get(item.actor.id) : undefined}
-        onFollowChange={onFollowChange}
+        followedWhenShown={item.actor ? followedWhenShown.get(item.actor.id) : undefined}
         onMessage={onMessage}
       />
     ),
-    [timeAgo, onPressItem, onFollowChange, onMessage, looksUnread, followedThisVisit],
+    [timeAgo, onPressItem, onMessage, looksUnread, followedWhenShown],
   )
 
   const emptyContent = useMemo(() => {

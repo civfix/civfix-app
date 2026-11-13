@@ -19,6 +19,7 @@ import type {
   SearchUsersResponse,
   HandleAvailableResponse,
   GetLegalDocumentsResponse,
+  NotificationDTO,
   UserDTO,
 } from "@civfix/contract"
 import { isValidHandle } from "@civfix/contract"
@@ -82,6 +83,24 @@ export function patchPersonInConnectionLists(
             ),
           })),
         }
+      : prev,
+  )
+}
+
+/**
+ * The notification center offers Follow back or Message from its cached rows, and that cache is persisted, so a
+ * reload shows the rows without asking the server again: the follow has to land in the cached rows too.
+ */
+export function patchActorInNotificationLists(
+  qc: QueryClient,
+  personId: string,
+  isFollowing: boolean,
+): void {
+  qc.setQueriesData<NotificationDTO[]>({ queryKey: queryKeys.notificationsRoot }, (prev) =>
+    Array.isArray(prev) && prev.some((n) => n.actor?.id === personId)
+      ? prev.map((n) =>
+          n.actor?.id === personId ? { ...n, actor: { ...n.actor, isFollowing } } : n,
+        )
       : prev,
   )
 }
@@ -188,12 +207,15 @@ export function buildFollowMutation(
         followers: nextFollowers,
       })
 
+      patchActorInNotificationLists(qc, id, nextFollowing)
+
       const didNudgeMyFollowing = nudgeMyFollowing(qc, nextFollowing ? 1 : -1)
 
       return { prevFollow, didNudgeMyFollowing }
     },
     onError: (_err, currentlyFollowing, ctx) => {
       if (ctx?.didNudgeMyFollowing) nudgeMyFollowing(qc, currentlyFollowing ? 1 : -1)
+      patchActorInNotificationLists(qc, id, currentlyFollowing)
       const prev = ctx?.prevFollow
       if (!prev) return
       patchProfileCaches(qc, id, prev)
@@ -201,6 +223,7 @@ export function buildFollowMutation(
       patchPersonInConnectionLists(qc, id, prev)
     },
     onSuccess: (res) => {
+      patchActorInNotificationLists(qc, id, res.isFollowing)
       patchProfileCaches(qc, id, { isFollowing: res.isFollowing, followers: res.followers })
       patchPersonInFlatLists(qc, id, { isFollowing: res.isFollowing, followers: res.followers })
       patchPersonInConnectionLists(qc, id, {

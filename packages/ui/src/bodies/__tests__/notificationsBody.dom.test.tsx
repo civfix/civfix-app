@@ -553,6 +553,54 @@ describe("GH#308 notification center: people", () => {
     expect(useNavStore.getState().active).toBeNull()
   })
 
+  it("records a Follow back in the cached list, so a reload from the cache offers Message", async () => {
+    const server: Server = {
+      items: [{ ...follows("n1"), actor: actor("a1", { name: "Ada Actor" }) }],
+      hasUnread: false,
+    }
+    const api = makeApi(server)
+    const page = renderBody(api)
+    fireEvent.click(await screen.findByRole("button", { name: "Follow back" }))
+    await screen.findByRole("button", { name: "Following" })
+    expect(listCache(page.queryClient)?.[0]?.actor?.isFollowing).toBe(true)
+
+    // A reload restores the persisted list and shows it before (or without) asking the server again.
+    api.listNotifications.mockImplementation(() => new Promise(() => {}))
+    page.unmountPage()
+    page.mountPage()
+    expect(await screen.findByRole("button", { name: "Message Ada Actor" })).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Follow back" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Following" })).toBeNull()
+  })
+
+  it("keeps the Following toggle for the visit when a refetch reports the follow", async () => {
+    const server: Server = { items: [{ ...follows("n1"), actor: actor("a1") }], hasUnread: false }
+    const api = makeApi(server)
+    const { queryClient } = renderBody(api)
+    fireEvent.click(await screen.findByRole("button", { name: "Follow back" }))
+    await screen.findByRole("button", { name: "Following" })
+
+    server.items = [{ ...follows("n1"), actor: actor("a1", { isFollowing: true }) }]
+    await act(() => queryClient.invalidateQueries({ queryKey: ["notifications"] }))
+    await flush()
+    expect(api.listNotifications.mock.calls.length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByRole("button", { name: "Following" })).toBeTruthy()
+    expect(screen.queryByRole("button", { name: /^Message/ })).toBeNull()
+  })
+
+  it("puts Follow back and the cached row back when the follow is refused", async () => {
+    const api = makeApi(
+      { items: [{ ...follows("n1"), actor: actor("a1") }], hasUnread: false },
+      { followPerson: vi.fn(async () => Promise.reject(AppError.rateLimited())) },
+    )
+    const { queryClient } = renderBody(api)
+    fireEvent.click(await screen.findByRole("button", { name: "Follow back" }))
+    await waitFor(() => expect(api.followPerson).toHaveBeenCalledTimes(1))
+    await flush()
+    expect(screen.getByRole("button", { name: "Follow back" })).toBeTruthy()
+    expect(listCache(queryClient)?.[0]?.actor?.isFollowing).toBe(false)
+  })
+
   it("offers Message to a new follower the viewer follows, which opens the conversation, not the row's link", async () => {
     const api = makeApi({
       items: [{ ...follows("n1"), actor: actor("a1", { name: "Ada Actor", isFollowing: true }) }],

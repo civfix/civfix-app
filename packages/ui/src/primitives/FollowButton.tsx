@@ -27,7 +27,6 @@ export interface FollowButtonProps {
   style?: StyleProp<ViewStyle>
   /** The label before following, when "Follow" alone undersells it (a new follower's "Follow back"). */
   idleLabel?: string
-  onFollowChange?: (following: boolean) => void
 }
 
 export function FollowButton({
@@ -37,7 +36,6 @@ export function FollowButton({
   size = "md",
   style,
   idleLabel,
-  onFollowChange,
 }: FollowButtonProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -47,11 +45,8 @@ export function FollowButton({
   const { mutate: mutateFollow } = follow
 
   const onPress = useCallback(() => {
-    requireAuth(
-      () => mutateFollow(isFollowing, { onSuccess: () => onFollowChange?.(!isFollowing) }),
-      { next: nextPath },
-    )
-  }, [requireAuth, mutateFollow, isFollowing, nextPath, onFollowChange])
+    requireAuth(() => mutateFollow(isFollowing), { next: nextPath })
+  }, [requireAuth, mutateFollow, isFollowing, nextPath])
   const followLabel = idleLabel ?? t("button.follow")
 
   const compact = size === "sm"
