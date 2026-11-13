@@ -33,8 +33,10 @@ vi.mock("../../primitives", () => ({
 
 vi.mock("../../theme", () => ({
   space: new Proxy({}, { get: () => 0 }),
-  useAppearancePreference: () => "system",
 }))
+
+// The appearance tiles at the top are their own test (settingsAppearanceTiles); only the About rows are under test.
+vi.mock("../AppearanceTiles", () => ({ AppearanceTiles: () => null }))
 
 vi.mock("../../data", () => ({
   useAuthState: () => ({ isAuthenticated: true, isPending: false }),

@@ -26,7 +26,7 @@ const BROWSER_ONLY_ROOTS = new Set([
   "unsubscribe",
 ])
 
-const SETTINGS_CHILDREN = new Set(["account", "privacy", "blocked", "language", "appearance"])
+const SETTINGS_CHILDREN = new Set(["account", "privacy", "blocked", "language"])
 
 const ROOM_KINDS = new Set(["dm", "report", "cleanup", "group"])
 
@@ -203,7 +203,8 @@ function notificationsPathFor(sub: string | undefined): string | null {
 }
 
 function settingsPathFor(child: string | undefined): string | null {
-  if (!child) return "/settings"
+  // Appearance lives at the top of Settings, so a link to its old page opens Settings.
+  if (!child || child === "appearance") return "/settings"
   return SETTINGS_CHILDREN.has(child) ? `/settings/${child}` : null
 }
 

@@ -101,7 +101,7 @@ const RECOGNISED: readonly (readonly [string, string])[] = [
   ["/settings/privacy", "/settings/privacy"],
   ["/settings/blocked", "/settings/blocked"],
   ["/settings/language", "/settings/language"],
-  ["/settings/appearance", "/settings/appearance"],
+  ["/settings/appearance", "/settings"],
   ["/groups/new", "/messages"],
   ["/groups/g1/info", "/groups/g1/info"],
   ["/channels/new", "/messages"],
@@ -241,10 +241,7 @@ test("a scheme link outside the route table goes home, whatever query or hash it
   ]) {
     assert.deepEqual(resolveIncomingPath(raw), home, raw)
   }
-  assert.deepEqual(
-    resolveIncomingPath("civfix://settings/appearance"),
-    internal("/settings/appearance"),
-  )
+  assert.deepEqual(resolveIncomingPath("civfix://settings/appearance"), internal("/settings"))
 })
 
 test("a link hands the compose route none of the composer's reply parameters", () => {
@@ -419,7 +416,6 @@ const ROUND_TRIP: readonly (readonly [Record<string, unknown>, IncomingLink])[] 
   [{ kind: "event-analytics", id: "c1" }, internal("/cleanups/c1/analytics")],
   [{ kind: "host-analytics" }, internal("/host/analytics")],
   [{ kind: "org-manage", slug: "acme" }, internal("/orgs/acme/manage")],
-  [{ kind: "appearance-settings" }, internal("/settings/appearance")],
 ]
 
 for (const [entry, expected] of ROUND_TRIP) {

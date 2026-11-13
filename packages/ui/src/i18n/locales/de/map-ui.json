@@ -24,10 +24,6 @@
     "notifications": "Benachrichtigungen",
     "reset": "Zurücksetzen"
   },
-  "appearance": {
-    "toggle": "Erscheinungsbild",
-    "dismiss": "Erscheinungsbild-Menü schließen"
-  },
   "stack": {
     "events": "Aktionen & Events",
     "messages": "Nachrichten",

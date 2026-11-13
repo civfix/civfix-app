@@ -411,7 +411,7 @@ const LEGITIMATE_LINKS: readonly (readonly [string, string])[] = [
   ["/settings/privacy", "/settings/privacy"],
   ["/settings/blocked", "/settings/blocked"],
   ["/settings/language", "/settings/language"],
-  ["/settings/appearance", "/settings/appearance"],
+  ["/settings/appearance", "/settings"],
   ["/groups/new", "/messages"],
   ["/groups/g1/info", "/groups/g1/info"],
   ["/channels/new", "/messages"],

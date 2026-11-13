@@ -175,6 +175,13 @@ describe("mount", () => {
     expect(nav().view).toBe("report")
   })
 
+  it("opens Settings for a link to the old Appearance page and shows the Settings address", () => {
+    window.history.replaceState(null, "", "/settings/appearance/")
+    mount()
+    expect(nav().stack).toEqual([{ kind: "settings" }])
+    expect(path()).toBe("/settings/")
+  })
+
   it("opens a cold shared post link as its thread and keeps the short address", () => {
     window.history.replaceState(null, "", "/post/p1")
     mount()

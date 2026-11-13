@@ -39,7 +39,6 @@ export type DetailKind =
   | "blocked"
   | "members"
   | "language-settings"
-  | "appearance-settings"
   | "settings"
   | "settings-account"
   | "settings-privacy"
@@ -89,7 +88,6 @@ export const ALL_DETAIL_KINDS = [
   "blocked",
   "members",
   "language-settings",
-  "appearance-settings",
   "settings",
   "settings-account",
   "settings-privacy",
