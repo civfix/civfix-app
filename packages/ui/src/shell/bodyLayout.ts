@@ -35,7 +35,6 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "group-info": "scroll",
   blocked: "scroll",
   "language-settings": "scroll",
-  "appearance-settings": "scroll",
   settings: "scroll",
   "settings-account": "scroll",
   "settings-privacy": "scroll",

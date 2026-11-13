@@ -96,7 +96,6 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     ["settings-privacy", { kind: "settings-privacy" }],
     ["blocked", { kind: "blocked" }],
     ["language-settings", { kind: "language-settings" }],
-    ["appearance-settings", { kind: "appearance-settings" }],
     ["report (view)", { kind: "view", view: "report" }],
     ["post", { kind: "post", id: "post-1" }],
     ["post-thread", { kind: "post-thread", id: "post-1" }],
@@ -189,15 +188,19 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     ).toBe("/messages/x")
   })
 
-  it("keeps the five /settings children apart, and an unknown child resolves to nothing", () => {
+  it("keeps the four /settings children apart, and an unknown child resolves to nothing", () => {
     expect(pathForEntry({ kind: "settings" })).toBe("/settings")
     expect(entryFromPath("/settings")).toEqual({ kind: "settings" })
     expect(entryFromPath("/settings/account")).toEqual({ kind: "settings-account" })
     expect(entryFromPath("/settings/privacy")).toEqual({ kind: "settings-privacy" })
     expect(entryFromPath("/settings/blocked")).toEqual({ kind: "blocked" })
     expect(entryFromPath("/settings/language")).toEqual({ kind: "language-settings" })
-    expect(entryFromPath("/settings/appearance")).toEqual({ kind: "appearance-settings" })
     expect(entryFromPath("/settings/nope")).toBeNull()
+  })
+
+  it("opens Settings for a link to the old Appearance page, whose tiles now head Settings", () => {
+    expect(entryFromPath("/settings/appearance")).toEqual({ kind: "settings" })
+    expect(entryFromPath("/settings/appearance/")).toEqual({ kind: "settings" })
   })
 
   it("titles every settings surface with a real key (a page with no header has no exit)", () => {
@@ -205,7 +208,6 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     expect(titleForEntry({ kind: "settings-account" })).toBe("title.settings_account")
     expect(titleForEntry({ kind: "settings-privacy" })).toBe("title.settings_privacy")
     expect(titleForEntry({ kind: "language-settings" })).toBe("title.language_settings")
-    expect(titleForEntry({ kind: "appearance-settings" })).toBe("title.appearance_settings")
   })
 
   it("maps home both ways", () => {

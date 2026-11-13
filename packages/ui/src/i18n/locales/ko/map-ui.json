@@ -24,10 +24,6 @@
     "notifications": "알림",
     "reset": "초기화"
   },
-  "appearance": {
-    "toggle": "화면 모드",
-    "dismiss": "화면 모드 메뉴 닫기"
-  },
   "stack": {
     "events": "이벤트 및 정화 활동",
     "messages": "메시지",

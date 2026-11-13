@@ -277,15 +277,6 @@ const ROUTES = {
       view: null,
     },
   ],
-  "appearance-settings": [
-    {
-      entry: { kind: "appearance-settings" },
-      path: "/settings/appearance",
-      title: "title.appearance_settings",
-      parentView: null,
-      view: null,
-    },
-  ],
   settings: [
     {
       entry: { kind: "settings" },
@@ -637,6 +628,7 @@ describe("path aliases and fallbacks", () => {
     ["/cleanups/e1/nonsense", { kind: "cleanup", id: "e1" }],
     ["/host/nonsense", { kind: "create-cleanup" }],
     ["/settings/nope", null],
+    ["/settings/appearance", { kind: "settings" }],
     ["/groups", null],
     ["/groups/abc", null],
     ["/groups/new/info", { kind: "new-group" }],

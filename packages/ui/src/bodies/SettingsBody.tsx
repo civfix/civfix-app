@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { View, StyleSheet } from "react-native"
 import type { LegalDocumentType } from "@civfix/contract"
-import { space, useAppearancePreference } from "../theme"
+import { space } from "../theme"
 import { iconMap } from "../typography"
 import {
   SettingsRow,
@@ -21,6 +21,7 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { useLocale, useT, supportedLocales } from "../i18n"
 import { useOnboardingTourPresenter } from "./onboardingTour"
 import { useDeveloperScreenPresenter } from "./developerScreen"
+import { AppearanceTiles } from "./AppearanceTiles"
 
 const SHORT_COMMIT_LENGTH = 7
 
@@ -33,7 +34,6 @@ export function SettingsBody() {
   const openExternal = useOpenExternal()
   const toast = useToast()
   const { locale } = useLocale()
-  const appearance = useAppearancePreference()
   const { t: tAppearance } = useT("appearance-settings")
   const presentTour = useOnboardingTourPresenter()
   const presentDeveloper = useDeveloperScreenPresenter()
@@ -62,7 +62,6 @@ export function SettingsBody() {
   )
 
   const localeName = supportedLocales.find((entry) => entry.code === locale)?.nativeName ?? locale
-  const appearanceName = tAppearance(`option.${appearance}`)
   const signedOut = !isAuthenticated && !isPending
 
   return (
@@ -71,6 +70,10 @@ export function SettingsBody() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      <SettingsSection label={tAppearance("title")} style={styles.appearance}>
+        <AppearanceTiles />
+      </SettingsSection>
+
       {signedOut ? (
         <View style={styles.promptBox}>
           <SignInPrompt
@@ -113,12 +116,6 @@ export function SettingsBody() {
           label={t("language.label")}
           value={localeName}
           onPress={() => pushKind("language-settings")}
-        />
-        <SettingsRow
-          icon="SunMoon"
-          label={t("appearance.label")}
-          value={appearanceName}
-          onPress={() => pushKind("appearance-settings")}
         />
         {presentTour ? (
           <SettingsRow
@@ -173,6 +170,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: space["4"],
     paddingTop: space["2"],
     paddingBottom: space["10"],
+  },
+  appearance: {
+    marginBottom: space["6"],
   },
   promptBox: {
     minHeight: 300,

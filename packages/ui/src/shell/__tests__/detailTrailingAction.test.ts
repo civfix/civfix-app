@@ -39,11 +39,8 @@ function resetCompact(): void {
 beforeEach(resetCompact)
 
 describe("detailTrailingActionFor", () => {
-  it("T1: gives the OWN profile a bell, then the settings gear, both named from the nav namespace", () => {
-    const actions = detailTrailingActionFor({ kind: "profile" })
-    expect(actions).toHaveLength(2)
-    expect(actions).toEqual([
-      { icon: "Bell", a11yKey: "a11y.notifications", push: { kind: "activity" }, unreadDot: true },
+  it("gives the OWN profile only the settings gear, named from the nav namespace; the bell lives on the map", () => {
+    expect(detailTrailingActionFor({ kind: "profile" })).toEqual([
       { icon: "Settings", a11yKey: "a11y.settings", push: { kind: "settings" } },
     ])
   })
@@ -67,19 +64,14 @@ describe("detailTrailingActionFor", () => {
     expect(withActions).toEqual(["profile"])
   })
 
-  it("pushes the notifications page and the settings hub ONTO the profile, so Back returns to it", () => {
-    for (const kind of ["activity", "settings"] as const) {
-      resetCompact()
-      useNavStore.getState().push({ kind: "profile" })
-      const action = detailTrailingActionFor(useNavStore.getState().active).find(
-        (a) => a.push.kind === kind,
-      )
-      expect(action, kind).toBeDefined()
-      useNavStore.getState().push(action!.push)
-      expect(useNavStore.getState().active?.kind).toBe(kind)
-      useNavStore.getState().back()
-      expect(useNavStore.getState().active?.kind).toBe("profile")
-    }
+  it("pushes the settings hub ONTO the profile, so Back returns to it", () => {
+    useNavStore.getState().push({ kind: "profile" })
+    const [action] = detailTrailingActionFor(useNavStore.getState().active)
+    expect(action).toBeDefined()
+    useNavStore.getState().push(action!.push)
+    expect(useNavStore.getState().active?.kind).toBe("settings")
+    useNavStore.getState().back()
+    expect(useNavStore.getState().active?.kind).toBe("profile")
   })
 })
 
@@ -155,7 +147,7 @@ describe("every host that draws a detail header draws the trailing chip", () => 
   })
 })
 
-describe("the bell's and the gear's a11y labels", () => {
+describe("the map bell's and the gear's a11y labels", () => {
   const locale = (lng: string): Record<string, Record<string, string>> =>
     JSON.parse(read(`../../i18n/locales/${lng}/nav.json`)) as Record<string, Record<string, string>>
 

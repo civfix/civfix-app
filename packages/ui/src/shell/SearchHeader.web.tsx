@@ -2,8 +2,7 @@ import { useEffect, useState } from "react"
 import { View, Pressable, TextInput } from "react-native"
 import { focusRingProps, space, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
-import { Avatar, UnreadDot } from "../primitives"
-import { useHasUnreadNotifications } from "../data"
+import { Avatar } from "../primitives"
 import { useT } from "../i18n"
 import type { SearchHeaderProps } from "./SearchHeader.types"
 import { useSearchHeaderStyles } from "./SearchHeader.styles"
@@ -128,8 +127,6 @@ export function SearchHeader(props: SearchHeaderProps) {
   const styles = useSearchHeaderStyles()
   const th = useTheme()
   const { t } = useT("common-search")
-  const { t: tn } = useT("notifications")
-  const unread = useHasUnreadNotifications()
   if (props.docked) return <DockedSearchBar {...props} />
 
   const {
@@ -173,11 +170,7 @@ export function SearchHeader(props: SearchHeaderProps) {
         <Pressable
           onPress={onOpenProfile}
           accessibilityRole="button"
-          accessibilityLabel={
-            unread
-              ? tn("row.unreadSuffix", { title: t("a11y.open_profile") })
-              : t("a11y.open_profile")
-          }
+          accessibilityLabel={t("a11y.open_profile")}
           hitSlop={8}
           {...focusRingProps}
           style={(state) => [
@@ -188,7 +181,6 @@ export function SearchHeader(props: SearchHeaderProps) {
           ]}
         >
           <Avatar name={userName} photoUrl={userPhotoUrl ?? null} size={32} />
-          {unread ? <UnreadDot /> : null}
         </Pressable>
       ) : null}
     </View>

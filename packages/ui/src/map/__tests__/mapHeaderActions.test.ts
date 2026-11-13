@@ -9,7 +9,14 @@ describe("MapHeaderActions", () => {
   it("reuses the feed header controls so the map top-right is pixel-identical to Your Feed", () => {
     expect(source).toContain('from "../bodies/HeaderProfileButton"')
     expect(source).toContain('<HeaderProfileButton surface="solid" />')
-    expect(source).toContain('<MapThemeToggle variant="solid" />')
+  })
+
+  it("puts the notifications bell before the avatar, where the appearance toggle was", () => {
+    expect(source).toContain('from "../bodies/NotificationsButton"')
+    const bell = source.indexOf('<NotificationsButton variant="solid" />')
+    expect(bell).toBeGreaterThan(-1)
+    expect(bell).toBeLessThan(source.indexOf("<HeaderProfileButton"))
+    expect(source).not.toContain("MapThemeToggle")
   })
 
   it("carries no create affordance of its own - the dock's camera tab owns that entry", () => {

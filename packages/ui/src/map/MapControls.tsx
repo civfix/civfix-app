@@ -10,14 +10,14 @@ import {
   webTransition,
   HOVERED_OPACITY,
 } from "../theme"
-import { Brand, GlassButton, Avatar, UnreadDot, openBrandAbout } from "../primitives"
+import { Brand, GlassButton, Avatar, openBrandAbout } from "../primitives"
 import { Text, Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
 import { useNavStore } from "../nav"
-import { useAuthState, useHasUnreadNotifications, useRequireAuth } from "../data"
+import { useAuthState, useRequireAuth } from "../data"
 import { LayersPopover, useLayersPopoverPresence } from "./LayersPopover"
 import { MapHeaderActions } from "./MapHeaderActions"
-import { MapThemeToggle } from "./MapThemeToggle"
+import { NotificationsButton } from "../bodies/NotificationsButton"
 import { useReportFilterStore } from "./filterStore"
 import { useT } from "../i18n"
 import { HEADER_AVATAR_SIZE, HEADER_GLYPH_SIZE } from "../primitives/headerControls"
@@ -92,7 +92,7 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
             />
           </GlassButton>
           {layersButton}
-          <MapThemeToggle variant="glass" />
+          <NotificationsButton variant="map-glass" />
           <ProfileEntry />
         </View>
 
@@ -141,8 +141,6 @@ function ProfileEntry() {
   const requireAuth = useRequireAuth()
   const { t } = useT("map-ui")
   const { t: tNav } = useT("nav")
-  const { t: tn } = useT("notifications")
-  const unread = useHasUnreadNotifications()
 
   if (isPending) return null
 
@@ -174,9 +172,7 @@ function ProfileEntry() {
       <Pressable
         onPress={() => useNavStore.getState().push({ kind: "profile" })}
         accessibilityRole="button"
-        accessibilityLabel={
-          unread ? tn("row.unreadSuffix", { title: t("profile.open") }) : t("profile.open")
-        }
+        accessibilityLabel={t("profile.open")}
         hitSlop={6}
         {...focusRingProps}
         style={(state) => [
@@ -195,7 +191,6 @@ function ProfileEntry() {
           size={HEADER_AVATAR_SIZE}
         />
       </Pressable>
-      {unread ? <UnreadDot /> : null}
     </View>
   )
 }

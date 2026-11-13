@@ -91,9 +91,10 @@ and `react-native-is-edge-to-edge`.
 - **Preference seam.** The host owns persistence and registers its store once, at module scope:
   `setAppearancePreferenceStore({ get, set, subscribe })` (mobile: a zustand+MMKV store; web: a
   zustand+localStorage store). Shared code reads it with `useAppearancePreference()` and writes with
-  `setAppearancePreference(p)`. With no host store registered an in-memory store stands in. The
-  Appearance row in `SettingsBody` opens `AppearanceSettingsBody` (`/settings/appearance`), the
-  three-option picker.
+  `setAppearancePreference(p)`. With no host store registered an in-memory store stands in.
+  `SettingsBody` opens with `AppearanceTiles` (Light / Dark / System picture tiles), signed in or
+  out; `/settings/appearance`, the old picker page's address, now resolves to Settings.
+  `AppearanceOptionList` remains the radio picker that mobile onboarding mounts.
 - **Styles: the conversion recipe (`makeThemedStyles`).** A module-scope `StyleSheet.create` that reads
   `theme.colors.*` / `theme.glass.*` / `theme.shadows.*` / `theme.imageFrame` is frozen to light. Convert
   it mechanically:
