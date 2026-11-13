@@ -817,6 +817,15 @@ describe("isManagedLink", () => {
   })
 })
 
+describe("the tab icon is the shell's", () => {
+  it("T14: leaves icon links to the page and still owns canonical and apple-touch-icon", () => {
+    expect(isManagedLink("icon")).toBe(false)
+    expect(isManagedLink("shortcut icon")).toBe(false)
+    expect(isManagedLink("canonical")).toBe(true)
+    expect(isManagedLink("apple-touch-icon")).toBe(true)
+  })
+})
+
 describe("previewForOrganization", () => {
   const base: OrganizationPreviewInput = {
     name: "River Keepers LA",
