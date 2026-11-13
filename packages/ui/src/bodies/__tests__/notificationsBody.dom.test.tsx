@@ -573,6 +573,30 @@ describe("GH#308 notification center: people", () => {
     expect(screen.queryByRole("button", { name: "Following" })).toBeNull()
   })
 
+  it("keeps the follow when a list fetch from before it answers after it", async () => {
+    const stale = { ...follows("n1"), actor: actor("a1") }
+    const api = makeApi({ items: [stale], hasUnread: false })
+    const { queryClient } = renderBody(api)
+    const followBack = await screen.findByRole("button", { name: "Follow back" })
+    await flush()
+
+    const inFlight = held<{ items: NotificationDTO[] }>()
+    api.listNotifications.mockImplementation(() => inFlight.promise)
+    act(() => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] })
+    })
+    await waitFor(() => expect(queryClient.isFetching({ queryKey: ["notifications", 50] })).toBe(1))
+
+    fireEvent.click(followBack)
+    await waitFor(() => expect(api.followPerson).toHaveBeenCalledWith({ id: "a1" }))
+    await screen.findByRole("button", { name: "Following" })
+    await act(async () => inFlight.resolve({ items: [{ ...stale }] }))
+    await flush()
+
+    expect(listCache(queryClient)?.[0]?.actor?.isFollowing).toBe(true)
+    expect(screen.getByRole("button", { name: "Following" })).toBeTruthy()
+  })
+
   it("keeps the Following toggle for the visit when a refetch reports the follow", async () => {
     const server: Server = { items: [{ ...follows("n1"), actor: actor("a1") }], hasUnread: false }
     const api = makeApi(server)

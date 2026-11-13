@@ -29,6 +29,7 @@ import { coercePages } from "../infinitePages"
 import { listItems } from "../types"
 import { useDebouncedValue } from "./useDebouncedValue"
 import { recordSignUpAcceptance, useLegalDocuments } from "./legal"
+import { notificationListFilters } from "./notifications"
 import {
   profilePastEventsAction,
   profilePastEventsView,
@@ -96,8 +97,8 @@ export function patchActorInNotificationLists(
   personId: string,
   isFollowing: boolean,
 ): void {
-  qc.setQueriesData<NotificationDTO[]>({ queryKey: queryKeys.notificationsRoot }, (prev) =>
-    Array.isArray(prev) && prev.some((n) => n.actor?.id === personId)
+  qc.setQueriesData<NotificationDTO[]>(notificationListFilters, (prev) =>
+    prev?.some((n) => n.actor?.id === personId)
       ? prev.map((n) =>
           n.actor?.id === personId ? { ...n, actor: { ...n.actor, isFollowing } } : n,
         )
@@ -188,6 +189,7 @@ export function buildFollowMutation(
         qc.cancelQueries({ queryKey: queryKeys.myProfile }),
         qc.cancelQueries({ queryKey: PEOPLE_LIST_KEY }),
         qc.cancelQueries({ queryKey: CONNECTIONS_KEY }),
+        qc.cancelQueries(notificationListFilters),
       ])
       const nextFollowing = !currentlyFollowing
 
