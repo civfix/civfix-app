@@ -1,6 +1,9 @@
 {
   "row": {
-    "unreadSuffix": "{{title}}, ungelesen"
+    "unreadSuffix": "{{title}}, ungelesen",
+    "follow_back": "Zurückfolgen",
+    "message": "Nachricht",
+    "message_a11y": "Nachricht an {{name}}"
   },
   "markReadError": {
     "generic": "Deine Benachrichtigungen konnten nicht als gelesen markiert werden. Versuche es erneut.",
@@ -17,5 +20,8 @@
   "empty": {
     "title": "Alles auf dem neuesten Stand",
     "body": "Updates zu deinen Meldungen, Events und Followern erscheinen hier."
+  },
+  "suggestions": {
+    "title": "Vorschläge für dich"
   }
 }

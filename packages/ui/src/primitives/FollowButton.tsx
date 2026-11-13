@@ -25,6 +25,9 @@ export interface FollowButtonProps {
   nextPath: string
   size?: "sm" | "md"
   style?: StyleProp<ViewStyle>
+  /** The label before following, when "Follow" alone undersells it (a new follower's "Follow back"). */
+  idleLabel?: string
+  onFollowChange?: (following: boolean) => void
 }
 
 export function FollowButton({
@@ -33,6 +36,8 @@ export function FollowButton({
   nextPath,
   size = "md",
   style,
+  idleLabel,
+  onFollowChange,
 }: FollowButtonProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -42,8 +47,12 @@ export function FollowButton({
   const { mutate: mutateFollow } = follow
 
   const onPress = useCallback(() => {
-    requireAuth(() => mutateFollow(isFollowing), { next: nextPath })
-  }, [requireAuth, mutateFollow, isFollowing, nextPath])
+    requireAuth(
+      () => mutateFollow(isFollowing, { onSuccess: () => onFollowChange?.(!isFollowing) }),
+      { next: nextPath },
+    )
+  }, [requireAuth, mutateFollow, isFollowing, nextPath, onFollowChange])
+  const followLabel = idleLabel ?? t("button.follow")
 
   const compact = size === "sm"
   const fg = isFollowing ? th.colors.moss["700"] : th.colors.onAccent
@@ -54,7 +63,7 @@ export function FollowButton({
       disabled={follow.isPending}
       accessibilityRole="button"
       accessibilityState={{ selected: isFollowing, busy: follow.isPending }}
-      accessibilityLabel={isFollowing ? t("button.following") : t("button.follow")}
+      accessibilityLabel={isFollowing ? t("button.following") : followLabel}
       hitSlop={compact ? FOLLOW_SM_HIT_SLOP : FOLLOW_MD_HIT_SLOP}
       {...focusRingProps}
       style={(state) => [
@@ -74,7 +83,7 @@ export function FollowButton({
         <>
           <Icon icon={isFollowing ? iconMap.Check : iconMap.UserPlus} size={14} color={fg} />
           <Text color={fg} style={[styles.label, compact ? styles.labelSm : null, webNoSelect]}>
-            {isFollowing ? t("button.following") : t("button.follow")}
+            {isFollowing ? t("button.following") : followLabel}
           </Text>
         </>
       )}

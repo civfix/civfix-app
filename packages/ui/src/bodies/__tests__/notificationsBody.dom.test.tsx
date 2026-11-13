@@ -4,8 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import * as ReactNative from "react-native"
 import {
   AppError,
+  type NotificationActorDTO,
   type NotificationDTO,
   type NotificationType,
+  type PersonDTO,
   type UserDTO,
 } from "@civfix/contract"
 import type { ApiClient } from "@civfix/contract/client"
@@ -18,6 +20,7 @@ import { useNavStore } from "../../nav"
 import { themes } from "../../theme"
 import { ToastContext } from "../../primitives/toastContext"
 import type * as ToastContextModule from "../../primitives/toastContext"
+import type * as FollowButtonModule from "../../primitives/FollowButton"
 import { NotificationsBody } from "../NotificationsBody"
 
 // The icon set pulls in native-only modules; a glyph is read by the name the row asked for.
@@ -37,7 +40,16 @@ vi.mock("../../primitives", async () => {
       <Text>{body}</Text>
     </View>
   )
+  const { FollowButton } = await vi.importActual<typeof FollowButtonModule>(
+    "../../primitives/FollowButton",
+  )
+  // The photo itself is the Avatar primitive's business; a row shows whose photo it asked for.
+  const Avatar = ({ seed, photoUrl }: { seed: string; photoUrl: string | null }) => (
+    <View testID={`avatar-${seed}-${photoUrl ?? "none"}`} />
+  )
   return {
+    Avatar,
+    FollowButton,
     EmptyState: Copy,
     SignInPrompt: Copy,
     LoadingState: ({ skeleton }: { skeleton: string }) => <View testID={`skeleton-${skeleton}`} />,
@@ -103,6 +115,12 @@ function makeApi(server: Server, over: Partial<Record<string, ReturnType<typeof 
       return { ok: true as const }
     }),
     dismissNotification: vi.fn(async () => ({ ok: true as const })),
+    followSuggestions: vi.fn(async () => ({ results: [] as PersonDTO[] })),
+    followPerson: vi.fn(async () => ({ isFollowing: true, followers: 1 })),
+    unfollowPerson: vi.fn(async () => ({ isFollowing: false, followers: 0 })),
+    openDm: vi.fn(async ({ userId }: { userId: string }) => ({
+      thread: { id: `dm-${userId}`, refId: null, peer: null },
+    })),
     ...over,
   }
 }
@@ -153,11 +171,12 @@ function renderBody(
 
 const row = (title: string) =>
   screen.getByRole("button", { name: (name) => name === title || name.startsWith(`${title},`) })
+// The row's fill sits on the container that holds its tap target and, for a new follower, its action.
 const looksUnread = (title: string) => {
   const el = row(title)
   return {
     label: (el.getAttribute("aria-label") ?? "").startsWith(`${title}, unread`),
-    fill: getComputedStyle(el).backgroundColor === UNREAD_FILL,
+    fill: getComputedStyle(el.parentElement!).backgroundColor === UNREAD_FILL,
   }
 }
 const UNREAD = { label: true, fill: true }
@@ -417,4 +436,187 @@ describe("GH#226 NotificationsBody rows", () => {
     renderBody(makeApi({ items: [], hasUnread: false }))
     expect(await screen.findByText("You are all caught up")).toBeTruthy()
   })
+})
+
+function person(id: string, name: string): PersonDTO {
+  return { id, name, handle: id, avatar: null, avatarUrl: null, isFollowing: false } as PersonDTO
+}
+
+function actor(id: string, over: Partial<NotificationActorDTO> = {}): NotificationActorDTO {
+  return {
+    id,
+    name: `Name ${id}`,
+    handle: id,
+    avatar: null,
+    avatarUrl: null,
+    isFollowing: false,
+    ...over,
+  }
+}
+
+const SUGGESTIONS_TITLE = "Suggested for you"
+const DOT_FILL = rgb(themes.light.colors.brand.bloom)
+const hasDot = (title: string) =>
+  [...row(title).querySelectorAll("div")].some(
+    (el) => getComputedStyle(el).backgroundColor === DOT_FILL,
+  )
+const follows = (follower: string) =>
+  note(follower, true, { type: "new_follower", link: `/people/${follower}` })
+
+describe("GH#308 notification center: people", () => {
+  it("opens with the suggestion strip above the notifications, and keeps it in the empty state", async () => {
+    const people = [person("p1", "Pat One"), person("p2", "Sam Two")]
+    const api = makeApi(
+      { items: [note("n1", true)], hasUnread: false },
+      { followSuggestions: vi.fn(async () => ({ results: people })) },
+    )
+    const page = renderBody(api)
+    const title = await screen.findByRole("heading", { name: SUGGESTIONS_TITLE })
+    expect(screen.getByRole("button", { name: /Pat One/ })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /Sam Two/ })).toBeTruthy()
+    expect(title.compareDocumentPosition(row("N1")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(api.followSuggestions).toHaveBeenCalledWith({ limit: 10 })
+    page.unmountPage()
+
+    renderBody(
+      makeApi(
+        { items: [], hasUnread: false },
+        { followSuggestions: vi.fn(async () => ({ results: people })) },
+      ),
+    )
+    expect(await screen.findByText("You are all caught up")).toBeTruthy()
+    expect(await screen.findByRole("heading", { name: SUGGESTIONS_TITLE })).toBeTruthy()
+  })
+
+  it("leaves the strip out when there are no suggestions or they fail, and still shows the notifications", async () => {
+    const none = renderBody(makeApi({ items: [note("n1", true)], hasUnread: false }))
+    await screen.findByRole("button", { name: /^N1/ })
+    await flush()
+    expect(screen.queryByRole("heading", { name: SUGGESTIONS_TITLE })).toBeNull()
+    none.unmountPage()
+
+    const failing = makeApi(
+      { items: [note("n2", true)], hasUnread: false },
+      { followSuggestions: vi.fn(async () => Promise.reject(new Error("offline"))) },
+    )
+    renderBody(failing)
+    await screen.findByRole("button", { name: /^N2/ })
+    await waitFor(() => expect(failing.followSuggestions).toHaveBeenCalled())
+    await flush()
+    expect(screen.queryByRole("heading", { name: SUGGESTIONS_TITLE })).toBeNull()
+    expect(row("N2")).toBeTruthy()
+  })
+
+  it("shows the person's photo with the type badge on a row about a person, and the type icon otherwise", async () => {
+    const api = makeApi({
+      items: [
+        note("n1", true, {
+          type: "chat_mention",
+          actor: actor("a1", { avatarUrl: "https://img.test/a1.jpg" }),
+        }),
+        note("n2", true, { type: "new_follower", actor: actor("a2") }),
+        note("n3", true, { type: "report_update", actor: null }),
+        note("n4", true, { type: "cleanup_reminder" }),
+      ],
+      hasUnread: false,
+    })
+    renderBody(api)
+    await screen.findByRole("button", { name: /^N1/ })
+    expect(
+      row("N1").querySelector('[data-testid="avatar-a1-https://img.test/a1.jpg"]'),
+    ).not.toBeNull()
+    expect(row("N1").querySelector('[data-testid="icon-AtSign"]')).not.toBeNull()
+    expect(row("N2").querySelector('[data-testid="avatar-a2-none"]')).not.toBeNull()
+    expect(row("N2").querySelector('[data-testid="icon-UserPlus"]')).not.toBeNull()
+    expect(row("N3").querySelector('[data-testid^="avatar-"]')).toBeNull()
+    expect(row("N3").querySelector('[data-testid="icon-MapPin"]')).not.toBeNull()
+    expect(row("N4").querySelector('[data-testid^="avatar-"]')).toBeNull()
+    expect(row("N4").querySelector('[data-testid="icon-Calendar"]')).not.toBeNull()
+  })
+
+  it("offers Follow back to a new follower, reads Following once followed, and unfollows on a second tap", async () => {
+    const api = makeApi({
+      items: [{ ...follows("n1"), actor: actor("a1") }],
+      hasUnread: false,
+    })
+    renderBody(api)
+    const followBack = await screen.findByRole("button", { name: "Follow back" })
+    fireEvent.click(followBack)
+    await waitFor(() => expect(api.followPerson).toHaveBeenCalledWith({ id: "a1" }))
+    const following = await screen.findByRole("button", { name: "Following" })
+    expect(useNavStore.getState().active).toBeNull()
+    expect(screen.queryByRole("button", { name: /^Message/ })).toBeNull()
+
+    fireEvent.click(following)
+    await waitFor(() => expect(api.unfollowPerson).toHaveBeenCalledWith({ id: "a1" }))
+    expect(await screen.findByRole("button", { name: "Follow back" })).toBeTruthy()
+    expect(useNavStore.getState().active).toBeNull()
+  })
+
+  it("offers Message to a new follower the viewer follows, which opens the conversation, not the row's link", async () => {
+    const api = makeApi({
+      items: [{ ...follows("n1"), actor: actor("a1", { name: "Ada Actor", isFollowing: true }) }],
+      hasUnread: false,
+    })
+    renderBody(api)
+    const message = await screen.findByRole("button", { name: "Message Ada Actor" })
+    expect(screen.queryByRole("button", { name: "Follow back" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Following" })).toBeNull()
+    const push = vi.spyOn(useNavStore.getState(), "push")
+    fireEvent.click(message)
+    await waitFor(() => expect(api.openDm).toHaveBeenCalledWith({ userId: "a1" }))
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith({
+        kind: "thread",
+        id: "dm-a1",
+        roomKind: "dm",
+        peer: undefined,
+      }),
+    )
+    expect(push).toHaveBeenCalledTimes(1)
+  })
+
+  it("the row's own tap still opens its link on a row with a follower action", async () => {
+    const api = makeApi({
+      items: [note("n1", true, { type: "new_follower", link: "/reports/r1", actor: actor("a1") })],
+      hasUnread: false,
+    })
+    renderBody(api)
+    await screen.findByRole("button", { name: "Follow back" })
+    fireEvent.click(row("N1"))
+    expect(useNavStore.getState().active).toEqual({ kind: "pin", id: "r1" })
+    expect(api.followPerson).not.toHaveBeenCalled()
+  })
+
+  it("gives no follower action to a row about a person that is not a new follower, or a follower with no actor", async () => {
+    const api = makeApi({
+      items: [
+        note("n1", true, { type: "chat_mention", actor: actor("a1") }),
+        note("n2", true, { type: "new_follower", actor: null }),
+      ],
+      hasUnread: false,
+    })
+    renderBody(api)
+    await screen.findByRole("button", { name: /^N1/ })
+    await flush()
+    expect(screen.queryByRole("button", { name: "Follow back" })).toBeNull()
+    expect(screen.queryByRole("button", { name: /^Message/ })).toBeNull()
+  })
+
+  it("clears a new row's unread look 3 seconds after it is first shown, while marking read stays as it was", async () => {
+    const server: Server = { items: [note("n1", false), note("n2", true)], hasUnread: true }
+    const api = makeApi(server)
+    renderBody(api)
+    await screen.findByRole("button", { name: /^N1, unread/ })
+    const shownAt = Date.now()
+    await waitFor(() => expect(api.markAllNotificationsRead).toHaveBeenCalledTimes(1))
+    await flush()
+    expect(looksUnread("N1")).toEqual(UNREAD)
+    expect(hasDot("N1")).toBe(true)
+    await waitFor(() => expect(looksUnread("N1")).toEqual(READ), { timeout: 4000 })
+    expect(Date.now() - shownAt).toBeGreaterThanOrEqual(2900)
+    expect(hasDot("N1")).toBe(false)
+    expect(looksUnread("N2")).toEqual(READ)
+    expect(api.markAllNotificationsRead).toHaveBeenCalledTimes(1)
+  }, 10_000)
 })

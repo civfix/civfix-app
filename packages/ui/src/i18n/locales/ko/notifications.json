@@ -1,6 +1,9 @@
 {
   "row": {
-    "unreadSuffix": "{{title}}, 읽지 않음"
+    "unreadSuffix": "{{title}}, 읽지 않음",
+    "follow_back": "맞팔로우",
+    "message": "메시지",
+    "message_a11y": "{{name}}에게 메시지 보내기"
   },
   "markReadError": {
     "generic": "알림을 읽음으로 표시하지 못했어요. 다시 시도해 주세요.",
@@ -17,5 +20,8 @@
   "empty": {
     "title": "모두 확인했어요",
     "body": "신고, 이벤트, 팔로워 관련 업데이트가 여기에 표시돼요."
+  },
+  "suggestions": {
+    "title": "회원님을 위한 추천"
   }
 }

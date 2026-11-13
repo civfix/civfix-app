@@ -77,6 +77,29 @@ function SuggestedPersonCard({ person, expanded }: { person: PersonDTO; expanded
   )
 }
 
+/** The sideways row of people to follow; Search and the notification center both show it. */
+export function SuggestedPeopleRail({
+  people,
+  expanded,
+}: {
+  people: readonly PersonDTO[]
+  expanded: boolean
+}) {
+  const styles = useSearchStyles()
+  return (
+    <RNScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.personRail}
+      contentContainerStyle={styles.personRailContent}
+    >
+      {people.map((person) => (
+        <SuggestedPersonCard key={person.id} person={person} expanded={expanded} />
+      ))}
+    </RNScrollView>
+  )
+}
+
 export function Discovery({ expanded }: { expanded: boolean }) {
   const styles = useSearchStyles()
   const { t } = useT("home-sidebar")
@@ -152,16 +175,7 @@ export function Discovery({ expanded }: { expanded: boolean }) {
           >
             {t("search_page.suggested_people")}
           </Text>
-          <RNScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.personRail}
-            contentContainerStyle={styles.personRailContent}
-          >
-            {sections.people.map((person) => (
-              <SuggestedPersonCard key={person.id} person={person} expanded={expanded} />
-            ))}
-          </RNScrollView>
+          <SuggestedPeopleRail people={sections.people} expanded={expanded} />
         </>
       ) : null}
 
