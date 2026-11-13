@@ -10,10 +10,10 @@ import { useT } from "../i18n"
 import { HeaderIconButton } from "./HeaderIconButton"
 
 export interface NotificationsButtonProps {
-  variant: "map-glass" | "solid" | "glass"
+  variant: "map-glass" | "solid"
 }
 
-/** The header's way into the notification center; it carries the unread dot the avatar used to. */
+/** The map header's way into the notification center, carrying the unread dot. */
 export function NotificationsButton({ variant }: NotificationsButtonProps) {
   const th = useTheme()
   const { t } = useT("nav")

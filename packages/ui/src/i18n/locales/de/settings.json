@@ -23,9 +23,6 @@
   "language": {
     "label": "Sprache"
   },
-  "appearance": {
-    "label": "Erscheinungsbild"
-  },
   "tour": {
     "label": "Tour ansehen",
     "sub": "Die Willkommenstour erneut abspielen"

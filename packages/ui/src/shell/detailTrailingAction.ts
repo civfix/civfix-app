@@ -5,8 +5,6 @@ export interface DetailTrailingAction {
   icon: IconName
   a11yKey: string
   push: DetailEntry
-  /** Shows the unread dot while the server says a notification is unread. */
-  unreadDot?: boolean
 }
 
 const NO_ACTIONS: readonly DetailTrailingAction[] = []

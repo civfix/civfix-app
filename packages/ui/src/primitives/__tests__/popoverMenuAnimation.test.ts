@@ -15,7 +15,6 @@ const motionSource = strip(read("../menuMotion.ts"))
 const motionModelSource = strip(read("../menuMotionModel.ts"))
 const popover = strip(read("../PopoverMenu.tsx"))
 const anchoredPopover = strip(read("../AnchoredPopover.tsx"))
-const mapThemeToggle = strip(read("../../map/MapThemeToggle.tsx"))
 const contextMenu = strip(read("../MessageContextMenu.tsx"))
 const postActionBar = strip(read("../PostActionBar.tsx"))
 const convoBar = strip(read("../../bodies/conversation/ConvoBar.tsx"))
@@ -238,12 +237,9 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
     expect(anchoredPopover).not.toMatch(/backgroundColor: t\.colors\.surface/)
   })
 
-  it("is the presentation for PopoverMenu and the map theme toggle, neither wiring its own Modal", () => {
+  it("is the presentation for PopoverMenu, which wires no Modal of its own", () => {
     expect(popover).toMatch(/<AnchoredPopover/)
     expect(popover).not.toMatch(/<Modal/)
-    expect(mapThemeToggle).toMatch(/<AnchoredPopover/)
-    expect(mapThemeToggle).not.toMatch(/<Modal/)
-    expect(mapThemeToggle).not.toMatch(/position: "fixed"/)
   })
 })
 

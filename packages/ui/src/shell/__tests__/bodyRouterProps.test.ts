@@ -249,9 +249,6 @@ const BODY_CASES = {
   languageSettings: [
     { entry: full("language-settings"), renders: "LanguageSettingsBody", props: {} },
   ],
-  appearanceSettings: [
-    { entry: full("appearance-settings"), renders: "AppearanceSettingsBody", props: {} },
-  ],
   settings: [{ entry: full("settings"), renders: "SettingsBody", props: {} }],
   settingsAccount: [{ entry: full("settings-account"), renders: "SettingsAccountBody", props: {} }],
   settingsPrivacy: [{ entry: full("settings-privacy"), renders: "SettingsPrivacyBody", props: {} }],

@@ -26,7 +26,6 @@ export type BodyId =
   | "members"
   | "blockedAccounts"
   | "languageSettings"
-  | "appearanceSettings"
   | "settings"
   | "settingsAccount"
   | "settingsPrivacy"
@@ -85,7 +84,6 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   members: "members",
   blocked: "blockedAccounts",
   "language-settings": "languageSettings",
-  "appearance-settings": "appearanceSettings",
   settings: "settings",
   "settings-account": "settingsAccount",
   "settings-privacy": "settingsPrivacy",

@@ -38,23 +38,15 @@ const tap = (target: AppearancePreference, from: AppearancePreference): Appearan
   from,
 })
 
-describe("the appearance option list is the one picker both surfaces mount", () => {
+describe("the appearance option list", () => {
   const LIST = read("../AppearanceOptionList.tsx")
   const RADIO_ROW = read("../../primitives/RadioOptionRow.tsx")
-  const BODY = read("../AppearanceSettingsBody.tsx")
 
   it("owns the rows, the radio group and the store write", () => {
     expect(LIST).toContain('accessibilityRole="radiogroup"')
     expect(LIST).toContain("<RadioOptionRow")
     expect(RADIO_ROW).toContain('accessibilityRole="radio"')
     expect(LIST).toContain("setAppearancePreference(commit.preference)")
-  })
-
-  it("leaves the settings body with nothing but the heading and the shared list", () => {
-    expect(BODY).toContain('import { AppearanceOptionList } from "./AppearanceOptionList"')
-    expect(BODY).toContain("<AppearanceOptionList />")
-    expect(BODY).not.toContain("setAppearancePreference")
-    expect(BODY).not.toContain('accessibilityRole="radio"')
   })
 
   it("is exported from the bodies barrel, so hosts outside settings can mount it", () => {

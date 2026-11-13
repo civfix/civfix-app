@@ -24,10 +24,6 @@
     "notifications": "Notificaciones",
     "reset": "Restablecer"
   },
-  "appearance": {
-    "toggle": "Apariencia",
-    "dismiss": "Cerrar el menú de apariencia"
-  },
   "stack": {
     "events": "Eventos y limpiezas",
     "messages": "Mensajes",

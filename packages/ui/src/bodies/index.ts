@@ -5,7 +5,6 @@ export { ProfileBody } from "./ProfileBody"
 export { BlockedAccountsBody } from "./BlockedAccountsBody"
 
 export { LanguageSettingsBody } from "./LanguageSettingsBody"
-export { AppearanceSettingsBody } from "./AppearanceSettingsBody"
 export { AppearanceOptionList } from "./AppearanceOptionList"
 
 export { SettingsBody } from "./SettingsBody"
