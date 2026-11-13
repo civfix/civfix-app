@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type * as ReactNative from "react-native"
 import type { NotificationUnreadResponse, UserDTO } from "@civfix/contract"
@@ -56,7 +56,7 @@ function renderBar(bar: Bar, getNotificationUnread: ReturnType<typeof vi.fn>) {
 const unreadAnswer = (hasUnread: boolean) =>
   vi.fn(async (): Promise<NotificationUnreadResponse> => ({ hasUnread }))
 
-const dotsIn = (el: Element) => el.querySelectorAll('[data-testid="unread-dot"]').length
+const flush = () => act(() => new Promise((r) => setTimeout(r, 20)))
 
 function resetNav(mode: "compact" | "expanded"): void {
   useNavStore.setState({
@@ -77,34 +77,28 @@ afterEach(() => {
 describe.each<[Bar, "compact" | "expanded"]>([
   ["DetailHeader", "compact"],
   ["ExpandedShell", "expanded"],
-])("GH#226 the profile's %s", (bar, mode) => {
+])("GH#308 the profile's %s", (bar, mode) => {
   beforeEach(() => resetNav(mode))
 
-  it("T6: puts the Notifications button immediately before Settings, and it opens the notifications page", async () => {
+  it("keeps Settings, which opens the settings hub, and has no Notifications button", async () => {
     renderBar(bar, unreadAnswer(false))
-    const bell = await screen.findByRole("button", { name: "Notifications" })
-    const settings = screen.getByRole("button", { name: "Settings" })
-    const buttons = screen.getAllByRole("button")
-    expect(buttons.indexOf(settings)).toBe(buttons.indexOf(bell) + 1)
-    // Each chip sits in its own slot (the slot also holds its dot); the bell's slot is the gear's neighbour.
-    expect(bell.parentElement!.nextElementSibling).toBe(settings.parentElement)
+    const settings = await screen.findByRole("button", { name: "Settings" })
+    expect(screen.queryByRole("button", { name: /^Notifications/ })).toBeNull()
 
-    fireEvent.click(bell)
-    expect(useNavStore.getState().active).toEqual({ kind: "activity" })
-    expect(useNavStore.getState().stack.map((e) => e.kind)).toEqual(["profile", "activity"])
+    fireEvent.click(settings)
+    expect(useNavStore.getState().stack.map((e) => e.kind)).toEqual(["profile", "settings"])
   })
 
-  it("T7: marks the bell, and only the bell, unread while the server says hasUnread", async () => {
+  it("shows no unread dot and says unread nowhere while the server says hasUnread", async () => {
     const getNotificationUnread = unreadAnswer(true)
-    const { queryClient } = renderBar(bar, getNotificationUnread)
-    const bell = await screen.findByRole("button", { name: "Notifications, unread" })
-    expect(dotsIn(bell.parentElement!)).toBe(1)
-    expect(dotsIn(screen.getByRole("button", { name: "Settings" }).parentElement!)).toBe(0)
-    expect(screen.getAllByTestId("unread-dot")).toHaveLength(1)
-
-    getNotificationUnread.mockImplementation(async () => ({ hasUnread: false }))
-    await act(() => queryClient.invalidateQueries({ queryKey: ["notifications"] }))
-    await waitFor(() => expect(screen.getByRole("button", { name: "Notifications" })).toBeTruthy())
+    renderBar(bar, getNotificationUnread)
+    await screen.findByRole("button", { name: "Settings" })
+    await flush()
     expect(screen.queryByTestId("unread-dot")).toBeNull()
+    const unreadLabels = screen
+      .getAllByRole("button")
+      .map((b) => b.getAttribute("aria-label") ?? "")
+      .filter((label) => label.includes("unread"))
+    expect(unreadLabels).toEqual([])
   })
 })

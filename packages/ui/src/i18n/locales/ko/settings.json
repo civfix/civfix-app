@@ -23,9 +23,6 @@
   "language": {
     "label": "언어"
   },
-  "appearance": {
-    "label": "화면 모드"
-  },
   "tour": {
     "label": "둘러보기",
     "sub": "환영 안내를 다시 봐요"

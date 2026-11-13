@@ -23,9 +23,6 @@
   "language": {
     "label": "Language"
   },
-  "appearance": {
-    "label": "Appearance"
-  },
   "tour": {
     "label": "Take the tour",
     "sub": "Replay the welcome walkthrough"

@@ -23,9 +23,6 @@
   "language": {
     "label": "Idioma"
   },
-  "appearance": {
-    "label": "Apariencia"
-  },
   "tour": {
     "label": "Ver el recorrido",
     "sub": "Repite el recorrido de bienvenida"

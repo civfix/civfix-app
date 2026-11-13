@@ -8,8 +8,6 @@ import {
   webTransition,
 } from "../theme"
 import { Icon, iconMap } from "../typography"
-import { UnreadDot } from "../primitives/UnreadDot"
-import { useHasUnreadNotifications } from "../data"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"
 import {
@@ -41,30 +39,23 @@ function DetailTrailingButton({ action }: { action: DetailTrailingAction }) {
   const th = useTheme()
   const push = useNavStore((s) => s.push)
   const { t } = useT("nav")
-  const { t: tn } = useT("notifications")
-  const unread = useHasUnreadNotifications()
-  const dot = action.unreadDot === true && unread
-  const label = t(action.a11yKey)
   return (
-    <View>
-      <Pressable
-        onPress={() => push(action.push)}
-        accessibilityRole="button"
-        accessibilityLabel={dot ? tn("row.unreadSuffix", { title: label }) : label}
-        hitSlop={DETAIL_ACTION_HIT_SLOP}
-        {...focusRingProps}
-        style={(state) => [
-          styles.chip,
-          webCursor(),
-          webTransition,
-          webHover(state) ? styles.chipHovered : null,
-          state.pressed ? styles.pressed : null,
-        ]}
-      >
-        <Icon icon={iconMap[action.icon]} size={DETAIL_ACTION_ICON_SIZE} color={th.colors.text} />
-      </Pressable>
-      {dot ? <UnreadDot /> : null}
-    </View>
+    <Pressable
+      onPress={() => push(action.push)}
+      accessibilityRole="button"
+      accessibilityLabel={t(action.a11yKey)}
+      hitSlop={DETAIL_ACTION_HIT_SLOP}
+      {...focusRingProps}
+      style={(state) => [
+        styles.chip,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.chipHovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
+    >
+      <Icon icon={iconMap[action.icon]} size={DETAIL_ACTION_ICON_SIZE} color={th.colors.text} />
+    </Pressable>
   )
 }
 

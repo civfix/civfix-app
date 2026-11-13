@@ -52,9 +52,9 @@ allowBuilds:
 # The react, react-dom and react-native entries pin the Expo SDK set. Each range entry forces a patched release of a
 # transitive package whose parent still declares a vulnerable range, held inside the major its parent asks for with one
 # exception: uuid goes to 11 under xcode, which asks for ^7 in the iOS prebuild path and only calls v4(). undici is
-# scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. node-forge floors at 1.4.2,
-# not 1.4.1, because 1.4.1's PEM fix broke Buffer input to pem.decode(). Drop each entry once its parent ships the fixed
-# range itself.
+# scoped per major because @expo/cli wants 6, miniflare pins 7 exactly and jsdom wants 8. node-forge floors at 1.4.3,
+# which fixes GHSA-w4xr-hqv8-ch44, GHSA-6cv4-p8m7-4r25 and GHSA-j8rw-jp99-435v. Drop each entry once its parent ships
+# the fixed range itself.
 overrides:
   react: "19.3.0"
   react-dom: "19.3.0"
@@ -80,7 +80,7 @@ overrides:
   source-map-js@1: ">=1.2.2 <2"
   sharp: ">=0.35.5 <0.36"
   zod@4: ">=4.6.6 <5"
-  node-forge: ">=1.4.2 <2"
+  node-forge: ">=1.4.3 <2"
 
 # No untrusted input reaches any ignored advisory; each entry says when it can go.
 auditConfig:

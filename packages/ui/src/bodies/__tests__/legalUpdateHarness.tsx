@@ -104,15 +104,21 @@ function authStore(initial: AuthState) {
     listeners.add(listener)
     return () => listeners.delete(listener)
   }
+  const apply = (next: AuthState) => {
+    state = next
+    listeners.forEach((listener) => listener())
+  }
   return {
     useAuthState: () => React.useSyncExternalStore(subscribe, () => state),
     get: () => state,
+    /** A change the test makes between its own steps. */
     set(next: AuthState) {
-      state = next
-      act(() => {
-        listeners.forEach((listener) => listener())
-      })
+      act(() => apply(next))
     },
+    // The app's own change (a saved profile) lands inside whatever act() or waitFor the test is awaiting,
+    // so it must not open an act() of its own: React ends an outermost act() by dropping the act queue, and
+    // an `await act(async ...)` still flushing its work would then render the next query update outside act.
+    applyFromApp: apply,
   }
 }
 
@@ -182,7 +188,7 @@ export function mountLegal(ui: React.ReactElement, { api, auth = SIGNED_IN, open
     ...makeFakeDataContext({ api: api as unknown as ApiClient }),
     useAuthState: store.useAuthState,
     logout,
-    onUserUpdated: (user) => store.set({ isAuthenticated: true, user, isPending: false }),
+    onUserUpdated: (user) => store.applyFromApp({ isAuthenticated: true, user, isPending: false }),
   }
   const capabilities = {
     ...makeFakeCapabilities(),

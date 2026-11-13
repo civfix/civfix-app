@@ -3,7 +3,7 @@ import { space } from "../theme"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 import { HeaderProfileButton } from "../bodies/HeaderProfileButton"
 import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"
-import { MapThemeToggle } from "./MapThemeToggle"
+import { NotificationsButton } from "../bodies/NotificationsButton"
 
 export interface MapHeaderActionsProps {
   topInset?: number
@@ -14,7 +14,7 @@ export function MapHeaderActions({ topInset = 0 }: MapHeaderActionsProps) {
   return (
     <View style={[styles.root, { top: topInset + space["2"] + rowCenterOffset }]}>
       <View style={styles.actions}>
-        <MapThemeToggle variant="solid" />
+        <NotificationsButton variant="solid" />
         <HeaderProfileButton surface="solid" />
       </View>
     </View>
