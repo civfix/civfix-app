@@ -1,5 +1,11 @@
 import { Platform, type ViewStyle } from "react-native"
-import { tokens, categoryColor, type CategoryColorKey } from "@civfix/tokens"
+import {
+  tokens,
+  categoryColor,
+  seasonLook,
+  type CategoryColorKey,
+  type ColorSchemeName as TokenSchemeName,
+} from "@civfix/tokens"
 import { useColorSchemeName } from "./ThemeProvider"
 import { themes, type Theme } from "./themes"
 import { hexWithAlpha } from "./color"
@@ -116,6 +122,11 @@ export const wordmarkColors: readonly string[] = [
   tokens.color.brand.lilac,
   tokens.color.brand.bloom,
 ]
+
+/** The wordmark's letters for a scheme: the active season's when one is on, the everyday ones otherwise. */
+export function wordmarkColorsFor(scheme: TokenSchemeName): readonly string[] {
+  return seasonLook?.wordmark[scheme] ?? wordmarkColors
+}
 
 export const supportsBlur = Platform.OS === "ios"
 

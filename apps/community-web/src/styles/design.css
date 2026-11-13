@@ -273,22 +273,59 @@
     font-weight: inherit;
   }
   .cf-logo .s1 {
-    color: var(--bloom);
+    color: var(--logo-1, var(--bloom));
   }
   .cf-logo .s2 {
-    color: var(--sun-600);
+    color: var(--logo-2, var(--sun-600));
   }
   .cf-logo .s3 {
-    color: var(--moss);
+    color: var(--logo-3, var(--moss));
   }
   .cf-logo .s4 {
-    color: var(--sky);
+    color: var(--logo-4, var(--sky));
   }
   .cf-logo .s5 {
-    color: var(--lilac);
+    color: var(--logo-5, var(--lilac));
   }
   .cf-logo .s6 {
-    color: var(--bloom);
+    color: var(--logo-6, var(--bloom));
+  }
+
+  /* Holiday seasons (@civfix/tokens seasons.ts, switched by ACTIVE_SEASON, which layout.tsx writes to
+     <html data-season>). The letters mirror seasonLook.wordmark per scheme. */
+  :root[data-season="christmas"] {
+    --logo-1: var(--bloom-700);
+    --logo-2: var(--sun-600);
+    --logo-3: var(--moss-700);
+    --logo-4: var(--bloom-700);
+    --logo-5: var(--sun-600);
+    --logo-6: var(--moss-700);
+    --hat-felt: var(--bloom-700);
+    --hat-trim: var(--card);
+    --hat-edge: var(--ink-4);
+  }
+  :root.dark[data-season="christmas"] {
+    --logo-1: var(--bloom);
+    --logo-2: var(--sun-600);
+    --logo-3: var(--moss-600);
+    --logo-4: var(--bloom);
+    --logo-5: var(--sun-600);
+    --logo-6: var(--moss-600);
+    --hat-felt: var(--bloom);
+    --hat-trim: var(--ink);
+    --hat-edge: var(--ink);
+  }
+  .cf-logo {
+    position: relative;
+  }
+  .cf-logo .cf-hat {
+    position: absolute;
+    left: -0.1em;
+    top: -0.24em;
+    width: 0.62em;
+    height: 0.5em;
+    transform: rotate(-14deg);
+    pointer-events: none;
   }
 
   .cf-splash-mark {

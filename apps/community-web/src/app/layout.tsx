@@ -17,6 +17,7 @@ import {
   SITE_NAME,
   normalizeSiteUrl,
 } from "@/lib/site-meta"
+import { ACTIVE_SEASON } from "@civfix/tokens"
 import { APPEARANCE_SCRIPT } from "@/lib/appearance-script"
 import "./globals.css"
 import "@/styles/design.css"
@@ -75,7 +76,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-season={ACTIVE_SEASON} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_SCRIPT }} />
       </head>

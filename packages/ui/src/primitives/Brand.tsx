@@ -3,7 +3,8 @@
  * as an extra `<h1>` above each surface's real heading (see `theme/webAffordances.headingLevel`).
  */
 import { View, Text, StyleSheet } from "react-native"
-import { fontFamily, wordmarkColors } from "../theme"
+import { fontFamily, useColorSchemeName, wordmarkColorsFor } from "../theme"
+import { SeasonHat } from "./SeasonHat"
 
 // Keyed by slot, not letter: the two "i" glyphs repeat but take different colors.
 const GLYPHS = [
@@ -20,17 +21,21 @@ export interface BrandProps {
 }
 
 export function Brand({ size = 40 }: BrandProps) {
+  const colors = wordmarkColorsFor(useColorSchemeName())
   const letterSpacing = -size * 0.04
   return (
     <View style={styles.row} accessibilityLabel="civfix">
       {GLYPHS.map((glyph, i) => (
         <Text
           key={glyph.slot}
-          style={[styles.letter, { color: wordmarkColors[i], fontSize: size, letterSpacing }]}
+          style={[styles.letter, { color: colors[i], fontSize: size, letterSpacing }]}
         >
           {glyph.char}
         </Text>
       ))}
+      <View pointerEvents="none" style={[styles.hat, { left: -size * 0.12, top: size * 0.02 }]}>
+        <SeasonHat width={size * 0.62} />
+      </View>
     </View>
   )
 }
@@ -43,5 +48,9 @@ const styles = StyleSheet.create({
   letter: {
     fontFamily: fontFamily.brand,
     fontWeight: "800",
+  },
+  hat: {
+    position: "absolute",
+    transform: [{ rotate: "-14deg" }],
   },
 })
