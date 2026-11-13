@@ -51,7 +51,7 @@
     "dev": "tsup --watch --onSuccess \"node scripts/build-theme.mjs\""
   },
   "devDependencies": {
-    "@civfix/contract": "^0.71.1",
+    "@civfix/contract": "0.72.0-b-feat-notification-actor.g5365d83",
     "@civfix/testing": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.2",
