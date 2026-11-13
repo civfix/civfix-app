@@ -21,7 +21,8 @@ export interface BrandProps {
 }
 
 export function Brand({ size = 40 }: BrandProps) {
-  const colors = wordmarkColorsFor(useColorSchemeName())
+  const scheme = useColorSchemeName()
+  const colors = wordmarkColorsFor(scheme)
   const letterSpacing = -size * 0.04
   return (
     <View style={styles.row} accessibilityLabel="civfix">
@@ -33,9 +34,7 @@ export function Brand({ size = 40 }: BrandProps) {
           {glyph.char}
         </Text>
       ))}
-      <View pointerEvents="none" style={[styles.hat, { left: -size * 0.12, top: size * 0.02 }]}>
-        <SeasonHat width={size * 0.62} />
-      </View>
+      <SeasonHat size={size} scheme={scheme} />
     </View>
   )
 }
@@ -48,9 +47,5 @@ const styles = StyleSheet.create({
   letter: {
     fontFamily: fontFamily.brand,
     fontWeight: "800",
-  },
-  hat: {
-    position: "absolute",
-    transform: [{ rotate: "-14deg" }],
   },
 })

@@ -11,13 +11,13 @@ import {
   BRAND_IMAGE_WIDTH,
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
-  ICON_PATH,
   ICON_TYPE,
   SITE_LOCALE,
   SITE_NAME,
   normalizeSiteUrl,
 } from "@/lib/site-meta"
-import { ACTIVE_SEASON } from "@civfix/tokens"
+import { ACTIVE_ICON_PATH } from "@/lib/season-icon"
+import { ACTIVE_SEASON } from "@civfix/ui/theme/season"
 import { APPEARANCE_SCRIPT } from "@/lib/appearance-script"
 import "./globals.css"
 import "@/styles/design.css"
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
   icons: {
-    icon: [{ url: ICON_PATH, type: ICON_TYPE }],
+    icon: [{ url: ACTIVE_ICON_PATH, type: ICON_TYPE }],
     apple: [{ url: APPLE_TOUCH_ICON_PATH, sizes: APPLE_TOUCH_ICON_SIZES, type: BRAND_IMAGE_TYPE }],
   },
   openGraph: {

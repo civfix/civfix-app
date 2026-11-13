@@ -5,10 +5,10 @@ import {
   APPLE_TOUCH_ICON_SIZES,
   BRAND_IMAGE_TYPE,
   DEFAULT_DESCRIPTION,
-  ICON_PATH,
   ICON_TYPE,
   SITE_NAME,
 } from "@/lib/site-meta"
+import { ACTIVE_ICON_PATH } from "@/lib/season-icon"
 
 export const dynamic = "force-static"
 
@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: tokens.color.neutral.paper,
     theme_color: tokens.color.neutral.paper,
     icons: [
-      { src: ICON_PATH, sizes: "any", type: ICON_TYPE },
+      { src: ACTIVE_ICON_PATH, sizes: "any", type: ICON_TYPE },
       { src: APPLE_TOUCH_ICON_PATH, sizes: APPLE_TOUCH_ICON_SIZES, type: BRAND_IMAGE_TYPE },
     ],
   }

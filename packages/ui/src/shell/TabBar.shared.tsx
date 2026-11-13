@@ -180,7 +180,7 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
   },
   garland: {
     position: "absolute",
-    top: t.space["2"] - 4,
+    top: t.space["2"] - t.space["1"],
     left: t.space["4"],
   },
   tab: {

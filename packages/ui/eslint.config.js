@@ -102,7 +102,11 @@ const POINTER_EVENTS_PROP_SELECTORS = [
   },
 ]
 
-const RN_FREE_FILES = ["src/theme/schemes.ts", "src/primitives/externalUrls.ts"]
+const RN_FREE_FILES = [
+  "src/theme/schemes.ts",
+  "src/theme/season.ts",
+  "src/primitives/externalUrls.ts",
+]
 const RN_FREE_PATHS = [
   {
     name: "react",

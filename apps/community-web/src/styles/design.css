@@ -263,6 +263,7 @@
       "opsz" 24;
     line-height: 1;
     display: inline-flex;
+    position: relative;
     white-space: nowrap;
   }
   .cf-logo .ch {
@@ -291,8 +292,8 @@
     color: var(--logo-6, var(--bloom));
   }
 
-  /* Holiday seasons (@civfix/tokens seasons.ts, switched by ACTIVE_SEASON, which layout.tsx writes to
-     <html data-season>). The letters mirror seasonLook.wordmark per scheme. */
+  /* Holiday seasons: layout.tsx writes ACTIVE_SEASON (@civfix/ui/theme/season) to <html data-season>.
+     These blocks mirror seasonLook's wordmark and hat per scheme; with no season the fallbacks above apply. */
   :root[data-season="christmas"] {
     --logo-1: var(--bloom-700);
     --logo-2: var(--sun-600);
@@ -314,9 +315,6 @@
     --hat-felt: var(--bloom);
     --hat-trim: var(--ink);
     --hat-edge: var(--ink);
-  }
-  .cf-logo {
-    position: relative;
   }
   .cf-logo .cf-hat {
     position: absolute;

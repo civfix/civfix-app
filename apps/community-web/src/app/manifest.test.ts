@@ -1,6 +1,7 @@
 import { tokens } from "@civfix/tokens"
 import { describe, expect, it } from "vitest"
-import { APPLE_TOUCH_ICON_PATH, ICON_PATH, SITE_NAME } from "@/lib/site-meta"
+import { APPLE_TOUCH_ICON_PATH, SITE_NAME } from "@/lib/site-meta"
+import { ACTIVE_ICON_PATH } from "@/lib/season-icon"
 import manifest from "./manifest"
 
 describe("the web app manifest", () => {
@@ -20,7 +21,7 @@ describe("the web app manifest", () => {
   it("only points at icons the export actually ships", () => {
     const sources = (value.icons ?? []).map((icon) => icon.src)
     expect(sources.length).toBeGreaterThan(0)
-    for (const src of sources) expect([ICON_PATH, APPLE_TOUCH_ICON_PATH]).toContain(src)
+    for (const src of sources) expect([ACTIVE_ICON_PATH, APPLE_TOUCH_ICON_PATH]).toContain(src)
   })
 
   it("T11: leads with the christmas favicon and keeps the apple-touch icon", () => {

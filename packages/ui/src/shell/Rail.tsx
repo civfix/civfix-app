@@ -140,13 +140,7 @@ export function Rail({ topInset }: { topInset: number }) {
               <RailTab key={tab.id} tab={tab} selected={i === index} onPress={() => onTab(tab)} />
             ))}
           </View>
-          <View
-            style={[styles.garland, styles.noPointer]}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          >
-            <SeasonGarland width={RAIL_CAPSULE_W} />
-          </View>
+          <SeasonGarland width={RAIL_CAPSULE_W} style={styles.garland} />
         </View>
 
         <Pressable
@@ -262,7 +256,7 @@ const useStyles = makeThemedStyles((t) => ({
   garland: {
     position: "absolute",
     left: 0,
-    top: -4,
+    top: -t.space["1"],
   },
   capsule: {
     width: RAIL_CAPSULE_W,

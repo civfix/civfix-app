@@ -27,6 +27,7 @@ import {
   type DockShapes,
 } from "../surface"
 import { useNavStore, type View as NavView } from "../nav"
+import { SeasonGarland } from "../primitives/SeasonGarland"
 import { useT } from "../i18n"
 import { useTabBarStore } from "./tabBarStore"
 import { useSearchBarStore } from "./searchBarStore"
@@ -358,6 +359,10 @@ export function TabBar() {
     transform: [{ translateX: tx.value }],
     opacity: pillOp.value * (1 - windowProgress(p.value, 0, 0.35)) * (1 - mz.value),
   }))
+  // The tab pill shrinks away when the dock morphs into search or minimizes; the garland leaves with it.
+  const garlandStyle = useAnimatedStyle(() => ({
+    opacity: (1 - windowProgress(p.value, 0, 0.35)) * (1 - mz.value),
+  }))
   const restMagX = Math.max(regionW - H / 2, 0)
   const magStyle = useAnimatedStyle(() => {
     const right = shapes.value.right
@@ -551,6 +556,9 @@ export function TabBar() {
               </>
             ) : null}
           </LiquidGlassDock>
+          <Animated.View style={[styles.garland, garlandStyle]} pointerEvents="none">
+            <SeasonGarland width={wide} />
+          </Animated.View>
         </Animated.View>
       </Animated.View>
     </Animated.View>
@@ -570,6 +578,11 @@ const useStyles = makeThemedStyles((t) => ({
   dockRegion: {
     height: H,
     justifyContent: "center",
+  },
+  garland: {
+    position: "absolute",
+    top: -t.space["1"],
+    left: 0,
   },
   tabStrip: {
     position: "absolute",

@@ -1,10 +1,12 @@
 import { View, StyleSheet } from "react-native"
-import { fontFamily, wordmarkColors, WORDMARK_GLYPHS } from "@/theme"
-import { Text } from "@civfix/ui"
+import { fontFamily, useColorSchemeName, wordmarkColorsFor, WORDMARK_GLYPHS } from "@/theme"
+import { SeasonHat, Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
 export function Wordmark({ size = 23 }: { size?: number }) {
   const { t } = useT("mobile-branding")
+  const scheme = useColorSchemeName()
+  const colors = wordmarkColorsFor(scheme)
   const letterSpacing = -size * 0.05
   return (
     <View
@@ -16,12 +18,13 @@ export function Wordmark({ size = 23 }: { size?: number }) {
       {WORDMARK_GLYPHS.map((glyph, i) => (
         <Text
           key={glyph.slot}
-          color={wordmarkColors[i]}
+          color={colors[i]}
           style={[styles.letter, { fontSize: size, letterSpacing }]}
         >
           {glyph.char}
         </Text>
       ))}
+      <SeasonHat size={size} scheme={scheme} />
     </View>
   )
 }

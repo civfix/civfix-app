@@ -11,8 +11,9 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from "react-native-reanimated"
-import { focusRingProps, makeThemedStyles, wordmarkColors, WORDMARK_GLYPHS } from "@/theme"
-import { Text } from "@civfix/ui"
+import { focusRingProps, makeThemedStyles, wordmarkColorsFor, WORDMARK_GLYPHS } from "@/theme"
+import { SeasonHat, Text } from "@civfix/ui"
+import { ACTIVE_SEASON, seasonLook } from "@civfix/ui/theme/season"
 import { useT } from "@civfix/ui/i18n"
 import { retrySessionRestore, useBootGate } from "@/hooks/useBootGate"
 import { LAUNCH_SCHEME } from "@/boot/launchTheme"
@@ -30,6 +31,9 @@ const EASE_BOUNCE = Easing.bezier(0.28, 0.84, 0.42, 1)
 const TAG_DURATION = 640
 const TAG_DELAY = 760
 
+const LETTER_COLORS = wordmarkColorsFor(LAUNCH_SCHEME)
+const HAT_ON_C = seasonLook(ACTIVE_SEASON)?.hat != null
+
 function wordmarkSize(width: number): number {
   return Math.max(72, Math.min(width * 0.22, 112))
 }
@@ -41,6 +45,7 @@ function Letter({
   fontSize,
   dropDistance,
   reduceMotion,
+  hat,
 }: {
   char: string
   color: string | undefined
@@ -48,6 +53,7 @@ function Letter({
   fontSize: number
   dropDistance: number
   reduceMotion: boolean
+  hat: boolean
 }) {
   const drop = useSharedValue(reduceMotion ? 1 : 0)
   const bounce = useSharedValue(0)
@@ -86,7 +92,7 @@ function Letter({
     }
   })
 
-  return (
+  const letter = (
     <Animated.Text
       style={[styles.letter, { color, fontSize, letterSpacing: -fontSize * 0.05 }, style]}
       accessibilityElementsHidden
@@ -94,6 +100,16 @@ function Letter({
     >
       {char}
     </Animated.Text>
+  )
+  if (!hat) return letter
+  // The hat rides the "c" through its drop and bounces, so it shares the letter's animated style.
+  return (
+    <>
+      {letter}
+      <Animated.View style={[styles.hatRide, style]}>
+        <SeasonHat size={fontSize} scheme={LAUNCH_SCHEME} />
+      </Animated.View>
+    </>
   )
 }
 
@@ -176,11 +192,12 @@ export function LoadingSplash() {
           <Letter
             key={glyph.slot}
             char={glyph.char}
-            color={wordmarkColors[i]}
+            color={LETTER_COLORS[i]}
             index={i}
             fontSize={fontSize}
             dropDistance={dropDistance}
             reduceMotion={reduceMotion}
+            hat={i === 0 && HAT_ON_C}
           />
         ))}
       </View>
@@ -205,6 +222,11 @@ const styles = makeThemedStyles((t) => ({
   letter: {
     fontFamily: t.fontFamily.brand,
     includeFontPadding: false,
+  },
+  hatRide: {
+    position: "absolute",
+    left: 0,
+    top: 0,
   },
   tag: {
     marginTop: t.space["6"],

@@ -37,6 +37,12 @@ vi.mock("react-native-safe-area-context", async () => {
   return { SafeAreaInsetsContext: createContext(insets), useSafeAreaInsets: () => insets }
 })
 
+// The About card's wordmark wears the season's hat; react-native-svg resolves to its native build here.
+vi.mock("react-native-svg", () => {
+  const Shape = () => null
+  return { default: Shape, Circle: Shape, Path: Shape, Rect: Shape }
+})
+
 const open = vi.fn(async (_url: string) => {})
 const present = vi.fn()
 

@@ -345,9 +345,10 @@ function rootVars(scheme: ColorSchemeName, season: Season): Map<string, string> 
 function resolveValue(value: string, vars: Map<string, string>): string {
   const ref = /^var\(\s*(--[a-z0-9-]+)\s*(?:,\s*([\s\S]*))?\)$/i.exec(value.trim())
   if (!ref) return value.trim().toUpperCase()
-  const own = vars.get(ref[1] as string)
+  const name = ref[1] as string
+  const own = vars.get(name)
   if (own !== undefined) return resolveValue(own, vars)
-  expect(ref[2], `${ref[1]} is unset and has no fallback`).toBeDefined()
+  expect(ref[2], `${name} is unset and has no fallback`).toBeDefined()
   return resolveValue(ref[2] ?? "", vars)
 }
 

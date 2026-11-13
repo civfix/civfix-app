@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { seasonLook } from "@civfix/tokens"
+import { ACTIVE_SEASON, seasonLook } from "@civfix/ui/theme/season"
 
 /** The per-letter colors live in design.css (`.cf-logo .s1` to `.s6`). */
 export function Wordmark({ className }: { className?: string }) {
@@ -29,12 +29,12 @@ export function Wordmark({ className }: { className?: string }) {
       <span className="ch s6" aria-hidden="true">
         <b>x</b>
       </span>
-      {seasonLook?.hat ? <SeasonHat /> : null}
+      {seasonLook(ACTIVE_SEASON)?.hat ? <SeasonHat /> : null}
     </span>
   )
 }
 
-/** Colors come from design.css (`--hat-felt`, `--hat-trim`), so the hat follows the scheme with no JS. */
+/** Colors come from design.css (`--hat-*`), so the hat follows the scheme with no JS. Decorative: the wordmark keeps its own label. */
 function SeasonHat() {
   return (
     <svg className="cf-hat" viewBox="0 0 40 32" aria-hidden="true">
