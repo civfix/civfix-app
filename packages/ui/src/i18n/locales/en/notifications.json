@@ -1,6 +1,9 @@
 {
   "row": {
-    "unreadSuffix": "{{title}}, unread"
+    "unreadSuffix": "{{title}}, unread",
+    "follow_back": "Follow back",
+    "message": "Message",
+    "message_a11y": "Message {{name}}"
   },
   "markReadError": {
     "generic": "Couldn't mark your notifications as read. Try again.",
@@ -17,5 +20,8 @@
   "empty": {
     "title": "You are all caught up",
     "body": "Updates on your reports, events, and followers will show up here."
+  },
+  "suggestions": {
+    "title": "Suggested for you"
   }
 }

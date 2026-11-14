@@ -1,6 +1,9 @@
 {
   "row": {
-    "unreadSuffix": "{{title}}, no leído"
+    "unreadSuffix": "{{title}}, no leído",
+    "follow_back": "Seguir también",
+    "message": "Mensaje",
+    "message_a11y": "Enviar mensaje a {{name}}"
   },
   "markReadError": {
     "generic": "No se pudieron marcar tus notificaciones como leídas. Inténtalo de nuevo.",
@@ -17,5 +20,8 @@
   "empty": {
     "title": "Estás al día",
     "body": "Las actualizaciones de tus reportes, eventos y seguidores aparecerán aquí."
+  },
+  "suggestions": {
+    "title": "Sugerencias para ti"
   }
 }

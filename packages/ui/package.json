@@ -156,7 +156,7 @@
     }
   },
   "dependencies": {
-    "@civfix/contract": "^0.71.1",
+    "@civfix/contract": "^0.72.0",
     "@civfix/tokens": "workspace:*",
     "i18next": "^26.6.0",
     "qrcode-generator": "^2.0.4",
